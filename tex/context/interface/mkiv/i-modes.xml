@@ -93,7 +93,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemode" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifelsemode" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -101,7 +101,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmodeelse" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifmodeelse" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -109,14 +109,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmode" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifmode" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotmode" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifnotmode" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -135,7 +135,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseallmodes" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifelseallmodes" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -143,7 +143,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallmodeselse" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifallmodeselse" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -151,7 +151,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallmodes" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifallmodes" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -159,7 +159,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotallmodes" level="style" category="structure conditional" file="core-env.mkiv">
+    <cd:command name="doifnotallmodes" level="style" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>

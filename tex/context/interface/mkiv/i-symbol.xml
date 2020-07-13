@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseinsymbolset" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifelseinsymbolset" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -21,7 +21,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinsymbolsetelse" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifinsymbolsetelse" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -30,7 +30,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinsymbolset" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifinsymbolset" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesymbolset" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifelsesymbolset" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsymbolsetelse" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifsymbolsetelse" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -75,7 +75,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefiguresymbol" level="style" category="symbols graphics" file="symb-ini.mkiv">
+    <cd:command name="definefiguresymbol" level="style" category="symbols" keywords="graphics" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="figuresymbol" level="document" category="symbols graphics" file="symb-ini.mkiv">
+    <cd:command name="figuresymbol" level="document" category="symbols" keywords="graphics" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:file"/>
@@ -100,7 +100,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesymboldefined" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifelsesymboldefined" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -108,7 +108,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsymboldefinedelse" level="system" category="symbols conditional" file="symb-ini.mkiv">
+    <cd:command name="doifsymboldefinedelse" level="system" category="symbols" keywords="conditional" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

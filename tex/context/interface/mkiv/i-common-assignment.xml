@@ -27,6 +27,9 @@
             <cd:parameter name="ownnumber">
                 <cd:constant type="cd:text"/>
             </cd:parameter>
+            <cd:parameter name="placeholder">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 
@@ -48,6 +51,9 @@
                 <cd:constant type="cd:reference"/>
             </cd:parameter>
             <cd:parameter name="ownnumber">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="placeholder">
                 <cd:constant type="cd:text"/>
             </cd:parameter>
         </cd:assignments>

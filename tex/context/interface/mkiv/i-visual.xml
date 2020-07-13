@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="fakerule" level="system" file="m-visual.mkiv">
+    <cd:command name="fakerule" level="system" category="rules" file="m-visual.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
@@ -17,7 +17,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakelines" level="document" file="m-visual.mkiv">
+    <cd:command name="fakelines" level="document" category="strings" file="m-visual.mkiv">
         <cd:arguments>
             <cd:keywords name="keywords" delimiters="braces">
                 <cd:constant type="cd:number"/>
@@ -30,7 +30,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakewords" level="document" file="m-visual.mkiv">
+    <cd:command name="fakewords" level="document" category="strings" file="m-visual.mkiv">
         <cd:arguments>
             <cd:keywords name="keywords" delimiters="braces">
                 <cd:constant type="cd:number"/>
@@ -43,29 +43,29 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakenwords" level="system" file="m-visual.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-number"/>
-            <cd:keywords name="keywords" delimiters="braces">
-                <cd:constant type="cd:number"/>
-                <cd:constant type="cd:nothing"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="showfakewords" level="system" file="m-visual.mkiv"/>
-
-    <cd:command name="fakeword" level="system" file="m-visual.mkiv"/>
-
-    <cd:command name="fakeparindent" level="system" file="m-visual.mkiv"/>
-
-    <cd:command name="fakeddroppedcaps" level="system" file="m-visual.mkiv">
+    <cd:command name="fakenwords" level="system" category="strings" file="m-visual.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakefigure" level="document" file="m-visual.mkiv">
+    <cd:command name="showfakewords" level="system" category="strings" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeword" level="system" category="strings" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeparindent" level="system" category="whitespace" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeddroppedcaps" level="system" category="fonts" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakefigure" level="document" category="graphics" keywords="structure" file="m-visual.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="placefloat"/>
@@ -78,7 +78,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakeimage" level="document" file="m-visual.mkiv">
+    <cd:command name="fakeimage" level="document" category="graphics" file="m-visual.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
@@ -87,11 +87,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fakeformula" level="document" file="m-visual.mkiv"/>
+    <cd:command name="fakeformula" level="document" category="mathematics" file="m-visual.mkiv"/>
 
-    <cd:command name="fakespacingformula" level="document" file="m-visual.mkiv"/>
+    <cd:command name="fakespacingformula" level="document" category="mathematics" file="m-visual.mkiv"/>
 
-    <cd:command name="smashedgrid" level="system" file="m-visual.mkiv">
+    <cd:command name="smashedgrid" level="system" category="layout" file="m-visual.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="basegrid"/>
@@ -99,17 +99,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bodyfontgrid" level="system" file="m-visual.mkiv"/>
+    <cd:command name="bodyfontgrid" level="system" category="fonts" file="m-visual.mkiv"/>
 
-    <cd:command name="emexgrid" level="system" file="m-visual.mkiv"/>
+    <cd:command name="emexgrid" level="system" category="fonts" file="m-visual.mkiv"/>
 
-    <cd:command name="simplethesis" level="system" file="m-visual.mkiv"/>
+    <cd:command name="simplethesis" level="system" category="layout" file="m-visual.mkiv"/>
 
-    <cd:command name="showbaselines" level="system" file="m-visual.mkiv"/>
+    <cd:command name="showbaselines" level="system" category="layout" file="m-visual.mkiv"/>
 
-    <cd:command name="showpagebuilder" level="system" file="m-visual.mkiv"/>
+    <cd:command name="showpagebuilder" level="system" category="layout" file="m-visual.mkiv"/>
 
-    <cd:command name="tagbox" level="system" file="m-visual.mkiv">
+    <cd:command name="tagbox" level="system" category="boxes" file="m-visual.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:keywords optional="yes">
@@ -131,24 +131,24 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredhbox" level="system" file="m-visual.mkiv">
+    <cd:command name="coloredhbox" level="system" category="boxes" keywords="colors" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredvbox" level="system" file="m-visual.mkiv">
+    <cd:command name="coloredvbox" level="system" category="boxes" keywords="colors" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredvtop" level="system" file="m-visual.mkiv">
+    <cd:command name="coloredvtop" level="system" category="boxes" keywords="colors" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredstrut" level="system" file="m-visual.mkiv"/>
+    <cd:command name="coloredstrut" level="system" category="fonts" file="m-visual.mkiv"/>
 
 </cd:interface>

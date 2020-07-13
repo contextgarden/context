@@ -68,16 +68,7 @@ local scan_luanumber   = token.scan_luanumber   or scan_float -- only lmtx
 local scan_luainteger  = token.scan_luainteger  or scan_int   -- only lmtx
 local scan_luacardinal = token.scan_luacardinal or scan_int   -- only lmtx
 
-local get_next         = token.get_next
------ get_next_token   = token.get_next_token
-local skip_next        = token.skip_next
-local peek_next_char   = token.peek_next_char
-local is_next_char     = token.is_next_char
-
 local set_macro        = token.set_macro
-local get_macro        = token.get_macro
-local get_meaning      = token.get_meaning
-local get_cmdname      = token.get_cmdname
 local set_char         = token.set_char
 local set_lua          = token.set_lua
 
@@ -173,50 +164,63 @@ if not scan_box then
 end
 
 tokens.scanners = { -- these expand
-    token       = scan_token,
-    toks        = scan_toks,
-    tokens      = scan_toks,
-    box         = scan_box,
-    hbox        = function() return scan_box("hbox") end,
-    vbox        = function() return scan_box("vbox") end,
-    vtop        = function() return scan_box("vtop") end,
-    dimen       = scan_dimen,
-    dimension   = scan_dimen,
-    glue        = scan_glue,
-    gluespec    = scan_gluespec,
-    integer     = scan_int,
-    real        = scan_real,
-    float       = scan_float,
-    luanumber   = scan_luanumber,
-    luainteger  = scan_luainteger,
-    luacardinal = scan_luacardinal,
-    count       = scan_int,
-    string      = scan_string,
-    argument    = scan_argument,
-    delimited   = scan_delimited,
-    tokenlist   = scan_tokenlist,
-    verbatim    = scan_verbatim, -- detokenize
-    code        = scan_code,
-    tokencode   = scan_token_code,
-    word        = scan_word,
-    letters     = scan_letters,
-    key         = scan_key,
-    value       = scan_value,
-    char        = scan_char,
-    number      = scan_number,
-    boolean     = scan_boolean,
-    keyword     = scan_keyword,
-    keywordcs   = scan_keyword_cs,
-    csname      = scan_csname,
-    peek        = peek_next_char,
-    skip        = skip_next,
-    ischar      = is_next_char,
+    token          = scan_token,
+    toks           = scan_toks,
+    tokens         = scan_toks,
+    box            = scan_box,
+    hbox           = function() return scan_box("hbox") end,
+    vbox           = function() return scan_box("vbox") end,
+    vtop           = function() return scan_box("vtop") end,
+    dimen          = scan_dimen,
+    dimension      = scan_dimen,
+    glue           = scan_glue,
+    gluespec       = scan_gluespec,
+    integer        = scan_int,
+    real           = scan_real,
+    float          = scan_float,
+    luanumber      = scan_luanumber,
+    luainteger     = scan_luainteger,
+    luacardinal    = scan_luacardinal,
+    count          = scan_int,
+    string         = scan_string,
+    argument       = scan_argument,
+    delimited      = scan_delimited,
+    tokenlist      = scan_tokenlist,
+    verbatim       = scan_verbatim, -- detokenize
+    code           = scan_code,
+    tokencode      = scan_token_code,
+    word           = scan_word,
+    letters        = scan_letters,
+    key            = scan_key,
+    value          = scan_value,
+    char           = scan_char,
+    number         = scan_number,
+    boolean        = scan_boolean,
+    keyword        = scan_keyword,
+    keywordcs      = scan_keyword_cs,
+    csname         = scan_csname,
+
+    next           = token.scan_next,
+    nextexpanded   = token.scan_next_expanded,
+
+    peek           = token.peek_next,
+    peekexpanded   = token.peek_next_expanded,
+    peekchar       = token.peek_next_char,
+
+    skip           = token.skip_next,
+    skipexpanded   = token.skip_next_expanded,
+
+    cmdchr         = token.scan_cmdchr,
+    cmdchrexpanded = token.scan_cmdchr_expanded,
+
+    ischar         = token.is_next_char,
 }
 
 tokens.getters = { -- these don't expand
-    meaning = get_meaning,
-    macro   = get_macro,
-    token   = get_next,
+    meaning = token.get_meaning,
+    macro   = token.get_macro,
+    token   = token.scan_next,   -- not here, use scanners.next or token
+    cstoken = token.get_cstoken,
     count   = tex.getcount,
     dimen   = tex.getdimen,
     skip    = tex.getglue,
@@ -237,6 +241,23 @@ tokens.setters = {
     skip  = tex.setmuglue,
     glue  = tex.setmuglue,
     box   = tex.setbox,
+}
+
+token.accessors = {
+    command    = token.get_command,
+    cmd        = token.get_command,
+    cmdname    = token.get_cmdname,
+    name       = token.get_cmdname,
+    csname     = token.get_csname,
+    index      = token.get_index,
+    active     = token.get_active,
+    frozen     = token.get_frozen,
+    protected  = token.get_protected,
+    expandable = token.get_protected,
+    user       = token.get_user,
+    cmdchrcs   = token.get_cmdchrcs,
+    active     = token.get_active,
+    range      = token.get_range,
 }
 
 -- static int run_scan_token(lua_State * L)

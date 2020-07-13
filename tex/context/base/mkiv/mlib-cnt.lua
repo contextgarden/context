@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['mlib-cnt'] = {
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to mlib-ctx.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",

@@ -4,33 +4,39 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="noflines" level="system" file="supp-box.mkiv"/>
+    <cd:command name="noflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv"/>
 
-    <cd:command name="getnoflines" level="system" file="supp-box.mkiv">
+    <cd:command name="getnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getroundednoflines" level="system" file="supp-box.mkiv">
+    <cd:command name="getroundednoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrawnoflines" level="system" file="supp-box.mkiv">
+    <cd:command name="getrawnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="determinenoflines" level="system" file="supp-box.mkiv">
+    <cd:command name="determinenoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelines" level="style" file="spac-lin.mkiv">
+    <cd:command name="noflinesinbox" level="system" category="boxes" file="supp-box.lua">
+        <cd:arguments>
+            <cd:resolve name="string-box"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definelines" level="style" category="structure" file="spac-lin.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -40,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplines" level="style" file="spac-lin.mkiv">
+    <cd:command name="setuplines" level="style" category="structure" file="spac-lin.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -84,11 +90,15 @@
                 <cd:parameter name="right">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="indentlist" list="yes">
+                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="*"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lines" type="environment" generated="yes" variant="instance" level="document" file="spac-lin.mkiv">
+    <cd:command name="lines" type="environment" generated="yes" variant="instance" level="document" category="structure" file="spac-lin.mkiv">
         <cd:sequence>
             <cd:instance value="lines"/>
         </cd:sequence>
@@ -104,7 +114,7 @@
 
     <!--
 
-        <cd:command name="lines" type="environment" level="document" file="spac-lin.mkiv">
+        <cd:command name="lines" type="environment" level="document" category="structure" file="spac-lin.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuplines"/>
@@ -114,7 +124,7 @@
 
     -->
 
-    <cd:command name="emptylines" level="document" file="spac-lin.mkiv">
+    <cd:command name="emptylines" level="document" category="whitespace" file="spac-lin.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>

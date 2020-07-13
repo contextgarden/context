@@ -111,7 +111,7 @@
 
     -->
 
-    <cd:command name="floatcombination" type="environment" variant="matrix" level="document" category="float tables" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" variant="matrix" level="document" category="tables" keywords="float" file="pack-com.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:matrix"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="floatcombination" type="environment" level="document" category="float tables" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" level="document" category="tables" keywords="float" file="pack-com.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcombination"/>

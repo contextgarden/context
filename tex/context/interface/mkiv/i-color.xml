@@ -435,7 +435,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecolor" level="system" category="colors conditional" file="color-ini.mkiv">
+    <cd:command name="doifelsecolor" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -443,7 +443,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolorelse" level="system" category="colors conditional" file="color-ini.mkiv">
+    <cd:command name="doifcolorelse" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -451,7 +451,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolor" level="system" category="colors conditional" file="color-ini.mkiv">
+    <cd:command name="doifcolor" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -518,7 +518,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseblack" level="system"  category="colors conditional" file="colo-ini.mkiv">
+    <cd:command name="doifelseblack" level="system"  category="colors" keywords="conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -526,7 +526,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifblackelse" level="system" category="colors conditional" file="colo-ini.mkiv">
+    <cd:command name="doifblackelse" level="system" category="colors" keywords="conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -534,14 +534,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedrawingblack" level="system" category="colors conditional" file="colo-ini.mkiv">
+    <cd:command name="doifelsedrawingblack" level="system" category="colors" keywords="conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdrawingblackelse" level="system" category="colors conditional" file="colo-ini.mkiv">
+    <cd:command name="doifdrawingblackelse" level="system" category="colors" keywords="conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

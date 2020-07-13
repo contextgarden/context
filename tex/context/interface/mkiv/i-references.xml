@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsereferencefound" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doifelsereferencefound" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifreferencefoundelse" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doifreferencefoundelse" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -421,7 +421,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseurldefined" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doifelseurldefined" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -429,7 +429,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifurldefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doifurldefinedelse" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -437,7 +437,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefiledefined" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doifelsefiledefined" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -445,7 +445,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffiledefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
+    <cd:command name="doiffiledefinedelse" level="system" category="references" keywords="conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

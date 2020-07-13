@@ -159,14 +159,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsynonymused" level="system" category="symbols conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsynonymused" level="system" category="symbols" keywords="conditional" file="strc-syn.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsynonymshown" level="system" category="symbols conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsynonymshown" level="system" category="symbols" keywords="conditional" file="strc-syn.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

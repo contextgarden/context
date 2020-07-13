@@ -30,8 +30,10 @@ local expandpaths   = resolvers.expandedpathlistfromvariable
 
 local report        = logs.reporter("resolvers","libraries")
 local trace         = false
+local silent        = false
 
-trackers.register("resolvers.lib", function(v) trace = v end)
+trackers.register("resolvers.lib",        function(v) trace  = v end)
+trackers.register("resolvers.lib.silent", function(v) silent = v end)
 
 local function findlib(required) -- todo: cache
     local suffix = os.libsuffix or "so"
@@ -143,10 +145,10 @@ function libraries.optionalloaded(name,libnames)
                     end
                 end
                 local initialized = thelib_initialize(unpack(libnames))
-                if initialized then
-                    report("using library '% + t'",libnames)
-                else
+                if not initialized then
                     report("unable to initialize library '% + t'",libnames)
+                elseif not silent then
+                    report("using library '% + t'",libnames)
                 end
                 return initialized
             end

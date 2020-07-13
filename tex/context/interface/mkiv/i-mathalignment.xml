@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathalignment" level="style" category="mathematics alignment" file="math-ali.mkiv">
+    <cd:command name="definemathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathalignment" level="style" category="mathematics alignment" file="math-ali.mkiv">
+    <cd:command name="setupmathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" level="document" category="mathematics alignment" file="math-ali.mkiv">
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
         <cd:sequence>
             <cd:instance value="mathalignment"/>
         </cd:sequence>
@@ -69,7 +69,7 @@
 
     <!--
 
-        <cd:command name="mathalignment" type="environment" level="document" category="mathematics alignment" file="math-ali.mkiv">
+        <cd:command name="mathalignment" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmathalignment"/>
@@ -77,7 +77,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="align" type="environment" level="document" category="mathematics alignment" file="math-ali.mkiv">
+        <cd:command name="align" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmathalignment"/>

@@ -134,7 +134,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayouttextline" level="system" category="layout conditional" file="page-txt.mkvi">
+    <cd:command name="doifelselayouttextline" level="system" category="layout" keywords="conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -142,7 +142,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayouttextlineelse" level="system" category="layout conditional" file="page-txt.mkvi">
+    <cd:command name="doiflayouttextlineelse" level="system" category="layout" keywords="conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -150,7 +150,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayoutsomeline" level="system" category="layout conditional" file="page-txt.mkvi">
+    <cd:command name="doifelselayoutsomeline" level="system" category="layout" keywords="conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -158,7 +158,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayoutsomelineelse" level="system" category="layout conditional" file="page-txt.mkvi">
+    <cd:command name="doiflayoutsomelineelse" level="system" category="layout" keywords="conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

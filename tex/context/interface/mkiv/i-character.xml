@@ -62,32 +62,32 @@
 
     <cd:command name="letterexclamationmark" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="utfchar" level="document" category="characters fonts" file="char-ini.mkiv">
+    <cd:command name="utfchar" level="document" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="safechar" level="style" category="characters fonts" file="char-ini.mkiv">
+    <cd:command name="safechar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedchar" level="style" category="characters fonts" file="char-ini.mkiv">
+    <cd:command name="checkedchar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textormathchar" level="style" category="characters fonts" file="char-ini.mkiv">
+    <cd:command name="textormathchar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-  <cd:command name="textormathchars" level="style" category="characters fonts" file="char-ini.mkiv">
+  <cd:command name="textormathchars" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>

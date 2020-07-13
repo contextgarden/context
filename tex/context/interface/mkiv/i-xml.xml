@@ -827,7 +827,7 @@
 
     <!--
 
-        <cd:command name="xmltoparameters" file="lxml-ini.mkiv">
+        <cd:command name="xmltoparameters" level="style" category="xml" file="lxml-ini.mkiv">
             <cd:arguments>
             <cd:resolve name="argument-node"/>
             <cd:resolve name="argument-lpath"/>
@@ -930,6 +930,12 @@
     </cd:command>
 
     <cd:command name="xmldefaulttotext" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmldepth" level="style" category="xml" file="lxml-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-node"/>
         </cd:arguments>

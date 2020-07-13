@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseorientation" level="system" category="conditional" file="pack-ori.mkxl">
+    <cd:command name="doifelseorientation" level="system" category="alignment" keywords="conditional" file="pack-ori.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-orientation"/>
             <cd:resolve name="argument-true"/>

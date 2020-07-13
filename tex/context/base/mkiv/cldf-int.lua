@@ -35,7 +35,7 @@ if CONTEXTLMTXMODE > 0 then
     local scanners  = tokens.scanners
     local shortcuts = tokens.shortcuts
 
-    local scanpeek  = scanners.peek
+    local peekchar  = scanners.peekchar
     local scankey   = scanners.key
     local scanvalue = scanners.value
     local scanskip  = scanners.skip
@@ -46,11 +46,11 @@ if CONTEXTLMTXMODE > 0 then
     local comma     = byte(',')
 
     function scanhash(scanners)
-        if scanpeek() == open then
+        if peekchar() == open then
             local data = { }
             scanskip()
             while true do
-                local c = scanpeek()
+                local c = peekchar()
                 if c == comma then
                     scanskip()
                 elseif c == close then
@@ -59,7 +59,7 @@ if CONTEXTLMTXMODE > 0 then
                 else
                     local key = scankey(equal)
                     if key then
-                        if scanpeek() == equal then
+                        if peekchar() == equal then
                             scanskip()
                             if scanners then
                                 local scanner = scanners[key]
@@ -84,12 +84,12 @@ if CONTEXTLMTXMODE > 0 then
     end
 
     function scanarray()
-        if scanpeek() == open then
+        if peekchar() == open then
             local data = { }
             local d = 0
             scanskip()
             while true do
-                local c = scanpeek()
+                local c = peekchar()
                 if c == comma then
                     scanskip()
                 elseif c == close then

@@ -93,7 +93,7 @@
 
     <cd:command name="defaultobjectpage" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="doifelseobjectfound" level="system" category="pdf conditional" file="pack-obj.mkiv">
+    <cd:command name="doifelseobjectfound" level="system" category="pdf" keywords="conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -102,7 +102,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifobjectfoundelse" level="system" category="pdf conditional" file="pack-obj.mkiv">
+    <cd:command name="doifobjectfoundelse" level="system" category="pdf" keywords="conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -111,7 +111,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseobjectreferencefound" level="system" category="pdf conditional" file="pack-obj.mkiv">
+    <cd:command name="doifelseobjectreferencefound" level="system" category="pdf" keywords="conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifobjectreferencefoundelse" level="system" category="pdf conditional" file="pack-obj.mkiv">
+    <cd:command name="doifobjectreferencefoundelse" level="system" category="pdf" keywords="conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>

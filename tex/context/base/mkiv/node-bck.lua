@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['node-bck'] = {
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to node-bck.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",

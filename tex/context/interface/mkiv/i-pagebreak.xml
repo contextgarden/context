@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepagebreak" level="style" file="page-brk.mkiv">
+    <cd:command name="definepagebreak" level="style" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagebreak" level="document" file="page-brk.mkiv">
+    <cd:command name="pagebreak" level="document" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:resolve name="value-pagebreak"/>
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="page" level="document" file="page-brk.mkiv">
+    <cd:command name="page" level="document" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="pagebreak"/>
@@ -30,7 +30,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolumnbreak" level="style" file="page-brk.mkiv">
+    <cd:command name="definecolumnbreak" level="style" category="structure" keywords="columns" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnbreak" level="document" file="page-brk.mkiv">
+    <cd:command name="columnbreak" level="document" category="structure" keywords="columns" file="page-brk.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:resolve name="value-columnbreak"/>
@@ -48,7 +48,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="column" level="document" file="page-brk.mkiv">
+    <cd:command name="column" level="document" category="structure" keywords="columns" file="page-brk.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="columnbreak"/>
@@ -56,7 +56,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepagechecker" level="style" file="page-brk.mkiv">
+    <cd:command name="definepagechecker" level="style" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagechecker" level="style" file="page-brk.mkiv">
+    <cd:command name="setuppagechecker" level="style" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -95,7 +95,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkpage" level="document" file="page-brk.mkiv">
+    <cd:command name="checkpage" level="document" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -104,28 +104,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testpage" level="document" file="page-brk.mkiv">
+    <cd:command name="testpage" level="document" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testpageonly" level="system" file="page-brk.mkiv">
+    <cd:command name="testpageonly" level="system" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testpagesync" level="system" file="page-brk.mkiv">
+    <cd:command name="testpagesync" level="system" category="structure" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testcolumn" level="document" file="page-brk.mkiv">
+    <cd:command name="testcolumn" level="document" category="structure" keywords="columns" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>

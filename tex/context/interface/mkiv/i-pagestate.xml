@@ -4,25 +4,25 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="signalrightpage" level="system" file="spac-pag.mkiv"/>
+    <cd:command name="signalrightpage" level="system" category="twopassdata" file="spac-pag.mkiv"/>
 
-    <cd:command name="doifelserightpage" level="system" file="spac-pag.mkiv">
+    <cd:command name="doifelserightpage" level="system" category="twopassdata" keywords="conditional" file="spac-pag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifrightpageelse" level="system" file="spac-pag.mkiv">
+    <cd:command name="doifrightpageelse" level="system" category="twopassdata" keywords="conditional" file="spac-pag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rightpageorder" level="system" file="spac-pag.mkiv"/>
+    <cd:command name="rightpageorder" level="system" category="twopassdata" file="spac-pag.mkiv"/>
 
-    <cd:command name="definepagestate" level="system" file="core-dat.mkiv">
+    <cd:command name="definepagestate" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagestate" level="system" file="core-dat.mkiv">
+    <cd:command name="setuppagestate" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -44,7 +44,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpagestate" level="system" file="core-dat.mkiv">
+    <cd:command name="setpagestate" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -54,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagestaterealpage" level="system" file="core-dat.mkiv">
+    <cd:command name="pagestaterealpage" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -64,7 +64,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpagestaterealpageno" level="system" file="core-dat.mkiv">
+    <cd:command name="setpagestaterealpageno" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagestaterealpageorder" level="system" file="core-dat.mkiv">
+    <cd:command name="pagestaterealpageorder" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -84,19 +84,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autopagestaterealpage" level="system" file="core-dat.mkiv">
+    <cd:command name="autopagestaterealpage" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setautopagestaterealpageno" level="system" file="core-dat.mkiv">
+    <cd:command name="setautopagestaterealpageno" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autopagestaterealpageorder" level="system" file="core-dat.mkiv">
+    <cd:command name="autopagestaterealpageorder" level="system" category="twopassdata" keywords="counter pagenumber" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

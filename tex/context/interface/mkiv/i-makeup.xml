@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemakeup" level="style" category="structure layout" file="page-mak.mkvi">
+    <cd:command name="definemakeup" level="style" category="structure" keywords="layout" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmakeup" level="style" category="structure layout" file="page-mak.mkvi">
+    <cd:command name="setupmakeup" level="style" category="structure" keywords="layout" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -113,7 +113,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" level="document" category="structure layout" file="page-mak.mkvi">
+    <cd:command name="makeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -122,7 +122,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" generated="yes" variant="instance" level="document" category="structure layout" file="page-mak.mkvi">
+    <cd:command name="makeup" type="environment" generated="yes" variant="instance" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
         <cd:sequence>
             <cd:instance value="makeup"/>
             <cd:string value="makeup"/>
@@ -139,7 +139,7 @@
 
     <!--
 
-        <cd:command name="standardmakeup" type="environment" level="document" category="structure layout" file="page-mak.mkvi">
+        <cd:command name="standardmakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmakeup"/>
@@ -147,7 +147,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="textmakeup" type="environment" level="document" category="structure layout" file="page-mak.mkvi">
+        <cd:command name="textmakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmakeup"/>
@@ -155,7 +155,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="pagemakeup" type="environment" level="document" category="structure layout" file="page-mak.mkvi">
+        <cd:command name="pagemakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmakeup"/>
@@ -163,7 +163,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="middlemakeup" type="environment" level="document" category="structure layout" file="page-mak.mkvi">
+        <cd:command name="middlemakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmakeup"/>

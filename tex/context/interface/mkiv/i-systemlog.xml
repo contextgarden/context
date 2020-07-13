@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="systemlog" level="system" file="core-sys.mkiv">
+    <cd:command name="systemlog" level="system" category="tracker" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-text"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="systemlogfirst" level="system" file="core-sys.mkiv">
+    <cd:command name="systemlogfirst" level="system" category="tracker" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-text"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="systemloglast" level="system" file="core-sys.mkiv">
+    <cd:command name="systemloglast" level="system" category="tracker" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-text"/>

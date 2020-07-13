@@ -140,7 +140,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesamelinereference" level="system" category="structure conditional" file="page-lin.mkvi">
+    <cd:command name="doifelsesamelinereference" level="system" category="structure" keywords="conditional" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsamelinereferenceelse" level="system" category="structure conditional" file="page-lin.mkvi">
+    <cd:command name="doifsamelinereferenceelse" level="system" category="structure" keywords="conditional" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>

@@ -29,7 +29,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseinsertion" level="system" category="structure conditional" file="page-ins.mkiv">
+    <cd:command name="doifelseinsertion" level="system" category="structure" keywords="conditional" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinsertionelse" level="system" category="structure conditional" file="page-ins.mkiv">
+    <cd:command name="doifinsertionelse" level="system" category="structure" keywords="conditional" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

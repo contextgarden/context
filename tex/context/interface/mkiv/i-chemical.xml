@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="molecule" level="document" file="chem-ini.mkiv">
+    <cd:command name="molecule" level="document" category="symbols" file="chem-ini.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chem" level="document" file="chem-ini.mkiv">
+    <cd:command name="chem" level="document" category="symbols" file="chem-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>

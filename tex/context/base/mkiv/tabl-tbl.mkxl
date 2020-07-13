@@ -2259,6 +2259,15 @@
   {\setlocalhsize
    \hsize\localhsize}
 
+% test case for pre/post spacing:
+%
+% \ruledvbox{\starttabulate[|l|]  \FL\NC xxx \NC         \NR\LL\stoptabulate}
+% \ruledvbox{\starttabulate[|l|l|]\FL\NC xxx \NC xxx \NC \NR\LL\stoptabulate}
+% \ruledvbox{\starttabulate[|l|]     \NC xxx \NC         \NR   \stoptabulate}
+% \ruledvbox{\starttabulate[|lj8|]   \NC xxx \NC         \NR   \stoptabulate}
+% \ruledvbox{\starttabulate[|k8|]    \NC xxx \NC         \NR   \stoptabulate}
+% \ruledvbox{\starttabulate[|l|l|]   \NC xxx \NC xxx \NC \NR   \stoptabulate}
+
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
@@ -2266,7 +2275,7 @@
    \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
    \s_tabl_tabulate_last\s_tabl_tabulate_first
    \s_tabl_tabulate_pre\zeropoint
-   \s_tabl_tabulate_post\s_tabl_tabulate_first % was: \zeropoint
+   \s_tabl_tabulate_post\zeropoint
    \global\c_tabl_tabulate_columns\zerocount
    \global\c_tabl_tabulate_nofauto\zerocount
    \global\c_tabl_tabulate_noflines\zerocount

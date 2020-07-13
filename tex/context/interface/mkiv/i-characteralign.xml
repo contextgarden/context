@@ -41,7 +41,7 @@
 
     <cd:command name="alignmentcharacter" level="system" category="alignment" file="typo-tal.mkiv"/>
 
-    <cd:command name="characteralign" type="environment" category="alignment" level="system" file="typo-tal.mkiv">
+    <cd:command name="characteralign" type="environment" level="system" category="alignment" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcharacteralign"/>
@@ -49,7 +49,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="characteralign" type="environment" variant="argument" category="alignment" level="system" file="typo-tal.mkiv">
+    <cd:command name="characteralign" type="environment" variant="argument" level="system" category="alignment" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>

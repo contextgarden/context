@@ -4,21 +4,21 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="MPdefinitions" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPdefinitions" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-instance-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPextensions" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPextensions" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-instance-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPinitializations" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv"/>
+    <cd:command name="MPinitializations" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="MPinclusions" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPinclusions" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="+"/>
@@ -27,7 +27,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPinclusions" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPinclusions" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="+"/>
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineMPinstance" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="defineMPinstance" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupMPinstance" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="setupMPinstance" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -84,19 +84,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetMPinstance" level="system" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="resetMPinstance" level="system" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processMPfigurefile" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="processMPfigurefile" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPdrawing" type="environment" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPdrawing" type="environment" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="-"/>
@@ -104,85 +104,85 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetMPdrawing" level="document" category="graphics metapost" file="meta-ini.mkiv"/>
+    <cd:command name="resetMPdrawing" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="getMPdrawing" level="document" category="graphics metapost" file="meta-ini.mkiv"/>
+    <cd:command name="getMPdrawing" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="MPdrawing" level="system" type="environment" begin="push" end="pop" category="graphics metapost" file="meta-ini.mkiv"/>
+    <cd:command name="MPdrawing" level="system" type="environment" begin="push" end="pop" category="graphics" keywords="metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="MPdrawing" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPdrawing" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPclip" type="environment" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPclip" type="environment" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPfontsizehskip" level="system" category="graphics metapost fonts" file="meta-ini.mkiv">
+    <cd:command name="MPfontsizehskip" level="system" category="graphics" keywords="metapost fonts" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupMPvariables" level="style" file="meta-ini.mkiv">
+    <cd:command name="setupMPvariables" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setMPvariables" level="style" file="meta-ini.mkiv">
+    <cd:command name="setMPvariables" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setMPvariable" level="style" file="meta-ini.mkiv">
+    <cd:command name="setMPvariable" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-userdata"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPrawvar" level="system" file="meta-ini.mkiv">
+    <cd:command name="MPrawvar" level="system" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPvariable" level="style" file="meta-ini.mkiv">
+    <cd:command name="MPvariable" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPvar" level="style" file="meta-ini.mkiv">
+    <cd:command name="MPvar" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useMPvariables" level="style" file="meta-ini.mkiv">
+    <cd:command name="useMPvariables" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-key-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uniqueMPgraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="uniqueMPgraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uniqueMPgraphic" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="uniqueMPgraphic" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:assignments delimiters="braces" list="yes" optional="yes">
@@ -193,14 +193,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useMPgraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="useMPgraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useMPgraphic" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="useMPgraphic" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:assignments delimiters="braces" list="yes" optional="yes">
@@ -211,14 +211,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usableMPgraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="usableMPgraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reuseMPgraphic" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="reuseMPgraphic" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:assignments delimiters="braces" list="yes" optional="yes">
@@ -229,14 +229,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reusableMPgraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="reusableMPgraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reusableMPgraphic" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="reusableMPgraphic" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:assignments delimiters="braces" list="yes" optional="yes">
@@ -247,14 +247,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uniqueMPpagegraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="uniqueMPpagegraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uniqueMPpagegraphic" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="uniqueMPpagegraphic" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:assignments delimiters="braces" list="yes" optional="yes">
@@ -265,19 +265,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processMPbuffer" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="processMPbuffer" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="runMPbuffer" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="runMPbuffer" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPenvironment" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPenvironment" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reset"/>
@@ -287,80 +287,72 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetMPenvironment" level="style" category="graphics" file="meta-ini.mkiv"/>
+    <cd:command name="resetMPenvironment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="useMPenvironmentbuffer" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="useMPenvironmentbuffer" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPcode" type="environment" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPcode" type="environment" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-instance-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPcode" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPcode" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-instance-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPrun" type="environment" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPrun" type="environment" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useMPrun" level="document" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="useMPrun" level="document" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useMPlibrary" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="useMPlibrary" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setMPtext" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="setMPtext" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPtext" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPtext" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPstring" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPstring" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPbetex" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="MPbetex" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseMPgraphic" level="style" category="graphics metapost conditional" file="meta-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifMPgraphicelse" level="style" category="graphics metapost conditional" file="meta-ini.mkiv">
+    <cd:command name="doifelseMPgraphic" level="style" category="graphics" keywords="metapost conditional" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -368,20 +360,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="staticMPfigure" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="doifMPgraphicelse" level="style" category="graphics" keywords="metapost conditional" file="meta-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="staticMPfigure" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="staticMPgraphic" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="staticMPgraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usestaticMPfigure" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="usestaticMPfigure" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupscale"/>
@@ -390,7 +390,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupMPgraphics" level="style" category="graphics metapost" file="meta-ini.mkiv">
+    <cd:command name="setupMPgraphics" level="style" category="graphics" keywords="metapost" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="color">

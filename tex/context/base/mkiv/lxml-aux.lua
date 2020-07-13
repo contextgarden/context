@@ -566,7 +566,6 @@ local x_stripper   = lpegpatterns.x_stripper
 
 local function stripelement(e,nolines,anywhere,everything)
     local edt = e.dt
-    print(nolines,anywhere,everything)
     if edt then
         local n = #edt
         if n == 0 then

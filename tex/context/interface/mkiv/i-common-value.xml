@@ -361,6 +361,8 @@
             <cd:constant type="et"/>
             <cd:constant type="kr"/>
             <cd:constant type="jp"/>
+            <cd:constant type="he"/>
+            <cd:constant type="yi"/>
         -->
         <cd:constant type="cd:language"/>
     </cd:define>
@@ -955,6 +957,75 @@
         <cd:constant type="binarypost"/>
         <cd:constant type="decimalpost"/>
         <cd:constant type="simplefun"/>
+    </cd:define>
+
+    <!-- date -->
+
+    <cd:define name="value-date">
+        <cd:constant type="year"/>
+        <cd:constant type="cd:name" prefix="year" method="range"/>
+        <cd:constant type="y"/>
+        <cd:constant type="cd:name" prefix="y" method="range"/>
+        <cd:constant type="yy"/>
+        <cd:constant type="Y"/>
+        <cd:constant type="cd:name" prefix="Y" method="range"/>
+        <cd:constant type="YY"/>
+        <cd:constant type="month"/>
+        <cd:constant type="month:mnem"/>
+        <cd:constant type="month:hebrew"/>
+        <cd:constant type="month:jalali"/>
+        <cd:constant type="m"/>
+        <cd:constant type="m:mnem"/>
+        <cd:constant type="m:hebrew"/>
+        <cd:constant type="m:jalali"/>
+        <cd:constant type="MONTH"/>
+        <cd:constant type="MONTH:mnem"/>
+        <cd:constant type="MONTH:hebrew"/>
+        <cd:constant type="MONTH:jalali"/>
+        <cd:constant type="mm"/>
+        <cd:constant type="M"/>
+        <cd:constant type="day"/>
+        <cd:constant type="cd:name" prefix="day" method="range"/>
+        <cd:constant type="day:+"/>
+        <cd:constant type="day:ord"/>
+        <cd:constant type="day:++"/>
+        <cd:constant type="day:highord"/>
+        <cd:constant type="d"/>
+        <cd:constant type="cd:name" prefix="d" method="range"/>
+        <cd:constant type="d:+"/>
+        <cd:constant type="d:ord"/>
+        <cd:constant type="d:++"/>
+        <cd:constant type="d:highord"/>
+        <cd:constant type="dd"/>
+        <cd:constant type="dd:+"/>
+        <cd:constant type="dd:ord"/>
+        <cd:constant type="dd:++"/>
+        <cd:constant type="dd:highord"/>
+        <cd:constant type="D"/>
+        <cd:constant type="D:+"/>
+        <cd:constant type="D:ord"/>
+        <cd:constant type="D:++"/>
+        <cd:constant type="D:highord"/>
+        <cd:constant type="weekday"/>
+        <cd:constant type="weekday:mnem"/>
+        <cd:constant type="weekday:hebrew"/>
+        <cd:constant type="weekday:jalali"/>
+        <cd:constant type="w"/>
+        <cd:constant type="w:mnem"/>
+        <cd:constant type="w:hebrew"/>
+        <cd:constant type="w:jalali"/>
+        <cd:constant type="WEEKDAY"/>
+        <cd:constant type="WEEKDAY:mnem"/>
+        <cd:constant type="WEEKDAY:hebrew"/>
+        <cd:constant type="WEEKDAY:jalali"/>
+        <cd:constant type="W"/>
+        <cd:constant type="referral"/>
+        <cd:constant type="space"/>
+        <cd:constant type="\␣"/>
+        <cd:constant type="cd:text"/>
+        <cd:constant type="hebrew:to"/>
+        <cd:constant type="jalali:to"/>
+        <cd:constant type="jalali:from"/>
     </cd:define>
 
     <!-- tracker -->

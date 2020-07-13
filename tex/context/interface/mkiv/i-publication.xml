@@ -807,7 +807,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelse" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelse" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -815,14 +815,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoif" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoif" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifnot" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifnot" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -835,7 +835,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsesameaspreviouschecked" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsesameaspreviouschecked" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="always"/>
@@ -847,7 +847,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsesameasprevious" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsesameasprevious" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -855,7 +855,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsecombiinlist" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsecombiinlist" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -864,7 +864,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifsameaspreviouscheckedelse" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifsameaspreviouscheckedelse" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="always"/>
@@ -876,7 +876,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifsameaspreviouselse" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifsameaspreviouselse" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -884,7 +884,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifcombiinlistelse" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifcombiinlistelse" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -899,7 +899,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelseuservariable" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelseuservariable" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -907,7 +907,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifuservariableelse" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxdoifuservariableelse" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -967,7 +967,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsingularplural" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxsingularplural" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="editor"/>
@@ -979,7 +979,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsingularorplural" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxsingularorplural" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="editor"/>
@@ -991,7 +991,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxoneorrange" level="system" category="bibliography conditional" file="publ-ini.mkiv">
+    <cd:command name="btxoneorrange" level="system" category="bibliography" keywords="conditional" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="volume"/>

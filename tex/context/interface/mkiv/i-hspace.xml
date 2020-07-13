@@ -111,11 +111,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftskipadaption" level="system" category="whitespace layout" file="spac-hor.mkiv"/>
+    <cd:command name="leftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv"/>
 
-    <cd:command name="rightskipadaption" level="system" category="whitespace layout" file="spac-hor.mkiv"/>
+    <cd:command name="rightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv"/>
 
-    <cd:command name="dosetleftskipadaption" level="system" category="whitespace layout" file="spac-hor.mkiv">
+    <cd:command name="dosetleftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-leftskip"/>
@@ -123,7 +123,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetrightskipadaption" level="system" category="whitespace layout" file="spac-hor.mkiv">
+    <cd:command name="dosetrightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-rightskip"/>
@@ -131,7 +131,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doadaptleftskip" level="system" category="whitespace layout" file="spac-hor.mkiv">
+    <cd:command name="doadaptleftskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-leftskip"/>
@@ -139,7 +139,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doadaptrightskip" level="system" category="whitespace layout" file="spac-hor.mkiv">
+    <cd:command name="doadaptrightskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-rightskip"/>

@@ -120,4 +120,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="asciimode" level="document" category="catcode" file="math-ini.mkxl"/>
+
+    <cd:command name="enableasciimode" level="document" category="catcode" file="math-ini.mkxl"/>
+
+    <cd:command name="asciimode" type="environment" level="document" category="catcode" file="math-ini.mkxl"/>
+
+    <cd:command name="literalmode" level="document" category="catcode" file="buff-ver.mkiv"/>
+
 </cd:interface>

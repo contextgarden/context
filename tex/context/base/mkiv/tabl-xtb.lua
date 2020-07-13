@@ -900,7 +900,7 @@ function xtables.construct()
                 end
                 nofr = nofr + 1
                 local rp = rowproperties[r]
-                -- we have a direction issue here but hpack_node_list(list,0,"exactly","TLT") cannot be used
+                -- we have a direction issue here but hpack_node_list(list,0,"exactly") cannot be used
                 -- due to the fact that we need the width
                 local hbox = hpack_node_list(list)
                 setdirection(hbox,lefttoright_code)

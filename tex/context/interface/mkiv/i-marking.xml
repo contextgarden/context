@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="definemarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-mark-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="setupmarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark-list-optional"/>
             <cd:assignments list="yes">
@@ -36,27 +36,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="relatemarking" level="system" file="strc-mar.mkiv">
+    <cd:command name="relatemarking" level="system" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:resolve name="keyword-mark"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="setmarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmarking" level="system" file="strc-mar.mkiv">
+    <cd:command name="resetmarking" level="system" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizemarking" level="system" file="strc-mar.mkiv">
+    <cd:command name="synchronizemarking" level="system" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:resolve name="keyword-number"/>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemarking" level="system" category="conditional" file="strc-mar.mkiv">
+    <cd:command name="doifelsemarking" level="system" category="structure" keywords="conditional" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-mark"/>
             <cd:resolve name="argument-true"/>
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmarkingelse" level="system" category="conditional" file="strc-mar.mkiv">
+    <cd:command name="doifmarkingelse" level="system" category="structure" keywords="conditional" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-mark"/>
             <cd:resolve name="argument-true"/>
@@ -82,7 +82,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getmarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="getmarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords optional="yes">
@@ -96,7 +96,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchonemark" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchonemark" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords optional="yes">
@@ -105,19 +105,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchtwomarks" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchtwomarks" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchallmarks" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchallmarks" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchmark" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchmark" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords optional="yes">
@@ -126,7 +126,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchmarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchmarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords>
@@ -140,7 +140,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchonemarking" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchonemarking" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords>
@@ -154,7 +154,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchtwomarkings" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchtwomarkings" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords>
@@ -165,7 +165,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fetchallmarkings" level="style" file="strc-mar.mkiv">
+    <cd:command name="fetchallmarkings" level="style" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:keywords>

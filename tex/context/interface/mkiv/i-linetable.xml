@@ -112,7 +112,7 @@
 
     <cd:command name="linetablebody" type="environment" level="document" category="tables" file="tabl-ltb.mkiv"/>
 
-    <cd:command name="processlinetablebuffer" level="document" category="tables buffer" file="tabl-ltb.mkiv">
+    <cd:command name="processlinetablebuffer" level="document" category="tables" keywords="buffer" file="tabl-ltb.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>

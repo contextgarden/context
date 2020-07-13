@@ -1,0 +1,38 @@
+%D \module
+%D   [       file=libs-imp-kpse,
+%D        version=2020.05.19,
+%D          title=\CONTEXT\ System Modules,
+%D       subtitle=KPSE File Searching,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is not really a module. It's more some left over from an experiment. Who
+%D know when it comes in handy; probably never in a real run, but I might want to
+%D make a \LUAMETATEX\ plain format one day, just for the fun of it.
+
+% \registerctxluafile{libs-imp-kpse}{}
+
+\continueifinputfile{libs-imp-kpse.mkxl}
+
+\starttext
+
+\startTEXpage
+    \startluacode
+        local kpse = require("libs-imp-kpse")
+
+        kpse.set_program_name("pdftex")
+
+        local name = "context.mkii"
+
+        context("%s: %s",name,kpse.find_file(name))
+    \stopluacode
+\stopTEXpage
+
+\stoptext
+
+

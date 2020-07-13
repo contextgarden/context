@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="immediatesavetwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="immediatesavetwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savetwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="savetwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lazysavetwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="lazysavetwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -28,16 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savetaggedtwopassdata" level="system" file="core-two.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-name"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="lazysavetaggedtwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="savetaggedtwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -46,66 +37,66 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetwopasslist" level="system" file="core-two.mkiv">
+    <cd:command name="lazysavetaggedtwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetwopasslist" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gettwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="gettwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checktwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="checktwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="findtwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="findtwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getfirsttwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="getfirsttwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getlasttwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="getlasttwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getnamedtwopassdatalist" level="system" file="core-two.mkiv">
+    <cd:command name="getnamedtwopassdatalist" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gettwopassdatalist" level="system" file="core-two.mkiv">
+    <cd:command name="gettwopassdatalist" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseintwopassdata" level="system" file="core-two.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifintwopassdataelse" level="system" file="core-two.mkiv">
+    <cd:command name="doifelseintwopassdata" level="system" category="twopassdata" keywords="conditional" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -114,7 +105,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getfromtwopassdata" level="system" file="core-two.mkiv">
+    <cd:command name="doifintwopassdataelse" level="system" category="twopassdata" keywords="conditional" file="core-two.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getfromtwopassdata" level="system" category="twopassdata" file="core-two.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>

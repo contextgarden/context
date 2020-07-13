@@ -4,126 +4,126 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setups" level="style" file="core-env.mkiv">
+    <cd:command name="setups" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setups" variant="direct" level="style" file="core-env.mkiv">
+    <cd:command name="setups" variant="direct" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setup" level="style" file="core-env.mkiv">
+    <cd:command name="setup" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setup" variant="direct" level="style" file="core-env.mkiv">
+    <cd:command name="setup" variant="direct" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directsetup" level="style" file="core-env.mkiv">
+    <cd:command name="directsetup" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastsetup" level="style" file="core-env.mkiv">
+    <cd:command name="fastsetup" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texsetup" level="style" file="core-env.mkiv">
+    <cd:command name="texsetup" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luasetup" level="style" category="lua" file="core-env.mkiv">
+    <cd:command name="luasetup" level="style" category="structure" keywords="lua" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="systemsetups" level="system" file="core-env.mkiv">
+    <cd:command name="systemsetups" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetsetups" level="system" file="core-env.mkiv">
+    <cd:command name="resetsetups" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copysetups" level="system" file="core-env.mkiv">
+    <cd:command name="copysetups" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showsetupsdefinition" level="system" file="core-env.mkiv">
+    <cd:command name="showsetupsdefinition" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupwithargument" level="system" file="core-env.mkiv">
+    <cd:command name="setupwithargument" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastsetupwithargument" level="system" file="core-env.mkiv">
+    <cd:command name="fastsetupwithargument" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupwithargumentswapped" level="system" file="core-env.mkiv">
+    <cd:command name="setupwithargumentswapped" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastsetupwithargumentswapped" level="system" file="core-env.mkiv">
+    <cd:command name="fastsetupwithargumentswapped" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usesetupsparameter" level="system" file="core-env.mkiv">
+    <cd:command name="usesetupsparameter" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autosetups" level="style" file="core-env.mkiv">
+    <cd:command name="autosetups" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doprocesslocalsetups" level="system" file="core-env.mkiv">
+    <cd:command name="doprocesslocalsetups" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesetups" level="system" category="conditional" file="core-env.mkiv">
+    <cd:command name="doifelsesetups" level="system" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -131,7 +131,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsetupselse" level="system" category="conditional" file="core-env.mkiv">
+    <cd:command name="doifsetupselse" level="system" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -139,21 +139,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsetups" level="system" category="conditional" file="core-env.mkiv">
+    <cd:command name="doifsetups" level="system" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotsetups" level="system" category="conditional" file="core-env.mkiv">
+    <cd:command name="doifnotsetups" level="system" category="structure" keywords="conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luasetups" type="environment" level="system" category="lua" file="core-env.mkiv">
+    <cd:command name="luasetups" type="environment" level="system" category="structure" keywords="lua" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="grid"/>
@@ -162,13 +162,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luasetups" type="environment" variant="string" level="system" category="lua" file="core-env.mkiv">
+    <cd:command name="luasetups" type="environment" variant="string" level="system" category="structure" keywords="lua" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xmlsetups" type="environment" level="style" category="xml" file="core-env.mkiv">
+    <cd:command name="xmlsetups" type="environment" level="style" category="structure" keywords="xml" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="grid"/>
@@ -177,13 +177,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xmlsetups" type="environment" variant="string" level="style" category="xml" file="core-env.mkiv">
+    <cd:command name="xmlsetups" type="environment" variant="string" level="style" category="structure" keywords="xml" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawsetups" type="environment" level="system" file="core-env.mkiv">
+    <cd:command name="rawsetups" type="environment" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="grid"/>
@@ -192,13 +192,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawsetups" type="environment" variant="string" level="system" file="core-env.mkiv">
+    <cd:command name="rawsetups" type="environment" variant="string" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localsetups" type="environment" level="style" file="core-env.mkiv">
+    <cd:command name="localsetups" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="grid"/>
@@ -207,13 +207,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localsetups" type="environment" variant="string" level="style" file="core-env.mkiv">
+    <cd:command name="localsetups" type="environment" variant="string" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setups" type="environment" level="style" file="core-env.mkiv">
+    <cd:command name="setups" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="grid"/>
@@ -222,7 +222,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setups" type="environment" variant="string" level="style" file="core-env.mkiv">
+    <cd:command name="setups" type="environment" variant="string" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>

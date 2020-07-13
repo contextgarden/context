@@ -83,14 +83,22 @@ local fillcodes     = mark(getsubtypes("fill"))
 local boundarycodes = mark(getsubtypes("boundary"))
 local penaltycodes  = mark(getsubtypes("penalty"))
 local kerncodes     = mark(getsubtypes("kern"))
-local margincodes   = CONTEXTLMTXMODE == 0 and mark(getsubtypes("marginkern")) or { }
+local margincodes   = CONTEXTLMTXMODE > 0 and { }
 local mathcodes     = mark(getsubtypes("math"))
 local noadcodes     = mark(getsubtypes("noad"))
 local radicalcodes  = mark(getsubtypes("radical"))
 local accentcodes   = mark(getsubtypes("accent"))
 local fencecodes    = mark(getsubtypes("fence"))
 ----- fractioncodes = mark(getsubtypes("fraction"))
-local localparcodes = allocate { [0] = "new_graf", "local_box", "hmode_par", "penalty", "math" } -- only in luametatex now
+local localparcodes = CONTEXTLMTXMODE > 0 and mark(getsubtypes("localpar"))
+
+if not margincodes then
+    margincodes = mark(getsubtypes("marginkern"))
+end
+
+if not localparcodes then
+    localparcodes = allocate { [0] = "new_graf", "local_box", "hmode_par", "penalty", "math" }
+end
 
 local function simplified(t)
     local r = { }
@@ -104,13 +112,13 @@ local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits and node.whatsits() or { })
 
 local usercodes = allocate {
-    [ 97] = "attribute",  -- a
-    [100] = "number",     -- d
-    [102] = "float",      -- f
-    [108] = "lua",        -- l
-    [110] = "node",       -- n
-    [115] = "string",     -- s
-    [116] = "token"       -- t
+    [ 97] = "attribute", -- a
+    [100] = "number",    -- d
+    [102] = "float",     -- f
+    [108] = "lua",       -- l
+    [110] = "node",      -- n
+    [115] = "string",    -- s
+    [116] = "token"      -- t
 }
 
 local noadoptions = allocate {
@@ -125,24 +133,11 @@ local noadoptions = allocate {
     right    = 0x14 + 0x08,
 }
 
--- local directionvalues  = mark(getvalues("dir"))
--- local gluevalues       = mark(getvalues("glue"))
--- local literalvalues    = mark(getvalues("literal"))
+local dirvalues = CONTEXTLMTXMODE > 0 and mark(getvalues("dir"))
 
-local dirvalues = allocate {
-    [0] = "TLT",
-    [1] = "TRT",
-    [2] = "LTL",
-    [3] = "RTT",
-}
-
-local gluevalues = allocate {
-    [0] = "normal",
-    [1] = "fi",
-    [2] = "fil",
-    [3] = "fill",
-    [4] = "filll",
-}
+if not dirvalues then
+    dirvalues = allocate { [0] = "lefttoright", [1] = "righttoleft" }
+end
 
 local literalvalues = allocate {
     [0] = "origin",
@@ -153,6 +148,8 @@ local literalvalues = allocate {
     [5] = "font",
     [6] = "special",
 }
+
+local gluevalues = mark(getvalues("glue"))
 
 gluecodes        = allocate(swapped(gluecodes,gluecodes))
 dircodes         = allocate(swapped(dircodes,dircodes))
@@ -232,9 +229,6 @@ nodes.dirvalues            = dirvalues
 nodes.gluevalues           = gluevalues
 nodes.literalvalues        = literalvalues
 
-dirvalues.lefttoright = 0
-dirvalues.righttoleft = 1
-
 nodes.subtypes = allocate {
     [nodecodes.accent]     = accentcodes,
     [nodecodes.boundary]   = boundarycodes,
@@ -267,14 +261,16 @@ table.setmetatableindex(nodes.subtypes,function(t,k)
     return v
 end)
 
-nodes.skipcodes            = gluecodes     -- more friendly
-nodes.directioncodes       = dircodes      -- more friendly
-nodes.whatsitcodes         = whatcodes     -- more official
+-- a few more friendly aliases:
+
+nodes.skipcodes            = gluecodes
+nodes.directioncodes       = dircodes
+nodes.whatsitcodes         = whatcodes
 nodes.marginkerncodes      = margincodes
 nodes.discretionarycodes   = disccodes
-nodes.directionvalues      = dirvalues     -- more friendly
-nodes.skipvalues           = gluevalues    -- more friendly
-nodes.literalvalues        = literalvalues -- more friendly
+nodes.directionvalues      = dirvalues
+nodes.skipvalues           = gluevalues
+nodes.literalvalues        = literalvalues
 
 glyphcodes.glyph           = glyphcodes.character
 

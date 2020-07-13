@@ -20,7 +20,7 @@
         </cd:assignments>
     </cd:define>
 
-    <cd:command name="setuprealpagenumber" level="system" category="counter" file="strc-pag.mkiv">
+    <cd:command name="setuprealpagenumber" level="system" category="counter" keywords="structure" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcounter"/>
@@ -28,13 +28,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupuserpagenumber" level="style" category="counter" file="strc-pag.mkiv">
+    <cd:command name="setupuserpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-setupuserpagenumber"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubpagenumber" level="style" category="counter" file="strc-pag.mkiv">
+    <cd:command name="setupsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcounter"/>
@@ -42,7 +42,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagenumber" level="style" category="counter" file="strc-pag.mkiv">
+    <cd:command name="setuppagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-setupuserpagenumber"/>
         </cd:arguments>
@@ -54,13 +54,13 @@
 
     -->
 
-    <cd:command name="resetuserpagenumber" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="resetuserpagenumber" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="resetsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="resetsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="resetpagenumber" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="resetpagenumber" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="setuppagenumbering" level="style" category="counter" file="strc-pag.mkiv">
+    <cd:command name="setuppagenumbering" level="style" category="counter" keywords="structure" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="alternative">
@@ -113,74 +113,74 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstrealpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstrealpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="firstuserpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstuserpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="firstsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastrealpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastrealpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastuserpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastuserpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevrealpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevrealpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevuserpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevuserpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextrealpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextrealpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextuserpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextuserpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="firstrealpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstrealpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="firstuserpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstuserpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="firstsubpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="firstsubpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevrealpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevrealpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevuserpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevuserpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prevsubpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prevsubpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextrealpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextrealpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextuserpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextuserpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="nextsubpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="nextsubpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastrealpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastrealpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastuserpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastuserpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="lastsubpage" level="system" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="lastsubpage" level="system" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="realpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="realpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="userpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="userpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="subpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="subpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="pagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="pagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="prefixedpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="prefixedpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="incrementpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="incrementpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="incrementsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="incrementsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="decrementpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="decrementpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="decrementsubpagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="decrementsubpagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="completepagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="completepagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
-    <cd:command name="placepagenumber" level="style" category="counter" file="strc-pag.mkiv"/>
+    <cd:command name="placepagenumber" level="style" category="counter" keywords="structure" file="strc-pag.mkiv"/>
 
 </cd:interface>

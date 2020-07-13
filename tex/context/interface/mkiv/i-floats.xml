@@ -239,7 +239,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupfloatcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+        <cd:command name="setupfloatcaption" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -363,7 +363,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+        <cd:command name="setupcaption" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -372,7 +372,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupcaptions" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+        <cd:command name="setupcaptions" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -383,7 +383,7 @@
 
     -->
 
-    <cd:command name="setupcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+    <cd:command name="setupcaption" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -512,7 +512,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcaptions" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+    <cd:command name="setupcaptions" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -521,7 +521,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placefloatcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+    <cd:command name="placefloatcaption" level="style" category="structure" keywords="fonts counter" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -547,7 +547,7 @@
 
     <!--
 
-        <cd:command name="definefloatframed" level="style" category="structure background" file="strc-flt.mkvi">
+        <cd:command name="definefloatframed" level="style" category="structure" keywords="background" file="strc-flt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -559,7 +559,7 @@
 
     -->
 
-    <cd:command name="setupfloatframed" level="style" category="structure background" file="strc-flt.mkvi">
+    <cd:command name="setupfloatframed" level="style" category="structure" keywords="background" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -667,42 +667,42 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelserightpagefloat" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifelserightpagefloat" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifrightpagefloatelse" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifrightpagefloatelse" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoddpagefloat" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifelseoddpagefloat" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoddpagefloatelse" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifoddpagefloatelse" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemainfloatbody" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifelsemainfloatbody" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmainfloatbodyelse" level="system" category="structure conditional" file="strc-flt.mkvi">
+    <cd:command name="doifmainfloatbodyelse" level="system" category="structure" keywords="conditional" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
@@ -939,7 +939,7 @@
 
     <cd:command name="forcelocalfloats" level="system" category="structure" file="strc-flt.mkvi"/>
 
-    <cd:command name="setupfloatsplitting" level="style" category="structure counter" file="tabl-tsp.mkiv">
+    <cd:command name="setupfloatsplitting" level="style" category="structure" keywords="counter" file="tabl-tsp.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="before">
@@ -972,7 +972,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotinsidesplitfloat" level="system" category="structure conditional" file="tabl-tsp.mkiv">
+    <cd:command name="doifnotinsidesplitfloat" level="system" category="structure" keywords="conditional" file="tabl-tsp.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
         </cd:arguments>

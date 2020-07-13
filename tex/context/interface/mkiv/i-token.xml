@@ -4,55 +4,55 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="tokens" type="environment" level="system" file="toks-tra.mkiv">
+    <cd:command name="tokens" type="environment" level="system" category="strings" file="toks-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushtokens" level="system" file="toks-tra.mkiv">
+    <cd:command name="flushtokens" level="system" category="strings" file="toks-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showtokens" level="system" file="toks-tra.mkiv">
+    <cd:command name="showtokens" level="system" category="strings" file="toks-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testtokens" level="system" file="toks-tra.mkiv">
+    <cd:command name="testtokens" level="system" category="strings" file="toks-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetokenlist" level="style" file="toks-aux.mkiv">
+    <cd:command name="definetokenlist" level="style" category="strings" file="toks-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tokenlist" type="environment" level="style" file="toks-aux.mkiv">
+    <cd:command name="tokenlist" type="environment" level="style" category="strings" file="toks-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gettokenlist" level="style" file="toks-aux.mkiv">
+    <cd:command name="gettokenlist" level="style" category="strings" file="toks-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resettokenlist" level="style" file="toks-aux.mkiv">
+    <cd:command name="resettokenlist" level="style" category="strings" file="toks-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settokenlist" level="style" file="toks-aux.mkiv">
+    <cd:command name="settokenlist" level="style" category="strings" file="toks-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="argument-text"/>

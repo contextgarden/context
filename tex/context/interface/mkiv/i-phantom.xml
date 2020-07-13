@@ -4,25 +4,25 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="phantom" level="style" file="supp-box.mkiv">
+    <cd:command name="phantom" level="style" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hphantom" level="style" file="supp-box.mkiv">
+    <cd:command name="hphantom" level="style" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vphantom" level="style" file="supp-box.mkiv">
+    <cd:command name="vphantom" level="style" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="phantombox" level="style" file="pack-box.mkiv">
+    <cd:command name="phantombox" level="style" category="boxes" keywords="strings" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">

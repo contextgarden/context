@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathmatrix" level="style" category="mathematics tables" file="math-ali.mkiv">
+    <cd:command name="definemathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathmatrix" level="style" category="mathematics tables" file="math-ali.mkiv">
+    <cd:command name="setupmathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -56,7 +56,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" level="document" category="mathematics tables" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:sequence>
             <cd:instance value="mathmatrix"/>
         </cd:sequence>
@@ -72,7 +72,7 @@
 
     <!--
 
-        <cd:command name="mathmatrix" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:command name="mathmatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmathmatrix"/>
@@ -80,7 +80,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="matrix" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:command name="matrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmathmatrix"/>
@@ -90,7 +90,7 @@
 
     -->
 
-    <cd:command name="mathmatrix" generated="yes" level="document" category="mathematics tables" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" generated="yes" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:sequence>
             <cd:variable value="mathmatrix"/>
         </cd:sequence>
@@ -99,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="matrices" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
+    <cd:command name="matrices" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmathmatrix"/>
@@ -131,20 +131,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bordermatrix" level="document" category="mathematics tables" file="math-pln.mkiv">
+    <cd:command name="bordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bbordermatrix" level="document" category="mathematics tables" file="math-pln.mkiv">
+    <cd:command name="bbordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bordermatrix" type="environment" level="document" category="mathematics tables" file="math-pln.mkiv"/>
+    <cd:command name="bordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv"/>
 
-    <cd:command name="bbordermatrix" type="environment" level="document" category="mathematics tables" file="math-pln.mkiv"/>
+    <cd:command name="bbordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv"/>
 
 </cd:interface>

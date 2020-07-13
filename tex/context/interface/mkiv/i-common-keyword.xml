@@ -820,14 +820,31 @@
         </cd:keywords>
     </cd:define>
 
-    <!--        *   -->
-    <!-- \... [...] -->
-    <!--            -->
-    <!-- * DIRECTIVE  -->
+    <!--        *    -->
+    <!-- \... [...]  -->
+    <!--             -->
+    <!-- * DIRECTIVE -->
 
     <cd:define name="keyword-directive-list">
         <cd:keywords list="yes">
             <cd:resolve name="value-directive"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * DATE     -->
+
+    <cd:define name="keyword-date-list">
+        <cd:keywords list="yes">
+            <cd:resolve name="value-date"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="keyword-date-list-optional">
+        <cd:keywords list="yes" optional="yes">
+            <cd:resolve name="value-date"/>
         </cd:keywords>
     </cd:define>
 

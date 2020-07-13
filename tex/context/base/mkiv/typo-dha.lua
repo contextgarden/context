@@ -14,12 +14,12 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 --
 -- Then we have, with input: LATIN ARAB
 --
--- \textdir TLT LATIN ARAB => LATIN BARA
--- \textdir TRT LATIN ARAB => LATIN BARA
--- \textdir TRT LRO LATIN ARAB => LATIN ARAB
--- \textdir TLT LRO LATIN ARAB => LATIN ARAB
--- \textdir TLT RLO LATIN ARAB => NITAL ARAB
--- \textdir TRT RLO LATIN ARAB => NITAL ARAB
+-- \textdirection 1 LATIN ARAB => LATIN BARA
+-- \textdirection 1 LATIN ARAB => LATIN BARA
+-- \textdirection 1 LRO LATIN ARAB => LATIN ARAB
+-- \textdirection 1 LRO LATIN ARAB => LATIN ARAB
+-- \textdirection 1 RLO LATIN ARAB => NITAL ARAB
+-- \textdirection 1 RLO LATIN ARAB => NITAL ARAB
 
 -- elseif d == "es"  then -- European Number Separator
 -- elseif d == "et"  then -- European Number Terminator
@@ -272,12 +272,12 @@ local function process(start)
                             stack[top] = { override, embedded }
                             override   = 1
                             obsolete[#obsolete+1] = current
-                        elseif direction == "lre" then -- Left-to-Right Embedding -> TLT
+                        elseif direction == "lre" then -- Left-to-Right Embedding -> lefttoright_code
                             top        = top + 1
                             stack[top] = { override, embedded }
                             embedded   = 1
                             obsolete[#obsolete+1] = current
-                        elseif direction == "rle" then -- Right-to-Left Embedding -> TRT
+                        elseif direction == "rle" then -- Right-to-Left Embedding -> righttoleft_code
                             top        = top + 1
                             stack[top] = { override, embedded }
                             embedded   = -1
@@ -382,7 +382,7 @@ local function process(start)
             if cp == "n" then
                 local swap = state == "r"
                 if swap then
-                    head = insert_node_before(head,current,startdir("TLT"))
+                    head = insert_node_before(head,current,startdir(lefttoright_code))
                 end
                 setprop(current,"direction",true)
                 while true do
@@ -395,14 +395,14 @@ local function process(start)
                     end
                 end
                 if swap then
-                    head, current = insert_node_after(head,current,stopdir("TLT"))
+                    head, current = insert_node_after(head,current,stopdir(lefttoright_code))
                 end
             elseif cp == "l" then
                 if state ~= "l" then
                     if state == "r" then
-                        head = insert_node_before(head,last or current,stopdir("TRT"))
+                        head = insert_node_before(head,last or current,stopdir(righttoleft_code))
                     end
-                    head  = insert_node_before(head,current,startdir("TLT"))
+                    head  = insert_node_before(head,current,startdir(lefttoright_code))
                     state = "l"
                     done  = true
                 end
@@ -410,9 +410,9 @@ local function process(start)
             elseif cp == "r" then
                 if state ~= "r" then
                     if state == "l" then
-                        head = insert_node_before(head,last or current,stopdir("TLT"))
+                        head = insert_node_before(head,last or current,stopdir(lefttoright_code))
                     end
-                    head  = insert_node_before(head,current,startdir("TRT"))
+                    head  = insert_node_before(head,current,startdir(righttoleft_code))
                     state = "r"
                     done  = true
                 end
@@ -425,9 +425,9 @@ local function process(start)
                 end
             else
                 if state == "r" then
-                    head = insert_node_before(head,current,stopdir("TRT"))
+                    head = insert_node_before(head,current,stopdir(righttoleft_code))
                 elseif state == "l" then
-                    head = insert_node_before(head,current,stopdir("TLT"))
+                    head = insert_node_before(head,current,stopdir(lefttoright_code))
                 end
                 state = false
                 last  = false
@@ -438,7 +438,7 @@ local function process(start)
         if next then
             current = next
         else
-            local sd = (state == "r" and stopdir("TRT")) or (state == "l" and stopdir("TLT"))
+            local sd = (state == "r" and stopdir(righttoleft_code)) or (state == "l" and stopdir(lefttoright_code))
             if sd then
                 if id == glue_code and getsubtype(current) == parfillskip_code then
                     head = insert_node_before(head,current,sd)

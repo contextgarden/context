@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definehighlight" level="style" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="definehighlight" level="style" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphighlight" level="style" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="setuphighlight" level="style" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="highlight" generated="yes" variant="example" level="document" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="highlight" generated="yes" variant="example" level="document" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:sequence>
             <cd:variable value="highlight"/>
         </cd:sequence>
@@ -41,20 +41,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="highlight" level="document" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="highlight" level="document" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="highlight" type="environment" level="document" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="highlight" type="environment" level="document" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directhighlight" level="document" category="fonts colors" file="core-sys.mkiv">
+    <cd:command name="directhighlight" level="document" category="fonts" keywords="colors" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>

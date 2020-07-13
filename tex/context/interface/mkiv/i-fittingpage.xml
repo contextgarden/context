@@ -28,7 +28,7 @@
         </cd:assignments>
     </cd:define>
 
-    <cd:command name="definefittingpage" level="style" category="background layout" file="page-app.mkiv">
+    <cd:command name="definefittingpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -38,14 +38,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfittingpage" level="style" category="background layout" file="page-app.mkiv">
+    <cd:command name="setupfittingpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="assignment-setupfittingpage"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittingpage" type="environment" level="document" category="background layout" file="page-app.mkiv">
+    <cd:command name="fittingpage" type="environment" level="document" category="layout" keywords="background" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -54,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittingpage" type="environment" generated="yes" variant="instance" level="document" category="background layout" file="page-app.mkiv">
+    <cd:command name="fittingpage" type="environment" generated="yes" variant="instance" level="document" category="layout" keywords="background" file="page-app.mkiv">
         <cd:sequence>
             <cd:instance value="fittingpage"/>
         </cd:sequence>
@@ -70,7 +70,7 @@
 
     <!--
 
-        <cd:command name="setupTEXpage" level="style" category="background layout" file="page-app.mkiv">
+        <cd:command name="setupTEXpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setupfittingpage"/>
@@ -78,7 +78,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupMPpage" level="style" category="background layout metapost" file="meta-fig.mkiv">
+        <cd:command name="setupMPpage" level="style" category="layout" keywords="background metapost" file="meta-fig.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setupfittingpage"/>
@@ -88,13 +88,13 @@
 
     -->
 
-    <cd:command name="setupTEXpage" level="style" category="background layout" file="page-app.mkiv">
+    <cd:command name="setupTEXpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-setupfittingpage"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupMPpage" level="style" category="background layout metapost" file="meta-fig.mkiv">
+    <cd:command name="setupMPpage" level="style" category="layout" keywords="background metapost" file="meta-fig.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-setupfittingpage"/>
         </cd:arguments>

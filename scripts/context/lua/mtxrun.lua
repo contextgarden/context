@@ -5741,10 +5741,11 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 41281, stripped down to: 17261
+-- original size: 41303, stripped down to: 17277
 
 if not modules then modules={} end modules ['l-unicode']={
  version=1.001,
+ optimize=true,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -8209,10 +8210,11 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 11530, stripped down to: 9007
+-- original size: 11552, stripped down to: 9023
 
 if not modules then modules={} end modules ['util-fil']={
  version=1.001,
+ optimize=true,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -8577,10 +8579,11 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 12946, stripped down to: 9507
+-- original size: 12968, stripped down to: 9523
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
+ optimize=true,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -19344,7 +19347,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 33747, stripped down to: 20989
+-- original size: 33708, stripped down to: 20953
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -19839,7 +19842,6 @@ local e_stripper=lpegpatterns.e_stripper
 local x_stripper=lpegpatterns.x_stripper
 local function stripelement(e,nolines,anywhere,everything)
  local edt=e.dt
- print(nolines,anywhere,everything)
  if edt then
   local n=#edt
   if n==0 then
@@ -25628,7 +25630,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["libs-ini"] = package.loaded["libs-ini"] or true
 
--- original size: 5822, stripped down to: 3629
+-- original size: 5950, stripped down to: 3737
 
 if not modules then modules={} end modules ['libs-ini']={
  version=1.001,
@@ -25648,7 +25650,9 @@ local findfile=resolvers.findfile
 local expandpaths=resolvers.expandedpathlistfromvariable
 local report=logs.reporter("resolvers","libraries")
 local trace=false
+local silent=false
 trackers.register("resolvers.lib",function(v) trace=v end)
+trackers.register("resolvers.lib.silent",function(v) silent=v end)
 local function findlib(required) 
  local suffix=os.libsuffix or "so"
  if not qualifiedpath(required) then
@@ -25749,10 +25753,10 @@ function libraries.optionalloaded(name,libnames)
      end
     end
     local initialized=thelib_initialize(unpack(libnames))
-    if initialized then
-     report("using library '% + t'",libnames)
-    else
+    if not initialized then
      report("unable to initialize library '% + t'",libnames)
+    elseif not silent then
+     report("using library '% + t'",libnames)
     end
     return initialized
    end
@@ -26211,8 +26215,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1041734
--- stripped bytes    : 411240
+-- original bytes    : 1041889
+-- stripped bytes    : 411275
 
 -- end library merge
 

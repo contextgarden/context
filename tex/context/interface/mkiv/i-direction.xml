@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupdirections" level="style" category="language alignment" file="typo-dir.mkiv">
+    <cd:command name="setupdirections" level="style" category="language" keywords="alignment" file="typo-dir.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="bidi">
@@ -30,26 +30,26 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdirection" level="style" category="language alignment" file="typo-dir.mkiv">
+    <cd:command name="setdirection" level="style" category="language" keywords="alignment" file="typo-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetdirection" level="style" category="language alignment" file="typo-dir.mkiv"/>
+    <cd:command name="resetdirection" level="style" category="language" keywords="alignment" file="typo-dir.mkiv"/>
 
     <!--
 
-        <cd:command name="lefttorightmark" level="system" category="language alignment" file="typo-dir.mkiv"/>
+        <cd:command name="lefttorightmark" level="system" category="language" keywords="alignment" file="typo-dir.mkiv"/>
 
-        <cd:command name="righttoleftmark" level="system" category="language alignment" file="typo-dir.mkiv"/>
+        <cd:command name="righttoleftmark" level="system" category="language" keywords="alignment" file="typo-dir.mkiv"/>
 
-        <cd:command name="lrm" level="system" category="language alignment" file="typo-dir.mkiv"/>
+        <cd:command name="lrm" level="system" category="language" keywords="alignment" file="typo-dir.mkiv"/>
 
-        <cd:command name="rlm" level="system" category="language alignment" file="typo-dir.mkiv"/>
+        <cd:command name="rlm" level="system" category="language" keywords="alignment" file="typo-dir.mkiv"/>
 
     -->
 
-    <cd:command name="showdirsinmargin" level="document" category="alignment" file="supp-dir.mkiv"/>
+    <cd:command name="showdirsinmargin" level="document" category="alignment" keywords="alignment" file="supp-dir.mkiv"/>
 
 </cd:interface>

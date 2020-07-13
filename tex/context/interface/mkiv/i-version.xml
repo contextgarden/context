@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseolderversion" level="system" category="conditional" file="file-mod.mkvi">
+    <cd:command name="doifelseolderversion" level="system" keywords="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifolderversionelse" level="system" category="conditional" file="file-mod.mkvi">
+    <cd:command name="doifolderversionelse" level="system" keywords="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoldercontext" level="system" category="conditional" file="file-mod.mkvi">
+    <cd:command name="doifelseoldercontext" level="system" keywords="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoldercontextelse" level="system" category="conditional" file="file-mod.mkvi">
+    <cd:command name="doifoldercontextelse" level="system" keywords="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>

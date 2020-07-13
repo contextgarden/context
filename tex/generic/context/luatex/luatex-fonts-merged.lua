@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-07-09 14:48
+-- merge date  : 2020-07-13 16:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -3996,6 +3996,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['util-fil']={
  version=1.001,
+ optimize=true,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -4916,6 +4917,7 @@ end
 nodes.nodecodes=nodecodes
 nodes.glyphcodes=glyphcodes
 nodes.disccodes=disccodes
+nodes.dirvalues={ lefttoright=0,righttoleft=1 }
 nodes.handlers.protectglyphs=node.protect_glyphs   
 nodes.handlers.unprotectglyphs=node.unprotect_glyphs
 local direct=node.direct
@@ -10388,6 +10390,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-map']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -10973,6 +10976,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-otr']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -12817,6 +12821,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-cff']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -14994,6 +14999,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-ttf']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -16166,6 +16172,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-dsp']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -21874,6 +21881,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-otj']={
  version=1.001,
+ optimize=true,
  comment="companion to font-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -26502,6 +26510,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-ots']={ 
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -26604,6 +26613,8 @@ local disc_code=nodecodes.disc
 local math_code=nodecodes.math
 local dir_code=nodecodes.dir
 local localpar_code=nodecodes.localpar
+local lefttoright_code=nodes.dirvalues.lefttoright
+local righttoleft_code=nodes.dirvalues.righttoleft
 local discretionarydisc_code=disccodes.discretionary
 local ligatureglyph_code=glyphcodes.ligature
 local a_noligature=attributes.private("noligature")
@@ -29460,8 +29471,6 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
 end
 local txtdirstate,pardirstate  do 
  local getdirection=nuts.getdirection
- local lefttoright=0
- local righttoleft=1
  txtdirstate=function(start,stack,top,rlparmode)
   local dir,pop=getdirection(start)
   if pop then
@@ -29469,19 +29478,19 @@ local txtdirstate,pardirstate  do
     return 0,rlparmode
    else
     top=top-1
-    if stack[top]==righttoleft then
+    if stack[top]==righttoleft_code then
      return top,-1
     else
      return top,1
     end
    end
-  elseif dir==lefttoright then
+  elseif dir==lefttoright_code then
    top=top+1
-   stack[top]=lefttoright
+   stack[top]=lefttoright_code
    return top,1
-  elseif dir==righttoleft then
+  elseif dir==righttoleft_code then
    top=top+1
-   stack[top]=righttoleft
+   stack[top]=righttoleft_code
    return top,-1
   else
    return top,rlparmode
@@ -29489,13 +29498,9 @@ local txtdirstate,pardirstate  do
  end
  pardirstate=function(start)
   local dir=getdirection(start)
-  if dir==lefttoright then
+  if dir==lefttoright_code then
    return 1,1
-  elseif dir==righttoleft then
-   return -1,-1
-  elseif dir=="TLT" then
-   return 1,1
-  elseif dir=="TRT" then
+  elseif dir==righttoleft_code then
    return -1,-1
   else
    return 0,0
@@ -29550,7 +29555,7 @@ do
   local initialrl=0
   if getid(head)==localpar_code and start_of_par(head) then
    initialrl=pardirstate(head)
-  elseif direction==1 or direction=="TRT" then
+  elseif direction==righttoleft_code then
    initialrl=-1
   end
   local datasets=otfdataset(tfmdata,font,attr)
@@ -29774,7 +29779,7 @@ do
   local done=false
   local dirstack={ nil } 
   local start=head
-  local initialrl=(direction==1 or direction=="TRT") and -1 or 0
+  local initialrl=(direction==righttoleft_code) and -1 or 0
   local rlmode=initialrl
   local rlparmode=initialrl
   local topstack=0
@@ -33773,6 +33778,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-onr']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",
@@ -34147,6 +34153,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-one']={
  version=1.001,
+ optimize=true,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
  copyright="PRAGMA ADE / ConTeXt Development Team",

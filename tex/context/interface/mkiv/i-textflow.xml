@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetextflowcollector" level="system" category="structure conditional" file="page-flw.mkiv">
+    <cd:command name="doifelsetextflowcollector" level="system" category="structure" keywords="conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -45,7 +45,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doiftextflowcollectorelse" level="system" category="structure conditional" file="page-flw.mkiv">
+    <cd:command name="doiftextflowcollectorelse" level="system" category="structure" keywords="conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetextflow" level="system" category="structure conditional" file="page-flw.mkiv">
+    <cd:command name="doifelsetextflow" level="system" category="structure" keywords="conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -61,7 +61,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doiftextflowelse" level="system" category="structure conditional" file="page-flw.mkiv">
+    <cd:command name="doiftextflowelse" level="system" category="structure" keywords="conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

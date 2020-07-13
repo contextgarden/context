@@ -298,6 +298,7 @@ return {
         "quitcondition", "truecondition", "falsecondition",
         --
         "tracingall", "tracingnone", "loggingall",
+        "showluatokens",
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --

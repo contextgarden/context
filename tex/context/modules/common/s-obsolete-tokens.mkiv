@@ -1,11 +1,33 @@
-if not modules then modules = { } end modules ['toks-ini'] = {
+%D \module
+%D   [       file=toks-tra, % was toks-ini
+%D        version=2007.03.03,
+%D          title=\CONTEXT\ Obsolete Modules,
+%D       subtitle=Tokens,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The code here used to be in the \type {toks-tra} files which were made in
+%D the real early days of \LUATEX\ and used in articles and presentations
+%D about this engine. Because the code is used in manuals we keep it around
+%D as module.
+
+\writestatus{loading}{ConTeXt Obsolete Modules / Tokens}
+
+%D This used to be in \type {toks-tra.lua}:
+
+\startluacode
+
+if not modules then modules = { } end modules ['s-obsolete-tokens'] = {
     version   = 1.001,
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
-
--- this will become a module
 
 local utfbyte, utfchar, utfvalues = utf.byte, utf.char, utf.values
 local format, gsub = string.format, string.gsub
@@ -69,27 +91,34 @@ function collectors.show(data)
     local ctx_NR       = context.NR
     local ctx_bold     = context.bold
     local ctx_verbatim = context.verbatim
-    context.starttabulate { "|Tl|Tc|Tl|" }
-    ctx_NC() ctx_bold("cmd")
-    ctx_NC() ctx_bold("meaning")
-    ctx_NC() ctx_bold("properties")
-    ctx_NC() ctx_NR()
-    context.HL()
-    for i=1,#data do
-        local token   = data[i]
-        local cmdname = token.cmdname
-        local simple  = simple[cmdname]
-        ctx_NC()
-        ctx_verbatim(simple or cmdname)
-        ctx_NC()
-        ctx_verbatim(simple and utfchar(token.mode) or token.csname)
-        ctx_NC()
-        if token.active     then context("active ") end
-        if token.expandable then context("expandable ") end
-        if token.protected  then context("protected ") end
-        ctx_NC()
-        ctx_NR()
+    local function show(data)
+        for i=1,#data do
+            local token = data[i]
+            if type(token) == "table" then
+                show(token)
+            else
+                local cmdname = token.cmdname
+                local simple  = simple[cmdname]
+                ctx_NC()
+                ctx_verbatim(simple or cmdname)
+                ctx_NC()
+                ctx_verbatim(simple and utfchar(token.index) or token.csname)
+                ctx_NC()
+                if token.active     then context("active ") end
+                if token.expandable then context("expandable ") end
+                if token.protected  then context("protected ") end
+                ctx_NC()
+                ctx_NR()
+            end
+        end
     end
+    context.starttabulate { "|Tl|Tc|Tl|" }
+        ctx_NC() ctx_bold("cmd")
+        ctx_NC() ctx_bold("meaning")
+        ctx_NC() ctx_bold("properties")
+        ctx_NC() ctx_NR()
+        context.HL()
+        show(data)
     context.stoptabulate()
 end
 
@@ -291,3 +320,27 @@ function collectors.defaultwords(t,str)
         n = n + 1 ; t[n] = tokens.egroup
     end
 end
+
+\stopluacode
+
+%D This used to be in \type {toks-tra.mkiv}:
+
+% used to be: \registerctxluafile{toks-tra}{}
+
+\unprotect
+
+%D Handy for manuals \unknown\ but not really used in practice, so it might
+%D become a runtime loaded module instead.
+
+\unexpanded\def\starttokens  [#1]{\ctxcommand{collecttokens("#1","stoptokens")}}
+           \let\stoptokens        \relax
+\unexpanded\def\flushtokens  [#1]{\ctxcommand{flushtokens("#1")}}
+\unexpanded\def\showtokens   [#1]{\ctxcommand{showtokens("#1")}}
+\unexpanded\def\testtokens   [#1]{\ctxcommand{testtokens("#1")}}
+\unexpanded\def\registertoken  #1{\ctxcommand{registertoken("#1")}}
+
+\let\toks_show\showtokens % we also support the primitive
+
+\unexpanded\def\showtokens{\doifelsenextoptional\toks_show\normalshowtokens}
+
+\protect \endinput

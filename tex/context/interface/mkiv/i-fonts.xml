@@ -334,7 +334,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addfeature" category="fonts" level="style" file="font-fea.mkvi">
+    <cd:command name="addfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -434,29 +434,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentfonthasfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
+    <cd:command name="doifelsecurrentfonthasfeature" level="system" category="fonts" keywords="conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-    <cd:command name="doifcurrentfonthasfeatureelse" level="system" category="fonts conditional" file="font-fea.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifelsefontfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-    <cd:command name="doiffontfeatureelse" level="system" category="fonts conditional" file="font-fea.mkvi">
+    <cd:command name="doifcurrentfonthasfeatureelse" level="system" category="fonts" keywords="conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -464,7 +449,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifunknownfontfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
+    <cd:command name="doifelsefontfeature" level="system" category="fonts" keywords="conditional" file="font-fea.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+    <cd:command name="doiffontfeatureelse" level="system" category="fonts" keywords="conditional" file="font-fea.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifunknownfontfeature" level="system" category="fonts" keywords="conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -569,7 +569,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefontsynonym" level="system" category="fonts conditional" file="font-fil.mkvi">
+    <cd:command name="doifelsefontsynonym" level="system" category="fonts" keywords="conditional" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -577,7 +577,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontsynonymelse" level="system" category="fonts conditional" file="font-fil.mkvi">
+    <cd:command name="doiffontsynonymelse" level="system" category="fonts" keywords="conditional" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -1417,14 +1417,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseitalic" level="system" category="fonts conditional" file="font-sym.mkvi">
+    <cd:command name="doifelseitalic" level="system" category="fonts" keywords="conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifitalicelse" level="system" category="fonts conditional" file="font-sym.mkvi">
+    <cd:command name="doifitalicelse" level="system" category="fonts" keywords="conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
@@ -1503,7 +1503,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefontchar" level="system" category="fonts conditional" file="font-sym.mkvi">
+    <cd:command name="doifelsefontchar" level="system" category="fonts" keywords="conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-number"/>
@@ -1512,7 +1512,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontcharelse" level="system" category="fonts conditional" file="font-sym.mkvi">
+    <cd:command name="doiffontcharelse" level="system" category="fonts" keywords="conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-number"/>
@@ -1529,7 +1529,7 @@
 
     <cd:command name="showfontdata" level="document" category="fonts" file="font-tra.mkiv"/>
 
-    <cd:command name="doifelsefontpresent" level="system" category="fonts conditional" file="font-tra.mkiv">
+    <cd:command name="doifelsefontpresent" level="system" category="fonts" keywords="conditional" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-true"/>
@@ -1537,7 +1537,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontpresentelse" level="system" category="fonts conditional" file="font-tra.mkiv">
+    <cd:command name="doiffontpresentelse" level="system" category="fonts" keywords="conditional" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-true"/>
@@ -1759,14 +1759,6 @@
     <cd:command name="blockligatures" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-text-list"/>
-        </cd:arguments>
-    </cd:command>
-
-    <!-- question for ws: maybe move to i-file with ... level="system" category="structure" ... -->
-
-    <cd:command name="addfontpath" level="style" category="fonts" file="font-ini.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 

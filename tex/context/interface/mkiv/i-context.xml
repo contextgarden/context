@@ -181,6 +181,7 @@
     <cd:interfacefile filename="i-penalty.xml"/>
     <cd:interfacefile filename="i-periods.xml"/>
     <cd:interfacefile filename="i-phantom.xml"/>
+    <cd:interfacefile filename="i-placeholder.xml"/>
     <cd:interfacefile filename="i-placement.xml"/>
     <cd:interfacefile filename="i-position.xml"/>
     <cd:interfacefile filename="i-positionbar.xml"/>

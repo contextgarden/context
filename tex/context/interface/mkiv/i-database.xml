@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedatabase" level="style" file="m-database.mkiv">
+    <cd:command name="definedatabase" level="style" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdatabase" level="style" file="m-database.mkiv">
+    <cd:command name="setupdatabase" level="style" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -64,21 +64,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processdatabasebuffer" level="document" file="m-database.mkiv">
+    <cd:command name="processdatabasebuffer" level="document" category="tables" keywords="buffer" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-buffer"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processdatabasefile" level="document" file="m-database.mkiv">
+    <cd:command name="processdatabasefile" level="document" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineseparatedlist" level="style" file="m-database.mkiv">
+    <cd:command name="defineseparatedlist" level="style" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -87,26 +87,26 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processseparatedlist" level="document" file="m-database.mkiv">
+    <cd:command name="processseparatedlist" level="document" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="separatedlist" type="environment" generated="yes" variant="instance" level="document" file="m-database.mkiv">
+    <cd:command name="separatedlist" type="environment" generated="yes" variant="instance" level="document" category="tables" file="m-database.mkiv">
         <cd:sequence>
             <cd:instance value="separatedlist"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="separatedlist" type="environment" level="document" file="m-database.mkiv">
+    <cd:command name="separatedlist" type="environment" level="document" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupseparatedlist" level="style" file="m-database.mkiv">
+    <cd:command name="setupseparatedlist" level="style" category="tables" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

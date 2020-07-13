@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="userdata" type="environment" level="document" category="structure" file="strc-usr.mkiv">
+    <cd:command name="userdata" type="environment" level="document" category="structure" keywords="buffer" file="strc-usr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
@@ -78,8 +78,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getuserdata" level="style" category="structure" file="strc-usr.mkiv"/>
+    <cd:command name="getuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkiv"/>
 
-    <cd:command name="getinlineuserdata" level="style" category="structure" file="strc-usr.mkiv"/>
+    <cd:command name="getinlineuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkiv"/>
 
 </cd:interface>

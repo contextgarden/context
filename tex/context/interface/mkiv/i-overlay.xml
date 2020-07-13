@@ -12,9 +12,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaycolor" level="system" category="background colors" file="pack-rul.mkiv"/>
+    <cd:command name="overlaycolor" level="system" category="background colors" keywords="background colors" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlaylinecolor" level="system" category="background colors" file="pack-rul.mkiv"/>
+    <cd:command name="overlaylinecolor" level="system" category="background colors" keywords="background colors" file="pack-rul.mkiv"/>
 
     <cd:command name="overlaywidth" level="system" category="background" file="pack-rul.mkiv"/>
 
@@ -26,7 +26,7 @@
 
     <cd:command name="overlaylinewidth" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="doifelseoverlay" level="system" category="background conditional" file="pack-rul.mkiv">
+    <cd:command name="doifelseoverlay" level="system" category="background" keywords="conditional" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoverlayelse" level="system" category="background conditional" file="pack-rul.mkiv">
+    <cd:command name="doifoverlayelse" level="system" category="background" keywords="conditional" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

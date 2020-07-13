@@ -235,7 +235,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="instance" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:instance value="typing"/>
         </cd:sequence>
@@ -249,7 +249,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="instance:argument" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance:argument" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:instance value="typing"/>
         </cd:sequence>
@@ -321,7 +321,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetypingfile" category="verbatim conditional" level="system" file="buff-ver.mkiv">
+    <cd:command name="doifelsetypingfile" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -329,7 +329,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftypingfileelse" category="verbatim conditional" level="system" file="buff-ver.mkiv">
+    <cd:command name="doiftypingfileelse" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>

@@ -225,7 +225,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayoutdefined" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifelselayoutdefined" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -233,7 +233,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayoutdefinedelse" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doiflayoutdefinedelse" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -262,29 +262,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoddpage" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifelseoddpage" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoddpageelse" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifoddpageelse" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifbothsidesoverruled" level="system" category="layout conditional" file="page-lay.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-command"/>
-            <cd:resolve name="argument-command"/>
-            <cd:resolve name="argument-command"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifbothsides" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifbothsidesoverruled" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -292,7 +284,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rightorleftpageaction" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifbothsides" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightorleftpageaction" level="system" category="layout" keywords="conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -373,14 +373,14 @@
 
     <cd:command name="spread" type="environment" level="document" category="layout" file="page-spr.mkiv"/>
 
-    <cd:command name="doifelsetopofpage" level="system" category="layout conditional" file="page-ini.mkiv">
+    <cd:command name="doifelsetopofpage" level="system" category="layout" keywords="conditional" file="page-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftopofpageelse" level="system" category="layout conditional" file="page-ini.mkiv">
+    <cd:command name="doiftopofpageelse" level="system" category="layout" keywords="conditional" file="page-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

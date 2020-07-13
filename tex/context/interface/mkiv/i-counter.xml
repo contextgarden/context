@@ -111,7 +111,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifelsecounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -119,7 +119,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcounterelse" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifcounterelse" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -127,14 +127,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifcounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotcounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifnotcounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -360,7 +360,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doifelsedefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifelsedefinedcounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -368,7 +368,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefinedcounterelse" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifdefinedcounterelse" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -376,14 +376,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifdefinedcounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifundefinedcounter" level="system" category="counter conditional" file="strc-num.mkiv">
+    <cd:command name="doifundefinedcounter" level="system" category="counter" keywords="conditional" file="strc-num.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineattachment" level="style" file="scrn-wid.mkvi">
+    <cd:command name="defineattachment" level="style" category="pdf" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupattachment" level="style" file="scrn-wid.mkvi">
+    <cd:command name="setupattachment" level="style" category="pdf" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupattachments" level="style" file="scrn-wid.mkvi">
+    <cd:command name="setupattachments" level="style" category="pdf" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -97,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerattachment" level="document" file="scrn-wid.mkvi">
+    <cd:command name="registerattachment" level="document" category="pdf" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -106,7 +106,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
+    <cd:command name="attachment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:instance value="attachment"/>
         </cd:sequence>
@@ -121,7 +121,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="attachment" type="environment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
+    <cd:command name="attachment" type="environment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:instance value="attachment"/>
         </cd:sequence>
@@ -136,11 +136,11 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placeattachments" level="document" file="scrn-wid.mkvi"/>
+    <cd:command name="placeattachments" level="document" category="pdf" file="scrn-wid.mkvi"/>
 
     <!--
 
-        <cd:command name="attachment" file="scrn-wid.mkvi">
+        <cd:command name="attachment" level="document" category="pdf" file="scrn-wid.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes" optional="yes">
@@ -149,7 +149,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="attachment" type="environment" file="scrn-wid.mkvi">
+        <cd:command name="attachment" type="environment" level="document" category="pdf" file="scrn-wid.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes" optional="yes">

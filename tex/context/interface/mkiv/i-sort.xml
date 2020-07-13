@@ -139,7 +139,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsortingused" level="system" category="language conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsortingused" level="system" category="language" keywords="conditional" file="strc-syn.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

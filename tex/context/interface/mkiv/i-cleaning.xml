@@ -4,11 +4,11 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="punctuation" type="environment" begin="push" end="pop" level="system" file="typo-chr.mkiv"/>
+    <cd:command name="punctuation" type="environment" begin="push" end="pop" level="system" category="language" file="typo-chr.mkiv"/>
 
-    <cd:command name="removepunctuation" level="system" file="typo-chr.mkiv"/>
+    <cd:command name="removepunctuation" level="system" category="language" file="typo-chr.mkiv"/>
 
-    <cd:command name="markcontent" level="system" file="typo-chr.mkiv">
+    <cd:command name="markcontent" level="system" category="language" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reset"/>
@@ -19,7 +19,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markedcontent" type="environment" level="system" file="typo-chr.mkiv">
+    <cd:command name="markedcontent" type="environment" level="system" category="language" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reset"/>
@@ -29,13 +29,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removemarkedcontent" level="system" file="typo-chr.mkiv">
+    <cd:command name="removemarkedcontent" level="system" category="language" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemarkedcontent" level="system" category="conditional" file="typo-chr.mkiv">
+    <cd:command name="doifelsemarkedcontent" level="system" category="language" keywords="conditional" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -43,7 +43,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharactercleaning" level="system" file="typo-cln.mkiv">
+    <cd:command name="setcharactercleaning" level="system" category="language" file="typo-cln.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>

@@ -9,7 +9,7 @@
             <cd:assignments list="yes">
                 <cd:parameter name="state">
                     <cd:constant type="start"/>
-                    <cd:constant type="stop" defult="yes"/>
+                    <cd:constant type="stop" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="method">
                     <cd:constant type="1"/>

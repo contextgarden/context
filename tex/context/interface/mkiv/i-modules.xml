@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="usemodule" level="style" file="file-mod.mkvi">
+    <cd:command name="usemodule" level="style" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="m"/>
@@ -24,7 +24,7 @@
 
     <!--
 
-        <cd:command name="usemodules" level="style" file="file-mod.mkvi">
+        <cd:command name="usemodules" level="style" category="structure" file="file-mod.mkvi">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="m"/>
@@ -44,7 +44,7 @@
 
     -->
 
-    <cd:command name="usetexmodule" level="style" file="file-mod.mkvi">
+    <cd:command name="usetexmodule" level="style" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="m"/>
@@ -62,19 +62,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="module" type="environment" level="system" file="file-mod.mkvi">
+    <cd:command name="module" type="environment" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="module" type="environment" variant="string" level="system" file="file-mod.mkvi">
+    <cd:command name="module" type="environment" variant="string" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="string-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmodule" level="system" file="file-mod.mkvi">
+    <cd:command name="setupmodule" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file-optional"/>
             <cd:assignments list="yes">
@@ -89,35 +89,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="moduleparameter" level="system" file="file-mod.mkvi">
+    <cd:command name="moduleparameter" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentmoduleparameter" level="system" file="file-mod.mkvi">
+    <cd:command name="currentmoduleparameter" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="moduletestsection" type="environment" level="system" file="file-mod.mkvi"/>
+    <cd:command name="moduletestsection" type="environment" level="system" category="structure" file="file-mod.mkvi"/>
 
-    <cd:command name="fetchruntinecommand" level="system" file="file-mod.mkvi">
+    <cd:command name="fetchruntinecommand" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaenvironment" level="system" file="file-mod.mkvi">
+    <cd:command name="luaenvironment" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="string-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useluamodule" level="system" file="file-mod.mkvi">
+    <cd:command name="useluamodule" level="system" category="structure" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>

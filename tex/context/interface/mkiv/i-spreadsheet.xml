@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsespreadsheetcell" level="system" category="tables conditional" file="m-spreadsheet.mkiv">
+    <cd:command name="doifelsespreadsheetcell" level="system" category="tables" keywords="conditional" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifspreadsheetcellelse" level="system" category="tables conditional" file="m-spreadsheet.mkiv">
+    <cd:command name="doifspreadsheetcellelse" level="system" category="tables" keywords="conditional" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>

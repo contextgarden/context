@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineipsum" level="style" file="m-ipsum.mkiv">
+    <cd:command name="defineipsum" level="style" category="language" file="m-ipsum.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupipsum" level="style" file="m-ipsum.mkiv">
+    <cd:command name="setupipsum" level="style" category="language" file="m-ipsum.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -63,7 +63,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ipsum" level="document" file="m-ipsum.mkiv">
+    <cd:command name="ipsum" level="document" category="language" file="m-ipsum.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -72,7 +72,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directipsum" level="document" file="m-ipsum.mkiv">
+    <cd:command name="directipsum" level="document" category="language" file="m-ipsum.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

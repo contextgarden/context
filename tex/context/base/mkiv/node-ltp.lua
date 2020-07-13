@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['node-par'] = {
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to node-par.mkiv",
     author    = "Hans Hagen",
     copyright = "ConTeXt Development Team",
@@ -259,7 +260,6 @@ local nodepool                = nuts.pool
 
 local nodecodes               = nodes.nodecodes
 local kerncodes               = nodes.kerncodes
-local margincodes             = nodes.margincodes
 local disccodes               = nodes.disccodes
 local mathcodes               = nodes.mathcodes
 local fillcodes               = nodes.fillcodes
@@ -293,9 +293,6 @@ local userkern_code           = kerncodes.userkern
 local italickern_code         = kerncodes.italiccorrection
 local fontkern_code           = kerncodes.fontkern
 local accentkern_code         = kerncodes.accentkern
-
-local leftmargin_code         = margincodes.left
------ rightmargin_code        = margincodes.right
 
 local automaticdisc_code      = disccodes.automatic
 local regulardisc_code        = disccodes.regular

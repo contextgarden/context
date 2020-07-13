@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="doiftext" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doiftext" level="system" category="strings" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetext" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifelsetext" level="system" category="strings" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftextelse" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doiftextelse" level="system" category="strings" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dowithnextbox" level="system" file="supp-box.mkiv">
+    <cd:command name="dowithnextbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:csname/>
@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dowithnextboxcs" level="system" file="supp-box.mkiv">
+    <cd:command name="dowithnextboxcs" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
@@ -44,21 +44,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nextboxwd" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextboxwd" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="nextboxht" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextboxht" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="nextboxdp" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextboxdp" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="nextboxhtdp" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextboxhtdp" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="flushnextbox" level="system" file="supp-box.mkiv"/>
+    <cd:command name="flushnextbox" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="nextbox" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextbox" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="nextdepth" level="system" file="supp-box.mkiv"/>
+    <cd:command name="nextdepth" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="dowithnextboxcontent" level="system" file="supp-box.mkiv">
+    <cd:command name="dowithnextboxcontent" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dowithnextboxcontentcs" level="system" file="supp-box.mkiv">
+    <cd:command name="dowithnextboxcontentcs" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
@@ -76,55 +76,55 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rlap" level="system" file="supp-box.mkiv">
+    <cd:command name="rlap" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="llap" level="system" file="supp-box.mkiv">
+    <cd:command name="llap" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="clap" level="system" file="supp-box.mkiv">
+    <cd:command name="clap" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tlap" level="system" file="supp-box.mkiv">
+    <cd:command name="tlap" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blap" level="system" file="supp-box.mkiv">
+    <cd:command name="blap" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reshapebox" level="system" file="supp-box.mkiv">
+    <cd:command name="reshapebox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shapebox" type="environment" begin="beginof" end="endof" level="system" file="supp-box.mkiv"/>
+    <cd:command name="shapebox" type="environment" begin="beginof" end="endof" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="flushshapebox" level="system" file="supp-box.mkiv"/>
+    <cd:command name="flushshapebox" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="innerflushshapebox" level="system" file="supp-box.mkiv"/>
+    <cd:command name="innerflushshapebox" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="shapedhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="shapedhbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processtokens" level="system" file="supp-box.mkiv">
+    <cd:command name="processtokens" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -134,7 +134,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doboundtext" level="system" file="supp-box.mkiv">
+    <cd:command name="doboundtext" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-dimension"/>
@@ -142,7 +142,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="limitatetext" level="system" file="supp-box.mkiv">
+    <cd:command name="limitatetext" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:keywords delimiters="braces">
@@ -152,7 +152,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="limitatetext" variant="list" level="system" file="supp-box.mkiv">
+    <cd:command name="limitatetext" variant="list" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:keywords delimiters="braces" list="yes">
@@ -162,7 +162,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="limitatefirstline" level="system" file="supp-box.mkiv">
+    <cd:command name="limitatefirstline" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-dimension"/>
@@ -170,159 +170,159 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processisolatedchars" level="system" file="supp-box.mkiv">
+    <cd:command name="processisolatedchars" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processisolatedwords" level="system" file="supp-box.mkiv">
+    <cd:command name="processisolatedwords" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytocharacters" level="system" file="supp-box.mkiv">
+    <cd:command name="applytocharacters" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytowords" level="system" file="supp-box.mkiv">
+    <cd:command name="applytowords" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringchar" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringchar" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringword" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringword" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringline" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringline" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringcharspaced" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringcharspaced" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringwordspaced" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringwordspaced" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applytosplitstringlinespaced" level="system" file="supp-box.mkiv">
+    <cd:command name="applytosplitstringlinespaced" level="system" category="strings" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sbox" level="system" file="supp-box.mkiv">
+    <cd:command name="sbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linebox" level="system" file="supp-box.mkiv">
+    <cd:command name="linebox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shiftbox" level="system" file="supp-box.mkiv">
+    <cd:command name="shiftbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:dimension/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hpackbox" level="system" file="supp-box.mkiv">
+    <cd:command name="hpackbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:dimension/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vpackbox" level="system" file="supp-box.mkiv">
+    <cd:command name="vpackbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:dimension/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hpackedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="hpackedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:dimension/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vpackedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="vpackedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:dimension/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlinedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="inlinedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="struttedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="struttedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="topskippedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="topskippedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="centeredbox" level="system" file="supp-box.mkiv">
+    <cd:command name="centeredbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="centerednextbox" level="system" file="supp-box.mkiv">
+    <cd:command name="centerednextbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="centerbox" level="system" file="supp-box.mkiv">
+    <cd:command name="centerbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setrigidcolumnhsize" level="system" file="supp-box.mkiv">
+    <cd:command name="setrigidcolumnhsize" level="system" category="columns" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
@@ -330,21 +330,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setrigidcolumnbalance" level="system" file="supp-box.mkiv">
+    <cd:command name="setrigidcolumnbalance" level="system" category="columns" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vboxtohbox" type="environment" level="system" file="supp-box.mkiv"/>
+    <cd:command name="vboxtohbox" type="environment" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="vboxtohboxseparator" type="environment" level="system" file="supp-box.mkiv"/>
+    <cd:command name="vboxtohboxseparator" type="environment" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="convertvboxtohbox" level="system" file="supp-box.mkiv"/>
+    <cd:command name="convertvboxtohbox" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="hboxestohbox" type="environment" level="system" file="supp-box.mkiv"/>
+    <cd:command name="hboxestohbox" type="environment" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="unhhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="unhhbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:delimiter name="with"/>
@@ -354,17 +354,17 @@
 
     <!--
 
-        <cd:command name="hhbox" level="system" file="supp-box.mkiv"/>
+        <cd:command name="hhbox" level="system" category="boxes" file="supp-box.mkiv"/>
 
     -->
 
-    <cd:command name="hboxofvbox" level="system" file="supp-box.mkiv">
+    <cd:command name="hboxofvbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcontent" level="system" file="supp-box.mkiv">
+    <cd:command name="doifcontent" level="system" category="boxes" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -374,105 +374,105 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlay" type="environment" level="system" file="supp-box.mkiv"/>
+    <cd:command name="overlay" type="environment" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="fakebox" level="system" file="supp-box.mkiv">
+    <cd:command name="fakebox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cbox" level="system" file="supp-box.mkiv">
+    <cd:command name="cbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rbox" level="system" file="supp-box.mkiv">
+    <cd:command name="rbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltop" level="system" file="supp-box.mkiv">
+    <cd:command name="ltop" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctop" level="system" file="supp-box.mkiv">
+    <cd:command name="ctop" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtop" level="system" file="supp-box.mkiv">
+    <cd:command name="rtop" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tbox" level="system" file="supp-box.mkiv">
+    <cd:command name="tbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bbox" level="system" file="supp-box.mkiv">
+    <cd:command name="bbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lhbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="mhbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="rhbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefthbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lefthbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="midhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="midhbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righthbox" level="system" file="supp-box.mkiv">
+    <cd:command name="righthbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxofsize" level="system" file="supp-box.mkiv">
+    <cd:command name="boxofsize" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:keywords delimiters="none" list="yes" optional="yes">
@@ -482,7 +482,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="limitatelines" level="system" file="supp-box.mkiv">
+    <cd:command name="limitatelines" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-command"/>
@@ -490,117 +490,117 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittopbaselinegrid" level="system" file="supp-box.mkiv">
+    <cd:command name="fittopbaselinegrid" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxcursor" level="system" file="supp-box.mkiv"/>
+    <cd:command name="boxcursor" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="placedbox" level="system" file="supp-box.mkiv">
+    <cd:command name="placedbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rightbox" level="system" file="supp-box.mkiv">
+    <cd:command name="rightbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftbox" level="system" file="supp-box.mkiv">
+    <cd:command name="leftbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="topbox" level="system" file="supp-box.mkiv">
+    <cd:command name="topbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bottombox" level="system" file="supp-box.mkiv">
+    <cd:command name="bottombox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttopbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lefttopbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttopbox" level="system" file="supp-box.mkiv">
+    <cd:command name="righttopbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftbottombox" level="system" file="supp-box.mkiv">
+    <cd:command name="leftbottombox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rightbottombox" level="system" file="supp-box.mkiv">
+    <cd:command name="rightbottombox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="topleftbox" level="system" file="supp-box.mkiv">
+    <cd:command name="topleftbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="toprightbox" level="system" file="supp-box.mkiv">
+    <cd:command name="toprightbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bottomleftbox" level="system" file="supp-box.mkiv">
+    <cd:command name="bottomleftbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bottomrightbox" level="system" file="supp-box.mkiv">
+    <cd:command name="bottomrightbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="middlebox" level="system" file="supp-box.mkiv">
+    <cd:command name="middlebox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="baselinemiddlebox" level="system" file="supp-box.mkiv">
+    <cd:command name="baselinemiddlebox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="baselineleftbox" level="system" file="supp-box.mkiv">
+    <cd:command name="baselineleftbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="baselinerightbox" level="system" file="supp-box.mkiv">
+    <cd:command name="baselinerightbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lrtbbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lrtbbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
@@ -610,27 +610,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="toplinebox" level="system" file="supp-box.mkiv">
+    <cd:command name="toplinebox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setstackbox" level="system" file="supp-box.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-name"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="initializeboxstack" level="system" file="supp-box.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="savebox" level="system" file="supp-box.mkiv">
+    <cd:command name="setstackbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -638,28 +624,42 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushbox" level="system" file="supp-box.mkiv">
+    <cd:command name="initializeboxstack" level="system" category="boxes" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="savebox" level="system" category="boxes" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="flushbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="restorebox" level="system" file="supp-box.mkiv">
+    <cd:command name="restorebox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="foundbox" level="system" file="supp-box.mkiv">
+    <cd:command name="foundbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsebox" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifelsebox" level="system" category="boxes" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -668,7 +668,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifboxelse" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifboxelse" level="system" category="boxes" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -677,51 +677,51 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localpushbox" level="system" file="supp-box.mkiv">
+    <cd:command name="localpushbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localpopbox" level="system" file="supp-box.mkiv">
+    <cd:command name="localpopbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpushbox" level="system" file="supp-box.mkiv">
+    <cd:command name="globalpushbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpopbox" level="system" file="supp-box.mkiv">
+    <cd:command name="globalpopbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removedepth" level="system" file="supp-box.mkiv"/>
+    <cd:command name="removedepth" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="obeydepth" level="system" file="supp-box.mkiv"/>
+    <cd:command name="obeydepth" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="undepthed" level="system" file="supp-box.mkiv">
+    <cd:command name="undepthed" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removebottomthings" level="system" file="supp-box.mkiv"/>
+    <cd:command name="removebottomthings" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="removelastskip" level="system" file="supp-box.mkiv"/>
+    <cd:command name="removelastskip" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="makestrutofbox" level="system" file="supp-box.mkiv">
+    <cd:command name="makestrutofbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="raisebox" level="system" file="supp-box.mkiv">
+    <cd:command name="raisebox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
@@ -729,7 +729,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowerbox" level="system" file="supp-box.mkiv">
+    <cd:command name="lowerbox" level="system" category="boxes" keywords="alignment" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
@@ -737,213 +737,213 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="halfwaybox" level="system" file="supp-box.mkiv">
+    <cd:command name="halfwaybox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="depthonlybox" level="system" file="supp-box.mkiv">
+    <cd:command name="depthonlybox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalhbox" level="system" file="supp-dir.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-boxoptions"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="naturalvbox" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturalhbox" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvtop" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturalvbox" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvcenter" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalvtop" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalhpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturalvcenter" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturalhpack" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturaltpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturalvpack" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversehbox" level="system" file="supp-dir.mkiv">
+    <cd:command name="naturaltpack" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversevbox" level="system" file="supp-dir.mkiv">
+    <cd:command name="reversehbox" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversevtop" level="system" file="supp-dir.mkiv">
+    <cd:command name="reversevbox" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversehpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="reversevtop" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversevpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="reversehpack" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reversetpack" level="system" file="supp-dir.mkiv">
+    <cd:command name="reversevpack" level="system" category="boxes" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="frozenhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="reversetpack" level="system" category="boxes" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="frozenhbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setboxllx" level="system" file="supp-box.mkiv">
+    <cd:command name="setboxllx" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setboxlly" level="system" file="supp-box.mkiv">
+    <cd:command name="setboxlly" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gsetboxllx" level="system" file="supp-box.mkiv">
+    <cd:command name="gsetboxllx" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gsetboxlly" level="system" file="supp-box.mkiv">
+    <cd:command name="gsetboxlly" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getboxllx" level="system" file="supp-box.mkiv">
+    <cd:command name="getboxllx" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getboxlly" level="system" file="supp-box.mkiv">
+    <cd:command name="getboxlly" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directgetboxllx" level="system" file="supp-box.mkiv">
+    <cd:command name="directgetboxllx" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directgetboxlly" level="system" file="supp-box.mkiv">
+    <cd:command name="directgetboxlly" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shownextbox" level="system" file="supp-box.mkiv">
+    <cd:command name="shownextbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spreadhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="spreadhbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="minimalhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="minimalhbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nodetostring" level="system" file="supp-box.mkiv">
+    <cd:command name="nodetostring" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getnaturaldimensions" level="system" file="supp-box.mkiv">
+    <cd:command name="getnaturaldimensions" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastnaturalboxwd" level="system" file="supp-box.mkiv"/>
+    <cd:command name="lastnaturalboxwd" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="lastnaturalboxht" level="system" file="supp-box.mkiv"/>
+    <cd:command name="lastnaturalboxht" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="lastnaturalboxdp" level="system" file="supp-box.mkiv"/>
+    <cd:command name="lastnaturalboxdp" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="naturalwd" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalwd" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelserighttoleftinbox" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifelserighttoleftinbox" level="system" category="boxes" keywords="conditional direction" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-true"/>
@@ -951,7 +951,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifrighttoleftinboxelse" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifrighttoleftinboxelse" level="system" category="boxes" keywords="conditional direction" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-true"/>
@@ -959,209 +959,209 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="runninghbox" level="system" file="supp-box.mkiv">
+    <cd:command name="runninghbox" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vbox" type="environment" begin="begin" end="end" level="system" file="supp-box.mkiv"/>
+    <cd:command name="vbox" type="environment" begin="begin" end="end" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="hbox" type="environment" begin="begin" end="end" level="system" file="supp-box.mkiv"/>
+    <cd:command name="hbox" type="environment" begin="begin" end="end" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="vtop" type="environment" begin="begin" end="end" level="system" file="supp-box.mkiv"/>
+    <cd:command name="vtop" type="environment" begin="begin" end="end" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="setvboxregister" level="system" file="supp-box.mkiv">
+    <cd:command name="setvboxregister" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethboxregister" level="system" file="supp-box.mkiv">
+    <cd:command name="sethboxregister" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setvtopregister" level="system" file="supp-box.mkiv">
+    <cd:command name="setvtopregister" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushboxregister" level="system" file="supp-box.mkiv">
+    <cd:command name="flushboxregister" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vboxregister" type="environment" level="system" file="supp-box.mkiv">
+    <cd:command name="vboxregister" type="environment" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hboxregister" type="environment" level="system" file="supp-box.mkiv">
+    <cd:command name="hboxregister" type="environment" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vtopregister" type="environment" level="system" file="supp-box.mkiv">
+    <cd:command name="vtopregister" type="environment" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttolefthbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="righttolefthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlhbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="rtlhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorighthbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="lefttorighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrhbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="ltrhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="rtlvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="ltrvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="rtlvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="ltrvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirhbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="autodirhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="autodirvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="autodirvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrighthbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="leftorrighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvbox" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvtop" level="system" category="alignment" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ibox" level="system" file="spac-ali.mkiv">
+    <cd:command name="ibox" level="system" category="boxes" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="obox" level="system" file="spac-ali.mkiv">
+    <cd:command name="obox" level="system" category="boxes" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definehbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="definehbox" level="system" category="boxes" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hbox" generated="yes" variant="example" level="system" file="spac-ali.mkiv">
+    <cd:command name="hbox" generated="yes" variant="example" level="system" category="boxes" file="spac-ali.mkiv">
         <cd:sequence>
             <cd:string value="hbox"/>
             <cd:variable value="box"/>
@@ -1171,9 +1171,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastlinewidth" level="system" file="supp-box.mkiv"/>
+    <cd:command name="lastlinewidth" level="system" category="boxes" file="supp-box.mkiv"/>
 
-    <cd:command name="putboxincache" level="system" file="supp-box.mkiv">
+    <cd:command name="putboxincache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1184,7 +1184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getboxfromcache" level="system" file="supp-box.mkiv">
+    <cd:command name="getboxfromcache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1195,7 +1195,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseboxincache" level="system" category="conditional" file="supp-box.mkiv">
+    <cd:command name="doifelseboxincache" level="system" category="boxes" keywords="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1207,7 +1207,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copyboxfromcache" level="system" file="supp-box.mkiv">
+    <cd:command name="copyboxfromcache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1218,7 +1218,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directboxfromcache" level="system" file="supp-box.mkiv">
+    <cd:command name="directboxfromcache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1228,7 +1228,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcopyboxfromcache" level="system" file="supp-box.mkiv">
+    <cd:command name="directcopyboxfromcache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
@@ -1238,13 +1238,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetboxesincache" level="system" file="supp-box.mkiv">
+    <cd:command name="resetboxesincache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="putnextboxincache" level="system" file="supp-box.mkiv">
+    <cd:command name="putnextboxincache" level="system" category="boxes" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['node-cmp'] = {
 }
 
 -- This is a LuaTeX compatibility module. The code below is no longer
--- present node-met or node-aux. These functions are rarely used.
+-- present in node-met or node-aux. These functions are rarely used.
 
 if node.count then
     return

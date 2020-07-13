@@ -24,6 +24,7 @@
                     <cd:constant type="nihongo"/>
                     <cd:constant type="ethiopic"/>
                     <cd:constant type="thai"/>
+                    <cd:constant type="tibetan"/>
                     <cd:constant type="test"/>
                 </cd:parameter>
                 <cd:parameter name="preset">
@@ -65,7 +66,7 @@
 
     <cd:command name="resetscript" level="system" category="language" file="scrp-ini.mkvi"/>
 
-    <cd:command name="script" type="environment" category="language" file="scrp-ini.mkvi">
+    <cd:command name="script" type="environment" level="document" category="language" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="hangul"/>
@@ -73,6 +74,7 @@
                 <cd:constant type="nihongo"/>
                 <cd:constant type="ethiopic"/>
                 <cd:constant type="thai"/>
+                <cd:constant type="tibetan"/>
                 <cd:constant type="test"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>

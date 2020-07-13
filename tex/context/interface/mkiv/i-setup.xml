@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupsetup" level="style" file="x-setups-basics.mkiv">
+    <cd:command name="setupsetup" level="style" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="criterium">
@@ -19,149 +19,149 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="basicsetup" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="basicsetup" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="basicsetup" variant="argument" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="basicsetup" variant="argument" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shortsetup" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="shortsetup" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shortsetup" variant="argument" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="shortsetup" variant="argument" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setup" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="setup" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setup" variant="argument" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="setup" variant="argument" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showsetup" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="showsetup" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showsetup" variant="argument" level="system" file="x-setups-basics.mkiv">
+    <cd:command name="showsetup" variant="argument" level="system" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placesetup" level="document" file="x-setups-basics.mkiv"/>
+    <cd:command name="placesetup" level="document" category="xml" file="x-setups-basics.mkiv"/>
 
-    <cd:command name="placeallsetups" level="document" file="x-setups-basics.mkiv"/>
+    <cd:command name="placeallsetups" level="document" category="xml" file="x-setups-basics.mkiv"/>
 
-    <cd:command name="placeeverysetup" level="document" file="x-setups-basics.mkiv"/>
+    <cd:command name="placeeverysetup" level="document" category="xml" file="x-setups-basics.mkiv"/>
 
-    <cd:command name="showrootvalues" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="showrootvalues" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showinstancevalues" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="showinstancevalues" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdinternal" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdinternal" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdbasicsetup" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdbasicsetup" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdbasicsetup" variant="argument" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdbasicsetup" variant="argument" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdshortsetup" level="document" file="x-setups-basics.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cmdshortsetup" variant="argument" level="document" file="x-setups-basics.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cmdfullsetup" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdshortsetup" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdfullsetup" variant="argument" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdshortsetup" variant="argument" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cmdbasicsetupinstance" level="document" file="x-setups-basics.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cmdshortsetupinstance" level="document" file="x-setups-basics.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cmdfullsetupinstance" level="document" file="x-setups-basics.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="showdefinition" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdfullsetup" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showdefinition" variant="argument" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdfullsetup" variant="argument" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definition" level="document" file="x-setups-basics.mkiv">
+    <cd:command name="cmdbasicsetupinstance" level="document" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cmdshortsetupinstance" level="document" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cmdfullsetupinstance" level="document" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showdefinition" level="document" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showdefinition" variant="argument" level="document" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definition" level="document" category="xml" file="x-setups-basics.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text-list"/>
         </cd:arguments>

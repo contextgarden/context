@@ -283,7 +283,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayerdata" level="system" category="background conditional" file="pack-lyr.mkiv">
+    <cd:command name="doifelselayerdata" level="system" category="background" keywords="conditional" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -291,7 +291,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayerdataelse" level="system" category="background conditional" file="pack-lyr.mkiv">
+    <cd:command name="doiflayerdataelse" level="system" category="background" keywords="conditional" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -303,7 +303,7 @@
 
     <cd:command name="layerheight" level="system" category="background" file="pack-lyr.mkiv"/>
 
-    <cd:command name="setMPlayer" level="document" category="background metapost" file="pack-lyr.mkiv">
+    <cd:command name="setMPlayer" level="document" category="background" keywords="metapost" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -314,7 +314,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getMPlayer" level="document" category="background metapost" file="pack-lyr.mkiv">
+    <cd:command name="getMPlayer" level="document" category="background" keywords="metapost" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

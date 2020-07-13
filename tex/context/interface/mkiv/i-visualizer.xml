@@ -4,111 +4,111 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="ruledhbox" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledhbox" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvbox" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledvbox" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvtop" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledvtop" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledtopv" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledtopv" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledhpack" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledhpack" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvpack" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledvpack" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledtpack" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledtpack" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledmbox" level="system" file="trac-vis.mkiv">
+    <cd:command name="ruledmbox" level="system" category="boxes" keywords="rules" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxr" level="system" file="trac-vis.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-boxoptions"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="filledhboxg" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxr" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxb" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxg" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxc" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxb" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxm" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxc" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxy" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxm" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxk" level="system" file="trac-vis.mkiv">
+    <cd:command name="filledhboxy" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showmakeup" level="document" file="trc-vis.mkiv">
+    <cd:command name="filledhboxk" level="system" category="boxes" keywords="background colors" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showmakeup" level="document" category="boxes" file="trc-vis.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="makeup" default="yes"/>
@@ -142,26 +142,26 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showallmakeup" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showallmakeup" level="document" category="boxes" file="trc-vis.mkiv"/>
 
-    <cd:command name="showboxes" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showboxes" level="document" category="boxes" file="trc-vis.mkiv"/>
 
-    <cd:command name="showglyphs" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showglyphs" level="document" category="fonts" file="trc-vis.mkiv"/>
 
-    <cd:command name="showfontkerns" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showfontkerns" level="document" category="fonts" file="trc-vis.mkiv"/>
 
-    <cd:command name="showfontitalics" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showfontitalics" level="document" category="fonts" file="trc-vis.mkiv"/>
 
-    <cd:command name="showglyphdata" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showglyphdata" level="document" category="fonts" file="trc-vis.mkiv"/>
 
-    <cd:command name="showfontexpansion" level="document" file="trc-vis.mkiv"/>
+    <cd:command name="showfontexpansion" level="document" category="fonts" file="trc-vis.mkiv"/>
 
-    <cd:command name="setvisualizerfont" level="system" file="trc-vis.mkiv">
+    <cd:command name="setvisualizerfont" level="system" category="fonts" file="trc-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-font-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetvisualizers" level="system" file="trc-vis.mkiv"/>
+    <cd:command name="resetvisualizers" level="system" category="fonts" file="trc-vis.mkiv"/>
 
 </cd:interface>

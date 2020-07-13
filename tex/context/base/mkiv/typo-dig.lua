@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['typo-dig'] = {
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to typo-dig.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",

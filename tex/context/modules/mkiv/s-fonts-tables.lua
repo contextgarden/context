@@ -27,6 +27,8 @@ local setlink             = nodes.setlink
 local hpack               = nodes.hpack
 local applyvisuals        = nodes.applyvisuals
 
+local lefttoright_code    = nodes.dirvalues.lefttoright
+
 local handle_positions    = fonts.handlers.otf.datasetpositionprocessor
 local handle_injections   = nodes.injections.handler
 
@@ -285,17 +287,9 @@ function tabletracers.showpositionings(specification)
 
     if resources then
 
-        local direction = "TLT"
-
+        local direction = lefttoright_code -- not that relevant probably
         local sequences = resources.sequences
         local marks     = resources.marks
-
-        if tonumber(direction) == -1 or direction == "TRT"  then
-            direction = "TRT"
-        else
-            direction = "TLT"
-        end
-
         local visuals   = "fontkern,glyph,box"
 
         local datasets  = fonts.handlers.otf.dataset(tfmdata,fontid,0)

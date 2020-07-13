@@ -796,6 +796,9 @@ The first argument is one of \type {top}, \type {bottom}, \type {first}, \type
 number. When no arguments are given the current maximum number of classes is
 returned.
 
+When \type {tex.gettoks} gets an extra argument \type {true} it will return a
+table with userdata tokens.
+
 \stopsubsection
 
 \startsubsection[title={Character code registers: \type {[get|set]*code[s]}}]
@@ -2198,21 +2201,42 @@ a bit but for passing strings conversion to and from tokens has to be done anywa
 
 \startsubsection[title={Picking up one token}]
 
-\libindex {get_next}
+\libindex {scan_next}
+\libindex {scan_next_expanded}
+\libindex {skip_next}
+\libindex {skip_next_expanded}
+\libindex {peek_next}
+\libindex {peek_next_expanded}
 \libindex {scan_token}
 \libindex {expand}
 
 The scanners look for a sequence. When you want to pick up one token from the
-input you use \type {get_next}. This creates a token with the (low level)
+input you use \type {scan_next}. This creates a token with the (low level)
 properties as discussed next. This token is just the next one. If you want to
-enforce expansion first you can use \type {scan_token}. Internally tokens are
-characterized by a number that packs a lot of information. In order to access
-the bits of information a token is wrapped in a userdata object.
+enforce expansion first you can use \type {scan_token} or the \type {_expanded}
+variants. Internally tokens are characterized by a number that packs a lot of
+information. In order to access the bits of information a token is wrapped in a
+userdata object.
 
 The \type {expand} function will trigger expansion of the next token in the
 input. This can be quite unpredictable but when you call it you probably know
 enough about \TEX\ not to be too worried about that. It basically is a call to
 the internal expand related function.
+
+\starttabulate[|lT|p|]
+\DB name \BC explanation \NC \NR
+\TB
+\NC scan_next          \NC get the next token \NC \NR
+\NC scan_next_expanded \NC get the next expanded token \NC \NR
+\NC skip_next          \NC skip the next token \NC \NR
+\NC skip_next_expanded \NC skip the next expanded token \NC \NR
+\NC peek_next          \NC get the next token and put it back in the input \NC \NR
+\NC peek_next_expanded \NC get the next expanded token and put it back in the input \NC \NR
+\LL
+\stoptabulate
+
+The peek function accept a boolean argument that triggers skipping spaces and
+alike.
 
 \stopsubsection
 
@@ -2241,7 +2265,7 @@ the internal expand related function.
 \libindex{get_frozen}
 \libindex{get_user}
 
-\libindex{get_next}
+\libindex{scan_next}
 
 The creator function can be used as follows:
 
@@ -2392,16 +2416,16 @@ and are to be seen as abstractions.
 
 \startsubsection[title={Pushing back}]
 
-\libindex{get_next}
+\libindex{scan_next}
 \libindex{put_next}
 
 There is a (for now) experimental putter:
 
 \starttyping
-local t1 = token.get_next()
-local t2 = token.get_next()
-local t3 = token.get_next()
-local t4 = token.get_next()
+local t1 = token.scan_next()
+local t2 = token.scan_next()
+local t3 = token.scan_next()
+local t4 = token.scan_next()
 -- watch out, we flush in sequence
 token.put_next { t1, t2 }
 -- but this one gets pushed in front
@@ -2509,9 +2533,9 @@ When scanning from \LUA\ we are not in a mode that defines (undefined) macros at
 all. There we just get the real primitive undefined macro token.
 
 \startbuffer
-\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\myfirstbar
-\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\mysecondbar
-\directlua{local t = token.get_next() tex.print(t.id.." "..t.tok)}\mythirdbar
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\myfirstbar
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mysecondbar
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mythirdbar
 \stopbuffer
 
 \startlines

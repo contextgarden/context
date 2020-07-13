@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineparallel" level="style" file="buff-par.mkvi">
+    <cd:command name="defineparallel" level="style" category="columns" keywords="structure" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupparallel" level="style" file="buff-par.mkvi">
+    <cd:command name="setupparallel" level="style" category="columns" keywords="structure" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeparallel" level="document" file="buff-par.mkvi">
+    <cd:command name="placeparallel" level="document" category="columns" keywords="structure" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
@@ -42,7 +42,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseparallel" level="style" category="conditional" file="buff-par.mkvi">
+    <cd:command name="doifelseparallel" level="style" category="columns" keywords="structure conditional" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces" list="yes">
@@ -54,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifparallelelse" level="style" category="conditional" file="buff-par.mkvi">
+    <cd:command name="doifparallelelse" level="style" category="columns" keywords="structure conditional" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces" list="yes">
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetparallel" level="style" file="buff-par.mkvi">
+    <cd:command name="resetparallel" level="style" category="columns" keywords="structure" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -76,7 +76,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="parallel" type="environment" generated="yes" variant="example" level="document" file="buff-par.mkvi">
+    <cd:command name="parallel" type="environment" generated="yes" variant="example" level="document" category="columns" keywords="structure" file="buff-par.mkvi">
         <cd:sequence>
             <cd:variable value="parallel"/>
         </cd:sequence>

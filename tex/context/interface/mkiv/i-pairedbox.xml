@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepairedbox" level="style" file="pack-com.mkiv">
+    <cd:command name="definepairedbox" level="style" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" level="style" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" level="style" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -70,7 +70,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placepairedbox" level="document" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" level="document" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" level="document" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" level="document" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -90,7 +90,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" generated="yes" variant="instance" level="style" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" generated="yes" variant="instance" level="style" category="tables" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="pairedbox"/>
@@ -105,7 +105,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" generated="yes" variant="instance" level="document" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" generated="yes" variant="instance" level="document" category="tables" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="pairedbox"/>
@@ -122,7 +122,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" generated="yes" variant="instance" level="document" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" generated="yes" variant="instance" level="document" category="tables" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="pairedbox"/>
@@ -139,7 +139,7 @@
 
     <!--
 
-        <cd:command name="setuplegend" level="document" file="pack-com.mkiv">
+        <cd:command name="setuplegend" level="document" category="tables" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -147,7 +147,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="placelegend" level="document" file="pack-com.mkiv">
+        <cd:command name="placelegend" level="document" category="tables" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -157,7 +157,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="placelegend" type="environment" level="document" file="pack-com.mkiv">
+        <cd:command name="placelegend" type="environment" level="document" category="tables" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -167,14 +167,14 @@
 
     -->
 
-    <cd:command name="placeontopofeachother" level="document" file="pack-com.mkiv">
+    <cd:command name="placeontopofeachother" level="document" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placesidebyside" level="document" file="pack-com.mkiv">
+    <cd:command name="placesidebyside" level="document" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>

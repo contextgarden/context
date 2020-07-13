@@ -85,7 +85,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundline" level="document" category="background colors" file="pack-bck.mkvi">
+    <cd:command name="backgroundline" level="document" category="background" keywords="colors" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
@@ -140,7 +140,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesomebackground" level="system" category="background conditional" file="page-bck.mkiv">
+    <cd:command name="doifelsesomebackground" level="system" category="background" keywords="conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomebackgroundelse" level="system" category="background conditional" file="page-bck.mkiv">
+    <cd:command name="doifsomebackgroundelse" level="system" category="background" keywords="conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomebackground" level="system" category="background conditional" file="page-bck.mkiv">
+    <cd:command name="doifsomebackground" level="system" category="background" keywords="conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

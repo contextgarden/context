@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemarginblock" level="style" category="structure layout" file="page-mbk.mkvi">
+    <cd:command name="definemarginblock" level="style" category="structure" keywords="layout" file="page-mbk.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmarginblock" level="style" category="structure layout" file="page-mbk.mkvi">
+    <cd:command name="setupmarginblock" level="style" category="structure" keywords="layout" file="page-mbk.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -67,7 +67,7 @@
 
     <!--
 
-        <cd:command name="setupmarginblocks" level="style" category="structure layout" file="page-mbk.mkvi">
+        <cd:command name="setupmarginblocks" level="style" category="structure" keywords="layout" file="page-mbk.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -78,7 +78,7 @@
 
     -->
 
-    <cd:command name="marginblock" type="environment" level="document" category="structure layout" file="page-mbk.mkvi">
+    <cd:command name="marginblock" type="environment" level="document" category="structure" keywords="layout" file="page-mbk.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>

@@ -1377,7 +1377,6 @@ function figures.dummy(data)
     du.width   = du.width  or figures.defaultwidth
     du.height  = du.height or figures.defaultheight
     du.depth   = du.depth  or figures.defaultdepth
- -- box.dir    = "TLT"
     box.width  = du.width
     box.height = du.height
     box.depth  = du.depth

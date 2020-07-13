@@ -310,7 +310,7 @@
 
     -->
 
-    <cd:command name="doifelselist" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doifelselist" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-list"/>
             <cd:resolve name="argument-true"/>
@@ -318,7 +318,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflistelse" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doiflistelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-list"/>
             <cd:resolve name="argument-true"/>
@@ -545,28 +545,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsestructurelisthaspage" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doifelsestructurelisthaspage" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifstructurelisthaspageelse" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doifstructurelisthaspageelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsestructurelisthasnumber" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doifelsestructurelisthasnumber" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifstructurelisthasnumberelse" level="system" category="structure conditional" file="strc-lst.mkvi">
+    <cd:command name="doifstructurelisthasnumberelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

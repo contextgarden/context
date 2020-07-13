@@ -171,7 +171,9 @@ local xcomplex = xcomplex or { }
 
 local cmd          = tokens.commands
 
-local get_next     = token.get_next
+local scan_next    = token.scan_next or token.get_next
+local scan_cmdchr  = token.scan_cmdchr_expanded
+
 local get_command  = token.get_command
 local get_mode     = token.get_mode
 local get_index    = token.get_index
@@ -210,7 +212,7 @@ if CONTEXTLMTXMODE == 0 then
         local w = 0
         local r = 1
         while true do
-            local t = get_next()
+            local t = scan_next()
             local n = get_command(t)
             local c = cmd[n]
             -- todo, helper: returns number
@@ -292,8 +294,6 @@ if CONTEXTLMTXMODE == 0 then
 
 else
 
-    local get_cmdchrcs             = tokens.get_cmdchrcs or token.get_cmdchrcs
-
     local letter_code              = cmd.letter
     local other_char_code          = cmd.other_char
     local spacer_code              = cmd.spacer
@@ -311,10 +311,10 @@ else
     local math_given_code          = cmd.math_given
     local xmath_given_code         = cmd.xmath_given
     local some_item_code           = cmd.some_item
-    local call_code                = cmd.call
-    local the_code                 = cmd.the
-    local convert_code             = cmd.convert
-    local lua_expandable_call_code = cmd.lua_expandable_call
+ -- local call_code                = cmd.call
+ -- local the_code                 = cmd.the
+ -- local convert_code             = cmd.convert
+ -- local lua_expandable_call_code = cmd.lua_expandable_call
 
     local function unexpected(c)
         report("unexpected token %a",c)
@@ -324,8 +324,7 @@ else
         local w = 0
         local r = 1
         while true do
-            local t = get_next()
-            local n, i = get_cmdchrcs(t)
+        local n, i = scan_cmdchr()
             if n == letter_code then
                 w = w + 1 ; word[w] = utfchar(i)
             else
@@ -374,21 +373,21 @@ else
                     else
                         unexpected(c)
                     end
-                elseif n == call_code then
-                    local n = get_csname(t)
-                    if n then
-                        local s = get_macro(n)
-                        if s then
-                            r = r + 1 ; result[r] = s
-                        else
-                            unexpected(c)
-                        end
-                    else
-                        unexpected(c)
-                    end
-                elseif n == the_code or n == convert_code or n == lua_expandable_call_code then
-                    put_next(t)
-                    scan_token() -- expands
+             -- elseif n == call_code then
+             --     local n = get_csname(t)
+             --     if n then
+             --         local s = get_macro(n)
+             --         if s then
+             --             r = r + 1 ; result[r] = s
+             --         else
+             --             unexpected(c)
+             --         end
+             --     else
+             --         unexpected(c)
+             --     end
+             -- elseif n == the_code or n == convert_code or n == lua_expandable_call_code then
+             --     put_next(t)
+             --     scan_token() -- expands
                 else
                     unexpected(c)
                 end

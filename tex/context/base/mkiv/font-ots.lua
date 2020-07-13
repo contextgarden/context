@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['font-ots'] = { -- sequences
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
@@ -251,6 +252,9 @@ local disc_code          = nodecodes.disc
 local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
+
+local lefttoright_code   = nodes.dirvalues.lefttoright
+local righttoleft_code   = nodes.dirvalues.righttoleft
 
 local discretionarydisc_code = disccodes.discretionary
 local ligatureglyph_code     = glyphcodes.ligature
@@ -3625,8 +3629,6 @@ end
 local txtdirstate, pardirstate  do -- this might change (no need for nxt in pardirstate)
 
     local getdirection = nuts.getdirection
-    local lefttoright  = 0
-    local righttoleft  = 1
 
     txtdirstate = function(start,stack,top,rlparmode)
         local dir, pop = getdirection(start)
@@ -3635,19 +3637,19 @@ local txtdirstate, pardirstate  do -- this might change (no need for nxt in pard
                 return 0, rlparmode
             else
                 top = top - 1
-                if stack[top] == righttoleft then
+                if stack[top] == righttoleft_code then
                     return top, -1
                 else
                     return top, 1
                 end
             end
-        elseif dir == lefttoright then
+        elseif dir == lefttoright_code then
             top = top + 1
-            stack[top] = lefttoright
+            stack[top] = lefttoright_code
             return top, 1
-        elseif dir == righttoleft then
+        elseif dir == righttoleft_code then
             top = top + 1
-            stack[top] = righttoleft
+            stack[top] = righttoleft_code
             return top, -1
         else
             return top, rlparmode
@@ -3656,14 +3658,9 @@ local txtdirstate, pardirstate  do -- this might change (no need for nxt in pard
 
     pardirstate = function(start)
         local dir = getdirection(start)
-        if dir == lefttoright then
+        if dir == lefttoright_code then
             return 1, 1
-        elseif dir == righttoleft then
-            return -1, -1
-        -- for old times sake we we handle strings too
-        elseif dir == "TLT" then
-            return 1, 1
-        elseif dir == "TRT" then
+        elseif dir == righttoleft_code then
             return -1, -1
         else
             return 0, 0
@@ -3764,7 +3761,7 @@ do
 
         if getid(head) == localpar_code and start_of_par(head) then
             initialrl = pardirstate(head)
-        elseif direction == 1 or direction == "TRT" then
+        elseif direction == righttoleft_code then
             initialrl = -1
         end
 
@@ -4059,7 +4056,7 @@ do
         local done      = false
         local dirstack  = { nil } -- could move outside function but we can have local runs (maybe a few more nils)
         local start     = head
-        local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
+        local initialrl = (direction == righttoleft_code) and -1 or 0
         local rlmode    = initialrl
         local rlparmode = initialrl
         local topstack  = 0

@@ -44,7 +44,7 @@ local gettoken          = getters.token
 
 local getcommand        = token.get_command
 local getcsname         = token.get_csname
-local getnextchar       = token.get_next_char
+local getnextchar       = token.scan_next_char or token.get_next_char
 
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array

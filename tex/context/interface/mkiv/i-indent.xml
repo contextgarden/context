@@ -88,4 +88,11 @@
 
     <cd:command name="indentation" type="environment" begin="push" end="pop" level="system" category="whitespace" file="spac-hor.mkiv"/>
 
+    <cd:command name="doifelseindented" level="system" category="whitespace" keywords="conditional" file="supp-box.lua">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:argument>
+    </cd:command>
+
 </cd:interface>

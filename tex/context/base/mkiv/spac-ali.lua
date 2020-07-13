@@ -1,5 +1,6 @@
 if not modules then modules = { } end modules ['spac-ali'] = {
     version   = 1.001,
+    optimize  = true,
     comment   = "companion to spac-ali.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",

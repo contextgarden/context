@@ -49,14 +49,14 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="doifelsehelp" level="system" category="pdf conditional" file="scrn-hlp.mkvi">
+    <cd:command name="doifelsehelp" level="system" category="pdf" keywords="conditional" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifhelpelse" level="system" category="pdf conditional" file="scrn-hlp.mkvi">
+    <cd:command name="doifhelpelse" level="system" category="pdf" keywords="conditional" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

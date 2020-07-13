@@ -419,12 +419,6 @@ local function get_baselevel(head,list,size,direction)
             return direction, true
         end
     end
-    -- for old times sake we we handle strings too
-    if direction == "TLT" then
-        return lefttoright_code, true
-    elseif direction == "TRT" then
-        return righttoleft_code, true
-    end
     -- P2, P3
     for i=1,size do
         local entry     = list[i]

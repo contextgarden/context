@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineprocessor" level="style" category="fonts colors" file="typo-prc.mkvi">
+    <cd:command name="defineprocessor" level="style" category="fonts" keywords="colors" file="typo-prc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupprocessor" level="style" category="fonts colors" file="typo-prc.mkvi">
+    <cd:command name="setupprocessor" level="style" category="fonts" keywords="colors" file="typo-prc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applyprocessor" level="system" category="fonts colors" file="typo-prc.mkvi">
+    <cd:command name="applyprocessor" level="system" category="fonts" keywords="colors" file="typo-prc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>

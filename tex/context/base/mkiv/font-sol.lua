@@ -111,6 +111,8 @@ local whatsit_code       = nodecodes.whatsit
 
 local fontkern_code      = kerncodes.fontkern
 
+local righttoleft_code   = nodes.dirvalues.righttoleft
+
 local userdefinedwhatsit_code = whatsitcodes.userdefined
 
 local nodeproperties     = nodes.properties.data
@@ -379,7 +381,7 @@ function splitters.split(head) -- best also pass the direction
             end
         end
         if r2l then
-            local dirnode = new_direction(righttoleft) -- brrr, we don't pop ... to be done (when used at all)
+            local dirnode = new_direction(righttoleft_code) -- brrr, we don't pop ... to be done (when used at all)
             setlink(dirnode,list)
             list = dirnode
         end
@@ -434,13 +436,13 @@ function splitters.split(head) -- best also pass the direction
                 flush()
             end
             local direction, pop = getdirection(current)
-            r2l = not pop and direction == righttoleft
+            r2l = not pop and direction == righttoleft_code
         elseif id == localpar_code and start_of_par(current) then
             if start then
                 flush() -- very unlikely as this starts a paragraph
             end
             local direction = getdirection(current)
-            r2l = direction == righttoleft or direction == "TRT" -- for old times sake
+            r2l = direction == righttoleft_code
         else
             if start then
                 flush()

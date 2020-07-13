@@ -45,6 +45,7 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
                     <cd:constant type="auto" default="yes"/>
+                    <cd:constant type="hidden"/>
                 </cd:parameter>
                 <cd:parameter name="left">
                     <cd:constant type="cd:number"/>

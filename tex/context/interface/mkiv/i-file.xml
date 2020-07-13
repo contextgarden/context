@@ -16,21 +16,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffile" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doiffile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotfile" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifnotfile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefile" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsefile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -38,7 +38,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffileelse" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doiffileelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -72,7 +72,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepath" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsepath" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -80,7 +80,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathelse" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifpathelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefileexists" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsefileexists" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -96,7 +96,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffileexistselse" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doiffileexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepathexists" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsepathexists" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -112,7 +112,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathexistselse" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifpathexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseparentfile" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifelseparentfile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifparentfileelse" level="system" category="structure conditional" file="file-ini.mkvi">
+    <cd:command name="doifparentfileelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -156,7 +156,7 @@
 
     <cd:command name="splitoffroot" level="system" category="structure" file="file-ini.mkvi"/>
 
-    <cd:command name="doifelseinputfile" level="system" category="structure conditional" file="file-job.mkvi">
+    <cd:command name="doifelseinputfile" level="system" category="structure" keywords="conditional" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -164,7 +164,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinputfileelse" level="system" category="structure conditional" file="file-job.mkvi">
+    <cd:command name="doifinputfileelse" level="system" category="structure" keywords="conditional" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -239,13 +239,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadluafile" level="system" category="structure lua" file="file-job.mkvi">
+    <cd:command name="loadluafile" level="system" category="structure" keywords="lua" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadcldfile" level="system" category="structure lua" file="file-job.mkvi">
+    <cd:command name="loadcldfile" level="system" category="structure" keywords="lua" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
@@ -263,13 +263,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadluafileonce" level="system" category="structure lua" file="file-job.mkvi">
+    <cd:command name="loadluafileonce" level="system" category="structure" keywords="lua" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadcldfileonce" level="system" category="structure lua" file="file-job.mkvi">
+    <cd:command name="loadcldfileonce" level="system" category="structure" keywords="lua" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
@@ -293,7 +293,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readjobfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readjobfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -301,7 +301,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readlocfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readlocfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -309,7 +309,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readsysfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readsysfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -317,16 +317,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readfixfile" level="system" category="structure conditional" file="file-res.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-path"/>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="readsetfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readfixfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-file"/>
@@ -335,7 +326,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readsetfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-path"/>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="readfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -349,7 +349,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readtexfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="readtexfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -357,7 +357,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readxmlfile" level="system" category="structure conditional xml" file="file-res.mkvi">
+    <cd:command name="readxmlfile" level="system" category="structure" keywords="conditional xml" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -365,7 +365,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselocfile" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="doifelselocfile" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -373,7 +373,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflocfileelse" level="system" category="structure conditional" file="file-res.mkvi">
+    <cd:command name="doiflocfileelse" level="system" category="structure" keywords="conditional" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -404,6 +404,12 @@
     <cd:command name="truefilename" level="system" category="structure" file="file-sys.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usefontpath" level="system" category="structure" keywords="fonts" file="font-ini.mklx">
+        <cd:arguments>
+            <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 

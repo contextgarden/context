@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="getrandomcount" level="system" file="supp-ran.mkiv">
+    <cd:command name="getrandomcount" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-number"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrandomdimen" level="system" file="supp-ran.mkiv">
+    <cd:command name="getrandomdimen" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dimension"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrandomnumber" level="system" file="supp-ran.mkiv">
+    <cd:command name="getrandomnumber" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-number"/>
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrandomfloat" level="system" file="supp-ran.mkiv">
+    <cd:command name="getrandomfloat" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-number"/>
@@ -36,29 +36,29 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setrandomseed" level="system" file="supp-ran.mkiv">
+    <cd:command name="setrandomseed" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrandomseed" level="system" file="supp-ran.mkiv">
+    <cd:command name="getrandomseed" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="randomseed" type="environment" begin="push" end="pop" level="system" file="supp-ran.mkiv"/>
+    <cd:command name="randomseed" type="environment" begin="push" end="pop" level="system" category="counter" file="supp-ran.mkiv"/>
 
-    <cd:command name="reuserandomseed" level="system" file="supp-ran.mkiv"/>
+    <cd:command name="reuserandomseed" level="system" category="counter" file="supp-ran.mkiv"/>
 
-    <cd:command name="randomnumber" level="system" file="supp-ran.mkiv">
+    <cd:command name="randomnumber" level="system" category="counter" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mprandomnumber" level="system" file="supp-ran.mkiv"/>
+    <cd:command name="mprandomnumber" level="system" category="counter" keywords="metapost" file="supp-ran.mkiv"/>
 
 </cd:interface>
