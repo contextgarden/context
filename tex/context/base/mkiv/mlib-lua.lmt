@@ -1,0 +1,120 @@
+if not modules then modules = { } end modules ['mlib-lua'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local type = type
+local insert, remove = table.insert, table.remove
+
+local scan   = mp.scan
+local inject = mp.inject
+
+local currentmpx = nil
+local stack      = { }
+
+local scan_next       = mplib.scan_next
+local scan_expression = mplib.scan_expression
+local scan_token      = mplib.scan_token
+local scan_symbol     = mplib.scan_symbol
+local scan_numeric    = mplib.scan_numeric
+local scan_integer    = mplib.scan_integer
+local scan_boolean    = mplib.scan_boolean
+local scan_string     = mplib.scan_string
+local scan_pair       = mplib.scan_pair
+local scan_color      = mplib.scan_color
+local scan_cmykcolor  = mplib.scan_cmykcolor
+local scan_transform  = mplib.scan_transform
+local scan_path       = mplib.scan_path
+local scan_pen        = mplib.scan_pen
+
+scan.next       = function(k)   return scan_next      (currentmpx,k)   end
+scan.expression = function(k)   return scan_expression(currentmpx,k)   end
+scan.token      = function(k)   return scan_token     (currentmpx,k)   end
+scan.symbol     = function(k,e) return scan_symbol    (currentmpx,k,e) end
+scan.numeric    = function()    return scan_numeric   (currentmpx)     end
+scan.integer    = function()    return scan_integer   (currentmpx)     end
+scan.boolean    = function()    return scan_boolean   (currentmpx)     end
+scan.string     = function()    return scan_string    (currentmpx)     end
+scan.pair       = function(t)   return scan_pair      (currentmpx,t)   end
+scan.color      = function(t)   return scan_color     (currentmpx,t)   end
+scan.cmykcolor  = function(t)   return scan_cmykcolor (currentmpx,t)   end
+scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
+scan.path       = function(t)   return scan_path      (currentmpx,t)   end
+scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
+
+local inject_path      = mplib.inject_path
+local inject_numeric   = mplib.inject_numeric
+local inject_pair      = mplib.inject_pair
+local inject_boolean   = mplib.inject_boolean
+local inject_integer   = mplib.inject_integer
+local inject_string    = mplib.inject_string
+local inject_color     = mplib.inject_color
+local inject_cmykcolor = mplib.inject_cmykcolor
+local inject_transform = mplib.inject_transform
+local inject_whatever  = mplib.inject_whatever
+
+inject.path      = function(t,cycle,curled)  return inject_path     (currentmpx,t,cycle,curled)  end
+inject.numeric   = function(n)               return inject_numeric  (currentmpx,n)               end
+inject.pair      = function(x,y)             return inject_pair     (currentmpx,x,y)             end
+inject.boolean   = function(b)               return inject_boolean  (currentmpx,b)               end
+inject.integer   = function(i)               return inject_integer  (currentmpx,i)               end
+inject.string    = function(s)               return inject_string   (currentmpx,s)               end
+inject.color     = function(r,g,b)           return inject_color    (currentmpx,r,g,b)           end
+inject.cmykcolor = function(c,m,y,k)         return inject_cmykcolor(currentmpx,c,m,y,k)         end
+inject.transform = function(x,y,xx,xy,yx,yy) return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
+inject.whatever  = function(...)             return inject_whatever (currentmpx,...)             end
+
+-- bonus:
+
+scan  .number    = scan  .numeric
+inject.number    = inject.numeric
+
+table.setmetatablecall(inject,function(t,...)
+    inject_whatever(currentmpx,...)
+end)
+
+-- experiment
+
+function mp.autoinject(m)
+    local t = type(m)
+    if t == "table" then
+        local n = #t
+        if n == 2 then
+            inject_pair(currentmpx,m)
+        elseif n == 3 then
+            inject_color(currentmpx,m)
+        elseif n == 4 then
+            inject_cmykcolor(currentmpx,m)
+        elseif n == 6 then
+            inject_transform(currentmpx,m)
+        end
+    elseif t == "number" then
+        inject_numeric(currentmpx,m)
+    elseif t == "string" then
+        inject_string(currentmpx,m)
+    elseif t == "boolean" then
+        inject_boolean(currentmpx,m)
+    end
+end
+
+function metapost.pushscriptrunner(mpx)
+    insert(stack,mpx)
+    currentmpx = mpx
+end
+
+function metapost.popscriptrunner()
+    currentmpx = remove(stack,mpx)
+end
+
+function metapost.currentmpx()
+    return currentmpx
+end
+
+local status = mplib.status
+
+function metapost.currentmpxstatus()
+    return status and status(currentmpx) or 0
+end

@@ -209,32 +209,4 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="abbreviation" level="document" category="symbols" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-optional"/>
-                <cd:resolve name="argument-text"/>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="placelistofabbreviations" level="document" category="symbols" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupsynonyms"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="completelistofabbreviations" level="document" category="symbols" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupsynonyms"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

@@ -15,18 +15,17 @@
 
 \registerctxluafile{mlib-run}{}
 \registerctxluafile{mlib-ctx}{}
-\registerctxluafile{mlib-lua}{}
-\registerctxluafile{mlib-scn}{}
-\registerctxluafile{mlib-mat}{}
-\registerctxluafile{mlib-ran}{}
-\registerctxluafile{mlib-lmp}{}
-\registerctxluafile{mlib-int}{}
-\registerctxluafile{mlib-lmt}{}
-
-\doifelsefileexists{mlib-cnt.lua}{\registerctxluafile{mlib-cnt}{}}{}
-\doifelsefileexists{mlib-svg.lua}{\registerctxluafile{mlib-svg}{}}{}
+\registerctxluafile{mlib-lua}{autosuffix}
+\registerctxluafile{mlib-mpf}{}
+\registerctxluafile{mlib-scn}{autosuffix}
+\registerctxluafile{mlib-mat}{autosuffix}
+\registerctxluafile{mlib-ran}{autosuffix}
+\registerctxluafile{mlib-lmp}{autosuffix}
+\registerctxluafile{mlib-int}{autosuffix}
+\registerctxluafile{mlib-lmt}{autosuffix}
+\registerctxluafile{mlib-cnt}{autosuffix,optimize}
+\registerctxluafile{mlib-svg}{autosuffix,optimize}
 
 \unprotect
 
 \protect \endinput
-

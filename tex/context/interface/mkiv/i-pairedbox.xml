@@ -137,36 +137,6 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setuplegend" level="document" category="tables" file="pack-com.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setuppairedbox"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="placelegend" level="document" category="tables" file="pack-com.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setuppairedbox"/>
-                </cd:assignments>
-                <cd:content/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="placelegend" type="environment" level="document" category="tables" file="pack-com.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setuppairedbox"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="placeontopofeachother" level="document" category="tables" file="pack-com.mkiv">
         <cd:arguments>
             <cd:content/>

@@ -400,3 +400,30 @@ implement {
     name      = "mptexreset",
     actions   = mptex.reset
 }
+
+-- moved from mlib-lua:
+
+mp = mp or {  -- system namespace
+    set    = { },
+    get    = { },
+    aux    = { },
+    scan   = { },
+    inject = { },
+}
+
+MP = MP or { } -- user namespace
+
+-- We had this:
+--
+--   table.setmetatablecall(mp,function(t,k) mpprint(k) end)
+--
+-- but the next one is more interesting because we cannot use calls like:
+--
+--   lua.mp.somedefdname("foo")
+--
+-- which is due to expansion of somedefdname during suffix creation. So:
+--
+--   lua.mp("somedefdname","foo")
+
+table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
+table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)

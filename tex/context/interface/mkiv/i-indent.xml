@@ -92,7 +92,7 @@
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
-        </cd:argument>
+        </cd:arguments>
     </cd:command>
 
 </cd:interface>

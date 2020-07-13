@@ -117,12 +117,6 @@
         </cd:sequence>
     </cd:command>
 
-    <!--
-
-        <cd:command name="hiding" type="environment" level="document" category="buffer" file="buff-ini.mkiv"/>
-
-    -->
-
     <cd:command name="processtexbuffer" level="style" category="buffer" file="buff-ini.mkiv">
         <cd:sequence>
             <cd:string value="processTEXbuffer"/>

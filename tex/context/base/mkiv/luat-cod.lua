@@ -59,9 +59,6 @@ local strip = false if arg then for i=-1,#arg do if arg[i] == "--c:strip" then s
 
 function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
-    if barename == filename then
-        filename = filename .. ".lua"
-    end
     local basename = match(barename,"^.+[/\\](.-)$") or barename
     if not bytedone[basename] then
         local opts = { }
@@ -69,6 +66,9 @@ function lua.registercode(filename,options)
             for s in gmatch(options,"([a-z]+)") do
                 opts[s] = true
             end
+        end
+        if barename == filename then
+            filename = filename .. (opts.autosuffix and CONTEXTLMTXMODE > 0 and ".lmt" or ".lua")
         end
         local code = environment.luafilechunk(filename,false,opts.optimize)
         if code then

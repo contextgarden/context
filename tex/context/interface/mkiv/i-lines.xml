@@ -112,18 +112,6 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="lines" type="environment" level="document" category="structure" file="spac-lin.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setuplines"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="emptylines" level="document" category="whitespace" file="spac-lin.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>

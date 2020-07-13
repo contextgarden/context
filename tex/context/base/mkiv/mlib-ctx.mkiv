@@ -15,12 +15,10 @@
 
 \registerctxluafile{mlib-run}{}
 \registerctxluafile{mlib-ctx}{}
-\registerctxluafile{mlib-lua}{}
-\registerctxluafile{mlib-lmp}{}
-\registerctxluafile{mlib-int}{}
-
-\doifelsefileexists{mlib-cnt.lua}{\registerctxluafile{mlib-cnt}{optimize}}{}
-\doifelsefileexists{mlib-svg.lua}{\registerctxluafile{mlib-svg}{optimize}}{}
+\registerctxluafile{mlib-lua}{autosuffix}
+\registerctxluafile{mlib-mpf}{}
+\registerctxluafile{mlib-lmp}{autosuffix}
+\registerctxluafile{mlib-int}{autosuffix}
 
 \unprotect
 

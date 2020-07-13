@@ -87,16 +87,6 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="unit" level="document" category="symbols" file="phys-dim.mkiv">
-            <cd:arguments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="installunitsseparator" level="system" category="symbols" file="phys-dim.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>

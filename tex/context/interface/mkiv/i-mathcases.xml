@@ -55,24 +55,4 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="mathcases" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathcases"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="cases" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathcases"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

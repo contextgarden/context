@@ -62,30 +62,4 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="tooltip" level="document" category="pdf" file="scrn-fld.mkvi">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setuptooltip"/>
-                </cd:assignments>
-                <cd:resolve name="argument-text"/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="tooltip" variant="argument" level="document" category="pdf" file="scrn-fld.mkvi">
-            <cd:arguments>
-                <cd:keywords optional="yes">
-                    <cd:constant type="left"/>
-                    <cd:constant type="middle"/>
-                    <cd:constant type="right"/>
-                </cd:keywords>
-                <cd:resolve name="argument-text"/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

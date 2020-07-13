@@ -138,26 +138,4 @@
 
     <cd:command name="placeattachments" level="document" category="pdf" file="scrn-wid.mkvi"/>
 
-    <!--
-
-        <cd:command name="attachment" level="document" category="pdf" file="scrn-wid.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-optional"/>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupattachment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="attachment" type="environment" level="document" category="pdf" file="scrn-wid.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-optional"/>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupattachment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

@@ -518,35 +518,6 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="footnote" type="environment" variant="assignment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="assignment-constructiondata-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="footnote" type="environment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="footnote" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference-list-optional"/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="footnote" variant="assignment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="assignment-constructiondata-list"/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="footnotetext" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
@@ -577,35 +548,6 @@
             </cd:assignments>
         </cd:arguments>
     </cd:command>
-
-    <!--
-
-        <cd:command name="endnote" type="environment" variant="assignment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="assignment-constructiondata-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="endnote" type="environment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="endnote" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference-list-optional"/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="endnote" variant="assignment" level="document" category="structure" keywords="notes" file="strc-not.mkvi">
-            <cd:arguments>
-                <cd:resolve name="assignment-constructiondata-list"/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
 
     <cd:command name="definelinenote" level="style" category="structure" keywords="notes" file="strc-lnt.mkvi">
         <cd:arguments>
@@ -695,29 +637,6 @@
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
-
-    <!--
-
-        <cd:command name="linenote" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
-            <cd:arguments>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="startlinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference"/>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="stoplinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference"/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
 
     <cd:command name="definetextnote" level="style" category="structure" keywords="notes" file="strc-tnt.mkiv">
         <cd:arguments>

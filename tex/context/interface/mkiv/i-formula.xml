@@ -207,34 +207,6 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="spformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-formula-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="sdformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-formula-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="mpformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-formula-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="mdformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-formula-list-optional"/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="defineformulaalternative" level="system" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>

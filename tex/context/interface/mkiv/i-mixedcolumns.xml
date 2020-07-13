@@ -119,18 +119,6 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="boxedcolumns" type="environment" level="document" category="columns" keywords="structure layout" file="page-mix.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmixedcolumns"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="setupcolumns" level="style" category="columns" keywords="structure layout" file="page-smp.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">

@@ -73,20 +73,4 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="shiftup" level="document" category="layout" file="node-rul.mkiv">
-            <cd:arguments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="shiftdown" level="document" category="layout" file="node-rul.mkiv">
-            <cd:arguments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

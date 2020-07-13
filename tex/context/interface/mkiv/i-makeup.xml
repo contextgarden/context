@@ -137,40 +137,4 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="standardmakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmakeup"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="textmakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmakeup"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="pagemakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmakeup"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="middlemakeup" type="environment" level="document" category="structure" keywords="layout" file="page-mak.mkvi">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmakeup"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

@@ -68,26 +68,6 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupTEXpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupfittingpage"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="setupMPpage" level="style" category="layout" keywords="background metapost" file="meta-fig.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupfittingpage"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="setupTEXpage" level="style" category="layout" keywords="background" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-setupfittingpage"/>

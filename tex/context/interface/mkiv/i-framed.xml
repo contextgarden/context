@@ -348,19 +348,6 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="unframed" level="document" category="rules" keywords="background" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupframed"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
     <cd:command name="definemathframed" level="style" category="rules" keywords="background mathematics" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
@@ -394,37 +381,6 @@
             <cd:resolve name="instance-mathframed"/>
         </cd:instances>
     </cd:command>
-
-    <!--
-
-        <cd:command name="mframed" level="document" category="rules" keywords="background mathematics" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathframed"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="inmframed" level="document" category="rules" keywords="background mathematics" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathframed"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="mcframed" level="document" category="rules" keywords="background mathematics" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathframed"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-    -->
 
     <cd:command name="defineformulaframed" level="style" category="rules" keywords="background mathematics" file="math-for.mkiv">
         <cd:arguments>
@@ -539,33 +495,6 @@
             <cd:resolve name="instance-framedtext"/>
         </cd:instances>
     </cd:command>
-
-    <!--
-
-        <cd:command name="framedtext" level="document" category="rules" keywords="background" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupframedtext"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="framedtext" type="environment" level="document" category="rules" keywords="background" file="pack-rul.mkiv">
-            <cd:arguments>
-                <cd:keywords optional="yes">
-                    <cd:constant type="left"/>
-                    <cd:constant type="right"/>
-                    <cd:constant type="middle"/>
-                    <cd:constant type="none"/>
-                </cd:keywords>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupframedtext"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
 
     <cd:command name="defineframedcontent" level="style" category="rules" keywords="background" file="pack-rul.mkiv">
         <cd:arguments>

@@ -16682,7 +16682,93 @@
   </cd:command>
   <cd:command begin="push" category="layout" end="pop" file="page-imp.mkiv" level="system" name="arrangedpages" type="environment"/>
  </cd:interface>
- <error/>
+ <cd:interface file="i-indent.xml">
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="defineindenting">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords list="yes">
+     <cd:constant method="none" prefix="cd:sign" type="small"/>
+     <cd:constant method="none" prefix="cd:sign" type="medium"/>
+     <cd:constant method="none" prefix="cd:sign" type="big"/>
+     <cd:constant type="none"/>
+     <cd:constant type="no"/>
+     <cd:constant type="not"/>
+     <cd:constant type="first"/>
+     <cd:constant type="next"/>
+     <cd:constant type="yes"/>
+     <cd:constant type="always"/>
+     <cd:constant type="never"/>
+     <cd:constant type="odd"/>
+     <cd:constant type="even"/>
+     <cd:constant type="normal"/>
+     <cd:constant type="reset"/>
+     <cd:constant type="toggle"/>
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="setupindenting">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant method="none" prefix="cd:sign" type="small"/>
+     <cd:constant method="none" prefix="cd:sign" type="medium"/>
+     <cd:constant method="none" prefix="cd:sign" type="big"/>
+     <cd:constant type="none"/>
+     <cd:constant type="no"/>
+     <cd:constant type="not"/>
+     <cd:constant type="first"/>
+     <cd:constant type="next"/>
+     <cd:constant type="yes"/>
+     <cd:constant type="always"/>
+     <cd:constant type="never"/>
+     <cd:constant type="odd"/>
+     <cd:constant type="even"/>
+     <cd:constant type="normal"/>
+     <cd:constant type="reset"/>
+     <cd:constant type="toggle"/>
+     <cd:constant type="cd:dimension"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="synchronizeindenting"/>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="useindentingparameter">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" coreprimitive="yes" file="spac-hor.mkiv" level="document" name="indentation"/>
+  <cd:command category="whitespace" coreprimitive="yes" file="spac-hor.mkiv" level="document" name="noindentation"/>
+  <cd:command category="whitespace" coreprimitive="yes" file="spac-hor.mkiv" level="system" name="doindentation"/>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="checknextindentation">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="yes"/>
+     <cd:constant type="no"/>
+     <cd:constant type="auto"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="useindentnextparameter">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="dorechecknextindentation"/>
+  <cd:command begin="push" category="whitespace" end="pop" file="spac-hor.mkiv" level="system" name="indentation" type="environment"/>
+  <cd:command category="whitespace" file="supp-box.lua" keywords="conditional" level="system" name="doifelseindented">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
  <cd:interface file="i-indentedtext.xml">
   <cd:command category="structure" file="strc-ind.mkiv" level="style" name="defineindentedtext">
    <cd:arguments>
@@ -25209,7 +25295,23 @@
     </cd:keywords>
    </cd:arguments>
    <cd:instances>
-    <cd:resolve name="instance-mathovertextextensible"/>
+    <cd:constant value="overleftarrow"/>
+    <cd:constant value="overrightarrow"/>
+    <cd:constant value="overleftrightarrow"/>
+    <cd:constant value="overtwoheadleftarrow"/>
+    <cd:constant value="overtwoheadrightarrow"/>
+    <cd:constant value="overleftharpoondown"/>
+    <cd:constant value="overleftharpoonup"/>
+    <cd:constant value="overrightharpoondown"/>
+    <cd:constant value="overrightharpoonup"/>
+    <cd:constant value="overbar"/>
+    <cd:constant value="overbrace"/>
+    <cd:constant value="overparent"/>
+    <cd:constant value="overbracket"/>
+    <cd:constant value="overbartext"/>
+    <cd:constant value="overbracetext"/>
+    <cd:constant value="overparenttext"/>
+    <cd:constant value="overbrackettext"/>
    </cd:instances>
   </cd:command>
   <cd:command category="mathematics" file="math-sty.mkvi" level="system" name="definemathundertextextensible">
@@ -25238,7 +25340,23 @@
     </cd:keywords>
    </cd:arguments>
    <cd:instances>
-    <cd:resolve name="instance-mathundertextextensible"/>
+    <cd:constant value="underleftarrow"/>
+    <cd:constant value="underrightarrow"/>
+    <cd:constant value="underleftrightarrow"/>
+    <cd:constant value="undertwoheadleftarrow"/>
+    <cd:constant value="undertwoheadrightarrow"/>
+    <cd:constant value="underleftharpoondown"/>
+    <cd:constant value="underleftharpoonup"/>
+    <cd:constant value="underrightharpoondown"/>
+    <cd:constant value="underrightharpoonup"/>
+    <cd:constant value="underbar"/>
+    <cd:constant value="underbrace"/>
+    <cd:constant value="underparent"/>
+    <cd:constant value="underbracket"/>
+    <cd:constant value="underbartext"/>
+    <cd:constant value="underbracetext"/>
+    <cd:constant value="underparenttext"/>
+    <cd:constant value="underbrackettext"/>
    </cd:instances>
   </cd:command>
   <cd:command category="mathematics" file="math-sty.mkvi" level="system" name="definemathtriplet">

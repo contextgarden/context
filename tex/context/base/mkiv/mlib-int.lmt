@@ -1,0 +1,130 @@
+if not modules then modules = { } end modules ['mlib-int'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local factor         = number.dimenfactors.bp
+local mpstring       = mp.string
+local getdimen       = tex.getdimen
+local getcount       = tex.getcount
+local getmacro       = tokens.getters.macro
+local get            = tex.get
+local emwidths       = fonts.hashes.emwidths
+local exheights      = fonts.hashes.exheights
+
+local registerscript = metapost.registerscript
+
+local on_right_page  = structures.pages.on_right
+local is_odd_page    = structures.pages.is_odd
+local in_body_page   = structures.pages.in_body
+local page_fraction  = structures.pages.fraction
+
+local function defaultcolormodel() -- can be helper
+    local colormethod = getcount("MPcolormethod")
+    return (colormethod == 0 or colormethod == 1) and 1 or 3
+end
+
+local t = os.date("*t") -- maybe this should be a very early on global
+
+registerscript("year",   function() return t.year  end)
+registerscript("month",  function() return t.month end)
+registerscript("day",    function() return t.day   end)
+registerscript("hour",   function() return t.hour  end)
+registerscript("minute", function() return t.min   end)
+registerscript("second", function() return t.sec   end)
+
+registerscript("PaperHeight",          function() return getdimen("paperheight")          * factor end)
+registerscript("PaperWidth",           function() return getdimen("paperwidth")           * factor end)
+registerscript("PrintPaperHeight",     function() return getdimen("printpaperheight")     * factor end)
+registerscript("PrintPaperWidth",      function() return getdimen("printpaperwidth")      * factor end)
+registerscript("TopSpace",             function() return getdimen("topspace")             * factor end)
+registerscript("BottomSpace",          function() return getdimen("bottomspace")          * factor end)
+registerscript("BackSpace",            function() return getdimen("backspace")            * factor end)
+registerscript("CutSpace",             function() return getdimen("cutspace")             * factor end)
+registerscript("MakeupHeight",         function() return getdimen("makeupheight")         * factor end)
+registerscript("MakeupWidth",          function() return getdimen("makeupwidth")          * factor end)
+registerscript("TopHeight",            function() return getdimen("topheight")            * factor end)
+registerscript("TopDistance",          function() return getdimen("topdistance")          * factor end)
+registerscript("HeaderHeight",         function() return getdimen("headerheight")         * factor end)
+registerscript("HeaderDistance",       function() return getdimen("headerdistance")       * factor end)
+registerscript("TextHeight",           function() return getdimen("textheight")           * factor end)
+registerscript("FooterDistance",       function() return getdimen("footerdistance")       * factor end)
+registerscript("FooterHeight",         function() return getdimen("footerheight")         * factor end)
+registerscript("BottomDistance",       function() return getdimen("bottomdistance")       * factor end)
+registerscript("BottomHeight",         function() return getdimen("bottomheight")         * factor end)
+registerscript("LeftEdgeWidth",        function() return getdimen("leftedgewidth")        * factor end)
+registerscript("LeftEdgeDistance",     function() return getdimen("leftedgedistance")     * factor end)
+registerscript("LeftMarginWidth",      function() return getdimen("leftmarginwidth")      * factor end)
+registerscript("LeftMarginDistance",   function() return getdimen("leftmargindistance")   * factor end)
+registerscript("TextWidth",            function() return getdimen("textwidth")            * factor end)
+registerscript("RightMarginDistance",  function() return getdimen("rightmargindistance")  * factor end)
+registerscript("RightMarginWidth",     function() return getdimen("rightmarginwidth")     * factor end)
+registerscript("RightEdgeDistance",    function() return getdimen("rightedgedistance")    * factor end)
+registerscript("RightEdgeWidth",       function() return getdimen("rightedgewidth")       * factor end)
+registerscript("InnerMarginDistance",  function() return getdimen("innermargindistance")  * factor end)
+registerscript("InnerMarginWidth",     function() return getdimen("innermarginwidth")     * factor end)
+registerscript("OuterMarginDistance",  function() return getdimen("outermargindistance")  * factor end)
+registerscript("OuterMarginWidth",     function() return getdimen("outermarginwidth")     * factor end)
+registerscript("InnerEdgeDistance",    function() return getdimen("inneredgedistance")    * factor end)
+registerscript("InnerEdgeWidth",       function() return getdimen("inneredgewidth")       * factor end)
+registerscript("OuterEdgeDistance",    function() return getdimen("outeredgedistance")    * factor end)
+registerscript("OuterEdgeWidth",       function() return getdimen("outeredgewidth")       * factor end)
+registerscript("PageOffset",           function() return getdimen("pagebackgroundoffset") * factor end)
+registerscript("PageDepth",            function() return getdimen("pagebackgrounddepth")  * factor end)
+registerscript("LayoutColumns",        function() return getcount("layoutcolumns")                 end)
+registerscript("LayoutColumnDistance", function() return getdimen("layoutcolumndistance") * factor end)
+registerscript("LayoutColumnWidth",    function() return getdimen("layoutcolumnwidth")    * factor end)
+registerscript("SpineWidth",           function() return getdimen("spinewidth")           * factor end)
+registerscript("PaperBleed",           function() return getdimen("paperbleed")           * factor end)
+
+registerscript("RealPageNumber",       function() return getcount("realpageno")                    end)
+registerscript("LastPageNumber",       function() return getcount("lastpageno")                    end)
+
+registerscript("PageNumber",           function() return getcount("pageno")                        end)
+registerscript("NOfPages",             function() return getcount("lastpageno")                    end)
+
+registerscript("SubPageNumber",        function() return getcount("subpageno")                     end)
+registerscript("NOfSubPages",          function() return getcount("lastsubpageno")                 end)
+
+registerscript("CurrentColumn",        function() return getcount("mofcolumns")                    end)
+registerscript("NOfColumns",           function() return getcount("nofcolumns")                    end)
+
+registerscript("BaseLineSkip",         function() return get     ("baselineskip",true)    * factor end)
+registerscript("LineHeight",           function() return getdimen("lineheight")           * factor end)
+registerscript("BodyFontSize",         function() return getdimen("bodyfontsize")         * factor end)
+
+registerscript("TopSkip",              function() return get     ("topskip",true)         * factor end)
+registerscript("StrutHeight",          function() return getdimen("strutht")              * factor end)
+registerscript("StrutDepth",           function() return getdimen("strutdp")              * factor end)
+
+registerscript("PageNumber",           function() return getcount("pageno")                        end)
+registerscript("RealPageNumber",       function() return getcount("realpageno")                    end)
+registerscript("NOfPages",             function() return getcount("lastpageno")                    end)
+
+registerscript("CurrentWidth",         function() return get     ("hsize")                * factor end)
+registerscript("CurrentHeight",        function() return get     ("vsize")                * factor end)
+
+registerscript("EmWidth",              function() return emwidths [false]                 * factor end)
+registerscript("ExHeight",             function() return exheights[false]                 * factor end)
+
+registerscript("HSize",                function() return get     ("hsize")                * factor end)
+registerscript("VSize",                function() return get     ("vsize")                * factor end)
+registerscript("LastPageNumber",       function() return getcount("lastpageno")                    end)
+
+registerscript("OverlayWidth",         function() return getdimen("d_overlay_width")      * factor end)
+registerscript("OverlayHeight",        function() return getdimen("d_overlay_height")     * factor end)
+registerscript("OverlayDepth",         function() return getdimen("d_overlay_depth")      * factor end)
+registerscript("OverlayLineWidth",     function() return getdimen("d_overlay_linewidth")  * factor end)
+registerscript("OverlayOffset",        function() return getdimen("d_overlay_offset")     * factor end)
+registerscript("OverlayRegion",        function() mpstring(getmacro("m_overlay_region"))           end)
+--------------("CurrentLayout",        function() mpstring(getmacro("currentlayout"))              end)
+
+registerscript("PageFraction",         page_fraction)
+registerscript("OnRightPage",          on_right_page)
+registerscript("OnOddPage",            is_odd_page  )
+registerscript("InPageBody",           in_body_page )
+
+registerscript("defaultcolormodel",    defaultcolormodel)

@@ -67,24 +67,4 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="mathalignment" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathalignment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="align" type="environment" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmathalignment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

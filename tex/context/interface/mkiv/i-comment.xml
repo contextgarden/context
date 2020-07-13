@@ -130,27 +130,4 @@
 
     <cd:command name="placecomments" level="document" category="pdf" file="scrn-wid.mkvi"/>
 
-    <!--
-
-        <cd:command name="comment" level="document" category="pdf" file="scrn-wid.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-text-optional"/>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupcomment"/>
-                </cd:assignments>
-                <cd:resolve name="argument-text"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="comment" type="environment" level="document" category="pdf" file="scrn-wid.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-text-optional"/>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupcomment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

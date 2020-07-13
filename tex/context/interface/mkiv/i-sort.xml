@@ -177,31 +177,4 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="logo" level="document" category="language" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-optional"/>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="placelistoflogos" level="document" category="language" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupsorting"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="completelistoflogos" level="document" category="language" file="strc-syn.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupsorting"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
 </cd:interface>

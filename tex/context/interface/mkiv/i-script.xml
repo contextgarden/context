@@ -90,22 +90,4 @@
         </cd:instances>
     </cd:command>
 
-    <!--
-
-        <cd:command name="hangul" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="hanzi" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="nihongo" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="ethiopic" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="thai" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="latin" level="document" category="language" file="scrp-ini.mkvi"/>
-
-        <cd:command name="test" level="document" category="language" file="scrp-ini.mkvi"/>
-
-    -->
-
 </cd:interface>

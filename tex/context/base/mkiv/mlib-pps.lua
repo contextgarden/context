@@ -964,8 +964,8 @@ local tx_reset, tx_process  do
     -- instance in a macro definition (rawtextext (pass back string)) ... of course one
     -- should use textext so this is just a catch. When not in lmtx it's never immediate.
 
-    local reported  = false
-    local awayswrap = CONTEXTLMTXMODE <= 1
+    local reported   = false
+    local alwayswrap = false -- CONTEXTLMTXMODE <= 1 -- was always nil due to typo
 
     function metapost.maketext(s,mode)
         if not reported then
