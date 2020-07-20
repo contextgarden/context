@@ -818,14 +818,20 @@ do
         end
     end
 
+    -- A problem is that we need to transfer back and this is kind of
+    -- messy so we force text mode .. i'll do a better job on that but
+    -- will experiment first (both engines). Virtual fonts will change
+    -- anyway.
+
     backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 
         startcolor = startcolor,
      -- stopcolor  = { "pdf", "page", "0 g 0 G Q" },
-        stopcolor  = { "pdf", "page", "Q" },
+        stopcolor  = { "pdf", "text", "Q" },
 
         startslant = startslant,
-        stopslant  = { "pdf", "origin", "Q" },
+     -- stopslant  = { "pdf", "origin", "Q" },
+        stopslant  = { "pdf", "text", "Q" },
 
     }
 

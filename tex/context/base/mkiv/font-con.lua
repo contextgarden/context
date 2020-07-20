@@ -566,6 +566,15 @@ function constructors.scale(tfmdata,specification)
     targetparameters.quad          = targetquad
     targetparameters.extra_space   = targetextra_space
     --
+    local hshift = parameters.hshift
+    if hshift then
+        targetparameters.hshift = delta * hshift
+    end
+    local vshift = parameters.vshift
+    if vshift then
+        targetparameters.vshift = delta * vshift
+    end
+    --
     local ascender = parameters.ascender
     if ascender then
         targetparameters.ascender  = delta * ascender

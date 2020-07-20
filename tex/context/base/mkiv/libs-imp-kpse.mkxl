@@ -15,7 +15,7 @@
 %D know when it comes in handy; probably never in a real run, but I might want to
 %D make a \LUAMETATEX\ plain format one day, just for the fun of it.
 
-% \registerctxluafile{libs-imp-kpse}{}
+% \registerctxluafile{libs-imp-kpse}{autosuffix}
 
 \continueifinputfile{libs-imp-kpse.mkxl}
 

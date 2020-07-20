@@ -47,58 +47,22 @@ local v_none             = variables.none
 
 -- boundingbox={yes|background|frame|empty|<color>}
 
-local bp  = number.dimenfactors.bp
-local r   = 16384 * bp -- 65536 // 4
-local f_1 = formatters["%.6F w 0 %.6F %.6F %.6F re f"]
-local f_2 = formatters["[] 0 d 0 J %.6F w %.6F %.6F %.6F %.6F re S"]
-
--- change this into w h d instead of h d w
-
-local backcache = setmetatableindex(function(t,h)
-    local h = h * bp
-    local v = setmetatableindex(function(t,d)
-        local d = d * bp
-        local v = setmetatableindex(function(t,w)
-            local v = { "pdf", "origin", f_1(r,-d,w*bp,h+d) }
-            t[w] = v
-            return v
-        end)
-        t[d] = v
-        return v
-    end)
-    t[h] = v
-    return v
-end)
-
-local forecache = setmetatableindex(function(t,h)
-    local h = h * bp
-    local v = setmetatableindex(function(t,d)
-        local d = d * bp
-        local v = setmetatableindex(function(t,w)
-            -- the frame goes through the boundingbox
-            local v = { "pdf", "origin", f_2(r,r/2,-d+r/2,w*bp-r,h+d-r) }
-            t[w] = v
-            return v
-        end)
-        t[d] = v
-        return v
-    end)
-    t[h] = v
-    return v
-end)
-
-local startcolor = nil
-local stopcolor  = nil
+local backgrounds = nil
+local outlines    = nil
+local startcolor  = nil
+local stopcolor   = nil
 
 local function initialize(tfmdata,key,value)
     if value then
-        if not backcolors then
+        if not backgrounds then
             local vfspecials = backends.pdf.tables.vfspecials
-            startcolor = vfspecials.startcolor
-            stopcolor  = vfspecials.stopcolor
+            startcolor  = vfspecials.startcolor
+            stopcolor   = vfspecials.stopcolor
+            backgrounds = vfspecials.backgrounds
+            outlines    = vfspecials.outlines
         end
         local characters = tfmdata.characters
-        local rulecache  = backcache
+        local rulecache  = backgrounds
         local showchar   = true
         local color      = "palegray"
         if type(value) == "string" then
@@ -106,9 +70,9 @@ local function initialize(tfmdata,key,value)
             for i=1,#value do
                 local v = value[i]
                 if v == v_frame then
-                    rulecache = forecache
+                    rulecache = outlines
                 elseif v == v_background then
-                    rulecache = backcache
+                    rulecache = backgrounds
                 elseif v == v_empty then
                     showchar = false
                 elseif v == v_none then

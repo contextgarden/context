@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Anchoring}
 
-\registerctxluafile{pack-ori}{}
+\registerctxluafile{pack-ori}{autosuffix}
 
 \unprotect
 

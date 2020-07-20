@@ -13,10 +13,10 @@ if not modules then modules = { } end modules ['libs-ini'] = {
 -- is doing.
 
 local type, unpack = type, unpack
+local find = string.find
 
 -- here we implement the resolver
 
-local type = type
 
 local nameonly      = file.nameonly
 local joinfile      = file.join
@@ -196,3 +196,19 @@ end
 --         }
 --     end
 -- }
+
+local dofile       = dofile
+local savedrequire = require
+
+function require(name,version)
+    if find(name,"%.lua$") or find(name,"%.lmt$") then
+        local m = dofile(findfile(name))
+        if m then
+            package.loaded[name] = m
+            return m
+        end
+    else
+        return savedrequire(name)
+    end
+end
+

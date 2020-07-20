@@ -687,23 +687,17 @@
        \else
          \colo_helpers_set_model\s!rgb
        \fi
-     \else
-       \ifconditional\c_colo_cmyk_supported
-         \colo_helpers_set_model\s!cmyk
-       \else
-         \ifconditional\c_colo_convert_gray
-           \colo_helpers_set_model\s!gray
-         \else
-           \colo_helpers_set_model\s!none
-         \fi
-       \fi
-     \fi
-   \else
-     \ifconditional\c_colo_convert_gray
+     \orelse\ifconditional\c_colo_cmyk_supported
+       \colo_helpers_set_model\s!cmyk
+     \orelse\ifconditional\c_colo_convert_gray
        \colo_helpers_set_model\s!gray
      \else
        \colo_helpers_set_model\s!none
      \fi
+   \orelse\ifconditional\c_colo_convert_gray
+     \colo_helpers_set_model\s!gray
+   \else
+     \colo_helpers_set_model\s!none
    \fi}
 
 %D Currently in mkiv transparency is implemented independent of color. This costs a
@@ -846,9 +840,10 @@
   {\advance\c_colo_protection\minusone}
 
 \def\colo_basics_define[#1][#2]%
-  {\edef\m_colo_old{#1}%
-   \edef\m_colo_new{#2}%
-   \ifx\m_colo_old\m_colo_new
+% {\edef\m_colo_old{#1}%
+%  \edef\m_colo_new{#2}%
+%  \ifx\m_colo_old\m_colo_new
+  {\iftok{#1}{#2}%
      % maybe a warning
    \else
      \clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
@@ -859,9 +854,10 @@
    \fi}
 
 \def\colo_basics_define_global[#1][#2]%
-  {\edef\m_colo_old{#1}%
-   \edef\m_colo_new{#2}%
-   \ifx\m_colo_old\m_colo_new
+% {\edef\m_colo_old{#1}%
+%  \edef\m_colo_new{#2}%
+%  \ifx\m_colo_old\m_colo_new
+  {\iftok{#1}{#2}%
      % maybe a warning
    \else
      \clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
@@ -1284,25 +1280,40 @@
 
 \def\thecolorattribute       #1{\number\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
 \def\thetransparencyattribute#1{\number\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}
-\def\internalspotcolorname   #1{\clf_spotcolorname  \thecolorattribute{#1} }
-\def\internalspotcolorparent #1{\clf_spotcolorparent\thecolorattribute{#1} }
-\def\internalspotcolorsize   #1{\clf_spotcolorvalue \thecolorattribute{#1} }
 
-\def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute       {#1} }
-\def\transparencycomponents  #1{\clf_transparencycomponents\thetransparencyattribute{#1} }
-\def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute       {#1} }
+% \def\internalspotcolorname   #1{\clf_spotcolorname  \thecolorattribute{#1} }
+% \def\internalspotcolorparent #1{\clf_spotcolorparent\thecolorattribute{#1} }
+% \def\internalspotcolorsize   #1{\clf_spotcolorvalue \thecolorattribute{#1} }
+%
+% \def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute       {#1} }
+% \def\transparencycomponents  #1{\clf_transparencycomponents\thetransparencyattribute{#1} }
+% \def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute       {#1} }
+%
+% \def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
+% \def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}
+%
+% \def\doifelseblack           #1{\clf_doifelseblack\thecolorattribute{#1} }
+% \def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
+%
+% \let\doifblackelse        \doifelseblack
+% \let\doifdrawingblackelse \doifelsedrawingblack
 
-\def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
-\def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}
+\def\internalspotcolorname   #1{\clf_spotcolorname  \rawcolorattribute{#1}}
+\def\internalspotcolorparent #1{\clf_spotcolorparent\rawcolorattribute{#1}}
+\def\internalspotcolorsize   #1{\clf_spotcolorvalue \rawcolorattribute{#1}}
 
-\def\doifelseblack           #1{\clf_doifelseblack\thecolorattribute{#1} }
+\def\colorcomponents         #1{\clf_colorcomponents       \rawcolorattribute       {#1}}
+\def\transparencycomponents  #1{\clf_transparencycomponents\rawtransparencyattribute{#1}}
+\def\processcolorcomponents  #1{\clf_processcolorcomponents\rawcolorattribute       {#1}}
+
+\def\colorvalue              #1{\clf_formatcolor\rawcolorattribute{#1}{\colorformatseparator}}
+\def\grayvalue               #1{\clf_formatgray \rawcolorattribute{#1}{\colorformatseparator}}
+
+\def\doifelseblack           #1{\clf_doifelseblack\rawcolorattribute{#1}}
 \def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
 
 \let\doifblackelse        \doifelseblack
 \let\doifdrawingblackelse \doifelsedrawingblack
-
-\let\doifblackelse       \doifelseblack
-\let\doifdrawingblackelse\doifelsedrawingblack
 
 %D \macros
 %D   {forcecolorhack}
@@ -1328,7 +1339,7 @@
 %
 % I really need to sort this out!
 
-\unexpanded\def\forcecolorhack{\leaders\hrule height\zeropoint depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
+\unexpanded\def\forcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
 
 %D We default to the colors defined in \type {colo-imp-rgb} and
 %D support both \RGB\ and \CMYK\ output. Transparencies are defined

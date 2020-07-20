@@ -1,0 +1,107 @@
+if not modules then modules = { } end modules ['node-gmc'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type, tostring = type, tostring
+
+local nodes         = nodes
+local ligature_code = nodes.glyphcodes.ligature
+local nuts          = nodes.nuts
+
+local getnext       = nuts.getnext
+local getsubtype    = nuts.getsubtype
+local copy_node     = nuts.copy
+local count         = nuts.count
+local isglyph       = nuts.isglyph
+local getprop       = nuts.getprop
+local setprop       = nuts.setprop
+
+local fastcopy      = table.fastcopy
+
+local report_error  = logs.reporter("node-aux:error")
+
+local function set_components(base,list)
+    local t = { }
+    local n = 0
+    while list do
+        local char = isglyph(list)
+        if char then
+            n = n + 1
+            t[n] = char
+        end
+        list = getnext(list)
+    end
+    setprop(base,"components",n > 0 and t or false)
+end
+
+local function get_components(base)
+    return getprop(base,"components")
+end
+
+local function copy_no_components(base)
+    local copy = copy_node(base)
+    setprop(copy,"components",false) -- no metatable lookup!
+    return copy
+end
+
+local function copy_only_glyphs(base)
+    local t = getprop(base,"components") -- also metatable
+    if t then
+        return fastcopy(t)
+    end
+end
+
+local function do_count(t,marks)
+    local n = 0
+    if t then
+        for i=1,#t do
+            local c = t[i]
+            if type(c) == "table" then
+                n = n + do_count(t,marks)
+            elseif not marks[c] then
+                n = n + 1
+            else
+                --marks don't count
+            end
+        end
+    end
+    return n
+end
+
+-- start is a mark and we need to keep that one
+
+local done = false
+
+local function count_components(base,marks)
+    local char = isglyph(base)
+    if char then
+        if getsubtype(base) == ligature_code then
+            if not done then
+                logs.report("fonts","!")
+                logs.report("fonts","! check count_components with mkiv !")
+                logs.report("fonts","!")
+                done = true
+            end
+            local t = getprop(base,"components")
+            if t then
+                return do_count(t,marks)
+            end
+        elseif not marks[char] then
+            return 1
+        end
+    end
+    return 0
+end
+
+nuts.set_components     = set_components
+nuts.get_components     = get_components
+nuts.copy_only_glyphs   = copy_only_glyphs
+nuts.copy_no_components = copy_no_components
+nuts.count_components   = count_components
+
+nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
+nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end

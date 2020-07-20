@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-07-13 23:44
+-- merge date  : 2020-07-20 10:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -9229,6 +9229,14 @@ function constructors.scale(tfmdata,specification)
  targetparameters.x_height=targetx_height
  targetparameters.quad=targetquad
  targetparameters.extra_space=targetextra_space
+ local hshift=parameters.hshift
+ if hshift then
+  targetparameters.hshift=delta*hshift
+ end
+ local vshift=parameters.vshift
+ if vshift then
+  targetparameters.vshift=delta*vshift
+ end
  local ascender=parameters.ascender
  if ascender then
   targetparameters.ascender=delta*ascender
@@ -12712,6 +12720,7 @@ function readers.loadfont(filename,n,instance)
     hascolor=fontdata.hascolor or false,
     instance=fontdata.instance,
     factors=fontdata.factors,
+    nofsubfonts=fontdata.subfonts and #fontdata.subfonts or nil,
    },
    resources={
     filename=filename,
@@ -37105,6 +37114,7 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
   end
  end
 end
+local shiftmode=CONTEXTLMTXMODE>0
 local function manipulateeffect(tfmdata)
  local effect=tfmdata.properties.effect
  if effect then
@@ -37126,38 +37136,45 @@ local function manipulateeffect(tfmdata)
   local factor=(1+effect.factor)*factor
   local hfactor=(1+effect.hfactor)*hfactor
   local vfactor=(1+effect.vfactor)*vfactor
-  local vshift=vshift~=0 and upcommand[vshift] or false
+  if shiftmode then
+   parameters.hshift=hshift
+   parameters.vshift=vshift
+  else
+   vshift=vshift~=0 and upcommand[vshift] or false
+   hshift=rightcommand[hshift]
+  end
   for unicode,character in next,characters do
    local oldwidth=character.width
    local oldheight=character.height
    local olddepth=character.depth
    if oldwidth and oldwidth>0 then
     character.width=oldwidth+wdelta
-    local commands=character.commands
-    local hshift=rightcommand[hshift]
-    if vshift then
-     if commands then
-      prependcommands (commands,
-       hshift,
-       vshift
-      )
+    if not shiftmode then
+     local commands=character.commands
+     if vshift then
+      if commands then
+       prependcommands (commands,
+        hshift,
+        vshift
+       )
+      else
+       character.commands={
+        hshift,
+        vshift,
+        charcommand[unicode]
+       }
+      end
      else
-      character.commands={
-       hshift,
-       vshift,
-       charcommand[unicode]
-      }
-     end
-    else
-     if commands then
-      prependcommands (commands,
-       hshift
-      )
-     else
-      character.commands={
-       hshift,
-       charcommand[unicode]
-      }
+      if commands then
+        prependcommands (commands,
+         hshift
+        )
+      else
+       character.commands={
+        hshift,
+        charcommand[unicode]
+        }
+      end
      end
     end
    end

@@ -228,8 +228,13 @@ local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
     return rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
 end
 
-local function flushsimplerule(current, pos_h, pos_v, pos_r, size_h, size_v)
+local function flushsimplerule(pos_h, pos_v, pos_r, size_h, size_v)
     return rule(pos_h, pos_v, pos_r, size_h, size_v, "normal", nil)
+end
+
+local function flushspecialrule(pos_h, pos_v, pos_r, w, h, d, l, outline)
+    -- no l support yet
+    return rule(pos_h, pos_v - d, pos_r, w, h + d, outline and "outline" or "normal")
 end
 
 -- file stuff too
@@ -253,6 +258,8 @@ drivers.install {
         updatefontstate = updatefontstate,
         character       = flushcharacter,
         rule            = flushrule,
+        simplerule      = flushsimplerule,
+        specialrule     = flushspecialrule,
     }
 }
 
@@ -300,6 +307,8 @@ drivers.install {
         updatefontstate = updatefontstate,
         character       = flushcharacter,
         rule            = flushrule,
+        simplerule      = flushsimplerule,
+        specialrule     = flushspecialrule,
     }
 }
 
@@ -351,5 +360,7 @@ drivers.install {
         updatefontstate = updatefontstate,
         character       = flushcharacter,
         rule            = flushrule,
+        simplerule      = flushsimplerule,
+        specialrule     = flushspecialrule,
     }
 }

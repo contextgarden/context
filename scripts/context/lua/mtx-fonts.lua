@@ -486,11 +486,16 @@ function scripts.fonts.convert() -- new save
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
                 local data = fonts.handlers.otf.readers.loadfont(filename,sub)
                 if data then
+                    local nofsubfonts = data and data.properties and data.properties.nofsubfonts or 0
                     fonts.handlers.otf.readers.compact(data)
                     fonts.handlers.otf.readers.rehash(data,getargument("names") and "names" or "unicodes")
                     local savename = replacesuffix(lower(data.metadata.fullname or filename),"lua")
                     table.save(savename,data)
-                    report("font: %a saved as %a",filename,savename)
+                    if nofsubfonts == 0 then
+                        report("font: %a saved as %a",filename,savename)
+                    else
+                        report("font: %a saved as %a, %i subfonts found, provide number if wanted",filename,savename,nofsubfonts)
+                    end
                 else
                     report("font: %a not loaded",filename)
                 end

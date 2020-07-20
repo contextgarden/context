@@ -1,0 +1,117 @@
+if not modules then modules = { } end modules ['syst-mac'] = {
+    version   = 1.001,
+    comment   = "companion to syst-aux.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is kind of tricky and might not work for all csnames but as long as we use
+-- it in a controlled way, we're okay. The engine implementation might be changed
+-- a bit (no need to go through strings, but fetching a cs index and passing that
+-- back also takes time).
+
+-- Another approach is to have the predefined stack operate use private stacks and
+-- then the pop doesn't need the cs. But ... we then also need to store stuff in
+-- the format so that complicates maters more than I'm willing to do.
+
+local insert, remove = table.insert, table.remove
+
+local push_macro   = token.push_macro
+local pop_macro    = token.pop_macro
+local scan_csname  = token.scan_csname
+local create_token = token.create
+local gobble_token = token.gobble
+
+local context      = context
+local implement    = interfaces.implement
+
+local report       = logs.reporter("system","macrostack")
+
+local stack        = table.setmetatableindex("table")
+
+local function pushmacro(name,global)
+    local s = push_macro(name,global)
+    if s then
+        insert(stack[name],s)
+    else
+        report("no macro %a",name)
+        insert(stack[name],false)
+    end
+end
+
+local function popmacro(name)
+    local s = remove(stack[name])
+    if s then
+        pop_macro(s)
+    else
+        -- error
+    end
+end
+
+tokens.pushmacro = pushmacro
+tokens.popmacro  = popmacro
+
+implement {
+    name      = "localpushmacro",
+    public    = true,
+    protected = true,
+    actions   = function()
+        pushmacro(scan_csname())
+    end
+}
+
+implement {
+    name      = "globalpushmacro",
+    public    = true,
+    protected = true,
+    actions   = function()
+        pushmacro(scan_csname(),true)
+    end
+}
+
+implement {
+    name      = "localpopmacro",
+    public    = true,
+    protected = true,
+    actions   = function()
+        popmacro(scan_csname())
+    end
+}
+
+implement {
+    name      = "globalpopmacro",
+    public    = true,
+    protected = true,
+    actions   = function()
+        popmacro(scan_csname())
+    end
+}
+
+implement {
+    name      = "showmacrostack",
+    public    = true,
+    protected = true,
+    actions   = function()
+        local n = scan_csname()
+        local s = stack[n]
+        local m = #s
+        report("%s : %i stack slots used",n,m)
+        for i=1,m do
+            report("% 3i %S",i,s[i])
+        end
+    end
+}
+
+implement {
+    name      = "gobblenested",
+    public    = true,
+    protected = true,
+    arguments = "3 strings",
+    actions   = function(start,stop,command)
+        gobble_token(create_token(start),create_token(stop))
+        if command then
+            context[command]()
+        end
+    end
+}

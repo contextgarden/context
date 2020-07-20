@@ -22,7 +22,6 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
 local localpar_code      = nodecodes.localpar
-local ligatureglyph_code = nodes.glyphcodes.ligature
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -48,7 +47,6 @@ local setlink            = nuts.setlink
 local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
-local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
 local traversers         = nuts.traversers
@@ -381,162 +379,6 @@ nuts.rehpack = rehpack
 function nodes.rehpack(n,...)
     rehpack(tonut(n),...)
 end
-
-if CONTEXTLMTXMODE > 0 then
-
-    local fastcopy = table.fastcopy
-    local getprop  = nuts.getprop
-    local setprop  = nuts.setprop
-
-    local function set_components(base,list)
-        local t = { }
-        local n = 0
-        while list do
-            local char = isglyph(list)
-            if char then
-                n = n + 1
-                t[n] = char
-            end
-            list = getnext(list)
-        end
-        setprop(base,"components",n > 0 and t or false)
-    end
-
-    local function get_components(base)
-        return getprop(base,"components")
-    end
-
-    local function copy_no_components(base)
-        local copy = copy_node(base)
-        setprop(copy,"components",false) -- no metatable lookup!
-        return copy
-    end
-
-    local function copy_only_glyphs(base)
-        local t = getprop(base,"components") -- also metatable
-        if t then
-            return fastcopy(t)
-        end
-    end
-
-    local function do_count(t,marks)
-        local n = 0
-        if t then
-            for i=1,#t do
-                local c = t[i]
-                if type(c) == "table" then
-                    n = n + do_count(t,marks)
-                elseif not marks[c] then
-                    n = n + 1
-                else
-                    --marks don't count
-                end
-            end
-        end
-        return n
-    end
-
-    -- start is a mark and we need to keep that one
-
-    local done = false
-
-    local function count_components(base,marks)
-        local char = isglyph(base)
-        if char then
-            if getsubtype(base) == ligatureglyph_code then
-                if not done then
-                    logs.report("fonts","!")
-                    logs.report("fonts","! check count_components with mkiv !")
-                    logs.report("fonts","!")
-                    done = true
-                end
-                local t = getprop(base,"components")
-                if t then
-                    return do_count(t,marks)
-                end
-            elseif not marks[char] then
-                return 1
-            end
-        end
-        return 0
-    end
-
-    nuts.set_components     = set_components
-    nuts.get_components     = get_components
-    nuts.copy_only_glyphs   = copy_only_glyphs
-    nuts.copy_no_components = copy_no_components
-    nuts.count_components   = count_components
-
-else
-
-    local get_components = node.direct.getcomponents
-    local set_components = node.direct.setcomponents
-
-    local function copy_no_components(g,copyinjection)
-        local components = get_components(g)
-        if components then
-            set_components(g)
-            local n = copy_node(g)
-            if copyinjection then
-                copyinjection(n,g)
-            end
-            set_components(g,components)
-            -- maybe also upgrade the subtype but we don't use it anyway
-            return n
-        else
-            local n = copy_node(g)
-            if copyinjection then
-                copyinjection(n,g)
-            end
-            return n
-        end
-    end
-
-    local function copy_only_glyphs(current)
-        local head     = nil
-        local previous = nil
-        for n in nextglyph, current do
-            n = copy_node(n)
-            if head then
-                setlink(previous,n)
-            else
-                head = n
-            end
-            previous = n
-        end
-        return head
-    end
-
-    -- start is a mark and we need to keep that one
-
-    local function count_components(start,marks)
-        local char = isglyph(start)
-        if char then
-            if getsubtype(start) == ligatureglyph_code then
-                local n = 0
-                local components = get_components(start)
-                while components do
-                    n = n + count_components(components,marks)
-                    components = getnext(components)
-                end
-                return n
-            elseif not marks[char] then
-                return 1
-            end
-        end
-        return 0
-    end
-
-    nuts.set_components     = set_components
-    nuts.get_components     = get_components
-    nuts.copy_only_glyphs   = copy_only_glyphs
-    nuts.copy_no_components = copy_no_components
-    nuts.count_components   = count_components
-
-end
-
-nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
-nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end
 
 do
 

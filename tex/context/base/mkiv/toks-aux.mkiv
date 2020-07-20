@@ -28,7 +28,9 @@
 % \showluatokens\scratchtoks
 % \showluatokens\everypar
 
-\registerctxluafile{toks-aux}{}
+\ifcase\contextlmtxmode \or
+    \registerctxluafile{toks-aux}{autosuffix}
+\fi
 
 \installcorenamespace {tokenlist}
 

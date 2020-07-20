@@ -7,42 +7,57 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 }
 
 local load, type, tonumber = load, type, tonumber
+local find = string.find
 local concat = table.concat
 local utfchar = utf.char
-local find = string.find
 local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
 
-local xmath        = xmath    or math
-local xcomplex     = xcomplex or { }
+local xmath                    = xmath    or math
+local xcomplex                 = xcomplex or { }
 
-local cmd          = tokens.commands
+local scan_next                = token.scan_next or token.get_next
+local scan_cmdchr              = token.scan_cmdchr_expanded
+local scan_token               = token.scan_token
 
-local scan_next    = token.scan_next or token.get_next
-local scan_cmdchr  = token.scan_cmdchr_expanded
+local get_csname               = token.get_csname
+----- get_macro                = token.get_macro
+----- put_next                 = token.put_next
 
-local get_command  = token.get_command
-local get_mode     = token.get_mode
-local get_index    = token.get_index
-local get_csname   = token.get_csname
-local get_macro    = token.get_macro
+local cmd                      = tokens.commands
+local letter_code              = cmd.letter
+local other_char_code          = cmd.other_char
+local spacer_code              = cmd.spacer
+local other_char_code          = cmd.other_char
+local relax_code               = cmd.relax
+local register_int_code        = cmd.register_int
+local internal_int_code        = cmd.internal_int
+local register_dimen_code      = cmd.register_dimen
+local internal_dimen_code      = cmd.internal_dimen
+local register_glue_code       = cmd.register_glue
+local internal_glue_code       = cmd.internal_glue
+local register_toks_code       = cmd.register_toks
+local internal_toks_code       = cmd.internal_toks
+local char_given_code          = cmd.char_given
+local math_given_code          = cmd.math_given
+local xmath_given_code         = cmd.xmath_given
+local some_item_code           = cmd.some_item
+----- call_code                = cmd.call
+----- the_code                 = cmd.the
+----- convert_code             = cmd.convert
+----- lua_expandable_call_code = cmd.lua_expandable_call
 
-local put_next     = token.put_next
+local getdimen                 = tex.getdimen
+local getglue                  = tex.getglue
+local getcount                 = tex.getcount
+local gettoks                  = tex.gettoks
+local gettex                   = tex.get
 
-local scan_token   = token.scan_token or token.get_token
-
-local getdimen     = tex.getdimen
-local getglue      = tex.getglue
-local getcount     = tex.getcount
-local gettoks      = tex.gettoks
-local gettex       = tex.get
-
-local context      = context
-local dimenfactors = number.dimenfactors
-
-commands           = commands or { }
-local commands     = commands
-local context      = context
-local implement    = interfaces.implement
+local context                  = context
+commands                       = commands or { }
+local commands                 = commands
+local context                  = context
+local implement                = interfaces.implement
+local dimenfactors             = number.dimenfactors
 
 local ctx_protected_cs         = context.protected.cs -- more efficient
 local ctx_firstoftwoarguments  = context.firstoftwoarguments
@@ -205,18 +220,20 @@ do
         report("unexpected token %a",c)
     end
 
+    local function unexpected(c)
+        report("unexpected token %a",c)
+    end
+
     local function expression()
         local w = 0
         local r = 1
         while true do
-            local t = scan_next()
-            local n = get_command(t)
-            local c = cmd[n]
-            -- todo, helper: returns number
-            if c == "letter"  then
-                w = w + 1 ; word[w] = utfchar(get_mode(t))
+        local n, i = scan_cmdchr()
+            if n == letter_code then
+                w = w + 1 ; word[w] = utfchar(i)
             else
                 if w > 0 then
+                    -- we could use a metatable for all math, complex and factors
                     local s = concat(word,"",1,w)
                     local d = dimenfactors[s]
                     if d then
@@ -232,23 +249,23 @@ do
                     end
                     w = 0
                 end
-                if     c == "other_char" then
-                    r = r + 1 ; result[r] = utfchar(get_mode(t))
-                elseif c == "spacer" then
-                 -- r = r + 1 ; result[r] = " "
-                elseif c == "relax" then
+                if     n == other_char_code then
+                    r = r + 1 ; result[r] = utfchar(i)
+                elseif n == spacer_code then
+                -- r = r + 1 ; result[r] = " "
+                elseif n == relax_code then
                     break
-                elseif c == "assign_int" then
-                    r = r + 1 ; result[r] = getcount(get_index(t))
-                elseif c == "assign_dimen" then
-                    r = r + 1 ; result[r] = getdimen(get_index(t))
-                elseif c == "assign_glue" then
-                    r = r + 1 ; result[r] = getglue(get_index(t))
-                elseif c == "assign_toks" then
-                    r = r + 1 ; result[r] = gettoks(get_index(t))
-                elseif c == "char_given" or c == "math_given" or c == "xmath_given" then
-                    r = r + 1 ; result[r] = get_mode(t)
-                elseif c == "last_item" then
+                elseif n == register_int_code or n == internal_int_code then
+                    r = r + 1 ; result[r] = getcount(i)
+                elseif n == register_dimen_code or n == internal_dimen_code then
+                    r = r + 1 ; result[r] = getdimen(i)
+                elseif n == register_glue_code or n == n == register_dimen_code_glue_code then
+                    r = r + 1 ; result[r] = getglue(i)
+                elseif n == register_toks_code or n == n == register_dimen_code_toks_code then
+                    r = r + 1 ; result[r] = gettoks(i)
+                elseif n == char_given_code or n == math_given_code or n == xmath_given_code then
+                    r = r + 1 ; result[r] = i
+                elseif n == some_item_code then
                     local n = get_csname(t)
                     if n then
                         local s = gettex(n)
@@ -260,21 +277,21 @@ do
                     else
                         unexpected(c)
                     end
-                elseif c == "call" then
-                    local n = get_csname(t)
-                    if n then
-                        local s = get_macro(n)
-                        if s then
-                            r = r + 1 ; result[r] = s
-                        else
-                            unexpected(c)
-                        end
-                    else
-                        unexpected(c)
-                    end
-                elseif c == "the" or c == "convert" or c == "lua_expandable_call" then
-                    put_next(t)
-                    scan_token() -- expands
+             -- elseif n == call_code then
+             --     local n = get_csname(t)
+             --     if n then
+             --         local s = get_macro(n)
+             --         if s then
+             --             r = r + 1 ; result[r] = s
+             --         else
+             --             unexpected(c)
+             --         end
+             --     else
+             --         unexpected(c)
+             --     end
+             -- elseif n == the_code or n == convert_code or n == lua_expandable_call_code then
+             --     put_next(t)
+             --     scan_token() -- expands
                 else
                     unexpected(c)
                 end

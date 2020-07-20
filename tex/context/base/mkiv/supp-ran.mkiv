@@ -13,27 +13,37 @@
 
 \writestatus{loading}{ConTeXt Support Macros / Random Number Generation}
 
-%D This module is downward compatible in the sense that we've kept
-%D the user interface (which uses intermediate variables).
+%D This module is downward compatible in the sense that we've kept the user
+%D interface (which uses intermediate variables).
+%D
+%D \starttyping
+%D                   \type{new}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \setrandomseed{24}\type{set}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \setrandomseed{24}\type{set}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \setrandomseed{24}\type{set}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \pushrandomseed   \type{new}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \poprandomseed    \type{old}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D                   \type{new}: \dorecurse{10}{\randomnumber{1}{100} }\par
+%D \stoptyping
 
 \registerctxluafile{supp-ran}{}
 
 \unprotect
-
 \protected\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax\relax}
 \protected\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen\dimexpr#2\relax\dimexpr#3\relax\scaledpoint\relax}
 \protected\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax}}
 \protected\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat\dimexpr#2\relax\dimexpr#3\relax}}
 \protected\def\setrandomseed      #1{\clf_setrandomseed\numexpr#1\relax}
 \protected\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
-\protected\def\pushrandomseed       {\clf_pushrandomseed}
-\protected\def\poprandomseed        {\clf_poprandomseed}
-\protected\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop
+%protected\def\pushrandomseed       {\clf_pushrandomseed}
+%protected\def\poprandomseed        {\clf_poprandomseed}
+%protected\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop
 
 \let\freezerandomseed \pushrandomseed
 \let\defrostrandomseed\poprandomseed
 
 \def\randomnumber  #1#2{\clf_getrandomnumber\numexpr#1\relax\numexpr#2\relax}
 \let\mprandomnumber     \clf_getmprandomnumber
+
 
 \protect \endinput

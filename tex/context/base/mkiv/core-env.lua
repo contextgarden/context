@@ -100,27 +100,19 @@ setmetatableindex(texsystemmodes, function(t,k)
         end
     end
 end)
+
 setmetatablenewindex(texsystemmodes, function(t,k)
     report_mode("you cannot set the %s named %a this way","systemmode",k)
 end)
 
-setmetatableindex(texconstants, function(t,k)
-    return cache[k].mode ~= 0 and texgetcount(k) or 0
-end)
 setmetatablenewindex(texconstants, function(t,k)
     report_mode("you cannot set the %s named %a this way","constant",k)
 end)
 
-setmetatableindex(texconditionals, function(t,k) -- 0 == true
-    return cache[k].mode ~= 0 and texgetcount(k) == 0
-end)
 setmetatablenewindex(texconditionals, function(t,k)
     report_mode("you cannot set the %s named %a this way","conditional",k)
 end)
 
-table.setmetatableindex(texifs, function(t,k)
-    return cache[k].mode == iftrue
-end)
 setmetatablenewindex(texifs, function(t,k)
     -- just ignore
 end)
@@ -140,11 +132,25 @@ if CONTEXTLMTXMODE > 0 then
         return cache[k].command == countcode and texgetcount(k) == 0
     end)
 
-    table.setmetatableindex(texifs, function(t,k)
+    setmetatableindex(texifs, function(t,k)
         local c = cache[k]
         print(k)
         inspect(c)
         return c.command == conditioncode and c.index == iftrue
+    end)
+
+else
+
+    setmetatableindex(texconstants, function(t,k)
+        return cache[k].mode ~= 0 and texgetcount(k) or 0
+    end)
+
+    setmetatableindex(texconditionals, function(t,k) -- 0 == true
+        return cache[k].mode ~= 0 and texgetcount(k) == 0
+    end)
+
+    setmetatableindex(texifs, function(t,k)
+        return cache[k].mode == iftrue
     end)
 
 end

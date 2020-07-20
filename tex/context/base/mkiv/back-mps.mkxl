@@ -12,7 +12,7 @@
 %C details.
 
 \ifcase\contextlmtxmode \else
-    \registerctxluafile{back-mps}{optimize}
+    \registerctxluafile{back-mps}{autosuffix,optimize}
 \fi
 
 \endinput

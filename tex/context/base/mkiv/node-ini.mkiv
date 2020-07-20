@@ -18,7 +18,7 @@
 \newcount\filterstate \filterstate\plusone % hm, public
 
 \ifcase\contextlmtxmode \else
-    \registerctxluafile{node-cmp}{}
+    \registerctxluafile{node-cmp}{autosuffix}
 \fi
 
 \registerctxluafile{node-ini}{}
@@ -27,6 +27,7 @@
 \registerctxluafile{node-res}{}
 %registerctxluafile{node-ppt}{} % experimental, not used so probably useless
 \registerctxluafile{node-aux}{}
+\registerctxluafile{node-gcm}{autosuffix}
 \registerctxluafile{node-tst}{}
 \registerctxluafile{node-tra}{} % we might split it off (module)
 \registerctxluafile{node-snp}{}

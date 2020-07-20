@@ -21,7 +21,7 @@
     \expandafter \endinput
 \fi
 
-\registerctxluafile{libs-imp-mujs}{}
+\registerctxluafile{libs-imp-mujs}{autosuffix}
 
 \unprotect
 

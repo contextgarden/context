@@ -703,9 +703,9 @@ implement { name = "figurestatus",   actions = { get, context }, arguments = { "
 implement { name = "figurerequest",  actions = { get, context }, arguments = { "'request'", "string", "string" } }
 implement { name = "figureused",     actions = { get, context }, arguments = { "'used'",    "string", "string" } }
 
-implement { name = "figurefilepath", actions = { get, file.dirname,  context }, arguments = { "'used'", "'fullname'" } }
-implement { name = "figurefilename", actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
-implement { name = "figurefiletype", actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefilepath", public = true, actions = { get, file.dirname,  context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefilename", public = true, actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefiletype", public = true, actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
 
 implement { name = "figuresetdimensions", actions = setdimensions, arguments = "integer" }
 

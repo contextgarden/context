@@ -12,6 +12,7 @@
 %C details.
 
 \registerctxluafile{syst-aux}{}
+\registerctxluafile{syst-mac}{autosuffix}
 
 %D This file is a follow up in \type {syst-aux.mkii} and \type {syst-aux.mkiv} where
 %D you can find some more pure \TEX\ or \LUATEX\ variants. There are quite some

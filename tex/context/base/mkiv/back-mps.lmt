@@ -137,9 +137,12 @@ local function flushrule(current, pos_h, pos_v, pod_r, size_h, size_v, subtype)
     end
 end
 
-local function flushsimplerule(current, pos_h, pos_v, pod_r, size_h, size_v)
-    b = b + 1
-    buffer[b] = f_rule(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
+local function flushsimplerule(pos_h, pos_v, pod_r, size_h, size_v)
+    flush_rule(false,pos_h,pos_v,pod_r,size_h,size_v,normalrule_code)
+end
+
+local function flushspecialrule(pos_h, pos_v, pod_r, w, h, d, l, outline)
+    flush_rule(false,pos_h,pos_v-d,pod_r,w,h+d,outline and outlinerule_code or normalrule_code)
 end
 
 -- installer
@@ -160,6 +163,7 @@ drivers.install {
         character       = flushcharacter,
         rule            = flushrule,
         simplerule      = flushsimplerule,
+        specialrule     = flushspecialrule,
     }
 }
 

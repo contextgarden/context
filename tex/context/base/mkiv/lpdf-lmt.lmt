@@ -32,7 +32,7 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 -- the next interface is suboptimal and will change at some time. At that moment I will
 -- also optimize and extend.
 
-local type, next, unpack, tonumber = type, next, unpack, tonumber
+local type, next, unpack, tonumber, rawget = type, next, unpack, tonumber, rawget
 local char, rep, find = string.char, string.rep, string.find
 local formatters, splitupstring = string.formatters, string.splitup
 local band, extract = bit32.band, bit32.extract
@@ -61,6 +61,7 @@ local pdfgetfontobjnumber  = lpdf.getfontobjnumber
 local pdfreserveobject     = lpdf.reserveobject
 local pdfpagereference     = lpdf.pagereference
 local pdfflushobject       = lpdf.flushobject
+local pdfsharedobject      = lpdf.shareobjectreference
 local pdfreference         = lpdf.reference
 local pdfdictionary        = lpdf.dictionary
 local pdfarray             = lpdf.array
@@ -94,6 +95,7 @@ local getxformname, getximagename
 local boundingbox, shippingmode, objectnumber
 local tmrx, tmry, tmsx, tmsy, tmtx, tmty
 local cmrx, cmry, cmsx, cmsy, cmtx, cmty
+local tmef
 
 local function usefont(t,k) -- a bit redundant hash
     local v = pdfgetfontname(k)
@@ -109,6 +111,7 @@ local function reset_variables(specification)
     tmrx, tmry    = 1.0, 1.0
     tmsx, tmsy    = 0.0, 0.0
     tmtx, tmty    = 0.0, 0.0
+    tmef          = 1.0
     need_tm       = false
     need_tf       = false
     need_width    = 0
@@ -145,6 +148,10 @@ local function reset_buffer()
     b = 0
 end
 
+local function flush_buffer()
+    b = 0
+end
+
 -- fonts
 
 local fontcharacters
@@ -158,6 +165,7 @@ local horizontalmode = true
 ----- widefontmode   = true
 local scalefactor    = 1
 local threshold      = 655360
+local thresfactor    = 100
 local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
@@ -174,7 +182,16 @@ local function updatefontstate(font)
  -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
     local fthreshold = fontproperties.threshold
-    threshold = (fthreshold and (size * fthreshold / 100)) or 655360
+    threshold        = (fthreshold and (size * fthreshold / 100)) or 655360
+    -- when we bolden the threshold should be smaller .. a hack .. i need to redo all this
+    if (fontparameters.extendfactor or 1) == 1 then
+        -- we're probably okay
+    elseif fontparameters.hshift or fontparameters.vshift then
+        -- we could be okay
+    else
+        -- some vf magic going on
+        threshold = threshold / 5
+    end
 end
 
 -- helpers
@@ -378,6 +395,8 @@ local flushcharacter  do
     -- for it so
 
     local naturalwidth = nil
+    local hshift       = false
+    local vshift       = false
 
  -- local naturalwidths = setmetatableindex(function(t,font)
  --     local d = descriptions[font]
@@ -446,6 +465,7 @@ local flushcharacter  do
         if e then
             extend = extend * e
         end
+        tmef       = expand
         tmrx       = expand * extend
         tmsy       = slant
         tmry       = squeeze
@@ -467,50 +487,10 @@ local flushcharacter  do
         end
         --
         naturalwidth = naturalwidths[font]
+        --
+        hshift = fontparameters.hshift
+        vshift = fontparameters.vshift
     end
-
-    -- This only saves a little on hz because there we switch a lot of
-    -- instances.
-
- -- local lastslant, lastextend, lastsqueeze, lastformat, lastsize, lastwidth, lastmode, lastused, lastfont
-
- -- local function setup_fontparameters(font,factor,f,e)
- --     if font ~= lastfont then
- --         lastslant   = fontparameters.slantfactor   or 0
- --         lastextend  = fontparameters.extendfactor  or 1
- --         lastsqueeze = fontparameters.squeezefactor or 1
- --         lastformat  = fontproperties.format
- --         lastsize    = fontparameters.size * bpfactor
- --         if format == "opentype" or format == "type1" then
- --             lastsize = lastsize * 1000 / fontparameters.units -- can we avoid this ?
- --         end
- --         lastwidth = fontparameters.width
- --         lastmode  = fontparameters.mode
- --         lastused  = usedfonts[font] -- cache
- --         lastfont  = font
- --     end
- --     local expand = 1 + factor / 1000000
- --     if e then
- --         tmrx = expand * lastextend * e
- --     else
- --         tmrx = expand * lastextend
- --     end
- --     tmsy       = lastslant
- --     tmry       = lastsqueeze
- --     need_width = lastwidth
- --     need_mode  = lastmode
- --     f_cur      = lastfont
- --     f_pdf      = lastused
- --     cur_factor = factor
- --     cur_f      = f
- --     cur_e      = e
- --     tj_delta   = 0
- --     if f then
- --         fs = lastsize * f
- --     else
- --         fs = lastsize
- --     end
- -- end
 
     local f_width = formatters["%.6N w"]
     local f_mode  = formatters["%i Tr"]        -- can be hash
@@ -519,10 +499,12 @@ local flushcharacter  do
     local s_width = "0 w"
     local s_mode  = "0 Tr"
 
+    local width_factor = 72.27 / 72000.0
+
     local function set_font()
      -- if need_width and need_width ~= 0 then
         if need_width ~= 0 then
-            b = b + 1 ; buffer[b] = f_width(bpfactor * need_width / 1000)
+            b = b + 1 ; buffer[b] = f_width(width_factor*need_width)
             done_width = true
         elseif done_width then
             b = b + 1 ; buffer[b] = s_width
@@ -576,7 +558,13 @@ local flushcharacter  do
         return v
     end)
 
-    local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
+ -- local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
+
+ -- local f_skip = formatters["%.2N"]
+
+    -- I will redo this mess ... we no longer have the mkiv pdf generator that we used in
+    -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
+    -- time to move on I guess.
 
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
         if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
@@ -612,6 +600,10 @@ local flushcharacter  do
                     end
                 end
             end
+
+            if hshift then pos_h = pos_h + hshift end
+            if vshift then pos_v = pos_v - vshift end
+
             if need_tm then
                 pdf_goto_textmode()
                 set_textmatrix(pos_h,pos_v)
@@ -634,7 +626,7 @@ local flushcharacter  do
             begin_charmode()
         end
 
-        cw = cw + naturalwidth[char] * tmrx
+        cw = cw + naturalwidth[char] * tmef
 
         local index = data.index or char
 
@@ -756,6 +748,7 @@ local flushliteral  do
                  -- pdf_set_pos(pdf_h,pdf_v)
                 end
                 b = b + 1 ; buffer[b] = str
+                flush_buffer()
             end
         end
     end)
@@ -901,7 +894,7 @@ end
 local flushedxforms  = { } -- actually box resources but can also be direct
 local localconverter = nil -- will be set
 
-local flushrule, flushsimplerule, flushimage, flushgroup  do
+local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
     local rulecodes = nodes.rulecodes
     local newrule   = nodes.pool.rule
@@ -935,6 +928,9 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
     local f_f = formatters["0 0 %.6N %.6N re f"]
     local f_o = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
     local f_w = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
+
+    local f_b = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
+    local f_f = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1265,6 +1261,10 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
 
     -- For the moment we need this hack because the engine checks the 'image'
     -- command in virtual fonts (so we use lua instead).
+    --
+    -- These will be replaced by a new more advanced one ... some day ... or
+    -- never because the next are like the other engines and compensate for
+    -- small sizes which is needed for inaccurate viewers.
 
     flushrule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
 
@@ -1341,6 +1341,30 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
             pdf_set_pos_temp(pos_h,pos_v)
             rule = f_f(dim_h,dim_v)
         end
+
+        b = b + 1 ; buffer[b] = rule
+        b = b + 1 ; buffer[b] = s_e
+    end
+
+    flushspecialrule = function(pos_h,pos_v,pos_r,width,height,depth,line,outline)
+        pdf_goto_pagemode()
+
+        b = b + 1 ; buffer[b] = s_b
+
+        local width  = bpfactor * width
+        local height = bpfactor * height
+        local depth  = bpfactor * depth
+        local total  = height + depth
+        local line   = bpfactor * line
+        local half   = line / 2
+        local rule
+
+        if outline then
+            rule = f_f(line,half,-depth+half,width-line,total-line)
+        else
+            rule = f_b(line,-depth,width,total)
+        end
+        pdf_set_pos_temp(pos_h,pos_v)
 
         b = b + 1 ; buffer[b] = rule
         b = b + 1 ; buffer[b] = s_e
@@ -1661,7 +1685,8 @@ local finalize  do
             pageattributes.Contents  = pdfreference(contentsobj)
             pageattributes.Resources = pageresources
          -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
-            pageattributes.MediaBox  = bbox
+         -- pageattributes.MediaBox  = bbox
+            pageattributes.MediaBox  = pdfsharedobject(bbox)
             pageattributes.Parent    = nil -- precalculate
             pageattributes.Group     = nil -- todo
 
@@ -1671,11 +1696,15 @@ local finalize  do
 
             lpdf.finalizepage(true)
 
-            if relocated then
-                if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
-                if pageattributes.CropBox  then pageattributes.CropBox  = box end
-                if pageattributes.BleedBox then pageattributes.BleedBox = box end
-            end
+         -- if relocated then
+         --     if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
+         --     if pageattributes.CropBox  then pageattributes.CropBox  = box end
+         --     if pageattributes.BleedBox then pageattributes.BleedBox = box end
+         -- end
+
+            if pageattributes.TrimBox  then pageattributes.TrimBox  = relocated and pdfsharedobject(box or pageattributes.TrimBox ) end
+            if pageattributes.CropBox  then pageattributes.CropBox  = relocated and pdfsharedobject(box or pageattributes.CropBox ) end
+            if pageattributes.BleedBox then pageattributes.BleedBox = relocated and pdfsharedobject(box or pageattributes.BleedBox) end
 
         else
 
@@ -1711,6 +1740,7 @@ local finalize  do
                 }
             end
             if xformtype == 0 or xformtype == 2 or xformtype == 3 then
+                -- can be shared too
                 wrapper.Matrix = pdfarray { 1, 0, 0, 1, 0, 0 }
             end
 
@@ -2184,6 +2214,8 @@ local openfile, closefile  do
     local inmemory = false
     local close    = false
 
+ -- local removefile = os.remove
+
     openfile = function(filename)
         if inmemory then
             local n = 0
@@ -2218,6 +2250,14 @@ local openfile, closefile  do
             flush = m.write or m.__index.write
             close = m.close or m.__index.close
         end
+        --
+        flush_buffer = function()
+            if b > 0 then
+                flush(f,concat(buffer,"",1,b))
+                b = 0
+            end
+        end
+
         local v = f_pdf(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
@@ -2244,7 +2284,7 @@ local openfile, closefile  do
                     f:close()
                 end
             end
-            removefile(abort)
+            os.remove(abort)
         else
             local xrefoffset = offset
             local lastfree   = 0
@@ -2682,10 +2722,6 @@ end)
 
 do
 
-    local isfile     = lfs.isfile
-    local removefile = os.remove
-    local renamefile = os.rename
- -- local copyfile   = file.copy
  -- local addsuffix  = file.addsuffix
     local texgetbox  = tex.getbox
 
@@ -2770,6 +2806,7 @@ do
             fontchar        = flushfontchar,
             rule            = flushrule,
             simplerule      = flushsimplerule,
+            specialrule     = flushspecialrule,
             pushorientation = pushorientation,
             poporientation  = poporientation,
             --

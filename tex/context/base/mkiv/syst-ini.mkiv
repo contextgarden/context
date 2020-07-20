@@ -997,8 +997,11 @@
 %D Sometimes kerns make more sense than glue but we need to be in the
 %D right mode:
 
-\protected\def\vkern{\ifhmode\par           \fi\kern}
-\protected\def\hkern{\ifvmode\dontleavehmode\fi\kern}
+\protected\def\vkern   {\ifhmode\par           \fi\kern}
+\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}
+
+\protected\def\vpenalty{\ifhmode\par           \fi\penalty}
+\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty}
 
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but
 %D are probably not used in \CONTEXT.

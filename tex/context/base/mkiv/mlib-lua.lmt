@@ -45,6 +45,12 @@ scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
 scan.path       = function(t)   return scan_path      (currentmpx,t)   end
 scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
 
+local solve_path = mplib.solve_path
+
+mp.solve = function(...)
+    return solve_path(currentmpx,...)
+end
+
 local inject_path      = mplib.inject_path
 local inject_numeric   = mplib.inject_numeric
 local inject_pair      = mplib.inject_pair
@@ -56,7 +62,7 @@ local inject_cmykcolor = mplib.inject_cmykcolor
 local inject_transform = mplib.inject_transform
 local inject_whatever  = mplib.inject_whatever
 
-inject.path      = function(t,cycle,curled)  return inject_path     (currentmpx,t,cycle,curled)  end
+------.path      = function(t,cycle,curled)  return inject_path     (currentmpx,t,cycle,curled)  end
 inject.numeric   = function(n)               return inject_numeric  (currentmpx,n)               end
 inject.pair      = function(x,y)             return inject_pair     (currentmpx,x,y)             end
 inject.boolean   = function(b)               return inject_boolean  (currentmpx,b)               end
@@ -66,6 +72,47 @@ inject.color     = function(r,g,b)           return inject_color    (currentmpx,
 inject.cmykcolor = function(c,m,y,k)         return inject_cmykcolor(currentmpx,c,m,y,k)         end
 inject.transform = function(x,y,xx,xy,yx,yy) return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
 inject.whatever  = function(...)             return inject_whatever (currentmpx,...)             end
+
+local function same(p,n)
+    local f = p[1]
+    local l = p[n]
+    local nf = #f
+    local nl = #l
+    if nf == nl then
+        for i=1,nf do
+            if f[i] ~= l[i] then
+                return false
+            end
+        end
+        return true
+    end
+    return false
+end
+
+-- local p = mp.scan.path()
+-- mp.inject.path(p,true,true)
+
+function inject.path(p,close,connector)
+    local curled = false
+    local n = #p
+    if p.close then
+        close = true
+    end
+    if n > 1 then
+        -- [ ../true | --/false | nil/auto ]
+        if connector == nil or connector == "auto" then
+            connector = #p[1] > 2
+        end
+        if connector == false or connector == "--" then
+            curled = true
+        elseif connector == true or connector == ".." then
+            if close and not same(p,n) then
+                p[n+1] = p[1]
+            end
+        end
+    end
+    return inject_path(currentmpx,p,curled,close)
+end
 
 -- bonus:
 

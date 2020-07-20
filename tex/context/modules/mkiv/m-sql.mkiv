@@ -17,8 +17,8 @@
 \registerctxluafile{util-sql}{}
 
 \ifcase\contextlmtxmode\else
-    \registerctxluafile{libs-imp-mysql}{}
-    \registerctxluafile{libs-imp-sqlite}{}
+    \registerctxluafile{libs-imp-mysql}{autosuffix}
+    \registerctxluafile{libs-imp-sqlite}{autosuffix}
 \fi
 
 \setupmodule

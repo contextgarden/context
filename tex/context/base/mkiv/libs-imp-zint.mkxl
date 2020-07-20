@@ -22,7 +22,7 @@
 %D There is a bit more code than needed as we want to be able to
 %D feed names.
 
-\registerctxluafile{libs-imp-zint}{}
+\registerctxluafile{libs-imp-zint}{autosuffix}
 
 \unprotect
 

@@ -1,0 +1,94 @@
+%D \module
+%D   [      file=s-system-visual.mkxl,
+%D        version=2020.07.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=System Visual Debugger Legend,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[system-visual]
+
+\starttexdefinition unexpanded visuallegend
+    \begingroup
+    \switchtobodyfont[10pt]
+    \setuptabulate[before=,after=]
+    \hsize24cm
+    \scale
+        [width=\textwidth]
+        \bgroup
+            \forgetall
+            \startboxedcolumns[n=3,strut=no]
+                \starttabulate[|lT|l|]
+                    \NC L__  \NC line box \NC \NR
+                    \NC H__  \NC horizontal box \NC \NR
+                    \NC _T_  \NC vertical top box \NC \NR
+                    \NC __V  \NC vertical box \NC \NR
+                    \TB
+                    \NC VK   \NC vertical kern \NC \NR
+                    \NC HK   \NC horizontal kern \NC \NR
+                    \NC MK   \NC math kern \NC \NR
+                    \NC MK   \NC margin kern \NC \NR
+                    \NC LK   \NC math list kern \NC \NR
+                    \TB
+                    \NC VP   \NC vertical penalty   \NC \NR
+                    \NC HP   \NC horizontal penalty \NC \NR
+                    \TB
+                    \NC LI   \NC line skip \NC \NR
+                    \NC BS   \NC baseline skip \NC \NR
+                    \NC PS   \NC par skip \NC \NR
+                    \NC DA   \NC abovedisplay skip \NC \NR
+                    \NC DB   \NC belowdisplay skip \NC \NR
+                    \NC SA   \NC above display short skip \NC \NR
+                    \NC SB   \NC below display short skip \NC \NR
+                    \NC TS   \NC top skip \NC \NR
+                    \NC ST   \NC split top skip \NC \NR
+                    \NC AS   \NC tab skip \NC \NR
+                    \NC LH   \NC left hang skip \NC \NR
+                    \NC RH   \NC right hang skip \NC \NR
+                    \NC MS   \NC thin mu skip \NC \NR
+                    \NC MM   \NC med mu skip \NC \NR
+                    \NC ML   \NC thick mu skip \NC \NR
+                    \NC IM   \NC inter math skip \NC \NR
+                    \NC MT   \NC math skip \NC \NR
+                    \NC LS   \NC left skip \NC \NR
+                    \NC RS   \NC right skip \NC \NR
+                    \NC SP   \NC space skip \NC \NR
+                    \NC XS   \NC x space skip \NC \NR
+                    \NC ZS   \NC zero space skip \NC \NR
+                    \NC PF   \NC par fill skip \NC \NR
+                    \NC IN   \NC indent skip \NC \NR
+                    \NC CS   \NC correction skip \NC \NR
+                    \NC VS   \NC vertical user skip \NC \NR
+                    \NC HS   \NC horizontal user skip \NC \NR
+                    \NC IC   \NC italic correcection \NC \NR
+                    \TB
+                    \NC NL   \NC leaders \NC \NR
+                    \NC CL   \NC c leaders \NC \NR
+                    \NC XL   \NC x leaders \NC \NR
+                    \NC GL   \NC g leaders \NC \NR
+                    \TB
+                    \NC M:B  \NC math begin \NC \NR
+                    \NC M:E  \NC math end \NC \NR
+                    \NC W:*  \NC whatsit \NC \NR
+                \stoptabulate
+            \stopboxedcolumns
+        \egroup
+    \endgroup
+\stoptexdefinition
+
+\stopmodule
+
+\continueifinputfile{s-system-visual.mkiv}
+
+\usemodule[article-basic]
+
+\startTEXpage[width=20cm,offset=5mm]
+
+    \visuallegend
+
+\stopTEXpage

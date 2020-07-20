@@ -2421,6 +2421,7 @@ function readers.loadfont(filename,n,instance)
                 hascolor      = fontdata.hascolor or false,
                 instance      = fontdata.instance,
                 factors       = fontdata.factors,
+                nofsubfonts   = fontdata.subfonts and #fontdata.subfonts or nil,
             },
             resources     = {
              -- filename      = fontdata.filename,

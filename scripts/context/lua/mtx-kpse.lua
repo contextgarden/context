@@ -8,13 +8,12 @@ if not modules then modules = { } end modules ['mtx-kpse'] = {
 
 -- I decided to make this module after a report on the mailing list about
 -- a clash with texmf-var on a system that had texlive installed. One way
--- to figure that out is to use kpse. We had the code anyway.
---
--- mtxrun --script kpse --progname=pdftex --findfile context.mkii
+-- to figure that out is to use kpse. We had the code anyway so next time
+-- there is some issue ...
 
 trackers.enable("resolvers.lib.silent")
 
-local kpse = LUATEXENGINE == "luametatex" and require("libs-imp-kpse")
+local kpse = LUATEXENGINE == "luametatex" and require("libs-imp-kpse.lmt")
 
 if type(kpse) ~= "table" then
     return
@@ -33,6 +32,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="progname"><short>mandate, set the program name (e.g. pdftex)</short></flag>
     <flag name="findfile"><short>report the fully qualified path of the given file</short></flag>
+    <flag name="findfiles"><short>report a list of all full names of the given file</short></flag>
     <flag name="expandpath"><short>expand the given path variable</short></flag>
     <flag name="expandvar"><short>expand a variable</short></flag>
     <flag name="expandbraces"><short>expand a complex variable specification</short></flag>
@@ -40,11 +40,29 @@ local helpinfo = [[
     <flag name="readablefile"><short>report if a file is readable</short></flag>
     <flag name="filetypes"><short>list all supported formats</short></flag>
    </subcategory>
+  </category>
+  <category name="additional">
    <subcategory>
-    <flag name="fonts"><short>only wipe fonts</short></flag>
+    <flag name="format"><short>format type</short></flag>
+    <flag name="path"><short>path variable</short></flag>
+    <flag name="split"><short>split result in lines</short></flag>
    </subcategory>
   </category>
  </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfile  context.mkii</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfile  context.mkii --format=tex</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfiles context.mkii --path=$TEXINPUTS</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script kpse --progname=pdftex --expandpath $TEXMFVAR</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --expandpath $TEXINPUTS -- split</command></example>
+   </subcategory>
+  </category>
+ </examples>
 </application>
 ]]
 
@@ -56,7 +74,8 @@ local application = logs.application {
 
 local report   = application.report
 local argument = environment.argument
-local target   = environment.files[1]
+local files    = environment.files
+local target   = files[1]
 
 if argument("progname") or argument("programname") then
     kpse.set_program_name(argument("progname"))
@@ -65,15 +84,30 @@ else
     return
 end
 
+local function printtable(result)
+    if type(result) == "table" then
+        for i=1,#result do
+            print(result[i])
+        end
+    end
+end
+
 if argument("exporthelp") then
     application.export(environment.argument("exporthelp"),target)
 elseif argument("filetypes") or argument("formats") then
     print(table.concat(kpse.get_file_types()," "))
 elseif type(target) == "string" and target ~= "" then
-    if argument("findfile") or argument("find-file") then
+    if argument("findfiles") or argument("find-files") then
+        printtable(kpse.find_files(argument("path"),target))
+    elseif argument("findfile") or argument("find-file") then
         print(kpse.find_file(target,argument("format")))
     elseif argument("expandpath") or argument("expand-path") then
-        print(kpse.expand_path(target))
+        local result = kpse.expand_path(target)
+        if result and argument("split") then
+            printtable(string.split(result,";"))
+        else
+            print(result)
+        end
     elseif argument("expandvar") or argument("expand-var") then
         print(kpse.expand_var(target))
     elseif argument("expandbraces") or argument("expand-braces") then

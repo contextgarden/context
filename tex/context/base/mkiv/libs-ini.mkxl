@@ -11,17 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{libs-ini}{}
+\registerctxluafile{libs-ini}{} % shared with mkiv
 
-\registerctxluafile{libs-imp-curl}{}
-\registerctxluafile{libs-imp-ghostscript}{}
-\registerctxluafile{libs-imp-graphicsmagick}{}
+\registerctxluafile{libs-imp-curl}{autosuffix}
+\registerctxluafile{libs-imp-ghostscript}{autosuffix}
+\registerctxluafile{libs-imp-graphicsmagick}{autosuffix}
 
 % These are loaded on demand:
 
-% \registerctxluafile{libs-imp-mysql}{}
-% \registerctxluafile{libs-imp-sqlite}{}
-% \registerctxluafile{libs-imp-postgress}{}
+% \registerctxluafile{libs-imp-mysql}{autosuffix}
+% \registerctxluafile{libs-imp-sqlite}{autosuffix}
+% \registerctxluafile{libs-imp-postgress}{autosuffix}
+% \registerctxluafile{libs-imp-kpse}{autosuffix}
 
 \unprotect
 

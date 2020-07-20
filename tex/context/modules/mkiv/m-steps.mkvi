@@ -428,11 +428,15 @@
 \startxmlsetups xml:step:define
     \xmlsetsetup
         {#1}
-        {stepchart|steptable|stepaligntable|cells|texts|stepcell|cell|text}
+        {stepchart|steptable|stepaligntable|cells|texts|stepcell|cell|text|br}
         {xml:step:*}
 \stopxmlsetups
 
 \xmlregistersetup{xml:step:define}
+
+\startxmlsetups xml:step:br
+    \crlf
+\stopxmlsetups
 
 \startxmlsetups xml:step:stepchart
     \startSTEPchart[\c!category=\xmlatt{#1}{class}]
@@ -492,9 +496,17 @@
 \stopxmlsetups
 
 \startxmlsetups xml:step:text
-    \text
-      [\xmlatt{#1}{class}]
-      {\xmlflush{#1}}
+    \doifelse {\xmlatt{#1}{option}} {paragraph} {
+        \text
+          [\xmlatt{#1}{class}]
+          {\framed
+             [\c!location=\v!middle,\c!align={\v!lohi,\v!flushleft},\c!offset=0pt,\c!frame=\v!no]
+             {\ignorespaces\xmlflush{#1}\removeunwantedspaces}}
+    } {
+        \text
+          [\xmlatt{#1}{class}]
+          {\xmlflush{#1}}
+    }
 \stopxmlsetups
 
 \protect
@@ -519,11 +531,21 @@
 
 \startbuffer
 <steptable>
-  <cell> some cell </cell>
-  <text> some text </text>
-  <cell> some cell </cell>
-  <text> some text </text>
-  <cell> some cell </cell>
+  <cell> some cell A</cell>
+  <text> some text 1</text>
+  <cell> some cell B</cell>
+  <text> some text 2</text>
+  <cell> some cell C</cell>
+</steptable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<steptable>
+  <cell> some cell A</cell>
+  <text option="paragraph"> some more<br/>text 1</text>
+  <cell> some cell B</cell>
 </steptable>
 \stopbuffer
 

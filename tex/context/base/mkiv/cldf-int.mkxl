@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Multilingual Macros / Lua}
 
-\registerctxluafile{cldf-int}{}
+\registerctxluafile{cldf-int}{autosuffix}
 
 \unprotect
 

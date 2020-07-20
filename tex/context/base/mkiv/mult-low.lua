@@ -188,7 +188,7 @@ return {
         "sixthargumentfalse", "sixthargumenttrue",
         "seventhargumentfalse", "seventhargumenttrue",
         --
-        "vkern", "hkern",
+        "vkern", "hkern", "vpenalty", "hpenalty",
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --

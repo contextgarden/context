@@ -445,10 +445,14 @@ do
 
     local f_key_null       = formatters["/%s null"]
     local f_key_value      = formatters["/%s %s"]
-    local f_key_dictionary = formatters["/%s << % t >>"]
-    local f_dictionary     = formatters["<< % t >>"]
-    local f_key_array      = formatters["/%s [ % t ]"]
-    local f_array          = formatters["[ % t ]"]
+ -- local f_key_dictionary = formatters["/%s << % t >>"]
+ -- local f_dictionary     = formatters["<< % t >>"]
+    local f_key_dictionary = formatters["/%s << %s >>"]
+    local f_dictionary     = formatters["<< %s >>"]
+ -- local f_key_array      = formatters["/%s [ % t ]"]
+ -- local f_array          = formatters["[ % t ]"]
+    local f_key_array      = formatters["/%s [ %s ]"]
+    local f_array          = formatters["[ %s ]"]
     local f_key_number     = formatters["/%s %N"]  -- always with max 9 digits and integer is possible
     local f_tonumber       = formatters["%N"]      -- always with max 9 digits and integer is possible
 
@@ -501,8 +505,9 @@ do
             if e then
                 r[n+1] = e
             end
+            r = concat(r," ")
             if contentonly then
-                return concat(r," ")
+                return r
             elseif key then
                 return f_key_dictionary(key,r)
             else
@@ -550,8 +555,9 @@ do
             if e then
                 r[tn+1] = e
             end
+            r = concat(r," ")
             if contentonly then
-                return concat(r, " ")
+                return r
             elseif key then
                 return f_key_array(key,r)
             else

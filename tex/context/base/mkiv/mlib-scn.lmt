@@ -71,6 +71,7 @@ local injectpair          = injectors.pair
 local injecttriplet       = injectors.color
 local injectquadruple     = injectors.cmykcolor
 local injecttransform     = injectors.transform
+local injectpath          = injectors.path
 
 local report              = logs.reporter("metapost")
 
@@ -95,26 +96,6 @@ local typescanners   = nil
 local tokenscanners  = nil
 local scanset        = nil
 local scanparameters = nil
-
-local injectpath = mp.path
-
-do -- todo: this will become an overload
-
-    local flush  = mp.path
-    local inject = injectors.path -- work in progress
-
-    injectpath = function(p,connector,close)
-        if #p > 1 then
-            if connector == true or connector == ".." then
-                return inject(p,false,close or p.close)
-            elseif connector == "--" then
-                return inject(p,true,close or p.close)
-            end
-        end
-        return flush(p,connector,close)
-    end
-
-end
 
 scanset = function() -- can be optimized, we now read twice
     scantoken()

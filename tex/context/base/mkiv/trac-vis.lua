@@ -388,10 +388,10 @@ local c_skip_b          = "trace:m"
 local c_glyph           = "trace:o"
 local c_ligature        = "trace:s"
 local c_white           = "trace:w"
-local c_math            = "trace:s"
-local c_origin          = "trace:o"
-local c_discretionary   = "trace:d"
-local c_expansion       = "trace:o"
+----- c_math            = "trace:s"
+----- c_origin          = "trace:o"
+----- c_discretionary   = "trace:d"
+----- c_expansion       = "trace:o"
 local c_depth           = "trace:o"
 local c_indent          = "trace:s"
 
@@ -409,8 +409,9 @@ local c_white_d         = "trace:dw"
 local c_math_d          = "trace:dr"
 local c_origin_d        = "trace:do"
 local c_discretionary_d = "trace:dd"
-local c_expansion_d     = "trace:do"
-local c_depth_d         = "trace:do"
+----- c_expansion_d     = "trace:do"
+----- c_depth_d         = "trace:do"
+----- c_indent_d        = "trace:ds"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = hpack_string(str,usedfont)
@@ -889,7 +890,7 @@ local ruledglue do
 
     local tags = {
      -- [userskip_code]                   = "US",
-        [gluecodes.lineskip]              = "LS",
+        [gluecodes.lineskip]              = "LI",
         [gluecodes.baselineskip]          = "BS",
         [gluecodes.parskip]               = "PS",
         [gluecodes.abovedisplayskip]      = "DA",

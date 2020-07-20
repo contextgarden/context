@@ -1,0 +1,40 @@
+if not modules then modules = { } end modules ['lpdf-vfc'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local setmetatableindex = table.setmetatableindex
+
+local defaultline = 16384
+local vfspecials  = backends.pdf.tables.vfspecials
+
+vfspecials.backgrounds = setmetatableindex(function(t,h)
+    local v = setmetatableindex(function(t,d)
+        local v = setmetatableindex(function(t,w)
+            local v = { "frame", w, h, d, defaultline, true, true }
+            t[w] = v
+            return v
+        end)
+        t[d] = v
+        return v
+    end)
+    t[h] = v
+    return v
+end)
+
+vfspecials.outlines = setmetatableindex(function(t,h)
+    local v = setmetatableindex(function(t,d)
+        local v = setmetatableindex(function(t,w)
+            local v = { "frame", w, h, d, defaultline, false, true }
+            t[w] = v
+            return v
+        end)
+        t[d] = v
+        return v
+    end)
+    t[h] = v
+    return v
+end)

@@ -712,7 +712,8 @@ function codeinjections.prerollreference(actions) -- share can become option
             local bs, bc = pdfborder()
             main = pdfdictionary {
                 Subtype = pdf_link,
-                Border  = bs,
+             -- Border  = bs,
+                Border  = pdfshareobjectreference(bs),
                 C       = bc,
                 H       = (not actions.highlight and pdf_n) or nil,
                 A       = pdfshareobjectreference(main),
