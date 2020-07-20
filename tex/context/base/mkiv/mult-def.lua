@@ -9288,6 +9288,9 @@ return {
    ["pe"]="تورفتگی",
    ["ro"]="aliniat",
   },
+  ["indentlist"]={
+   ["en"]="indentlist",
+  },
   ["indentnext"]={
    ["cs"]="odsadpristi",
    ["de"]="ziehefolgendeein",
@@ -10798,6 +10801,9 @@ return {
    ["nl"]="plaatskop",
    ["pe"]="بگذارسر",
    ["ro"]="punetitlu",
+  },
+  ["placeholder"]={
+   ["en"]="placeholder",
   },
   ["placestopper"]={
    ["cs"]="predelmista",

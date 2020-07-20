@@ -233,137 +233,91 @@ end
 
 logs.setmessenger(context.verbatim.ctxreport)
 
--- todo: use setmacro
+-- function interfaces.setuserinterface(interface,response)
+--     sharedstorage.currentinterface, currentinterface = interface, interface
+--     sharedstorage.currentresponse, currentresponse = response, response
+--     if environment.initex then
+--         local nofconstants    = 0
+--         local nofvariables    = 0
+--         local nofelements     = 0
+--         local nofcommands     = 0
+--         local nofformats      = 0
+--         local noftranslations = 0
+--         local nofsetupstrings = 0
+--         --
+--         local t, f, s = { }, formatters["\\ui_c{%s}{%s}"], formatters["\\ui_s{%s}"]
+--         for given, constant in next, complete.constants do
+--             constant = constant[interface] or constant.en or given
+--             constants[constant] = given -- breedte -> width
+--             nofconstants = nofconstants + 1
+--             if given == constant then
+--                 t[nofconstants] = s(given)
+--             else
+--                 t[nofconstants] = f(given,constant)
+--             end
+--         end
+--         contextsprint(prtcatcodes,concat(t))
+--         --
+--         local t, f = { }, formatters["\\ui_v{%s}{%s}"]
+--         for given, variable in next, complete.variables do
+--             variable = variable[interface] or variable.en or given
+--             variables[given] = variable -- ja -> yes
+--             nofvariables = nofvariables + 1
+--             t[nofvariables] = f(given,variable)
+--         end
+--         contextsprint(prtcatcodes,concat(t))
+--         --
+--         local t, f = { }, formatters["\\ui_e{%s}{%s}"]
+--         for given, element in next, complete.elements do
+--             element = element[interface] or element.en or given
+--             elements[element] = given
+--             nofelements = nofelements + 1
+--             t[nofelements] = f(given,element)
+--         end
+--         contextsprint(prtcatcodes,concat(t))
+--         --
+--      -- local t, n, f = { }, 0, formatters["\\ui_m{%s}{%s}"]
+--         local t, n, f = { }, 0, formatters["\\ui_a\\%s\\%s"]
+--         for given, command in next, complete.commands do
+--             command = command[interface] or command.en or given
+--             if command ~= given then
+--                 n = n + 1
+--                 t[n] = f(given,command)
+--             end
+--             nofcommands = nofcommands + 1
+--         end
+--         contextsprint(prtcatcodes,"\\toksapp\\everydump{"..concat(t).."}")
+--         --
+--         for given, format in next, complete.messages.formats do
+--             formats[given] = format[interface] or format.en or given
+--             nofformats = nofformats + 1
+--         end
+--         --
+--         for given, translation in next, complete.messages.translations do
+--             translations[given] = translation[interface] or translation.en or given
+--             noftranslations = noftranslations + 1
+--         end
+--         --
+--         for given, setupstring in next, complete.setupstrings do
+--             setupstring = setupstring[interface] or setupstring.en or given
+--             setupstrings[given] = setupstring
+--             nofsetupstrings = nofsetupstrings + 1
+--         end
+--         --
+--         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations, %a setupstrings",
+--             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations,nofsetupstrings)
+--     else
+--         report_interface("the language(s) can only be set when making the format")
+--     end
+--     interfaces.currentinterface = currentinterface
+--     interfaces.currentresponse  = currentresponse
+-- end
 
-function interfaces.setuserinterface(interface,response)
-    sharedstorage.currentinterface, currentinterface = interface, interface
-    sharedstorage.currentresponse, currentresponse = response, response
-    if environment.initex then
-        local setmacro        = false
-     -- local setmacro        = interfaces.setmacro -- cleaner (but we need to test first)
-        local nofconstants    = 0
-        local nofvariables    = 0
-        local nofelements     = 0
-        local nofcommands     = 0
-        local nofformats      = 0
-        local noftranslations = 0
-        local nofsetupstrings = 0
-        --
-        if setmacro then
-            for given, constant in next, complete.constants do
-                constant = constant[interface] or constant.en or given
-                constants[constant] = given -- breedte -> width
-                nofconstants = nofconstants + 1
-                setmacro("c!"..given,given)
-                if currentinterface ~= "en" then
-                    setmacro("k!"..constant,given)
-                end
-            end
-        else
-            local t, f, s = { }, formatters["\\ui_c{%s}{%s}"], formatters["\\ui_s{%s}"]
-            for given, constant in next, complete.constants do
-                constant = constant[interface] or constant.en or given
-                constants[constant] = given -- breedte -> width
-                nofconstants = nofconstants + 1
-                if given == constant then
-                    t[nofconstants] = s(given)
-                else
-                    t[nofconstants] = f(given,constant)
-                end
-            end
-            contextsprint(prtcatcodes,concat(t))
-        end
-        --
-        if setmacro then
-            for given, variable in next, complete.variables do
-                variable = variable[interface] or variable.en or given
-                variables[given] = variable -- ja -> yes
-                nofvariables = nofvariables + 1
-                setmacro("v!"..given,variable)
-            end
-        else
-            local t, f = { }, formatters["\\ui_v{%s}{%s}"]
-            for given, variable in next, complete.variables do
-                variable = variable[interface] or variable.en or given
-                variables[given] = variable -- ja -> yes
-                nofvariables = nofvariables + 1
-                t[nofvariables] = f(given,variable)
-            end
-            contextsprint(prtcatcodes,concat(t))
-        end
-        --
-        if setmacro then
-            for given, element in next, complete.elements do
-                element = element[interface] or element.en or given
-                elements[element] = given
-                nofelements = nofelements + 1
-                setmacro("e!"..given,element)
-            end
-        else
-            local t, f = { }, formatters["\\ui_e{%s}{%s}"]
-            for given, element in next, complete.elements do
-                element = element[interface] or element.en or given
-                elements[element] = given
-                nofelements = nofelements + 1
-                t[nofelements] = f(given,element)
-            end
-            contextsprint(prtcatcodes,concat(t))
-        end
-        --
-        if setmacro then
-            -- this can only work ok when we already have defined the command
-            luatex.registerdumpactions(function()
-                for given, command in next, complete.commands do
-                    command = command[interface] or command.en or given
-                    if command ~= given then
-                        setmacro(prtcatcodes,given,"\\"..command)
-                    end
-                    nofcommands = nofcommands + 1
-                end
-            end)
-        else
-            local t, n, f = { }, 0, formatters["\\ui_m{%s}{%s}"]
-            for given, command in next, complete.commands do
-                command = command[interface] or command.en or given
-                if command ~= given then
-                    n = n + 1
-                    t[n] = f(given,command)
-                end
-                nofcommands = nofcommands + 1
-            end
-            contextsprint(prtcatcodes,concat(t))
-        end
-        --
-        for given, format in next, complete.messages.formats do
-            formats[given] = format[interface] or format.en or given
-            nofformats = nofformats + 1
-        end
-        --
-        for given, translation in next, complete.messages.translations do
-            translations[given] = translation[interface] or translation.en or given
-            noftranslations = noftranslations + 1
-        end
-        --
-        for given, setupstring in next, complete.setupstrings do
-            setupstring = setupstring[interface] or setupstring.en or given
-            setupstrings[given] = setupstring
-            nofsetupstrings = nofsetupstrings + 1
-        end
-        --
-        report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations, %a setupstrings",
-            nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations,nofsetupstrings)
-    else
-        report_interface("the language(s) can only be set when making the format")
-    end
-    interfaces.currentinterface = currentinterface
-    interfaces.currentresponse  = currentresponse
-end
-
-interfaces.implement {
-    name      = "setuserinterface",
-    actions   = interfaces.setuserinterface,
-    arguments = "2 strings",
-}
+-- interfaces.implement {
+--     name      = "setuserinterface",
+--     actions   = interfaces.setuserinterface,
+--     arguments = "2 strings",
+-- }
 
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }

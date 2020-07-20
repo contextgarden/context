@@ -27,8 +27,8 @@ local implement         = interfaces.implement
 local trace_jobfiles    = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
 
 local report            = logs.reporter("system")
-local report_jobfiles   = logs.reporter("system","jobfiles")
-local report_functions  = logs.reporter("system","functions")
+local report_jobfiles   = logs.reporter("system", "jobfiles")
+local report_functions  = logs.reporter("system", "functions")
 
 local texsetcount       = tex.setcount
 local elements          = interfaces.elements

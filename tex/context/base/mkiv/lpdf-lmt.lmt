@@ -1706,9 +1706,11 @@ local finalize  do
                 if BleedBox then BleedBox = box end
             end
 
-            if TrimBox  then pageattributes.TrimBox  =  pdfsharedobject(TrimBox ) end
-            if CropBox  then pageattributes.CropBox  =  pdfsharedobject(CropBox ) end
-            if BleedBox then pageattributes.BleedBox =  pdfsharedobject(BleedBox) end
+            -- Indirect objects don't work in all viewers.
+
+            if TrimBox  then pageattributes.TrimBox  = TrimBox  end -- pdfsharedobject(TrimBox )
+            if CropBox  then pageattributes.CropBox  = CropBox  end -- pdfsharedobject(CropBox )
+            if BleedBox then pageattributes.BleedBox = BleedBox end -- pdfsharedobject(BleedBox)
 
         else
 

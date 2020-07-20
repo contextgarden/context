@@ -73,7 +73,7 @@ function lua.registercode(filename,options)
         local code = environment.luafilechunk(filename,false,opts.optimize)
         if code then
             bytedone[basename] = true
-            if environment.initex then
+            if environment.initex and not opts.initexonly then
                 local n = lua.lastbytecode + 1
                 bytedata[n] = { name = barename, options = opts }
                 if strip or opts.strip then

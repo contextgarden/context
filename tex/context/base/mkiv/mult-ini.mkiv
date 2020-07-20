@@ -20,11 +20,7 @@
 \unprotect
 
 \registerctxluafile{mult-ini}{}
-
-% Todo:
-
-\def\c!placeholder{placeholder}
-\def\c!indentlist {indentlist}
+\registerctxluafile{mult-fmt}{initexonly}
 
 %D \macros
 %D   [constanten,variabelen,commands]
@@ -723,25 +719,14 @@
 
 %D For at the \LUA\ end (experiment):
 
-% \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
-%                   \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
-% \def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
-% \def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
-% \def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
-%
-% \startinterface english
-%
-%     \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
-%
-% \stopinterface
-
 \def\ui_c#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
               \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
 \def\ui_s  #1{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
               \expandafter\gdef\csname\k!prefix!#1\endcsname{#1}} % backmapping from non english
 \def\ui_v#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
 \def\ui_e#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
-\def\ui_m#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
+%def\ui_m#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
+\def\ui_a#1#2{\aliasmacro#2#1}
 
 \startinterface english
 
@@ -797,7 +782,7 @@
 
 \ifx\undefined\everydump
     \newtoks\everydump
-    \def\dump{\the\everydump\normaldump}
+    \def\dump{\the\everydump\global\everydump\emptytoks\glet\dump\relax\normaldump}
 \fi
 
 % \appendtoks \showcontextbanner \to \everydump

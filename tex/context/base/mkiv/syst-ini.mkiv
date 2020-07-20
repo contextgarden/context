@@ -761,7 +761,7 @@
 
 \newtoks\everydump
 
-\def\dump{\the\everydump\normaldump}
+\def\dump{\the\everydump\global\everydump\emptytoks\glet\dump\relax\normaldump}
 
 %D The same applies for the startup actions.
 
