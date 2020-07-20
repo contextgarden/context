@@ -1696,15 +1696,19 @@ local finalize  do
 
             lpdf.finalizepage(true)
 
-         -- if relocated then
-         --     if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
-         --     if pageattributes.CropBox  then pageattributes.CropBox  = box end
-         --     if pageattributes.BleedBox then pageattributes.BleedBox = box end
-         -- end
+            local TrimBox  = pageattributes.TrimBox
+            local CropBox  = pageattributes.CropBox
+            local BleedBox = pageattributes.BleedBox
 
-            if pageattributes.TrimBox  then pageattributes.TrimBox  = relocated and pdfsharedobject(box or pageattributes.TrimBox ) end
-            if pageattributes.CropBox  then pageattributes.CropBox  = relocated and pdfsharedobject(box or pageattributes.CropBox ) end
-            if pageattributes.BleedBox then pageattributes.BleedBox = relocated and pdfsharedobject(box or pageattributes.BleedBox) end
+            if relocated then
+                if TrimBox  then TrimBox  = box end
+                if CropBox  then CropBox  = box end
+                if BleedBox then BleedBox = box end
+            end
+
+            if TrimBox  then pageattributes.TrimBox  =  pdfsharedobject(TrimBox ) end
+            if CropBox  then pageattributes.CropBox  =  pdfsharedobject(CropBox ) end
+            if BleedBox then pageattributes.BleedBox =  pdfsharedobject(BleedBox) end
 
         else
 

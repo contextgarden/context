@@ -1733,6 +1733,14 @@
 \def\docopyvalue#1#2#3%
   {\expandafter\def\csname#1#3\endcsname{\csname#2#3\endcsname}}
 
+%D Experiment:
+
+\edef\m_syst_protected{\detokenize{protected}}
+
+\protected\def\aliasmacro#1#2%
+  {\doifinstring{\m_syst_protected}{\meaning#2}\protected
+   \def#1{#2}}
+
 %D \macros
 %D   {doassign,undoassign,doassignempty}
 %D

@@ -131,6 +131,9 @@
 		<cd:variable name='camel' value='camel'/>
 		<cd:variable name='cap' value='cap'/>
 		<cd:variable name='capital' value='majuscula'/>
+		<cd:variable name='category' value='category'/>
+		<cd:variable name='cd:character' value='cd:character'/>
+		<cd:variable name='cd:font' value='cd:font'/>
 		<cd:variable name='center' value='center'/>
 		<cd:variable name='centerlast' value='centerlast'/>
 		<cd:variable name='chapter' value='capitol'/>
@@ -189,6 +192,7 @@
 		<cd:variable name='external' value='extern'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fapt'/>
+		<cd:variable name='fallback' value='fallback'/>
 		<cd:variable name='february' value='februarie'/>
 		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='figura'/>
@@ -810,8 +814,10 @@
 		<cd:constant name='extras' value='extras'/>
 		<cd:constant name='factor' value='factor'/>
 		<cd:constant name='fallback' value='fallback'/>
+		<cd:constant name='fallbacks' value='fallbacks'/>
 		<cd:constant name='family' value='familie'/>
 		<cd:constant name='features' value='features'/>
+		<cd:constant name='featureset' value='featureset'/>
 		<cd:constant name='fences' value='fences'/>
 		<cd:constant name='field' value='field'/>
 		<cd:constant name='fieldbackgroundcolor' value='culoarefundalcamp'/>
@@ -1379,8 +1385,18 @@
 		<cd:command name='Word' value='Cuvant'/>
 		<cd:command name='Words' value='Cuvinte'/>
 		<cd:command name='about' value='despre'/>
+		<cd:command name='adaptfontfeature' value='adaptfontfeature'/>
 		<cd:command name='adaptlayout' value='adapteazaaspect'/>
+		<cd:command name='addfeature' value='addfeature'/>
+		<cd:command name='alignbottom' value='alignbottom'/>
+		<cd:command name='aligned' value='aligned'/>
+		<cd:command name='alignedbox' value='alignedbox'/>
+		<cd:command name='alignedline' value='alignedline'/>
+		<cd:command name='alignhere' value='alignhere'/>
 		<cd:command name='alignment' value='alignment'/>
+		<cd:command name='alignmentcharacter' value='alignmentcharacter'/>
+		<cd:command name='applytocharacters' value='applytocharacters'/>
+		<cd:command name='applytofirstcharacter' value='applytofirstcharacter'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='la'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1392,9 +1408,13 @@
 		<cd:command name='blackrules' value='liniinegre'/>
 		<cd:command name='blank' value='blanc'/>
 		<cd:command name='bookmark' value='semncarte'/>
+		<cd:command name='bottombox' value='bottombox'/>
 		<cd:command name='bottomdistance' value='distantajos'/>
 		<cd:command name='bottomheight' value='inaltimejos'/>
+		<cd:command name='bottomleftbox' value='bottomleftbox'/>
+		<cd:command name='bottomrightbox' value='bottomrightbox'/>
 		<cd:command name='bottomspace' value='spatiujos'/>
+		<cd:command name='buildtextbottomdot' value='buildtextbottomdot'/>
 		<cd:command name='but' value='but'/>
 		<cd:command name='button' value='buton'/>
 		<cd:command name='bypassblocks' value='saripesteblocuri'/>
@@ -1433,8 +1453,11 @@
 		<cd:command name='defineblock' value='definestebloc'/>
 		<cd:command name='definebodyfont' value='definestefonttext'/>
 		<cd:command name='definebodyfontenvironment' value='definestemediulfonttext'/>
+		<cd:command name='definebodyfontswitch' value='definebodyfontswitch'/>
 		<cd:command name='definebuffer' value='definestebuffer'/>
 		<cd:command name='definecharacter' value='definestecaracter'/>
+		<cd:command name='definecharacterkerning' value='definecharacterkerning'/>
+		<cd:command name='definecharacterspacing' value='definecharacterspacing'/>
 		<cd:command name='definecolor' value='definesteculoare'/>
 		<cd:command name='definecolorgroup' value='definestegrupculori'/>
 		<cd:command name='definecolumnbreak' value='definecolumnbreak'/>
@@ -1444,37 +1467,57 @@
 		<cd:command name='definecommand' value='definestecomanda'/>
 		<cd:command name='defineconversion' value='definesteconversie'/>
 		<cd:command name='definedescription' value='definestedescriere'/>
+		<cd:command name='definedfont' value='definedfont'/>
 		<cd:command name='defineenumeration' value='definesteenumerare'/>
+		<cd:command name='definefallbackfamily' value='definefallbackfamily'/>
 		<cd:command name='definefield' value='definestecamp'/>
 		<cd:command name='definefieldstack' value='definestestivacampuri'/>
 		<cd:command name='definefiguresymbol' value='definestesimbolfigura'/>
+		<cd:command name='definefilefallback' value='definefilefallback'/>
+		<cd:command name='definefirstline' value='definefirstline'/>
 		<cd:command name='definefloat' value='definestefloat'/>
 		<cd:command name='definefont' value='definestefont'/>
+		<cd:command name='definefontalternative' value='definefontalternative'/>
+		<cd:command name='definefontfallback' value='definefontfallback'/>
+		<cd:command name='definefontfamily' value='definefontfamily'/>
+		<cd:command name='definefontfamilypreset' value='definefontfamilypreset'/>
+		<cd:command name='definefontfeature' value='definefontfeature'/>
+		<cd:command name='definefontfile' value='definefontfile'/>
+		<cd:command name='definefontsize' value='definefontsize'/>
+		<cd:command name='definefontsolution' value='definefontsolution'/>
 		<cd:command name='definefontstyle' value='definestestilfont'/>
 		<cd:command name='definefontsynonym' value='definestesinonimfont'/>
 		<cd:command name='defineframed' value='definesteinconjurare'/>
 		<cd:command name='defineframedtext' value='definestetextinconjurat'/>
+		<cd:command name='definefrozenfont' value='definefrozenfont'/>
 		<cd:command name='definehbox' value='definestehbox'/>
 		<cd:command name='definehead' value='definesteantet'/>
+		<cd:command name='definehyphenationfeatures' value='definehyphenationfeatures'/>
 		<cd:command name='defineindentedtext' value='defineindentedtext'/>
 		<cd:command name='defineinmargin' value='defineinmargin'/>
 		<cd:command name='defineinteractionmenu' value='definestemeniuinteractiune'/>
 		<cd:command name='defineitemgroup' value='defineitemgroup'/>
+		<cd:command name='defineitems' value='defineitems'/>
 		<cd:command name='definelabel' value='definesteeticheta'/>
 		<cd:command name='definelayer' value='definelayer'/>
 		<cd:command name='definelayout' value='definelayout'/>
+		<cd:command name='definelinenote' value='definelinenote'/>
 		<cd:command name='definelist' value='definestelista'/>
 		<cd:command name='definelogo' value='definestelogo'/>
 		<cd:command name='definemainfield' value='definestecampprincipal'/>
 		<cd:command name='definemakeup' value='definestemakeup'/>
 		<cd:command name='definemarking' value='definestemarcaje'/>
 		<cd:command name='definemathalignment' value='definemathalignment'/>
+		<cd:command name='definemode' value='definemode'/>
+		<cd:command name='definenamedcolor' value='definenamedcolor'/>
+		<cd:command name='definenote' value='definenote'/>
 		<cd:command name='defineoutput' value='definesteoutput'/>
 		<cd:command name='defineoverlay' value='definesteoverlay'/>
 		<cd:command name='definepagebreak' value='definepagebreak'/>
 		<cd:command name='definepalet' value='definestepaleta'/>
 		<cd:command name='definepapersize' value='definestedimensiunehartie'/>
 		<cd:command name='defineparagraphs' value='definesteparagraf'/>
+		<cd:command name='defineperiodkerning' value='defineperiodkerning'/>
 		<cd:command name='defineplacement' value='defineplacement'/>
 		<cd:command name='defineprofile' value='definesteprofil'/>
 		<cd:command name='defineprogram' value='definesteprogram'/>
@@ -1496,33 +1539,45 @@
 		<cd:command name='definetabulate' value='definestetabulatori'/>
 		<cd:command name='definetext' value='definestetext'/>
 		<cd:command name='definetextbackground' value='definetextbackground'/>
+		<cd:command name='definetextnote' value='definetextnote'/>
 		<cd:command name='definetextposition' value='definestepozitietext'/>
 		<cd:command name='definetextvariable' value='definestevariabilatext'/>
 		<cd:command name='definetype' value='definetype'/>
 		<cd:command name='definetyping' value='definestetyping'/>
 		<cd:command name='defineversion' value='definesteversiune'/>
+		<cd:command name='depthspanningtext' value='depthspanningtext'/>
 		<cd:command name='determineheadnumber' value='determinanumartitlu'/>
 		<cd:command name='determinelistcharacteristics' value='determinacaracteristicilelistei'/>
 		<cd:command name='determineregistercharacteristics' value='determinacaracteristiciregistru'/>
 		<cd:command name='dimension' value='dimensiune'/>
 		<cd:command name='disableinteractionmenu' value='dezactiveazameniuinteractiune'/>
+		<cd:command name='disablemode' value='disablemode'/>
+		<cd:command name='doaddfeature' value='doaddfeature'/>
 		<cd:command name='domicile' value='domiciliu'/>
+		<cd:command name='dontconvertfont' value='dontconvertfont'/>
 		<cd:command name='donttest' value='nutesta'/>
 		<cd:command name='edgedistance' value='distantacolt'/>
 		<cd:command name='edgewidth' value='latimecolturi'/>
+		<cd:command name='emphasisboldface' value='emphasisboldface'/>
 		<cd:command name='emptylines' value='emptylines'/>
+		<cd:command name='enablemode' value='enablemode'/>
 		<cd:command name='environment' value='mediu'/>
 		<cd:command name='externalfigure' value='figuraexterna'/>
 		<cd:command name='fact' value='fact'/>
+		<cd:command name='fastswitchtobodyfont' value='fastswitchtobodyfont'/>
+		<cd:command name='feature' value='feature'/>
 		<cd:command name='field' value='camp'/>
 		<cd:command name='fieldstack' value='stivacampuri'/>
 		<cd:command name='fillinfield' value='campumplere'/>
 		<cd:command name='fillinline' value='linieumplere'/>
 		<cd:command name='fillinrules' value='rigleumplere'/>
 		<cd:command name='fillintext' value='textumplere'/>
+		<cd:command name='firstcharacter' value='firstcharacter'/>
 		<cd:command name='fitfield' value='potrivestecamp'/>
+		<cd:command name='fittopbaselinegrid' value='fittopbaselinegrid'/>
 		<cd:command name='fixedspace' value='spatiufixat'/>
 		<cd:command name='fixedspaces' value='spatiifixate'/>
+		<cd:command name='flushnotes' value='flushnotes'/>
 		<cd:command name='followprofile' value='urmeazaprofil'/>
 		<cd:command name='followprofileversion' value='urmeazaversiuneprofil'/>
 		<cd:command name='followversion' value='urmeazaversiune'/>
@@ -1531,13 +1586,19 @@
 		<cd:command name='footnote' value='notasubsol'/>
 		<cd:command name='footnotetext' value='footnotetext'/>
 		<cd:command name='forceblocks' value='forteazablocuri'/>
+		<cd:command name='forcecharacterstripping' value='forcecharacterstripping'/>
 		<cd:command name='formulanumber' value='numarformula'/>
 		<cd:command name='fraction' value='fractie'/>
 		<cd:command name='framed' value='framed'/>
 		<cd:command name='from' value='din'/>
+		<cd:command name='fromlinenote' value='fromlinenote'/>
 		<cd:command name='getbuffer' value='adubuffer'/>
+		<cd:command name='getfirstcharacter' value='getfirstcharacter'/>
 		<cd:command name='getmarking' value='adumarcaje'/>
 		<cd:command name='getnumber' value='getnumber'/>
+		<cd:command name='globaldisablemode' value='globaldisablemode'/>
+		<cd:command name='globalenablemode' value='globalenablemode'/>
+		<cd:command name='globalpreventmode' value='globalpreventmode'/>
 		<cd:command name='godown' value='injos'/>
 		<cd:command name='goto' value='dute'/>
 		<cd:command name='gotobox' value='dutebox'/>
@@ -1553,6 +1614,7 @@
 		<cd:command name='headnumber' value='numartitlu'/>
 		<cd:command name='headsym' value='headsym'/>
 		<cd:command name='headtext' value='texttitlu'/>
+		<cd:command name='heightspanningtext' value='heightspanningtext'/>
 		<cd:command name='hideblocks' value='ascundeblocuri'/>
 		<cd:command name='high' value='inalt'/>
 		<cd:command name='hl' value='hl'/>
@@ -1584,26 +1646,37 @@
 		<cd:command name='interactionbuttons' value='butoaneinteractiune'/>
 		<cd:command name='interactionmenu' value='meniuinteractiune'/>
 		<cd:command name='item' value='element'/>
+		<cd:command name='itemgroup' value='itemgroup'/>
 		<cd:command name='items' value='element'/>
+		<cd:command name='itemtag' value='itemtag'/>
 		<cd:command name='its' value='el'/>
 		<cd:command name='keepblocks' value='pastreazablocuri'/>
+		<cd:command name='kerncharacters' value='kerncharacters'/>
 		<cd:command name='label' value='eticheta'/>
 		<cd:command name='labels' value='etichete'/>
 		<cd:command name='labeltext' value='texteticheta'/>
 		<cd:command name='language' value='limba'/>
+		<cd:command name='languageCharacters' value='languageCharacters'/>
+		<cd:command name='languagecharacters' value='languagecharacters'/>
 		<cd:command name='leftaligned' value='aliniatstanga'/>
+		<cd:command name='leftbottombox' value='leftbottombox'/>
 		<cd:command name='leftedgedistance' value='distantacoltstanga'/>
 		<cd:command name='leftedgewidth' value='latimecoltstanga'/>
+		<cd:command name='leftline' value='leftline'/>
 		<cd:command name='leftmargindistance' value='distantamarginestanga'/>
 		<cd:command name='leftmarginwidth' value='latimemarginestanga'/>
 		<cd:command name='leg' value='leg'/>
 		<cd:command name='linecorrection' value='linecorrection'/>
+		<cd:command name='linenote' value='linenote'/>
+		<cd:command name='linespanningtext' value='linespanningtext'/>
 		<cd:command name='linewidth' value='grosimelinie'/>
 		<cd:command name='listheight' value='inaltimelista'/>
 		<cd:command name='listlength' value='lungimelista'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='latimelista'/>
+		<cd:command name='loadfontgoodies' value='loadfontgoodies'/>
 		<cd:command name='localfootnotes' value='localfootnotes'/>
+		<cd:command name='localnotes' value='localnotes'/>
 		<cd:command name='logfields' value='logcampuri'/>
 		<cd:command name='lohi' value='jossus'/>
 		<cd:command name='low' value='jos'/>
@@ -1634,6 +1707,7 @@
 		<cd:command name='nodimension' value='faradimensiune'/>
 		<cd:command name='noheaderandfooterlines' value='faraliniiantetsisubsol'/>
 		<cd:command name='noindenting' value='faraaliniat'/>
+		<cd:command name='noitem' value='noitem'/>
 		<cd:command name='nolist' value='faralista'/>
 		<cd:command name='nomarking' value='faramarcaje'/>
 		<cd:command name='nomoreblocks' value='gatablocuri'/>
@@ -1641,6 +1715,7 @@
 		<cd:command name='nop' value='nop'/>
 		<cd:command name='nospace' value='faraspatiu'/>
 		<cd:command name='note' value='nota'/>
+		<cd:command name='notesymbol' value='notesymbol'/>
 		<cd:command name='notopandbottomlines' value='faraliniisussijos'/>
 		<cd:command name='notsmallcapped' value='nokap'/>
 		<cd:command name='nowhitespace' value='faraspatiualb'/>
@@ -1652,6 +1727,7 @@
 		<cd:command name='outermarginwidth' value='outermarginwidth'/>
 		<cd:command name='packed' value='impachetat'/>
 		<cd:command name='page' value='pagina'/>
+		<cd:command name='pagebreak' value='pagebreak'/>
 		<cd:command name='pagedepth' value='pagedepth'/>
 		<cd:command name='pagenumber' value='numarpagina'/>
 		<cd:command name='pageoffset' value='pageoffset'/>
@@ -1670,7 +1746,10 @@
 		<cd:command name='placelist' value='punelista'/>
 		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='punenotesubsollocale'/>
+		<cd:command name='placelocalnotes' value='placelocalnotes'/>
 		<cd:command name='placelogos' value='punelogouri'/>
+		<cd:command name='placenamedfloat' value='placenamedfloat'/>
+		<cd:command name='placenotes' value='placenotes'/>
 		<cd:command name='placeongrid' value='plaseazapegrid'/>
 		<cd:command name='placeontopofeachother' value='punedeasuprafiecareia'/>
 		<cd:command name='placepagenumber' value='punenumarpagina'/>
@@ -1683,9 +1762,17 @@
 		<cd:command name='placetextvariable' value='punevariabilatext'/>
 		<cd:command name='position' value='pozitie'/>
 		<cd:command name='positiontext' value='pozitietext'/>
+		<cd:command name='postponenotes' value='postponenotes'/>
+		<cd:command name='postponingnotes' value='postponingnotes'/>
+		<cd:command name='predefinedfont' value='predefinedfont'/>
+		<cd:command name='predefinefont' value='predefinefont'/>
+		<cd:command name='presetdocument' value='presetdocument'/>
+		<cd:command name='prettyprintbuffer' value='prettyprintbuffer'/>
+		<cd:command name='preventmode' value='preventmode'/>
 		<cd:command name='printpaperheight' value='inaltimehartieimprimanta'/>
 		<cd:command name='printpaperwidth' value='latimehartieimprimanta'/>
 		<cd:command name='processblocks' value='proceseazabloc'/>
+		<cd:command name='processbodyfontenvironmentlist' value='processbodyfontenvironmentlist'/>
 		<cd:command name='processpage' value='proceseazapagina'/>
 		<cd:command name='product' value='produs'/>
 		<cd:command name='program' value='program'/>
@@ -1695,19 +1782,45 @@
 		<cd:command name='quote' value='minicitat'/>
 		<cd:command name='ran' value='ran'/>
 		<cd:command name='redo' value='refa'/>
+		<cd:command name='redoconvertfont' value='redoconvertfont'/>
 		<cd:command name='ref' value='ref'/>
 		<cd:command name='reference' value='referinta'/>
 		<cd:command name='referral' value='referit'/>
 		<cd:command name='referraldate' value='datareferit'/>
 		<cd:command name='referring' value='referring'/>
+		<cd:command name='registerfontclass' value='registerfontclass'/>
+		<cd:command name='registerhyphenationexception' value='registerhyphenationexception'/>
+		<cd:command name='registerhyphenationpattern' value='registerhyphenationpattern'/>
 		<cd:command name='remark' value='remarca'/>
+		<cd:command name='replacefeature' value='replacefeature'/>
 		<cd:command name='reset' value='reset'/>
+		<cd:command name='resetandaddfeature' value='resetandaddfeature'/>
+		<cd:command name='resetcharacteralign' value='resetcharacteralign'/>
+		<cd:command name='resetcharacterkerning' value='resetcharacterkerning'/>
+		<cd:command name='resetcharacterspacing' value='resetcharacterspacing'/>
+		<cd:command name='resetcharacterstripping' value='resetcharacterstripping'/>
+		<cd:command name='resetfeature' value='resetfeature'/>
+		<cd:command name='resetfontcolorsheme' value='resetfontcolorsheme'/>
+		<cd:command name='resetfontfallback' value='resetfontfallback'/>
+		<cd:command name='resetfontsolution' value='resetfontsolution'/>
+		<cd:command name='resethyphenationfeatures' value='resethyphenationfeatures'/>
+		<cd:command name='resetlocalfloats' value='resetlocalfloats'/>
 		<cd:command name='resetmarking' value='reseteazamarcaje'/>
+		<cd:command name='resetmode' value='resetmode'/>
 		<cd:command name='resetnumber' value='resetnumber'/>
+		<cd:command name='resetpath' value='resetpath'/>
+		<cd:command name='resetperiodkerning' value='resetperiodkerning'/>
+		<cd:command name='resetsystemmode' value='resetsystemmode'/>
 		<cd:command name='resettext' value='resettextcontent'/>
+		<cd:command name='resetvisualizers' value='resetvisualizers'/>
+		<cd:command name='restoreglobalbodyfont' value='restoreglobalbodyfont'/>
+		<cd:command name='retestfeature' value='retestfeature'/>
+		<cd:command name='revivefeature' value='revivefeature'/>
 		<cd:command name='rightaligned' value='aliniatdreapta'/>
+		<cd:command name='rightbottombox' value='rightbottombox'/>
 		<cd:command name='rightedgedistance' value='distantacoltdreapta'/>
 		<cd:command name='rightedgewidth' value='latimecoltdreapta'/>
+		<cd:command name='rightline' value='rightline'/>
 		<cd:command name='rightmargindistance' value='distantamarginedreapta'/>
 		<cd:command name='rightmarginwidth' value='latimemarginedreapta'/>
 		<cd:command name='romannumerals' value='numereromane'/>
@@ -1718,12 +1831,38 @@
 		<cd:command name='selectblocks' value='selecteazablocuri'/>
 		<cd:command name='selectpaper' value='selecteazahartie'/>
 		<cd:command name='selectversion' value='selecteazaversiune'/>
+		<cd:command name='setbigbodyfont' value='setbigbodyfont'/>
+		<cd:command name='setcharacteralign' value='setcharacteralign'/>
+		<cd:command name='setcharacteraligndetail' value='setcharacteraligndetail'/>
+		<cd:command name='setcharactercasing' value='setcharactercasing'/>
+		<cd:command name='setcharactercleaning' value='setcharactercleaning'/>
+		<cd:command name='setcharacterkerning' value='setcharacterkerning'/>
+		<cd:command name='setcharacterspacing' value='setcharacterspacing'/>
+		<cd:command name='setcharacterstripping' value='setcharacterstripping'/>
+		<cd:command name='setcurrentfontclass' value='setcurrentfontclass'/>
+		<cd:command name='setfirstline' value='setfirstline'/>
+		<cd:command name='setfirstpasscharacteralign' value='setfirstpasscharacteralign'/>
+		<cd:command name='setfont' value='setfont'/>
+		<cd:command name='setfontcolorsheme' value='setfontcolorsheme'/>
+		<cd:command name='setfontfeature' value='setfontfeature'/>
+		<cd:command name='setfontsolution' value='setfontsolution'/>
+		<cd:command name='setfontstrut' value='setfontstrut'/>
+		<cd:command name='sethyphenationfeatures' value='sethyphenationfeatures'/>
+		<cd:command name='setmainbodyfont' value='setmainbodyfont'/>
+		<cd:command name='setmode' value='setmode'/>
+		<cd:command name='setnote' value='setnote'/>
+		<cd:command name='setnotetext' value='setnotetext'/>
 		<cd:command name='setnumber' value='setnumber'/>
+		<cd:command name='setperiodkerning' value='setperiodkerning'/>
+		<cd:command name='setsecondpasscharacteralign' value='setsecondpasscharacteralign'/>
+		<cd:command name='setsmallbodyfont' value='setsmallbodyfont'/>
+		<cd:command name='setsystemmode' value='setsystemmode'/>
 		<cd:command name='settextcontent' value='settextcontent'/>
 		<cd:command name='settextvariable' value='setvariabilatext'/>
 		<cd:command name='setupalign' value='seteazaalinierea'/>
 		<cd:command name='setupanswerarea' value='setupanswerarea'/>
 		<cd:command name='setuparranging' value='seteazaaranjareapag'/>
+		<cd:command name='setupattachment' value='setupattachment'/>
 		<cd:command name='setupbackground' value='seteazafundal'/>
 		<cd:command name='setupbackgrounds' value='seteazafundaluri'/>
 		<cd:command name='setupblackrules' value='seteazaliniinegre'/>
@@ -1738,6 +1877,9 @@
 		<cd:command name='setupcapitals' value='seteazamajuscule'/>
 		<cd:command name='setupcaption' value='seteazalegenda'/>
 		<cd:command name='setupcaptions' value='seteazalegendele'/>
+		<cd:command name='setupcharacteralign' value='setupcharacteralign'/>
+		<cd:command name='setupcharacterkerning' value='setupcharacterkerning'/>
+		<cd:command name='setupcharacterspacing' value='setupcharacterspacing'/>
 		<cd:command name='setupclipping' value='seteazaclipping'/>
 		<cd:command name='setupcolor' value='seteazaculoare'/>
 		<cd:command name='setupcolors' value='seteazaculori'/>
@@ -1748,6 +1890,7 @@
 		<cd:command name='setupcombinations' value='seteazacombinari'/>
 		<cd:command name='setupcombinedlist' value='seteazalistacombinata'/>
 		<cd:command name='setupcomment' value='seteazacomentariu'/>
+		<cd:command name='setupcounter' value='setupcounter'/>
 		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='seteazadescriere'/>
 		<cd:command name='setupenumeration' value='setupenumeration'/>
@@ -1757,9 +1900,14 @@
 		<cd:command name='setupfields' value='seteazacampuri'/>
 		<cd:command name='setupfillinlines' value='seteazaliniiumplere'/>
 		<cd:command name='setupfillinrules' value='seteazarigleumplere'/>
+		<cd:command name='setupfirstline' value='setupfirstline'/>
 		<cd:command name='setupfloat' value='seteazafloat'/>
 		<cd:command name='setupfloats' value='seteazafloats'/>
 		<cd:command name='setupfloatsplitting' value='seteazaimpartireafloat'/>
+		<cd:command name='setupfontexpansion' value='setupfontexpansion'/>
+		<cd:command name='setupfontprotrusion' value='setupfontprotrusion'/>
+		<cd:command name='setupfonts' value='setupfonts'/>
+		<cd:command name='setupfontsolution' value='setupfontsolution'/>
 		<cd:command name='setupfooter' value='seteazasubsol'/>
 		<cd:command name='setupfootertexts' value='seteazatextesubsol'/>
 		<cd:command name='setupfootnotedefinition' value='seteazadefinireanotasubsol'/>
@@ -1776,6 +1924,7 @@
 		<cd:command name='setupheadnumber' value='seteazanumartitlu'/>
 		<cd:command name='setupheads' value='seteazatitluri'/>
 		<cd:command name='setupheadtext' value='seteazatexttitlu'/>
+		<cd:command name='setuphyphenation' value='setuphyphenation'/>
 		<cd:command name='setuphyphenmark' value='seteazaliniesilabe'/>
 		<cd:command name='setupindentedtext' value='setupindentedtext'/>
 		<cd:command name='setupindenting' value='seteazaaliniat'/>
@@ -1792,6 +1941,7 @@
 		<cd:command name='setuplanguage' value='setarelimba'/>
 		<cd:command name='setuplayout' value='seteazaaspect'/>
 		<cd:command name='setuplegend' value='seteazalegenda'/>
+		<cd:command name='setuplinenote' value='setuplinenote'/>
 		<cd:command name='setuplinenumbering' value='seteazanumerotarelinii'/>
 		<cd:command name='setuplines' value='seteazalinii'/>
 		<cd:command name='setuplinewidth' value='seteazagrosimelinie'/>
@@ -1804,6 +1954,10 @@
 		<cd:command name='setupmarking' value='seteazamarcaje'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
 		<cd:command name='setupnarrower' value='seteazaingust'/>
+		<cd:command name='setupnotation' value='setupnotation'/>
+		<cd:command name='setupnotations' value='setupnotations'/>
+		<cd:command name='setupnote' value='setupnote'/>
+		<cd:command name='setupnotes' value='setupnotes'/>
 		<cd:command name='setupnumber' value='setupnumber'/>
 		<cd:command name='setupnumbering' value='seteazanumerotare'/>
 		<cd:command name='setupoppositeplacing' value='seteazaplasareaopozita'/>
@@ -1817,6 +1971,7 @@
 		<cd:command name='setuppapersize' value='seteazadimensiunihartie'/>
 		<cd:command name='setupparagraphnumbering' value='seteazanumerotareparagrafe'/>
 		<cd:command name='setupparagraphs' value='seteazaparagrafe'/>
+		<cd:command name='setupperiodkerning' value='setupperiodkerning'/>
 		<cd:command name='setupplacement' value='setupplacement'/>
 		<cd:command name='setuppositioning' value='setarepozitie'/>
 		<cd:command name='setupprofiles' value='seteazaprofile'/>
@@ -1846,6 +2001,7 @@
 		<cd:command name='setuptabulate' value='seteazatabulatori'/>
 		<cd:command name='setuptext' value='seteazatext'/>
 		<cd:command name='setuptextbackground' value='setuptextbackground'/>
+		<cd:command name='setuptextnote' value='setuptextnote'/>
 		<cd:command name='setuptextposition' value='seteazapozitietext'/>
 		<cd:command name='setuptextrules' value='seteazarigletext'/>
 		<cd:command name='setuptexttexts' value='seteazatextetext'/>
@@ -1860,16 +2016,29 @@
 		<cd:command name='setupurl' value='seteazaurl'/>
 		<cd:command name='setupversions' value='seteazaversiuni'/>
 		<cd:command name='setupwhitespace' value='seteazaspatiualb'/>
+		<cd:command name='setvisualizerfont' value='setvisualizerfont'/>
 		<cd:command name='showbodyfont' value='afiseazafonttext'/>
 		<cd:command name='showbodyfontenvironment' value='afiseazamediufonttext'/>
 		<cd:command name='showcolor' value='afiseazaculoare'/>
 		<cd:command name='showcolorgroup' value='afiseazagrupculoare'/>
+		<cd:command name='showcounter' value='showcounter'/>
 		<cd:command name='showexternalfigures' value='afiseazafiguriexterne'/>
 		<cd:command name='showfields' value='afiseazacampuri'/>
+		<cd:command name='showfont' value='showfont'/>
+		<cd:command name='showfontdata' value='showfontdata'/>
+		<cd:command name='showfontexpansion' value='showfontexpansion'/>
+		<cd:command name='showfontitalics' value='showfontitalics'/>
+		<cd:command name='showfontkerns' value='showfontkerns'/>
+		<cd:command name='showfontparameters' value='showfontparameters'/>
+		<cd:command name='showfontstrip' value='showfontstrip'/>
+		<cd:command name='showfontstyle' value='showfontstyle'/>
 		<cd:command name='showframe' value='afiseazarama'/>
 		<cd:command name='showgrid' value='afiseazagrid'/>
+		<cd:command name='showhyphenationtrace' value='showhyphenationtrace'/>
+		<cd:command name='showkerning' value='showkerning'/>
 		<cd:command name='showlayout' value='afiseazaaspect'/>
 		<cd:command name='showmakeup' value='afiseazamakeup'/>
+		<cd:command name='showminimalbaseline' value='showminimalbaseline'/>
 		<cd:command name='showpalet' value='afiseazapaleta'/>
 		<cd:command name='showprint' value='afiseazatiparire'/>
 		<cd:command name='showsetups' value='afiseazasetari'/>
@@ -1879,6 +2048,7 @@
 		<cd:command name='someline' value='olinie'/>
 		<cd:command name='somewhere' value='undeva'/>
 		<cd:command name='space' value='spatiu'/>
+		<cd:command name='specialitem' value='specialitem'/>
 		<cd:command name='splitfloat' value='impartefloat'/>
 		<cd:command name='startalignment' value='startaliniere'/>
 		<cd:command name='startbackground' value='startfundal'/>
@@ -1896,6 +2066,7 @@
 		<cd:command name='startglobal' value='startglobal'/>
 		<cd:command name='startline' value='startlinie'/>
 		<cd:command name='startlinecorrection' value='startcorectielinie'/>
+		<cd:command name='startlinenote' value='startlinenote'/>
 		<cd:command name='startlinenumbering' value='startnumerotarelinii'/>
 		<cd:command name='startlines' value='startlinii'/>
 		<cd:command name='startlocal' value='startlocal'/>
@@ -1938,6 +2109,7 @@
 		<cd:command name='stopglobal' value='stopblobal'/>
 		<cd:command name='stopline' value='stoplinie'/>
 		<cd:command name='stoplinecorrection' value='stopcorectielinie'/>
+		<cd:command name='stoplinenote' value='stoplinenote'/>
 		<cd:command name='stoplinenumbering' value='stopnumerotarelinii'/>
 		<cd:command name='stoplines' value='stoplinii'/>
 		<cd:command name='stoplocal' value='stoplocal'/>
@@ -1965,8 +2137,11 @@
 		<cd:command name='stopunpacked' value='stopneimpachetat'/>
 		<cd:command name='stopversion' value='stopversiune'/>
 		<cd:command name='stretched' value='intins'/>
+		<cd:command name='strictinspectnextcharacter' value='strictinspectnextcharacter'/>
+		<cd:command name='stripcharacter' value='stripcharacter'/>
 		<cd:command name='subformulanumber' value='numarsubformula'/>
 		<cd:command name='subpagenumber' value='subpagenumber'/>
+		<cd:command name='subtractfeature' value='subtractfeature'/>
 		<cd:command name='switchtobodyfont' value='trecilafonttext'/>
 		<cd:command name='switchtorawfont' value='trecilafontraw'/>
 		<cd:command name='sym' value='sim'/>
@@ -1976,16 +2151,24 @@
 		<cd:command name='synchronize' value='sincronizeaza'/>
 		<cd:command name='tab' value='tab'/>
 		<cd:command name='testcolumn' value='testcolumn'/>
+		<cd:command name='testfeature' value='testfeature'/>
+		<cd:command name='testfeatureonce' value='testfeatureonce'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
 		<cd:command name='textbackground' value='textbackground'/>
+		<cd:command name='textcolor' value='textcolor'/>
 		<cd:command name='textheight' value='inaltimetext'/>
+		<cd:command name='textnote' value='textnote'/>
 		<cd:command name='textreference' value='referintatext'/>
 		<cd:command name='textrule' value='riglatext'/>
 		<cd:command name='textvariable' value='variabilatext'/>
 		<cd:command name='textwidth' value='latimetext'/>
+		<cd:command name='thefirstcharacter' value='thefirstcharacter'/>
+		<cd:command name='thenormalizedbodyfontsize' value='thenormalizedbodyfontsize'/>
+		<cd:command name='theremainingcharacters' value='theremainingcharacters'/>
 		<cd:command name='thinrule' value='liniesubtire'/>
 		<cd:command name='thinrules' value='liniisubtiri'/>
+		<cd:command name='tolinenote' value='tolinenote'/>
 		<cd:command name='tooltip' value='tooltip'/>
 		<cd:command name='topdistance' value='distantasus'/>
 		<cd:command name='topheight' value='inaltimesus'/>
@@ -1996,13 +2179,19 @@
 		<cd:command name='typ' value='typ'/>
 		<cd:command name='type' value='type'/>
 		<cd:command name='typebuffer' value='scriebuffer'/>
+		<cd:command name='typedefinedbuffer' value='typedefinedbuffer'/>
 		<cd:command name='typefile' value='typefile'/>
+		<cd:command name='typeinlinebuffer' value='typeinlinebuffer'/>
+		<cd:command name='typing' value='typing'/>
 		<cd:command name='unitmeaning' value='numeunitate'/>
 		<cd:command name='unknown' value='necunoscut'/>
+		<cd:command name='unregisterhyphenationpattern' value='unregisterhyphenationpattern'/>
 		<cd:command name='useJSscripts' value='folosestescriptJS'/>
 		<cd:command name='useURL' value='folosesteURL'/>
 		<cd:command name='useXMLfilter' value='useXMLfilter'/>
 		<cd:command name='useblocks' value='folosestebloc'/>
+		<cd:command name='usebodyfont' value='usebodyfont'/>
+		<cd:command name='usebodyfontparameter' value='usebodyfontparameter'/>
 		<cd:command name='usecommands' value='folosestecomenzi'/>
 		<cd:command name='useencoding' value='folosestecodificarea'/>
 		<cd:command name='useexternaldocument' value='folosestedocumentextern'/>
@@ -2019,10 +2208,12 @@
 		<cd:command name='usetypescript' value='usetypescript'/>
 		<cd:command name='usetypescriptfile' value='usetypescriptfile'/>
 		<cd:command name='useurl' value='folosesteurl'/>
+		<cd:command name='verbatim' value='verbatim'/>
 		<cd:command name='version' value='versiune'/>
 		<cd:command name='vl' value='vl'/>
 		<cd:command name='weekday' value='zidinsaptamana'/>
 		<cd:command name='whitespace' value='spatiualb'/>
+		<cd:command name='widthspanningtext' value='widthspanningtext'/>
 		<cd:command name='wordright' value='cuvantdreapta'/>
 		<cd:command name='writebetweenlist' value='scrieintreliste'/>
 		<cd:command name='writetolist' value='scrieinlista'/>

@@ -300,6 +300,8 @@ return {
         "tracingall", "tracingnone", "loggingall",
         "showluatokens",
         --
+        "aliasmacro",
+        --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
         "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "emspace", "charspace", "nbsp", "crlf",

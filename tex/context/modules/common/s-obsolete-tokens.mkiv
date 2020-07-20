@@ -56,7 +56,7 @@ local report          = logs.reporter("tokens","collectors")
 -- flush    : print back to tex
 -- test     : fancy stuff
 
-local get_next     = token.get_next
+local get_next     = token.scan_next or token.get_next
 local create_token = token.create
 
 function collectors.install(tag,end_cs)

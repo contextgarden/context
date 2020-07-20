@@ -1410,6 +1410,20 @@
 \def\doignorevalue#1#2#3{\expandafter\let \csname#1#2\endcsname\empty}
 \def\docopyvalue  #1#2#3{\expandafter\def \csname#1#3\endcsname{\csname#2#3\endcsname}}
 
+%D Experiment
+%D
+%D \starttyping
+%D \protected\def\fooA{A} \aliasmacro\FooA\fooA
+%D           \def\fooB{B} \aliasmacro\FooB\fooB
+%D
+%D \meaning\fooA\crlf \meaning\FooA\crlf
+%D \meaning\fooB\crlf \meaning\FooB\crlf
+%D \stoptyping
+
+\protected\def\aliasmacro#1#2%
+  {\ifprotected#2\protected\protected\fi
+   \def#1{#2}}
+
 %D \macros
 %D   {doassign,undoassign,doassignempty}
 %D

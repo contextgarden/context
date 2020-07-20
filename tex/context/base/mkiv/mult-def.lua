@@ -151,6 +151,10 @@ return {
    ["pe"]="درمورد",
    ["ro"]="despre",
   },
+  ["adaptfontfeature"]={
+   ["en"]="adaptfontfeature",
+   ["fr"]="adapterfonctionnalitepolice",
+  },
   ["adaptlayout"]={
    ["cs"]="prizpusobvzhled",
    ["de"]="passelayoutan",
@@ -161,11 +165,46 @@ return {
    ["pe"]="تنظیم‌طرح‌بندی",
    ["ro"]="adapteazaaspect",
   },
-  ["adding"]={},
+  ["addfeature"]={
+   ["en"]="addfeature",
+   ["fr"]="ajouterfonctionnalite",
+  },
+  ["alignbottom"]={
+   ["en"]="alignbottom",
+   ["fr"]="alignerbas",
+  },
+  ["aligned"]={
+   ["en"]="aligned",
+   ["fr"]="aligne",
+  },
+  ["alignedbox"]={
+   ["en"]="alignedbox",
+   ["fr"]="boitealignee",
+  },
+  ["alignedline"]={
+   ["en"]="alignedline",
+   ["fr"]="lignealignee",
+  },
+  ["alignhere"]={
+   ["en"]="alignhere",
+   ["fr"]="alignerici",
+  },
   ["alignment"]={
    ["en"]="alignment",
    ["fr"]="alignement",
    ["nl"]="uitlijnen",
+  },
+  ["alignmentcharacter"]={
+   ["en"]="alignmentcharacter",
+   ["fr"]="caracterealignement",
+  },
+  ["applytocharacters"]={
+   ["en"]="applytocharacters",
+   ["fr"]="appliquerauxcaracteres",
+  },
+  ["applytofirstcharacter"]={
+   ["en"]="applytofirstcharacter",
+   ["fr"]="appliqueraupremiercaractere",
   },
   ["arg"]={
    ["cs"]="arg",
@@ -277,6 +316,10 @@ return {
    ["pe"]="چوبخط",
    ["ro"]="semncarte",
   },
+  ["bottombox"]={
+   ["en"]="bottombox",
+   ["fr"]="boitebas",
+  },
   ["bottomdistance"]={
    ["cs"]="vzdalenostspodku",
    ["de"]="abstandunten",
@@ -297,6 +340,14 @@ return {
    ["pe"]="ارتفاع‌پایین",
    ["ro"]="inaltimejos",
   },
+  ["bottomleftbox"]={
+   ["en"]="bottomleftbox",
+   ["fr"]="basgaucheboite",
+  },
+  ["bottomrightbox"]={
+   ["en"]="bottomrightbox",
+   ["fr"]="boitebasdroite",
+  },
   ["bottomspace"]={
    ["cs"]="bottomspace",
    ["de"]="bottomspace",
@@ -306,6 +357,10 @@ return {
    ["nl"]="bodemwit",
    ["pe"]="فضای‌پایین",
    ["ro"]="spatiujos",
+  },
+  ["buildtextbottomdot"]={
+   ["en"]="buildtextbottomdot",
+   ["fr"]="construirepointtextebas",
   },
   ["but"]={
    ["cs"]="spodek",
@@ -687,6 +742,10 @@ return {
    ["pe"]="تعریف‌محیط‌قلم‌بدنه",
    ["ro"]="definestemediulfonttext",
   },
+  ["definebodyfontswitch"]={
+   ["en"]="definebodyfontswitch",
+   ["fr"]="définircommutateurpolicedecorps",
+  },
   ["definebuffer"]={
    ["cs"]="definujbuffer",
    ["de"]="definierepuffer",
@@ -706,6 +765,14 @@ return {
    ["nl"]="definieerkarakter",
    ["pe"]="تعریف‌حرف",
    ["ro"]="definestecaracter",
+  },
+  ["definecharacterkerning"]={
+   ["en"]="definecharacterkerning",
+   ["fr"]="définirapprochecaracteres",
+  },
+  ["definecharacterspacing"]={
+   ["en"]="definecharacterspacing",
+   ["fr"]="définirespacementcaracteres",
   },
   ["definecolor"]={
    ["cs"]="definujbarvu",
@@ -797,6 +864,10 @@ return {
    ["pe"]="تعریف‌شرح",
    ["ro"]="definestedescriere",
   },
+  ["definedfont"]={
+   ["en"]="definedfont",
+   ["fr"]="policedefinie",
+  },
   ["defineenumeration"]={
    ["cs"]="definujvycet",
    ["de"]="definierenummerierung",
@@ -806,6 +877,10 @@ return {
    ["nl"]="doornummeren",
    ["pe"]="تعریف‌شماره‌بندی",
    ["ro"]="definesteenumerare",
+  },
+  ["definefallbackfamily"]={
+   ["en"]="definefallbackfamily",
+   ["fr"]="définirfamillederepli",
   },
   ["definefield"]={
    ["cs"]="definujpole",
@@ -837,6 +912,14 @@ return {
    ["pe"]="تعریف‌نمادشکل",
    ["ro"]="definestesimbolfigura",
   },
+  ["definefilefallback"]={
+   ["en"]="definefilefallback",
+   ["fr"]="définirfichierderepli",
+  },
+  ["definefirstline"]={
+   ["en"]="definefirstline",
+   ["fr"]="définirpremiereligne",
+  },
   ["definefloat"]={
    ["cs"]="definujplvouciobjekt",
    ["de"]="definieregleitobjekt",
@@ -856,6 +939,38 @@ return {
    ["nl"]="definieerfont",
    ["pe"]="تعریف‌قلم",
    ["ro"]="definestefont",
+  },
+  ["definefontalternative"]={
+   ["en"]="definefontalternative",
+   ["fr"]="définirvariantepolice",
+  },
+  ["definefontfallback"]={
+   ["en"]="definefontfallback",
+   ["fr"]="définirpolicederepli",
+  },
+  ["definefontfamily"]={
+   ["en"]="definefontfamily",
+   ["fr"]="définirfamillepolice",
+  },
+  ["definefontfamilypreset"]={
+   ["en"]="definefontfamilypreset",
+   ["fr"]="définirprereglagefamillepolice",
+  },
+  ["definefontfeature"]={
+   ["en"]="definefontfeature",
+   ["fr"]="définirfonctionnalitepolice",
+  },
+  ["definefontfile"]={
+   ["en"]="definefontfile",
+   ["fr"]="définirfichierpolice",
+  },
+  ["definefontsize"]={
+   ["en"]="definefontsize",
+   ["fr"]="définirtaillepolice",
+  },
+  ["definefontsolution"]={
+   ["en"]="definefontsolution",
+   ["fr"]="définirsolutionpolice",
   },
   ["definefontstyle"]={
    ["cs"]="definujstylfontu",
@@ -897,6 +1012,10 @@ return {
    ["pe"]="تعریف‌متن‌قالبی",
    ["ro"]="definestetextinconjurat",
   },
+  ["definefrozenfont"]={
+   ["en"]="definefrozenfont",
+   ["fr"]="définirpolicegelee",
+  },
   ["definehbox"]={
    ["cs"]="definujhbox",
    ["de"]="definierehbox",
@@ -916,6 +1035,10 @@ return {
    ["nl"]="definieerkop",
    ["pe"]="تعریف‌سر",
    ["ro"]="definesteantet",
+  },
+  ["definehyphenationfeatures"]={
+   ["en"]="definehyphenationfeatures",
+   ["fr"]="définirfonctionnalitescesure",
   },
   ["defineindentedtext"]={
    ["en"]="defineindentedtext",
@@ -952,6 +1075,10 @@ return {
    ["pe"]="تعریف‌گروه‌آیتم",
    ["ro"]="defineitemgroup",
   },
+  ["defineitems"]={
+   ["en"]="defineitems",
+   ["fr"]="définiréléments",
+  },
   ["definelabel"]={
    ["cs"]="definujpopisek",
    ["de"]="definierelabel",
@@ -981,6 +1108,10 @@ return {
    ["nl"]="definieerlayout",
    ["pe"]="تعریف‌طرح‌بندی",
    ["ro"]="definelayout",
+  },
+  ["definelinenote"]={
+   ["en"]="definelinenote",
+   ["fr"]="définirnotedeligne",
   },
   ["definelist"]={
    ["cs"]="definujseznam",
@@ -1042,6 +1173,18 @@ return {
    ["pe"]="تعریف‌تنظیم‌ریاضی",
    ["ro"]="definemathalignment",
   },
+  ["definemode"]={
+   ["en"]="definemode",
+   ["fr"]="définirmode",
+  },
+  ["definenamedcolor"]={
+   ["en"]="definenamedcolor",
+   ["fr"]="définircouleurnommee",
+  },
+  ["definenote"]={
+   ["en"]="definenote",
+   ["fr"]="définirnote",
+  },
   ["defineoutput"]={
    ["cs"]="definujvystup",
    ["de"]="defineoutput",
@@ -1101,6 +1244,10 @@ return {
    ["nl"]="definieeralineas",
    ["pe"]="تعریف‌پاراگرافها",
    ["ro"]="definesteparagraf",
+  },
+  ["defineperiodkerning"]={
+   ["en"]="defineperiodkerning",
+   ["fr"]="reglerapprochepoint",
   },
   ["defineplacement"]={
    ["cs"]="defineplacement",
@@ -1307,6 +1454,10 @@ return {
    ["fr"]="définirtextearriereplan",
    ["nl"]="definieertekstachtergrond",
   },
+  ["definetextnote"]={
+   ["en"]="definetextnote",
+   ["fr"]="définirnotetexte",
+  },
   ["definetextposition"]={
    ["cs"]="definetextposition",
    ["de"]="definetextposition",
@@ -1356,6 +1507,10 @@ return {
    ["nl"]="definieerversie",
    ["pe"]="تعریف‌نسخه",
    ["ro"]="definesteversiune",
+  },
+  ["depthspanningtext"]={
+   ["en"]="depthspanningtext",
+   ["fr"]="jambagetextecouvrant",
   },
   ["determineheadnumber"]={
    ["cs"]="stanovcislonadpisu",
@@ -1407,6 +1562,14 @@ return {
    ["pe"]="ازکارانداختن‌منوی‌پانل",
    ["ro"]="dezactiveazameniuinteractiune",
   },
+  ["disablemode"]={
+   ["en"]="disablemode",
+   ["fr"]="desactivermode",
+  },
+  ["doaddfeature"]={
+   ["en"]="doaddfeature",
+   ["fr"]="faireajouterfonctionnalite",
+  },
   ["domicile"]={
    ["cs"]="bydliste",
    ["de"]="wohnort",
@@ -1416,6 +1579,10 @@ return {
    ["nl"]="woonplaats",
    ["pe"]="مسکن",
    ["ro"]="domiciliu",
+  },
+  ["dontconvertfont"]={
+   ["en"]="dontconvertfont",
+   ["fr"]="nepasconvertirpolice",
   },
   ["donttest"]={
    ["cs"]="zadnytest",
@@ -1447,6 +1614,10 @@ return {
    ["pe"]="عرض‌لبه",
    ["ro"]="latimecolturi",
   },
+  ["emphasisboldface"]={
+   ["en"]="emphasisboldface",
+   ["fr"]="policegrasaccentue",
+  },
   ["emptylines"]={
    ["cs"]="emptylines",
    ["de"]="emptylines",
@@ -1456,6 +1627,10 @@ return {
    ["nl"]="legeregels",
    ["pe"]="خطها‌خالی",
    ["ro"]="emptylines",
+  },
+  ["enablemode"]={
+   ["en"]="enablemode",
+   ["fr"]="activermode",
   },
   ["environment"]={
    ["cs"]="prostredi",
@@ -1486,6 +1661,14 @@ return {
    ["nl"]="geg",
    ["pe"]="حقیقت",
    ["ro"]="fact",
+  },
+  ["fastswitchtobodyfont"]={
+   ["en"]="fastswitchtobodyfont",
+   ["fr"]="passerrapideapolicedecorps",
+  },
+  ["feature"]={
+   ["en"]="feature",
+   ["fr"]="fonctionnalite",
   },
   ["field"]={
    ["cs"]="pole",
@@ -1547,6 +1730,10 @@ return {
    ["pe"]="درج‌درمتن",
    ["ro"]="textumplere",
   },
+  ["firstcharacter"]={
+   ["en"]="firstcharacter",
+   ["fr"]="premiercaractere",
+  },
   ["fitfield"]={
    ["cs"]="prizpusobivepole",
    ["de"]="passendfeld",
@@ -1556,6 +1743,10 @@ return {
    ["nl"]="passendveld",
    ["pe"]="پرکردن‌میدان",
    ["ro"]="potrivestecamp",
+  },
+  ["fittopbaselinegrid"]={
+   ["en"]="fittopbaselinegrid",
+   ["fr"]="adaptergrillehautlignedebase",
   },
   ["fixedspace"]={
    ["cs"]="tvrdamezera",
@@ -1576,6 +1767,10 @@ return {
    ["nl"]="vastespaties",
    ["pe"]="فضاهای‌ثابت",
    ["ro"]="spatiifixate",
+  },
+  ["flushnotes"]={
+   ["en"]="flushnotes",
+   ["fr"]="vidernotes",
   },
   ["followprofile"]={
    ["cs"]="dodrzujprofil",
@@ -1657,6 +1852,10 @@ return {
    ["pe"]="اجباربلوکها",
    ["ro"]="forteazablocuri",
   },
+  ["forcecharacterstripping"]={
+   ["en"]="forcecharacterstripping",
+   ["fr"]="forcerdemontagecaracteres",
+  },
   ["formulanumber"]={
    ["cs"]="cislorovnice",
    ["de"]="formelnummer",
@@ -1697,6 +1896,10 @@ return {
    ["pe"]="از",
    ["ro"]="din",
   },
+  ["fromlinenote"]={
+   ["en"]="fromlinenote",
+   ["fr"]="denotedeligne",
+  },
   ["getbuffer"]={
    ["cs"]="ziskejbuffer",
    ["de"]="holepuffer",
@@ -1706,6 +1909,10 @@ return {
    ["nl"]="haalbuffer",
    ["pe"]="دریافت‌بافر",
    ["ro"]="adubuffer",
+  },
+  ["getfirstcharacter"]={
+   ["en"]="getfirstcharacter",
+   ["fr"]="obtenirpremiercaractere",
   },
   ["getmarking"]={
    ["cs"]="ziskejznaceni",
@@ -1726,6 +1933,18 @@ return {
    ["nl"]="haalnummer",
    ["pe"]="دریافت‌شماره",
    ["ro"]="getnumber",
+  },
+  ["globaldisablemode"]={
+   ["en"]="globaldisablemode",
+   ["fr"]="desactivermodeglobal",
+  },
+  ["globalenablemode"]={
+   ["en"]="globalenablemode",
+   ["fr"]="activermodeglobal",
+  },
+  ["globalpreventmode"]={
+   ["en"]="globalpreventmode",
+   ["fr"]="empechermodeglobal",
   },
   ["godown"]={
    ["cs"]="jdidolu",
@@ -1876,6 +2095,10 @@ return {
    ["nl"]="koptekst",
    ["pe"]="متن‌سر",
    ["ro"]="texttitlu",
+  },
+  ["heightspanningtext"]={
+   ["en"]="heightspanningtext",
+   ["fr"]="hauteurtextecouvrant",
   },
   ["hideblocks"]={
    ["cs"]="schovejbloky",
@@ -2187,6 +2410,10 @@ return {
    ["pe"]="آیتم",
    ["ro"]="element",
   },
+  ["itemgroup"]={
+   ["en"]="itemgroup",
+   ["fr"]="groupedéléments",
+  },
   ["items"]={
    ["cs"]="polozky",
    ["de"]="posten",
@@ -2196,6 +2423,10 @@ return {
    ["nl"]="items",
    ["pe"]="آیتمها",
    ["ro"]="element",
+  },
+  ["itemtag"]={
+   ["en"]="itemtag",
+   ["fr"]="étiquettedélément",
   },
   ["its"]={
    ["cs"]="pol",
@@ -2216,6 +2447,10 @@ return {
    ["nl"]="handhaafblokken",
    ["pe"]="حفظ‌بلوکها",
    ["ro"]="pastreazablocuri",
+  },
+  ["kerncharacters"]={
+   ["en"]="kerncharacters",
+   ["fr"]="approchercaracteres",
   },
   ["label"]={
    ["cs"]="poppisek",
@@ -2257,6 +2492,14 @@ return {
    ["pe"]="زبان",
    ["ro"]="limba",
   },
+  ["languageCharacters"]={
+   ["en"]="languageCharacters",
+   ["fr"]="Caractereslangue",
+  },
+  ["languagecharacters"]={
+   ["en"]="languagecharacters",
+   ["fr"]="caractereslangue",
+  },
   ["leftaligned"]={
    ["cs"]="zarovnanovlevo",
    ["de"]="linksbuendig",
@@ -2266,6 +2509,10 @@ return {
    ["nl"]="regellinks",
    ["pe"]="چپ‌چین",
    ["ro"]="aliniatstanga",
+  },
+  ["leftbottombox"]={
+   ["en"]="leftbottombox",
+   ["fr"]="boitebasgauche",
   },
   ["leftedgedistance"]={
    ["cs"]="vzdalenostlevehookraje",
@@ -2286,6 +2533,10 @@ return {
    ["nl"]="linkerrandbreedte",
    ["pe"]="عرض‌لبه‌چپ",
    ["ro"]="latimecoltstanga",
+  },
+  ["leftline"]={
+   ["en"]="leftline",
+   ["fr"]="lignegauche",
   },
   ["leftmargindistance"]={
    ["cs"]="vzdalenostlevemarginalie",
@@ -2321,6 +2572,14 @@ return {
    ["en"]="linecorrection",
    ["fr"]="correctionligne",
    ["nl"]="regelcorrectie",
+  },
+  ["linenote"]={
+   ["en"]="linenote",
+   ["fr"]="notedeligne",
+  },
+  ["linespanningtext"]={
+   ["en"]="linespanningtext",
+   ["fr"]="largeurtextecouvrant",
   },
   ["linewidth"]={
    ["cs"]="tloustkacary",
@@ -2372,10 +2631,18 @@ return {
    ["pe"]="عرض‌لیست",
    ["ro"]="latimelista",
   },
+  ["loadfontgoodies"]={
+   ["en"]="loadfontgoodies",
+   ["fr"]="charerfriandisespolice",
+  },
   ["localfootnotes"]={
    ["en"]="localfootnotes",
    ["fr"]="notesbdplocales",
    ["nl"]="lokalevoetnoten",
+  },
+  ["localnotes"]={
+   ["en"]="localnotes",
+   ["fr"]="noteslocales",
   },
   ["logfields"]={
    ["cs"]="zaznamovepole",
@@ -2672,6 +2939,10 @@ return {
    ["pe"]="بدون‌تورفتگی",
    ["ro"]="faraaliniat",
   },
+  ["noitem"]={
+   ["en"]="noitem",
+   ["fr"]="sansélément",
+  },
   ["nolist"]={
    ["cs"]="zadnyseznam",
    ["de"]="keineliste",
@@ -2741,6 +3012,10 @@ return {
    ["nl"]="noot",
    ["pe"]="یادداشت",
    ["ro"]="nota",
+  },
+  ["notesymbol"]={
+   ["en"]="notesymbol",
+   ["fr"]="symbolenote",
   },
   ["notopandbottomlines"]={
    ["cs"]="zadnehorniadolniradky",
@@ -2851,6 +3126,10 @@ return {
    ["nl"]="pagina",
    ["pe"]="صفحه",
    ["ro"]="pagina",
+  },
+  ["pagebreak"]={
+   ["en"]="pagebreak",
+   ["fr"]="sautdepage",
   },
   ["pagedepth"]={
    ["cs"]="pagedepth",
@@ -3027,6 +3306,10 @@ return {
    ["pe"]="درج‌پانوشتهای‌موضعی",
    ["ro"]="punenotesubsollocale",
   },
+  ["placelocalnotes"]={
+   ["en"]="placelocalnotes",
+   ["fr"]="placernoteslocales",
+  },
   ["placelogos"]={
    ["cs"]="umistiloga",
    ["de"]="platzierelogo",
@@ -3036,6 +3319,14 @@ return {
    ["nl"]="plaatsbeeldmerken",
    ["pe"]="درج‌آرمها",
    ["ro"]="punelogouri",
+  },
+  ["placenamedfloat"]={
+   ["en"]="placenamedfloat",
+   ["fr"]="placerflottantnomme",
+  },
+  ["placenotes"]={
+   ["en"]="placenotes",
+   ["fr"]="placernotes",
   },
   ["placeongrid"]={
    ["cs"]="umistinamrizku",
@@ -3157,6 +3448,34 @@ return {
    ["pe"]="مکان‌متن",
    ["ro"]="pozitietext",
   },
+  ["postponenotes"]={
+   ["en"]="postponenotes",
+   ["fr"]="reporternotes",
+  },
+  ["postponingnotes"]={
+   ["en"]="postponingnotes",
+   ["fr"]="reportnotes",
+  },
+  ["predefinedfont"]={
+   ["en"]="predefinedfont",
+   ["fr"]="policepredefinie",
+  },
+  ["predefinefont"]={
+   ["en"]="predefinefont",
+   ["fr"]="predéfinirpolice",
+  },
+  ["presetdocument"]={
+   ["en"]="presetdocument",
+   ["fr"]="prereglerdocument",
+  },
+  ["prettyprintbuffer"]={
+   ["en"]="prettyprintbuffer",
+   ["fr"]="imprimerjolimenttampon",
+  },
+  ["preventmode"]={
+   ["en"]="preventmode",
+   ["fr"]="empechermode",
+  },
   ["printpaperheight"]={
    ["cs"]="vyskatiskpapiru",
    ["de"]="printpapierhoehe",
@@ -3186,6 +3505,10 @@ return {
    ["nl"]="verwerkblokken",
    ["pe"]="بلوکهای‌پردازش",
    ["ro"]="proceseazabloc",
+  },
+  ["processbodyfontenvironmentlist"]={
+   ["en"]="processbodyfontenvironmentlist",
+   ["fr"]="traiterlisteenvironnementpolicedecorps",
   },
   ["processpage"]={
    ["cs"]="zpracujstranu",
@@ -3277,6 +3600,10 @@ return {
    ["pe"]="انجام‌دوباره",
    ["ro"]="refa",
   },
+  ["redoconvertfont"]={
+   ["en"]="redoconvertfont",
+   ["fr"]="refaireconvertirpolice",
+  },
   ["ref"]={
    ["cs"]="ref",
    ["de"]="ref",
@@ -3327,6 +3654,18 @@ return {
    ["pe"]="مراجعه",
    ["ro"]="referring",
   },
+  ["registerfontclass"]={
+   ["en"]="registerfontclass",
+   ["fr"]="enregistrerclassepolice",
+  },
+  ["registerhyphenationexception"]={
+   ["en"]="registerhyphenationexception",
+   ["fr"]="enregistrerexceptioncesure",
+  },
+  ["registerhyphenationpattern"]={
+   ["en"]="registerhyphenationpattern",
+   ["fr"]="enregistrermotifcesure",
+  },
   ["remark"]={
    ["cs"]="oznaceni",
    ["de"]="bemerkung",
@@ -3336,6 +3675,10 @@ return {
    ["nl"]="toelichting",
    ["pe"]="توجه",
    ["ro"]="remarca",
+  },
+  ["replacefeature"]={
+   ["en"]="replacefeature",
+   ["fr"]="remplacerfonctionnalite",
   },
   ["reset"]={
    ["cs"]="reset",
@@ -3347,6 +3690,50 @@ return {
    ["pe"]="بازنشانی",
    ["ro"]="reset",
   },
+  ["resetandaddfeature"]={
+   ["en"]="resetandaddfeature",
+   ["fr"]="razetajouterfonctionnalite",
+  },
+  ["resetcharacteralign"]={
+   ["en"]="resetcharacteralign",
+   ["fr"]="razalignercaractere",
+  },
+  ["resetcharacterkerning"]={
+   ["en"]="resetcharacterkerning",
+   ["fr"]="razapprochecaracteres",
+  },
+  ["resetcharacterspacing"]={
+   ["en"]="resetcharacterspacing",
+   ["fr"]="razespacementcaracteres",
+  },
+  ["resetcharacterstripping"]={
+   ["en"]="resetcharacterstripping",
+   ["fr"]="razdemontagecaracteres",
+  },
+  ["resetfeature"]={
+   ["en"]="resetfeature",
+   ["fr"]="razfonctionnalite",
+  },
+  ["resetfontcolorsheme"]={
+   ["en"]="resetfontcolorsheme",
+   ["fr"]="razthemecouleurpolice",
+  },
+  ["resetfontfallback"]={
+   ["en"]="resetfontfallback",
+   ["fr"]="razpolicederepli",
+  },
+  ["resetfontsolution"]={
+   ["en"]="resetfontsolution",
+   ["fr"]="zarsolutionpolice",
+  },
+  ["resethyphenationfeatures"]={
+   ["en"]="resethyphenationfeatures",
+   ["fr"]="razfonctionnalitescesure",
+  },
+  ["resetlocalfloats"]={
+   ["en"]="resetlocalfloats",
+   ["fr"]="razflottantslocaux",
+  },
   ["resetmarking"]={
    ["cs"]="resetznaceni",
    ["de"]="ruecksetztenbeschriftung",
@@ -3356,6 +3743,10 @@ return {
    ["nl"]="resetmarkering",
    ["pe"]="بازنشانی‌نشانه‌گذاری",
    ["ro"]="reseteazamarcaje",
+  },
+  ["resetmode"]={
+   ["en"]="resetmode",
+   ["fr"]="razmode",
   },
   ["resetnumber"]={
    ["cs"]="resetnumber",
@@ -3367,6 +3758,18 @@ return {
    ["pe"]="بازنشانی‌شماره",
    ["ro"]="resetnumber",
   },
+  ["resetpath"]={
+   ["en"]="resetpath",
+   ["fr"]="razchemin",
+  },
+  ["resetperiodkerning"]={
+   ["en"]="resetperiodkerning",
+   ["fr"]="razapprochepoint",
+  },
+  ["resetsystemmode"]={
+   ["en"]="resetsystemmode",
+   ["fr"]="razmodesysteme",
+  },
   ["resettext"]={
    ["cs"]="resettextcontent",
    ["de"]="resettextcontent",
@@ -3377,6 +3780,22 @@ return {
    ["pe"]="بازنشانی‌متن",
    ["ro"]="resettextcontent",
   },
+  ["resetvisualizers"]={
+   ["en"]="resetvisualizers",
+   ["fr"]="razvisualisateurs",
+  },
+  ["restoreglobalbodyfont"]={
+   ["en"]="restoreglobalbodyfont",
+   ["fr"]="restaurerpolicedecorpsglobale",
+  },
+  ["retestfeature"]={
+   ["en"]="retestfeature",
+   ["fr"]="retesterfonctionnalite",
+  },
+  ["revivefeature"]={
+   ["en"]="revivefeature",
+   ["fr"]="relancerfonctionnalite",
+  },
   ["rightaligned"]={
    ["cs"]="zarovnanovpravo",
    ["de"]="rechtsbuendig",
@@ -3386,6 +3805,10 @@ return {
    ["nl"]="regelrechts",
    ["pe"]="تنظیم‌راست",
    ["ro"]="aliniatdreapta",
+  },
+  ["rightbottombox"]={
+   ["en"]="rightbottombox",
+   ["fr"]="boitebasdroite",
   },
   ["rightedgedistance"]={
    ["cs"]="vzdalenostpravehookraje",
@@ -3406,6 +3829,10 @@ return {
    ["nl"]="rechterrandbreedte",
    ["pe"]="عرض‌لبه‌راست",
    ["ro"]="latimecoltdreapta",
+  },
+  ["rightline"]={
+   ["en"]="rightline",
+   ["fr"]="lignedroite",
   },
   ["rightmargindistance"]={
    ["cs"]="vzdalenostpravemarginalie",
@@ -3502,6 +3929,90 @@ return {
    ["pe"]="انتخاب‌نسخه",
    ["ro"]="selecteazaversiune",
   },
+  ["setbigbodyfont"]={
+   ["en"]="setbigbodyfont",
+   ["fr"]="reglerpolicedecorpsimportante",
+  },
+  ["setcharacteralign"]={
+   ["en"]="setcharacteralign",
+   ["fr"]="regleralignercaractere",
+  },
+  ["setcharacteraligndetail"]={
+   ["en"]="setcharacteraligndetail",
+   ["fr"]="reglerdetailalignercaractere",
+  },
+  ["setcharactercasing"]={
+   ["en"]="setcharactercasing",
+   ["fr"]="reglercassecaracteres",
+  },
+  ["setcharactercleaning"]={
+   ["en"]="setcharactercleaning",
+   ["fr"]="reglernettoyagecaracteres",
+  },
+  ["setcharacterkerning"]={
+   ["en"]="setcharacterkerning",
+   ["fr"]="reglerapprochecaracteres",
+  },
+  ["setcharacterspacing"]={
+   ["en"]="setcharacterspacing",
+   ["fr"]="reglerespacementcaracteres",
+  },
+  ["setcharacterstripping"]={
+   ["en"]="setcharacterstripping",
+   ["fr"]="reglerdemontagecaracteres",
+  },
+  ["setcurrentfontclass"]={
+   ["en"]="setcurrentfontclass",
+   ["fr"]="reglerclassepolicecourante",
+  },
+  ["setfirstline"]={
+   ["en"]="setfirstline",
+   ["fr"]="reglerpremiereligne",
+  },
+  ["setfirstpasscharacteralign"]={
+   ["en"]="setfirstpasscharacteralign",
+   ["fr"]="regleralignercaracterepremierepasse",
+  },
+  ["setfont"]={
+   ["en"]="setfont",
+   ["fr"]="reglerpolice",
+  },
+  ["setfontcolorsheme"]={
+   ["en"]="setfontcolorsheme",
+   ["fr"]="reglerthemecouleurpolice",
+  },
+  ["setfontfeature"]={
+   ["en"]="setfontfeature",
+   ["fr"]="reglerfonctionnalitepolice",
+  },
+  ["setfontsolution"]={
+   ["en"]="setfontsolution",
+   ["fr"]="reglersolutionpolice",
+  },
+  ["setfontstrut"]={
+   ["en"]="setfontstrut",
+   ["fr"]="reglerentretoisepolice",
+  },
+  ["sethyphenationfeatures"]={
+   ["en"]="sethyphenationfeatures",
+   ["fr"]="reglerfonctionnalitescesure",
+  },
+  ["setmainbodyfont"]={
+   ["en"]="setmainbodyfont",
+   ["fr"]="reglerpolicedecorpsprincipale",
+  },
+  ["setmode"]={
+   ["en"]="setmode",
+   ["fr"]="reglermode",
+  },
+  ["setnote"]={
+   ["en"]="setnote",
+   ["fr"]="reglernote",
+  },
+  ["setnotetext"]={
+   ["en"]="setnotetext",
+   ["fr"]="reglertextenote",
+  },
   ["setnumber"]={
    ["cs"]="setnumber",
    ["de"]="setnumber",
@@ -3511,6 +4022,22 @@ return {
    ["nl"]="setnummer",
    ["pe"]="تعیین‌شماره",
    ["ro"]="setnumber",
+  },
+  ["setperiodkerning"]={
+   ["en"]="setperiodkerning",
+   ["fr"]="reglerapprochepoint",
+  },
+  ["setsecondpasscharacteralign"]={
+   ["en"]="setsecondpasscharacteralign",
+   ["fr"]="regleralignercaracteresecondepasse",
+  },
+  ["setsmallbodyfont"]={
+   ["en"]="setsmallbodyfont",
+   ["fr"]="reglerpolicedecorpspetite",
+  },
+  ["setsystemmode"]={
+   ["en"]="setsystemmode",
+   ["fr"]="reglermodesysteme",
   },
   ["settextcontent"]={
    ["cs"]="settextcontent",
@@ -3561,6 +4088,10 @@ return {
    ["nl"]="stelarrangerenin",
    ["pe"]="بارگذاری‌ترتیب",
    ["ro"]="seteazaaranjareapag",
+  },
+  ["setupattachment"]={
+   ["en"]="setupattachment",
+   ["fr"]="configurepiecejointe",
   },
   ["setupbackground"]={
    ["cs"]="nastavpozadi",
@@ -3702,6 +4233,18 @@ return {
    ["pe"]="بارگذاری‌شرحها",
    ["ro"]="seteazalegendele",
   },
+  ["setupcharacteralign"]={
+   ["en"]="setupcharacteralign",
+   ["fr"]="configureralignercaractere",
+  },
+  ["setupcharacterkerning"]={
+   ["en"]="setupcharacterkerning",
+   ["fr"]="configurerapprochecaracteres",
+  },
+  ["setupcharacterspacing"]={
+   ["en"]="setupcharacterspacing",
+   ["fr"]="configurerespacementcaracteres",
+  },
   ["setupclipping"]={
    ["cs"]="nastavorez",
    ["de"]="stelleausschnittein",
@@ -3802,6 +4345,10 @@ return {
    ["pe"]="بارگذاری‌توضیح",
    ["ro"]="seteazacomentariu",
   },
+  ["setupcounter"]={
+   ["en"]="setupcounter",
+   ["fr"]="configurercompteur",
+  },
   ["setupdescription"]={
    ["en"]="setupdescription",
    ["fr"]="configurerdescription",
@@ -3882,6 +4429,10 @@ return {
    ["pe"]="بارگذاری‌درج‌درخطها",
    ["ro"]="seteazarigleumplere",
   },
+  ["setupfirstline"]={
+   ["en"]="setupfirstline",
+   ["fr"]="configurerpremiereligne",
+  },
   ["setupfloat"]={
    ["cs"]="nastavplvouciobjekt",
    ["de"]="stellegleitobjektein",
@@ -3911,6 +4462,22 @@ return {
    ["nl"]="stelplaatsbloksplitsenin",
    ["pe"]="بارگذاری‌شکافتن‌شناورها",
    ["ro"]="seteazaimpartireafloat",
+  },
+  ["setupfontexpansion"]={
+   ["en"]="setupfontexpansion",
+   ["fr"]="configurerexpansionpolice",
+  },
+  ["setupfontprotrusion"]={
+   ["en"]="setupfontprotrusion",
+   ["fr"]="configurerprotrusionpolice",
+  },
+  ["setupfonts"]={
+   ["en"]="setupfonts",
+   ["fr"]="configurerpolices",
+  },
+  ["setupfontsolution"]={
+   ["en"]="setupfontsolution",
+   ["fr"]="configuresolutionpolice",
   },
   ["setupfooter"]={
    ["cs"]="nastavupati",
@@ -4061,6 +4628,10 @@ return {
    ["nl"]="stelkoptekstin",
    ["pe"]="بارگذاری‌متن‌سر",
    ["ro"]="seteazatexttitlu",
+  },
+  ["setuphyphenation"]={
+   ["en"]="setuphyphenation",
+   ["fr"]="configurercesure",
   },
   ["setuphyphenmark"]={
    ["cs"]="nastavdelitko",
@@ -4217,6 +4788,10 @@ return {
    ["pe"]="بارگذاری‌راهنما",
    ["ro"]="seteazalegenda",
   },
+  ["setuplinenote"]={
+   ["en"]="setuplinenote",
+   ["fr"]="configurernotedeligne",
+  },
   ["setuplinenumbering"]={
    ["cs"]="nastavcislovaniradku",
    ["de"]="stellezeilennumerierungein",
@@ -4326,6 +4901,22 @@ return {
    ["nl"]="stelsmallerin",
    ["pe"]="بارگذاری‌باریکتر",
    ["ro"]="seteazaingust",
+  },
+  ["setupnotation"]={
+   ["en"]="setupnotation",
+   ["fr"]="configurernotation",
+  },
+  ["setupnotations"]={
+   ["en"]="setupnotations",
+   ["fr"]="configurernotations",
+  },
+  ["setupnote"]={
+   ["en"]="setupnote",
+   ["fr"]="configurenote",
+  },
+  ["setupnotes"]={
+   ["en"]="setupnotes",
+   ["fr"]="configurenotes",
   },
   ["setupnumber"]={
    ["cs"]="setupnumber",
@@ -4456,6 +5047,10 @@ return {
    ["nl"]="stelalineasin",
    ["pe"]="بارگذاری‌پاراگرافها",
    ["ro"]="seteazaparagrafe",
+  },
+  ["setupperiodkerning"]={
+   ["en"]="setupperiodkerning",
+   ["fr"]="configurerapprochepoint",
   },
   ["setupplacement"]={
    ["cs"]="setupplacement",
@@ -4742,6 +5337,10 @@ return {
    ["fr"]="configurertextearriereplan",
    ["nl"]="steltekstachtergrondin",
   },
+  ["setuptextnote"]={
+   ["en"]="setuptextnote",
+   ["fr"]="configurernotetexte",
+  },
   ["setuptextposition"]={
    ["cs"]="setuptextposition",
    ["de"]="setuptextposition",
@@ -4882,6 +5481,10 @@ return {
    ["pe"]="بارگذاری‌فضای‌سفید",
    ["ro"]="seteazaspatiualb",
   },
+  ["setvisualizerfont"]={
+   ["en"]="setvisualizerfont",
+   ["fr"]="reglervisualisateurpolice",
+  },
   ["showbodyfont"]={
    ["cs"]="ukazzakladnifont",
    ["de"]="zeigefliesstext",
@@ -4922,6 +5525,10 @@ return {
    ["pe"]="نمایش‌گروه‌رنگ",
    ["ro"]="afiseazagrupculoare",
   },
+  ["showcounter"]={
+   ["en"]="showcounter",
+   ["fr"]="montrercompteur",
+  },
   ["showexternalfigures"]={
    ["cs"]="ukazexterniobrazy",
    ["de"]="zeigeexterneabbildungen",
@@ -4941,6 +5548,38 @@ return {
    ["nl"]="toonvelden",
    ["pe"]="نمایش‌میدانها",
    ["ro"]="afiseazacampuri",
+  },
+  ["showfont"]={
+   ["en"]="showfont",
+   ["fr"]="montrerpolice",
+  },
+  ["showfontdata"]={
+   ["en"]="showfontdata",
+   ["fr"]="montrerdonneespolice",
+  },
+  ["showfontexpansion"]={
+   ["en"]="showfontexpansion",
+   ["fr"]="montrerexpansionpolice",
+  },
+  ["showfontitalics"]={
+   ["en"]="showfontitalics",
+   ["fr"]="montreritaliquespolice",
+  },
+  ["showfontkerns"]={
+   ["en"]="showfontkerns",
+   ["fr"]="montrerlesapproches",
+  },
+  ["showfontparameters"]={
+   ["en"]="showfontparameters",
+   ["fr"]="montrerparametrespolice",
+  },
+  ["showfontstrip"]={
+   ["en"]="showfontstrip",
+   ["fr"]="montrervisuellementpolice",
+  },
+  ["showfontstyle"]={
+   ["en"]="showfontstyle",
+   ["fr"]="montrerstylepolice",
   },
   ["showframe"]={
    ["cs"]="ukazramecek",
@@ -4962,6 +5601,14 @@ return {
    ["pe"]="نمایش‌توری",
    ["ro"]="afiseazagrid",
   },
+  ["showhyphenationtrace"]={
+   ["en"]="showhyphenationtrace",
+   ["fr"]="montrertracecesure",
+  },
+  ["showkerning"]={
+   ["en"]="showkerning",
+   ["fr"]="montrerapproche",
+  },
   ["showlayout"]={
    ["cs"]="ukazvzhled",
    ["de"]="zeigelayout",
@@ -4981,6 +5628,10 @@ return {
    ["nl"]="toonopmaak",
    ["pe"]="نمایش‌آرایش",
    ["ro"]="afiseazamakeup",
+  },
+  ["showminimalbaseline"]={
+   ["en"]="showminimalbaseline",
+   ["fr"]="montrerlignedebase",
   },
   ["showpalet"]={
    ["cs"]="ukazpaletu",
@@ -5071,6 +5722,10 @@ return {
    ["nl"]="spatie",
    ["pe"]="فضا",
    ["ro"]="spatiu",
+  },
+  ["specialitem"]={
+   ["en"]="specialitem",
+   ["fr"]="élémentspécial",
   },
   ["splitfloat"]={
    ["cs"]="rozdelplvouciobjekt",
@@ -5236,6 +5891,10 @@ return {
    ["nl"]="startregelcorrectie",
    ["pe"]="شروع‌تصحیح‌خط",
    ["ro"]="startcorectielinie",
+  },
+  ["startlinenote"]={
+   ["en"]="startlinenote",
+   ["fr"]="débutnotedeligne",
   },
   ["startlinenumbering"]={
    ["cs"]="startcislovaniradku",
@@ -5647,6 +6306,10 @@ return {
    ["pe"]="پایان‌تصحیح‌خط",
    ["ro"]="stopcorectielinie",
   },
+  ["stoplinenote"]={
+   ["en"]="stoplinenote",
+   ["fr"]="finnotedeligne",
+  },
   ["stoplinenumbering"]={
    ["cs"]="stopcislovaniradku",
    ["de"]="stopzeilennumerierung",
@@ -5912,6 +6575,14 @@ return {
    ["pe"]="کشیده",
    ["ro"]="intins",
   },
+  ["strictinspectnextcharacter"]={
+   ["en"]="strictinspectnextcharacter",
+   ["fr"]="inspecterstrictementcaracteresuivant",
+  },
+  ["stripcharacter"]={
+   ["en"]="stripcharacter",
+   ["fr"]="demontercaractere",
+  },
   ["subformulanumber"]={
    ["cs"]="cislopodrovnice",
    ["de"]="unterformelnummer",
@@ -5931,6 +6602,10 @@ return {
    ["nl"]="subpaginanummer",
    ["pe"]="شماره‌زیرصفحه",
    ["ro"]="subpagenumber",
+  },
+  ["subtractfeature"]={
+   ["en"]="subtractfeature",
+   ["fr"]="enleverfonctionnalite",
   },
   ["switchtobodyfont"]={
    ["cs"]="prepninazakladnifont",
@@ -6017,6 +6692,14 @@ return {
    ["pe"]="ستون‌امتحان",
    ["ro"]="testcolumn",
   },
+  ["testfeature"]={
+   ["en"]="testfeature",
+   ["fr"]="testerfonctionnalite",
+  },
+  ["testfeatureonce"]={
+   ["en"]="testfeatureonce",
+   ["fr"]="testerfonctionnaliteunfois",
+  },
   ["testpage"]={
    ["cs"]="testpage",
    ["de"]="testpage",
@@ -6042,6 +6725,10 @@ return {
    ["fr"]="textearriereplan",
    ["nl"]="tekstachtergrond",
   },
+  ["textcolor"]={
+   ["en"]="textcolor",
+   ["fr"]="textecouleura",
+  },
   ["textheight"]={
    ["cs"]="vyskatextu",
    ["de"]="texthoehe",
@@ -6051,6 +6738,10 @@ return {
    ["nl"]="teksthoogte",
    ["pe"]="ارتفاع‌متن",
    ["ro"]="inaltimetext",
+  },
+  ["textnote"]={
+   ["en"]="textnote",
+   ["fr"]="notetexte",
   },
   ["textreference"]={
    ["cs"]="odkaznatext",
@@ -6092,6 +6783,18 @@ return {
    ["pe"]="عرض‌متن",
    ["ro"]="latimetext",
   },
+  ["thefirstcharacter"]={
+   ["en"]="thefirstcharacter",
+   ["fr"]="lepremiercaractere",
+  },
+  ["thenormalizedbodyfontsize"]={
+   ["en"]="thenormalizedbodyfontsize",
+   ["fr"]="lataillenormaliseepolicedecorps",
+  },
+  ["theremainingcharacters"]={
+   ["en"]="theremainingcharacters",
+   ["fr"]="lescaracteresrestants",
+  },
   ["thinrule"]={
    ["cs"]="tenkalinka",
    ["de"]="duennelinie",
@@ -6111,6 +6814,10 @@ return {
    ["nl"]="dunnelijnen",
    ["pe"]="خطهای‌نازک",
    ["ro"]="liniisubtiri",
+  },
+  ["tolinenote"]={
+   ["en"]="tolinenote",
+   ["fr"]="alanotedeligne",
   },
   ["tooltip"]={
    ["cs"]="bublinkovanapoveda",
@@ -6212,6 +6919,10 @@ return {
    ["pe"]="تایپ‌بافر",
    ["ro"]="scriebuffer",
   },
+  ["typedefinedbuffer"]={
+   ["en"]="typedefinedbuffer",
+   ["fr"]="transcriretampondefini",
+  },
   ["typefile"]={
    ["cs"]="opissoubor",
    ["de"]="tippedatei",
@@ -6221,6 +6932,14 @@ return {
    ["nl"]="typefile",
    ["pe"]="تایپ‌پرونده",
    ["ro"]="typefile",
+  },
+  ["typeinlinebuffer"]={
+   ["en"]="typeinlinebuffer",
+   ["fr"]="transcriretamponenligne",
+  },
+  ["typing"]={
+   ["en"]="typing",
+   ["fr"]="transcription",
   },
   ["unitmeaning"]={
    ["cs"]="vyznam",
@@ -6241,6 +6960,10 @@ return {
    ["nl"]="onbekend",
    ["pe"]="ناشناس",
    ["ro"]="necunoscut",
+  },
+  ["unregisterhyphenationpattern"]={
+   ["en"]="unregisterhyphenationpattern",
+   ["fr"]="desenregistrermotifcesure",
   },
   ["useJSscripts"]={
    ["cs"]="uzijJSscripts",
@@ -6281,6 +7004,14 @@ return {
    ["nl"]="gebruikblokken",
    ["pe"]="استفاده‌بلوکها",
    ["ro"]="folosestebloc",
+  },
+  ["usebodyfont"]={
+   ["en"]="usebodyfont",
+   ["fr"]="utiliserpolicedecorps",
+  },
+  ["usebodyfontparameter"]={
+   ["en"]="usebodyfontparameter",
+   ["fr"]="utiliserparametrepolicedecorps",
   },
   ["usecommands"]={
    ["cs"]="uzijprikazy",
@@ -6442,6 +7173,10 @@ return {
    ["pe"]="useurl",
    ["ro"]="folosesteurl",
   },
+  ["verbatim"]={
+   ["en"]="verbatim",
+   ["fr"]="verbatim",
+  },
   ["version"]={
    ["cs"]="verze",
    ["de"]="version",
@@ -6481,6 +7216,10 @@ return {
    ["nl"]="witruimte",
    ["pe"]="فضای‌سفید",
    ["ro"]="spatiualb",
+  },
+  ["widthspanningtext"]={
+   ["en"]="widthspanningtext",
+   ["fr"]="largeurtextecouvrant",
   },
   ["wordright"]={
    ["cs"]="slovovpravo",
@@ -7918,6 +8657,10 @@ return {
    ["pe"]="عقب‌ریختن",
    ["ro"]="fallback",
   },
+  ["fallbacks"]={
+   ["en"]="fallbacks",
+   ["fr"]="replis",
+  },
   ["family"]={
    ["cs"]="rodina",
    ["de"]="familie",
@@ -7931,6 +8674,10 @@ return {
   ["features"]={
    ["en"]="features",
    ["fr"]="fonctionnalites",
+  },
+  ["featureset"]={
+   ["en"]="featureset",
+   ["fr"]="jeufonctionnalite",
   },
   ["fences"]={
    ["en"]="fences",
@@ -14134,6 +14881,18 @@ return {
    ["pe"]="capital",
    ["ro"]="majuscula",
   },
+  ["category"]={
+   ["en"]="category",
+   ["fr"]="categorie",
+  },
+  ["cd:character"]={
+   ["en"]="cd:character",
+   ["fr"]="caracteres",
+  },
+  ["cd:font"]={
+   ["en"]="cd:font",
+   ["fr"]="police",
+  },
   ["center"]={
    ["cs"]="center",
    ["de"]="center",
@@ -14607,6 +15366,10 @@ return {
    ["nl"]="gegeven",
    ["pe"]="fact",
    ["ro"]="fapt",
+  },
+  ["fallback"]={
+   ["en"]="fallback",
+   ["fr"]="repli",
   },
   ["february"]={
    ["cs"]="unor",
