@@ -49,6 +49,11 @@
 \unexpanded\def\flushparagraphproperties
   {\popmacro\currentparagraphproperties}
 
+%D New experimental stuff:
+
+\unexpanded\def\freezeparagraphproperties{\snapshotpar\maxdimen}
+
+
 %D Beware, changing this will break some code (like pos/backgrounds) but it has been
 %D changed anyway so let's see where things go wrong.
 

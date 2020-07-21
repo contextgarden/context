@@ -400,6 +400,7 @@ return {
   "scantextokens",
   "setfontid",
   "shapemode",
+  "snapshotpar",
   "supmarkmode",
   "textdirection",
   "thewithoutunit",

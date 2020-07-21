@@ -148,10 +148,6 @@ local function reset_buffer()
     b = 0
 end
 
-local function flush_buffer()
-    b = 0
-end
-
 -- fonts
 
 local fontcharacters
@@ -723,6 +719,8 @@ local flushliteral  do
 
     updaters.register("backend.update.pdf",function()
         function pdf.print(mode,str)
+            -- This only works inside objects, don't change this to flush
+            -- in between. It's different from luatex but okay.
             if str then
                 mode = literalvalues[mode]
             else
@@ -748,7 +746,6 @@ local flushliteral  do
                  -- pdf_set_pos(pdf_h,pdf_v)
                 end
                 b = b + 1 ; buffer[b] = str
-                flush_buffer()
             end
         end
     end)
@@ -1708,9 +1705,9 @@ local finalize  do
 
             -- Indirect objects don't work in all viewers.
 
-            if TrimBox  then pageattributes.TrimBox  = TrimBox  end -- pdfsharedobject(TrimBox )
-            if CropBox  then pageattributes.CropBox  = CropBox  end -- pdfsharedobject(CropBox )
-            if BleedBox then pageattributes.BleedBox = BleedBox end -- pdfsharedobject(BleedBox)
+            if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(TrimBox ) end
+            if CropBox  then pageattributes.CropBox  = pdfsharedobject(CropBox ) end
+            if BleedBox then pageattributes.BleedBox = pdfsharedobject(BleedBox) end
 
         else
 
@@ -2228,6 +2225,7 @@ local openfile, closefile  do
             f = { }
             flush = function(f,s)
                 n = n + 1 f[n] = s
+offset = offset + #s
             end
             close = function(f)
                 f = concat(f)
@@ -2257,19 +2255,12 @@ local openfile, closefile  do
             close = m.close or m.__index.close
         end
         --
-        flush_buffer = function()
-            if b > 0 then
-                flush(f,concat(buffer,"",1,b))
-                b = 0
-            end
-        end
-
         local v = f_pdf(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
         flush(f,v)
         flush(f,b)
-        offset = #v + #b
+        offset = offset + #v + #b
     end
 
     closefile = function(abort)

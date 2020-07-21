@@ -460,7 +460,7 @@ function metapost.flush(specification,result)
                                         result[#result+1] = evenodd and "W* n" or "W n"
                                     elseif objecttype == "stop_clip" then
                                         result[#result+1] = "Q"
-                                        miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
+                                        miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                     elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                         -- skip
                                     elseif objecttype == "start_group" then
@@ -475,7 +475,7 @@ function metapost.flush(specification,result)
                                                     bbox   = toboundingbox(object.path),
                                                 })
                                                 result = { }
-miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                             else
                                                 insert(groupstack,false)
                                             end
@@ -490,7 +490,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                             result[#result+1] = reference
                                             result = pluginactions(data.after,result,flushfigure)
                                             result[#result+1] = "Q"
-miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         end
                                     else
                                         -- we use an indirect table as we want to overload
