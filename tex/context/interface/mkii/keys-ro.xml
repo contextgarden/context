@@ -892,6 +892,7 @@
 		<cd:constant name='increment' value='increment'/>
 		<cd:constant name='incrementnumber' value='numarincrement'/>
 		<cd:constant name='indenting' value='aliniat'/>
+		<cd:constant name='indentlist' value='indentlist'/>
 		<cd:constant name='indentnext' value='aliniaturmator'/>
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='indicator'/>
@@ -1096,6 +1097,7 @@
 		<cd:constant name='period' value='period'/>
 		<cd:constant name='place' value='pune'/>
 		<cd:constant name='placehead' value='punetitlu'/>
+		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='punestopper'/>
 		<cd:constant name='position' value='pozitie'/>
 		<cd:constant name='prefix' value='prefix'/>

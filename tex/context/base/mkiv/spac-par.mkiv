@@ -51,8 +51,20 @@
 
 %D New experimental stuff:
 
-\unexpanded\def\freezeparagraphproperties{\snapshotpar\maxdimen}
+\ifcase\contextlmtxmode
 
+    \let\freezeparagraphproperties\donothing
+
+\else
+
+    \unexpanded\def\freezeparagraphproperties{\snapshotpar\maxdimen}
+
+    \installtexexperiment
+      {paragraphs.freeze}
+      {\appendtoksonce\freezeparagraphproperties\to  \everypar}
+      {\removetoks    \freezeparagraphproperties\from\everypar}
+
+\fi
 
 %D Beware, changing this will break some code (like pos/backgrounds) but it has been
 %D changed anyway so let's see where things go wrong.

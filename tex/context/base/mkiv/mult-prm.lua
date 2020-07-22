@@ -382,6 +382,7 @@ return {
   "novrule",
   "orelse",
   "outputbox",
+  "parattr",
   "pardirection",
   "postexhyphenchar",
   "posthyphenchar",

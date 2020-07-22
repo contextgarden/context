@@ -8,18 +8,21 @@ if not modules then modules = { } end modules ['trac-ctx'] = {
 
 local next = next
 
-local context       = context
-local implement     = interfaces.implement
-local register      = trackers.register
+local context        = context
+local implement      = interfaces.implement
+local register       = trackers.register
 
-local textrackers   = tex.trackers   or { }
-local texdirectives = tex.directives or { }
+local textrackers    = tex.trackers    or { }
+local texdirectives  = tex.directives  or { }
+local texexperiments = tex.experiments or { }
 
-tex.trackers        = textrackers
-tex.directives      = texdirectives
+tex.trackers         = textrackers
+tex.directives       = texdirectives
+tex.experiments      = texexperiments
 
-storage.register("tex/trackers",  textrackers,  "tex.trackers")
-storage.register("tex/directives",texdirectives,"tex.directives")
+storage.register("tex/trackers",   textrackers,   "tex.trackers")
+storage.register("tex/directives", texdirectives, "tex.directives")
+storage.register("tex/experiments",texexperiments,"tex.experiments")
 
 local function doit(category,tag,v)
     local tt = category[tag]
@@ -56,6 +59,13 @@ implement {
 }
 
 implement {
+    name    = "initializetexexperiments",
+    actions = function()
+        initialize(texexperiments,experiments.register)
+    end
+}
+
+implement {
     name    = "installtextracker",
     arguments = "3 strings",
     actions = function(tag,enable,disable)
@@ -68,6 +78,14 @@ implement {
     arguments = "3 strings",
     actions   = function(tag,enable,disable)
         install(texdirectives,directives.register,tag,enable,disable)
+    end,
+}
+
+implement {
+    name      = "installtexexperiment",
+    arguments = "3 strings",
+    actions   = function(tag,enable,disable)
+        install(texexperiments,experiments.register,tag,enable,disable)
     end,
 }
 

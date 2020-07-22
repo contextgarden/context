@@ -23,9 +23,13 @@
 \unexpanded\def\installtexdirective#1#2#3%
   {\clf_installtexdirective{#1}{\detokenize{#2}}{\detokenize{#3}}}
 
+\unexpanded\def\installtexexperiment#1#2#3%
+  {\clf_installtexexperiment{#1}{\detokenize{#2}}{\detokenize{#3}}}
+
 \appendtoks
     \clf_initializetextrackers
     \clf_initializetexdirectives
+    \clf_initializetexexperiments
 \to \everyjob
 
 \protect \endinput

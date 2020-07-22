@@ -228,8 +228,11 @@
 
 \unexpanded\def\autocap{\ifmmode\expandafter\normalcap\else\expandafter\smallcapped\fi}
 
-\appendtoks
+\prependtoks
     \let\normalcap\cap % mathmode cap
+\to \everydump
+
+\appendtoks
     \let\cap\autocap
 \to \everydump
 
