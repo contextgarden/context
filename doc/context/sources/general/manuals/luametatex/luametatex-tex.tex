@@ -1539,14 +1539,15 @@ an error:
 This function has two optional arguments in case a token register is passed:
 
 \startfunctioncall
-tex.runtoks(<token register>,force,grouped)
+tex.runtoks(<token register>,force,grouped,obeymode)
 \stopfunctioncall
 
 Inside for instance an \type {\edef} the \type {runtoks} function behaves (at
 least tries to) like it were an \type {\the}. This prevents unwanted side
 effects: normally in such an definition tokens remain tokens and (for instance)
 characters don't become nodes. With the second argument you can force the local
-main loop, no matter what. The third argument adds a level of grouping.
+main loop, no matter what. The third argument adds a level of grouping. The last
+argument tells the scanner to stay in the current mode.
 
 You can quit the local loop with \type {\endlocalcontrol} or from the \LUA\ end
 with \type {tex.quittoks}. In that case you end one level up! Of course in the

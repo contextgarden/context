@@ -927,7 +927,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
     local f_w = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
 
     local f_b = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
-    local f_f = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
+    local f_x = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1357,7 +1357,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         local rule
 
         if outline then
-            rule = f_f(line,half,-depth+half,width-line,total-line)
+            rule = f_x(line,half,-depth+half,width-line,total-line)
         else
             rule = f_b(line,-depth,width,total)
         end

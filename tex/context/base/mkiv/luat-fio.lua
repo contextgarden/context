@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['luat-fio'] = {
 
 local format = string.format
 local concat = table.concat
-local sequenced = table.sequenced
 
 texconfig.kpse_init      = false
 texconfig.shell_escape   = 't'

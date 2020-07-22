@@ -1,0 +1,90 @@
+if not modules then modules = { } end modules ['luat-fio'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local format = string.format
+local concat = table.concat
+
+texconfig.kpse_init      = false  -- can go away
+texconfig.shell_escape   = 't'    -- can go away
+texconfig.max_print_line = 100000 -- can go away
+texconfig.max_in_open    = 1000   -- can go away
+
+if not resolvers.initialized() then
+
+    resolvers.reset()
+
+    -- we now load the file database as we might need files other than
+    -- tex and lua file on the given path
+
+    resolvers.load()
+
+    if callback then
+
+        local findbinfile = resolvers.findbinfile
+        local loadbinfile = resolvers.loadbinfile
+        local findtexfile = resolvers.findtexfile
+        local opentexfile = resolvers.opentexfile
+        local register    = callbacks.register
+
+        local ioflush     = io.flush
+        local ioread      = io.read
+        local writenl     = texio.write_nl
+
+        local function terminal()
+            writenl("\ntex console > ")
+            ioflush()
+            local line = ioread()
+            writenl("")
+            ioflush()
+            return line
+        end
+
+        local function find_data_file(name, index)
+            if index == 0 then
+                return "terminal"
+            else
+                return findbinfile(name,"tex")
+            end
+        end
+
+        local function open_data_file(name, index)
+            if index == 0 and name == "terminal" then
+                return {
+                    reader   = terminal,
+                    noflines = 1,
+                    filename = name,
+                }
+            else
+                return opentexfile(name)
+            end
+        end
+
+        local function find_any_file(name)
+            return name
+        end
+
+        register('find_data_file'  , find_data_file, true)
+        register('open_data_file'  , open_data_file, true)
+        register('find_log_file'   , find_any_file,  true)
+        register('find_format_file', find_any_file,  true)
+
+    end
+
+end
+
+statistics.register("resource resolver", function()
+    local scandata = resolvers.scandata()
+    return format("loadtime %s seconds, %s scans with scantime %s seconds, %s shared scans, %s found files, scanned paths: %s",
+        resolvers.loadtime(),
+        scandata.n,
+        scandata.time,
+        scandata.shared,
+        #resolvers.foundintrees(),
+        #scandata.paths > 0 and concat(scandata.paths," ") or "<none>"
+    )
+end)

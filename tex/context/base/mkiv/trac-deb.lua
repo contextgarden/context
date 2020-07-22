@@ -25,6 +25,8 @@ local report_str  = logs.writer
 tracers           = tracers or { }
 local tracers     = tracers
 
+-- this is old tracing stuff ... will go to its own module
+
 tracers.lists     = { }
 local lists       = tracers.lists
 
@@ -106,6 +108,52 @@ end
 function tracers.knownlist(name)
     local l = lists[name]
     return l and #l > 0
+end
+
+-- till here
+
+-- for now here
+
+if CONTEXTLMTXMODE > 0 then
+
+    local ioflush     = io.flush
+    local ioread      = io.read
+    local writenl     = texio.write_nl
+    local write       = texio.write
+
+    local runtoks      = tex.runtoks
+    local terminaldata = false
+    local context      = context
+
+    interfaces.implement {
+        name    = "fetchterminaldata",
+        actions = function()
+            context(terminaldata)
+        end,
+    }
+
+    function texio.terminal()
+        writenl("\n" .. "entering interactive mode, use \\quit to abort reading" .."\n\n")
+        while true do
+            write(">")
+            ioflush()
+            terminaldata = ioread()
+            if terminaldata == "\\quit" then
+                terminaldata = false
+                break
+            else
+                runtoks("t_syst_terminal_data",nil,nil,true) -- obeymode
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "readfromterminal",
+        public    = true,
+        protected = true,
+        actions   = texio.terminal,
+    }
+
 end
 
 local savedluaerror = nil
