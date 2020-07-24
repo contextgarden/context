@@ -45,6 +45,7 @@ local function start_run()
     if logs.start_run then
         logs.start_run()
     end
+ -- logs.report("engine","%s version %s, format id %s",LUATEXENGINE,LUATEXVERSION,LUATEXFORMATID)
     for i=1,#startactions do
         startactions[i]()
     end

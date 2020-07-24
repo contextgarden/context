@@ -13,7 +13,97 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Paragraphs}
 
+\registerctxluafile{spac-par}{autosuffix}
+
 \unprotect
+
+%D New experimental stuff:
+
+\let\spac_paragraph_freeze\relax
+
+\protected\def\freezeparagraphproperties {\snapshotpar\maxcount}
+\protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
+
+\protected\def\setparagraphfreezing   {\let\spac_paragraph_freeze\freezeparagraphproperties}
+\protected\def\forgetparagraphfreezing{\let\spac_paragraph_freeze\relax}
+
+\installcorenamespace {bparwrap}
+\installcorenamespace {eparwrap}
+
+\let\spac_paragraph_wrap\relax
+
+\protected\def\spac_paragraph_update
+  {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname
+     \the\lastnamedcs
+     \wrapuppar{\the\csname\??eparwrap\the\currentgrouplevel\endcsname}%
+   \fi}
+
+
+\protected\def\spac_paragraph_install
+  {\expandafter\newtoks\csname\??bparwrap\the\currentgrouplevel\endcsname
+   \expandafter\newtoks\csname\??eparwrap\the\currentgrouplevel\endcsname}
+
+% \protected\def\registerparwrapper#1#2%
+%   {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
+%      \spac_paragraph_install
+%    \fi
+%    \toksapp\csname\??bparwrap\the\currentgrouplevel\endcsname{#1}%
+%    \tokspre\csname\??eparwrap\the\currentgrouplevel\endcsname{#2}%
+%    \let\spac_paragraph_wrap\spac_paragraph_update}
+
+% \protected\def\registerparwrapperreverse#1#2%
+%   {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
+%      \spac_paragraph_install
+%    \fi
+%    \tokspre\csname\??bparwrap\the\currentgrouplevel\endcsname{#1}%
+%    \toksapp\csname\??eparwrap\the\currentgrouplevel\endcsname{#2}%
+%    \let\spac_paragraph_wrap\spac_paragraph_update}
+
+\protected\def\registerparwrapper#1#2#3%
+  {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
+     \spac_paragraph_install
+   \fi
+   \clf_newparwrapper{#1}%
+   \toksapp\csname\??bparwrap\the\currentgrouplevel\endcsname{\clf_setparwrapper{#1}#2}%
+   \tokspre\csname\??eparwrap\the\currentgrouplevel\endcsname{#3}%
+   \let\spac_paragraph_wrap\spac_paragraph_update}
+
+\protected\def\registerparwrapperreverse#1#2#3%
+  {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
+     \spac_paragraph_install
+   \fi
+   \clf_newparwrapper{#1}%
+   \tokspre\csname\??bparwrap\the\currentgrouplevel\endcsname{\clf_setparwrapper{#1}#2}%
+   \toksapp\csname\??eparwrap\the\currentgrouplevel\endcsname{#3}%
+   \let\spac_paragraph_wrap\spac_paragraph_update}
+
+\protected\def\forgetparwrapper
+  {\csname\??bparwrap\the\currentgrouplevel\endcsname\emptytoks
+   \csname\??eparwrap\the\currentgrouplevel\endcsname\emptytoks}
+
+% \getparwrapper  % defined in lua
+% \lastparwrapper % defined in lua
+
+\protected\def\showparwrapperstate#1%
+  {\begingroup
+   \infofont ¶#1\hilo
+     {\smallinfofont\getparwrapper {#1}}%
+     {\smallinfofont\lastparwrapper{#1}}%
+   \endgroup}
+
+\appendtoks    \updateparwrapperindeed      \to\everypar
+\appendtoks\let\updateparwrapperindeed\relax\to\everyforgetall
+
+\installtexexperiment
+  {paragraphs.freeze}
+  {\setparagraphfreezing
+   \appendtoksonce\spac_paragraph_wrap  \to  \everypar
+   \appendtoksonce\spac_paragraph_freeze\to  \everypar}
+  {\forgetparagraphfreezing
+   \removetoks    \spac_paragraph_wrap  \from\everypar
+   \removetoks    \spac_paragraph_freeze\from\everypar}
+
+%D In due time, the code below will be upgraded using the above mechanisms.
 
 %D The dreadful sequence \type {\bgroup} \unknown\ \type {\carryoverpar} \unknown\
 %D \type {\egroup} is needed when for instance sidefloats are used in combination
@@ -48,17 +138,6 @@
 
 \unexpanded\def\flushparagraphproperties
   {\popmacro\currentparagraphproperties}
-
-%D New experimental stuff, not supported in \MKIV:
-
-\let\freezeparagraphproperties \relax
-\let\defrostparagraphproperties\relax
-\let\setparagraphfreezing      \relax
-\let\forgetparagraphfreezing   \relax
-
-\let\updateparwrapper  \relax
-\let\registerparwrapper\gobbletwoarguments
-\let\forgetparwrapper  \relax
 
 %D Beware, changing this will break some code (like pos/backgrounds) but it has been
 %D changed anyway so let's see where things go wrong.

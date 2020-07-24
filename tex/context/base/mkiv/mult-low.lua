@@ -450,7 +450,8 @@ return {
         "installctxfunction", "installprotectedctxfunction",  "installprotectedctxscanner", "installctxscanner", "resetctxscanner",
         "cldprocessfile", "cldloadfile", "cldloadviafile", "cldcontext", "cldcommand",
         --
-        "carryoverpar", "freezeparagraphproperties",
+        "carryoverpar", "freezeparagraphproperties", "defrostparagraphproperties", "setparagraphfreezing", "forgetparagraphfreezing",
+        --
         "lastlinewidth",
         --
         "assumelongusagecs",
