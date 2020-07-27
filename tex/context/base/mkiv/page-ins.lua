@@ -19,6 +19,7 @@ inserts.data         = inserts.data   or allocate { } -- bytecode storage pool
 
 local variables      = interfaces.variables
 local v_page         = variables.page
+local v_auto         = variables.auto
 
 local context        = context
 local implement      = interfaces.implement
@@ -111,3 +112,10 @@ implement {
     arguments = "string"
 }
 
+implement {
+    name      = "setinsertmigration",
+    arguments = "string",
+    actions   = function(state)
+        nodes.migrations.setinserts(state == v_auto)
+    end
+}

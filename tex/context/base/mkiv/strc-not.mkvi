@@ -1563,13 +1563,17 @@
 % we need a proper state: normal, postponing, flushing
 
 \unexpanded\def\postponenotes
-  {\ifconditional\postponingnotes\else
-     \global\settrue\postponingnotes
-     \glet\flushnotes\doflushnotes
-     \clf_postponenotes
+  {\ifcase\insertionmigrationmode
+     \ifconditional\postponingnotes\else
+       \global\settrue\postponingnotes
+       \glet\flushnotes\doflushnotes
+       \clf_postponenotes
+     \fi
    \fi}
 
 \let\flushnotes\relax
+
+% also \ifcase\insertionmigrationmode here, needs testing:
 
 \unexpanded\def\startpostponingnotes % experimental, page-mix
   {\ifconditional\postponingnotes\else

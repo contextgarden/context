@@ -59,9 +59,9 @@
    \c!n=3,
    \c!m=1,
    \c!method=\v!none,
- % \s!font=Bold sa 4,
- % \s!font=Bold ht \measure{initial:n},
-   \s!font=Bold cp \measure{initial:n},
+ % \c!font=Bold sa 4,
+ % \c!font=Bold ht \measure{initial:n},
+   \c!font=Bold cp \measure{initial:n},
    \c!distance=.125\emwidth,
    \c!hoffset=\zeropoint,
    \c!voffset=\v!line, % \dimexp\lineheight*\initialparameter\c!n-\lineheight\relax]
@@ -90,7 +90,7 @@
    \setupcurrentinitial[#2]%
    \resetfontfeature % might be needed in more places
    \doifelsenothing{\initialparameter\c!style}
-     {\definedfont[\initialparameter\s!font]}
+     {\definedfont[\initialparameter\c!font]}
      {\useinitialstyleparameter\c!style}%
    \useinitialcolorparameter\c!color
    \edef\p_voffset{\initialparameter\c!voffset}%

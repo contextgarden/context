@@ -311,7 +311,7 @@
    \c!time={h,:,m},
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
    \c!text=Ag,
-   \s!font=] % \v!auto : experimental !
+   \c!font=] % \v!auto : experimental !
 
 % to be tested:
 %
@@ -486,12 +486,12 @@
 \unexpanded\def\setuplanguages
   {\setuplanguage[\s!default]}
 
-% \setuplanguages[\s!font=\v!auto]
-% \setuplanguage[\s!default][\s!font=\v!auto]
-% \setuplanguage[nl][\s!font=\v!auto]
+% \setuplanguages[\c!font=\v!auto]
+% \setuplanguage[\s!default][\c!font=\v!auto]
+% \setuplanguage[nl][\c!font=\v!auto]
 
 \appendtoks
-    \edef\p_language_font{\languageparameter\s!font}%
+    \edef\p_language_font{\languageparameter\c!font}%
     \ifx\p_language_font\empty\else
       \ifx\p_language_font\v!auto
         \doaddfeature\currentlanguage

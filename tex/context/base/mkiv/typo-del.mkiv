@@ -420,7 +420,7 @@
    \typo_delimited_push{#1}{#2}%
    \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
-   \ifx\p_delimited_method\s!font
+   \ifx\p_delimited_method\v!font
      \expandafter\typo_delimited_start_font
    \else
      \expandafter\typo_delimited_start_other
@@ -579,7 +579,7 @@
   {\dontleavehmode % following ones can be omited
    \typo_delimited_push{#1}{#2}%
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
-   \ifx\p_delimited_method\s!font
+   \ifx\p_delimited_method\v!font
      \expandafter\typo_delimited_fontdriven
    \else
      \expandafter\typo_delimited_other

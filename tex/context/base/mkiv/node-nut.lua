@@ -205,6 +205,7 @@ nuts.write                   = direct.write
 nuts.mlist_to_hlist          = direct.mlist_to_hlist
 nuts.has_dimensions          = direct.has_dimensions
 nuts.start_of_par            = direct.start_of_par
+nuts.migrate                 = direct.migrate
 
 if not nuts.mlist_to_hlist then
 

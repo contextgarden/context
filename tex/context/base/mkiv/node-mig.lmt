@@ -12,7 +12,7 @@ local format = string.format
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
-local report_nodes = logs.reporter("nodes","migrations")
+local report_nodes     = logs.reporter("nodes","migrations")
 
 local attributes       = attributes
 local nodes            = nodes
@@ -23,17 +23,16 @@ local tonut            = nuts.tonut
 local getnext          = nuts.getnext
 local getid            = nuts.getid
 local getlist          = nuts.getlist
+local getpost          = nuts.getpost
 local getprop          = nuts.getprop
 
 local setprop          = nuts.setprop
 local setlink          = nuts.setlink
 local setlist          = nuts.setlist
-local setprev          = nuts.setprev
-local setnext          = nuts.setnext
-local setboth          = nuts.setboth
+local setpost          = nuts.setpost
 
-local remove_node      = nuts.remove
 local count            = nuts.count
+local migrate          = nuts.migrate
 
 local nodecodes        = nodes.nodecodes
 local hlist_code       = nodecodes.hlist
@@ -42,64 +41,17 @@ local insert_code      = nodecodes.ins
 local mark_code        = nodecodes.mark
 
 local a_migrated       = attributes.private("migrated")
-local trialtypesetting = context.trialtypesetting
 
 local migrate_inserts  = false
 local migrate_marks    = false
-
 local t_inserts        = 0
 local t_marks          = 0
 local t_sweeps         = 0
 
-local function locate(head,first,last)
-    local current = head
-    while current do
-        local id = getid(current)
-        if id == vlist_code or id == hlist_code then
-            local list = getlist(current)
-            if list then
-                local l
-                l, first, last = locate(list,first,last)
-                if l ~= list then
-                    setlist(current,l)
-                end
-            end
-            current = getnext(current)
-        elseif id == insert_code then
-            if migrate_inserts then
-                local insert
-                head, current, insert = remove_node(head,current)
-                if first then
-                    setnext(insert)
-                    setlink(last,insert)
-                else
-                    setboth(insert)
-                    first = insert
-                end
-                last = insert
-            end
-        elseif id == mark_code then
-            if migrate_marks then
-                local mark
-                head, current, mark = remove_node(head,current)
-                if first then
-                    setnext(mark)
-                    setlink(last,mark)
-                else
-                    setboth(mark)
-                    first = mark
-                end
-                last = mark
-            end
-        else
-            current = getnext(current)
-        end
-    end
-    return head, first, last
-end
+local trialtypesetting = context.trialtypesetting
 
 function nodes.handlers.migrate(head,where)
-    if head and not trialtypesetting() then
+    if head and not trialtypesetting() and where == "alignment" then
         if trace_migrations then
             report_nodes("migration sweep %a",where)
         end
@@ -108,17 +60,10 @@ function nodes.handlers.migrate(head,where)
             local id = getid(current)
             if (id == vlist_code or id == hlist_code or id == insert_code) and not getprop(current,"migrated") then
                 setprop(current,"migrated",true)
-                local h = getlist(current)
-                if h then
+                local list = getlist(current)
+                if list then
                     t_sweeps = t_sweeps + 1
-                    local first, last
-                    while h do
-                        local id = getid(h)
-                        if id == vlist_code or id == hlist_code then
-                            h, first, last = locate(h,first,last)
-                        end
-                        h = getnext(h)
-                    end
+                    local h, first, last = migrate(list,migrate_inserts,migrate_marks)
                     if first then
                         if trace_migrations then
                             local ni = count(insert_code,first)
@@ -127,13 +72,14 @@ function nodes.handlers.migrate(head,where)
                             t_marks   = t_marks   + nm
                             report_nodes("sweep %a, container %a, %s inserts and %s marks migrated outwards during %a",
                                 t_sweeps,nodecodes[id],ni,nm,where)
+
                         end
-                        local n = getnext(current)
-                        if n then
-                            setlink(last,n)
+                        local p, t = getpost(current)
+                        if p then
+                            setlink(t,first)
+                        else
+                            setpost(current,first)
                         end
-                        setlink(current,first)
-                        current = last
                     end
                 end
             end
@@ -155,6 +101,7 @@ end)
 
 local enableaction  = nodes.tasks.enableaction
 local disableaction = nodes.tasks.disableaction
+local texsetcount   = tex.setcount
 
 local migrations = { }
 nodes.migrations = migrations
@@ -164,14 +111,14 @@ local function check()
     if migrate_marks or migrate_inserts then
         if not enabled then
             enableaction("mvlbuilders", "nodes.handlers.migrate")
-            enableaction("processors", "nodes.handlers.migrate")
             enabled = true
+            texsetcount("automigrationmode",3)
         end
     else
         if enabled then
             disableaction("mvlbuilders", "nodes.handlers.migrate")
-            disableaction("processors", "nodes.handlers.migrate")
             enabled = false
+            texsetcount("automigrationmode",0)
         end
     end
 end

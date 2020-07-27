@@ -13,10 +13,6 @@
 
 \writestatus{loading}{ConTeXt Node Support / Migrations}
 
-%D This is very experimental and although it is used in a real project it mostly
-%D serves a testbed for Taco and me so as prelude to extending the inserts
-%D mechanism.
-%D
 %D \starttyping
 %D \automigrateinserts
 %D
@@ -40,9 +36,9 @@
 
 \unprotect
 
-\registerctxluafile{node-mig}{}
+\registerctxluafile{node-mig}{autosuffix}
 
-\protected\def\automigrateinserts{\setupinsertion[\c!anchoring=\v!auto]}
-          \let\automigratemarks   \relax
+\let\automigrateinserts\relax
+\let\automigratemarks  \relax
 
 \protect

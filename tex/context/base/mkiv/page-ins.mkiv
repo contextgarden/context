@@ -38,6 +38,31 @@
    %c!factor=\plusthousand,
    \c!location=\v!page]
 
+\newconstant\insertionmigrationmode
+
+\def\page_inserts_check_anchoring
+  {\edef\p_anchoring{\namedinsertionparameter\empty\c!anchoring}%
+   \insertionmigrationmode\ifx\p_anchoring\v!auto\plusone\else\zerocount\fi
+   \clf_setinsertmigration{\p_anchoring}}
+
+\appendtoks
+    \ifx\currentinsertionparent\empty
+        \page_inserts_check_anchoring
+    \fi
+\to \everysetupinsertion
+
+\ifcase\contextlmtxmode
+    \setupinsertion
+      [\c!anchoring=\v!none]
+\else
+    \setupinsertion
+      [\c!anchoring=\v!auto]
+\fi
+
+\appendtoks
+    \page_inserts_check_anchoring
+\to \everystarttext % or \everyjob
+
 \newcount\currentinsertionnumber % This is a count and not a macro !
 
 \newtoks\t_page_inserts_list
@@ -63,7 +88,9 @@
 % \floatingpenalty\zerocount
 
 \appendtoks
-    \page_inserts_synchronize_registers
+    \ifx\currentinsertionparent\empty \else
+        \page_inserts_synchronize_registers
+    \fi
 \to \everysetupinsertion
 
 \unexpanded\def\page_inserts_process#1% beware, this adapts currentinsertion !
@@ -131,12 +158,14 @@
 \to \everydefineinsertion
 
 \appendtoks
-    \clf_setupinsertion
-      {\currentinsertion}
-      {%
-        location {\insertionparameter\c!location}%
-      }%
-    \relax
+    \ifx\currentinsertionparent\empty \else
+        \clf_setupinsertion
+          {\currentinsertion}
+          {%
+            location {\insertionparameter\c!location}%
+          }%
+        \relax
+    \fi
 \to \everysetupinsertion
 
 \unexpanded\def\page_inserts_set_location#1#2% fast one

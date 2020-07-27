@@ -8821,6 +8821,10 @@ return {
    ["pe"]="تمرکزبیرون",
    ["ro"]="focusout",
   },
+  ["font"]={
+   ["en"]="font",
+   ["nl"]="font",
+  },
   ["footer"]={
    ["cs"]="upati",
    ["de"]="fusszeile",
@@ -15576,6 +15580,10 @@ return {
    ["en"]="followingpage",
    ["fr"]="pagesuccesseur",
    ["nl"]="opvolgendepagina",
+  },
+  ["font"]={
+   ["en"]="font",
+   ["nl"]="font",
   },
   ["footer"]={
    ["cs"]="upati",

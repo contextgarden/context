@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.07.24 15:15}
+\edef\contextversion{2020.07.27 16:21}
 
 %D Kind of special:
 
@@ -158,7 +158,7 @@
 \loadmarkfile{cldf-bas} % basics / depends on nodes
 
 \loadmkivfile{node-fin}
-\loadmarkfile{node-mig}
+\loadmkxlfile{node-mig}
 %loadmarkfile{node-pag}
 
 \loadmkxlfile{driv-ini} % LMTX

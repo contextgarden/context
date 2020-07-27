@@ -66,6 +66,12 @@ appendaction("processors",   "lists",       "typesetters.digits.handler",       
 appendaction("processors",   "lists",       "typesetters.italics.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "languages.visualizediscretionaries",               nil, "nut",    "disabled"  )
 
+if CONTEXTLMTXMODE == 0 then
+
+appendaction("processors",   "lists",       "nodes.handlers.migrate",                           nil, "nut",    "disabled"  )
+
+end
+
 appendaction("processors",   "after",       "typesetters.marksuspects",                         nil, "nut",    "disabled"  )
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage",                       nil, "nut",    "production")
