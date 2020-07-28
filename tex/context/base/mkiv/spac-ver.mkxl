@@ -1878,11 +1878,8 @@
 
 %D This has become obsolete:
 
-\def\fuzzysnappedbox#1#2% \box<n> \unvbox<n>
-  {#1#2}
-
-\def\moveboxontogrid#1#2#3% will become obsolete, but it needs checking
-  {}
+% \def\moveboxontogrid#1#2#3% will become obsolete, but it needs checking
+%   {}
 
 %D Helper:
 

@@ -952,13 +952,25 @@
 \setupnotes
   [\c!width=\v!auto]
 
+% \def\strc_notes_set_width
+%   {\edef\p_width{\noteparameter\c!width}%
+%    \ifx\p_width\v!auto
+%      \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
+%    \else\ifx\p_width\empty
+%      \setnoteparameter\c!width{\hsize}%
+%    \fi\fi}
+
 \def\strc_notes_set_width
-  {\edef\p_width{\noteparameter\c!width}%
-   \ifx\p_width\v!auto
-     \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
-   \else\ifx\p_width\empty
-     \setnoteparameter\c!width{\hsize}%
-   \fi\fi}
+  {\ifinsidemulticolumns
+     \setnoteparameter\c!width{\makeupwidth}%
+   \else
+     \edef\p_width{\noteparameter\c!width}%
+     \ifx\p_width\v!auto
+       \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
+     \else\ifx\p_width\empty
+       \setnoteparameter\c!width{\hsize}%
+     \fi\fi
+  \fi}
 
 \appendtoks
     \strc_notes_set_width
@@ -1112,12 +1124,21 @@
      \c_strc_notes_columns\plusone
    \fi}
 
+% \def\strc_notes_set_location_page
+%   {\setfalse\c_strc_notes_delayed
+%    \strc_notes_set_distance
+%    \strc_notes_set_columns
+%    \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
+%    \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
+%    \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+%    \global\skip \currentnoteinsertionnumber\s_strc_notes_distance\relax}
+
 \def\strc_notes_set_location_page
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
    \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
-   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\count\currentnoteinsertionnumber\numexpr(\plusthousand/\c_strc_notes_columns)*\nofmulticolumns\relax
    \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
    \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
 
@@ -2043,4 +2064,3 @@
 % \stoptext
 
 \protect \endinput
-

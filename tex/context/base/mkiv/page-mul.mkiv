@@ -690,17 +690,17 @@
         \else
           \unvcopy#4%
         \fi
-        \fuzzysnappedbox\unvbox\scratchbox
+        \unvbox\scratchbox
         \fakecolumnfootnotes{#1}}%
    \else\ifcase\c_strc_notes_page_location
      \global\setbox#1\vsplit#2 to #3%
      \global\setbox#1\vbox
-       {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
+       {\unvbox{#1}}% % or \box ?
    \else
      \columnfootnotecorrection{#1}{#3}%
      \setbox\scratchbox\vsplit#2 to #3%
      \global\setbox#1\vbox to #3%
-       {\fuzzysnappedbox\unvbox\scratchbox
+       {\unvbox\scratchbox
         \fakecolumnfootnotes{#1}}%
    \fi \fi
    \egroup}
@@ -714,7 +714,7 @@
 \def\page_mul_split_last_column#1#2%
   {\global\setbox\lastcolumnbox\vbox
      {\unvcopy\lasttopcolumnbox
-      \fuzzysnappedbox\unvbox{#1}%
+      \unvbox{#1}%
       \fakecolumnfootnotes\lastcolumnbox}}
 
 %D NEW: still to be documented.

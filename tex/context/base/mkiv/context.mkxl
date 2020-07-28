@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.07.27 16:21}
+\edef\contextversion{2020.07.28 23:01}
 
 %D Kind of special:
 
@@ -326,6 +326,7 @@
 \loadmkxlfile{pack-lyr} % LMTX
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
+\loadmkxlfile{page-mcl} % LMTX
 
 \loadmarkfile{strc-reg} % uses mixed columns
 
