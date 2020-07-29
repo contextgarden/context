@@ -214,6 +214,7 @@
 		<cd:variable name='flushouter' value='flushouter'/>
 		<cd:variable name='flushright' value='flushright'/>
 		<cd:variable name='followingpage' value='followingpage'/>
+		<cd:variable name='font' value='font'/>
 		<cd:variable name='footer' value='fusszeile'/>
 		<cd:variable name='footnote' value='fussnote'/>
 		<cd:variable name='force' value='zwinge'/>
@@ -838,6 +839,7 @@
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusoffset' value='focusoffset'/>
 		<cd:constant name='focusout' value='focusout'/>
+		<cd:constant name='font' value='font'/>
 		<cd:constant name='footer' value='fusszeile'/>
 		<cd:constant name='footerdistance' value='fusszeilenabstand'/>
 		<cd:constant name='footerstate' value='fusszeilenstatus'/>

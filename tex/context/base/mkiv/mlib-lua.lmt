@@ -95,7 +95,7 @@ end
 function inject.path(p,close,connector)
     local curled = false
     local n = #p
-    if p.close then
+    if p.close or p.cycle then
         close = true
     end
     if n > 1 then
@@ -111,7 +111,7 @@ function inject.path(p,close,connector)
             end
         end
     end
-    return inject_path(currentmpx,p,curled,close)
+    return inject_path(currentmpx,p,close,curled)
 end
 
 -- bonus:

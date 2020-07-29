@@ -335,7 +335,7 @@ local function get(v)
     elseif t == "table" then
         local n = #v
         if type(v[1]) == "table" then
-            return injectpath(v) -- cycle ?
+            return injectpath(v)
         elseif n == 2 then
             return injectpair(v)
         elseif n == 3 then

@@ -411,7 +411,7 @@
       \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi}%
    \protected\def#4##1% color
      {\edef\currentcolorparameter{#1{##1}}% this name is public
-     %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
+     %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}%
       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}}
 
 \protected\def\installstyleandcolorhandler#1#2%

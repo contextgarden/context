@@ -322,7 +322,7 @@
      \gdef\arrangedrotationO{0}%
      \gdef\arrangedrotationE{180}%
      \processcommalist[#1]\doinstalledarrangedoption
-     \ifx\handlearrangedpage\undefined
+     \ifdefined\handlearrangedpage\else
        \global\arrangingpagesfalse
      \fi
      \setuppapersize
@@ -356,6 +356,15 @@
 
 \installpagearrangement {\v!normal}
   {\global\arrangingpagesfalse}
+
+%D (WS:) Watch out with 2UP and A4/A5:
+%D
+%D \definepapersize [A4] [width=210mm,height=297mm]
+%D \definepapersize [A5] [width=148mm,height=210mm]
+%D
+%D 297 mm - 2 * 148 mm = 1 mm
+%D
+%D This is only visible when we have a full background.
 
 \installpagearrangement 2*16
   {\dosetuparrangement{4}{4}{16}{5}{5}%

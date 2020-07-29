@@ -120,8 +120,8 @@
 \setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
 \def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
-  {\doifelsedimenstring{#1}
-     {\setupspecifiedinterlinespace[\c!line=#1]}
+  {\doifelsedimenstring{#1}%
+     {\setupspecifiedinterlinespace[\c!line=#1]}%
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}
 
@@ -1730,11 +1730,11 @@
 
 \unexpanded\def\synchronizegridsnapping
   {\edef\askedgridmode{\layoutparameter\c!grid}%
-   \ifx\askedgridmode\v!no       % official
+   \ifx\askedgridmode\v!no         % official
      \spac_grids_check_nop
    \orelse\ifx\askedgridmode\v!off % for taco and luigi
      \spac_grids_check_nop
-   \orelse\ifempty\askedgridmode % to be sure
+   \orelse\ifempty\askedgridmode   % to be sure
      \spac_grids_check_nop
    \else
      \spac_grids_check_yes
