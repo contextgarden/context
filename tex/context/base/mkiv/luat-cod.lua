@@ -20,9 +20,9 @@ local texconfig, lua = texconfig, lua
 texconfig.kpse_init       = false
 texconfig.shell_escape    = 't'
 
-texconfig.error_line      =     79 -- frozen / large values can crash
+texconfig.error_line      =    250 --  79 -- frozen / large values can crash
 texconfig.expand_depth    =  10000
-texconfig.half_error_line =     50 -- frozen
+texconfig.half_error_line =    125 --  50 -- frozen
 texconfig.max_in_open     =   1000
 texconfig.max_print_line  = 100000
 texconfig.max_strings     = 500000

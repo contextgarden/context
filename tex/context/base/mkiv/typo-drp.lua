@@ -321,8 +321,13 @@ actions[v_default] = function(head,setting)
             if trace_initials then
                 report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
             end
-            texset("hangafter",hangafter)
-            texset("hangindent",hangindent)
+            if CONTEXTLMTXMODE > 0 then
+                texset("hangafter",hangafter,true)
+                texset("hangindent",hangindent,true)
+            else
+                texset("hangafter",hangafter)
+                texset("hangindent",hangindent)
+            end
         end
         if indent then
             insert_after(first,first,new_kern(-parindent))

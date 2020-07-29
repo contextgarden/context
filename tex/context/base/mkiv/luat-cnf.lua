@@ -19,9 +19,9 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-texconfig.error_line      =     79 -- frozen / large values can crash
+texconfig.error_line      =    250 --  79 -- frozen / large values can crash
 texconfig.expand_depth    =  10000
-texconfig.half_error_line =     50 -- frozen
+texconfig.half_error_line =    125 --  50 -- frozen
 texconfig.hash_extra      = 100000
 texconfig.max_in_open     =   1000 -- frozen
 texconfig.max_print_line  = 100000 -- frozen
