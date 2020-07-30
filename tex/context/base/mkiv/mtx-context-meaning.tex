@@ -31,11 +31,22 @@
 \setupbodyfont
   [dejavu]
 
-\def\showmeaning#1%
+\unexpanded\def\ShowMeaning#1%
   {\ctxlua{logs.pushtarget("both")}%
    \writestatus{meaning}{\strippedcsname#1}%
    \writestring{}%
    \writestring{\expandafter\meaning\begincsname#1\endcsname}%
+   \ctxlua{logs.poptarget()}}
+
+\unexpanded\def\ShowTokens#1%
+  {\ctxlua{logs.pushtarget("both")}%
+   \writestatus{tokens}{\strippedcsname#1}%
+   \writestring{}%
+   \ifcase\contextlmtxmode
+      \writestring{only supported in lmtx}%
+   \else
+      \expandafter\showluatokens\begincsname#1\endcsname
+   \fi
    \ctxlua{logs.poptarget()}}
 
 \starttext
@@ -44,6 +55,7 @@
 
 \startluacode
     local h = tex.hashtokens()
+    local t = environment.arguments.tokens
 
     local function showmeaning(str)
         local h = interfaces.macros.collect(str)
@@ -54,7 +66,11 @@
             local hi = h[i]
             context.type(hi)
             context.par()
-            context.showmeaning(hi)
+            if t then
+                context.ShowTokens(hi)
+            else
+                context.ShowMeaning(hi)
+            end
         end
         context.page()
     end

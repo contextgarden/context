@@ -67,6 +67,15 @@ return {
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
         "primeasciicode", "hyphenasciicode",
         --
+        "frozenhsizecode", "frozenleftskipcode", "frozenrightskipcode", "frozenhangindentcode",
+        "frozenhangaftercode", "frozenparindentcode", "frozenparfillskipcode", "frozenadjustspacingcode",
+        "frozenprotrudecharscode", "frozenpretolerancecode", "frozentolerancecode", "frozenemergencystretchcode",
+        "frozenloosenesscode", "frozenlastlinefitcode", "frozenlinepenaltycode", "frozeninterlinepenaltycode",
+        "frozenwidowpenaltycode", "frozenclubpenaltycode",  "frozenbrokenpenaltycode",  "frozenadjdemeritscode",
+        "frozendoublehyphendemeritscode", "frozenfinalhyphendemeritscode", "frozenparshapecode",
+        "frozeninterlinepenaltiescode", "frozenwidowpenaltiescode", "frozenclubpenaltiescode",
+        "paragraphupdatecodes", "paragraphpenaltycodes", "paragraphdemeritcodes",
+        --
         "activemathcharcode",
         --
         "activetabtoken", "activeformfeedtoken", "activeendoflinetoken",
@@ -450,7 +459,10 @@ return {
         "installctxfunction", "installprotectedctxfunction",  "installprotectedctxscanner", "installctxscanner", "resetctxscanner",
         "cldprocessfile", "cldloadfile", "cldloadviafile", "cldcontext", "cldcommand",
         --
-        "carryoverpar", "freezeparagraphproperties", "defrostparagraphproperties", "setparagraphfreezing", "forgetparagraphfreezing",
+        "carryoverpar",
+        "freezeparagraphproperties", "defrostparagraphproperties",
+        "setparagraphfreezing", "forgetparagraphfreezing",
+        "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits",
         --
         "lastlinewidth",
         --

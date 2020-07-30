@@ -15,17 +15,9 @@
 
 \unprotect
 
-%D The \type {new} and \type {old} methods are gone as we now have \type
-%D {flush*} variants. Starting at the last day of 2011 both methods are
-%D merged into one and caching has been added, which makes switching
-%D twice as fast.
-
-% Todo: find a way to force last lines to have some distance from the right
-% edge (problem: keywords or presets), maybe a plugin
-%
-% \setupalign[...,myoption] % last
-%
-% but that also means myoption gets frozen due to caching.
+%D The \type {new} and \type {old} methods are gone as we now have \type {flush*}
+%D variants. Starting at the last day of 2011 both methods are merged into one and
+%D caching has been added, which makes switching twice as fast.
 
 \registerctxluafile{spac-ali}{optimize}
 
@@ -832,20 +824,6 @@
      \quitcommalist
    \fi}
 
-% \def\usealignparametersethbox#1%
-%   {\edef\p_spac_align{#1\c!align}%
-%    \let\raggedbox\hbox
-%    \ifx\p_spac_align\empty \else
-%      \processcommacommand[\p_spac_align]\spac_align_set_ragged_hbox
-%    \fi}
-%
-% \def\usealignparametersetvbox#1%
-%   {\edef\p_spac_align{#1\c!align}%
-%    \let\raggedbox\vbox
-%    \ifx\p_spac_align\empty \else
-%      \processcommacommand[\p_spac_align]\spac_align_set_ragged_vbox
-%    \fi}
-
 \setvalue{\??alignvertical  \v!left      }{\let\raggedbox\lbox}
 \setvalue{\??alignvertical  \v!right     }{\let\raggedbox\rbox}
 \setvalue{\??alignvertical  \v!middle    }{\let\raggedbox\cbox}
@@ -1094,8 +1072,8 @@
       \quad % decent spacing
       \hbox}
      {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
-      \parfillskip\zeropoint
-      \finalhyphendemerits\zerocount % yes or no (see hyhenation/specialcases-001.tex)
+      \frozen\parfillskip\zeropoint
+      \frozen\finalhyphendemerits\zerocount % yes or no (see hyhenation/specialcases-001.tex)
       \par}}
 
 % \dorecurse{5}{something} \wordright{--someone} \endgraf
@@ -1230,6 +1208,6 @@
 \setvalue{\??reverse\v!normal }{\ifconditional\inlinelefttoright\else\s!reverse\fi}
 \setvalue{\??reverse\v!reverse}{\ifconditional\inlinelefttoright     \s!reverse\fi}
 
-\let\usedirectionparameterreverse\gobbleoneargument
+\def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
 
 \protect \endinput

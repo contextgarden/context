@@ -588,7 +588,6 @@ local hlist_out, vlist_out  do
 
         -- we can encounter localpar, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
-
         for current, id, subtype in nextnode, current do
             if id == glyph_code then
                 local char, font = isglyph(current)
@@ -1034,17 +1033,13 @@ local hlist_out, vlist_out  do
                     if not orientation then
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
-                        if shift == 0 then
-                            pos_h = ref_h
+                        if boxdir ~= pos_r then
+                            shift = shift + width
+                        end
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - shift
                         else
-                            if boxdir ~= pos_r then
-                                shift = shift + width
-                            end
-                            if pos_r == righttoleft_code then
-                                pos_h = ref_h - shift
-                            else
-                                pos_h = ref_h + shift
-                            end
+                            pos_h = ref_h + shift
                         end
                         pos_v = ref_v - (cur_v + height)
                         -- synced

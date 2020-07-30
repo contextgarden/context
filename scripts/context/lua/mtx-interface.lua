@@ -36,6 +36,7 @@ local helpinfo = [[
     <flag name="raw"><short>report commands to the console</short></flag>
     <flag name="check"><short>generate check file</short></flag>
     <flag name="meaning"><short>report the mening of commands</short></flag>
+    <flag name="tokens"><short>show the internal representation of commands</short></flag>
    </subcategory>
    <subcategory>
     <flag name="toutf"><short>replace named characters by utf</short></flag>
@@ -690,6 +691,26 @@ function scripts.interface.meaning()
     end
 end
 
+function scripts.interface.tokens()
+    local runner  = "mtxrun --silent --script context --extra=meaning --tokens --once --noconsole --nostatistics"
+    local pattern = environment.arguments.pattern
+    local files   = environment.files
+    if type(pattern) == "string" then
+        runner = runner .. ' --pattern="' .. pattern .. '"'
+    elseif files and #files > 0 then
+        for i=1,#files do
+            runner = runner .. ' "' .. files[i] .. '"'
+        end
+    else
+        return
+    end
+    local r = os.resultof(runner)
+    if type(r) == "string" then
+        r = gsub(r,"^.-(tokens%s+>)","\n%1")
+        print(r)
+    end
+end
+
 local ea = environment.argument
 
 if ea("mkii") then
@@ -698,6 +719,8 @@ elseif ea("preprocess") then
     scripts.interface.preprocess()
 elseif ea("meaning") then
     scripts.interface.meaning()
+elseif ea("tokens") then
+    scripts.interface.tokens()
 elseif ea("toutf") then
     scripts.interface.toutf()
 elseif ea("bidi") then

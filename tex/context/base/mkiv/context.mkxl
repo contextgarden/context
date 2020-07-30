@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.07.29 18:33}
+\edef\contextversion{2020.07.30 16:49}
 
 %D Kind of special:
 
@@ -267,7 +267,7 @@
 \loadmkvifile{strc-lev} % experiment
 
 \loadmarkfile{spac-hor}
-\loadmarkfile{spac-ali}
+\loadmkxlfile{spac-ali}
 \loadmarkfile{spac-flr}
 \loadmkxlfile{spac-ver} % LMTX beware, hooks into strc-sec
 \loadmarkfile{spac-lin}

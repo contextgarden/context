@@ -41,6 +41,9 @@ generate check file
 .B --meaning
 report the mening of commands
 .TP
+.B --tokens
+show the internal representation of commands
+.TP
 .B --toutf
 replace named characters by utf
 .TP

@@ -214,6 +214,7 @@
 		<cd:variable name='flushouter' value='پمپ‌خارجی'/>
 		<cd:variable name='flushright' value='پمپ‌راست'/>
 		<cd:variable name='followingpage' value='followingpage'/>
+		<cd:variable name='font' value='font'/>
 		<cd:variable name='footer' value='ته‌برگ'/>
 		<cd:variable name='footnote' value='پانوشت'/>
 		<cd:variable name='force' value='اجبار'/>
@@ -838,6 +839,7 @@
 		<cd:constant name='focusin' value='تمرکزدرون'/>
 		<cd:constant name='focusoffset' value='focusoffset'/>
 		<cd:constant name='focusout' value='تمرکزبیرون'/>
+		<cd:constant name='font' value='font'/>
 		<cd:constant name='footer' value='ته‌برگ'/>
 		<cd:constant name='footerdistance' value='فاصله‌ته‌برگ'/>
 		<cd:constant name='footerstate' value='وضعیت‌ته‌برگ'/>

@@ -19,13 +19,80 @@
 
 %D New experimental stuff:
 
-\let\spac_paragraph_freeze\relax
+% this might move to syst-ini.mkxl
+
+\setnewconstant\frozenhsizecode                "0000001
+\setnewconstant\frozenleftskipcode             "0000002
+\setnewconstant\frozenrightskipcode            "0000004
+\setnewconstant\frozenhangindentcode           "0000008
+\setnewconstant\frozenhangaftercode            "0000010
+\setnewconstant\frozenparindentcode            "0000020
+\setnewconstant\frozenparfillskipcode          "0000040
+\setnewconstant\frozenadjustspacingcode        "0000080
+\setnewconstant\frozenprotrudecharscode        "0000100
+\setnewconstant\frozenpretolerancecode         "0000200
+\setnewconstant\frozentolerancecode            "0000400
+\setnewconstant\frozenemergencystretchcode     "0000800
+\setnewconstant\frozenloosenesscode            "0001000
+\setnewconstant\frozenlastlinefitcode          "0002000
+\setnewconstant\frozenlinepenaltycode          "0004000
+\setnewconstant\frozeninterlinepenaltycode     "0008000
+\setnewconstant\frozenwidowpenaltycode         "0010000
+\setnewconstant\frozenclubpenaltycode          "0020000
+\setnewconstant\frozenbrokenpenaltycode        "0040000
+\setnewconstant\frozenadjdemeritscode          "0080000
+\setnewconstant\frozendoublehyphendemeritscode "0100000
+\setnewconstant\frozenfinalhyphendemeritscode  "0200000
+\setnewconstant\frozenparshapecode             "0400000
+\setnewconstant\frozeninterlinepenaltiescode   "0800000
+\setnewconstant\frozenwidowpenaltiescode       "1000000
+\setnewconstant\frozenclubpenaltiescode        "2000000
+
+\setnewconstant\paragraphupdatecodes\numexpr
+    \frozentolerancecode
+  + \frozenloosenesscode
+  + \frozenlinepenaltycode
+  + \frozeninterlinepenaltycode
+  + \frozenwidowpenaltycode
+  + \frozenclubpenaltycode
+  + \frozenbrokenpenaltycode
+  + \frozenadjdemeritscode
+  + \frozendoublehyphendemeritscode
+  + \frozenfinalhyphendemeritscode
+  + \frozeninterlinepenaltiescode
+  + \frozenwidowpenaltiescode
+  + \frozenclubpenaltiescode
+\relax
+
+\setnewconstant\paragraphpenaltycodes\numexpr
+    \frozeninterlinepenaltycode
+  + \frozenwidowpenaltycode
+  + \frozenclubpenaltycode
+  + \frozenbrokenpenaltycode
+  + \frozeninterlinepenaltiescode
+  + \frozenwidowpenaltiescode
+  + \frozenclubpenaltiescode
+\relax
+
+\setnewconstant\paragraphdemeritcodes\numexpr
+    \frozenadjdemeritscode
+  + \frozendoublehyphendemeritscode
+  + \frozenfinalhyphendemeritscode
+\relax
 
 \protected\def\freezeparagraphproperties {\snapshotpar\maxcount}
 \protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
 
-\protected\def\setparagraphfreezing   {\let\spac_paragraph_freeze\freezeparagraphproperties}
-\protected\def\forgetparagraphfreezing{\let\spac_paragraph_freeze\relax}
+\protected\def\updateparagraphproperties {\ifhmode\snapshotpar\paragraphupdatecodes\fi}
+\protected\def\updateparagraphpenalties  {\ifhmode\snapshotpar\paragraphpenaltycodes\fi}
+\protected\def\updateparagraphdemerits   {\ifhmode\snapshotpar\paragraphdemeritcodes\fi}
+
+% so far
+
+\let\spac_paragraph_freeze\relax
+
+\protected\def\setparagraphfreezing      {\let\spac_paragraph_freeze\freezeparagraphproperties}
+\protected\def\forgetparagraphfreezing   {\let\spac_paragraph_freeze\relax}
 
 \installcorenamespace {bparwrap}
 \installcorenamespace {eparwrap}

@@ -116,10 +116,10 @@ end
 
 if CONTEXTLMTXMODE > 0 then
 
-    local ioflush     = io.flush
-    local ioread      = io.read
-    local writenl     = texio.write_nl
-    local write       = texio.write
+    local ioflush      = io.flush
+    local ioread       = io.read
+    local writenl      = texio.write_nl
+    local write        = texio.write
 
     local runtoks      = tex.runtoks
     local terminaldata = false
@@ -233,13 +233,12 @@ end
 local nop = function() end
 local resetmessages = status.resetmessages or nop
 
-local function processerror(offset)
+local function processerror(offset,eof)
  -- print("[[ last tex error: " .. tostring(status.lasterrorstring     or "<unset>") .. " ]]")
  -- print("[[ last lua error: " .. tostring(status.lastluaerrorstring  or "<unset>") .. " ]]")
  -- print("[[ last warning  : " .. tostring(status.lastwarningstring   or "<unset>") .. " ]]")
  -- print("[[ last location : " .. tostring(status.lastwarninglocation or "<unset>") .. " ]]")
  -- print("[[ last context  : " .. tostring(status.lasterrorcontext    or "<unset>") .. " ]]")
-
     local filename     = status.filename
     local linenumber   = tonumber(status.linenumber) or 0
     local lastcontext  = status.lasterrorcontext
@@ -259,27 +258,12 @@ local function processerror(offset)
         luaerrorline = luaerrorline,
         lastcontext  = lastcontext,
         lasttexhelp  = tex.gethelptext and tex.gethelptext() or nil,
+        endoffile    = eof,
     }
-end
-
--- so one can overload the printer if (really) needed
-
-if fatalerror then
-    callback.register("terminal_input",function(what)
-        processerror()
-        if what == "*" then
-            fatalerror("some kind of input expected, file ends too soon, quitting now")
-        else
-            fatalerror("bad input, quitting now")
-        end
-    end)
-else
- -- tex.print("\\nonstopmode")
 end
 
 directives.register("system.quitonerror",function(v)
     quitonerror = toboolean(v)
- -- tex.print("\\errorstopmode")
 end)
 
 directives.register("system.usescitelexer",function(v)
@@ -300,9 +284,15 @@ function tracers.printerror(specification)
         local luaerrorline = specification.luaerrorline
         local errortype    = specification.errortype
         local offset       = specification.offset
+        local endoffile    = specification.endoffile
         local report       = errorreporter(luaerrorline)
-        if not filename then
-            report("error not related to input file:")
+        if endoffile then
+            report("runaway error: %s",lasttexerror or "-")
+            if not quitonerror and texio.terminal then
+                texio.terminal() -- not well tested
+            end
+        elseif not filename then
+            report("fuzzy error:")
             report("  tex: %s",lasttexerror or "-")
             report("  lua: %s",lastluaerror or "-")
             report("  mps: %s",lastmpserror or "-")
@@ -376,7 +366,7 @@ directives.register("system.errorcontext", function(v)
     if v then
         register('show_error_message',  nop)
         register('show_warning_message',function() processwarning(v) end)
-        register('show_error_hook',     function() processerror(v) end)
+        register('show_error_hook',     function(eof) processerror(v,eof) end)
         register('show_lua_error_hook', function() processerror(v) end)
     else
         register('show_error_message',  nil)
