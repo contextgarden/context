@@ -4754,21 +4754,24 @@
 \def\numberofpoints    #1{\the\numexpr\dimexpr#1\relax/\maxcard\relax}
 
 %D \macros
-%D   {swapdimens,swapcounts,swapmacros,
+%D   {swapdimens,swapskips,swapcounts,swapmacros,
 %D    globalswapdimens,globalswapcounts,globalswapmacros}
 %D
 %D Simple but effective are the next two macros. There name exactly states their
 %D purpose.
 
 \newdimen\d_syst_helpers_swapped
+\newskip \s_syst_helpers_swapped
 \newcount\c_syst_helpers_swapped
 \let     \m_syst_helpers_swapped\relax
 
 \protected\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
+\protected\def\swapskips #1#2{\s_syst_helpers_swapped#1#1#2#2\s_syst_helpers_swapped}
 \protected\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
 \protected\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
 
 \protected\def\globalswapdimens#1#2{\d_syst_helpers_swapped#1\global#1#2\global#2\d_syst_helpers_swapped}
+\protected\def\globalswapskips #1#2{\s_syst_helpers_swapped#1\global#1#2\global#2\s_syst_helpers_swapped}
 \protected\def\globalswapcounts#1#2{\c_syst_helpers_swapped#1\global#1#2\global#2\c_syst_helpers_swapped}
 \protected\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet#1#2\glet#2\m_syst_helpers_swapped}
 

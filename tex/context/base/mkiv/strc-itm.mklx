@@ -929,7 +929,7 @@
    \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
    \ifdim\d_strc_itemgroups_list_width>\zeropoint\relax
      \ifconditional\c_strc_itemgroups_inline\else
-       \advance\leftskip\d_strc_itemgroups_list_width\relax
+       \frozen\advance\leftskip\d_strc_itemgroups_list_width\relax
      \fi
    \fi
    \ifempty\m_strc_itemgroups_repeat_start

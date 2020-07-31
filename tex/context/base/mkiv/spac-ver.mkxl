@@ -2422,20 +2422,20 @@
    \fi
    \scratchcounter\directhangingparameter\c!n\relax
    \ifnum\scratchcounter>\zerocount
-     \hangafter-\scratchcounter
+     \frozen\hangafter-\scratchcounter
    \else
      \getboxheight\scratchdimen\of\box\nextbox
      \getnoflines\scratchdimen
-     \hangafter-\noflines
+     \frozen\hangafter-\noflines
    \fi
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
    \ifx\m_spac_hanging_location\v!right
-     \hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
+     \frozen\hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
      \rlap{\hskip\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
    \else
-     \hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
+     \frozen\hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
      \llap{\box\nextbox\hskip\scratchdistance}%
    \fi
    \ignorespaces}

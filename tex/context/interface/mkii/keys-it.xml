@@ -214,6 +214,7 @@
 		<cd:variable name='flushouter' value='flushouter'/>
 		<cd:variable name='flushright' value='flushright'/>
 		<cd:variable name='followingpage' value='followingpage'/>
+		<cd:variable name='font' value='font'/>
 		<cd:variable name='footer' value='piedipagina'/>
 		<cd:variable name='footnote' value='notapdp'/>
 		<cd:variable name='force' value='forza'/>
@@ -639,6 +640,7 @@
 		<cd:constant name='afterkey' value='dopotasto'/>
 		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='allinea'/>
+		<cd:constant name='alignbottom' value='alignbottom'/>
 		<cd:constant name='aligncharacter' value='allineacarattere'/>
 		<cd:constant name='alignmentcharacter' value='carattereallineamento'/>
 		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
@@ -838,6 +840,7 @@
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusoffset' value='focusoffset'/>
 		<cd:constant name='focusout' value='focusout'/>
+		<cd:constant name='font' value='font'/>
 		<cd:constant name='footer' value='piedipagina'/>
 		<cd:constant name='footerdistance' value='distanzapdp'/>
 		<cd:constant name='footerstate' value='statopdp'/>

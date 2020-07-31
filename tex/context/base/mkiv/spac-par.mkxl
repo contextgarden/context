@@ -80,12 +80,24 @@
   + \frozenfinalhyphendemeritscode
 \relax
 
+% + \frozenparskipcode
+
+\setnewconstant\paragraphshapecodes\numexpr
+   \frozenhangindentcode
+ + \frozenhangaftercode
+ + \frozenleftskipcode
+ + \frozenrightskipcode
+ + \frozenparfillskipcode
+ + \frozenparshapecode
+\relax
+
 \protected\def\freezeparagraphproperties {\snapshotpar\maxcount}
 \protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
 
-\protected\def\updateparagraphproperties {\ifhmode\snapshotpar\paragraphupdatecodes\fi}
+\protected\def\updateparagraphproperties {\ifhmode\snapshotpar\paragraphupdatecodes \fi}
 \protected\def\updateparagraphpenalties  {\ifhmode\snapshotpar\paragraphpenaltycodes\fi}
 \protected\def\updateparagraphdemerits   {\ifhmode\snapshotpar\paragraphdemeritcodes\fi}
+\protected\def\updateparagraphshapes     {\ifhmode\snapshotpar\paragraphshapecodes  \fi}
 
 % so far
 
@@ -107,7 +119,9 @@
   {\c_spac_paragraph_group_level\currentgrouplevel\relax
    \ifcsname\??bparwrap\the\c_spac_paragraph_group_level\endcsname
      \the\lastnamedcs
-     \wrapuppar{\the\csname\??eparwrap\the\c_spac_paragraph_group_level\endcsname}%
+     \relax
+     \dontleavehmode % just in case
+     \wrapuppar{\the\csname\??eparwrap\the\c_spac_paragraph_group_level\endcsname\relax}%
    \fi}
 
 \protected\def\registerparwrapper       {\spac_register_par_wrapper\toksapp\tokspre}
@@ -123,7 +137,7 @@
    #1\csname\??bparwrap\the\currentgrouplevel\endcsname\expandafter{\expandafter\the\csname\??parwrapbefore#3\endcsname}%
    #2\csname\??eparwrap\the\currentgrouplevel\endcsname\expandafter{\expandafter\the\csname\??parwrapafter #3\endcsname}}
 
-\protected\def\spac_register_par_wrapper#1#2#3#4#5%
+\def\spac_register_par_wrapper_yes#1#2#3#4#5%
   {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
      \spac_paragraph_install
    \fi
@@ -135,6 +149,16 @@
    \clf_newparwrapper{#3}%
    \let\spac_paragraph_wrap\spac_paragraph_update}
 
+\def\spac_register_par_wrapper_nop#1#2#3#4#5%
+  {#4\wrapuppar{#5}}
+
+\protected\def\spac_register_par_wrapper
+  {\ifhmode
+     \expandafter\spac_register_par_wrapper_nop
+   \else
+     \expandafter\spac_register_par_wrapper_yes
+   \fi}
+
 \protected\def\forgetparwrapper
   {\csname\??bparwrap\the\currentgrouplevel\endcsname\emptytoks
    \csname\??eparwrap\the\currentgrouplevel\endcsname\emptytoks}
@@ -142,6 +166,9 @@
 \protected\def\unregisterparwrapper#1%
   {\csname\??parwrapbefore#1\endcsname\emptytoks
    \csname\??parwrapafter #1\endcsname\emptytoks}
+
+\def\directparwrapper#1#2%
+  {#1\wrapuppar{#2}}
 
 % \getparwrapper  % defined in lua
 % \lastparwrapper % defined in lua
@@ -161,15 +188,6 @@
 
 \appendtoks\let\spac_paragraph_wrap\relax\to\everyforgetall
 
-% \installtexexperiment
-%   {paragraphs.freeze}
-%   {\setparagraphfreezing
-%    \appendtoksonce\spac_paragraph_wrap  \to  \everypar
-%    \appendtoksonce\spac_paragraph_freeze\to  \everypar}
-%   {\forgetparagraphfreezing
-%    \removetoks    \spac_paragraph_wrap  \from\everypar
-%    \removetoks    \spac_paragraph_freeze\from\everypar}
-
 %D In due time, the code below will be upgraded using the above mechanisms.
 
 %D The dreadful sequence \type {\bgroup} \unknown\ \type {\carryoverpar} \unknown\
@@ -177,14 +195,6 @@
 %D with something that starts with a group. This is because otherwise the
 %D indentation as set (by the output routine) inside the group are forgotten
 %D afterwards. (I must not forget its existence).
-
-% Todo (maybe):
-%
-% \parshape             \getparshape\relax
-% \interlinepenalties   \getinterlinepenalties\relax
-% \clubpenalties        \getclubpenalties\relax
-% \widowpenalties       \getwidowpenalties\relax
-% \displaywidowpenalties\getdisplaywidowpenalties\relax
 
 \def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded

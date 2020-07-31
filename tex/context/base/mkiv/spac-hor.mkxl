@@ -1,0 +1,1287 @@
+%D \module
+%D   [       file=spac-hor,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Horizontal,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Horizontal}
+
+\unprotect
+
+\registerctxluafile{spac-hor}{}
+
+\let        \parfillrightskip \parfillskip
+\newskip    \parfillleftskip
+\newconstant\parfillleftmode
+
+\let\v_spac_indentation_current\empty % amount/keyword
+
+\newdimen \d_spac_indentation_par
+\parindent\d_spac_indentation_par % for the show
+
+\newconditional\c_spac_indentation_indent_first \settrue\c_spac_indentation_indent_first
+\newconstant   \c_spac_indentation_toggle_state
+
+%D After a blank or comparable situation (left side floats) we
+%D need to check if the next paragraph has to be indented.
+
+\unexpanded\def\presetindentation
+  {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
+
+\unexpanded\def\setupindenting
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\spac_indentation_setup_size}
+
+% \unexpanded\def\spac_indentation_setup_size
+%   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
+
+\unexpanded\def\spac_indentation_setup_size
+  {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}%
+   \ifzeropt\parindent\else
+     \parindent\d_spac_indentation_par\relax % new per 2019-04-12 : just in case it has been set beforehand
+   \fi}
+
+\let\synchronizeindenting\spac_indentation_setup_size
+
+\let\m_spac_indentation_options\empty
+
+\def\spac_indentation_setup_options[#1]%
+  {\edef\m_spac_indentation_options{#1}% comma separated list
+   \ifx\m_spac_indentation_options\empty \else
+     \spac_indentation_setup_indeed
+   \fi}
+
+\def\spac_indentation_setup_indeed
+  {% not here: \settrue\c_spac_indentation_indent_first
+   % not here: \parindent\d_spac_indentation_par
+   % not here: \c_spac_indentation_toggle_state\zerocount
+   \processcommacommand[\m_spac_indentation_options]\spac_indentation_apply_step_one % catch small, medium, etc
+   \processcommacommand[\m_spac_indentation_options]\spac_indentation_apply_step_two % catch rest
+   \ifzeropt\parindent\else
+     \doifemptytoks\everypar\spac_indentation_set_everypar
+   \fi
+   \ifconditional\c_spac_indentation_indent_first
+     \spac_indentation_variant_yes % better than: \let\checkindentation\relax
+   \else
+     \spac_indentation_variant_no
+   \fi
+   \spac_indentation_check_toggle}
+
+\def\spac_indentation_set_everypar
+  {\everypar{\checkindentation}}
+
+\unexpanded\def\useindentingparameter#1% faster local variant
+  {\edef\m_spac_indentation_options{#1\c!indenting}%
+   \ifx\m_spac_indentation_options\empty \else
+     \spac_indentation_setup_indeed
+   \fi}
+
+% \def\spac_indentation_apply_step_one#1%
+%   {\ifcsname\??indentingmethod#1\endcsname
+%      % case two
+%    \else
+%      \edef\v_spac_indentation_current{#1}% single entry in list
+%      \let\normalindentation\v_spac_indentation_current
+%      \spac_indentation_setup_size
+%    \fi}
+%
+% \def\spac_indentation_apply_step_two#1%
+%   {\ifcsname\??indentingmethod#1\endcsname
+%      \csname\??indentingmethod#1\endcsname
+%    \else
+%      % case one
+%    \fi}
+
+% \defineindenting[whatever][yes,2cm]
+% %defineindenting[whatever][yes,-2cm]
+%
+% \setupindenting[yes,-2em] \input ward \par
+% \setupindenting[yes,2em]  \input ward \par
+% \setupindenting[whatever] \input ward \par
+
+\installcorenamespace {indentingpreset}
+
+\unexpanded\def\defineindenting
+  {\dodoubleargument\spac_indenting_define}
+
+\def\spac_indenting_define[#1][#2]% todo: mixes
+  {\setevalue{\??indentingpreset#1}{#2}}
+
+% \def\spac_indentation_apply_step_one_nested#1%
+%   {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_one}
+%
+% \def\spac_indentation_apply_step_two_nested#1%
+%   {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_two}
+%
+% \def\spac_indentation_apply_step_one#1%
+%   {\ifcsname\??indentingpreset#1\endcsname
+%      \spac_indentation_apply_step_one_nested{#1}%
+%    \else\ifcsname\??indentingmethod#1\endcsname
+%      % case two
+%    \else
+%      \edef\v_spac_indentation_current{#1}% single entry in list
+%      \let\normalindentation\v_spac_indentation_current
+%      \spac_indentation_setup_size
+%    \fi\fi}
+%
+% \def\spac_indentation_apply_step_two#1%
+%   {\ifcsname\??indentingpreset#1\endcsname
+%      \spac_indentation_apply_step_two_nested{#1}%
+%    \else\ifcsname\??indentingmethod#1\endcsname
+%      \lastnamedcs
+%    \else
+%      % case one
+%    \fi\fi}
+
+\def\spac_indentation_apply_step_one_nested
+  {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_one}
+
+\def\spac_indentation_apply_step_two_nested
+  {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_two}
+
+\def\spac_indentation_apply_step_one#1%
+  {\ifcsname\??indentingpreset#1\endcsname
+     \spac_indentation_apply_step_one_nested
+   \else\ifcsname\??indentingmethod#1\endcsname
+     % case two
+   \else
+     \edef\v_spac_indentation_current{#1}% single entry in list
+     \let\normalindentation\v_spac_indentation_current
+     \spac_indentation_setup_size
+   \fi\fi}
+
+\def\spac_indentation_apply_step_two#1%
+  {\ifcsname\??indentingpreset#1\endcsname
+     \spac_indentation_apply_step_two_nested
+   \else\ifcsname\??indentingmethod#1\endcsname
+     \lastnamedcs
+   \else
+     % case one
+   \fi\fi}
+
+\unexpanded\def\indenting % kind of obsolete
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\relax}
+
+% use \noindentation to suppress next indentation
+
+\installcorenamespace{indentingmethod}
+
+\unexpanded\def\installindentingmethod#1#2%
+  {\setvalue{\??indentingmethod#1}{#2}}
+
+\installindentingmethod \v!no    {\parindent\zeropoint}
+\installindentingmethod \v!not   {\parindent\zeropoint}
+
+\installindentingmethod \v!first {\settrue\c_spac_indentation_indent_first}
+\installindentingmethod \v!next  {\setfalse\c_spac_indentation_indent_first}
+
+\installindentingmethod \v!yes   {\parindent\d_spac_indentation_par\relax} % not \indent !
+\installindentingmethod \v!always{\parindent\d_spac_indentation_par\relax} % not \indent !
+
+\installindentingmethod \v!never {\parindent\zeropoint\relax     % no \indent !
+                                  \c_spac_indentation_toggle_state\zerocount}
+
+\installindentingmethod \v!odd   {\c_spac_indentation_toggle_state\plusone}
+\installindentingmethod \v!even  {\c_spac_indentation_toggle_state\plustwo}
+
+\installindentingmethod \v!normal{\ifx\normalindentation\empty\else
+                                    \let\v_spac_indentation_current\normalindentation
+                                    \spac_indentation_setup_size
+                                  \fi}
+
+\installindentingmethod \v!reset {\settrue\c_spac_indentation_indent_first
+                                  \parindent\zeropoint
+                                  \c_spac_indentation_toggle_state\zerocount}
+
+\installindentingmethod \v!toggle{\parindent\ifzeropt\parindent
+                                    \d_spac_indentation_par
+                                  \else
+                                    \zeropoint
+                                  \fi\relax}
+
+\unexpanded\def\noindenting{\indenting[\v!no, \v!next ]}
+\unexpanded\def\doindenting{\indenting[\v!yes,\v!first]}
+
+%D Here come the handlers (still rather messy ... we need states).
+
+%newif\ifindentation \indentationtrue  % will become a mode
+
+\let\checkindentation\relax
+
+\installmacrostack\checkindentation
+%installmacrostack\ifindentation
+
+\def\spac_indentation_remove
+  {\ifzeropt\parindent \else
+     \begingroup
+     \setbox\scratchbox\lastbox
+     \endgroup
+   \fi}
+
+\def\spac_indentation_kill_indeed
+  {%\global\indentationfalse
+   \spac_indentation_remove}
+
+\def\spac_indentation_do_toggle_indeed
+  {%\global\indentationfalse
+   \glet\checkindentation\spac_indentation_no_toggle_indeed
+   \spac_indentation_remove}
+
+\def\spac_indentation_no_toggle_indeed
+  {%\global\indentationtrue
+   \glet\checkindentation\spac_indentation_do_toggle_indeed}
+
+\def\spac_indentation_do_indeed
+  {}%\global\indentationtrue}
+
+\def\spac_indentation_do_toggle
+  {\glet\checkindentation\spac_indentation_do_toggle_indeed}
+
+\def\spac_indentation_no_toggle
+  {\glet\checkindentation\spac_indentation_no_toggle_indeed}
+
+\def\spac_indentation_check_toggle
+  {\ifcase\c_spac_indentation_toggle_state
+     % nothing
+   \or
+     \spac_indentation_no_toggle
+   \or
+     \spac_indentation_do_toggle
+   \fi}
+
+\def\spac_indentation_variant_yes
+  {\glet\checkindentation\spac_indentation_do_indeed}
+
+\def\spac_indentation_no_next_check
+  {\spac_indentation_remove
+   \glet\checkindentation\spac_indentation_do_indeed}
+
+\def\spac_indentation_variant_no % made global
+  {\ifinpagebody \else
+     %\global\indentationfalse
+     \glet\checkindentation\spac_indentation_no_next_check
+   \fi}
+
+\def\nonoindentation % bv bij floats
+  {\ifinpagebody \else
+     %\global\indentationtrue
+     \glet\checkindentation\spac_indentation_do_indeed
+   \fi}
+
+\def\spac_indentation_variant_force
+  {\ifvmode \ifzeropt\parindent \else
+     % was : \hskip\parindent
+     % can be: \indent
+     % but we test:
+     \noindent\hskip\parindent
+   \fi \fi}
+
+\appendtoks
+    \push_macro_checkindentation
+    \push_macro_ifindentation
+\to \everypushsomestate
+
+\appendtoks
+    \pop_macro_ifindentation
+    \pop_macro_checkindentation
+\to \everypopsomestate
+
+% public:
+
+\let\indentation  \spac_indentation_variant_force
+\let\noindentation\spac_indentation_variant_no    % public
+\let\doindentation\spac_indentation_variant_yes   % public
+
+\def\dontrechecknextindentation              % public (in macros)
+  {\glet\dorechecknextindentation\relax}
+
+\let\dorechecknextindentation\relax          % public (in macros)
+
+\unexpanded\def\spac_indentation_check_next_indentation
+  {\glet\dorechecknextindentation\relax
+   \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
+
+\def\spac_indentation_variant_auto
+  {\glet\dorechecknextindentation\spac_indentation_check_next_indentation}
+
+%D This one sets up the local indentation behaviour (i.e. either or not
+%D a next paragraph will be indented).
+
+\installcorenamespace{indentnext}
+
+\unexpanded\def\checknextindentation[#1]%
+  {\begincsname\??indentnext#1\endcsname}
+
+\unexpanded\def\useindentnextparameter#1% new, the more efficient variant
+  {\edef\p_indentnext{#1\c!indentnext}%
+   \ifx\p_indentnext\empty\else
+     \begincsname\??indentnext\p_indentnext\endcsname
+   \fi}
+
+\letvalue{\??indentnext       }\donothing
+\letvalue{\??indentnext\v!yes }\spac_indentation_variant_yes
+\letvalue{\??indentnext\v!no  }\spac_indentation_variant_no
+\letvalue{\??indentnext\v!auto}\spac_indentation_variant_auto
+
+%D An example of usage:
+%D
+%D \starttyping
+%D \setupindenting[small,yes]
+%D
+%D \setupitemize [indentnext=auto]
+%D \setuptyping  [indentnext=auto]
+%D \setupformulas[indentnext=auto]
+%D
+%D \input tufte \startitemize \item itemize \stopitemize
+%D \input tufte \startitemize \item itemize \stopitemize
+%D \input tufte \startitemize \item itemize \stopitemize
+%D
+%D \page
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \input tufte
+%D \starttyping
+%D verbatim
+%D \stoptyping
+%D
+%D \page
+%D
+%D \input tufte \startformula a = b \stopformula
+%D \input tufte \startformula a = b \stopformula
+%D \input tufte \startformula a = b \stopformula
+%D \stoptyping
+
+% maybe an everyforgetparindent
+
+\unexpanded\def\forgetparindent
+  {\settrue\c_spac_indentation_indent_first % recently added
+   \d_spac_indentation_par\zeropoint
+   \parindent\zeropoint
+   \let\v_spac_indentation_current\v!none}
+
+\appendtoks
+    \forgetparindent
+\to \everyforgetall
+
+\unexpanded\def\forgethorizontalstretch
+  {\emergencystretch\zeropoint}
+
+\appendtoks
+    \forgethorizontalstretch
+\to \everyforgetall % needed in pagebody
+
+%D Helper:
+
+\unexpanded\def\softbreak
+  {\relax\ifhmode\hskip\parfillskip\break\fi}
+
+%D \macros
+%D   {frenchspacing,nonfrenchspacing}
+%D
+%D Somehow \type{\frenchspacing} can lead to hyphenation between dashes so we now
+%D have \type {\newfrenchspacing} (moved from \type {syst-chr}). Maybe it's not
+%D needed any more.
+
+%D Hm ... todo:
+
+\installcorenamespace{spacecodemethod}
+
+\sfcode`\)=\zerocount
+\sfcode`\'=\zerocount
+\sfcode`\]=\zerocount
+
+\def\spac_spacecodes_set_fixed#1%
+  {\sfcode`\.#1\relax \sfcode`\,#1\relax
+   \sfcode`\?#1\relax \sfcode`\!#1\relax
+   \sfcode`\:#1\relax \sfcode`\;#1\relax}
+
+\def\spac_spacecodes_set_stretch
+  {\sfcode`\.3000 \sfcode`\,1250
+   \sfcode`\?3000 \sfcode`\!3000
+   \sfcode`\:2000 \sfcode`\;1500 }
+
+\unexpanded\def\frenchspacing   {\spac_spacecodes_set_fixed\plusthousand}
+\unexpanded\def\newfrenchspacing{\spac_spacecodes_set_fixed{1050}}
+\unexpanded\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
+
+\unexpanded\def\installspacingmethod#1#2{\setvalue{\??spacecodemethod#1}{#2}}
+
+\installspacingmethod \empty    {}                  % keep values
+\installspacingmethod \v!fixed  {\frenchspacing   } % equal spaces everywhere
+\installspacingmethod \v!packed {\newfrenchspacing} % slighly more after punctuation
+\installspacingmethod \v!broad  {\nonfrenchspacing} % more depending on what punctuation
+
+\unexpanded\def\setupspacing
+  {\doifelsenextoptionalcs\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
+
+\def\spac_spacecodes_setup_yes[#1]%
+  {\begincsname\??spacecodemethod#1\endcsname
+   \updateraggedskips}
+
+\def\spac_spacecodes_setup_nop
+  {\updateraggedskips}
+
+%D Here's a tweak .. if needed one can configure it in the configuration
+%D so that initialization happens more efficient.
+%D
+%D \starttyping
+%D \startoverlay
+%D     {
+%D         \green
+%D         \enabledirectives[characters.spaceafteruppercase=normal]%
+%D         \vbox{\hsize 5em x. X\par x.\ X\par X. X\par X.\ X\par}
+%D     } {
+%D         \blue
+%D         \enabledirectives[characters.spaceafteruppercase=traditional]%
+%D         \vbox{\hsize 5em x. X\par x.\ X\par X. X\par X.\ X\par}
+%D     }
+%D \stopoverlay
+%D \stoptyping
+
+% This is not needed, as \updateraggedskips is taking care of it:
+
+\let\synchronizespacecodes\spac_spacecodes_setup_nop % \relax
+
+% \dorecurse{100}{\recurselevel\spacefactor 800 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \space} \par
+% \dorecurse{100}{\recurselevel\spacefactor 800 \normalspaceprimitive} \par
+% \dorecurse{100}{\recurselevel\spacefactor1200 \normalspaceprimitive} \par
+
+% When we don't add the % here, we effectively get \<endlinechar> and
+% since we have by default \def\^^M{\ } we get into a loop.
+
+\let\normalspaceprimitive=\ % space-comment is really needed
+
+%D As the \type{\ } is convenient in:
+%D
+%D \starttyping
+%D \TEX\space x\crlf
+%D \TEX\      x\crlf
+%D \TEX{}     x\crlf
+%D \stoptyping
+%D
+%D from now on we treat it as a normal space and not as a space with \type
+%D {sfcode} 1000.
+
+\unexpanded\def\specialspaceprimitive
+  {\begingroup
+   % so, no fancy extra spacing after: foo i.e.\ bar
+   \nonfrenchspacing\normalspaceprimitive
+   \endgroup}
+
+\unexpanded\def\normalnotobeyedspace
+  {\mathortext\normalspaceprimitive\specialspaceprimitive} % no \dontleavehmode\space (else no frenchspacing)
+
+\let\ =\normalnotobeyedspace
+
+% Because I strip spaces at the end of lines (in the editor) we need a bit of
+% a trick to define slash+newline, so \space and \<newline> are the same
+
+% We need to be careful with \ and \space and the definition of ~ which uses \ as
+% we need to associate unicode spacing with it. There is some messy aspect that
+% I forgot to note down so I will revision the \ once I ran into it again.
+
+% \ruledhbox spread 10pt {\frenchspacing    xx xx\ X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx\ X}
+% \ruledhbox spread 10pt {\frenchspacing    xx xx X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx X}
+% \ruledhbox spread 10pt {\frenchspacing    xx xx~X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx xx~X}
+
+% \ruledhbox spread 10pt {\frenchspacing    xx dr.\ X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr.\ X}
+% \ruledhbox spread 10pt {\frenchspacing    xx dr. X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr. X}
+% \ruledhbox spread 10pt {\frenchspacing    xx dr.~X}
+% \ruledhbox spread 10pt {\nonfrenchspacing xx dr.~X}
+
+\unexpanded\def\nonbreakablespace{\penalty\plustenthousand\normalspaceprimitive} % no space in math
+
+\letcatcodecommand \ctxcatcodes \tildeasciicode \nonbreakablespace % overloaded later
+
+           \def\space          { }
+\unexpanded\def\removelastspace{\ifhmode\unskip\fi}
+\unexpanded\def\nospace        {\removelastspace\ignorespaces}
+
+\ifdefined\nospaces
+    \unexpanded\def\nospacing{\normalnospaces\plusone}
+    \unexpanded\def\dospacing{\normalnospaces\zerocount}
+\else
+    \unexpanded\def\nospacing{\spaceskip\scaledpoint     \xspaceskip\zeropoint}
+    \unexpanded\def\dospacing{\spaceskip\currentspaceskip\xspaceskip\zeropoint} % what
+\fi
+
+\ifdefined\softhyphen \else
+    \let\softhyphen\explicitdiscretionary
+\fi
+
+\cldcontext{"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}"}
+%cldcontext{"\string\\let\string\\\string\n=\string\\space"}
+
+% in tables we need:
+%
+% \def\fixedspace   {\hskip.5em\relax}
+%
+% but, since not all fonts have .5em digits:
+
+\unexpanded\def\fixedspace
+  {\setbox\scratchbox\hpack{\mathortext{0}{0}}% was \hbox
+   \hskip\wd\scratchbox\relax}
+
+\unexpanded\def\fixedspaces
+  {\letcatcodecommand \ctxcatcodes \tildeasciicode\fixedspace
+   \let~\fixedspace} % we need to renew it
+
+\appendtoks
+    \let~\space
+    \let\ \space
+\to \everysimplifycommands
+
+\newsignal\s_spac_keep_unwanted_space
+
+\unexpanded\def\keepunwantedspaces
+  {\ifhmode
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\else
+        \hskip\s_spac_keep_unwanted_space\relax
+     \fi
+   \fi}
+
+\unexpanded\def\removeunwantedspaces
+  {\ifhmode
+     \expandafter \spac_helpers_remove_unwantedspace
+   \fi}
+
+\def\spac_helpers_remove_unwantedspace
+  {\ifnum\lastnodetype=\gluenodecode
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\relax
+       \unskip
+     \else
+       \unskip
+       \doubleexpandafter\spac_helpers_remove_unwantedspace
+     \fi
+   \fi}
+
+\unexpanded\def\onlynonbreakablespace
+  {\ifdim\lastskip=\interwordspace
+     \unskip
+     \nonbreakablespace
+   \fi
+   \ignorespaces}
+
+% \startbuffer
+% \startlines \tt \fixedspaces
+%  0~1~~2~~~3~~~~4~~~~~5
+%  0~~~~~~~~~~~~~~~~~~~5
+% $0~1~~2~~~3~~~~4~~~~~5$
+% $0~~~~~~~~~~~~~~~~~~~5$
+% \stoplines
+%
+% \starttabulate[|~|]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \NR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \NR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \NR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \NR
+% \stoptabulate
+%
+% \starttable[||]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \AR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \AR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \AR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \AR
+% \stoptable
+% \stopbuffer
+%
+% \setupbodyfont[cmr] \getbuffer
+% \setupbodyfont[lbr] \getbuffer
+
+%D A couple of plain macros:
+
+\ifdefined\thinspace \else
+
+    \unexpanded\def\thinspace   {\kern .16667\emwidth}
+    \unexpanded\def\negthinspace{\kern-.16667\emwidth}
+    \unexpanded\def\enspace     {\kern     .5\emwidth}
+
+\fi
+
+\ifdefined\quad \else
+
+    \unexpanded\def\enskip{\hskip.5\emwidth\relax}
+    \unexpanded\def\quad  {\hskip  \emwidth\relax}
+    \unexpanded\def\qquad {\hskip 2\emwidth\relax}
+
+\fi
+
+\unexpanded\def\negenspace{\kern-.5\emwidth}
+\unexpanded\def\negemspace{\kern-  \emwidth}
+
+\let\emspace\quad
+
+\unexpanded\def\charspace{ } % the unexpandable \space (as space can also be delimiter for numbers)
+
+\unexpanded\def\quads
+  {\dosingleempty\spac_quads}
+
+\def\spac_quads[#1]%
+  {\zwj\dorecurse{\iffirstargument#1\else\plusthree\fi}{\hskip\emwidth\zwj}}
+
+% Suggested by GB (not the name -):
+
+\def\rapfillskip{.5\hsize plus .092\hsize minus .5\hsize} % D.A.'s value
+
+% Bovendien definieren we enkele extra \fill's:
+
+\unexpanded\def\hfilll   {\hskip\zeropoint\s!plus1\s!filll\relax}
+\unexpanded\def\vfilll   {\vskip\zeropoint\s!plus1\s!filll\relax}
+
+%unexpanded\def\hfilneg  {\hskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\hfillneg {\hskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\hfilllneg{\hskip\zeropoint\s!plus-1\s!filll\relax}
+%unexpanded\def\vfilneg  {\vskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\vfillneg {\vskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\vfilllneg{\vskip\zeropoint\s!plus-1\s!filll\relax}
+
+\unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
+\unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
+
+% maybe we should hash the analysis
+
+\installcorenamespace{narrower}
+\installcorenamespace{narrowermethod}
+
+\newskip\s_spac_narrower_left
+\newskip\s_spac_narrower_right
+\newskip\s_spac_narrower_middle
+
+\installcommandhandler \??narrower {narrower} \??narrower
+
+\setupnarrower
+  [\c!before=\endgraf,
+   \c!after=\endgraf,
+   \c!left=1.5\emwidth,
+   \c!right=1.5\emwidth,
+   \c!middle=1.5\emwidth,
+   \c!default=\v!middle]
+
+\appendtoks
+   \setuevalue{\e!start\currentnarrower}{\spac_narrower_start{\currentnarrower}}%
+   \setuevalue{\e!stop \currentnarrower}{\spac_narrower_stop}%
+\to \everydefinenarrower
+
+\unexpanded\def\installnarrowermethod#1#2%
+  {\setvalue{\??narrowermethod#1}{#2}}
+
+\unexpanded\def\spac_narrower_method_analyze#1%
+  {\ifcsname\??narrowermethod#1\endcsname
+     \lastnamedcs
+   \else
+     \global\advance\s_spac_narrower_middle#1\relax
+   \fi}
+
+\def\spac_narrower_initialize[#1]% hm, can be dorepeat directly
+  {\dorepeatwithcommand[#1]\spac_narrower_method_analyze}
+
+\installnarrowermethod  \v!left   {\global\advance\s_spac_narrower_left   \narrowerparameter\c!left  \relax}
+\installnarrowermethod  \v!middle {\global\advance\s_spac_narrower_middle \narrowerparameter\c!middle\relax}
+\installnarrowermethod  \v!right  {\global\advance\s_spac_narrower_right  \narrowerparameter\c!right \relax}
+\installnarrowermethod{-\v!left  }{\global\advance\s_spac_narrower_left  -\narrowerparameter\c!left  \relax}
+\installnarrowermethod{-\v!middle}{\global\advance\s_spac_narrower_middle-\narrowerparameter\c!middle\relax}
+\installnarrowermethod{-\v!right }{\global\advance\s_spac_narrower_right -\narrowerparameter\c!right \relax}
+\installnarrowermethod  \v!reset  {\global        \s_spac_narrower_left   \zeropoint
+                                   \global        \s_spac_narrower_middle \zeropoint
+                                   \global        \s_spac_narrower_right  \zeropoint\relax}
+\installnarrowermethod \v!none    {}
+\installnarrowermethod \v!reverse {} % never seen
+
+\unexpanded\def\spac_narrower_start#1%
+  {\begingroup
+   \edef\currentnarrower{#1}%
+   \dosingleempty\spac_narrower_start_indeed}
+
+\unexpanded\def\spac_narrower_start_indeed[#1]%
+  {\iffirstargument
+     \spac_narrower_start_apply{#1}%
+   \else
+     \spac_narrower_start_apply{\narrowerparameter\v!default}%
+   \fi}
+
+\newskip\s_spac_narrower_left_last
+\newskip\s_spac_narrower_right_last
+\newconditional\s_spac_narrower_last_swap
+
+\def\spac_narrower_start_apply#1%
+  {\narrowerparameter\c!before
+   \global\s_spac_narrower_left  \zeropoint
+   \global\s_spac_narrower_right \zeropoint
+   \global\s_spac_narrower_middle\zeropoint
+   \edef\askednarrower{#1}%
+   \ifx\askednarrower\v!reverse
+     \ifconditional\s_spac_narrower_last_swap
+       \frozen\leftskip \s_spac_narrower_right_last
+       \frozen\rightskip\s_spac_narrower_left_last
+       \setfalse\s_spac_narrower_last_swap
+     \else
+       \frozen\leftskip \s_spac_narrower_left_last
+       \frozen\rightskip\s_spac_narrower_right_last
+       \settrue\s_spac_narrower_last_swap
+     \fi
+   \else
+     \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
+     \frozen\advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
+     \frozen\advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+   \fi
+   \seteffectivehsize}
+
+\unexpanded\def\spac_narrower_stop
+  {\narrowerparameter\c!after
+   \normalexpanded{%
+      \endgroup
+      \s_spac_narrower_left_last \the\leftskip \relax
+      \s_spac_narrower_right_last\the\rightskip\relax
+      \ifconditional\s_spac_narrower_last_swap
+        \setfalse\s_spac_narrower_last_swap
+      \else
+        \settrue\s_spac_narrower_last_swap
+      \fi
+   }}
+
+\unexpanded\def\startnarrower
+  {\dosingleempty\spac_narrower_start_basic}
+
+\unexpanded\def\spac_narrower_start_basic[#1]%
+  {\begingroup
+   \let\currentnarrower\empty
+   \iffirstargument
+     \spac_narrower_start_apply{#1}%
+   \else
+     \spac_narrower_start_apply{\narrowerparameter\v!default}%
+   \fi}
+
+\let\stopnarrower\spac_narrower_stop
+
+\unexpanded\def\startnarrow % current how
+  {\begingroup
+   \dodoubleempty\spac_narrower_start_named}
+
+% \def\spac_narrower_start_named[#1][#2]%
+%   {\edef\currentnarrower{#1}%
+%    \ifsecondargument
+%      \spac_narrower_start_apply{#2}%
+%    \else
+%      \spac_narrower_start_apply{\narrowerparameter\v!default}%
+%    \fi}
+
+\def\spac_narrower_start_named
+  {\ifsecondargument
+      \expandafter\spac_narrower_start_named_two
+   \else
+      \expandafter\spac_narrower_start_named_one
+   \fi}
+
+\def\spac_narrower_start_named_one[#1]%
+  {\doifelseassignment{#1}\spac_narrower_start_named_one_yes\spac_narrower_start_named_one_nop[#1]}
+
+\def\spac_narrower_start_named_one_yes[#1][#2]% [settings] []
+  {\setupcurrentnarrower[#1]%
+   \spac_narrower_start_apply{\narrowerparameter\v!default}}
+
+\def\spac_narrower_start_named_one_nop[#1][#2]% [tag] []
+  {\edef\currentnarrower{#1}%
+   \spac_narrower_start_apply{\narrowerparameter\v!default}}
+
+\def\spac_narrower_start_named_two[#1]%
+  {\doifelseassignment{#1}\spac_narrower_start_named_settings_how\spac_narrower_start_named_tag_unknown[#1]}
+
+\def\spac_narrower_start_named_settings_how[#1][#2]% [settings] [how]
+  {\setupcurrentnarrower[#1]%
+   \spac_narrower_start_apply{#2}}
+
+\def\spac_narrower_start_named_tag_unknown[#1][#2]% [tag] [...]
+  {\doifelseassignment{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
+
+\def\spac_narrower_start_named_tag_settings[#1][#2]% [tag] [settings]
+  {\edef\currentnarrower{#1}%
+   \setupcurrentnarrower[#2]%
+   \spac_narrower_start_apply{\narrowerparameter\v!default}}
+
+\def\spac_narrower_start_named_tag_how[#1][#2]% [tag] [how]
+  {\edef\currentnarrower{#1}%
+   \spac_narrower_start_apply{#2}}
+
+\let\stopnarrow\spac_narrower_stop
+
+\newdimen\d_spac_effective_hsize     \def\effectivehsize    {\hsize}
+\newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\dimexpr\leftskip \relax}
+\newdimen\d_spac_effective_rightskip \def\effectiverightskip{\dimexpr\rightskip\relax}
+
+\unexpanded\def\seteffectivehsize
+  {\setlocalhsize
+   \d_spac_effective_hsize    \localhsize
+   \d_spac_effective_leftskip 1\leftskip
+   \d_spac_effective_rightskip1\rightskip
+   \let\effectivehsize    \d_spac_effective_hsize
+   \let\effectiveleftskip \d_spac_effective_leftskip
+   \let\effectiverightskip\d_spac_effective_rightskip}
+
+\installcorenamespace{skipadaptionleft}
+\installcorenamespace{skipadaptionright}
+
+\newskip\leftskipadaption
+\newskip\rightskipadaption
+
+\setvalue{\??skipadaptionleft \v!yes     }{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+\letvalue{\??skipadaptionleft \v!no      }\zeropoint
+\letvalue{\??skipadaptionleft \empty     }\zeropoint
+\setvalue{\??skipadaptionright\v!yes     }{\narrowerparameter\c!right}
+\letvalue{\??skipadaptionright\v!no      }\zeropoint
+\letvalue{\??skipadaptionright\empty     }\zeropoint
+
+% \setvalue{\??skipadaptionleft \v!standard}{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+% \setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
+
+\letcsnamecsname\csname\??skipadaptionleft \v!standard\endcsname\csname\??skipadaptionleft \v!yes\endcsname
+\letcsnamecsname\csname\??skipadaptionright\v!standard\endcsname\csname\??skipadaptionright\v!yes\endcsname
+
+% \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
+% \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
+
+\unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
+\unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
+
+\unexpanded\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\frozen\advance\leftskip \leftskipadaption }
+\unexpanded\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advance\rightskip\rightskipadaption}
+
+\unexpanded\def\forgetbothskips
+  {\leftskip\zeropoint
+   \rightskip\zeropoint
+   \relax}
+
+\appendtoks
+    \forgetbothskips
+\to \everyforgetall
+
+% in spac-ver.mkiv
+%
+% \unexpanded\def\forgetparskip
+%   {\s_spac_whitespace_parskip\zeropoint
+%    \parskip\zeropoint
+%    \let\v_spac_whitespace_current\v!none}
+%
+% \appendtoks
+%     \forgetparskip
+% \to \everyforgetall
+
+%D Tolerance (can also be set with align):
+
+\installcorenamespace{tolerancemethods}
+
+\unexpanded\def\installtolerancemethod#1#2#3%
+  {\setvalue{\??tolerancemethods#1:#2}{#3}}
+
+\installtolerancemethod \v!vertical   \v!verystrict   {\let\bottomtolerance\empty}
+\installtolerancemethod \v!vertical   \v!strict       {\def\bottomtolerance{.050}}
+\installtolerancemethod \v!vertical   \v!tolerant     {\def\bottomtolerance{.075}}
+\installtolerancemethod \v!vertical   \v!verytolerant {\def\bottomtolerance{.100}}
+
+\installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize}
+\installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\s!plus.25em\s!minus.25em\relax}
+\installtolerancemethod \v!horizontal \v!verystrict   {\tolerance\plustwohundred}
+\installtolerancemethod \v!horizontal \v!strict       {\tolerance1500 }
+\installtolerancemethod \v!horizontal \v!tolerant     {\tolerance3000 }
+\installtolerancemethod \v!horizontal \v!verytolerant {\tolerance4500 }
+
+\appendetoks
+     \pretolerance\plushundred
+     \tolerance   \plustwohundred
+\to\everyforgetall
+
+\def\spac_tolerances_step_vertical  #1{\csname\??tolerancemethods\v!vertical  :#1\endcsname}
+\def\spac_tolerances_step_horizontal#1{\csname\??tolerancemethods\v!horizontal:#1\endcsname}
+
+\unexpanded\def\setuptolerance
+  {\dosingleargument\spac_tolerances_setup}
+
+\def\spac_tolerances_setup[#1]%
+  {\doifelseinset\v!vertical{#1}%
+     {\processcommacommand[#1]\spac_tolerances_step_vertical  }
+     {\processcommacommand[#1]\spac_tolerances_step_horizontal}}
+
+%D \macros
+%D   {pushindentation,popindentation}
+%D
+%D The pushing and popping is done by:
+
+\newbox\b_spac_indentations_a
+\newbox\b_spac_indentations_b
+
+\unexpanded\def\pushindentation
+  {\begingroup
+   \ifhmode
+     \unskip
+     \setbox\b_spac_indentations_a\lastbox       % get \strut if present
+     \unskip
+     \setbox\b_spac_indentations_b\lastbox       % get \indent generated box
+     \unskip
+   \else
+     \dontleavehmode % was \hskip\zeropoint      % switch to horizontal mode
+     \unskip
+     \setbox\b_spac_indentations_a\lastbox       % get \indent generated box
+     \setbox\b_spac_indentations_b\emptybox
+   \fi}
+
+\unexpanded\def\popindentation
+  {\box\b_spac_indentations_b
+   \box\b_spac_indentations_a
+   \endgroup}
+
+%D The only complication lays in \type{\strut}. In \PLAIN\
+%D \TEX\ a \type{\strut} is defined as:
+%D
+%D \starttyping
+%D \def\strut%
+%D   {\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
+%D \stoptyping
+%D
+%D But what is a \type{\strut}? Normally it's a rule of width
+%D zero, but when made visual, it's a rule and a negative skip.
+%D The mechanism for putting things in the margins described
+%D here cannot handle this situation very well. One
+%D characteristic of \type{\strut} is that the \type{\unhcopy}
+%D results in entering horizontal mode, which in return leads
+%D to some indentation.
+%D
+%D To serve our purpose a bit better, the macro \type{\strut}
+%D can be redefined as:
+%D
+%D \starttyping
+%D \def\strut
+%D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
+%D \stoptyping
+%D
+%D Or more compatible:
+%D
+%D \starttyping
+%D \def\strut
+%D   {\relax\ifmmode
+%D      \copy\strutbox
+%D    \else
+%D      \bgroup\setbox\strutbox=\hbox{\box\strutbox}\unhcopy\strutbox\egroup
+%D    \fi}
+%D \stoptyping
+%D
+%D In \CONTEXT\ however we save some processing time by putting
+%D an extra \type{\hbox} around the \type{\strutbox}.
+
+%D \starttyping
+%D % \setuplayout[gridgrid=yes] \showgrid
+%D
+%D \startbuffer
+%D test 1\crlf
+%D test 2\crlf
+%D
+%D \crlf test 3
+%D
+%D test 4\crlf
+%D test 5
+%D
+%D \crlf
+%D \crlf
+%D \crlf
+%D test 6
+%D \stopbuffer
+%D
+%D \hbox
+%D   {\hsize5em
+%D    \ruledvtop{\getbuffer}\enspace
+%D    \ruledvtop{\showstruts\getbuffer}\enspace
+%D    \hsize15em \setuptyping[before=,after=]%
+%D    \ruledvtop{\typebuffer}}
+%D \stoptyping
+
+\unexpanded\def\justonespace{\removeunwantedspaces\space}
+%unexpanded\def\justaperiod {\removeunwantedspaces.}
+%unexpanded\def\justacomma  {\removeunwantedspaces,}
+
+\installcorenamespace{hspace}
+
+\unexpanded\def\ignorecrlf
+  {\let\crlf\justonespace\let\\\crlf}
+
+\unexpanded\def\definehspace
+  {\dotripleempty\spac_hspaces_define}
+
+\def\spac_hspaces_define[#1][#2][#3]% #1 = optional namespace
+  {\ifthirdargument
+     \setvalue{\??hspace#1:#2}{#3}%
+   \else
+     \setvalue{\??hspace:#1}{#2}%
+   \fi}
+
+\unexpanded\def\hspace
+  {\dodoubleempty\spac_hspaces_insert}
+
+\def\spac_hspaces_insert[#1][#2]%
+  {\ifhmode
+     \removeunwantedspaces
+     \hskip % always a skip even when 0pt
+       \ifsecondargument
+         \hspaceamount{#1}{#2}%
+       \else\iffirstargument
+         \hspaceamount\empty{#1}%
+       \else
+         \hspaceamount\empty\s!default
+       \fi\fi
+     \expandafter\ignorespaces
+   \fi}
+
+\def\hspaceamount#1#2%
+  {\dimexpr\ifcsname\??hspace#1:#2\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+
+\def\directhspaceamount#1%
+  {\dimexpr\ifcsname\??hspace  :#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+
+% no installhspace here (this is already an old command)
+
+\definehspace [\v!small]   [.25\emspaceamount]
+\definehspace [\v!medium]  [.5\emspaceamount]
+\definehspace [\v!big]     [1\emspaceamount]
+\definehspace [\v!normal]  [1\spaceamount]
+\definehspace [\v!default] [\spaceamount]
+\definehspace [\v!none]    [\zeropoint]
+
+%D Taken from Taco's math module (cq. \AMS\ macros), but
+%D adapted to \type {\hspace}:
+
+\unexpanded\def\textormathspace         #1#2#3{\ifmmode\mskip#1#2\else\kern #1\hspaceamount\empty{#3}\fi\relax}
+\unexpanded\def\textormathspacecommand  #1#2#3{\ifmmode\mskip#1#2\else#3\fi\relax}
+\unexpanded\def\breakabletextormathspace#1#2#3{\ifmmode\mskip#1#2\else\hskip#1\hspaceamount\empty{#3}\fi\relax}
+
+\newmuskip\hairmuskip \hairmuskip=.15mu
+
+\unexpanded\def\hairspace    {\textormathspace+\hairmuskip{.5}}
+\unexpanded\def\thinspace    {\textormathspace+\thinmuskip 1}
+%unexpanded\def\medspace     {\textormathspace+\medmuskip  2}      % 4/18 em
+\unexpanded\def\thickspace   {\textormathspace+\thickmuskip3}
+\unexpanded\def\neghairspace {\textormathspace-\thinmuskip{.5}}
+\unexpanded\def\negthinspace {\textormathspace-\thinmuskip 1}
+\unexpanded\def\negmedspace  {\textormathspace-\medmuskip  2}
+\unexpanded\def\negthickspace{\textormathspace-\thickmuskip3}
+
+\unexpanded\edef\medspace    {\textormathspacecommand+\medmuskip{\Uchar"205F}}
+
+% needed for unicode:
+
+%unexpanded\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip1}
+%unexpanded\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+%unexpanded\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
+%unexpanded\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
+%unexpanded\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
+%unexpanded\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
+%unexpanded\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+%unexpanded\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+%unexpanded\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
+%unexpanded\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
+%unexpanded\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
+%unexpanded\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
+%unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
+%unexpanded\def\zerowidthspace          {\hskip\zeropoint}
+
+\definehspace[.5][.1250\emwidth] % hair
+\definehspace[1] [.1667\emwidth] % thin
+\definehspace[2] [.2222\emwidth] % med
+\definehspace[3] [.2777\emwidth] % thick
+
+\let \, \thinspace
+\let \: \medspace
+\let \; \thickspace
+\let \! \negthinspace
+
+% plain ...
+%
+% \ifdefined\> \else \unexpanded\def\>{\mskip \medmuskip  }                                \fi
+% \ifdefined\* \else \unexpanded\def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
+
+\def\flexiblespaceamount#1#2#3%
+         {#1\interwordspace
+   \s!plus#2\interwordstretch
+  \s!minus#3\interwordshrink}
+
+\def\fixedspaceamount#1%
+  {#1\interwordspace}
+
+% moved from page-lin
+%
+% the following code is used in startlines\stoplines
+%
+% do we need \normalspaceprimitive here?
+
+\installcorenamespace{spacemethods}
+
+\unexpanded\def\installspacemethod#1#2% needs to set \obeyedspace
+  {\setvalue{\??spacemethods#1}{#2}}
+
+\def\activatespacehandler#1%
+  {\csname\??spacemethods\ifcsname\??spacemethods#1\endcsname#1\else\v!off\fi\endcsname}
+
+\unexpanded\def\spac_spaces_checked_control{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+\unexpanded\def\spac_spaces_checked_normal {\mathortext\normalspace{\dontleavehmode\normalspace}}%
+\unexpanded\def\spac_spaces_checked_fixed  {\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+
+% hm, order matters when we \let in \obeyspaces
+
+\installspacemethod \v!on
+  {\obeyspaces
+   \let\obeyedspace\spac_spaces_checked_control
+   \let\ =\obeyedspace}
+
+\installspacemethod \v!yes
+  {\obeyspaces
+   \let\obeyedspace\spac_spaces_checked_normal
+   \let\ =\obeyedspace}
+
+\installspacemethod \v!off % == default
+  {\normalspaces
+   \let\obeyedspace\normalspace
+   \let\ =\normalspaceprimitive} % was \normalspace
+
+\installspacemethod \v!fixed
+  {\obeyspaces
+   \let\obeyedspace\spac_spaces_checked_fixed
+   \let\ =\obeyedspace}
+
+\appendtoks
+   \normalspaces % to be sure
+\to \everybeforeoutput
+
+%D A more robust variant of the \MKII\ one:
+%D
+%D \startbuffer
+%D bla \TEX\autoinsertnextspace bla
+%D bla \TEX\autoinsertnextspace (bla)
+%D bla (\TEX\autoinsertnextspace) bla
+%D bla \TEX\autoinsertnextspace\ bla
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\autoinsertnextspace
+  {\futurelet\nexttoken\spac_spaces_auto_insert_next}
+
+\def\spac_spaces_auto_insert_next
+  {\clf_autonextspace{\normalmeaning\nexttoken}} % todo, just consult nexttoken at the lua end
+
+%D Moved from bib module:
+
+\unexpanded\def\outdented#1%
+  {\hskip-\hangindent#1\relax}
+
+%D Beware: due to char-def this becomes an active character but that
+%D might change sometime when we will replace all these specials to
+%D node insertions. We might even expand it to utf then as it then
+%D can be used in string comparison (not that much needed anyway).
+
+% \chardef\zwnj="200C
+% \chardef\zwj ="200D
+
+% TODO (but used in languages):
+
+\unexpanded\def\spac_glues_text_or_math#1#2%
+  {\begingroup
+   \ifmmode
+     \mskip#1%
+   \else
+     \scratchdimen#1\hspaceamount\empty{#2}%
+     \scratchskip\scratchdimen\s!plus.5\scratchdimen\s!minus.3\scratchdimen
+     \hskip\scratchskip
+   \fi
+   \endgroup}
+
+\unexpanded\def\thinglue {\spac_glues_text_or_math\thinmuskip \v!small}
+\unexpanded\def\medglue  {\spac_glues_text_or_math\medmuskip  \v!medium}
+\unexpanded\def\thickglue{\spac_glues_text_or_math\thickmuskip\v!big}
+
+%D A rather unknown one:
+
+\unexpanded\def\widened % moved from cont-new
+  {\doifelsenextoptionalcs\spac_widened_yes\spac_widened_nop}
+
+\def\spac_widened_yes[#1]#2{\hbox \s!spread       #1{\hss#2\hss}}
+\def\spac_widened_nop    #1{\hbox \s!spread \emwidth{\hss#1\hss}}
+
+\definecomplexorsimple\widened
+
+%D For the moment here (used in page-txt):
+
+\unexpanded\def\ignoredlinebreak{\unskip\space\ignorespaces}
+
+%D \macros
+%D   {startignorespaces}
+%D
+%D I'll probably forget that this one exists:
+%D
+%D \starttyping
+%D \ruledhbox
+%D   {\startignorespaces
+%D      \def\oeps{a}
+%D      \startignorespaces
+%D        \def\oeps{a}
+%D      \stopignorespaces
+%D      \def\oeps{a}
+%D    \stopignorespaces
+%D    \oeps}
+%D \stoptyping
+
+\newsignal\s_spac_ignore_spaces
+\newcount \c_spac_ignore_spaces
+
+\unexpanded\def\startignorespaces
+  {\advance\c_spac_ignore_spaces\plusone
+   \ifcase\c_spac_ignore_spaces\or \ifhmode
+     \hskip\s_spac_ignore_spaces
+   \fi \fi
+   \ignorespaces}
+
+\unexpanded\def\stopignorespaces
+  {\ifcase\c_spac_ignore_spaces \or
+     \ifhmode
+       \doloop\spac_ignore_spaces_body
+     \fi
+   \fi
+   \advance\c_spac_ignore_spaces\minusone}
+
+\def\spac_ignore_spaces_body
+  {\ifzeropt\lastskip
+     \exitloop
+   \else\ifdim\lastskip=\s_spac_ignore_spaces
+     \unskip
+     \exitloop
+   \else
+     \unskip
+   \fi\fi}
+
+%D \macros
+%D   {obeyfollowingtoken}
+
+\def\obeyfollowingtoken{{}}  % end \cs scanning
+
+%D Something new:
+
+\unexpanded\def\interwordspacebefore{\wordboundary\zwnj\hskip\interwordspace\relax}
+\unexpanded\def\interwordspaceafter {\hskip\interwordspace\relax\zwnj\wordboundary}
+
+\unexpanded\def\interwordspacesbefore#1{\dofastloopcs{#1}\interwordspacebefore}
+\unexpanded\def\interwordspacesafter #1{\dofastloopcs{#1}\interwordspaceafter}
+\unexpanded\def\interwordspaces      #1{\wordboundary\zwnj\dofastloopcs{\numexpr#1+\minusone}\interwordspaceafter}
+
+\protect \endinput

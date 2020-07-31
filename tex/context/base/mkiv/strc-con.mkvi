@@ -418,6 +418,8 @@
    %
    \dostoptagged % tag
    \dostarttagged\t!constructioncontent\empty
+  %\freezeparagraphproperties
+   \updateparagraphshapes
    \ignorespaces} % args not needed
 
 \unexpanded\setvalue{\??constructionstophandler\v!construction}%
@@ -433,7 +435,7 @@
    \dorechecknextindentation}
 
 \unexpanded\def\boxedconstructionhead#1%
-  {\vtop
+  {\doifelse{\constructionalternativeparameter\c!alignbottom}{\v!yes}\vbox\vtop
      {\hsize\constructionsheadwidth
       \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
       \ifx\p_strc_constructions_headalign\empty \else
@@ -918,6 +920,43 @@
     \constructionparameter\c!headcommand{\flushconstructionheadbox}
     \endgroup
 \stopsetups
+
+\ifcase\contextlmtxmode \else
+    % just an empty check so that we can grep for contextlmtxmode in mkiv files
+\fi
+
+% \definedescription[whatever][alternative=right:bottom]
+%
+% \startwhatever{just a small\\example}
+%     \input ward
+% \stopwhatever
+
+\defineconstructionalternative
+  [\v!right:\v!bottom]
+  [%\c!width=7em,
+   %\c!distance=1em,
+   \c!alignbottom=\v!yes,
+   \c!renderingsetup=\??constructionrenderings:\v!right:\v!bottom]
+
+\startsetups[\??constructionrenderings:\v!right:\v!bottom]
+    \let\\=\crlf
+    \noindent
+    \leftskip\leftconstructionskip
+    \rightskip\dimexpr\rightconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
+    \parfillskip\zeropoint
+    \strc_constructions_set_pure_box\v!flushright
+    \directparwrapper \relax {%
+      \hfilll
+      \rlap
+        {\kern\constructionsheaddistance
+         \copy\constructionheadbox}%
+    }%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+%D This next feature will get an lmtx implementation (probably by using a new generic
+%D close mechanism).
 
 % you can use \placeclosesymbol or \qed to place a symbol at the end of a
 % construction

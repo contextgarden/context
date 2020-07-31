@@ -7338,6 +7338,10 @@ return {
    ["pe"]="تنظیم",
    ["ro"]="aliniere",
   },
+  ["alignbottom"]={
+   ["en"]="alignbottom",
+   ["fr"]="alignerbas",
+  },
   ["aligncharacter"]={
    ["cs"]="aligncharacter",
    ["de"]="aligncharacter",

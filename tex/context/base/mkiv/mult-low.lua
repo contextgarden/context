@@ -74,7 +74,7 @@ return {
         "frozenwidowpenaltycode", "frozenclubpenaltycode",  "frozenbrokenpenaltycode",  "frozenadjdemeritscode",
         "frozendoublehyphendemeritscode", "frozenfinalhyphendemeritscode", "frozenparshapecode",
         "frozeninterlinepenaltiescode", "frozenwidowpenaltiescode", "frozenclubpenaltiescode",
-        "paragraphupdatecodes", "paragraphpenaltycodes", "paragraphdemeritcodes",
+        "paragraphupdatecodes", "paragraphpenaltycodes", "paragraphdemeritcodes", "paragraphshapecodes",
         --
         "activemathcharcode",
         --
@@ -462,7 +462,7 @@ return {
         "carryoverpar",
         "freezeparagraphproperties", "defrostparagraphproperties",
         "setparagraphfreezing", "forgetparagraphfreezing",
-        "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits",
+        "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits", "updateparagraphshapes",
         --
         "lastlinewidth",
         --
