@@ -158,6 +158,7 @@ function colorschemes.coloring(head)
             if lastscheme then
                 local sc = lastscheme[char]
                 if sc then
+                    -- todo: use new lmtx mechanism instead
                     setnodecolor(n,lastcache[sc]) -- we could inline this one
                 end
             end

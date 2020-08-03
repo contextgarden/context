@@ -617,73 +617,12 @@
 
 \let\active\activecatcode
 
-%D Constants to be used with \type {\currentgrouptype}.
-
-\chardef\bottomlevelgroupcode   =  0
-\chardef\simplegroupcode        =  1
-\chardef\hboxgroupcode          =  2
-\chardef\adjustedhboxgroupcode  =  3
-\chardef\vboxgroupcode          =  4
-\chardef\vtopgroupcode          =  5
-\chardef\aligngroupcode         =  6
-\chardef\noaligngroupcode       =  7
-\chardef\outputgroupcode        =  8
-\chardef\mathgroupcode          =  9
-\chardef\discretionarygroupcode = 10
-\chardef\insertgroupcode        = 11
-\chardef\vcentergroupcode       = 12
-\chardef\mathabovegroupcode     = 13
-\chardef\mathchoicegroupcode    = 14
-\chardef\semisimplegroupcode    = 15
-\chardef\mathshiftgroupcode     = 16
-\chardef\mathleftgroupcode      = 17
-\chardef\vadjustgroupcode       = \insertgroupcode
-
 %D Constants to be used with \type {\interactionmode}.
 
 \chardef\batchmodecode     \zerocount
 \chardef\nonstopmodecode   \plusone
 \chardef\scrollmodecode    \plustwo
 \chardef\errorstopmodecode \plusthree
-
-%D Constants to be used with \type {\lastnodetype}. The \type {\lastnodetype}
-%D primitive is \ETEX\ compliant. The valid range is still -1 .. 15 and glyph nodes
-%D have number 0 (used to be char node) and ligature nodes are mapped to 7. That way
-%D macro packages can use the same symbolic names as in traditional \ETEX. Keep in
-%D mind that the internal node numbers are different and that there are more node
-%D types that 15. The mode parameter forces \LUAMETATEX\ to use the real node
-%D numbers.
-
-\internalcodesmode\plusone
-
-%D Constants to be used with \type {\currentiftype}. I wonder if we will ever
-%D use these in \CONTEXT. We have a few more anyway and in \LUAMETATEX\ we
-%D have different numbers. So for now let's just not define them. The
-%D previously mentioned mode parameters enables the real numbers (we have
-%D some more and they are therefore ordered differently).
-
-% \chardef\charifcode     =  1
-% \chardef\catifcode      =  2
-% \chardef\numifcode      =  3
-% \chardef\dimifcode      =  4
-% \chardef\oddifcode      =  5
-% \chardef\vmodeifcode    =  6
-% \chardef\hmodeifcode    =  7
-% \chardef\mmodeifcode    =  8
-% \chardef\innerifcode    =  9
-% \chardef\voidifcode     = 10
-% \chardef\hboxifcode     = 11
-% \chardef\vboxifcode     = 12
-% \chardef\xifcode        = 13
-% \chardef\eofifcode      = 14
-% \chardef\trueifcode     = 15
-% \chardef\falseifcode    = 16
-% \chardef\caseifcode     = 17
-% \chardef\definedifcode  = 18
-% \chardef\csnameifcode   = 19
-% \chardef\fontcharifcode = 20
-%
-% % there are some more in luametatex
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.

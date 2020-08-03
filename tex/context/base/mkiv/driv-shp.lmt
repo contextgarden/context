@@ -272,13 +272,13 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 end
             end
         elseif command == "right" then
-            local h = packet[2] * siz -- * siz is really needed for boldening
+            local h = packet[2] -- already scaled
             if factor ~= 0 and h ~= 0 then
                 h = h + h * factor / 1000 -- expansion
             end
             pos_h = pos_h + h
         elseif command == "down" then
-            local v = packet[2] * siz -- * siz is really needed for boldening
+            local v = packet[2] -- already scaled
             pos_v = pos_v - v
         elseif command == "push" then
             level = level + 1

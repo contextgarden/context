@@ -3045,16 +3045,15 @@
 
 \let\themaxboxwidth\clf_themaxboxwidth
 
-%D New: slow but ok for most cases:
+%D Fast enough for most cases:
 
 \unexpanded\def\doifelseframed#1%
-  {\ifcase\numexpr\zerocount
-     \immediateassignment\edef\tempstring{#1\c!frame      }\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!topframe   }\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!bottomframe}\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!leftframe  }\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!rightframe }\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!background }\ifempty\tempstring\else+\plusone\fi
-   \relax\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
+         {\iftok{#1\c!frame      }{\v!on}\expandafter\firstoftwoarguments
+   \orelse\iftok{#1\c!topframe   }{\v!on}\expandafter\firstoftwoarguments
+   \orelse\iftok{#1\c!bottomframe}{\v!on}\expandafter\firstoftwoarguments
+   \orelse\iftok{#1\c!leftframe  }{\v!on}\expandafter\firstoftwoarguments
+   \orelse\iftok{#1\c!rightframe }{\v!on}\expandafter\firstoftwoarguments
+   \orelse\iftok{#1\c!background }     {}\expandafter\secondoftwoarguments
+     \else                               \expandafter\firstoftwoarguments\fi}
 
 \protect \endinput

@@ -877,6 +877,7 @@ local ruledglue do
     local spaceskip_code      = gluecodes.spaceskip
     local xspaceskip_code     = gluecodes.xspaceskip
     local zerospaceskip_code  = gluecodes.zerospaceskip or gluecodes.userskip
+ -- local keepskip_code       = gluecodes.keepskip or gluecodes.userskip
     local leftskip_code       = gluecodes.leftskip
     local rightskip_code      = gluecodes.rightskip
     local parfillskip_code    = gluecodes.parfillskip
@@ -906,6 +907,7 @@ local ruledglue do
         [gluecodes.medmuskip]             = "MM",
         [gluecodes.thickmuskip]           = "ML",
         [gluecodes.intermathskip]         = "IM",
+        [gluecodes.keepskip or 99]        = "KS",
         [gluecodes.mathskip]              = "MT",
         [leadercodes.leaders]             = "NL",
         [leadercodes.cleaders]            = "CL",

@@ -84,8 +84,10 @@ return {
         --
         "bottomlevelgroupcode", "simplegroupcode", "hboxgroupcode", "adjustedhboxgroupcode", "vboxgroupcode",
         "vtopgroupcode", "aligngroupcode", "noaligngroupcode", "outputgroupcode", "mathgroupcode",
-        "discretionarygroupcode", "insertgroupcode", "vcentergroupcode", "mathabovegroupcode", "mathchoicegroupcode",
-        "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode", "vadjustgroupcode",
+        "discgroupcode", "insertgroupcode", "vadjustgroupcode", "vcentergroupcode", "mathabovegroupcode",
+        "mathchoicegroupcode", "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode",
+        "localboxgroupcode", "splitoffgroupcode", "splitkeepgroupcode", "preamblegroupcode",
+        "alignsetgroupcode", "finrowgroupcode", "discretionarygroupcode",
         --
         "charnodecode", "hlistnodecode", "vlistnodecode", "rulenodecode", "insertnodecode", "marknodecode",
         "adjustnodecode", "ligaturenodecode", "discretionarynodecode", "whatsitnodecode", "mathnodecode",
@@ -209,6 +211,7 @@ return {
         --
         "mathortext",
         --
+        "thebox",
         "htdp",
         "unvoidbox",
         "hfilll", "vfilll",
@@ -496,5 +499,7 @@ return {
         "start", "stop",
         --
         "unsupportedcs",
+        --
+        "openout", "closeout", "write", "openin", "closein", "read", "readline",
     }
 }

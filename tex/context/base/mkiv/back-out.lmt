@@ -61,17 +61,19 @@ local setmatrixnode       = register(newnut(whatsit_code,whatsitcodes.setmatrix)
 
 local tomatrix            = drivers.helpers.tomatrix
 
-local immediately         = false -- not watertight
-
 local open_command, write_command, close_command
 
 backends = backends or { }
 
-local function openout()
+local function immediately(prefix)
+    return prefix and (prefix & 8) ~= 0
+end
+
+local function openout(prefix)
     local channel = scaninteger()
     scankeyword("=") -- hack
     local filename = scanstring()
-    if not immediately then
+    if not immediately(prefix) then
         local n = copynode(opennode)
         nodeproperties[n] = { channel = channel, filename = filename } -- action = "open"
         return context(tonode(n))
@@ -83,7 +85,6 @@ local function openout()
             -- error
         end
     end
-    immediately = false
 end
 
 function backends.openout(n)
@@ -98,9 +99,9 @@ function backends.openout(n)
     end
 end
 
-local function write()
+local function write(prefix)
     local channel = scaninteger()
-    if not immediately then
+    if not immediately(prefix) then
         local t = scantokenlist()
         local n = copynode(writenode)
         nodeproperties[n] = { channel = channel, data = t } -- action = "write"
@@ -114,7 +115,6 @@ local function write()
            logwriter(content,"\n")
         end
     end
-    immediately = false
 end
 
 function backends.writeout(n)
@@ -130,9 +130,9 @@ function backends.writeout(n)
     end
 end
 
-local function closeout()
+local function closeout(prefix)
     local channel = scaninteger()
-    if not immediately then
+    if not immediately(prefix) then
         local n = copynode(closenode)
         nodeproperties[n] = { channel = channel } -- action = "close"
         return context(tonode(n))
@@ -146,7 +146,6 @@ local function closeout()
             -- error
         end
     end
-    immediately = false
 end
 
 function backends.closeout(n)
@@ -162,10 +161,6 @@ function backends.closeout(n)
             -- error
         end
     end
-end
-
-local function immediate()
-    immediately = true
 end
 
 local noflatelua = 0
@@ -247,10 +242,9 @@ function nodepool.setmatrix(rx,sx,sy,ry,tx,ty)
     return t
 end
 
-interfaces.implement { name = "immediate", actions = immediate,  public = true, protected = true }
-interfaces.implement { name = "openout",   actions = openout,    public = true, protected = true }
-interfaces.implement { name = "write",     actions = write,      public = true, protected = true }
-interfaces.implement { name = "closeout",  actions = closeout,   public = true, protected = true }
+interfaces.implement { name = "openout",   actions = openout,    public = true, protected = true, value = "none" }
+interfaces.implement { name = "write",     actions = write,      public = true, protected = true, value = "none" }
+interfaces.implement { name = "closeout",  actions = closeout,   public = true, protected = true, value = "none" }
 interfaces.implement { name = "latelua",   actions = latelua,    public = true, protected = true }
 interfaces.implement { name = "special",   actions = scanstring, public = true, protected = true }
 

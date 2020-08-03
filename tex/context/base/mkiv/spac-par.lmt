@@ -51,6 +51,7 @@ implement {
 implement {
     name      = "setparwrapper",
     arguments = "string",
+    protected = true,
     actions   = function(id)
         local t = tobesaved[id]
         local n = #t

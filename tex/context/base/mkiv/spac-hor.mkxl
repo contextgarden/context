@@ -554,6 +554,8 @@
 
 \newsignal\s_spac_keep_unwanted_space
 
+% \parindentmode\plusone
+
 \unexpanded\def\keepunwantedspaces
   {\ifhmode
      \ifdim\lastskip=\s_spac_keep_unwanted_space\else
@@ -567,12 +569,14 @@
    \fi}
 
 \def\spac_helpers_remove_unwantedspace
-  {\ifnum\lastnodetype=\gluenodecode
-     \ifdim\lastskip=\s_spac_keep_unwanted_space\relax
-       \unskip
+  {\ifnum\lastnodetype=\gluenodecode\relax
+     \ifnum\lastnodesubtype=\indentskipsubtypecode\relax
+       % keep parindent
+     \orelse\ifdim\lastskip=\s_spac_keep_unwanted_space\relax
+        \unskip
      \else
-       \unskip
-       \doubleexpandafter\spac_helpers_remove_unwantedspace
+        \unskip
+        \doubleexpandafter\spac_helpers_remove_unwantedspace
      \fi
    \fi}
 
@@ -642,15 +646,21 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
-\unexpanded\def\hfilll   {\hskip\zeropoint\s!plus1\s!filll\relax}
-\unexpanded\def\vfilll   {\vskip\zeropoint\s!plus1\s!filll\relax}
+\newskip\s_spac_fil        \s_spac_fil       = \zeropoint \s!plus 1\s!fil  \relax
+\newskip\s_spac_fill       \s_spac_fill      = \zeropoint \s!plus 1\s!fill \relax
+\newskip\s_spac_filll      \s_spac_filll     = \zeropoint \s!plus 1\s!filll\relax
 
-%unexpanded\def\hfilneg  {\hskip\zeropoint\s!plus-1\s!fil\relax}
-\unexpanded\def\hfillneg {\hskip\zeropoint\s!plus-1\s!fill\relax}
-\unexpanded\def\hfilllneg{\hskip\zeropoint\s!plus-1\s!filll\relax}
-%unexpanded\def\vfilneg  {\vskip\zeropoint\s!plus-1\s!fil\relax}
-\unexpanded\def\vfillneg {\vskip\zeropoint\s!plus-1\s!fill\relax}
-\unexpanded\def\vfilllneg{\vskip\zeropoint\s!plus-1\s!filll\relax}
+\newskip\s_spac_neg_fil    \s_spac_neg_fil   = \zeropoint \s!plus-1\s!fil  \relax
+\newskip\s_spac_neg_fill   \s_spac_neg_fill  = \zeropoint \s!plus-1\s!fill \relax
+\newskip\s_spac_neg_filll  \s_spac_neg_filll = \zeropoint \s!plus-1\s!filll\relax
+
+\unexpanded\def\hfilll   {\hskip\s_spac_fill\relax}
+\unexpanded\def\vfilll   {\vskip\s_spac_fill\relax}
+
+\unexpanded\def\hfillneg {\hskip\s_spac_neg_fill \relax}
+\unexpanded\def\hfilllneg{\hskip\s_spac_neg_filll\relax}
+\unexpanded\def\vfillneg {\vskip\s_spac_neg_fill \relax}
+\unexpanded\def\vfilllneg{\vskip\s_spac_neg_filll\relax}
 
 \unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere

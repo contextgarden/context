@@ -640,6 +640,7 @@
 		<cd:constant name='afterkey' value='afterkey'/>
 		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='align'/>
+		<cd:constant name='alignbottom' value='alignbottom'/>
 		<cd:constant name='aligncharacter' value='aligncharacter'/>
 		<cd:constant name='alignmentcharacter' value='alignmentcharacter'/>
 		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>

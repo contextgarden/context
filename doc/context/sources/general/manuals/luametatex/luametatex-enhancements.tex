@@ -1486,14 +1486,29 @@ the node number of the nodes.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
-{currentiftype} and \lpr {internalcodesmode}.}]
+% \startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
+% {currentiftype} and \lpr {internalcodesmode}.}]
+%
+% The \ETEX\ command \type {\lastnodetype} is limited to some nodes. When the
+% parameter \type {\internalcodesmode} is set to a non|-|zero value the normal
+% (internally used) numbers are reported. The same is true for \type
+% {\currentiftype}, as we have more conditionals and also use a different order.
+% The \type {\lastnodesubtype} is a bonus.
+%
+% \stopsubsection
 
-The \ETEX\ command \type {\lastnodetype} is limited to some nodes. When the
-parameter \type {\internalcodesmode} is set to a non|-|zero value the normal
-(internally used) numbers are reported. The same is true for \type
+\startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
+{currentiftype}}]
+
+The \ETEX\ command \type {\lastnodetype} returns the node codes as used in the
+engine. You can query the numbers at the \LUA\ end if you need the actual values.
+The parameter \type {\internalcodesmode} is no longer provided as compatibility
+switch because \LUATEX\ has more cq. some different nodes and it makes no sense
+to be incompatible with the \LUA\ end of the engine. The same is true for \type
 {\currentiftype}, as we have more conditionals and also use a different order.
-The \type {\lastnodesubtype} is a bonus.
+The \type {\lastnodesubtype} is a bonus and again reports the codes used
+internally. During development these might occasionally change, but eventually
+they will be stable.
 
 \stopsubsection
 

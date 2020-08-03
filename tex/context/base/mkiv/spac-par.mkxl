@@ -110,6 +110,7 @@
 \installcorenamespace {eparwrap}
 \installcorenamespace {parwrapbefore}
 \installcorenamespace {parwrapafter}
+\installcorenamespace {parwrapcount}
 
 \let\spac_paragraph_wrap\relax
 
@@ -131,26 +132,39 @@
   {\expandafter\newtoks\csname\??bparwrap\the\currentgrouplevel\endcsname
    \expandafter\newtoks\csname\??eparwrap\the\currentgrouplevel\endcsname}
 
+\def\spac_paragraph_install_count#1%
+  {\expandafter\newcount\csname\??parwrapcount#1\endcsname}
+
 \def\spac_paragraph_install_pair#1#2#3%
-  {\expandafter\newtoks \csname\??parwrapbefore#3\endcsname
-   \expandafter\newtoks \csname\??parwrapafter #3\endcsname
-   #1\csname\??bparwrap\the\currentgrouplevel\endcsname\expandafter{\expandafter\the\csname\??parwrapbefore#3\endcsname}%
-   #2\csname\??eparwrap\the\currentgrouplevel\endcsname\expandafter{\expandafter\the\csname\??parwrapafter #3\endcsname}}
+  {\expandafter\newtoks\csname\??parwrapbefore#3\endcsname
+   \expandafter\newtoks\csname\??parwrapafter #3\endcsname
+   #1\csname\??bparwrap\the\currentgrouplevel\endcsname
+     {\the\csname\??parwrapbefore#3\endcsname}%
+   #2\csname\??eparwrap\the\currentgrouplevel\endcsname
+     {\the\csname\??parwrapafter #3\endcsname}}
 
 \def\spac_register_par_wrapper_yes#1#2#3#4#5%
   {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
      \spac_paragraph_install
    \fi
+   \ifcsname\??parwrapcount#3\endcsname \else
+     \spac_paragraph_install_count{#3}%
+   \fi
    \ifcsname\??parwrapbefore#3\endcsname \else
      \spac_paragraph_install_pair#1#2{#3}%
    \fi
-   #1\csname\??parwrapbefore#3\endcsname{\clf_setparwrapper{#3}#4}%
+   #1\csname\??parwrapbefore#3\endcsname{\advance\csname\??parwrapcount#3\endcsname\plusone\relax
+                                         \clf_setparwrapper{#3}#4}%
    #2\csname\??parwrapafter #3\endcsname{#5}%
    \clf_newparwrapper{#3}%
    \let\spac_paragraph_wrap\spac_paragraph_update}
 
 \def\spac_register_par_wrapper_nop#1#2#3#4#5%
-  {#4\wrapuppar{#5}}
+  {\ifcsname\??parwrapcount#3\endcsname \else
+     \spac_paragraph_install_count{#3}%
+   \fi
+   \csname\??parwrapcount #3\endcsname\plusone
+   #4\wrapuppar{#5}}
 
 \protected\def\spac_register_par_wrapper
   {\ifhmode
@@ -164,11 +178,34 @@
    \csname\??eparwrap\the\currentgrouplevel\endcsname\emptytoks}
 
 \protected\def\unregisterparwrapper#1%
-  {\csname\??parwrapbefore#1\endcsname\emptytoks
+  {\csname\??parwrapcount #1\endcsname\zerocount
+   \csname\??parwrapbefore#1\endcsname\emptytoks
    \csname\??parwrapafter #1\endcsname\emptytoks}
 
 \def\directparwrapper#1#2%
   {#1\wrapuppar{#2}}
+
+% \protected\def\doifelseparwrapper#1%
+%   {\ifcsname\??parwrapbefore#1\endcsname
+%      \unless\iftok\lastnamedcs\emptytoks
+%        \doubleexpandafter\firstoftwoarguments
+%      \orelse\iftok\csname\??parwrapafter#1\endcsname\emptytoks
+%        \doubleexpandafter\secondoftwoarguments
+%      \else
+%        \doubleexpandafter\firstoftwoarguments
+%      \fi
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+
+\protected\def\doifelseparwrapper#1%
+  {\unless\ifcsname\??parwrapcount#1\endcsname
+     \expandafter\secondoftwoarguments
+   \orelse\ifcase\lastnamedcs
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 % \getparwrapper  % defined in lua
 % \lastparwrapper % defined in lua
@@ -393,9 +430,30 @@
    \glet\flushpostponednodedata\spac_postponed_data_flush
    \dowithnextboxcs\spac_postponed_data_finish\hpack}
 
+% \def\spac_postponed_data_finish
+%   {\global\setbox\b_spac_postponed_data\hpack % to\zeropoint
+%      {\box\b_spac_postponed_data\box\nextbox}%
+%    \endgroup}
+%
+% This is better when used with protrusion which does not like too deeply nested
+% boxes:
+%
+% \def\spac_postponed_data_finish
+%   {\dontcomplain
+%    \global\setbox\b_spac_postponed_data\hpack to \zeropoint
+%      {\unhbox\b_spac_postponed_data\unhbox\nextbox}%
+%    \endgroup}
+%
+% We could do this if there is content with widths ... not that is should be used
+% that way, but this way we don't overflow:
+
 \def\spac_postponed_data_finish
-  {\global\setbox\b_spac_postponed_data\hpack % to\zeropoint
-     {\box\b_spac_postponed_data\box\nextbox}%
+  {\dontcomplain
+   \global\setbox\b_spac_postponed_data\hpack % to \zeropoint
+     {\unhbox\b_spac_postponed_data
+      \scratchdimen\wd\nextbox
+      \unhbox\nextbox
+      \ifcase\scratchdimen\else\kern-\b_spac_postponed_data\fi}%
    \endgroup}
 
 \def\spac_postponed_data_flush

@@ -906,3 +906,18 @@ implement {
         context(c)
     end,
 }
+
+do
+
+    local takebox = tex.takebox
+
+    interfaces.implement {
+        name      = "thebox",
+        public    = true,
+        arguments = "integer",
+        actions   = function(n)
+            context(takebox(n))
+        end
+    }
+
+end

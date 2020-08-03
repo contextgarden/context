@@ -1,0 +1,49 @@
+-- If needed we can add names glyphs (maybe some wildcard mapping) ... not that fast
+-- but for a specific font one can always make a dedicated file.
+
+local type = type
+local imerged = table.imerged
+
+local shapes  = { }
+local default = { }
+local upper   = { }
+local lower   = { }
+
+for k, v in next, characters.data do
+    local sh = v.shcode
+    if sh and type(sh) == "number" then
+        local tsh = shapes[sh]
+        if tsh then
+            tsh[#tsh+1] = k
+        else
+            shapes[sh] = { sh, k }
+        end
+    end
+end
+
+for i=1,26 do
+    local l = shapes[65 + i - 1] or { }
+    local u = shapes[97 + i - 1] or { }
+    upper[i] = u
+    lower[i] = l
+    default[i] = imerged(l, u)
+end
+
+-- default = {
+--     [1] = { codepoint, ..., glyph_name, ... },
+--     [2] = { codepoint, ..., glyph_name, ... },
+--     ...
+-- }
+
+return {
+    name         = "color-latin",
+    version      = "1.00",
+    comment      = "Side effect of mails from Marcus Vinicius Mesquita to the list.",
+    author       = "Hans Hagen",
+    copyright    = "ConTeXt development team",
+    colorschemes = {
+         default = default,
+         upper   = upper,
+         lower   = lower,
+     }
+}

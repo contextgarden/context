@@ -329,13 +329,21 @@ function definers.resetnullfont()
     definers.resetnullfont = function() end
 end
 
+-- This is some initialization code and we don't want (tracing) clutter in lmtx
+-- which is why we follow a different route there. I admit that is sounds freaky.
+-- Watch out: in lmtx the font dimen array is no longer resized automatically.
+
 implement {
     name     = "resetnullfont",
     onlyonce = true,
     actions  = function()
         for i=1,7 do
-            -- we have no direct method yet
-            context([[\fontdimen%s\nullfont\zeropoint]],i)
+            if CONTEXTLMTXMODE > 0 then
+                font.setfontdimen(0,i,0)
+            else
+                -- we have no direct method
+                context([[\fontdimen%s\nullfont\zeropoint]],i)
+            end
         end
         definers.resetnullfont()
     end

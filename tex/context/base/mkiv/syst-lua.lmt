@@ -313,3 +313,102 @@ do
     }
 
 end
+
+do
+
+    -- This is some 20% slower than native but we only provide this for compatibility
+    -- reasons so we don't care that much about it. Eventually we can drop the
+    -- built-in method.
+
+    local channels = { }
+
+    local findbinfile = resolvers.findbinfile
+    local loadbinfile = resolvers.loadbinfile
+    local opentexfile = resolvers.opentexfile
+
+    local scaninteger = tokens.scanners.integer
+    local scankeyword = tokens.scanners.keyword
+    local scanstring  = tokens.scanners.string
+    local scancsname  = tokens.scanners.csname
+
+    local setmacro    = tokens.setters.macro
+    local vrbcatcodes = tex.vrbcatcodes
+
+    interfaces.implement {
+        name      = "openin",
+        public    = true,
+        protected = true,
+        actions   = function()
+            local n = scaninteger()
+                      scankeyword("=")
+            local s = scanstring(true)
+            local c = channels[n]
+            if c then
+                c:close()
+            end
+            local f = findbinfile(s,"tex")
+            if f then
+                channels[n] = opentexfile(f)
+            else
+                channels[n] = false
+            end
+        end,
+    }
+
+    interfaces.implement {
+        name      = "closein",
+        public    = true,
+        protected = true,
+        value     = "none",
+        actions   = function()
+            local n = scaninteger()
+            local c = channels[n]
+            if c then
+                c:close()
+            end
+            channels[n] = false
+        end,
+    }
+
+    interfaces.implement {
+        name      = "read",
+        public    = true,
+        protected = true,
+        value     = "none",
+        actions   = function(prefix)
+            local n = scaninteger()
+                      scankeyword("to")
+            local m = scancsname(true)
+            local c = channels[n]
+            local s = c and c:reader()
+            if not s then
+                channels[n] = false
+                s = "\\par" -- or just "", no need to fake tex here
+            end
+            setmacro(m, s, prefix) -- checks for frozen
+        end,
+    }
+
+    interfaces.implement {
+        name      = "readline",
+        public    = true,
+        protected = true,
+        actions   = function(prefix)
+            local n = scaninteger()
+                      scankeyword("to")
+            local m = scancsname(true)
+            local c = channels[n]
+            local s = c and c:reader()
+            if not s then
+                channels[n] = false
+                s = ""
+            end
+            setmacro(vrbcatcodes, m, s, prefix) -- checks for frozen
+        end,
+    }
+
+    callback.register("end_of_file", function(n)
+        return not channels[n]
+    end)
+
+end

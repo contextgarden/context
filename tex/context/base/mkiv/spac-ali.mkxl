@@ -1058,23 +1058,38 @@
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
 
+%D We need to pick up a box (downward compatible in case \type {\bgroup}
+%D is used (test suite index example).
+
 \unexpanded\def\wordright
   {\dosingleempty\spac_word_right}
 
 \def\spac_word_right[#1]%
-  {% don't change
-   \groupedcommand
-     {\removeunwantedspaces
-      \hfill
-      \allowbreak % changed back from \hskip\zeropoint
+  {\dowithnextbox
+     {\normalexpanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
+     \hbox}
+
+\unexpanded\def\spac_word_right_indeed#1#2%
+  {\registerparwrapper
+     {\v!word:\v!right}
+     {\begingroup
+      \frozen\parfillskip        \zeropoint
+      \frozen\finalhyphendemerits\zerocount
+      \endgroup}
+     {\doifelseparwrapper{\v!word:\v!right}%
+        {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
+         \strut \removeunwantedspaces
+         \hfill
+         \allowbreak % changed back from \hskip\zeropoint
+         \quad}%
+        {\allowbreak % changed back from \hskip\zeropoint
+         \break}%
+      \unregisterparwrapper{\v!word:\v!right}%
       \strut
       \hfill
-      \quad % decent spacing
-      \hbox}
-     {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
-      \frozen\parfillskip\zeropoint
-      \frozen\finalhyphendemerits\zerocount % yes or no (see hyhenation/specialcases-001.tex)
-      \par}}
+      \nobreak
+      #2%
+      \allowbreak}}
 
 % \dorecurse{5}{something} \wordright{--someone} \endgraf
 % \dorecurse{6}{something} \wordright{--someone} \endgraf

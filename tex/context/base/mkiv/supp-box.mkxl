@@ -17,17 +17,13 @@
 
 \registerctxluafile{supp-box}{optimize}
 
-% This file is partially cleaned up.
-
-%D First some defaults:
-
-\fixupboxesmode\plusone
-
 %D And some dimensions:
 
 \newdimen\givenwidth
 \newdimen\givenheight
 \newdimen\givendepth
+
+% \fixupboxesmode\plusone % gone: is now the default
 
 %D \macros
 %D   {dontcomplain}

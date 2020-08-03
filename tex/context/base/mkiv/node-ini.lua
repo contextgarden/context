@@ -350,7 +350,7 @@ end
 
 -- We use the real node code numbers.
 
-if CONTEXTLMTXMODE > 0 then
+if environment.initex and CONTEXTLMTXMODE > 0 then
 
     local texchardef = tex.chardef
 
@@ -358,7 +358,10 @@ if CONTEXTLMTXMODE > 0 then
         for i=0,nodecodes.glyph do
             texchardef(nodecodes[i] .. "nodecode",i)
         end
-        tex.set("internalcodesmode",1)
+        for i=0,#gluecodes do
+            texchardef(gluecodes[i] .. "subtypecode",i)
+        end
+     -- tex.set("internalcodesmode",1) -- obsolete
     end
 
 end

@@ -667,7 +667,8 @@ local function handletable(t,b,array)
                     end
                     t[k] = v
                 end
-                if b == "global" then
+            --  if b == "global" then
+                if b and (b & 0x04) ~= 0 then -- or just band(b,0x04)
                     for k, v in next, stack do
                         local t = s[t]
                         if t then
