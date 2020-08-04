@@ -15,6 +15,9 @@
 \libindex{find}
 \libindex{known}
 
+{\em The callbacks are a moving target. Don't bother me with questions about
+them.}
+
 This library has functions that register, find and list callbacks. Callbacks are
 \LUA\ functions that are called in well defined places. There are two kinds of
 callbacks: those that mix with existing functionality, and those that (when
@@ -73,145 +76,52 @@ if callback.known("foo") then ... end
 
 \startsection[title={File related callbacks}][library=callback]
 
-The behaviour documented in this subsection is considered stable in the sense that
-there will not be backward|-|incompatible changes any more.
-
-\subsection{\cbk {find_read_file}}
-
-Your callback function should have the following conventions:
-
-\startfunctioncall
-<string> actual_name =
-    function (<number> id_number, <string> asked_name)
-\stopfunctioncall
-
-Arguments:
-
-\startitemize
-
-\sym{id_number}
-
-This number is zero for the log or \prm {input} files. For \TEX's \prm {read}
-or \prm {write} the number is incremented by one, so \type {\read0} becomes~1.
-
-\sym{asked_name}
-
-This is the user|-|supplied filename, as found by \prm {input}, \prm {openin}
-or \prm {openout}.
-
-\stopitemize
-
-Return value:
-
-\startitemize
-
-\sym{actual_name}
-
-This is the filename used. For the very first file that is read in by \TEX, you
-have to make sure you return an \type {actual_name} that has an extension and
-that is suitable for use as \type {jobname}. If you don't, you will have to
-manually fix the name of the log file and output file after \LUATEX\ is finished,
-and an eventual format filename will become mangled. That is because these file
-names depend on the jobname.
-
-You have to return \type {nil} if the file cannot be found.
-
-\stopitemize
-
-\subsection{\cbk {find_data_file}}
-
-\topicindex{callbacks+data files}
-
-Your callback function should have the following conventions:
-
-\startfunctioncall
-<string> actual_name =
-    function (<string> asked_name)
-\stopfunctioncall
-
-Return \type {nil} if the file cannot be found.
-
-\subsection{\cbk {find_format_file}}
+\subsection{\cbk {find_format_file} and \cbk {find_log_file}}
 
 \topicindex{callbacks+format file}
+\topicindex{callbacks+log file}
 
-Your callback function should have the following conventions:
+These callbacks are called as:
 
 \startfunctioncall
-<string> actual_name =
-    function (<string> asked_name)
+<string> actualname =
+    function (<string> askedname)
 \stopfunctioncall
 
-The \type {asked_name} is a format file for reading (the format file for writing
-is always opened in the current directory).
+The \type {askedname} is a format file for reading (the format file for writing
+is always opened in the current directory) or a log file for writing.
 
-\subsection{\cbk {open_read_file}}
+\subsection{\cbk {open_data_file}}
 
 \topicindex{callbacks+opening files}
 
-Your callback function should have the following conventions:
+This callback function gets a filename passed:
 
 \startfunctioncall
-<table> env =
-    function (<string> file_name)
+<table> env = function (<string> filename)
 \stopfunctioncall
 
-Argument:
-
-\startitemize
-
-\sym{file_name}
-
-The filename returned by a previous \cbk {find_read_file} or the return value of
-\type {kpse.find_file()} if there was no such callback defined.
-
-\stopitemize
-
-Return value:
-
-\startitemize
-
-\sym{env}
-
-This is a table containing at least one required and one optional callback
-function for this file. The required field is \type {reader} and the associated
-function will be called once for each new line to be read, the optional one is
-\type {close} that will be called once when \LUATEX\ is done with the file.
+The return value is either the boolean value false or a table with two functions.
+A mandate \type {reader} function fill be called once for each new line to be
+read, the optional \type {close} function will be called once \LUATEX\ is done
+with the file.
 
 \LUATEX\ never looks at the rest of the table, so you can use it to store your
 private per|-|file data. Both the callback functions will receive the table as
 their only argument.
 
-\stopitemize
+\subsection{\cbk {if_end_of_file}}
 
-\subsubsection{\type {reader}}
+\topicindex{callbacks+checking files}
 
-\topicindex{callbacks+reader}
-
-\LUATEX\ will run this function whenever it needs a new input line from the file.
-
-\startfunctioncall
-function(<table> env)
-    return <string> line
-end
-\stopfunctioncall
-
-Your function should return either a string or \type {nil}. The value \type {nil}
-signals that the end of file has occurred, and will make \TEX\ call the optional
-\type {close} function next.
-
-\subsubsection{\type {close}}
-
-\topicindex{callbacks+closing files}
-
-\LUATEX\ will run this optional function when it decides to close the file.
+This callback has no arguments and your function should return true or false. The
+callback is triggered by \type {\ifeof}. It's up to the macro package to come up
+with a reasonable implementation. By default the test is always true.
 
 \startfunctioncall
-function(<table> env)
-end
+<boolean> eof =
+    function ()
 \stopfunctioncall
-
-Your function should not return any value.
 
 \stopsection
 
@@ -694,7 +604,7 @@ This callback replaces the code that prints \LUATEX's statistics and \quote
 {output written to} messages. The engine can still do housekeeping and therefore
 you should not rely on this hook for postprocessing the \PDF\ or log file.
 
-\subsection{\cbk {show_error_hook}}
+\subsection{\cbk {intercept_tex_error}, \cbk {intercept_lua_error}}
 
 \topicindex{callbacks+errors}
 
@@ -706,30 +616,21 @@ end
 This callback is run from inside the \TEX\ error function, and the idea is to
 allow you to do some extra reporting on top of what \TEX\ already does (none of
 the normal actions are removed). You may find some of the values in the \type
-{status} table useful. This callback does not replace any internal code.
+{status} table useful. The \TEX\ related callback gets two arguments: the current
+processing mode and a boolean indicating if there was a runaway.
 
-\subsection{\cbk {show_error_message}}
+\subsection{\cbk {show_error_message} and \cbk {show_warning_message}}
 
 \topicindex{callbacks+errors}
+\topicindex{callbacks+warnings}
 
 \startfunctioncall
 function()
 end
 \stopfunctioncall
 
-This callback replaces the code that prints the error message. The usual
+These callback replaces the code that prints the error message. The usual
 interaction after the message is not affected.
-
-\subsection{\cbk {show_lua_error_hook}}
-
-\topicindex{callbacks+errors}
-
-\startfunctioncall
-function()
-end
-\stopfunctioncall
-
-This callback replaces the code that prints the extra \LUA\ error message.
 
 \subsection{\cbk {start_file}}
 

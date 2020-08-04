@@ -25901,7 +25901,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 13843, stripped down to: 9991
+-- original size: 11725, stripped down to: 8417
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25963,16 +25963,16 @@ local checkers={
  binarypath="string",
 }
 local runners={
- luatex=sandbox.registerrunner {
-  name="make luatex format",
-  program="luatex",
+ luametatex=sandbox.registerrunner {
+  name="make luametatex format",
+  program="luametatex",
   template=template,
   checkers=checkers,
   reporter=report_format,
  },
- luametatex=sandbox.registerrunner {
-  name="make luametatex format",
-  program="luametatex",
+ luatex=sandbox.registerrunner {
+  name="make luatex format",
+  program="luatex",
   template=template,
   checkers=checkers,
   reporter=report_format,
@@ -25985,6 +25985,16 @@ local runners={
   reporter=report_format,
  },
 }
+local stubfiles={
+ luametatex="luat-cod.lmt",
+ luatex="luat-cod.lua",
+ luajittex="luat-cod.lua",
+}
+local suffixes={
+ luametatex="mkxl",
+ luatex="mkiv",
+ luajittex="mkiv",
+}
 local function validbinarypath()
  if not environment.arguments.nobinarypath then
   local path=environment.ownpath or file.dirname(environment.ownname)
@@ -25996,101 +26006,51 @@ local function validbinarypath()
   end
  end
 end
+local function fatalerror(startupdir,...)
+ report_format(...)
+ lfs.chdir(startupdir)
+end
 function environment.make_format(formatname)
  local arguments=environment.arguments
  local engine=environment.ownmain or "luatex"
  local silent=arguments.silent
  local errors=arguments.errors
- local texsourcename=""
- local texsourcepath=""
- local fulltexsourcename=""
- if engine=="luametatex" then
-  texsourcename=file.addsuffix(formatname,"mkxl")
-  fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
- end
- if fulltexsourcename=="" then
-  texsourcename=file.addsuffix(formatname,"mkiv")
-  fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
- end
- if fulltexsourcename=="" then
-  texsourcename=file.addsuffix(formatname,"tex")
-  fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
- end
- if fulltexsourcename=="" then
-  report_format("no tex source file with name %a (mkiv or tex)",formatname)
-  return
- end
- report_format("using tex source file %a",fulltexsourcename)
- fulltexsourcename=dir.expandname(fulltexsourcename)
- texsourcepath=file.dirname(fulltexsourcename)
- if not lfs.isfile(fulltexsourcename) then
-  report_format("no accessible tex source file with name %a",fulltexsourcename)
-  return
- end
- local specificationname="context.lus"
- local specificationpath=""
- local fullspecificationname=resolvers.findfile(specificationname) or ""
- if fullspecificationname=="" then
-  report_format("unable to locate specification file %a",specificationname)
-  return
- end
- report_format("using specification file %a",fullspecificationname)
- fullspecificationname=dir.expandname(fullspecificationname)
- specificationpath=file.dirname(fullspecificationname)
- if texsourcepath~=specificationpath then
-  report_format("tex source file and specification file are on different paths")
-  return
- end
- if not lfs.isfile(fulltexsourcename) then
-  report_format("no accessible tex source file with name %a",fulltexsourcename)
-  return
- end
- if not lfs.isfile(fullspecificationname) then
-  report_format("no accessible specification file with name %a",fulltexsourcename)
-  return
- end
- report_format("using tex source path %a",texsourcepath)
- local validformatpath=caches.getwritablepath("formats",engine) or ""
+ local runner=runners[engine]
  local startupdir=dir.current()
+ if not runner then
+  return fatalerror(startupdir,"the format %a cannot be generated, no runner available for engine %a",name,engine)
+ end
+ local luasourcename=stubfiles[engine]
+ if not luasourcename then
+  return fatalerror(startupdir,"no lua stub file specified for %a",engine)
+ end
+ local texsourcename=file.addsuffix(formatname,suffixes[engine])
+ local fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
+ if fulltexsourcename=="" then
+  return fatalerror(startupdir,"no tex source file with name %a (mkiv or tex)",formatname)
+ end
+ local fulltexsourcename=dir.expandname(fulltexsourcename)
+ local texsourcepath=file.dirname(fulltexsourcename)
+ if lfs.isfile(fulltexsourcename) then
+  report_format("using tex source file %a",fulltexsourcename)
+ else
+  return fatalerror(startupdir,"no accessible tex source file with name %a",fulltexsourcename)
+ end
+ local fullluasourcename=dir.expandname(file.join(texsourcepath,luasourcename) or "")
+ if lfs.isfile(fullluasourcename) then
+  report_format("using lua stub file %a",fullluasourcename)
+ else
+  return fatalerror(startupdir,"no accessible lua stub file with name %a",fulltexsourcename)
+ end
+ local validformatpath=caches.getwritablepath("formats",engine) or ""
  if validformatpath=="" then
-  report_format("invalid format path, insufficient write access")
-  return
+  return fatalerror(startupdir,"invalid format path, insufficient write access")
  end
  local binarypath=validbinarypath()
  report_format("changing to format path %a",validformatpath)
  lfs.chdir(validformatpath)
  if dir.current()~=validformatpath then
-  report_format("unable to change to format path %a",validformatpath)
-  return
- end
- local usedluastub=nil
- local usedlualibs=dofile(fullspecificationname)
- if type(usedlualibs)=="string" then
-  usedluastub=file.join(specificationpath,usedlualibs)
- elseif type(usedlualibs)=="table" then
-  report_format("using stub specification %a",fullspecificationname)
-  local texbasename=file.basename(name)
-  local luastubname=file.addsuffix(texbasename,luasuffixes.lua)
-  local lucstubname=file.addsuffix(texbasename,luasuffixes.luc)
-  report_format("creating initialization file %a",luastubname)
-  utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
-  if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
-   report_format("using compiled initialization file %a",lucstubname)
-   usedluastub=lucstubname
-  else
-   report_format("using uncompiled initialization file %a",luastubname)
-   usedluastub=luastubname
-  end
- else
-  report_format("invalid stub specification %a",fullspecificationname)
-  lfs.chdir(startupdir)
-  return
- end
- local runner=runners[engine]
- if not runner then
-  report_format("the format %a cannot be generated, no runner available for engine %a",name,engine)
-  lfs.chdir(startupdir)
-  return
+  return fatalerror(startupdir,"unable to change to format path %a",validformatpath)
  end
  local primaryflags=primaryflags(arguments)
  local secondaryflags=secondaryflags(arguments)
@@ -26098,7 +26058,7 @@ function environment.make_format(formatname)
   binarypath=binarypath,
   primaryflags=primaryflags,
   secondaryflags=secondaryflags,
-  luafile=quoted(usedluastub),
+  luafile=quoted(fullluasourcename),
   texfile=quoted(fulltexsourcename),
   dump=os.platform=="unix" and "\\\\dump" or "\\dump",
  }
@@ -26117,7 +26077,7 @@ function environment.make_format(formatname)
   end
  report_format("format path      : %s",validformatpath)
  report_format("luatex engine    : %s",engine)
- report_format("lua startup file : %s",usedluastub)
+ report_format("lua startup file : %s",fullluasourcename)
   if primaryflags~="" then
  report_format("primary flags    : %s",primaryflags)
   end
@@ -26231,8 +26191,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1042414
--- stripped bytes    : 411443
+-- original bytes    : 1040296
+-- stripped bytes    : 410899
 
 -- end library merge
 

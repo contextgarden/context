@@ -163,7 +163,7 @@
   {\ifcsname\??parwrapcount#3\endcsname \else
      \spac_paragraph_install_count{#3}%
    \fi
-   \csname\??parwrapcount #3\endcsname\plusone
+   \csname\??parwrapcount#3\endcsname\plusone
    #4\wrapuppar{#5}}
 
 \protected\def\spac_register_par_wrapper
@@ -178,9 +178,11 @@
    \csname\??eparwrap\the\currentgrouplevel\endcsname\emptytoks}
 
 \protected\def\unregisterparwrapper#1%
-  {\csname\??parwrapcount #1\endcsname\zerocount
-   \csname\??parwrapbefore#1\endcsname\emptytoks
-   \csname\??parwrapafter #1\endcsname\emptytoks}
+  {\csname\??parwrapcount#1\endcsname\zerocount
+   \ifcsname\??parwrapbefore#1\endcsname
+     \lastnamedcs\emptytoks
+     \csname\??parwrapafter#1\endcsname\emptytoks
+   \fi}
 
 \def\directparwrapper#1#2%
   {#1\wrapuppar{#2}}

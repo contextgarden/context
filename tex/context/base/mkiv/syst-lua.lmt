@@ -407,7 +407,7 @@ do
         end,
     }
 
-    callback.register("end_of_file", function(n)
+    callback.register("if_end_of_file", function(n)
         return not channels[n]
     end)
 

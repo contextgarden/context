@@ -500,6 +500,6 @@ return {
         --
         "unsupportedcs",
         --
-        "openout", "closeout", "write", "openin", "closein", "read", "readline",
+        "openout", "closeout", "write", "openin", "closein", "read", "readline", "readfromterminal",
     }
 }

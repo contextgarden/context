@@ -361,20 +361,41 @@ function tracers.printwarning(specification)
     logs.report("luatex warning","%s: %s",specification.lastlocation,specification.lastwarning)
 end
 
-directives.register("system.errorcontext", function(v)
-    local register = callback.register
-    if v then
-        register('show_error_message',  nop)
-        register('show_warning_message',function() processwarning(v) end)
-        register('show_error_hook',     function(eof) processerror(v,eof) end)
-        register('show_lua_error_hook', function() processerror(v) end)
-    else
-        register('show_error_message',  nil)
-        register('show_error_hook',     nil)
-        register('show_warning_message',nil)
-        register('show_lua_error_hook', nil)
-    end
-end)
+if CONTEXTLMTXMODE > 0 then
+
+    directives.register("system.errorcontext", function(v)
+        local register = callback.register
+        if v then
+            register('show_error_message',   nop)
+            register('show_warning_message', function()         processwarning(v)   end)
+            register('intercept_lua_error',  function()         processerror(v)     end)
+            register('intercept_tex_error',  function(mode,eof) processerror(v,eof) end)
+        else
+            register('show_error_message',   nil)
+            register('show_warning_message', nil)
+            register('intercept_lua_error',  nil)
+            register('intercept_tex_error',  nil)
+        end
+    end)
+
+else
+
+    directives.register("system.errorcontext", function(v)
+        local register = callback.register
+        if v then
+            register('show_error_message',  nop)
+            register('show_warning_message',function()         processwarning(v)   end)
+            register('show_error_hook',     function(eof)      processerror(v,eof) end)
+            register('show_lua_error_hook', function()         processerror(v)     end)
+        else
+            register('show_error_message',  nil)
+            register('show_error_hook',     nil)
+            register('show_warning_message',nil)
+            register('show_lua_error_hook', nil)
+        end
+    end)
+
+end
 
 -- this might move
 
@@ -433,6 +454,7 @@ function lmx.overloaderror(v)
     end
     callback.register('show_error_hook',     function() showerror() end) -- prevents arguments being passed
     callback.register('show_lua_error_hook', function() showerror() end) -- prevents arguments being passed
+    callback.register('show_tex_error_hook', function() showerror() end) -- prevents arguments being passed
 end
 
 directives.register("system.showerror", lmx.overloaderror)

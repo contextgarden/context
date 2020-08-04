@@ -645,40 +645,35 @@
 \protected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
-   \tracingstats     \plustwo
-   \tracingpages     \plusone
-   \tracingoutput    \plusone
-   \tracinglostchars \plustwo
    \tracingmacros    \plustwo
+   \tracingoutput    \plusone
+   \tracingpages     \plusone
    \tracingparagraphs\plusone
    \tracingrestores  \plusone
-   \showboxbreadth   \maxdimen
-   \showboxdepth     \maxdimen
    \tracinggroups    \plusone
    \tracingifs       \plusone
-   \tracingscantokens\plusone
    \tracingnesting   \plustwo
-   \tracingassigns   \plustwo}
+   \tracingassigns   \plustwo
+   \tracingfonts
+   \showboxbreadth   \maxdimen
+   \showboxdepth     \maxdimen}
 
 \protected\def\loggingall
   {\tracingall
    \tracingonline    \zerocount}
 
 \protected\def\tracingnone
-  {\tracingassigns   \zerocount
+  {\showboxdepth     \plusthree
+   \showboxbreadth   \plusfive
+   \tracingassigns   \zerocount
    \tracingnesting   \zerocount
-   \tracingscantokens\zerocount
    \tracingifs       \zerocount
    \tracinggroups    \zerocount
-   \showboxdepth     \plusthree
-   \showboxbreadth   \plusfive
    \tracingrestores  \zerocount
    \tracingparagraphs\zerocount
-   \tracingmacros    \zerocount
-   \tracinglostchars \plusone
-   \tracingoutput    \zerocount
    \tracingpages     \zerocount
-   \tracingstats     \zerocount
+   \tracingoutput    \zerocount
+   \tracingmacros    \zerocount
    \tracingcommands  \zerocount
    \tracingonline    \zerocount}
 

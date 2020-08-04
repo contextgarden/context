@@ -26,7 +26,6 @@ if not resolvers.initialized() then
     if callback then
 
         local findbinfile = resolvers.findbinfile
-        local loadbinfile = resolvers.loadbinfile
         local findtexfile = resolvers.findtexfile
         local opentexfile = resolvers.opentexfile
         local register    = callbacks.register
@@ -44,23 +43,41 @@ if not resolvers.initialized() then
             return line
         end
 
-        local function find_data_file(name, index)
-            if index == 0 then
-                return "terminal"
-            else
-                return findbinfile(name,"tex")
-            end
-        end
+     -- local function find_data_file(name)
+     --     if not name or name == "" then
+     --         return "context terminal"
+     --     else
+     --         return findbinfile(name,"tex")
+     --     end
+     -- end
+     --
+     -- local function open_data_file(name)
+     --     if not name or name == "" or name == "context terminal" then
+     --         return {
+     --             reader   = terminal,
+     --             noflines = 1,
+     --             filename = name,
+     --         }
+     --     else
+     --         name = opentexfile(name)
+     --         return name ~= "" and name or false
+     --     end
+     -- end
 
-        local function open_data_file(name, index)
-            if index == 0 and name == "terminal" then
+        local function open_data_file(name)
+            if not name or name == "" then
                 return {
                     reader   = terminal,
                     noflines = 1,
-                    filename = name,
+                    filename = "context terminal"
                 }
             else
-                return opentexfile(name)
+                local fullname = findbinfile(name,"tex")
+                if fullname then
+                    return opentexfile(fullname)
+                else
+                    return false
+                end
             end
         end
 
@@ -68,10 +85,10 @@ if not resolvers.initialized() then
             return name
         end
 
-        register('find_data_file'  , find_data_file, true)
-        register('open_data_file'  , open_data_file, true)
         register('find_log_file'   , find_any_file,  true)
         register('find_format_file', find_any_file,  true)
+     -- register('find_data_file'  , find_data_file, true)
+        register('open_data_file'  , open_data_file, true)
 
     end
 

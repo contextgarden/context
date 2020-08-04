@@ -65,10 +65,13 @@ what is gone. We start with the primitives that were dropped.
                 \NC \NR
 \NC extensions  \NC \type {\latelua}
                     \type {\lateluafunction}
-                    \type {\immediate}
                     \type {\openout}
                     \type {\write}
                     \type {\closeout}
+                    \type {\openin}
+                    \type {\read}
+                    \type {\readline}
+                    \type {\closein}
                 \NC \NR
 \NC control     \NC \type {\suppressfontnotfounderror}
                     \type {\suppresslongerror}
@@ -129,16 +132,17 @@ some file related callbacks could go away. The following file related callbacks
 remained (till now):
 
 \starttyping
-find_write_file find_data_file find_format_file
-open_data_file read_data_file
+find_write_file find_format_file open_data_file
 \stoptyping
 
-Also callbacks related to errors stay:
+The callbacks related to errors are changed:
 
 \starttyping
-show_error_hook show_lua_error_hook,
+intercept_tex_error intercept_lua_error,
 show_error_message show_warning_message
 \stoptyping
+
+and a new ont \type {if_end_of_file} has been added to the repertoire.
 
 The (job) management hooks are kept:
 
@@ -161,15 +165,14 @@ is what we ended up with:
 % \ctxlua{inspect(table.sortedkeys(callbacks.list))}
 
 \starttyping
-find_log_file, find_data_file, find_format_file, open_data_file, read_data_file,
-process_jobname, start_run, stop_run, define_font, pre_output_filter,
-buildpage_filter, hpack_filter, vpack_filter, hyphenate, ligaturing, kerning,
-pre_linebreak_filter, linebreak_filter, post_linebreak_filter,
-append_to_vlist_filter, mlist_to_hlist, pre_dump, start_file, stop_file,
-handle_error_hook, show_error_hook, show_lua_error_hook, show_error_message,
-show_warning_message, hpack_quality, vpack_quality, insert_local_par,
-contribute_filter, build_page_insert, wrapup_run, new_graf, make_extensible,
-show_whatsit, terminal_input,
+find_log_file, find_format_file, open_data_file, if_end_of_file, process_jobname,
+start_run, stop_run, define_font, pre_output_filter, buildpage_filter,
+hpack_filter, vpack_filter, hyphenate, ligaturing, kerning, pre_linebreak_filter,
+linebreak_filter, post_linebreak_filter, append_to_vlist_filter, mlist_to_hlist,
+pre_dump, start_file, stop_file, intercept_tex_error, intercept_lua_error,
+show_error_message, show_warning_message, hpack_quality, vpack_quality,
+insert_local_par, contribute_filter, build_page_insert, wrapup_run, new_graf,
+make_extensible, show_whatsit
 \stoptyping
 
 As in \LUATEX\ font loading happens with the following callback. This time it
