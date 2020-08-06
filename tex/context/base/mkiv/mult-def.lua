@@ -9785,6 +9785,10 @@ return {
    ["pe"]="تصحیح‌خط",
    ["ro"]="corectielinie",
   },
+  ["linedirection"]={
+   ["en"]="linedirection",
+   ["nl"]="regelrichting",
+  },
   ["lines"]={
    ["cs"]="radky",
    ["de"]="zeilen",

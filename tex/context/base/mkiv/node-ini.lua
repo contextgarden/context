@@ -178,11 +178,13 @@ gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
 if not gluecodes.indentskip then
-    gluecodes.indentskip     = gluecodes.userskip
-    gluecodes.lefthangskip   = gluecodes.userskip
-    gluecodes.righthangskip  = gluecodes.userskip
-    gluecodes.correctionskip = gluecodes.userskip
-    gluecodes.intermathskip  = gluecodes.userskip
+    gluecodes.indentskip       = gluecodes.userskip
+    gluecodes.lefthangskip     = gluecodes.userskip
+    gluecodes.righthangskip    = gluecodes.userskip
+    gluecodes.correctionskip   = gluecodes.userskip
+    gluecodes.intermathskip    = gluecodes.userskip
+    gluecodes.parfillleftskip  = gluecodes.parfillskip
+    gluecodes.parfillrightskip = gluecodes.parfillskip
 end
 
 if CONTEXTLMTXMODE > 0 then

@@ -15,23 +15,23 @@
 
 \unprotect
 
-\def\fontslantperpoint   {\fontdimen\plusone  }
-\def\fontinterwordspace  {\fontdimen\plustwo  }
-\def\fontinterwordstretch{\fontdimen\plusthree}
-\def\fontinterwordshrink {\fontdimen\plusfour }
-\def\fontexheight        {\fontdimen\plusfive }
-\def\fontemwidth         {\fontdimen\plussix  }
-\def\fontextraspace      {\fontdimen\plusseven}
+\protected\def\fontslantperpoint   {\fontdimen\plusone  }
+\protected\def\fontinterwordspace  {\fontdimen\plustwo  }
+\protected\def\fontinterwordstretch{\fontdimen\plusthree}
+\protected\def\fontinterwordshrink {\fontdimen\plusfour }
+\protected\def\fontexheight        {\fontdimen\plusfive }
+\protected\def\fontemwidth         {\fontdimen\plussix  }
+\protected\def\fontextraspace      {\fontdimen\plusseven}
 
-\def\slantperpoint       {\fontdimen\plusone  \font}
-\def\interwordspace      {\fontdimen\plustwo  \font}
-\def\interwordstretch    {\fontdimen\plusthree\font}
-\def\interwordshrink     {\fontdimen\plusfour \font}
-\def\exheight            {\fontdimen\plusfive \font}
-\def\emwidth             {\fontdimen\plussix  \font}
-\def\extraspace          {\fontdimen\plusseven\font}
+\protected\def\slantperpoint       {\fontdimen\plusone  \font}
+\protected\def\interwordspace      {\fontdimen\plustwo  \font}
+\protected\def\interwordstretch    {\fontdimen\plusthree\font}
+\protected\def\interwordshrink     {\fontdimen\plusfour \font}
+\protected\def\exheight            {\fontdimen\plusfive \font}
+\protected\def\emwidth             {\fontdimen\plussix  \font}
+\protected\def\extraspace          {\fontdimen\plusseven\font}
 
-\def\mathaxisheight      {\Umathaxis} % takes style
+\let          \mathaxisheight       \Umathaxis % takes style
 
 \def\currentspaceskip    {\interwordspace\s!plus\interwordstretch\s!minus\interwordshrink\relax}
 

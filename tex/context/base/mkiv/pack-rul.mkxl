@@ -1457,6 +1457,15 @@
   {\profilegivenbox\p_profile\b_framed_normal
    \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}}
 
+\def\pack_framed_reverse_box
+  {\ifvbox\b_framed_normal
+     \edef\p_linedirection{\framedparameter\c!linedirection}%
+     \ifx\p_linedirection\v!reverse
+       \reversevboxcontent\b_framed_normal
+       \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}%
+     \fi
+   \fi}
+
 \unexpanded\def\pack_framed_finish
   {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down
    \pack_framed_locator_before\p_framed_location
@@ -1467,6 +1476,9 @@
     %    \pack_framed_profile_box
     %  \fi
     %\fi
+     \ifempty\p_framed_anchoring\else
+       \pack_framed_reverse_box
+     \fi
      \ifx\p_framed_autowidth\v!force
        \pack_framed_finish_a
      \orelse\ifx\localwidth\v!fit
@@ -1539,6 +1551,7 @@
    \fi
    %
    \ifx\postprocessframebox\relax \else
+     % better: \pushmacro\\postprocessframebox etc
      \let\next\postprocessframebox
      \let\postprocessframebox\relax % prevent nesting
      \next\b_framed_normal

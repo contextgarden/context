@@ -640,6 +640,7 @@
 		<cd:constant name='afterkey' value='nachtaste'/>
 		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='ausrichtung'/>
+		<cd:constant name='alignbottom' value='alignbottom'/>
 		<cd:constant name='aligncharacter' value='aligncharacter'/>
 		<cd:constant name='alignmentcharacter' value='alignmentcharacter'/>
 		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
@@ -959,6 +960,7 @@
 		<cd:constant name='limittext' value='limittext'/>
 		<cd:constant name='line' value='zeile'/>
 		<cd:constant name='linecorrection' value='zeilekorrektur'/>
+		<cd:constant name='linedirection' value='linedirection'/>
 		<cd:constant name='lines' value='zeilen'/>
 		<cd:constant name='list' value='liste'/>
 		<cd:constant name='listtext' value='listtext'/>

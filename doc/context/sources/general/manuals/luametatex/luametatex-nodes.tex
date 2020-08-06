@@ -1182,12 +1182,9 @@ tail node.
 <node> tail = node.slide(<node> n)
 \stopfunctioncall
 
-After some callbacks automatic sliding takes place. This feature can be turned
-off with \type {node.fix_node_lists(false)} but you better make sure then that
-you don't mess up lists. In most cases \TEX\ itself only uses \type {next}
-pointers but your other callbacks might expect proper \type {prev} pointers too.
-Future versions of \LUATEX\ can add more checking but this will not influence
-usage.
+In most cases \TEX\ itself only uses \type {next} pointers but your other
+callbacks might expect proper \type {prev} pointers too. So, when you run into
+issues or are in doubt, apply the slide function before you return the list.
 
 \stopsubsubsection
 

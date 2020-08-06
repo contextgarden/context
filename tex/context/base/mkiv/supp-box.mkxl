@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{supp-box}{optimize}
+\registerctxluafile{supp-box}{autosuffix,optimize}
 
 %D And some dimensions:
 
@@ -2637,10 +2637,10 @@
    \fi
    \egroup}
 
-% makes sense but too much log for overfull boxes:
-%
-% \showboxbreadth\maxdimen
-% \showboxdepth  \maxdimen
+% Why not ...
+
+\showboxbreadth\plusthousand
+\showboxdepth  \plusthousand
 
 %D Moved from cont-new:
 %D
@@ -2784,6 +2784,25 @@
 %D \stopbuffer
 %D
 %D \typebuffer \blank \getbuffer \blank
+
+%D Implemented elsewhere:
+
+%D \starttyping
+%D \boxlines    <box>
+%D \boxline     <box> <line>
+%D \copyboxline <box> <line>
+%D \setboxline  <box> <line>
+%D \boxlineht   <box> <line> [<dimen>]
+%D \boxlinedp   <box> <line> [<dimen>]
+%D \boxlinewd   <box> <line> [<dimen>]
+%D \boxlinels   <box> <line>
+%D \boxliners   <box> <line>
+%D \boxlinelh   <box> <line>
+%D \boxlinerh   <box> <line>
+%D \boxlinelp   <box> <line>
+%D \boxlinerp   <box> <line>
+%D \boxlinein   <box> <line>
+%D \stoptyping
 
 \protect \endinput
 

@@ -459,14 +459,14 @@ do
 
     nuts.find_node = find_node
 
-    nodes.getnormalizeline = node.getnormalizeline or function() return 0 end
-    nodes.setnormalizeline = node.setnormalizeline or function()          end
+ -- if CONTEXTLMTXMODE then ... end
 
     nuts.getnormalizedline = direct.getnormalizedline or function(h)
         if getid(h) == hlist_code and getsubtype(h) == line_code then
             local ls, rs = 0, 0
             local lh, rh = 0, 0
-            local is, ps = 0, 0
+            local lp, rp = 0, 0
+            local is     = 0
             local h = getlist(h)
             local t = findtail(h)
             for n, subtype in nextglue, h do
@@ -475,10 +475,20 @@ do
                 elseif subtype == lefthangskip_code  then lh = getwidth(n)
                 elseif subtype == righthangskip_code then rh = getwidth(n)
                 elseif subtype == indentskip_code    then is = getwidth(n)
-                elseif subtype == parfillskip_code   then ps = getwidth(n)
+                elseif subtype == parfillskip_code   then rp = getwidth(n)
                 end
             end
-            return ls, rs, lh, rh, is, ps, h, t
+            return {
+                leftskip         = ls,
+                rightskip        = rs,
+                lefthangskip     = lh,
+                righthangskip    = rh,
+                indent           = is,
+                parfillrightskip = rp,
+                parfillleftskip  = lp,
+                head             = h,
+                tail             = t,
+            }
         end
     end
 

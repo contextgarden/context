@@ -284,131 +284,140 @@
 % \s!plus ... slower than inline
 
 \unexpanded\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
-  {\raggedstatus\zerocount
+  {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
-   \leftskip   \plusone\leftskip
-   \rightskip  \plusone\rightskip
-   \spaceskip  \zeropoint
-   \xspaceskip \zeropoint
-   \parfillskip\s_zero_plus_one_fil % new
-   \setfalse\raggedonelinerstate    % now here
-   \let\updateraggedskips\relax}    % no need for adaption
+   \leftskip         \plusone\leftskip
+   \rightskip        \plusone\rightskip
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_one_fil % new
+   \setfalse         \raggedonelinerstate % now here
+   \let\updateraggedskips\relax}          % no need for adaption
 
 \unexpanded\def\spac_align_set_horizontal_left
-  {\setraggedness\spac_align_set_raggedness_left
-   \raggedstatus\plusone
+  {\setraggedness    \spac_align_set_raggedness_left
+   \raggedstatus     \plusone
    \c_attr_alignstate\plusone
-   \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_left
-   \rightskip  \plusone\rightskip\s!plus\zeropoint
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_left
+   \rightskip        \plusone\rightskip\s!plus\zeropoint
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_center
-  {\setraggedness\spac_align_set_raggedness_middle
-   \raggedstatus\plustwo
+  {\setraggedness    \spac_align_set_raggedness_middle
+   \raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
-   \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
-   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
+   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_right
-  {\setraggedness\spac_align_set_raggedness_right
-   \raggedstatus\plusthree
+  {\setraggedness    \spac_align_set_raggedness_right
+   \raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
-   \leftskip   \plusone\leftskip \s!plus\zeropoint
-   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_one_fil
-  %\parindent  \parindent
+   \leftskip         \plusone\leftskip \s!plus\zeropoint
+   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_one_fil
+  %\parindent        \parindent
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_very_left
-  {\raggedstatus\plusone
+  {\raggedstatus     \plusone
    \c_attr_alignstate\plusone
-   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
-   \rightskip  \plusone\rightskip\s!plus\zeropoint
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
+   \rightskip        \plusone\rightskip\s!plus\zeropoint
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_very_center
-  {\raggedstatus\plustwo
+  {\raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
-   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
-   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
+   \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_very_right
-  {\raggedstatus\plusthree
+  {\raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
-   \leftskip   \plusone\leftskip \s!plus\zeropoint
-   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-  %\parindent  \parindent
+   \leftskip         \plusone\leftskip \s!plus\zeropoint
+   \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+  %\parindent        \parindent
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_wide_center
-  {\setraggedness\spac_align_set_raggedness_middle
-   \raggedstatus\plustwo
+  {\setraggedness    \spac_align_set_raggedness_middle
+   \raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
-   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
-   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
-   \spaceskip  \v_spac_align_space_amount
-   \xspaceskip \v_spac_align_space_amount_x
-   \parfillskip\s_zero_plus_zero
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
+   \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
+   \spaceskip        \v_spac_align_space_amount
+   \xspaceskip       \v_spac_align_space_amount_x
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_centered_last_line
-  {\raggedstatus\zerocount
+  {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
-   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
-   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip  \zeropoint\relax
-   \xspaceskip \zeropoint\relax
-   \parfillskip\zeropoint\s!plus\v_spac_align_fill_amount_double\relax
-   \parindent  \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
+   \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
+   \spaceskip        \zeropoint\relax
+   \xspaceskip       \zeropoint\relax
+   \parfillleftskip  \zeropoint
+   \parfillskip      \zeropoint\s!plus\v_spac_align_fill_amount_double\relax
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_flushedright_last_line
-  {\raggedstatus\zerocount
+  {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
-   \leftskip       \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
-   \rightskip      \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip      \zeropoint\relax
-   \xspaceskip     \zeropoint\relax
-   \parfillskip    \zeropoint
-   \parfillleftskip\zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
-   \parfillleftmode\plustwo % \plusone checks for multiple lines
-   \parindent      \zeropoint
+   \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
+   \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
+   \spaceskip        \zeropoint\relax
+   \xspaceskip       \zeropoint\relax
+   \parfillskip      \zeropoint
+   \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
+   \parindent        \zeropoint
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_right_tt % a plain command
   {\tttf % brrr
-   \raggedstatus\plusthree
+   \raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
-   \leftskip   \plusone\leftskip \s!plus\zeropoint\relax
-   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
-   \spaceskip  \zeropoint\relax
-   \xspaceskip \zeropoint\relax
-   \parfillskip\s_zero_plus_zero
-  %\parindent  \parindent
+   \leftskip         \plusone\leftskip \s!plus\zeropoint\relax
+   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
+   \spaceskip        \zeropoint\relax
+   \xspaceskip       \zeropoint\relax
+   \parfillleftskip  \zeropoint
+   \parfillskip      \s_zero_plus_zero
+  %\parindent        \parindent
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_extra

@@ -501,5 +501,9 @@ return {
         "unsupportedcs",
         --
         "openout", "closeout", "write", "openin", "closein", "read", "readline", "readfromterminal",
+        --
+        "boxlines", "boxline", "setboxline", "copyboxline", "boxlineht", "boxlinedp",
+        "boxlinewd", "boxlinels", "boxliners", "boxlinelh", "boxlinerh",
+        "boxlinelp", "boxlinerp", "boxlinein",
     }
 }

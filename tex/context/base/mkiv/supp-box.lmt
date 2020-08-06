@@ -51,6 +51,8 @@ local getattribute  = nuts.getattribute
 local getbox        = nuts.getbox
 local getdirection  = nuts.getdirection
 local getwidth      = nuts.getwidth
+local getheight     = nuts.getheight
+local getdepth      = nuts.getdepth
 local getwhd        = nuts.getwhd
 local takebox       = nuts.takebox
 
@@ -68,6 +70,7 @@ local setdepth      = nuts.setdepth
 local setshift      = nuts.setshift
 local setsplit      = nuts.setsplit
 local setattrlist   = nuts.setattrlist
+local setwhd        = nuts.setwhd
 
 local flush_node    = nuts.flush_node
 local flush_list    = nuts.flush_list
@@ -81,6 +84,7 @@ local traverse_id   = nuts.traverse_id
 local traverse      = nuts.traverse
 local free          = nuts.free
 local findtail      = nuts.tail
+local reverse       = nuts.reverse
 
 local nextdisc      = nuts.traversers.disc
 local nextdir       = nuts.traversers.dir
@@ -482,8 +486,6 @@ end
 
 do
 
-    local nuts       = nodes.nuts
-    local tonode     = nuts.tonode
     local takebox    = nuts.takebox
     local flush_list = nuts.flush_list
     local copy_list  = nuts.copy_list
@@ -836,6 +838,26 @@ implement {
     end,
 }
 
+-- only in lmtx:
+
+implement {
+    name      = "widthuptohere",
+    public    = true,
+    protected = true,
+    value     = true,
+    actions   = function()
+        local n = texgetnest()
+        local w = 0
+        if n.mode == hmode_code then
+            local h = hpack(getnext(tonut(n.head)))
+            w = getwidth(h)
+            setlist(h)
+            free(h)
+        end
+        return tokens.values.dimension, w
+    end,
+}
+
 implement {
     name      = "doifelseindented",
     public    = true,
@@ -890,13 +912,237 @@ do
 
     local takebox = tex.takebox
 
-    interfaces.implement {
+    implement {
         name      = "thebox",
         public    = true,
         arguments = "integer",
         actions   = function(n)
             context(takebox(n))
         end
+    }
+
+end
+
+-- only in lmtx
+
+implement {
+    name      = "reversevboxcontent",
+    protected = true,
+    public    = true,
+    arguments = "integer",
+    actions   = function(n)
+        local b = getbox(n)
+        local l = b and getid(b) == vlist_code and getlist(b)
+        if l and getnext(l) then
+            setlist(b,reverse(l)) -- no re-vpack here!
+        end
+    end
+}
+
+-- only in lmtx
+
+do
+
+    local scaninteger       = tokens.scanners.integer
+    local scanbox           = tokens.scanners.box
+    local scandimen         = tokens.scanners.dimen
+
+    local setsubtype        = nuts.setsubtype
+    local removenode        = nuts.remove
+    local getnormalizedline = nuts.getnormalizedline -- we can optimize this
+
+    local line_code         = nodes.listcodes.line
+    local unknown_code      = nodes.listcodes.unknown
+
+    local values            = tokens.values
+    local dimension_value   = values.dimension
+    local cardinal_value    = values.cardinal
+    local list_value        = values.list
+
+    local function boxlinecount(what)
+        local box  = scaninteger()
+        local list = getbox(box)
+        local line = 0
+        if list then
+            list = getlist(list)
+            if list then
+                for n, subtype in nexthlist, list do
+                    if subtype == line_code then
+                        line = line + 1
+                    end
+                end
+            end
+        end
+        if what == "value" then
+            return cardinal_value, line
+        end
+    end
+
+    local function findline()
+        local n    = scaninteger()
+        local line = scaninteger()
+        local box  = getbox(n)
+        if box then
+            local list = getlist(box)
+            if list then
+                for n, subtype in nexthlist, list do
+                    if subtype == line_code then
+                        if line == 1 then
+                            return n, list, box
+                        else
+                            line = line - 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local function getline(found,list,box,value)
+        local p, n = getboth(found)
+        local temp = new_hlist()
+        setsubtype(temp,line_code)
+        setwhd(temp,getwhd(found))
+        if found == list then
+            setlink(temp,n)
+            setlist(box,temp)
+        else
+            setlink(p,temp,n)
+        end
+        setboth(found)
+        setsubtype(found, unknown_code)
+        found = tonode(found)
+        if value then
+            return list_value, found
+        else
+            context(found)
+        end
+    end
+
+    local function copyline(found,list,box,value)
+        local p, n = getboth(found)
+        found = copy_list(found)
+        setsubtype(found, unknown_code)
+        found = tonode(found)
+        if value then
+            return list_value, found
+        else
+            context(found)
+        end
+    end
+
+    local function setline(found,list,box)
+        local p, n = getboth(found)
+        local temp = scanbox()
+        if temp then
+            temp = tonut(temp)
+            if found == list then
+                setlink(temp,n)
+                setlist(box,temp)
+            else
+                setlink(p,temp,n)
+            end
+            flush_node(found)
+        end
+    end
+
+    local getters = {
+        ["wd"]  = function(found) return dimension_value, getwidth (found) end,
+        ["ht"]  = function(found) return dimension_value, getheight(found) end,
+        ["dp"]  = function(found) return dimension_value, getdepth (found) end,
+        ["ls"]  = function(found) return dimension_value, getnormalizedline(found).leftskip end,
+        ["rs"]  = function(found) return dimension_value, getnormalizedline(found).rightskip end,
+        ["lh"]  = function(found) return dimension_value, getnormalizedline(found).lefthangskip end,
+        ["rh"]  = function(found) return dimension_value, getnormalizedline(found).righthangskip end,
+        ["lp"]  = function(found) return dimension_value, getnormalizedline(found).parfillleftskip end,
+        ["rp"]  = function(found) return dimension_value, getnormalizedline(found).parfillrightskip end,
+        ["in"]  = function(found) return dimension_value, getnormalizedline(found).indent end,
+        ["get"] = function(found,list,box) return getline(found,list,box,true) end,
+    }
+
+    local setters = {
+        ["wd"]   = function(found) return setwidth (found,scandimen(false,false,true)) end,
+        ["ht"]   = function(found) return setheight(found,scandimen(false,false,true)) end,
+        ["dp"]   = function(found) return setdepth (found,scandimen(false,false,true)) end,
+        ["set"]  = setline,
+        ["get"]  = getline,
+        ["copy"] = copyline,
+    }
+
+    local report = logs.reporter("tex", "boxlines")
+
+    local function boxline(name,what)
+        local found, list, box = findline()
+        if not found then
+            report("invalid box line specification, pass box number and line number")
+        elseif what == "value" then
+            local getter = getters[name]
+            if getter then
+                return getter(found,list,box)
+            end
+        else
+            local setter = setters[name]
+            if setter then
+                return setter(found,list,box)
+            end
+        end
+    end
+
+    implement {
+        name    = "boxlines", public = true, protected = true, value = true,
+        actions = boxlinecount,
+    }
+    implement {
+        name    = "boxline", public = true, protected = true, value = true,
+        actions = function(what) return boxline("get",what) end,
+    }
+    implement {
+        name    = "setboxline", public = true, protected = true, value = true,
+        actions = function(what) return boxline("set",what) end,
+    }
+    implement {
+        name    = "copyboxline", public = true, protected = true, value = true,
+        actions = function(what) return boxline("copy",what) end,
+    }
+    implement {
+        name    = "boxlineht", public = true, protected = true, value = true,
+        actions = function(what) return boxline("ht",what) end,
+    }
+    implement {
+        name    = "boxlinedp", public = true, protected = true, value = true,
+        actions = function(what) return boxline("dp",what) end,
+    }
+    implement {
+        name    = "boxlinewd", public = true, protected = true, value = true,
+        actions = function(what) return boxline("wd",what) end,
+    }
+    implement {
+        name    = "boxlinels", public = true, protected = true, value = true,
+        actions = function(what) return boxline("ls",what) end,
+    }
+    implement {
+        name    = "boxliners", public = true, protected = true, value = true,
+        actions = function(what) return boxline("rs",what) end,
+    }
+    implement {
+        name    = "boxlinelh", public = true, protected = true, value = true,
+        actions = function(what) return boxline("lh",what) end,
+    }
+    implement {
+        name    = "boxlinerh", public = true, protected = true, value = true,
+        actions = function(what) return boxline("rh",what) end,
+    }
+    implement {
+        name    = "boxlinelp", public = true, protected = true, value = true,
+        actions = function(what) return boxline("lp",what) end,
+    }
+    implement {
+        name    = "boxlinerp", public = true, protected = true, value = true,
+        actions = function(what) return boxline("rp",what) end,
+    }
+    implement {
+        name    = "boxlinein", public = true, protected = true, value = true,
+        actions = function(what) return boxline("in",what) end,
     }
 
 end

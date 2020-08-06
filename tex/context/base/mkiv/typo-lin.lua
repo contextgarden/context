@@ -236,53 +236,75 @@ function paragraphs.checkline(n)
     return getprop(n,"line") or normalize(n,true)
 end
 
-function paragraphs.normalize(head,islocal)
-    if texgetcount("pagebodymode") > 0 then
-        -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
-        return head, false
-    end
-    -- this can become a separate handler but it makes sense to integrate it here
-    local mode = texgetcount("parfillleftmode")
-    if mode > 0 then
-        local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
-        if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
-            local last = nil -- a nut
-            local done = mode == 2 -- false
-            for line, subtype in nexthlist, head do
-                if subtype == linelist_code and not getprop(line,"line") then
-                    if done then
-                        last = line
-                    else
-                        done = true
-                    end
-                end
+-- do we still need this:
+
+if CONTEXTLMTXMODE > 0 then
+
+    function paragraphs.normalize(head,islocal)
+        if texgetcount("pagebodymode") > 0 then
+            -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
+            return head, false
+        end
+        -- normalizer : todo, get the data, no need to normalize
+        for line, subtype in nexthlist, head do
+            if subtype == linelist_code and not getprop(line,"line") then
+                normalize(line)
             end
-            if last then -- only if we have more than one line
-                local head    = getlist(last)
-                local current = head
-                if current then
-                    if getid(current) == glue_code and getsubtype(current,leftskip_code) then
-                        current = getnext(current)
-                    end
-                    if current then
-                        head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
-                        if head == current then
-                            setlist(last,head)
+        end
+        return head, true -- true is obsolete
+    end
+
+else
+
+    function paragraphs.normalize(head,islocal)
+        if texgetcount("pagebodymode") > 0 then
+            -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
+            return head, false
+        end
+        -- this can become a separate handler but it makes sense to integrate it here
+        local mode = texgetcount("parfillleftmode")
+        if mode > 0 then
+            local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
+            if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
+                local last = nil -- a nut
+                local done = mode == 2 -- false
+                for line, subtype in nexthlist, head do
+                    if subtype == linelist_code and not getprop(line,"line") then
+                        if done then
+                            last = line
+                        else
+                            done = true
                         end
-                        -- can be a 'rehpack(h  )'
-                        rehpack(last)
+                    end
+                end
+                if last then -- only if we have more than one line
+                    local head    = getlist(last)
+                    local current = head
+                    if current then
+                        if getid(current) == glue_code and getsubtype(current,leftskip_code) then
+                            current = getnext(current)
+                        end
+                        if current then
+                            head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
+                            if head == current then
+                                setlist(last,head)
+                            end
+                            -- can be a 'rehpack(h  )'
+                            rehpack(last)
+                        end
                     end
                 end
             end
         end
-    end
-    -- normalizer
-    for line, subtype in nexthlist, head do
-        if subtype == linelist_code and not getprop(line,"line") then
-            normalize(line)
+        -- normalizer
+        for line, subtype in nexthlist, head do
+            if subtype == linelist_code and not getprop(line,"line") then
+                normalize(line)
+            end
         end
+        return head, true -- true is obsolete
     end
-    return head, true -- true is obsolete
+
 end
 
 -- print(nodes.idstostring(head))

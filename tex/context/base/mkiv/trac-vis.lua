@@ -63,6 +63,7 @@ local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
 local getexpansion        = nuts.getexpansion
+local getdirection        = nuts.getdirection
 
 local isglyph             = nuts.isglyph
 
@@ -76,8 +77,6 @@ local insert_node_after   = nuts.insert_after
 local apply_to_nodes      = nuts.apply
 local find_tail           = nuts.tail
 local effectiveglue       = nuts.effective_glue
-
-local nextnode            = nuts.traversers.node
 
 local hpack_string        = nuts.typesetters.tohpack
 
@@ -167,10 +166,13 @@ local modes = {
     depth         = 0x080000,
     marginkern    = 0x100000,
     mathlistkern  = 0x200000,
+    dir           = 0x400000,
+    localpar      = 0x800000,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathlistkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathlistkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
+    l_dir, l_whatsit
 
 local enabled = false
 local layers  = { }
@@ -181,6 +183,7 @@ local preset_makeup = preset_boxes
 local preset_all    = preset_makeup
                     + modes.fontkern + modes.marginkern + modes.mathlistkern
                     + modes.whatsit + modes.glyph + modes.user + modes.math
+                    + modes.dir + modes.whatsit
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -232,6 +235,8 @@ local function initialize()
     l_line          = layers.line
     l_space         = layers.space
     l_depth         = layers.depth
+    l_dir           = layers.dir
+    l_localpar      = layers.localpar
     --
     if not userrule then
        userrule = nuts.rules.userrule
@@ -609,13 +614,64 @@ local whatsit do
         if info then
             -- print("hit whatsit")
         else
-            local tag = whatsitcodes[what]
-            -- maybe different text colors per tag
-            info = sometext(formatters["W:%s"](tag and tags[tag] or what),usedfont,nil,c_white)
+            info = sometext(formatters["W:%s"](what),usedfont,nil,c_white)
             setattr(info,a_layer,l_whatsit)
             w_cache[what] = info
         end
         head, current = insert_node_after(head,current,copy_list(info))
+        return head, current
+    end
+
+end
+
+local dir, localpar do
+
+    local dircodes    = nodes.dircodes
+    local dirvalues   = nodes.dirvalues
+
+    local cancel_code = dircodes.cancel
+    local l2r_code    = dirvalues.l2r
+    local r2l_code    = dirvalues.r2l
+
+    local d_cache     = caches["dir"]
+
+    local tags = {
+        l2r    = "L2R",
+        r2l    = "R2L",
+        cancel = "CAN",
+        par    = "PAR",
+    }
+
+    localpar = function(head,current)
+        local what = "par" -- getsubtype(current)
+        local info = d_cache[what]
+        if info then
+            -- print("hit localpar")
+        else
+            info = sometext(formatters["L:%s"](what),usedfont,nil,c_white)
+            setattr(info,a_layer,l_dir)
+            d_cache[what] = info
+        end
+        return head, current
+    end
+
+    dir = function(head,current)
+        local what = getsubtype(current)
+        if what == cancelcode then
+            what = "cancel"
+        elseif getdirection(current) == r2l_code then
+            what = "r2l"
+        else
+            what = "l2r"
+        end
+        local info = d_cache[what]
+        if info then
+            -- print("hit dir")
+        else
+            info = sometext(formatters["D:%s"](what),usedfont,nil,c_white)
+            setattr(info,a_layer,l_dir)
+            d_cache[what] = info
+        end
         return head, current
     end
 
@@ -870,21 +926,23 @@ end
 
 local ruledglue do
 
-    local gluecodes           = nodes.gluecodes
-    local leadercodes         = nodes.gluecodes
+    local gluecodes             = nodes.gluecodes
+    local leadercodes           = nodes.gluecodes
 
-    local userskip_code       = gluecodes.userskip
-    local spaceskip_code      = gluecodes.spaceskip
-    local xspaceskip_code     = gluecodes.xspaceskip
-    local zerospaceskip_code  = gluecodes.zerospaceskip or gluecodes.userskip
- -- local keepskip_code       = gluecodes.keepskip or gluecodes.userskip
-    local leftskip_code       = gluecodes.leftskip
-    local rightskip_code      = gluecodes.rightskip
-    local parfillskip_code    = gluecodes.parfillskip
-    local indentskip_code     = gluecodes.indentskip
-    local correctionskip_code = gluecodes.correctionskip
+    local userskip_code         = gluecodes.userskip
+    local spaceskip_code        = gluecodes.spaceskip
+    local xspaceskip_code       = gluecodes.xspaceskip
+    local zerospaceskip_code    = gluecodes.zerospaceskip or gluecodes.userskip
+ -- local keepskip_code         = gluecodes.keepskip or gluecodes.userskip
+    local leftskip_code         = gluecodes.leftskip
+    local rightskip_code        = gluecodes.rightskip
+    local parfillskip_code      = gluecodes.parfillskip
+    local parfillleftskip_code  = gluecodes.parfillleftskip or parfillskip_code
+    local parfillrightskip_code = gluecodes.parfillrightskip or parfillskip_code
+    local indentskip_code       = gluecodes.indentskip
+    local correctionskip_code   = gluecodes.correctionskip
 
-    local cleaders_code       = leadercodes.cleaders
+    local cleaders_code         = leadercodes.cleaders
 
     local g_cache_v = caches["vglue"]
     local g_cache_h = caches["hglue"]
@@ -920,7 +978,9 @@ local ruledglue do
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
         [zerospaceskip_code]              = "ZS",
-        [parfillskip_code]                = "PF",
+        [parfillskip_code]                = "PR",
+        [parfillleftskip_code]            = "PL",
+        [parfillrightskip_code]           = "PR",
         [indentskip_code]                 = "IN",
         [correctionskip_code]             = "CS",
     }
@@ -939,7 +999,7 @@ local ruledglue do
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
-            elseif subtype == parfillskip_code or subtype == indentskip_code or subtype == correctionskip_code then
+            elseif subtype == parfillskip_code or subtype == parfillleftskip_code or subtype == parfillrightskip_code or subtype == indentskip_code or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,c_indent)
             elseif subtype == userskip_code then
                 if width > 0 then
@@ -1179,18 +1239,20 @@ end
 
 do
 
-    local disc_code         = nodecodes.disc
-    local kern_code         = nodecodes.kern
-    local glyph_code        = nodecodes.glyph
-    local glue_code         = nodecodes.glue
-    local penalty_code      = nodecodes.penalty
-    local whatsit_code      = nodecodes.whatsit
-    local user_code         = nodecodes.user
-    local math_code         = nodecodes.math
-    local hlist_code        = nodecodes.hlist
-    local vlist_code        = nodecodes.vlist
-    local marginkern_code   = nodecodes.marginkern
-    local mathlistkern_code = nodecodes.mathlistkern
+    local disc_code            = nodecodes.disc
+    local kern_code            = nodecodes.kern
+    local glyph_code           = nodecodes.glyph
+    local glue_code            = nodecodes.glue
+    local penalty_code         = nodecodes.penalty
+    local whatsit_code         = nodecodes.whatsit
+    local user_code            = nodecodes.user
+    local math_code            = nodecodes.math
+    local hlist_code           = nodecodes.hlist
+    local vlist_code           = nodecodes.vlist
+    local marginkern_code      = nodecodes.marginkern
+    local mathlistkern_code    = nodecodes.mathlistkern
+    local dir_code             = nodecodes.dir
+    local localpar_code        = nodecodes.localpar
 
     local kerncodes            = nodes.kerncodes
     local fontkern_code        = kerncodes.fontkern
@@ -1200,8 +1262,8 @@ do
     local mathlistkern_code    = kerncodes.mathlistkern
     ----- userkern_code        = kerncodes.userkern
 
-    local listcodes       = nodes.listcodes
-    local linelist_code   = listcodes.line
+    local listcodes            = nodes.listcodes
+    local linelist_code        = listcodes.line
 
     local cache
 
@@ -1226,6 +1288,8 @@ do
         local trace_line            = false
         local trace_space           = false
         local trace_depth           = false
+        local trace_dir             = false
+        local trace_localpar        = false
         local current               = head
         local previous              = nil
         local attr                  = unsetvalue
@@ -1269,6 +1333,8 @@ do
                     trace_depth         = false
                     trace_marginkern    = false
                     trace_mathlistkern  = false
+                    trace_dir           = false
+                    trace_localpar      = false
                     if id == kern_code then
                         goto kern
                     else
@@ -1298,6 +1364,8 @@ do
                     trace_depth         = band(a,0x080000) ~= 0
                     trace_marginkern    = band(a,0x100000) ~= 0
                     trace_mathlistkern  = band(a,0x200000) ~= 0
+                    trace_dir           = band(a,0x400000) ~= 0
+                    trace_whatsit       = band(a,0x800000) ~= 0
                 end
             elseif a == unsetvalue then
                 goto list
@@ -1358,6 +1426,14 @@ do
             elseif id == marginkern_code then
                 if trace_kern then
                     head, current = ruledkern(head,current,vertical,true)
+                end
+            elseif id == dir_code then
+                if trace_dir then
+                    head, current = dir(head,current)
+                end
+            elseif id == localpar_code then
+                if trace_localpar then
+                    head, current = localpar(head,current)
                 end
             end
             goto next
@@ -1470,6 +1546,7 @@ do
 
     local hlist_code = nodecodes.hlist
     local vlist_code = nodecodes.vlist
+    local nextnode   = nuts.traversers.node
 
     local last       = nil
     local used       = nil

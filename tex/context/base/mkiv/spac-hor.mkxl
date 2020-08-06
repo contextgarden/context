@@ -17,9 +17,7 @@
 
 \registerctxluafile{spac-hor}{}
 
-\let        \parfillrightskip \parfillskip
-\newskip    \parfillleftskip
-\newconstant\parfillleftmode
+\let\parfillrightskip\parfillskip
 
 \let\v_spac_indentation_current\empty % amount/keyword
 

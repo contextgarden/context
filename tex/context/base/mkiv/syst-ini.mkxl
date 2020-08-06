@@ -654,9 +654,8 @@
    \tracingifs       \plusone
    \tracingnesting   \plustwo
    \tracingassigns   \plustwo
-   \tracingfonts
-   \showboxbreadth   \maxdimen
-   \showboxdepth     \maxdimen}
+   \showboxbreadth   \maxcount
+   \showboxdepth     \maxcount}
 
 \protected\def\loggingall
   {\tracingall
