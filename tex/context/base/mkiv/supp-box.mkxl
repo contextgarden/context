@@ -2802,7 +2802,21 @@
 %D \boxlinelp   <box> <line>
 %D \boxlinerp   <box> <line>
 %D \boxlinein   <box> <line>
+%D \boxrangeht  <box> <first line> <last line>
+%D \boxrangedp  <box> <first line> <last line>
+%D \boxrangewd  <box> <first line> <last line>
 %D \stoptyping
+
+% To be discussed with ws.
+%
+% \installcorenamespace{namedboxes}
+%
+% \protected\def\newnamedbox#1%
+%   {\ifcsname\??namedboxes#1\endcsname\else
+%      \expandafter\newbox\csname\??namedboxes#1\endcsname
+%    \fi}
+%
+% \protected\def\namedbox#1{\csname\??namedboxes#1\endcsname}
 
 \protect \endinput
 

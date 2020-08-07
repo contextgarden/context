@@ -136,6 +136,16 @@ The result is:
     \stoppacked
 \stoplinecorrection
 
+You can query the natural width, height and depth too:
+
+\startbuffer
+used width  : \the\boxlinewd 0 5, natural width  : \the\boxlinenw 0 5
+used heigth : \the\boxlineht 0 5, natural height : \the\boxlinenh 0 5
+used depth  : \the\boxlinedp 0 5, natural depth  : \the\boxlinend 0 5
+\stopbuffer
+
+\typebuffer[option=TEX] \startlines \getbuffer \stoplines
+
 Next we replace an existing line by a new line:
 
 \startbuffer

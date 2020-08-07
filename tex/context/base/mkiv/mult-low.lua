@@ -68,13 +68,14 @@ return {
         "primeasciicode", "hyphenasciicode",
         --
         "frozenhsizecode", "frozenleftskipcode", "frozenrightskipcode", "frozenhangindentcode",
-        "frozenhangaftercode", "frozenparindentcode", "frozenparfillskipcode", "frozenadjustspacingcode",
-        "frozenprotrudecharscode", "frozenpretolerancecode", "frozentolerancecode", "frozenemergencystretchcode",
-        "frozenloosenesscode", "frozenlastlinefitcode", "frozenlinepenaltycode", "frozeninterlinepenaltycode",
-        "frozenwidowpenaltycode", "frozenclubpenaltycode",  "frozenbrokenpenaltycode",  "frozenadjdemeritscode",
+        "frozenhangaftercode", "frozenparindentcode", "frozenparfillskipcode", "frozenparfillleftskipcode",
+        "frozenadjustspacingcode", "frozenprotrudecharscode", "frozenpretolerancecode", "frozentolerancecode",
+        "frozenemergencystretchcode", "frozenloosenesscode", "frozenlastlinefitcode", "frozenlinepenaltycode",
+        "frozeninterlinepenaltycode", "frozenclubpenaltycode", "frozenwidowpenaltycode",
+        "frozendisplaywidowpenaltycode", "frozenbrokenpenaltycode", "frozenadjdemeritscode",
         "frozendoublehyphendemeritscode", "frozenfinalhyphendemeritscode", "frozenparshapecode",
-        "frozeninterlinepenaltiescode", "frozenwidowpenaltiescode", "frozenclubpenaltiescode",
-        "paragraphupdatecodes", "paragraphpenaltycodes", "paragraphdemeritcodes", "paragraphshapecodes",
+        "frozeninterlinepenaltiescode", "frozenclubpenaltiescode", "frozenwidowpenaltiescode",
+        "frozendisplaywidowpenaltiescode",
         --
         "activemathcharcode",
         --
@@ -502,8 +503,11 @@ return {
         --
         "openout", "closeout", "write", "openin", "closein", "read", "readline", "readfromterminal",
         --
-        "boxlines", "boxline", "setboxline", "copyboxline", "boxlineht", "boxlinedp",
-        "boxlinewd", "boxlinels", "boxliners", "boxlinelh", "boxlinerh",
+        "boxlines", "boxline", "setboxline", "copyboxline",
+        "boxlinewd","boxlineht", "boxlinedp",
+        "boxlinenw","boxlinenh", "boxlinend",
+        "boxlinels", "boxliners", "boxlinelh", "boxlinerh",
         "boxlinelp", "boxlinerp", "boxlinein",
+        "boxrangewd", "boxrangeht", "boxrangedp",
     }
 }

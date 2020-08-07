@@ -21,32 +21,35 @@
 
 % this might move to syst-ini.mkxl
 
-\setnewconstant\frozenhsizecode                "0000001
-\setnewconstant\frozenleftskipcode             "0000002
-\setnewconstant\frozenrightskipcode            "0000004
-\setnewconstant\frozenhangindentcode           "0000008
-\setnewconstant\frozenhangaftercode            "0000010
-\setnewconstant\frozenparindentcode            "0000020
-\setnewconstant\frozenparfillskipcode          "0000040
-\setnewconstant\frozenadjustspacingcode        "0000080
-\setnewconstant\frozenprotrudecharscode        "0000100
-\setnewconstant\frozenpretolerancecode         "0000200
-\setnewconstant\frozentolerancecode            "0000400
-\setnewconstant\frozenemergencystretchcode     "0000800
-\setnewconstant\frozenloosenesscode            "0001000
-\setnewconstant\frozenlastlinefitcode          "0002000
-\setnewconstant\frozenlinepenaltycode          "0004000
-\setnewconstant\frozeninterlinepenaltycode     "0008000
-\setnewconstant\frozenwidowpenaltycode         "0010000
-\setnewconstant\frozenclubpenaltycode          "0020000
-\setnewconstant\frozenbrokenpenaltycode        "0040000
-\setnewconstant\frozenadjdemeritscode          "0080000
-\setnewconstant\frozendoublehyphendemeritscode "0100000
-\setnewconstant\frozenfinalhyphendemeritscode  "0200000
-\setnewconstant\frozenparshapecode             "0400000
-\setnewconstant\frozeninterlinepenaltiescode   "0800000
-\setnewconstant\frozenwidowpenaltiescode       "1000000
-\setnewconstant\frozenclubpenaltiescode        "2000000
+\setnewconstant\frozenhsizecode                 "00000001
+\setnewconstant\frozenleftskipcode              "00000002
+\setnewconstant\frozenrightskipcode             "00000004
+\setnewconstant\frozenhangindentcode            "00000008
+\setnewconstant\frozenhangaftercode             "00000010
+\setnewconstant\frozenparindentcode             "00000020
+\setnewconstant\frozenparfillskipcode           "00000040
+\setnewconstant\frozenparfillleftskipcode       "00000080
+\setnewconstant\frozenadjustspacingcode         "00000100
+\setnewconstant\frozenprotrudecharscode         "00000200
+\setnewconstant\frozenpretolerancecode          "00000400
+\setnewconstant\frozentolerancecode             "00000800
+\setnewconstant\frozenemergencystretchcode      "00001000
+\setnewconstant\frozenloosenesscode             "00002000
+\setnewconstant\frozenlastlinefitcode           "00004000
+\setnewconstant\frozenlinepenaltycode           "00008000
+\setnewconstant\frozeninterlinepenaltycode      "00010000
+\setnewconstant\frozenclubpenaltycode           "00020000
+\setnewconstant\frozenwidowpenaltycode          "00040000
+\setnewconstant\frozendisplaywidowpenaltycode   "00080000
+\setnewconstant\frozenbrokenpenaltycode         "00100000
+\setnewconstant\frozenadjdemeritscode           "00200000
+\setnewconstant\frozendoublehyphendemeritscode  "00400000
+\setnewconstant\frozenfinalhyphendemeritscode   "00800000
+\setnewconstant\frozenparshapecode              "01000000
+\setnewconstant\frozeninterlinepenaltiescode    "02000000
+\setnewconstant\frozenclubpenaltiescode         "04000000
+\setnewconstant\frozenwidowpenaltiescode        "08000000
+\setnewconstant\frozendisplaywidowpenaltiescode "10000000
 
 \setnewconstant\paragraphupdatecodes\numexpr
     \frozentolerancecode

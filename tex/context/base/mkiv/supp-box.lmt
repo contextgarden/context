@@ -943,38 +943,62 @@ implement {
 
 do
 
-    local scaninteger       = tokens.scanners.integer
-    local scanbox           = tokens.scanners.box
-    local scandimen         = tokens.scanners.dimen
+    local scaninteger        = tokens.scanners.integer
+    local scanbox            = tokens.scanners.box
+    local scandimen          = tokens.scanners.dimen
 
-    local setsubtype        = nuts.setsubtype
-    local removenode        = nuts.remove
-    local getnormalizedline = nuts.getnormalizedline -- we can optimize this
+    local setsubtype         = nuts.setsubtype
+    local removenode         = nuts.remove
+    local getnormalizedline  = nuts.getnormalizedline -- we can optimize this
+    local getdimensions      = nuts.dimensions
+    local getrangedimensions = nuts.rangedimensions
 
-    local line_code         = nodes.listcodes.line
-    local unknown_code      = nodes.listcodes.unknown
+    local setprop            = nuts.setprop
+    local getprop            = nuts.getprop
 
-    local values            = tokens.values
-    local dimension_value   = values.dimension
-    local cardinal_value    = values.cardinal
-    local list_value        = values.list
+    local line_code          = nodes.listcodes.line
+    local unknown_code       = nodes.listcodes.unknown
 
-    local function boxlinecount(what)
-        local box  = scaninteger()
-        local list = getbox(box)
-        local line = 0
-        if list then
-            list = getlist(list)
+    local values             = tokens.values
+    local dimension_value    = values.dimension
+    local cardinal_value     = values.cardinal
+    local list_value         = values.list
+
+    -- todo: make helper that formats
+
+    local function reporterror(fmt,...)
+        tex.error(string.formatters[fmt](...))
+    end
+
+    -- The first variant did a linear lookup but for large boxes and lots of
+    -- analysis that is not nice. Okay, in practice performance is quite ok
+    -- (milliseconds for thousands of access) but still ... the next is nicer
+    -- and it's part of the experimental fun stuff anyway.
+
+    local function countlines(box)
+        local prop = getprop(box,"boxlines")
+        if not prop then
+            local line = 0
+            local list = getlist(box)
+            prop = { }
             if list then
                 for n, subtype in nexthlist, list do
                     if subtype == line_code then
                         line = line + 1
+                        prop[line] = n
                     end
                 end
             end
+            setprop(box,"boxlines",prop)
         end
+        return prop
+    end
+
+    local function boxlinecount(what)
+        local n   = scaninteger()
+        local box = getbox(n)
         if what == "value" then
-            return cardinal_value, line
+            return cardinal_value, box and #countlines(box) or 0
         end
     end
 
@@ -983,32 +1007,62 @@ do
         local line = scaninteger()
         local box  = getbox(n)
         if box then
-            local list = getlist(box)
-            if list then
-                for n, subtype in nexthlist, list do
-                    if subtype == line_code then
-                        if line == 1 then
-                            return n, list, box
-                        else
-                            line = line - 1
-                        end
-                    end
+            local prop = getprop(box,"boxlines")
+            if not prop then
+                prop = countlines(box)
+            end
+            local found = prop[line]
+            if found then
+                local props = getprop(found,"lineproperties")
+                if not props then
+                    props = getnormalizedline(found)
+                    props.width, props.height, props.depth = getwhd(found)
+                    setprop(found,"lineproperties",props)
                 end
+                return props, line, found, box
             end
         end
+        reporterror("no line %i in box %i",line,n)
     end
 
-    local function getline(found,list,box,value)
+    local function findrange()
+        local n     = scaninteger()
+        local first = scaninteger()
+        local last  = scaninteger()
+        local box   = getbox(n)
+        if box then
+            local prop = getprop(box,"boxlines")
+            if not prop then
+                prop = countlines(box)
+            end
+            if first > 0 and last <= #prop then
+                for i = first, last do
+                    local found = prop[i]
+                    local props = getprop(found,"lineproperties")
+                    if not props then
+                        props = getnormalizedline(found)
+                        props.width, props.height, props.depth = getwhd(found)
+                        setprop(found,"lineproperties",props)
+                    end
+                end
+                return prop, first, last, box
+            end
+        end
+        reporterror("no lines %i - %i in box %i",first,last,n)
+    end
+
+    local function getline(props,line,found,box,value)
         local p, n = getboth(found)
         local temp = new_hlist()
         setsubtype(temp,line_code)
         setwhd(temp,getwhd(found))
-        if found == list then
+        if found == getlist(box) then
             setlink(temp,n)
             setlist(box,temp)
         else
             setlink(p,temp,n)
         end
+        getprop(box,"boxlines")[line] = temp
         setboth(found)
         setsubtype(found, unknown_code)
         found = tonode(found)
@@ -1019,9 +1073,8 @@ do
         end
     end
 
-    local function copyline(found,list,box,value)
-        local p, n = getboth(found)
-        found = copy_list(found)
+    local function copyline(props,line,found,box,value)
+        found = copy_node(found)
         setsubtype(found, unknown_code)
         found = tonode(found)
         if value then
@@ -1031,118 +1084,153 @@ do
         end
     end
 
-    local function setline(found,list,box)
+    local function setline(props,line,found,box)
         local p, n = getboth(found)
         local temp = scanbox()
         if temp then
             temp = tonut(temp)
-            if found == list then
+            if found == getlist(box) then
                 setlink(temp,n)
                 setlist(box,temp)
             else
                 setlink(p,temp,n)
             end
             flush_node(found)
-        end
+            getprop(box,"boxlines")[line] = temp
+       end
     end
 
-    local getters = {
-        ["wd"]  = function(found) return dimension_value, getwidth (found) end,
-        ["ht"]  = function(found) return dimension_value, getheight(found) end,
-        ["dp"]  = function(found) return dimension_value, getdepth (found) end,
-        ["ls"]  = function(found) return dimension_value, getnormalizedline(found).leftskip end,
-        ["rs"]  = function(found) return dimension_value, getnormalizedline(found).rightskip end,
-        ["lh"]  = function(found) return dimension_value, getnormalizedline(found).lefthangskip end,
-        ["rh"]  = function(found) return dimension_value, getnormalizedline(found).righthangskip end,
-        ["lp"]  = function(found) return dimension_value, getnormalizedline(found).parfillleftskip end,
-        ["rp"]  = function(found) return dimension_value, getnormalizedline(found).parfillrightskip end,
-        ["in"]  = function(found) return dimension_value, getnormalizedline(found).indent end,
-        ["get"] = function(found,list,box) return getline(found,list,box,true) end,
+    local function naturaldimensions(p,l,found)
+        if not p.naturalwidth then
+            p.naturalwidth, p.naturalheight, p.naturaldepth = getdimensions(getlist(found))
+        end
+        return p
+    end
+
+    local function rangedimensions(p,f,l,box)
+        local w, h, d = getrangedimensions(box,p[f],getnext(p[l]),true)
+        return { width = w, height = h, depth = d }
+    end
+
+
+    local getters_one = {
+
+        ["wd"]  = function(p,l,found) return dimension_value, p.width end,
+        ["ht"]  = function(p,l,found) return dimension_value, p.height end,
+        ["dp"]  = function(p,l,found) return dimension_value, p.depth end,
+        ["ls"]  = function(p,l,found) return dimension_value, p.leftskip end,
+        ["rs"]  = function(p,l,found) return dimension_value, p.rightskip end,
+        ["lh"]  = function(p,l,found) return dimension_value, p.lefthangskip end,
+        ["rh"]  = function(p,l,found) return dimension_value, p.righthangskip end,
+        ["lp"]  = function(p,l,found) return dimension_value, p.parfillleftskip end,
+        ["rp"]  = function(p,l,found) return dimension_value, p.parfillrightskip end,
+        ["in"]  = function(p,l,found) return dimension_value, p.indent end,
+
+        ["nw"]  = function(p,l,found) return dimension_value, naturaldimensions(p,l,found).naturalwidth end,
+        ["nh"]  = function(p,l,found) return dimension_value, naturaldimensions(p,l,found).naturalheigth end,
+        ["nd"]  = function(p,l,found) return dimension_value, naturaldimensions(p,l,found).naturaldepth end,
+
+        ["get"] = function(p,l,found,box) return getline(p,l,found,box,true) end,
     }
 
-    local setters = {
-        ["wd"]   = function(found) return setwidth (found,scandimen(false,false,true)) end,
-        ["ht"]   = function(found) return setheight(found,scandimen(false,false,true)) end,
-        ["dp"]   = function(found) return setdepth (found,scandimen(false,false,true)) end,
+    local getters_two = {
+        ["wd"] = function(p,f,l,box) return dimension_value, rangedimensions(p,f,l,box).width  end,
+        ["ht"] = function(p,f,l,box) return dimension_value, rangedimensions(p,f,l,box).height end,
+        ["dp"] = function(p,f,l,box) return dimension_value, rangedimensions(p,f,l,box).depth  end,
+    }
+
+    local setters_one = {
+        ["wd"]   = function(p,l,found) return setwidth (found,scandimen(false,false,true)) end,
+        ["ht"]   = function(p,l,found) return setheight(found,scandimen(false,false,true)) end,
+        ["dp"]   = function(p,l,found) return setdepth (found,scandimen(false,false,true)) end,
         ["set"]  = setline,
         ["get"]  = getline,
         ["copy"] = copyline,
     }
 
-    local report = logs.reporter("tex", "boxlines")
-
     local function boxline(name,what)
-        local found, list, box = findline()
+        local props, line, found, box = findline()
         if not found then
-            report("invalid box line specification, pass box number and line number")
+            --
         elseif what == "value" then
-            local getter = getters[name]
+            local getter = getters_one[name]
             if getter then
-                return getter(found,list,box)
+                return getter(props,line,found,box)
             end
         else
-            local setter = setters[name]
+            local setter = setters_one[name]
             if setter then
-                return setter(found,list,box)
+                return setter(props,line,found,box)
             end
         end
     end
 
+    --
+
+    local function boxrange(name,what)
+        local prop, first, last, box = findrange()
+        if not prop then
+            --
+        elseif what == "value" then
+            local getter = getters_two[name]
+            if getter then
+                return getter(prop,first,last,box)
+            end
+        else
+            local setter = setters_two[name]
+            if setter then
+                return setter(prop,first,last,box)
+            end
+        end
+    end
+
+    local function define_one(name,action)
+        implement {
+            name      = name,
+            public    = true,
+            protected = true,
+            value     = true,
+            actions   = function(what) return boxline(action,what) end,
+        }
+    end
+
+    local function define_two(name,action)
+        implement {
+            name      = name,
+            public    = true,
+            protected = true,
+            value     = true,
+            actions   = function(what) return boxrange(action,what) end,
+        }
+    end
+
     implement {
-        name    = "boxlines", public = true, protected = true, value = true,
-        actions = boxlinecount,
+        name      = "boxlines",
+        public    = true,
+        protected = true,
+        value     = true,
+        actions   = boxlinecount,
     }
-    implement {
-        name    = "boxline", public = true, protected = true, value = true,
-        actions = function(what) return boxline("get",what) end,
-    }
-    implement {
-        name    = "setboxline", public = true, protected = true, value = true,
-        actions = function(what) return boxline("set",what) end,
-    }
-    implement {
-        name    = "copyboxline", public = true, protected = true, value = true,
-        actions = function(what) return boxline("copy",what) end,
-    }
-    implement {
-        name    = "boxlineht", public = true, protected = true, value = true,
-        actions = function(what) return boxline("ht",what) end,
-    }
-    implement {
-        name    = "boxlinedp", public = true, protected = true, value = true,
-        actions = function(what) return boxline("dp",what) end,
-    }
-    implement {
-        name    = "boxlinewd", public = true, protected = true, value = true,
-        actions = function(what) return boxline("wd",what) end,
-    }
-    implement {
-        name    = "boxlinels", public = true, protected = true, value = true,
-        actions = function(what) return boxline("ls",what) end,
-    }
-    implement {
-        name    = "boxliners", public = true, protected = true, value = true,
-        actions = function(what) return boxline("rs",what) end,
-    }
-    implement {
-        name    = "boxlinelh", public = true, protected = true, value = true,
-        actions = function(what) return boxline("lh",what) end,
-    }
-    implement {
-        name    = "boxlinerh", public = true, protected = true, value = true,
-        actions = function(what) return boxline("rh",what) end,
-    }
-    implement {
-        name    = "boxlinelp", public = true, protected = true, value = true,
-        actions = function(what) return boxline("lp",what) end,
-    }
-    implement {
-        name    = "boxlinerp", public = true, protected = true, value = true,
-        actions = function(what) return boxline("rp",what) end,
-    }
-    implement {
-        name    = "boxlinein", public = true, protected = true, value = true,
-        actions = function(what) return boxline("in",what) end,
-    }
+
+    define_one("boxline",     "get")
+    define_one("setboxline",  "set")
+    define_one("copyboxline", "copy")
+    define_one("boxlineht",   "ht")
+    define_one("boxlinedp",   "dp")
+    define_one("boxlinewd",   "wd")
+    define_one("boxlinels",   "ls")
+    define_one("boxliners",   "rs")
+    define_one("boxlinelh",   "lh")
+    define_one("boxlinerh",   "rh")
+    define_one("boxlinelp",   "lp")
+    define_one("boxlinerp",   "rp")
+    define_one("boxlinein",   "in")
+    define_one("boxlinenw",   "nw")
+    define_one("boxlinenh",   "nh")
+    define_one("boxlinend",   "nd")
+
+    define_two("boxrangewd",  "wd")
+    define_two("boxrangeht",  "ht")
+    define_two("boxrangedp",  "dp")
 
 end
