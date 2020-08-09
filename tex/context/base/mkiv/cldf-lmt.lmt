@@ -26,6 +26,7 @@ local scanboolean       = scanners.boolean
 local scandimen         = scanners.dimen
 local scanfloat         = scanners.float
 local scaninteger       = scanners.integer
+local scancardinal      = scanners.cardinal
 local scannumber        = scanners.luanumber
 local scanluainteger    = scanners.luainteger
 local scanluacardinal   = scanners.luacardinal
@@ -33,6 +34,7 @@ local scanluanumber     = scanners.luanumber
 local scanargument      = scanners.argument
 local scantoken         = scanners.token
 local scancsname        = scanners.csname
+local scankeyword       = scanners.keyword
 
 local getindex          = token.get_index
 
@@ -719,3 +721,119 @@ implement {
 
 context.hashedtables  = setmetatableindex(function(t,k) return tables[k] end)
 context.indexedtables = context.hashedtables
+
+-- I played with adding bitwise operator to the expr scanners but in the end didn't
+-- keep the code ... the problem is in what symbols ... so for now a more verbose
+-- and/or/xor is okay. Extending the expression scanner would add a little overhead
+-- to all expressions while an logical operator would gain less that 50% so for now
+-- we don't bother. Providing \ifbitwiseand makes sense for performance reasons as
+-- if a bit beter than testing the bitwise and with an \ifcase.
+
+local reporterror = logs.reporterror
+
+local function youcant(cmd)
+    reporterror("you can't use \\%s this way, it's an integer value", cmd)
+end
+
+implement {
+    name    = "bitwiseset",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        if what == "value" then
+            return cardinal_code, a
+        else
+            youcant("bitwiseset")
+        end
+    end
+}
+
+implement {
+    name    = "bitwiseand",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        scankeyword("with")
+        local b = scancardinal()
+        if what == "value" then
+            return cardinal_code, a & b
+        else
+            youcant("bitwiseand")
+        end
+    end
+}
+
+implement {
+    name    = "bitwiseor",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        scankeyword("with")
+        local b = scancardinal()
+        if what == "value" then
+            return cardinal_code, a | b
+        else
+            youcant("bitwiseor")
+        end
+    end
+}
+
+implement {
+    name    = "bitwisexor",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        scankeyword("with")
+        local b = scancardinal()
+        if what == "value" then
+            return cardinal_code, a ~ b
+        else
+            youcant("bitwisexor")
+        end
+    end
+}
+
+implement {
+    name    = "bitwisenot",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        if what == "value" then
+            return cardinal_code, ~ a
+        else
+            youcant("bitwisenot")
+        end
+    end
+}
+
+implement {
+    name    = "bitwisenil",
+    public  = true,
+    value   = true,
+    actions = function(what)
+        local a = scancardinal()
+        scankeyword("with")
+        local b = scancardinal()
+        if what == "value" then
+            return cardinal_code, a & (~ b)
+        else
+            youcant("bitwisenil")
+        end
+    end
+}
+
+implement {
+    name      = "ifbitwiseand",
+    public    = true,
+    condition = true,
+    actions   = function(what)
+        local a = scancardinal()
+        local b = scancardinal()
+        return boolean_code, (a & b) ~= 0
+    end
+}

@@ -1154,3 +1154,16 @@ if tex then
     end
 
 end
+
+-- for now ... maybe directly but now we get the context too
+
+if tex.error then
+
+    local texerror   = tex.error
+    local formatters = string.formatters
+
+    function logs.reporterror(fmt,first,...)
+        texerror(first and formatters[fmt](first,...) or fmt)
+    end
+
+end

@@ -383,6 +383,7 @@
 
 \startsetups[\??simplelistrenderings::\v!text]
     \begingroup
+    \usehyphensparameter\simplelistparameter
     \usesimpleliststyleandcolor\c!textstyle\c!textcolor
     \simplelistparameter\c!textcommand{\currentsynonymmeaning}%
     \endgroup
@@ -663,7 +664,8 @@
 
 \setupsynonyms
   [\v!abbreviation]
-  [\c!textstyle=\v!capital]
+  [\c!hyphens=\v!no, % new, not yet in setup definitions
+   \c!textstyle=\v!capital]
 
 \definesorting
   [\v!logo]

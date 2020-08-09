@@ -77,7 +77,7 @@ function interfaces.implement(specification)
     if knownscanner(name) and not specification.overload then
         report("warning: interface scanner %a is overloaded",name)
     end
-    register(name,scanner,specification.protected,specification.public,specification.value)
+    register(name,scanner,specification.protected,specification.public,specification.value,specification.condition)
     if private then
         return
     end

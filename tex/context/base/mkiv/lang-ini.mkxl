@@ -409,6 +409,46 @@
 \newcount\hyphenstate
 \newcount\hyphenminoffset
 
+% This is the old implementation: a hack that sets the min values, because we want
+% to keep the language set:
+%
+% \unexpanded\def\nohyphens % nicer for url's
+%   {\ifx\dohyphens\relax
+%      \unexpanded\edef\dohyphens
+%        {\hyphenminoffset\the\hyphenminoffset\relax
+%         \lang_basics_synchronize_min_max}%
+%    \fi
+%    \hyphenminoffset\plusthousand
+%    \lang_basics_synchronize_min_max}
+%
+% \let\dohyphens\relax
+
+% But this one is nicer because we do keep the language set as well as don't mess
+% with the min values (it's more efficient too). We might get some more bits in
+% this mode (engine specific).
+%
+% \let \hyphenationenabledcode   \plusone
+% \let \hyphenationuppercasecode \plustwo
+%
+% \protected\def\dohyphens
+%   {\hyphenationmode \numexpr
+%      \hyphenationenabledcode
+%     +\hyphenationuppercasecode
+%    \relax}
+
+\unexpanded\def\dohyphens{\hyphenationmode\plusthree}
+\unexpanded\def\nohyphens{\hyphenationmode\zerocount}
+
+\unexpanded\def\usehyphensparameter#1%
+  {\edef\p_hyphens{#1\c!hyphens}%
+   \ifx\p_hyhens\v!no
+     \nohyphens
+   \fi}
+
+\dohyphens
+
+%D The rest stays the same as in mkiv:
+
 \unexpanded\def\lesshyphens
   {\advance\hyphenminoffset\plusone
    \lang_basics_synchronize_min_max}
@@ -418,17 +458,6 @@
      \advance\hyphenminoffset\minusone
    \fi
    \lang_basics_synchronize_min_max}
-
-\unexpanded\def\nohyphens % nicer for url's
-  {\ifx\dohyphens\relax
-     \unexpanded\edef\dohyphens
-       {\hyphenminoffset\the\hyphenminoffset\relax
-        \lang_basics_synchronize_min_max}%
-   \fi
-   \hyphenminoffset\plusthousand
-   \lang_basics_synchronize_min_max}
-
-\let\dohyphens\relax
 
 \unexpanded\def\lang_basics_synchronize_min_max % maybe store this at the lua end
   {% these values are stored along with glyph nodes

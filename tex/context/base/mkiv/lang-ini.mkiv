@@ -430,6 +430,12 @@
 
 \let\dohyphens\relax
 
+\unexpanded\def\usehyphensparameter#1%
+  {\edef\p_hyphens{#1\c!hyphens}%
+   \ifx\p_hyhens\v!no
+     \nohyphens
+   \fi}
+
 \unexpanded\def\lang_basics_synchronize_min_max % maybe store this at the lua end
   {% these values are stored along with glyph nodes
    \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax

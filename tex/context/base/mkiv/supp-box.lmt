@@ -257,42 +257,54 @@ local function processsplit(specification)
     local command = specification.command or "ruledhbox"
     local method  = specification.method  or "word"
     local spaced  = specification.spaced
+    if command then
+        command = context[command]
+    end
     if method == "char" or method == "character" then
+        if spaced then
+            spaced = context.space
+        end
         local words = lpegmatch(split_char,str)
         for i=1,#words do
             local word = words[i]
             if word == " " then
                 if spaced then
-                    context.space()
+                    spaced()
                 end
             elseif command then
-                context[command](word)
+                command(word)
             else
                 context(word)
             end
         end
     elseif method == "word" then
+        if spaced then
+            spaced = context.space
+        end
         local words = lpegmatch(split_word,str)
         for i=1,#words do
             local word = words[i]
             if spaced and i > 1 then
-                context.space()
+                spaced()
             end
             if command then
-                context[command](word)
+                command(word)
             else
                 context(word)
             end
         end
     elseif method == "line" then
+        if spaced then
+            spaced = context.par
+        end
         local words = lpegmatch(split_line,str)
         for i=1,#words do
             local word = words[i]
             if spaced and i > 1 then
-                context.par()
+                spaced()
             end
             if command then
-                context[command](word)
+                command(word)
             else
                 context(word)
             end
@@ -1112,7 +1124,6 @@ do
         return { width = w, height = h, depth = d }
     end
 
-
     local getters_one = {
 
         ["wd"]  = function(p,l,found) return dimension_value, p.width end,
@@ -1188,7 +1199,7 @@ do
         implement {
             name      = name,
             public    = true,
-            protected = true,
+         -- protected = true,
             value     = true,
             actions   = function(what) return boxline(action,what) end,
         }
@@ -1198,7 +1209,7 @@ do
         implement {
             name      = name,
             public    = true,
-            protected = true,
+         -- protected = true,
             value     = true,
             actions   = function(what) return boxrange(action,what) end,
         }
@@ -1207,7 +1218,7 @@ do
     implement {
         name      = "boxlines",
         public    = true,
-        protected = true,
+     -- protected = true,
         value     = true,
         actions   = boxlinecount,
     }

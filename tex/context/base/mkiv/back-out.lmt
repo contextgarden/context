@@ -14,11 +14,11 @@ local context             = context
 -- tokens.scanners.....
 
 local get                 = token.get_index
-local scaninteger         = token.scan_int
-local scanstring          = token.scan_string
-local scankeyword         = token.scan_keyword
-local scantokenlist       = token.scan_tokenlist
------ scancode            = token.scan_code
+local scanners            = tokens.scanners
+local scaninteger         = scanners.integer
+local scanstring          = scanners.string
+local scankeyword         = scanners.keyword
+local scantokenlist       = scanners.tokenlist
 
 local tokentostring       = token.to_string
 

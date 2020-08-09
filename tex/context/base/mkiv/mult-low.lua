@@ -509,5 +509,8 @@ return {
         "boxlinels", "boxliners", "boxlinelh", "boxlinerh",
         "boxlinelp", "boxlinerp", "boxlinein",
         "boxrangewd", "boxrangeht", "boxrangedp",
+        --
+        "bitwiseset", "bitwiseand", "bitwiseor", "bitwisexor", "bitwisenot", "bitwisenil",
+        "ifbitwiseand",
     }
 }
