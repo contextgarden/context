@@ -640,6 +640,7 @@
 		<cd:constant name='afterkey' value='بعدازکلید'/>
 		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='تنظیم'/>
+		<cd:constant name='alignbottom' value='alignbottom'/>
 		<cd:constant name='aligncharacter' value='حرف‌تنظیم'/>
 		<cd:constant name='alignmentcharacter' value='حرف‌تنظیم‌کردن'/>
 		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
@@ -959,6 +960,7 @@
 		<cd:constant name='limittext' value='مرزمتن'/>
 		<cd:constant name='line' value='خط'/>
 		<cd:constant name='linecorrection' value='تصحیح‌خط'/>
+		<cd:constant name='linedirection' value='linedirection'/>
 		<cd:constant name='lines' value='خطها'/>
 		<cd:constant name='list' value='لیست'/>
 		<cd:constant name='listtext' value='متن‌لیست'/>

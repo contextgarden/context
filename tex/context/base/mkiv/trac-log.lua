@@ -1031,14 +1031,14 @@ if utilities then
     utilities.report = report_system
 end
 
-if tex and tex.error then
+do
+    local texerror   = tex and tex.error or print
+    local formatters = string.formatters
+
     function logs.texerrormessage(...) -- for the moment we put this function here
-        tex.error(format(...))
+        texerror(first and formatters[fmt](first,...) or fmt)
     end
-else
-    function logs.texerrormessage(...)
-        print(format(...))
-    end
+
 end
 
 -- this is somewhat slower but prevents out-of-order messages when print is mixed
@@ -1151,19 +1151,6 @@ if tex then
             end
             return next(possiblefatal) and sortedkeys(possiblefatal) or false
         end
-    end
-
-end
-
--- for now ... maybe directly but now we get the context too
-
-if tex.error then
-
-    local texerror   = tex.error
-    local formatters = string.formatters
-
-    function logs.reporterror(fmt,first,...)
-        texerror(first and formatters[fmt](first,...) or fmt)
     end
 
 end

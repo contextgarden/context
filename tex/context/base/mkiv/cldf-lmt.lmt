@@ -729,7 +729,7 @@ context.indexedtables = context.hashedtables
 -- we don't bother. Providing \ifbitwiseand makes sense for performance reasons as
 -- if a bit beter than testing the bitwise and with an \ifcase.
 
-local reporterror = logs.reporterror
+local reporterror = logs.texerrormessage
 
 local function youcant(cmd)
     reporterror("you can't use \\%s this way, it's an integer value", cmd)

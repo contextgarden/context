@@ -978,9 +978,7 @@ do
 
     -- todo: make helper that formats
 
-    local function reporterror(fmt,...)
-        tex.error(string.formatters[fmt](...))
-    end
+    local reporterror = logs.texerrormessage
 
     -- The first variant did a linear lookup but for large boxes and lots of
     -- analysis that is not nice. Okay, in practice performance is quite ok
