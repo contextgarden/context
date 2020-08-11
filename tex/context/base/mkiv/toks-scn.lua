@@ -478,7 +478,7 @@ function tokens.compile(specification)
             return scanners[ti]
         end
     elseif #t == 0 then
-        if specification.value then
+        if specification.usage == "value" then
             code = "b"
             args = "_,b"
         else

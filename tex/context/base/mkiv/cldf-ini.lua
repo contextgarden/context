@@ -375,17 +375,14 @@ interfaces.storedscanners = storedscanners
 
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
-local function registerscanner(name,action,protected,public,value,condition) -- todo: combine value and condition
+local function registerscanner(name,action,protected,public,usage) -- todo: combine value and condition
     rawset(interfacescanners,name,action)
     local n = storedscanners[name]
     n = registerfunction("interfaces.scanners."..name,true,n)
     storedscanners[name] = n
     name = public and name or (privatenamespace .. name)
-    setluatoken(name,n,"global", -- always
-        protected and "protected" or "",
-        value     and "value"     or "",
-        condition and "condition" or ""
-    )
+ -- print(">>",name,protected and "protected" or "",usage or "macro")
+    setluatoken(name,n,"global",protected and "protected" or "",usage or "macro")
 end
 
 interfaces.registerscanner = registerscanner

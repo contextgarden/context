@@ -46,7 +46,7 @@
      \meta_process_graphic{lmt_#2;}%
      \clf_lmt_parameters_reset{#2}%
      \meta_end_graphic_group
-   \else\ifsecondargument
+   \orelse\ifsecondargument
      \doifelseassignment{#2}
        {\let\currentMPinstance\defaultMPinstance
         \meta_enable_include
@@ -61,6 +61,6 @@
      \let\currentMPinstance\defaultMPinstance
      \meta_enable_include
      \meta_process_graphic{lmt_#1;}%
-   \fi\fi}
+   \fi}
 
 \protect

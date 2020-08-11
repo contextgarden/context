@@ -1035,7 +1035,7 @@ do
     local texerror   = tex and tex.error or print
     local formatters = string.formatters
 
-    function logs.texerrormessage(...) -- for the moment we put this function here
+    function logs.texerrormessage(fmt,first,...) -- for the moment we put this function here
         texerror(first and formatters[fmt](first,...) or fmt)
     end
 

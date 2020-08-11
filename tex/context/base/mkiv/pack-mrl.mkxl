@@ -52,18 +52,18 @@
    \edef\p_depth {\directblackrulesparameter\c!depth }%
    \ifx\p_height\v!max
      \setstrut
-   \else\ifx\p_depth\v!max
+   \orelse\ifx\p_depth\v!max
      \setstrut
-   \fi\fi
+   \fi
    \useblackrulesstyleandcolor\c!style\c!color
    \ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
      \lastnamedcs
    \else
      \vrule
    \fi
-   \ifx\p_width \v!max\s!width \emwidth\else\ifx\p_width \empty\else\s!width \p_width \fi\fi
-   \ifx\p_height\v!max\s!height\strutht\else\ifx\p_height\empty\else\s!height\p_height\fi\fi
-   \ifx\p_depth \v!max\s!depth \strutdp\else\ifx\p_depth \empty\else\s!depth \p_depth \fi\fi
+   \ifx\p_width \v!max\s!width \emwidth\orelse\ifx\p_width \empty\else\s!width \p_width \fi
+   \ifx\p_height\v!max\s!height\strutht\orelse\ifx\p_height\empty\else\s!height\p_height\fi
+   \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifx\p_depth \empty\else\s!depth \p_depth \fi
    \egroup}
 
 \setupblackrules
@@ -283,11 +283,11 @@
    \linewidth\dimexpr\directthinrulesparameter\c!rulethickness/\plustwo\relax
    \ifzeropt\linewidth
      \c_pack_thinrules_type\zerocount
-   \else\ifx\p_frame\v!on
+   \orelse\ifx\p_frame\v!on
      \c_pack_thinrules_type\expandnamespaceparameter\??thinrulealternatives\directthinrulesparameter\c!alternative\v!b\relax
    \else
      \c_pack_thinrules_type\zerocount
-   \fi\fi
+   \fi
    \ifnum\c_pack_thinrules_type=\plusone
      \ifx\p_height\v!max
        \scratchheight\strutht
@@ -755,11 +755,11 @@
      \ifx\p_width\v!fit
        \scratchdistance\zeropoint
        \hbox
-     \else\ifx\p_width\v!broad
+     \orelse\ifx\p_width\v!broad
        \hbox
      \else
        \hbox to \directfillinrulesparameter\c!width
-     \fi\fi
+     \fi
      \bgroup
        \usefillinrulesstyleandcolor\c!style\c!color
        \strut

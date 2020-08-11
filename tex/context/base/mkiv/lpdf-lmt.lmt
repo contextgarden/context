@@ -2216,6 +2216,7 @@ local openfile, closefile  do
 
     local inmemory = false
     local close    = false
+    local update   = false
 
  -- local removefile = os.remove
 
@@ -2225,12 +2226,15 @@ local openfile, closefile  do
             f = { }
             flush = function(f,s)
                 n = n + 1 f[n] = s
-offset = offset + #s
+             -- offset = offset + #s
             end
             close = function(f)
                 f = concat(f)
                 io.savedata(filename,f)
                 f = false
+            end
+            update = function(f,s)
+                f[1] = s
             end
          -- local n = 0
          -- f = {
@@ -2253,8 +2257,11 @@ offset = offset + #s
             local m = getmetatable(f)
             flush = m.write or m.__index.write
             close = m.close or m.__index.close
+            update = function(f,s)
+                f:seek("set",0)
+                f:write(s)
+            end
         end
-        --
         local v = f_pdf(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
@@ -2265,7 +2272,7 @@ offset = offset + #s
 
     closefile = function(abort)
         if abort then
-            f:close()
+            close(f)
             if not environment.arguments.nodummy then
                 f = io.open(abort,"wb")
                 if f then
@@ -2464,7 +2471,8 @@ offset = offset + #s
                     flush(f,f_trailer_no(trailer(),xrefoffset))
                 end
             end
-            f:close()
+            update(f,f_pdf(majorversion,minorversion))
+            close(f)
         end
         io.flush()
         closefile = function() end

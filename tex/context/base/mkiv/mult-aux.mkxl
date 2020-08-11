@@ -853,14 +853,14 @@
 %       \ifsecondargument
 %         \edef#2{##1}%
 %         #3[##2]%
-%       \else\iffirstargument
+%       \orelse\iffirstargument
 %         \doifelseassignment{##1}
 %           {\let#2\empty
 %            #3[##1]}%
 %           {\edef#2{##1}}%
 %       \else
 %         \let#2\empty
-%       \fi\fi
+%       \fi
 %       \directsetup{handler:action:#1}%
 %       \endgroup}}
 
@@ -922,7 +922,7 @@
 %def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces>}
 
 %def\v_interfaces_prefix_template % consistently %03i>
-% {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\else\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi\fi
+% {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\orelse\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi
 %  \number\c_mult_interfaces_n_of_namespaces>}
 
 \def\v_interfaces_prefix_template

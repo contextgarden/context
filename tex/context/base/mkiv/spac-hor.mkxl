@@ -120,22 +120,22 @@
 % \def\spac_indentation_apply_step_one#1%
 %   {\ifcsname\??indentingpreset#1\endcsname
 %      \spac_indentation_apply_step_one_nested{#1}%
-%    \else\ifcsname\??indentingmethod#1\endcsname
+%    \orelse\ifcsname\??indentingmethod#1\endcsname
 %      % case two
 %    \else
 %      \edef\v_spac_indentation_current{#1}% single entry in list
 %      \let\normalindentation\v_spac_indentation_current
 %      \spac_indentation_setup_size
-%    \fi\fi}
+%    \fi}
 %
 % \def\spac_indentation_apply_step_two#1%
 %   {\ifcsname\??indentingpreset#1\endcsname
 %      \spac_indentation_apply_step_two_nested{#1}%
-%    \else\ifcsname\??indentingmethod#1\endcsname
+%    \orelse\ifcsname\??indentingmethod#1\endcsname
 %      \lastnamedcs
 %    \else
 %      % case one
-%    \fi\fi}
+%    \fi}
 
 \def\spac_indentation_apply_step_one_nested
   {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_one}
@@ -146,22 +146,22 @@
 \def\spac_indentation_apply_step_one#1%
   {\ifcsname\??indentingpreset#1\endcsname
      \spac_indentation_apply_step_one_nested
-   \else\ifcsname\??indentingmethod#1\endcsname
+   \orelse\ifcsname\??indentingmethod#1\endcsname
      % case two
    \else
      \edef\v_spac_indentation_current{#1}% single entry in list
      \let\normalindentation\v_spac_indentation_current
      \spac_indentation_setup_size
-   \fi\fi}
+   \fi}
 
 \def\spac_indentation_apply_step_two#1%
   {\ifcsname\??indentingpreset#1\endcsname
      \spac_indentation_apply_step_two_nested
-   \else\ifcsname\??indentingmethod#1\endcsname
+   \orelse\ifcsname\??indentingmethod#1\endcsname
      \lastnamedcs
    \else
      % case one
-   \fi\fi}
+   \fi}
 
 \unexpanded\def\indenting % kind of obsolete
   {\doifelsenextoptionalcs\spac_indentation_setup_options\relax}
@@ -1045,11 +1045,11 @@
      \hskip % always a skip even when 0pt
        \ifsecondargument
          \hspaceamount{#1}{#2}%
-       \else\iffirstargument
+       \orelse\iffirstargument
          \hspaceamount\empty{#1}%
        \else
          \hspaceamount\empty\s!default
-       \fi\fi
+       \fi
      \expandafter\ignorespaces
    \fi}
 
@@ -1271,12 +1271,12 @@
 \def\spac_ignore_spaces_body
   {\ifzeropt\lastskip
      \exitloop
-   \else\ifdim\lastskip=\s_spac_ignore_spaces
+   \orelse\ifdim\lastskip=\s_spac_ignore_spaces
      \unskip
      \exitloop
    \else
      \unskip
-   \fi\fi}
+   \fi}
 
 %D \macros
 %D   {obeyfollowingtoken}

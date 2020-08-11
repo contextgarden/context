@@ -1195,15 +1195,10 @@
 \setvalue{\??colorattribute        currentcolor}{\the\c_attr_color}        % for mpcolor
 \setvalue{\??transparencyattribute currentcolor}{\the\c_attr_transparency} % for mpcolor
 
-%def\colo_helpers_inherited_current_ca#1{\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
-%def\colo_helpers_inherited_current_cs#1{\csname\??colorsetter          \ifcsname\??colorsetter          \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorsetter          #1\endcsname#1\fi\fi\endcsname}
-%def\colo_helpers_inherited_current_ta#1{\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}
-%def\colo_helpers_inherited_current_ts#1{\csname\??transparencysetter   \ifcsname\??transparencysetter   \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencysetter   #1\endcsname#1\fi\fi\endcsname}
-
-\def\colo_helpers_inherited_current_ca#1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi\fi}
-\def\colo_helpers_inherited_current_cs#1{\ifcsname\??colorsetter          \currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\else\fi\fi}
-\def\colo_helpers_inherited_current_ta#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi\fi}
-\def\colo_helpers_inherited_current_ts#1{\ifcsname\??transparencysetter   \currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\else\fi\fi}
+\def\colo_helpers_inherited_current_ca#1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_current_cs#1{\ifcsname\??colorsetter          \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
+\def\colo_helpers_inherited_current_ta#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_current_ts#1{\ifcsname\??transparencysetter   \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
 
 %D Low level defs:
 
@@ -1271,9 +1266,6 @@
      \colo_helpers_inherited_current_ta{#1} }
 
 \def\thecolormodelattribute    {\the\c_attr_colormodel}
-
-%def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
-%def\thetransparencyattribute#1{\number\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}
 
 \def\rawcolorattribute       #1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
 \def\rawtransparencyattribute#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}

@@ -132,11 +132,11 @@
 %      \par
 %      \ifhmode
 %         % \removeunwantedspaces
-%      \else\ifdim\prevdepth<\zeropoint % =-1000pt ?
+%      \orelse\ifdim\prevdepth<\zeropoint % =-1000pt ?
 %        \vskip-\strutdp
 %      \else
 %        \removebottomthings
-%      \fi\fi
+%      \fi
 %    \fi}
 
 \newcount\c_tabl_ntb_row

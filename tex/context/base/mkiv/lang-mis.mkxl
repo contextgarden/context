@@ -213,11 +213,11 @@
    \csname\??discretionarymode
      \ifcase\discretionarymode
        n%
-     \else\ifmmode
+     \orelse\ifmmode
        m%
      \else
        t%
-     \fi\fi
+     \fi
    \endcsname}
 
 \setvalue{\??discretionarymode n}#1%
@@ -387,13 +387,13 @@
   {\ifconditional\spaceafterdiscretionary
      %prewordbreak\hbox{#1}\relax
      \wordboundary\hbox{#1}\relax
-   \else\ifconditional\punctafterdiscretionary
+   \orelse\ifconditional\punctafterdiscretionary
      %prewordbreak\hbox{#1}\relax
      \wordboundary\hbox{#1}\relax
    \else
     %\prewordbreak#2\postwordbreak % was prewordbreak
      \wordboundary#2\wordboundary
-   \fi\fi}
+   \fi}
 
 \definetextmodediscretionary {}
   {\lang_discretionaries_hyphen_like\textmodehyphen\textmodehyphendiscretionary}

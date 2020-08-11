@@ -914,12 +914,12 @@
      \letitemgroupparameter\c!inbetween\empty
    \fi
    \ifconditional\c_strc_itemgroups_columns
-     \ifinsidecolumns\else\ifcase\c_strc_itemgroups_column_depth
+     \ifinsidecolumns\orelse\ifcase\c_strc_itemgroups_column_depth
        \global\c_strc_itemgroups_column_depth\c_strc_itemgroups_nesting % global ?
        \strc_itemgroups_before_command
        \strc_itemgroups_tag_start_group
        \strc_itemgroups_start_columns
-     \fi\fi
+     \fi
    \fi
    \ifconditional\c_strc_itemgroups_fitting
      \ifdim\d_strc_itemgroups_max_width>\zeropoint
@@ -1494,9 +1494,9 @@
    \strc_itemgroups_make_destination_box
    \ifconditional\c_strc_itemgroups_fitting
      \strc_itemgroups_make_fitting_box
-   \else\ifdim\d_strc_itemgroups_asked_width>\zeropoint
+   \orelse\ifdim\d_strc_itemgroups_asked_width>\zeropoint
      \strc_itemgroups_make_aligned_box
-   \fi\fi
+   \fi
    \let\m_strc_itemgroups_destination\empty
    \ht\b_strc_itemgroups\strutheight % just in case a symbols is not yet available in
    \dp\b_strc_itemgroups\strutdepth  % the current run (more a mkii mp side artifact)

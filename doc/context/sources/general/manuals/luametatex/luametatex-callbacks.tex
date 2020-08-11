@@ -110,20 +110,22 @@ with the file.
 private per|-|file data. Both the callback functions will receive the table as
 their only argument.
 
-\subsection{\cbk {if_end_of_file}}
-
-\topicindex{callbacks+checking files}
-
-This callback has no arguments and your function should return true or false. The
-callback is triggered by \type {\ifeof}. It's up to the macro package to come up
-with a reasonable implementation. By default the test is always true.
-
-\startfunctioncall
-<boolean> eof =
-    function ()
-\stopfunctioncall
-
-\stopsection
+% No longer needed anyway.
+%
+% \subsection{\cbk {if_end_of_file}}
+%
+% \topicindex{callbacks+checking files}
+%
+% This callback has no arguments and your function should return true or false. The
+% callback is triggered by \type {\ifeof}. It's up to the macro package to come up
+% with a reasonable implementation. By default the test is always true.
+%
+% \startfunctioncall
+% <boolean> eof =
+%     function ()
+% \stopfunctioncall
+%
+% \stopsection
 
 \startsection[title={Data processing callbacks}][library=callback]
 

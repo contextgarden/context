@@ -2075,22 +2075,22 @@
   {\currentxfontsize\plusone
    \ifmmode
      \scriptstyle
-   \else\ifconditional\c_font_inherit_scale
+   \orelse\ifconditional\c_font_inherit_scale
      \font_scale_inherit_x
    \else
      \font_scale_defined_x
-   \fi\fi
+   \fi
    \let\tx\txx}
 
 \unexpanded\def\txx
   {\currentxfontsize\plustwo
    \ifmmode
      \scriptscriptstyle
-   \else\ifconditional\c_font_inherit_scale
+   \orelse\ifconditional\c_font_inherit_scale
      \font_scale_inherit_xx
    \else
      \font_scale_defined_xx
-   \fi\fi
+   \fi
    \let\tx \empty
    \let\txx\empty}
 

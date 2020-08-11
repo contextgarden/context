@@ -58,6 +58,7 @@
 
 \unexpanded\def\pdfextension{\clf_pdfextension}
            \def\pdffeedback {\clf_pdffeedback}
+           \def\pdfvariable {\clf_pdfvariable}
 
 %D For the moment we keep this for tikz but hopefully it will at some point use
 %D the proper ones. Consider them obsolete:

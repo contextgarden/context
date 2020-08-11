@@ -587,13 +587,13 @@
 \def\meta_prepare_variable_yes
   {\ifchkdim\m_meta_current_variable\or
      \meta_prepare_variable_dimension
-   \else\ifchknum\m_meta_current_variable\or
+   \orelse\ifchknum\m_meta_current_variable\or
      \meta_prepare_variable_number
    \else
       \doifelsecolor\m_meta_current_variable
         \meta_prepare_variable_color
         \meta_prepare_variable_dimension
-   \fi\fi}
+   \fi}
 
 \let\MPvar         \MPvariable
 \let\setMPvariables\setupMPvariables

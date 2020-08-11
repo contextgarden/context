@@ -325,11 +325,11 @@
 \def\syst_basics_allocate#1#2#3#4#5% last class method max name
   {\ifx#5\undefined
      \expandafter\syst_basics_allocate_yes
-   \else\ifx#5\relax
-     \expandafter\expandafter\expandafter\syst_basics_allocate_yes
+   \orelse\ifx#5\relax
+     \expandafter\syst_basics_allocate_yes
    \else
-     \expandafter\expandafter\expandafter\syst_basics_allocate_nop
-   \fi\fi
+     \expandafter\syst_basics_allocate_nop
+   \fi
    #1#2#3#4#5}
 
 %D Since the number of chars exceed 256 now, we can use \type {\chardef} instead of

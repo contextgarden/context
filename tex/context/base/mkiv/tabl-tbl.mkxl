@@ -780,7 +780,7 @@
 
 % \def\tabl_tabulate_set_color_span#1#2%
 %   {\xdef\m_tabl_tabulate_color{#2}%
-%    \global\c_tabl_tabulate_colorspan\if#1L\plusone\else\if#1M\plustwo\else\if#1R\plusthree\else\zerocount\fi\fi\fi\relax
+%    \global\c_tabl_tabulate_colorspan\if#1L\plusone\orelse\if#1M\plustwo\orelse\if#1R\plusthree\else\zerocount\fi\relax
 %    \tabl_tabulate_set_preamble}
 
 \installcorenamespace{tabulatecolorspec}
@@ -2188,9 +2188,9 @@
 %     %\ifcase#1\or % todo: check what this does
 %        \ifnum\noftabulatelines=\zerocount
 %          \glet\dotabulateautoline\donothing
-%        \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%        \orelse\ifnum\noftabulatelines=\totalnoftabulatelines
 %          \glet\dotabulateautoline\donothing
-%        \fi\fi
+%        \fi
 %     %\fi
 %      \dotabulatenobreak
 %    \stoptabulatenoalign

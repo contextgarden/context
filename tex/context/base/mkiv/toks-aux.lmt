@@ -85,24 +85,32 @@ if CONTEXTLMTXMODE > 0 then
         end
     }
 
-    -- for the moment here, will move to initex only (also see node-ini.lua) :
+    -- For the moment here, will move to initex only (also see node-ini.lua); we need
+    -- to actually store these.
+
+    local groupcodes       = { }
+    local hyphenationcodes = { }
+
+    for k, v in next, tex.getgroupvalues() do
+        groupcodes[k] = gsub(v,"_","")
+    end
+    for k, v in next, tex.gethyphenationvalues() do
+        hyphenationcodes[k] = gsub(v,"_","")
+    end
 
     if environment.initex then
 
         local texchardef = tex.chardef
-        local groupcodes = { }
 
-        for k, v in next, tex.getgroupvalues() do
-            groupcodes[k] = gsub(v,"_","")
-        end
-
-        groupcodes     = utilities.storage.allocate(table.swapped(groupcodes,groupcodes))
-        tex.groupcodes = groupcodes
-
-        for i=0,#groupcodes do
-            texchardef(groupcodes[i] .. "groupcode",i)
-        end
+        for k, v in next, groupcodes       do texchardef(v .. "groupcode",          k) end
+        for k, v in next, hyphenationcodes do texchardef(v .. "hyphenationmodecode",k) end
 
     end
+
+    groupcodes           = utilities.storage.allocate(table.swapped(groupcodes,      groupcodes))
+    hyphenationcodes     = utilities.storage.allocate(table.swapped(hyphenationcodes,hyphenationcodescodes))
+
+    tex.groupcodes       = groupcodes
+    tex.hyphenationcodes = hyphenationcodes
 
 end

@@ -6,29 +6,90 @@ if not modules then modules = { } end modules ['core-lmt'] = {
     license   = "see context related readme files"
 }
 
+-- Kind of obsolete ... old school directions.
+
 local implement   = interfaces.implement
 local scankeyword = tokens.scanners.keyword
+local scaninteger = tokens.scanners.integer
 
-local settextdir = tex.settextdir
-local setlinedir = tex.setlinedir
-local setpardir  = tex.setpardir
-local setboxdir  = tex.setboxdir
+local settextdir  = tex.settextdir
+local setlinedir  = tex.setlinedir
+local setpardir   = tex.setpardir
+local setboxdir   = tex.setboxdir
 
-local function scandir(what)
+local gettextdir  = tex.gettextdir
+local getlinedir  = tex.getlinedir
+local getpardir   = tex.getpardir
+local getboxdir   = tex.getboxdir
+
+local none_code   = tokens.values.none
+
+local context     = context
+
+local function scandir()
     if scankeyword("tlt") then
-        what(0)
+        return 0
     elseif scankeyword("trt") then
-        what(1)
- -- elseif scankeyword("rtt") then
- --     what(2)
- -- elseif scankeyword("ltl") then
- --     what(3)
+        return 1
     else
-        what(0)
+        return 0
     end
 end
 
-implement { name = "textdir", public = true, protected = true, actions = function() scandir(settextdir) end }
-implement { name = "linedir", public = true, protected = true, actions = function() scandir(setlinedir) end }
-implement { name = "pardir",  public = true, protected = true, actions = function() scandir(setpardir)  end }
-implement { name = "boxdir",  public = true, protected = true, actions = function() scandir(setboxdir)  end }
+local function showdir(d)
+    context(d == 1 and "TRT" or "LTL")
+    return none_code
+end
+
+implement {
+    name    = "textdir",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        if what == "value" then
+            showdir(gettextdir())
+        else
+            settextdir(scandir())
+        end
+    end
+}
+
+implement {
+    name    = "linedir",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        if what == "value" then
+            return showdir(getlinedir())
+        else
+            setlinedir(scandir())
+        end
+    end
+}
+
+implement {
+    name    = "pardir",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        if what == "value" then
+            return showdir(getpardir())
+        else
+            setpardir(scandir())
+        end
+    end
+}
+
+implement {
+    name    = "boxdir",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        local n = scaninteger()
+        if what == "value" then
+            return showdir(getboxdir(n))
+        else
+            setboxdir(n,scandir())
+        end
+    end
+}

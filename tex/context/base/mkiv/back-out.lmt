@@ -242,9 +242,9 @@ function nodepool.setmatrix(rx,sx,sy,ry,tx,ty)
     return t
 end
 
-interfaces.implement { name = "openout",   actions = openout,    public = true, protected = true, value = "none" }
-interfaces.implement { name = "write",     actions = write,      public = true, protected = true, value = "none" }
-interfaces.implement { name = "closeout",  actions = closeout,   public = true, protected = true, value = "none" }
+interfaces.implement { name = "openout",   actions = openout,    public = true, usage = "value" }
+interfaces.implement { name = "write",     actions = write,      public = true, usage = "value" }
+interfaces.implement { name = "closeout",  actions = closeout,   public = true, usage = "value" }
 interfaces.implement { name = "latelua",   actions = latelua,    public = true, protected = true }
 interfaces.implement { name = "special",   actions = scanstring, public = true, protected = true }
 

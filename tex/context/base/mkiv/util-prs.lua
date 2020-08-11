@@ -373,7 +373,9 @@ hashes.settings_to_set =  table.setmetatableindex(function(t,k) -- experiment, n
     return v
 end)
 
-getmetatable(hashes.settings_to_set).__mode = "kv" -- could be an option (maybe sharing makes sense)
+-- as we use a next, we are not sure when the gc kicks in
+--
+-- getmetatable(hashes.settings_to_set).__mode = "kv" -- could be an option (maybe sharing makes sense)
 
 function parsers.simple_hash_to_string(h, separator)
     local t  = { }

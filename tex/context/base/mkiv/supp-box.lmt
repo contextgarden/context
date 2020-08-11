@@ -855,8 +855,7 @@ implement {
 implement {
     name      = "widthuptohere",
     public    = true,
-    protected = true,
-    value     = true,
+    usage     = "value",
     actions   = function()
         local n = texgetnest()
         local w = 0
@@ -1195,30 +1194,27 @@ do
 
     local function define_one(name,action)
         implement {
-            name      = name,
-            public    = true,
-         -- protected = true,
-            value     = true,
-            actions   = function(what) return boxline(action,what) end,
+            name    = name,
+            public  = true,
+            usage   = "value",
+            actions = function(what) return boxline(action,what) end,
         }
     end
 
     local function define_two(name,action)
         implement {
-            name      = name,
-            public    = true,
-         -- protected = true,
-            value     = true,
-            actions   = function(what) return boxrange(action,what) end,
+            name    = name,
+            public  = true,
+            usage   = "value",
+            actions = function(what) return boxrange(action,what) end,
         }
     end
 
     implement {
-        name      = "boxlines",
-        public    = true,
-     -- protected = true,
-        value     = true,
-        actions   = boxlinecount,
+        name    = "boxlines",
+        public  = true,
+        usage   = "value",
+        actions = boxlinecount,
     }
 
     define_one("boxline",     "get")

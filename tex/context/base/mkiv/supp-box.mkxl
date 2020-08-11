@@ -621,15 +621,15 @@
 %D   {\def\syst_boxes_with_next_box{#1}%
 %D    \ifx#2\hbox
 %D      \afterassignment\syst_boxes_with_next_box_indeed
-%D    \else\ifx#2\vbox
+%D    \orelse\ifx#2\vbox
 %D      \afterassignment\syst_boxes_with_next_box_indeed
-%D    \else\ifx#2\vtop
+%D    \orelse\ifx#2\vtop
 %D      \afterassignment\syst_boxes_with_next_box_indeed
-%D    \else\ifx#2\normalvcenter
+%D    \orelse\ifx#2\normalvcenter
 %D      \afterassignment\syst_boxes_with_next_box_indeed
 %D    \else
 %D      \afterassignment\syst_boxes_with_next_box
-%D    \fi\fi\fi\fi
+%D    \fi
 %D    \setbox\nextbox#2}
 %D \stoptyping
 %D

@@ -2743,7 +2743,7 @@
 % 0x002B=plus 0x2212=minus 0x2013=endash
 
 \unexpanded\def\mathplus     {+}
-\unexpanded\def\mathminus    {\ifmmode –\else\iffontchar\font`−−\else –\fi\fi}
+\unexpanded\def\mathminus    {\ifmmode –\orelse\iffontchar\font`−−\else –\fi}
 \unexpanded\def\mathplusminus{±}
 
 %D The \type {\displaywidth} is only known inside a display formula, so we need to catch

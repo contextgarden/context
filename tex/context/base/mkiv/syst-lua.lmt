@@ -337,8 +337,7 @@ do
     implement {
         name      = "openin",
         public    = true,
-     -- protected = true,
-        value     = true,
+        usage     = "value",
         actions   = function()
             local n = scaninteger()
                       scankeyword("=")
@@ -359,8 +358,7 @@ do
     implement {
         name      = "closein",
         public    = true,
-     -- protected = true,
-        value     = true,
+        usage     = "value",
         actions   = function()
             local n = scaninteger()
             local c = channels[n]
@@ -374,8 +372,7 @@ do
     implement {
         name      = "read",
         public    = true,
-     -- protected = true,
-        value     = true,
+        usage     = "value",
         actions   = function(prefix)
             local n = scaninteger()
                       scankeyword("to")
@@ -393,8 +390,7 @@ do
     implement {
         name      = "readline",
         public    = true,
-     -- protected = true,
-        value     = true,
+        usage     = "value",
         actions   = function(prefix)
             local n = scaninteger()
                       scankeyword("to")
@@ -409,15 +405,10 @@ do
         end,
     }
 
- -- callback.register("if_end_of_file", function(n)
- --     return not channels[n]
- -- end)
-
     implement {
         name      = "ifeof",
         public    = true,
-     -- protected = true,
-        condition = true,
+        usage     = "condition",
         actions   = function(prefix)
             local n = scaninteger()
             return tokens.values.boolean, not channels[n]

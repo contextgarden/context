@@ -195,20 +195,6 @@
 \unexpanded\def\installlanguage
   {\dodoubleargument\lang_basics_install}
 
-% \def\lang_basics_install[#1][#2]%
-%   {\doifelseassignment{#2}
-%      {\doifelselanguage{#1}
-%         {\getparameters[\??language#1][#2]}
-%         {\setvalue{\??languagelinked#1}{#1}%
-%          \lang_basics_install_indeed{#1}{#1}%
-%          \getparameters[\??language#1][\c!state=\v!start,#2]}%
-%       \edef\currentsetuplanguage{#1}%
-%       \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
-%       \the\everysetuplanguage}
-%      {\setvalue{\??languagelinked#1}{#2}%
-%       \clf_setlanguagesynonym{#1}{#2}%
-%       \lang_basics_install_indeed{#1}{#2}}}
-
 \def\lang_basics_install[#1][#2]%
   {\ifcondition\validassignment{#2}%
      \doifelselanguage{#1}
@@ -426,17 +412,20 @@
 % But this one is nicer because we do keep the language set as well as don't mess
 % with the min values (it's more efficient too). We might get some more bits in
 % this mode (engine specific).
-%
-% \let \hyphenationenabledcode   \plusone
-% \let \hyphenationuppercasecode \plustwo
-%
-% \protected\def\dohyphens
-%   {\hyphenationmode \numexpr
-%      \hyphenationenabledcode
-%     +\hyphenationuppercasecode
-%    \relax}
 
-\unexpanded\def\dohyphens{\hyphenationmode\plusthree}
+\exhyphenchar 45 % to permit breaking at explicit hyphens
+
+% \uchyph\plusone :
+
+\chardef \completehyphenationmodecode \numexpr
+    \normalhyphenationmodecode    % \discretionary
+  + \automatichyphenationmodecode % -
+  + \explicithyphenationmodecode  % \-
+  + \syllablehyphenationmodecode  % pattern driven
+  + \uppercasehyphenationmodecode % uchyph
+\relax
+
+\unexpanded\def\dohyphens{\hyphenationmode\completehyphenationmodecode}
 \unexpanded\def\nohyphens{\hyphenationmode\zerocount}
 
 \unexpanded\def\usehyphensparameter#1%
@@ -736,11 +725,6 @@
 
 \unexpanded\def\hyphenation
   {\clf_setlanguageexceptions{\currentlanguage}}
-
-%D For the moment here:
-
-\uchyph        1 % also treat uppercase
-\exhyphenchar 45 % to permit breaking at explicit hyphens
 
 %D New:
 

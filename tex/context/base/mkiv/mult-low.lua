@@ -158,6 +158,9 @@ return {
         "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
         --
         "wildcardsymbol",
+        --
+        "normalhyphenationmodecode", "automatichyphenationmodecode", "explicithyphenationmodecode",
+        "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "completehyphenationmodecode",
     },
     ["helpers"] = {
         --
@@ -369,6 +372,7 @@ return {
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "fastloopindex", "fastloopfinal", "dowith",
+        "doloopovermatch", "doloopoverlist",
         --
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
         "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
@@ -453,7 +457,7 @@ return {
         "ctxlua", "luacode", "lateluacode", "directluacode",
         "registerctxluafile", "ctxloadluafile",
         "luaversion", "luamajorversion", "luaminorversion",
-        "ctxluacode", "luaconditional", "luaexpanded",
+        "ctxluacode", "luaconditional", "luaexpanded", "ctxluamatch",
         "startluaparameterset", "stopluaparameterset", "luaparameterset",
         "definenamedlua",
         "obeylualines", "obeyluatokens",
@@ -511,6 +515,8 @@ return {
         "boxrangewd", "boxrangeht", "boxrangedp",
         --
         "bitwiseset", "bitwiseand", "bitwiseor", "bitwisexor", "bitwisenot", "bitwisenil",
-        "ifbitwiseand",
+        "ifbitwiseand", "bitwise",
+        -- old ... very low level
+        "textdir", "linedir", "pardir", "boxdir",
     }
 }

@@ -3290,6 +3290,32 @@
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
+%D This is some \LMTX\ experiment:
+%D
+%D Think of:
+%D
+%D \starttyping
+%D \domatch {(\letterpercent w+) *(\letterpercent w*)} {aa bb cc dd} {
+%D     [
+%D     \domatch{(\letterpercent w)(\letterpercent w)} {#1} {(##1 ##2)}
+%D     \domatch{(\letterpercent w)(\letterpercent w)} {#2} {(##1 ##2)}
+%D     ]
+%D }
+%D
+%D and:
+%D
+%D \stoptyping
+%D
+%D \starttyping
+%D \def\MyMacro#1{(#1)} \ctxluamatch \MyMacro {(.)} {abcd}
+%D \stoptyping
+
+\protected\def\doloopovermatch#1#2#3%
+  {\pushmacro\matchloopcommand
+   \def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+   \ctxluamatch\matchloopcommand{#1}{#2}%
+   \popmacro\matchloopcommand}
+
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
 %D
@@ -3463,7 +3489,7 @@
      \assignmentfalse
    \fi}
 
-\protected\def\validassignment  #1{\ifhastok={#1}}
+\protected\def\validassignment  #1{\ifhastok={#1}} % can become: {\ifhastok=} as we enforce {}
 \protected\def\novalidassignment#1{\ifnum\ifhastok={#1}\zerocount\else\plusone\fi=\plusone}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some speed, but in general far
@@ -5367,7 +5393,7 @@
 %D first version was:
 %D
 %D \starttyping
-%D \def\dontleavehmode{\ifhmode\else\ifmmode\else$ $\fi\fi}
+%D \def\dontleavehmode{\ifhmode\orelse\ifmmode\else$ $\fi}
 %D \stoptyping
 %D
 %D Next, Taco came with a better alternative (using mathsurround):

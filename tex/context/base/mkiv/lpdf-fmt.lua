@@ -885,8 +885,8 @@ function codeinjections.setformat(s)
             end
             local pdf_version         = spec.pdf_version * 10
             local inject_metadata     = spec.inject_metadata
-            local majorversion        = math.div(pdf_version,10)
-            local minorversion        = math.mod(pdf_version,10)
+            local majorversion        = math.floor(math.div(pdf_version,10))
+            local minorversion        = math.floor(math.mod(pdf_version,10))
             local objectcompression   = spec.object_compression and pdf_version >= 15
             local compresslevel       = level or lpdf.compresslevel() -- keep default
             local objectcompresslevel = (objectcompression and (level or lpdf.objectcompresslevel())) or 0

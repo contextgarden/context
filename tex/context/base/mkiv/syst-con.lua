@@ -30,12 +30,18 @@ function converters.octstringtonumber(n) tonumber(n, 8) end
 
 function converters.rawcharacter     (n) utfchar(0x110000+n) end
 
-local lchexnumber  = formatters["%x"]
-local uchexnumber  = formatters["%X"]
-local lchexnumbers = formatters["%02x"]
-local uchexnumbers = formatters["%02X"]
-local octnumber    = formatters["%03o"]
-local nicenumber   = formatters["%0.6F"]
+local f_lchexnumber  = formatters["%x"]
+local f_uchexnumber  = formatters["%X"]
+local f_lchexnumbers = formatters["%02x"]
+local f_uchexnumbers = formatters["%02X"]
+local f_octnumber    = formatters["%03o"]
+local   nicenumber   = formatters["%0.6F"]
+
+local lchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_lchexnumber (n) end
+local uchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_uchexnumber (n) end
+local lchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return f_lchexnumbers(n) end
+local uchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return f_uchexnumbers(n) end
+local octnumber    = function(n) if n < 0 then n = 0x100000000 + n end return f_octnumber   (n) end
 
 converters.lchexnumber  = lchexnumber
 converters.uchexnumber  = uchexnumber

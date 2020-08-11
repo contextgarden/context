@@ -7,10 +7,12 @@ if not modules then modules = { } end modules ['cldf-lmt'] = {
 }
 
 local next, load = next, load
+local gmatch, gsub, byte = string.gmatch, string.gsub, string.byte
 
 local setmetatableindex    = table.setmetatableindex
 local setmetatablenewindex = table.setmetatablenewindex
 local serialize            = table.serialize
+local concat               = table.concat
 
 local random            = math.random
 local randomseed        = math.randomseed
@@ -36,6 +38,9 @@ local scantoken         = scanners.token
 local scancsname        = scanners.csname
 local scankeyword       = scanners.keyword
 
+local peekchar          = scanners.peekchar
+local skipnext          = scanners.skip
+
 local getindex          = token.get_index
 
 local texsetdimen       = tex.setdimen
@@ -60,10 +65,10 @@ local cardinals = { }
 local numbers   = { }
 
 implement {
-    name      = "luafloat",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luafloat",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             context("%.99g",floats[n] or 0)
@@ -75,10 +80,10 @@ implement {
 }
 
 implement {
-    name      = "luainteger",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luainteger",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             context("%i",integers[n] or 0)
@@ -89,10 +94,10 @@ implement {
 }
 
 implement {
-    name      = "luacount",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luacount",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             return integer_code, integers[n] or 0
@@ -103,10 +108,10 @@ implement {
 }
 
 implement {
-    name      = "luadimen",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luadimen",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             return dimension_code, integers[n] or 0
@@ -117,10 +122,10 @@ implement {
 }
 
 implement {
-    name      = "luacardinal",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luacardinal",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             context("%1.0f",cardinals[n] or 0)
@@ -131,10 +136,10 @@ implement {
 }
 
 implement {
-    name      = "luanumber",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luanumber",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local n = scanword()
         if b == "value" then
             context("%N",floats[n] or integers[n] or cardinals[n] or 0) -- maybe %N
@@ -146,10 +151,10 @@ implement {
 }
 
 implement {
-    name      = "luarandom",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "luarandom",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         if b == "value" then
             return integer_code, random(scanluainteger(),scanluainteger())
         else
@@ -236,10 +241,10 @@ implement {
 }
 
 implement {
-    name      = "arrayvalue",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "arrayvalue",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local name = scanstring()
         if name then
             local a = arrays[name]
@@ -267,10 +272,10 @@ implement {
 }
 
 implement {
-    name      = "arrayequals",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "arrayequals",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local name = scanstring()
         if name then
             local a = arrays[name]
@@ -291,10 +296,10 @@ implement {
 }
 
 implement {
-    name      = "arraycompare",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "arraycompare",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         local name = scanstring()
         if name then
             local a = arrays[name]
@@ -382,10 +387,10 @@ implement {
 local dimenfactors = number.dimenfactors
 
 implement {
-    name      = "nodimen",
-    public    = true,
-    value     = true,
-    actions   = function(b)
+    name    = "nodimen",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
         if b == "value" then
             local how  = scanword()
             local what = scandimen()
@@ -535,7 +540,6 @@ end
 implement {
     name      = "newluatable",
     protected = true,
- -- public    = true,
     arguments = "csname",
     actions   = newluatable,
 }
@@ -543,7 +547,6 @@ implement {
 implement {
     name      = "useluatable",
     protected = true,
- -- public    = true,
     arguments = { "csname", true },
     actions   = newluatable,
 }
@@ -695,7 +698,7 @@ local function newtable(array)
         interfaces.implement {
             name    = name,
             public  = true,
-            value   = true,
+            usage   = "value",
             actions = function(b)
                 handletable(t,b,array)
             end,
@@ -738,7 +741,7 @@ end
 implement {
     name    = "bitwiseset",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         if what == "value" then
@@ -752,7 +755,7 @@ implement {
 implement {
     name    = "bitwiseand",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         scankeyword("with")
@@ -768,7 +771,7 @@ implement {
 implement {
     name    = "bitwiseor",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         scankeyword("with")
@@ -784,7 +787,7 @@ implement {
 implement {
     name    = "bitwisexor",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         scankeyword("with")
@@ -800,7 +803,7 @@ implement {
 implement {
     name    = "bitwisenot",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         if what == "value" then
@@ -814,7 +817,7 @@ implement {
 implement {
     name    = "bitwisenil",
     public  = true,
-    value   = true,
+    usage   = "value",
     actions = function(what)
         local a = scancardinal()
         scankeyword("with")
@@ -830,10 +833,73 @@ implement {
 implement {
     name      = "ifbitwiseand",
     public    = true,
-    condition = true,
+    usage     = "condition",
     actions   = function(what)
         local a = scancardinal()
         local b = scancardinal()
         return boolean_code, (a & b) ~= 0
     end
 }
+
+interfaces.implement {
+    name      = "bitwise",
+    public    = true,
+    usage     = "value",
+    actions   = function(what)
+        if what == "value" then
+            local b = 0
+            while true do
+                local c = peekchar()
+                if c == 48 or c == 49 then
+                    skipnext()
+                    b = (b << 1) + (c - 48)
+                    if b == 0xFFFFFFFF then
+                        break
+                    end
+                else
+                    break
+                end
+            end
+            return 1, b
+        else
+            local b = scancardinal()
+            local t = nil
+            local n = 0
+            for i=1,32 do
+                if (b & (0x100000000 >> i)) == 0 then
+                    if n > 0 then
+                        n = n + 1
+                        t[n] = "0"
+                    end
+                elseif t then
+                    n = n + 1
+                    t[n] = "1"
+                else
+                    n = 1
+                    t = { "1" }
+                end
+            end
+            context(n > 0 and table.concat(t) or "0")
+        end
+    end,
+}
+
+-- something to play with, this might move to syst-aux.lmt when we have that
+
+local escape = function(s) return "\\" .. byte(s) end
+
+interfaces.implement {
+    name   = "ctxluamatch",
+    public = true,
+    value  = true,
+    actions   = function()
+        local command = context[scancsname()]
+        local pattern = gsub(scanstring(),"\\.",escape)
+        local input   = gsub(scanstring(),"\\.",escape)
+        for a, b, c, d, e, f, g, h, i in gmatch(input,pattern) do
+            command(a, b or "", c or "", d or "", e or "", f or "", g or "", h or "", i or "")
+        end
+        return none_code
+    end,
+}
+
