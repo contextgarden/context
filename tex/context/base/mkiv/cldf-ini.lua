@@ -1712,8 +1712,15 @@ do
 
     local modelevels = tex.getmodevalues()
     local t          = table.keys(modelevels)
-    tex.modelevels   = table.swapped(modelevels,modelevels)
+    tex.modelevels   = table.swapped(modelevels,modelevels) -- utilities.storage.allocate()
 
     for i=1,#t do local k = t[i] modelevels[-k] = modelevels[k] end
+
+    if CONTEXTLMTXMODE > 0 then
+
+        local prefixcodes = tex.getprefixvalues()
+        tex.prefixcodes   = table.swapped(prefixcodes,prefixcodes) -- utilities.storage.allocate()
+
+    end
 
 end

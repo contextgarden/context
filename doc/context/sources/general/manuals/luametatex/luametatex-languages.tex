@@ -305,82 +305,28 @@ min values to 1 and make sure that the words hyphenate at each character.
     \stopcombination
 \stopplacefigure
 
-% (Future versions of \LUATEX\ might provide more granularity.)
-
 In traditional \TEX\ ligature building and hyphenation are interwoven with the
 line break mechanism. In \LUATEX\ these phases are isolated. As a consequence we
 deal differently with (a sequence of) explicit hyphens. We already have added
 some control over aspects of the hyphenation and yet another one concerns
 automatic hyphens (e.g.\ \type {-} characters in the input).
 
-When \lpr {automatichyphenmode} has a value of 0, a hyphen will be turned into
-an automatic discretionary. The snippets before and after it will not be
-hyphenated. A side effect is that a leading hyphen can lead to a split but one
-will seldom run into that situation. Setting a pre and post character makes this
-more prominent. A value of 1 will prevent this side effect and a value of 2 will
-not turn the hyphen into a discretionary. Experiments with other options, like
-permitting hyphenation of the words on both sides were discarded.
+Hyphenation and discretionary injection is driven by a mode parameter which is
+a bitset made from the following values.
 
-\startbuffer[a]
-before-after \par
-before--after \par
-before---after \par
-\stopbuffer
-
-\startbuffer[b]
--before \par
-after- \par
---before \par
-after-- \par
----before \par
-after--- \par
-\stopbuffer
-
-\startbuffer[c]
-before-after \par
-before--after \par
-before---after \par
-\stopbuffer
-
-\startbuffer[demo]
-\startcombination[nx=4,ny=3,location=top]
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[a]}} {A~0~6em}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[a]}} {A~0~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[a]}} {A~1~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[a]}} {A~2~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[b]}} {B~0~6em}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[b]}} {B~0~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[b]}} {B~1~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[b]}} {B~2~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize6em \getbuffer[c]}} {C~0~6em}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\zerocount \hsize2pt \getbuffer[c]}} {C~0~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plusone   \hsize2pt \getbuffer[c]}} {C~1~2pt}
-    {\framed[align=normal,strut=no,top=\vskip.5ex,bottom=\vskip.5ex]{\automatichyphenmode\plustwo   \hsize2pt \getbuffer[c]}} {C~2~2pt}
-\stopcombination
-\stopbuffer
-
-\startplacefigure[reference=automatichyphenmode:1,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with a \prm {hsize}
-of 6em and 2pt (which triggers a linebreak).}]
-    \dontcomplain \tt \getbuffer[demo]
-\stopplacefigure
-
-\startplacefigure[reference=automatichyphenmode:2,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with \lpr {preexhyphenchar} and \lpr {postexhyphenchar} set to characters \type {A} and \type {B}.}]
-    \postexhyphenchar`A\relax
-    \preexhyphenchar `B\relax
-    \dontcomplain \tt \getbuffer[demo]
-\stopplacefigure
-
-In \in {figure} [automatichyphenmode:1] \in {and} [automatichyphenmode:2] we show
-what happens with three samples:
-
-Input A: \typebuffer[a]
-Input B: \typebuffer[b]
-Input C: \typebuffer[c]
-
-As with primitive companions of other single character commands, the \prm {-}
-command has a more verbose primitive version in \lpr {explicitdiscretionary}
-and the normally intercepted in the hyphenator character \type {-} (or whatever
-is configured) is available as \lpr {automaticdiscretionary}.
+\starttabulate[|||]
+\NC \number \normalhyphenationmodecode           \NC honour (normal) \prm{discretionary}'s \NC \NR
+\NC \number \automatichyphenationmodecode        \NC turn \type {-} into (automatic) discretionaries \NC \NR
+\NC \number \explicithyphenationmodecode         \NC turn \type {\-} into (explicit) discretionaries \NC \NR
+\NC \number \syllablehyphenationmodecode         \NC hyphenate (syllable) according to language \NC \NR
+\NC \number \uppercasehyphenationmodecode        \NC hyphenate uppercase characters too (replaces \prm {uchyph} \NC \NR
+\NC \number \compoundhyphenationmodecode         \NC permit break at an explicit hyphen (border cases) \NC \NR
+\NC \number \strictstarthyphenationmodecode      \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
+\NC \number \strictendhyphenationmodecode        \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
+\NC \number \automaticpenaltyhyphenationmodecode \NC use \lpr {automatichyphenpenalty} \NC \NR
+\NC \number \explicitpenaltyhyphenationmodecode  \NC use \lpr {explicithyphenpenalty} \NC \NR
+\NC \number \permitgluehyphenationmodecode       \NC turn glue in discretionaries into kerns \NC \NR
+\stoptabulate
 
 \stopsection
 
@@ -493,25 +439,10 @@ have been added:
 \explicithyphenpenalty
 \stoptyping
 
-The first parameter has the following consequences for automatic discs (the ones
-resulting from an \prm {exhyphenchar}):
-
-\starttabulate[|c|l|l|]
-\DB mode     \BC automatic disc \type {-}      \BC explicit disc \prm{-}         \NC \NR
-\TB
-\NC \type{0} \NC \prm {exhyphenpenalty}        \NC \prm {exhyphenpenalty}        \NC \NR
-\NC \type{1} \NC \prm {hyphenpenalty}          \NC \prm {hyphenpenalty}          \NC \NR
-\NC \type{2} \NC \prm {exhyphenpenalty}        \NC \prm {hyphenpenalty}          \NC \NR
-\NC \type{3} \NC \prm {hyphenpenalty}          \NC \prm {exhyphenpenalty}        \NC \NR
-\NC \type{4} \NC \lpr {automatichyphenpenalty} \NC \lpr {explicithyphenpenalty}  \NC \NR
-\NC \type{5} \NC \prm {exhyphenpenalty}        \NC \lpr {explicithyphenpenalty}  \NC \NR
-\NC \type{6} \NC \prm {hyphenpenalty}          \NC \lpr {explicithyphenpenalty}  \NC \NR
-\NC \type{7} \NC \lpr {automatichyphenpenalty} \NC \prm {exhyphenpenalty}        \NC \NR
-\NC \type{8} \NC \lpr {automatichyphenpenalty} \NC \prm {hyphenpenalty}          \NC \NR
-\LL
-\stoptabulate
-
-other values do what we always did in \LUATEX: insert \prm {exhyphenpenalty}.
+The usage of these penalties is controlled by the \lpr {hyphenationmode} flags
+\number\automaticpenaltyhyphenationmodecode\space and
+\number\explicitpenaltyhyphenationmodecode\space and when these are not set \prm
+{exhyphenpenalty} is used.
 
 \stopsection
 

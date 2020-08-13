@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.08.11 15:56}
+\edef\contextversion{2020.08.13 19:42}
 
 %D Kind of special:
 
@@ -423,7 +423,7 @@
 \loadmarkfile{typo-spa}
 \loadmarkfile{typo-krn}
 \loadmkvifile{typo-itc}
-\loadmarkfile{typo-dir}
+\loadmkxlfile{typo-dir}
 \loadmarkfile{typo-brk}
 \loadmarkfile{typo-cap}
 \loadmarkfile{typo-dig}

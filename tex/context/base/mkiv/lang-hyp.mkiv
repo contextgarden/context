@@ -45,8 +45,10 @@
 
 \newcount\compoundhyphenpenalty
 
-\automatichyphenmode    \plusone
-\hyphenpenaltymode      \plusfour
+\ifcase\contextlmtxmode
+    \hyphenpenaltymode\plusfour
+    \automatichyphenmode\plusone
+\fi
 
 \hyphenpenalty            50 % hyphenator
 \automatichyphenpenalty   50 % -

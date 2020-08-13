@@ -220,21 +220,6 @@
 \let\m_lang_labels_left \empty
 \let\m_lang_labels_right\empty
 
-% \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
-%   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
-%    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
-%    \ifempty\m_lang_labels_right
-%      \ifempty\m_lang_labels_left
-%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
-%      \else
-%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
-%      \fi
-%    \else
-%      \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
-%    \fi}
-%
-% how we love obscure efficicency ...
-
 \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
@@ -279,7 +264,7 @@
 %      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
 %      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
 %
-% this delays the aliasing so that we can switch maillanguage in between
+% this delays the aliasing so that we can switch mainlanguage in between
 
 \def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
   {\expandafter\edef\csname\??label\currenttextprefixclass:#1\endcsname

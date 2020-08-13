@@ -136,7 +136,7 @@ actions[v_line] = function(head,setting)
     local temp       = copy_node_list(head)
     local linebreaks = { }
 
-    set = function(head)
+    local set = function(head)
         for g in nextglyph, head do
             if dynamic > 0 then
                 setglyphdata(g,dynamic)
@@ -180,9 +180,9 @@ actions[v_line] = function(head,setting)
          --        nodes.handlers.protectglyphs(temp)  -- not needed as we discard
          -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
          -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
--- temp = typesetters.cases.handler(temp)     -- maybe when enabled
-flush_node_list(temp);
+         -- temp = typesetters.cases.handler(temp)     -- maybe when enabled
             local width = getdimensions(temp)
+            flush_node_list(temp)
             return width
         end
 

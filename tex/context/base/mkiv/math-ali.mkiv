@@ -50,23 +50,6 @@
 
 \def\displayopenupvalue{.25\bodyfontsize}
 
-% \def\math_build_eqalign
-%   {\scratchtoks\emptytoks
-%    \d_math_eqalign_distance\mathalignmentparameter\c!distance
-%    \scratchcounterone\mathalignmentparameter\c!m
-%    \scratchcountertwo\mathalignmentparameter\c!n
-%    \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_a}}%
-%    \scratchcounter\plusone
-%    \dorecurse{\numexpr\scratchcounterone*\scratchcountertwo-\plusone\relax}
-%      {\ifnum\scratchcounter=\scratchcountertwo
-%         \scratchcounter\plusone
-%         \scratchtoks\expandafter{\the\scratchtoks\math_eqalign_distance}%
-%       \else
-%         \advance\scratchcounter\plusone
-%       \fi
-%       \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}%
-%    \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}}
-
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \d_math_eqalign_distance\mathalignmentparameter\c!distance\relax

@@ -1539,7 +1539,7 @@
   {\let\m_strc_itemgroups_text_distance\zeropoint}
 
 \setvalue{\??itemgroupdistance\v!space}%
-  {\def\m_strc_itemgroups_text_distance{\interwordspace\!!plus\interwordstretch\!!minus\interwordshrink}}
+  {\def\m_strc_itemgroups_text_distance{\interwordspace\s!plus\interwordstretch\s!minus\interwordshrink}}
 
 \setvalue\??itemgroupdistance % catches empty value
   {\let\m_strc_itemgroups_text_distance\zeropoint}
@@ -1558,9 +1558,9 @@
   {\assignvalue
      \m_strc_itemgroups_text_distance
      \m_strc_itemgroups_text_distance
-     {.5\interwordspace\!!plus.5\emwidth}%
-     {\interwordspace  \!!plus  \emwidth}%
-     {\emwidth         \!!plus  \interwordstretch\!!minus\interwordshrink}}
+     {.5\interwordspace\s!plus.5\emwidth}%
+     {\interwordspace  \s!plus  \emwidth}%
+     {\emwidth         \s!plus  \interwordstretch\!!minus\interwordshrink}}
 
 % \unexpanded\def\strc_itemgroups_default_command
 %   {\EveryPar{\ignorespaces}% needed ?

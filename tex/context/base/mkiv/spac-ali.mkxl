@@ -21,6 +21,12 @@
 
 \registerctxluafile{spac-ali}{optimize}
 
+\chardef\normalizelinemodecode  = "01
+\chardef\indentskipmodecode     = "02
+\chardef\swaphangindentmodecode = "04
+\chardef\swapparskipmodecode    = "08
+\chardef\breakafterdirmodecode  = "10
+
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
 

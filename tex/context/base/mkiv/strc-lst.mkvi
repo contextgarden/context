@@ -76,7 +76,7 @@
   %\c!inbetween=,
   %\c!symbol=,
   %\c!expansion=,
-  \c!limittext=\languageparameter\c!limittext] % not used currently
+   \c!limittext=\languageparameter\c!limittext] % not used currently
 
 %D Helpers:
 
@@ -242,7 +242,7 @@
 %D When placing a list either one or a set can be giving. This makes
 %D it possible to flush for instance an nested (or merged) table of
 %D contents. Keep in mind that placing a list is what we do most (think
-%D of tables of contents, figures, etc.\ but other usag eis also possible
+%D of tables of contents, figures, etc.\ but other usage is also possible
 %D in which case low level commands have to be used.
 
 \newtoks\everystructurelist
@@ -627,14 +627,14 @@
   {\strut\symbol[bullet]}
 
 \unexpanded\def\strc_lists_symbol_two
-  {\vrule\!!width\emwidth\!!height\exheight\!!depth\zeropoint}
+  {\vrule\s!width\emwidth\s!height\exheight\s!depth\zeropoint\relax}
 
 \unexpanded\def\strc_lists_symbol_three
   {\begingroup
    \strc_lists_assign_dimen\scratchwidth \c!width {1.5\emwidth}%
    \strc_lists_assign_dimen\scratchheight\c!height\exheight
    \strc_lists_assign_dimen\scratchdepth \c!depth \zeropoint
-   \vrule\!!width\scratchwidth\!!height\scratchheight\!!depth\scratchdepth
+   \vrule\s!width\scratchwidth\s!height\scratchheight\s!depth\scratchdepth
    \endgroup}
 
 \unexpanded\def\strc_lists_symbol_unknown
@@ -1139,7 +1139,7 @@
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
                     \scratchdimen\listalternativeparameter\c!distance\relax
                     \ifzeropt\wd\b_strc_lists_page \else \ifdim\scratchdimen>\zeropoint\relax
-                        \rightskip\scratchdimen\!!plus\listalternativeparameter\c!stretch\relax
+                        \rightskip\scratchdimen\s!plus\listalternativeparameter\c!stretch\relax
                         \parfillskip-\rightskip
                     \fi \fi
                 \else
@@ -1262,9 +1262,9 @@
     \endgroup
     \scratchdistance\listparameter\c!distance\relax
     \ifdim\scratchdistance<\emwidth
-        \hskip\emwidth\!!plus\emwidth\!!minus.25\emwidth\relax
+        \hskip\emwidth\s!plus\emwidth\s!minus.25\emwidth\relax
     \else
-        \hskip\scratchdistance\!!plus.5\scratchdistance\!!minus.25\scratchdistance\relax
+        \hskip\scratchdistance\s!plus.5\scratchdistance\s!minus.25\scratchdistance\relax
     \fi
     \endgroup
     \endgroup

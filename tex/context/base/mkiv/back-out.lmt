@@ -43,6 +43,8 @@ local pageliteral_code    = literalvalues.page
 local directliteral_code  = literalvalues.direct
 local rawliteral_code     = literalvalues.raw
 
+local immediate_code      = tex.prefixcodes.immediate
+
 local nodeproperties      = nodes.properties.data
 
 local channels            = { }
@@ -66,7 +68,7 @@ local open_command, write_command, close_command
 backends = backends or { }
 
 local function immediately(prefix)
-    return prefix and (prefix & 8) ~= 0
+    return prefix and (prefix & immediate_code) ~= 0
 end
 
 local function openout(prefix)

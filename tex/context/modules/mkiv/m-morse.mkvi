@@ -227,8 +227,8 @@ end
 \def\MorseHeight            {0.2em}
 %def\MorseShort             {\dontleavehmode\blackrule[\c!height=\MorseHeight,\c!width=\dimexpr\MorseWidth]}
 %def\MorseLong              {\dontleavehmode\blackrule[\c!height=\MorseHeight,\c!width=3\dimexpr\MorseWidth]}
-\def\MorseShort             {\dontleavehmode\vrule\!!width \dimexpr\MorseWidth\!!height\MorseHeight\!!depth\zeropoint\relax}
-\def\MorseLong              {\dontleavehmode\vrule\!!width3\dimexpr\MorseWidth\!!height\MorseHeight\!!depth\zeropoint\relax}
+\def\MorseShort             {\dontleavehmode\vrule\s!width \dimexpr\MorseWidth\s!height\MorseHeight\s!depth\zeropoint\relax}
+\def\MorseLong              {\dontleavehmode\vrule\s!width3\dimexpr\MorseWidth\s!height\MorseHeight\s!depth\zeropoint\relax}
 \def\MorseBetweenCharacters {\kern\MorseWidth}
 \def\MorseBetweenWords      {\hskip3\dimexpr\MorseWidth\relax}
 \def\MorseSpace             {\hskip7\dimexpr\MorseWidth\relax}

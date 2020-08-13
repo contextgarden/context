@@ -51,7 +51,6 @@ local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
 local nextglyph            = nuts.traversers.glyph
 local getdimensions        = nuts.dimensions
-local first_glyph          = nuts.first_glyph
 
 local setglue              = nuts.setglue
 
@@ -174,7 +173,6 @@ function characteralign.handler(head,where)
     if not datasets then
         return head
     end
- -- local first = first_glyph(head) -- we could do that once
     local first
     for n in nextglyph, head do
         first = n

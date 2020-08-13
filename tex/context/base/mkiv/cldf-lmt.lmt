@@ -44,6 +44,8 @@ local skipnext          = scanners.skip
 local getindex          = token.get_index
 
 local texsetdimen       = tex.setdimen
+local texsetcount       = tex.setcount
+local texgetcount       = tex.getcount
 local texget            = tex.get
 
 local values            = tokens.values
@@ -54,6 +56,8 @@ local dimension_code    = values.dimension
 local skip_code         = values.skip
 local boolean_code      = values.boolean
 local float_code        = values.float
+
+local global_code      = tex.prefixcodes.global
 
 local context           = context
 
@@ -807,7 +811,7 @@ implement {
     actions = function(what)
         local a = scancardinal()
         if what == "value" then
-            return cardinal_code, ~ a
+            return cardinal_code, ~a & 0xFFFFFFFF
         else
             youcant("bitwisenot")
         end
@@ -823,9 +827,50 @@ implement {
         scankeyword("with")
         local b = scancardinal()
         if what == "value" then
-            return cardinal_code, a & (~ b)
+            return cardinal_code, a & (~b & 0xFFFFFFFF)
         else
             youcant("bitwisenil")
+        end
+    end
+}
+
+implement {
+    name    = "bitwiseshift",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        local a = scancardinal()
+        scankeyword("by")
+        local b = scaninteger()
+        if what == "value" then
+            return cardinal_code, (b < 0) and (a << -b) or (a >> b)
+        else
+            youcant("bitwiseshift")
+        end
+    end
+}
+
+implement {
+    name    = "bitwiseflip",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        local t = scancsname()
+        local b = scaninteger()
+        local c = texgetcount(t)
+        if c then
+            if b > 0 then
+                c = c | b
+            elseif b < 0 then
+                c = c & (~(-b) & 0xFFFFFFFF)
+            end
+            if what == "value" then
+                return cardinal_code, c
+            elseif what and (what & global_code) ~= 0 then
+                texsetcount("global",t,c)
+            else
+                texsetcount(t,c)
+            end
         end
     end
 }

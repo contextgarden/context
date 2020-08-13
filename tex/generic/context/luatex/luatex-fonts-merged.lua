@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-08-11 15:56
+-- merge date  : 2020-08-13 19:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -10894,7 +10894,6 @@ local insert=table.insert
 local fonts=fonts
 local helpers=fonts.helpers
 local setmetatableindex=table.setmetatableindex
-local makeweak=table.makeweak
 local push={ "push" }
 local pop={ "pop" }
 local dummy={ "comment" }

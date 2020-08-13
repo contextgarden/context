@@ -102,6 +102,7 @@ if CONTEXTLMTXMODE > 0 then
 
         local texchardef = tex.chardef
 
+     -- for k, v in next, prefixcodes      do texchardef(v .. "prefixcode",         k) end
         for k, v in next, groupcodes       do texchardef(v .. "groupcode",          k) end
         for k, v in next, hyphenationcodes do texchardef(v .. "hyphenationmodecode",k) end
 

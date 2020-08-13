@@ -161,6 +161,10 @@ return {
         --
         "normalhyphenationmodecode", "automatichyphenationmodecode", "explicithyphenationmodecode",
         "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "completehyphenationmodecode",
+        "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
+        "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode", "permitgluehyphenationmodecode",
+        --
+        "normalizelinemodecode", "indentskipmodecode", "swaphangindentmodecode", "swapparskipmodecode", "breakafterdirmodecode",
     },
     ["helpers"] = {
         --
@@ -515,7 +519,7 @@ return {
         "boxrangewd", "boxrangeht", "boxrangedp",
         --
         "bitwiseset", "bitwiseand", "bitwiseor", "bitwisexor", "bitwisenot", "bitwisenil",
-        "ifbitwiseand", "bitwise",
+        "ifbitwiseand", "bitwise", "bitwiseshift", "bitwiseflip",
         -- old ... very low level
         "textdir", "linedir", "pardir", "boxdir",
     }

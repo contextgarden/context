@@ -6,6 +6,10 @@ local info = {
     license   = "see context related readme files",
 }
 
+-- Note for myself: I need to check the latest greatest textadept and also see if
+-- the lpeg lexer interface has been ported to the latest scite. If not I need to
+-- come up with a backup plan (vscode?).
+
 if not textadept then
     return
 end

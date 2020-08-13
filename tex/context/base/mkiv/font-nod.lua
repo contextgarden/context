@@ -294,7 +294,6 @@ function step_tracers.glyphs(n,i)
 end
 
 function step_tracers.features()
-    -- we cannot use first_glyph here as it only finds characters with subtype < 256
     local f = collection[1]
     for n, char, font in nextglyph, f do
         local tfmdata  = fontidentifiers[font]

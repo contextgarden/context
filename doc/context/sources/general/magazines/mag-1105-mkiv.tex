@@ -11,8 +11,7 @@
 %             the manuals contain characteristic graphics and personal notes or examples that
 %             make no sense when used out-of-context.
 
-\ifdefined\parindentmode     \parindentmode    \plusone \fi % this will become default in lmtx
-\ifdefined\normalizelinemode \normalizelinemode\plusone \fi % this will become default in lmtx
+\bitwiseflip \normalizelinemode \plusthree
 
 \usemodule[magazine-basic,abr-02]
 
@@ -42,8 +41,7 @@ do. For that we have a an interface to the lines on such a box. We start with a
 few settings:
 
 \starttyping[option=TEX]
-\parindentmode    \plusone
-\normalizelinemode\plusone
+\bitwiseflip \normalizelinemode \plusthree % indent and normalize
 \stoptyping
 
 These two settings will become default in \CONTEXT\ \LMTX, but here we need them in

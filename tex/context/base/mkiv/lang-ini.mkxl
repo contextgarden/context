@@ -418,11 +418,17 @@
 % \uchyph\plusone :
 
 \chardef \completehyphenationmodecode \numexpr
-    \normalhyphenationmodecode    % \discretionary
-  + \automatichyphenationmodecode % -
-  + \explicithyphenationmodecode  % \-
-  + \syllablehyphenationmodecode  % pattern driven
-  + \uppercasehyphenationmodecode % uchyph
+    \normalhyphenationmodecode           % \discretionary
+  + \automatichyphenationmodecode        % -
+  + \explicithyphenationmodecode         % \-
+  + \syllablehyphenationmodecode         % pattern driven
+  + \uppercasehyphenationmodecode        % replaces \uchyph
+  + \compoundhyphenationmodecode         % replaces \compoundhyphenmode
+  % \strictstarthyphenationmodecode      % replaces \hyphenationbounds (strict = original tex)
+  % \strictendhyphenationmodecode        % replaces \hyphenationbounds (strict = original tex)
+  + \automaticpenaltyhyphenationmodecode % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \explicitpenaltyhyphenationmodecode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \permitgluehyphenationmodecode       % turn glue into kern in \discretionary
 \relax
 
 \unexpanded\def\dohyphens{\hyphenationmode\completehyphenationmodecode}
@@ -728,16 +734,21 @@
 
 %D New:
 
-\unexpanded\def\traceddiscretionary#1#2#3%
-  {\dontleavehmode
-   \discretionary{\darkred#1}{\darkgreen#2}{\darkblue#3}}
+\unexpanded\def\traceddiscretionary#1#%
+  {\dontleavehmode\lang_basics_traced_discretionary{#1}}
+
+\unexpanded\def\lang_basics_traced_discretionary#1#2#3#4%
+  {\normaldiscretionary#1{\darkred#2}{\darkgreen#3}{\darkblue#4}}
+
+\installtextracker
+  {discretionaries}
+  {\let\discretionary\traceddiscretionary}
+  {\let\discretionary\normaldiscretionary}
 
 \unexpanded\def\samplediscretionary
   {\traceddiscretionary
      {pre\clf_currentprehyphenchar}%
      {\clf_currentposthyphenchar post}%
      {replace}}
-
-% todo: make this configurable
 
 \protect \endinput

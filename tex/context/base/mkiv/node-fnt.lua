@@ -398,12 +398,11 @@ do
 
         if force_discrun then
             -- basefont is not supported in disc only runs ... it would mean a lot of
-            -- ranges .. we could try to run basemode as a separate processor run but
-            -- not for now (we can consider it when the new node code is tested
+            -- ranges .. we could try to run basemode as a separate processor run but not
+            -- for now (we can consider it when the new node code is tested
             for d in nextdisc, head do
-                -- we could use first_glyph, only doing replace is good enough because
-                -- pre and post are normally used for hyphens and these come from fonts
-                -- that part of the hyphenated word
+                -- doing only replace is good enough because pre and post are normally used
+                -- for hyphens and these come from fonts that part of the hyphenated word
                 local r = getreplace(d)
                 if r then
                     local prevfont = nil

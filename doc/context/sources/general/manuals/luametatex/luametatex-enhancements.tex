@@ -1728,106 +1728,108 @@ convenience extra which could also have been implemented using node list parsing
 
 \stopsubsection
 
-\startsubsection[title={Controlling glue with \lpr {breakafterdirmode}}]
+\startsubsection[title={Normalizing lines}]
 
-Glue after a dir node is ignored in the linebreak decision but you can bypass that
-by setting \lpr {breakafterdirmode} to~\type {1}. The following table shows the
-difference. Watch your spaces.
+{\em Experimental!}
 
-\def\ShowSome#1{%
-    \BC \type{#1}
-    \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
-    \NC
-    \NC \breakafterdirmode\plusone\hsize\zeropoint#1
-    \NC
-    \NC \NR
-}
+% Swapping shapes
+%
+% Another adaptation to the \ALEPH\ directional model is control over shapes driven
+% by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
+% \lpr {shapemode}:
+%
+% \starttabulate[|c|l|l|]
+% \DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
+% \TB
+% \BC \type{0} \NC  normal             \NC normal            \NC \NR
+% \BC \type{1} \NC  mirrored           \NC normal            \NC \NR
+% \BC \type{2} \NC  normal             \NC mirrored          \NC \NR
+% \BC \type{3} \NC  mirrored           \NC mirrored          \NC \NR
+% \LL
+% \stoptabulate
+%
+% The value is reset to zero (like \prm {hangindent} and \prm {parshape})
+% after the paragraph is done with. You can use negative values to prevent
+% this. In \in {figure} [fig:shapemode] a few examples are given.
+%
+% \startplacefigure[reference=fig:shapemode,title={The effect of \type {shapemode}.}]
+%     \startcombination[2*3]
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%                 \pardirection 0 \textdirection 0
+%                 \hangindent 40pt \hangafter -3
+%                 \leftskip10pt \input tufte \par
+%          \egroup} {TLT: hangindent}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 0 \textdirection 0
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TLT: parshape}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 1 \textdirection 1
+%             \hangindent 40pt \hangafter -3
+%             \leftskip10pt \input tufte \par
+%          \egroup} {TRT: hangindent mode 0}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 1 \textdirection 1
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TRT: parshape mode 0}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \shapemode=3
+%             \pardirection 1 \textdirection 1
+%             \hangindent 40pt \hangafter -3
+%             \leftskip10pt \input tufte \par
+%          \egroup} {TRT: hangindent mode 1 & 3}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \shapemode=3
+%             \pardirection 1 \textdirection 1
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TRT: parshape mode 2 & 3}
+%     \stopcombination
+% \stopplacefigure
+%
+% We have \type {\pardirection}, \type {\textdirection}, \type {\mathdirection} and
+% \type {\linedirection} that is like \type {\textdirection} but with some
+% additional (inline) glue checking.
 
-\starttabulate[|l|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
-    \DB
-    \BC \type{0}
-    \NC
-    \BC \type{1}
-    \NC
-    \NC \NR
-    \TB
-    \ShowSome{pre {\textdirection 0 xxx} post}
-    \ShowSome{pre {\textdirection 0 xxx }post}
-    \ShowSome{pre{ \textdirection 0 xxx} post}
-    \ShowSome{pre{ \textdirection 0 xxx }post}
-    \ShowSome{pre { \textdirection 0 xxx } post}
-    \ShowSome{pre {\textdirection 0\relax\space xxx} post}
-    \LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={Controlling parshapes with \lpr {shapemode}}]
-
-Another adaptation to the \ALEPH\ directional model is control over shapes driven
-by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
-\lpr {shapemode}:
-
-\starttabulate[|c|l|l|]
-\DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
-\TB
-\BC \type{0} \NC  normal             \NC normal            \NC \NR
-\BC \type{1} \NC  mirrored           \NC normal            \NC \NR
-\BC \type{2} \NC  normal             \NC mirrored          \NC \NR
-\BC \type{3} \NC  mirrored           \NC mirrored          \NC \NR
-\LL
-\stoptabulate
-
-The value is reset to zero (like \prm {hangindent} and \prm {parshape})
-after the paragraph is done with. You can use negative values to prevent
-this. In \in {figure} [fig:shapemode] a few examples are given.
-
-\startplacefigure[reference=fig:shapemode,title={The effect of \type {shapemode}.}]
-    \startcombination[2*3]
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-                \pardirection 0 \textdirection 0
-                \hangindent 40pt \hangafter -3
-                \leftskip10pt \input tufte \par
-         \egroup} {TLT: hangindent}
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-            \pardirection 0 \textdirection 0
-            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
-            \input tufte \par
-         \egroup} {TLT: parshape}
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-            \pardirection 1 \textdirection 1
-            \hangindent 40pt \hangafter -3
-            \leftskip10pt \input tufte \par
-         \egroup} {TRT: hangindent mode 0}
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-            \pardirection 1 \textdirection 1
-            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
-            \input tufte \par
-         \egroup} {TRT: parshape mode 0}
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-            \shapemode=3
-            \pardirection 1 \textdirection 1
-            \hangindent 40pt \hangafter -3
-            \leftskip10pt \input tufte \par
-         \egroup} {TRT: hangindent mode 1 & 3}
-        {\ruledvbox \bgroup \setuptolerance[verytolerant]
-            \hsize .45\textwidth \switchtobodyfont[6pt]
-            \shapemode=3
-            \pardirection 1 \textdirection 1
-            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
-            \input tufte \par
-         \egroup} {TRT: parshape mode 2 & 3}
-    \stopcombination
-\stopplacefigure
-
-We have \type {\pardirection}, \type {\textdirection}, \type {\mathdirection} and
-\type {\linedirection} that is like \type {\textdirection} but with some
-additional (inline) glue checking.
+% Controlling glue with \lpr {breakafterdirmode}
+%
+% Glue after a dir node is ignored in the linebreak decision but you can bypass that
+% by setting \lpr {breakafterdirmode} to~\type {1}. The following table shows the
+% difference. Watch your spaces.
+%
+% \def\ShowSome#1{%
+%     \BC \type{#1}
+%     \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
+%     \NC
+%     \NC \breakafterdirmode\plusone\hsize\zeropoint#1
+%     \NC
+%     \NC \NR
+% }
+%
+% \starttabulate[|l|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
+%     \DB
+%     \BC \type{0}
+%     \NC
+%     \BC \type{1}
+%     \NC
+%     \NC \NR
+%     \TB
+%     \ShowSome{pre {\textdirection 0 xxx} post}
+%     \ShowSome{pre {\textdirection 0 xxx }post}
+%     \ShowSome{pre{ \textdirection 0 xxx} post}
+%     \ShowSome{pre{ \textdirection 0 xxx }post}
+%     \ShowSome{pre { \textdirection 0 xxx } post}
+%     \ShowSome{pre {\textdirection 0\relax\space xxx} post}
+%     \LL
+% \stoptabulate
 
 \stopsubsection
 
