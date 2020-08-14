@@ -967,13 +967,15 @@ do
     local setprop            = nuts.setprop
     local getprop            = nuts.getprop
 
-    local line_code          = nodes.listcodes.line
-    local unknown_code       = nodes.listcodes.unknown
+    local listcodes          = nodes.listcodes
+    local line_code          = listcodes.line
+    local equation_code      = listcodes.equation
+    local unknown_code       = listcodes.unknown
 
     local values             = tokens.values
     local dimension_value    = values.dimension
     local cardinal_value     = values.cardinal
-    local list_value         = values.list
+    local direct_value       = values.direct
 
     -- todo: make helper that formats
 
@@ -992,7 +994,7 @@ do
             prop = { }
             if list then
                 for n, subtype in nexthlist, list do
-                    if subtype == line_code then
+                    if subtype == line_code then -- or subtype == equation_code then
                         line = line + 1
                         prop[line] = n
                     end
@@ -1063,7 +1065,7 @@ do
     local function getline(props,line,found,box,value)
         local p, n = getboth(found)
         local temp = new_hlist()
-        setsubtype(temp,line_code)
+        setsubtype(temp,getsubtype(found))
         setwhd(temp,getwhd(found))
         if found == getlist(box) then
             setlink(temp,n)
@@ -1074,22 +1076,20 @@ do
         getprop(box,"boxlines")[line] = temp
         setboth(found)
         setsubtype(found, unknown_code)
-        found = tonode(found)
         if value then
-            return list_value, found
+            return direct_value, found
         else
-            context(found)
+            context(tonode(found))
         end
     end
 
     local function copyline(props,line,found,box,value)
         found = copy_node(found)
         setsubtype(found, unknown_code)
-        found = tonode(found)
         if value then
-            return list_value, found
+            return direct_value, found
         else
-            context(found)
+            context(tonode(found))
         end
     end
 

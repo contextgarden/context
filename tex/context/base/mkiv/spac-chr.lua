@@ -38,7 +38,6 @@ local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
 local setsubtype         = nuts.setsubtype
-local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
@@ -58,7 +57,6 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 local new_kern           = nodepool.kern
 local new_rule           = nodepool.rule
-local new_disc           = nodepool.disc
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
