@@ -1359,6 +1359,8 @@ end
 
 -- touching files (signals regeneration of formats)
 
+local newversion = false
+
 local function touch(path,name,versionpattern,kind,kindpattern)
     if path and path ~= "" then
         name = filejoinname(path,name)
@@ -1367,9 +1369,11 @@ local function touch(path,name,versionpattern,kind,kindpattern)
     end
     local olddata = io.loaddata(name)
     if olddata then
-        local oldkind, newkind = "", kind or ""
-        local oldversion, newversion = "", os.date("%Y.%m.%d %H:%M")
+        local oldkind = ""
+        local newkind = kind or ""
+        local oldversion = ""
         local newdata
+              newversion = newversion or os.date("%Y.%m.%d %H:%M")
         if versionpattern then
             newdata = gsub(olddata,versionpattern,function(pre,mid,post)
                 oldversion = mid
