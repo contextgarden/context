@@ -934,10 +934,10 @@ interfaces.implement {
 local escape = function(s) return "\\" .. byte(s) end
 
 interfaces.implement {
-    name   = "ctxluamatch",
-    public = true,
-    value  = true,
-    actions   = function()
+    name    = "ctxluamatch",
+    public  = true,
+    usage   = "value",
+    actions = function()
         local command = context[scancsname()]
         local pattern = gsub(scanstring(),"\\.",escape)
         local input   = gsub(scanstring(),"\\.",escape)

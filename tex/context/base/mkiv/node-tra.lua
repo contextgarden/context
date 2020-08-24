@@ -193,8 +193,18 @@ end
 nodes.tosequence = tosequence
 nuts .tosequence = tosequence
 
-function nodes.report(t)
-    report_nodes("output %a, %s nodes",status.output_active,count_nodes(t))
+if CONTEXTLMTXMODE > 0 then
+
+    function nodes.report(t)
+        report_nodes("output %a, %s nodes",tex.getoutputactive(),count_nodes(t))
+    end
+
+else
+
+    function nodes.report(t)
+        report_nodes("output %a, %s nodes",status.output_active,count_nodes(t))
+    end
+
 end
 
 function nodes.packlist(head)

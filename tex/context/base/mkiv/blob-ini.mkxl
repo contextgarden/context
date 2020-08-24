@@ -19,35 +19,28 @@
 %D pure \LUA\ sometimes makes sense.
 
 \registerctxluafile{node-typ}{} % experimental
-\registerctxluafile{blob-ini}{}
-
-%D For the moment here:
+\registerctxluafile{blob-ini}{autosuffix}
 
 \unprotect
 
-% this one takes simple (utf) strings
+% \widthofstring          % defined in lua
+% \heightofstring         % defined in lua
+% \depthofstring          % defined in lua
+% \heightanddepthofstring % defined in lua
 
-\def\wdofstring#1{\dimexpr\clf_strwd{#1}\scaledpoint\relax}
-\def\htofstring#1{\dimexpr\clf_strht{#1}\scaledpoint\relax}
-\def\dpofstring#1{\dimexpr\clf_strdp{#1}\scaledpoint\relax}
-\def\hdofstring#1{\dimexpr\clf_strhd{#1}\scaledpoint\relax}
-
-\def\widthofstring  {\the\wdofstring}
-\def\heightofstring {\the\htofstring}
-\def\depthofstring  {\the\dpofstring}
-\def\totalofstring  {\the\hdofstring}
+\def\wdofstring#1{\dimexpr\widthofstring {#1}\relax} % assured an dimen
+\def\htofstring#1{\dimexpr\heightofstring{#1}\relax} % assured an dimen
+\def\dpofstring#1{\dimexpr\depthofstring {#1}\relax} % assured an dimen
+\def\hdofstring#1{\dimexpr\totalofstring {#1}\relax} % assured an dimen
 
 \let\heightanddepthofstring\totalofstring
 \let\htdpofstring          \hdofstring
 
 \let\hd\htdp % if yes then move this
 
-% this one takes anything that can be typeset
+% This one takes anything that can be typeset
 
-\unexpanded\def\setwidthof#1\to#2%
-  {\bgroup
-   \setbox\scratchbox\hbox{#1}%
-   \expanded{\egroup\def\noexpand#2{\the\wd\scratchbox}}}
+\unexpanded\def\setwidthof#1\to#2{\edef#2{\widthofstring{#1}}}
 
 \protect \endinput
 

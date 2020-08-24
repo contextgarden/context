@@ -47,7 +47,8 @@ further) adapted. It also discusses the (main) differences. Some of the new
 primitives or functions that show up in \LUAMETATEX\ might show up in \LUATEX\ at
 some point, others might not, so don't take this manual as reference for \LUATEX
 ! For now it is an experimental engine in which we can change things at will but
-with \CONTEXT\ in tandem so that this macro package will keep working.
+with \CONTEXT\ in tandem so that this macro package will keep working. Often you
+can find examples of usage in \CONTEXT\ related documents and the source code.
 
 For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. The
 \CONTEXT\ variant for this engine is tagged \LMTX. The pair can be used in
@@ -55,7 +56,7 @@ production, just as with \LUATEX\ and \MKIV. In fact, most users will probably
 not really notice the difference. In some cases there will be a drop in
 performance, due to more work being delegated to \LUA, but on the average
 performance will be better, also due to some changes below the hood of the
-engine.
+engine. Memory consumption is also less.
 
 As this follow up is closely related to \CONTEXT\ development, and because we
 expect stock \LUATEX\ to be used outside the \CONTEXT\ proper, there will be no
@@ -100,10 +101,15 @@ Hans Hagen
 
 \vfilll
 
-{\bf remark:} \LUAMETATEX\ development is mostly done by Hans Hagen and Alan
-Braslau, who love playing with the three languages involved. And as usual Mojca
-Miklavec make sure all compiles well on the buildbot infrastructure. Testing is
-done by \CONTEXT\ developers and users. Many thanks for their patience!
+{\bf remark:} \LUAMETATEX\ development is mostly done by Hans Hagen and in
+adapting the macros to the new features Wolfgang Schuster, who knows the code
+inside||out is a instrumental. In the initial phase Alan Braslau, who love
+playing with the three languages did extensive testing and compiled for several
+platforms. Later Mojca Miklavec make sure all compiles well on the buildbot
+infrastructure. After the first release more users got involved in testing. Many
+thanks for their patience! The development also triggered upgrading of the wiki
+support infrastructure where Taco Hoekwater and Paul Mazaitis have teamed up. So,
+progress all around.
 
 {\bf remark:} When there are non|-|intrusive features that also make sense in
 \LUATEX, these will be applied in the experimental branch first, so that there is

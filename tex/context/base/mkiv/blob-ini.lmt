@@ -190,9 +190,21 @@ blobs.strhd = strhd
 
 -- upgraded
 
-local scan_hbox = tokens.scanners.hbox
+local dimension_code = tokens.values.dimension
+local scan_hbox      = tokens.scanners.hbox
 
-implement { name = "strwd", actions = function() local l = scan_hbox() context(l.width)            flush_node_list(l) end }
-implement { name = "strht", actions = function() local l = scan_hbox() context(l.height)           flush_node_list(l) end }
-implement { name = "strdp", actions = function() local l = scan_hbox() context(l.depth)            flush_node_list(l) end }
-implement { name = "strhd", actions = function() local l = scan_hbox() context(l.height + l.depth) flush_node_list(l) end }
+local function action(field,what)
+    local l = scan_hbox()
+    local d = l[field]
+    flush_node_list(l)
+    if what == "value" then
+        return dimension_code, d
+    else
+        context("%p",d)
+    end
+end
+
+implement { name = "widthofstring",  public = true, usage = "value", actions = function(w) return action("width", w) end }
+implement { name = "heightofstring", public = true, usage = "value", actions = function(w) return action("height",w) end }
+implement { name = "depthofstring",  public = true, usage = "value", actions = function(w) return action("depth", w) end }
+implement { name = "totalofstring",  public = true, usage = "value", actions = function(w) return action("total", w) end }

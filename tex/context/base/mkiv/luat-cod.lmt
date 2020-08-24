@@ -17,22 +17,27 @@ local texconfig, lua = texconfig, lua
 
 -- some basic housekeeping
 
-texconfig.kpse_init       = false
-texconfig.shell_escape    = 't'
+texconfig.kpse_init       = false     -- not needed in lmtx
+texconfig.shell_escape    = 't'       -- not needed in lmtx
 
-texconfig.error_line      =    250 --  79 -- frozen / large values can crash
-texconfig.expand_depth    =  10000
-texconfig.half_error_line =    125 --  50 -- frozen
-texconfig.max_in_open     =   1000
-texconfig.max_print_line  = 100000
-texconfig.max_strings     = 500000
-texconfig.nest_size       =   1000
-texconfig.param_size      =  25000
-texconfig.save_size       = 100000
-texconfig.stack_size      =  10000
-texconfig.function_size   =  32768
-texconfig.properties_size =  10000
-texconfig.fix_mem_init    = 750000
+texconfig.max_in_open     =     2000
+texconfig.nest_size       =    10000
+texconfig.param_size      =   100000
+texconfig.save_size       =   500000
+texconfig.stack_size      =   100000
+texconfig.buffer_size     = 10000000
+texconfig.token_size      = 10000000
+texconfig.node_size       = 20000000
+
+texconfig.max_print_line  =   100000
+texconfig.max_strings     =   500000
+texconfig.hash_extra      =   200000
+
+texconfig.expand_depth    =    10000
+texconfig.function_size   =    32768
+texconfig.properties_size =    10000
+texconfig.error_line      =      250
+texconfig.half_error_line =      125
 
 -- registering bytecode chunks
 
@@ -276,3 +281,15 @@ end
 callback.register('find_log_file',   find_log_file)
 callback.register('find_data_file' , find_data_file )
 callback.register('open_data_file' , open_data_file )
+
+callback.register("trace_memory", function(what,success)
+    success = success and "succeeded" or "failed"
+    if logs then
+        logs.report("tex memory","bumping category %a %s, details: %s",
+            what,success,table.sequenced(status["get"..what.."state"]()))
+    elseif texio then
+        texio.write_nl(format("bumping tex %a memory %s",
+            what,success))
+    end
+ -- os.exit()
+end)

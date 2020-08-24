@@ -203,19 +203,23 @@
 % 255       : page
 % 256 -     : user
 
+% use \chardef instead for min and max
+%
+% will be blocked: \newfamily \newlanguage
+
 \countdef   \c_syst_min_allocated_register   =    52 \c_syst_min_allocated_register   =   256 % can change
-\countdef   \c_syst_max_allocated_register   =    53 \c_syst_max_allocated_register   = 32767
-\countdef   \c_syst_min_allocated_read       =    54 \c_syst_min_allocated_read       =    -1
-\countdef   \c_syst_max_allocated_read       =    55 \c_syst_max_allocated_read       =    16
+\countdef   \c_syst_max_allocated_register   =    53 \c_syst_max_allocated_register   = 65535
+\countdef   \c_syst_min_allocated_read       =    54 \c_syst_min_allocated_read       =     0
+\countdef   \c_syst_max_allocated_read       =    55 \c_syst_max_allocated_read       =  1023
 \countdef   \c_syst_min_allocated_language   =    56 \c_syst_min_allocated_language   =     0
-\countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =   255
+\countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =  8191
 \countdef   \c_syst_min_allocated_insert     =    58 \c_syst_min_allocated_insert     =   128
 \countdef   \c_syst_max_allocated_insert     =    59 \c_syst_max_allocated_insert     =   254
 \countdef   \c_syst_min_allocated_family     =    60 \c_syst_min_allocated_family     =   128
 \countdef   \c_syst_max_allocated_family     =    61 \c_syst_max_allocated_family     =   255
 \countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 0-1023 : private
 \countdef   \c_syst_min_allocated_write      =    63 \c_syst_min_allocated_write      =     0
-\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =   127
+\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =  1023
 
 \countdef   \c_syst_last_allocated_count     =    32 \c_syst_last_allocated_count     = \c_syst_min_allocated_register
 \countdef   \c_syst_last_allocated_dimen     =    33 \c_syst_last_allocated_dimen     = \c_syst_min_allocated_register
@@ -1049,8 +1053,8 @@
 
 %D For a while we will keep these useless numbers as for instance tikz checks for them:
 
-\chardef\eTeXversion   2
-\def    \eTeXrevision {2}
+\frozen\chardef\eTeXversion   2
+\frozen\def    \eTeXrevision {2}
 
 %D Experiment:
 

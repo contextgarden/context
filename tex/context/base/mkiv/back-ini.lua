@@ -207,6 +207,6 @@ implement {
 
 -- could also be codeinjections
 
-function backends.noflatelua()
-    return status.late_callbacks or 0
+function backends.getcallbackstate()
+    return { count = status.late_callbacks or 0 }
 end

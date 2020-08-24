@@ -968,7 +968,11 @@ function document.setcommandline() -- has to happen at the tex end in order to e
     -- to trick the files table which actually only has one entry in a tex job
 
     if arguments.timing then
-        context.usemodule("timing")
+        context.usemodule { "timing" }
+    end
+
+    if arguments.usage then
+       directives.enable("system.usage")
     end
 
     if arguments.batchmode then

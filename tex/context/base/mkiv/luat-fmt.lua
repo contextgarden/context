@@ -64,7 +64,7 @@ end
 -- The silent option is for Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
-local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
+local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %redirect%]]
 
 local checkers = {
     primaryflags   = "verbose",  -- "flags"
@@ -72,7 +72,6 @@ local checkers = {
     luafile        = "readable", -- "cache"
     texfile        = "readable", -- "cache"
     redirect       = "string",
-    dump           = "string",
     binarypath     = "string",
 }
 
@@ -193,7 +192,6 @@ function environment.make_format(formatname)
         secondaryflags = secondaryflags,
         luafile        = quoted(fullluasourcename),
         texfile        = quoted(fulltexsourcename),
-        dump           = os.platform == "unix" and "\\\\dump" or "\\dump",
     }
     if silent then
         specification.redirect = "> temp.log"

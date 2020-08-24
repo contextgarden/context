@@ -20,19 +20,19 @@ local texconfig, lua = texconfig, lua
 texconfig.kpse_init       = false
 texconfig.shell_escape    = 't'
 
-texconfig.error_line      =    250 --  79 -- frozen / large values can crash
-texconfig.expand_depth    =  10000
-texconfig.half_error_line =    125 --  50 -- frozen
-texconfig.max_in_open     =   1000
-texconfig.max_print_line  = 100000
-texconfig.max_strings     = 500000
-texconfig.nest_size       =   1000
-texconfig.param_size      =  25000
-texconfig.save_size       = 100000
-texconfig.stack_size      =  10000
-texconfig.function_size   =  32768
-texconfig.properties_size =  10000
-texconfig.fix_mem_init    = 750000
+texconfig.error_line      =     250
+texconfig.expand_depth    =   10000
+texconfig.half_error_line =     125
+texconfig.max_in_open     =    1000
+texconfig.max_print_line  =  100000
+texconfig.max_strings     =  500000
+texconfig.nest_size       =    1000
+texconfig.param_size      =   25000
+texconfig.save_size       =  100000
+texconfig.stack_size      =   10000
+texconfig.function_size   =   32768
+texconfig.properties_size =   10000
+texconfig.fix_mem_init    = 1000000
 
 -- registering bytecode chunks
 

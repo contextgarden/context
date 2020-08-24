@@ -207,37 +207,6 @@ local preparejob  preparejob = function() -- tricky: we need a hook for this
         }
     end
 
- -- -- todo: move from mtx-context to here:
- --
- -- local timing = arguments.timing
- -- if type(timing) == "string" then
- --     context.usemodule { timing }
- -- end
- -- local nodates = arguments.nodates
- -- if nodates then
- --     context.enabledirectives { "backend.date=" .. (type(nodates) == "string" and nodates or "no") }
- -- end
- -- local trailerid = arguments.trailerid
- -- if type(trailerid) == "string" then
- --     context.enabledirectives { "backend.trailerid=" .. trailerid }
- -- end
- -- local profile = arguments.profile
- -- if profile then
- --     context.enabledirectives { "system.profile=" .. tonumber(profile) or 0 }
- -- end
-
- -- -- already done in mtxrun / mtx-context, has to happen very early
- --
- -- if arguments.silent then
- --     directives.enable("logs.blocked",arguments.silent)
- -- end
- --
- -- -- already done in mtxrun / mtx-context, can as well happen here
- --
- -- if arguments.errors then
- --     directives.enable("logs.errors",arguments.errors)
- -- end
-
     preparejob = function() end
 
     job.prepare = preparejob
@@ -247,6 +216,8 @@ end
 job.prepare = preparejob
 
 local function processjob()
+
+    tokens.setters.macro("processjob","") -- make a
 
     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
@@ -331,6 +302,13 @@ end
 
 implement {
     name     = "processjob",
+    public   = true,
     onlyonce = true,
     actions  = processjob,
 }
+
+if CONTEXTLMTXMODE then
+
+    texconfig.firstline = "\\processjob " -- experiment, yet undocumented
+
+end

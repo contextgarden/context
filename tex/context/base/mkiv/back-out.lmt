@@ -204,8 +204,8 @@ function backends.latelua(current,pos_h,pos_v) -- todo: pass pos_h and pos_v (mo
     end
 end
 
-function backends.noflatelua()
-    return noflatelua
+function backends.getcallbackstate()
+    return { count = noflatelua }
 end
 
 function nodepool.originliteral(str) local t = copynode(literalnode) nodeproperties[t] = { data = str, mode = originliteral_code } return t end

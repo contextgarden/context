@@ -83,9 +83,9 @@ There are three primitives to test the version of \LUATEX\ (and \LUAMETATEX):
                           \BC explanation \NC \NR
 \TB
 \NC \lpr {luatexbanner}   \NC \VersionHack{\luatexbanner}
-                          \NC the banner reported on the command line \NC \NR
+                          \NC the banner reported on the console \NC \NR
 \NC \lpr {luatexversion}  \NC \the\luatexversion
-                          \NC a combination of major and minor number \NC \NR
+                          \NC major and minor number combined \NC \NR
 \NC \lpr {luatexrevision} \NC \the\luatexrevision
                           \NC the revision number \NC \NR
 \LL
@@ -178,7 +178,9 @@ the time comes to print a character $c>=1{,}114{,}112$, \LUATEX\ will actually
 print the single byte corresponding to $c$ minus 1{,}114{,}112.
 
 Contrary to other \TEX\ engines, the output to the terminal is as|-|is so there
-is no escaping with \type {^^}. We operate in a \UTF\ universe.
+is no escaping with \type {^^}. We operate in a \UTF\ universe. Because we
+operate in a \CCODE\ universum, zero characters are special but because we also
+live in a \UNICODE\ galaxy that is no real problem.
 
 \stopsubsection
 
@@ -400,6 +402,12 @@ mode, but in \LUAMETATEX\ there is no error message and the box the height and
 depth are equally divided. Of course in text mode there is no math axis related
 offset applied.
 
+It is possible to change or add to the attributes assigned to a box:
+
+\starttyping
+\boxattr 0 123 456
+\stoptyping
+
 \stopsubsection
 
 \stopsection
@@ -475,20 +483,22 @@ will result in
 
 Note that the expansion of \prm {directlua} is a sequence of characters, not of
 tokens, contrary to all \TEX\ commands. So formally speaking its expansion is
-null, but it places material on a pseudo-file to be immediately read by \TEX, as
-\ETEX's \prm {scantokens}. For a description of print functions look at \in
-{section} [sec:luaprint].
+null, but it collects material in a new level on the input stack to be
+immediately read by \TEX\ after the \LUA\ call as finished. It is a bit like
+\ETEX's \prm {scantokens}, which now uses the same mechanism. For a description
+of print functions look at \in {section} [sec:luaprint].
 
 Because the \syntax {<general text>} is a chunk, the normal \LUA\ error handling
 is triggered if there is a problem in the included code. The \LUA\ error messages
-should be clear enough, but the contextual information is still pretty bad.
-Often, you will only see the line number of the right brace at the end of the
-code.
+should be clear enough, but the contextual information is often suboptimal
+because it can come from deep down, and \TEX\ has no knowledge about what you do
+in \LUA. Often, you will only see the line number of the right brace at the end
+of the code.
 
 While on the subject of errors: some of the things you can do inside \LUA\ code
 can break up \LUAMETATEX\ pretty bad. If you are not careful while working with
-the node list interface, you may even end up with assertion errors from within
-the \TEX\ portion of the executable.
+the node list interface, you may even end up with errors or even crashes from
+within the \TEX\ portion of the executable.
 
 \stopsubsection
 
@@ -565,53 +575,6 @@ tokens and assume that the function is available when that token expands. On the
 other hand, as we have tested this functionality in relative complex situations
 normal usage should not give problems.
 
-There are another three (still experimental) primitives that behave like \lpr
-{luafunction} but they expect the function to return an integer, dimension (also
-an integer) or a gluespec node. The return values gets injected into the input.
-
-\starttyping
-\luacountfunction 997 123
-\luadimenfunction 998 123pt
-\luaskipfunction  999 123pt plus 10pt minus 20pt
-\stoptyping
-
-Examples of function 997 in the above lines are:
-
-\starttyping
-function() return token.scan_int() end
-function() return 1234 end
-\stoptyping
-
-This itself is not spectacular so there is more. These functions can be called in
-two modes: either \TEX\ is expecting a value, or it is not and just expanding the
-call.
-
-\starttyping
-local n = 0
-function(slot,scanning)
-    if scanning then
-        return n
-    else
-        n = token.scan_int()
-    end
-end
-\stoptyping
-
-So, assuming that the function is in slot 997, you can do this:
-
-\starttyping
-\luacountfunction 997 123
-\count100=\luacountfunction 997
-\stoptyping
-
-After which \type {\count 100} has the value \type {123}.
-
-% Also experimental (I need to play with this a bit more when I have time):
-%
-% The \type {token.set_lua} function already accepts some strings as optional
-% arguments (\type {protected} and \type {global}) and now also handles \type
-% {count}, \type {dimen} and \type {skip}.
-
 \stopsubsection
 
 \startsubsection[title={\lpr {luabytecode} and \lpr {luabytecodecall}}]
@@ -663,13 +626,13 @@ contents is stored and retrieved from the format file.
 
 \startsubsection[title={\lpr {catcodetable}}]
 
-\startsyntax
-\catcodetable <15-bit number>
-\stopsyntax
-
 The primitive \lpr {catcodetable} switches to a different catcode table. Such a
 table has to be previously created using one of the two primitives below, or it
 has to be zero. Table zero is initialized by \INITEX.
+
+\startsyntax
+\catcodetable <15-bit number>
+\stopsyntax
 
 \stopsubsection
 
@@ -710,11 +673,9 @@ initial values are:
 
 \lpr {savecatcodetable} copies the current set of catcodes to a new table with
 the requested number. The definitions in this new table are all treated as if
-they were made in the outermost level.
-
-The new table is allocated globally: it will not go away after the current group
-has ended. If the supplied number is the currently active table, an error is
-raised.
+they were made in the outermost level. Again, the new table is allocated globally:
+it will not go away after the current group has ended. If the supplied number is
+the currently active table, an error is raised.
 
 \stopsubsection
 
@@ -722,7 +683,7 @@ raised.
 
 \startsection[title={Tokens, commands and strings}]
 
-\startsubsection[title={\lpr {scantextokens}}]
+\startsubsection[title={\lpr {scantextokens} and \lpr {tokenized}}]
 
 \topicindex {tokens+scanning}
 
@@ -732,8 +693,7 @@ differences are:
 
 \startitemize
 \startitem
-    The last (and usually only) line does not have a \prm {endlinechar}
-    appended.
+    The last (and usually only) line does not have a \prm {endlinechar} appended.
 \stopitem
 \startitem
     \lpr {scantextokens} never raises an EOF error, and it does not execute
@@ -745,6 +705,18 @@ differences are:
     while a conditional is still incomplete.
 \stopitem
 \stopitemize
+
+The implementation in \LUAMETATEX\ is different in the sense that it uses the same
+methods as printing from \LUA\ to \TEX\ does. Therefore, in addition to the two
+commands we also have this expandable command:
+
+\startsyntax
+\tokenized {...}
+\tokenized catcodetable <number> {...}
+\stopsyntax
+
+The \ETEX\ command \type {\tracingscantokens} has been dropped in the process as
+that was interwoven with the old code.
 
 \stopsubsection
 
@@ -805,7 +777,7 @@ that it saves a few tokens and can make code a bit more readable.
 
 This primitive complements the \ETEX\ mark primitives and clears a mark class
 completely, resetting all three connected mark texts to empty. It is an
-immediate command.
+immediate command (no synchronization node is used).
 
 \startsyntax
 \clearmarks <16-bit number>
@@ -1102,8 +1074,6 @@ valid style identifier (a primitive identifier or number). The \type
 
 \stopsubsection
 
-\stopsubsection
-
 \startsubsection[title={\lpr {ifempty}}]
 
 This primitive tests for the following token (control sequence) having no
@@ -1219,7 +1189,7 @@ we use \type {\unless} to negate the result.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {orelse}}]
+\startsubsection[title={\lpr {orelse} and \lpr {orunless}}]
 
 Sometimes you have successive tests that, when laid out in the source lead to
 deep trees. The \type {\ifcase} test is an exception. Experiments with \type
@@ -1285,6 +1255,12 @@ Of course it is only useful at the right level, so you might end up with cases l
 \fi
 \stoptyping
 
+The \lpr {orunless} variant negates the next test, just like \prm {unless}. In
+some cases these commands look at the next token to see if it is an if|-|test so
+a following negation will not work (read: making that work would complicate the
+code and hurt efficiency too). Side note: interesting is that in \CONTEXT\ we
+hardly use this kind of negation.
+
 \stopsubsection
 
 \startsubsection[title={\lpr {ifprotected}, \lpr {frozen}, \lpr {iffrozen} and \lpr {ifusercmd}}]
@@ -1315,13 +1291,6 @@ the acceptable range is from 0 to 65535.
 
 \stopsubsection
 
-\startsubsection[title={\prm {vpack}, \prm {hpack} and \prm {tpack}}]
-
-These three primitives are like \prm {vbox}, \prm {hbox} and \prm {vtop}
-but don't apply the related callbacks.
-
-\stopsubsection
-
 \startsubsection[title={\prm {vsplit}}]
 
 \topicindex {splitting}
@@ -1332,7 +1301,7 @@ a split of the given size but result has the natural dimensions then.
 
 \stopsubsection
 
-\startsubsection[title={Images and reused box objects},reference=sec:imagedandforms]
+\startsubsection[title={Images and reused box objects},reference=sec:imagesandforms]
 
 In original \TEX\ image support is dealt with via specials. It's not a native
 feature of the engine. All that \TEX\ cares about is dimensions, so in practice
@@ -1409,10 +1378,12 @@ packages.
 
 \startsubsection[title={\lpr {hpack}, \lpr {vpack} and \lpr {tpack}}]
 
-These three primitives are the equivalents of \type {\hbox}, \type {\vbox} and
-\type {\vtop} but they don't trigger the packaging related callbacks. Of course
+These three primitives are the equivalents of \prm {hbox}, \prm {vbox} and
+\prm {vtop} but they don't trigger the packaging related callbacks. Of course
 one never know if content needs a treatment so using them should be done with
-care.
+care. Apart from accepting more keywords (and therefore options) the normal
+box behave the same as before. The \prm {vcenter} builder also works in text
+mode.
 
 \stopsubsection
 
@@ -1863,6 +1834,10 @@ only really take effect when the backend supports them. When usage on \CONTEXT\
 shows that is't okay, they will become official, so we just mention them: \type
 {\boxdirection}, \type {\boxattr}, \type {\boxorientation}, \type {\boxxoffset},
 \type {\boxyoffset}, \type {\boxxmove}, \type {\boxymove} and \type {\boxtotal}.
+
+{\em This is still somewhat experimental and will be documented in more detail
+when I've used it more in \CONTEXT\ and the specification is frozen. This might
+take some time (and user input).}
 
 \stopsubsection
 

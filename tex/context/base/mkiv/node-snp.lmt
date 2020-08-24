@@ -1,0 +1,61 @@
+if not modules then modules = { } end modules ['node-snp'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not nodes then
+    nodes = { } -- also loaded in mtx-timing
+end
+
+local snapshots = { }
+nodes.snapshots = snapshots
+
+local status    = status
+
+local nodeusage = nodes.pool and nodes.pool.usage
+local clock     = os.gettimeofday or os.clock -- should go in environment
+local lasttime  = clock()
+local samples   = { }
+
+function snapshots.takesample(comment)
+    if nodeusage then
+        local c = clock()
+        samples[#samples+1] = {
+            nodes            = nodeusage(),
+            texcallbacks     = status.getcallbackstate(),
+            mpcallbacks      = mplib.getcallbackstate(),
+            backendcallbacks = backends.getcallbackstate(),
+            luavariables     = status.getluastate(),
+            texvariables     = status.gettexstate(),
+            comment          = comment,
+            variables        = {
+                lasttime = c,
+                elapsed  = c - lasttime,
+            },
+            memories         = {
+                pool      = status.getpoolstate(),
+                hash      = status.gethashstate(),
+                node      = status.getnodestate(),
+                token     = status.gettokenstate(),
+                buffer    = status.getbufferstate(),
+                input     = status.getinputstate(),
+                file      = status.getfilestate(),
+                nest      = status.getneststate(),
+                parameter = status.getparameterstate(),
+                save      = status.getsavestate(),
+                expand    = status.getexpandstate(),
+            },
+        }
+    end
+end
+
+function snapshots.getsamples()
+    return samples -- one return value !
+end
+
+function snapshots.resetsamples()
+    samples = { }
+end

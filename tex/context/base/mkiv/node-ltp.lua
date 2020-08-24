@@ -2878,7 +2878,7 @@ do
 
     local function common_message(hlist,line,str)
         write_nl("")
-        if status.output_active then -- unset
+        if CONTEXTLMTXMODE > 0 and tex.getoutputactive() or status.output_active then
             write(str," has occurred while \\output is active")
         else
             write(str)

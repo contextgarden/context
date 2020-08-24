@@ -184,7 +184,8 @@ local function scanbracketed()
     if s then
         return s
     else
-        report_scan("missing argument in line %i of %a", status.linenumber, status.filename)
+        local readstate = status.getreadstate()
+        report_scan("missing argument in line %i of %a", readstate.linenumber, readstate.filename)
         return ""
     end
 end

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 }
 
 -- This is an old mechanism, a result of some experiments in the early days of
--- luatex and mkiv, but still nice anyway.
+-- luatex and mkiv, but still nice anyway. I will clean it up in lmtx.
 
 local status = status
 
@@ -112,7 +112,47 @@ end
 
 -- till here
 
--- for now here
+do
+
+    local ioflush      = io.flush
+    local ioread       = io.read
+    local writenl      = texio.write_nl
+    local write        = texio.write
+
+    local runtoks      = tex.runtoks
+    local terminaldata = false
+    local context      = context
+
+    interfaces.implement {
+        name    = "fetchterminaldata",
+        actions = function()
+            context(terminaldata)
+        end,
+    }
+
+    function texio.terminal()
+        writenl("\n" .. "entering interactive mode, use \\quit to abort reading" .."\n\n")
+        while true do
+            write(">")
+            ioflush()
+            terminaldata = ioread()
+            if terminaldata == "\\quit" then
+                terminaldata = false
+                break
+            else
+                runtoks("t_syst_terminal_data",nil,nil,true) -- obeymode
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "readfromterminal",
+        public    = true,
+        protected = true,
+        actions   = texio.terminal,
+    }
+
+end
 
 local savedluaerror = nil
 local usescitelexer = nil
@@ -179,8 +219,6 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
     end
 end
 
--- this will work ok in >=0.79
-
 -- todo: last tex error has ! prepended
 -- todo: some nested errors have two line numbers
 -- todo: collect errorcontext in string (after code cleanup)
@@ -190,27 +228,31 @@ end
 local nop = function() end
 local resetmessages = status.resetmessages or nop
 
-local function processerror(offset,eof)
-    local filename     = status.filename
-    local linenumber   = tonumber(status.linenumber) or 0
-    local lastcontext  = status.lasterrorcontext
-    local lasttexerror = status.lasterrorstring or "?"
-    local lastluaerror = status.lastluaerrorstring or "?" -- lasttexerror
-    local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
-    local lastmpserror = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
+local function processerror(offset,errortype)
+    local readstate      = status.readstate
+    local filename       = readstate.filename
+    local linenumber     = readstate.linenumber
+    local skiplinenumber = readstate.skiplinenumber
+    local errorstate     = status.errorstate
+    local lastcontext    = errorstate.errorcontext
+    local lasttexerror   = errorstate.error or "?"
+    local lastluaerror   = errorstate.luaerror or "?" -- lasttexerror
+    local luaerrorline   = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local lastmpserror   = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
     resetmessages()
     lastluaerror = gsub(lastluaerror,"%[\\directlua%]","[ctxlua]")
     tracers.printerror {
-        filename     = filename,
-        linenumber   = linenumber,
-        offset       = tonumber(offset) or 10,
-        lasttexerror = lasttexerror,
-        lastmpserror = lastmpserror,
-        lastluaerror = lastluaerror, -- can be the same as lasttexerror
-        luaerrorline = luaerrorline,
-        lastcontext  = lastcontext,
-        lasttexhelp  = tex.gethelptext and tex.gethelptext() or nil,
-        endoffile    = eof,
+        filename       = filename,
+        linenumber     = linenumber,
+        skiplinenumber = skiplinenumber,
+        offset         = tonumber(offset) or 10,
+        lasttexerror   = lasttexerror,
+        lastmpserror   = lastmpserror,
+        lastluaerror   = lastluaerror, -- can be the same as lasttexerror
+        luaerrorline   = luaerrorline,
+        lastcontext    = lastcontext,
+        lasttexhelp    = tex.gethelptext and tex.gethelptext() or nil,
+        errortype      = errortype,
     }
     if job and type(job.disablesave) == "function" then
         job.disablesave()
@@ -230,22 +272,34 @@ local busy = false
 function tracers.printerror(specification)
     if not busy then
         busy = true
+        local errorvalues  = table.swapped(tex.geterrorvalues())
         local filename     = specification.filename
         local linenumber   = specification.linenumber
         local lasttexerror = specification.lasttexerror
         local lastmpserror = specification.lastmpserror
         local lastluaerror = specification.lastluaerror
-        local lastcontext  = specification.lasterrorcontext
+        local lastcontext  = specification.lastcontext
         local luaerrorline = specification.luaerrorline
         local errortype    = specification.errortype
         local offset       = specification.offset
         local endoffile    = specification.endoffile
         local report       = errorreporter(luaerrorline)
-        if endoffile then
+        if errortype == errorvalues.eof then
             report("runaway error: %s",lasttexerror or "-")
             if not quitonerror and texio.terminal then
                 texio.terminal() -- not well tested
             end
+        elseif errortype == errorvalues.condition then
+            linenumber = specification.skiplinenumber
+            if linenumber > 0 then
+                report("condition error on line %s in file %s: %s",linenumber,filename,lasttexerror)
+                report_nl()
+                report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
+                report_nl()
+            else
+                report("runaway condition error: %s",lasttexerror or "-")
+            end
+            quitonerror = true
         elseif not filename then
             report("fuzzy error:")
             report("  tex: %s",lasttexerror or "-")
@@ -271,9 +325,9 @@ function tracers.printerror(specification)
                     report_nl()
                     report_str(lastcontext)
                     report_nl()
-                elseif tex.show_context then
+                else
                     report_nl()
-                    tex.show_context()
+                 -- tex.show_context()
                 end
                 if lastluaerror and not match(lastluaerror,"^%s*[%?]*%s*$") then
                     print("\nlua error:\n\n",lastluaerror,"\n")
@@ -303,11 +357,12 @@ end
 luatex.wrapup(function() os.remove(file.addsuffix(tex.jobname .. "-error","log")) end)
 
 local function processwarning(offset)
-    local lastwarning  = status.lastwarningstring or "?"
-    local lastlocation = status.lastwarningtag or "?"
+    local warningstate = status.warningstate
+    local lastwarning  = warningstate.warning or "?"
+    local lastlocation = warningstate.warningtag or "?"
     resetmessages()
     tracers.printwarning {
-        lastwarning  = lastwarning ,
+        lastwarning  = lastwarning,
         lastlocation = lastlocation,
     }
 end
@@ -319,15 +374,15 @@ end
 directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
-        register('show_error_message',  nop)
-        register('show_warning_message',function()         processwarning(v)   end)
-        register('show_error_hook',     function(eof)      processerror(v,eof) end)
-        register('show_lua_error_hook', function()         processerror(v)     end)
+        register('show_error_message',   nop)
+        register('show_warning_message', function()         processwarning(v)   end)
+        register('intercept_lua_error',  function()         processerror(v)     end)
+        register('intercept_tex_error',  function(mode,eof) processerror(v,eof) end)
     else
-        register('show_error_message',  nil)
-        register('show_error_hook',     nil)
-        register('show_warning_message',nil)
-        register('show_lua_error_hook', nil)
+        register('show_error_message',   nil)
+        register('show_warning_message', nil)
+        register('intercept_lua_error',  nil)
+        register('intercept_tex_error',  nil)
     end
 end)
 
@@ -359,17 +414,19 @@ function lmx.showdebuginfo(lmxname)
 end
 
 local function showerror(lmxname)
-    local filename, linenumber, errorcontext = status.filename, tonumber(status.linenumber) or 0, ""
+    local readstate    = status.readstate()
+    local filename     = readstate.filename
+    local linenumber   = tonumber(readstate.linenumber) or 0
+    local errorcontext = ""
     if not filename then
-        filename, errorcontext = 'unknown', 'error in filename'
-    elseif type(filename) == "number" then
-        filename, errorcontext = format("<read %s>",filename), 'unknown error'
+        filename     = status.iocodes and status.iocodes[readstate.iocode] or 'unknown'
+        errorcontext = 'error in filename'
     else
         errorcontext = tracers.showlines(filename,linenumber,offset)
     end
     local variables = {
         ['title']                = 'ConTeXt Error Information',
-        ['errormessage']         = status.lasterrorstring,
+        ['errormessage']         = status.errorstatus.error or "?",
         ['linenumber']           = linenumber,
         ['color-background-one'] = lmx.get('color-background-yellow'),
         ['color-background-two'] = lmx.get('color-background-purple'),
@@ -386,9 +443,9 @@ function lmx.overloaderror(v)
     if v == "scite" then
         usescitelexer = true
     end
-    callback.register('show_error_hook',     function() showerror() end) -- prevents arguments being passed
-    callback.register('show_lua_error_hook', function() showerror() end) -- prevents arguments being passed
-    callback.register('show_tex_error_hook', function() showerror() end) -- prevents arguments being passed
+    callback.register('show_error_message',  function() showerror() end)
+    callback.register('intercept_lua_error', function() showerror() end)
+    callback.register('intercept_tex_error', function() showerror() end)
 end
 
 directives.register("system.showerror", lmx.overloaderror)

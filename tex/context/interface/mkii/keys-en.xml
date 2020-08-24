@@ -960,6 +960,7 @@
 		<cd:constant name='limittext' value='limittext'/>
 		<cd:constant name='line' value='line'/>
 		<cd:constant name='linecorrection' value='linecorrection'/>
+		<cd:constant name='linedirection' value='linedirection'/>
 		<cd:constant name='lines' value='lines'/>
 		<cd:constant name='list' value='list'/>
 		<cd:constant name='listtext' value='listtext'/>

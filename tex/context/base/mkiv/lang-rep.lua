@@ -40,6 +40,10 @@ local trace_details      = false  trackers.register("languages.replacements.deta
 local report_replacement = logs.reporter("languages","replacements")
 
 local glyph_code         = nodes.nodecodes.glyph
+local glue_code          = nodes.nodecodes.glue
+
+local spaceskip_code     = nodes.gluecodes.spaceskip
+local xspaceskip_code    = nodes.gluecodes.xspaceskip
 
 local nuts               = nodes.nuts
 
@@ -47,6 +51,7 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local isglyph            = nuts.isglyph
 
@@ -105,7 +110,7 @@ lists[v_reset].attribute = unsetvalue -- so we discard 0
 local function add(root,word,replacement)
     local processor, replacement = splitprocessor(replacement,true) -- no check
     replacement = lpegmatch(stripper,replacement) or replacement
-    local list = utfsplit(word,true)
+    local list = utfsplit(word) -- ,true)
     local size = #list
     for i=1,size do
         local l = utfbyte(list[i])
@@ -169,9 +174,12 @@ local function hit(a,head)
             local lastfinal = false
             while current do
                 local char, id = isglyph(current)
-             -- if not char and id == glue_code then
-             --     char = " " -- if needed we can also deal with spaces and special nbsp and such
-             -- end
+                if not char and id == glue_code then
+                    local s = getsubtype(current)
+                    if s == spaceskip_code or s == xspaceskip_code then
+                        char = 32 -- if needed we can also deal with spaces and special nbsp and such
+                    end
+                end
                 if char then
                     local newroot = root[char]
                     if not newroot then
@@ -288,9 +296,9 @@ function replacements.handler(head)
                             i = i + 1
                         end
                         flush_list(list)
-                    elseif newlength == 0 then
-                        -- nothing gets replaced
-                        current = getnext(last)
+                 -- elseif newlength == 0 then
+                 --     -- nothing gets replaced
+                 --     current = getnext(last)
                     elseif oldlength == newlength then -- #old == #new
                         if final.word == final.replacement then
                             -- nothing to do but skip
@@ -311,7 +319,7 @@ function replacements.handler(head)
                             setchar(current,newcodes[i])
                             current = getnext(current)
                         end
-                    else -- #old > #new
+                    else -- #old > #new or #new == 0
                         for i=1,oldlength-newlength do
                             head, current = remove_node(head,current,true)
                         end

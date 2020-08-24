@@ -192,15 +192,15 @@ The start and end of a sequence of characters is signalled by a \nod {glue}, \no
 {penalty}, \nod {kern} or \nod {boundary} node. But by default also a \nod
 {hlist}, \nod {vlist}, \nod {rule}, \nod {dir}, \nod {whatsit}, \nod {ins}, and
 \nod {adjust} node indicate a start or end. You can omit the last set from the
-test by setting \lpr {hyphenationbounds} to a non|-|zero value:
+test by setting flags in \lpr {hyphenationmode}:
 
 \starttabulate[|c|l|]
-\DB value    \BC behaviour \NC \NR
+\DB value      \BC behaviour \NC \NR
 \TB
-\NC \type{0} \NC not strict \NC \NR
-\NC \type{1} \NC strict start \NC \NR
-\NC \type{2} \NC strict end \NC \NR
-\NC \type{3} \NC strict start and strict end \NC \NR
+\NC            \NC not strict \NC \NR
+\NC \type{64}  \NC strict start \NC \NR
+\NC \type{128} \NC strict end \NC \NR
+\NC \type{192} \NC strict start and strict end \NC \NR
 \LL
 \stoptabulate
 
@@ -210,11 +210,11 @@ The word start is determined as follows:
 \DB node      \BC behaviour \NC \NR
 \TB
 \BC boundary  \NC yes when wordboundary \NC \NR
-\BC hlist     \NC when hyphenationbounds 1 or 3 \NC \NR
-\BC vlist     \NC when hyphenationbounds 1 or 3 \NC \NR
-\BC rule      \NC when hyphenationbounds 1 or 3 \NC \NR
-\BC dir       \NC when hyphenationbounds 1 or 3 \NC \NR
-\BC whatsit   \NC when hyphenationbounds 1 or 3 \NC \NR
+\BC hlist     \NC when the start bit is set \NC \NR
+\BC vlist     \NC when the start bit is set \NC \NR
+\BC rule      \NC when the start bit is set \NC \NR
+\BC dir       \NC when the start bit is set \NC \NR
+\BC whatsit   \NC when the start bit is set \NC \NR
 \BC glue      \NC yes \NC \NR
 \BC math      \NC skipped \NC \NR
 \BC glyph     \NC exhyphenchar (one only) : yes (so no -- ---) \NC \NR
@@ -232,13 +232,13 @@ The word end is determined as follows:
 \BC glue      \NC yes \NC \NR
 \BC penalty   \NC yes \NC \NR
 \BC kern      \NC yes when not italic (for some historic reason) \NC \NR
-\BC hlist     \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC vlist     \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC rule      \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC dir       \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC whatsit   \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC ins       \NC when hyphenationbounds 2 or 3 \NC \NR
-\BC adjust    \NC when hyphenationbounds 2 or 3 \NC \NR
+\BC hlist     \NC when the end bit is set \NC \NR
+\BC vlist     \NC when the end bit is set \NC \NR
+\BC rule      \NC when the end bit is set \NC \NR
+\BC dir       \NC when the end bit is set \NC \NR
+\BC whatsit   \NC when the end bit is set \NC \NR
+\BC ins       \NC when the end bit is set \NC \NR
+\BC adjust    \NC when the end bit is set \NC \NR
 \LL
 \stoptabulate
 
@@ -256,52 +256,52 @@ min values to 1 and make sure that the words hyphenate at each character.
    \hbox to 2cm {%
      \vtop {%
        \hsize 1pt
-       \hyphenationbounds#1
+       \advance\hyphenationmode#1\relax
        #2
        \par}}}
 
 \startplacefigure[reference=hb:1,title={\type{one}}]
     \startcombination[4*1]
-        {\SomeTest{0}{one}} {\type{0}}
-        {\SomeTest{1}{one}} {\type{1}}
-        {\SomeTest{2}{one}} {\type{2}}
-        {\SomeTest{3}{one}} {\type{3}}
+        {\SomeTest  {0}{one}} {\type  {0}}
+        {\SomeTest {64}{one}} {\type {64}}
+        {\SomeTest{128}{one}} {\type{128}}
+        {\SomeTest{192}{one}} {\type{192}}
     \stopcombination
 \stopplacefigure
 
 \startplacefigure[reference=hb:2,title={\type{one\null two}}]
     \startcombination[4*1]
-        {\SomeTest{0}{one\null two}} {\type{0}}
-        {\SomeTest{1}{one\null two}} {\type{1}}
-        {\SomeTest{2}{one\null two}} {\type{2}}
-        {\SomeTest{3}{one\null two}} {\type{3}}
+        {\SomeTest  {0}{one\null two}} {\type  {0}}
+        {\SomeTest {64}{one\null two}} {\type {64}}
+        {\SomeTest{128}{one\null two}} {\type{128}}
+        {\SomeTest{192}{one\null two}} {\type{192}}
     \stopcombination
 \stopplacefigure
 
 \startplacefigure[reference=hb:3,title={\type{\null one\null two}}]
     \startcombination[4*1]
-        {\SomeTest{0}{\null one\null two}} {\type{0}}
-        {\SomeTest{1}{\null one\null two}} {\type{1}}
-        {\SomeTest{2}{\null one\null two}} {\type{2}}
-        {\SomeTest{3}{\null one\null two}} {\type{3}}
+        {\SomeTest  {0}{\null one\null two}} {\type  {0}}
+        {\SomeTest {64}{\null one\null two}} {\type {64}}
+        {\SomeTest{128}{\null one\null two}} {\type{128}}
+        {\SomeTest{192}{\null one\null two}} {\type{192}}
     \stopcombination
 \stopplacefigure
 
 \startplacefigure[reference=hb:4,title={\type{one\null two\null}}]
     \startcombination[4*1]
-        {\SomeTest{0}{one\null two\null}} {\type{0}}
-        {\SomeTest{1}{one\null two\null}} {\type{1}}
-        {\SomeTest{2}{one\null two\null}} {\type{2}}
-        {\SomeTest{3}{one\null two\null}} {\type{3}}
+        {\SomeTest  {0}{one\null two\null}} {\type  {0}}
+        {\SomeTest {64}{one\null two\null}} {\type {64}}
+        {\SomeTest{128}{one\null two\null}} {\type{128}}
+        {\SomeTest{192}{one\null two\null}} {\type{192}}
     \stopcombination
 \stopplacefigure
 
 \startplacefigure[reference=hb:5,title={\type{\null one\null two\null}}]
     \startcombination[4*1]
-        {\SomeTest{0}{\null one\null two\null}} {\type{0}}
-        {\SomeTest{1}{\null one\null two\null}} {\type{1}}
-        {\SomeTest{2}{\null one\null two\null}} {\type{2}}
-        {\SomeTest{3}{\null one\null two\null}} {\type{3}}
+        {\SomeTest  {0}{\null one\null two\null}} {\type  {0}}
+        {\SomeTest {64}{\null one\null two\null}} {\type {64}}
+        {\SomeTest{128}{\null one\null two\null}} {\type{128}}
+        {\SomeTest{192}{\null one\null two\null}} {\type{192}}
     \stopcombination
 \stopplacefigure
 
@@ -312,7 +312,8 @@ some control over aspects of the hyphenation and yet another one concerns
 automatic hyphens (e.g.\ \type {-} characters in the input).
 
 Hyphenation and discretionary injection is driven by a mode parameter which is
-a bitset made from the following values.
+a bitset made from the following values, some of which we saw in the previous
+examples.
 
 \starttabulate[|||]
 \NC \number \normalhyphenationmodecode           \NC honour (normal) \prm{discretionary}'s \NC \NR

@@ -111,64 +111,66 @@ local function usemodule(name,hasscheme)
 end
 
 function environment.usemodules(prefix,askedname,truename)
-    local truename = truename or environment.truefilename(askedname)
-    local hasprefix = prefix and prefix ~= ""
-    local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
-    local status = modstatus[hashname] or false -- yet unset
-    if status == 0 then
-        -- not found
-    elseif status == 1 then
-        status = status + 1
-    else
-        if trace_modules then
-            report("locating, prefix %a, askedname %a, truename %a",prefix,askedname,truename)
-        end
-        local hasscheme = url.hasscheme(truename)
-        if hasscheme then
-            -- no prefix and suffix done
-            if usemodule(truename,true) then
-                status = 1
-            else
-                status = 0
-            end
-        elseif hasprefix then
-            if usemodule(prefix .. "-" .. truename) then
-                status = 1
-            else
-                status = 0
-            end
+    local truename = truename or environment.truefilename(askedname) or askedname
+    if truename and truename ~= "" then
+        local hasprefix = prefix and prefix ~= ""
+        local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
+        local status = modstatus[hashname] or false -- yet unset
+        if status == 0 then
+            -- not found
+        elseif status == 1 then
+            status = status + 1
         else
-            for i=1,#prefixes do
-                -- todo: reconstruct name i.e. basename
-                local thename = prefixes[i] .. "-" .. truename
-                if usemodule(thename) then
+            if trace_modules then
+                report("locating, prefix %a, askedname %a, truename %a",prefix,askedname,truename)
+            end
+            local hasscheme = url.hasscheme(truename)
+            if hasscheme then
+                -- no prefix and suffix done
+                if usemodule(truename,true) then
                     status = 1
-                    break
+                else
+                    status = 0
+                end
+            elseif hasprefix then
+                if usemodule(prefix .. "-" .. truename) then
+                    status = 1
+                else
+                    status = 0
+                end
+            else
+                for i=1,#prefixes do
+                    -- todo: reconstruct name i.e. basename
+                    local thename = prefixes[i] .. "-" .. truename
+                    if usemodule(thename) then
+                        status = 1
+                        break
+                    end
+                end
+                if status then
+                    -- ok, don't change
+                elseif find(truename,"-",1,true) and usemodule(truename) then
+                    -- assume a user namespace
+                    report("using user prefixed file %a",truename)
+                    status = 1
+                elseif permit_unprefixed and usemodule(truename) then
+                    report("using unprefixed file %a",truename)
+                    status = 1
+                else
+                    status = 0
                 end
             end
-            if status then
-                -- ok, don't change
-            elseif find(truename,"-",1,true) and usemodule(truename) then
-                -- assume a user namespace
-                report("using user prefixed file %a",truename)
-                status = 1
-            elseif permit_unprefixed and usemodule(truename) then
-                report("using unprefixed file %a",truename)
-                status = 1
-            else
-                status = 0
-            end
         end
+        if status == 0 then
+            missing = true
+            report("%a is not found",askedname)
+        elseif status == 1 then
+            report("%a is loaded",trace_modules and truename or askedname)
+        else
+            report("%a is already loaded",trace_modules and truename or askedname)
+        end
+        modstatus[hashname] = status
     end
-    if status == 0 then
-        missing = true
-        report("%a is not found",askedname)
-    elseif status == 1 then
-        report("%a is loaded",trace_modules and truename or askedname)
-    else
-        report("%a is already loaded",trace_modules and truename or askedname)
-    end
-    modstatus[hashname] = status
 end
 
 statistics.register("loaded tex modules", function()

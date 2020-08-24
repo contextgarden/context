@@ -31,9 +31,10 @@ In this mode, it will set \LUA's \type {arg[0]} to the found script name, pushin
 preceding options in negative values and the rest of the command line in the
 positive values, just like the \LUA\ interpreter does.
 
-\LUAMETATEX\ will exit immediately after executing the specified \LUA\ script and is,
-in effect, a somewhat bulky stand alone \LUA\ interpreter with a bunch of extra
-preloaded libraries.
+\LUAMETATEX\ will exit immediately after executing the specified \LUA\ script and
+is, in effect, a somewhat bulky stand alone \LUA\ interpreter with a bunch of
+extra preloaded libraries. But we really want to keep the binary small, if
+possible below the 3MB which is okay for a script engine.
 
 When no argument is given, \LUAMETATEX\ will look for a \LUA\ file with the same
 name as the binary and run that one when present. This makes it possible to use
@@ -105,7 +106,7 @@ values from the \type {texconfig} table at the end of script execution (see the
 description of the \type {texconfig} table later on in this document for more
 details on which ones exactly).
 
-So let's summarize this. The handling of when is called jobname is a bit complex.
+So let's summarize this. The handling of what is called jobname is a bit complex.
 There can be explicit names set on the command line but when not set they can be
 taken from the \type {texconfig} table.
 
@@ -117,7 +118,9 @@ taken from the \type {texconfig} table.
 
 These names are initialized according to \type {--luaonly} or the first filename
 seen in the list of options. Special treatment of \type {&} and \type {*} as well
-as interactive startup is gone.
+as interactive startup is gone but we still enter \TEX\ via an forced \type {\input}
+into the input buffer. \footnote {This might change at some point into an explicit
+loading triggered via \LUA.}
 
 When we are in \TEX\ mode at some point the engine needs a filename, for instance
 for opening a log file. At that moment the set jobname becomes the internal one
@@ -132,6 +135,12 @@ access etc.\ internally uses the current code page but to the user is exposed as
 % fileio_state     .jobname         : a tex string (set when a (log) file is opened)
 % engine_state     .startup_jobname : handles by option parser
 % environment_state.input_name      : temporary interceptor
+
+There is an extra options \type{--permitloadlib} that needs to be given when you
+load external libraries via \LUA. Although you could manage this via \LUA\ itself
+in a startup script, the reason for having this as option is the wish for
+security (at some point that became a demand for \LUATEX), so this might give an
+extra feeling of protection.
 
 \stopsubsection
 
@@ -199,8 +208,10 @@ some care you can deal with \UNICODE\ just fine.
 There are some more libraries present. These are discussed on a later chapter.
 For instance we embed \type {luasocket} but contrary to \LUATEX\ don't embed the
 related \LUA\ code. An adapted version of \type {luafilesystem} is also included.
-There is a more extensive math library and there are libraries that deal with
-encryption and compression.
+There are more extensive math libraries and there are libraries that deal with
+encryption and compression. At some point some of these might become so called
+optional libraries (read: the handful that we provide interfaces for but that get
+loaded on demand).
 
 \stopsection
 

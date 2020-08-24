@@ -256,8 +256,22 @@ do
         return result
     end
 
-    function metapost.nofscriptruns()
-        return runs
+    if CONTEXTLMTXMODE > 0 then
+
+        function metapost.nofscriptruns()
+            local c = mplib.getcallbackstate()
+            return c.count, string.format(
+                "%s (file: %s, text: %s, script: %s, log: %s)",
+                c.count, c.file, c.text, c.script, c.log
+            )
+        end
+
+    else
+
+        function metapost.nofscriptruns()
+            return runs
+        end
+
     end
 
     -- writers

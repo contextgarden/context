@@ -16,14 +16,15 @@
 The first version of \LUATEX, made by Hartmut after we discussed the possibility
 of an extension language, only had a few extra primitives and it was largely the
 same as \PDFTEX. It was presented to the public in 2005. As part of the Oriental
-\TEX\ project, Taco merged substantial parts of \ALEPH\ into the code and some
-more primitives were added. Then we started more fundamental experiments. After
-many years, when the engine had become more stable, the decision was made to
-clean up the rather hybrid nature of the program. This means that some primitives
-were promoted to core primitives, often with a different name, and that others
-were removed. This also made it possible to start cleaning up the code base. In
-\in {chapter} [enhancements] we discuss some new primitives, here we will cover
-most of the adapted ones.
+\TEX\ project, Taco merged some parts of \ALEPH\ into the code and some more
+primitives were added. Then we started more fundamental experiments. After many
+years, when the engine had become more stable, the decision was made to clean up
+the rather hybrid nature of the program. This means that some primitives were
+promoted to core primitives, often with a different name, and that others were
+removed. This also made it possible to start cleaning up the code base, which
+showed decades of stepwise additions to original \TEX. In \in {chapter}
+[enhancements] we discuss some new primitives, here we will cover most of the
+adapted ones.
 
 During more than a decade stepwise new functionality was added and after 10 years
 the more of less stable version 1.0 was presented. But we continued and after
@@ -50,10 +51,10 @@ most still comes from original Knuthian \TEX. But we divert a bit.
 \startitemize
 
 \startitem
-    The current code base is written in \CCODE, not \PASCAL. The original \CWEB\
+    The current code base is written in \CCODE, not \PASCAL. The original \WEB\
     documentation is kept when possible and not wrapped in tagged comments. As a
     consequence instead of one large file plus change files, we now have multiple
-    files organized in categories like \type {tex}, \type {luaf}, \type
+    files organized in categories like \type {tex}, \type {lua}, \type
     {languages}, \type {fonts}, \type {libraries}, etc. There are some artifacts
     of the conversion to \CCODE, but these got (and get) removed stepwise. The
     documentation, which actually comes from the mix of engines (via so called
@@ -61,8 +62,8 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     close as possible to the original so that the documentation of the
     fundamentals behind \TEX\ by Don Knuth still applies. However, because we use
     \CCODE, some documentation is a bit off. Also, most global variables are now
-    collected in structures, but the original names were kept. There are lots of
-    so called macros too.
+    collected in structures, but the original names and level of abstraction were
+    mostly kept. On the other hand, opening up had its impact on the code.
 \stopitem
 
 \startitem
@@ -74,14 +75,20 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     wherever we like. There are various options to control discretionary
     injection and related penalties are now integrated in these nodes. Language
     information is now bound to glyphs. The number of languages in \LUAMETATEX\
-    is smaller than in \LUATEX.
+    is smaller than in \LUATEX. Control over discretionaries is more granular and
+    now managed by less variables.
 \stopitem
 
 \startitem
     There is no pool file, all strings are embedded during compilation. This also
     removed some memory constraints. We kept token and node memory management
     because it is convenient and efficient but parts were reimplemented in order
-    to remove some constraints. Token memory management is largely the same.
+    to remove some constraints. Token memory management is largely the same. All
+    the other large memory structures, like those related to nesting, the save
+    stack, input levels, the hash table and table of equivalents, etc. now all
+    start out small and are enlarged when needed, where maxima are controlled in
+    the usual way. In principle the initial memory footprint is smaller while at
+    the same time we can go real large.
 \stopitem
 
 \startitem
@@ -123,6 +130,12 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     implemented. This is no big deal because it is possible to use the scanner
     library to implement them as needed, which depends on the macro package and
     backend.
+\stopitem
+
+\startitem
+    The math style related primitives can use numbers as well as symbolic names.
+    There is some more (control over) math anyway, which is a side effect of
+    supporting \OPENTYPE\ math.
 \stopitem
 
 \startitem
@@ -169,6 +182,20 @@ features, but with a few small adaptations.
     Register management in \LUAMETATEX\ uses the \OMEGA|/|\ALEPH\ model, so the
     maximum value is 65535 and the implementation uses a flat array instead of
     the mixed flat & sparse model from \ETEX.
+\stopitem
+
+\startitem
+    Because we have more nodes, conditionals, etc.\ the \ETEX\ status related
+    variables are adapted to \LUAMETATEX: we use different \quote {constants},
+    but that should be no problem because any sane macro package uses
+    abstraction.
+\stopitem
+
+\startitem
+    The \type {\scantokens} primitive is now using the same mechanism as \LUA\
+    print|-|to|-|\TEX\ uses, which simplifies the code. There is a little
+    performance hit but it will not be noticed in \CONTEXT, because we never use
+    this primitive.
 \stopitem
 
 \startitem
@@ -292,7 +319,8 @@ Here is a summary of inherited functionality:
 
 \startitem
     Glues {\it immediately after} direction change commands are not legal
-    breakpoints. There is a bit more sanity testing for the direction state.
+    breakpoints. There is a bit more sanity testing for the direction state. This
+    can be configured.
 \stopitem
 
 \startitem
@@ -303,7 +331,7 @@ Here is a summary of inherited functionality:
 \startitem
     There are no direction related primitives for page and body directions. The
     paragraph, text and math directions are specified using primitives that
-    take a number.
+    take a number. The three letter codes are dropped.
 \stopitem
 
 \stopitemize
@@ -334,7 +362,10 @@ The single internal memory heap that traditional \TEX\ used for tokens and nodes
 is split into two separate arrays. Each of these will grow dynamically when
 needed. Internally a token or node is an index into these arrays. This permits
 for an efficient implementation and is also responsible for the performance of
-the core. The original documentation in \TEX\ The Program mostly applies!
+the core. All other data structures are mostly the same but managed dynamically
+too. Because we operate in a 64 bit world, the parallel table of equivalents
+needed for managing levels, is gone. Anyhow, the original documentation in \TEX\
+The Program mostly applies!
 
 \stopsubsection
 
@@ -352,10 +383,6 @@ assignments don't show up when using the \ETEX\ tracing routines \prm
 {tracingassigns} and \prm {tracingrestores} but we don't see that as a real
 limitation. It also saves a lot of clutter.
 
-A side|-|effect of the current implementation is that \prm {global} is now more
-expensive in terms of processing than non|-|global assignments but not many users
-will notice that.
-
 The glyph ids within a font are also managed by means of a sparse array as glyph
 ids can go up to index $2^{21}-1$ but these are never accessed directly so again
 users will not notice this.
@@ -367,13 +394,15 @@ users will not notice this.
 \topicindex {csnames}
 
 Single|-|character commands are no longer treated specially in the internals,
-they are stored in the hash just like the multiletter csnames.
+they are stored in the hash just like the multiletter control sequences. This is
+a side effect of going \UNICODE\ and \UTF. Where using 256 slots in an array add
+no burden supporting the whole \UNICODE\ range is a waste of space. Therefore,
+also active characters are internally implemented as a special type of
+multi|-|letter control sequences that uses a prefix that is otherwise impossible
+to obtain.
 
 The code that displays control sequences explicitly checks if the length is one
 when it has to decide whether or not to add a trailing space.
-
-Active characters are internally implemented as a special type of multi|-|letter
-control sequences that uses a prefix that is otherwise impossible to obtain.
 
 \stopsubsection
 
@@ -381,12 +410,17 @@ control sequences that uses a prefix that is otherwise impossible to obtain.
 
 \topicindex {files+binary}
 
-All of the internal code is changed in such a way that if one of the \type
-{read_xxx_file} callbacks is not set, then the file is read by a \CCODE\ function
-using basically the same convention as the callback: a single read into a buffer
-big enough to hold the entire file contents. While this uses more memory than the
-previous code (that mostly used \type {getc} calls), it can be quite a bit faster
-(depending on your \IO\ subsystem). So far we never had issues with this approach.
+All input now goes via \LUA: files loaded with \type {\input} as well as files
+that are opened with \type {\openin}. Actually the later has to be implemented
+in terms of macros and \LUA\ calls. This also means that compared to \LUATEX\
+the internal handling of input has been changed but users won't notice that.
+
+Setting a callback is expected now. Although reading input natively using \type
+{getc} calls is more efficient, we now fetch lines from \LUA, put them in a
+buffer and then pick successive bytes (keep in mind that we read \UTF) from that.
+The performance is quite ok, also because \LUA\ is fast, todays operating systems
+cache, and storage media have become very fast. Also, \TEX\ is spending more time
+messing around with what it has input than actually reading input.
 
 \stopsubsection
 
@@ -419,9 +453,9 @@ more details anyway.
 The information that goes into the log file can be different from \LUATEX, and
 might even differ a bit more in the future. The main reason is that inside the
 engine we have more granularity, which for instance means that we output subtype
-related information when nodes are printed. Of course we could have offered a
-compatibility mode but it serves no purpose. Over time there have been many
-subtle changes to control logs in the \TEX\ ecosystems so another one is
+and attribute related information when nodes are printed. Of course we could have
+offered a compatibility mode but it serves no purpose. Over time there have been
+many subtle changes to control logs in the \TEX\ ecosystems so another one is
 bearable.
 
 In a similar fashion, there is a bit different behaviour when \TEX\ expects
@@ -429,7 +463,10 @@ input, which in turn is a side effect of removing the interception of \type {*}
 and \type {&} which made for cleaner code (quite a bit had accumulated as side
 effect of continuous adaptations in the \TEX\ ecosystems). There was already code
 that was never executed, simply as side effect of the way \LUATEX\ initializes
-itself (one needs to enable classes of primitives for instance).
+itself (one needs to enable classes of primitives for instance). Keep in mind
+that over time system dependencies have been handles with \TEX\ change files, the
+\WEBC\ infrastructure, \KPSE\ features, compilation variables and flags, etc. In
+\LUAMETATEX\ we try to minimize all that.
 
 \stopsubsection
 

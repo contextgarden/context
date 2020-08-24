@@ -19,13 +19,26 @@
 
 \enablemode[no-timing] \usemodule[timing]
 
+\usemodule[article-basic]
+
 \setuplayout
-  [topspace=1cm,
-   bottomspace=.5cm,
-   header=0pt,
-   width=middle,
-   height=middle,
+  [tight]
+  [footer=15pt,
    style=\tt]
+
+\setuplayout
+  [tight]
+
+\setupbodyfont
+  [10pt]
+
+% \setuplayout
+%   [topspace=1cm,
+%    bottomspace=.5cm,
+%    header=0pt,
+%    width=middle,
+%    height=middle,
+%    style=\tt]
 
 \setupfootertexts
   [\getdocumentfilename{1}-luatex-progress.lut \emdash\ \pagenumber]

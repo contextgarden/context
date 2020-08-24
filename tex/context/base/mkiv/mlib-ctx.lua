@@ -335,12 +335,13 @@ statistics.register("metapost", function()
     if n and n > 0 then
         local elapsedtime = statistics.elapsedtime
         local elapsed     = statistics.elapsed
+        local runs, stats = metapost.nofscriptruns()
         local instances,
               memory      = metapost.getstatistics(true)
-        return format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %i, memory: %0.3f M",
+        return format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %s, memory: %0.3f M",
             elapsedtime(metapost), elapsedtime(mplib), elapsedtime(metapost.exectime), n,
             elapsedtime((elapsed(metapost) + elapsed(mplib) + elapsed(metapost.exectime)) / n),
-            instances, metapost.nofscriptruns(),memory/(1024*1024))
+            instances, stats and stats or runs, memory/(1024*1024))
     else
         return nil
     end

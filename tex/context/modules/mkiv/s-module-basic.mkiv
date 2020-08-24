@@ -25,8 +25,6 @@
 %D him when you run into problems. Bugs in this style can be sent to
 %D Hans.
 
-\showframe
-
 \usemodule[abbreviations-words]
 
 \startmodule[modules-basics]
@@ -45,20 +43,24 @@
 
 \let\module\setupdocument
 
-\definepalet [module:unknown] [localone=black,localtwo=white]
+\definepalet [module:unknown] [locallocalone=darkyellow,localtwo=darkred,localthree=white,localfour=darkgray]
 
-\definepalet [module:tex]     [localone=blue,localtwo=green]
-\definepalet [module:mkii]    [localone=blue,localtwo=green]
-\definepalet [module:mkiv]    [localone=blue,localtwo=green]
-\definepalet [module:mkvi]    [localone=blue,localtwo=green]
+\definepalet [module:tex]     [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:mkii]    [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:mkiv]    [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:mkvi]    [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:mkxl]    [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:mklx]    [localone=darkblue,localtwo=darkgreen,localthree=white,localfour=darkgray]
 
-\definepalet [module:lua]     [localone=red,localtwo=green]
-\definepalet [module:cld]     [localone=red,localtwo=green]
+\definepalet [module:lua]     [localone=darkred,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:lmt]     [localone=darkred,localtwo=darkgreen,localthree=white,localfour=darkgray]
+\definepalet [module:cld]     [localone=darkred,localtwo=darkgreen,localthree=white,localfour=darkgray]
 
-\definepalet [module:mp]      [localone=red,localtwo=blue]
-\definepalet [module:mpii]    [localone=red,localtwo=blue]
-\definepalet [module:mpiv]    [localone=red,localtwo=blue]
-\definepalet [module:metapost][localone=red,localtwo=blue]
+\definepalet [module:mp]      [localone=darkred,localtwo=darkblue,localthree=white,localfour=darkgray]
+\definepalet [module:mpii]    [localone=darkred,localtwo=darkblue,localthree=white,localfour=darkgray]
+\definepalet [module:mpiv]    [localone=darkred,localtwo=darkblue,localthree=white,localfour=darkgray]
+\definepalet [module:mpxl]    [localone=darkred,localtwo=darkblue,localthree=white,localfour=darkgray]
+\definepalet [module:metapost][localone=darkred,localtwo=darkblue,localthree=white,localfour=darkgray]
 
 \setuppalet
   [module:unknown]
@@ -67,12 +69,10 @@
 
     StartPage ;
 
-        color local_white ; local_white := .8white ;
-        color local_one   ; local_one   := \MPcolor{localone} randomized (.6,.8) ;
-        color local_two   ; local_two   := \MPcolor{localtwo} randomized (.3,.4) ;
-
-        color local_one   ; local_one   := .75[\MPcolor{localone},white] ;
-        color local_two   ; local_two   := .75[\MPcolor{localtwo},white] ;
+        color local_one   ; local_one   := .6 * \MPcolor{localone} ;
+        color local_two   ; local_two   := .6 * \MPcolor{localtwo} ;
+        color local_three ; local_three :=      \MPcolor{localthree} ;
+        color local_four  ; local_four  :=      \MPcolor{localfour} ;
 
         numeric width  ; width  := bbwidth  Page ;
         numeric height ; height := bbheight Page ;
@@ -84,12 +84,13 @@
                 ddy := 0 ; sx := 60u ;
                 for i=1 upto (4 randomized 2) :
                     sy := 7u randomized 3u ;
-                    fill unitsquare xyscaled(sx,sy) shifted (0,ddy) withcolor local_two ;
+                    fill unitsquare xyscaled(sx,sy) shifted (0,ddy)
+                        withcolor local_two ;
                     ddy := ddy + sy + 4u ;
                 endfor ;
             ) ;
             p := p shifted (dx,dy) shifted - center p ;
-            fill boundingbox p enlarged 8u withcolor local_white ;
+            fill boundingbox p enlarged 8u withcolor local_four ;
             fill boundingbox p enlarged 4u withcolor local_one ;
             draw p ;
         enddef ;
@@ -111,7 +112,7 @@
             draw anchored.urt(textext("\bf\strut\documentvariable{subtitle}") ysized 1.5cm,urcorner Page shifted (-1cm,-10cm)) ;
             draw anchored.urt(textext("\bf\strut\documentvariable{author}")   ysized 1.5cm,lrcorner Page shifted (-1cm,  5cm)) ;
             draw anchored.urt(textext("\bf\strut\currentdate")                ysized 1.5cm,lrcorner Page shifted (-1cm,  3cm)) ;
-        ) withcolor .25white ;
+        ) withcolor local_three ;
 
     StopPage ;
 

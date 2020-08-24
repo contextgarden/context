@@ -194,7 +194,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6529, stripped down to: 2933
+-- original size: 6405, stripped down to: 2865
 
 if not modules then modules={} end modules ['l-lua']={
  version=1.001,
@@ -290,9 +290,6 @@ function optionalrequire(...)
  if ok then
   return result
  end
-end
-if lua then
- lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
 end
 local flush=io.flush
 if flush then
@@ -13984,7 +13981,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 10182, stripped down to: 7498
+-- original size: 9781, stripped down to: 7325
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -14158,17 +14155,10 @@ function statistics.show()
    return format("%s, type: %s, binary subtree: %s",
     os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
   end)
-  if LUATEXENGINE=="luametatex" then
-   register("used engine",function()
-    return format("%s version: %s, functionality level: %s, format id: %s, compiler: %s",
-     LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,LUATEXFORMATID,status.used_compiler)
-   end)
-  else
-   register("used engine",function()
-    return format("%s version: %s, functionality level: %s, banner: %s",
-     LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,lower(status.banner))
-   end)
-  end
+  register("used engine",function()
+   return format("%s version: %s, functionality level: %s, banner: %s",
+    LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,lower(status.banner))
+  end)
   register("used hash slots",function()
    return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
   end)
@@ -14183,15 +14173,10 @@ function statistics.show()
    end
   end
   register("lua properties",function()
-   local hashchar=tonumber(status.luatex_hashchars)
-   local mask=lua.mask or "ascii"
+   local hash=2^status.luatex_hashchars
+   local mask=load([[τεχ = 1]]) and "utf" or "ascii"
    return format("engine: %s %s, used memory: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
-    jit and "luajit" or "lua",
-    LUAVERSION,
-    statistics.memused(),
-    hashchar and 2^hashchar or "unknown",
-    mask,
-    mask=="utf" and "τεχ" or "tex")
+    jit and "luajit" or "lua",LUAVERSION,statistics.memused(),hash,mask,mask=="utf" and "τεχ" or "tex")
   end)
   register("runtime",statistics.runtime)
   logs.newline() 
@@ -14246,6 +14231,13 @@ function statistics.tracefunction(base,tag,...)
   base[name]=function(n,k,v) stat[k]=stat[k]+1 return func(n,k,v) end
   statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
  end
+end
+function status.getreadstate()
+ return {
+  filename=status.filename   or "?",
+  linenumber=status.linenumber or 0,
+  iocode=status.inputid or 0,
+ }
 end
 
 
@@ -25899,7 +25891,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 11725, stripped down to: 8417
+-- original size: 11612, stripped down to: 8339
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25950,14 +25942,13 @@ local function secondaryflags(arguments)
  end
  return concat(flags," ")
 end
-local template=[[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
+local template=[[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %redirect%]]
 local checkers={
  primaryflags="verbose",
  secondaryflags="verbose",
  luafile="readable",
  texfile="readable",
  redirect="string",
- dump="string",
  binarypath="string",
 }
 local runners={
@@ -26058,7 +26049,6 @@ function environment.make_format(formatname)
   secondaryflags=secondaryflags,
   luafile=quoted(fullluasourcename),
   texfile=quoted(fulltexsourcename),
-  dump=os.platform=="unix" and "\\\\dump" or "\\dump",
  }
  if silent then
   specification.redirect="> temp.log"
@@ -26189,8 +26179,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040387
--- stripped bytes    : 410960
+-- original bytes    : 1039749
+-- stripped bytes    : 410641
 
 -- end library merge
 

@@ -121,7 +121,8 @@ In the \type {node}, \type {tex} and \type {status} library we no longer have
 helpers and variables that relate to the backend. The \LUAMETATEX\ engine is in
 principle \DVI\ and \PDF\ unaware. There are only generic whatsit nodes that can
 be used for some management related tasks. For instance you can use them to
-implement user nodes.
+implement user nodes. More extensive status information is provided in the
+overhauled status library.
 
 The margin kern nodes are gone and we now use regular kern nodes for them. As a
 consequence there are two extra subtypes indicating the injected left or right
@@ -139,11 +140,16 @@ find_write_file find_format_file open_data_file
 The callbacks related to errors are changed:
 
 \starttyping
-intercept_tex_error intercept_lua_error,
+intercept_tex_error intercept_lua_error
 show_error_message show_warning_message
 \stoptyping
 
-and a new ont \type {if_end_of_file} has been added to the repertoire.
+There is a hook that gets called when one of the fundamental memory structures
+gets reallocated.
+
+\starttyping
+trace_memory
+\stoptyping
 
 The (job) management hooks are kept:
 
@@ -163,18 +169,9 @@ show_whatsit
 Being the core of extensibility, the typesetting callbacks of course stayed. This
 is what we ended up with:
 
-% \ctxlua{inspect(table.sortedkeys(callbacks.list))}
-
-\starttyping
-find_log_file, find_format_file, open_data_file, if_end_of_file, process_jobname,
-start_run, stop_run, define_font, pre_output_filter, buildpage_filter,
-hpack_filter, vpack_filter, hyphenate, ligaturing, kerning, pre_linebreak_filter,
-linebreak_filter, post_linebreak_filter, append_to_vlist_filter, mlist_to_hlist,
-pre_dump, start_file, stop_file, intercept_tex_error, intercept_lua_error,
-show_error_message, show_warning_message, hpack_quality, vpack_quality,
-insert_local_par, contribute_filter, build_page_insert, wrapup_run, new_graf,
-make_extensible, show_whatsit
-\stoptyping
+\startalign[flushleft,nothyphenated]
+\tt \cldcontext{table.concat(table.sortedkeys(callbacks.list), ", ")}
+\stopalign
 
 As in \LUATEX\ font loading happens with the following callback. This time it
 really needs to be set because there is no built|-|in font loader.
@@ -186,7 +183,7 @@ define_font
 There are all kinds of subtle differences in the implementation, for instance we
 no longer intercept \type {*} and \type {&} as these were already replaced long
 ago in \TEX\ engines by command line options. Talking of options, only a few are
-left.
+left. All input goes via \LUA, even the console.
 
 We took our time for reaching a stable state in \LUATEX. Among the reasons is the
 fact that most was experimented with in \CONTEXT. It took many man|-|years to
@@ -237,7 +234,7 @@ if luatex and luametatex then
     luatex     = table.tohash(luatex)
     luametatex = table.tohash(luametatex)
 
-    context.page()
+ -- context.page()
 
     context("The following primitives are available in \\LUATEX\\ but not in \\LUAMETATEX.")
     context("Some of these are emulated in \\CONTEXT.")
@@ -252,7 +249,7 @@ if luatex and luametatex then
     context.stopcolumns()
 
 
-    context.page()
+ -- context.page()
 
     context("The following primitives are available in \\LUAMETATEX\\ only.")
     context("At some point in time some might be added to \\LUATEX.")

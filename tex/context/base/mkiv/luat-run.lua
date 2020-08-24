@@ -62,7 +62,9 @@ local function stop_run()
     if trace_tex_status then
         logs.newline()
         for k, v in table.sortedhash(status.list()) do
-            report_tex("%S=%S",k,v)
+            if type(v) ~= "table" then
+                report_tex("%S=%S",k,v)
+            end
         end
     end
     if quit then
@@ -125,10 +127,10 @@ appendgroup(wrapupactions,"user")
 appendgroup(cleanupactions,"system")
 appendgroup(cleanupactions,"user")
 
-local function wrapup_run()
+local function wrapup_run(someerror)
     local runner = wrapupactions.runner
     if runner then
-        runner()
+        runner(someerror) -- we could use the error flag in lmtx
     end
 end
 

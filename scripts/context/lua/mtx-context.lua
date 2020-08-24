@@ -628,7 +628,7 @@ function scripts.context.run(ctxdata,filename)
      -- files    = { }
     elseif #files > 0 then
         -- the list of given files is processed using the stub file
-        mainfile = usedfiles.yes
+        mainfile = usedfiles.yes -- this can become "" for luametatex/lmtx
         filelist = files
         files    = { }
     else
@@ -821,19 +821,11 @@ function scripts.context.run(ctxdata,filename)
                  -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
---                     ["fmt"]                   = formatfile,
---                     ["lua"]                   = scriptfile,
+--                  ["fmt"]                   = formatfile,
+--                  ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
                     ["jithash"]               = a_jithash,
                 }
-                --
-                if not a_timing then
-                    -- okay
-                elseif c_flags.usemodule then
-                    c_flags.usemodule = format("timing,%s",c_flags.usemodule)
-                else
-                    c_flags.usemodule = "timing"
-                end
                 --
                 local directives = { }
                 --
@@ -1012,7 +1004,7 @@ function scripts.context.run(ctxdata,filename)
                     report("you can process (timing) statistics with:",jobname)
                     report()
                     report("context --extra=timing '%s'",jobname)
-                    report("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
+                 -- report("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
                     report()
                 end
             else

@@ -15,6 +15,7 @@ local nuts          = nodes.nuts
 local getnext       = nuts.getnext
 local getsubtype    = nuts.getsubtype
 local copy_node     = nuts.copy
+local flush_list    = nuts.flush_list
 local count         = nuts.count
 local isglyph       = nuts.isglyph
 local getprop       = nuts.getprop
@@ -27,6 +28,7 @@ local report_error  = logs.reporter("node-aux:error")
 local function set_components(base,list)
     local t = { }
     local n = 0
+    local l = list
     while list do
         local char = isglyph(list)
         if char then
@@ -35,6 +37,9 @@ local function set_components(base,list)
         end
         list = getnext(list)
     end
+    -- was forgotten:
+    flush_list(l)
+    --
     setprop(base,"components",n > 0 and t or false)
 end
 

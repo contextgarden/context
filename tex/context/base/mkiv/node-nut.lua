@@ -296,6 +296,7 @@ nuts.getdepth         = direct.getdepth
 nuts.setdepth         = direct.setdepth
 nuts.getshift         = direct.getshift
 nuts.setshift         = direct.setshift
+nuts.gettotal         = direct.gettotal
 
 -- lmtx compatibility
 
@@ -465,6 +466,17 @@ if not nuts.getpre then
     function nuts.setpre    (n,h) d_setfield(d,"pre",    h) end
     function nuts.setpost   (n,h) d_setfield(d,"post",   h) end
     function nuts.setreplace(n,h) d_setfield(d,"replace",h) end
+
+end
+
+if not nuts.gettotal then
+
+    local d_getheight = direct.getheight
+    local d_getdepth  = direct.getdepth
+
+    function nuts.gettotal(n)
+        return (d_getheight(n) or 0) + (d_getdepth(n) or 0)
+    end
 
 end
 

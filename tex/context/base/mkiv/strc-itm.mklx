@@ -1561,7 +1561,7 @@
      \m_strc_itemgroups_text_distance
      {.5\interwordspace\s!plus.5\emwidth}%
      {\interwordspace  \s!plus  \emwidth}%
-     {\emwidth         \s!plus  \interwordstretch\!!minus\interwordshrink}}
+     {\emwidth         \s!plus  \interwordstretch\s!minus\interwordshrink}}
 
 % \unexpanded\def\strc_itemgroups_default_command
 %   {\EveryPar{\ignorespaces}% needed ?

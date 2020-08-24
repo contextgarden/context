@@ -1,0 +1,177 @@
+if not modules then modules = { } end modules ['trac-tim'] = {
+    version   = 1.001,
+    comment   = "companion to m-timing.tex",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local format, gsub = string.format, string.gsub
+local concat, sort = table.concat, table.sort
+local next, tonumber = next, tonumber
+
+moduledata          = moduledata or { }
+local progress      = moduledata.progress or { }
+moduledata.progress = progress
+
+local report_timing = logs.reporter("timing")
+
+if not nodes then nodes = { } end -- when loaded in mtxrun
+
+progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
+
+-- storage
+
+function progress.store()
+    nodes.snapshots.takesample()
+end
+
+function progress.save(name)
+    local filename = (name or progress.defaultfilename) .. ".lut"
+    report_timing("saving data in %a",filename)
+    table.save(filename,nodes.snapshots.getsamples())
+    nodes.snapshots.resetsamples()
+end
+
+-- conversion
+
+local processed = { }
+
+local function convert(name)
+    name = name ~= "" and name or progress.defaultfilename
+    if not processed[name] then
+        local pages = 0
+        local names = { }
+        local top   = { }
+        local bot   = { }
+        local siz   = { }
+        local paths = { }
+        local data  = table.load(name .. ".lut")
+        if data then
+            pages = #data
+            if pages > 1 then
+
+                local factor = 100
+
+                local function path(tag,subtag,tagname)
+                    local tagname = tag .. ": " .. subtag
+                    local b, t, s = nil, nil, { }
+                    for k=1,#data do
+                        local v = data[k][tag]
+                        v = v and v[subtag]
+                        if v then
+                            if type(v) == "table" then
+                                set[tagname] = tonumber(v.set)
+                                v = tonumber(v.top)
+                            else
+                                v = tonumber(v)
+                            end
+                            if v then
+                                if b then
+                                    if v > t then t = v end
+                                    if v < b then b = v end
+                                else
+                                    t = v
+                                    b = v
+                                end
+                            else
+                                v = 0
+                            end
+                        else
+                            v = 0
+                        end
+                        s[k] = v
+                    end
+                    if not b then
+                        -- safeguard against updates
+                        b = 0
+                        t = 0
+                    end
+                    top[tagname] = gsub(format("%.3f",t),"%.000$","")
+                    bot[tagname] = gsub(format("%.3f",b),"%.000$","")
+                    local delta = t - b
+                    if delta == 0 then
+                        delta = 1
+                    else
+                        delta = factor/delta
+                    end
+                    for k=1,#s do
+                        s[k] = format("(%.3f,%.3f)",k,(s[k]-b)*delta)
+                    end
+                    paths[tagname] = concat(s,"--")
+                    return tagname
+                end
+
+                local function collect(category)
+                    if data[1][category] then
+                        local keys = { }
+                        for k=1,#data do
+                            for k, v in next, data[k][category] do
+                                keys[k] = true
+                            end
+                        end
+                        for k=1,#data do
+                            local m = data[k][category]
+                            for k, v in next, keys do
+                                if not m[k] then m[k] = 0 end
+                            end
+                        end
+                        for k in next, keys do
+                            names[#names+1] = path(category,k)
+                        end
+                    end
+                end
+
+                collect("nodes")
+                collect("memories")
+                collect("variables")
+                collect("texvariables")
+                collect("luavariables")
+                collect("texcallbacks")
+                collect("mpcallbacks")
+                collect("backendcallbacks")
+
+                pages = pages - 1 -- hm
+            end
+        end
+
+        sort(names)
+
+        processed[name] = {
+            names = names,
+            top   = top,
+            bot   = bot,
+            set   = set,
+            pages = pages,
+            paths = paths,
+        }
+    end
+    return processed[name]
+end
+
+progress.convert = convert
+
+function progress.set(name,tag)
+    return convert(name).set[tag] or 0
+end
+
+function progress.bot(name,tag)
+    return convert(name).bot[tag] or 0
+end
+
+function progress.top(name,tag)
+    return convert(name).top[tag] or 0
+end
+
+function progress.pages(name,tag)
+    return convert(name).pages or 0
+end
+
+function progress.path(name,tag)
+    return convert(name).paths[tag] or "origin"
+end
+
+function progress.names(name)
+    return convert(name).names or { }
+end
+

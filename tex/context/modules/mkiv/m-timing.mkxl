@@ -1,0 +1,114 @@
+%D \module
+%D   [       file=m-timing,
+%D        version=2007.12.23,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Timing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Todo: adapt to latest metafun magic.
+
+\ifdefined\ShowNamedUsage \endinput \fi
+
+%D Written at the end of 2007, this module is dedicated to Taco. Reaching this
+%D point in \LUATEX\ was a non trivial effort. By visualizing a bit what happens
+%D when pages come out of \LUATEX, you may get an idea what is involved. It took
+%D much time an dedication to reach this point in the development. Add to that
+%D those daily Skype intense discussion, testing and debugging moments. Time flies
+%D but progress is impressive. The motto of this module could be: what you see
+%D is what you get. An there is much more to come \unknown.
+
+% \usemodule[timing]
+% \setupcolors[state=start]
+% \starttext
+%     \dorecurse{200}{\input tufte \par} \ShowUsage{}
+% \stoptext
+
+\definecolor[usage:line] [darkred]
+\definecolor[usage:time] [darkblue]
+\definecolor[usage:frame][darkgray]
+
+\ctxloadluafile{trac-tim.lmt}
+
+\startluacode
+local progress = moduledata.progress
+
+function progress.show(filename,names,other)
+    if not filename or filename == "" then
+        filename = progress.defaultfilename or ""
+    end
+    for n, name in pairs(progress.names(filename)) do
+        if string.find(name,names) and name ~= other and name ~= "variables: lasttime" then
+            context.ShowNamedUsage(filename,name or "",other or "")
+        end
+    end
+end
+\stopluacode
+
+\startnotmode[no-timing]
+    \appendtoks\ctxlua{moduledata.progress.store()}\to\everystarttext
+    \appendtoks\ctxlua{moduledata.progress.store()}\to\everyshipout
+    \ctxlua{luatex.registerstopactions(function() moduledata.progress.save() end)}
+\stopnotmode
+
+\unexpanded\def\ShowNamedUsage#1#2#3%
+  {\setbox\scratchbox\vbox\bgroup
+    \startMPcode{doublefun}
+      begingroup ; save p, q, b, h, w ;
+      path p, q, b ; numeric h, w ;
+      p := \cldcontext{moduledata.progress.path("#1","#2")} ;
+    % p := p shifted -llcorner p ;
+      if bbwidth(p) > 0 :
+        h := 100 ; w := 2 * h ;
+        w := \the\textwidth-3pt ; % correct for pen
+        p := p xstretched w ;
+        b := boundingbox (llcorner p -- llcorner p shifted (w,h)) ;
+        pickup pencircle scaled 3pt ; linecap := butt ;
+        draw b withcolor \MPcolor{usage:frame} ;
+        draw p withcolor \MPcolor{usage:line} ;
+        if ("#3" <> "") and ("#3" <> "#2") :
+          q := \cldcontext{moduledata.progress.path("#1","#3")} ;
+        % q := q shifted -llcorner q ;
+          if bbwidth(q) > 1 :
+            q := q xstretched w ;
+            pickup pencircle scaled 1.5pt ; linecap := butt ;
+            draw q withcolor \MPcolor{usage:time} ;
+          fi ;
+        fi ;
+      fi ;
+      endgroup ;
+   \stopMPcode
+   \egroup
+   \scratchdimen\wd\scratchbox
+   \ifdim\scratchdimen>\zeropoint
+     \startlinecorrection[blank]
+       \box\scratchbox \endgraf
+       \hbox to \scratchdimen\bgroup
+         \tttf\strut\detokenize{#2}\hss
+         \scratchcounter=\cldcontext{moduledata.progress.set("#1","\detokenize{#2}")}\relax
+         \ifcase\scratchcounter\else
+         set:\the\scratchcounter, %
+         \fi
+         \scratchcounterone=\cldcontext{moduledata.progress.bot("#1","\detokenize{#2}")}\relax
+         \scratchcountertwo=\cldcontext{moduledata.progress.top("#1","\detokenize{#2}")}\relax
+         min:\the\scratchcounterone, %
+         max:\the\scratchcountertwo, %
+         inc:\the\numexpr\scratchcountertwo-\scratchcounterone\relax, %
+         pages:\cldcontext{moduledata.progress.pages("#1")}%
+       \egroup
+     \stoplinecorrection
+   \fi}
+
+\unexpanded\def\LoadUsage          #1{\ctxlua{moduledata.progress.convert("#1")}}
+\unexpanded\def\ShowUsage          #1{\ctxlua{moduledata.progress.show("#1",".*",       "variables: elapsed")}}
+\unexpanded\def\ShowMemoryUsage    #1{\ctxlua{moduledata.progress.show("#1","memory:.*","variables: elapsed")}}
+\unexpanded\def\ShowNodeUsage      #1{\ctxlua{moduledata.progress.show("#1","nodes:.*", "variables: elapsed")}}
+\unexpanded\def\ShowFilteredUsage#1#2{\ctxlua{moduledata.progress.show("#1","#2",       "variables: elapsed")}}
+\unexpanded\def\ShowSimpleUsage  #1#2{\ctxlua{moduledata.progress.show("#1","#2")}}
+
+\endinput

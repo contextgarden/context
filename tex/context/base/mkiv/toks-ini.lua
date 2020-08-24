@@ -158,6 +158,7 @@ if not scan_box then
         if s == "hbox" or s == "vbox" or s == "vtop" then
             put_next(create_token(s))
         end
+        return scan_list()
     end
 
     token.scan_box = scan_box
