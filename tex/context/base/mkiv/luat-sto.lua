@@ -111,7 +111,7 @@ function lua.collectgarbage(threshold)
 end
 
 statistics.register("stored bytecode data", function()
-    local nofbytecodes = CONTEXTLMTXMODE > 0 and status.luastate.bytecodes or status.lua_bytecodes
+    local nofbytecodes = CONTEXTLMTXMODE > 0 and status.luastate.bytecodes or status.luabytecodes
     local nofmodules   = (storage.nofmodules > 0 and storage.nofmodules) or (nofbytecodes - lua.firstbytecode - 1)
     local nofdumps     = (storage.noftables  > 0 and storage.noftables ) or storage.max-storage.min + 1
     local tofmodules   = storage.tofmodules or 0
