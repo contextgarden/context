@@ -804,14 +804,22 @@ if tex then
     end
 
     local timing   = false
+    local usage    = false
     local lasttime = nil
 
-    trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
-        timing = ""
-    end)
+    logs.private = {
+        enablepagetiming = function()
+            usage = true
+        end,
+        getpagetiming = function()
+            return type(usage) == "table" and usage
+        end,
+    }
+
+    trackers.register("pages.timing", function() timing = "" end)
 
     function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
-        if timing then
+        if timing or usage then
             local elapsed = statistics.currenttime(statistics)
             local average, page
             if not lasttime or real < 2 then
@@ -822,7 +830,23 @@ if tex then
                 page    = elapsed - lasttime
             end
             lasttime = elapsed
-            timing   = formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+            if timing then
+                timing = formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+            end
+            if usage then
+                usage = {
+                    page = {
+                        real = real,
+                        user = user,
+                        sub  = sub,
+                    },
+                    time = {
+                        elapsed = elapsed,
+                        page    = page,
+                        average = average,
+                    }
+                }
+            end
         end
         if real <= 0 then
             report("flushing page%s",timing)

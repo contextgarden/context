@@ -972,7 +972,7 @@ function document.setcommandline() -- has to happen at the tex end in order to e
     end
 
     if arguments.usage then
-       directives.enable("system.usage")
+       trackers.enable("system.usage")
     end
 
     if arguments.batchmode then

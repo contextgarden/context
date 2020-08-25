@@ -419,7 +419,7 @@ local function showerror(lmxname)
     local linenumber   = tonumber(readstate.linenumber) or 0
     local errorcontext = ""
     if not filename then
-        filename     = status.iocodes and status.iocodes[readstate.iocode] or 'unknown'
+        filename     = status.iocodes[readstate.iocode]
         errorcontext = 'error in filename'
     else
         errorcontext = tracers.showlines(filename,linenumber,offset)

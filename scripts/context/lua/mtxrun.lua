@@ -12734,7 +12734,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13394, stripped down to: 8882
+-- original size: 13766, stripped down to: 9174
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -12757,7 +12757,7 @@ utilities.setters=setters
 local data={}
 local trace_initialize=false 
 local frozen=true  
-function setters.initialize(filename,name,values) 
+local function initialize_setter(filename,name,values) 
  local setter=data[name]
  if setter then
   local data=setter.data
@@ -12798,8 +12798,8 @@ function setters.initialize(filename,name,values)
  end
 end
 local function set(t,what,newvalue)
- local data=t.data
- if not data.frozen then
+ local data=t.data 
+ if data and not data.frozen then
   local done=t.done
   if type(what)=="string" then
    what=settings_to_hash(what) 
@@ -12835,7 +12835,7 @@ local function set(t,what,newvalue)
 end
 local function reset(t)
  local data=t.data
- if not data.frozen then
+ if data and not data.frozen then
   for name,functions in sortedthash(data) do
    for i=1,#functions do
     functions[i](false)
@@ -12856,7 +12856,7 @@ local function disable(t,what)
   set(t,what,false)
  end
 end
-function setters.register(t,what,...)
+local function register_setter(t,what,...)
  local data=t.data
  what=lower(what)
  local functions=data[what]
@@ -12891,23 +12891,24 @@ function setters.register(t,what,...)
  end
  return false 
 end
-function setters.enable(t,what)
+local function enable_setter(t,what)
  local e=t.enable
  t.enable,t.done=enable,{}
+ set(t,what,true)
  enable(t,what)
  t.enable,t.done=e,{}
 end
-function setters.disable(t,what)
+local function disable_setter(t,what)
  local e=t.disable
  t.disable,t.done=disable,{}
  disable(t,what)
  t.disable,t.done=e,{}
 end
-function setters.reset(t)
+local function reset_setter(t)
  t.done={}
  reset(t)
 end
-function setters.list(t) 
+local function list_setter(t) 
  local list=table.sortedkeys(t.data)
  local user,system={},{}
  for l=1,#list do
@@ -12920,8 +12921,8 @@ function setters.list(t)
  end
  return user,system
 end
-function setters.show(t)
- local list=setters.list(t)
+local function show_setter(t)
+ local list=list_setter(t)
  t.report()
  for k=1,#list do
   local name=list[k]
@@ -12952,39 +12953,47 @@ function setters.show(t)
   end
  end
 end
-local enable,disable,register,list,show=setters.enable,setters.disable,setters.register,setters.list,setters.show
-function setters.report(setter,fmt,...)
+local function report_setter(setter,fmt,...)
  print(formatters["%-15s : %s\n"](setter.name,formatters[fmt](...)))
 end
-local function default(setter,name)
+local function setter_default(setter,name)
  local d=setter.data[name]
  return d and d.default
 end
-local function value(setter,name)
+local function setter_value(setter,name)
  local d=setter.data[name]
  return d and (d.value or d.default)
 end
-function setters.new(name) 
+local function new_setter(name) 
  local setter 
  setter={
   data=allocate(),
   name=name,
-  report=function(...) setters.report  (setter,...) end,
-  enable=function(...)   enable  (setter,...) end,
-  disable=function(...)   disable (setter,...) end,
-  reset=function(...)   reset   (setter,...) end,
-  register=function(...)   register(setter,...) end,
-  list=function(...)  return list (setter,...) end,
-  show=function(...)   show (setter,...) end,
-  default=function(...)  return default (setter,...) end,
-  value=function(...)  return value   (setter,...) end,
+  report=function(...)   report_setter  (setter,...) end,
+  enable=function(...)   enable_setter  (setter,...) end,
+  disable=function(...)   disable_setter (setter,...) end,
+  reset=function(...)   reset_setter   (setter,...) end,
+  register=function(...)   register_setter(setter,...) end,
+  list=function(...)  return list_setter (setter,...) end,
+  show=function(...)   show_setter (setter,...) end,
+  default=function(...)  return setter_default (setter,...) end,
+  value=function(...)  return setter_value   (setter,...) end,
  }
  data[name]=setter
  return setter
 end
-trackers=setters.new("trackers")
-directives=setters.new("directives")
-experiments=setters.new("experiments")
+setters.enable=enable_setter
+setters.disable=disable_setter
+setters.report=report_setter
+setters.register=register_setter
+setters.list=list_setter
+setters.show=show_setter
+setters.reset=reset_setter
+setters.new=new_setter
+setters.initialize=initialize_setter
+trackers=new_setter("trackers")
+directives=new_setter("directives")
+experiments=new_setter("experiments")
 local t_enable,t_disable=trackers   .enable,trackers   .disable
 local d_enable,d_disable=directives .enable,directives .disable
 local e_enable,e_disable=experiments.enable,experiments.disable
@@ -13031,11 +13040,11 @@ if environment then
  if engineflags then
   local list=engineflags["c:trackers"] or engineflags["trackers"]
   if type(list)=="string" then
-   setters.initialize("commandline flags","trackers",settings_to_hash(list))
+   initialize_setter("commandline flags","trackers",settings_to_hash(list))
   end
   local list=engineflags["c:directives"] or engineflags["directives"]
   if type(list)=="string" then
-   setters.initialize("commandline flags","directives",settings_to_hash(list))
+   initialize_setter("commandline flags","directives",settings_to_hash(list))
   end
  end
 end
@@ -13077,7 +13086,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 33035, stripped down to: 21697
+-- original size: 33699, stripped down to: 22084
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -13707,12 +13716,19 @@ if tex then
   sub=texgetcount("subpageno")
  end
  local timing=false
+ local usage=false
  local lasttime=nil
- trackers.register("pages.timing",function(v) 
-  timing=""
- end)
+ logs.private={
+  enablepagetiming=function()
+   usage=true
+  end,
+  getpagetiming=function()
+   return type(usage)=="table" and usage
+  end,
+ }
+ trackers.register("pages.timing",function() timing="" end)
  function logs.stop_page_number() 
-  if timing then
+  if timing or usage then
    local elapsed=statistics.currenttime(statistics)
    local average,page
    if not lasttime or real<2 then
@@ -13723,7 +13739,23 @@ if tex then
     page=elapsed-lasttime
    end
    lasttime=elapsed
-   timing=formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+   if timing then
+    timing=formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+   end
+   if usage then
+    usage={
+     page={
+      real=real,
+      user=user,
+      sub=sub,
+     },
+     time={
+      elapsed=elapsed,
+      page=page,
+      average=average,
+     }
+    }
+   end
   end
   if real<=0 then
    report("flushing page%s",timing)
@@ -26179,8 +26211,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1039749
--- stripped bytes    : 410641
+-- original bytes    : 1040785
+-- stripped bytes    : 410998
 
 -- end library merge
 

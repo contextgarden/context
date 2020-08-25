@@ -90,15 +90,14 @@ end
        \box\scratchbox \endgraf
        \hbox to \scratchdimen\bgroup
          \tttf\strut\detokenize{#2}\hss
-         \scratchcounter=\cldcontext{moduledata.progress.set("#1","\detokenize{#2}")}\relax
-         \ifcase\scratchcounter\else
-         set:\the\scratchcounter, %
-         \fi
-         \scratchcounterone=\cldcontext{moduledata.progress.bot("#1","\detokenize{#2}")}\relax
-         \scratchcountertwo=\cldcontext{moduledata.progress.top("#1","\detokenize{#2}")}\relax
-         min:\the\scratchcounterone, %
-         max:\the\scratchcountertwo, %
-         inc:\the\numexpr\scratchcountertwo-\scratchcounterone\relax, %
+         \scratchcounter     =\cldcontext{moduledata.progress.set("#1","\detokenize{#2}")}\relax
+         \scratchcounterone  =\cldcontext{moduledata.progress.bot("#1","\detokenize{#2}")}\relax
+         \scratchcountertwo  =\cldcontext{moduledata.progress.top("#1","\detokenize{#2}")}\relax
+         \scratchcounterthree=\numexpr\scratchcountertwo-\scratchcounterone\relax
+         \ifnum\scratchcounter     >\zerocount      set:\the\scratchcounter     \quad\fi
+         \ifnum\scratchcounterthree>\zerocount      inc:\the\scratchcounterthree\quad\fi
+         \ifnum\scratchcounterone  >\zerocount      min:\the\scratchcounterone  \quad\fi
+         \ifnum\scratchcountertwo  >\zerocount      max:\the\scratchcountertwo  \quad\fi
          pages:\cldcontext{moduledata.progress.pages("#1")}%
        \egroup
      \stoplinecorrection

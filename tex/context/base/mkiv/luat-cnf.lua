@@ -38,6 +38,7 @@ texconfig.stack_size      =   100000
 texconfig.buffer_size     = 10000000
 texconfig.token_size      = 10000000
 texconfig.node_size       = 20000000
+texconfig.max_pool        = 10000000
 
 else
 
@@ -60,6 +61,7 @@ local variablenames = CONTEXTLMTXMODE > 0 and {
     hash_extra      = true,
     nest_size       = true,
     max_strings     = true,
+    max_pool        = true,
     param_size      = true,
     save_size       = true,
     stack_size      = true,
@@ -67,6 +69,7 @@ local variablenames = CONTEXTLMTXMODE > 0 and {
     properties_size = true,
     token_size      = true,
     node_size       = true,
+    buffer_size     = true,
 } or {
     error_line      = false,
     half_error_line = false,

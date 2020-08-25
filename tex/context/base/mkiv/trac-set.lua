@@ -33,7 +33,7 @@ local data        = { }
 local trace_initialize = false -- only for testing during development
 local frozen           = true  -- this needs checking
 
-function setters.initialize(filename,name,values) -- filename only for diagnostics
+local function initialize_setter(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
      -- trace_initialize = true
@@ -81,8 +81,8 @@ end
 -- user interface code
 
 local function set(t,what,newvalue)
-    local data = t.data
-    if not data.frozen then
+    local data = t.data -- somehow this can be nil
+    if data and not data.frozen then
         local done = t.done
         if type(what) == "string" then
             what = settings_to_hash(what) -- inefficient but ok
@@ -120,7 +120,7 @@ end
 
 local function reset(t)
     local data = t.data
-    if not data.frozen then
+    if data and not data.frozen then
         for name, functions in sortedthash(data) do
             for i=1,#functions do
                 functions[i](false)
@@ -144,7 +144,7 @@ local function disable(t,what)
     end
 end
 
-function setters.register(t,what,...)
+local function register_setter(t,what,...)
     local data = t.data
     what = lower(what)
     local functions = data[what]
@@ -182,26 +182,27 @@ function setters.register(t,what,...)
     return false -- so we can use it in an assignment
 end
 
-function setters.enable(t,what)
+local function enable_setter(t,what)
     local e = t.enable
     t.enable, t.done = enable, { }
+    set(t,what,true)
     enable(t,what)
     t.enable, t.done = e, { }
 end
 
-function setters.disable(t,what)
+local function disable_setter(t,what)
     local e = t.disable
     t.disable, t.done = disable, { }
     disable(t,what)
     t.disable, t.done = e, { }
 end
 
-function setters.reset(t)
+local function reset_setter(t)
     t.done = { }
     reset(t)
 end
 
-function setters.list(t) -- pattern
+local function list_setter(t) -- pattern
     local list = table.sortedkeys(t.data)
     local user, system = { }, { }
     for l=1,#list do
@@ -215,8 +216,8 @@ function setters.list(t) -- pattern
     return user, system
 end
 
-function setters.show(t)
-    local list = setters.list(t)
+local function show_setter(t)
+    local list = list_setter(t)
     t.report()
     for k=1,#list do
         local name = list[k]
@@ -253,44 +254,52 @@ end
 
 -- we could make this into a module but we also want the rest avaliable
 
-local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
-
-function setters.report(setter,fmt,...)
+local function report_setter(setter,fmt,...)
     print(formatters["%-15s : %s\n"](setter.name,formatters[fmt](...)))
 end
 
-local function default(setter,name)
+local function setter_default(setter,name)
     local d = setter.data[name]
     return d and d.default
 end
 
-local function value(setter,name)
+local function setter_value(setter,name)
     local d = setter.data[name]
     return d and (d.value or d.default)
 end
 
-function setters.new(name) -- we could use foo:bar syntax (but not used that often)
+local function new_setter(name) -- we could use foo:bar syntax (but not used that often)
     local setter -- we need to access it in setter itself
     setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        report   = function(...) setters.report  (setter,...) end,
-        enable   = function(...)         enable  (setter,...) end,
-        disable  = function(...)         disable (setter,...) end,
-        reset    = function(...)         reset   (setter,...) end, -- can be dangerous
-        register = function(...)         register(setter,...) end,
-        list     = function(...)  return list    (setter,...) end,
-        show     = function(...)         show    (setter,...) end,
-        default  = function(...)  return default (setter,...) end,
-        value    = function(...)  return value   (setter,...) end,
+        report   = function(...)         report_setter  (setter,...) end,
+        enable   = function(...)         enable_setter  (setter,...) end,
+        disable  = function(...)         disable_setter (setter,...) end,
+        reset    = function(...)         reset_setter   (setter,...) end, -- can be dangerous
+        register = function(...)         register_setter(setter,...) end,
+        list     = function(...)  return list_setter    (setter,...) end,
+        show     = function(...)         show_setter    (setter,...) end,
+        default  = function(...)  return setter_default (setter,...) end,
+        value    = function(...)  return setter_value   (setter,...) end,
     }
     data[name] = setter
     return setter
 end
 
-trackers    = setters.new("trackers")
-directives  = setters.new("directives")
-experiments = setters.new("experiments")
+setters.enable     = enable_setter
+setters.disable    = disable_setter
+setters.report     = report_setter
+setters.register   = register_setter
+setters.list       = list_setter
+setters.show       = show_setter
+setters.reset      = reset_setter
+setters.new        = new_setter
+setters.initialize = initialize_setter
+
+trackers    = new_setter("trackers")
+directives  = new_setter("directives")
+experiments = new_setter("experiments")
 
 local t_enable, t_disable = trackers   .enable, trackers   .disable
 local d_enable, d_disable = directives .enable, directives .disable
@@ -361,12 +370,12 @@ if environment then
     if engineflags then
         local list = engineflags["c:trackers"] or engineflags["trackers"]
         if type(list) == "string" then
-            setters.initialize("commandline flags","trackers",settings_to_hash(list))
+            initialize_setter("commandline flags","trackers",settings_to_hash(list))
          -- t_enable(list)
         end
         local list = engineflags["c:directives"] or engineflags["directives"]
         if type(list) == "string" then
-            setters.initialize("commandline flags","directives", settings_to_hash(list))
+            initialize_setter("commandline flags","directives", settings_to_hash(list))
          -- d_enable(list)
         end
     end

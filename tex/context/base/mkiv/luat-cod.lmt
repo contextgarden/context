@@ -31,6 +31,8 @@ texconfig.node_size       = 20000000
 
 texconfig.max_print_line  =   100000
 texconfig.max_strings     =   500000
+texconfig.max_pool        = 10000000
+
 texconfig.hash_extra      =   200000
 
 texconfig.expand_depth    =    10000
@@ -172,6 +174,13 @@ environment.luatexfunctionality = LUATEXFUNCTIONALITY
 environment.jitsupported        = JITSUPPORTED
 environment.initex              = INITEXMODE
 environment.initexmode          = INITEXMODE
+
+-- if INITEXMODE then
+--     -- we have about that amount so we preallocate then which gives less
+--     -- reallocations (we're talking tiny record so no real gain)
+--     lua.setbytecode(1024,nil)
+--     -- but we don't want to lie about the amount either so ...
+-- end
 
 if not environment.luafilechunk then
 

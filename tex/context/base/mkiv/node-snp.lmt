@@ -38,6 +38,7 @@ function snapshots.takesample(comment)
             memories         = {
                 pool      = status.getpoolstate(),
                 hash      = status.gethashstate(),
+                lookup    = status.getlookupstate(),
                 node      = status.getnodestate(),
                 token     = status.gettokenstate(),
                 buffer    = status.getbufferstate(),
@@ -47,6 +48,9 @@ function snapshots.takesample(comment)
                 parameter = status.getparameterstate(),
                 save      = status.getsavestate(),
                 expand    = status.getexpandstate(),
+                read      = status.getreadstate(),
+                font      = status.getfontstate(),
+                language  = status.getlanguagestate(),
             },
         }
     end
