@@ -289,20 +289,20 @@ function statistics.showusage(when)
     local list   = {
         "stringstate", "poolstate",
         "hashstate", "lookupstate",
-        "nodestate", "tokenstate",
+        "nodestate", "extrastate", "tokenstate",
         "bufferstate", "inputstate", "filestate",
         "neststate", "parameterstate", "savestate",
-        "fontstate", "languagestate",
+        "fontstate", "languagestate", "markstate", "sparsestate",
     }
     local fields = { "max", "min", "set", "stp", false, "mem", "all", false, "ini", "ptr", "top" }
-    local line   = rep("-",172)
+    local line   = rep("-",190)
     do
         local t = { }
         for i=1,#list do
             t[i] = gsub(list[i],"state","")
         end
         report("%w%s",2,line)
-        report("%w%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s",5,unpack(t))
+        report("%w%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",5,unpack(t))
         report("%w%s",2,line)
     end
     for i=1,#fields do
@@ -311,9 +311,9 @@ function statistics.showusage(when)
             local t = { }
             for i=1,#list do
                 local n = s[list[i]][f]
-                t[i] = n < 0 and formatters["%w"](12) or formatters["%12i"](n)
+                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
             end
-            report("  %3s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s%12s",f,unpack(t))
+            report("  %3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",f,unpack(t))
         else
             report("")
         end
@@ -363,8 +363,18 @@ local enabled    = false
 trackers.register("system.usage", function(v)
     if v and not registered then
         logs.private.enablepagetiming()
-        luatex.registerpageactions(function() if enabled then statistics.showusage("page")   end end)
-        luatex.registerstopactions(function() if enabled then statistics.showusage("finish") end end)
+        if v ~= "summary" then
+            luatex.registerpageactions(function()
+                if enabled then
+                    statistics.showusage("page")
+                end
+            end)
+        end
+        luatex.registerstopactions(function()
+            if enabled then
+                statistics.showusage("finish")
+            end
+        end)
         registered = true
     end
     enabled = v

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['node-nut'] = {
+if not modules then modules = { } end modules ['node-MET'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

@@ -1221,6 +1221,7 @@ do  -- else too many locals
              -- ctx_setemptyfontsize()
             end
             specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
+-- specification.original = str
             if trace_defining then
                 report_defining("stop stage one")
             end
@@ -1238,11 +1239,6 @@ do  -- else too many locals
     directives.register("fonts.features.combine",function(v)
         combinefeatures = v
     end)
-
-
-
-
-
 
     implement {
         name      = "definefont_two",
@@ -1269,7 +1265,6 @@ do  -- else too many locals
                         fontdesignsize,  -- \m_font_designsize
                         scaledfontmode   -- \scaledfontmode
                     )
-
             if trace_defining then
                 report_defining("start stage two: %s, size %s, features %a & %a, mode %a",str,size,classfeatures,fontfeatures,inheritancemode)
             end
@@ -1424,6 +1419,7 @@ do  -- else too many locals
                     context(function()
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
+tfmdata.original = specification.specification
                         local id = definefont(tfmdata)
                         csnames[id] = specification.cs
                         properties.id = id
@@ -1461,6 +1457,7 @@ do  -- else too many locals
                     end)
                     return
                 else
+tfmdata.original = specification.specification
                     local id = definefont(tfmdata)
                     csnames[id] = specification.cs
                     properties.id = id

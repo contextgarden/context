@@ -1,0 +1,287 @@
+if not modules then modules = { } end modules ['node-ini'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--[[ldx--
+<p>Most of the code that had accumulated here is now separated in modules.</p>
+--ldx]]--
+
+local next, type, tostring = next, type, tostring
+local gsub = string.gsub
+local concat, remove = table.concat, table.remove
+local sortedhash, sortedkeys, swapped = table.sortedhash, table.sortedkeys, table.swapped
+
+--[[ldx--
+<p>Access to nodes is what gives <l n='luatex'/> its power. Here we implement a
+few helper functions. These functions are rather optimized.</p>
+--ldx]]--
+
+nodes               = nodes or { }
+local nodes         = nodes
+nodes.handlers      = nodes.handlers or { }
+
+local mark          = utilities.storage.mark
+local allocate      = utilities.storage.allocate
+local formatcolumns = utilities.formatters.formatcolumns
+
+local getsubtypes   = node.subtypes
+local getvalues     = node.values
+
+tex.magicconstants = { -- we use tex.constants for something else
+    running  = -1073741824, -- null_flag
+    maxdimen =  1073741823, -- max_dimen
+    trueinch =     4736286,
+}
+
+local listcodes     = mark(getsubtypes("list"))
+local rulecodes     = mark(getsubtypes("rule"))
+local dircodes      = mark(getsubtypes("dir"))
+local glyphcodes    = mark(getsubtypes("glyph"))
+local disccodes     = mark(getsubtypes("disc"))
+local gluecodes     = mark(getsubtypes("glue"))
+local leadercodes   = mark(getsubtypes("leader"))
+local fillcodes     = mark(getsubtypes("fill"))
+local boundarycodes = mark(getsubtypes("boundary"))
+local penaltycodes  = mark(getsubtypes("penalty"))
+local kerncodes     = mark(getsubtypes("kern"))
+local mathcodes     = mark(getsubtypes("math"))
+local noadcodes     = mark(getsubtypes("noad"))
+local radicalcodes  = mark(getsubtypes("radical"))
+local accentcodes   = mark(getsubtypes("accent"))
+local fencecodes    = mark(getsubtypes("fence"))
+----- fractioncodes = mark(getsubtypes("fraction"))
+local localparcodes = CONTEXTLMTXMODE > 0 and mark(getsubtypes("localpar"))
+
+if not localparcodes then
+    localparcodes = allocate { [0] = "new_graf", "local_box", "hmode_par", "penalty", "math" }
+end
+
+local function simplified(t)
+    local r = { }
+    for k, v in next, t do
+        r[k] = gsub(v,"_","")
+    end
+    return r
+end
+
+local nodecodes = simplified(node.types())
+local whatcodes = simplified(node.whatsits and node.whatsits() or { })
+
+local dirvalues  = mark(getvalues("dir"))
+local gluevalues = mark(getvalues("glue"))
+
+local whatcodes = {
+    literal     = 0x1, [0x1] = "literal",
+    latelua     = 0x2, [0x2] = "latelua",
+    userdefined = 0x3, [0x3] = "userdefined",
+    savepos     = 0x4, [0x4] = "savepos",
+    save        = 0x5, [0x5] = "save",
+    restore     = 0x6, [0x6] = "restore",
+    setmatrix   = 0x7, [0x7] = "setmatrix",
+    open        = 0x8, [0x8] = "open",
+    close       = 0x9, [0x9] = "close",
+    write       = 0xA, [0xA] = "write",
+}
+
+local usercodes = allocate {
+    [ 97] = "attribute", -- a
+    [100] = "number",    -- d
+    [102] = "float",     -- f
+    [108] = "lua",       -- l
+    [110] = "node",      -- n
+    [115] = "string",    -- s
+    [116] = "token"      -- t
+}
+
+local noadoptions = allocate {
+    set      =        0x08,
+    unused_1 = 0x00 + 0x08,
+    unused_2 = 0x01 + 0x08,
+    axis     = 0x02 + 0x08,
+    no_axis  = 0x04 + 0x08,
+    exact    = 0x10 + 0x08,
+    left     = 0x11 + 0x08,
+    middle   = 0x12 + 0x08,
+    right    = 0x14 + 0x08,
+}
+
+local literalvalues = allocate {
+    [0] = "origin",
+    [1] = "page",
+    [2] = "always",
+    [3] = "raw",
+    [4] = "text",
+    [5] = "font",
+    [6] = "special",
+}
+
+gluecodes     = allocate(swapped(gluecodes,gluecodes))
+dircodes      = allocate(swapped(dircodes,dircodes))
+boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
+noadcodes     = allocate(swapped(noadcodes,noadcodes))
+radicalcodes  = allocate(swapped(radicalcodes,radicalcodes))
+nodecodes     = allocate(swapped(nodecodes,nodecodes))
+whatcodes     = allocate(swapped(whatcodes,whatcodes))
+listcodes     = allocate(swapped(listcodes,listcodes))
+glyphcodes    = allocate(swapped(glyphcodes,glyphcodes))
+kerncodes     = allocate(swapped(kerncodes,kerncodes))
+penaltycodes  = allocate(swapped(penaltycodes,penaltycodes))
+mathcodes     = allocate(swapped(mathcodes,mathcodes))
+fillcodes     = allocate(swapped(fillcodes,fillcodes))
+disccodes     = allocate(swapped(disccodes,disccodes))
+accentcodes   = allocate(swapped(accentcodes,accentcodes))
+fencecodes    = allocate(swapped(fencecodes,fencecodes))
+localparcodes = allocate(swapped(localparcodes,localparcodes))
+rulecodes     = allocate(swapped(rulecodes,rulecodes))
+leadercodes   = allocate(swapped(leadercodes,leadercodes))
+usercodes     = allocate(swapped(usercodes,usercodes))
+noadoptions   = allocate(swapped(noadoptions,noadoptions))
+dirvalues     = allocate(swapped(dirvalues,dirvalues))
+gluevalues    = allocate(swapped(gluevalues,gluevalues))
+literalvalues = allocate(swapped(literalvalues,literalvalues))
+
+nodes.gluecodes     = gluecodes
+nodes.dircodes      = dircodes
+nodes.boundarycodes = boundarycodes
+nodes.noadcodes     = noadcodes
+nodes.nodecodes     = nodecodes
+nodes.whatcodes     = whatcodes
+nodes.listcodes     = listcodes
+nodes.glyphcodes    = glyphcodes
+nodes.kerncodes     = kerncodes
+nodes.penaltycodes  = penaltycodes
+nodes.mathcodes     = mathcodes
+nodes.fillcodes     = fillcodes
+nodes.disccodes     = disccodes
+nodes.accentcodes   = accentcodes
+nodes.radicalcodes  = radicalcodes
+nodes.fencecodes    = fencecodes
+nodes.localparcodes = localparcodes
+nodes.rulecodes     = rulecodes
+nodes.leadercodes   = leadercodes
+nodes.usercodes     = usercodes
+nodes.noadoptions   = noadoptions
+nodes.dirvalues     = dirvalues
+nodes.gluevalues    = gluevalues
+nodes.literalvalues = literalvalues
+
+nodes.subtypes = allocate {
+    [nodecodes.accent]   = accentcodes,
+    [nodecodes.boundary] = boundarycodes,
+    [nodecodes.dir]      = dircodes,
+    [nodecodes.disc]     = disccodes,
+    [nodecodes.fence]    = fencecodes,
+    [nodecodes.glue]     = gluecodes,
+    [nodecodes.glyph]    = glyphcodes,
+    [nodecodes.hlist]    = listcodes,
+    [nodecodes.kern]     = kerncodes,
+    [nodecodes.localpar] = localparcodes,
+    [nodecodes.math]     = mathcodes,
+    [nodecodes.noad]     = noadcodes,
+    [nodecodes.penalty]  = penaltycodes,
+    [nodecodes.radical]  = radicalcodes,
+    [nodecodes.rule]     = rulecodes,
+ -- [nodecodes.user]     = usercodes,
+    [nodecodes.vlist]    = listcodes,
+    [nodecodes.whatsit]  = whatcodes,
+}
+
+table.setmetatableindex(nodes.subtypes,function(t,k)
+    local v = { }
+    t[k] = v
+    return v
+end)
+
+-- a few more friendly aliases:
+
+nodes.skipcodes            = gluecodes
+nodes.directioncodes       = dircodes
+nodes.whatsitcodes         = whatcodes
+nodes.discretionarycodes   = disccodes
+nodes.directionvalues      = dirvalues
+nodes.skipvalues           = gluevalues
+nodes.literalvalues        = literalvalues
+
+glyphcodes.glyph           = glyphcodes.character
+
+localparcodes.vmode_par    = localparcodes.new_graf
+
+listcodes.row              = listcodes.alignment
+listcodes.column           = listcodes.alignment
+
+kerncodes.kerning          = kerncodes.fontkern
+kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
+
+literalvalues.direct       = literalvalues.always
+
+nodes.codes = allocate { -- mostly for listing
+    glue        = skipcodes,
+    boundary    = boundarycodes,
+    noad        = noadcodes,
+    node        = nodecodes,
+    hlist       = listcodes,
+    vlist       = listcodes,
+    glyph       = glyphcodes,
+    kern        = kerncodes,
+    penalty     = penaltycodes,
+    math        = mathnodes,
+    fill        = fillcodes,
+    disc        = disccodes,
+    whatsit     = whatcodes,
+    accent      = accentcodes,
+    fence       = fencecodes,
+    rule        = rulecodes,
+    leader      = leadercodes,
+    user        = usercodes,
+    noadoptions = noadoptions,
+}
+
+nodes.noadoptions = {
+    set      =        0x08,
+    unused_1 = 0x00 + 0x08,
+    unused_2 = 0x01 + 0x08,
+    axis     = 0x02 + 0x08,
+    no_axis  = 0x04 + 0x08,
+    exact    = 0x10 + 0x08,
+    left     = 0x11 + 0x08,
+    middle   = 0x12 + 0x08,
+    right    = 0x14 + 0x08,
+}
+
+local report_codes = logs.reporter("nodes","codes")
+
+function nodes.showcodes()
+    local t = { }
+    for name, codes in sortedhash(nodes.codes) do
+        local sorted = sortedkeys(codes)
+        for i=1,#sorted do
+            local s = sorted[i]
+            if type(s) ~= "number" then
+                t[#t+1] = { name, s, codes[s] }
+            end
+        end
+    end
+    formatcolumns(t)
+    for k=1,#t do
+        report_codes (t[k])
+    end
+end
+
+trackers.register("system.showcodes", nodes.showcodes)
+
+-- We use the real node code numbers.
+
+local texchardef = tex.chardef
+
+for i=0,nodecodes.glyph do
+    texchardef(nodecodes[i] .. "nodecode",i)
+end
+for i=0,#gluecodes do
+    texchardef(gluecodes[i] .. "subtypecode",i)
+end
+
+-- tex.set("internalcodesmode",1) -- obsolete

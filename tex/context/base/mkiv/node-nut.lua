@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['node-met'] = {
+if not modules then modules = { } end modules ['node-nut'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -396,7 +396,7 @@ local d_setlink       = direct.setlink
 local d_setboth       = direct.setboth
 local d_getboth       = direct.getboth
 
-local remove = CONTEXTLMTXMODE > 0 and d_remove_node or function(head,current,free_too)
+local remove = function(head,current,free_too)
     if current then
         local h, c = d_remove_node(head,current)
         if free_too then
@@ -812,8 +812,6 @@ nuts.tracedslide       = tracedslide
 nuts.untracedslide     = untracedslide
 nuts.nestedtracedslide = nestedtracedslide
 
--- nuts.slide          = tracedslide
-
 -- this might move
 
 local propertydata = direct.get_properties_table(true)
@@ -877,17 +875,7 @@ local getstate = direct.getstate
 local setstate = direct.setstate
 
 if not setstate or not getstate then
- -- setstate = function(n,v)
- --     setprop(n,"state",v)
- -- end
- -- getstate = function(n,v)
- --     local s = getprop(n,"state")
- --     if v then
- --         return s == v
- --     else
- --         return s
- --     end
- -- end
+
     setstate = function(n,v)
         local p = propertydata[n]
         if p then
@@ -896,6 +884,7 @@ if not setstate or not getstate then
             propertydata[n] = { state = v }
         end
     end
+
     getstate = function(n,v)
         local p = propertydata[n]
         if p then
@@ -919,7 +908,7 @@ local setscript = direct.setscript or function(n,v) end -- elsewhere
 nuts.setscript = getscript
 nuts.getscript = setscript
 
-nuts.isdone = function(n,k)
+function nuts.isdone(n,k)
     local p = propertydata[n]
     if not p then
         propertydata[n] = { [k] = true }
@@ -932,9 +921,6 @@ nuts.isdone = function(n,k)
     end
     return v
 end
-
--- nodes.setprop = nodes.setproperty
--- nodes.getprop = nodes.getproperty
 
 function nuts.copy_properties(source,target,what)
     local newprops = propertydata[source]

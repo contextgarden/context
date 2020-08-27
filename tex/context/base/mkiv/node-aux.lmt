@@ -76,24 +76,6 @@ local texsetbox          = tex.setbox
 
 local report_error       = logs.reporter("node-aux:error")
 
--- At some point we figured that copying before using was the safest bet
--- when dealing with boxes at the tex end. This is because tex also needs
--- to manage the grouping (i.e. savestack). However, there is an easy
--- solution that keeps the tex end happy as tex.setbox deals with this. The
--- overhead of one temporary list node is neglectable.
---
--- function tex.takebox(id)
---     local box = tex.getbox(id)
---     if box then
---         local copy = node.copy(box)
---         local list = box.list
---         copy.list = list
---         box.list = nil
---         tex.setbox(id,nil)
---         return copy
---     end
--- end
-
 local function takebox(id)
     local box = getbox(id)
     if box then
@@ -409,82 +391,6 @@ do
     function nodes.start_of_par(n)
         local s = getsubtype(n)
         return s == hmodepar_code or s == vmodepar_code
-    end
-
-end
-
-if not nuts.getnormalizedline then
-
-    local nextnode           = traversers.glue
-    local findfail           = nuts.tail
-
-    local getid              = nuts.getid
-    local getsubtype         = nuts.getsubtype
-    local getlist            = nuts.getlist
-    local getwidth           = nuts.getwidth
-
-    local direct             = node.direct
-
-    local nodecodes          = nodes.nodecodes
-    local skipcodes          = nodes.skipcodes
-
-    local hlist_code         = nodecodes.hlist
-    local line_code          = nodecodes.line
-
-    local leftskip_code      = skipcodes.leftskip
-    local rightskip_code     = skipcodes.rightskip
-    local lefthangskip_code  = skipcodes.lefthangskip
-    local righthangskip_code = skipcodes.righthangskip
-    local indentskip_code    = skipcodes.indentskip
-    local parfillskip_code   = skipcodes.parfillskip
-
-    local find_node = direct.find_node or function(h,t,s)
-        if h then
-            if s then
-                for node, subtype in traversers[t] do
-                    if s == subtype then
-                        return current
-                    end
-                end
-            else
-                for node, subtype in traversers[t] do
-                    return current, subtype
-                end
-            end
-        end
-    end
-
-    nuts.find_node = find_node
-
-    function nuts.getnormalizedline(h)
-        if getid(h) == hlist_code and getsubtype(h) == line_code then
-            local ls, rs = 0, 0
-            local lh, rh = 0, 0
-            local lp, rp = 0, 0
-            local is     = 0
-            local h = getlist(h)
-            local t = findtail(h)
-            for n, subtype in nextglue, h do
-                if     subtype == leftskip_code      then ls = getwidth(n)
-                elseif subtype == rightskip_code     then rs = getwidth(n)
-                elseif subtype == lefthangskip_code  then lh = getwidth(n)
-                elseif subtype == righthangskip_code then rh = getwidth(n)
-                elseif subtype == indentskip_code    then is = getwidth(n)
-                elseif subtype == parfillskip_code   then rp = getwidth(n)
-                end
-            end
-            return {
-                leftskip         = ls,
-                rightskip        = rs,
-                lefthangskip     = lh,
-                righthangskip    = rh,
-                indent           = is,
-                parfillrightskip = rp,
-                parfillleftskip  = lp,
-                head             = h,
-                tail             = t,
-            }
-        end
     end
 
 end

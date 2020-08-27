@@ -123,6 +123,7 @@ local function convert(name)
                 end
 
                 collect("nodes")
+                collect("stock")
                 collect("memories")
                 collect("variables")
                 collect("texvariables")

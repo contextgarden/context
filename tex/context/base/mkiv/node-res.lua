@@ -584,11 +584,16 @@ local usage = CONTEXTLMTXMODE > 0 and node.inuse or function()
     return t
 end
 
+local stock = CONTEXTLMTXMODE > 0 and node.instock or { }
+
 nutpool .cleanup = cleanup
 nodepool.cleanup = cleanup
 
 nutpool .usage   = usage
 nodepool.usage   = usage
+
+nutpool .stock   = stock
+nodepool.stock   = stock
 
 -- end
 

@@ -16,6 +16,7 @@ nodes.snapshots = snapshots
 local status    = status
 
 local nodeusage = nodes.pool and nodes.pool.usage
+local nodestock = nodes.pool and nodes.pool.stock
 local clock     = os.gettimeofday or os.clock -- should go in environment
 local lasttime  = clock()
 local samples   = { }
@@ -25,6 +26,7 @@ function snapshots.takesample(comment)
         local c = clock()
         samples[#samples+1] = {
             nodes            = nodeusage(),
+            stock            = nodestock(),
             texcallbacks     = status.getcallbackstate(),
             mpcallbacks      = mplib.getcallbackstate(),
             backendcallbacks = backends.getcallbackstate(),
@@ -51,6 +53,8 @@ function snapshots.takesample(comment)
                 read      = status.getreadstate(),
                 font      = status.getfontstate(),
                 language  = status.getlanguagestate(),
+                mark      = status.getmarkstate(),
+                sparse    = status.getsparsestate(),
             },
         }
     end
