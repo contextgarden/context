@@ -288,7 +288,7 @@
 
 \let\newfam\newfamily
 
-\firstvalidlanguage\plusone
+\firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might becoem the default
 
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.

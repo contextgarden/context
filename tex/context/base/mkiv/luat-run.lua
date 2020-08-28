@@ -293,3 +293,9 @@ end)
 --     end
 -- end)
 
+
+if environment.initex then
+
+    luatex.registerdumpactions(statistics.showmemory)
+
+end

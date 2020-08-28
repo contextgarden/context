@@ -262,7 +262,7 @@ end
 
 status.iocodes = setmetatableindex(tex.getiovalues(), function() return "unknown" end)
 
-local report = logs.reporter("usage")
+local report = logs.reporter("system")
 
 function statistics.showusage(when)
     local s = status.list()
@@ -287,8 +287,7 @@ function statistics.showusage(when)
     end
     report("")
     local list   = {
-        "stringstate", "poolstate",
-        "hashstate", "lookupstate",
+        "stringstate", "poolstate", "hashstate", "lookupstate",
         "nodestate", "extrastate", "tokenstate",
         "bufferstate", "inputstate", "filestate",
         "neststate", "parameterstate", "savestate",
@@ -354,6 +353,47 @@ function statistics.showusage(when)
     report("")
     report("  page numbers          : realpage %s, userpage %s, subpage %s",pstatus.page.real,pstatus.page.user,pstatus.page.sub)
     report("  page timing           : total %0.03f, page %0.03f, average %0.03f",pstatus.time.elapsed,pstatus.time.page,pstatus.time.average)
+    report("")
+end
+
+function statistics.showmemory(when)
+    local s = status.list()
+    --
+    report("")
+    report("memory configuration")
+    report("")
+    local list   = {
+        "stringstate", "poolstate", "hashstate", "lookupstate",
+        "nodestate", "tokenstate",
+        "bufferstate", "inputstate", "filestate",
+        "neststate", "parameterstate", "savestate",
+        "fontstate", "languagestate", "markstate",
+    }
+    local fields = { "max", "min", "set", "stp" }
+    local line   = rep("-",168)
+    do
+        local t = { }
+        for i=1,#list do
+            t[i] = gsub(list[i],"state","")
+        end
+        report("%w%s",2,line)
+        report("%w%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",5,unpack(t))
+        report("%w%s",2,line)
+    end
+    for i=1,#fields do
+        local f = fields[i]
+        if f then
+            local t = { }
+            for i=1,#list do
+                local n = s[list[i]][f]
+                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
+            end
+            report("  %3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",f,unpack(t))
+        else
+            report("")
+        end
+    end
+    report("%w%s",2,line)
     report("")
 end
 
