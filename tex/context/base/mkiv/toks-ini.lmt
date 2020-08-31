@@ -18,9 +18,12 @@ local printtable = table.print
 local concat     = table.concat
 local format     = string.format
 
-local commands  = token.commands()
+local commands  = token.getcommandvalues()
+local values    = token.getfunctionvalues()
+values.dimen    = values.dimension
+values.count    = values.integer
+tokens.values   = utilities.storage.allocate(table.swapped(values, values))
 tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
-tokens.values   = { }
 
 local scan_toks        = token.scan_toks
 local scan_string      = token.scan_string
@@ -50,6 +53,9 @@ local scan_float       = token.scan_float
 local scan_luanumber   = token.scan_luanumber   or scan_float    -- only lmtx
 local scan_luainteger  = token.scan_luainteger  or scan_integer  -- only lmtx
 local scan_luacardinal = token.scan_luacardinal or scan_cardinal -- only lmtx
+
+-- todo: gobble_integer   -- might go away
+-- todo: gobble_dimension -- might go away
 
 local set_macro        = token.set_macro
 local set_char         = token.set_char
@@ -279,22 +285,20 @@ if setinspector then
                 return {
                     id         = t.id,
                     category   = simple,
-                    character  = utfchar(t.mode) or nil,
+                    character  = utfchar(t.index) or nil,
                 }
             else
                 return {
-                    command    = t.command,
                     id         = t.id,
-                    tok        = t.tok,
+                    command    = t.command,
+                    index      = t.index,
                     csname     = t.csname,
+                    cmdname    = cmdname,
                     active     = t.active,
                     expandable = t.expandable,
                     protected  = t.protected,
                     frozen     = t.frozen,
-                    mode       = t.mode,
-                    index      = t.index,
                     user       = t.user,
-                    cmdname    = cmdname,
                 }
             end
         end
@@ -314,18 +318,3 @@ tokens.cache = table.setmetatableindex(function(t,k)
     t[k] = v
     return v
 end)
-
-if LUATEXVERSION < 114 then
-
-    local d = tokens.defined
-    local c = tokens.create
-
-    function tokens.defined(s,b)
-        if b then
-            return d(s)
-        else
-            return c(s).cmd_name == "undefined_cmd"
-        end
-    end
-
-end

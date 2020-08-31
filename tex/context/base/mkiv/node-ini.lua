@@ -83,22 +83,14 @@ local fillcodes     = mark(getsubtypes("fill"))
 local boundarycodes = mark(getsubtypes("boundary"))
 local penaltycodes  = mark(getsubtypes("penalty"))
 local kerncodes     = mark(getsubtypes("kern"))
-local margincodes   = CONTEXTLMTXMODE > 0 and { }
+local margincodes   = mark(getsubtypes("marginkern"))
 local mathcodes     = mark(getsubtypes("math"))
 local noadcodes     = mark(getsubtypes("noad"))
 local radicalcodes  = mark(getsubtypes("radical"))
 local accentcodes   = mark(getsubtypes("accent"))
 local fencecodes    = mark(getsubtypes("fence"))
 ----- fractioncodes = mark(getsubtypes("fraction"))
-local localparcodes = CONTEXTLMTXMODE > 0 and mark(getsubtypes("localpar"))
-
-if not margincodes then
-    margincodes = mark(getsubtypes("marginkern"))
-end
-
-if not localparcodes then
-    localparcodes = allocate { [0] = "new_graf", "local_box", "hmode_par", "penalty", "math" }
-end
+local localparcodes = allocate { [0] = "vmode_par", "local_box", "hmode_par", "penalty", "math" }
 
 local function simplified(t)
     local r = { }
@@ -275,8 +267,6 @@ nodes.skipvalues           = gluevalues
 nodes.literalvalues        = literalvalues
 
 glyphcodes.glyph           = glyphcodes.character
-
-localparcodes.vmode_par    = localparcodes.new_graf
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment

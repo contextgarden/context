@@ -8,33 +8,36 @@ if not modules then modules = { } end modules ['node-typ'] = {
 
 -- code has been moved to blob-ini.lua
 
-local typesetters     = nodes.typesetters or { }
-nodes.typesetters     = typesetters
+local typesetters       = nodes.typesetters or { }
+nodes.typesetters       = typesetters
 
-local nuts            = nodes.nuts
-local tonode          = nuts.tonode
-local tonut           = nuts.tonut
+local nuts              = nodes.nuts
+local tonode            = nuts.tonode
+local tonut             = nuts.tonut
 
-local setlink         = nuts.setlink
-local setchar         = nuts.setchar
-local setattrlist     = nuts.setattrlist
+local setlink           = nuts.setlink
+local setchar           = nuts.setchar
+local setattrlist       = nuts.setattrlist
 
-local getfont         = nuts.getfont
-local getattrlist     = nuts.getattrlist
+local getfont           = nuts.getfont
+local getattrlist       = nuts.getattrlist
 
-local hpack_node_list = nuts.hpack
-local vpack_node_list = nuts.vpack
-local full_hpack_list = nuts.fullhpack
+local hpack_node_list   = nuts.hpack
+local vpack_node_list   = nuts.vpack
+local full_hpack_list   = nuts.fullhpack
 
-local nodepool        = nuts.pool
-local new_glyph       = nodepool.glyph
-local new_glue        = nodepool.glue
+local nodepool          = nuts.pool
+local new_glyph         = nodepool.glyph
+local new_glue          = nodepool.glue
 
-local utfvalues       = utf.values
+local utfvalues         = utf.values
 
-local currentfont     = font.current      -- mabe nicer is fonts     .current
-local currentattr     = node.current_attr -- mabe nicer is attributes.current
-local fontparameters  = fonts.hashes.parameters
+local currentfont       = font.current            -- mabe nicer is fonts     .current
+local currentattributes = node.current_attributes -- mabe nicer is attributes.current
+
+local fontparameters    = fonts.hashes.parameters
+
+if not currentattributes then currentattributes = node.current_attr end -- CONTEXTLMTXMODE == 0
 
 -- when attrid == true then take from glyph or current else use the given value
 
@@ -51,7 +54,7 @@ local function tonodes(str,fontid,spacing,templateglyph,attrid) -- quick and dir
         if templateglyph then
             attrid = false -- we copy with the glyph
         else
-            attrid = currentattr()
+            attrid = currentattributes()
         end
     end
     local fp = fontparameters[fontid]

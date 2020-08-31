@@ -102,7 +102,7 @@ nodes.uses_font               = node.uses_font
 nodes.first_glyph             = node.first_glyph
 nodes.has_glyph               = node.has_glyph or node.first_glyph
 
-nodes.current_attr            = node.current_attr
+nodes.current_attributes      = node.current_attributes or node.current_attr
 nodes.has_field               = node.has_field
 nodes.last_node               = node.last_node
 nodes.usedlist                = node.usedlist

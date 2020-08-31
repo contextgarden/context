@@ -947,4 +947,3 @@ interfaces.implement {
         return none_code
     end,
 }
-

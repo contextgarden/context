@@ -54,11 +54,7 @@ local radicalcodes  = mark(getsubtypes("radical"))
 local accentcodes   = mark(getsubtypes("accent"))
 local fencecodes    = mark(getsubtypes("fence"))
 ----- fractioncodes = mark(getsubtypes("fraction"))
-local localparcodes = CONTEXTLMTXMODE > 0 and mark(getsubtypes("localpar"))
-
-if not localparcodes then
-    localparcodes = allocate { [0] = "new_graf", "local_box", "hmode_par", "penalty", "math" }
-end
+local localparcodes = mark(getsubtypes("localpar"))
 
 local function simplified(t)
     local r = { }
@@ -207,8 +203,6 @@ nodes.skipvalues           = gluevalues
 nodes.literalvalues        = literalvalues
 
 glyphcodes.glyph           = glyphcodes.character
-
-localparcodes.vmode_par    = localparcodes.new_graf
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment

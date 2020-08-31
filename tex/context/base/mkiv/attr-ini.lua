@@ -14,32 +14,33 @@ local osexit = os.exit
 symbolic names later on.</p>
 --ldx]]--
 
-local nodes           = nodes
-local context         = context
-local storage         = storage
-local commands        = commands
+local nodes             = nodes
+local context           = context
+local storage           = storage
+local commands          = commands
 
-local implement       = interfaces.implement
+local implement         = interfaces.implement
 
-attributes            = attributes or { }
-local attributes      = attributes
+attributes              = attributes or { }
+local attributes        = attributes
 
-local sharedstorage   = storage.shared
+local sharedstorage     = storage.shared
 
-local texsetattribute = tex.setattribute
+local texsetattribute   = tex.setattribute
 
-attributes.names      = attributes.names    or { }
-attributes.numbers    = attributes.numbers  or { }
-attributes.list       = attributes.list     or { }
-attributes.states     = attributes.states   or { }
-attributes.handlers   = attributes.handlers or { }
-attributes.unsetvalue = -0x7FFFFFFF
+attributes.names        = attributes.names    or { }
+attributes.numbers      = attributes.numbers  or { }
+attributes.list         = attributes.list     or { }
+attributes.states       = attributes.states   or { }
+attributes.handlers     = attributes.handlers or { }
+attributes.unsetvalue   = -0x7FFFFFFF
 
-local currentfont     = font.current
+local currentfont       = font.current            -- mabe nicer is attributes.current
+local currentattributes = node.current_attributes -- mabe nicer is fonts     .current
 
-local names           = attributes.names
-local numbers         = attributes.numbers
-local list            = attributes.list
+local names             = attributes.names
+local numbers           = attributes.numbers
+local list              = attributes.list
 
 storage.register("attributes/names",   names,   "attributes.names")
 storage.register("attributes/numbers", numbers, "attributes.numbers")
@@ -127,7 +128,7 @@ local function showlist(what,list)
 end
 
 function attributes.showcurrent()
-    showlist("current",node.current_attr())
+    showlist("current",currentattributes())
 end
 
 function attributes.ofnode(n)
@@ -140,7 +141,7 @@ local store = { }
 
 function attributes.save(name)
     name = name or ""
-    local n = node.current_attr()
+    local n = currentattributes()
     n = n and n.next
     local t = { }
     while n do

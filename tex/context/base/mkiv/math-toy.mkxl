@@ -1,0 +1,55 @@
+%D \module
+%D   [       file=math-toy,
+%D        version=2020.08.31,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Toy math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Toy}
+
+\unprotect
+
+%D Just an example:
+%D
+%D \starttyping
+%D \enabletrackers[math.toysymbol]
+%D
+%D \definemathtoysymbol[Plus] [bin][+]
+%D \definemathtoysymbol[Minus][bin][-]
+%D \definemathtoysymbol[Equal][rel][=]
+%D
+%D $\dorecurse{199}{x_{#1} \ifodd#1\relax\Plus\else\Minus\fi} x_{200} \Equal n$ \blank
+%D \stoptyping
+
+\unexpanded\def\definemathtoysymbol
+  {\dotripleargument\math_toy_define_symbol}
+
+\def\math_toy_define_symbol[#1][#2][#3]%
+  {\setuevalue{#1}{\math_toy_define_symbol_indeed{\mathcodechecked{#2}}{#3}}}
+
+\unexpanded\def\math_toy_define_symbol_traced#1#2%
+  {\normalexpanded{\discretionary class #1 %
+     {$\Ustyle\number\mathstyle \darkred   #2$}%
+     {$\Ustyle\number\mathstyle \darkblue  #2$}%
+     {$\Ustyle\number\mathstyle \darkgreen #2$}}}
+
+\unexpanded\def\math_toy_define_symbol_normal#1#2%
+  {\normalexpanded{\discretionary class #1 %
+     {$\Ustyle\number\mathstyle #2$}%
+     {$\Ustyle\number\mathstyle #2$}%
+     {$\Ustyle\number\mathstyle #2$}}}
+
+\installtextracker
+  {math.toysymbol}
+  {\let\math_toy_define_symbol_indeed\math_toy_define_symbol_traced}
+  {\let\math_toy_define_symbol_indeed\math_toy_define_symbol_normal}
+
+\let\math_toy_define_symbol_indeed\math_toy_define_symbol_normal
+
+\protect

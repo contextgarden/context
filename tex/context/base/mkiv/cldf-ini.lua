@@ -678,8 +678,7 @@ end
 
 local containseol = patterns.containseol
 
------ t_cldl_luafunction             = newtoken("luafunctioncall",0)
-local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
+local lua_expandable_call_code = tokens.commands.lua_expandable_call
 
 local sortedhashindeed = false
 
@@ -776,7 +775,7 @@ local function writer(parent,command,...) -- already optimized before call
                     local tj = ti[1]
                     if type(tj) == "function" then
                         tj = storefunction(tj)
-                        flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),"]")
+                        flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
                     else
                         flush(currentcatcodes,"[",tj,"]")
                     end
@@ -786,7 +785,7 @@ local function writer(parent,command,...) -- already optimized before call
                         local tj = ti[j]
                         if type(tj) == "function" then
                             tj = storefunction(tj)
-                            flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),j == tn and "]" or ",")
+                            flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
                         else
                             if j == tn then
                                 flush(currentcatcodes,tj,"]")
@@ -799,7 +798,7 @@ local function writer(parent,command,...) -- already optimized before call
             elseif typ == "function" then
                 -- todo: ctx|prt|texcatcodes
                 ti = storefunction(ti)
-                flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_token_code),"}")
+                flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
             elseif typ == "boolean" then
                 if ti then
                     flushdirect(currentcatcodes,"\r")
@@ -955,7 +954,7 @@ local caller = function(parent,f,a,...)
         elseif typ == "function" then
             -- ignored: a ...
             f = storefunction(f)
-            flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_token_code),"}")
+            flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then

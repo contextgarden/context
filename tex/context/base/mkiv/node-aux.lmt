@@ -365,8 +365,8 @@ end
 do
 
     local localparcodes = nodes.localparcodes
-    local hmodepar_code = localparcodes.vmode_par
-    local vmodepar_code = localparcodes.hmode_par
+    local hmodepar_code = localparcodes.hmode_par
+    local vmodepar_code = localparcodes.vmode_par
 
     local getnest       = tex.getnest
     local getsubtype    = nuts.getsubtype

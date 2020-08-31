@@ -661,20 +661,21 @@ do
 
 end
 
+local getstatistics = mplib.getstatistics or mplib.statistics
+
 function metapost.getstatistics(memonly)
     if memonly then
         local n, m = 0, 0
         for name, mpx in next, mpxformats do
             n = n + 1
-            m = m + mpx:statistics().memory
+            m = m + getstatistics(mpx).memory
         end
         return n, m
     else
         local t = { }
         for name, mpx in next, mpxformats do
-            t[name] = mpx:statistics()
+            t[name] = getstatistics(mpx)
         end
         return t
     end
 end
-

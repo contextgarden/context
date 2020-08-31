@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.08.28 13:55}
+\edef\contextversion{2020.08.31 22:01}
 
 %D Kind of special:
 
@@ -491,6 +491,7 @@
 \loadmarkfile{math-inl}
 \loadmarkfile{math-dis}
 %loadmarkfile{math-lan}
+\loadmkxlfile{math-toy}
 
 %loadmarkfile{phys-dim} % moved to after typo-scr
 

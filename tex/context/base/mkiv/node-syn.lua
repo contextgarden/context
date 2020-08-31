@@ -170,15 +170,11 @@ local new_kern           = nodepool.kern
 local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
 
-local get_synctex_fields = nuts.get_synctex_fields
------ set_synctex_fields = nuts.set_synctex_fields
-local set_synctex_line   = tex.set_synctex_line
-local set_synctex_tag    = tex.set_synctex_tag
-local force_synctex_tag  = tex.force_synctex_tag
-local force_synctex_line = tex.force_synctex_line
------ get_synctex_tag    = tex.get_synctex_tag
-local get_synctex_line   = tex.get_synctex_line
-local set_synctex_mode   = tex.set_synctex_mode
+local getsynctexfields   = nuts.getsynctexfields or nuts.get_synctex_fields
+local forcesynctextag    = tex.forcesynctextag   or tex.force_synctex_tag
+local forcesynctexline   = tex.forcesynctexline  or tex.force_synctex_line
+local getsynctexline     = tex.getsynctexline    or tex.get_synctex_line
+local setsynctexmode     = tex.setsynctexmode    or tex.set_synctex_mode
 
 local foundintree        = resolvers.foundintree
 
@@ -212,7 +208,7 @@ local paused  = 0
 local used    = false
 local never   = false
 
--- get rid of overhead
+-- get rid of overhead in mkiv
 
 if tex.set_synctex_no_files then
     tex.set_synctex_no_files(1)
@@ -261,18 +257,18 @@ function synctex.blockfilename(name)
 end
 
 function synctex.setfilename(name,line)
-    if paused == 0 and force_synctex_tag and name then
-        force_synctex_tag(sttags[name])
+    if paused == 0 and name then
+        forcesynctextag(sttags[name])
         if line then
-            force_synctex_line(line)
+            forcesynctexline(line)
         end
     end
 end
 
 function synctex.resetfilename()
-    if paused == 0 and force_synctex_tag then
-        force_synctex_tag(0)
-        force_synctex_line(0)
+    if paused == 0 then
+        forcesynctextag(0)
+        forcesynctexline(0)
     end
 end
 
@@ -284,10 +280,10 @@ do
     function synctex.pushline()
         nesting = nesting + 1
         if nesting == 1 then
-            local l = get_synctex_line()
+            local l = getsynctexline()
             ignored = l and l > 0
             if not ignored then
-                force_synctex_line(texget("inputlineno"))
+                forcesynctexline(texget("inputlineno"))
             end
         end
     end
@@ -295,7 +291,7 @@ do
     function synctex.popline()
         if nesting == 1 then
             if not ignored then
-                force_synctex_line()
+                forcesynctexline()
                 ignored = false
             end
         end
@@ -524,7 +520,7 @@ local function collect_min(head)
             local line  = 0
             while true do
                 if id == glyph_code then
-                    local tc, lc = get_synctex_fields(current)
+                    local tc, lc = getsynctexfields(current)
                     if tc and tc > 0 then
                         tag  = tc
                         line = lc
@@ -591,7 +587,7 @@ local function collect_max(head,parent)
             local line  = 0
             while true do
                 if id == glyph_code then
-                    local tc, lc = get_synctex_fields(current)
+                    local tc, lc = getsynctexfields(current)
                     if tc and tc > 0 then
                         if tag > 0 and (tag ~= tc or line ~= lc) then
                             head  = inject(parent,head,first,last,tag,line)
@@ -619,7 +615,7 @@ local function collect_max(head,parent)
                     end
                 elseif id == glue_code then
                     if tag > 0 then
-                        local tc, lc = get_synctex_fields(current)
+                        local tc, lc = getsynctexfields(current)
                         if tc and tc > 0 then
                             if tag ~= tc or line ~= lc then
                                 head = inject(parent,head,first,last,tag,line)
@@ -734,7 +730,7 @@ end
 function synctex.enable()
     if not never and not enabled then
         enabled = true
-        set_synctex_mode(3) -- we want details
+        setsynctexmode(3) -- we want details
         if not used then
             nodes.tasks.enableaction("shipouts","luatex.synctex.collect")
             report_system("synctex functionality is enabled, expect 5-10 pct runtime overhead!")
@@ -748,7 +744,7 @@ end
 
 function synctex.disable()
     if enabled then
-        set_synctex_mode(0)
+        setsynctexmode(0)
         report_system("synctex functionality is disabled!")
         enabled = false
         for i=1,#disablers do
@@ -772,13 +768,13 @@ local filename = nil
 function synctex.pause()
     paused = paused + 1
     if enabled and paused == 1 then
-        set_synctex_mode(0)
+        setsynctexmode(0)
     end
 end
 
 function synctex.resume()
     if enabled and paused == 1 then
-        set_synctex_mode(3)
+        setsynctexmode(3)
     end
     paused = paused - 1
 end

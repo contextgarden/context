@@ -652,8 +652,8 @@
 \newskip\s_spac_neg_fill   \s_spac_neg_fill  = \zeropoint \s!plus-1\s!fill \relax
 \newskip\s_spac_neg_filll  \s_spac_neg_filll = \zeropoint \s!plus-1\s!filll\relax
 
-\unexpanded\def\hfilll   {\hskip\s_spac_fill\relax}
-\unexpanded\def\vfilll   {\vskip\s_spac_fill\relax}
+\unexpanded\def\hfilll   {\hskip\s_spac_filll\relax}
+\unexpanded\def\vfilll   {\vskip\s_spac_filll\relax}
 
 \unexpanded\def\hfillneg {\hskip\s_spac_neg_fill \relax}
 \unexpanded\def\hfilllneg{\hskip\s_spac_neg_filll\relax}

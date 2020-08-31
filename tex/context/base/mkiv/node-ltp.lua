@@ -346,6 +346,11 @@ local new_hlist               = nodepool.hlist
 
 local getnormalizeline        = nodes.getnormalizeline
 
+local packing_exactly    = "exactly"
+local packing_additional = "additional"
+local packing_expanded   = CONTEXTLMTXMODE > 0 and "expanded"   or "cal_expand_ratio"
+local packing_substitute = CONTEXTLMTXMODE > 0 and "substiture" or "subst_ex_font"
+
 -- helpers --
 
 -- It makes more sense to move the somewhat messy dir state tracking
@@ -1648,9 +1653,9 @@ do
             local finished_line = nil
             if adjust_spacing > 0 then
                 statistics.nofadjustedlines = statistics.nofadjustedlines + 1
-                finished_line = xpack_nodes(start,cur_width,"cal_expand_ratio",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
+                finished_line = xpack_nodes(start,cur_width,packing_expanded,par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
             else
-                finished_line = xpack_nodes(start,cur_width,"exactly",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
+                finished_line = xpack_nodes(start,cur_width,packing_exactly,par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
             end
             if protrude_chars > 0 then
                 statistics.nofprotrudedlines = statistics.nofprotrudedlines + 1
@@ -2958,7 +2963,7 @@ do
             setlist(hlist,head)
         end
 
-        local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
+        local cal_expand_ratio  = method == packing_expanded or method == packing_substitute
 
         direction               = direction or texget("textdir")
 
@@ -3133,7 +3138,7 @@ do
         if pre_adjust_tail then
             pre_adjust_tail.next = nil -- todo
         end
-        if method == "additional" then
+        if method == packing_additional then
             width = width + natural
         end
         setwhd(hlist,width,height,depth)

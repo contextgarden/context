@@ -27,7 +27,7 @@ local copy_node       = node.copy
 local write_node      = node.write
 
 local pen_info        = mplib.pen_info
-local object_fields   = mplib.fields
+local getfields       = mplib.getfields or mplib.fields -- todo: in lmtx get them once and then use gettype
 
 local save_table      = false
 local force_stroke    = false
@@ -744,9 +744,9 @@ function metapost.totable(result,askedfig)
         for o=1,#objects do
             local object = objects[o]
             local result = { }
-            local fields = object_fields(object) -- hm, is this the whole list, if so, we can get it once
+            local fields = getfields(object) -- hm, is this the whole list, if so, we can get it once
             for f=1,#fields do
-                local field = fields[f]
+                local field   = fields[f]
                 result[field] = object[field]
             end
             results[o] = result

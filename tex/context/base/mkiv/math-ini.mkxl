@@ -665,6 +665,7 @@
 
            \def\mathcodenumber #1{\the\csname math#1code\endcsname}
 \unexpanded\def\mathcodecommand#1{\csname\??mathcodecommand#1\endcsname}
+           \def\mathcodechecked#1{\ifcsname math#1code\endcsname\lastnamedcs\else#1\fi}
 
 % \startlines
 % $\mathopnolimits{\rm d}x$

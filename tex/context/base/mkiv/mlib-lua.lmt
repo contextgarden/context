@@ -45,10 +45,11 @@ scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
 scan.path       = function(t)   return scan_path      (currentmpx,t)   end
 scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
 
-local solve_path = mplib.solve_path
+local solvepath = mplib.solvepath
+local getstatus = mplib.getstatus
 
 mp.solve = function(...)
-    return solve_path(currentmpx,...)
+    return solvepath(currentmpx,...)
 end
 
 local inject_path      = mplib.inject_path
@@ -160,8 +161,8 @@ function metapost.currentmpx()
     return currentmpx
 end
 
-local status = mplib.status
+-- mplib.getstates(): zero is "normal"
 
 function metapost.currentmpxstatus()
-    return status and status(currentmpx) or 0
+    return getstatus(currentmpx) or 0
 end

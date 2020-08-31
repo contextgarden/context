@@ -20,7 +20,7 @@ local scanstring          = scanners.string
 local scankeyword         = scanners.keyword
 local scantokenlist       = scanners.tokenlist
 
-local tokentostring       = token.to_string
+local serialize           = token.serialize
 
 local logwriter           = logs.writer
 local openfile            = io.open
@@ -123,7 +123,7 @@ function backends.writeout(n)
     local p = nodeproperties[n]
     if p then
         local handle  = channels[p.channel]
-        local content = tokentostring(p.data)
+        local content = serialize(p.data)
         if handle then
             handle:write(content,"\n")
         else
@@ -193,7 +193,7 @@ function backends.latelua(current,pos_h,pos_v) -- todo: pass pos_h and pos_v (mo
         data()
     else
         if kind ~= "string" then
-            data = tokentostring(data)
+            data = serialize(data)
         end
         if #data ~= "" then
             local code = loadstring(data)

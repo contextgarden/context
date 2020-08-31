@@ -162,7 +162,8 @@ return {
         "normalhyphenationmodecode", "automatichyphenationmodecode", "explicithyphenationmodecode",
         "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "completehyphenationmodecode",
         "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
-        "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode", "permitgluehyphenationmodecode",
+        "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
+        "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         --
         "normalizelinemodecode", "indentskipmodecode", "swaphangindentmodecode", "swapparskipmodecode", "breakafterdirmodecode",
     },
@@ -376,7 +377,7 @@ return {
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "fastloopindex", "fastloopfinal", "dowith",
-        "doloopovermatch", "doloopoverlist",
+        "doloopovermatch", "doloopovermatched", "doloopoverlist",
         --
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
         "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",

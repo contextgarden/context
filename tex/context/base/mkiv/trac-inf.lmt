@@ -181,7 +181,7 @@ function statistics.show()
             local t = status.gethashstate()
             local m = status.gettexstate()
             return format("%s of %s with base %s, approximate memory usage: %i MB",
-                t.cnt, t.max, status.tex_hash_size, m.approximate // (1024 * 1024))
+                t.top, t.max, status.tex_hash_size, m.approximate // (1024 * 1024))
         end)
         register("callbacks", statistics.callbacks)
         -- so far
@@ -279,6 +279,8 @@ function statistics.showusage(when)
     --
     local iocode  = status.iocodes[rstatus.iocode]
     --
+    local mpinstances, mpmemory = metapost.getstatistics(true)
+    --
     report("")
     if when == "finish" then
         report("status after finishing run")
@@ -342,6 +344,8 @@ function statistics.showusage(when)
     report("  message callbacks     : %s", c.message)
     report("  bytecode callbacks    : %s", c.bytecode)
     report("")
+    report("  mp instances          : %s", mpinstances)
+    report("  mp estimated memory   : %s (%s MB)", mpmemory, mpmemory // 1048576)
     report("  mp file callbacks     : %s", m.file)
     report("  mp text callbacks     : %s", m.text)
     report("  mp script callbacks   : %s", m.script)

@@ -418,17 +418,19 @@
 % \uchyph\plusone :
 
 \chardef \completehyphenationmodecode \numexpr
-    \normalhyphenationmodecode           % \discretionary
-  + \automatichyphenationmodecode        % -
-  + \explicithyphenationmodecode         % \-
-  + \syllablehyphenationmodecode         % pattern driven
-  + \uppercasehyphenationmodecode        % replaces \uchyph
-  + \compoundhyphenationmodecode         % replaces \compoundhyphenmode
-  % \strictstarthyphenationmodecode      % replaces \hyphenationbounds (strict = original tex)
-  % \strictendhyphenationmodecode        % replaces \hyphenationbounds (strict = original tex)
-  + \automaticpenaltyhyphenationmodecode % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
-  + \explicitpenaltyhyphenationmodecode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
-  + \permitgluehyphenationmodecode       % turn glue into kern in \discretionary
+    \normalhyphenationmodecode            % \discretionary
+  + \automatichyphenationmodecode         % -
+  + \explicithyphenationmodecode          % \-
+  + \syllablehyphenationmodecode          % pattern driven
+  + \uppercasehyphenationmodecode         % replaces \uchyph
+  + \compoundhyphenationmodecode          % replaces \compoundhyphenmode
+  % \strictstarthyphenationmodecode       % replaces \hyphenationbounds (strict = original tex)
+  % \strictendhyphenationmodecode         % replaces \hyphenationbounds (strict = original tex)
+  + \automaticpenaltyhyphenationmodecode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \explicitpenaltyhyphenationmodecode   % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \permitgluehyphenationmodecode        % turn glue into kern in \discretionary
+  + \permitallhyphenationmodecode         % okay, let's be even more tolerant
+  + \permitmathreplacehyphenationmodecode % and again we're more permissive
 \relax
 
 \unexpanded\def\dohyphens{\hyphenationmode\completehyphenationmodecode}

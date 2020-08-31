@@ -476,10 +476,10 @@ still preliminary and mostly provided as reminder.
 
 The types and token codes are numbers but they actually depend on the
 implementation (although changes are unlikely). The types of data structures can
-be queried with \type {mplib.types()}:
+be queried with \type {mplib.gettypes()}:
 
 \dontleavehmode \startluacode
-    local t = mplib.types()
+    local t = mplib.gettypes()
     for i=0,#t do
         if i > 0 then
             context(", ")
@@ -488,10 +488,10 @@ be queried with \type {mplib.types()}:
     end
 \stopluacode .
 
-The command codes are available with \type {mplib.codes()}:
+The command codes are available with \type {mplib.getcodes()}:
 
 \dontleavehmode \startluacode
-    local t = mplib.codes()
+    local t = mplib.getcodes()
     for i=0,#t do
         if i > 0 then
             context(", ")
