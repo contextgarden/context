@@ -602,8 +602,11 @@ do
                 local y = f:readcardinal4()
                 local u = f:readcardinal()
                 if u == 1 then -- meters
-                 -- x = round(0.0254 * x)
-                 -- y = round(0.0254 * y)
+                    -- there was a reason why this was commented
+                    x = round(0.0254 * x)
+                    y = round(0.0254 * y)
+                    if x == 0 then x = 1 end
+                    if y == 0 then y = 1 end
                 end
                 specification.xres = x
                 specification.yres = y

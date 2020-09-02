@@ -1307,7 +1307,7 @@ implement {
                 return
             end
             local p = jpi.p
-            if p then
+            if p and p ~= true then
                 context("page:" .. p)
             end
         end

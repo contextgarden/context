@@ -177,11 +177,11 @@ function statistics.show()
             return format("%s version: %s, functionality level: %s, format id: %s, compiler: %s",
                 LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, LUATEXFORMATID, status.used_compiler)
         end)
-        register("used hash slots", function()
+        register("tex properties", function()
             local t = status.gethashstate()
             local m = status.gettexstate()
-            return format("%s of %s with base %s, approximate memory usage: %i MB",
-                t.top, t.max, status.tex_hash_size, m.approximate // (1024 * 1024))
+            return format("%s hash slots used of %s, approximate memory usage: %i MB",
+                t.top, t.max, m.approximate // (1024 * 1024))
         end)
         register("callbacks", statistics.callbacks)
         -- so far

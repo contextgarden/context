@@ -17,6 +17,8 @@
 
 \unprotect
 
+% TODO: \appendtoks \strut \wrapuppar{\strut}\to \everypar
+
 %D New experimental stuff:
 
 % this might move to syst-ini.mkxl

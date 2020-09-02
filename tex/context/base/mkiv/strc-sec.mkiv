@@ -1298,6 +1298,14 @@
    \fi
    \glet\previoushead\currenthead}
 
+\def\strc_sectioning_depth_correction
+  {\ifvmode
+     \edef\p_depthcorrection{\headparameter\c!depthcorrection}%
+     \ifx\p_depthcorrection\v!strut
+       \prevdepth\strutdepth
+     \fi
+   \fi}
+
 \def\strc_sectioning_after_yes
   {\ifconditional\headisdisplay
      \ifconditional\c_strc_sectioning_auto_break
@@ -1305,6 +1313,7 @@
      \fi
      \strc_sectioning_empty_correction
      \headparameter\c!after
+     \strc_sectioning_depth_correction
    \fi}
 
 \unexpanded\def\strc_sectioning_prevent_page_break % see strc-con
