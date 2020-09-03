@@ -74,7 +74,8 @@ local function pdfobj()
             immediate     = immediate,
         }
         if fileobject then
-            object.filename = content
+            object.file = content
+         -- object.filename = content
         else
             object.string = content
         end
