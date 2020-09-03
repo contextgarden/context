@@ -98,8 +98,8 @@
    \edef\normallineheight     {\interlinespaceparameter\c!line     }%
    \edef\topskipfactor        {\interlinespaceparameter\c!top      }%
    \edef\maxdepthfactor       {\interlinespaceparameter\c!bottom   }%
-   \edef\m_spac_vertical_baseline_stretch_factor{\interlinespaceparameter\c!stretch  }%
-   \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink   }%
+   \edef\m_spac_vertical_baseline_stretch_factor{\interlinespaceparameter\c!stretch}%
+   \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink }%
    % often topskip does more bad than good, so:
    \ifx\topskipfactor\v!height
      \let\topskipfactor\strutheightfactor
