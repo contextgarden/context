@@ -197,10 +197,11 @@
     enddef ;
 \stopMPextensions
 
-\startuniqueMPgraphic{math:radical:default}%{...}
+\startuniqueMPgraphic{minifun::math:radical:default}%{...}
     draw
         math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
-        withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+      % withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+        withpen pencircle scaled OverlayLineWidth
       % dashed evenly
         withcolor OverlayLineColor ;
 \stopuniqueMPgraphic
@@ -217,7 +218,8 @@
    \d_overlay_height   \ht\nextbox
    \d_overlay_depth    \dp\nextbox
    \d_overlay_offset   \scratchoffset
-   \d_overlay_linewidth\linewidth
+   \d_overlay_linewidth\the\dimexpr\triggeredmathstyleparameter\Umathfractionrule
+   %
    \edef\overlaylinecolor{\mathradicalparameter\c!color}%
    %
    \edef\p_mp{\mathradicalparameter\c!mp}%
@@ -241,7 +243,7 @@
    \fi
    \endgroup}
 
-\definemathradical[sqrt][mp=math:radical:default]
+\definemathradical[sqrt][mp=minifun::math:radical:default]
 
 % \setupmathradical[sqrt][alternative=normal,color=darkblue]
 % \setupmathradical[sqrt][alternative=mp,color=darkgreen]

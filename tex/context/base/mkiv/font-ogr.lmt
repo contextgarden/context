@@ -70,6 +70,7 @@ do
         local d_descriptions     = { } -- setmetatableindex({ },t_descriptions) -- hm, index vs unicode
         d_tfmdata.characters     = d_characters
         d_tfmdata.descriptions   = d_descriptions
+        d_tfmdata.parentdata     = t_tfmdata -- so we can access it if needed
         d_properties.instance    = - droppedin -- will become an extra element in the hash
         t_properties.virtualized = true
         identifiers[droppedin]   = d_tfmdata

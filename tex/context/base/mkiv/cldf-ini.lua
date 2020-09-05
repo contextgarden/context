@@ -137,7 +137,7 @@ local trialtypesettingstate = createtoken("trialtypesettingstate").index
 
 function context.trialtypesetting()
     return texgetcount(trialtypesettingstate) ~= 0
---     return texgetcount("trialtypesettingstate") ~= 0
+ -- return texgetcount("trialtypesettingstate") ~= 0
 end
 
 local knownfunctions = (lua.getfunctionstable or lua.get_functions_table)(true)

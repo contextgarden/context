@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 }
 
 local load, type, tonumber = load, type, tonumber
-local find = string.find
+local find, gsub = string.find, string.gsub
 local concat = table.concat
 local utfchar = utf.char
 local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
@@ -379,9 +379,12 @@ do
             local m = scancsname(true)
             local c = channels[n]
             local s = c and c:reader()
-            if not s then
+            if s then
+                s = gsub(s," *$"," ") -- or just "", no need to fake tex here
+            else
                 channels[n] = false
-                s = "\\par" -- or just "", no need to fake tex here
+             -- s = "\\par"
+                s = "" -- no need to fake tex here
             end
             setmacro(m, s, prefix) -- checks for frozen
         end,
@@ -397,7 +400,9 @@ do
             local m = scancsname(true)
             local c = channels[n]
             local s = c and c:reader()
-            if not s then
+            if s then
+                -- should we strip spaces at the end?
+            else
                 channels[n] = false
                 s = ""
             end

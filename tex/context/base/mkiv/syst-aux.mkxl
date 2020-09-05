@@ -2989,6 +2989,8 @@
 %D We now use the macro stack which is somewhat leaner and meaner and a little
 %D faster too.
 
+% left overs: too much \protected here
+
 \newcount\outerrecurse
 \newcount\innerrecurse
 
@@ -3061,6 +3063,7 @@
    \fi{#1}}
 
 \protected\def\syst_helpers_recurse_indeed#1#2% from to
+% {\ifnum#1>#2 %
   {\ifnum#1>#2\relax
      \expandafter\syst_helpers_recurse_indeed_nop
    \else
@@ -3073,7 +3076,7 @@
   {\syst_helpers_recurse_content
    \syst_helpers_recurse_indeed}
 
-\protected\def\syst_helpers_recurse_indeed_nop#1#2#3%
+\protected\def\syst_helpers_recurse_indeed_nop#0#0#0%
   {}
 
 %D \macros
@@ -3106,7 +3109,6 @@
 %D When needed, one can call for \type {\looplevel} and \type {\loopdepth}.
 
 \let\endofloop\donothing % maybe \syst_helpers_loop_end
-
 
 \protected\def\doloop#1%
   {\global\advance\outerrecurse \plusone
@@ -3219,7 +3221,7 @@
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\protected\def\syst_helpers_stepwise_recurse_nop#1#2#3#4%
+\protected\def\syst_helpers_stepwise_recurse_nop#0#0#0#0%
   {}
 
 \newcount\fastloopindex

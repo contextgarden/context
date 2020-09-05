@@ -1,10 +1,23 @@
-% not yet a module
+%D \module
+%D   [       file=meta-imp-threesix,
+%D        version=2019.00.00,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Don Knuths ThreeSix font,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The design of the font is if course by Don Knuth and can be found in facs9b.ps. I
+%D wish I was clever enough to understand all the good stuff in there.
 
 \startluacode
-    local gsub, utfbyte = string.gsub, utf.byte
-
-    -- The font from DEK's facs9b.ps (I wish I was clever enough to understand all the good
-    -- stuff in there):
+    local unpack = unpack
+    local concat = table.concat
+    local gsub, gmatch, utfbyte = string.gsub, string.gmatch, utf.byte
 
     local font36 = {
         ["0"] = [[00111100 01111110 11000011 11000011 11000011 11000011 01111110 00111100]],
@@ -65,8 +78,9 @@
             preamble = "InitializeThreeSix;",
         }
         for u, v in table.sortedhash(font36) do
+            local data   = remap(v)
             local ny     = 8
-            local nx     = (#v - ny + 1) // ny
+            local nx     = ((#v + 1) // ny) - 1
             local height = ny * 1.1 - 0.1
             local width  = nx * 1.1 - 0.1
             fonts.dropins.registerglyph {
@@ -74,93 +88,18 @@
                 unicode  = utfbyte(u),
                 width    = width,
                 height   = height,
-                code     = f_code(remap(v)),
+                code     = f_code(data),
             }
         end
     end
-
     MP.registerthreesix("fontthreesix")
 \stopluacode
-
-% \startMPcalculation{simplefun}
-%     def InitializeThreeSix =
-%         save Y, N, L, S ; save dx, dy, nx, ny ;
-%         save shape, fillcolor, mypen, random, currentpen, spread, hoffset ;
-%         string shape, fillcolor, mypen ; boolean random ; pen currentpen ;
-%         dx :=   11/10 ;
-%         dy := - 11/10 ;
-%         nx := - dx ;
-%         ny :=   0 ;
-%         shape      := getparameterdefault "mpsfont" "shape"  "circle" ;
-%         random     := hasoption           "mpsfont" "random" "true" ;
-%         fillcolor  := getparameterdefault "mpsfont" "color"  "" ;
-%         mypen      := getparameterdefault "mpsfont" "pen"    "" ;
-%         spread     := getparameterdefault "mpsfont" "spread" 0 ;
-%         hoffset    := 12 * spread / 2 ;
-%         currentpen := pencircle
-%             if mypen = "fancy" :
-%                 xscaled 1/20 yscaled 2/20 rotated 45
-%             else :
-%                 scaled 1/20
-%             fi ;
-%         if shape == "square" :
-%             def S =
-%                 unitsquare if random : randomized 1/10 fi
-%                 shifted (nx,ny)
-%             enddef ;
-%         elseif shape = "diamond" :
-%             def S =
-%                 unitdiamond if random : randomized 1/10 fi
-%                 shifted (nx,ny)
-%             enddef ;
-%         else :
-%             def S =
-%                 unitcircle if random : randomizedcontrols 1/20 fi
-%                 shifted (nx,ny)
-%             enddef ;
-%         fi ;
-%         def N =
-%             nx := nx + dx ;
-%             draw S ;
-%         enddef ;
-%         if fillcolor = "random" :
-%             def Y =
-%                 nx := nx + dx ;
-%                 fillup S withcolor white randomized (2/3,2/3,2/3) ;
-%             enddef ;
-%         elseif fillcolor = "" :
-%             def Y =
-%                 nx := nx + dx ;
-%                 fillup S ;
-%             enddef ;
-%         else :
-%             def Y =
-%                 nx := nx + dx ;
-%                 fillup S withcolor fillcolor ;
-%             enddef ;
-%         fi ;
-%         def L =
-%             nx := - dx ;
-%             ny := ny + dy ;
-%         enddef ;
-%     enddef ;
-%
-%     vardef ThreeSix (text code) =
-%         InitializeThreeSix ;
-%         draw image (code) shifted (hoffset,-ny) ;
-%     enddef ;
-% \stopMPcalculation
 
 \startMPcalculation{simplefun}
     def InitializeThreeSix =
         save Y, N, L, S ;
-      % save dx, dy, nx, ny ;
         save shape, fillcolor, mypen, random, threesixpen, spread, hoffset ;
         string shape, fillcolor, mypen ; boolean random ; pen threesixpen ;
-      % dx :=   11/10 ;
-      % dy := - 11/10 ;
-      % nx := - dx ;
-      % ny :=   0 ;
         shape       := getparameterdefault "mpsfont" "shape"  "circle" ;
         random      := hasoption           "mpsfont" "random" "true" ;
         fillcolor   := getparameterdefault "mpsfont" "color"  "" ;
@@ -189,10 +128,17 @@
                 shifted (nx,ny)
             enddef ;
         fi ;
-        def N =
-            nx := nx + dx ;
-            draw S ;
-        enddef ;
+        if fillcolor = "" :
+            def N =
+                nx := nx + dx ;
+                draw S ;
+            enddef ;
+        else :
+            def N =
+                nx := nx + dx ;
+                draw S withcolor "lightgray" ;
+            enddef ;
+        fi ;
         if fillcolor = "random" :
             def Y =
                 nx := nx + dx ;
@@ -250,4 +196,40 @@
 \definefont[DEKFontC][Serif*fontthreesix-initial]
 \definefont[DEKFontD][Serif*fontthreesix-tweak]
 
-\endinput
+\continueifinputfile{meta-imp-threesix.mkxl}
+
+\starttext
+
+\definefontfeature % color, with some spread
+  [fontthreesix-color]
+  [default]
+  [metapost={category=fontthreesix,shape=diamond,color=random,pen=fancy,spread=.1,random=yes}]
+
+% \definefont[DEKFontA][Serif*fontthreesix-color @ 280pt]
+% \definefont[DEKFontB][Serif*fontthreesix-color @  80pt]
+
+\definefont[DEKFontA][Serif*fontthreesix-color @ 200pt]
+\definefont[DEKFontB][Serif*fontthreesix-color @  60pt]
+
+\startTEXpage[align={lohi,middle,nothyphenated},offset=20pt]
+    \offinterlineskip                                             \vskip10pt
+    \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vskip60pt
+    \DEKFontB TOUGH                                               \vskip20pt
+              SMART                                               \vskip20pt
+              UNITED                                              \vskip20pt
+              DISCIPLINED                                         \vskip20pt
+              LOVING                                              \vskip10pt
+\stopTEXpage
+
+\startpagemakeup
+    \setupalign[middle,nothyphenated]
+    \offinterlineskip                                             \vfil\vfil
+    \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vfil\vfil\vfil
+    \DEKFontB TOUGH                                               \vfil
+              SMART                                               \vfil
+              UNITED                                              \vfil
+              DISCIPLINED                                         \vfil
+              LOVING                                              \vfil
+\stoppagemakeup
+
+\stoptext

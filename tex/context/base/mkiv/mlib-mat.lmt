@@ -117,8 +117,8 @@ local c_erfcx  = c.erfcx  registerscript("c_erfcx",  function() return mppair(c_
 local c_erfi   = c.erfi   registerscript("c_erfi",   function() return mppair(c_topair(c_erfi  (c_new(scanpair())))) end)
 local c_dawson = c.dawson registerscript("c_dawson", function() return mppair(c_topair(c_dawson(c_new(scanpair())))) end)
 
-local c_voigt       = c.voigt
-local c_voigt_hwhm  = c.voigt_hwhm
+local c_voigt      = c.voigt
+local c_voigt_hwhm = c.voigt_hwhm
 
 registerscript("c_voigt", function()
     return mppair(c_topair(c_voigt(c_new(scanpair()),c_new(scanpair()),c_new(scanpair()))))

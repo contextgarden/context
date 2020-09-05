@@ -221,10 +221,12 @@ local hash = { -- we could put these presets in char-def.lua
     [0x30A5] = "non_starter", [0x30A7] = "non_starter", [0x30A9] = "non_starter", [0x30C3] = "non_starter", [0x30E3] = "non_starter",
     [0x30E5] = "non_starter", [0x30E7] = "non_starter", [0x30EE] = "non_starter", [0x30F5] = "non_starter", [0x30F6] = "non_starter",
     [0x30FC] = "non_starter", [0x30FD] = "non_starter", [0x30FE] = "non_starter", [0x31F0] = "non_starter", [0x31F1] = "non_starter",
-    [0x30F2] = "non_starter", [0x30F3] = "non_starter", [0x30F4] = "non_starter", [0x31F5] = "non_starter", [0x31F6] = "non_starter",
-    [0x30F7] = "non_starter", [0x30F8] = "non_starter", [0x30F9] = "non_starter", [0x31FA] = "non_starter", [0x31FB] = "non_starter",
-    [0x30FC] = "non_starter", [0x30FD] = "non_starter", [0x30FE] = "non_starter", [0x31FF] = "non_starter",
+    [0x31F2] = "non_starter", [0x31F3] = "non_starter", [0x31F4] = "non_starter", [0x31F5] = "non_starter", [0x31F6] = "non_starter",
+    [0x31F7] = "non_starter", [0x31F8] = "non_starter", [0x31F9] = "non_starter", [0x31FA] = "non_starter", [0x31FB] = "non_starter",
+    [0x31FC] = "non_starter", [0x31FD] = "non_starter", [0x31FE] = "non_starter", [0x31FF] = "non_starter",
     --
+    [0x301C] = "non_starter", [0x303B] = "non_starter", [0x303C] = "non_starter", [0x309B] = "non_starter", [0x30FB] = "non_starter",
+    [0x30FE] = "non_starter",
     -- hyphenation
     --
     [0x2026] = "hyphen", -- …   ellipsis

@@ -129,7 +129,9 @@
     % main handler
 
     def math_stacker_draw_accent(expr p) =
-        draw p withpen pencircle scaled OverlayLineWidth xyscaled (2,3) rotated 45 ;
+%         draw p withpen pencircle scaled OverlayLineWidth xyscaled (2,3) rotated 45 ;
+%         draw p withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 45 ;
+        draw p withpen pencircle scaled OverlayLineWidth ;
     enddef ;
 
     def math_stacker_draw_arrow(expr p) =
@@ -204,10 +206,15 @@
 \startuniqueMPgraphic{minifun::math:radical:default}{axis,ex,em}
     draw
         math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
-        withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+     %  withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+        withpen pencircle scaled OverlayLineWidth
       % dashed evenly
         withcolor OverlayLineColor ;
 \stopuniqueMPgraphic
+
+% already setup:
+%
+% definemathradical [sqrt]   [mp=minifun::math:radical:default]
 
 \continueifinputfile{meta-imp-mat.mkiv}
 

@@ -314,6 +314,10 @@ local function collectnames()
             n = n + 1 l[n] = scanstring(1)
         elseif t == nullary_code then
             n = n + 1 l[n] = scanboolean(1)
+        elseif t == leftbracket_code then
+            scantoken() -- leftbacket
+            n = n + 1 l[n] = scaninteger(1)
+            scantoken() -- rightbacket
         elseif t == leftdelimiter_code or t == tag_code or t == capsule_code then
             t = scanexpression(true)
             n = n + 1 l[n] = (typescanners[t] or scanexpression)()
