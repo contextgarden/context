@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['mlib-int'] = {
 
 local factor         = number.dimenfactors.bp
 local mpstring       = mp.string
+local mpboolean      = mp.boolean
 local getdimen       = tex.getdimen
 local getcount       = tex.getcount
 local getmacro       = tokens.getters.macro
@@ -122,9 +123,13 @@ registerscript("OverlayOffset",        function() return getdimen("d_overlay_off
 registerscript("OverlayRegion",        function() mpstring(getmacro("m_overlay_region"))           end)
 --------------("CurrentLayout",        function() mpstring(getmacro("currentlayout"))              end)
 
-registerscript("PageFraction",         page_fraction)
-registerscript("OnRightPage",          on_right_page)
-registerscript("OnOddPage",            is_odd_page  )
-registerscript("InPageBody",           in_body_page )
+-- should be direct
+--
+-- registerscript("PageFraction",       page_fraction)
+
+registerscript("PageFraction",         function() return mpboolean(page_fraction()) end)
+registerscript("OnRightPage",          function() return mpboolean(on_right_page()) end)
+registerscript("OnOddPage",            function() return mpboolean(is_odd_page  ()) end)
+registerscript("InPageBody",           function() return mpboolean(in_body_page ()) end)
 
 registerscript("defaultcolormodel",    defaultcolormodel)

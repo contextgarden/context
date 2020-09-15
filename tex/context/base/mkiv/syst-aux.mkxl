@@ -3723,7 +3723,7 @@
   {\def\syst_helpers_grab_indeed##1#1{#2{##1}}\syst_helpers_grab_indeed}
 
 \protected\def\grabuntil#1%
-  {\expandafter\syst_helpers_grab\expandafter{\begincsname#1\endcsname}}
+  {\expandafter\syst_helpers_grab\expandafter{\csname#1\endcsname}}
 
 %D The next command build on this mechanism:
 %D

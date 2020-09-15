@@ -295,22 +295,81 @@
   {\popsystemmode\v!environment
    \signalendofinput\v!environment}
 
-%D Relatively new (might move as it depends on setups):
+%D Upgraded after the ctx 2020 meeting:
+%D
+%D \starttyping
+%D \definedocument[thesis]
+%D
+%D \setupdocument[a=b,e=f]
+%D \setupdocument[thesis][a=x,c=d]
+%D
+%D % \startsetups[thesis:start]
+%D \startsetups[document:start]
+%D     START
+%D \stopsetups
+%D
+%D \startsetups[thesis:stop]
+%D % \startsetups[document:stop]
+%D     STOP
+%D \stopsetups
+%D
+%D % \startdocument[thesis]
+%D \startthesis
+%D     (\currentdocument/a): \documentvariable{a}\par
+%D     (\currentdocument/c): \documentvariable{c}\par
+%D     (\currentdocument/e): \documentvariable{e}\par
+%D \stopthesis
+%D % \stopdocument
+%D \stoptyping
 
-%newtoks\everysetupdocument
+\installcorenamespace {document}
+
+\installcommandhandler \??document \s!document \??document
+
+\setupdocument
+  [\c!before=\directsetup{\s!document:\v!start},
+   \c!after =\directsetup{\s!document:\v!stop}]
+
+\def\syst_document_setup#1%
+  {\directsetup{\doifelsesetups{\currentdocument:\v!start}\currentdocument\s!document:\v!start}}
+
+\appendtoks
+    \normalexpanded {%
+        \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
+        \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
+        \setvalue{\e!start\currentdocument}{\dodoubleargument\syst_document_start[\currentdocument]}%
+        \letvalue{\e!stop \currentdocument}\stopdocument
+    }%
+\to \everydefinedocument
 
 \unexpanded\def\startdocument % todo: dostarttagged\t!document
-  {\dosingleargument\syst_structure_document_start}
+  {\dodoubleargument\syst_document_start}
 
-\unexpanded\def\syst_structure_document_start[#settings]%
-  {\setvariables[\s!document][#settings]%
-   \the\everysetupdocument\relax
+\unexpanded\def\syst_document_start[#namespace][#settings]%
+  {\pushmacro\currentdocument
+   \ifsecondargument
+     \edef\currentdocument{#namespace}%
+     \setupcurrentdocument[#settings]%
+   \else\iffirstargument
+     \doifelseassignment{#namespace}%
+       {\let\currentdocument\empty
+        \setupcurrentdocument[#namespace]}%
+       {\edef\currentdocument{#namespace}}%
+   \fi\fi
+   \ifx\empty\currentdocument\else\setmode\currentdocument\fi
    \starttext
+   \the\everystartdocument
    \documentvariable\c!before}
 
 \unexpanded\def\stopdocument % todo: dostoptagged\t!document
   {\documentvariable\c!after
-   \stoptext}
+   \the\everystopdocument
+   \stoptext
+   \ifx\empty\currentdocument\else\resetmode\currentdocument\fi
+   \popmacro\currentdocument}
+
+           \let\documentvariable           \documentparameter
+\unexpanded\def\unexpandeddocumentvariable{\documentparameter}
 
 \unexpanded\def\doifelsedocumentvariable#name{\doifelsesomething{\documentvariable{#name}}}
 \unexpanded\def\doifdocumentvariable    #name{\doifsomething    {\documentvariable{#name}}}
@@ -318,38 +377,21 @@
 
 \let\doifdocumentvariableelse\doifelsedocumentvariable
 
-\def\documentvariable#name%
-  {\getvariable\s!document{#name}}
+\unexpanded\def\presetdocument
+  {\dodoubleargument\syst_document_preset}
 
-\unexpanded\def\unexpandeddocumentvariable#name%
-  {\getvariable\s!document{#name}}
-
-\unexpanded\def\setupdocument[#settings]%
-  {\setvariables[\s!document][#settings]%
-   \the\everysetupdocument\relax}
-
-\unexpanded\def\presetdocument[#settings]%
-  {\checkvariables[\s!document][#settings]}
-
-% We silently ignore missing documents. Beware: there are no begin/end setups
-% invoked as we expect the loaded document to be wrapped in \startdocument ...
-% \stopdocument. This is just a convenient variant of input.
-%
-% \unexpanded\def\document
-%   {\dosingleempty\syst_document}
-%
-% \def\syst_document[#1]#2%
-%    \startdocument[#1]
-%    \readfile{#2}{}{}}
-
-% metadata:author  metadata:title  metadata:subject
-
-\setvariables
-  [document]
-  [\c!before=\directsetup{\s!document:start},
-   \c!after=\directsetup{\s!document:stop}]
-
-%S The document: namespace will be used elsewhere too.
+\unexpanded\def\syst_document_preset[#namespace][#settings]%
+  {\pushmacro\currentdocument
+   \ifsecondargument
+     \edef\currentdocument{#namespace}%
+     \setupcurrentdocument[#settings]%
+   \else\iffirstargument
+     \doifelseassignment{#namespace}%
+       {\let\currentdocument\empty
+        \setupcurrentdocument[#namespace]}%
+       {}%
+   \fi\fi
+   \popmacro\currentdocument}
 
 % Bonus:
 

@@ -1,0 +1,694 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={CONCEPTS},
+   banner={experiments turned features},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+% see datatypes, hyphenation etc
+
+\starttitle[title=Experiments]
+
+There have been quite some experiments. Some results were rejected, some kept.
+Here are a few (that come to mind). This talk is a mix of summary, discussion and
+some demos.
+
+\stoptitle
+
+\starttitle[title=Math]
+
+There are a couple of additional features in the math engine. Most concern a bit
+more control over hard coded behavior, but some are sort of new:
+
+\startbuffer
+test $a = b \discretionary class 3 {$<$}{$>$}{$\neq$}  c$ test
+\stopbuffer
+
+\typebuffer
+
+When there is enough room this will give
+
+\getbuffer
+
+When \type {\hsize} is limited we get:
+
+{\hsize 4mm \getbuffer}
+
+\page
+
+\enabletrackers[math.toysymbol]
+
+\definemathtoysymbol[Plus] [bin][+]
+\definemathtoysymbol[Minus][bin][-]
+\definemathtoysymbol[Equal][rel][=]
+
+\start
+
+\let\darkblue\darkyellow %\showmakeup[glue]
+
+$\dorecurse{199} {
+    x_{#1} \ifodd#1\relax\Plus\else\Minus\fi
+} x_{200} \Equal n$
+
+\dorecurse{10} {
+    test \discretionary
+        {\darkred   hel  $\sqrt{y}$ lo}
+        {\darkgreen good $\sqrt{z}$ bye}
+        {\darkblue  wel  $\sqrt{x}$ come} test
+}
+
+\dorecurse{10} {test #1
+    $x + 2x \discretionary class 2
+        {$+ \, \cdots $}
+        {$     \cdots \, +$}
+        {$+ \, \cdots \, +$} nx$ test
+}
+
+\stop
+
+\stoptitle
+
+\starttitle[title=More math]
+
+In traditional \TEX\ the last setting wins:
+
+\startbuffer
+\def\whatevera
+  {\Umathordrelspacing \textstyle=50mu
+   \Umathopenbinspacing\textstyle=50mu}
+
+\def\whateverb
+  {\Umathordrelspacing \textstyle=25mu
+   \Umathopenbinspacing\textstyle=25mu}
+
+$\whatevera a = (-2)$ \par
+$\whateverb a = (-2)$ \par
+$\whatevera a = (-2) \quad \whateverb a = (-2)$ \par
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+\page
+
+In \LUAMETATEX\ we can freeze settings on the spot:
+
+\startbuffer
+\def\whatevera
+  {\frozen\Umathordrelspacing \textstyle=50mu
+   \frozen\Umathopenbinspacing\textstyle=50mu}
+
+\def\whateverb
+  {\frozen\Umathordrelspacing \textstyle=25mu
+   \frozen\Umathopenbinspacing\textstyle=25mu}
+
+$\whatevera a = (-2)$ \par
+$\whateverb a = (-2)$ \par
+$\whatevera a = (-2) \quad \whateverb a = (-2)$ \par
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+\stoptitle
+
+\starttitle[title=Macros]
+
+Not storing arguments:
+
+\starttyping
+\def\foo#1#0#3{....}
+
+\foo{11}{22}{33}
+
+\foo #1#0#3->....
+#1<-11
+#2<-
+#3<-33
+\stoptyping
+
+Ignoring arguments:
+
+\starttyping
+\def\foo#1#-#2{#1#2}
+
+\foo{1}{2}{3}
+
+13
+\stoptyping
+
+\page
+
+Normal behaviour:
+
+\starttyping
+\def\foo#1#2#3{#1#2#3}
+
+\foo{1}{{2}}{3}
+
+\foo #1#2#3->#1#2#3
+#1<-1
+#2<-{2}
+#3<-3
+\stoptyping
+
+Special behaviour:
+
+\starttyping
+\def\foo#1#+#3{#1#2#3}
+
+\foo #1#2#3->#1#2#3
+#1<-1
+#2<-{{2}}
+#3<-3
+\stoptyping
+
+\page
+
+Optional tokens (we also show some \TEX-expansion-horror here):
+
+\starttyping
+\edef\a!space{\expandtoken \ignorecatcode \spaceasciicode}
+
+\normalexpanded {
+
+    \protected \def \noexpand \doifelseinset#1#2%
+      {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
+         \noexpand\expandafter\noexpand\firstoftwoarguments
+       \noexpand\else
+         \noexpand\expandafter\noexpand\secondoftwoarguments
+       \noexpand\fi}
+
+}
+\stoptyping
+
+or as tokens (\type{\showluatokens\doifelseinset}) on the next page:
+
+\page
+
+\starttyping
+591504   13    1  argument
+643771   13    2  argument
+595596   14    0  end match
+633535  120   48  if test       ifhasxtoks
+643789    1  123  left brace
+643793   12   44  other char
+643741    9   32  ignore
+185919    5    1  parameter
+633495   12   44  other char
+ 57752    2  125  right brace
+167619    1  123  left brace
+643686   12   44  other char
+228803    5    2  parameter
+643434   12   44  other char
+643792    2  125  right brace
+643788  114    0  expand after  expandafter
+643775  125    0  call          firstoftwoarguments
+590609  120    3  if test       else
+643628  114    0  expand after  expandafter
+643754  125    0  call          secondoftwoarguments
+643763  120    2  if test       fi
+\stoptyping
+
+\page
+
+Cheating with arguments:
+
+\startbuffer
+\def\foo#1=#2,{(#1/#2)}
+
+\foo 1=2,\ignorearguments
+\foo 1=2\ignorearguments
+\foo 1\ignorearguments
+\foo \ignorearguments
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+As in:
+
+\startbuffer
+\def\foo#1=#2,{\ifarguments\or(#1)\or(#1/#2)\fi}
+
+\foo 1=2,\ignorearguments
+\foo 1=2\ignorearguments
+\foo 1\ignorearguments
+\foo \ignorearguments
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stoptitle
+
+\starttitle[title=Hyphenation]
+
+Hyphenation at work:
+
+\startlinecorrection[line]
+\startcombination[distance=3cm,nx=6]
+    {\vtop{\hsize 2mm \strut NEDERLANDS\vskip.5\lineheight}} {\type{NEDERLANDS}}
+    {\vtop{\hsize 2mm \strut Nederlands\vskip.5\lineheight}} {\type{Nederlands}}
+    {\vtop{\hsize 2mm \strut nederlands\vskip.5\lineheight}} {\type{nederlands}}
+    {\vtop{\hsize 2mm \strut \CONTEXT  \vskip.5\lineheight}} {\type{\CONTEXT  }}
+    {\vtop{\hsize 2mm \strut text\-test\vskip.5\lineheight}} {\type{text\-test}}
+    {\vtop{\hsize 2mm \strut test-test \vskip.5\lineheight}} {\type{test-test }}
+\stopcombination
+\stoplinecorrection
+
+Controlling hyphenation:
+
+\startbuffer[1]
+\nohyphens NEDERLANDS {\dohyphens Nederlands} nederlands
+\stopbuffer
+
+\startbuffer[2]
+NEDERLANDS {\nohyphens Nederlands} nederlands
+\stopbuffer
+
+\typebuffer[1] and \typebuffer[2]
+
+\startlinecorrection[line]
+\startcombination[distance=4cm,nx=2]
+    {\small \small \vtop{\hsize 2mm \strut \nl \getbuffer[1]}} {}
+    {\small \small \vtop{\hsize 2mm \strut \nl \getbuffer[2]}} {}
+\stopcombination
+\stoplinecorrection
+
+\page
+
+There are several ways to implement this:
+
+\startitemize
+\startitem choose a language with no patterns:
+    \startitemize[packed]
+        \startitem it's quite efficient \stopitem
+        \startitem we loose language specifics \stopitem
+    \stopitemize
+\stopitem
+\startitem set the left and right hyphen min values high:
+    \startitemize[packed]
+        \startitem it works okay \stopitem
+        \startitem it is a hack \stopitem
+        \startitem we still enter the routine \stopitem
+    \stopitemize
+\stopitem
+\startitem block the mechanism:
+    \startitemize[packed]
+        \startitem it provides detailed control \stopitem
+        \startitem it is conceptually clean \stopitem
+    \stopitemize
+\stopitem
+\stopitemize
+
+The last method is what we use in \LMTX:
+
+\type {\dohyphens} : {\tttf \meaning\dohyphens}
+
+\type {\nohyphens} : {\tttf \meaning\nohyphens}
+
+\page
+
+For the moment we have this (it might evolve):
+
+\starttyping[style=\tt\small\small]
+\chardef \completehyphenationmodecode \numexpr
+    \normalhyphenationmodecode            % \discretionary
+  + \automatichyphenationmodecode         % -
+  + \explicithyphenationmodecode          % \-
+  + \syllablehyphenationmodecode          % pattern driven
+  + \uppercasehyphenationmodecode         % replaces \uchyph
+  + \compoundhyphenationmodecode          % replaces \compoundhyphenmode
+  % \strictstarthyphenationmodecode       % replaces \hyphenationbounds (strict = original tex)
+  % \strictendhyphenationmodecode         % replaces \hyphenationbounds (strict = original tex)
+  + \automaticpenaltyhyphenationmodecode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \explicitpenaltyhyphenationmodecode   % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \permitgluehyphenationmodecode        % turn glue into kern in \discretionary
+  + \permitallhyphenationmodecode         % okay, let's be even more tolerant
+  + \permitmathreplacehyphenationmodecode % and again we're more permissive
+\relax
+\stoptyping
+
+This replaces some \LUATEX\ mode variables and adds some more which is why we now use
+a bitset instead of multiple parameters.
+
+\page
+
+In addition we have more detailed discretionary control:
+
+\startbuffer
+nederlands\discretionary           {!}{!}{!}nederlands
+nederlands\discretionary options 1 {!}{!}{!}nederlands
+nederlands\discretionary options 2 {!}{!}{!}nederlands
+nederlands\discretionary options 3 {!}{!}{!}nederlands
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[line]
+\startcombination[distance=4cm,nx=4]
+    {\vtop{\hsize 1mm \strut \nl nederlands\discretionary           {!}{!}{!}nederlands}} {}
+    {\vtop{\hsize 1mm \strut \nl nederlands\discretionary options 1 {!}{!}{!}nederlands}} {}
+    {\vtop{\hsize 1mm \strut \nl nederlands\discretionary options 2 {!}{!}{!}nederlands}} {}
+    {\vtop{\hsize 1mm \strut \nl nederlands\discretionary options 3 {!}{!}{!}nederlands}} {}
+\stopcombination
+\stoplinecorrection
+
+At some point it will become \quote {frozen} functionality and that's when it gets
+documented (first we need to integrate and play a bit more with it in \CONTEXT).
+
+\stoptitle
+
+\starttitle[title=Local control]
+
+In \LUATEX\ we have experimental (kind of ugly) immediate assignments that can be
+used in expansions without blocking (resulting in tokens that is).
+
+But now we now have local control:
+
+\startbuffer
+\newcount\foocounter
+
+\def\foo
+  {\advance\foocounter\plusone
+   \the\foocounter}
+
+\edef\oof{(\foo)(\foo)(\foo)(\foo)}
+
+\meaning\oof
+\stopbuffer
+
+\typebuffer
+
+{\tttf \nohyphens \veryraggedright \getbuffer}
+
+\page
+
+Immediate expansion:
+
+\startbuffer
+\def\foo
+  {\beginlocalcontrol
+     \advance\foocounter\plusone
+   \endlocalcontrol
+   \the\foocounter}
+
+\edef\oof{(\foo)(\foo)(\foo)(\foo)}
+
+\meaning\oof
+\stopbuffer
+
+\typebuffer
+
+{\tttf \getbuffer}
+
+Hidden assignments:
+
+\startbuffer
+\scratchcounterone \beginlocalcontrol
+    \scratchcountertwo 100
+    \multiply \scratchcountertwo by 4
+\endlocalcontrol \scratchcountertwo
+\the\scratchcounterone
+\stopbuffer
+
+\typebuffer
+
+{\tttf \getbuffer}
+
+% \the \beginlocalcontrol
+%     \scratchcountertwo 100
+%     \multiply \scratchcountertwo by 4
+% \endlocalcontrol \scratchcountertwo
+
+\page
+
+Fancy expansion:
+
+\startbuffer
+\protected\def\foo
+  {\beginlocalcontrol
+     \advance\foocounter\plusone
+   \endlocalcontrol
+   \the\foocounter}
+
+\edef\oof{(\foo)(\foo)(\foo)(\foo)}
+\edef\ofo{(\expand\foo)(\expand\foo)(\expand\foo)(\expand\foo)}
+
+\meaning\oof \par \meaning\ofo
+\stopbuffer
+
+\typebuffer
+
+{\tttf \getbuffer}
+
+And a teaser:
+
+\starttyping
+\protected\def\widthofcontent#1{\beginlocalcontrol
+     \setbox\scratchbox\hbox{#1}\endlocalcontrol   \wd\scratchbox}
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Conditionals]
+
+We can get nicer code that this:
+
+\starttyping
+\ifdim\scratchdimen=10pt
+   \expandafter\one
+\else\ifnum\scratchcounter=20
+   \expandafter\expandafter\expandafter\two
+\else
+   \expandafter\expandafter\expandafter\three
+\fi\fi
+\stoptyping
+
+This becomes:
+
+\starttyping
+\ifdim\scratchdimen=10pt
+   \expandafter\one
+\orelse\ifnum\scratchcounter=20
+   \expandafter\two
+\else
+   \expandafter\three
+\fi
+\stoptyping
+
+\page
+
+There is a bunch of extra conditions like the generic:
+
+\startnarrower \type {\ifcondition} \stopnarrower
+
+some token testers like:
+
+\startnarrower \type {\iftok} and \type {\ifhas(x)tok(s)} \stopnarrower
+
+some specific for math:
+
+\startnarrower \type {\ifmathstyle} and \type {\ifmathparameter} \stopnarrower
+
+macro helpers:
+
+\startnarrower \type {\ifarguments}, \type {\ifboolean} and \type {\ifempty} \stopnarrower
+
+robust number and dimension interception:
+
+\startnarrower \type {\ifchknum}, \type {\ifchkdim}, \type {\ifcmpnum}, \type {\ifcmpdim)}, \type {\ifnumval} and \type {\ifdimval} \stopnarrower
+
+bonus checks:
+
+\startnarrower \type {\iffrozen}, \type {\ifprotected} and \type {\ifusercmd} \stopnarrower
+
+and the mentioned:
+
+\startnarrower \type {\orelse} and \type {\orunless} \stopnarrower
+
+\stoptitle
+
+\starttitle[title=Migration]
+
+\startbuffer
+h: \setbox0\hbox{box    \footnote{h:     box}}\setbox2\hbox{\box    0}\box2\par
+h: \setbox0\hbox{copy   \footnote{h:    copy}}\setbox2\hbox{\copy   0}\box2\par
+h: \setbox0\hbox{unbox  \footnote{h:  unhbox}}\setbox2\hbox{\unhbox 0}\box2\par
+h: \setbox0\hbox{uncopy \footnote{h: unhcopy}}\setbox2\hbox{\unhcopy0}\box2\par
+
+v: \setbox0\hbox{box    \footnote{v:     box}}\setbox2\vbox{\box    0}\box2\par
+v: \setbox0\hbox{copy   \footnote{v:    copy}}\setbox2\vbox{\copy   0}\box2\par
+v: \setbox0\hbox{unbox  \footnote{v:  unhbox}}\setbox2\vbox{\unhbox 0}\box2\par
+v: \setbox0\hbox{uncopy \footnote{v: unhcopy}}\setbox2\vbox{\unhcopy0}\box2\par
+
+\starttabulate[||]
+\NC tabulate \footnote{tabulate} \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer[style={\tt\small}]
+
+\page
+
+\startpacked \getbuffer \stoppacked
+
+% \setbox0\hbox{test \footnote{test}} (\prelistbox0) (\postlistbox0)
+% \setprelistbox0\hbox{BEFORE} \setpostlistbox0\hbox{AFTER}
+% \box0
+
+% \setbox0\hbox{test \footnote{test}} (\prelistcopy0) (\postlistcopy0)
+% \setprelistbox0\hbox{BEFORE} \setpostlistbox0\hbox{AFTER}
+% \box0
+
+\stoptitle
+
+\starttitle[title=Normalizing lines]
+
+We can have predictable lines:
+
+\startbuffer
+    \hangindent3cm \hangafter 2 \leftskip1cm \rightskip1cm \input ward \par
+\stopbuffer
+
+\typebuffer
+
+Standard (but already with left skips):
+
+\start
+    \bitwiseflip \normalizelinemode -\indentskipmodecode
+    \bitwiseflip \normalizelinemode -\normalizelinemodecode
+    \showmakeup \relax \getbuffer
+\stop
+
+Normalized (enhanced, no shifts, indent skip):
+
+\start
+    \bitwiseflip \normalizelinemode \indentskipmodecode
+    \bitwiseflip \normalizelinemode \normalizelinemodecode
+    \showmakeup \relax \getbuffer
+\stop
+
+\page
+
+\startbuffer
+    \parshape 2 1cm 10cm 2cm 15cm \leftskip1cm \rightskip1cm \input ward \par
+\stopbuffer
+
+\typebuffer
+
+Standard:
+
+\start
+    \bitwiseflip \normalizelinemode -\indentskipmodecode
+    \bitwiseflip \normalizelinemode -\normalizelinemodecode
+    \showmakeup \relax \getbuffer
+\stop
+
+Normalized:
+
+\start
+    \bitwiseflip \normalizelinemode \indentskipmodecode
+    \bitwiseflip \normalizelinemode \normalizelinemodecode
+    \showmakeup \relax \getbuffer
+\stop
+
+% {\showmakeup \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Freezing paragraph properties]
+
+\startbuffer
+\forgetparagraphfreezing \placefigure[left]{}{} {\bf Andrew Cuomo:} \input cuomo
+\stopbuffer
+
+\typebuffer[style=\tt\small] \start \switchtobodyfont[8pt] \getbuffer \par \stop
+
+\startbuffer
+\setparagraphfreezing \placefigure[left]{}{} {\bf Andrew Cuomo:}  \input cuomo
+\stopbuffer
+
+\typebuffer[style=\tt\small] \start \switchtobodyfont[8pt] \getbuffer \par \stop
+
+\stoptitle
+
+\starttitle[title=Wrapping up paragraphs]
+
+\setparagraphfreezing
+
+We have \type {\wrapuppar} as new hook. An experimental mechanism has been build
+around it so that Wolfgang and I can freak out on this.
+
+\startbuffer
+\def\TestA{\registerparwrapper
+  {A}
+  {[\ignorespaces}
+  {\removeunwantedspaces]\showparwrapperstate{A}}}
+
+\def\TestB#1{\registerparwrapper
+  {B#1}
+  {(\ignorespaces}
+  {\removeunwantedspaces)\showparwrapperstate{B#1}}}
+
+\def\TestC{\registerparwrapper
+  {C}
+  {<\ignorespaces}
+  {\removeunwantedspaces>\showparwrapperstate{C}\forgetparwrapper}}
+
+\def\TestR{\registerparwrapperreverse
+  {R}
+  {<\ignorespaces}
+  {\removeunwantedspaces>\showparwrapperstate{R}}}
+\stopbuffer
+
+\typebuffer[style=\tt\small] \getbuffer
+
+\page
+
+Example 1:
+
+\startbuffer
+\TestA
+\dorecurse{3}
+    {1.#1 before \ruledvbox{\hsize2em\raggedcenter\TestB1 !\par} after\par}
+\dorecurse{3}
+    {2.#1 before \ruledvbox{\hsize3em\raggedcenter        !\par} after\par}
+\dorecurse{3}
+    {3.#1 before \ruledvbox{\hsize4em\raggedcenter\TestB2 !}     after\par}
+\forgetparwrapper
+\dorecurse{3}
+    {4.#1 before \ruledvbox{\hsize5em\raggedcenter\TestB3 !}     after\par}
+\TestC
+\dorecurse{3}
+    {5.#1 before \ruledvbox{\hsize2em\raggedcenter\TestA  !}     after\par}
+\stopbuffer
+
+\typebuffer[style=\tt\small]
+
+\startcolumns  \startpacked \getbuffer \stoppacked \stopcolumns
+
+\page
+
+Example 2:
+
+\startbuffer
+\TestA
+\dorecurse{3}{6.#1  before after\par} \blank
+\TestB4
+\dorecurse{3}{7.#1 before after\par} \blank
+\TestB5
+\TestR
+\dorecurse{3}{8.#1 before after\par} \blank
+\stopbuffer
+
+\typebuffer[style=\tt\small]
+
+\startcolumns  \startpacked \getbuffer \stoppacked \stopcolumns
+
+\stoptitle
+
+\stopdocument

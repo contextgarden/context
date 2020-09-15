@@ -1,0 +1,208 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={MKII MKIV LMTX},
+   banner={where does it end},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Welcome]
+
+This meeting was kind of special because of the Covid situations. It forces us to
+adapt and think about how to deal with this kind of situations. But, we had a
+very nice meeting as usual. The first talk was a summary of where we started and
+where we are now. The other talks are more specialized.
+
+All presentations use the same simple style. No interaction, no fancy \PDF\
+features, also because we had to stream them.
+
+\stoptitle
+
+\starttitle[title=MKII]
+
+\startitemize
+\startitem
+    In the 80's I bought the \TEX book but it all stayed pretty abstract.
+\stopitem
+\startitem
+    In the beginning of the 90's we had to get some math on paper we bought (!) a
+    copy of \LATEX.
+\stopitem
+\startitem
+    Right from the start we had to make in look a bit better than out of the box.
+\stopitem
+\startitem
+    So a shell around if evolved but soon we started from scratch.
+\stopitem
+\startitem
+    We did so first on top \LAMSTEX, then we switched to \INRSTEX.
+\stopitem
+\startitem
+    Soon we only used a few components of that: we learned from trial and error.
+\stopitem
+\startitem
+    We joined the \NTG, met Taco and friends, and slowly got some presence.
+\stopitem
+\startitem
+    And it all went on till we had what we later called \MKII.
+\stopitem
+\startitem
+    But, we always had ideas about what more we wanted.
+\stopitem
+\startitem
+    We went from \TEX\ to \ETEX\ to \PDFTEX\ to \PDFETEX.
+\stopitem
+\startitem
+    We played with the idea of \type {eetex}, different backends etc.\ (show old
+    \MAPS\ article).
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=MK{\thinspace\periods[2]}]
+
+\startitemize
+\startitem
+    \CONTEXT\ has been keyword driven and class based from the start.
+\stopitem
+\startitem
+    This came with a performance hit so the reputation was that it was slow:
+    inheritance, flexibility, user control \unknown\ it all comes at a price.
+\stopitem
+\startitem
+    \CONTEXT\ always had an abstract driver model (\DVIPS, \DVIPSONE, \DVIWINDO,
+    \ACROBAT, \PDFTEX, etc).
+\stopitem
+\startitem
+    It also had an adaptive the front end so we could support successive engines:
+    \TEX, \ETEX, \PDFTEX, \ALEPH, \XETEX.
+\stopitem
+\startitem
+    There had to be color and graphics support from the beginning.
+\stopitem
+\startitem
+    The interfaces permitted extension without breaking compatibility. The user
+    interface was multilingual: we started with Dutch and German (users).
+\stopitem
+\startitem
+    It came with management tools (like \TEXEXEC, \TEXUTIL, \TEXFONT, \TEXMFSTART) etc.\
+    for job control, dealing with (user) fonts, image manipulations etc.
+\stopitem
+\startitem
+    And of course \METAPOST, \XML, combining font setups, mixing encodings, \UTF\
+    patterns evolved with the system.
+\stopitem
+\startitem
+    Educational usage was often the reason for new features.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=MKIV]
+
+\startitemize
+\startitem
+    At some point we started playing with \LUA\ (in \SCITE).
+\stopitem
+\startitem
+    And then with Hartmut started adding some basic \LUA\ support to a clone of
+    \PDFTEX\ that soon became \LUATEX.
+\stopitem
+\startitem
+    Next the Oriental \TEX\ project provided means for Taco to transition to
+    \CCODE .
+\stopitem
+\startitem
+    And for years we slowly built up the system. A \LUAJITTEX\ version showed up
+    and Luigi took over integration in \TEXLIVE\ (like compilation within the
+    infrastructure and updating libraries).
+\stopitem
+\startitem
+    In parallel we tested features and explored what we needed with \CONTEXT:
+    \MKIV\ evolved.
+\stopitem
+\startitem
+    And \unknown\ soon, all further development happened in \MKIV\ only: \MKII\
+    became frozen.
+\stopitem
+\startitem
+    The interface subsystem was upgraded and Wolfgang checked and completed all
+    setups while we did. Obsolete (font, language, input) mechanisms were
+    removed.
+\stopitem
+\startitem
+    A lot happened: some more \TEX, lots of \LUA, better \METAPOST\ integration,
+    more advanced \XML.
+\stopitem
+\startitem
+    To some extend a project like that became to late because the glory days of
+    \TEX\ were already past (publishing changed) but just as with \PDFTEX\ a
+    conceptual upgrade like was felt needed.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=MKXL (aka LMTX)]
+
+\startitemize
+\startitem
+    When \LUATEX\ had to be frozen a follow up took place in \LUAMETATEX. The name
+    reflects the importance of each core component.
+\stopitem
+\startitem
+    The idea is to have an lean and mean engine, one that will become very stable
+    and does not depend on the issues of the day.
+\stopitem
+\startitem
+    It's for all those dedicated users who like quality and playing around but
+    also want guarantees that the tools keeps working years from now: it's about
+    independence.
+\stopitem
+\startitem
+    Of course we tested and explored with \CONTEXT\ and this time \LMTX\ evolves.
+    Here the \type {X} reflects that we consider \XML\ to be part of the picture.
+\stopitem
+\startitem
+    Although there will be (and already is) new functionality the change is less
+    dramatic because this we don't have the change in fonts, encoding and regime
+    subsystems (which made some \MKII\ commands go away).
+\stopitem
+\startitem
+    Hopefully some of the more tricky (hard to do in good old \TEX) mechanisms
+    can be improved now.
+\stopitem
+\startitem
+    And at some point we will freeze \MKIV\ and development will happen in \LMTX\
+    only.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=This meeting]
+
+\startitemize
+\startitem
+    My talks in this meeting are mostly about \LUAMETATEX\ and the \CONTEXT\
+    version \LMTX\ that targets it: how it is done, which concepts show up, where
+    we want to go.
+\stopitem
+\startitem
+    Unless you kept a close eye on last years development, you will encounter of
+    plenty of new features that relate to \LUAMETATEX. So, there is more to tell,
+    but most of that is already known from previous meetings.
+\stopitem
+\startitem
+    And, as usual, a \CONTEXT\ meeting is not only a deadline, but also a
+    starting point. It's you who keep it all going. And, even more than that,
+    it is about us meeting.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\stopdocument

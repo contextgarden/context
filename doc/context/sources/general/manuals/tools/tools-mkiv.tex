@@ -116,13 +116,13 @@
         draw p shifted (center Page - center p) withpen pencircle scaled 2 withcolor .5white ;
         numeric dx ; dx := bbwidth(Page)/21 ;
         numeric dy ; dy := bbheight(Page)/30 ;
-        p := textext("\tt\bf\white\getvariable{document}{extra-1}") xsized(14*dx) ;
+        p := textext("\tt\bf\white\documentvariable{extra-1}") xsized(14*dx) ;
         p := p shifted (-lrcorner p) shifted lrcorner Page shifted (-1dx,8dy) ;
         draw p ;
-        p := textext("\tt\bf\white\getvariable{document}{extra-2}") xsized(14*dx) ;
+        p := textext("\tt\bf\white\documentvariable{extra-2}") xsized(14*dx) ;
         p := p shifted (-lrcorner p) shifted lrcorner Page shifted (-1dx,5dy) ;
         draw p ;
-        p := textext("\tt\bf\white\getvariable{document}{extra-3}") xsized(14*dx) ;
+        p := textext("\tt\bf\white\documentvariable{extra-3}") xsized(14*dx) ;
         p := p shifted (-lrcorner p) shifted lrcorner Page shifted (-1dx,2dy) ;
         draw p ;
         setbounds currentpicture to Page ;

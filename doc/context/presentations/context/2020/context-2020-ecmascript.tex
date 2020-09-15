@@ -1,0 +1,272 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={ECMASCRIPT},
+   banner={just because it can be done},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Why oh why]
+
+\startitemize
+
+\startitem
+    We use a \type {mupdf} based \PDF\ viewer: \type {SumatraPDF}.
+\stopitem
+\startitem
+    And occasionally we use the tools that come with \type {mupdf}.
+\stopitem
+\startitem
+    So when checking if that viewer supports \JAVASCRIPT\ in widgets I noticed
+    the stand alone interpreter. \footnote {The official name is \ECMASCRIPT\
+    which is the standardized core language.}
+\stopitem
+\startitem
+    Which made me wonder how easy it would be to interface to it.
+\stopitem
+
+\blank
+
+\startitem
+    It uses the lightweight library subsystem: like \FFI\ the library interface
+    is setup dynamically.
+\stopitem
+\startitem
+    Support is {\em not} integrated in \LUAMETATEX, so there is no overhead and
+    there are no dependencies.
+\stopitem
+\startitem
+    We assume that the library is on the system, and when not, then there is also
+    also no support.
+\stopitem
+\startitem
+    We stick to the absolute minimum of interfacing needed and delegate
+    everything else to \LUA.
+\stopitem
+\startitem
+    We assume a stable \API, and if not, well \unknown\ sorry.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The components]
+
+\startitemize
+
+\startitem
+    The optional, delayed loading, interface, adds only a few KB to \LUAMETATEX.
+\stopitem
+
+\startitem
+    The \LUA\ library interface that is part of the \CONTEXT\ distribution which means
+    that it's officially supported.
+\stopitem
+
+\startitem
+    There is a \TEX\ module that loads the lot and provides the user interface.
+\stopitem
+
+\startitem
+    And of course, somewhere on the system, there should be the \type {mujs}
+    library. \footnote {Taco compiled the library for his system during the talk
+    and confirmed that it also works out of the box on \OSX.}
+\stopitem
+
+\startitem
+    A module like this should conform to the \CONTEXT\ \LMTX\ standards (a
+    minimalistic not bloated \API, interfacing in \LUA\ and \TEX, etc.).
+\stopitem
+
+\stopitemize
+
+\blank[2*line]
+
+In \CONTEXT\ libraries go into the platform tree, like:
+
+\starttyping
+/tex/texmf-win64/bin/lib/luametatex/mujs/libmujs.dll
+/tex/texmf-linux-64/bin/lib/luametatex/mujs/libmujs.so
+/tex/texmf-osx-64/bin/lib/luametatex/mujs/libmujs.so
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=An example]
+
+\startbuffer
+\usemodule[ecmascript]
+
+\ecmacode {
+    console("");
+    console("When you see this, the loading has succeeded!");
+    console("");
+}
+
+\ecmacode {texprint("Just a {\\bf short} sentence.")}
+
+\startecmacode
+    texprint("And this is \\inframed{\\bs a bit longer} sentence.")
+\stopecmacode
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stoptitle
+
+\starttitle[title=Catcodes]
+
+As with the \LUA\ interface, catcode regimes are supported:
+
+\startbuffer
+\ecmacode {texprint(catcodes.vrb,"Just a {\\bf short} sentence.")}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Possible values are:
+
+\starttabulate
+\NC \type {tex} \NC regular \TEX\ catcode regime       \NC \NR
+\NC \type {ctx} \NC standard \CONTEXT\ catcode regime  \NC \NR
+\NC \type {vrb} \NC verbatim catcode regime            \NC \NR
+\NC \type {prt} \NC protected \CONTEXT\ catcode regime \NC \NR
+\stoptabulate
+
+\stoptitle
+
+\starttitle[title=Print whatever you want]
+
+\startbuffer
+\startecmacode
+  console("We're doing some MetaPost!");
+  texsprint(
+      "\\startMPcode "
+    + 'fill fullsquare xyscaled (6cm,1cm) withcolor "darkgray";'
+    + 'fill fullsquare xyscaled (4cm,1cm) withcolor "middlegray";'
+    + 'fill fullsquare xyscaled (2cm,1cm) withcolor "lightgray";'
+    + "\\stopMPcode "
+  );
+\stopecmacode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Of course the code doesn't look pretty but it can serve as a step|-|up to the real
+deal: coding in \CONTEXT\ speak (or \LUA).
+
+\stoptitle
+
+\starttitle[title=Files]
+
+Because the interpreter is pretty bare, interfacing to the file system has to be
+provided but we can just use what we already have (controlled by \LUA).
+
+\startbuffer
+\startecmacode
+  var f = File("\jobname","r");
+  var l = f.read("*a");
+  f.close();
+  texprint(
+      "This file has "
+    + l.length // or: l.length.toString()
+    + " bytes!"
+  )
+\stopecmacode
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We support the usual arguments, like \type {*a}, \type {*l}, a number indicating
+the bytes to read etc. There is no support for writing files (let's use the
+security excuse).
+
+\page
+
+A file with some script:
+
+\startluacode
+io.savedata("context-2020-ecmascript.js",[[
+function filesize(name) {
+    var f = File(name,"r");
+    if (f != undefined) {
+        var l = f.seek("end");
+        f.close();
+        return l;
+    } else {
+        return 0;
+    }
+}
+]])
+\stopluacode
+
+\typefile{context-2020-ecmascript.js}
+
+Loading that file:
+
+\startbuffer
+\ecmafile{context-2020-ecmascript.js}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Using that function:
+
+\startbuffer
+\ecmacode{texsprint("This file has " + filesize("\jobname.tex") + " bytes!")}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=Ecmascript from \LUA]
+
+\startbuffer
+\startluacode
+  optional.loaded.mujs.execute [[
+    var MyMax = 10; // an example of persistence
+  ]]
+
+  optional.loaded.mujs.execute [[
+    texsprint("\\startpacked");
+    for (var i = 1; i <= MyMax; i++) {
+      texprint(
+        "Here is some rather dumb math test: "
+      + Math.sqrt(i/MyMax)
+      + "!\\par"
+      );
+    }
+    texsprint("\\stoppacked");
+  ]]
+\stopluacode
+\stopbuffer
+
+\typebuffer \page The result: \getbuffer
+
+\stoptitle
+
+\starttitle[title=So what good is it]
+
+\startitemize
+\startitem Not that much value is added compared to what we already have. \stopitem
+\startitem But at least we can say that we can do \ECMASCRIPT\ (aka \JAVASCRIPT). \stopitem
+\startitem And it might convince (new) users to use the \LUA\ interfaces instead. \stopitem
+\startitem So we pay a low price and have no overhead anyway. \stopitem
+\stopitemize
+
+\stoptitle
+
+\stopdocument

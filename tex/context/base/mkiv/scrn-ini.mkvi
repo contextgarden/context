@@ -231,7 +231,7 @@
 % this comes before starttext
 
 \def\scrn_identity_document#1#2%
-  {\doifvariable{document}{metadata:#1}{\setupinteraction[#2=\documentvariable{metadata:#1}]}}
+  {\doifdocumentvariable{metadata:#1}{\setupinteraction[#2=\documentvariable{metadata:#1}]}}
 
 \appendtoks % not interfaced i.e. english
     \scrn_identity_document   {title}\c!title
@@ -242,7 +242,7 @@
     \scrn_identity_document {keyword}\c!keyword
     \scrn_identity_document{keywords}\c!keyword
     \scrn_identity_document    {date}\c!date
-\to \everysetupdocument
+\to \everystartdocument % or stop
 
 \setupinteraction
   [\c!title=,

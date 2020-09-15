@@ -1,0 +1,529 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={LUAMETATEX},
+   banner={where do we stand},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=When it started]
+
+\startitemize
+
+\startitem
+    About three years ago the idea came up to go this route.
+\stopitem
+\startitem
+    At the 2018 meeting it was first mentioned and those present were okay with
+    it.
+\stopitem
+\startitem
+    Early 2019 the first beta release took place.
+\stopitem
+\startitem
+    At the 2019 meeting the first more official version was presented.
+\stopitem
+\startitem
+    Around the 2020 meeting we have more or less arrived at what I had in mind.
+\stopitem
+\startitem
+    At the 2021 meeting I expect the code to be stable and repositories to be set
+    up.
+\stopitem
+\startitem
+    At the 2022 meeting we can make the official transition from \MKIV\ to \LMTX.
+\stopitem
+\startitem
+    Some new options are only enabled in my local \type {cont-exp.tex} file.
+\stopitem
+\startitem
+    Knowing that Wolfgang keeps an eye on all those changes makes me more daring.
+\stopitem
+\startitem
+    We aim to get less (but more efficient) macro code that on the average looks
+    better.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Why it started]
+
+\startitemize
+
+\startitem
+    There was an increasing pressure for a stable \LUATEX.
+\stopitem
+\startitem
+    There should be no more changes to the interfaces, no more extensions.
+\stopitem
+\startitem
+    One can run into interesting comments on the web (as usual), like
+    \startitemize[packed]
+        \startitem The \LUATEX\ program has \quote {many bugs}. \stopitem
+        \startitem The \LUATEX\ manual is bad. \stopitem
+        \startitem The \LUATEX\ program is too slow to be useful. \stopitem
+        \startitem The \LUATEX\ program will never end up in distributions. \stopitem
+        \startitem The \LUATEX\ project is funded and developed in a commercial setting. \stopitem
+    \stopitemize
+\stopitem
+\startitem
+    I won't comment on how I read these (demotivating) comments because \unknown
+\stopitem
+\startitem
+    \unknown\ it anyway often says more about the writer (attitudes) than about
+    \LUATEX.
+\stopitem
+\startitem
+    I also looks like (non \CONTEXT) users are charmed by \LUATEX, and the more
+    they code, the more we need to freeze.
+\stopitem
+\startitem
+    So, hopefully, the \LUAMETATEX\ development does not interfere badly with
+    developments outside the \CONTEXT\ community.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The development]
+
+The summary on the next pages is partial. More can be found in articles and
+documents that come with the distribution.
+
+\startitemize
+
+\startitem
+    \LUATEX\ started out as \CWEB\ code \unknown\ that eventually became just
+    \CCODE\ \unknown\ which in \LUAMETATEX\ has been detached from the (complex)
+    infrastructure.
+\stopitem
+\startitem
+    The basic idea is to only keep the core of \TEX, but for instance font
+    loading, file handling and the backend are gone.
+\stopitem
+\startitem
+    As a consequence the code has been reorganized (shuffled around).
+\stopitem
+\startitem
+    I experimented a lot without bothering about usage elsewhere and I like the
+    result so far.
+\stopitem
+\startitem
+    The \CONTEXT\ distribution will at some point ship with the source.
+\stopitem
+
+\stopitemize
+
+\starttitle[title=File handling]
+
+\startitemize
+
+\startitem
+    All file handling goes via \LUA, also read and write related primitives.
+\stopitem
+\startitem
+    The same is true for terminal (console) handling.
+\stopitem
+\startitem
+    Part of that (the writing) was actually kind of extension code in \TEX\ and
+    partly a system dependency.
+\stopitem
+\startitem
+    The \ETEX\ pseudo file \type {\scantokens} primitive uses the same mechanism
+    as \LUA\ does.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The macro machinery]
+
+\startitemize
+
+\startitem
+    There are extensions to the way macro arguments are handled (less clumsy
+    macros).
+\stopitem
+\startitem
+    There are extra if tests (makes for nicer macros).
+\stopitem
+\startitem
+    Else branches in conditions can be collapsed using \type {\orelse} and \type
+    {\orunless} which gives cleaner low level code.
+\stopitem
+\startitem
+    Tracing gives more detail about node properties and also shows attributes.
+\stopitem
+\startitem
+    Some new data carriers have been added that can be played with from \LUA .
+\stopitem
+\startitem
+    Macros can efficiently be frozen (new) and protected (redone) and the
+    concepts \quote {long} and \type {outer} are gone. \footnote {In \CONTEXT\
+    macros were always \type {\long} and never \type {\outer}. Most commands were
+    unexpandable (also in \MKII, pre \ETEX). So, users won't notice this.}
+\stopitem
+\startitem
+    Saving and restoring is somewhat more efficient (partly a side effect of
+    wider memory).
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Language]
+
+\startitemize
+
+\startitem
+    Language control settings now use less parameters but bit sets instead.
+\stopitem
+\startitem
+    Only basic parameters are stored in the format file now.
+\stopitem
+\startitem
+    There are all kind of small improvements.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Typesetting]
+
+\startitemize
+
+\startitem
+    Attributes (the lists and states) are implemented more efficiently.
+\stopitem
+\startitem
+    The paragraph state is stored with the paragraph.
+\stopitem
+\startitem
+    Paragraphs can be normalized and options are now set with bit sets.
+\stopitem
+\startitem
+    Boxes carry orientation related information (offsets, rotation, etc).
+\stopitem
+\startitem
+    Some nodes carry more information.
+\stopitem
+\startitem
+    Directions are mostly gone (it's up to the backend).
+\stopitem
+\startitem
+    Migrated content is optionally kept with boxes.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Math]
+
+\startitemize
+
+\startitem
+    Some math concepts have been extended (like prescripts and some more
+    control over styles).
+\stopitem
+\startitem
+    There are plenty of new control details.
+\stopitem
+\startitem
+    The math parameter settings obey grouping in a math list.
+\stopitem
+\startitem
+    We can have math in discretionaries in text and more advanced discretionaries
+    in math as well.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Fonts]
+
+\startitemize
+
+\startitem
+    Font specification information no longer uses the string pool (which saves a
+    lot).
+\stopitem
+\startitem
+    Of course we still have the basic font handler.
+\stopitem
+\startitem
+    We only store what is needed for traditional \TEX\ font handling.
+\stopitem
+\startitem
+    Virtual fonts are even more virtual (also a backend thing) so we can have
+    more features.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The code]
+
+\startitemize
+
+\startitem
+    Artifacts from \PASCAL\ and \CWEB\ have been removed.
+\stopitem
+\startitem
+    Languages, fonts, marks etc are no longer \quote {register} based.
+\stopitem
+\startitem
+    The token interface is more abstract and no longer presents strange numbers.
+\stopitem
+\startitem
+    Some internals have been reconstructed because of cleaner \LUA\ interfacing.
+\stopitem
+\startitem
+    A side effect of this is better abstraction of the equivalent ranges.
+\stopitem
+\startitem
+    The code has been made more abstract (and looks easier in e.g. Visual Studio).
+\stopitem
+\startitem
+    The compile farm is used to check if compilation works out of the box.
+\stopitem
+\startitem
+    Compilation is fast and easy, otherwise this project was not possible.
+\stopitem
+\startitem
+    Readability of the code is constantly improved (the usual: has to look okay
+    in my editor).
+\stopitem
+\startitem
+    The code has been made mostly independent of specific operating system needs.
+\stopitem
+\startitem
+    Wide characters are dealt with in Windows interfaces.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Libraries]
+
+\startitemize
+
+\startitem
+    We really want to stay lean and mean: the engine is also a \LUA\ engine.
+\stopitem
+\startitem
+    All code is included, a few libraries are used, but these are small, old and
+    stable.
+\stopitem
+\startitem
+    In addition some helper libraries are made (including pplib by Pawel).
+\stopitem
+\startitem
+    What we ship is what you get: \CONTEXT\ will not depend on more than that.
+\stopitem
+\startitem
+    If something is updated (at all) the differences are checked first.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The \LUA\ engine]
+
+\startitemize
+
+\startitem
+    We use the latest (even alpha) \LUA\ (5.4) because \LUAMETATEX\ is a good
+    test.
+\stopitem
+\startitem
+    There is no support for \LUAJIT\ and the \FFI\ interface is gone.
+\stopitem
+\startitem
+    There is a limited set of libraries that we support but no code is (and will
+    be) included.
+\stopitem
+\startitem
+    There are less callbacks (because we only have a frontend).
+\stopitem
+\startitem
+    There are more token scanners and some options have been added.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Efficiency]
+
+\startitemize
+
+\startitem
+    We benefit some more from the wider memory words (some constructs could go).
+\stopitem
+\startitem
+    The format file is smaller and not longer compressed.
+\stopitem
+\startitem
+    Memory management is now mostly dynamic and usage is much lower.
+\stopitem
+\startitem
+    There are more statistics (also as side effect of memory management).
+\stopitem
+\startitem
+    Dumping the format has been made a bit more robust and is faster.
+\stopitem
+\startitem
+    The core engine performs a bit better (machines don't get that much faster).
+\stopitem
+\startitem
+    We want to be prepared for future architectures.
+\stopitem
+\startitem
+    We manage to keep the binary way below 3 MB.
+\stopitem
+\startitem
+    The lot runs quite well on e.g.\ a Raspberry Pi 4.
+\stopitem
+
+\stopitemize
+
+\starttitle[title=Upgraded \METAPOST]
+
+\startitemize
+
+\startitem
+    All (eight bit) font stuff has been stripped from the \METAPOST\ library.
+\stopitem
+\startitem
+    The library no longer has a \POSTSCRIPT\ backend.
+\stopitem
+\startitem
+    The library provides scanners that make extensions possible.
+\stopitem
+\startitem
+    All file \IO\ goes via \LUA.
+\stopitem
+\startitem
+    There are a few additions like pre|/|postscripts for clip and bounding boxes.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Praise for the users]
+
+\startitemize
+
+\startitem
+    Much has been done and I probably forget to mention a lot.
+\stopitem
+\startitem
+    The number of bugs is relative small compared to what gets changed and added.
+\stopitem
+\startitem
+    The test suite gets ran very often, also to check if performance is okay.
+\stopitem
+\startitem
+    I could only do this because the \CONTEXT\ users are so tolerant.
+\stopitem
+\startitem
+    Some seem to constantly check for updates so they help with fast testing.
+\stopitem
+\startitem
+    The \CONTEXT\ code base gets stepwise adapted (split files) which again
+    forces users to test.
+\stopitem
+\startitem
+    It takes a lot of time because we take small steps in order not to mess up.
+\stopitem
+\startitem
+    I would not do it without the positive attribute of the \CONTEXT\ users.
+\stopitem
+\startitem
+    It's all about motivation and I thank the \CONTEXT\ users for providing this
+    friendly and non|-|competitive bubble!
+\stopitem
+
+\stopitemize
+
+\starttitle[title=Todo]
+
+\startitemize
+
+\startitem
+    Maybe add some more sanity checks in order to catch errors intruded by
+    callbacks. Maybe add some more tracing too.
+\stopitem
+\startitem
+    Explore variants, like having registers in dedicated eqtb tables so that we
+    can allocate them dynamically (mostly for the fun of doing it).
+\stopitem
+\startitem
+    Add some more documentation (read: addition cq.\ remarks about where the
+    original documentation no longer applies, but we have years for doing that).
+\stopitem
+\startitem
+    Update the manual (which is done occasionally in batch based on print|-|outs;
+    there is no real need to hurry because we still experiment).
+\stopitem
+\startitem
+    Apply some of the new stuff in \LMTX. Take up some challenges.
+\stopitem
+\startitem
+    Wrap up new functionality (once it's stable) in articles and other documents.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=And \LUATEX ?]
+
+\startitemize
+
+\startitem
+    Of course \LUATEX\ will be maintained! After all, \MKIV\ needs it and it
+    serves as reference for the front|-|end rendering and back|-|end generation
+    when we're messing with \LUAMETATEX.
+\stopitem
+\startitem
+    It is used by \LATEX\ and there are now also plain inspired packages. Because
+    there are spin|-|offs (\LATEX\ has settled on a version with built|-|in font
+    processing) we cannot change much.
+\stopitem
+\startitem
+    And \LUATEX\ being nicely integrated into \TEXLIVE\ is another argument for
+    not touching it too much.
+\stopitem
+\startitem
+    I have no clue of \LUATEX\ usage but that fact alone already makes an
+    argument for being even more careful. It's bad advertisement for \TEX\ when
+    users who use the low level interfaces get confronted with conceptual
+    changes.
+\stopitem
+\startitem
+    So in the end not much will be back ported to \LUATEX: at some point the code
+    base became too different and it's the price paid for the stability demand.
+    That way we cannot introduce new bugs either. It also doesn't pay of.
+\stopitem
+\startitem
+    But, a few non|-|intrusive things might actually trickle into it in due time,
+    also out of self interest: it might help to share code between \MKIV\ and
+    \LMTX.
+\stopitem
+
+\stopitemize
+
+\stopdocument

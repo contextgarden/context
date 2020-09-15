@@ -1,0 +1,380 @@
+% language=us
+
+% \enabletrackers[context*]
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={IMPLEMENTERS},
+   banner={an old feature still evolving},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Interfacing with \LUA]
+
+\startitemize
+
+\startitem
+    Quite some activity is delegated to \LUA.
+\stopitem
+\startitem
+    Normally the initiative is at the \TEX\ end.
+\stopitem
+\startitem
+    We can set variables or call functions etc.
+\stopitem
+\startitem
+    We can parameters to function calls.
+\stopitem
+\startitem
+    From the \LUA\ end we can use scanners to pick up data.
+\stopitem
+\startitem
+    We provide some consistent interfaces for doing all that.
+\stopitem
+\startitem
+    From \TEX\ to \LUA\ we use \type {\ctxlua{...}} and friends.
+\stopitem
+\startitem
+    From \LUA\ to \TEX\ we use \type {context(...)} and alike.
+\stopitem
+\startitem
+    For adding functionality we use so called implementers.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Calling \LUA]
+
+\startbuffer
+\ctxlua{context("ok")}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\ctxlua{context(2 * tokens.scanners.integer())} 10
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startluacode
+function document.MyThing() context(2 * tokens.scanners.integer()) end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\ctxlua{document.MyThing()} 20 \quad
+\ctxlua{document.MyThing()} 30 \quad
+\ctxlua{document.MyThing()} 40
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=Streamlining \LUA]
+
+\startbuffer
+\startluacode
+interfaces.implement {
+    name      = "MyThing",
+    public    = true,
+    arguments = "integer",
+    actions   =   function(i) context(i * 2) end,
+ -- actions   = { function(i)  return i * 2  end, context },
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\MyThing 20 \quad \MyThing 30 \quad \MyThing 40
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=Making commands]
+
+\startbuffer
+\startluacode
+interfaces.implement {
+    name      = "MyRoot",
+    public    = true,
+    actions   = function()
+        local a = tokens.scanners.integer()
+        if not tokens.scanners.keyword("of") then
+         -- tex.error("the keyword 'of' expected")
+        end
+        local b = tokens.scanners.integer()
+        context("%0.6N",math.sqrt(b,a))
+    end,
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\MyRoot 2 of 40 \quad \MyRoot 3 60
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=Scanners]
+
+There are lots of scanners: \blank
+
+\startalign[flushleft,broad] \tttf
+    \cldcontext { table.concat ( table.sortedkeys (tokens.scanners), " " ) }
+\stopalign
+
+\stoptitle
+
+\starttitle[title=A more complex example]
+
+Let's implement a matcher: \blank
+
+\startbuffer
+\doloopovermatch {(.)} {luametatex} { [#1] }
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\doloopovermatch {([\letterpercent w]+)} {\cldloadfile{tufte.tex}} { [#1] }
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=A more complex example (\TEX)]
+
+Here is the macro definition of this loop: \blank
+
+\starttyping
+\protected\def\doloopovermatch#1#2#3%
+  {\pushmacro\matchloopcommand
+   \def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+   \ctxluamatch\matchloopcommand{#1}{#2}%
+   \popmacro\matchloopcommand}
+\stoptyping
+
+\startitemize
+
+\startitem The pushing and popping makes it possible to nest this macro. \stopitem
+\startitem The definition of the internal match macro permits argument references. \stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=A more complex example (\LUA)]
+
+At the \LUA\ end we use an implementer: \blank
+
+\starttyping[style=\small\tt]
+local escape = function(s) return "\\" .. string.byte(s) end
+
+interfaces.implement {
+    name    = "ctxluamatch",
+    public  = true,
+    usage   = "value",
+    actions = function()
+        local command = context[tokens.scanners.csname()]
+        local pattern = string.gsub(tokens.scanners.string(),"\\.",escape)
+        local input   = string.gsub(tokens.scanners.string(),"\\.",escape)
+        for a, b, c, d, e, f, g, h, i in string.gmatch(input,pattern) do
+            command(a, b or "", c or "", d or "", e or "", f or "", g or "",
+                h or "", i or "")
+        end
+        return tokens.values.none
+    end,
+}
+\stoptyping
+
+So what does the \type {usage} key tells the implementer?
+
+\stoptitle
+
+\starttitle[title=Value functions]
+
+Normally we pipe back verbose strings that are interpreted as if they were
+files. Value functions are different;
+
+\startitemize
+
+\startitem
+    The return value indicates what gets fed back in the input.
+\stopitem
+\startitem
+    This can be: \cldcontext { table.concat(token.getfunctionvalues(), ", ", 0) }.
+\stopitem
+\startitem
+    When possible an efficient token is injected.
+\stopitem
+\startitem
+    Value function can check if they are supposed to feed back a value.
+\stopitem
+\startitem
+    So, they can be used as setters and getters.
+\stopitem
+\startitem
+    A variant is a function that is seen as conditional.
+\stopitem
+\startitem
+    In (simple) tracing they are presented as primitives.
+\stopitem
+\startitem
+    They are protected against user overload (aka: frozen).
+\stopitem
+\startitem
+    All this is experimental and might evolve.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=So, let's step up a level]
+
+Say that we want an expandable command:
+
+\startbuffer
+\edef\foo{\doloopovermatched{.}{123}{(#1)}} \meaning\foo
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+Or nested:
+
+\startbuffer
+\edef\foo {%
+    \doloopovermatched {(..)} {123456} {%
+        \doloopovermatched {(.)(.)} {#1} {%
+           [##1][##2]%
+        }%
+    }%
+} \meaning\foo
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+\stoptitle
+
+\starttitle[title=So, let's step up a level]
+
+Compare:
+
+\starttyping[style=\small\tt]
+\protected\def\doloopovermatch#1#2#3%
+  {\pushmacro\matchloopcommand
+   \def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+   \ctxluamatch\matchloopcommand{#1}{#2}%
+   \popmacro\matchloopcommand}
+\stoptyping
+
+With:
+
+\starttyping[style=\small\tt]
+\def\doloopovermatched#1#2#3%
+  {\beginlocalcontrol
+     \pushmacro\matchloopcommand
+     \def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+   \endlocalcontrol
+   \the\ctxluamatch\matchloopcommand{#1}{#2}%
+   \beginlocalcontrol
+     \popmacro\matchloopcommand
+   \endlocalcontrol}
+\stoptyping
+
+Local control hides the assignments (it basically nests the mail loop).
+
+\stoptitle
+
+\starttitle[title=A few teasers (\TEX)]
+
+\starttyping[style=\small\tt]
+\doloopovermatch {(\letterpercent d+)} {this 1 is 22 a 333 test} { [#1] }
+
+\doloopovermatch {(\letterpercent w+) *(\letterpercent w*)} {aa bb cc dd} {
+    [
+        \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#1} {(##1 ##2)}
+        \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#2} {(##1 ##2)}
+    ]
+}
+
+\doloopovermatch
+    {(.-)\letterpercent{\bf (.-)\letterpercent}(.*)}
+    {this is {\bf a} test}
+    {#1{\it not #2}#3}
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=A few teasers (\LUA)]
+
+\starttyping[style=\small\tt]
+interfaces.implement {
+    name = "bitwisexor", public = true, usage = "value", actions =
+    function(what)
+        local a = tokens.scanners.cardinal()
+        scankeyword("with")
+        local b = tokens.scanners.cardinal()
+        if what == "value" then
+            return tokens.values.cardinal, a ~ b
+        else
+            logs.texerrormessage("you can't use \\bitwiseor this way")
+        end
+    end
+}
+interfaces.implement {
+    name = "ifbitwiseand", public = true, usage = "condition", actions =
+    function(what)
+        local a = tokens.scanners.cardinal()
+        local b = tokens.scanners.cardinal()
+        return tokens.values.boolean, (a & b) ~= 0
+    end
+}
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Questions and more examples]
+
+More examples will be given in the editor.
+
+\stoptitle
+
+\stopdocument
+
+% \doloopovermatch {(\letterpercent w+) *(\letterpercent w*)} {aa bb cc dd} {
+%     [
+%         \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#1} {(##1 ##2)}
+%         \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#2} {(##1 ##2)}
+%     ]
+% }
+
+% \doloopovermatch {(\letterpercent d+)} {this 1 is 22 a 333 test} { [#1] }
+
+% \testfeatureonce{10000}{\doloopovermatch {(\letterpercent d+)} {this 1 is 22 a 333 test} {}} \elapsedtime
+
+% \doloopovermatch
+%     {(.-)\letterpercent{\bf (.-)\letterpercent}(.*)}
+%     {this is {\bf a} test}
+%     {#1{\it not #2}#3}
+
+% \doloopovermatch {([\letterpercent w]+)} {\cldloadfile{tufte.tex}} { [#1] }
+
+% \testfeatureonce{100}{\doloopovermatch {([\letterpercent w]+)}{\cldloadfile{tufte.tex}} {}} \elapsedtime
+

@@ -1,0 +1,143 @@
+%D \module
+%D   [      file=s-present-boring, % s-pre-15,
+%D        version=2020.07.10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Boring,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Because I use a mupdf based viewer and acrobat is not always reliable I nowadays
+%D tend to go for simple presentation styles. They mostly serve as a reminder for
+%D myself of what I'm supposed to talk about. Just demoing often makes more sense,
+%D especially at meetings where there is some interaction.
+
+\startmodule[present-boring]
+
+\setupbodyfont
+  [plex]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [backspace=20pt,
+   topspace=20pt,
+   bottomspace=20pt,
+   header=0pt,
+   footer=0pt,
+   bottom=20pt,
+   bottomdistance=30pt,
+   width=middle,
+   height=fit]
+
+\definecolor[maincolor] [darkblue]
+\definecolor[extracolor][darkyellow]
+\definecolor[darkcolor] [darkgray]
+
+\setupbackgrounds
+  [page]
+  [backgroundoffset=10pt,
+   background=color,
+   backgroundcolor=darkcolor]
+
+\setupbackgrounds
+  [text] [text]
+  [backgroundoffset=10pt,
+   background=color,
+   backgroundcolor=maincolor]
+
+\setupbackgrounds
+  [bottom] [text]
+  [backgroundoffset=10pt,
+   background=color,
+   backgroundcolor=extracolor]
+
+\setupcolors
+  [textcolor=white]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   after={\blank[line,fixed]}]
+
+\setupwhitespace
+  [halfline]
+
+\setupblank
+  [halfline,fixed]
+
+% \setupblank
+%   [fixed]
+
+\setuplinenumbering
+  [typing]
+  [style=\txx,
+   color=middlegray]
+
+\setuptyping
+  [numbering=line,
+   location=left,
+   blank=halfline]
+
+\startsetups document:start
+
+    \startpagemakeup
+        \raggedcenter
+        \vfill
+        \dontleavehmode \scale [
+            width=\textwidth
+        ] {
+            \space
+            {\bf \documentvariable{title}}
+            \space
+        }
+        \vfill
+        \dontleavehmode \scale [
+            width=.8\textwidth
+        ] {
+            \space
+            {\bf \documentvariable{banner}}
+            \space
+        }
+        \vfill
+        \vfill
+        \dontleavehmode \scale [
+            width=\textwidth
+        ] {
+            \qquad
+            \color[darkcolor]{\documentvariable{location}}
+            \qquad
+        }
+        \vfill
+    \stoppagemakeup
+
+    \setupbottomtexts [
+        {
+            \words {
+                \documentvariable{title}
+                \quad\emdash\quad
+                \documentvariable{location}
+                \quad\emdash\quad
+                \getmarking[title]
+            }
+        }
+    ]
+
+\stopsetups
+
+\startsetups document:stop
+    %
+\stopsetups
+
+\stopmodule
+
+\continueifinputfile{s-present-boring.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{context/2020/context-2020-tokens.tex}

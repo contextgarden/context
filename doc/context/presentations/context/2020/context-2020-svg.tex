@@ -1,0 +1,123 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={SVG GRAPHICS},
+   banner={some demos and discussion},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Wrapup]
+
+\startitemize
+
+\startitem
+    It expands to for Scalable Vector Graphics.
+\stopitem
+\startitem
+    It is an example of application \XML\ turned standard.
+\stopitem
+\startitem
+    It started out simple, kind of expanded \POSTSCRIPT\ in \XML\ format.
+\stopitem
+\startitem
+    It took a while to be picked up as output format.
+\stopitem
+
+\blank[2*line]
+
+\startitem
+    In practice you get the same messy build-up as in other vector formats.
+\stopitem
+
+\startitem
+    This is a side effect of often unstructured editing. \footnote {Afterwards
+    Hraban gave a demonstration of editing in InkScape and there was some
+    discussion about this aspect}.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Properties]
+
+\startitemize
+
+\startitem
+    Properties can be set as attributes to an element (key/values).
+\stopitem
+\startitem
+    Properties can be set in the \type {style} attribute (semicolon separated key/values).
+\stopitem
+\startitem
+    Properties can be set via one or more \type {class} assignments.
+\stopitem
+\startitem
+    Properties can be bound to a specific element
+\stopitem
+\startitem
+    Properties can be inherited from an ancestor (somewhat vague).
+\stopitem
+\startitem
+    Properties can be redundant (nested), overloaded (parent, style), editors can
+    add their own. etc.\ \unknown\ it's kind of a mess.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Side effects]
+
+\startbuffer
+\usemodule[gnuplot]
+
+\externalfigure
+  [context-2020-gpdemo.gp]
+  [conversion=svg,width=4cm,
+   background=color,backgroundcolor=white]
+
+\externalfigure
+  [context-2020-gpdemo.gp]
+  [conversion=svg,width=6cm,
+   background=color,backgroundcolor=white]
+
+\scale
+  [height=4cm]
+  {\framed
+     [background=color,backgroundcolor=white]
+     {\includegnuplotsvgfile[context-2020-sin.svg]}}
+
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stoptitle
+
+\starttitle[title=Simple examples]
+
+Some examples were shown (they can be found in manuals):
+
+\starttyping
+svg-lmtx-context.lua
+svg-lmtx-microsoft.lua
+svg-lmtx-mozilla.lua
+svg-lmtx-xahlee.lua
+\stoptyping
+
+Also some examples were shown from the Math4All project.
+
+\stoptitle
+
+% \starttitle[title=Complex examples]
+%
+% \starttyping
+% temporary/svg/test*
+% \stoptyping
+%
+% \stoptitle
+
+\stopdocument

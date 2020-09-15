@@ -56,5 +56,30 @@
     \stoptabulate
     \stopcolumns
 
+    \page
+
+    Here is a typeset table of \type {\startframed} using \type {\luatokentable\startframed}:
+
+    \luatokentable\startframed
+
+    which calls \type {\pack_framed_start_framed} where \type {\luatokentable\pack_framed_start_framed} gives:
+
+
+    \unprotect
+    \luatokentable\pack_framed_start_framed
+    \protect
+
+    So you can guess what generates this:
+
+    \unprotect
+    \luatokentable\pack_framed_start_framed_nop
+    \protect
+
+    And this:
+
+    \unprotect
+    \luatokentable\pack_framed_start_framed_yes
+    \protect
+
 \stoptext
 

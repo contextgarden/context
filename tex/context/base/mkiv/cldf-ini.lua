@@ -368,11 +368,13 @@ end
 
 -- interfaces.scanners.foo = function() context("[%s]",tokens.scanners.string()) end : \scan_foo
 
-local storedscanners      = interfaces.storedscanners or { }
-local interfacescanners   = { }
-local privatenamespace    = "clf_"
+local storedscanners    = interfaces.storedscanners or { }
+local namesofscanners   = interfaces.namesofscanners or { }
+local interfacescanners = { }
+local privatenamespace  = "clf_"
 
-interfaces.storedscanners = storedscanners
+interfaces.storedscanners  = storedscanners
+interfaces.namesofscanners = namesofscanners
 
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
@@ -381,6 +383,7 @@ local function registerscanner(name,action,protected,public,usage) -- todo: comb
     local n = storedscanners[name]
     n = registerfunction("interfaces.scanners."..name,true,n)
     storedscanners[name] = n
+    namesofscanners[n] = name
     name = public and name or (privatenamespace .. name)
  -- print(">>",name,protected and "protected" or "",usage or "macro")
     setluatoken(name,n,"global",protected and "protected" or "",usage or "macro")
@@ -390,6 +393,20 @@ interfaces.registerscanner = registerscanner
 
 function interfaces.knownscanner(name)
     return interfacescanners[name]
+end
+
+function interfaces.nameofscanner(slot)
+    return namesofscanners[slot] or slot
+end
+
+if CONTEXTLMTXMODE > 0 then
+
+    callback.register("show_lua_call", function(what, slot)
+        local name = namesofscanners[slot]
+     -- return name and formatters["%s: \\%s, slot: %i"](what,name,slot) or ""
+        return name and formatters["%s \\%s"](what,name) or ""
+    end)
+
 end
 
 setmetatablenewindex(interfacescanners, function(t,k,v)

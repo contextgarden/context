@@ -1,0 +1,287 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos,system-tokens]
+
+\startdocument
+  [title={TOKENS},
+   banner={tokens as I see them},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=About tokens]
+
+\startitemize
+
+\startitem Like nodes, it's a common term used in programming. \stopitem
+\startitem In \TEX\ The Program tokens and nodes are therefore omni|-|present. \stopitem
+\startitem For most users they are irrelevant concepts. \stopitem
+\startitem But we will explain them anyway. \stopitem
+\startitem Let's try to avoid the snobbish token|-|speak sometimes heard in the community. \stopitem
+\startitem So \unknown\ I won't correct you as long as you don't correct me. \stopitem
+\startitem Let's now enter the world of tokens in the na\"ive way. \stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=What are tokens]
+
+\startitemize
+
+\startitem It is an internal data structure, effectively a (32 bit) integer. \stopitem
+\startitem This integer encodes a command (opcode) and an char code (operand). \stopitem
+\startitem But often it's not a character but more a sub command. \stopitem
+\startitem Input is converted into tokens. \stopitem
+\startitem Tokens are either expanded (interpreted) or stored. \stopitem
+\startitem When they are stored they are part of a larger data structure, a memory word. \stopitem
+\startitem Token memory is an array of such memory words. \stopitem
+\startitem The token memory \quote {word} has two integers: a token value and an index into token memory. \stopitem
+\startitem That way \TEX\ can have forward linked lists of tokens. \stopitem
+\startitem A hash table maps control sequences onto indices into token memory. \stopitem
+
+\stopitemize
+
+\starttitle[title=Some implementation details]
+
+\startitemize
+
+\startitem Sometimes there is special head token at the start. \stopitem
+\startitem A head token makes for easier appending of extra tokens. \stopitem
+\startitem Shared lists use the head node for a reference count. \stopitem
+\startitem Original \TEX\ uses global temporary lists. \stopitem
+\startitem This is needed when we expand (nested) and need to report issues. \stopitem
+\startitem This is not needed when we just serialize (which we do a lot in \LUATEX). \stopitem
+\startitem So, this is all optimized for performance and memory consumption. \stopitem
+\startitem Freed tokens are collected in a cache so tokens can get scattered. \stopitem
+\startitem In \LUAMETATEX\ we stay as close to original \TEX\ as possible. \stopitem
+\startitem But the \LUA\ interfaces force us to occasionally divert. \stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=A schematic view of tokens]
+
+A token value:
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=22mm]
+    \setupTABLE[c][2][width=42mm]
+    \bTABLE
+        \bTR \bTD cmd \eTD \bTD chr \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+Token memory:
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=8mm]
+    \setupTABLE[c][2][width=64mm]
+    \setupTABLE[c][3][width=64mm]
+    \bTABLE
+        \bTR \bTD 1 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD 2 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD 3 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD n \eTD \bTD info \eTD \bTD link \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Looking up control sequences]
+
+\startitemize
+
+\startitem A very visible to-be-token is a \type {\controlsequence}. \stopitem
+\startitem When read, the name will be looked up in the hash table. \stopitem
+\startitem When found its value will point to the table of equivalents. \stopitem
+\startitem That table keeps track of:
+    \startitemize
+        \startitem the type (cmd) \stopitem
+        \startitem the current level (grouping) \stopitem
+        \startitem the current meaning (token list) \stopitem
+    \stopitemize
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The (big) table of equivalents (simplified)]
+
+\startlinecorrection[blank]
+    \bTABLE
+        \bTR \bTD[ny=4] main hash \eTD \bTD null control sequence              \eTD \eTR
+        \bTR                           \bTD 128K hash entries                  \eTD \eTR
+        \bTR                           \bTD frozen control sequences           \eTD \eTR
+        \bTR                           \bTD special sequences (undefined)      \eTD \eTR
+        \bTR \bTD[ny=7] registers \eTD \bTD  17 internal & 64K user glues      \eTD \eTR
+        \bTR                           \bTD   4 internal & 64K user mu glues   \eTD \eTR
+        \bTR                           \bTD  12 internal & 64K user tokens     \eTD \eTR
+        \bTR                           \bTD   2 internal & 64K user boxes      \eTD \eTR
+        \bTR                           \bTD 116 internal & 64K user integers   \eTD \eTR
+        \bTR                           \bTD   0 internal & 64K user attribute  \eTD \eTR
+        \bTR                           \bTD  22 internal & 64K user dimensions \eTD \eTR
+        \bTR \bTD specifications  \eTD \bTD   5 internal &   0 user            \eTD \eTR
+        \bTR \bTD extra hash      \eTD \bTD additional entries (grows dynamic) \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+\stoptable
+
+\starttitle[title=The hash table (simplified)]
+
+The hash table runs parallel to the main hash. On the todo list is is to move the
+registers to its own tables and make them dynamic.
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=16mm]
+    \setupTABLE[c][2][width=64mm]
+    \setupTABLE[c][3][width=64mm]
+    \bTABLE
+        \bTR \bTD 1     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD 2     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + 1 \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + 2 \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + m \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+Equivalents (registers direct, macros indirect i.e.\ token lists):
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=8mm]
+    \setupTABLE[c][2][width=32mm]
+    \setupTABLE[c][3][width=32mm]
+    \setupTABLE[c][4][width=64mm]
+    \bTABLE
+        \bTR \bTD 1 \eTD \bTD level \eTD \bTD type \eTD \bTD value \eTD \eTR
+        \bTR \bTD 2 \eTD \bTD level \eTD \bTD type \eTD \bTD value \eTD \eTR
+        \bTR \bTD 3 \eTD \bTD level \eTD \bTD type \eTD \bTD value \eTD \eTR
+        \bTR \bTD n \eTD \bTD level \eTD \bTD type \eTD \bTD value \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Other data management]
+
+\startitemize
+\startitem Grouping is handles by a nesting stack. \stopitem
+\startitem Nested conditionals (\type {\if...}) have their own stack. \stopitem
+\startitem The values before assignments are saved ion the save stack. \stopitem
+\startitem Also other local changes (housekeeping) ends up in the save stack. \stopitem
+\startitem Token lists and macro aliases have references pointers (reuse). \stopitem
+\startitem Attributes, being linked node lists, have their own management. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Example 1: in the input]
+
+\startbuffer
+\luatokentable{1 \bf{2} 3\what {!}}
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Example 1: in the input]
+
+\startbuffer
+\luatokentable{a \the\scratchcounter b \the\parindent \hbox to 10pt{x}}
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Example 2: user registers]
+
+\startbuffer
+\scratchtoks{foo \framed{\red 123}456}
+
+\luatokentable\scratchtoks
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Example 3: internal variables]
+
+\startbuffer
+\luatokentable\everypar
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Example 4: macro definitions]
+
+\startbuffer
+\protected\def\whatever#1[#2](#3)\relax{oeps #1 and #2 & #3 done ## error}
+
+\luatokentable\whatever
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \startcolumns \getbuffer \stopcolumns}
+
+\stoptitle
+
+\starttitle[title=Example 5: commands]
+
+\startbuffer
+\luatokentable\startitemize
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stoptitle
+
+\starttitle[title=Example 6: commands]
+
+\startbuffer
+\luatokentable\doifelse
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stoptitle
+
+\starttitle[title=Example 7: nothing]
+
+\startbuffer
+\luatokentable\relax
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stoptitle
+
+\starttitle[title=Example 8: Hashes]
+
+\startbuffer
+\edef\foo#1#2{(#1)(\letterhash)(#2)}  \luatokentable\foo
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stoptitle
+
+\starttitle[title=Example 9: Nesting]
+
+\startbuffer
+\def\foo#1{\def\foo##1{(#1)(##1)}}  \luatokentable\foo
+\stopbuffer
+
+\typebuffer \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stoptitle
+
+\stopdocument

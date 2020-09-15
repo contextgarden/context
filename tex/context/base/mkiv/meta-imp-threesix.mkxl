@@ -205,21 +205,32 @@
   [default]
   [metapost={category=fontthreesix,shape=diamond,color=random,pen=fancy,spread=.1,random=yes}]
 
-% \definefont[DEKFontA][Serif*fontthreesix-color @ 280pt]
-% \definefont[DEKFontB][Serif*fontthreesix-color @  80pt]
-
 \definefont[DEKFontA][Serif*fontthreesix-color @ 200pt]
 \definefont[DEKFontB][Serif*fontthreesix-color @  60pt]
 
-\startTEXpage[align={lohi,middle,nothyphenated},offset=20pt]
-    \offinterlineskip                                             \vskip10pt
-    \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vskip60pt
-    \DEKFontB TOUGH                                               \vskip20pt
-              SMART                                               \vskip20pt
-              UNITED                                              \vskip20pt
-              DISCIPLINED                                         \vskip20pt
-              LOVING                                              \vskip10pt
+% Or course:
+
+\startTEXpage
+    \DEKFontA TEX
 \stopTEXpage
+
+\startTEXpage
+    \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX
+\stopTEXpage
+
+% One of the \CONTEXT\ 2020 posters (inspired by NewYork State AC's press
+% conferences as these keywords apply quite well to the audience of the
+% meeting):
+
+% \startTEXpage[align={lohi,middle,nothyphenated},offset=20pt]
+%     \offinterlineskip                                             \vskip10pt
+%     \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vskip60pt
+%     \DEKFontB TOUGH                                               \vskip20pt
+%               SMART                                               \vskip20pt
+%               UNITED                                              \vskip20pt
+%               DISCIPLINED                                         \vskip20pt
+%               LOVING                                              \vskip10pt
+% \stopTEXpage
 
 \startpagemakeup
     \setupalign[middle,nothyphenated]

@@ -513,8 +513,8 @@ function number.tobasepoints  (n,fmt) return numbertodimen(n,"bp",fmt) end
 function number.topicas       (n,fmt) return numbertodimen(n "pc",fmt) end
 function number.todidots      (n,fmt) return numbertodimen(n,"dd",fmt) end
 function number.tociceros     (n,fmt) return numbertodimen(n,"cc",fmt) end
-function number.tonewdidots   (n,fmt) return numbertodimen(n,"nd",fmt) end
-function number.tonewciceros  (n,fmt) return numbertodimen(n,"nc",fmt) end
+-------- number.tonewdidots   (n,fmt) return numbertodimen(n,"nd",fmt) end
+-------- number.tonewciceros  (n,fmt) return numbertodimen(n,"nc",fmt) end
 
 function nodes.topoints      (n,fmt) return nodetodimen(n,"pt",fmt) end
 function nodes.toinches      (n,fmt) return nodetodimen(n,"in",fmt) end
@@ -526,8 +526,8 @@ function nodes.tobasepoints  (n,fmt) return nodetodimen(n,"bp",fmt) end
 function nodes.topicas       (n,fmt) return nodetodimen(n "pc",fmt) end
 function nodes.todidots      (n,fmt) return nodetodimen(n,"dd",fmt) end
 function nodes.tociceros     (n,fmt) return nodetodimen(n,"cc",fmt) end
-function nodes.tonewdidots   (n,fmt) return nodetodimen(n,"nd",fmt) end
-function nodes.tonewciceros  (n,fmt) return nodetodimen(n,"nc",fmt) end
+-------- nodes.tonewdidots   (n,fmt) return nodetodimen(n,"nd",fmt) end
+-------- nodes.tonewciceros  (n,fmt) return nodetodimen(n,"nc",fmt) end
 
 -- stop redefinition
 

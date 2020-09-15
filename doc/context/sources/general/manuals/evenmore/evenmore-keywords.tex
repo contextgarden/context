@@ -8,10 +8,10 @@
 
 Some primitives in \TEX\ can take one or more optional keywords and|/|or keywords
 followed by one or more values. In traditional \TEX\ it concerns a handful of
-primitives, in \PDFTEX\ there are plenty of backend related primitives, \LUATEX\
-introduced optional keywords to some math constructs and attributes to boxes,
-while \LUAMETATEX\ adds some more too. The keyword scanner in \TEX\ is kind of
-special. Keywords are used in cases like:
+primitives, in \PDFTEX\ there are plenty of backend|-|related primitives,
+\LUATEX\ introduced optional keywords to some math constructs and attributes to
+boxes, and \LUAMETATEX\ adds some more too. The keyword scanner in \TEX\ is
+rather special. Keywords are used in cases like:
 
 \starttyping
 \hbox spread 10cm {...}
@@ -20,20 +20,20 @@ special. Keywords are used in cases like:
 \stoptyping
 
 Sometimes there are multiple keywords, as with rules, in which case you can
-imagine use cases like:
+imagine a case like:
 
 \starttyping
 \vrule width 3cm depth 1ex width 10cm depth 0ex height 1ex\relax
 \stoptyping
 
 Here we add a \type {\relax} to end the scanning. If we don't do that and the
-rule specification is followed by arbitrary (read: unpredictable) text, the next
-word can as well be valid keyword and when followed by a dimensions (unlikely) it
-will happily take that as directive or when not followed by a dimension an error
-message will show up. Sometimes the scanning is more restricted, like with glue
+rule specification is followed by arbitrary (read:\ unpredictable) text, the next
+word might be a valid keyword and when followed by a dimension (unlikely) it will
+happily be read as a directive, or when not followed by a dimension an error
+message will show up. Sometimes the scanning is more restricted, as with glue
 where the optional \type {plus} and \type {minus} are to come in that order, but
 when missing, again a word from the text can be picked up if one doesn't
-explicitly ends with a \type {\relax} or some other not relevant token.
+explicitly end with a \type {\relax} or some other token.
 
 \starttyping
 \scratchskip = 10pt plus 10pt minus 10pt % okay
@@ -52,13 +52,13 @@ The scanner is case insensitive, so the following specifications are all valid:
 \hbox to 10cm {to}
 \stoptyping
 
-It happens that keywords are always simple english words so the engine uses a
+It happens that keywords are always simple English words so the engine uses a
 cheap check deep down, just offsetting to uppercase, but of course that will not
-work for arbitrary \UTF\ (as used in \LUATEX) and it's also unrelated to the
+work for arbitrary \UTF-8\ (as used in \LUATEX) and it's also unrelated to the
 upper- and lowercase codes as \TEX\ knows them.
 
 The above lines scan for the keyword \type {to} and after that for a dimension.
-Where keyword scanning is case tolerant, dimension scanning is period tolerant:
+While keyword scanning is case tolerant, dimension scanning is period tolerant:
 
 \starttyping
 \hbox to 10cm   {10cm}
@@ -68,10 +68,10 @@ Where keyword scanning is case tolerant, dimension scanning is period tolerant:
 \hbox to 10.cm  {10.cm}
 \stoptyping
 
-These are all valid and according to the specification; even the single period one
-is okay, although it looks funny. It would not be hard to intercept that but I
-guess that when \TEX\ was written anything that could harm performance was taken
-into account and the above is quite okay. One can even argue for cases like:
+These are all valid and according to the specification; even the single period is
+okay, although it looks funny. It would not be hard to intercept that but I guess
+that when \TEX\ was written anything that could harm performance was taken into
+account. One can even argue for cases like:
 
 \starttyping
 \hbox to \first.\second cm {.cm}
@@ -80,10 +80,11 @@ into account and the above is quite okay. One can even argue for cases like:
 Here \type {\first} and|/|or \type {\second} can be empty. Most users won't
 notice these side effects of scanning numbers anyway.
 
-The reason for even spending words on keywords is the following. Optional keyword
-scanning is kind of costly, not so much now, but more so decades ago. For
-instance, in the first line below, there is no keyword. The scanner sees a \type
-{1} and it not being a keyword, pushes that character back in the input.
+The reason for writing up any discussion of keywords is the following. Optional
+keyword scanning is kind of costly, not so much now, but more so decades ago
+(which led to some interesting optimizations, as we'll see). For instance, in the
+first line below, there is no keyword. The scanner sees a \type {1} and it not
+being a keyword, pushes that character back in the input.
 
 \starttyping
 \advance\scratchcounter 10
@@ -96,16 +97,16 @@ In the case of:
 \scratchskip 10pt plux
 \stoptyping
 
-It has to push back the four scanned tokens \type {plux}. Now, in the engine
+it has to push back the four scanned tokens \type {plux}. Now, in the engine
 there are lots of cases where lookahead happens and when a condition is not
-satisfied, the just read token is pushed back. Incidentally, when picking up the
-next token triggered some expansion, it's not the original next token that gets
-pushed back, but the first token seen at the expansion. Pushing back tokens is
-not that inefficient, although it involves allocating a token and pushing and
-popping input stacks (we're talking of a mix of reading from file, token memory,
-\LUA\ prints, etc) but it always takes a little time and memory. In \LUATEX\
-there are more keywords for boxes, and there we have loops too: in a box
-specification one or more optional attributes are scanned before the optional
+satisfied, the just|-|read token is pushed back. Incidentally, when picking up
+the next token triggered some expansion, it's not the original next token that
+gets pushed back, but the first token seen after the expansion. Pushing back
+tokens is not that inefficient, although it involves allocating a token and
+pushing and popping input stacks (we're talking of a mix of reading from file,
+token memory, \LUA\ prints, etc.)\ but it always takes a little time and memory.
+In \LUATEX\ there are more keywords for boxes, and there we have loops too: in a
+box specification one or more optional attributes are scanned before the optional
 \type {to} or \type {spread}, so again there can be push back when no more \type
 {attr} are seen.
 
@@ -124,22 +125,24 @@ for now and just show one example:
 }
 \stoptyping
 
-Although one cannot mess to much with these low level scanners there was room for
-some optimization so the penalty we pay for more keyword scanning in \LUAMETATEX\
-is not that high. In fact, I often manage to compensate adding features that
-have a possible performance hit with some gain elsewhere.
+Although one cannot mess too much with these low|-|level scanners there was room
+for some optimization, so the penalty we pay for more keyword scanning in
+\LUAMETATEX\ is not that high. (I try to compensate when adding features that
+have a possible performance hit with some gain elsewhere.)
 
-Anyway, it will be no surprise that there can be interesting side effects to
-keyword scanning. For instance, using the two character keyword \type {by} in an
-advance can be more efficient because nothing needs to be pushed back. The same is
-true for the sometimes optional equal:
+It will be no surprise that there can be interesting side effects to keyword
+scanning. For instance, using the two character keyword \type {by} in an \type
+{\advance} can be more efficient because nothing needs to be pushed back. The
+same is true for the sometimes optional equal:
 
 \starttyping
 \scratchskip = 10pt
 \stoptyping
 
 Similar impacts on efficiency can be found in the way the end of a number is
-seen, basically anything not resolving to a number (or digit).
+seen, basically anything not resolving to a number (or digit). (For these, assume
+a following token will terminate the number if needed; we're focusing on the
+spaces here.)
 
 \starttyping
 \scratchcounter 10%          space not seen, ends \cs
@@ -151,21 +154,21 @@ seen, basically anything not resolving to a number (or digit).
 
 In the above examples scanning the number involves: skipping over spaces,
 checking for an optional equal, skipping over spaces, scanning for a sign,
-checking for an optional octal or hexadecimal trigger (single or double quote),
-scanning the number till a non digit is seen. In the case of dimensions there is
-fraction scanning as well as unit scanning too.
+checking for an optional octal or hexadecimal trigger (single or double quote
+character), scanning the number till a non|-|digit is seen. In the case of
+dimensions there is fraction scanning as well as unit scanning too.
 
-In any case, the equal is optional and kind of a keyword. Having an \type {equal}
-can be more efficient then not having one, again due to push back in case of no
-equal being seen, In the process spaces have been skipped, so add to the overhead
-the scanning for optional spaces. In \LUAMETATEX\ all that has been optimized a
-bit. By the way, in dimension scanning \type {pt} is actually a keyword and as
-there are several dimensions possible quite some push back can happen there, but
-we scan for the most likely candidates first.
+In any case, the equal is optional and kind of a keyword. Having an equal can be
+more efficient then not having one, again due to push back in case of no equal
+being seen, In the process spaces have been skipped, so add to the overhead the
+scanning for optional spaces. In \LUAMETATEX\ all that has been optimized a bit.
+By the way, in dimension scanning \type {pt} is actually a keyword and as there
+are several dimensions possible quite some push back can happen there, but we
+scan for the most likely candidates first.
 
 All that said, we're now ready for a surprise. The keyword scanner gets a string
-that it will test for, say \type {to} in case of a box specification. It then
-will fetch tokens from whatever provides the input. A token encodes a so called
+that it will test for, say, \type {to} in case of a box specification. It then
+will fetch tokens from whatever provides the input. A token encodes a so|-|called
 command and a character and can be related to a control sequence. For instance,
 the character \type {t} becomes a letter command with related value \number`t.
 So, we have three properties: the command code, the character code and the
@@ -173,15 +176,15 @@ control sequence code. Now, instead of checking if the command code is a letter
 or other character (two checks) a fast check happens for the control sequence
 code being zero. If that is the case, the character code is compared. In practice
 that works out well because the characters that make up a keyword are in the
-range \number"41\ upto \number"5A\ and \number"61\ upto \number"7A, and all other
-character codes are either below that (the ones that relate to primitives where
-the character code is actually a sub command of a limited range) or much larger
-numbers that for instance indicate an entry in some array, where the first useful
-index is above the mentioned ranges.
+range \number"41--\number"5A\ and \number"61--\number"7A, and all other character
+codes are either below that (the ones that relate to primitives where the
+character code is actually a subcommand of a limited range) or much larger
+numbers that, for instance, indicate an entry in some array, where the first
+useful index is above the mentioned ranges.
 
 The surprise is in the fact that there is no checking for letters or other
-characters, so this is why the next code will work too: \footnote {No longer in
-\LUAMETATEX\ where we do a bit more robust check.}
+characters, so this is why the following code will work too: \footnote {No longer
+in \LUAMETATEX\ where we do a bit more robust check.}
 
 \starttyping
 \catcode `O= 1 \hbox tO 10cm {...} % { begingroup
@@ -195,14 +198,14 @@ characters, so this is why the next code will work too: \footnote {No longer in
 \catcode `O=12 \hbox tO 10cm {...} %   other
 \stoptyping
 
-In the first line, when we would use change the catcode of \type {T} and use that
-one it would kind of fails because they \TEX\ sees a begin group character and
-starts the group, but as a second character in a keyword it's okay because \TEX\
-will not look at the category code.
+In the first line, if we changed the catcode of \type {T} (instead of \type {O}),
+it gives an error because \TEX\ sees a begin group character (category code 1)
+and starts the group, but as a second character in a keyword (\type {O}) it's
+okay because \TEX\ will not look at the category code.
 
-Of course only the cases \type {11} and \type {12} make sense because one can
-imagine that messing with the category codes of regular letters this way will
-definitely give problems with processing the text. In a case like:
+Of course only the cases \type {11} and \type {12} make sense in practice.
+Messing with the category codes of regular letters this way will definitely give
+problems with processing normal text. In a case like:
 
 \starttyping
 {\catcode `o=3 \hbox to 10cm {oeps}} % $ mathshift {oeps}
@@ -211,32 +214,34 @@ definitely give problems with processing the text. In a case like:
 
 we have several issues: the primitive control sequence \type {\hbox} has an \type
 {o} so \TEX\ will stop after \type {\hb} which can be undefined or a valid macro
-and what happens next is hard to predict. Going uppercase will work but then the
-content of the box is bad because there the \type {O} enters math.
+and what happens next is hard to predict. Using uppercase will work but then the
+content of the box is bad because there the \type {O} enters math. Now consider:
 
 \starttyping
 {\catcode `O=3 \hbox tO 10cm {Oeps Oeps}} % {$eps $eps}
 \stoptyping
 
-This will work because there are now two \type {O} in the box so we have balanced
-inline math triggers. But how does one explain that to a user, who probably
-doesn't understand where an error message comes from in the first place. Anyway,
-this kind of tolerance is still not pretty so in \LUAMETATEX\ we now check for
-the command code and stick to letters and other characters. On today's machines
-(and even on my by now ancient workhorse) the performance hit can be neglected.
-Actually, by intercepting the weird cases we also avoid an unnecessary case check
-when we fall through the zero cs test. Of course that also means that the above
-mentioned category code trickery doesn't work any more: only letters and other
-characters are now valid in keyword scanning. Now, it can be that some macro
-programmer actually used those side effects but apart from some macro hacker
-being hurt because no longer mastering those details can be showed off, it is
-users that we care more for, don't we?
+This will work because there are now two \type {O}'s in the box, so we have
+balanced inline math triggers. But how does one explain that to a user? (Who
+probably doesn't understand where an error message comes from in the first
+place.) Anyway, this kind of tolerance is still not pretty, so in \LUAMETATEX\ we
+now check for the command code and stick to letters and other characters. On
+today's machines (and even on my by now ancient workhorse) the performance hit
+can be neglected.
 
-Now get me right, the above mentioning of performance of keyword and equal
-scanning is not that relevant in practice. But for the record, here are some
-timings on a laptop with a i7-3849QM processor using \MINGW\ binaries on a 64 bit
-\MSWINDOWS\ 10. The times are the averages of five times a million such
-assignments and advancements:
+In fact, by intercepting the weird cases we also avoid an unnecessary case check
+when we fall through the zero control sequence test. Of course that also means
+that the above mentioned category code trickery doesn't work any more: only
+letters and other characters are now valid in keyword scanning. Now, it can be
+that some macro programmer actually used those side effects but apart from some
+macro hacker being hurt because no longer mastering those details can be showed
+off, it is users that we care more for, don't we?
+
+To be sure, the abovementioned performance of keyword and equal scanning is not
+that relevant in practice. But for the record, here are some timings on a laptop
+with a i7-3849\cap{QM} processor using \MINGW\ binaries on a 64-bit \MSWINDOWS\
+10 system. The times are the averages of five times a million such assignments
+and advancements.
 
 \starttabulate[|l|c|c|c|]
 \FL
@@ -253,12 +258,13 @@ assignments and advancements:
 \LL
 \stoptabulate
 
-We differentiate between using a space as terminal or a \type {\relax}. The later
-is a bit less efficient because more code is involved in resolving the meaning of
-that control sequence (which eventually boils down to nothing) but nevertheless,
-these are not timings that one can loose sleep over, especially when the rest of
-a decent \TEX\ run is taken into account. And yes, \LUAMETATEX\ is a bit faster
-here than \LUATEX, but I would be disappointed if that weren't the case.
+We differentiate here between using a space as terminal or a \type {\relax}. The
+latter is a bit less efficient because more code is involved in resolving the
+meaning of the control sequence (which eventually boils down to nothing) but
+nevertheless, these are not timings that one can lose sleep over, especially when
+the rest of a decent \TEX\ run is taken into account. And yes, \LUAMETATEX\
+(\LMTX) is a bit faster here than \LUATEX, but I would be disappointed if that
+weren't the case.
 
 % luametatex:
 
@@ -281,7 +287,6 @@ here than \LUATEX, but I would be disappointed if that weren't the case.
 % \luaexpr{(0.147+0.151+0.160+0.144+0.151)/5} 0.151\crlf
 % \luaexpr{(0.076+0.085+0.088+0.073+0.078)/5} 0.080\crlf
 % \luaexpr{(0.136+0.138+0.142+0.135+0.140)/5} 0.138\crlf
-
 
 \stopchapter
 

@@ -49,7 +49,7 @@ local uccodes          = characters.uccodes
 local lccodes          = characters.lccodes
 
 lang.exceptions        = lang.hyphenation
-local new_langage      = lang.new
+local new_language     = lang.new
 
 languages              = languages or {}
 local languages        = languages
@@ -85,7 +85,7 @@ local function resolve(tag)
     if data then
         instance = data.instance
         if not instance then
-            instance = new_langage(data.number)
+            instance = new_language(data.number)
             data.instance = instance
         end
     end
@@ -101,7 +101,7 @@ local function tolang(what) -- returns lang object
     if data then
         local instance = data.lang
         if not instance then
-            instance = new_langage(data.number)
+            instance = new_language(data.number)
             data.instance = instance
         end
         return instance
@@ -500,6 +500,14 @@ else
         else
             return 0
         end
+    end
+
+    if CONTEXTLMTXMODE > 0 then
+        numbers[0] = "null"
+        registered.null = {
+            number   = 0,
+            instance = new_language(0),
+        }
     end
 
 end

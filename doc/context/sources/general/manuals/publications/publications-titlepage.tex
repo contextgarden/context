@@ -11,9 +11,9 @@
             for i=0 upto 9 : draw pth shifted (0,2*i) ; endfor ;
         ) ;
 
-        picture btx ; btx := textext("\ssbf\WORDS{\getvariable{document}{title}}") ;
-        picture ctx ; ctx := textext("\ssbf\WORDS{\getvariable{document}{subtitle}}") ;
-        picture dtx ; dtx := textext("\ssbf       \getvariable{document}{author}") ;
+        picture btx ; btx := textext("\ssbf\WORDS{\documentvariable{title}}") ;
+        picture ctx ; ctx := textext("\ssbf\WORDS{\documentvariable{subtitle}}") ;
+        picture dtx ; dtx := textext("\ssbf       \documentvariable{author}") ;
 
         pic := pic shifted - llcorner pic ;
         btx := btx shifted - llcorner btx ;

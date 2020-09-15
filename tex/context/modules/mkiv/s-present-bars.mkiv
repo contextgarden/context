@@ -68,7 +68,7 @@
 
 \setupheadertexts
   [Breskens 2012]
-  [\getvariable{document}{title}]
+  [\documentvariable{title}]
 
 \setupbackgrounds
   [page]
@@ -99,9 +99,9 @@
 
 \startsetups document:setup
 
-    \doifsomething {\getvariable{document}{color}} {
+    \doifsomething {\documentvariable{color}} {
 
-       \definecolor[maincolor][\getvariable{document}{color}]
+       \definecolor[maincolor][\documentvariable{color}]
 
     }
 

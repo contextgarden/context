@@ -1,0 +1,454 @@
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={DATATYPES},
+   banner={additional datatypes in lmtx},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Native \TEX\ datatypes: simple registers]
+
+\startbuffer
+integer: \count 123 = 456 \the\count123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\startbuffer
+dimension: \dimen123 = 456pt \the\dimen123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\startbuffer
+glue: \skip123 = 6pt plus 5pt minus 4pt\relax \the\skip123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\startbuffer
+muglue: \muskip123 = 6mu plus 5mu minus 4mu\relax \the\muskip123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\startbuffer
+attribute: \attribute123 = 456 \the\attribute123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+\global \the \countdef \dimendef \skipdef \muskipdef \attributedef
+\advance \multiply \divide \numexpr \dimexpr \glueexpr \muexpr
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \TEX\ datatypes: tokens]
+
+\startbuffer
+toks: \toks123 = {456} \the\toks123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+\global \the \toksdef
+\toksapp \etoksapp \xtoksapp \gtoksapp
+\tokspre \etokspre \xtokspre \gtokspre
+\stoptyping
+
+\blank[2*line]
+
+(in retrospect: eetex)
+
+\stoptitle
+
+\starttitle[title=Native \TEX\ datatypes: boxes]
+
+\startbuffer
+box: \box123 = \hbox {456} (\the\wd123,\the\ht123,\the\dp123) \box123
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+\global \box \copy \unhbox \unvbox
+\hbox \vbox \vtop \hpack \vpack \tpack
+\wd \ht \dp \boxtotal
+\boxdirection \boxattr
+\boxorientation \boxxoffset \boxyoffset \boxxmove \boxymove
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \TEX\ datatypes: macros]
+
+\startbuffer
+\def\onetwothree{346} \onetwothree
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+\global \protected \frozen
+\def \edef \edef \xdef
+\meaning
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \LUA\ datatypes: numbers]
+
+\startbuffer
+\ctxlua{local n = 123                  context(n)}\quad
+\ctxlua{local n = 123.456              context(n)}\quad
+\ctxlua{local n = 123.4E56             context(n)}\quad
+\ctxlua{local n = 0x123                context(n)}\quad
+\ctxlua{local n = 0x1.37fe4cd4b70b2p-1 context(n)}
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
++ - * / // % ^ | ~ & << >> == ~= < > <= >= ( )
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \LUA\ datatypes: strings]
+
+\startbuffer
+\ctxlua{local s = "abc"       context(s)}\quad
+\ctxlua{local s = 'abc'       context(s)}\quad
+\ctxlua{local s = [[abc]]     context(s)}\quad
+\ctxlua{local s = [==[abc]==] context(s)}\quad
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+.. # == ~= < > <= >=
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \LUA\ datatypes: booleans and nil]
+
+\startbuffer
+\ctxlua{local b = true  context(b)}\quad
+\ctxlua{local b = false context(b)}\quad
+\ctxlua{local n = nil   context(n)}\quad
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\blank[2*line]
+
+\starttyping
+== ~= and or not
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Native \LUA\ datatypes: some more]
+
+\starttyping
+functions
+userdata (lpeg is userdata)
+coroutine
+\stoptyping
+
+\LUAMETATEX\ provides tokens and nodes as userdata and some libraries also
+use them (complex, decimal, pdf, etc).
+
+\stoptitle
+
+\starttitle[title=Both worlds combined]
+
+\startitemize[packed]
+\startitem There are only 64K registers (although we can extend that if needed). \stopitem
+\startitem Accessing registers at the \LUA\ end is not that efficient. \stopitem
+\startitem So we have now datatypes at the \LUA\ end with access at the \TEX\ end. \stopitem
+\startitem Their values can go beyond what \TEX\ registers provide. \stopitem
+\stopitemize
+
+\startbuffer
+\luacardinal bar  123
+\luainteger  bar -456
+\luafloat    bar  123.456E-3
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\the\luacardinal bar \quad
+\the\luainteger  bar \quad
+\the\luafloat    bar
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\page
+
+The usual \LUA\ semantics apply:
+
+\startbuffer
+\luacardinal bar  0x123
+\luainteger  bar -0x456
+\luafloat    bar  0x123.456p-3
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So, now we get:
+
+\startbuffer
+\the\luacardinal bar \quad
+\the\luainteger  bar \quad
+\the\luafloat    bar
+\stopbuffer
+
+\getbuffer
+
+Equal signs are optional:
+
+\startbuffer
+\luainteger gnu=  123456   \luafloat gnu=  123.456e12
+\luainteger gnu = 123456   \luafloat gnu = 123.456e12
+\luainteger gnu  =123456   \luafloat gnu  =123.456e12
+\stopbuffer
+
+\typebuffer
+
+These commands can be uses for assignments as well as serialization. They use the
+\LUAMETATEX\ value function feature.
+
+\page
+
+Dimensions are serialized differently so that they can be used like this:
+
+\startbuffer
+\luadimen test 100pt \scratchdimen = .25 \luadimen test: \the\scratchdimen
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+Assume that we have this:
+
+\startbuffer
+\luacardinal x = -123   \luafloat x =  123.123
+\luacardinal y =  456   \luafloat y = -456.456
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can then use the macro \type {\luaexpression} that takes an optional keyword:
+
+\startbuffer
+- : \luaexpression          {n.x + 2*n.y}
+f : \luaexpression float    {n.x + 2*n.y}
+i : \luaexpression integer  {n.x + 2*n.y}
+c : \luaexpression cardinal {n.x + 2*n.y}
+b : \luaexpression boolean  {n.x + 2*n.y}
+l : \luaexpression lua      {n.x + 2*n.y}
+\stopbuffer
+
+\typebuffer
+
+The serialization can be different for these cases:
+
+\startlines
+\tt \getbuffer
+\stoplines
+
+Variables have their own namespace but get resolved across namespaces (f, i, c).
+
+\page
+
+Special tricks:
+
+\startbuffer
+\scratchdimen 123.456pt [\the\scratchdimen] [\the\nodimen\scratchdimen]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Does nothing, nor does:
+
+\startbuffer
+\nodimen\scratchdimen = 654.321pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+But:
+
+\starttabulate[|T|T|]
+\NC \type {\the\nodimen bp \scratchdimen} \NC \the\nodimen bp \scratchdimen \NC \NR
+\NC \type {\the\nodimen cc \scratchdimen} \NC \the\nodimen cc \scratchdimen \NC \NR
+\NC \type {\the\nodimen cm \scratchdimen} \NC \the\nodimen cm \scratchdimen \NC \NR
+\NC \type {\the\nodimen dd \scratchdimen} \NC \the\nodimen dd \scratchdimen \NC \NR
+\NC \type {\the\nodimen in \scratchdimen} \NC \the\nodimen in \scratchdimen \NC \NR
+\NC \type {\the\nodimen mm \scratchdimen} \NC \the\nodimen mm \scratchdimen \NC \NR
+\NC \type {\the\nodimen pt \scratchdimen} \NC \the\nodimen pt \scratchdimen \NC \NR
+\NC \type {\the\nodimen sp \scratchdimen} \NC \the\nodimen sp \scratchdimen \NC \NR
+\stoptabulate
+
+gives different units! In the coffee break it was decided to drop the \type {nc}
+and \type {nd} units in \LUAMETATEX\ when Arthur indicated that they never became
+a standard. Dropping the \type {true} variants also makes sense but we postponed
+dropping the \type {in} (inch).
+
+\stoptitle
+
+\starttitle[title=Arrays]
+
+Two dimensional arrays have names and a type:
+
+\startbuffer
+\newarray name integers   type integer   nx 2 ny 2
+\newarray name booleans   type boolean   nx 2 ny 2
+\newarray name floats     type float     nx 2 ny 2
+\newarray name dimensions type dimension nx 4
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And a special accessor. Here we set values:
+
+\startbuffer
+\arrayvalue integers   1 2 4        \arrayvalue integers   2 1 8
+\arrayvalue booleans   1 2 true     \arrayvalue booleans   2 1 true
+\arrayvalue floats     1 2 12.34    \arrayvalue floats     2 1 34.12
+\arrayvalue dimensions 1   12.34pt  \arrayvalue dimensions 3   34.12pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\page
+
+Here we get values:
+
+\startbuffer
+[\the\arrayvalue integers   1 2]
+[\the\arrayvalue booleans   1 2]
+[\the\arrayvalue floats     1 2]
+[\the\arrayvalue dimensions 1  ]\crlf
+[\the\arrayvalue integers   2 1]
+[\the\arrayvalue booleans   2 1]
+[\the\arrayvalue floats     2 1]
+[\the\arrayvalue dimensions   3]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+When a value is expected the integer is serialized:
+
+\startbuffer
+\scratchcounter\arrayvalue integers 1 2\relax \the\scratchcounter
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+You can view an array on the console with:
+
+\starttyping
+\showarray integers
+\stoptyping
+
+\page
+
+Another expression example:
+
+\startbuffer
+\dostepwiserecurse {1} {4} {1} {
+    [\the\arrayvalue dimensions #1 :
+     \luaexpression dimen {math.sind(30) * a.dimensions[#1]}]
+}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+We can combine it all with if tests:
+
+\startbuffer
+slot 1 is \ifboolean\arrayequals dimensions 1 0pt zero \else not zero \fi\quad
+slot 2 is \ifboolean\arrayequals dimensions 2 0pt zero \else not zero \fi
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+slot 1: \ifcase\arraycompare dimensions 1 3pt lt \or eq \else gt \fi zero\quad
+slot 2: \ifcase\arraycompare dimensions 2 3pt lt \or eq \else gt \fi zero\quad
+slot 3: \ifcase\arraycompare dimensions 3 3pt lt \or eq \else gt \fi zero\quad
+slot 4: \ifcase\arraycompare dimensions 4 3pt lt \or eq \else gt \fi zero
+
+slot 1: \ifcmpdim\arrayvalue dimensions 1 3pt lt \or eq \else gt \fi zero\quad
+slot 2: \ifcmpdim\arrayvalue dimensions 2 3pt lt \or eq \else gt \fi zero\quad
+slot 3: \ifcmpdim\arrayvalue dimensions 3 3pt lt \or eq \else gt \fi zero\quad
+slot 4: \ifcmpdim\arrayvalue dimensions 4 3pt lt \or eq \else gt \fi zero
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stoptitle
+
+\starttitle[title=Complex numbers]
+
+\startbuffer
+\startluacode
+local c1 = xcomplex.new(1,3)
+local c2 = xcomplex.new(2,4)
+context(c1) context.quad() context(c2) context.quad(c1 + c2)
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\starttitle[title=Decimal numbers]
+
+\startbuffer
+\startluacode
+local c1 = xdecimal.new("123456789012345678901234567890")
+local c2 = xdecimal.new(1234567890)
+context(c1) context.crlf() context(c2) context.crlf(c1 * c2)
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptitle
+
+\stopdocument

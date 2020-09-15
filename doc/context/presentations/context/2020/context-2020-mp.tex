@@ -1,0 +1,342 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\startdocument
+  [title={METAFUN},
+   banner={simple fonts},
+   location={context\enspace {\bf 2020}\enspace meeting}]
+
+\starttitle[title=Metafonts]
+
+\startitemize
+
+\startitem
+    Because \METAPOST\ is based on \METAFONT\ it make sense to use of for making fonts.
+\stopitem
+
+\startitem
+    Making a font is an art in itself, something that is actually proven by many bad
+    looking fonts, but we have plenty of choice nowadays.
+\stopitem
+
+\startitem
+    We tend to use free fonts and often being made by volunteers we can hardly have any
+    demands.
+\stopitem
+
+\startitem
+    So, instead of complaining (which is not nice anyway) we can try to (at least temporary)
+    come up with a solution ourselves.
+\stopitem
+
+\startitem
+    We're actually talking about missing glyphs here and \METAPOST\ can be of help.
+\stopitem
+
+\startitem
+    Also keep in mind that we always had this option or variants of it in \CONTEXT, it's
+    just that we can make nicer interfaces now.
+\stopitem
+
+\startitem
+    So, don't expect something spectacular.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=What is is not]
+
+Years ago mechanisms were added to \MKIV\ to come up with more fancy shapes in
+for instance math. Actually Alan needed it and I wanted a root symbol to look
+like school times.
+
+\startbuffer
+\useMPlibrary[mat]
+
+\setupmathradical[color=darkgray,alternative=mp]
+
+% \definemathradical [sqrt] [mp=minifun::math:radical:default]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So:
+
+\startbuffer
+\scale[height=2cm]{$ \sqrt {a+b+c+d} $}
+\stopbuffer
+
+\typebuffer
+
+Gives:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\page
+
+And with:
+
+\startbuffer
+\startuniqueMPgraphic{minifun::math:radical:default}
+draw
+    math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
+    withpen pencircle
+        xscaled (2OverlayLineWidth)
+        yscaled (1OverlayLineWidth/4)
+        rotated 30
+    dashed evenly
+    withcolor OverlayLineColor ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer
+
+We get
+
+\startlinecorrection
+\getbuffer
+\scale[height=2cm]{$ \sqrt {a+b+c+d} $}
+\stoplinecorrection
+
+\page
+
+Also think of stackers:
+
+\startbuffer
+\setupmathstackers [both]   [color=darkgray,alternative=mp]
+\setupmathstackers [top]    [color=darkgray,alternative=mp]
+\setupmathstackers [bottom] [color=darkgray,alternative=mp]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\blank[2*line]
+
+\startbuffer
+$
+    \overbracket   {a+b+c+d} \quad
+    \underbracket  {a+b+c+d} \quad
+    \doublebracket {a+b+c+d}
+$
+\blank
+$
+    \overparent   {a+b+c+d} \quad
+    \underparent  {a+b+c+d} \quad
+    \doubleparent {a+b+c+d}
+$
+\blank
+$
+    \overbrace   {a+b+c+d} \quad
+    \underbrace  {a+b+c+d} \quad
+    \doublebrace {a+b+c+d}
+$
+\blank
+$
+    \overbar   {a+b+c+d} \quad
+    \underbar  {a+b+c+d} \quad
+    \doublebar {a+b+c+d}
+$
+\blank
+$
+    \overleftarrow  {a+b+c+d} \quad
+    \overrightarrow {a+b+c+d}
+$
+\blank
+$
+    \underleftarrow  {a+b+c+d} \quad
+    \underrightarrow {a+b+c+d}
+$
+\stopbuffer
+
+\getbuffer
+
+\blank[2*line]
+
+But, these are just overlays and nothing special: we simply don't use the normal
+font route not fancy \LUA\ tricks either (in principle \MKII\ could do this). I
+might upgrade it some day (no real demand so far, just fun stuff).
+
+\stoptitle
+
+\starttitle[title=Real fonts]
+
+\startitemize
+
+\startitem For text we need an efficient way to define extra shapes. \stopitem
+\startitem We don't really want inline graphics every time we use a glyph. \stopitem
+\startitem We also want to cut and paste properly. \stopitem
+\startitem Basically the fact that we drop in shapes should be hidden. \stopitem
+
+\blank[2*line]
+
+\startitem
+    We use the same (generic) subsystem that is also used for color fonts, bitmap
+    emoji, \SVG\ fonts, etc.
+\stopitem
+\startitem
+    Shapes end up as \TYPETHREE\ fonts. These have some specific properties and
+    limitations, but we can actually make \UNICODE\ fonts.
+\stopitem
+\startitem
+    The system is not burdened by much overhead and most happens at embedding time.
+\stopitem
+
+\stopitemize
+
+\page
+
+\startbuffer[font]
+\definefont[DemoFontA][Serif*default @ 10pt]
+\definefont[DemoFontB][Serif*default @ 12pt]
+\definefont[DemoFontC][Serif*default @ 14pt]
+\definefont[DemoFontD][SerifBold*default @ 14pt]
+\stopbuffer
+
+\typebuffer[font] \getbuffer[font]
+
+\startbuffer[demo]
+\startlines
+\DemoFontA first\endash second\emdash third\char"2015\relax fourth
+\DemoFontB first\endash second\emdash third\char"2015\relax fourth
+\DemoFontC first\endash second\emdash third\char"2015\relax fourth
+\DemoFontD first\endash second\emdash third\char"2015\relax fourth
+\stoplines
+\stopbuffer
+
+\typebuffer[demo] \getbuffer[demo]
+
+\page
+
+\startbuffer[mpone]
+\startMPcalculation{simplefun}
+
+    vardef QuotationDashOne =
+        draw image (
+            interim linecap := squared ;
+            save l ; l := 0.2 ;
+            draw (l/2,3) -- (10-l/2,3) withpen pencircle scaled l ;
+        )
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "symbolsone",
+        units    = 10,
+        usecolor = true,
+        width    = 10,
+        height   = 3.1,
+        depth    = 0,
+    ] ;
+
+    lmt_registerglyph [
+        category = "symbolsone",
+        unicode  = "0x2015",
+        code     = "QuotationDashOne ;"
+    ] ;
+
+\stopMPcalculation
+\stopbuffer
+
+\getbuffer[mpone]
+
+\startbuffer[font]
+\definefontfeature[exampleone][metapost=symbolsone]
+
+\definefont[DemoFontA][Serif*default,exampleone @ 10pt]
+\definefont[DemoFontB][Serif*default,exampleone @ 12pt]
+\definefont[DemoFontC][Serif*default,exampleone @ 14pt]
+\definefont[DemoFontD][SerifBold*default,exampleone @ 14pt]
+\stopbuffer
+
+\typebuffer[font] \getbuffer[font]
+
+\getbuffer[demo]
+
+\page
+
+\typebuffer[mpone][style=\tt\small\small]
+
+\page
+
+\startbuffer[mptwo]
+\startMPcalculation{simplefun}
+
+    vardef QuotationDashTwo =
+        draw image (
+            interim linecap := squared ;
+            save l ; l := 0.4 ;
+            string weight ; weight := getparameter "mpsfont" "parentdata" "shared" "rawdata" "metadata" "weight" ;
+            if     weight = "semibold" : l := l * 2;
+            elseif weight = "bold"     : l := l * 3; fi
+            draw (l/2,3) -- (10-l/2,3) withpen pencircle scaled l
+            withcolor yellow ;
+        )
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "symbolstwo",
+        units    = 10,
+        usecolor = false,
+        width    = 10,
+        height   = 3.1,
+        depth    = 0,
+    ] ;
+
+    lmt_registerglyph [
+        category = "symbolstwo",
+        unicode  = "0x2015",
+        code     = "QuotationDashTwo ;"
+    ] ;
+
+\stopMPcalculation
+\stopbuffer
+
+\getbuffer[mptwo]
+
+\startbuffer[font]
+\definefontfeature[exampletwo][metapost=symbolstwo]
+
+\definefont[DemoFontA][Serif*default,exampletwo @ 10pt]
+\definefont[DemoFontB][Serif*default,exampletwo @ 12pt]
+\definefont[DemoFontC][Serif*default,exampletwo @ 14pt]
+\definefont[DemoFontD][SerifBold*default,exampletwo @ 14pt]
+\stopbuffer
+
+\typebuffer[font] \getbuffer[font]
+
+\getbuffer[demo]
+
+\page
+
+\typebuffer[mptwo][style=\tt\small\small]
+
+\stoptitle
+
+\starttitle[title=More examples]
+
+We give some examples (these are also in the modules). Overloading math
+symbols:
+
+\starttyping
+meta-imp-kindergarten.mkxl
+\stoptyping
+
+Extending fonts with Don Knuths dices and tiles (symbols, ligatures, proper
+\UNICODE):
+
+\starttyping
+meta-imp-gamesymbols.mkxl
+\stoptyping
+
+An implementation of Don Knuths ThirtySix font in various variants (color,
+random, shapes):
+
+\starttyping
+meta-imp-threesix.mkxl
+\stoptyping
+
+\stopdocument

@@ -167,7 +167,7 @@
             [rotation=90]
             {\color
                 [lightgray]
-                {\getvariable{document}{title}}}
+                {\documentvariable{title}}}
         \par
    \stopstandardmakeup
    \setupbackgrounds
@@ -179,9 +179,9 @@
     \blank[2*big]
     \testpage[3]
     \startpacked
-        \getvariable{document}{author}\par
-        \getvariable{document}{affiliation}\par
-        \getvariable{document}{location}\par
+        \documentvariable{author}\par
+        \documentvariable{affiliation}\par
+        \documentvariable{location}\par
     \stoppacked
 \stopsetups
 

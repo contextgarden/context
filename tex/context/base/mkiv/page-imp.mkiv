@@ -167,8 +167,17 @@
 
 % \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
 
+\ifcase\contextlmtxmode
+    \def\page_shipout_show_box{\scratchcounter}
+\else
+    \def\page_shipout_show_box{\showbox diagnose}
+\fi
+
 \unexpanded\def\page_shipout_box#1%
-  {\clf_shipoutpage#1\relax
+  {\ifcase\tracingoutput\else
+     \page_shipout_show_box#1\relax
+   \fi
+   \clf_shipoutpage#1\relax
    \global\setbox#1\emptybox
    \global\deadcycles\zerocount}
 
