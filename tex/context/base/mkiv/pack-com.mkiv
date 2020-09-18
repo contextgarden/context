@@ -77,11 +77,15 @@
 \to \everyinsidefloat
 
 \newcount\c_pack_combinations_nesting  % local
+
 \newcount\c_pack_combinations_x        % global
 \newcount\c_pack_combinations_y        % global
 \newcount\c_pack_combinations_max      % global
-\newbox  \b_pack_combinations_captions % global
-\newbox  \b_pack_combinations_temp     % global
+
+\newdimen\d_pack_combinations_ht       % global
+
+\newbox  \b_pack_combinations_captions % global % can go
+\newbox  \b_pack_combinations_temp     % global % can go
 \newbox  \b_pack_combinations_content  % local
 \newbox  \b_pack_combinations_caption  % local
 
@@ -95,6 +99,9 @@
 \newcount\c_pack_combinations_x_saved
 \newcount\c_pack_combinations_y_saved
 \newcount\c_pack_combinations_max_saved
+
+\newdimen\d_pack_combinations_ht_saved
+
 \newbox  \b_pack_combinations_captions_saved
 \newbox  \b_pack_combinations_temp_saved
 \newbox  \b_pack_combinations_content_saved
@@ -108,6 +115,7 @@
      \c_pack_combinations_x_saved  \c_pack_combinations_x
      \c_pack_combinations_y_saved  \c_pack_combinations_y
      \c_pack_combinations_max_saved\c_pack_combinations_max
+     \d_pack_combinations_ht_saved \d_pack_combinations_ht
      \setbox\b_pack_combinations_captions_saved\box\b_pack_combinations_captions
      \setbox\b_pack_combinations_temp_saved    \box\b_pack_combinations_temp
      \setbox\b_pack_combinations_content_saved \box\b_pack_combinations_content
@@ -121,6 +129,7 @@
      \global\c_pack_combinations_x  \c_pack_combinations_x_saved
      \global\c_pack_combinations_y  \c_pack_combinations_y_saved
      \global\c_pack_combinations_max\c_pack_combinations_max_saved
+     \global\d_pack_combinations_ht \d_pack_combinations_ht_saved
      \global\setbox\b_pack_combinations_captions\box\b_pack_combinations_captions_saved
      \global\setbox\b_pack_combinations_temp    \box\b_pack_combinations_temp_saved
      \setbox\b_pack_combinations_content        \box\b_pack_combinations_content_saved
@@ -474,35 +483,66 @@
    \pack_combinations_flush_captions
    \egroup}
 
+% \def\pack_combinations_save_caption
+%   {\global\setbox\b_pack_combinations_captions\hpack
+%      {\hpack{\box\b_pack_combinations_caption}%
+%       \unhbox\b_pack_combinations_captions}}
+%
+% \def\pack_combinations_flush_captions
+%   {\noalign
+%      {\ifdim\ht\b_pack_combinations_captions>\zeropoint
+%         \nointerlineskip % indeed
+%         \combinationparameter\c!inbetween
+%         \global\c_pack_combinations_x\c_pack_combinations_max
+%         \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_yes
+%       \else
+%         \global\setbox\b_pack_combinations_captions\emptybox
+%         \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_nop
+%       \fi}%
+%    \pack_combinations_flush_captions_indeed
+%    \crcr}
+%
+% \def\pack_combinations_flush_captions_yes
+%   {\global\setbox\b_pack_combinations_captions\hpack
+%      {\unhbox\b_pack_combinations_captions
+%       \global\setbox\b_pack_combinations_temp\lastbox}%
+%    \box\b_pack_combinations_temp
+%    \global\advance\c_pack_combinations_x\minusone\relax
+%    \ifnum\c_pack_combinations_x>\zerocount
+%      \expandafter\pack_combinations_flush_captions_yes_followup
+%    \else
+%      \global\setbox\b_pack_combinations_captions\emptybox
+%    \fi}
+
+\installcorenamespace{combinationcaption}
+
 \def\pack_combinations_save_caption
-  {\global\setbox\b_pack_combinations_captions\hpack
-     {\hpack{\box\b_pack_combinations_caption}%
-      \unhbox\b_pack_combinations_captions}}
+  {\ifdim\htdp\b_pack_combinations_caption>\zeropoint
+     \global\d_pack_combinations_ht\htdp\b_pack_combinations_caption
+   \fi
+   \savebox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}{\box\b_pack_combinations_caption}}
 
 \def\pack_combinations_flush_captions
   {\noalign
-     {\ifdim\ht\b_pack_combinations_captions>\zeropoint
+     {\ifdim\d_pack_combinations_ht>\zeropoint
         \nointerlineskip % indeed
         \combinationparameter\c!inbetween
         \global\c_pack_combinations_x\c_pack_combinations_max
         \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_yes
       \else
-        \global\setbox\b_pack_combinations_captions\emptybox
         \glet\pack_combinations_flush_captions_indeed\pack_combinations_flush_captions_nop
       \fi}%
    \pack_combinations_flush_captions_indeed
    \crcr}
 
 \def\pack_combinations_flush_captions_yes
-  {\global\setbox\b_pack_combinations_captions\hpack
-     {\unhbox\b_pack_combinations_captions
-      \global\setbox\b_pack_combinations_temp\lastbox}%
-   \box\b_pack_combinations_temp
-   \global\advance\c_pack_combinations_x\minusone\relax
-   \ifnum\c_pack_combinations_x>\zerocount
+  {\foundbox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}%
+   \global\advance\c_pack_combinations_x\minusone
+   \ifnum\c_pack_combinations_x>\zerocount % \c_pack_combinations_max
      \expandafter\pack_combinations_flush_captions_yes_followup
    \else
-     \global\setbox\b_pack_combinations_captions\emptybox
+     \global\d_pack_combinations_ht\zeropoint
+     \initializeboxstack{\??combinationcaption:\number-\c_pack_combinations_nesting}%
    \fi}
 
 \let\pack_combinations_flush_captions_nop\donothing
@@ -539,8 +579,15 @@
 
 \let\stopfloatcombination\relax
 
+% \unexpanded\def\pack_combinations_float_hack_a#1%
+%   {\strc_floats_build_box_separate_split{\getlocalfloat{#1}}%
+%    \box\b_strc_floats_separate_content}
+
+% \unexpanded\def\pack_combinations_float_hack_b#1%
+%   {\box\b_strc_floats_separate_caption}
+
 \unexpanded\def\pack_combinations_float_hack_a#1%
-  {\strc_floats_build_box_separate_split{\getlocalfloat{#1}}%
+  {\strc_floats_build_box_separate_split{#1}%
    \box\b_strc_floats_separate_content}
 
 \unexpanded\def\pack_combinations_float_hack_b#1%

@@ -322,6 +322,7 @@
      \else
       %\prewordbreak\discretionary{\hbox{#2}}{}{\hbox{#2}}\postwordbreak
        \wordboundary\discretionary{\hbox{#2}}{}{\hbox{#2}}\wordboundary
+      %\discretionary options \plusthree{\hbox{#2}}{}{\hbox{#2}}%
      \fi
    \fi
    \nextnextnext}
@@ -362,6 +363,7 @@
 \setuvalue{\??discretionarymode i}#1%
  %{\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\postwordbreak}
   {\wordboundary\discretionary{\hbox{#1}}{}{\hbox{#1}}\wordboundary}
+ %{\discretionary options \plusthree{\hbox{#1}}{}{\hbox{#1}}}
 
 \unexpanded\def\definetextmodediscretionary #1
   {\setvalue{\??discretionaryaction\detokenize{#1}}}
@@ -414,21 +416,26 @@
    \else
     %\prewordbreak\discretionary{}{(-}{(}\prewordbreak
      \wordboundary\discretionary{}{(-}{(}\wordboundary
+    %\discretionary options \plusthree{}{(-}{(}%
    \fi}
 
 \definetextmodediscretionary ~
  %{\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
   {\wordboundary\discretionary{-}{}{\thinspace}\wordboundary}
+ %{\discretionary options \plusthree{-}{}{\thinspace}}
 
 \definetextmodediscretionary '
  %{\prewordbreak\discretionary{-}{}{'}\postwordbreak}
   {\wordboundary\discretionary{-}{}{'}\wordboundary}
+ %{\discretionary options \plusthree{-}{}{'}}
 
 \definetextmodediscretionary ^
  %{\prewordbreak\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
  % \postwordbreak} % bugged
-  {\wordboundary\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
+  {\wordboundary
+   \discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
    \wordboundary} % bugged
+ %{\discretionary options \plusthree{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}}
 
 \definetextmodediscretionary <
  %{\beginofsubsentence\prewordbreak\beginofsubsentencespacing
@@ -559,5 +566,20 @@
    %\disablecompoundcharacters
     \disablediscretionaries
 \to \everycleanupfeatures
+
+%D Here:
+%D
+%D \startbuffer
+%D {\red somelongword}{\blue \compounddiscretionary}{\green somelongword}
+%D \stopbuffer
+%D
+%D \typebuffer \blank {\hsize3mm\getbuffer\par} \blank
+
+\unexpanded\def\compounddiscretionary
+   {\discretionary
+      options \plusthree
+      {\ifnum\prehyphenchar >\zerocount\char\prehyphenchar \fi}%
+      {\ifnum\posthyphenchar>\zerocount\char\posthyphenchar\fi}%
+      {\ifnum\posthyphenchar>\zerocount\char\posthyphenchar\fi}}
 
 \protect \endinput

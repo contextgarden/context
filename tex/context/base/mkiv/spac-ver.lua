@@ -39,6 +39,7 @@ local unpack = unpack or table.unpack
 local allocate = utilities.storage.allocate
 local todimen = string.todimen
 local formatters = string.formatters
+local abs = math.abs
 
 local nodes        =  nodes
 local trackers     =  trackers
@@ -181,7 +182,6 @@ local gluecodes           = nodes.gluecodes
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
-local insert_code         = nodecodes.ins
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local rule_code           = nodecodes.rule
@@ -2157,32 +2157,47 @@ do
         end
     end
 
-    local trace = false
+    local trace      = false
+    local last       = nil
+    local vmode_code = tex.modelevels.vertical
+    local temp_code  = nodecodes.temp
+    local getnest    = tex.getnest
+    local getlist    = tex.getlist
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
-    local last = nil
+    -- abs : negative is inner
 
- -- function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
- --     local box = texgetbox(n)
- --     if box then
- --         box = tonut(box)
- --         local head = getlist(box)
- --         if head then
- --             local tail = find_node_tail(head)
- --             if tail and getid(tail) == hlist_code then
- --                 local dp = getdepth(tail)
- --                 if dp < depth then
- --                     setdepth(tail,depth)
- --                     outer.prevdepth = depth
- --                     if trace or trace_mode > 0 then
- --                         nuts.setvisual(tail,"depth")
- --                     end
- --                 end
- --             end
- --         end
- --     end
- -- end
+    function vspacing.checkstrutdepth(depth)
+        local nest = getnest()
+        if abs(nest.mode) == vmode_code and nest.head then
+            local tail = nest.tail
+            local id   = tail.id
+            if id == hlist_code then
+                if tail.depth < depth then
+                    tail.depth = depth
+                end
+                nest.prevdepth = depth
+            elseif id == temp_code and getnest("ptr") == 0 then
+                local head = getlist("page_head")
+                if head then
+                    tail = nodes.tail(head)
+                    if tail and tail.id == hlist_code then
+                        if tail.depth < depth then
+                            tail.depth = depth
+                        end
+                        nest.prevdepth = depth
+                    end
+                end
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "checkstrutdepth",
+        arguments = "dimension",
+        actions   = vspacing.checkstrutdepth,
+    }
 
     function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
         local box = texgetbox(n)

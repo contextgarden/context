@@ -27,6 +27,20 @@
 \unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
 \unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often
 
+%D \LMTX\ testcase:
+%D
+%D \starttyping
+%D \hbox {\hbox{\footnote{HH1}\footnote{HH2}}} \par
+%D \hbox {\hbox{x\footnote{XHH1}x\footnote{XHH2}}} \par
+%D \vbox {\setbox0\hbox{\footnote{VH1}\footnote{VH2}}\box0} \par
+%D \vbox         {\hbox{\footnote{VH1}xxx\footnote{VH2}}} \par
+%D \vbox         {\hbox{\footnote{VH1}\footnote{VH2}}
+%D                \hbox{\footnote{VH1}\footnote{VH2}}} \par
+%D \vbox {\hbox{x\footnote{XVH1}x\footnote{XVH2}}} \par
+%D \vbox {\vbox{\footnote{VV1}\footnote{VV2}}} \par % two lines
+%D \vbox {\vbox{x\footnote{XVV1}x\footnote{XVV2}}} \par
+%D \stoptyping
+
 %D Notes have two handlers: notations and notes. Although notations can be defined
 %D independently it makes not much sense. In principle we can treat notes as lists
 %D but they are currently done as a variant on enumerations. I will provide a list

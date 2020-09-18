@@ -235,24 +235,26 @@
 
 % todo: replace * by ... less messy with features
 
+% % no \ifempty here as #1 can be empty
+%
 % \def\truefontname#name%
 %   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
 %
 % \def\font_helpers_true_fontname#name*#first#rest*#crap\relax
 %   {\ifcsname\??fontfile\fontclass#name\endcsname
-%      \ifempty#first%
+%      \ifx#first\empty
 %        \expandafter\truefontname\lastnamedcs
 %      \else
 %        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
 %      \fi
 %    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%      \ifempty#first%
+%      \ifx#first\empty
 %        \expandafter\truefontname\lastnamedcs
 %      \else
 %        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
 %      \fi
 %    \orelse\ifcsname\??fontfile#name\endcsname
-%      \ifempty#first%
+%      \ifx#first\empty
 %        \expandafter\truefontname\lastnamedcs
 %      \else
 %        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
@@ -275,30 +277,32 @@
 %      #name%
 %    \fi}
 
+% no \ifempty here as #1 can be empty
+
 \def\truefontname#name%
   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
 
 \def\font_helpers_true_fontname#name*#first#rest*#ignore\relax
   {\ifcsname\??fontfile\fontclass#name\endcsname
-     \ifempty#first%
+     \ifx#first\empty
        \expandafter\truefontname\lastnamedcs
      \else
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-     \ifempty#first%
+     \ifx#first\empty
        \expandafter\truefontname\lastnamedcs
      \else
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile#name\endcsname
-     \ifempty#first%
+     \ifx#first\empty
        \expandafter\truefontname\lastnamedcs
      \else
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \else
-     #name\ifempty#first\else*#first#rest\fi
+     #name\ifx#first\empty\else*#first#rest\fi
    \fi}
 
 \def\font_helpers_true_fontname_check#name%

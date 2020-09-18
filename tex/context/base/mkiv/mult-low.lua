@@ -494,6 +494,7 @@ return {
         "dirlre", "dirrle", "dirlro", "dirrlo",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
+        "compounddiscretionary",
         --
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --

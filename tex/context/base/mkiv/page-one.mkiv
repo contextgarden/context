@@ -486,11 +486,24 @@
      \fi\fi
    \fi}
 
+% \def\page_one_place_float_here_indeed
+%   {\ifgridsnapping
+%      % otherwise real bad outcome
+%    \else
+%      \baselinecorrection % this has to be done better (and definitely not in column mode)
+%    \fi
+%    \doplacefloatbox
+%    \page_floats_report_total
+%    \dohandlenextfloatindent}
+
 \def\page_one_place_float_here_indeed
   {\ifgridsnapping
      % otherwise real bad outcome
    \else
-     \baselinecorrection % this has to be done better (and definitely not in column mode)
+    % this was not really applied (delayed)
+    % \baselinecorrection % this has to be done better (and definitely not in column mode)
+    % so we now use this:
+      \checkprevdepth
    \fi
    \doplacefloatbox
    \page_floats_report_total

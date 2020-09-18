@@ -658,6 +658,7 @@
    \tracingifs       \plusone
    \tracingnesting   \plustwo
    \tracingassigns   \plustwo
+   \tracingmath      \plusone
    \showboxbreadth   \maxcount
    \showboxdepth     \maxcount}
 
@@ -668,6 +669,7 @@
 \protected\def\tracingnone
   {\showboxdepth     \plusthree
    \showboxbreadth   \plusfive
+   \tracingmath      \zerocount
    \tracingassigns   \zerocount
    \tracingnesting   \zerocount
    \tracingifs       \zerocount

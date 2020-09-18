@@ -158,10 +158,10 @@
    \def\dobotbaselinecorrection
      {\hrule\s!height\d_spac_lines_correction_after}}
 
-\def\dobaselinecorrection % beware, this one is redefined / used locally elsewhere
-  {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
-   \kern\strutdp
-   \prevdepth\strutdp}
+% \def\dobaselinecorrection % beware, this one is redefined below
+%   {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
+%    \kern\strutdp
+%    \prevdepth\strutdp}
 
 \def\baselinecorrection
   {\endgraf
@@ -290,6 +290,49 @@
    \fi
    \prevdepth\strutdp}
 
+% \def\dobaselinecorrection
+%   {\scratchdimen\dimexpr\ifdim\prevdepth>\zeropoint-\prevdepth+\fi\strutdp\relax
+%    \vspacing[\the\scratchdimen]%
+%    \prevdepth\strutdp}
+%
+% some day:
+%
+% \def\dobaselinecorrection
+%   {\clf_checkstrutdepth\strutdp}
+%
+% \def\baselinecorrection
+%   {\endgraf
+%    \ifvmode
+%      \ifdim\prevdepth<\maxdimen
+%        \ifdim\prevdepth<\zeropoint \else
+%          \ifdim\prevdepth<\strutdepth \relax
+%            % works in mvl:
+%            % \forcestrutdepth
+%            % doesn't work immediately (unless enforced with penalty):
+%            % \pushlastnode
+%            % \dobaselinecorrection
+%            % \poplastnode
+%            % works ok:
+%              \clf_checkstrutdepth\strutdp
+%          \fi
+%        \fi
+%      \fi
+%    \fi}
+
+%D For the moment only with placefloats (should work in mvl and boxes):
+
+\unexpanded\def\checkprevdepth
+  {\endgraf
+   \ifvmode
+     \ifdim\prevdepth<\maxdimen
+       \ifdim\prevdepth<\zeropoint \else
+         \ifdim\prevdepth<\strutdepth \relax
+           \clf_checkstrutdepth\strutdp
+         \fi
+       \fi
+     \fi
+   \fi}
+
 \let\normalstartbaselinecorrection\startbaselinecorrection
 
 \unexpanded\def\startbaselinecorrection
@@ -299,14 +342,6 @@
    \else
      \normalstartbaselinecorrection
    \fi}
-
-%D Different in LMTX, maybe here we can use this in \MKIV:
-%D
-%D \let\checkprevdepth\forcestrutdepth % mlv only
-%D
-%D as we have sync issues that makes it not work otherwise.
-
-\let\checkprevdepth\baselinecorrection
 
 % This is new (and experimental) and might replace some of the above. beware it doesn't always work
 % out well, e.g. when used grouped and such (e.g. before display math doesn't work out well).

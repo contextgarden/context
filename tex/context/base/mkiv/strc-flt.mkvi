@@ -2203,6 +2203,8 @@
         {\box\floatbox}}}
 
 % special purpose: used in floatcombinations
+%
+% todo : keep float content and caption separated in local
 
 \newbox\b_strc_floats_separate_content
 \newbox\b_strc_floats_separate_caption
@@ -2211,37 +2213,44 @@
   {\settrue\c_floats_adapt_to_caption_width
    \settrue\c_floats_store_minimal_package}
 
-\def\strc_floats_build_box_separate_make
-  {\offinterlineskip
-   \vpack to \onepoint{\box\b_strc_floats_content}\break
-   \vpack to \onepoint{\box\b_strc_floats_caption}}
+% \def\strc_floats_build_box_separate_make
+%   {\offinterlineskip
+%    \vpack to \onepoint{\box\b_strc_floats_content}\break
+%    \vpack to \onepoint{\box\b_strc_floats_caption}}
 
-\def\strc_floats_build_box_separate_split#1%
-  {\setbox\scratchbox\vbox\bgroup
-     \setbox\scratchbox\vpack{#1}%
-     \unvbox\scratchbox\relax
-     \setbox\scratchbox\lastbox
-    %\doloop{%
-        \unvbox\scratchbox
-        \setbox\scratchbox\lastbox
-    %   \ifdim\ht\scratchbox=2\onepoint
-          \unvbox\scratchbox
-          \setbox\scratchbox\lastbox
-    %     \exitloop
-    %   \fi
-    %}%
-     \splittopskip\zeropoint
-     \global\setbox\b_strc_floats_separate_content\vsplit\scratchbox to \onepoint
-     \global\setbox\b_strc_floats_separate_caption\vsplit\scratchbox to \onepoint
-   \egroup
-   \global\setbox\b_strc_floats_separate_content\vpack
-     {\unvbox\b_strc_floats_separate_content
-      \setbox\scratchbox\lastbox
-      \unvbox\scratchbox}%
-   \global\setbox\b_strc_floats_separate_caption\tpack
-     {\unvbox\b_strc_floats_separate_caption
-      \setbox\scratchbox\lastbox
-      \unvbox\scratchbox}}
+%D Remark for \LMTX: we don't want to migrate inserts here so we unpack
+%D (could be a flag). When migrated, the inserts end up in the vertical
+%D list and we no longer have just a box (but inserts and lines again).
+
+% \def\strc_floats_build_box_separate_split#1%
+%   {\setbox\scratchbox\vpack{#1}%
+%    \setbox\scratchbox\vbox\bgroup
+%      \unvpack\scratchbox
+%      \setbox\scratchbox\lastbox % can have (unmigrated) inserts
+%      \unvpack\scratchbox
+%      \setbox\scratchbox\lastbox % can have (unmigrated) inserts
+%      \unvpack\scratchbox
+%      \setbox\scratchbox\lastbox % can have (unmigrated) inserts
+%      \splittopskip\zeropoint
+%      \global\setbox\b_strc_floats_separate_content\vsplit\scratchbox to \onepoint
+%      \global\setbox\b_strc_floats_separate_caption\vsplit\scratchbox to \onepoint
+%    \egroup
+%    \global\setbox\b_strc_floats_separate_content\vpack
+%      {\unvbox\b_strc_floats_separate_content
+%       \setbox\scratchbox\lastbox
+%       \unvbox\scratchbox}%
+%    \global\setbox\b_strc_floats_separate_caption\tpack
+%      {\unvbox\b_strc_floats_separate_caption
+%       \setbox\scratchbox\lastbox
+%       \unvbox\scratchbox}}
+
+\def\strc_floats_build_box_separate_make
+  {\savebox\??localfloatstack{\number\numexpr\c_strc_localfloats_n+1\relax:a}{\box\b_strc_floats_content}%
+   \savebox\??localfloatstack{\number\numexpr\c_strc_localfloats_n+1\relax:b}{\box\b_strc_floats_caption}}
+
+\unexpanded\def\strc_floats_build_box_separate_split#1%
+  {\global\setbox\b_strc_floats_separate_content\vpack{\foundbox\??localfloatstack{\number#1:a}}%
+   \global\setbox\b_strc_floats_separate_caption\tpack{\foundbox\??localfloatstack{\number#1:b}}}
 
 % \def\strc_floats_build_box_step#1%
 %   {\doifdefined{\??floatbuilder#1}{\def\floatcaptionarrangement{#1}\quitcommalist}}

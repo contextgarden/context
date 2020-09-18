@@ -676,6 +676,12 @@
      \strc_itemgroups_insert_item_counter_indeed
    \fi}
 
+\installcorenamespace{itemstopper}
+
+\setvalue{\??itemstopper\v!yes    }{\itemgroupparameter\c!stopper}
+\setvalue{\??itemstopper\v!display}{\ifconditional\c_strc_itemgroups_inline\else\itemgroupparameter\c!stopper\fi}
+\setvalue{\??itemstopper\v!inline }{\ifconditional\c_strc_itemgroups_inline\itemgroupparameter\c!stopper\fi}
+
 \def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
   {\begingroup                                  % can be optimized ... best move some to strc-num
    \setupcounter
@@ -690,7 +696,7 @@
       \c!prefixconnector=\itemgroupparameter\c!prefixconnector,
       \c!criterium=\itemgroupparameter\c!criterium,
       \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
-      \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
+      \c!numberstopper=\begincsname\??itemstopper\itemgroupparameter\c!placestopper\endcsname,
       \c!numberconversionset=\v_strc_itemgroups_counter,
       \c!numbersegments=\currentitemgroupsegments]%
    % there will be a fixedconversion key
