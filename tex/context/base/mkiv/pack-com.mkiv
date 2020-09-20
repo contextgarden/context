@@ -517,7 +517,7 @@
 \installcorenamespace{combinationcaption}
 
 \def\pack_combinations_save_caption
-  {\ifdim\htdp\b_pack_combinations_caption>\zeropoint
+  {\ifdim\htdp\b_pack_combinations_caption>\d_pack_combinations_ht
      \global\d_pack_combinations_ht\htdp\b_pack_combinations_caption
    \fi
    \savebox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}{\box\b_pack_combinations_caption}}
@@ -536,7 +536,10 @@
    \crcr}
 
 \def\pack_combinations_flush_captions_yes
-  {\foundbox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}%
+  {\vpack to \d_pack_combinations_ht\bgroup
+     \foundbox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}%
+     \vss
+   \egroup
    \global\advance\c_pack_combinations_x\minusone
    \ifnum\c_pack_combinations_x>\zerocount % \c_pack_combinations_max
      \expandafter\pack_combinations_flush_captions_yes_followup
@@ -544,6 +547,7 @@
      \global\d_pack_combinations_ht\zeropoint
      \initializeboxstack{\??combinationcaption:\number-\c_pack_combinations_nesting}%
    \fi}
+
 
 \let\pack_combinations_flush_captions_nop\donothing
 

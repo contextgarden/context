@@ -929,31 +929,6 @@
 \letvalue{\??notepenalty\v!verystrict}\notepenaltyverystrict
 \letvalue{\??notepenalty             }\notepenaltytolerant
 
-% \def\strc_notes_set_width
-%   {\edef\p_width{\noteparameter\c!width}%
-%    \ifx\p_width\empty
-%      \setnoteparameter\c!width{\hsize}%
-%    \fi}
-
-\setupnotes
-  [\c!width=\v!auto]
-
-\def\strc_notes_set_width
-  {\ifinsidemulticolumns
-     \setnoteparameter\c!width{\makeupwidth}%
-   \else
-     \edef\p_width{\noteparameter\c!width}%
-     \ifx\p_width\v!auto
-       \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
-     \else\ifx\p_width\empty
-       \setnoteparameter\c!width{\hsize}%
-     \fi\fi
-  \fi}
-
-\appendtoks
-    \strc_notes_set_width
-\to \everysynchronizenote
-
 %D The following switch can be used to disable limiting the height of the footnote
 %D area, something that is needed in multi column balancing. Use this switch with
 %D care.
@@ -1216,12 +1191,6 @@
      \kern\strutdepth
    \fi}
 
-\ifdefined\setnotehsize \else
-
-  \unexpanded\def\setnotehsize{\hsize\noteparameter\c!width\relax} % can be overloaded
-
-\fi
-
 %D The formatting depends on the width of the table, so we have to set \type {n} to
 %D zero.
 %D
@@ -1407,12 +1376,31 @@
 %     \setfalse\inhibitmargindata
 % \to \everyinsidenoteinsert
 
+\setupnotes
+  [\c!width=\v!auto]
+
+\unexpanded\def\setnotehsize
+  {\ifinsidemulticolumns
+     \setnoteparameter\c!width{\makeupwidth}%
+   \else
+     \edef\p_width{\noteparameter\c!width}%
+     \ifx\p_width\v!auto
+     % \ifinsidecolumns
+         \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
+     % \else
+     %   \setnoteparameter\c!width{\makeupwidth}%
+     % \fi
+     \else\ifx\p_width\empty
+       \setnoteparameter\c!width{\hsize}%
+     \fi\fi
+  \fi
+  \hsize\noteparameter\c!width\relax}
+
 \appendtoks
     % only needed when columns (could be three \set...)
+    \setnotehsize
     \setsimplecolumnshsize[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
 \to \everyinsidenoteinsert
-
-% not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
 
 %D Normally footnotes are saved as inserts that are called upon as soon as the
 %D pagebody is constructed. The footnote insertion routine looks just like the
@@ -1502,9 +1490,12 @@
    \obeydepth} % (a) added , since split footnotes will not align properly
 
 \def\strc_notes_flush_inserts_columns
-  {\startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
+  {\begingroup
+   \setnotehsize % probably still not ok for columns
+   \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
      \strc_notes_flush_global
-   \stopsimplecolumns}
+   \stopsimplecolumns
+   \endgroup}
 
 % idea: tag with attr and then just flush them again
 

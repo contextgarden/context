@@ -92,7 +92,7 @@
        \adjustspacingshrink \expansionparameter\c!shrink\relax}%
 \to \everydefineexpansion
 
-\defineexpansion
+\setupexpansion
   [\c!step=1,
    \c!stretch=40,
    \c!shrink=20]
