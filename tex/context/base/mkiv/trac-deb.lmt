@@ -119,7 +119,7 @@ do
     local writenl      = texio.write_nl
     local write        = texio.write
 
-    local runtoks      = tex.runtoks
+    local runlocal     = tex.runlocal
     local terminaldata = false
     local context      = context
 
@@ -140,7 +140,7 @@ do
                 terminaldata = false
                 break
             else
-                runtoks("t_syst_terminal_data",nil,nil,true) -- obeymode
+                runlocal("t_syst_terminal_data",nil,nil,true) -- obeymode
             end
         end
     end
@@ -284,7 +284,11 @@ function tracers.printerror(specification)
         local offset       = specification.offset
         local endoffile    = specification.endoffile
         local report       = errorreporter(luaerrorline)
-        if errortype == errorvalues.eof then
+        if errortype == errorvalues.warning then
+            report("warning error: %s",lasttexerror or "-")
+            busy = false;
+            return;
+        elseif errortype == errorvalues.eof then
             report("runaway error: %s",lasttexerror or "-")
             if not quitonerror and texio.terminal then
                 texio.terminal() -- not well tested
@@ -377,7 +381,7 @@ directives.register("system.errorcontext", function(v)
         register('show_error_message',   nop)
         register('show_warning_message', function()         processwarning(v)   end)
         register('intercept_lua_error',  function()         processerror(v)     end)
-        register('intercept_tex_error',  function(mode,eof) processerror(v,eof) end)
+        register('intercept_tex_error',  function(mode,eof) processerror(v,eof) return mode end)
     else
         register('show_error_message',   nil)
         register('show_warning_message', nil)

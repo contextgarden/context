@@ -32,17 +32,18 @@
 
 \ifdefined\defineoverlay \else \message{loaded to early} \wait \fi
 
-\unexpanded\def\defineoverlay
-  {\dotripleempty\pack_framed_define_overlay}
+\pushoverloadmode
 
-\def\pack_framed_define_overlay[#1][#2][#3]% overlay [layer] content
-  {\ifthirdargument
+\permanent\overloaded\tolerant\protected\def\defineoverlay[#1]#*[#2]#*[#3]% overlay [layer] content
+  {\ifnum\lastarguments=\plusthree
     %\writestatus{BEWARE}{This (overlay definition) has changed!}% temp
      \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}%
    \else
      \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
    \fi
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
+
+\popoverloadmode
 
 %D We use the command handler code. The previous, more direct parameter handling was
 %D 25\% faster when no parameters were passed when adding content to a layer.
@@ -130,7 +131,7 @@
 \newconditional\c_pack_layers_trace
 \newcount      \c_pack_layers_current_data
 
-\newbox\b_layers
+\newbox\b_layers \pushoverloadmode \mutable\let\b_layers\b_layers \popoverloadmode
 
 \newdimen\d_pack_layers_x_size
 \newdimen\d_pack_layers_y_size
@@ -178,7 +179,7 @@
      \global\setbox\lastnamedcs\emptybox
    \fi}
 
-\def\resetlayer[#1]%
+\permanent\protected\def\resetlayer[#1]%
   {\pack_layers_reset_box{#1}%
    \pack_layers_reset_box{\v!left #1}%
    \pack_layers_reset_box{\v!right#1}%
@@ -195,37 +196,33 @@
 %D \setlayer [identifier] [optional parameters] {data}
 %D \stoptyping
 
-\def\setcurrentlayerdimensions
-  {\dodoubleempty\pack_layers_set_current_dimensions}
-
-\def\pack_layers_set_current_dimensions[#1][#2]% name left|right
+\permanent\tolerant\protected\def\setcurrentlayerdimensions[#1]#*[#2]% name left|right
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
    \edef\currentlayerheight{\thelayerheight{#2#1}}}
 
-\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\lastnamedcs\else\zeropoint\fi}
-\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\lastnamedcs\else\zeropoint\fi}
+\permanent\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\lastnamedcs\else\zeropoint\fi}
+\permanent\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\lastnamedcs\else\zeropoint\fi}
 
-\unexpanded\def\setlayer
-  {\dotripleempty\pack_layers_set}
-
-\def\pack_layers_set[#1][#2][#3]% #4 == box do \fi is ok
+\permanent\tolerant\protected\def\setlayer[#1]#*[#2]#*[#3]% #4 == box do \fi is ok
   {\bgroup
+   \nofarguments\lastarguments
    \checkpositionoverlays % otherwise funny regions
    \edef\currentlayer{#1}%
    \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
      \dowithnextboxcs\egroup\hbox % no pack ?
-   \orelse\ifthirdargument
-     \pack_layers_set_indeed[#1][#2][#3]%
+   \orelse\ifnum\nofarguments=\plusthree
+     \edef\m_pack_layers_target{#2}%
+     \pack_layers_set_indeed{#3}%
+   \orelse\ifhastok={#2}%
+     \let\m_pack_layers_target\empty
+     \pack_layers_set_indeed{#2}%
    \else
-      \ifcondition\validassignment{#2}%
-        \pack_layers_set_indeed[#1][][#2]%
-      \else
-        \pack_layers_set_indeed[#1][#2][]%
-      \fi
+     \edef\m_pack_layers_target{#2}%
+     \pack_layers_set_indeed\empty
    \fi}
 
-\def\pack_layers_set_indeed[#1][#2][#3]% #2 = links/rechts
+\def\pack_layers_set_indeed#1%
   {\page_backgrounds_recalculate % brrr
    \global\advance\c_pack_layers_current_data\plusone
    \forgetall
@@ -235,8 +232,7 @@
      \settrue\c_pack_layers_trace
      \traceboxplacementtrue
    \fi
-   \edef\m_pack_layers_target{#2}%
-   \dowithnextbox{\pack_layers_set_finish{#3}}\hbox}
+   \dowithnextbox{\pack_layers_set_finish{#1}}\hbox}
 
 \def\pack_layers_set_finish#1%
   {\ifcsname\??layerbox\currentlayer\endcsname % can move up
@@ -295,13 +291,15 @@
    \doifinset\v!middle\p_pack_layers_corner\pack_layers_set_middle_positions
    \edef\m_pack_layers_page{\layerparameter\c!page}}
 
-\unexpanded\def\definelayerpreset
-  {\dodoubleargument\pack_layers_define_preset}
-
-\def\pack_layers_define_preset[#1][#2]%
-  {\doifelseassignment{#2}
-     {\setvalue{\??layerpreset#1}{\setupcurrentlayer[#2]}}
-     {\setvalue{\??layerpreset#1}{\csname\??layerpreset#2\endcsname}}}
+\permanent\tolerant\protected\def\definelayerpreset[#1]#*[#2]%
+  {\ifarguments
+   \or
+     \letvalue{\??layerpreset#1}\empty
+   \orelse\ifhastok={#2}%
+     \setvalue{\??layerpreset#1}{\setupcurrentlayer[#2]}%
+   \else
+     \setvalue{\??layerpreset#1}{\csname\??layerpreset#2\endcsname}%
+   \fi}
 
 \def\pack_layers_set_content#1%
   {\layerwidth \layerparameter\c!width  % global (local later)
@@ -477,7 +475,7 @@
 %D \macros
 %D  {doifelselayerdata}
 
-\def\doifelselayerdata#1%
+\permanent\def\doifelselayerdata#1%
   {\ifcsname\??layerbox#1\endcsname
     %\ifvoid\csname\??layerbox#1\endcsname
      \ifvoid\lastnamedcs
@@ -500,7 +498,7 @@
 
 % todo: setups before flush, handy hook
 
-\unexpanded\def\flushlayer[#1]% quite core, so optimized (todo: check for void)
+\permanent\protected\def\flushlayer[#1]% quite core, so optimized (todo: check for void)
   {\begingroup
    \forgetall
    \edef\currentlayer{#1}%
@@ -529,21 +527,7 @@
    \fi
    \endgroup}
 
-% \def\pack_layers_flush_single
-%   {\startoverlay
-%      {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone   \currentlayer                 \fi}%
-%      {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\fi}%
-%    \stopoverlay}
-%
-% \def\pack_layers_flush_double#1%
-%   {\startoverlay
-%      {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone     \currentlayer                 \fi}%
-%      {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount  {\currentlayer:\the\realpageno}\fi}%
-%      {\ifcsname\??layerbox#1\currentlayer                \endcsname\pack_layers_flush_indeed\plusone  {#1\currentlayer                }\fi}%
-%      {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\fi}%
-%    \stopoverlay}
-
-% optimized:
+% optimized
 
 \def\pack_layers_flush_single
   {\ifcsname\??layerbox\currentlayer\endcsname
@@ -606,7 +590,6 @@
 \let\pack_layers_top_fill   \relax
 \let\pack_layers_bottom_fill\vss
 
-%def\pack_layers_flush_indeed#1#2%
 \def\pack_layers_flush_indeed#1#2#3%
   {\begingroup % already grouped
    \offinterlineskip
@@ -705,9 +688,9 @@
 %D This is a handy shortcut, which saves a couple of braces when we use it as
 %D parameter. This name also suits better to other layering commands.
 
-\unexpanded\def\composedlayer#1{\flushlayer[#1]}
+\permanent\protected\def\composedlayer#1{\flushlayer[#1]}
 
-\unexpanded\def\tightlayer[#1]%
+\permanent\protected\def\tightlayer[#1]%
   {\hpack
      {\def\currentlayer{#1}% todo: left/right
       \setbox\nextbox\emptybox
@@ -747,21 +730,15 @@
 %D   {\useMPgraphic{oeps}}
 %D \stoptyping
 
-\unexpanded\def\setMPlayer
-  {\dotripleempty\pack_layers_set_MP}
-
 \def\MPlayerwidth {\hsize}
 \def\MPlayerheight{\vsize}
 
-\def\pack_layers_set_MP[#1][#2][#3]%
+\permanent\tolerant\protected\def\setMPlayer[#1]#*[#2]#*[#3]%
   {\edef\MPlayerwidth {\MPw{#2}}%
    \edef\MPlayerheight{\MPh{#2}}%
    \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!position=\v!no,#3]}
 
-\unexpanded\def\getMPlayer
-  {\dodoubleempty\pack_layers_get_MP}
-
-\def\pack_layers_get_MP[#1][#2]%
+\permanent\tolerant\protected\def\getMPlayer[#1]#*[#2]%
   {\framed[\c!background={\v!foreground,#1},\c!frame=\v!off,\c!offset=\v!overlay,#2]} % takes argument
 
 %D Watch out, a redefinition:
@@ -778,9 +755,11 @@
   [\c!width=\innermakeupwidth,
    \c!height=\textheight]
 
-\let\normalsettextpagecontent\settextpagecontent % will be overloaded in page-spr
+\aliased\let\normalsettextpagecontent\settextpagecontent % will be overloaded in page-spr
 
-\unexpanded\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+\overloaded\aliased\let\normalsettextpagecontent\settextpagecontent % will be overloaded in page-spr
+
+\permanent\overloaded\protected\def\settextpagecontent#1#2#3% #2 and #3 will disappear
   {\doifelselayerdata{OTRTEXT}
      {\setbox#1\hpack to \makeupwidth
         {\startoverlay

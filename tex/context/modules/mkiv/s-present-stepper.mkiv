@@ -189,7 +189,7 @@
   {\setups[fonts:normalize]
    \resetsetups[fonts:normalize]
    \startstandardmakeup[headerstate=high]
-     \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
+     \enforced\protected\def\\{\enforced\protected\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
      #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
    \stopstandardmakeup}
 

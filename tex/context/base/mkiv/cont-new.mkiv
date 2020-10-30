@@ -13,7 +13,7 @@
 
 % \normalend % uncomment this to get the real base runtime
 
-\newcontextversion{2020.09.20 22:59}
+\newcontextversion{2020.10.30 22:24}
 
 %D This file is loaded at runtime, thereby providing an excellent place for hacks,
 %D patches, extensions and new features. There can be local overloads in cont-loc
@@ -35,9 +35,15 @@
 \ifdefined\w \else \unexpanded\def\w{\mathortext\word\mathword} \fi
 
 \appendtoks
-    \let\t\mathtext
-    \let\w\mathword
+    \overloaded\let\t\mathtext
+    \overloaded\let\w\mathword
 \to \everymathematics
+
+\pushoverloadmode
+    % charts needs these
+    \overloaded\unletfrozen\name % for now
+    \overloaded\frozen\let\type\type
+\popoverloadmode
 
 %D We're done.
 

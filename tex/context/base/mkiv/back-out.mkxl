@@ -13,11 +13,10 @@
 
 \registerctxluafile{back-out}{autosuffix}
 
-\let\normalimmediate\immediate
-\let\normalopenout  \openout
-\let\normalwrite    \write
-\let\normalcloseout \closeout
-\let\normallatelua  \latelua
-\let\normalspecial  \special
+\let\normalopenout \openout
+\let\normalwrite   \write
+\let\normalcloseout\closeout
+\let\normallatelua \latelua
+\let\normalspecial \special
 
 \endinput

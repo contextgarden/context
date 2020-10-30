@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['syst-aux'] = {
+    if not modules then modules = { } end modules ['syst-aux'] = {
     version   = 1.001,
     comment   = "companion to syst-aux.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -233,12 +233,12 @@ local dargument = (double * digit)^1
 
 -- third variant:
 
-local global      = nil
-local unexpanded  = nil
-local expanded    = nil
-local optional    = nil
-local csname      = nil
-local rest        = nil
+local global     = nil
+local unexpanded = nil
+local expanded   = nil
+local optional   = nil
+local csname     = nil
+local rest       = nil
 
 local function catcodes_s()
     setcatcode(32,10) -- space
@@ -262,13 +262,40 @@ local option = (
       + P("sixtuple")
   ) * (P("empty") + P("argument"))
 
+-- local pattern = (
+--              ( P("spaces")     * space / catcodes_s )^0
+--   * spaces * ( P("nospaces")   * space / catcodes_n )^0
+--   * spaces * ( P("global")     * space * Cc(true) + Cc(false) )
+--   * spaces * ( P("unexpanded") * space * Cc(true) + Cc(false) )
+--   * spaces * ( P("expanded")   * space * Cc(true) + Cc(false) )
+--   * spaces * ( C(option)       * space + Cc(false) )
+--   * spaces * ( C((1-S(" #["))^1) )
+--   * spaces *   Cs(
+--         ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
+--       + ( P("[") * sargument * P("]") + sargument)^1 * sentinel^-1 * single^-1
+--       + sentinel^-1 * (double+single)^-1
+--     )
+-- )
+--
+-- local ctx_dostarttexdefinition = context.dostarttexdefinition
+--
+-- local function texdefinition_one(str)
+--     global, unexpanded, expanded, optional, csname, rest = lpegmatch(pattern,str)
+--     ctx_dostarttexdefinition()
+-- end
+
 local pattern = (
-             ( P("spaces")     * space / catcodes_s )^0
-  * spaces * ( P("nospaces")   * space / catcodes_n )^0
-  * spaces * ( P("global")     * space * Cc(true) + Cc(false) )
-  * spaces * ( P("unexpanded") * space * Cc(true) + Cc(false) )
-  * spaces * ( P("expanded")   * space * Cc(true) + Cc(false) )
-  * spaces * ( C(option)       * space + Cc(false) )
+    (
+        spaces * (
+            ( P("spaces")     * space / catcodes_s )
+          + ( P("nospaces")   * space / catcodes_n )
+          + ( P("global")     * space / function()  global     = true end )
+          + ( P("unexpanded") * space / function()  unexpanded = true end )
+          + ( P("protected")  * space / function()  unexpanded = true end )
+          + ( P("expanded")   * space / function()  expanded   = true end )
+          + ( C(option)       * space / function(s) optional   = s    end )
+        )
+    )^0
   * spaces * ( C((1-S(" #["))^1) )
   * spaces *   Cs(
         ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
@@ -280,40 +307,29 @@ local pattern = (
 local ctx_dostarttexdefinition = context.dostarttexdefinition
 
 local function texdefinition_one(str)
-    global, unexpanded, expanded, optional, csname, rest = lpegmatch(pattern,str)
+    global     = false
+    unexpanded = false
+    expanded   = false
+    optional   = false
+    csname, rest = lpegmatch(pattern,str)
     ctx_dostarttexdefinition()
 end
 
 local function texdefinition_two()
     if optional then
         context (
-            [[\unexpanded\expandafter]] ..
-            (global and [[\xdef]] or [[\edef]]) ..
-            [[\csname ]] ..
-            csname ..
-            [[\endcsname{\expandafter\noexpand\expandafter\do]] ..
-            optional ..
-            [[\csname _do_]] ..
-            csname ..
-         -- [[_\endcsname}\unexpanded\expandafter]] ..
-            [[_\endcsname}\expandafter]] ..
-            (global and [[\gdef]] or  [[\edef]]) ..
-            [[\csname _do_]] ..
-            csname ..
-            [[_\endcsname ]] ..
+            (unexpanded and [[\unexpanded]] or "") ..
+            [[\expandafter]] .. (global and [[\xdef]] or [[\edef]]) ..
+            [[\csname ]] .. csname .. [[\endcsname{\expandafter\noexpand\expandafter\do]] .. optional ..
+            [[\csname _do_]] .. csname .. [[_\endcsname}\expandafter]] .. (global and [[\gdef]] or  [[\edef]]) ..
+            [[\csname _do_]] .. csname .. [[_\endcsname ]] ..
             rest
         )
     else
         context (
-            [[\unexpanded\expandafter]] ..
-            ( global and (
-                expanded and [[\xdef]] or [[\gdef]]
-              ) or (
-                expanded and [[\edef]] or [[\def]]
-            ) ) ..
-            [[\csname ]] ..
-            csname ..
-            [[\endcsname ]] ..
+            (unexpanded and [[\unexpanded]] or "") ..
+            [[\expandafter]] .. (global and (expanded and [[\xdef]] or [[\gdef]]) or (expanded and [[\edef]] or [[\def]])) ..
+            [[\csname ]] .. csname .. [[\endcsname ]] ..
             rest
         )
     end

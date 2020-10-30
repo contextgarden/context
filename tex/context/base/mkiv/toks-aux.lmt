@@ -5,113 +5,172 @@ if not modules then modules = { } end modules ['toks-aux'] = {
     license   = "see context related readme files"
 }
 
-if CONTEXTLMTXMODE > 0 then
+local type, tostring = type, tostring
+local max = math.max
+local formatters, gsub, char = string.formatters, string.gsub, string.char
+local concat = table.concat
 
-    local type, tostring = type, tostring
-    local max = math.max
-    local formatters, gsub = string.formatters, string.gsub
+local function flags(t)
+    if type(t) == "string" then
+        t = token.create(t)
+    end
+    local r = { }
+    if t.frozen    then r[#r+1] = "frozen"    end
+    if t.permanent then r[#r+1] = "permanent" end
+    if t.immutable then r[#r+1] = "immutable" end
+    if t.primitive then r[#r+1] = "primitive" end
+    if t.mutable   then r[#r+1] = "mutable"   end
+    if t.noaligned then r[#r+1] = "noaligned" end
+    if t.instance  then r[#r+1] = "instance"  end
+    if t.tolerant  then r[#r+1] = "tolerant"  end
+    if t.protected then r[#r+1] = "protected" end
+    return r
+end
 
-    interfaces.implement {
-        name      = "showluatokens",
-        public    = true,
-        protected = true,
-        actions   = function()
-            local f0 = formatters["%s: %s"]
-            local nl = logs.newline
-            local wr = logs.writer
-            local t  = token.peek_next() -- local t = token.scan_next() token.put_back(t)
-            local n  = ""
-            local w  = ""
-            local c  = t.cmdname
-            if c == "left_brace" then
-                w = "given token list"
-                t = token.scan_toks(false)
-            elseif c == "register_toks" then
-                token.scan_next()
-                w = "token register"
-                n = t.csname or t.index
-                t = tex.gettoks(n,true)
-            elseif c == "internal_toks" then
-                token.scan_next()
-                w = "internal token variable"
-                n = t.csname or t.index
-                t = tex.gettoks(n,true)
+tokens.flags= flags
+
+interfaces.implement {
+    name      = "showluatokens",
+    public    = true,
+    protected = true,
+    actions   = function()
+        local f0 = formatters["%s: %s"]
+        local nl = logs.newline
+        local wr = logs.writer
+        local t  = token.peek_next() -- local t = token.scan_next() token.put_back(t)
+        local n  = ""
+        local w  = ""
+        local c  = t.cmdname
+        if c == "left_brace" then
+            w = "given token list"
+            t = token.scan_toks(false)
+        elseif c == "register_toks" then
+            token.scan_next()
+            w = "token register"
+            n = t.csname or t.index
+            t = tex.gettoks(n,true)
+        elseif c == "internal_toks" then
+            token.scan_next()
+            w = "internal token variable"
+            n = t.csname or t.index
+            t = tex.gettoks(n,true)
+        else
+            n = token.scan_csname()
+            local r = flags(t)
+            local m = token.get_meaning(n,true)
+            r[#r+1] = "control sequence"
+            if type(m) == "table" then
+                t = m
             else
-                if t.protected then
-                    w = "protected control sequence"
-                else
-                    w = "control sequence"
-                end
-                n = token.scan_csname()
-                t = token.get_meaning(n,true)
+                t = { t }
             end
-            wr(f0(w,n))
-            nl()
-            if type(t) == "table" then
-                local w1 = 4
-                local w2 = 1
-                local w3 = 3
-                local w4 = 3
-                for i=1,#t do
-                    local ti = t[i]
-                    w1 = max(w1,#tostring(ti.id))
-                    w2 = max(w2,#tostring(ti.command))
-                    w3 = max(w3,#tostring(ti.index))
-                    w4 = max(w4,#ti.cmdname)
+            w = concat(r, " ")
+        end
+        wr(f0(w,n))
+        nl()
+        if type(t) == "table" then
+            local w1 = 4
+            local w2 = 1
+            local w3 = 3
+            local w4 = 3
+            for i=1,#t do
+                local ti = t[i]
+                w1 = max(w1,#tostring(ti.id))
+                w2 = max(w2,#tostring(ti.command))
+                w3 = max(w3,#tostring(ti.index))
+                w4 = max(w4,#ti.cmdname)
+            end
+            local f1 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"]
+            local f2 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"]
+            local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
+            for i=1,#t do
+                local ti = t[i]
+                local cs = ti.csname
+                local id = ti.id
+                local ix = ti.index
+                local cd = ti.command
+                local cn = ti.cmdname
+                if cn == "prefix" and not cs then
+                    cs = "always enforced"
                 end
-                local f1 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"]
-                local f2 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"]
-                local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
-                for i=1,#t do
-                    local ti = t[i]
-                    local cs = ti.csname
-                    local id = ti.id
-                    local ix = ti.index
-                    local cd = ti.command
-                    local cn = gsub(ti.cmdname,"_"," ")
-                    if cs then
-                        wr(f1(id,cd,ix,cn,cs))
-                    elseif cn == "letter" or cn == "other_char" then
-                        wr(f3(id,cd,ix,cn,ix))
-                    else
-                        wr(f2(id,cd,ix,cn))
-                        if cn == "end_match" then
-                            wr("-------")
-                        end
+                cn = gsub(cn,"_"," ")
+                if cs then
+                    wr(f1(id,cd,ix,cn,cs))
+                elseif cn == "letter" or cn == "other char" then
+                    wr(f3(id,cd,ix,cn,ix))
+                elseif cn == "match" then
+                    local s
+                        if ix == 32 then s = "optional spacer"     -- space
+                    elseif ix == 42 then s = "skip spaces"         -- *
+                    elseif ix == 43 then s = "keep braces"         -- +
+                    elseif ix == 45 then s = "thrash"              -- -
+                    elseif ix == 47 then s = "prune"               -- /
+                    elseif ix == 58 then s = "continue"            -- :
+                    elseif ix == 59 then s = "quit"                -- ;
+                    elseif ix == 61 then s = "mandate braces"      -- =
+                    elseif ix == 94 then s = "keep spaces"         -- ^
+                    elseif ix == 95 then s = "keep mandate braces" -- _
+                    else                 s = "argument " .. char(ix)
+                    end
+                    wr(f1(id,cd,ix,cn,s))
+                else
+                    wr(f2(id,cd,ix,cn))
+                    if cn == "end match" then
+                        wr("--------------")
                     end
                 end
-                nl()
             end
+            nl()
         end
-    }
-
-    -- For the moment here, will move to initex only (also see node-ini.lua); we need
-    -- to actually store these.
-
-    local groupcodes       = { }
-    local hyphenationcodes = { }
-
-    for k, v in next, tex.getgroupvalues() do
-        groupcodes[k] = gsub(v,"_","")
     end
-    for k, v in next, tex.gethyphenationvalues() do
-        hyphenationcodes[k] = gsub(v,"_","")
-    end
+}
 
-    if environment.initex then
+-- For the moment here, will move to initex only (also see node-ini.lua); we need
+-- to actually store these.
 
-        local texchardef = tex.chardef
+local groupcodes       = { }
+local glyphoptioncodes = { }
+local hyphenationcodes = { }
+local frozenparcodes   = { }
+local flagcodes        = { }
 
-     -- for k, v in next, prefixcodes      do texchardef(v .. "prefixcode",         k) end
-        for k, v in next, groupcodes       do texchardef(v .. "groupcode",          k) end
-        for k, v in next, hyphenationcodes do texchardef(v .. "hyphenationmodecode",k) end
+for k, v in next, tex.getgroupvalues() do
+    groupcodes[k] = gsub(v,"[_ ]","")
+end
+for k, v in next, tex.gethyphenationvalues() do
+    hyphenationcodes[k] = gsub(v,"[_ ]","")
+end
+for k, v in next, tex.getglyphoptionvalues() do
+    glyphoptioncodes[k] = gsub(v,"[_ ]","")
+end
+for k, v in next, tex.getfrozenparvalues() do
+    frozenparcodes[k] = gsub(v,"[_ ]","")
+end
+for k, v in next, tex.getflagvalues() do
+    flagcodes[k] = gsub(v,"[_ ]","")
+end
 
-    end
 
-    groupcodes           = utilities.storage.allocate(table.swapped(groupcodes,      groupcodes))
-    hyphenationcodes     = utilities.storage.allocate(table.swapped(hyphenationcodes,hyphenationcodescodes))
+if environment.initex then
 
-    tex.groupcodes       = groupcodes
-    tex.hyphenationcodes = hyphenationcodes
+    local texintegerdef = tex.integerdef
+
+    for k, v in next, groupcodes       do texintegerdef(v .. "groupcode",          k,"immutable") end
+    for k, v in next, glyphoptioncodes do texintegerdef(v .. "code",               k,"immutable") end
+    for k, v in next, hyphenationcodes do texintegerdef(v .. "hyphenationmodecode",k,"immutable") end
+    for k, v in next, frozenparcodes   do texintegerdef("frozen" .. v .. "code",   k,"immutable") end
+    for k, v in next, flagcodes        do texintegerdef(v .. "flagcode",           k,"immutable") end
 
 end
+
+groupcodes           = utilities.storage.allocate(table.swapped(groupcodes,      groupcodes))
+glyphoptioncodes     = utilities.storage.allocate(table.swapped(glyphoptioncodes,glyphoptioncodes))
+hyphenationcodes     = utilities.storage.allocate(table.swapped(hyphenationcodes,hyphenationcodes))
+frozenparcodes       = utilities.storage.allocate(table.swapped(frozenparcodes,  frozenparcodes))
+flagcodes            = utilities.storage.allocate(table.swapped(flagcodes,       flagcodes))
+
+tex.groupcodes       = groupcodes
+tex.glyphoptioncodes = glyphoptioncodes
+tex.hyphenationcodes = hyphenationcodes
+tex.frozenparcodes   = frozenparcodes
+tex.flagcodes        = flagcodes

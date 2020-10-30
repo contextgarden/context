@@ -77,9 +77,12 @@
 
 \installcommandhandler \??pagestate {pagestate} \??pagestate
 
+% \def\syst_pagestates_allocate
+%   {\expandafter\newcount\csname\??pagestatecounter\currentpagestate\endcsname
+%    \expandafter\let\expandafter\c_syst_pagestate\csname\??pagestatecounter\currentpagestate\endcsname}
+
 \def\syst_pagestates_allocate
-  {\expandafter\newcount\csname\??pagestatecounter\currentpagestate\endcsname
-   \expandafter\let\expandafter\c_syst_pagestate\csname\??pagestatecounter\currentpagestate\endcsname}
+  {\expandafter\newcount\csname\??pagestatecounter\currentpagestate\endcsname}
 
 \appendtoks
     \syst_pagestates_allocate
@@ -91,19 +94,37 @@
 \unexpanded\def\setpagestate
   {\dodoubleempty\syst_pagestates_set}
 
+% \def\syst_pagestates_set[#1][#2]%
+%   {\begingroup
+%    \edef\currentpagestate{#1}%
+%    \ifcsname\??pagestatecounter\currentpagestate\endcsname
+%      \let\c_syst_pagestate\lastnamedcs
+%    \else
+%      \syst_pagestates_allocate
+%    \fi
+%    \global\advance\c_syst_pagestate\plusone
+%    \scratchcounter\lastnamedcs
+%    \clf_setpagestate
+%       name  {\currentpagestate}%
+%       tag   {\ifsecondargument#2\else\number\c_syst_pagestate\fi}%
+%       delay {\pagestateparameter\c!delay}%
+%    \relax
+%    \endgroup}
+
 \def\syst_pagestates_set[#1][#2]%
   {\begingroup
    \edef\currentpagestate{#1}%
    \ifcsname\??pagestatecounter\currentpagestate\endcsname
-     \let\c_syst_pagestate\lastnamedcs
+     \scratchcounter\lastnamedcs
+     \advance\scratchcounter\plusone
    \else
+     \scratchcounter\plusone
      \syst_pagestates_allocate
    \fi
-   \global\advance\c_syst_pagestate\plusone
-   \scratchcounter\lastnamedcs
+   \global\csname\??pagestatecounter\currentpagestate\endcsname\scratchcounter
    \clf_setpagestate
       name  {\currentpagestate}%
-      tag   {\ifsecondargument#2\else\number\c_syst_pagestate\fi}%
+      tag   {\ifsecondargument#2\else\number\scratchcounter\fi}%
       delay {\pagestateparameter\c!delay}%
    \relax
    \endgroup}

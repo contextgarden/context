@@ -38,6 +38,8 @@ local function limit(str,n)
     return str
 end
 
+-- todo: use setmacro
+
 function interfaces.setuserinterface(interface,response)
     local variables     = interfaces.variables
     local constants     = interfaces.constants

@@ -72,8 +72,8 @@ tokens.istoken         = is_token
 tokens.isdefined       = is_defined
 tokens.defined         = is_defined
 
-tokens.getdata         = token.get_data -- only lmtx
-tokens.setdata         = token.set_data -- only lmtx
+tokens.getinteger      = token.get_integer
+tokens.setinteger      = token.set_integer
 
 local bits = {
     escape      = 0x00000001, -- 2^00
@@ -296,8 +296,14 @@ if setinspector then
                     cmdname    = cmdname,
                     active     = t.active,
                     expandable = t.expandable,
-                    protected  = t.protected,
                     frozen     = t.frozen,
+                    tolerant   = t.tolerant,
+                    protected  = t.protected,
+                    primitive  = t.primitive,
+                    permanent  = t.permanent,
+                    noaligned  = t.noaligned,
+                    instance   = t.instance,
+                    immutable  = t.imutable,
                     user       = t.user,
                 }
             end

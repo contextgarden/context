@@ -48,7 +48,7 @@
 
 \let\strc_registers_setup_saved\setupregister
 
-\unexpanded\def\setupregister % maybe we should drop the plural form
+\unexpanded\overloaded\def\setupregister % maybe we should drop the plural form
   {\dotripleempty\strc_registers_setup}
 
 \def\strc_registers_setup[#1][#2][#3]%
@@ -618,7 +618,7 @@
      \edef\currentregister{\firstinset{#1}}%
      \the\everyplaceregister
      \ifnum\namedmixedcolumnsparameter\currentregister\c!n>\plusone
-       \startmixedcolumns[\currentregister]
+       \startmixedcolumns[\currentregister]%
          \strc_registers_place_indeed{#1}%
        \stopmixedcolumns
      \else

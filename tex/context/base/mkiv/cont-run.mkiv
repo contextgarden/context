@@ -53,4 +53,16 @@
 \unexpanded\def\blocksynctexfile[#1]%
   {\processcommacommand{#1}\synctexblockfilename}
 
+\ifcase\contextlmtxmode
+    \def\continuewhenlmtxmode
+      {\starttext
+       \startTEXpage[\c!offset=2ex,\c!foregroundstyle=\tttf]%
+          This file needs \LuaMetaTeX\ and \ConTeXt\ \LMTX.%
+       \stopTEXpage
+       \stoptext
+       \endinput}
+\else
+    \let\continuewhenlmtxmode\relax
+\fi
+
 \protect \endinput

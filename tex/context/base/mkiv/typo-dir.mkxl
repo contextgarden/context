@@ -33,18 +33,18 @@
 
 \installsimplecommandhandler \??directions {directions} \??directions % no \define... yet
 
-\edef\lefttorightmark{\normalUchar"200E} \let\lrm\lefttorightmark
-\edef\righttoleftmark{\normalUchar"200F} \let\rlm\righttoleftmark
+\permanent\edef\lefttorightmark{\normalUchar"200E} \let\lrm\lefttorightmark % expandable
+\permanent\edef\righttoleftmark{\normalUchar"200F} \let\rlm\righttoleftmark % expandable
 
-\unexpanded\def\setdirection[#1]% todo: symbolic names
+\permanent\protected\def\setdirection[#1]% todo: symbolic names
   {\clf_setdirection#1\relax}
 
-% \unexpanded\def\resetdirection
+% \protected\def\resetdirection
 %   {\clf_setdirection\zerocount}
 %
 % is in fact:
 
-\unexpanded\def\resetdirection
+\protected\def\resetdirection
   {\c_attr_directions\attributeunsetvalue}
 
 \newconstant\directionsbidimode % this one might become pivate
@@ -100,16 +100,16 @@
    \c!break=\v!both, % experimental value, maybe \v!no will be default (bad name too)
    \c!fences=\v!yes]
 
-\unexpanded\edef\bidilre{\normalUchar"202A}
-\unexpanded\edef\bidirle{\normalUchar"202B}
-\unexpanded\edef\bidipop{\normalUchar"202C}
-\unexpanded\edef\bidilro{\normalUchar"202D}
-\unexpanded\edef\bidirlo{\normalUchar"202E}
+\permanent\protected\edef\bidilre{\normalUchar"202A}
+\permanent\protected\edef\bidirle{\normalUchar"202B}
+\permanent\protected\edef\bidipop{\normalUchar"202C}
+\permanent\protected\edef\bidilro{\normalUchar"202D}
+\permanent\protected\edef\bidirlo{\normalUchar"202E}
 
-\unexpanded\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdirection\directionlefttoright\fi}
-\unexpanded\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdirection\directionrighttoleft\fi}
-\unexpanded\def\dirlro{\ifcase\directionsbidimode\or\bidilro\or\setdirection[3]\fi}
-\unexpanded\def\dirrlo{\ifcase\directionsbidimode\or\bidirlo\or\setdirection[4]\fi}
+\permanent\protected\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdirection\directionlefttoright\fi}
+\permanent\protected\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdirection\directionrighttoleft\fi}
+\permanent\protected\def\dirlro{\ifcase\directionsbidimode\or\bidilro\or\setdirection[3]\fi}
+\permanent\protected\def\dirrlo{\ifcase\directionsbidimode\or\bidirlo\or\setdirection[4]\fi}
 
 % for the moment: \setdirection[\plusone]
 
@@ -143,7 +143,7 @@
 %     end
 % \stopluacode
 %
-% \unexpanded\def\biditest#1#2#3% font text raw
+% \protected\def\biditest#1#2#3% font text raw
 %   {\dontleavehmode\hbox
 %     {\framed[offset=overlay]{\tttf#2}\quad
 %      \enabletrackers[typesetters.directions]%

@@ -29,7 +29,7 @@ local vlist_code    = nodecodes.vlist
 local glue_code     = nodecodes.glue
 local penalty_code  = nodecodes.penalty
 local glyph_code    = nodecodes.glyph
-local localpar_code = nodecodes.localpar
+local par_code      = nodecodes.par
 
 local indent_code   = nodes.listcodes.indent
 
@@ -854,7 +854,7 @@ implement {
                             b = getwidth(n) > 0
                             break
                         end
-                    elseif id ~= localpar_code then
+                    elseif id ~= par_code then
                         break
                     end
                 end

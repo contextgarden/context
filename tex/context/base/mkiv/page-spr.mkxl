@@ -1,0 +1,131 @@
+%D \module
+%D   [       file=page-spr,
+%D        version=2002.11.11,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Spreading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Spreading}
+
+% This module is experimental and not yet official!
+
+\unprotect
+
+\newbox        \b_page_spread_content
+\newconditional\c_page_spread_busy
+\newconditional\c_page_spread_once     % when true only one flush (writes etc)
+
+\permanent\overloaded\protected\def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
+  {\setbox#1\hpack
+     {\setlayoutcomponentattribute{\v!page:\v!text}%
+      \vpack \layoutcomponentboxattribute to \textheight
+        {\offinterlineskip
+         \freezetextwidth
+         \hsize\textwidth   % local variant of \sethsize
+         \boxmaxdepth\maxdepth
+         \noindent          % content can be < \hsize
+         \page_otr_command_package_contents#2#3}}%
+   \dp#1\zeropoint
+   \ifconditional\c_page_spread_busy
+      \normalsettextpagecontent_spread{#1}%
+   \else
+      \normalsettextpagecontent_normal{#1}%
+   \fi}
+
+\def\normalsettextpagecontent_normal#1%
+  {\ifdim\wd#1=\makeupwidth\else
+     \setbox#1\hpack to \makeupwidth
+       {\hss\box#1\hss}% never change the \hss's
+   \fi}
+
+\def\normalsettextpagecontent_spread#1%
+  {\setbox#1\hpack to \makeupwidth
+     {\ifvoid\b_page_spread_content
+        \ifconditional\c_page_spread_once
+          \box#1%
+        \else
+          \global\setbox\b_page_spread_content\box#1%
+          \copy\b_page_spread_content
+        \fi
+        \hss % left page
+      \else
+        \hss % right page
+        \ifarrangingpages
+          % writes don't matter anyway
+        \else\ifconditional\c_page_spread_once
+          \global\setbox\b_page_spread_content\emptyhbox
+          \wd\b_page_spread_content\makeupwidth
+          \ht\b_page_spread_content\textheight
+        \else
+          % writes can interfere (todo: write stripper, but how about hyperlinks)
+        \fi \fi
+        \box\b_page_spread_content
+      \fi}}
+
+\protected\def\page_spread_flush
+  {\ifconditional\c_page_spread_busy \ifvoid\b_page_spread_content\else
+     % this page will be discarded later
+     \emptyhbox \page
+   \fi \fi }
+
+\permanent\protected\def\startspread
+  {\ifdoublesided
+     \ifconditional\c_page_spread_busy
+       \doubleexpandafter\page_spread_start_nop
+     \else
+       \doubleexpandafter\page_spread_start_yes
+     \fi
+   \else
+     \expandafter\page_spread_start_nop
+   \fi}
+
+\let\stopspread\relax
+
+\protected\def\page_spread_start_yes
+  {\bgroup
+   \page[\v!left]%
+  %\setsystemmode{spread}%
+   \settrue\c_page_spread_busy
+   \expanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
+   \let\stopspread\page_spread_stop_yes}
+
+\protected\def\page_spread_stop_yes
+  {\kern\zeropoint
+   \page
+   \setuplayout[\c!textwidth=\textwidth]%
+   \page[\v!left]%
+   \egroup}
+
+\protected\def\page_spread_start_nop
+  {\bgroup
+   \let\stopspread\page_spread_stop_nop}
+
+\protected\def\page_spread_stop_nop
+  {\egroup}
+
+\protect \endinput
+
+% texexec --arr --pdf test
+%
+% \setuplayout[width=middle]
+% \setuppapersize[A4][A3,landscape]
+% \setuppagenumbering[alternative=doublesided]
+% \setuparranging[2UP]
+%
+% \starttext
+%
+% \dorecurse{3}{\input tufte }
+%
+% \startspread
+%   \dorecurse{10}{\input tufte }
+% \stopspread
+%
+% \dorecurse{3}{\input tufte }
+%
+% \stoptext

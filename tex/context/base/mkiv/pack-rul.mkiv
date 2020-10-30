@@ -2693,7 +2693,7 @@
     %  \edef\p_framed_text_strut{\letframedtextparameter\c!strut}% to be used
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
-         \let\\=\endgraf
+         \let\\\endgraf
          \edef\p_framed_text_depthcorrection{\framedtextparameter\c!depthcorrection}%
          \ifx\p_framed_text_depthcorrection\v!on
             \pack_framed_text_start_depth_correction
@@ -2814,7 +2814,7 @@
    \letframedtextparameter\c!strut\v!no
    \inheritedframedtextframed\bgroup
      \blank[\v!disable]%
-     \let\\=\endgraf
+     \let\\\endgraf
      \useframedtextstyleandcolor\c!style\c!color
      \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
      \framedtextparameter\c!inner
@@ -3006,8 +3006,6 @@
   [\v!medium]
 
 %D A Goodie:
-
-\def\v!unframed{unframed}
 
 \defineframed
   [\v!unframed]

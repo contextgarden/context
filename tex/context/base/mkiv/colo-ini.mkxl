@@ -11,9 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We need to clean this up further but first we have to make sure that mkiv
-%D code works ok.
-
 \writestatus{loading}{ConTeXt Color Macros / Initialization}
 
 %D Todo: move color space in color attribute (last two bits)
@@ -98,16 +95,7 @@
 %D \stopcombination
 %D \stoptyping
 
-\unexpanded\def\definecolor             {\dodoubleargument\colo_basics_define}
-\unexpanded\def\defineglobalcolor       {\dodoubleargument\colo_basics_define_global}
-\unexpanded\def\defineprocesscolor      {\dotripleargument\colo_basics_define_process}
-\unexpanded\def\definenamedcolor        {\dodoubleargument\colo_basics_define_named}
-\unexpanded\def\definespotcolor         {\dotripleargument\colo_basics_define_spot}
-\unexpanded\def\definemultitonecolor    {\doquadrupleempty\colo_basics_define_multitone}
-\unexpanded\def\definetransparency      {\dodoubleargument\colo_basics_define_transpancy}
-\unexpanded\def\defineglobaltransparency{\dodoubleargument\colo_basics_define_transpancy_global}
-
-\unexpanded\def\loadfoundcolorsetfile#1#2% name foundname / not a user command
+\permanent\protected\def\loadfoundcolorsetfile#1#2% name foundname / not a user command
   {\startreadingfile
    \startcolorset[#1]%
    \input{#2}%
@@ -135,11 +123,11 @@
 \let\g_color\empty
 \let\g_style\empty
 
-\unexpanded\def\switchtocolor[#1]{\begincsname#1\endcsname}
+\protected\def\switchtocolor[#1]{\begincsname#1\endcsname}
 
 % transparency
 
-\unexpanded\def\transparent[#1]%
+\permanent\protected\def\transparent[#1]%
   {\bgroup
    \edef\currenttransparencyname{#1}%
    % the \relax catches a non existent csname
@@ -150,7 +138,7 @@
    \fi
    \let\nexttoken}
 
-\unexpanded\def\starttransparent[#1]%$
+\permanent\protected\def\starttransparent[#1]%$
   {\begingroup
    \edef\currenttransparencyname{#1}%
    \ifx\currenttransparencyname\v!reset
@@ -159,12 +147,12 @@
      \begincsname\??transparencysetter\currenttransparencyname\endcsname\relax
    \fi}
 
-\unexpanded\def\stoptransparent
+\permanent\protected\def\stoptransparent
   {\endgroup}
 
 % color
 
-\unexpanded\def\coloronly[#1]%
+\permanent\protected\def\coloronly[#1]%
   {\bgroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
@@ -174,7 +162,7 @@
    \fi
    \let\nexttoken}
 
-\unexpanded\def\startcoloronly[#1]%$
+\permanent\protected\def\startcoloronly[#1]%$
   {\begingroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
@@ -183,12 +171,12 @@
      \colo_helpers_activate_yes_only
    \fi}
 
-\unexpanded\def\stopcoloronly
+\permanent\protected\def\stopcoloronly
   {\endgroup}
 
 % color + transparency
 
-\unexpanded\def\color[#1]%
+\permanent\protected\def\color[#1]%
   {\bgroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
@@ -198,12 +186,12 @@
    \fi
    \let\nexttoken}
 
-\unexpanded\def\graycolor[#1]%
+\permanent\protected\def\graycolor[#1]%
   {\bgroup
    \colo_helpers_set_model\s!gray\colo_helpers_activate{#1}%
    \let\nexttoken}
 
-\unexpanded\def\startcolor[#1]%$
+\permanent\protected\def\startcolor[#1]%$
   {\begingroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
@@ -212,24 +200,24 @@
      \colo_helpers_activate_yes
    \fi}
 
-\unexpanded\def\stopcolor
+\permanent\protected\def\stopcolor
   {\endgroup}
 
-\unexpanded\def\colored[#1]%
+\permanent\protected\def\colored[#1]%
   {\bgroup
    \colo_basics_defined_and_activated{#1}%
    \let\nexttoken}
 
-\unexpanded\def\fastcolored[#1]#2%
+\permanent\protected\def\fastcolored[#1]#2%
   {\begingroup % is this command still needed?
    \colo_basics_defined_and_activated{#1}%
    #2%
    \endgroup}
 
-\unexpanded\def\directcolored[#1]%
+\permanent\protected\def\directcolored[#1]%
   {\colo_basics_defined_and_activated{#1}}
 
-\unexpanded\def\fastcolor[#1]#2%
+\permanent\protected\def\fastcolor[#1]#2%
   {\begingroup % is this command still needed?
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
@@ -240,7 +228,7 @@
    #2%
    \endgroup}
 
-\unexpanded\def\directcolor[#1]%
+\permanent\protected\def\directcolor[#1]%
   {\edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
@@ -250,10 +238,10 @@
 
 %D The following command is obsolete:
 
-\unexpanded\def\startcolorpage{\startcolor[\ifempty\maintextcolor\defaulttextcolor\else\maintextcolor\fi]}
-\unexpanded\def\stopcolorpage {\stopcolor}
+\permanent\protected\def\startcolorpage{\startcolor[\ifempty\maintextcolor\defaulttextcolor\else\maintextcolor\fi]}
+\permanent\protected\def\stopcolorpage {\stopcolor}
 
-\unexpanded\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
+\permanent\protected\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup
    \colo_helpers_activate{#1}%
    \normalexpanded{\endgroup\edef\noexpand#2%
@@ -264,8 +252,8 @@
 %D \macros
 %D   {startcurrentcolor,stopcurrentcolor}
 
-\unexpanded\def\startcurrentcolor{\startcolor[\outercolorname]}
-\unexpanded\def\stopcurrentcolor {\stopcolor}
+\permanent\protected\def\startcurrentcolor{\startcolor[\outercolorname]}
+\permanent\protected\def\stopcurrentcolor {\stopcolor}
 
 %D \macros
 %D   {setupcolor}
@@ -290,9 +278,9 @@
 %D \usecolors[dem]
 %D \stoptyping
 
-\unexpanded\def\startcolorset[#1]{\clf_startcolorset{#1}}
-\unexpanded\def\stopcolorset     {\clf_stopcolorset}
-\unexpanded\def\usecolors    [#1]{\clf_usecolors{#1}}
+\permanent\protected\def\startcolorset[#1]{\clf_startcolorset{#1}}
+\permanent\protected\def\stopcolorset     {\clf_stopcolorset}
+\permanent\protected\def\usecolors    [#1]{\clf_usecolors{#1}}
 
 \let\setupcolor\usecolors
 
@@ -351,7 +339,7 @@
 
 \newcount\c_colo_nesting
 
-\unexpanded\def\pushcolor[#1]%
+\permanent\protected\def\pushcolor[#1]%
   {\global\advance\c_colo_nesting\plusone
    \expandafter\edef\csname\??colorstack\number\c_colo_nesting\endcsname
      {\c_attr_colormodel  \the\c_attr_colormodel
@@ -360,7 +348,7 @@
       \relax}% stack
    \colo_helpers_activate{#1}}
 
-\unexpanded\def\popcolor
+\permanent\protected\def\popcolor
   {\csname\??colorstack\number\c_colo_nesting\endcsname
    \global\advance\c_colo_nesting\minusone}
 
@@ -369,11 +357,11 @@
 \newcount\c_colo_saved_attribute_color
 \newcount\c_colo_saved_attribute_transparency
 
-\unexpanded\def\savecolor
+\permanent\protected\def\savecolor
   {\c_colo_saved_attribute_color       \c_attr_color
    \c_colo_saved_attribute_transparency\c_attr_transparency}
 
-\unexpanded\def\restorecolor
+\permanent\protected\def\restorecolor
   {\c_attr_color       \c_colo_saved_attribute_color
    \c_attr_transparency\c_colo_saved_attribute_transparency}
 
@@ -443,8 +431,10 @@
 \let\c_colo_palet\relax
 
 \def\colo_palet_allocate#1%
-  {\expandafter\let     \csname\??paletlist#1\endcsname\empty
-   \expandafter\newcount\csname\??paletsize#1\endcsname}
+  {\expandafter\let\csname\??paletlist#1\endcsname\empty
+   \ifcsname\??paletsize#1\endcsname\else
+     \expandafter\newcount\csname\??paletsize#1\endcsname
+   \fi}
 
 \def\colo_palet_prepare#1%
   {\edef\colo_palet_name{#1}%
@@ -453,15 +443,16 @@
    \else
      \colo_palet_allocate\colo_palet_name
    \fi
-   \edef\m_colo_palet{\begincsname\??paletlist\colo_palet_name\endcsname}%
-   \expandafter\let\expandafter\c_colo_palet\csname\??paletsize\colo_palet_name\endcsname}
+   \enforced\expandafter\let\expandafter\c_colo_palet\csname\??paletsize\colo_palet_name\endcsname
+   \edef\m_colo_palet{\begincsname\??paletlist\colo_palet_name\endcsname}}
 
 \def\colo_palet_extend#1%
   {\addtocommalist{#1}\m_colo_palet
    \expandafter\let\csname\??paletlist\colo_palet_name\endcsname\m_colo_palet
+  %\advance\csname\??paletsize\colo_palet_name\endcsname\plusone
    \advance\c_colo_palet\plusone}
 
-\unexpanded\def\doifelsecolorpalet#1%
+\permanent\protected\def\doifelsecolorpalet#1%
   {\ifcsname\??paletlist#1\endcsname
      \expandafter\firstoftwoarguments
    \else
@@ -471,40 +462,74 @@
 \let\paletlist\empty
 \let\paletsize\!!zerocount
 
-\unexpanded\def\getpaletlist[#1]%
+\permanent\protected\def\getpaletlist[#1]%
   {\edef\paletlist{\begincsname\??paletlist#1\endcsname}}
 
-\unexpanded\def\getpaletsize[#1]%
+\permanent\protected\def\getpaletsize[#1]%
   {\ifcsname\??paletsize#1\endcsname
      \edef\paletsize{\the\lastnamedcs}%
    \else
      \let\paletsize\!!zerocount
    \fi}
 
-\unexpanded\def\definepalet
-  {\dotripleempty\colo_palets_define}
+%% \protected\def\definepalet
+%%   {\dotripleempty\colo_palets_define}
+%%
+%% \def\colo_palets_define
+%%   {\ifthirdargument
+%%      \expandafter\colo_palets_define_b
+%%    \else
+%%      \expandafter\colo_palets_define_a
+%%    \fi}
+%%
+%% \protected\def\colo_palets_define_a[#1][#2][#3]%
+%% \protected\def\colo_palets_define_b[#1][#2][#3]%
 
-\def\colo_palets_define
-  {\ifthirdargument
-     \expandafter\colo_palets_define_b
-   \else
+\permanent\tolerant\protected\def\definepalet[#1]#*[#2]#*[#3]%
+  {\ifarguments
+     \expandafter\gobblethreearguments
+   \or
+     \expandafter\gobblethreearguments
+   \or
      \expandafter\colo_palets_define_a
-   \fi}
+   \or
+     \expandafter\colo_palets_define_b
+  \fi{#1}{#2}{#3}}
 
-\unexpanded\def\colo_palets_define_a[#1][#2][#3]%
+\protected\def\colo_palets_define_a#1#2#3%
   {\colo_palet_prepare{#1}%
    \ifcondition\validassignment{#2}%
      \setevalue{\??colorpaletspecification#1}{#2}%
      \processcommalist[#2]{\colo_palets_define_one{#1}}%
    \orelse\ifcsname\??colorpaletspecification#2\endcsname
-     \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
+     \normalexpanded{\colo_palets_define_b{#1}{\lastnamedcs}\empty}%
    \fi}
 
-\unexpanded\def\colo_palets_define_b[#1][#2][#3]%
+\protected\def\colo_palets_define_b#1#2#3%
   {\colo_palet_prepare{#1}%
    \setevalue{\??colorpaletspecification#1}{#2}%
    \colo_palet_extend{#2}%
    \colo_palets_define_assign{#1}{#2}{#3}}
+
+% % or, it being not that critital, just this
+%
+% \permanent\tolerant\protected\def\definepalet[#1]#*[#2]#*[#3]%
+%   {\ifarguments
+%    \or
+%    \or
+%      \colo_palet_prepare{#1}%
+%      \ifcondition\validassignment{#2}%
+%        \setevalue{\??colorpaletspecification#1}{#2}%
+%        \processcommalist[#2]{\colo_palets_define_one{#1}}%
+%      \orelse\ifcsname\??colorpaletspecification#2\endcsname
+%        \normalexpanded{\colo_palets_define_b{#1}{\lastnamedcs}{}}%
+%      \fi
+%    \or
+%      \colo_palet_prepare{#1}%
+%      \setevalue{\??colorpaletspecification#1}{#2}%
+%      \colo_palet_extend{#2}%
+%      \colo_palets_define_assign{#1}{#2}{#3}%
+%   \fi}
 
 \def\colo_palets_define_one#1#2% get rid of { }
   {\ifcondition\validassignment{#2}% catch empty entries
@@ -539,12 +564,9 @@
 
 \newtoks\everysetuppalet
 
-\unexpanded\def\setuppalet
-  {\dosingleempty\colo_palets_setup}
-
 % \newtoks\t_colo_prefix % used in mp interface
 
-\def\colo_palets_setup[#1]%
+\permanent\tolerant\protected\def\setuppalet[#1]%
   {\edef\currentcolorpalet{#1}%
    \ifempty\currentcolorpalet
      % seems to be a reset
@@ -631,10 +653,10 @@
 %D
 %D These speak for themselves. See \type {colo-ext} for usage.
 
-\unexpanded\def\negatecolorcomponent#1% #1 = \macro
+\permanent\protected\def\negatecolorcomponent#1% #1 = \macro
   {\edef#1{\clf_negatecolorcomponent{#1}}}
 
-\def\negatedcolorcomponent#1%
+\permanent\def\negatedcolorcomponent#1%
   {\clf_negatecolorcomponent{#1}}
 
 %D \macros
@@ -670,7 +692,7 @@
 %     draw btex test etex withprescript \mptexcolor{blue}  ;
 % \stopMPpage
 
-\unexpanded\def\setcolormodel[#1]% % beware, \setupcolors will overload this, so this one is
+\permanent\protected\def\setcolormodel[#1]% % beware, \setupcolors will overload this, so this one is
   {\colo_helpers_set_model{#1}}  % only for local usage
 
 \def\colo_helpers_set_model#1% direct
@@ -790,12 +812,12 @@
 
 \let\dousecolorparameter\colo_helpers_activate
 
-\unexpanded\def\dousecolorhashparameter#1#2%
+\permanent\protected\def\dousecolorhashparameter#1#2%
   {\ifcsname#1#2\endcsname
      \expandafter\dousecolorparameter\csname#1#2\endcsname
    \fi}
 
-\unexpanded\def\dousecurrentcolorparameter
+\permanent\protected\def\dousecurrentcolorparameter
   {\let\currentcolorname\currentcolorparameter % maybe only when success
    \ifcsname\??colorsetter\currentcolorprefix\currentcolorparameter\endcsname
      \lastnamedcs
@@ -807,7 +829,7 @@
 
 \let\dosetcolorattribute\dousecolorhashparameter % for a while
 
-\unexpanded\def\deactivatecolor % sort of public but a bad name
+\permanent\protected\def\deactivatecolor % sort of public but a bad name
   {\let\currentcolorname\s!black
    \c_attr_color       \attributeunsetvalue
    \c_attr_transparency\attributeunsetvalue}
@@ -833,99 +855,78 @@
 
 \newcount\c_colo_protection
 
-\unexpanded\def\startprotectedcolors
-  {\advance\c_colo_protection\plusone}
+\permanent\protected\def\startprotectedcolors{\advance\c_colo_protection\plusone }
+\permanent\protected\def\stopprotectedcolors {\advance\c_colo_protection\minusone}
 
-\unexpanded\def\stopprotectedcolors
-  {\advance\c_colo_protection\minusone}
-
-\def\colo_basics_define[#1][#2]%
-% {\edef\m_colo_old{#1}%
-%  \edef\m_colo_new{#2}%
-%  \ifx\m_colo_old\m_colo_new
+\permanent\tolerant\protected\def\definecolor[#1]#*[#2]%
   {\iftok{#1}{#2}%
      % maybe a warning
    \else
      \clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
      \colo_basics_synchronize{#1}%
      \ifcase\c_colo_protection
-       \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+       \protected\setvalue{#1}{\colo_helpers_activate{#1}}%
      \fi
    \fi}
 
-\def\colo_basics_define_global[#1][#2]%
-% {\edef\m_colo_old{#1}%
-%  \edef\m_colo_new{#2}%
-%  \ifx\m_colo_old\m_colo_new
+\permanent\tolerant\protected\def\defineglobalcolor[#1]#*[#2]%
   {\iftok{#1}{#2}%
      % maybe a warning
    \else
      \clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
      \colo_basics_synchronize{#1}%
      \ifcase\c_colo_protection
-       \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+       \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
      \fi
    \fi}
 
-\let\colo_basics_define_named\colo_basics_define
-
-\def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
-  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
-   \colo_basics_synchronize{#1}%
-   \ifcase\c_colo_protection
-     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
-   \fi}
+\let\definenamedcolor\definecolor
 
 \def\colo_basics_defined_and_activated#1%
   {\clf_defineprocesscolordummy{#1}% we could pass dummy here too
    \colo_basics_synchronize{\v_colo_dummy_name}%
    \colo_helpers_activate_dummy}
 
-\def\colo_basics_define_process
-  {\ifthirdargument
-     \expandafter\colo_basics_define_process_yes
-   \else
-     \expandafter\colo_basics_define_process_nop
+\permanent\tolerant\protected\def\defineprocesscolor[#1]#*[#2]#*[#3]%
+  {\ifarguments\or
+     \colo_basics_define_process_wrapup{#1}\empty
+   \or
+     \colo_basics_define_process_wrapup{#1}{#2}%
+   \or % we could just pass #3 to clf_... also when it's empty ... todo after split
+     \colo_basics_define_process_wrapup{#1}{\processcolorcomponents{#2},#3}%
    \fi}
 
-\def\colo_basics_define_process_yes[#1][#2][#3]%
-  {\clf_defineprocesscolorlocal{#1}{\processcolorcomponents{#2},#3}\v_colo_freeze_state\relax
-   \colo_basics_synchronize{#1}%
-   \ifcase\c_colo_protection
-     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
-   \fi}
-
-\def\colo_basics_define_process_nop[#1][#2][#3]%
+\def\colo_basics_define_process_wrapup#1#2%
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 %D Spotcolors used setxvalue but that messes up currentcolor and probably no global
 %D is needed either but they are global at the lua end (true argument) so we keep
 %D that if only because spot colors often are a document wide property
 
-\def\colo_basics_define_spot[#1][#2][#3]%
+\permanent\tolerant\protected\def\definespotcolor[#1]#*[#2]#*[#3]%
   {\clf_definespotcolorglobal{#1}{#2}{#3}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
-\def\colo_basics_define_multitone[#1][#2][#3][#4]%
+\permanent\tolerant\protected\def\definemultitonecolor[#1]#*[#2]#*[#3]#*[#4]%
   {\clf_definemultitonecolorglobal{#1}{#2}{#3}{#4}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 %D Transparencies (only):
 
-\def\colo_basics_define_transpancy[#1][#2]%
+\permanent\tolerant\protected\def\definetransparency[#1]#*[#2]%
   {\clf_definetransparency{#1}{#2}}
 
-\def\colo_basics_define_transpancy_global[#1][#2]%
+\permanent\tolerant\protected\def\defineglobaltransparency[#1]#*[#2]%
   {\clf_definetransparencyglobal{#1}{#2}}
 
 % A goodie that replaces the startMPcolor hackery
@@ -971,10 +972,7 @@
 %
 % because the fractional definition results in a new definition.
 
-\unexpanded\def\defineintermediatecolor
-  {\dotripleempty\colo_basics_define_intermediate}
-
-\def\colo_basics_define_intermediate[#1][#2][#3]% \dotripleempty adds {} inside []
+\permanent\tolerant\protected\def\defineintermediatecolor[#1]#*[#2]#*[#3]
   {\colo_basics_define_intermediate_indeed[#1][#2][#3]}
 
 \def\colo_basics_define_intermediate_indeed[#1][#2,#3,#4][#5]%
@@ -989,7 +987,7 @@
      \v_colo_freeze_state
    \relax
    \colo_basics_synchronize{#1}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \protected\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 %D Here is a more efficient helper for pgf:
 %D
@@ -1044,7 +1042,7 @@
 %D Switching to a color is done by means of the following command. Later on we will
 %D explain the use of palets. We define ourselves a color conditional first.
 
-\def\doifelsecolor#1%
+\permanent\def\doifelsecolor#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
      \expandafter\firstoftwoarguments
    \orelse\ifcsname\??colorattribute#1\endcsname
@@ -1055,7 +1053,7 @@
 
 \let\doifcolorelse\doifelsecolor
 
-\def\doifcolor#1%
+\permanent\def\doifcolor#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
      \expandafter\firstofoneargument
    \orelse\ifcsname\??colorattribute#1\endcsname
@@ -1088,14 +1086,13 @@
 %D \stopregistercolor
 %D \stoptyping
 
-\let\maintextcolor     \empty
-\def\defaulttextcolor  {black}
-\def\s!themaintextcolor{themaintextcolor}
+\let\maintextcolor   \empty
+\def\defaulttextcolor{black}
 
-\unexpanded\def\inheritmaintextcolor
+\permanent\protected\def\inheritmaintextcolor
   {\ifempty\maintextcolor\else\colo_helpers_activate\maintextcolor\fi}
 
-\unexpanded\def\onlyinheritmaintextcolor
+\permanent\protected\def\onlyinheritmaintextcolor
   {\ifempty\maintextcolor
      \deactivatecolor
    \else
@@ -1113,9 +1110,8 @@
    \colo_helpers_activate\maintextcolor
    \clf_registermaintextcolor\thecolorattribute\maintextcolor\relax}
 
-\unexpanded\def\starttextcolor[#1]%
-  {\doifsomething{#1}
-     {\colo_helpers_switch_to_maintextcolor{#1}}}
+\permanent\protected\def\starttextcolor[#1]%
+  {\doifsomething{#1}{\colo_helpers_switch_to_maintextcolor{#1}}}
 
 \let\stoptextcolor\relax
 
@@ -1139,16 +1135,6 @@
 \def\colo_helpers_inherited_direct_ca#1{\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
 \def\colo_helpers_inherited_direct_ts#1{\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
 \def\colo_helpers_inherited_direct_ta#1{\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
-
-% %def\colo_helpers_inherited_palet_cs#1#2{\csname\??colorsetter          \ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-% %def\colo_helpers_inherited_palet_ca#1#2{\csname\??colorattribute       \ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-% %def\colo_helpers_inherited_palet_ts#1#2{\csname\??transparencysetter   \ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-% %def\colo_helpers_inherited_palet_ta#1#2{\csname\??transparencyattribute\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-%
-% \def\colo_helpers_inherited_palet_cs#1#2{\ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\lastnamedcs\fi}
-% \def\colo_helpers_inherited_palet_ca#1#2{\ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
-% \def\colo_helpers_inherited_palet_ts#1#2{\ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\lastnamedcs}
-% \def\colo_helpers_inherited_palet_ta#1#2{\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
 
 \let\colo_helpers_set_value\setvalue
 
@@ -1202,20 +1188,20 @@
 
 %D Low level defs:
 
-\unexpanded\def\colordefalc#1#2{\setevalue{\??colorattribute       #1}{#2}\setvalue {\??colorsetter       #1}{\c_attr_color       #2 }}
-\unexpanded\def\colordefagc#1#2{\setxvalue{\??colorattribute       #1}{#2}\setgvalue{\??colorsetter       #1}{\c_attr_color       #2 }} % was not g
-\unexpanded\def\colordefalt#1#2{\setevalue{\??transparencyattribute#1}{#2}\setvalue {\??transparencysetter#1}{\c_attr_transparency#2 }}
-\unexpanded\def\colordefagt#1#2{\setxvalue{\??transparencyattribute#1}{#2}\setgvalue{\??transparencysetter#1}{\c_attr_transparency#2 }}
+\permanent\protected\def\colordefalc#1#2{\setevalue{\??colorattribute       #1}{#2}\setvalue {\??colorsetter       #1}{\c_attr_color       #2 }}
+\permanent\protected\def\colordefagc#1#2{\setxvalue{\??colorattribute       #1}{#2}\setgvalue{\??colorsetter       #1}{\c_attr_color       #2 }} % was not g
+\permanent\protected\def\colordefalt#1#2{\setevalue{\??transparencyattribute#1}{#2}\setvalue {\??transparencysetter#1}{\c_attr_transparency#2 }}
+\permanent\protected\def\colordefagt#1#2{\setxvalue{\??transparencyattribute#1}{#2}\setgvalue{\??transparencysetter#1}{\c_attr_transparency#2 }}
 
-\unexpanded\def\colordefflc#1#2{\setvalue {\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
-\unexpanded\def\colordeffgc#1#2{\setgvalue{\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
-\unexpanded\def\colordefflt#1#2{\setvalue {\??transparencyattribute#1}{\colo_helpers_inherited_current_ta{#2}}\setvalue {\??transparencysetter#1}{\colo_helpers_inherited_current_ts{#2}}}
-\unexpanded\def\colordeffgt#1#2{\setgvalue{\??transparencyattribute#1}{\colo_helpers_inherited_current_ta{#2}}\setgvalue{\??transparencysetter#1}{\colo_helpers_inherited_current_ts{#2}}}
+\permanent\protected\def\colordefflc#1#2{\setvalue {\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
+\permanent\protected\def\colordeffgc#1#2{\setgvalue{\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
+\permanent\protected\def\colordefflt#1#2{\setvalue {\??transparencyattribute#1}{\colo_helpers_inherited_current_ta{#2}}\setvalue {\??transparencysetter#1}{\colo_helpers_inherited_current_ts{#2}}}
+\permanent\protected\def\colordeffgt#1#2{\setgvalue{\??transparencyattribute#1}{\colo_helpers_inherited_current_ta{#2}}\setgvalue{\??transparencysetter#1}{\colo_helpers_inherited_current_ts{#2}}}
 
-\unexpanded\def\colordefrlc  #1{\localundefine {\??colorattribute       #1}\localundefine {\??colorsetter       #1}}
-\unexpanded\def\colordefrgc  #1{\globalundefine{\??colorattribute       #1}\globalundefine{\??colorsetter       #1}}
-\unexpanded\def\colordefrlt  #1{\localundefine {\??transparencyattribute#1}\localundefine {\??transparencysetter#1}}
-\unexpanded\def\colordefrgt  #1{\globalundefine{\??transparencyattribute#1}\globalundefine{\??transparencysetter#1}}
+\permanent\protected\def\colordefrlc  #1{\localundefine {\??colorattribute       #1}\localundefine {\??colorsetter       #1}}
+\permanent\protected\def\colordefrgc  #1{\globalundefine{\??colorattribute       #1}\globalundefine{\??colorsetter       #1}}
+\permanent\protected\def\colordefrlt  #1{\localundefine {\??transparencyattribute#1}\localundefine {\??transparencysetter#1}}
+\permanent\protected\def\colordefrgt  #1{\globalundefine{\??transparencyattribute#1}\globalundefine{\??transparencysetter#1}}
 
 %D \macros
 %D   {colorvalue, grayvalue}
@@ -1241,71 +1227,54 @@
 
 \let\colorformatseparator\space
 
-\def\MPcolor#1%
+\permanent\def\MPcolor#1%
   {\clf_mpcolor
      \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
-\def\MPcoloronly#1%
+\permanent\def\MPcoloronly#1%
   {\clf_mpcolor
      \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \zerocount}
 
-\def\MPtransparency#1%
+\permanent\def\MPtransparency#1%
   {\clf_mpcolor
      \zerocount
      \zerocount
      \colo_helpers_inherited_current_ta{#1} }
 
-\def\MPoptions#1%
+\permanent\def\MPoptions#1%
   {\clf_mpoptions
      \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
-\def\thecolormodelattribute    {\the\c_attr_colormodel}
+\permanent\def\thecolormodelattribute    {\the\c_attr_colormodel}
 
-\def\rawcolorattribute       #1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
-\def\rawtransparencyattribute#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}
+\permanent\def\rawcolorattribute       #1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
+\permanent\def\rawtransparencyattribute#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}
 
-\def\thecolorattribute       #1{\number\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
-\def\thetransparencyattribute#1{\number\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}
+\permanent\def\thecolorattribute       #1{\number\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi}
+\permanent\def\thetransparencyattribute#1{\number\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi}
 
-% \def\internalspotcolorname   #1{\clf_spotcolorname  \thecolorattribute{#1} }
-% \def\internalspotcolorparent #1{\clf_spotcolorparent\thecolorattribute{#1} }
-% \def\internalspotcolorsize   #1{\clf_spotcolorvalue \thecolorattribute{#1} }
-%
-% \def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute       {#1} }
-% \def\transparencycomponents  #1{\clf_transparencycomponents\thetransparencyattribute{#1} }
-% \def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute       {#1} }
-%
-% \def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
-% \def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}
-%
-% \def\doifelseblack           #1{\clf_doifelseblack\thecolorattribute{#1} }
-% \def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
-%
-% \let\doifblackelse        \doifelseblack
-% \let\doifdrawingblackelse \doifelsedrawingblack
+\permanent\def\internalspotcolorname   #1{\clf_spotcolorname  \rawcolorattribute{#1}}
+\permanent\def\internalspotcolorparent #1{\clf_spotcolorparent\rawcolorattribute{#1}}
+\permanent\def\internalspotcolorsize   #1{\clf_spotcolorvalue \rawcolorattribute{#1}}
 
-\def\internalspotcolorname   #1{\clf_spotcolorname  \rawcolorattribute{#1}}
-\def\internalspotcolorparent #1{\clf_spotcolorparent\rawcolorattribute{#1}}
-\def\internalspotcolorsize   #1{\clf_spotcolorvalue \rawcolorattribute{#1}}
+\permanent\def\colorcomponents         #1{\clf_colorcomponents       \rawcolorattribute       {#1}}
+\permanent\def\transparencycomponents  #1{\clf_transparencycomponents\rawtransparencyattribute{#1}}
+\permanent\def\processcolorcomponents  #1{\clf_processcolorcomponents\rawcolorattribute       {#1}}
 
-\def\colorcomponents         #1{\clf_colorcomponents       \rawcolorattribute       {#1}}
-\def\transparencycomponents  #1{\clf_transparencycomponents\rawtransparencyattribute{#1}}
-\def\processcolorcomponents  #1{\clf_processcolorcomponents\rawcolorattribute       {#1}}
+\permanent\def\colorvalue              #1{\clf_formatcolor\rawcolorattribute{#1}{\colorformatseparator}}
+\permanent\def\grayvalue               #1{\clf_formatgray \rawcolorattribute{#1}{\colorformatseparator}}
 
-\def\colorvalue              #1{\clf_formatcolor\rawcolorattribute{#1}{\colorformatseparator}}
-\def\grayvalue               #1{\clf_formatgray \rawcolorattribute{#1}{\colorformatseparator}}
+\permanent\def\doifelseblack           #1{\clf_doifelseblack\rawcolorattribute{#1}}
+\permanent\def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
 
-\def\doifelseblack           #1{\clf_doifelseblack\rawcolorattribute{#1}}
-\def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
-
-\let\doifblackelse        \doifelseblack
-\let\doifdrawingblackelse \doifelsedrawingblack
+\aliased\let\doifblackelse        \doifelseblack
+\aliased\let\doifdrawingblackelse \doifelsedrawingblack
 
 %D \macros
 %D   {forcecolorhack}
@@ -1327,15 +1296,14 @@
 
 % \normal added else fails in metafun manual (leaders do a hard scan)
 
-% \unexpanded\def\forcecolorhack{\leaders\hrule\hskip\zeropoint\relax} % relax is needed !
+% \protected\def\forcecolorhack{\leaders\hrule\hskip\zeropoint\relax} % relax is needed !
 %
 % I really need to sort this out!
 
-\unexpanded\def\forcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
+\permanent\protected\def\forcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
 
-%D We default to the colors defined in \type {colo-imp-rgb} and
-%D support both \RGB\ and \CMYK\ output. Transparencies are defined
-%D here:
+%D We default to the colors defined in \type {colo-imp-rgb} and support both \RGB\
+%D and \CMYK\ output. Transparencies are defined here:
 
 \definecolor[black][s=0]
 \definecolor[white][s=1]

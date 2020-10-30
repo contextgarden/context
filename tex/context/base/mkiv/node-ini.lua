@@ -78,7 +78,6 @@ local dircodes      = mark(getsubtypes("dir"))
 local glyphcodes    = mark(getsubtypes("glyph"))
 local disccodes     = mark(getsubtypes("disc"))
 local gluecodes     = mark(getsubtypes("glue"))
-local leadercodes   = mark(getsubtypes("leader"))
 local fillcodes     = mark(getsubtypes("fill"))
 local boundarycodes = mark(getsubtypes("boundary"))
 local penaltycodes  = mark(getsubtypes("penalty"))
@@ -90,7 +89,7 @@ local radicalcodes  = mark(getsubtypes("radical"))
 local accentcodes   = mark(getsubtypes("accent"))
 local fencecodes    = mark(getsubtypes("fence"))
 ----- fractioncodes = mark(getsubtypes("fraction"))
-local localparcodes = allocate { [0] = "vmode_par", "local_box", "hmode_par", "penalty", "math" }
+local parcodes      = allocate { [0] = "vmode_par", "local_box", "hmode_par", "penalty", "math" }
 
 local function simplified(t)
     local r = { }
@@ -160,14 +159,27 @@ margincodes      = allocate(swapped(margincodes,margincodes))
 disccodes        = allocate(swapped(disccodes,disccodes))
 accentcodes      = allocate(swapped(accentcodes,accentcodes))
 fencecodes       = allocate(swapped(fencecodes,fencecodes))
-localparcodes    = allocate(swapped(localparcodes,localparcodes))
+parcodes         = allocate(swapped(parcodes,parcodes))
 rulecodes        = allocate(swapped(rulecodes,rulecodes))
-leadercodes      = allocate(swapped(leadercodes,leadercodes))
 usercodes        = allocate(swapped(usercodes,usercodes))
 noadoptions      = allocate(swapped(noadoptions,noadoptions))
 dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
+
+if not nodecodes.delimiter then
+    -- as in luametatex / lmtx
+    nodecodes.delimiter = nodecodes.delim
+    nodecodes[nodecodes.delimiter] = "delimiter"
+    nodecodes.delim     = nil
+end
+
+if not nodecodes.par then
+    -- as in luametatex / lmtx
+    local p = nodecodes.localpar
+    nodecodes.par = p
+    nodecodes[p]  = "par"
+end
 
 if not gluecodes.indentskip then
     gluecodes.indentskip       = gluecodes.userskip
@@ -179,18 +191,7 @@ if not gluecodes.indentskip then
     gluecodes.parfillrightskip = gluecodes.parfillskip
 end
 
-if CONTEXTLMTXMODE > 0 then
-    whatcodes.literal     = 0x1  whatcodes[0x1] = "literal"
-    whatcodes.latelua     = 0x2  whatcodes[0x2] = "latelua"
-    whatcodes.userdefined = 0x3  whatcodes[0x3] = "userdefined"
-    whatcodes.savepos     = 0x4  whatcodes[0x4] = "savepos"
-    whatcodes.save        = 0x5  whatcodes[0x5] = "save"
-    whatcodes.restore     = 0x6  whatcodes[0x6] = "restore"
-    whatcodes.setmatrix   = 0x7  whatcodes[0x7] = "setmatrix"
-    whatcodes.open        = 0x8  whatcodes[0x8] = "open"
-    whatcodes.close       = 0x9  whatcodes[0x9] = "close"
-    whatcodes.write       = 0xA  whatcodes[0xA] = "write"
-elseif not whatcodes.literal then
+if not whatcodes.literal then
     whatcodes.literal     = whatcodes.pdfliteral
     whatcodes.save        = whatcodes.pdfsave
     whatcodes.restore     = whatcodes.pdfrestore
@@ -214,9 +215,8 @@ nodes.disccodes            = disccodes
 nodes.accentcodes          = accentcodes
 nodes.radicalcodes         = radicalcodes
 nodes.fencecodes           = fencecodes
-nodes.localparcodes        = localparcodes
+nodes.parcodes             = parcodes
 nodes.rulecodes            = rulecodes
-nodes.leadercodes          = leadercodes
 nodes.usercodes            = usercodes
 nodes.noadoptions          = noadoptions
 nodes.dirvalues            = dirvalues
@@ -233,7 +233,7 @@ nodes.subtypes = allocate {
     [nodecodes.glyph]      = glyphcodes,
     [nodecodes.hlist]      = listcodes,
     [nodecodes.kern]       = kerncodes,
-    [nodecodes.localpar]   = localparcodes,
+    [nodecodes.par]        = parcodes,
  -- [nodecodes.marginkern] = margincodes,
     [nodecodes.math]       = mathcodes,
     [nodecodes.noad]       = noadcodes,
@@ -295,7 +295,6 @@ nodes.codes = allocate { -- mostly for listing
     accent      = accentcodes,
     fence       = fencecodes,
     rule        = rulecodes,
-    leader      = leadercodes,
     user        = usercodes,
     noadoptions = noadoptions,
 }

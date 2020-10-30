@@ -1,0 +1,658 @@
+%D \module
+%D   [       file=strc-syn,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Synonyms and Sorting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Synonyms and Sorting}
+
+\registerctxluafile{strc-syn}{}
+
+%D Although we could nowadays build this on top of regular lists we keep this
+%D more efficient variant around. Eventually we can add some options to lists
+%D that also provide such functionality but at the cost of much more overhead.
+%D
+%D We show a usage of both synonyms and sorts, which are deep down variants of
+%D so called simple lists. A definition looks like this:
+%D
+%D \startbuffer
+%D \definesynonyms
+%D   [myabbreviation]
+%D
+%D \setupsynonyms
+%D   [myabbreviation]
+%D   [headstyle=bold,
+%D    headcolor=darkred,
+%D    synonymstyle=boldslanted,
+%D    synonymcolor=darkblue,
+%D    textstyle=slanted,
+%D    textcolor=darkgreen,
+%D    style=normal,
+%D    color=darkyellow]
+%D
+%D \definesorting
+%D   [mylogo]
+%D
+%D \setupsorting
+%D   [mylogo]
+%D   [style=bold,
+%D    color=darkmagenta]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D More complex definitions involves commands to call up meanings and such. The
+%D use of the defined commands is as follows: \
+%D
+%D \startbuffer
+%D \myabbreviation [FIRST]  {TheFirst}  {The First Words}
+%D \myabbreviation [SECOND] {TheSecond} {The Second Words}
+%D \myabbreviation [THIRD]  {TheThird}  {The Third Words}
+%D
+%D \mylogo [FOURTH] {TheFourth}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D By default a synonym is just typeset and flagges as being used, so that in
+%D a list it wil be shows with its meaning. You can however also expand the
+%D meaning automatically at first use:
+%D
+%D \startbuffer
+%D \setupsynonyms[myabbreviation][alternative=first]
+%D
+%D We have \FIRST, \SECOND\ and also \THIRD\ but no \FOURTH.
+%D
+%D We have \FIRST, \SECOND\ and also \THIRD\ but no \FOURTH.
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D We can change the order, as demonstrated in:
+%D
+%D \startbuffer
+%D \resetshownsynonyms[myabbreviation]
+%D
+%D \setupsynonyms[myabbreviation][alternative=last]
+%D
+%D We have \FIRST\ and \THIRD\ or \FOURTH.
+%D
+%D We have \FIRST\ and \THIRD\ or \FOURTH.
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D A list is called up with:
+%D
+%D \startbuffer
+%D \placelistofsynonyms[myabbreviation]
+%D
+%D \placelistofsorts[mylogo]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D The lists are constructions (like descriptions are) and can be set up
+%D likewise.
+
+% todo: add 'define only' option to descriptions, then add sorting (also based on key)
+% and call to definition -> replaces this module
+
+\unprotect
+
+% split but common in lua
+
+\permanent\protected\def\preprocessexpansion#1#2#3#4% do this at the lua end if still needed
+  {\ifx#1\s!xml
+     \xmlstartraw
+       \xdef#2{#4}%
+     \xmlstopraw
+     \glet#3\s!xml
+   \else
+     \ifx#1\v!yes
+       \xdef#2{#4}%
+     \else
+       \xdef#2{\detokenize{#4}}%
+     \fi
+     \glet#3\s!tex
+   \fi}
+
+%D We now use a simple list variant:
+
+\installcorenamespace {simplelist}
+
+\installcommandhandler \??simplelist {simplelist} \??simplelist
+
+\let\setupsimplelists\setupsimplelist
+
+\setupsimplelists[%
+    %c!title=,
+    %c!text=,
+    %
+    %c!style=,
+    %c!color=,
+    %c!command=,
+    %c!align=,
+    %
+    %c!headstyle=,
+    %c!headcolor=,
+    %c!headalign=,
+    %
+    %c!titlestyle=,
+    %c!titlecolor=,
+    %c!titlecommand=,
+    %c!titleleft=,
+    %c!titleright=,
+    %
+    %c!closesymbol=,
+    %c!closecommand=,
+    %
+    \c!alternative=\v!left,
+    \c!display=\v!yes,
+    \c!width=7\emwidth,
+    \c!distance=\emwidth,
+    \c!titledistance=.5\emwidth,
+    %c!hang=,
+    %c!sample=,
+    \c!margin=\v!no,
+    \c!before=\startpacked,
+    \c!inbetween=\blank,
+    \c!after=\stoppacked,
+    %c!indentnext=,
+    %c!indenting=,
+    %
+    \c!expansion=\v!no,
+    %c!xmlsetup=,
+    %s!catcodes=,
+    \s!language=\currentmainlanguage,
+]
+
+\appendtoks
+    \setfalse\c_strc_constructions_define_commands
+    \ifx\currentsimplelistparent\empty
+        \defineconstruction[\currentsimplelist][\s!handler=\v!simplelist,\c!level=1]%
+    \else
+        \defineconstruction[\currentsimplelist][\currentsimplelistparent][\s!handler=\v!simplelist,\c!level=1]%
+    \fi
+    \settrue\c_strc_constructions_define_commands
+\to \everydefinesimplelist
+
+\setuvalue{\??constructioninitializer\v!simplelist}%
+  {\let         \currentsimplelist               \currentconstruction
+   \enforced\let\constructionparameter           \simplelistparameter
+   \enforced\let\constructionnamespace           \??simplelist
+   \enforced\let\detokenizedconstructionparameter\detokenizedsimplelistparameter
+   \enforced\let\letconstructionparameter        \letsimplelistparameter
+   \enforced\let\useconstructionstyleandcolor    \usesimpleliststyleandcolor
+   \enforced\let\setupcurrentconstruction        \setupcurrentsimplelist}
+
+\setuvalue{\??constructionfinalizer\v!simplelist}%
+  {}
+
+\setuvalue{\??constructiontexthandler\v!simplelist}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor
+   \the\everyconstruction
+   \constructionparameter\c!headcommand
+     {\strut
+      \currentsimplelistentry}%
+   \endgroup}
+
+% And we build on top of this.
+
+\ifdefined\dotagsynonym \else \let\dotagsynonym\relax \fi
+\ifdefined\dotagsorting \else \let\dotagsorting\relax \fi
+
+\definesimplelist
+  [\v!synonym]
+  [\c!state=\v!start,
+  %\c!synonymstyle=,
+  %\c!textstyle=,
+  %\c!headstyle=,
+  %\c!headcolor=,
+  %\c!criterium=,
+   \c!location=\v!left,
+   \c!width=5\emwidth,
+   \c!distance=\zeropoint,
+  %\c!sample=,
+  %\c!hang=,
+  %\c!align=,
+  %\c!before=,
+  %\c!inbetween=,
+  %\c!after=,
+   \c!indentnext=\v!no,
+  %\c!expansion=,
+   \c!method=]
+
+\aliased\let\setupsynonyms\setupsimplelist
+
+\permanent\tolerant\protected\def\definesynonyms[#1]#*[#2]#*[#3]#*[#4]% name plural \meaning \use
+  {\ifnum\lastarguments=\plusfour
+     \protected\instance\def#4##1{\strc_synonyms_insert{#1}{##1}}% name tag
+     \frozen\instance\setuvalue{#1}{\definesynonym[\v!no][#1]}% \name
+   \else
+     \frozen\instance\setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
+   \fi
+   \ifnum\lastarguments>\plustwo
+     \protected\frozen\instance\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
+   \fi
+   \edef\currentsynonym{#1}%
+   %
+  %\checksynonymparent
+  %\setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
+   \setfalse\c_strc_constructions_define_commands
+   \definesimplelist
+     [\currentsynonym]%
+     [\v!sorting]
+     [\s!single={#1},%
+      \s!multi={#2}]%
+   \settrue\c_strc_constructions_define_commands
+   \ifparameter#2\or
+     %
+     \presetheadtext[#2=\Word{#2}]% changes the \if...argument
+     %
+     % These will go away. Actually the overloads catched this empty case!
+     %
+     \instance\setuvalue{\e!setup #2\e!endsetup}{\setupsynonyms[#1]}% obsolete definition
+     \instance\setuvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
+     \instance\setuvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}%
+   \fi}
+
+\permanent\tolerant\protected\def\definesynonym[#1]#*[#2]#*[#3]%
+  {\begingroup
+   \edef\currentsynonymoption{#1}%
+   \edef\currentsynonym{#2}%
+   \edef\currentsynonymtag{#3}%
+   \strc_synonyms_define_entry}
+
+\def\strc_synonyms_define_entry#1#2%
+  {\let\currentsimplelist\currentsynonym
+   \ifempty\currentsynonymtag
+     \edef\currentsynonymtag{#1}%
+   \fi
+   \ifempty\currentsynonymtag \else
+     % this is not that efficient, esp when we load a big list
+     \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
+     \preprocessexpansion\currentsynonymexpansion\m_synonyms_text   \currentsynonymcoding{#1}%
+     \preprocessexpansion\currentsynonymexpansion\m_synonyms_meaning\currentsynonymcoding{#2}%
+     %
+     \clf_registersynonym
+        {\currentsynonym}%
+        {synonym}%
+        {%
+            metadata {%
+                catcodes \catcodetable
+                coding   {\currentsynonymcoding}%
+            \ifx\currentsynonymcoding\s!xml
+                xmlroot  {\xmldocument}%
+            \fi
+            }%
+            definition {%
+                tag     {\currentsynonymtag}%
+                synonym {\m_synonyms_text}%
+                meaning {\m_synonyms_meaning}%
+              % used    false
+            }%
+        }%
+     \relax
+     \ifx\currentsynonymoption\v!yes
+       \instance\setuxvalue\currentsynonymtag{\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}%
+     \fi
+   \fi
+   \endgroup}
+
+\permanent\tolerant\protected\def\registersynonym  [#1]#*[#2]{\clf_registerusedsynonym{#1}{#2}}
+\permanent         \protected\def\currentsynonymname         {\clf_synonymname{\currentsimplelist}{\currentsynonymtag}}
+\permanent         \protected\def\currentsynonymmeaning      {\clf_synonymmeaning{\currentsimplelist}{\currentsynonymtag}}
+\permanent         \protected\def\doifelsecurrentsynonymused {\clf_doifelsesynonymused{\currentsimplelist}{\currentsynonymtag}}
+\permanent         \protected\def\doifelsecurrentsynonymshown{\clf_doifelsesynonymshown{\currentsimplelist}{\currentsynonymtag}}
+\permanent         \protected\def\resetusedsynonyms      [#1]{\clf_resetusedsynonyms{#1}}
+\permanent         \protected\def\resetshownsynonyms     [#1]{\clf_resetshownsynonyms{#1}}
+
+\aliased\let\rawsynonymname   \clf_synonymname
+\aliased\let\rawsynonymmeaning\clf_synonymmeaning
+
+\installcorenamespace{simplelistalternative} % specific ways of rendering a list
+\installcorenamespace{simplelistrenderings}  % a namespace for setups (rather local)
+
+\installcommandhandler \??simplelistalternative {simplelistalternative} \??simplelistalternative
+
+\setupsimplelist
+  [\v!synonym]
+  [\c!alternative=\v!normal]
+
+\protected\def\strc_synonyms_insert_meaning#1#2% name tag
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
+   \def\currentsimplelist{#1}%
+   \def\currentsynonymtag{#2}%
+   \fastsetup{\??simplelistrenderings::\v!text}%
+   \endgroup}
+
+\protected\def\strc_synonyms_insert#1#2% name tag
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
+   \edef\currentsimplelist{#1}%
+   \let\currentsynonym\currentsimplelist % for a while
+   \def\currentsynonymtag{#2}%
+   \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
+     {\let\currentsimplelistalternative\v!normal}%
+   \fastsetup{\??simplelistrenderings:\v!synonym:\currentsimplelistalternative}%
+   \normalexpanded{\endgroup\simplelistparameter\c!next}}
+
+% \setupsimplelistalternative
+%   [\c!command=\directsimplelistparameter\c!command]
+
+\definesimplelistalternative
+  [\v!normal]
+  [\c!inbetween=\space,
+   \c!left=(,
+   \c!right=)]
+
+\definesimplelistalternative
+  [\v!first]
+  [\v!normal]
+
+\definesimplelistalternative
+  [\v!last]
+  [\v!normal]
+
+\startsetups[\??simplelistrenderings::\v!synonym]
+    \begingroup
+    \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
+    \dotagsynonym
+    \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
+    \simplelistparameter\c!synonymcommand{\currentsynonymname}%
+    \dostoptagged
+    \endgroup
+\stopsetups
+
+\startsetups[\??simplelistrenderings::\v!text]
+    \begingroup
+    \usehyphensparameter\simplelistparameter
+    \usesimpleliststyleandcolor\c!textstyle\c!textcolor
+    \simplelistparameter\c!textcommand{\currentsynonymmeaning}%
+    \endgroup
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!normal]
+    \fastsetup{\??simplelistrenderings::\v!synonym}
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!first]
+    \fastsetup{\??simplelistrenderings::\v!synonym}
+    \doifelsecurrentsynonymshown \donothing {
+        \simplelistalternativeparameter\c!inbetween
+        \simplelistalternativeparameter\c!left
+        \fastsetup{\??simplelistrenderings::\v!text}
+        \simplelistalternativeparameter\c!right
+    }
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!last]
+    \doifelsecurrentsynonymshown {
+        \fastsetup{\??simplelistrenderings::\v!synonym}
+    } {
+        \fastsetup{\??simplelistrenderings::\v!text}
+        \simplelistalternativeparameter\c!inbetween
+        \simplelistalternativeparameter\c!left
+        \fastsetup{\??simplelistrenderings::\v!synonym}
+        \simplelistalternativeparameter\c!right
+    }
+\stopsetups
+
+\permanent\tolerant\protected\def\placelistofsynonyms[#1]#*[#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \doifelsecommandhandler\??simplelist\currentsimplelist
+     {\strc_constructions_initialize{#1}%
+      \setupcurrentsimplelist[#2]%
+      \let\synonymentry\strc_synonym_normal
+      % so we can hook tabulate into before and after
+      \normalexpanded{\simplelistparameter\c!before
+        \noexpand\clf_processsynonyms
+           {#1}%
+           {%
+               criterium {\simplelistparameter\c!criterium}%
+               language  {\simplelistparameter\s!language}%
+               method    {\simplelistparameter\c!method}%
+           }%
+        \relax
+      \simplelistparameter\c!after}%
+      \relax}%
+     {}% todo: message that invalid
+   \endgroup}
+
+\permanent\tolerant\protected\def\completelistofsynonyms[#1]#*[#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \doifelsecommandhandler\??simplelist\currentsimplelist
+     {\normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+        \strc_synonyms_place_list[#1][#2]%
+        \page
+      \stopnamedsection}%
+     {}% todo: message that invalid
+   \endgroup}
+
+\protected\def\strc_synonym_normal#1#2#3#4%
+  {\begingroup
+   \def\currentsimplelistentry{#3}%
+   \csname\??constructionstarthandler\v!construction\endcsname
+   #4%
+   \csname\??constructionstophandler\v!construction\endcsname
+   \endgroup}
+
+%D Sorting (a simplified version of synonym).
+
+\definesimplelist
+  [\v!sorting]
+  [\c!state=\v!start,
+  %\c!command=, % we test for defined !
+  %\c!criterium=,
+  %\c!style=,
+   \c!before=\startpacked,
+   \c!after=\stoppacked,
+  %\c!expansion=,
+   \c!method=]
+
+\aliased\let\setupsorting\setupsimplelist
+
+% if #3=\relax or \v!none, then no command but still protected
+
+\permanent\tolerant\protected\def\definesorting[#1]#*[#2]#*[#3]%
+  {\ifnum\lastarguments=\plusthree
+     \doifnot{#3}\v!none
+       {\ifx#3\relax \else
+          \protected\instance\def#3##1{\strc_sorting_insert{#1}{##1}}%
+        \fi}%
+     \frozen\instance\setuvalue{#1}{\definesort[\v!no][#1]}%
+   \else
+     \frozen\instance\setuvalue{#1}{\definesort[\v!yes][#1]}%
+   \fi
+   \edef\currentsorting{#1}%
+   \setfalse\c_strc_constructions_define_commands
+   \definesimplelist
+     [\currentsorting]%
+     [\v!sorting]
+     [\s!single={#1},%
+      \s!multi={#2}]%
+   \settrue\c_strc_constructions_define_commands
+   \ifparameter#2\or
+     %
+     \presetheadtext[#2=\Word{#2}]% changes the \if...argument
+     %
+     % These will go away. Actually the overloads catched this empty case!
+     %
+     %
+     \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
+     %
+     \instance\setuvalue{\e!setup #2\e!endsetup}{\setupsorting[#1]}% obsolete definition
+     \instance\setuvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
+     \instance\setuvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}%
+   \fi}
+
+\permanent\tolerant\protected\def\definesort[#1]#*[#2]#*[#3]%
+  {\begingroup
+   \edef\currentsortingoption{#1}%
+   \edef\currentsorting{#2}%
+   \edef\currentsortingtag{#3}%
+   \strc_sorting_define_entry}
+
+\def\strc_sorting_define_entry#1%
+  {\let\currentsimplelist\currentsimplelist
+   \ifempty\currentsortingtag
+     \edef\currentsortingtag{#1}%
+   \fi
+   \ifempty\currentsortingtag \else
+     \edef\currentsortingexpansion{\simplelistparameter\c!expansion}%
+     \preprocessexpansion\currentsortingexpansion\currentsortingtext\currentsortingcoding{#1}%
+     \clf_registersynonym
+        {\currentsorting}%
+        {sorting}%
+        {%
+            metadata {%
+                catcodes \catcodetable
+                coding   {\currentsortingcoding}%
+            \ifx\currentsortingcoding\s!xml
+                xmlroot  {\xmldocument}%
+            \fi
+            }%
+            definition {%
+                tag     {\currentsortingtag}%
+                synonym {\currentsortingtext}%
+              % used    false
+            }%
+        }%
+     \relax
+     \ifx\currentsortingoption\v!yes
+       \instance\setuxvalue\currentsortingtag{\strc_sorting_insert{\currentsorting}{\currentsortingtag}}%
+     \fi
+   \fi
+   \endgroup}
+
+\permanent\protected\def\currentsortingname         {\clf_synonymname         {\currentsimplelist}{\currentsortingtag}}
+\permanent\protected\def\doifelsecurrentsortingused {\clf_doifelsesynonymused {\currentsimplelist}{\currentsortingtag}}
+\permanent\protected\def\resetusedsortings      [#1]{\clf_resetusedsynonyms   {#1}}
+
+\setupsimplelist
+  [\v!sorting]
+  [\c!alternative=\v!normal]
+
+\protected\def\strc_sorting_insert#1#2% name tag
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
+   % no kap currently, of .. we need to map cap onto WORD
+   \edef\currentsorting{#1}%
+   \edef\currentsortingtag{#2}%
+   \let\currentsimplelist\currentsorting
+   \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
+     {\let\currentsimplelistalternative\v!normal}%
+   \fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}%
+   \normalexpanded{\endgroup\simplelistparameter\c!next}}
+
+% or:
+%
+% \doifelsesetups{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}
+%    {\fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}}
+%    {\fastsetup{\??simplelistrenderings:\v!sorting:\v!normal}}
+
+\startsetups [\??simplelistrenderings:\v!sorting:\v!normal]
+   \fastsetup{\??simplelistrenderings::\v!sorting}%
+\stopsetups
+
+\startsetups [\??simplelistrenderings::\v!sorting]
+    \begingroup
+    \dostarttaggedchained\t!sorting\currentsorting\??simplelist
+    \dotagsorting
+    \usesimpleliststyleandcolor\c!style\c!color
+    \currentsortingname
+    \dostoptagged
+    \endgroup
+\stopsetups
+
+\permanent\tolerant\protected\def\registersort[#1]#*[#2]%
+  {\clf_registerusedsynonym{#1}{#2}}
+
+% before after
+%
+% maybe just 'commandset' and then combine
+
+\permanent\tolerant\protected\def\placelistofsorts[#1]#*[#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \strc_constructions_initialize{#1}%
+   \setupcurrentsimplelist[#2]%
+   \edef\p_simplelist_command{\simplelistparameter\c!command}%
+   \ifx\p_simplelist_command\empty
+     \let\synonymentry\strc_sorting_normal
+   \else
+     \let\synonymentry\strc_sorting_command
+   \fi
+   % so we can hook tabulate into before and after
+   \normalexpanded{\simplelistparameter\c!before
+     \noexpand\clf_processsynonyms
+        {#1}%
+        {%
+            criterium {\simplelistparameter\c!criterium}%
+            language  {\simplelistparameter\s!language}%
+            method    {\simplelistparameter\c!method}%
+        }%
+     \relax
+   \simplelistparameter\c!after}%
+   \endgroup}
+
+\permanent\tolerant\protected\def\completelistofsorts[#1]#*[#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+   \strc_sorting_place_list[#1][#2]%
+   \page
+   \stopnamedsection
+   \endgroup}
+
+\def\strc_sorting_command#1#2#3#4% #4 is meaning but empty here
+  {\p_simplelist_command{#1}{#2}{#3}}
+
+\def\strc_sorting_normal#1#2#3#4% #4 is meaning but empty here
+  {\begingroup
+   \usesimpleliststyleandcolor\c!style\c!color
+   #3%
+   \endgroup
+   \par}
+
+%D Presets.
+
+% To be considered:
+%
+% \setupsimplelist
+%   [\v!sorting]
+%   [\c!headstyle=\simplelistparameter\c!synonymstyle,
+%    \c!headcolor=\simplelistparameter\c!synonymcolor,
+%    \c!style=\simplelistparameter\c!textstyle,
+%    \c!color=\simplelistparameter\c!textcolor]
+
+\definesynonyms
+  [\v!abbreviation]
+  [\v!abbreviations]
+  [\infull]
+
+\setupsynonyms
+  [\v!abbreviation]
+  [\c!hyphens=\v!no, % new, not yet in setup definitions
+   \c!textstyle=\v!capital]
+
+\definesorting
+  [\v!logo]
+  [\v!logos]
+% [\logogram] % no
+
+\protect \endinput

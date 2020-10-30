@@ -309,6 +309,11 @@ nuts.setglyphdata     = direct.setglyphdata or function(n,d) set_attribute(n,0,d
 nuts.getruledata      = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
 nuts.setruledata      = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end
 
+-- maybe some day: [g|s]etglyphoptions and then use attribute for mkiv / generic but not now
+
+nuts.getoptions       = direct.getoptions or function() return 0 end
+nuts.setoptions       = direct.setoptions or function() end
+
 -- so far
 
 nuts.getnucleus       = direct.getnucleus
@@ -414,9 +419,9 @@ end
 
 if not nuts.start_of_par then
 
-    local localparcodes = nodes.localparcodes
-    local hmodepar_code = localparcodes.vmode_par
-    local vmodepar_code = localparcodes.hmode_par
+    local parcodes      = nodes.parcodes
+    local hmodepar_code = parcodes.vmode_par
+    local vmodepar_code = parcodes.hmode_par
 
     local getsubtype    = nuts.getsubtype
 

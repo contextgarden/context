@@ -24,57 +24,57 @@
 %D but we're prestine and have no macros defined yet. Abstraction also makes it
 %D possible to avoid the \type {^^} in the input.
 
-\chardef\escapecatcode             0
-\chardef\begingroupcatcode         1
-\chardef\endgroupcatcode           2
-\chardef\mathshiftcatcode          3
-\chardef\alignmentcatcode          4
-\chardef\endoflinecatcode          5
-\chardef\parametercatcode          6
-\chardef\superscriptcatcode        7
-\chardef\subscriptcatcode          8
-\chardef\ignorecatcode             9
-\chardef\spacecatcode             10
-\chardef\lettercatcode            11
-\chardef\othercatcode             12  % finally obsolete: \let\other \othercatcode
-\chardef\activecatcode            13  % finally obsolete: \let\active\activecatcode
-\chardef\commentcatcode           14
-\chardef\invalidcatcode           15
+\immutable\integerdef\escapecatcode             0
+\immutable\integerdef\begingroupcatcode         1
+\immutable\integerdef\endgroupcatcode           2
+\immutable\integerdef\mathshiftcatcode          3
+\immutable\integerdef\alignmentcatcode          4
+\immutable\integerdef\endoflinecatcode          5
+\immutable\integerdef\parametercatcode          6
+\immutable\integerdef\superscriptcatcode        7
+\immutable\integerdef\subscriptcatcode          8
+\immutable\integerdef\ignorecatcode             9
+\immutable\integerdef\spacecatcode             10
+\immutable\integerdef\lettercatcode            11
+\immutable\integerdef\othercatcode             12  % finally obsolete: \let\other \othercatcode
+\immutable\integerdef\activecatcode            13  % finally obsolete: \let\active\activecatcode
+\immutable\integerdef\commentcatcode           14
+\immutable\integerdef\invalidcatcode           15
 
 %chardef\zeroasciicode             0
-\chardef\tabasciicode              9
-\chardef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
-\chardef\formfeedasciicode        12
-\chardef\endoflineasciicode       13  % somewhat messy but this can be the active \par
-\chardef\endoffileasciicode       26
-\chardef\spaceasciicode           32
-\chardef\exclamationmarkasciicode 33 % ! used in namespace protection
-\chardef\doublequoteasciicode     34 % "
-\chardef\hashasciicode            35
-\chardef\dollarasciicode          36
-\chardef\commentasciicode         37
-\chardef\ampersandasciicode       38
-\chardef\singlequoteasciicode     39 % '
-\chardef\primeasciicode           39 % '
-\chardef\leftparentasciicode      40
-\chardef\rightparentasciicode     41
-\chardef\commaasciicode           44
-\chardef\hyphenasciicode          45
-\chardef\periodasciicode          46
-\chardef\forwardslashasciicode    47 % /
-\chardef\colonasciicode           58
-\chardef\lessthanasciicode        60 % < used as alternative verbatim {
-\chardef\morethanasciicode        62 % > used as alternative verbatim }
-\chardef\questionmarkasciicode    63 % ? used in namespace protection
-\chardef\atsignasciicode          64 % @ used in namespace protection
-\chardef\backslashasciicode       92 % `\\
-\chardef\circumflexasciicode      94
-\chardef\underscoreasciicode      95
-\chardef\leftbraceasciicode      123 % `\{
-\chardef\barasciicode            124 % `\|
-\chardef\rightbraceasciicode     125 % `\}
-\chardef\tildeasciicode          126 % `\~
-\chardef\delasciicode            127
+\immutable\integerdef\tabasciicode              9
+\immutable\integerdef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
+\immutable\integerdef\formfeedasciicode        12
+\immutable\integerdef\endoflineasciicode       13  % somewhat messy but this can be the active \par
+\immutable\integerdef\endoffileasciicode       26
+\immutable\integerdef\spaceasciicode           32
+\immutable\integerdef\exclamationmarkasciicode 33 % ! used in namespace protection
+\immutable\integerdef\doublequoteasciicode     34 % "
+\immutable\integerdef\hashasciicode            35
+\immutable\integerdef\dollarasciicode          36
+\immutable\integerdef\commentasciicode         37
+\immutable\integerdef\ampersandasciicode       38
+\immutable\integerdef\singlequoteasciicode     39 % '
+\immutable\integerdef\primeasciicode           39 % '
+\immutable\integerdef\leftparentasciicode      40
+\immutable\integerdef\rightparentasciicode     41
+\immutable\integerdef\commaasciicode           44
+\immutable\integerdef\hyphenasciicode          45
+\immutable\integerdef\periodasciicode          46
+\immutable\integerdef\forwardslashasciicode    47 % /
+\immutable\integerdef\colonasciicode           58
+\immutable\integerdef\lessthanasciicode        60 % < used as alternative verbatim {
+\immutable\integerdef\morethanasciicode        62 % > used as alternative verbatim }
+\immutable\integerdef\questionmarkasciicode    63 % ? used in namespace protection
+\immutable\integerdef\atsignasciicode          64 % @ used in namespace protection
+\immutable\integerdef\backslashasciicode       92 % `\\
+\immutable\integerdef\circumflexasciicode      94
+\immutable\integerdef\underscoreasciicode      95
+\immutable\integerdef\leftbraceasciicode      123 % `\{
+\immutable\integerdef\barasciicode            124 % `\|
+\immutable\integerdef\rightbraceasciicode     125 % `\}
+\immutable\integerdef\tildeasciicode          126 % `\~
+\immutable\integerdef\delasciicode            127
 
 %catcode\zeroasciicode           \ignorecatcode      % `\^^@   ascii null is ignored
 \catcode\tabasciicode            \spacecatcode       % `\^^I   ascii tab is a blank space
@@ -94,7 +94,7 @@
 \catcode\tildeasciicode          \activecatcode      % `\~     tilde is active
 %catcode\delasciicode            \invalidcatcode     % `\^^?   ascii delete is invalid
 
-\chardef\statuswrite   128
+\chardef\statuswrite 128 % we need to get rid of this one
 
 %D First we need to initialization the primitives. Because \CONTEXT\ is already a
 %D pretty old macro package, we have a couple of issues with respect to primitives.
@@ -140,20 +140,20 @@
     function tex.enableprimitives() end       % so we kind of protect what's there
 }
 
-\def\space{ }
-\def\empty{}
+\permanent\def\space{ }
+\permanent\def\empty{}
 
-\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
-\letcharcode \tildeasciicode    \       %                 tilde
-\letcharcode \spaceasciicode    \space  %                 space
+\permanent\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
+\permanent\letcharcode \tildeasciicode    \       %                 tilde
+\permanent\letcharcode \spaceasciicode    \space  %                 space
 
-\expandafter\def\csname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
-\expandafter\def\csname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
-\expandafter\def\csname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
+\permanent\expandafter\def\csname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
+\permanent\expandafter\def\csname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
+\permanent\expandafter\def\csname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
 
 %D For now:
 
-\def\gobbleoneargument#1{} % will be defined later on anyway
+\permanent\def\gobbleoneargument#-{} % will be defined later on anyway
 
 %D First we define a simplified version of the \CONTEXT\ protection mechanism.
 %D Later we will implement a better variant.
@@ -176,8 +176,8 @@
 
 %D Some pretty important definitions:
 
-\let\bgroup={
-\let\egroup=}
+\immutable\let\bgroup={
+\immutable\let\egroup=}
 
 %D \macros
 %D   {normalbgroup,normalgroup}
@@ -207,52 +207,42 @@
 %
 % will be blocked: \newfamily \newlanguage
 
-\countdef   \c_syst_min_allocated_register   =    52 \c_syst_min_allocated_register   =   256 % can change
-\countdef   \c_syst_max_allocated_register   =    53 \c_syst_max_allocated_register   = 65535
-\countdef   \c_syst_min_allocated_read       =    54 \c_syst_min_allocated_read       =     0
-\countdef   \c_syst_max_allocated_read       =    55 \c_syst_max_allocated_read       =  1023
-\countdef   \c_syst_min_allocated_language   =    56 \c_syst_min_allocated_language   =     0
-\countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =  8191
-\countdef   \c_syst_min_allocated_insert     =    58 \c_syst_min_allocated_insert     =   128
-\countdef   \c_syst_max_allocated_insert     =    59 \c_syst_max_allocated_insert     =   254
-\countdef   \c_syst_min_allocated_family     =    60 \c_syst_min_allocated_family     =   128
-\countdef   \c_syst_max_allocated_family     =    61 \c_syst_max_allocated_family     =   255
-\countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 0-1023 : private
-\countdef   \c_syst_min_allocated_write      =    63 \c_syst_min_allocated_write      =     0
-\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =  1023
+\permanent\countdef   \c_syst_min_allocated_register   =    52 \c_syst_min_allocated_register   =   256 % can change
+\permanent\countdef   \c_syst_max_allocated_register   =    53 \c_syst_max_allocated_register   = 65535
+\permanent\countdef   \c_syst_min_allocated_read       =    54 \c_syst_min_allocated_read       =     0
+\permanent\countdef   \c_syst_max_allocated_read       =    55 \c_syst_max_allocated_read       =  1023
+\permanent\countdef   \c_syst_min_allocated_language   =    56 \c_syst_min_allocated_language   =     0
+\permanent\countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =  8191
+\permanent\countdef   \c_syst_min_allocated_insert     =    58 \c_syst_min_allocated_insert     =   128
+\permanent\countdef   \c_syst_max_allocated_insert     =    59 \c_syst_max_allocated_insert     =   254
+\permanent\countdef   \c_syst_min_allocated_family     =    60 \c_syst_min_allocated_family     =   128
+\permanent\countdef   \c_syst_max_allocated_family     =    61 \c_syst_max_allocated_family     =   255
+\permanent\countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 0-1023 : private
+\permanent\countdef   \c_syst_min_allocated_write      =    63 \c_syst_min_allocated_write      =     0
+\permanent\countdef   \c_syst_max_allocated_write      =    64 \c_syst_max_allocated_write      =  1023
 
-\countdef   \c_syst_last_allocated_count     =    32 \c_syst_last_allocated_count     = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_dimen     =    33 \c_syst_last_allocated_dimen     = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_skip      =    34 \c_syst_last_allocated_skip      = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_muskip    =    35 \c_syst_last_allocated_muskip    = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_box       =    36 \c_syst_last_allocated_box       = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_toks      =    37 \c_syst_last_allocated_toks      = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_read      =    38 \c_syst_last_allocated_read      = \c_syst_min_allocated_read
-\countdef   \c_syst_last_allocated_write     =    39 \c_syst_last_allocated_write     = \c_syst_min_allocated_write
-\countdef   \c_syst_last_allocated_marks     =    40 \c_syst_last_allocated_marks     = \c_syst_min_allocated_register
-\countdef   \c_syst_last_allocated_language  =    41 \c_syst_last_allocated_language  = \c_syst_min_allocated_language    % not used in context
-\countdef   \c_syst_last_allocated_insertion =    42 \c_syst_last_allocated_insertion = \c_syst_min_allocated_insert
-\countdef   \c_syst_last_allocated_family    =    43 \c_syst_last_allocated_family    = \c_syst_min_allocated_family      % not used in context
-\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute   % not used in context
+\permanent\countdef   \c_syst_last_allocated_count     =    32 \c_syst_last_allocated_count     = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_dimen     =    33 \c_syst_last_allocated_dimen     = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_skip      =    34 \c_syst_last_allocated_skip      = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_muskip    =    35 \c_syst_last_allocated_muskip    = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_box       =    36 \c_syst_last_allocated_box       = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_toks      =    37 \c_syst_last_allocated_toks      = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_read      =    38 \c_syst_last_allocated_read      = \c_syst_min_allocated_read
+\permanent\countdef   \c_syst_last_allocated_write     =    39 \c_syst_last_allocated_write     = \c_syst_min_allocated_write
+\permanent\countdef   \c_syst_last_allocated_marks     =    40 \c_syst_last_allocated_marks     = \c_syst_min_allocated_register
+\permanent\countdef   \c_syst_last_allocated_language  =    41 \c_syst_last_allocated_language  = \c_syst_min_allocated_language    % not used in context
+\permanent\countdef   \c_syst_last_allocated_insertion =    42 \c_syst_last_allocated_insertion = \c_syst_min_allocated_insert
+\permanent\countdef   \c_syst_last_allocated_family    =    43 \c_syst_last_allocated_family    = \c_syst_min_allocated_family      % not used in context
+\permanent\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute   % not used in context
 
-\countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
-\countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
+\permanent\countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
+\permanent\countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
 
-\countdef   \zerocount                =   120 \zerocount                =  0
-\countdef   \plusone                  =   121 \plusone                  =  1
-\countdef   \minusone                 =   122 \minusone                 = -1
+\immutable\integerdef\zerocount     =   0
+\immutable\integerdef\plusone       =   1
+\immutable\integerdef\minusone      =  -1
 
-\countdef   \normalpagebox            =   127 \normalpagebox            = 255  % hardcoded in pdftex/xetex
-
-% Only to be used by developers in very special cases!
-
-% \def\lastallocatedcount    {\the\c_syst_last_allocated_count}
-% \def\lastallocateddimen    {\the\c_syst_last_allocated_dimen}
-% \def\lastallocatedskip     {\the\c_syst_last_allocated_skip}
-% \def\lastallocatedmuskip   {\the\c_syst_last_allocated_muskip}
-% \def\lastallocatedbox      {\the\c_syst_last_allocated_dimen}
-% \def\lastallocatedtoks     {\the\c_syst_last_allocated_toks}
-% \def\lastallocatedattribute{\the\c_syst_last_allocated_attribute}
+\immutable\integerdef\normalpagebox = 255  % hardcoded in pdftex/xetex
 
 % A few traditional allocations (these might go):
 
@@ -270,35 +260,41 @@
 
 %D The allocators share a common helper macro.
 
-\protected\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef   \c_syst_max_allocated_register}
-\protected\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef   \c_syst_max_allocated_register}
-\protected\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef    \c_syst_max_allocated_register}
-\protected\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef  \c_syst_max_allocated_register}
-\protected\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \mathchardef\c_syst_max_allocated_register}
-\protected\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef    \c_syst_max_allocated_register}
-\protected\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \chardef    \c_syst_max_allocated_read}
-\protected\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \chardef    \c_syst_max_allocated_write}
-\protected\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \mathchardef\c_syst_max_allocated_register}
-\protected\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef    \c_syst_max_allocated_insert}
+\protected\permanent\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef  \c_syst_max_allocated_register}
+\protected\permanent\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef  \c_syst_max_allocated_register}
+\protected\permanent\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef   \c_syst_max_allocated_register}
+\protected\permanent\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef \c_syst_max_allocated_register}
+\protected\permanent\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \integerdef\c_syst_max_allocated_register}
+\protected\permanent\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef   \c_syst_max_allocated_register}
+\protected\permanent\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \integerdef\c_syst_max_allocated_read}
+\protected\permanent\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \integerdef\c_syst_max_allocated_write}
+\protected\permanent\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \integerdef\c_syst_max_allocated_register}
+\protected\permanent\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef   \c_syst_max_allocated_insert}
+\protected\permanent\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\integerdef\c_syst_max_allocated_language} % not needed in context
+\protected\permanent\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \integerdef\c_syst_max_allocated_family}   % not needed in context
 
-%D We don't need these in \CONTEXT:
+\aliased\let\newfam\newfamily
 
-\protected\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\chardef    \c_syst_max_allocated_language}
-\protected\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \chardef    \c_syst_max_allocated_family}
-
-\let\newfam\newfamily
-
-\firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might becoem the default
+\firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might become the default
 
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\protected\def\newconstant       #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
-\protected\def\setnewconstant    #1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
-\protected\def\setconstant         {}                                             % dummy, no checking, so it warns
+\protected\def\setconstant         {}
 \protected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
-% maybe setconstant with check
+\protected\def\newconstant#1%
+  {\ifx#1\relax
+    %\writestatus{!!!!!!!!!!}{\string #1 => RELAX}%
+     \unletfrozen#1%
+     \newcount#1%
+   \orelse\ifdefined#1%
+    %\writestatus{!!!!!!!!!!}{\string #1 => DEFINED}%
+   \else
+     \newcount#1%
+   \fi}
+
+\protected\def\setnewconstant#1{\newconstant#1#1}
 
 % %D The next definitions are really needed (in \CONTEXT):
 
@@ -312,13 +308,13 @@
 
 \ifdefined\writestatus \else
    %\protected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
-    \protected\def\writestatus#1#2{\message{#1: #2}}
+    \frozen\protected\def\writestatus#1#2{\message{#1: #2}}
 \fi
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax
      \global\advance#1\plusone
-     \global#3#5=#1\relax
+     \permanent\global#3#5=#1\relax
    \else
      \writestatus{warning}{no room for \string#2\space \string#5\space (max: \number#4)}%
    \fi}
@@ -339,24 +335,23 @@
 %D Since the number of chars exceed 256 now, we can use \type {\chardef} instead of
 %D the more limited \type {\mathchardef}.
 
-\protected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
-\protected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
+% \protected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
+% \protected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
 
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not supposed to use
 %D the attributes directly but always allocate then first. For instance attribute~0
 %D is reserved for special purposes (this might change). Attributes in the range
 %D 128-1023 are private and should not be touched.
 
-\let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+\permanent\integerdef\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
 
-\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
+% \permanent\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 %D strings instead of tokens that take more memory. It's a trick to trick to force
 %D strings. This macro is never used in \CONTEXT.
 
-%protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
-\protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
+\permanent\protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
 
 %D \macros
 %D   {scratchcounter,
@@ -445,78 +440,79 @@
 
 %D More allocations:
 
-\newskip  \zeroskip      \zeroskip      0pt plus 0pt minus 0pt
-\newdimen \zeropoint     \zeropoint     0pt
-\newdimen \onepoint      \onepoint      1pt
-\newdimen \halfapoint    \halfapoint    0.5pt
-\newdimen \maxdimen      \maxdimen      16383.99999pt % 1073741823sp
-\newcount \maxcount      \maxcount      2147483647
-\newdimen \onebasepoint  \onebasepoint  1bp
-\newdimen \scaledpoint   \scaledpoint   1sp
-\newdimen \thousandpoint \thousandpoint 1000pt
-\newmuskip\zeromuskip    \zeromuskip    0mu
-\newmuskip\onemuskip     \onemuskip     1mu
+\newskip  \zeroskip      \immutable\zeroskip      0pt plus 0pt minus 0pt
+\newdimen \zeropoint     \immutable\zeropoint     0pt
+\newdimen \onepoint      \immutable\onepoint      1pt
+\newdimen \halfapoint    \immutable\halfapoint    0.5pt
+\newdimen \maxdimen      \immutable\maxdimen      16383.99999pt % 1073741823sp
+\newcount \maxcount      \immutable\maxcount      2147483647
+\newdimen \onebasepoint  \immutable\onebasepoint  1bp
+\newdimen \scaledpoint   \immutable\scaledpoint   1sp
+\newdimen \thousandpoint \immutable\thousandpoint 1000pt
+\newmuskip\zeromuskip    \immutable\zeromuskip    0mu
+\newmuskip\onemuskip     \immutable\onemuskip     1mu
 
-\newmuskip\muquad        \muquad        18mu
+\newmuskip\muquad        \immutable\muquad        18mu
 
-\let\points   \onepoint
-\let\halfpoint\halfapoint
+\aliased\let\points   \onepoint
+\aliased\let\halfpoint\halfapoint
 
 \newtoks \emptytoks
 
-%D And even more: (todo: countdefs 60+)
+%D And even more: (todo: countdefs 60+). Watch out, we need a count for a negative constant
+%D but can use chardefs for positive ones. Actually, because we have plenty of counters we
+%D can also use counts for those.
 
-%newcount\minusone \minusone    -1
-\newcount\minustwo \minustwo    -2
-%chardef \zerocount              0
-%chardef \plusone                1
-\chardef \plustwo                2
-\chardef \plusthree              3
-\chardef \plusfour               4
-\chardef \plusfive               5
-\chardef \plussix                6
-\chardef \plusseven              7
-\chardef \pluseight              8
-\chardef \plusnine               9
-\chardef \plusten               10
-\chardef \plussixteen           16
-\chardef \plusfifty             50
-\chardef \plushundred          100
-\chardef \plusonehundred       100
-\chardef \plustwohundred       200
-\chardef \plusfivehundred      500
-\chardef \pluscxxvii           127
-\chardef \pluscxxviii          128
-\chardef \pluscclv             255
-\chardef \pluscclvi            256
-\chardef \plusthousand        1000
-\chardef \plustenthousand    10000
-\chardef \plustwentythousand 20000
-\chardef \medcard            32768
-\chardef \maxcard            65536 % pdftex has less mathchars
-\chardef \maxcardminusone    65535
+%permanent\integerdef\minusone              -1
+\permanent\integerdef\minustwo              -2
+%permanent\integerdef\zerocount              0
+%permanent\integerdef\plusone                1
+\permanent\integerdef\plustwo                2
+\permanent\integerdef\plusthree              3
+\permanent\integerdef\plusfour               4
+\permanent\integerdef\plusfive               5
+\permanent\integerdef\plussix                6
+\permanent\integerdef\plusseven              7
+\permanent\integerdef\pluseight              8
+\permanent\integerdef\plusnine               9
+\permanent\integerdef\plusten               10
+\permanent\integerdef\pluseleven            11
+\permanent\integerdef\plustwelve            12
+\permanent\integerdef\plussixteen           16
+\permanent\integerdef\plusfifty             50
+\permanent\integerdef\plushundred          100
+\permanent\integerdef\plusonehundred       100
+\permanent\integerdef\plustwohundred       200
+\permanent\integerdef\plusfivehundred      500
+\permanent\integerdef\pluscxxvii           127
+\permanent\integerdef\pluscxxviii          128
+\permanent\integerdef\pluscclv             255
+\permanent\integerdef\pluscclvi            256
+\permanent\integerdef\plusthousand        1000
+\permanent\integerdef\plustenthousand    10000
+\permanent\integerdef\plustwentythousand 20000
+\permanent\integerdef\medcard            32768
+\permanent\integerdef\maxcard            65536 % pdftex has less mathchars
+\permanent\integerdef\maxcardminusone    65535
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
 %D
 %D A few handy shortcuts
 
-\let\singleexpandafter \expandafter
-\def\doubleexpandafter{\expandafter\expandafter\expandafter}
-\def\tripleexpandafter{\expandafter\doubleexpandafter\expandafter}
+\permanent\let\singleexpandafter \expandafter
+\permanent\def\doubleexpandafter{\expandafter\expandafter\expandafter}
+\permanent\def\tripleexpandafter{\expandafter\doubleexpandafter\expandafter}
 
 %D We prefer the more readable variant than in plain \TEX. User should only
 %D use \type {\emptybox}:
 
 \newbox\voidbox  % public
 
-\let\normalhbox\hbox
-\let\normalvbox\vbox
-
-\def\unvoidbox{\unhbox\voidbox}
-\def\emptybox {\box   \voidbox}  % used in initializations so no attributes
-\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
-\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
+\permanent\def\unvoidbox{\unhbox\voidbox}
+\permanent\def\emptybox {\box   \voidbox}  % used in initializations so no attributes
+\permanent\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
+\permanent\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
 
 \let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
@@ -525,7 +521,7 @@
 %D
 %D We need this one soon:
 
-\protected\def\dontcomplain
+\permanent\protected\def\dontcomplain
   {\hbadness\plustenthousand
    \vbadness\plustenthousand
    \hfuzz   \maxdimen
@@ -534,20 +530,21 @@
 %D Some expected plain variants follow. We don't reuse registers because we
 %D don't want clashes.
 
-\let     \p@             \onepoint
-\let     \m@ne           \minusone
-\let     \z@             \zeropoint
-\let     \@ne            \plusone
-\let     \tw@            \plustwo
-\let     \thr@@          \plusthree
-\let     \sixt@@n        \plussixteen
-\let     \@cclv          \pluscclv
-\let     \@cclvi         \pluscclvi
-\let     \voidb@x        \voidbox
-\newtoks \toks@        % \scratchtoks
+\aliased\let\p@     \onepoint
+\aliased\let\m@ne   \minusone
+\aliased\let\z@     \zeropoint
+\aliased\let\@ne    \plusone
+\aliased\let\tw@    \plustwo
+\aliased\let\thr@@  \plusthree
+\aliased\let\sixt@@n\plussixteen
+\aliased\let\@cclv  \pluscclv
+\aliased\let\@cclvi \pluscclvi
+\aliased\let\voidb@x\voidbox
 
-%D We define \type {\newif} a la plain \TEX, but will redefine it later. As
-%D Knuth says:
+\newtoks    \toks@  %scratchtoks
+
+%D We define \type {\newif} a la plain \TEX, but will redefine it later. As Knuth
+%D says:
 %D
 %D \startnarrower
 %D And here's a different sort of allocation: for example,
@@ -588,19 +585,14 @@
 % \protected\def\new_if_cs#1#2%
 %   {\csname\expandafter\newif\csstring#1#2\endcsname}
 %
-% We wrap all into one macro:
+% We wrap all into one macro (the frozen stuff adds 10% runtime):
 
-\protected\def\newif#1%
-  {\let\new_if_saved\newif
-   \let\newif\new_if_check
-   \expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
-   \expandafter\def\csname\expandafter\newif\csstring#1false\endcsname{\let#1\iffalse}%
-   \csname\expandafter\newif\csstring#1false\endcsname
-   \let\newif\new_if_saved}
+\permanent\protected\def\newif#1%
+  {\permanent\protected\expandafter\gdef\csname\expandafter\new_if_check\csstring#1true\endcsname {\overloaded\frozen\let#1\iftrue }%
+   \permanent\protected\expandafter\gdef\csname\expandafter\new_if_check\csstring#1false\endcsname{\overloaded\frozen\let#1\iffalse}%
+   \csname\expandafter\new_if_check\csstring#1false\endcsname}
 
-\bgroup
-   \normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
-\egroup
+\normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
 
 %D Let's test this one:
 
@@ -611,22 +603,22 @@
 
 %D A few shortcuts:
 
-\protected\def\udef {\protected\def }
-\protected\def\ugdef{\protected\gdef}
-\protected\def\uedef{\protected\edef}
-\protected\def\uxdef{\protected\xdef}
+\permanent\protected\def\udef {\protected\def }
+\permanent\protected\def\ugdef{\protected\gdef}
+\permanent\protected\def\uedef{\protected\edef}
+\permanent\protected\def\uxdef{\protected\xdef}
 
 %D For a while we keep the following, as systems like tikz need it. Best
 %D not use that one \CONTEXT.
 
-\let\active\activecatcode
+\aliased\let\active\activecatcode
 
 %D Constants to be used with \type {\interactionmode}.
 
-\chardef\batchmodecode     \zerocount
-\chardef\nonstopmodecode   \plusone
-\chardef\scrollmodecode    \plustwo
-\chardef\errorstopmodecode \plusthree
+\permanent\integerdef\batchmodecode     \zerocount
+\permanent\integerdef\nonstopmodecode   \plusone
+\permanent\integerdef\scrollmodecode    \plustwo
+\permanent\integerdef\errorstopmodecode \plusthree
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.
@@ -646,7 +638,7 @@
 
 % no longer \errorstopmode cf. plain tex 3.141592653
 
-\protected\def\tracingall
+\permanent\protected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
    \tracingmacros    \plustwo
@@ -659,16 +651,18 @@
    \tracingnesting   \plustwo
    \tracingassigns   \plustwo
    \tracingmath      \plusone
+   \tracingalignments\plusone
    \showboxbreadth   \maxcount
    \showboxdepth     \maxcount}
 
-\protected\def\loggingall
+\permanent\protected\def\loggingall
   {\tracingall
    \tracingonline    \zerocount}
 
-\protected\def\tracingnone
+\permanent\protected\def\tracingnone
   {\showboxdepth     \plusthree
    \showboxbreadth   \plusfive
+   \tracingalignments\zerocount
    \tracingmath      \zerocount
    \tracingassigns   \zerocount
    \tracingnesting   \zerocount
@@ -691,31 +685,31 @@
 
 \tracingstats\plusone
 
-%D Here we also save \type {\input}, more will be saved later.
+%D This is only used when we load \CONTEXT:
 
-\ifdefined\normalinput \else \let\normalinput\input \fi
-
-%D We don't like outer commands, and we always want access to the original
-%D \type {\input} primitive.
-
-\let\normalouter\outer  \def\outer{} % no longer \relax
-
-%D To circumvent dependencies, we can postpone certain initializations to
-%D dumping time, by appending them to the \type {\everydump} token register.
-
-\ifdefined\normaldump \else \let\normaldump\dump \fi
+\permanent\def\pushoverloadmode
+  {\edef\popoverloadmode{\overloadmode\the\overloadmode}%
+   \overloadmode\zerocount}
 
 \newtoks\everydump
 
-\def\dump{\the\everydump\global\everydump\emptytoks\glet\dump\relax\normaldump}
+\pushoverloadmode
 
-%D The same applies for the startup actions.
+\protected\def\dump
+  {\the\everydump
+   \global\everydump\emptytoks
+   \pushoverloadmode
+   \glet\dump\relax
+   \popoverloadmode
+   %let\pushoverloadmode\relax
+   %let\popoverloadmode\relax
+% \tracingall
+   \normaldump}
 
-\ifdefined\normaleveryjob \else \let\normaleveryjob\everyjob \fi
+\permanent\protected\def\input
+  {\normalinput}
 
-\let\everyjob\relax \newtoks\everyjob
-
-\normaleveryjob{\the\everyjob}
+\popoverloadmode
 
 %D \macros
 %D   {newconditional,
@@ -754,27 +748,27 @@
 %D Such an implementation gives problems with nested conditionals. The next
 %D implementation is about as fast and just as straightforward:
 
-\let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
-\let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
+\aliased\let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
+\aliased\let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
 
-\protected\def\settrue #1{\let#1\conditionaltrue }
-\protected\def\setfalse#1{\let#1\conditionalfalse}
+\permanent\protected\def\settrue #1{\integerdef#1\conditionaltrue }
+\permanent\protected\def\setfalse#1{\integerdef#1\conditionalfalse}
 
-\protected\def\settruevalue #1{\expandafter\let\csname#1\endcsname\conditionaltrue }
-\protected\def\setfalsevalue#1{\expandafter\let\csname#1\endcsname\conditionalfalse}
+\permanent\protected\def\settruevalue #1{\expandafter\integerdef\csname#1\endcsname\conditionaltrue }
+\permanent\protected\def\setfalsevalue#1{\expandafter\integerdef\csname#1\endcsname\conditionalfalse}
 
-\let\newconditional\setfalse
-\let\ifconditional \ifcase
+\aliased\let\newconditional\setfalse
+\aliased\let\ifconditional \ifcase
 
-\let\then\relax % so that we can say: \ifnum1>2\then -)
+\aliased\let\then\relax % so that we can say: \ifnum1>2\then -)
 
-\def\truecondition {\iftrue}
-\def\falsecondition{\iffalse}
+\permanent\def\truecondition {\iftrue}
+\permanent\def\falsecondition{\iffalse}
 
 % This one has to be unprotected otherwise we get a files-ends-to-soon but it's ok
 % as conditions expand anyway.
 
-\def\quitcondition{\orelse\iffalse}
+\permanent\def\quitcondition{\orelse\iffalse}
 
 %D \macros
 %D   {newmacro,setnewmacro,newfraction}
@@ -782,13 +776,13 @@
 %D Let's be complete and also introduce some definers. These are not mandate
 %D but handy for grepping.
 
-\protected\def\newmacro   #1{\let#1\empty}
-\protected\def\setnewmacro#1{\let#1}
+\permanent\protected\def\newmacro   #1{\let#1\empty}
+\permanent\protected\def\setnewmacro#1{\let#1}
 
-\def\!!zerocount{0}
-\def\!!plusone  {1}
+\permanent\protected\def\newfraction#1{\let#1\!!plusone}
 
-\protected\def\newfraction#1{\let#1\!!plusone}
+\def\!!zerocount{0} % later redefined
+\def\!!plusone  {1} % later redefined
 
 %D It would be handy to have a primitive \type {\unless\ifcase} because then we
 %D could use nicer values. Anyhow, this conditional code used to be in the \type
@@ -804,7 +798,7 @@
 %D \ifzeropt \somedimen ... \else ... \fi
 %D \stoptyping
 
-\let\ifzeropt\ifcase
+\aliased\let\ifzeropt\ifcase
 
 % these token list helpers might move to syst-aux.mkiv
 %
@@ -815,14 +809,14 @@
 
 \newtoks\t_syst_toks_temp \let\m_syst_toks_temp\t_syst_toks_temp
 
-\protected\def\appendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_l \t_syst_toks_temp=}
-\protected\def\prependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_l\t_syst_toks_temp=}
+\permanent\protected\def\appendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_l \t_syst_toks_temp=}
+\permanent\protected\def\prependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_l\t_syst_toks_temp=}
 
 % \def\syst_toks_append {\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\m_syst_toks_temp\the\t_syst_toks_temp}}}
 % \def\syst_toks_prepend{\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\t_syst_toks_temp\the\m_syst_toks_temp}}}
 
-\protected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
-\protected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
+\permanent\protected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
+\permanent\protected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
 
 \def\syst_toks_append_l {\normalexpanded{\m_syst_toks_temp{\the\m_syst_toks_temp\the\t_syst_toks_temp}}}
 \def\syst_toks_prepend_l{\normalexpanded{\m_syst_toks_temp{\the\t_syst_toks_temp\the\m_syst_toks_temp}}}
@@ -830,14 +824,14 @@
 \def\syst_toks_append_g {\global\syst_toks_append_l }
 \def\syst_toks_prepend_g{\global\syst_toks_prepend_l}
 
-\protected\def\addtotoks      #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_l\let\next}
-\protected\def\globaladdtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_g\let\next}
+\permanent\protected\def\addtotoks      #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_l\let\next}
+\permanent\protected\def\globaladdtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_g\let\next}
 
 \def\syst_toks_add_l{\m_syst_toks_temp\expandafter\bgroup\the\m_syst_toks_temp}
 \def\syst_toks_add_g{\global\syst_toks_add_l}
 
-\protected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
-\protected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes
+\permanent\protected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
+\permanent\protected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes
 
 %D \macros
 %D   {begcsname}
@@ -846,7 +840,7 @@
 
 % \def\begcsname#1\endcsname{\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
-\let\begcsname\begincsname
+\aliased\let\begcsname\begincsname
 
 %D Now come a few macros that might be needed in successive loading. We redefine the
 %D \type {\par} primitive pretty soon so that we get the equivalents right.
@@ -863,13 +857,13 @@
 %   {\everypar   \emptytoks
 %    \everyendpar\emptytoks}
 
-\protected\def\reseteverypar
+\permanent\protected\def\reseteverypar
   {\everypar\emptytoks}
 
-\let\endgraf\par
-\let\endline\cr
+\aliased\let\endgraf\par % plain, a kind of funny name
+%aliased\let\endline\cr  % plain, not needed and probably also confusing
 
-\protected\def\null{\hpack{}}
+\permanent\protected\def\null{\hpack{}}
 
 %D The following two might be overloaded later on but some modules need then
 %D earlier. These functionality is reflected in the name and will not change.
@@ -885,8 +879,8 @@
 %     \obeyspaces\glet =\space%
 % \egroup
 
-\def\obeylines {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\par}
-\def\obeyspaces{\catcode\spaceasciicode    \activecatcode\letcharcode\spaceasciicode    \space}
+\def\obeylines {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\par  } % check if these can be \permanent
+\def\obeyspaces{\catcode\spaceasciicode    \activecatcode\letcharcode\spaceasciicode    \space} % check if these can be \permanent
 
 % %D A constant:
 %
@@ -897,12 +891,12 @@
 %D get. Beware: this macro does not support nested loops. We use a namespace
 %D prefix \type {@@pln}.
 
-\def\loop#1\repeat{\def\@@plnbody{#1}\@@plniterate} % might go
+\permanent\def\loop#1\repeat{\def\@@plnbody{#1}\@@plniterate} % might go
 
 %D The following makes \type {\loop} \unknown\ \type {\if} \unknown\ \type
 %D {\repeat} skippable (clever trick):
 
-\let\repeat\fi % so both \loop and \repeat are reserved words!
+\permanent\let\repeat\fi % so both \loop and \repeat are reserved words!
 
 %D The original (no \type {@@pln} there):
 %D
@@ -927,12 +921,12 @@
 %D Although we don't add pagenumbers yet we alias the default register used
 %D for counting pages:
 
-\countdef\pageno\zerocount \pageno\plusone % first page is number 1
+\permanent\countdef\pageno\zerocount \pageno\plusone % first page is number 1
 
 %D Beside the raw counter \type {\pageno} the \type {\folio} macro provides
 %D the value.
 
-\def\folio{\the\pageno} % kind of expected and therefore reserved
+\permanent\def\folio{\the\pageno} % kind of expected and therefore reserved
 
 %D The following registers are kind of standard and (for the moment) we define
 %D them here. This might change.
@@ -948,11 +942,11 @@
 %D Sometimes kerns make more sense than glue but we need to be in the
 %D right mode:
 
-\protected\def\vkern   {\ifhmode\par           \fi\kern}
-\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}
+\permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}
+\permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}
 
-\protected\def\vpenalty{\ifhmode\par           \fi\penalty}
-\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty}
+\permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty}
+\permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty}
 
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but
 %D are probably not used in \CONTEXT.
@@ -960,19 +954,19 @@
 \newskip \hideskip   \hideskip  = -1000pt plus 1fill
 \newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
 
-\def\hidewidth % for alignment entries that can stick out
+\permanent\def\hidewidth % for alignment entries that can stick out
   {\hskip\hideskip}
 
-\def\ialign % initialized \halign
+\permanent\def\ialign % initialized \halign
   {\everycr\emptytoks
    \tabskip\zeroskip
    \halign}
 
 \newcount \mscount
 
-\def\spanomit{\span\omit} % bypass error message
+\permanent\def\spanomit{\span\omit} % bypass error message
 
-\def\multispan#1%
+\permanent\def\multispan#1%
   {\omit
    \mscount#1\relax
    \loop
@@ -980,30 +974,31 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-\let\nopdfcompression        \relax
-\let\onlypdfobjectcompression\relax
-\let\maximumpdfcompression   \relax
-\let\normalpdfcompression    \relax
+\let\nopdfcompression        \relax % later
+\let\onlypdfobjectcompression\relax % later
+\let\maximumpdfcompression   \relax % later
+\let\normalpdfcompression    \relax % later
 
 %D Basic status stuff.
 
-\newif\ifproductionrun
+% \newif\ifproductionrun % already defined
 
 %D For those who expect this \unknown
 
-\ifx\fmtname   \undefined \def\fmtname   {ConTeXt Initial TeX} \fi
-\ifx\fmtversion\undefined \def\fmtversion{3.1415926}           \fi
+\ifx\fmtname   \undefined \immutable\def\fmtname   {ConTeXt Initial TeX} \fi
+\ifx\fmtversion\undefined \immutable\def\fmtversion{3.1415926}           \fi
 
 %D A few bonus macros:
 
-\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
-\def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
+%permanent\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+\permanent\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
+\permanent\def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
 %D These could be set at the \LUA\ end instead:
 
-\edef\texenginename         {\directlua{tex.print(LUATEXENGINE)}}
-\edef\texengineversion      {\directlua{tex.print(LUATEXVERSION)}}
-\edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
+\immutable\edef\texenginename         {\directlua{tex.print(LUATEXENGINE)}}
+\immutable\edef\texengineversion      {\directlua{tex.print(LUATEXVERSION)}}
+\immutable\edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
 
 %D We have no reason not to enable this:
 
@@ -1012,12 +1007,12 @@
 %D We only can set this one via directives (system.synctex) and we only support
 %D the context variant. This will go away completely.
 
-\newcount\synctex \let\normalsynctex\synctex
+\newcount\synctex % \let\normalsynctex\synctex
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 
-\voffset\zeropoint \let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
-\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
+% \voffset\zeropoint \overloaded\let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
+% \hoffset\zeropoint \overloaded\let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
 
 \matheqnogapstep\zerocount % for now
 
@@ -1029,37 +1024,54 @@
 \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
 %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
 
-\protected\def\installsystemnamespace#1%
+\protected\def\installsystemnamespace#1% will be redefined
   {\ifcsname ??#1\endcsname
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
-     \expandafter\normalend
    \else
      \global\advance\c_syst_helpers_n_of_namespaces\plusone
-     \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+     \immutable\expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
 %D It makes more sense to have these here:
 
-\let\normalsuperscript  \Usuperscript
-\let\normalsubscript    \Usubscript
-\let\normalnosuperscript\Unosuperscript
-\let\normalnosubscript  \Unosubscript
-\let\normalstartimath   \Ustartmath
-\let\normalstopimath    \Ustopmath
-\let\normalstartdmath   \Ustartdisplaymath
-\let\normalstopdmath    \Ustopdisplaymath
+\aliased\let\normalsuperscript  \Usuperscript
+\aliased\let\normalsubscript    \Usubscript
+\aliased\let\normalnosuperscript\Unosuperscript
+\aliased\let\normalnosubscript  \Unosubscript
+\aliased\let\normalstartimath   \Ustartmath
+\aliased\let\normalstopimath    \Ustopmath
+\aliased\let\normalstartdmath   \Ustartdisplaymath
+\aliased\let\normalstopdmath    \Ustopdisplaymath
 
 %D Also better here:
 
-\def\wildcardsymbol{*}
+\immutable\def\wildcardsymbol{*}
 
 %D For a while we will keep these useless numbers as for instance tikz checks for them:
 
-\frozen\chardef\eTeXversion   2
-\frozen\def    \eTeXrevision {2}
+\immutable\integerdef\eTeXversion   2
+\immutable\def       \eTeXrevision {2}
 
 %D Experiment:
 
 \glyphdimensionsmode\plusone
+
+%D Just in case users use this:
+
+\aliased\let\immediateassign  \immediate
+\aliased\let\immediateassigned\localcontrolled
+
+%D Needed:
+
+\mutable\let\nexttoken   \relax
+\mutable\let\next        \relax
+\mutable\let\nextnext    \relax
+\mutable\let\nextnextnext\relax
+
+%D For now here: will get a proper solution
+
+\pushoverloadmode
+\mutable\let\par\par
+\popoverloadmode
 
 \protect \endinput

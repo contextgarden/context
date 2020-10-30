@@ -21,11 +21,11 @@
 
 \registerctxluafile{spac-ali}{optimize}
 
-\chardef\normalizelinemodecode  = "01
-\chardef\indentskipmodecode     = "02
-\chardef\swaphangindentmodecode = "04
-\chardef\swapparskipmodecode    = "08
-\chardef\breakafterdirmodecode  = "10
+\immutable\chardef\normalizelinemodecode  = "01
+\immutable\chardef\indentskipmodecode     = "02
+\immutable\chardef\swaphangindentmodecode = "04
+\immutable\chardef\swapparskipmodecode    = "08
+\immutable\chardef\breakafterdirmodecode  = "10
 
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
@@ -35,16 +35,16 @@
     \c_attr_alignstate\attributeunsetvalue
 \to \everyforgetall
 
-\unexpanded\def\resetrealignsignal{\c_attr_realign\attributeunsetvalue}
-\unexpanded\def\signalinnerrealign{\clf_setrealign\plustwo}
-\unexpanded\def\signalouterrealign{\clf_setrealign\plusone}
+\permanent\protected\def\resetrealignsignal{\c_attr_realign\attributeunsetvalue}
+\permanent\protected\def\signalinnerrealign{\clf_setrealign\plustwo}
+\permanent\protected\def\signalouterrealign{\clf_setrealign\plusone}
 
 \installcorenamespace{aligncommand}
 \installcorenamespace{alignhorizontal}
 \installcorenamespace{alignvertical}
 
-\installcorenamespace{alignmentnormalcache}
-\installcorenamespace{alignmentraggedcache}
+% \installcorenamespace{alignmentnormalcache}
+% \installcorenamespace{alignmentraggedcache}
 
 % nasty hack:
 
@@ -54,8 +54,8 @@
 \installcorenamespace{alignmentraggedcacheodd}
 \installcorenamespace{alignmentraggedcacheeven}
 
-\def\??alignmentnormalcache{\ifodd\realpageno\??alignmentnormalcacheodd\else\??alignmentnormalcacheeven\fi}
-\def\??alignmentraggedcache{\ifodd\realpageno\??alignmentraggedcacheodd\else\??alignmentraggedcacheeven\fi}
+\immutable\def\??alignmentnormalcache{\ifodd\realpageno\??alignmentnormalcacheodd\else\??alignmentnormalcacheeven\fi}
+\immutable\def\??alignmentraggedcache{\ifodd\realpageno\??alignmentraggedcacheodd\else\??alignmentraggedcacheeven\fi}
 
 \newtoks\everyresetalign % todo
 
@@ -65,48 +65,48 @@
 \newconditional\displaylefttoright  \settrue\displaylefttoright
 \newconditional\inlinelefttoright   \settrue\inlinelefttoright
 
-\unexpanded\def\lefttoright
+\permanent\protected\def\lefttoright
   {\ifvmode
      \spac_directions_lefttoright_vmode
    \else
      \spac_directions_lefttoright_hmode
    \fi}
 
-\unexpanded\def\righttoleft
+\permanent\protected\def\righttoleft
   {\ifvmode
      \spac_directions_righttoleft_vmode
    \else
      \spac_directions_righttoleft_hmode
    \fi}
 
-\unexpanded\def\spac_directions_lefttoright_vmode
+\protected\def\spac_directions_lefttoright_vmode
   {\settrue\displaylefttoright
    \settrue\inlinelefttoright
    \textdirection\directionlefttoright
    \pardirection \directionlefttoright}
 
-\unexpanded\def\spac_directions_righttoleft_vmode
+\protected\def\spac_directions_righttoleft_vmode
   {\setfalse\displaylefttoright
    \setfalse\inlinelefttoright
    \textdirection\directionrighttoleft
    \pardirection \directionrighttoleft}
 
-\unexpanded\def\spac_directions_lefttoright_hmode
+\protected\def\spac_directions_lefttoright_hmode
   {\linedirection\directionlefttoright % linedir keeps subtype of skip
    \settrue\inlinelefttoright}
 
-\unexpanded\def\spac_directions_righttoleft_hmode
+\protected\def\spac_directions_righttoleft_hmode
   {\linedirection\directionrighttoleft % linedir keeps subtype of skip
    \setfalse\inlinelefttoright}
 
-\unexpanded\def\synchronizelayoutdirection
+\permanent\protected\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright
      \spac_directions_synchronize_lr
    \else
      \spac_directions_synchronize_rl
    \fi}
 
-\unexpanded\def\synchronizedisplaydirection
+\permanent\protected\def\synchronizedisplaydirection
   {\ifconditional\displaylefttoright
      \spac_directions_synchronize_lr
    \else
@@ -123,30 +123,30 @@
    \textdirection\directionrighttoleft
    \pardirection \directionrighttoleft}
 
-\unexpanded\def\synchronizeinlinedirection
+\permanent\protected\def\synchronizeinlinedirection
   {% why not \linedirection here
    \textdirection\ifconditional\inlinelefttoright\directionlefttoright\else\directionrighttoleft\fi}
 
-\unexpanded\def\checkedlefttoright
+\permanent\protected\def\checkedlefttoright
   {\ifvmode
      \spac_directions_lefttoright_vmode
    \else
      \spac_directions_lefttoright_hmode_checked
    \fi}
 
-\unexpanded\def\checkedrighttoleft
+\permanent\protected\def\checkedrighttoleft
   {\ifvmode
      \spac_directions_righttoleft_vmode
    \else
      \spac_directions_righttoleft_hmode_checked
    \fi}
 
-\unexpanded\def\spac_directions_lefttoright_hmode_checked
+\protected\def\spac_directions_lefttoright_hmode_checked
   {\ifconditional\inlinelefttoright\else
      \lefttoright
    \fi}
 
-\unexpanded\def\spac_directions_righttoleft_hmode_checked
+\protected\def\spac_directions_righttoleft_hmode_checked
   {\ifconditional\inlinelefttoright
      \righttoleft
    \fi}
@@ -156,10 +156,10 @@
 \letvalue{\??bidi\v!left }\checkedlefttoright \letvalue{\??bidi l2r}\checkedlefttoright
 \letvalue{\??bidi\v!right}\checkedrighttoleft \letvalue{\??bidi r2l}\checkedrighttoleft
 
-\unexpanded\def\usebidiparameter#1%
+\permanent\protected\def\usebidiparameter#1%
   {\begincsname\??bidi#1\c!bidi\endcsname}
 
-\unexpanded\def\showdirections
+\permanent\protected\def\showdirections
   {\dontleavehmode
    \begingroup\infofont\textdirection\directionlefttoright[\space
    layout:  \ifconditional\layoutlefttoright  l2r\else r2l\fi\space
@@ -167,20 +167,20 @@
    inline:  \ifconditional\inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
 
-\unexpanded\def\righttolefthbox#1#{\reversehbox#1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
-\unexpanded\def\lefttorighthbox#1#{\naturalhbox#1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
-\unexpanded\def\righttoleftvbox#1#{\reversevbox#1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
-\unexpanded\def\lefttorightvbox#1#{\naturalvbox#1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
-\unexpanded\def\righttoleftvtop#1#{\reversevtop#1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
-\unexpanded\def\lefttorightvtop#1#{\naturalvtop#1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
+\permanent\protected\def\righttolefthbox#1#{\reversehbox#1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
+\permanent\protected\def\lefttorighthbox#1#{\naturalhbox#1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
+\permanent\protected\def\righttoleftvbox#1#{\reversevbox#1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
+\permanent\protected\def\lefttorightvbox#1#{\naturalvbox#1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
+\permanent\protected\def\righttoleftvtop#1#{\reversevtop#1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
+\permanent\protected\def\lefttorightvtop#1#{\naturalvtop#1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
 
-\unexpanded\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
-\unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox
-\unexpanded\def\autodirvtop#1#{\vtop#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vtop
+\permanent\protected\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
+\permanent\protected\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox
+\permanent\protected\def\autodirvtop#1#{\vtop#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vtop
 
-\unexpanded\def\leftorrighthbox{\ifconditional\displaylefttoright\expandafter\lefttorighthbox\else\expandafter\righttolefthbox\fi}
-\unexpanded\def\leftorrightvbox{\ifconditional\displaylefttoright\expandafter\lefttorightvbox\else\expandafter\righttoleftvbox\fi}
-\unexpanded\def\leftorrightvtop{\ifconditional\displaylefttoright\expandafter\lefttorightvtop\else\expandafter\righttoleftvtop\fi}
+\permanent\protected\def\leftorrighthbox{\ifconditional\displaylefttoright\expandafter\lefttorighthbox\else\expandafter\righttolefthbox\fi}
+\permanent\protected\def\leftorrightvbox{\ifconditional\displaylefttoright\expandafter\lefttorightvbox\else\expandafter\righttoleftvbox\fi}
+\permanent\protected\def\leftorrightvtop{\ifconditional\displaylefttoright\expandafter\lefttorightvtop\else\expandafter\righttoleftvtop\fi}
 
 % Tolerance and hyphenation
 
@@ -203,7 +203,7 @@
 
 \def\spac_align_set_raggedness_middle{\ifzeropt\hsize\plussix\bodyfontsize\else.5\hsize\fi}
 
-\unexpanded\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
+\protected\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
   {\ifnum\tolerance<\c_spac_tolerance_minimum
      \tolerance\c_spac_tolerance_minimum % small values have unwanted side effects
    \else
@@ -215,37 +215,37 @@
      % no need to do something as we're in \nohyphens
    \fi}
 
-\unexpanded\def\spac_align_set_tolerant
+\protected\def\spac_align_set_tolerant
   {\tolerance\c_spac_tolerance_normal}
 
-\unexpanded\def\spac_align_set_very_tolerant
+\protected\def\spac_align_set_very_tolerant
   {\tolerance\c_spac_tolerance_extreme}
 
-\unexpanded\def\spac_align_set_stretch
+\protected\def\spac_align_set_stretch
   {\emergencystretch\bodyfontsize}
 
-\unexpanded\def\spac_align_set_extreme_stretch
+\protected\def\spac_align_set_extreme_stretch
   {\emergencystretch10\bodyfontsize}
 
 % Vertical
 
 \newconstant\c_spac_align_state_vertical
 
-\unexpanded\def\spac_align_set_vertical_none
-  {\let\raggedtopcommand   \relax
-   \let\raggedbottomcommand\relax}
+\protected\def\spac_align_set_vertical_none
+  {\enforced\let\raggedtopcommand   \relax
+   \enforced\let\raggedbottomcommand\relax}
 
-\unexpanded\def\spac_align_set_vertical_lohi
-  {\let\raggedtopcommand   \vfilll
-   \let\raggedbottomcommand\vfilll}
+\protected\def\spac_align_set_vertical_lohi
+  {\enforced\let\raggedtopcommand   \vfilll
+   \enforced\let\raggedbottomcommand\vfilll}
 
-\unexpanded\def\spac_align_set_vertical_low
-  {\let\raggedtopcommand   \vfilll
-   \let\raggedbottomcommand\relax}
+\protected\def\spac_align_set_vertical_low
+  {\enforced\let\raggedtopcommand   \vfilll
+   \enforced\let\raggedbottomcommand\relax}
 
-\unexpanded\def\spac_align_set_vertical_high
-  {\let\raggedtopcommand   \relax
-   \let\raggedbottomcommand\vfilll}
+\protected\def\spac_align_set_vertical_high
+  {\enforced\let\raggedtopcommand   \relax
+   \enforced\let\raggedbottomcommand\vfilll}
 
 \def\spac_align_flush_vertical
   {\ifcase\c_spac_align_state_vertical
@@ -289,7 +289,7 @@
 
 % \s!plus ... slower than inline
 
-\unexpanded\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
+\permanent\protected\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
   {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip
@@ -301,7 +301,7 @@
    \setfalse         \raggedonelinerstate % now here
    \let\updateraggedskips\relax}          % no need for adaption
 
-\unexpanded\def\spac_align_set_horizontal_left
+\permanent\protected\def\spac_align_set_horizontal_left
   {\setraggedness    \spac_align_set_raggedness_left
    \raggedstatus     \plusone
    \c_attr_alignstate\plusone
@@ -314,7 +314,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_center
+\permanent\protected\def\spac_align_set_horizontal_center
   {\setraggedness    \spac_align_set_raggedness_middle
    \raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
@@ -327,7 +327,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_right
+\permanent\protected\def\spac_align_set_horizontal_right
   {\setraggedness    \spac_align_set_raggedness_right
    \raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
@@ -340,7 +340,7 @@
   %\parindent        \parindent
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_very_left
+\permanent\protected\def\spac_align_set_horizontal_very_left
   {\raggedstatus     \plusone
    \c_attr_alignstate\plusone
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
@@ -352,7 +352,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_very_center
+\permanent\protected\def\spac_align_set_horizontal_very_center
   {\raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
@@ -364,7 +364,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_very_right
+\permanent\protected\def\spac_align_set_horizontal_very_right
   {\raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint
@@ -376,7 +376,7 @@
   %\parindent        \parindent
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_wide_center
+\permanent\protected\def\spac_align_set_horizontal_wide_center
   {\setraggedness    \spac_align_set_raggedness_middle
    \raggedstatus     \plustwo
    \c_attr_alignstate\plustwo
@@ -389,7 +389,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_centered_last_line
+\permanent\protected\def\spac_align_set_horizontal_centered_last_line
   {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
@@ -401,7 +401,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_flushedright_last_line
+\permanent\protected\def\spac_align_set_horizontal_flushedright_last_line
   {\raggedstatus     \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
@@ -413,7 +413,7 @@
    \parindent        \zeropoint
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_right_tt % a plain command
+\permanent\protected\def\spac_align_set_horizontal_right_tt % a plain command
   {\tttf % brrr
    \raggedstatus     \plusthree
    \c_attr_alignstate\plusthree
@@ -426,7 +426,7 @@
   %\parindent        \parindent
    \relax}
 
-\unexpanded\def\spac_align_set_horizontal_extra
+\permanent\protected\def\spac_align_set_horizontal_extra
   {\xspaceskip\zeropoint\s!plus\v_spac_align_fill_amount_space\relax}
 
 \def\spac_align_flush_horizontal
@@ -496,21 +496,21 @@
 
 \newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
 
-\unexpanded\def\raggedbottom
+\permanent\protected\def\raggedbottom
   {\bottomraggednessmode\zerocount
    \settopskip}
 
-\unexpanded\def\alignbottom
+\permanent\protected\def\alignbottom
   {\bottomraggednessmode\plusone
    \settopskip}
 
-\unexpanded\def\baselinebottom
+\permanent\protected\def\baselinebottom
   {\bottomraggednessmode\plustwo
    \settopskip}
 
 \let\normalbottom\alignbottom % downward compatible
 
-\unexpanded\def\setbottomalignmode#1%
+\permanent\protected\def\setbottomalignmode#1%
   {\bottomraggednessmode#1%
    \settopskip}
 
@@ -548,7 +548,7 @@
 \let\updateraggedskips\relax
 
 \def\spac_align_add_to_cache
-  {\let\raggedbox\relax % why
+  {\enforced\let\raggedbox\relax % why
    % we inherit hyphenation and tolerance
    \t_spac_align_collected       \emptytoks
    \c_spac_align_state_broad     \zerocount
@@ -582,7 +582,7 @@
 
 % The local (key driven) setter:
 
-\unexpanded\def\spac_align_prepare#1% deferred
+\permanent\protected\def\spac_align_prepare#1% deferred
   {\edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifx\raggedcommand\relax
@@ -595,10 +595,7 @@
 
 % The regular align setter:
 
-\unexpanded\def\setupalign
-  {\dosingleempty\spac_align_setup}
-
-\def\spac_align_setup[#1]% immediate
+\permanent\tolerant\protected\def\setupalign[#1]% immediate
   {\edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifx\raggedcommand\relax
@@ -608,13 +605,13 @@
    \fi
    \raggedcommand}
 
-\unexpanded\def\usealignparameter#1% faster local variant
+\permanent\protected\def\usealignparameter#1% faster local variant
   {\edef\m_spac_align_asked{#1\c!align}%
    \ifx\m_spac_align_asked\empty\else
      \spac_align_use_indeed
    \fi}
 
-\unexpanded\def\dousealignparameter#1% faster local variant
+\permanent\protected\def\dousealignparameter#1% faster local variant
   {\edef\m_spac_align_asked{#1}%
    \ifx\m_spac_align_asked\empty\else
      \spac_align_use_indeed
@@ -631,7 +628,7 @@
 
 % experiment
 
-\unexpanded\def\spac_align_use_later#1%
+\protected\def\spac_align_use_later#1%
   {\begingroup
    \edef\m_spac_align_asked{#1}%
    \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
@@ -640,12 +637,12 @@
    \fi
    \endgroup}
 
-\unexpanded\def\spac_align_use_now#1%
+\protected\def\spac_align_use_now#1%
   {\csname\??alignmentnormalcache#1\endcsname}
 
 % Maybe we need something different in columns.
 
-\unexpanded\def\installalign#1#2% beware: commands must be unexpandable!
+\protected\def\installalign#1#2% beware: commands must be unexpandable!
   {\ifcsname\??aligncommand#1\endcsname \else
      \setvalue{\??aligncommand#1}{\toksapp\t_spac_align_collected{#2}}%
    \fi}
@@ -659,7 +656,7 @@
 %
 % this one could deal with both
 %
-% \unexpanded\def\installalignoption#1#2%
+% \protected\def\installalignoption#1#2%
 %   {\ifcsname\??aligncommand#1\endcsname \else
 %      \setvalue{\??aligncommand#1}%
 %        {\spac_align_set_horizontal_none
@@ -759,7 +756,7 @@
      \spac_align_flush_parfill_indeed{\number\c_spac_align_state_par_fill}%
    \fi}
 
-\unexpanded\def\spac_align_flush_parfill_indeed#1%
+\protected\def\spac_align_flush_parfill_indeed#1%
   {\parfillskip
      #1\directhspaceamount\v!final
    % plus \dimexpr\availablehsize-#1\directhspaceamount\v!final\relax
@@ -775,7 +772,7 @@
     \setvalue{\??aligncommand\v!left }{\c_spac_align_state_horizontal\plustwo  }%
 \to \t_spac_every_swap_align
 
-\unexpanded\def\enablereversealignment
+\permanent\protected\def\enablereversealignment
   {\the\t_spac_every_swap_align
    \t_spac_every_swap_align\emptytoks}
 
@@ -792,8 +789,7 @@
 \let\centeredlastline    \spac_align_set_horizontal_centered_last_line
 \let\flushedrightlastline\spac_align_set_horizontal_flushedright_last_line
 \let\ttraggedright       \spac_align_set_horizontal_right_tt            % a plain command
-
-\let\forgetragged      \spac_align_set_horizontal_none
+\let\forgetragged        \spac_align_set_horizontal_none
 
 \appendtoks
     \spac_align_set_horizontal_none
@@ -801,18 +797,18 @@
 
 % Box commands.
 
-\unexpanded\def\ibox
+\permanent\protected\def\ibox
   {\vbox\bgroup
      \forgetall
-     \let\\=\endgraf
+     \enforced\let\\\endgraf
      \ifdoublesided\signalinnerrealign\fi
      \doifelserightpage\spac_align_set_horizontal_right\spac_align_set_horizontal_left
      \let\next}
 
-\unexpanded\def\obox
+\permanent\protected\def\obox
   {\vbox\bgroup
      \forgetall
-     \let\\=\endgraf
+     \enforced\let\\\endgraf
      \ifdoublesided\signalouterrealign\fi
      \doifelserightpage\c_spac_align_state_horizontal_left\spac_align_set_horizontal_right
      \let\next}
@@ -820,11 +816,11 @@
 \let\raggedbox\relax
 
 \def\dosetraggedvbox#1% can be more keys .. how about caching here (but seldom used)
-  {\let\raggedbox\vbox
+  {\enforced\let\raggedbox\vbox
    \processcommacommand[#1]\spac_align_set_ragged_vbox}
 
 \def\dosetraggedhbox#1% can be more keys .. how about caching here (but seldom used)
-  {\let\raggedbox\hbox
+  {\enforced\let\raggedbox\hbox
    \processcommacommand[#1]\spac_align_set_ragged_hbox}
 
 \def\spac_align_set_ragged_vbox#1%
@@ -839,35 +835,52 @@
      \quitcommalist
    \fi}
 
-\setvalue{\??alignvertical  \v!left      }{\let\raggedbox\lbox}
-\setvalue{\??alignvertical  \v!right     }{\let\raggedbox\rbox}
-\setvalue{\??alignvertical  \v!middle    }{\let\raggedbox\cbox}
-\setvalue{\??alignvertical  \v!inner     }{\let\raggedbox\ibox}
-\setvalue{\??alignvertical  \v!outer     }{\let\raggedbox\obox}
-\setvalue{\??alignvertical  \v!flushleft }{\let\raggedbox\rbox}
-\setvalue{\??alignvertical  \v!flushright}{\let\raggedbox\lbox}
-\setvalue{\??alignvertical  \v!center    }{\let\raggedbox\cbox}
-\setvalue{\??alignvertical  \v!no        }{\def\raggedbox{\vbox\bgroup\spac_align_set_horizontal_right\let\next=}]}
+\permanent\protected\def\spac_align_vertical_left      {\lbox}
+\permanent\protected\def\spac_align_vertical_right     {\rbox}
+\permanent\protected\def\spac_align_vertical_middle    {\cbox}
+\permanent\protected\def\spac_align_vertical_inner     {\ibox}
+\permanent\protected\def\spac_align_vertical_outer     {\obox}
+\permanent\protected\def\spac_align_vertical_flushleft {\rbox}
+\permanent\protected\def\spac_align_vertical_flushright{\lbox}
+\permanent\protected\def\spac_align_vertical_center    {\cbox}
+\permanent\protected\def\spac_align_vertical_no        {\vbox\bgroup\spac_align_set_horizontal_right\let\next=}
 
-% maybe \let's
+\permanent\protected\def\spac_align_horizontal_left      {\doalignedline\v!left}
+\permanent\protected\def\spac_align_horizontal_right     {\doalignedline\v!right}
+\permanent\protected\def\spac_align_horizontal_middle    {\doalignedline\v!middle}
+\permanent\protected\def\spac_align_horizontal_inner     {\doalignedline\v!inner}
+\permanent\protected\def\spac_align_horizontal_outer     {\doalignedline\v!outer}
+\permanent\protected\def\spac_align_horizontal_flushleft {\doalignedline\v!right}
+\permanent\protected\def\spac_align_horizontal_flushright{\doalignedline\v!left}
+\permanent\protected\def\spac_align_horizontal_center    {\doalignedline\v!middle}
 
-\setvalue{\??alignhorizontal\v!left      }{\def\raggedbox{\doalignedline\v!left  }}
-\setvalue{\??alignhorizontal\v!right     }{\def\raggedbox{\doalignedline\v!right }}
-\setvalue{\??alignhorizontal\v!middle    }{\def\raggedbox{\doalignedline\v!middle}}
-\setvalue{\??alignhorizontal\v!inner     }{\def\raggedbox{\doalignedline\v!inner }}
-\setvalue{\??alignhorizontal\v!outer     }{\def\raggedbox{\doalignedline\v!outer }}
-\setvalue{\??alignhorizontal\v!flushleft }{\def\raggedbox{\doalignedline\v!right }}
-\setvalue{\??alignhorizontal\v!flushright}{\def\raggedbox{\doalignedline\v!left  }}
-\setvalue{\??alignhorizontal\v!center    }{\def\raggedbox{\doalignedline\v!middle}}
+\setvalue{\??alignvertical  \v!left      }{\enforced\let\raggedbox\spac_align_vertical_left}
+\setvalue{\??alignvertical  \v!right     }{\enforced\let\raggedbox\spac_align_vertical_right}
+\setvalue{\??alignvertical  \v!middle    }{\enforced\let\raggedbox\spac_align_vertical_middle}
+\setvalue{\??alignvertical  \v!inner     }{\enforced\let\raggedbox\spac_align_vertical_inner}
+\setvalue{\??alignvertical  \v!outer     }{\enforced\let\raggedbox\spac_align_vertical_outer}
+\setvalue{\??alignvertical  \v!flushleft }{\enforced\let\raggedbox\spac_align_vertical_flushleft }
+\setvalue{\??alignvertical  \v!flushright}{\enforced\let\raggedbox\spac_align_vertical_flushright}
+\setvalue{\??alignvertical  \v!center    }{\enforced\let\raggedbox\spac_align_vertical_center}
+\setvalue{\??alignvertical  \v!no        }{\enforced\let\raggedbox\spac_align_vertical_no}
+
+\setvalue{\??alignhorizontal\v!left      }{\enforced\let\raggedbox\spac_align_horizontal_left}
+\setvalue{\??alignhorizontal\v!right     }{\enforced\let\raggedbox\spac_align_horizontal_right}
+\setvalue{\??alignhorizontal\v!middle    }{\enforced\let\raggedbox\spac_align_horizontal_middle}
+\setvalue{\??alignhorizontal\v!inner     }{\enforced\let\raggedbox\spac_align_horizontal_inner}
+\setvalue{\??alignhorizontal\v!outer     }{\enforced\let\raggedbox\spac_align_horizontal_outer}
+\setvalue{\??alignhorizontal\v!flushleft }{\enforced\let\raggedbox\spac_align_horizontal_flushleft}
+\setvalue{\??alignhorizontal\v!flushright}{\enforced\let\raggedbox\spac_align_horizontal_flushright}
+\setvalue{\??alignhorizontal\v!center    }{\enforced\let\raggedbox\spac_align_horizontal_center}
 
 % The next one can be in use so we keep it around but oen should
 % be aware of possible interference.
 
-\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
-  {\unexpanded\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
+\permanent\protected\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
+  {\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
    \updateraggedskips}
 
-\def\dosetraggedskips#1#2#3#4#5#6#7%
+\permanent\def\dosetraggedskips#1#2#3#4#5#6#7%
   {\raggedstatus                 #1\relax
    \leftskip   1\leftskip \s!plus#2\relax
    \rightskip  1\rightskip\s!plus#3\relax
@@ -890,7 +903,7 @@
      \expandafter\spac_show_par_data
    \fi}
 
-\unexpanded\def\showpardata
+\permanent\protected\def\showpardata
   {\edef\thepardata
      {\hbox{font: \fontname\font}\endgraf
       \spac_show_par_data
@@ -909,24 +922,24 @@
    \endgroup
    \let\showpardata\relax}
 
-\unexpanded\def\startshowpardata
+\permanent\protected\def\startshowpardata
   {\begingroup
    \showstruts
    \tracingparagraphs\maxdimen
    \appendtoksonce\showpardata\to\everypar}
 
-\unexpanded\def\stopshowpardata
+\permanent\protected\def\stopshowpardata
   {\endgraf
    \endgroup}
 
 % Structure:
 
-\unexpanded\def\startalignment
+\protected\def\startalignment
   {\par
    \begingroup
    \setupalign}
 
-\unexpanded\def\stopalignment
+\protected\def\stopalignment
   {\par
    \endgroup}
 
@@ -937,19 +950,19 @@
 \newtoks \everyleftofalignedline
 \newtoks \everyrightofalignedline
 
-\unexpanded\def\shiftalignedline#1#2#3#4% left, right, inner, outer
+\permanent\protected\def\shiftalignedline#1#2#3#4% left, right, inner, outer
   {\rightorleftpageaction
      {\everyleftofalignedline {\hskip\dimexpr#1+#3\relax}%
       \everyrightofalignedline{\hskip\dimexpr#2+#4\relax}}
      {\everyleftofalignedline {\hskip\dimexpr#1+#4\relax}%
       \everyrightofalignedline{\hskip\dimexpr#2+#3\relax}}}
 
-\def\doalignline#1#2% \\ == newline
+\permanent\def\doalignline#1#2% \\ == newline
   {\noindentation  % was \noindent
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize % new
-   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
+   \enforced\permanent\protected\def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
    \dowithnextbox
      {\hbox to \localhsize
         {\ifcase\alignstrutmode\or\strut\fi
@@ -961,10 +974,10 @@
 
 % plain commands
 
-\ifdefined\line       \else \def\line        {\hbox to\hsize}    \fi
-\ifdefined\leftline   \else \def\leftline  #1{\line{#1\hss}}     \fi
-\ifdefined\rightline  \else \def\rightline #1{\line{\hss#1}}     \fi
-\ifdefined\centerline \else \def\centerline#1{\line{\hss#1\hss}} \fi
+\ifdefined\line       \else \permanent\def\line        {\hbox to\hsize}    \fi
+\ifdefined\leftline   \else \permanent\def\leftline  #1{\line{#1\hss}}     \fi
+\ifdefined\rightline  \else \permanent\def\rightline #1{\line{\hss#1}}     \fi
+\ifdefined\centerline \else \permanent\def\centerline#1{\line{\hss#1\hss}} \fi
 
 % direct commands
 
@@ -978,36 +991,32 @@
 \def\spac_align_wrapper_middle      {\doalignline\hss   \hss}
 
 \def\spac_align_wrapper_handle#1%
- %{\csname\??alignwrapper\ifcsname\??alignwrapper#1\endcsname#1\else\v!middle\fi\endcsname}
   {\ifcsname\??alignwrapper#1\endcsname\expandafter\lastnamedcs\else\expandafter\spac_align_wrapper_middle\fi}
 
-\unexpanded\def\spac_align_wrapper_start[#1]%
+\permanent\tolerant\protected\def\startlinealignment[#1]%
   {\spac_align_wrapper_handle{#1}%
    \bgroup\ignorespaces}
 
-\unexpanded\def\spac_align_wrapper_stop
+\protected\def\spac_align_wrapper_stop
   {\removeunwantedspaces\egroup}
 
-\unexpanded\def\startlinealignment
-  {\dosingleempty\spac_align_wrapper_start}
+\permanent\let\stoplinealignment\spac_align_wrapper_stop
 
-\let\stoplinealignment\spac_align_wrapper_stop
+\permanent\protected\def\startleftaligned  {\startlinealignment[\v!left  ]}  \permanent\let\stopleftaligned  \spac_align_wrapper_stop
+\permanent\protected\def\startmiddlealigned{\startlinealignment[\v!middle]}  \permanent\let\stopmiddlealigned\spac_align_wrapper_stop
+\permanent\protected\def\startrightaligned {\startlinealignment[\v!right ]}  \permanent\let\stoprightaligned \spac_align_wrapper_stop
+\permanent\protected\def\startmaxaligned   {\startlinealignment[\v!max   ]}  \permanent\let\stopmaxaligned   \spac_align_wrapper_stop
 
-\unexpanded\def\startleftaligned  {\spac_align_wrapper_start[\v!left  ]}  \let\stopleftaligned  \spac_align_wrapper_stop
-\unexpanded\def\startmiddlealigned{\spac_align_wrapper_start[\v!middle]}  \let\stopmiddlealigned\spac_align_wrapper_stop
-\unexpanded\def\startrightaligned {\spac_align_wrapper_start[\v!right ]}  \let\stoprightaligned \spac_align_wrapper_stop
-\unexpanded\def\startmaxaligned   {\spac_align_wrapper_start[\v!max   ]}  \let\stopmaxaligned   \spac_align_wrapper_stop
+\aliased\let\startmidaligned   \startmiddlealigned  \aliased\let\stopmidaligned   \stopmiddlealigned
+\aliased\let\startcenteraligned\startmiddlealigned  \aliased\let\stopcenteraligned\stopmiddlealigned
 
-\let\startmidaligned   \startmiddlealigned  \let\stopmidaligned   \stopmiddlealigned
-\let\startcenteraligned\startmiddlealigned  \let\stopcenteraligned\stopmiddlealigned
+\permanent\protected\def\leftaligned  {\spac_align_wrapper_handle\v!left  }
+\permanent\protected\def\middlealigned{\spac_align_wrapper_handle\v!middle}
+\permanent\protected\def\rightaligned {\spac_align_wrapper_handle\v!right }
+\permanent\protected\def\maxaligned   {\spac_align_wrapper_handle\v!max   }
 
-\unexpanded\def\leftaligned  {\spac_align_wrapper_handle\v!left  }
-\unexpanded\def\middlealigned{\spac_align_wrapper_handle\v!middle}
-\unexpanded\def\rightaligned {\spac_align_wrapper_handle\v!right }
-\unexpanded\def\maxaligned   {\spac_align_wrapper_handle\v!max   }
-
-\let\midaligned   \middlealigned
-\let\centeraligned\middlealigned
+\aliased\let\midaligned   \middlealigned
+\aliased\let\centeraligned\middlealigned
 
 \installcorenamespace{alignline}
 
@@ -1019,17 +1028,17 @@
 \letvalue{\??alignline\v!center    }\midaligned
 \letvalue{\??alignline\v!max       }\maxaligned
 
-\def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
+% \permanent\protected\def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
 
 %D Experimental (will be redone when floats are redone as it's real messy
 %D now). It can also be made faster (if needed).
 
-\def\doxalignline#1#2#3#4#5#6%
+\permanent\protected\def\doxalignline#1#2#3#4#5#6%
   {\noindentation  % was \noindent
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize
-   \def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
+   \enforced\permanent\protected\def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
    \dowithnextbox
      {\hbox to \localhsize
         {#1\hskip\ifdone#2\else#3\fi#4%
@@ -1042,7 +1051,7 @@
         \endgroup}
      \hbox}
 
-\def\doxcheckline % used for floats so multipass anyway
+\permanent\protected\def\doxcheckline % used for floats so multipass anyway
   {\signalrightpage\doifelserightpage\donetrue\donefalse}
 
 \setvalue{\??alignline\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
@@ -1059,11 +1068,9 @@
 \setvalue{\??alignline\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
 \setvalue{\??alignline\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
-\def\doalignedline#1% unchecked
-  {\csname\??alignline#1\endcsname} % no \resetrealignsignal here ?
+\permanent\protected\def\doalignedline#1{\csname\??alignline#1\endcsname} % no \resetrealignsignal here ?
 
-\def\alignedline#1#2% setting default
- % {\csname\??alignline\ifcsname\??alignline#1\endcsname#1\else#2\fi\endcsname}
+\permanent\protected\def\alignedline#1#2% setting default
   {\ifcsname\??alignline#1\endcsname
      \expandafter\lastnamedcs
    \else
@@ -1076,15 +1083,12 @@
 %D We need to pick up a box (downward compatible in case \type {\bgroup}
 %D is used (test suite index example).
 
-\unexpanded\def\wordright
-  {\dosingleempty\spac_word_right}
-
-\def\spac_word_right[#1]%
+\permanent\tolerant\protected\def\wordright[#1]%
   {\dowithnextbox
      {\normalexpanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
      \hbox}
 
-\unexpanded\def\spac_word_right_indeed#1#2%
+\protected\def\spac_word_right_indeed#1#2%
   {\registerparwrapper
      {\v!word:\v!right}
      {\begingroup
@@ -1119,13 +1123,13 @@
 % Trick posted by WS on mailing list, generalized a bit. The bottom text only shows
 % op when there is one line space available. We could add some extra space if needed.
 
-% \unexpanded\def\bottomword
+% v\protected\def\bottomword
 %   {\par
 %    \dowithnextbox
 %      {\leaders\box\nextbox\vfil\page}
 %      \vbox to \lineheight}
 %
-% \unexpanded\def\bottomword
+% \permanent\protected\def\bottomword
 %   {\par
 %    \groupedcommand
 %      {\leaders
@@ -1141,9 +1145,9 @@
 
 % todo: also handle \bgroup ... \egroup
 
-\unexpanded\def\spac_align_simple_left  #1{{#1\hss}}
-\unexpanded\def\spac_align_simple_right #1{{\hss#1}}
-\unexpanded\def\spac_align_simple_middle#1{{\hss#1\hss}}
+\protected\def\spac_align_simple_left  #1{{#1\hss}}
+\protected\def\spac_align_simple_right #1{{\hss#1}}
+\protected\def\spac_align_simple_middle#1{{\hss#1\hss}}
 
 \letvalue{\??alignsimple       \v!right     }\spac_align_simple_left
 \letvalue{\??alignsimple       \v!outer     }\spac_align_simple_left   % not managed! see linenumbers
@@ -1161,7 +1165,7 @@
 \letvalue{\??alignsimplereverse\v!flushright}\spac_align_simple_left
 \letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
 
-\unexpanded\def\simplealignedbox#1#2%
+\permanent\protected\def\simplealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimple#2\endcsname
        \doubleexpandafter\lastnamedcs
@@ -1170,7 +1174,7 @@
      \fi
    \fi}
 
-\unexpanded\def\simplealignedspreadbox#1#2%
+\permanent\protected\def\simplealignedspreadbox#1#2%
   {\hbox \ifdim#1>\zeropoint spread #1
      \ifcsname\??alignsimple#2\endcsname
        \doubleexpandafter\lastnamedcs
@@ -1179,7 +1183,7 @@
      \fi
    \fi}
 
-\unexpanded\def\simplealignedboxplus#1#2#3%
+\permanent\protected\def\simplealignedboxplus#1#2#3%
   {\hbox #3 \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimple#2\endcsname
        \doubleexpandafter\lastnamedcs
@@ -1190,7 +1194,7 @@
 
 \newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
 
-\unexpanded\def\simplereversealignedbox#1#2%
+\permanent\protected\def\simplereversealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimplereverse#2\endcsname
        \doubleexpandafter\lastnamedcs
@@ -1199,7 +1203,7 @@
      \fi
    \fi}
 
-\unexpanded\def\simplereversealignedboxplus#1#2#3%
+\permanent\protected\def\simplereversealignedboxplus#1#2#3%
   {\hbox #3 \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimplereverse#2\endcsname
        \doubleexpandafter\lastnamedcs
@@ -1220,16 +1224,13 @@
 % \setvalue{\??alignsets\v!lohi      }#1#2{\let#1\vss  \let#2\vss  }
 % \setvalue{\??alignsets\s!unknown   }#1#2{\let#1\relax\let#2\relax}
 %
-% \unexpanded\def\spac_align_set_ss#1%
+% \protected\def\spac_align_set_ss#1%
 %   {\csname\??alignsetss\ifcsname\??alignsetss#1\endcsname#1\else\s!unknown\fi\endcsname}
 
 % Some obsolete (old) helpers:
 
-\unexpanded\def\definehbox
-  {\dodoubleargument\spac_align_definehbox}
-
-\def\spac_align_definehbox[#1][#2]%
-  {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
+\permanent\tolerant\protected\def\definehbox[#1][#2]%
+  {\ifarguments\else\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}\fi}
 
 %D Some direction related helpers:
 
@@ -1238,6 +1239,6 @@
 \setvalue{\??reverse\v!normal }{\ifconditional\inlinelefttoright\else\s!reverse\fi}
 \setvalue{\??reverse\v!reverse}{\ifconditional\inlinelefttoright     \s!reverse\fi}
 
-\def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
+\permanent\def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
 
 \protect \endinput

@@ -1817,7 +1817,7 @@
 		<cd:command name='resetpath' value='resetpath'/>
 		<cd:command name='resetperiodkerning' value='resetperiodkerning'/>
 		<cd:command name='resetsystemmode' value='resetsystemmode'/>
-		<cd:command name='resettext' value='resettextcontent'/>
+		<cd:command name='resettextcontent' value='resettextcontent'/>
 		<cd:command name='resetvisualizers' value='resetvisualizers'/>
 		<cd:command name='restoreglobalbodyfont' value='restoreglobalbodyfont'/>
 		<cd:command name='retestfeature' value='retestfeature'/>

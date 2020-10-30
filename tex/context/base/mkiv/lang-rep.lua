@@ -164,50 +164,6 @@ function languages.replacements.addlist(category,list)
     end
 end
 
-local function hit(a,head)
-    local tree = trees[a]
-    if tree then
-        local root = tree[getchar(head)]
-        if root then
-            local current   = getnext(head)
-            local lastrun   = false
-            local lastfinal = false
-            while current do
-                local char, id = isglyph(current)
-                if not char and id == glue_code then
-                    local s = getsubtype(current)
-                    if s == spaceskip_code or s == xspaceskip_code then
-                        char = 32 -- if needed we can also deal with spaces and special nbsp and such
-                    end
-                end
-                if char then
-                    local newroot = root[char]
-                    if not newroot then
-                        return lastrun, lastfinal
-                    else
-                        local final = newroot.final
-                        if final then
-                            if trace_details then
-                                report_replacement("hitting word %a, replacement %a",final.word,final.replacement)
-                            end
-                            lastrun   = current
-                            lastfinal = final
-                        else
-                            root = newroot
-                        end
-                    end
-                    current = getnext(current)
-                else
-                    break
-                end
-            end
-            if lastrun then
-                return lastrun, lastfinal
-            end
-        end
-    end
-end
-
 local function tonodes(list,template)
     local head, current
     for i=1,#list do
@@ -222,120 +178,241 @@ local function tonodes(list,template)
     return head
 end
 
+local is_punctuation = characters.is_punctuation
+
+-- We can try to be clever and use the fact that there is no match to skip
+-- over to the next word but it is gives fuzzy code so for now I removed
+-- that optimization (when I really need a high performance version myself
+-- I will look into it (but so far I never used this mechanism myself).
+--
+-- We used to have the hit checker as function but is got messy when checks
+-- for punctuation was added.
+
+local function replace(head,first,last,final,hasspace,overload)
+    local current   = first
+    local prefirst  = getprev(first) or head
+    local postlast  = getnext(last)
+    local oldlength = final.oldlength
+    local newcodes  = final.newcodes
+    local newlength = newcodes and #newcodes or 0
+    if trace_replacements then
+        report_replacement("replacing word %a by %a",final.word,final.replacement)
+    end
+    if hasspace or final.special then
+        -- It's easier to delete and insert so we do just that. On the todo list is
+        -- turn injected spaces into glue but easier might be to let the char break
+        -- handler do that ...
+        local prev = getprev(current)
+        local next = getnext(last)
+        local list = current
+        setnext(last)
+        setlink(prev,next)
+        current = prev
+        if not current then
+            head = nil
+        end
+        local i = 1
+        while i <= newlength do
+            local codes = newcodes[i]
+            if type(codes) == "table" then
+                local method = codes[1]
+                if method == "discretionary" then
+                    local pre, post, replace = codes[2], codes[3], codes[4]
+                    if pre then
+                        pre = tonodes(pre,first)
+                    end
+                    if post then
+                        post = tonodes(post,first)
+                    end
+                    if replace then
+                        replace = tonodes(replace,first)
+                    end
+                    -- todo: also set attr
+                    local new = new_disc(pre,post,replace)
+                    setattrlist(new,first)
+                    head, current = insert_after(head,current,new)
+                elseif method == "noligature" then
+                    -- not that efficient to copy but ok for testing
+                    local list = codes[2]
+                    if list then
+                        for i=1,#list do
+                            local new = copy_node(first)
+                            setchar(new,list[i])
+                            setattr(new,a_noligature,1)
+                            head, current = insert_after(head,current,new)
+                        end
+                    else
+                        local new = copy_node(first)
+                        setchar(new,zwnj)
+                        head, current = insert_after(head,current,new)
+                    end
+                else
+                    report_replacement("unknown method %a",method or "?")
+                end
+            else
+                local new = copy_node(first)
+                setchar(new,codes)
+                head, current = insert_after(head,current,new)
+            end
+            i = i + 1
+        end
+        flush_list(list)
+    elseif newlength == 0 then
+        -- we overload
+    elseif oldlength == newlength then
+        if final.word ~= final.replacement then
+            for i=1,newlength do
+                setchar(current,newcodes[i])
+                current = getnext(current)
+            end
+        end
+        current = getnext(final)
+    elseif oldlength < newlength then
+        for i=1,newlength-oldlength do
+            local n = copy_node(current)
+            setchar(n,newcodes[i])
+            head, current = insert_node_before(head,current,n)
+            current = getnext(current)
+        end
+        for i=newlength-oldlength+1,newlength do
+            setchar(current,newcodes[i])
+            current = getnext(current)
+        end
+    else
+        for i=1,oldlength-newlength do
+            head, current = remove_node(head,current,true)
+        end
+        for i=1,newlength do
+            setchar(current,newcodes[i])
+            current = getnext(current)
+        end
+    end
+    if overload then
+        overload(final,getnext(prefirst),getprev(postlast))
+    end
+    return head, postlast
+end
+
+-- we handle just one space
+
 function replacements.handler(head)
-    local current  = head
-    local overload = attributes.applyoverloads
+    local current   = head
+    local overload  = attributes.applyoverloads
+    local mode      = false -- we're in word or punctuation mode
+    local wordstart = false
+    local wordend   = false
+    local prevend   = false
+    local prevfinal = false
+    local tree      = false
+    local root      = false
+    local hasspace  = false
     while current do
-        if getid(current) == glyph_code then
+        local id = getid(current) -- or use the char getter
+        if id == glyph_code then
             local a = getattr(current,a_replacements)
             if a then
-                local last, final = hit(a,current)
-                if last then
-                    local precurrent = getprev(current) or head
-                    local oldlength  = final.oldlength
-                    local newcodes   = final.newcodes
-                    local newlength  = newcodes and #newcodes or 0
-                    if trace_replacement then
-                        report_replacement("replacing word %a by %a",final.word,final.replacement)
-                    end
-                    if final.special then
-                        -- easier is to delete and insert (a simple callout to tex would be more efficient)
-                        -- maybe just walk over a replacement string instead
-                        local prev = getprev(current)
-                        local next = getnext(last)
-                        local list = current
-                        setnext(last)
-                        setlink(prev,next)
-                        current = prev
-                        if not current then
-                            head = nil
-                        end
-                        local i = 1
-                        while i <= newlength do
-                            local codes = newcodes[i]
-                            if type(codes) == "table" then
-                                local method = codes[1]
-                                if method == "discretionary" then
-                                    local pre, post, replace = codes[2], codes[3], codes[4]
-                                    if pre then
-                                        pre = tonodes(pre,last)
-                                    end
-                                    if post then
-                                        post = tonodes(post,last)
-                                    end
-                                    if replace then
-                                        replace = tonodes(replace,last)
-                                    end
-                                    -- todo: also set attr
-                                    local new = new_disc(pre,post,replace)
-                                    setattrlist(new,last)
-                                    head, current = insert_after(head,current,new)
-                                elseif method == "noligature" then
-                                    -- not that efficient to copy but ok for testing
-                                    local list = codes[2]
-                                    if list then
-                                        for i=1,#list do
-                                            local new = copy_node(last)
-                                            setchar(new,list[i])
-                                            setattr(new,a_noligature,1)
-                                            head, current = insert_after(head,current,new)
-                                        end
-                                    else
-                                        local new = copy_node(last)
-                                        setchar(new,zwnj)
-                                        head, current = insert_after(head,current,new)
-                                    end
-                                else
-                                    -- todo
+                -- we have a run
+                tree = trees[a]
+                if tree then
+                    local char = getchar(current)
+                    local punc = is_punctuation[char]
+                    if mode == "punc" then
+                        if not punc then
+                            if root then
+                                local final = root.final
+                                if final then
+                                    head = replace(head,wordstart,wordend,final,hasspace,overload)
+                                elseif prevfinal then
+                                    head = replace(head,wordstart,prevend,prevfinal,hasspace,overload)
                                 end
-                            else
-                                local new = copy_node(last)
-                                setchar(new,codes)
-                                head, current = insert_after(head,current,new)
+                                prevfinal = false
+                                root = false
                             end
-                            i = i + 1
+                            mode = "word"
                         end
-                        flush_list(list)
-                 -- elseif newlength == 0 then
-                 --     -- nothing gets replaced
-                 --     current = getnext(last)
-                    elseif oldlength == newlength then -- #old == #new
-                        if final.word == final.replacement then
-                            -- nothing to do but skip
-                        else
-                            for i=1,newlength do
-                                setchar(current,newcodes[i])
-                                current = getnext(current)
+                    elseif mode == "word" then
+                        if punc then
+                            if root then
+                                local final = root.final
+                                if final then
+                                    head = replace(head,wordstart,wordend,final,hasspace,overload)
+                                elseif prevfinal then
+                                    head = replace(head,wordstart,prevend,prevfinal,hasspace,overload)
+                                end
+                                prevfinal = false
+                                root = false
                             end
+                            mode = "punc"
                         end
-                    elseif oldlength < newlength then -- #old < #new
-                        for i=1,newlength-oldlength do
-                            local n = copy_node(current)
-                            setchar(n,newcodes[i])
-                            head, current = insert_node_before(head,current,n)
-                            current = getnext(current)
+                    else
+                        mode = punc and "punc" or "word"
+                    end
+                    if root then
+                        root = root[char]
+                        if root then
+                            wordend = current
                         end
-                        for i=newlength-oldlength+1,newlength do
-                            setchar(current,newcodes[i])
-                            current = getnext(current)
+                    else
+                        if prevfinal then
+                            head = replace(head,wordstart,prevend,prevfinal,hasspace,overload)
+                            prevfinal = false
                         end
-                    else -- #old > #new or #new == 0
-                        for i=1,oldlength-newlength do
-                            head, current = remove_node(head,current,true)
-                        end
-                        for i=1,newlength do
-                            setchar(current,newcodes[i])
-                            current = getnext(current)
+                        root = tree[char]
+                        if root then
+                            wordstart = current
+                            wordend   = current
+                            prevend   = false
+                            hasspace  = false
                         end
                     end
-                    if overload then
-                        overload(final,getnext(precurrent),getprev(current))
+                else
+                    root= false
+                end
+            else
+                tree = false
+            end
+            current = getnext(current)
+        elseif root then
+            local final = root.final
+            if mode == "word" and id == glue_code then
+                local s = getsubtype(current)
+                if s == spaceskip_code or s == xspaceskip_code then
+                    local r = root[32] -- maybe more types
+                    if r then
+                        if not prevend then
+                            local f = root.final
+                            if f then
+                                prevend   = wordend
+                                prevfinal = f
+                            end
+                        end
+                        wordend  = current
+                        root     = r
+                        hasspace = true
+                        goto moveon
                     end
                 end
             end
+            if final then
+                head, current = replace(head,wordstart,wordend,final,hasspace,overload)
+            elseif prevfinal then
+                head, current = replace(head,wordstart,prevend,prevfinal,hasspace,overload)
+            end
+            prevfinal = false
+            root = false
+          ::moveon::
+            current = getnext(current)
+        else
+            current = getnext(current)
         end
-        -- we're one ahead now but we need to because we handle words
-        current = getnext(current)
+    end
+    if root then
+        local final = root.final
+        if final then
+            head = replace(head,wordstart,wordend,final,hasspace,overload)
+        elseif prevfinal then
+            head = replace(head,wordstart,prevend,prevfinal,hasspace,overload)
+        end
     end
     return head
 end

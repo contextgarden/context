@@ -445,7 +445,6 @@ function colors.setmodel(name,weightgray)
     else
         -- stil the same
     end
-
     return default
 end
 

@@ -1,0 +1,219 @@
+%D \module
+%D   [       file=trac-vis, % replaces supp-vis plus some s-* modules
+%D        version=2012.06.23, % 1996.10.21,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The old visual debugger dates from 1996 and started out as joke. In practice
+%D it's not used that often although the \type {\ruledhbox} cum suis macros come
+%D in handy when writing code. In the process of luafication some additional
+%D tracing options were tested, for instance showing font kerns. As part of the
+%D \MKIV\ cleanup the decision was made to reimplement, reintegrate and reconsider
+%D all these features. The old code is gone and the new code will get extended
+%D when needed. We still provide placeholders for some old visualization commands
+%D but they might go away.
+%D
+%D Control over what gets visualized happens with the tracker command:
+%D
+%D \enabletrackers[visualizers.*]
+%D
+%D Possible values are: \type {fontkern}, \type {kern}, \type {glue}, \type
+%D {penalty}, \type {hbox}, \type {vbox}, \type {all}, \type {reset}, \type
+%D {makeup}, \type {whatsit}, \type{glyph}.
+%D
+%D In due time some special visualzation of math will move here as well.
+
+\writestatus{loading}{ConTeXt Tracing Macros / Visualization}
+
+\registerctxluafile{trac-vis}{autosuffix,optimize}
+
+\unprotect
+
+\newconstant\c_syst_visualizers_state
+\newtoks    \t_syst_visualizers_optimize
+
+% \definesystemattribute[visual][public,global] % already defined
+
+% no, but can become an option:
+%
+% \appendtoks
+%     \c_attr_visual\attributeunsetvalue
+% \to \everybeforepagebody
+
+%D We only provide box visualizers as they can come in handy for testing
+%D macros. In due time we will move some of the m-visual code here too.
+
+\aliased\let\syst_visualizers_hbox   \hbox
+\aliased\let\syst_visualizers_vbox   \vbox
+\aliased\let\syst_visualizers_vtop   \vtop
+\aliased\let\syst_visualizers_vcenter\vcenter
+\aliased\let\syst_visualizers_hpack  \hpack
+\aliased\let\syst_visualizers_vpack  \vpack
+\aliased\let\syst_visualizers_tpack  \tpack
+
+\permanent\protected\def\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \clf_getvisual{simplehbox} }
+\permanent\protected\def\ruledhpack  {\syst_visualizers_hpack   attr \visualattribute \clf_getvisual{simplehbox} }
+\permanent\protected\def\ruledvbox   {\syst_visualizers_vbox    attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledvpack  {\syst_visualizers_vpack   attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledvtop   {\syst_visualizers_vtop    attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruledtpack  {\syst_visualizers_tpack   attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledmbox #1{\ruledhbox{\startimath#1\stopimath}}
+
+\appendtoks
+    \ifcase\c_syst_visualizers_state\else
+        \syst_visualizers_speedup
+    \fi
+\to \everyshipout
+
+\appendtoks
+    \glet\syst_visualizers_speedup\relax
+    \global\t_syst_visualizers_optimize\emptytoks
+\to \t_syst_visualizers_optimize
+
+\def\syst_visualizers_speedup{\the\t_syst_visualizers_optimize}
+
+\appendtoks
+%     \enforced\global\protected\edef\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \number\clf_getvisual{simplehbox} }
+%     \enforced\global\protected\edef\ruledhpack  {\syst_visualizers_hpack   attr \visualattribute \number\clf_getvisual{simplehbox} }
+%     \enforced\global\protected\edef\ruledvbox   {\syst_visualizers_vbox    attr \visualattribute \number\clf_getvisual{simplevbox} }
+%     \enforced\global\protected\edef\ruledvpack  {\syst_visualizers_vpack   attr \visualattribute \number\clf_getvisual{simplevbox} }
+%     \enforced\global\protected\edef\ruledvtop   {\syst_visualizers_vtop    attr \visualattribute \number\clf_getvisual{simplevtop} }
+%     \enforced\global\protected\edef\ruledtpack  {\syst_visualizers_tpack   attr \visualattribute \number\clf_getvisual{simplevtop} }
+%     \enforced\global\protected\edef\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \number\clf_getvisual{simplevbox} }
+\to \t_syst_visualizers_optimize
+
+\permanent\tolerant\protected\def\showmakeup[#1]%
+  {\ifarguments
+     \clf_setvisual{makeup}%
+   \else
+     \clf_setvisual{#1}%
+   \fi}
+
+\permanent\protected\def\showallmakeup    {\clf_setvisual{all}\showstruts}
+\permanent\protected\def\showboxes        {\clf_setvisual{boxes}}
+\permanent\protected\def\showglyphs       {\clf_setvisual{glyph}}
+\permanent\protected\def\showfontkerns    {\clf_setvisual{fontkern}}
+\permanent\protected\def\showfontitalics  {\clf_setvisual{italic}}
+\permanent\protected\def\showglyphdata    {\showglyphs\showfontkerns\showfontitalics}
+\permanent\protected\def\showfontexpansion{\clf_setvisual{expansion}}
+
+\permanent\tolerant\protected\def\setvisualizerfont[#1]% somename at 4pt
+  {\begingroup
+   \iftok{#1}\emptytoks
+     \definedfont[Mono at 4pt]%
+   \else
+     \definedfont[#1]%
+   \fi
+   \clf_setvisualfont\fontid\font
+   \endgroup}
+
+\permanent\protected\def\resetvisualizers
+  {\c_attr_visual\attributeunsetvalue}
+
+%D New (these might also be a visualizers):
+
+% \definecolor[f:r:t][a=1,t=.25,r=1]
+% \definecolor[f:g:t][a=1,t=.25,g=1]
+% \definecolor[f:b:t][a=1,t=.25,b=1]
+% \definecolor[f:c:t][a=1,t=.25,c=1]
+% \definecolor[f:m:t][a=1,t=.25,m=1]
+% \definecolor[f:y:t][a=1,t=.25,y=1]
+% \definecolor[f:k:t][a=1,t=.25,s=0]
+
+\permanent\protected\def\filledhboxr{\node_backgrounds_boxes_add\hbox[f:r:t]}
+\permanent\protected\def\filledhboxg{\node_backgrounds_boxes_add\hbox[f:g:t]}
+\permanent\protected\def\filledhboxb{\node_backgrounds_boxes_add\hbox[f:b:t]}
+\permanent\protected\def\filledhboxc{\node_backgrounds_boxes_add\hbox[f:c:t]}
+\permanent\protected\def\filledhboxm{\node_backgrounds_boxes_add\hbox[f:m:t]}
+\permanent\protected\def\filledhboxy{\node_backgrounds_boxes_add\hbox[f:y:t]}
+\permanent\protected\def\filledhboxk{\node_backgrounds_boxes_add\hbox[f:k:t]}
+
+%D Overload:
+
+\protected\def\spac_struts_vide_hbox
+  {\hbox attr \visualattribute \clf_getvisual{strut} }
+
+\appendtoks
+    \normalexpanded{\protected\xdef\spac_struts_vide_hbox\expandafter{\spac_struts_vide_hbox}}%
+\to \t_syst_visualizers_optimize
+
+%D For manuals:
+
+\permanent\protected\def\markfonts#1%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{\getbuffer}%
+   \clf_markvisualfonts\scratchbox
+   \unhbox\scratchbox
+   \endgroup}
+
+% As demo:
+%
+% \startbuffer
+%     \hbox {\raise1cm\hbox{raised} normal \lower1cm\hbox{lowered}}
+%     \blank
+%     \moveleft1cm\hbox{left}
+%     \blank
+%     \hbox{normal}
+%     \blank
+%     \moveright1cm\hbox{right}
+%     \blank
+% \stopbuffer
+%
+% \start \showboxes \getbuffer \stop \blank[4*big] \getbuffer
+%
+% \startbuffer
+%     \moveleft1cm\vbox{left}
+%     \blank
+%     \vbox{normal}
+%     \blank
+%     \moveright1cm\vbox{right}
+%     \blank
+% \stopbuffer
+%
+% \start \showboxes \getbuffer \stop \blank[4*big] \getbuffer
+
+%D We keep this one:
+
+\permanent\protected\def\dontinterfere
+  {\reseteverypar
+   \parindent\zeropoint
+   \parskip  \zeropoint
+   \leftskip \zeropoint
+   \rightskip\zeropoint
+   \relax}
+
+%D We keep these for a while:
+
+\let\ruledhss       \hss
+\let\ruledhfil      \hfil
+\let\ruledhfill     \hfill
+\let\ruledhfilll    \hfilll
+\let\ruledhfilneg   \hfilneg
+\let\ruledhfillneg  \hfillneg
+\let\ruledhfilllneg \hfilllneg
+\let\ruledvss       \vss
+\let\ruledvfil      \vfil
+\let\ruledvfill     \vfill
+\let\ruledvfilll    \vfilll
+\let\ruledvfilneg   \vfilneg
+\let\ruledvfillneg  \vfillneg
+\let\ruledvfilllneg \vfilllneg
+\let\ruledhskip     \hskip
+\let\ruledvskip     \vskip
+\let\ruledkern      \kern
+\let\ruledhglue     \hglue
+\let\ruledvglue     \vglue
+\let\ruledmkern     \mkern
+\let\ruledmskip     \mskip
+\let\ruledpenalty   \penalty
+
+\protect \endinput

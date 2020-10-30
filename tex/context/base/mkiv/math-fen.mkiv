@@ -335,6 +335,8 @@
 
 %D A bonus:
 
+\pushoverloadmode
+
 \unexpanded\def\Lparenthesis         {\math_fenced_fenced_start{parenthesis}}          \unexpanded\def\Rparenthesis         {\math_fenced_fenced_stop {parenthesis}}
 \unexpanded\def\Lbracket             {\math_fenced_fenced_start{bracket}}              \unexpanded\def\Rbracket             {\math_fenced_fenced_stop {bracket}}
 \unexpanded\def\Lbrace               {\math_fenced_fenced_start{brace}}                \unexpanded\def\Rbrace               {\math_fenced_fenced_stop {brace}}
@@ -394,13 +396,19 @@
 % \left| \frac{1}{e} \right|
 % \stopformula
 
+\popoverloadmode
+
 \installcorenamespace{mathleft}
 \installcorenamespace{mathright}
 \installcorenamespace{mathmiddle}
 
+\pushoverloadmode
+
 \unexpanded\def\left  {\afterassignment\math_left  \let\nexttoken}
 \unexpanded\def\right {\afterassignment\math_right \let\nexttoken}
 \unexpanded\def\middle{\afterassignment\math_middle\let\nexttoken}
+
+\popoverloadmode
 
 \let\leftorright\relax
 
@@ -565,6 +573,8 @@
 
 % The names in char-def.lua (historic mess):
 
+\pushoverloadmode
+
 \let\lbrack      \lbracket
 \let\rbrack      \rbracket
 \let\lceiling    \lceil
@@ -633,6 +643,8 @@
 \installmathfencepair \( \Lparenthesis  \) \Rparenthesis
 \installmathfencepair \< \Langle        \> \Rangle
 \installmathfencepair \| \Lbar          \| \Rbar
+
+\popoverloadmode
 
 %D As we have overloaded \type {\left} and \type {\right} we also need a more
 %D clever version of the following:

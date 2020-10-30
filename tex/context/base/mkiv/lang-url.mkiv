@@ -47,19 +47,19 @@
     \resetfontfeature
     \resetcharacterspacing
     %
-    \let\&\letterampersand
-    \let\#\letterhash
-    \let\~\lettertilde
-    \let\\\letterbackslash
-    \let\$\letterdollar
-    \let\^\letterhat
-    \let\_\letterunderscore
-    \let\{\letterleftbrace
-    \let\}\letterrightbrace
-    \let\|\letterbar
-    \let~=\lettertilde
-    \let|=\letterbar
-    \let\Ux\eUx
+    \enforced\let\&\letterampersand
+    \enforced\let\#\letterhash
+    \enforced\let\~\lettertilde
+    \enforced\let\\\letterbackslash
+    \enforced\let\$\letterdollar
+    \enforced\let\^\letterhat
+    \enforced\let\_\letterunderscore
+    \enforced\let\{\letterleftbrace
+    \enforced\let\}\letterrightbrace
+    \enforced\let\|\letterbar
+    \enforced\let~=\lettertilde
+    \enforced\let|=\letterbar
+    \enforced\let\Ux\eUx
 \to \everyhyphenatedurl
 
 \let\hyphenatedurlseparator    \empty % \periodcentered
@@ -100,22 +100,17 @@
   {\dontleavehmode
    \begingroup
    \the\everyhyphenatedurl
-   \normallanguage\zerocount
-   \let\a\lang_url_a % after
-   \let\b\lang_url_b % before
-   \let\d\lang_url_d % disc
-   \let\l\lang_url_l % letter
-   \let\c\lang_url_c % character
-   \let\L\lang_url_L % letter_nobreak
-   \let\C\lang_url_C % character_nobreak
+   \normallanguage\zerocount % \nohyphens in mkiv
    \scratchskipone\zeropoint\s!plus\dimexpr\emwidth/12\s!minus\dimexpr\emwidth/24\relax % 1.00pt @ 12pt
    \scratchskiptwo\zeropoint\s!plus\dimexpr\emwidth/48\s!minus\dimexpr\emwidth/96\relax % 0.25pt @ 12pt
+   \unprotect
    \normalexpanded{\noexpand\clf_hyphenatedurl
      {\noexpand\detokenize{#1}}%
      \hyphenatedurllefthyphenmin
      \hyphenatedurlrighthyphenmin
      {\hyphenatedurldiscretionary}%
    }%
+   \protect
    \endgroup}
 
 %D \macros

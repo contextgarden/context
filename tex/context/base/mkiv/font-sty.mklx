@@ -48,13 +48,10 @@
 
 \setnewconstant \c_font_current_alternative_style_index \plusone
 
-\unexpanded\def\definealternativestyle
-  {\dotripleempty\font_basics_define_alternative_style}
-
-\def\font_basics_define_alternative_style[#commands][#variantone][#varianttwo]%
+\permanent\tolerant\protected\def\definealternativestyle[#commands]#spacer[#variantone]#spacer[#varianttwo]%
   {\processcommalist[#commands]{\font_basics_define_alternative_style_indeed{#variantone}{#varianttwo}}}
 
-\let\definestyle\definealternativestyle % later redefined
+% \let\definestyle\definealternativestyle % later redefined
 
 \newconstant\c_fonts_basics_alternative_style_method
 
@@ -66,7 +63,7 @@
       \ifthirdargument
         \setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
       \else
-        \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+            \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
       \fi
    \else
      \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
@@ -83,7 +80,7 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\applyalternativestyle#name% public
+\permanent\def\applyalternativestyle#name% public .. expandable? frozen?
   {\begincsname\??alternativestyle#name\endcsname}
 
 \appendtoks
@@ -146,7 +143,7 @@
 \let\m_current_convert_font   \empty
 \let\m_current_convert_font_dt\empty
 
-\unexpanded\def\doconvertfont#specification% takes second argument / this command is obsolete
+\permanent\protected\def\doconvertfont#specification% takes second argument / this command is obsolete
   {\edef\m_current_convert_font{#specification}%
    \ifempty\m_current_convert_font
     %\expandafter\firstofoneargument
@@ -174,30 +171,33 @@
 %D \chapter{This is \TEX}
 %D \stoptyping
 
-\unexpanded\def\dontconvertfont{\c_font_current_alternative_style_index\plustwo} % needs checking in usage
-\unexpanded\def\redoconvertfont{\c_font_current_alternative_style_index\plusone} % needs checking in usage
+\permanent\protected\def\dontconvertfont{\c_font_current_alternative_style_index\plustwo} % needs checking in usage
+\permanent\protected\def\redoconvertfont{\c_font_current_alternative_style_index\plusone} % needs checking in usage
 
 %D The new one:
 
 \setfalse\fontattributeisset
 
-\unexpanded\def\dousestyleparameter#value%
+\let\currentstyleparameter           \empty % these might become private (possible conflict with defines)
+\let\currentdetokenizedstyleparameter\empty % these might become private (possible conflict with defines)
+
+\permanent\protected\def\dousestyleparameter#value%
   {\edef\currentstyleparameter{#value}%
    \ifempty\currentstyleparameter\else
      \expandafter\dousecurrentstyleparameter
    \fi}
 
-\unexpanded\def\dousestylehashparameter#hash#parameter%
+\permanent\protected\def\dousestylehashparameter#hash#parameter%
   {\ifcsname#hash#parameter\endcsname
      \expandafter\dousestyleparameter\lastnamedcs
    \fi}
 
-\unexpanded\def\dousecurrentstyleparameter % empty check outside here
-  {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+\permanent\protected\def\dousecurrentstyleparameter % empty check outside here
+  {\edef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
-   \ifcsname\??alternativestyle\detokenizedstyleparameter\endcsname
+   \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
-   \orelse\ifcsname\detokenizedstyleparameter\endcsname
+   \orelse\ifcsname\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
    \else
      \currentstyleparameter
@@ -241,24 +241,24 @@
     \fi
 \to \everydefinestyle
 
-\unexpanded\def\font_styles_apply_start#name%
+\protected\def\font_styles_apply_start#name%
   {\begingroup
    \font_styles_use_defined{#name}}
 
-\unexpanded\def\font_styles_apply_stop
+\protected\def\font_styles_apply_stop
   {\endgroup}
 
-\unexpanded\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
+\protected\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
   {\bgroup
    \def\g_style{\font_styles_use_defined{#name}}%
    \afterassignment\g_style
    \let\nexttoken}
 
-\unexpanded\def\font_styles_use_defined#name%
+\protected\def\font_styles_use_defined#name%
   {\edef\currentstyle{#name}%
    \usestylestyleandcolor\c!style\c!color}
 
-\unexpanded\def\font_styles_use_generic#specification%
+\protected\def\font_styles_use_generic#specification%
   {\let\currentstyle\s!unknown % reasonable generic tag
    \letstyleparameter\c!style\empty
    \letstyleparameter\c!color\empty
@@ -269,7 +269,7 @@
 
 \installcorenamespace{styleargument}
 
-\unexpanded\def\style[#name]% as this is can be a switch we use groupedcommand
+\protected\def\style[#name]% as this is can be a switch we use groupedcommand % frozen?
   {\csname\??styleargument
      \ifcsname\??stylecheck#name\endcsname
        2% defined as style
@@ -282,14 +282,8 @@
      \fi
    \endcsname{#name}}
 
-% \setvalue{\??styleargument1}#name%
-%   {\groupedcommand{\begincsname#name\endcsname}{}}
-
 \setvalue{\??styleargument1}#name%
   {\expandafter\triggergroupedcommandcs\begincsname#name\endcsname}
-
-% \setvalue{\??styleargument2}#name%
-%   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument2}#name%
   {\triggergroupedcommand{\font_styles_use_defined{#name}}} % or {\font_styles_apply_grouped{#name}}
@@ -313,7 +307,7 @@
 
 \installcorenamespace{styleenvironment}
 
-\unexpanded\def\startstyle[#name]%
+\protected\def\startstyle[#name]%
   {\begingroup
    \csname\??styleenvironment
      \ifcsname\??stylecheck#name\endcsname
@@ -325,7 +319,7 @@
      \fi
    \endcsname{#name}}
 
-\unexpanded\def\stopstyle
+\protected\def\stopstyle
   {\endgroup
    \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
 
@@ -355,11 +349,8 @@
 
 \installcorenamespace{stylecollection}
 
-\unexpanded\def\definestylecollection
-  {\dosingleargument\font_styles_define_style_collection}
-
-\def\font_styles_define_style_collection[#name]%
-  {\iffirstargument
+\permanent\tolerant\protected\def\definestylecollection[#name]%
+  {\ifarguments\or
      \setuvalue{#name}{\styleinstance[#name]}%
      \def\font_styles_define_style_collection_a#style%
        {\def\font_styles_define_style_collection_b#alternative{\undefinevalue{\??stylecollection#name:#style:#alternative}}%
@@ -372,29 +363,19 @@
 \let\font_styles_define_style_collection_a\relax
 \let\font_styles_define_style_collection_b\relax
 
-\unexpanded\def\definestyleinstance
-  {\doquadrupleargument\font_styles_define_style_instance}
-
-\def\font_styles_define_style_instance[#instance][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
-  {\iffirstargument
+\permanent\tolerant\protected\def\definestyleinstance[#instance]#*[#2]#*[#3]#*[#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
+  {\ifparameter#instance\or
+     \ifarguments\or\or
+       \letvalueempty{\??stylecollection#instance::#2}%
+     \or
+       \setvalue{\??stylecollection#instance::#2}{#3}%
+     \or
+       \setvalue{\??stylecollection#instance:#2:#3}{#4}%
+     \fi
      \ifcsname#instance\endcsname\else\font_styles_define_style_collection[#instance]\fi
-   \fi
-   \iffourthargument
-     \setvalue{\??stylecollection#instance:#2:#3}{#4}%
-   \orelse\ifthirdargument
-     \setvalue{\??stylecollection#instance::#2}{#3}%
-   \orelse\ifsecondargument
-     \letvalueempty{\??stylecollection#instance::#2}%
-   \fi}
+  \fi}
 
-% \unexpanded\def\styleinstance[#instance]% will be made faster
-%   {%\begingroup\normalexpanded{\noexpand\infofont[#1:\fontstyle:\fontalternative]}\endgroup
-%    \executeifdefined{\??stylecollection#instance:\fontstyle:\fontalternative}%
-%   {\executeifdefined{\??stylecollection#instance:\fontstyle:\s!default}%
-%   {\executeifdefined{\??stylecollection#instance::\fontalternative}
-%   {\getvalue        {\??stylecollection#instance::\s!default}}}}}
-
-\unexpanded\def\styleinstance[#instance]% maybe \lastnamedcs here too
+\permanent\protected\def\styleinstance[#instance]% maybe \lastnamedcs here too
   {\csname\??stylecollection#instance:%
      \ifcsname\??stylecollection#instance:\fontstyle:\fontalternative\endcsname
        \fontstyle:\fontalternative
@@ -414,20 +395,20 @@
 %D \mathematics {\utfchar{0x2229}\vsone{}}
 %D \stoptyping
 
-\unexpanded\edef\vsone#character{#character\normalUchar"FE00 } % used
-\unexpanded\edef\vstwo#character{#character\normalUchar"FE01 } % not used but handy for testing
+\permanent\protected\edef\vsone#character{#character\normalUchar"FE00 } % used
+\permanent\protected\edef\vstwo#character{#character\normalUchar"FE01 } % not used but handy for testing
 
 %D For historic reasons we keep the following around but they are no longer that
-%D relevant for \MKIV.
+%D relevant for \MKIV. But \unknown\ they will be dropped in \LMTX !
 
-\unexpanded\def\doattributes#1#2#3#4%
+\permanent\protected\def\doattributes#1#2#3#4%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
    \dousestylehashparameter{#1}{#2}%
    \dousecolorhashparameter{#1}{#3}%
    #4%
    \endgroup}
 
-\unexpanded\def\dostartattributes#1#2#3%
+\permanent\protected\def\dostartattributes#1#2#3%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
    \dousestylehashparameter{#1}{#2}%
    \dousecolorhashparameter{#1}{#3}}
@@ -438,16 +419,16 @@
 
 \newconditional\c_font_styles_math
 
-\unexpanded\def\font_styles_math_reset
+\protected\def\font_styles_math_reset
   {\setfalse\c_font_styles_math}
 
-\unexpanded\def\font_styles_math_start
+\protected\def\font_styles_math_start
   {\ifconditional\c_font_styles_math
      \startimath
    \fi
    \relax}
 
-\unexpanded\def\font_styles_math_stop
+\protected\def\font_styles_math_stop
   {\relax
    \ifconditional\c_font_styles_math
      \stopimath

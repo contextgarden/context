@@ -50,6 +50,7 @@ local ctx_latelua       = context.latelua
 
 local tex               = tex
 local texgetcount       = tex.getcount
+local texgetinteger     = tex.getintegervalue or tex.getcount
 local texsetcount       = tex.setcount
 local texget            = tex.get
 local texsp             = tex.sp
@@ -282,7 +283,7 @@ local function setall(name,p,x,y,w,h,d,extra)
         e = extra ~= "" and extra or nil,
         r = region,
         c = column,
-        r2l = texgetcount("inlinelefttoright") == 1 and true or nil,
+        r2l = texgetinteger("inlinelefttoright") == 1 and true or nil,
     }
 end
 
@@ -626,7 +627,7 @@ implement {
             x   = true,
             y   = true,
             n   = nofparagraphs > 0 and nofparagraphs or nil,
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }
@@ -647,7 +648,7 @@ implement {
             h   = h ~= 0 and h or nil,
             d   = d ~= 0 and d or nil,
             n   = nofparagraphs > 0 and nofparagraphs or nil,
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }
@@ -670,7 +671,7 @@ implement {
             h = h ~= 0 and h or nil,
             d = d ~= 0 and d or nil,
             n = nofparagraphs > 0 and nofparagraphs or nil,
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }
@@ -692,7 +693,7 @@ implement {
             d   = d ~= 0 and d or nil,
             n   = nofparagraphs > 0 and nofparagraphs or nil,
             e   = scanstring(),
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }
@@ -714,7 +715,7 @@ implement {
             h   = h ~= 0 and h or nil,
             d   = d ~= 0 and d or nil,
             n   = nofparagraphs > 0 and nofparagraphs or nil,
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }
@@ -737,7 +738,7 @@ implement {
             h   = h ~= 0 and h or nil,
             d   = d ~= 0 and d or nil,
             n   = nofparagraphs > 0 and nofparagraphs or nil,
-            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+            r2l = texgetinteger("inlinelefttoright") == 1 or nil,
         }
         tobesaved[name] = spec
         ctx_latelua { action = enhance, specification = spec }

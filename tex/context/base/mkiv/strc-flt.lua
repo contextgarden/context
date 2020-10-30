@@ -31,13 +31,13 @@ function builders.checksidefloat(mode,indented)
     return indented
 end
 
-appendaction ("newgraf","system","builders.checksidefloat")
-disableaction("newgraf","builders.checksidefloat")
+appendaction ("paragraph","system","builders.checksidefloat")
+disableaction("paragraph","builders.checksidefloat")
 
 interfaces.implement {
     name     = "enablesidefloatchecker",
     onlyonce = true,
     actions  = function()
-        enableaction("newgraf","builders.checksidefloat")
+        enableaction("paragraph","builders.checksidefloat")
     end,
 }

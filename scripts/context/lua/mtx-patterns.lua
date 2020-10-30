@@ -107,7 +107,7 @@ scripts.patterns.list = {
     { "agr", "hyph-grc",           "ancient greek", ignored_ancient_greek },
     { "gb",  "hyph-en-gb",         "british english" },
     { "us",  "hyph-en-us",         "american english" },
- -- { "eo",  "hyph-eo",            "esperanto" },
+    { "eo",  "hyph-eo",            "esperanto" },
     { "es",  "hyph-es",            "spanish" },
     { "et",  "hyph-et",            "estonian" },
     { "eu",  "hyph-eu",            "basque" },

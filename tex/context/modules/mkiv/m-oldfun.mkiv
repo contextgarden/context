@@ -648,7 +648,7 @@
    \dontcomplain
    \setuptolerance[\v!verytolerant]% == \tolerance4500
    \hsize#1%
-   \def\\{\softbreak}%
+   \enforced\def\\{\softbreak}%
    \!!heighta#4%
    \!!heightb#2%
    \doloop
@@ -690,8 +690,8 @@
    \advance\scratchdimen#2\relax
    \NormalizeFontWidth
      #1%
-     {\def\+{\global\settrue\NFSpread\gobbleuntil\relax}%
-      \def\\{\gobbleuntil\relax}% newline
+     {\enforced\def\+{\global\settrue\NFSpread\gobbleuntil\relax}%
+      \enforced\def\\{\gobbleuntil\relax}% newline
       \setupspacing
       #6\relax}%
      {\scratchdimen}%

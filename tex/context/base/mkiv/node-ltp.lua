@@ -281,10 +281,10 @@ local unset_code              = nodecodes.unset
 local marginkern_code         = nodecodes.marginkern
 local dir_code                = nodecodes.dir
 local boundary_code           = nodecodes.boundary
-local localpar_code           = nodecodes.localpar
+local par_code                = nodecodes.par
 
 local protrusionboundary_code = nodes.boundarycodes.protrusion
-local leaders_code            = nodes.leadercodes.leaders
+local leaders_code            = nodes.gluecodes.leaders
 local indentlist_code         = nodes.listcodes.indent
 local ligatureglyph_code      = nodes.glyphcodes.ligature
 local cancel_code             = nodes.dircodes.cancel
@@ -1323,7 +1323,7 @@ do
 
         while current_break do
 
-            -- hm, here we have head == localpar and in the engine it's a temp node
+            -- hm, here we have head == par and in the engine it's a temp node
 
             head = inject_dirs_at_begin_of_line(dirstack,head)
 
@@ -1463,7 +1463,7 @@ do
                                     p = nil
                                 end
                                 break
-                            elseif id == localpar_code then
+                            elseif id == par_code then
                                 break
                             elseif id == temp_code then
                                 -- Go on.
@@ -1560,29 +1560,29 @@ do
                 start = insert_node_before(start,start,ls)
             end
             if normalize > 0 then
-                local localpar  = nil
-                local localdir  = nil
+                local par       = nil
+                local dir       = nil
                 local indent    = nil
-                local localpars = nil
+                local pars      = nil
                 local notflocal = 0
                 for n, id, subtype in nextnode, start do
                     if id == hlist_code then
                         if normalize > 1 and subtype == indentlist_code then
                             indent = n
                         end
-                    elseif id == localpar_code then
+                    elseif id == par_code then
                         if start_of_par(n) then --- maybe subtype check instead
-                            localpar = n
+                            par = n
                         elseif noflocals then
                             noflocals = noflocals + 1
-                            localpars[noflocals] = n
+                            pars[noflocals] = n
                         else
                             noflocals = 1
-                            localpars = { n }
+                            pars = { n }
                         end
                     elseif id == dir_code then
-                        if localpar and not localdir and subtype(n) == cancel_code then
-                            localdir = n
+                        if par and not dir and subtype(n) == cancel_code then
+                            dir = n
                         end
                     end
                 end
@@ -1591,14 +1591,14 @@ do
                     setattributelist(i,start)
                     replace_node(indent,i)
                 end
-                if localdir then
-                    local d = new_direction((getdirection(localpar)))
+                if dir then
+                    local d = new_direction((getdirection(par)))
                     setattributelist(d,start)
-                    replace_node(localpar,d)
+                    replace_node(par,d)
                 end
-                if localpars then
+                if pars then
                     for i=1,noflocals do
-                        start = remove_node(start,localpars[i],true)
+                        start = remove_node(start,pars[i],true)
                     end
                 end
             end
@@ -1719,7 +1719,7 @@ do
                     local id = getid(next)
                     if id == glyph_code then
                         break
-                    elseif id == localpar_code then
+                    elseif id == par_code then
                         -- nothing
                     elseif id < math_code then
                         -- messy criterium
@@ -1756,7 +1756,7 @@ par.head = head
                 if getnext(h) then
                     report_parbuilders("something is left over")
                 end
-                if getid(h) ~= localpar_code then
+                if getid(h) ~= par_code then
                     report_parbuilders("no local par node")
                 end
             end
@@ -2454,7 +2454,7 @@ par.head = head
 
             if current then
                 local id = getid(current)
-                if id == localpar_code then
+                if id == par_code then
                     par.init_internal_left_box       = getfield(current,"box_left")
                     par.init_internal_left_box_width = getfield(current,"box_left_width")
                     par.internal_pen_inter           = getfield(current,"pen_inter")
@@ -2617,7 +2617,7 @@ par.head = head
                     p_active, n_active = try_break(getpenalty(current), unhyphenated_code, par, first_p, current, checked_expansion)
                 elseif id == dir_code then
                     par.line_break_dir = checked_line_dir(dirstack,current) or par.line_break_dir
-                elseif id == localpar_code then
+                elseif id == par_code then
                     par.internal_pen_inter       = getfield(current,"pen_inter")
                     par.internal_pen_broken      = getfield(current,"pen_broken")
                     par.internal_left_box        = getfield(current,"box_left")

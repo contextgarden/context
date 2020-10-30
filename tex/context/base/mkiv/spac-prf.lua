@@ -17,7 +17,6 @@ local formatters        = string.formatters
 local nodecodes         = nodes.nodecodes
 local gluecodes         = nodes.gluecodes
 local listcodes         = nodes.listcodes
-local leadercodes       = nodes.leadercodes
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -31,8 +30,7 @@ local math_code         = nodecodes.math
 local rule_code         = nodecodes.rule
 local marginkern_code   = nodecodes.marginkern
 
-local leaders_code      = leadercodes.leaders
-
+local leaders_code      = gluecodes.leaders
 local lineskip_code     = gluecodes.lineskip
 local baselineskip_code = gluecodes.baselineskip
 

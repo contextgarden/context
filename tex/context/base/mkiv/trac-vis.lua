@@ -28,12 +28,12 @@ local round = math.round
 -- todo: maybe also xoffset, yoffset of glyph
 -- todo: inline concat (more efficient)
 -- todo: tags can also be numbers (just add to hash)
+-- todo: make a lmtx variant (a few more efficient fetchers)
 
 local nodecodes           = nodes.nodecodes
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
@@ -64,6 +64,7 @@ local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
 local getexpansion        = nuts.getexpansion
 local getdirection        = nuts.getdirection
+local getstate            = nuts.getstate
 
 local isglyph             = nuts.isglyph
 
@@ -167,7 +168,7 @@ local modes = {
     marginkern    = 0x100000,
     mathlistkern  = 0x200000,
     dir           = 0x400000,
-    localpar      = 0x800000,
+    par           = 0x800000,
 }
 
 local usedfont, exheight, emwidth
@@ -236,7 +237,7 @@ local function initialize()
     l_space         = layers.space
     l_depth         = layers.depth
     l_dir           = layers.dir
-    l_localpar      = layers.localpar
+    l_par           = layers.par
     --
     if not userrule then
        userrule = nuts.rules.userrule
@@ -559,6 +560,8 @@ local kernexpansion do
 
     local f_cache = caches["kernexpansion"]
 
+    -- in mkiv we actually need to reconstruct but let's not do that now
+
     kernexpansion = function(head,current)
         local extra = getexpansion(current)
         if extra ~= 0 then
@@ -624,7 +627,7 @@ local whatsit do
 
 end
 
-local dir, localpar do
+local dir, par do
 
     local dircodes    = nodes.dircodes
     local dirvalues   = nodes.dirvalues
@@ -642,11 +645,11 @@ local dir, localpar do
         par    = "PAR",
     }
 
-    localpar = function(head,current)
+    par = function(head,current)
         local what = "par" -- getsubtype(current)
         local info = d_cache[what]
         if info then
-            -- print("hit localpar")
+            -- print("hit par")
         else
             info = sometext(formatters["L:%s"](what),usedfont,nil,c_white)
             setattr(info,a_layer,l_dir)
@@ -927,7 +930,6 @@ end
 local ruledglue do
 
     local gluecodes             = nodes.gluecodes
-    local leadercodes           = nodes.gluecodes
 
     local userskip_code         = gluecodes.userskip
     local spaceskip_code        = gluecodes.spaceskip
@@ -936,13 +938,10 @@ local ruledglue do
  -- local keepskip_code         = gluecodes.keepskip or gluecodes.userskip
     local leftskip_code         = gluecodes.leftskip
     local rightskip_code        = gluecodes.rightskip
-    local parfillskip_code      = gluecodes.parfillskip
     local parfillleftskip_code  = gluecodes.parfillleftskip or parfillskip_code
     local parfillrightskip_code = gluecodes.parfillrightskip or parfillskip_code
     local indentskip_code       = gluecodes.indentskip
     local correctionskip_code   = gluecodes.correctionskip
-
-    local cleaders_code         = leadercodes.cleaders
 
     local g_cache_v = caches["vglue"]
     local g_cache_h = caches["hglue"]
@@ -967,10 +966,10 @@ local ruledglue do
         [gluecodes.intermathskip]         = "IM",
         [gluecodes.keepskip or 99]        = "KS",
         [gluecodes.mathskip]              = "MT",
-        [leadercodes.leaders]             = "NL",
-        [leadercodes.cleaders]            = "CL",
-        [leadercodes.xleaders]            = "XL",
-        [leadercodes.gleaders]            = "GL",
+        [gluecodes.leaders]               = "NL",
+        [gluecodes.cleaders]              = "CL",
+        [gluecodes.xleaders]              = "XL",
+        [gluecodes.gleaders]              = "GL",
      -- true                              = "VS",
      -- false                             = "HS",
         [leftskip_code]                   = "LS",
@@ -978,7 +977,6 @@ local ruledglue do
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
         [zerospaceskip_code]              = "ZS",
-        [parfillskip_code]                = "PR",
         [parfillleftskip_code]            = "PL",
         [parfillrightskip_code]           = "PR",
         [indentskip_code]                 = "IN",
@@ -999,7 +997,7 @@ local ruledglue do
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
-            elseif subtype == parfillskip_code or subtype == parfillleftskip_code or subtype == parfillrightskip_code or subtype == indentskip_code or subtype == correctionskip_code then
+            elseif subtype == parfillleftskip_code or subtype == parfillrightskip_code or subtype == indentskip_code or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,c_indent)
             elseif subtype == userskip_code then
                 if width > 0 then
@@ -1252,7 +1250,7 @@ do
     local marginkern_code      = nodecodes.marginkern
     local mathlistkern_code    = nodecodes.mathlistkern
     local dir_code             = nodecodes.dir
-    local localpar_code        = nodecodes.localpar
+    local par_code             = nodecodes.par
 
     local kerncodes            = nodes.kerncodes
     local fontkern_code        = kerncodes.fontkern
@@ -1289,7 +1287,7 @@ do
         local trace_space           = false
         local trace_depth           = false
         local trace_dir             = false
-        local trace_localpar        = false
+        local trace_par             = false
         local current               = head
         local previous              = nil
         local attr                  = unsetvalue
@@ -1334,7 +1332,7 @@ do
                     trace_marginkern    = false
                     trace_mathlistkern  = false
                     trace_dir           = false
-                    trace_localpar      = false
+                    trace_par           = false
                     if id == kern_code then
                         goto kern
                     else
@@ -1431,9 +1429,9 @@ do
                 if trace_dir then
                     head, current = dir(head,current)
                 end
-            elseif id == localpar_code then
-                if trace_localpar then
-                    head, current = localpar(head,current)
+            elseif id == par_code then
+                if trace_par then
+                    head, current = par(head,current)
                 end
             end
             goto next

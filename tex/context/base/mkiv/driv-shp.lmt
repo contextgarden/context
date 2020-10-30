@@ -44,6 +44,7 @@ local getdata           = nuts.getdata
 local getreplace        = nuts.getreplace
 local setreplace        = nuts.setreplace
 local getfont           = nuts.getfont
+local getkerndimension  = nuts.getkerndimension
 
 local setdirection      = nuts.setdirection
 local setfield          = nuts.setfield
@@ -68,7 +69,6 @@ local parameters        = fonthashes.parameters
 
 local nodecodes         = nodes.nodecodes
 local whatsitcodes      = nodes.whatsitcodes
-local leadercodes       = nodes.leadercodes
 local gluecodes         = nodes.gluecodes
 local dircodes          = nodes.dircodes
 local dirvalues         = nodes.dirvalues
@@ -92,10 +92,10 @@ local whatsit_code            = nodecodes.whatsit
 ----- penalty_code            = nodecodes.penalty
 ----- boundary_code           = nodecodes.boundary
 
-local leaders_code            = leadercodes.leaders
-local cleaders_code           = leadercodes.cleaders
-local xleaders_code           = leadercodes.xleaders
-local gleaders_code           = leadercodes.gleaders
+local leaders_code            = gluecodes.leaders
+local cleaders_code           = gluecodes.cleaders
+local xleaders_code           = gluecodes.xleaders
+local gleaders_code           = gluecodes.gleaders
 
 local spaceskip_code          = gluecodes.spaceskip
 
@@ -586,7 +586,7 @@ local hlist_out, vlist_out  do
      --     current = getlist(this_box)
      -- end
 
-        -- we can encounter localpar, boundary and penalty nodes but a special
+        -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
         for current, id, subtype in nextnode, current do
             if id == glyph_code then
@@ -775,6 +775,8 @@ local hlist_out, vlist_out  do
                 end
                 cur_h = cur_h + width
             elseif id == kern_code then
+                -- we can use getkerndimension(current) but then we get rounded values so for
+                -- now we calculate ourselves
                 local kern, factor = getkern(current,true)
                 if kern ~= 0 then
                     if factor ~= 0 then
@@ -893,7 +895,7 @@ local hlist_out, vlist_out  do
                     setlink(current,replace)
                     setreplace(current)
                 end
-         -- elseif id == localpar_code and start_of_par(current) then
+         -- elseif id == par_code and start_of_par(current) then
          --     local pardir = getdirection(current) or lefttoright_code
          --     if pardir == righttoleft_code then
          --     end

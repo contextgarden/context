@@ -11,7 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{syst-aux}{}
+%D In the process of being adapted to \LMTX\ flags so a bit of a mess now. Also
+%D our playground.
+
+\registerctxluafile{syst-aux}{autosuffix}
 \registerctxluafile{syst-mac}{autosuffix}
 
 %D This file is a follow up in \type {syst-aux.mkii} and \type {syst-aux.mkiv} where
@@ -46,14 +49,18 @@
 %D keep the same name for a similar mechanism. So, effectively we have two ways to
 %D protect a macro.
 
-\let\unexpanded\normalprotected
+\pushoverloadmode
+
+\aliased\let\unexpanded\normalprotected
+
+\popoverloadmode
 
 %D We're definitely in \LMTX\ mode here.
 
-\let\startlmtxmode\relax
-\let\stoplmtxmode \relax
-\def\startmkivmode#-\stopmkivmode{}
-\let\stopmkivmode \relax
+\aliased  \let\startlmtxmode\relax
+\aliased  \let\stoplmtxmode \relax
+\permanent\def\startmkivmode#-\stopmkivmode{}
+\aliased  \let\stopmkivmode \relax
 
 %D As we don't have namespace definers yet, we use a special one. Later we will
 %D do a better job.
@@ -71,7 +78,7 @@
 
 \fi
 
-\protected\def\installsystemnamespace#1% maybe move this to syst-ini
+\permanent\protected\def\installsystemnamespace#1% maybe move this to syst-ini
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate system namespace '#1'}\wait
    \else
@@ -144,24 +151,25 @@
 %D that's the price to pay. More are defined elsewhere. Of course we later pay a
 %D price when they need to be expanded.
 
-\def\v!prefix! {v!}
-\def\c!prefix! {c!}
-\def\s!prefix! {s!}
+% \def\v!prefix! {v!}
+% \def\c!prefix! {c!}
+% \def\s!prefix! {s!}
+%
+% \def\s!next    {next}
+% \def\s!default {default}
+% \def\s!dummy   {dummy}
+% \def\s!unknown {unknown}
+%
+% \def\s!do      {do}
+% \def\s!dodo    {dodo}
+%
+% \def\s!complex {complex}
+% \def\s!simple  {simple}
+%
+% \def\s!start{start}
+% \def\s!stop {stop}
 
-\def\s!next    {next}
-\def\s!default {default}
-\def\s!dummy   {dummy}
-\def\s!unknown {unknown}
-
-\def\s!do      {do}
-\def\s!dodo    {dodo}
-
-\def\s!complex {complex}
-\def\s!start   {start}
-\def\s!simple  {simple}
-\def\s!stop    {stop}
-
-\def\s!empty   {empty}
+% \immutable\def\s!empty {empty}
 
 %D Sometimes we pass macros as arguments to commands that don't expand them before
 %D interpretation. Such commands can be enclosed with \type {\expanded}, like:
@@ -178,13 +186,17 @@
 
 \let\m_syst_helpers_expanded\empty
 
-\protected\def\expanded#1%
+\pushoverloadmode
+
+\permanent\protected\def\expanded#1%
   {\xdef\m_syst_helpers_expanded{\noexpand#1}\m_syst_helpers_expanded}
 
-\protected\def\startexpanded#1\stopexpanded
+\popoverloadmode
+
+\permanent\protected\def\startexpanded#1\stopexpanded
   {\xdef\m_syst_helpers_expanded{#1}\m_syst_helpers_expanded}
 
-\let\stopexpanded\relax
+\aliased\let\stopexpanded\relax
 
 %D Recent \TEX\ engines have a primitive \type {\expanded} and we will use that when
 %D possible. After all, we can make not expandable macros now. The name clash is an
@@ -207,21 +219,21 @@
 %D is more efficient but it probably won't be noticed. It's anyway cheaper on memory
 %D access. We use versions that don't even store the arguments.
 
-\def\gobbleoneargument               #-{}
-\def\gobbletwoarguments            #-#-{}
-\def\gobblethreearguments        #-#-#-{}
-\def\gobblefourarguments       #-#-#-#-{}
-\def\gobblefivearguments       #-#-#-#-{}
-\def\gobblesixarguments        #-#-#-#-{}
-\def\gobblesevenarguments    #-#-#-#-#-{}
-\def\gobbleeightarguments  #-#-#-#-#-#-{}
-\def\gobbleninearguments #-#-#-#-#-#-#-{}
+%def\gobbleoneargument               #-{}
+\permanent\def\gobbletwoarguments            #-#-{}
+\permanent\def\gobblethreearguments        #-#-#-{}
+\permanent\def\gobblefourarguments       #-#-#-#-{}
+\permanent\def\gobblefivearguments       #-#-#-#-{}
+\permanent\def\gobblesixarguments        #-#-#-#-{}
+\permanent\def\gobblesevenarguments    #-#-#-#-#-{}
+\permanent\def\gobbleeightarguments  #-#-#-#-#-#-{}
+\permanent\def\gobbleninearguments #-#-#-#-#-#-#-{}
 
-\def\gobbleoneoptional   [#-]{}
-\def\gobbletwooptionals  [#-][#-]{}
-\def\gobblethreeoptionals[#-][#-][#-]{}
-\def\gobblefouroptionals [#-][#-][#-][#-]{}
-\def\gobblefiveoptionals [#-][#-][#-][#-][#-]{}
+\permanent\def\gobbleoneoptional   [#-]{}
+\permanent\def\gobbletwooptionals  [#-][#-]{}
+\permanent\def\gobblethreeoptionals[#-][#-][#-]{}
+\permanent\def\gobblefouroptionals [#-][#-][#-][#-]{}
+\permanent\def\gobblefiveoptionals [#-][#-][#-][#-][#-]{}
 
 %D Reserved macros for tests:
 
@@ -242,10 +254,10 @@
 %D blank spaces but in the meantime we can use some \LUATEX\ trickery. Older versions
 %D use more code and can be find in the \MKIV\ and \MKII\ files.
 
-\let\next          \relax
-\let\nextnext      \relax % kind of obsolete
-\let\nextnextnext  \relax % kind of obsolete
-\let\nexttoken     \relax
+% \mutable\let\next          \relax
+% \mutable\let\nextnext      \relax % kind of obsolete
+% \mutable\let\nextnextnext  \relax % kind of obsolete
+% \mutable\let\nexttoken     \relax
 
 \let\m_syst_action_yes\relax
 \let\m_syst_action_nop\relax
@@ -383,21 +395,37 @@
 %D As we will see, \CONTEXT\ uses these commands many times, which is mainly due to
 %D its object oriented and parameter driven character.
 
-\def\setvalue     #1{\expandafter\def \csname#1\endcsname}
-\def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
-\def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
-\def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
-\def\getvalue     #1{\csname#1\endcsname} % maybe: \begincsname#1\endcsname
-\def\letvalue     #1{\expandafter\let \csname#1\endcsname}
-\def\letgvalue    #1{\expandafter\glet\csname#1\endcsname}
-\def\resetvalue   #1{\expandafter\let \csname#1\endcsname\empty}
-\def\undefinevalue#1{\expandafter\let \csname#1\endcsname\undefined}
-\def\ignorevalue#1#2{\expandafter\let \csname#1\endcsname\empty}
+% \def\setvalue     #1{\expandafter\def \csname#1\endcsname}
+% \def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
+% \def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
+% \def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
+% \def\getvalue     #1{\csname#1\endcsname} % maybe: \begincsname#1\endcsname
+% \def\letvalue     #1{\expandafter\let \csname#1\endcsname}
+% \def\letgvalue    #1{\expandafter\glet\csname#1\endcsname}
+% \def\resetvalue   #1{\expandafter\let \csname#1\endcsname\empty}
+% \def\undefinevalue#1{\expandafter\let \csname#1\endcsname\undefined}
+% \def\ignorevalue#1#2{\expandafter\let \csname#1\endcsname\empty}
 
-\def\setuvalue    #1{\protected\expandafter \def\csname#1\endcsname}
-\def\setuevalue   #1{\protected\expandafter\edef\csname#1\endcsname}
-\def\setugvalue   #1{\protected\expandafter\gdef\csname#1\endcsname}
-\def\setuxvalue   #1{\protected\expandafter\xdef\csname#1\endcsname}
+\def\setvalue     #1{\expandafter\defcsname#1\endcsname}
+\def\setgvalue    #1{\global\defcsname#1\endcsname}
+\def\setevalue    #1{\edefcsname#1\endcsname}
+\def\setxvalue    #1{\global\edefcsname#1\endcsname}
+\def\getvalue     #1{\csname#1\endcsname} % maybe: \begincsname#1\endcsname
+\def\letvalue     #1{\letcsname#1\endcsname}
+\def\letgvalue    #1{\global\letcsname#1\endcsname}
+\def\resetvalue   #1{\letcsname#1\endcsname\empty}
+\def\undefinevalue#1{\letcsname#1\endcsname\undefined}
+\def\ignorevalue#1#2{\letcsname#1\endcsname\empty}
+
+% \def\setuvalue    #1{\protected\expandafter \def\csname#1\endcsname}
+% \def\setuevalue   #1{\protected\expandafter\edef\csname#1\endcsname}
+% \def\setugvalue   #1{\protected\expandafter\gdef\csname#1\endcsname}
+% \def\setuxvalue   #1{\protected\expandafter\xdef\csname#1\endcsname}
+
+\def\setuvalue    #1{\protected\defcsname#1\endcsname}
+\def\setuevalue   #1{\protected\edefcsname#1\endcsname}
+\def\setugvalue   #1{\protected\global\defcsname#1\endcsname}
+\def\setuxvalue   #1{\protected\global\edefcsname#1\endcsname}
 
 \protected\def\getuvalue#1{\csname#1\endcsname}
 
@@ -798,24 +826,40 @@
 %D arguments state. Again it permits leaner and meaner macro definitions with a bit
 %D less clutter in tracing.
 
-\protected\def\syst_helpers_process_comma_item#1,%
+\let\commalistcommand\empty
+
+\protected\def\syst_helpers_process_comma_item#+,%
   {\ifarguments
      \expandafter\syst_helpers_process_comma_item_gobble
-   \or
+   \orelse\ifparameter#1\or
      \commalistcommand{#1}%
      \expandafter\syst_helpers_process_comma_item_next
+   \else
+     \expandafter\syst_helpers_process_comma_item_gobble
    \fi}
 
 \def\syst_helpers_process_comma_item_next
   {\expandafterspaces\syst_helpers_process_comma_item}
 
-\protected\def\processcommalist[#1]#2%
+% \protected\def\processcommalist[#1]#2%
+%   {\pushmacro\commalistcommand
+%    \def\commalistcommand{#2}%
+%    \expandafterspaces\syst_helpers_process_comma_item#1,\ignorearguments\ignorearguments\ignorearguments
+%    \popmacro\commalistcommand}
+
+% \protected\def\processcommacommand[#1]#2%
+%   {\pushmacro\commalistcommand
+%    \def\commalistcommand{#2}%
+%    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
+%    \popmacro\commalistcommand}
+
+\protected\def\processcommalist[#*#+]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
    \expandafterspaces\syst_helpers_process_comma_item#1,\ignorearguments\ignorearguments\ignorearguments
    \popmacro\commalistcommand}
 
-\protected\def\processcommacommand[#1]#2%
+\protected\def\processcommacommand[#*#+]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
@@ -964,7 +1008,7 @@
      \let\syst_helpers_do_compare_process_action\syst_helpers_do_compare_process_action_b
    \fi
    \edef\syst_helpers_do_process_action##1{\syst_helpers_do_compare_process_action[##1][#1]}% expands #1
-   \processnextcommalist\relax\relax\syst_helpers_do_process_action[}
+   \processnextcommalist\syst_helpers_do_process_action[}
 
 \protected\def\syst_helpers_do_compare_process_action_c[#1=>#2][#3]%
   {\edef\m_syst_string_one{#1}%
@@ -990,10 +1034,10 @@
    \fi
    [#1]}
 
-\protected\def\syst_helpers_process_first_action_in_set_indeed[#1]#2[#3]%
+\tolerant\protected\def\syst_helpers_process_first_action_in_set_indeed[#1]#*[#2]%
   {\def\syst_helpers_do_process_action##1%
      {\def\syst_helpers_do_do_process_action####1{\syst_helpers_do_compare_process_action_c[####1][##1]}%
-      \processcommalist[#3]\syst_helpers_do_do_process_action}%
+      \processcommalist[#2]\syst_helpers_do_do_process_action}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_do_process_action}
 
 \protected\def\syst_helpers_do_compare_process_action_d[#1=>#2][#3]%
@@ -1011,12 +1055,12 @@
      \fi
    \fi}
 
-\protected\def\syst_helpers_process_all_actions_in_set_indeed[#1]#2[#3]%
+\tolerant\protected\def\syst_helpers_process_all_actions_in_set_indeed[#1]#*[#2]%
   {\globalpushmacro\syst_process_action_in_set_all
    \def\syst_process_action_in_set##1%
      {\def\syst_process_action_in_set_one####1{\syst_helpers_do_compare_process_action_d[####1][##1]}%
-      \processcommalist[#3]\syst_process_action_in_set_one}%
-   \processcommacommand[#1]\syst_process_action_in_set
+      \processcommalist[#2]\syst_process_action_in_set_one}%
+      \processcommacommand[#1]\syst_process_action_in_set
    \globalpopmacro\syst_process_action_in_set_all}
 
 \protected\def\processallactionsinset[#1]%
@@ -1025,18 +1069,21 @@
      \expandafter\processaction
    \else
      \expandafter\syst_helpers_process_all_actions_in_set_indeed
-   \fi
-   [#1]}
+   \fi[#1]}
 
 %D These macros use:
 
-\protected\def\processnextcommalist#1#2#3[#4#5]%
-  {#1\relax
-   \pushmacro\commalistcommand
-   \def\commalistcommand{#3}%
-   \expandafterspaces\syst_helpers_process_comma_item#4#5\ignorearguments\ignorearguments\ignorearguments
-   \popmacro\commalistcommand
-   #2\relax}
+% \protected\def\processnextcommalist#1[#2#3]%
+%   {\pushmacro\commalistcommand
+%    \def\commalistcommand{#1}%
+%    \expandafterspaces\syst_helpers_process_comma_item#2#3\ignorearguments\ignorearguments\ignorearguments
+%    \popmacro\commalistcommand}
+
+\protected\def\processnextcommalist#1[#2#3]%
+  {\pushmacro\commalistcommand
+   \def\commalistcommand{#1}%
+   \expandafterspaces\syst_helpers_process_comma_item#2#3\ignorearguments\ignorearguments\ignorearguments
+   \popmacro\commalistcommand}
 
 %D \macros
 %D   {getfirstcharacter, firstcharacter, remainingcharacters, doiffirstcharacter}
@@ -1281,10 +1328,12 @@
    \processcommalist[#1]\syst_helpers_do_make_raw_comma_list
    \edef#2{\the\scratchtoks}}
 
-\let\rawprocesscommalist   \processcommalist
-\let\rawprocesscommacommand\processcommacommand
+% beware: in mkiv { } were lost so it was not compatible with the non raw
 
-%D Here is one without nesting:
+\let\rawprocesscommalist   \processcommalist    % can go
+\let\rawprocesscommacommand\processcommacommand % can go
+
+%D Here is one without nesting .. still needed?
 
 \protected\def\syst_helpers_process_fast_comma_item#1,%
   {\ifarguments
@@ -1409,20 +1458,6 @@
 \def\doresetvalue   #1#2{\expandafter\let \csname#1#2\endcsname\empty}
 \def\doignorevalue#1#2#3{\expandafter\let \csname#1#2\endcsname\empty}
 \def\docopyvalue  #1#2#3{\expandafter\def \csname#1#3\endcsname{\csname#2#3\endcsname}}
-
-%D Experiment
-%D
-%D \starttyping
-%D \protected\def\fooA{A} \aliasmacro\FooA\fooA
-%D           \def\fooB{B} \aliasmacro\FooB\fooB
-%D
-%D \meaning\fooA\crlf \meaning\FooA\crlf
-%D \meaning\fooB\crlf \meaning\FooB\crlf
-%D \stoptyping
-
-\protected\def\aliasmacro#1#2%
-  {\ifprotected#2\protected\protected\fi
-   \def#1{#2}}
 
 %D \macros
 %D   {doassign,undoassign,doassignempty}
@@ -1559,11 +1594,10 @@
 \def\syst_helpers_grab_parameter_next
   {\expandafterspaces\syst_helpers_grab_parameter}
 
-\protected\def\dogetparameters#1[#2]#-[#3]%
+\protected\def\dogetparameters#1[#2]#*[#3]%
   {\def\m_syst_parameter_n{#2}%
    \let\m_syst_parameter_s#1%
    \expandafterspaces\syst_helpers_grab_parameter#3\ignorearguments\ignorearguments}
-
 
 %D \macros
 %D   {getemptyparameters}
@@ -1575,9 +1609,9 @@
 %D \getemptyparameters [label] [...=...,...=...]
 %D \stoptyping
 
-\protected\def\getemptyparameters[#1]#2[#3]%
+\protected\def\getemptyparameters[#1]#*[#2]%
   {\def\syst_helpers_get_empty_parameters##1{\doassignempty[#1][##1]}%
-   \processcommalist[#3]\syst_helpers_get_empty_parameters}
+   \processcommalist[#2]\syst_helpers_get_empty_parameters}
 
 %D We now just alias these as there is no need for a speedup. These have not been used
 %D for a long time in core code.
@@ -1658,7 +1692,7 @@
 %D By using \type {\docopyvalue} we've prepared this command for use in a
 %D multi||lingual environment.
 
-\protected\def\copyparameters[#1]#-[#2]#-[#3]%
+\protected\def\copyparameters[#1]#*[#2]#*[#3]%
   {\doifnot{#1}{#2}
      {\def\syst_helpers_copy_parameter{\docopyvalue{#1}{#2}}% ##1
       \processcommalist[#3]\syst_helpers_copy_parameter}}
@@ -1753,9 +1787,9 @@
 \def\syst_helpers_get_from_comma_list_next
   {\expandafterspaces\syst_helpers_get_from_comma_list}
 
-\protected\def\getfromcommalist[#1]#2[#3]%
+\protected\def\getfromcommalist[#1]#*[#2]%
   {\let\commalistelement\empty
-   \commalistcounter#3\relax
+   \commalistcounter#2\relax
    \expandafterspaces\syst_helpers_get_from_comma_list#1\ignorearguments\ignorearguments}
 
 \protected\def\getfromcommacommand[#1]%
@@ -1860,6 +1894,8 @@
 %D We use some signals for telling the calling macros if all wanted arguments are
 %D indeed supplied by the user.
 
+\newcount\nofarguments
+
 \newif\iffirstargument
 \newif\ifsecondargument
 \newif\ifthirdargument
@@ -1902,328 +1938,420 @@
 
 \newtoks\t_syst_aux
 
-\def\syst_helpers_single_empty_one_yes      {\firstargumenttrue  \the\t_syst_aux}
-\def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \the\t_syst_aux}
-\def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \the\t_syst_aux}
-\def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \the\t_syst_aux}
-\def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \the\t_syst_aux}
-\def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \the\t_syst_aux}
-\def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\the\t_syst_aux}
+% \def\syst_helpers_single_empty_one_yes      {\firstargumenttrue  \the\t_syst_aux}
+% \def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \the\t_syst_aux}
+% \def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \the\t_syst_aux}
+% \def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \the\t_syst_aux}
+% \def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \the\t_syst_aux}
+% \def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \the\t_syst_aux}
+% \def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\the\t_syst_aux}
+%
+% %D Single:
+%
+% \protected\def\dosingleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_single_empty_one_yes\syst_helpers_single_empty_one_nop}
+%
+% \def\syst_helpers_single_empty_one_nop
+%   {\firstargumentfalse
+%    \the\t_syst_aux[]}
+%
+% %D Double
+%
+% \protected\def\dodoubleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_double_empty_one_yes\syst_helpers_double_empty_one_nop}
+%
+% % \def\syst_helpers_double_empty_one_yes[#1]%
+% %   {\firstargumenttrue
+% %    \toksapp\t_syst_aux{[{#1}]}%
+% %    \futureexpand[\syst_helpers_double_empty_two_yes\syst_helpers_double_empty_two_nop}
+% %
+% % nicer is:
+%
+% \def\syst_helpers_double_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_double_empty_two_yes\syst_helpers_double_empty_two_nop}
+%
+% \def\syst_helpers_double_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_double_empty_two_nop
+%   {\secondargumentfalse
+%    \the\t_syst_aux[]}
+%
+% % Triple
+%
+% \protected\def\dotripleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_triple_empty_one_yes\syst_helpers_triple_empty_one_nop}
+%
+% \def\syst_helpers_triple_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_triple_empty_two_yes\syst_helpers_triple_empty_two_nop}
+%
+% \def\syst_helpers_triple_empty_two_yes[#+]%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_triple_empty_three_yes\syst_helpers_triple_empty_three_nop}
+%
+% \def\syst_helpers_triple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \the\t_syst_aux[][][]}
+%
+% \def\syst_helpers_triple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_triple_empty_three_nop
+%   {\thirdargumentfalse
+%    \the\t_syst_aux[]}
+%
+% %D Quadruple:
+%
+% \protected\def\doquadrupleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_quadruple_empty_one_yes\syst_helpers_quadruple_empty_one_nop}
+%
+% \def\syst_helpers_quadruple_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quadruple_empty_two_yes\syst_helpers_quadruple_empty_two_nop}
+%
+% \def\syst_helpers_quadruple_empty_two_yes[#+]%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quadruple_empty_three_yes\syst_helpers_quadruple_empty_three_nop}
+%
+% \def\syst_helpers_quadruple_empty_three_yes[#+]%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quadruple_empty_four_yes\syst_helpers_quadruple_empty_four_nop}
+%
+% \def\syst_helpers_quadruple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux[][][][]}
+%
+% \def\syst_helpers_quadruple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux[][][]}
+%
+% \def\syst_helpers_quadruple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_quadruple_empty_four_nop
+%   {\fourthargumentfalse
+%    \the\t_syst_aux[]}
+%
+% %D Quintuple:
+%
+% \protected\def\doquintupleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_quintuple_empty_one_yes\syst_helpers_quintuple_empty_one_nop}
+%
+% \def\syst_helpers_quintuple_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quintuple_empty_two_yes\syst_helpers_quintuple_empty_two_nop}
+%
+% \def\syst_helpers_quintuple_empty_two_yes[#+]%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quintuple_empty_three_yes\syst_helpers_quintuple_empty_three_nop}
+%
+% \def\syst_helpers_quintuple_empty_three_yes[#+]%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quintuple_empty_four_yes\syst_helpers_quintuple_empty_four_nop}
+%
+% \def\syst_helpers_quintuple_empty_four_yes[#+]%
+%   {\fourthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_quintuple_empty_five_yes\syst_helpers_quintuple_empty_five_nop}
+%
+% \def\syst_helpers_quintuple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux[][][][][]}
+%
+% \def\syst_helpers_quintuple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux[][][][]}
+%
+% \def\syst_helpers_quintuple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux[][][]}
+%
+% \def\syst_helpers_quintuple_empty_four_nop
+%   {\fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_quintuple_empty_five_nop
+%   {\fifthargumentfalse
+%    \the\t_syst_aux[]}
+%
+% %D Sixtuple:
+%
+% \protected\def\dosixtupleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_one_yes\syst_helpers_sixtuple_empty_one_nop}
+%
+% \def\syst_helpers_sixtuple_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_two_yes\syst_helpers_sixtuple_empty_two_nop}
+%
+% \def\syst_helpers_sixtuple_empty_two_yes[#+]%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_three_yes\syst_helpers_sixtuple_empty_three_nop}
+%
+% \def\syst_helpers_sixtuple_empty_three_yes[#+]%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_four_yes\syst_helpers_sixtuple_empty_four_nop}
+%
+% \def\syst_helpers_sixtuple_empty_four_yes[#+]%
+%   {\fourthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_five_yes\syst_helpers_sixtuple_empty_five_nop}
+%
+% \def\syst_helpers_sixtuple_empty_five_yes[#+]%
+%   {\fifthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_sixtuple_empty_six_yes\syst_helpers_sixtuple_empty_six_nop}
+%
+% \def\syst_helpers_sixtuple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \the\t_syst_aux[][][][][][]}
+%
+% \def\syst_helpers_sixtuple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \the\t_syst_aux[][][][][]}
+%
+% \def\syst_helpers_sixtuple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \the\t_syst_aux[][][][]}
+%
+% \def\syst_helpers_sixtuple_empty_four_nop
+%   {\fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \the\t_syst_aux[][][]}
+%
+% \def\syst_helpers_sixtuple_empty_five_nop
+%   {\fifthargumentfalse
+%    \sixthargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_sixtuple_empty_six_nop
+%   {\sixthargumentfalse
+%    \the\t_syst_aux[]}
+%
+% %D Seventuple:
+%
+% \protected\def\doseventupleempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand[\syst_helpers_seventuple_empty_one_yes\syst_helpers_seventuple_empty_one_nop}
+%
+% \def\syst_helpers_seventuple_empty_one_yes[#+]%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_two_yes\syst_helpers_seventuple_empty_two_nop}
+%
+% \def\syst_helpers_seventuple_empty_two_yes[#+]%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_three_yes\syst_helpers_seventuple_empty_three_nop}
+%
+% \def\syst_helpers_seventuple_empty_three_yes[#+]%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_four_yes\syst_helpers_seventuple_empty_four_nop}
+%
+% \def\syst_helpers_seventuple_empty_four_yes[#+]%
+%   {\fourthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_five_yes\syst_helpers_seventuple_empty_five_nop}
+%
+% \def\syst_helpers_seventuple_empty_five_yes[#+]%
+%   {\fifthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_six_yes\syst_helpers_seventuple_empty_six_nop}
+%
+% \def\syst_helpers_seventuple_empty_six_yes[#+]%
+%   {\sixthargumenttrue
+%    \toksapp\t_syst_aux{[#1]}%
+%    \futureexpand[\syst_helpers_seventuple_empty_seven_yes\syst_helpers_seventuple_empty_seven_nop}
+%
+% \def\syst_helpers_seventuple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][][][][][][]}
+%
+% \def\syst_helpers_seventuple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][][][][][]}
+%
+% \def\syst_helpers_seventuple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][][][][]}
+%
+% \def\syst_helpers_seventuple_empty_four_nop
+%   {\fourthargumentfalse
+%    \fifthargumentfalse
+%    \sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][][][]}
+%
+% \def\syst_helpers_seventuple_empty_five_nop
+%   {\fifthargumentfalse
+%    \sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][][]}
+%
+% \def\syst_helpers_seventuple_empty_six_nop
+%   {\sixthargumentfalse
+%    \seventhargumentfalse
+%    \the\t_syst_aux[][]}
+%
+% \def\syst_helpers_seventuple_empty_seven_nop
+%   {\seventhargumentfalse
+%    \the\t_syst_aux[]}
 
-%D Single:
+%tolerant\def\syst_single_empty#1\relax[#+]%
+\tolerant\def\syst_single_empty#1\relax[#2]%
+  {\ifarguments
+   \or\firstargumentfalse
+   \or\firstargumenttrue
+   \fi
+   #1[#2]}
 
-\protected\def\dosingleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_single_empty_one_yes\syst_helpers_single_empty_one_nop}
+%tolerant\def\syst_double_empty#1\relax[#2]#*[#3]%
+\tolerant\def\syst_double_empty#1\relax[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse
+   \or\firstargumenttrue \secondargumentfalse
+   \or\firstargumenttrue \secondargumenttrue
+   \fi
+   #1[#2][#3]}
 
-\def\syst_helpers_single_empty_one_nop
-  {\firstargumentfalse
-   \the\t_syst_aux[]}
+%tolerant\def\syst_triple_empty#1\relax[#2]#*[#3]#*[#4]%
+\tolerant\def\syst_triple_empty#1\relax[#+]#*[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue
+   \fi
+   #1[#2][#3][#4]}
 
-%D Double
+%tolerant\def\syst_quadruple_empty#1\relax[#2]#*[#3]#*[#4]#*[#5]%
+\tolerant\def\syst_quadruple_empty#1\relax[#+]#*[#+]#*[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue
+   \fi
+   #1[#2][#3][#4][#5]}
 
-\protected\def\dodoubleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_double_empty_one_yes\syst_helpers_double_empty_one_nop}
+%\tolerant\def\syst_quintuple_empty#1\relax[#2]#*[#3]#*[#4]#*[#5]#*[#6]%
+\tolerant\def\syst_quintuple_empty#1\relax[#+]#*[#+]#*[#+]#*[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue
+   \fi
+   #1[#2][#3][#4][#5][#6]}
 
-\def\syst_helpers_double_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_double_empty_two_yes\syst_helpers_double_empty_two_nop}
+%tolerant\def\syst_sixtuple_empty#1\relax[#2]#*[#3]#*[#4]#*[#5]#*[#6]#*[#7]%
+\tolerant\def\syst_sixtuple_empty#1\relax[#+]#*[#+]#*[#+]#*[#+]#*[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse\fifthargumentfalse\sixthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumentfalse\sixthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue \sixthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue \sixthargumenttrue
+   \fi
+   #1[#2][#3][#4][#5][#6][#7]}
 
-\def\syst_helpers_double_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \the\t_syst_aux[][]}
+%tolerant\def\syst_seventuple_empty#1\relax[#2]#*[#3]#*[#4]#*[#5]#*[#6]#*[#7]#*[#8]%
+\tolerant\def\syst_seventuple_empty#1\relax[#+]#*[#+]#*[#+]#*[#+]#*[#+]#*[#+]#*[#+]%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse\fifthargumentfalse\sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse\fifthargumentfalse\sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumentfalse\sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue \sixthargumentfalse\seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue \sixthargumenttrue \seventhargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue \sixthargumenttrue \seventhargumenttrue
+   \fi
+   #1[#2][#3][#4][#5][#6][#7][#8]}
 
-\def\syst_helpers_double_empty_two_nop
-  {\secondargumentfalse
-   \the\t_syst_aux[]}
-
-% Triple
-
-\protected\def\dotripleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_triple_empty_one_yes\syst_helpers_triple_empty_one_nop}
-
-\def\syst_helpers_triple_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_triple_empty_two_yes\syst_helpers_triple_empty_two_nop}
-
-\def\syst_helpers_triple_empty_two_yes[#1]%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_triple_empty_three_yes\syst_helpers_triple_empty_three_nop}
-
-\def\syst_helpers_triple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \the\t_syst_aux[][][]}
-
-\def\syst_helpers_triple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \the\t_syst_aux[][]}
-
-\def\syst_helpers_triple_empty_three_nop
-  {\thirdargumentfalse
-   \the\t_syst_aux[]}
-
-%D Quadruple:
-
-\protected\def\doquadrupleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_quadruple_empty_one_yes\syst_helpers_quadruple_empty_one_nop}
-
-\def\syst_helpers_quadruple_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quadruple_empty_two_yes\syst_helpers_quadruple_empty_two_nop}
-
-\def\syst_helpers_quadruple_empty_two_yes[#1]%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quadruple_empty_three_yes\syst_helpers_quadruple_empty_three_nop}
-
-\def\syst_helpers_quadruple_empty_three_yes[#1]%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quadruple_empty_four_yes\syst_helpers_quadruple_empty_four_nop}
-
-\def\syst_helpers_quadruple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux[][][][]}
-
-\def\syst_helpers_quadruple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux[][][]}
-
-\def\syst_helpers_quadruple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux[][]}
-
-\def\syst_helpers_quadruple_empty_four_nop
-  {\fourthargumentfalse
-   \the\t_syst_aux[]}
-
-%D Quintuple:
-
-\protected\def\doquintupleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_quintuple_empty_one_yes\syst_helpers_quintuple_empty_one_nop}
-
-\def\syst_helpers_quintuple_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quintuple_empty_two_yes\syst_helpers_quintuple_empty_two_nop}
-
-\def\syst_helpers_quintuple_empty_two_yes[#1]%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quintuple_empty_three_yes\syst_helpers_quintuple_empty_three_nop}
-
-\def\syst_helpers_quintuple_empty_three_yes[#1]%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quintuple_empty_four_yes\syst_helpers_quintuple_empty_four_nop}
-
-\def\syst_helpers_quintuple_empty_four_yes[#1]%
-  {\fourthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_quintuple_empty_five_yes\syst_helpers_quintuple_empty_five_nop}
-
-\def\syst_helpers_quintuple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux[][][][][]}
-
-\def\syst_helpers_quintuple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux[][][][]}
-
-\def\syst_helpers_quintuple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux[][][]}
-
-\def\syst_helpers_quintuple_empty_four_nop
-  {\fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux[][]}
-
-\def\syst_helpers_quintuple_empty_five_nop
-  {\fifthargumentfalse
-   \the\t_syst_aux[]}
-
-%D Sixtuple:
-
-\protected\def\dosixtupleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_sixtuple_empty_one_yes\syst_helpers_sixtuple_empty_one_nop}
-
-\def\syst_helpers_sixtuple_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_sixtuple_empty_two_yes\syst_helpers_sixtuple_empty_two_nop}
-
-\def\syst_helpers_sixtuple_empty_two_yes[#1]%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_sixtuple_empty_three_yes\syst_helpers_sixtuple_empty_three_nop}
-
-\def\syst_helpers_sixtuple_empty_three_yes[#1]%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_sixtuple_empty_four_yes\syst_helpers_sixtuple_empty_four_nop}
-
-\def\syst_helpers_sixtuple_empty_four_yes[#1]%
-  {\fourthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_sixtuple_empty_five_yes\syst_helpers_sixtuple_empty_five_nop}
-
-\def\syst_helpers_sixtuple_empty_five_yes[#1]%
-  {\fifthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_sixtuple_empty_six_yes\syst_helpers_sixtuple_empty_six_nop}
-
-\def\syst_helpers_sixtuple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \the\t_syst_aux[][][][][][]}
-
-\def\syst_helpers_sixtuple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \the\t_syst_aux[][][][][]}
-
-\def\syst_helpers_sixtuple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \the\t_syst_aux[][][][]}
-
-\def\syst_helpers_sixtuple_empty_four_nop
-  {\fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \the\t_syst_aux[][][]}
-
-\def\syst_helpers_sixtuple_empty_five_nop
-  {\fifthargumentfalse
-   \sixthargumentfalse
-   \the\t_syst_aux[][]}
-
-\def\syst_helpers_sixtuple_empty_six_nop
-  {\sixthargumentfalse
-   \the\t_syst_aux[]}
-
-%D Seventuple:
-
-\protected\def\doseventupleempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand[\syst_helpers_seventuple_empty_one_yes\syst_helpers_seventuple_empty_one_nop}
-
-\def\syst_helpers_seventuple_empty_one_yes[#1]%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_two_yes\syst_helpers_seventuple_empty_two_nop}
-
-\def\syst_helpers_seventuple_empty_two_yes[#1]%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_three_yes\syst_helpers_seventuple_empty_three_nop}
-
-\def\syst_helpers_seventuple_empty_three_yes[#1]%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_four_yes\syst_helpers_seventuple_empty_four_nop}
-
-\def\syst_helpers_seventuple_empty_four_yes[#1]%
-  {\fourthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_five_yes\syst_helpers_seventuple_empty_five_nop}
-
-\def\syst_helpers_seventuple_empty_five_yes[#1]%
-  {\fifthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_six_yes\syst_helpers_seventuple_empty_six_nop}
-
-\def\syst_helpers_seventuple_empty_six_yes[#1]%
-  {\sixthargumenttrue
-   \toksapp\t_syst_aux{[{#1}]}%
-   \futureexpand[\syst_helpers_seventuple_empty_seven_yes\syst_helpers_seventuple_empty_seven_nop}
-
-\def\syst_helpers_seventuple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][][][][][][]}
-
-\def\syst_helpers_seventuple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][][][][][]}
-
-\def\syst_helpers_seventuple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][][][][]}
-
-\def\syst_helpers_seventuple_empty_four_nop
-  {\fourthargumentfalse
-   \fifthargumentfalse
-   \sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][][][]}
-
-\def\syst_helpers_seventuple_empty_five_nop
-  {\fifthargumentfalse
-   \sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][][]}
-
-\def\syst_helpers_seventuple_empty_six_nop
-  {\sixthargumentfalse
-   \seventhargumentfalse
-   \the\t_syst_aux[][]}
-
-\def\syst_helpers_seventuple_empty_seven_nop
-  {\seventhargumentfalse
-   \the\t_syst_aux[]}
+\permanent\protected\def\dosingleempty    #1{\syst_single_empty    #1\relax}
+\permanent\protected\def\dodoubleempty    #1{\syst_double_empty    #1\relax}
+\permanent\protected\def\dotripleempty    #1{\syst_triple_empty    #1\relax}
+\permanent\protected\def\doquadrupleempty #1{\syst_quadruple_empty #1\relax}
+\permanent\protected\def\doquintupleempty #1{\syst_quintuple_empty #1\relax}
+\permanent\protected\def\dosixtupleempty  #1{\syst_sixtuple_empty  #1\relax}
+\permanent\protected\def\doseventupleempty#1{\syst_seventuple_empty#1\relax}
 
 %D Aliases:
 
@@ -2363,157 +2491,213 @@
 %D \type {conditional} token. Okay, these macros are not called that often but it
 %D saves crap when tracing.
 
-%D NB: experimental code in cont-exp.mkiv
+% \protected\def\dosinglegroupempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_single_empty_one_yes\syst_helpers_single_group_empty_one_nop}
+%
+% \def\syst_helpers_single_group_empty_one_nop
+%   {\firstargumentfalse
+%    \the\t_syst_aux{}}
+%
+% \protected\def\dodoublegroupempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_double_empty_one_yes\syst_helpers_group_double_empty_one_nop}
+%
+% % \def\syst_helpers_group_double_empty_one_yes#1%
+% %   {\firstargumenttrue
+% %    \toksapp\t_syst_aux{{#1}}%
+% %    \futureexpand\bgroup\syst_helpers_double_empty_two_yes\syst_helpers_group_double_empty_two_nop}
+% %
+% % nicer is:
+%
+% \def\syst_helpers_group_double_empty_one_yes#+%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_double_empty_two_yes\syst_helpers_group_double_empty_two_nop}
+%
+% \def\syst_helpers_group_double_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \the\t_syst_aux{}{}}
+%
+% \def\syst_helpers_group_double_empty_two_nop
+%   {\secondargumentfalse
+%    \the\t_syst_aux{}}
+%
+% \protected\def\dotriplegroupempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_triple_empty_one_yes\syst_helpers_group_triple_empty_one_nop}
+%
+% \def\syst_helpers_group_triple_empty_one_yes#+%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_triple_empty_two_yes\syst_helpers_group_triple_empty_two_nop}
+%
+% \def\syst_helpers_group_triple_empty_two_yes#+%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_triple_empty_three_yes\syst_helpers_group_triple_empty_three_nop}
+%
+% \def\syst_helpers_group_triple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \the\t_syst_aux{}{}{}}
+%
+% \def\syst_helpers_group_triple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \the\t_syst_aux{}{}}
+%
+% \def\syst_helpers_group_triple_empty_three_nop
+%   {\thirdargumentfalse
+%    \the\t_syst_aux{}}
+%
+% \protected\def\doquadruplegroupempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quadruple_empty_one_yes\syst_helpers_group_quadruple_empty_one_nop}
+%
+% \def\syst_helpers_group_quadruple_empty_one_yes#+%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quadruple_empty_two_yes\syst_helpers_group_quadruple_empty_two_nop}
+%
+% \def\syst_helpers_group_quadruple_empty_two_yes#+%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quadruple_empty_three_yes\syst_helpers_group_quadruple_empty_three_nop}
+%
+% \def\syst_helpers_group_quadruple_empty_three_yes#+%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_quadruple_empty_four_yes\syst_helpers_group_quadruple_empty_four_nop}
+%
+% \def\syst_helpers_group_quadruple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux{}{}{}{}}
+%
+% \def\syst_helpers_group_quadruple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux{}{}{}}
+%
+% \def\syst_helpers_group_quadruple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \the\t_syst_aux{}{}}
+%
+% \def\syst_helpers_group_quadruple_empty_four_nop
+%   {\fourthargumentfalse
+%    \the\t_syst_aux{}}
+%
+% \protected\def\doquintuplegroupempty#1%
+%   {\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quintuple_empty_one_yes\syst_helpers_group_quintuple_empty_one_nop}
+%
+% \def\syst_helpers_group_quintuple_empty_one_yes#+%
+%   {\firstargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quintuple_empty_two_yes\syst_helpers_group_quintuple_empty_two_nop}
+%
+% \def\syst_helpers_group_quintuple_empty_two_yes#+%
+%   {\secondargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quintuple_empty_three_yes\syst_helpers_group_quintuple_empty_three_nop}
+%
+% \def\syst_helpers_group_quintuple_empty_three_yes#+%
+%   {\thirdargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_group_quintuple_empty_four_yes\syst_helpers_group_quintuple_empty_four_nop}
+%
+% \def\syst_helpers_group_quintuple_empty_four_yes#+%
+%   {\fourthargumenttrue
+%    \toksapp\t_syst_aux{#1}%
+%    \futureexpand\bgroup\syst_helpers_quintuple_empty_five_yes\syst_helpers_group_quintuple_empty_five_nop}
+%
+% \def\syst_helpers_group_quintuple_empty_one_nop
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux{}{}{}{}{}}
+%
+% \def\syst_helpers_group_quintuple_empty_two_nop
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux{}{}{}{}}
+%
+% \def\syst_helpers_group_quintuple_empty_three_nop
+%   {\thirdargumentfalse
+%    \fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux{}{}{}}
+%
+% \def\syst_helpers_group_quintuple_empty_four_nop
+%   {\fourthargumentfalse
+%    \fifthargumentfalse
+%    \the\t_syst_aux{}{}}
+%
+% \def\syst_helpers_group_quintuple_empty_five_nop
+%   {\fifthargumentfalse
+%    \the\t_syst_aux{}}
 
-\protected\def\dosinglegroupempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand\bgroup\syst_helpers_single_empty_one_yes\syst_helpers_single_group_empty_one_nop}
+\tolerant\def\syst_single_group_empty#1\relax#_%
+  {\ifarguments
+   \or\firstargumentfalse
+   \or\firstargumenttrue
+   \fi
+   #1#2}
 
-\def\syst_helpers_single_group_empty_one_nop
-  {\firstargumentfalse
-   \the\t_syst_aux{}}
+\tolerant\def\syst_double_group_empty#1\relax#_#*#_%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse
+   \or\firstargumenttrue \secondargumentfalse
+   \or\firstargumenttrue \secondargumenttrue
+   \fi
+   #1#2#3}
 
-\protected\def\dodoublegroupempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand\bgroup\syst_helpers_group_double_empty_one_yes\syst_helpers_group_double_empty_one_nop}
+\tolerant\def\syst_triple_group_empty#1\relax#_#*#_#*#_%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue
+   \fi
+   #1#2#3#4}
 
-\def\syst_helpers_group_double_empty_one_yes#1%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_double_empty_two_yes\syst_helpers_group_double_empty_two_nop}
+\tolerant\def\syst_quadruple_group_empty#1\relax#_#*#_#*#_#*#_%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue
+   \fi
+   #1#2#3#4#5}
 
-\def\syst_helpers_group_double_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \the\t_syst_aux{}{}}
+\tolerant\def\syst_quintuple_group_empty#1\relax#_#*#_#*#_#*#_#*#_%
+  {\ifarguments
+   \or\firstargumentfalse\secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumentfalse\thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumentfalse\fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumentfalse\fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumentfalse
+   \or\firstargumenttrue \secondargumenttrue \thirdargumenttrue \fourthargumenttrue \fifthargumenttrue
+   \fi
+   #1#2#3#4#5#6}
 
-\def\syst_helpers_group_double_empty_two_nop
-  {\secondargumentfalse
-   \the\t_syst_aux{}}
-
-\protected\def\dotriplegroupempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand\bgroup\syst_helpers_group_triple_empty_one_yes\syst_helpers_group_triple_empty_one_nop}
-
-\def\syst_helpers_group_triple_empty_one_yes#1%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_triple_empty_two_yes\syst_helpers_group_triple_empty_two_nop}
-
-\def\syst_helpers_group_triple_empty_two_yes#1%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_triple_empty_three_yes\syst_helpers_group_triple_empty_three_nop}
-
-\def\syst_helpers_group_triple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \the\t_syst_aux{}{}{}}
-
-\def\syst_helpers_group_triple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \the\t_syst_aux{}{}}
-
-\def\syst_helpers_group_triple_empty_three_nop
-  {\thirdargumentfalse
-   \the\t_syst_aux{}}
-
-\protected\def\doquadruplegroupempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand\bgroup\syst_helpers_group_quadruple_empty_one_yes\syst_helpers_group_quadruple_empty_one_nop}
-
-\def\syst_helpers_group_quadruple_empty_one_yes#1%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_quadruple_empty_two_yes\syst_helpers_group_quadruple_empty_two_nop}
-
-\def\syst_helpers_group_quadruple_empty_two_yes#1%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_quadruple_empty_three_yes\syst_helpers_group_quadruple_empty_three_nop}
-
-\def\syst_helpers_group_quadruple_empty_three_yes#1%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_quadruple_empty_four_yes\syst_helpers_group_quadruple_empty_four_nop}
-
-\def\syst_helpers_group_quadruple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux{}{}{}{}}
-
-\def\syst_helpers_group_quadruple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux{}{}{}}
-
-\def\syst_helpers_group_quadruple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \the\t_syst_aux{}{}}
-
-\def\syst_helpers_group_quadruple_empty_four_nop
-  {\fourthargumentfalse
-   \the\t_syst_aux{}}
-
-\protected\def\doquintuplegroupempty#1%
-  {\t_syst_aux{#1}%
-   \futureexpand\bgroup\syst_helpers_group_quintuple_empty_one_yes\syst_helpers_group_quintuple_empty_one_nop}
-
-\def\syst_helpers_group_quintuple_empty_one_yes#1%
-  {\firstargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_quintuple_empty_two_yes\syst_helpers_group_quintuple_empty_two_nop}
-
-\def\syst_helpers_group_quintuple_empty_two_yes#1%
-  {\secondargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_quintuple_empty_three_yes\syst_helpers_group_quintuple_empty_three_nop}
-
-\def\syst_helpers_group_quintuple_empty_three_yes#1%
-  {\thirdargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_group_quintuple_empty_four_yes\syst_helpers_group_quintuple_empty_four_nop}
-
-\def\syst_helpers_group_quintuple_empty_four_yes#1%
-  {\fourthargumenttrue
-   \toksapp\t_syst_aux{{#1}}%
-   \futureexpand\bgroup\syst_helpers_quintuple_empty_five_yes\syst_helpers_group_quintuple_empty_five_nop}
-
-\def\syst_helpers_group_quintuple_empty_one_nop
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux{}{}{}{}{}}
-
-\def\syst_helpers_group_quintuple_empty_two_nop
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux{}{}{}{}}
-
-\def\syst_helpers_group_quintuple_empty_three_nop
-  {\thirdargumentfalse
-   \fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux{}{}{}}
-
-\def\syst_helpers_group_quintuple_empty_four_nop
-  {\fourthargumentfalse
-   \fifthargumentfalse
-   \the\t_syst_aux{}{}}
-
-\def\syst_helpers_group_quintuple_empty_five_nop
-  {\fifthargumentfalse
-   \the\t_syst_aux{}}
+\permanent\protected\def\dosinglegroupempty    #1{\syst_single_group_empty    #1\relax}
+\permanent\protected\def\dodoublegroupempty    #1{\syst_double_group_empty    #1\relax}
+\permanent\protected\def\dotriplegroupempty    #1{\syst_triple_group_empty    #1\relax}
+\permanent\protected\def\doquadruplegroupempty #1{\syst_quadruple_group_empty #1\relax}
+\permanent\protected\def\doquintuplegroupempty #1{\syst_quintuple_group_empty #1\relax}
 
 %D These macros can explictly take care of spaces, which means that the next
 %D definition and calls are valid:
@@ -2542,41 +2726,41 @@
 %D The next six macros (dedicated to Taco) can conveniently used to select
 %D arguments. Their names explain their functionality.
 
-\def\firstofoneargument            #1{#1}
+\permanent\def\firstofoneargument            #1{#1}
 
-\def\firstoftwoarguments         #1#-{#1}
-\def\secondoftwoarguments        #-#1{#1}
+\permanent\def\firstoftwoarguments         #1#-{#1}
+\permanent\def\secondoftwoarguments        #-#1{#1}
 
-\def\firstofthreearguments     #1#-#-{#1}
-\def\secondofthreearguments    #-#1#-{#1}
-\def\thirdofthreearguments     #-#-#1{#1}
+\permanent\def\firstofthreearguments     #1#-#-{#1}
+\permanent\def\secondofthreearguments    #-#1#-{#1}
+\permanent\def\thirdofthreearguments     #-#-#1{#1}
 
-\def\firstoffourarguments    #1#-#-#-{#1}
-\def\secondoffourarguments   #-#1#-#-{#1}
-\def\thirdoffourarguments    #-#-#1#-{#1}
-\def\fourthoffourarguments   #-#-#-#1{#1}
+\permanent\def\firstoffourarguments    #1#-#-#-{#1}
+\permanent\def\secondoffourarguments   #-#1#-#-{#1}
+\permanent\def\thirdoffourarguments    #-#-#1#-{#1}
+\permanent\def\fourthoffourarguments   #-#-#-#1{#1}
 
-\def\firstoffivearguments  #1#-#-#-#-{#1}
-\def\secondoffivearguments #-#1#-#-#-{#1}
-\def\thirdoffivearguments  #-#-#1#-#-{#1}
-\def\fourthoffivearguments #-#-#-#1#-{#1}
-\def\fifthoffivearguments  #-#-#-#-#1{#1}
+\permanent\def\firstoffivearguments  #1#-#-#-#-{#1}
+\permanent\def\secondoffivearguments #-#1#-#-#-{#1}
+\permanent\def\thirdoffivearguments  #-#-#1#-#-{#1}
+\permanent\def\fourthoffivearguments #-#-#-#1#-{#1}
+\permanent\def\fifthoffivearguments  #-#-#-#-#1{#1}
 
-\def\firstofsixarguments #1#-#-#-#-#-{#1}
-\def\secondofsixarguments#-#1#-#-#-#-{#1}
-\def\thirdofsixarguments #-#-#1#-#-#-{#1}
-\def\fourthofsixarguments#-#-#-#1#-#-{#1}
-\def\fifthofsixarguments #-#-#-#-#1#-{#1}
-\def\sixthofsixarguments #-#-#-#-#-#1{#1}
+\permanent\def\firstofsixarguments #1#-#-#-#-#-{#1}
+\permanent\def\secondofsixarguments#-#1#-#-#-#-{#1}
+\permanent\def\thirdofsixarguments #-#-#1#-#-#-{#1}
+\permanent\def\fourthofsixarguments#-#-#-#1#-#-{#1}
+\permanent\def\fifthofsixarguments #-#-#-#-#1#-{#1}
+\permanent\def\sixthofsixarguments #-#-#-#-#-#1{#1}
 
-\protected\def\firstofoneunexpanded       #1{#1}
+\permanent\protected\def\firstofoneunexpanded       #1{#1}
 
-\protected\def\firstoftwounexpanded     #1#-{#1}
-\protected\def\secondoftwounexpanded    #-#1{#1}
+\permanent\protected\def\firstoftwounexpanded     #1#-{#1}
+\permanent\protected\def\secondoftwounexpanded    #-#1{#1}
 
-\protected\def\firstofthreeunexpanded #1#-#-{#1}
-\protected\def\secondofthreeunexpanded#-#1#-{#1}
-\protected\def\thirdofthreeunexpanded #-#-#1{#1}
+\permanent\protected\def\firstofthreeunexpanded #1#-#-{#1}
+\permanent\protected\def\secondofthreeunexpanded#-#1#-{#1}
+\permanent\protected\def\thirdofthreeunexpanded #-#-#1{#1}
 
 %D \macros
 %D   {globalletempty,letempty,
@@ -2627,7 +2811,7 @@
 %D string with the macro \type {\statuswidth}.
 
 \setnewconstant\statuswidth  15
-\setnewconstant\statuswrite 128 % \pluscxxviii
+%setnewconstant\statuswrite 128 % \pluscxxviii
 
 \ifdefined\writestring \else
 
@@ -2671,7 +2855,7 @@
 \def\syst_helpers_grab_raw_parameter_next
   {\expandafterspaces\syst_helpers_grab_raw_parameter}
 
-\protected\def\rawgetparameters#1[#2]#-[#3]%
+\protected\def\rawgetparameters#1[#2]#*[#3]%
   {\def\m_syst_parameter_n{#2}%
   %\expandafterspaces\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
    \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
@@ -2687,15 +2871,15 @@
 %D can reset this mechanism with \type {\resetglobal}.
 
 \protected\def\resetglobal
-  {\let\redoglobal\relax
-   \let\dodoglobal\relax}
+  {\enforced\let\redoglobal\relax
+   \enforced\let\dodoglobal\relax}
 
 \resetglobal
 
 \protected\def\doglobal
   {\ifx\redoglobal\relax
-     \let\redoglobal\global
-     \let\dodoglobal\syst_helpers_dodo_global
+     \enforced\let\redoglobal\global
+     \enforced\let\dodoglobal\syst_helpers_dodo_global
    \fi}
 
 \def\syst_helpers_dodo_global
@@ -2706,47 +2890,10 @@
    \let\syst_helpers_redo_global\redoglobal}
 
 \def\restoreglobal
-  {\let\redoglobal\syst_helpers_redo_global
-   \let\dodoglobal\syst_helpers_dodo_global}
+  {\enforced\let\redoglobal\syst_helpers_redo_global
+   \enforced\let\dodoglobal\syst_helpers_dodo_global}
 
-%D A very useful application of this macro is \type {\newif}, \TEX's fake boolean
-%D type. Not being a primitive, \type {\global} hopelessly fails here. But a slight
-%D adaption of Knuth's original macro permits:
-%D
-%D \starttyping
-%D \doglobal\newif\iftest
-%D \stoptyping
-%D
-%D Of course one can still say:
-%D
-%D \starttyping
-%D \global\testtrue
-%D \global\testfalse
-%D \stoptyping
-%D
-%D Apart from the prefixes, a few more \type {\expandafters} are needed:
-
-% \protected\def\newif#1% uses the original plain \@if
-%   {\privatescratchcounter\escapechar
-%    \escapechar\minusone
-%    \expandafter\expandafter\expandafter
-%      \redoglobal\expandafter\expandafter\expandafter
-%        \edef\@if#1{true}{\let\noexpand#1\noexpand\iftrue}%
-%    \expandafter\expandafter\expandafter
-%      \redoglobal\expandafter\expandafter\expandafter
-%        \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
-%    \dodoglobal\@if#1{false}%
-%    \escapechar\privatescratchcounter}
-
-\protected\def\newif#1% see syst-ini.mkiv
-  {\let\new_if_saved\newif
-   \let\newif\new_if_check
-   \expandafter\redoglobal\expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
-   \expandafter\redoglobal\expandafter\def\csname\expandafter\newif\csstring#1false\endcsname{\let#1\iffalse}%
-   \dodoglobal\csname\expandafter\newif\csstring#1false\endcsname
-   \let\newif\new_if_saved}
-
-%D Also new:
+%D Whatever:
 
 \protected\def\define#1%
   {\ifdefined#1%
@@ -2792,13 +2939,9 @@
 %
 % [\test]
 
-\def\s!unexpanded{unexpanded}
-
 \bgroup \obeylines
 
-\glet\stoptexdefinition\relax
-
-\protected\gdef\starttexdefinition%
+\permanent\protected\gdef\starttexdefinition%
   {\bgroup%
    \obeylines%
    \syst_helpers_start_tex_definition}
@@ -2807,7 +2950,9 @@
   {\catcode\endoflineasciicode\ignorecatcode%
    \clf_texdefinition_one{#1}}
 
-\gdef\dostarttexdefinition#1\stoptexdefinition%
+\aliased\glet\stoptexdefinition\relax
+
+\permanent\gdef\dostarttexdefinition#1\stoptexdefinition%
   {\egroup%
    \clf_texdefinition_two{#1}}
 
@@ -2815,12 +2960,7 @@
 
 % \protected\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname} % todo: a nop cs: char 0 or some corenamespace
 
-\protected\def\texdefinition#1{\begincsname#1\endcsname}
-
-% This is a first variant, more might be added:
-
-\protected\def\starttexcode{\unprotect}
-\protected\def\stoptexcode {\protect}
+\permanent\protected\def\texdefinition#1{\begincsname#1\endcsname}
 
 %D \macros
 %D   {newcounter,
@@ -3000,14 +3140,24 @@
 \let\recurseaction\relax
 \let\recursestring\empty
 
-\let\syst_helpers_stepwise_next\relax
+% \let\syst_helpers_stepwise_next\relax
+
+% \protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
+%   {\ifnum#1>#2\relax
+%      \expandafter\syst_helpers_stepwise_recurse_nop
+%    \else
+%      \def\recurselevel{#1}%
+%      \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
+%    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
 \protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
   {\ifnum#1>#2\relax
-     \expandafter\syst_helpers_stepwise_recurse_nop
+     \expandafter\gobblefourarguments
    \else
      \def\recurselevel{#1}%
-     \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
+%    \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
+%  \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
+     \doubleexpandafter\syst_helpers_stepwise_recurse_yes
    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
 \protected\def\syst_helpers_stepwise_recurse_yes
@@ -3016,20 +3166,23 @@
 
 \protected\def\syst_helpers_stepwise_reverse#1#2#3% from to step
   {\ifnum#1<#2\relax
-     \expandafter\syst_helpers_stepwise_recurse_nop
+%      \expandafter\syst_helpers_stepwise_recurse_nop
+     \expandafter\gobblefourarguments
    \else
      \def\recurselevel{#1}%
      \innerrecurse#1\relax
      \advance\innerrecurse#3\relax
-     \doubleexpandafter\syst_helpers_stepwise_reverse_yes\expandafter
-   \fi\expandafter{\the\innerrecurse}{#2}{#3}}
+%      \doubleexpandafter\syst_helpers_stepwise_reverse_yes\expandafter
+%    \fi\expandafter{\the\innerrecurse}{#2}{#3}}
+     \doubleexpandafter\syst_helpers_stepwise_reverse_yes
+   \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
 \protected\def\syst_helpers_stepwise_reverse_yes
   {\syst_helpers_recurse_content
    \syst_helpers_stepwise_reverse}
 
-\protected\def\syst_helpers_stepwise_exit
-  {\syst_helpers_stepwise_recurse_nop\relax}
+% \protected\def\syst_helpers_stepwise_exit
+%   {\syst_helpers_stepwise_recurse_nop\relax}
 
 \def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
   {\ifnum#1>\zerocount
@@ -3112,8 +3265,8 @@
 
 \protected\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-   \globalpushmacro\recurselevel
    \globalpushmacro\recurseaction
+   \globalpushmacro\recurselevel
    \protected\gdef\recurseaction##1##2{#1}%
    \let\endofloop\syst_helpers_loop
    \syst_helpers_loop1}% no \plusone else \recurselevel wrong
@@ -3197,32 +3350,54 @@
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+% \protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+%   {\global\advance\outerrecurse \plusone
+%    \globalpushmacro\recurseaction
+%    \globalpushmacro\recurselevel
+%    \protected\gdef\recurseaction##1##2{#4}%
+%    \normalexpanded{\ifcmpnum#3\zerocount
+%      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
+%        \syst_helpers_stepwise_exit
+%      \else
+%        \syst_helpers_stepwise_reverse
+%      \fi
+%    \or
+%      \syst_helpers_stepwise_exit
+%    \or
+%      \ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
+%        \syst_helpers_stepwise_exit
+%      \else
+%        \syst_helpers_stepwise_recurse
+%      \fi
+%    \fi{\number#1}{\number#2}{\number#3}}%
+%    \globalpopmacro\recurselevel
+%    \globalpopmacro\recurseaction
+%    \global\advance\outerrecurse\minusone}
+
+\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4 ... todo: remove unused helpers
   {\global\advance\outerrecurse \plusone
-   \globalpushmacro\recurselevel
    \globalpushmacro\recurseaction
+   \globalpushmacro\recurselevel
    \protected\gdef\recurseaction##1##2{#4}%
    \normalexpanded{\ifcmpnum#3\zerocount
      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
-       \syst_helpers_stepwise_exit
+       \doubleexpandafter\gobbletwoarguments
      \else
-       \syst_helpers_stepwise_reverse
+       \tripleexpandafter\syst_helpers_stepwise_reverse
      \fi
    \or
-     \syst_helpers_stepwise_exit
-   \or
-     \ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
-       \syst_helpers_stepwise_exit
-     \else
-       \syst_helpers_stepwise_recurse
-     \fi
-   \fi{\number#1}{\number#2}{\number#3}}%
+     \doubleexpandafter\gobbletwoarguments
+   \orelse\ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
+     \doubleexpandafter\gobbletwoarguments
+   \else
+     \doubleexpandafter\syst_helpers_stepwise_recurse
+   \fi\normalexpanded{{\number#1}{\number#2}{\number#3}}}%
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\protected\def\syst_helpers_stepwise_recurse_nop#0#0#0#0%
-  {}
+% \protected\def\syst_helpers_stepwise_recurse_nop#0#0#0#0%
+%   {}
 
 \newcount\fastloopindex
 \newcount\fastloopfinal
@@ -3502,7 +3677,7 @@
    \fi}
 
 \protected\def\validassignment  #1{\ifhastok={#1}} % can become: {\ifhastok=} as we enforce {}
-\protected\def\novalidassignment#1{\ifnum\ifhastok={#1}\zerocount\else\plusone\fi=\plusone}
+\protected\def\novalidassignment#1{\ifnum\ifhastok={#1}\zerocount\else\plusone\fi=\plusone} % or use unless
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some speed, but in general far
 %D less that 1\% for \type {\convertargument} and nil for \type {\convertcommand}.
@@ -4257,34 +4432,44 @@
      \expandafter\gtokspre
    \fi#2{#1}}
 
-\def\syst_helpers_append_toks_indeed
-  {\ifx\dodoglobal\relax
-     \expandafter\toksapp
-   \else
-     \resetglobal
-     \expandafter\gtoksapp
-   \fi\m_syst_helpers_scratch\t_syst_helpers_scratch}
-
-\def\syst_helpers_prepend_toks_indeed
-  {\ifx\dodoglobal\relax
-     \expandafter\tokspre
-   \else
-     \resetglobal
-     \expandafter\gtokspre
-   \fi\m_syst_helpers_scratch\t_syst_helpers_scratch}
+% \def\syst_helpers_append_toks_indeed
+%   {\ifx\dodoglobal\relax
+%      \expandafter\toksapp
+%    \else
+%      \resetglobal
+%      \expandafter\gtoksapp
+%    \fi\m_syst_helpers_scratch\t_syst_helpers_scratch}
+%
+% \def\syst_helpers_prepend_toks_indeed
+%   {\ifx\dodoglobal\relax
+%      \expandafter\tokspre
+%    \else
+%      \resetglobal
+%      \expandafter\gtokspre
+%    \fi\m_syst_helpers_scratch\t_syst_helpers_scratch}
+%
+% \protected\def\appendtoksonce#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch{#1}%
+%    \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
+%      \syst_helpers_append_toks_indeed
+%    \fi}
+%
+% \protected\def\prependtoksonce#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch{#1}%
+%    \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
+%      \syst_helpers_prepend_toks_indeed
+%    \fi}
 
 \protected\def\appendtoksonce#1\to#2%
-  {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch{#1}%
-   \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
-     \syst_helpers_append_toks_indeed
+  {\ifhasxtoks{#1}#2\else
+     \appendtoks#1\to#2%
    \fi}
 
 \protected\def\prependtoksonce#1\to#2%
-  {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch{#1}%
-   \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
-     \syst_helpers_prepend_toks_indeed
+  {\ifhasxtoks{#1}{#2}\m_syst_helpers_scratch\else
+     \prependtoks#1\to#2%
    \fi}
 
 %D The test macro:
@@ -4681,7 +4866,7 @@
 
 \let\newcommalistelement\empty
 
-\def\syst_helpers_replace_in_comma_list_step#1%
+\def\syst_helpers_replace_in_comma_list_step#1% we can use #+ here too
   {\ifnum\commalistcounter=\c_syst_helpers_comma_list_index\relax
      \ifempty\newcommalistelement\else
        \ifempty\m_syst_helpers_comma_list_target
@@ -4803,15 +4988,25 @@
 \newcount\c_syst_helpers_swapped
 \let     \m_syst_helpers_swapped\relax
 
-\protected\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
-\protected\def\swapskips #1#2{\s_syst_helpers_swapped#1#1#2#2\s_syst_helpers_swapped}
-\protected\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
-\protected\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
+% \protected\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
+% \protected\def\swapskips #1#2{\s_syst_helpers_swapped#1#1#2#2\s_syst_helpers_swapped}
+% \protected\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
+% \protected\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
+
+\aliased\let\swapdimens\swapcsvalues
+\aliased\let\swapskips \swapcsvalues
+\aliased\let\swapcounts\swapcsvalues
+\aliased\let\swapmacros\swapcsvalues
 
 \protected\def\globalswapdimens#1#2{\d_syst_helpers_swapped#1\global#1#2\global#2\d_syst_helpers_swapped}
 \protected\def\globalswapskips #1#2{\s_syst_helpers_swapped#1\global#1#2\global#2\s_syst_helpers_swapped}
 \protected\def\globalswapcounts#1#2{\c_syst_helpers_swapped#1\global#1#2\global#2\c_syst_helpers_swapped}
 \protected\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet#1#2\glet#2\m_syst_helpers_swapped}
+
+\protected\def\globalswapdimens{\global\swapcsvalues}
+\protected\def\globalswapskips {\global\swapcsvalues}
+\protected\def\globalswapcounts{\global\swapcsvalues}
+\protected\def\globalswapmacros{\global\swapcsvalues}
 
 %D \macros
 %D   {pushmacro,popmacro}
@@ -5084,24 +5279,39 @@
 %D \definesomething[alfa,beta,...][variable=...,...]
 %D \stoptyping
 
-\let\m_syst_helpers_with_set_command\empty
-\let\syst_helpers_with_set_step     \relax
+%% \let\syst_helpers_with_set_step\relax
+%% \let\m_syst_helpers_with_set_command\empty
+%%
+%% \def\syst_helpers_with_set_double[#1][#2]%
+%%   {\doifsomething{#1}%
+%%      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2]}%
+%%       \processcommalist[#1]\syst_helpers_with_set_step}}
+%%
+%% \def\syst_helpers_with_set_triple[#1][#2][#3]%
+%%   {\doifsomething{#1}%
+%%      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2][#3]}%
+%%       \processcommalist[#1]\syst_helpers_with_set_step}}
+%%
+%% \def\dodoubleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dodoubleempty   \syst_helpers_with_set_double} % \command
+%% \def\dodoubleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dodoubleargument\syst_helpers_with_set_double} % \command
+%%
+%% \def\dotripleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dotripleempty   \syst_helpers_with_set_triple} % \command
+%% \def\dotripleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dotripleargument\syst_helpers_with_set_triple} % \command
 
-\def\syst_helpers_with_set_double[#1][#2]%
-  {\doifsomething{#1}%
-     {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2]}%
+\let\syst_helpers_with_set_step\relax % maybe push pop
+
+\permanent\tolerant\protected\def\dodoubleemptywithset#1#*[#2]#*[#3]%
+  {\doifsomething{#2}%
+     {\def\syst_helpers_with_set_step##1{#1[##1][#3]}%
       \processcommalist[#1]\syst_helpers_with_set_step}}
 
-\def\syst_helpers_with_set_triple[#1][#2][#3]%
-  {\doifsomething{#1}%
-     {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2][#3]}%
+\permanent\tolerant\protected\def\dotripleemptywithset#1#*[#2]#*[#3]#*[#4]%
+  {\doifsomething{#2}%
+     {\def\syst_helpers_with_set_step##1{#1[##1][#3][#4]}%
       \processcommalist[#1]\syst_helpers_with_set_step}}
 
-\def\dodoubleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dodoubleempty   \syst_helpers_with_set_double} % \command
-\def\dodoubleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dodoubleargument\syst_helpers_with_set_double} % \command
-
-\def\dotripleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dotripleempty   \syst_helpers_with_set_triple} % \command
-\def\dotripleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dotripleargument\syst_helpers_with_set_triple} % \command
+\let\dodoubleargumentwithset\dodoubleemptywithset
+\let\dotripleargumentwithset\dotripleemptywithset
 
 %D \macros
 %D   {stripcharacters,stripspaces}
@@ -5243,20 +5453,35 @@
 
 \let\syst_helpers_process_separated_list_step\relax
 
-\def\syst_helpers_process_separated_list#1]#2[#3]#4%
-   {\def\syst_helpers_process_separated_list_step##1##2#3%
+% \def\syst_helpers_process_separated_list#1]#*[#2]#3%
+%    {\def\syst_helpers_process_separated_list_step##1##2#2%
+%       {\def\m_syst_string_one{##2}% suggested by VZ
+%        \if]##1%
+%          \let\syst_helpers_process_separated_list_step\relax
+%        \orelse\ifx\blankspace\m_syst_string_one
+%          #3{##1}%
+%        \orelse\if]##2%
+%          \let\syst_helpers_process_separated_list_step\relax
+%        \else
+%          #3{##1##2}%
+%        \fi
+%        \syst_helpers_process_separated_list_step}%
+%     \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#2]#2}
+
+\def\syst_helpers_process_separated_list#1]#*[#2]#3%
+   {\def\syst_helpers_process_separated_list_step##1##2#2%
       {\def\m_syst_string_one{##2}% suggested by VZ
        \if]##1%
-         \let\syst_helpers_process_separated_list_step\relax
        \orelse\ifx\blankspace\m_syst_string_one
-         #4{##1}%
+         #3{##1}%
+         \expandafter\syst_helpers_process_separated_list_step
        \orelse\if]##2%
-         \let\syst_helpers_process_separated_list_step\relax
        \else
-         #4{##1##2}%
+         #3{##1##2}%
+         \expandafter\syst_helpers_process_separated_list_step
        \fi
-       \syst_helpers_process_separated_list_step}%
-    \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#3]#3}
+       }%
+    \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#2]#2}
 
 \protected\def\processseparatedlist[%
   {\syst_helpers_process_separated_list\relax}
@@ -5655,11 +5880,8 @@
 %D
 %D These two macros savely grab and dispose two arguments.
 
-\def\dogobblesingleempty{\dosingleempty\syst_helpers_gobble_single_empty}
-\def\dogobbledoubleempty{\dodoubleempty\syst_helpers_gobble_double_empty}
-
-\def\syst_helpers_gobble_single_empty    [#1]{}
-\def\syst_helpers_gobble_double_empty[#1][#2]{}
+\tolerant\protected\def\dogobblesingleempty      [#-]{}
+\tolerant\protected\def\dogobbledoubleempty[#-]#*[#-]{}
 
 \let\gobblesingleempty\dogobblesingleempty % also used
 \let\gobbledoubleempty\dogobbledoubleempty % also used
@@ -5872,29 +6094,16 @@
 
 \installsystemnamespace{measure}
 
-\protected\def\definemeasure
-  {\dodoubleargument\syst_helpers_define_measure}
+\permanent\tolerant\protected\def\definemeasure[#1]#*[#2]{\expandafter \def\csname\??measure#1\endcsname{#2}}
+\permanent\tolerant\protected\def\freezemeasure[#1]#*[#2]{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}}
 
-\def\syst_helpers_define_measure[#1][#2]%
-  {\expandafter\def\csname\??measure#1\endcsname{#2}}
+\permanent\protected\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}}             % quick way
+\permanent\protected\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}}             % quick way
+\permanent\protected\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
+\permanent\protected\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
 
-\protected\def\freezemeasure
-  {\dodoubleargument\syst_helpers_freeze_measure}
-
-\def\syst_helpers_freeze_measure[#1][#2]%
-  {\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}}
-
-\protected\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}}             % quick way
-\protected\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}}             % quick way
-\protected\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
-\protected\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
-
-\def\measure
-  {\the\measured}
-
-\def\measured#1%
- %{\dimexpr\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi\relax}
-  {\dimexpr\ifcsname\??measure#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+\permanent\def\measure   {\the\measured}
+\permanent\def\measured#1{\dimexpr\ifcsname\??measure#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
 
 % #2 could be omitted, but we want to support spaces
 %
@@ -5909,31 +6118,17 @@
 
 \installsystemnamespace{quantity}
 
-\protected\def\definequantity
-  {\dodoubleargument\syst_helpers_define_quantity}
+\permanent\tolerant\protected\def\definequantity[#1]#*[#2]{\expandafter\def \csname\??quantity#1\endcsname{#2}}
+\permanent\tolerant\protected\def\freezequantity[#1]#*[#2]{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}}
 
-\def\syst_helpers_define_quantity[#1][#2]%
-  {\expandafter\def\csname\??quantity#1\endcsname{#2}}
+\permanent\protected\def\setquantity #1#2{\expandafter\def \csname\??quantity#1\endcsname{#2}}             % quick way
+\permanent\protected\def\setgquantity#1#2{\expandafter\gdef\csname\??quantity#1\endcsname{#2}}             % quick way
+\permanent\protected\def\setequantity#1#2{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
+\permanent\protected\def\setxquantity#1#2{\expandafter\xdef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
 
-\protected\def\freezequantity
-  {\dodoubleargument\syst_helpers_freeze_quantity}
-
-\def\syst_helpers_freeze_quantity[#1][#2]%
-  {\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}}
-
-\protected\def\setquantity #1#2{\expandafter\def \csname\??quantity#1\endcsname{#2}}             % quick way
-\protected\def\setgquantity#1#2{\expandafter\gdef\csname\??quantity#1\endcsname{#2}}             % quick way
-\protected\def\setequantity#1#2{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
-\protected\def\setxquantity#1#2{\expandafter\xdef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
-
-\def\quantity
-  {\the\quantitied}
-
-\def\quantitied#1%
-  {\numexpr\ifcsname\??quantity#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
-
-\def\directquantity#1%
-  {\the\numexpr#1\relax}
+\permanent\def\quantity        {\the\quantitied}
+\permanent\def\quantitied    #1{\numexpr\ifcsname\??quantity#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+\permanent\def\directquantity#1{\the\numexpr#1\relax}
 
 % let\quantified\quantitied
 
@@ -5946,7 +6141,7 @@
 %D \definemeasure[columnwidth][\dividedsize\textwidth{1em}{3}]
 %D \stoptyping
 
-\def\dividedsize#1#2#3% size gap n
+\permanent\def\dividedsize#1#2#3% size gap n
   {\dimexpr
      \ifnum\dimexpr#1\relax>\plusone
        (\dimexpr#1\relax-\numexpr#3-\plusone\relax\dimexpr#2\relax)/#3\else#1%
@@ -5958,14 +6153,14 @@
 %D
 %D This is a dirty one: we simply append a unit and discard it when needed.
 
-\def\doifelsedimension#1%
+\permanent\def\doifelsedimension#1%
   {\ifchkdim#1\or
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\let\doifdimensionelse\doifelsedimension
+\aliased\let\doifdimensionelse\doifelsedimension
 
 %D Ok, here's another one, slower but seldom used. This one scans the text.
 %D
@@ -5984,18 +6179,18 @@
 %D \NC 1       \NC  \doifdimenstringelse      {1}{yes}{no} \NC \NR
 %D \stoptabulate
 
-\let\doifelsedimenstring\doifelsedimension
-\let\doifdimenstringelse\doifelsedimenstring
+\aliased\let\doifelsedimenstring\doifelsedimension
+\aliased\let\doifdimenstringelse\doifelsedimenstring
 
 %D \macros
 %D   {comparedimension,comparedimensioneps}
 %D
-%D This is a dirty one: we simply append a unit and discard it when needed.
+%D We no longer use the \MKIV\ dirty trick. These are obsolete anyway.
 
 \newdimen   \roundingeps \roundingeps=10sp
 \newconstant\compresult
 
-\def\comparedimension#1#2%
+\permanent\def\comparedimension#1#2%
   {\compresult
      \ifdim#1<#2%
        \zerocount
@@ -6005,7 +6200,7 @@
        \plustwo
      \fi}
 
-\def\comparedimensioneps#1#2% todo: use eps feature
+\permanent\def\comparedimensioneps#1#2% todo: use eps feature
   {\compresult
      \ifdim\dimexpr#1-#2\relax<\roudingeps
        \zerocount
@@ -6021,61 +6216,51 @@
 
 % \copycsname xxx\endcsname\csname ..\endcsname
 
-\protected\def\copycsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter\csname}
+\permanent\protected\def\copycsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter\csname}
 
 % \letcscsname    \crap               \csname ..\endcsname
 % \letcsnamecs    \csname ..\endcsname\crap
 % \letcsnamecsname\csname ..\endcsname\csname ..\endcsname
 
-\protected\def\letcscsname    {\expandafter\let\expandafter}
-\protected\def\letcsnamecs    {\expandafter\let}
-\protected\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
+\permanent\protected\def\letcscsname    {\expandafter\let\expandafter}
+\permanent\protected\def\letcsnamecs    {\expandafter\let}
+\permanent\protected\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
 
 % another one, add an item to a commalist
 
-\protected\def\addvalue#1#2% cs item
+\permanent\protected\def\addvalue#1#2% cs item
   {\ifcsname#1\endcsname\else\expandafter\let\csname#1\endcsname\empty\fi
    \normalexpanded{\addtocommalist{#2}\expandafter\noexpand\csname#1\endcsname}}
 
-\def\unspaced#1%
-  {\syst_helpers_unspaced#1\end}
+%D Are these ever used? Anyway, these variants are somewhat more efficient than
+%D the \MKIV variants for larger strings.
 
-\def\syst_helpers_unspaced#1%
-  {\ifx#1\end
-     \expandafter\gobbleoneargument
-   \orelse\ifx#1\blankspace
-     % go on
-   \else
-     #1%
-   \fi
-   \syst_helpers_unspaced}
+% A variant:
+%
+% \permanent\def\unspaced#1%
+%   {\localcontrolled{\begingroup\catcode\spaceasciicode\ignorecatcode}%
+%    \tokenized{#1}%
+%    \localcontrolled{\endgroup}}
+%
+% but we can also do this:
 
-\protected\def\unspaceargument#1\to#2%
-  {\privatescratchcounter\catcode\spaceasciicode
-   \catcode\spaceasciicode\ignorecatcode
-   \scantextokens{\edef#2{#1}}%
-   \catcode\spaceasciicode\privatescratchcounter}
+\permanent\def\unspaced#1%
+  {\tokenized \s!catcodetable \ctdcatcodes {#1}}
+
+\permanent\protected\def\unspaceargument#1\to#2%
+  {\edef#2{\tokenized \s!catcodetable \ctdcatcodes {#1}}}
 
 \protected\def\unspaceafter#1#2%
-  {\unspaceargument#2\to\ascii
-   \expandafter#1\expandafter{\ascii}}
+  {\expandafter#1\expandafter{\tokenized \s!catcodetable \ctdcatcodes {#2}}}
 
-% sometimes handy:
-
-\protected\def\doifelsehasspace#1%
-  {\edef\m_syst_string_one{#1}%
-   \normalexpanded{\syst_helpers_if_has_space_else#1\space}\empty\relax}
-
-\let\doifhasspaceelse\doifelsehasspace
-
-\protected\def\syst_helpers_if_has_space_else#1 #2#3\relax % \space\empty\relax
-  {\ifx\m_syst_string_one\space
+\permanent\protected\def\doifelsehasspace#1%
+  {\expandafter\ifhastok\space{#1}%
      \expandafter\firstoftwoarguments
-   \orelse\ifempty#2%
-     \expandafter\secondoftwoarguments
    \else
-     \expandafter\firstoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
+
+\aliased\let\doifhasspaceelse\doifelsehasspace
 
 % this will replace loadfile once and alike !!! todo
 
@@ -6543,5 +6728,25 @@
 \protected\def\emptyargumentcondition#1%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one}
+
+%D New (also serves as an example):
+%D
+%D \starttyping
+%D \commandflags\defineframed
+%D \stoptyping
+
+\permanent\def\commandflags#1%
+  {\beginlocalcontrol\begingroup\scratchtoks\emptytoks\donefalse
+     \ifflags#1=   \frozenflagcode\etoksapp\scratchtoks{\ifdone \space\fi    frozen}\donetrue\fi
+     \ifflags#1=\permanentflagcode\etoksapp\scratchtoks{\ifdone \space\fi permanent}\donetrue\fi
+     \ifflags#1=\immutableflagcode\etoksapp\scratchtoks{\ifdone \space\fi immutable}\donetrue\fi
+     \ifflags#1=\primitiveflagcode\etoksapp\scratchtoks{\ifdone \space\fi primitive}\donetrue\fi
+     \ifflags#1=  \mutableflagcode\etoksapp\scratchtoks{\ifdone \space\fi   mutable}\donetrue\fi
+     \ifflags#1=\noalignedflagcode\etoksapp\scratchtoks{\ifdone \space\fi noaligned}\donetrue\fi
+     \ifflags#1= \instanceflagcode\etoksapp\scratchtoks{\ifdone \space\fi  instance}\donetrue\fi
+    %\ifflags#1= \reservedflagcode\etoksapp\scratchtoks{\ifdone \space\fi  reserved}\donetrue\fi
+     \ifflags#1= \tolerantflagcode\etoksapp\scratchtoks{\ifdone \space\fi  tolerant}\donetrue\fi
+     \ifflags#1=\protectedflagcode\etoksapp\scratchtoks{\ifdone \space\fi protected}\donetrue\fi
+   \expandafter\endgroup\expandafter\endlocalcontrol\the\scratchtoks}
 
 \protect \endinput

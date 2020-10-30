@@ -287,10 +287,10 @@
 
 \def\buff_verbatim_type_nop
   {\buff_verbatim_left_of_type
-   \futurelet\next\buff_verbatim_type_one}
+   \futurelet\nexttoken\buff_verbatim_type_one}
 
 \def\buff_verbatim_type_one
-  {\ifx\next\bgroup
+  {\ifx\nexttoken\bgroup
      \expandafter\buff_verbatim_type_a
    \else
      \expandafter\buff_verbatim_type_two
@@ -299,10 +299,10 @@
 \def\buff_verbatim_type_two
   {\catcode`<=\othercatcode % old precaution
    \catcode`>=\othercatcode % old precaution
-   \futurelet\next\buff_verbatim_type_three}
+   \futurelet\nexttoken\buff_verbatim_type_three}
 
 \def\buff_verbatim_type_three
-  {\if\next<%
+  {\if\nexttoken<%
      \expandafter\buff_verbatim_type_b
    \else
      \expandafter\buff_verbatim_type_c

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-09-20 22:59
+-- merge date  : 2020-10-30 22:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -4939,6 +4939,7 @@ nuts.getkern=direct.getkern
 nuts.getlist=direct.getlist
 nuts.getnext=direct.getnext
 nuts.getoffsets=direct.getoffsets
+nuts.getoptions=direct.getoptions or function() return 0 end
 nuts.getprev=direct.getprev
 nuts.getsubtype=direct.getsubtype
 nuts.getwidth=direct.getwidth
@@ -5022,6 +5023,15 @@ local traverse_id=nuts.traverse_id
 local copy_node=nuts.copy_node
 local glyph_code=nodes.nodecodes.glyph
 local ligature_code=nodes.glyphcodes.ligature
+do 
+ local p=nodecodes.localpar or nodecodes.local_par
+ if p then
+  nodecodes.par=p
+  nodecodes[p]="par"
+  nodecodes.localpar=p 
+  nodecodes.local_par=p 
+ end
+end
 do
  local get_components=node.direct.getcomponents
  local set_components=node.direct.setcomponents
@@ -26639,7 +26649,7 @@ local glue_code=nodecodes.glue
 local disc_code=nodecodes.disc
 local math_code=nodecodes.math
 local dir_code=nodecodes.dir
-local localpar_code=nodecodes.localpar
+local par_code=nodecodes.par
 local lefttoright_code=nodes.dirvalues.lefttoright
 local righttoleft_code=nodes.dirvalues.righttoleft
 local discretionarydisc_code=disccodes.discretionary
@@ -26824,8 +26834,19 @@ local function markstoligature(head,start,stop,char)
   return head,base
  end
 end
+local no_left_ligature_code=1
+local no_right_ligature_code=2
+local no_left_kern_code=4
+local no_right_kern_code=8
+local has_glyph_option=node.direct.has_glyph_option or function(n,c)
+ if c==no_left_ligature_code or c==no_right_ligature_code then
+  return getattr(n,a_noligature)==1
+ else
+  return false
+ end
+end
 local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound,hasmarks) 
- if getattr(start,a_noligature)==1 then
+ if has_glyph_option(start,no_right_ligature_code) then
   return head,start
  end
  if start==stop and getchar(start)==char then
@@ -27175,78 +27196,86 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
  return head,start,false,false
 end
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
- local startchar=getchar(start)
- local format=step.format
- if format=="single" or type(kerns)=="table" then 
-  local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns,injection)
-  if trace_kerns then
-   logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
-  end
- else
-  local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
-  if trace_kerns then
-   logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
-  end
- end
- return head,start,true
-end
-function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
- local snext=getnext(start)
- if not snext then
+ if has_glyph_option(start,no_right_kern_code) then
   return head,start,false
  else
-  local prev=start
-  while snext do
-   local nextchar=ischar(snext,currentfont)
-   if nextchar then
-    if skiphash and skiphash[nextchar] then 
-     prev=snext
-     snext=getnext(snext)
-    else
-     local krn=kerns[nextchar]
-     if not krn then
-      break
-     end
-     local format=step.format
-     if format=="pair" then
-      local a=krn[1]
-      local b=krn[2]
-      if a==true then
-      elseif a then 
-       local x,y,w,h=setposition(1,start,factor,rlmode,a,injection)
-       if trace_kerns then
-        local startchar=getchar(start)
-        logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
-       end
-      end
-      if b==true then
-       start=snext 
-      elseif b then 
-       local x,y,w,h=setposition(2,snext,factor,rlmode,b,injection)
-       if trace_kerns then
-        local startchar=getchar(start)
-        logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
-       end
-       start=snext 
-      elseif forcepairadvance then
-       start=snext 
-      end
-      return head,start,true
-     elseif krn~=0 then
-      local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn,injection)
-      if trace_kerns then
-       logprocess("%s: inserting %s %p between %s and %s as %s",pref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar),injection or "injections")
-      end
-      return head,start,true
-     else 
-      break
-     end
-    end
-   else
-    break
+  local startchar=getchar(start)
+  local format=step.format
+  if format=="single" or type(kerns)=="table" then 
+   local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns,injection)
+   if trace_kerns then
+    logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
+   end
+  else
+   local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
+   if trace_kerns then
+    logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
    end
   end
+  return head,start,true
+ end
+end
+function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
+ if has_glyph_option(start,no_right_kern_code) then
   return head,start,false
+ else
+  local snext=getnext(start)
+  if not snext then
+   return head,start,false
+  else
+   local prev=start
+   while snext do
+    local nextchar=ischar(snext,currentfont)
+    if nextchar then
+     if skiphash and skiphash[nextchar] then 
+      prev=snext
+      snext=getnext(snext)
+     else
+      local krn=kerns[nextchar]
+      if not krn then
+       break
+      end
+      local format=step.format
+      if format=="pair" then
+       local a=krn[1]
+       local b=krn[2]
+       if a==true then
+       elseif a then 
+        local x,y,w,h=setposition(1,start,factor,rlmode,a,injection)
+        if trace_kerns then
+         local startchar=getchar(start)
+         logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+        end
+       end
+       if b==true then
+        start=snext 
+       elseif b then 
+        local x,y,w,h=setposition(2,snext,factor,rlmode,b,injection)
+        if trace_kerns then
+         local startchar=getchar(start)
+         logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+        end
+        start=snext 
+       elseif forcepairadvance then
+        start=snext 
+       end
+       return head,start,true
+      elseif krn~=0 then
+       local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn,injection)
+       if trace_kerns then
+        logprocess("%s: inserting %s %p between %s and %s as %s",pref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar),injection or "injections")
+       end
+       return head,start,true
+      else 
+       break
+      end
+     end
+    else
+     break
+    end
+   end
+   return head,start,false
+  end
  end
 end
 function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode,skiphash)
@@ -27676,89 +27705,93 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
  return head,start,false,0,false
 end
 function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
- local mapping=currentlookup.mapping
- if mapping==nil then
-  mapping=getmapping(dataset,sequence,currentlookup)
- end
- if mapping then
-  local startchar=getchar(start)
-  local kerns=mapping[startchar]
-  if kerns then
-   local format=currentlookup.format
-   if format=="single" then
-    local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns) 
-    if trace_kerns then
-     logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
+ if has_glyph_option(start,no_right_kern_code) then
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+   mapping=getmapping(dataset,sequence,currentlookup)
+  end
+  if mapping then
+   local startchar=getchar(start)
+   local kerns=mapping[startchar]
+   if kerns then
+    local format=currentlookup.format
+    if format=="single" then
+     local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns) 
+     if trace_kerns then
+      logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
+     end
+    else 
+     local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
+     if trace_kerns then
+      logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
+     end
     end
-   else 
-    local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
-    if trace_kerns then
-     logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
-    end
+    return head,start,true
    end
-   return head,start,true
   end
  end
  return head,start,false
 end
 function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex) 
- local mapping=currentlookup.mapping
- if mapping==nil then
-  mapping=getmapping(dataset,sequence,currentlookup)
- end
- if mapping then
-  local snext=getnext(start)
-  if snext then
-   local startchar=getchar(start)
-   local kerns=mapping[startchar] 
-   if kerns then
-    local prev=start
-    while snext do
-     local nextchar=ischar(snext,currentfont)
-     if not nextchar then
-      break
-     end
-     if skiphash and skiphash[nextchar] then
-      prev=snext
-      snext=getnext(snext)
-     else
-      local krn=kerns[nextchar]
-      if not krn then
+ if has_glyph_option(start,no_right_kern_code) then
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+   mapping=getmapping(dataset,sequence,currentlookup)
+  end
+  if mapping then
+   local snext=getnext(start)
+   if snext then
+    local startchar=getchar(start)
+    local kerns=mapping[startchar] 
+    if kerns then
+     local prev=start
+     while snext do
+      local nextchar=ischar(snext,currentfont)
+      if not nextchar then
        break
       end
-      local format=currentlookup.format
-      if format=="pair" then
-       local a=krn[1]
-       local b=krn[2]
-       if a==true then
-       elseif a then
-        local x,y,w,h=setposition(1,start,factor,rlmode,a,"injections") 
-        if trace_kerns then
-         local startchar=getchar(start)
-         logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-        end
-       end
-       if b==true then
-        start=snext 
-       elseif b then 
-        local x,y,w,h=setposition(2,snext,factor,rlmode,b,"injections")
-        if trace_kerns then
-         local startchar=getchar(start)
-         logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-        end
-        start=snext 
-       elseif forcepairadvance then
-        start=snext 
-       end
-       return head,start,true
-      elseif krn~=0 then
-       local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn)
-       if trace_kerns then
-        logprocess("%s: inserting %s %p between %s and %s",cref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar))
-       end
-       return head,start,true
+      if skiphash and skiphash[nextchar] then
+       prev=snext
+       snext=getnext(snext)
       else
-       break
+       local krn=kerns[nextchar]
+       if not krn then
+        break
+       end
+       local format=currentlookup.format
+       if format=="pair" then
+        local a=krn[1]
+        local b=krn[2]
+        if a==true then
+        elseif a then
+         local x,y,w,h=setposition(1,start,factor,rlmode,a,"injections") 
+         if trace_kerns then
+          local startchar=getchar(start)
+          logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+         end
+        end
+        if b==true then
+         start=snext 
+        elseif b then 
+         local x,y,w,h=setposition(2,snext,factor,rlmode,b,"injections")
+         if trace_kerns then
+          local startchar=getchar(start)
+          logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+         end
+         start=snext 
+        elseif forcepairadvance then
+         start=snext 
+        end
+        return head,start,true
+       elseif krn~=0 then
+        local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn)
+        if trace_kerns then
+         logprocess("%s: inserting %s %p between %s and %s",cref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar))
+        end
+        return head,start,true
+       else
+        break
+       end
       end
      end
     end
@@ -29580,7 +29613,7 @@ do
    checkstep(head)
   end
   local initialrl=0
-  if getid(head)==localpar_code and start_of_par(head) then
+  if getid(head)==par_code and start_of_par(head) then
    initialrl=pardirstate(head)
   elseif direction==righttoleft_code then
    initialrl=-1

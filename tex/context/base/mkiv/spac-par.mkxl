@@ -23,93 +23,75 @@
 
 % this might move to syst-ini.mkxl
 
-\setnewconstant\frozenhsizecode                 "00000001
-\setnewconstant\frozenleftskipcode              "00000002
-\setnewconstant\frozenrightskipcode             "00000004
-\setnewconstant\frozenhangindentcode            "00000008
-\setnewconstant\frozenhangaftercode             "00000010
-\setnewconstant\frozenparindentcode             "00000020
-\setnewconstant\frozenparfillskipcode           "00000040
-\setnewconstant\frozenparfillleftskipcode       "00000080
-\setnewconstant\frozenadjustspacingcode         "00000100
-\setnewconstant\frozenprotrudecharscode         "00000200
-\setnewconstant\frozenpretolerancecode          "00000400
-\setnewconstant\frozentolerancecode             "00000800
-\setnewconstant\frozenemergencystretchcode      "00001000
-\setnewconstant\frozenloosenesscode             "00002000
-\setnewconstant\frozenlastlinefitcode           "00004000
-\setnewconstant\frozenlinepenaltycode           "00008000
-\setnewconstant\frozeninterlinepenaltycode      "00010000
-\setnewconstant\frozenclubpenaltycode           "00020000
-\setnewconstant\frozenwidowpenaltycode          "00040000
-\setnewconstant\frozendisplaywidowpenaltycode   "00080000
-\setnewconstant\frozenbrokenpenaltycode         "00100000
-\setnewconstant\frozenadjdemeritscode           "00200000
-\setnewconstant\frozendoublehyphendemeritscode  "00400000
-\setnewconstant\frozenfinalhyphendemeritscode   "00800000
-\setnewconstant\frozenparshapecode              "01000000
-\setnewconstant\frozeninterlinepenaltiescode    "02000000
-\setnewconstant\frozenclubpenaltiescode         "04000000
-\setnewconstant\frozenwidowpenaltiescode        "08000000
-\setnewconstant\frozendisplaywidowpenaltiescode "10000000
-
 \setnewconstant\paragraphupdatecodes\numexpr
     \frozentolerancecode
   + \frozenloosenesscode
   + \frozenlinepenaltycode
-  + \frozeninterlinepenaltycode
   + \frozenwidowpenaltycode
   + \frozenclubpenaltycode
   + \frozenbrokenpenaltycode
-  + \frozenadjdemeritscode
-  + \frozendoublehyphendemeritscode
-  + \frozenfinalhyphendemeritscode
-  + \frozeninterlinepenaltiescode
-  + \frozenwidowpenaltiescode
-  + \frozenclubpenaltiescode
+  + \frozendemeritscode
 \relax
 
 \setnewconstant\paragraphpenaltycodes\numexpr
-    \frozeninterlinepenaltycode
+    \frozenlinepenaltycode
   + \frozenwidowpenaltycode
   + \frozenclubpenaltycode
   + \frozenbrokenpenaltycode
-  + \frozeninterlinepenaltiescode
-  + \frozenwidowpenaltiescode
-  + \frozenclubpenaltiescode
 \relax
 
 \setnewconstant\paragraphdemeritcodes\numexpr
-    \frozenadjdemeritscode
-  + \frozendoublehyphendemeritscode
-  + \frozenfinalhyphendemeritscode
+    \frozendemeritscode
 \relax
-
-% + \frozenparskipcode
 
 \setnewconstant\paragraphshapecodes\numexpr
-   \frozenhangindentcode
- + \frozenhangaftercode
- + \frozenleftskipcode
- + \frozenrightskipcode
- + \frozenparfillskipcode
- + \frozenparshapecode
+   \frozenhangcode
+ + \frozenskipcode
+ + \frozenparfillcode
+ + \frozenshapecode
 \relax
 
-\protected\def\freezeparagraphproperties {\snapshotpar\maxcount}
-\protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
+\setnewconstant\frozenparagraphdefault\numexpr
+   \frozenhsizecode          %  \hsize
+ + \frozenskipcode           %  \leftskip \rightskip
+ + \frozenhangcode           %  \hangindent \hangafter
+ + \frozenindentcode         %  \parindent
+ + \frozenparfillcode        %  \parfillskip \parfillleftskip
+ + \frozenadjustcode         %  \adjustspacing
+ + \frozenprotrudecode       %  \protrudechars
+ + \frozentolerancecode      %  \tolerance \pretolerance
+ + \frozenstretchcode        %  \emergcystretch
+ + \frozenloosenesscode      %  \looseness
+ + \frozenlastlinecode       %  \lastlinefit
+ + \frozenlinepenaltycode    %  \linepenalty \interlinepenalty \interlinepenalties
+ + \frozenclubpenaltycode    %  \clubpenalty \clubpenalties
+ + \frozenwidowpenaltycode   %  \widowpenalty \widowpenalties
+ + \frozendisplaypenaltycode %  \displaypenalty \displaypenalties
+ + \frozenbrokenpenaltycode  %  \brokenpenalty
+ + \frozendemeritscode       %  \doublehyphendemerits \finalhyphendemerits \adjdemerits
+ + \frozenshapecode          %  \parshape
+ % \frozenlinecode           %  \baselineskip \lineskip \lineskiplimit
+\relax
 
-\protected\def\updateparagraphproperties {\ifhmode\snapshotpar\paragraphupdatecodes \fi}
-\protected\def\updateparagraphpenalties  {\ifhmode\snapshotpar\paragraphpenaltycodes\fi}
-\protected\def\updateparagraphdemerits   {\ifhmode\snapshotpar\paragraphdemeritcodes\fi}
-\protected\def\updateparagraphshapes     {\ifhmode\snapshotpar\paragraphshapecodes  \fi}
+\setnewconstant\paragraphlinecodes\numexpr
+    \frozenlinecode
+\relax
+
+\permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}
+\permanent\protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
+
+\permanent\protected\def\updateparagraphproperties{\ifhmode\snapshotpar\paragraphupdatecodes \fi}
+\permanent\protected\def\updateparagraphpenalties {\ifhmode\snapshotpar\paragraphpenaltycodes\fi}
+\permanent\protected\def\updateparagraphdemerits  {\ifhmode\snapshotpar\paragraphdemeritcodes\fi}
+\permanent\protected\def\updateparagraphshapes    {\ifhmode\snapshotpar\paragraphshapecodes  \fi}
+\permanent\protected\def\updateparagraphlines     {\ifhmode\snapshotpar\paragraphlinecodes   \fi}
 
 % so far
 
 \let\spac_paragraph_freeze\relax
 
-\protected\def\setparagraphfreezing      {\let\spac_paragraph_freeze\freezeparagraphproperties}
-\protected\def\forgetparagraphfreezing   {\let\spac_paragraph_freeze\relax}
+\permanent\protected\def\setparagraphfreezing   {\enforced\let\spac_paragraph_freeze\freezeparagraphproperties}
+\permanent\protected\def\forgetparagraphfreezing{\enforced\let\spac_paragraph_freeze\relax}
 
 \installcorenamespace {bparwrap}
 \installcorenamespace {eparwrap}
@@ -130,8 +112,8 @@
      \wrapuppar{\the\csname\??eparwrap\the\c_spac_paragraph_group_level\endcsname\relax}%
    \fi}
 
-\protected\def\registerparwrapper       {\spac_register_par_wrapper\toksapp\tokspre}
-\protected\def\registerparwrapperreverse{\spac_register_par_wrapper\tokspre\toksapp}
+\permanent\protected\def\registerparwrapper       {\spac_register_par_wrapper\toksapp\tokspre}
+\permanent\protected\def\registerparwrapperreverse{\spac_register_par_wrapper\tokspre\toksapp}
 
 \protected\def\spac_paragraph_install
   {\expandafter\newtoks\csname\??bparwrap\the\currentgrouplevel\endcsname
@@ -143,10 +125,8 @@
 \def\spac_paragraph_install_pair#1#2#3%
   {\expandafter\newtoks\csname\??parwrapbefore#3\endcsname
    \expandafter\newtoks\csname\??parwrapafter #3\endcsname
-   #1\csname\??bparwrap\the\currentgrouplevel\endcsname
-     {\the\csname\??parwrapbefore#3\endcsname}%
-   #2\csname\??eparwrap\the\currentgrouplevel\endcsname
-     {\the\csname\??parwrapafter #3\endcsname}}
+   #1\csname\??bparwrap\the\currentgrouplevel\endcsname{\the\csname\??parwrapbefore#3\endcsname}%
+   #2\csname\??eparwrap\the\currentgrouplevel\endcsname{\the\csname\??parwrapafter #3\endcsname}}
 
 \def\spac_register_par_wrapper_yes#1#2#3#4#5%
   {\ifcsname\??bparwrap\the\currentgrouplevel\endcsname \else
@@ -162,7 +142,7 @@
                                          \clf_setparwrapper{#3}#4}%
    #2\csname\??parwrapafter #3\endcsname{#5}%
    \clf_newparwrapper{#3}%
-   \let\spac_paragraph_wrap\spac_paragraph_update}
+   \enforced\let\spac_paragraph_wrap\spac_paragraph_update}
 
 \def\spac_register_par_wrapper_nop#1#2#3#4#5%
   {\ifcsname\??parwrapcount#3\endcsname \else
@@ -178,34 +158,21 @@
      \expandafter\spac_register_par_wrapper_yes
    \fi}
 
-\protected\def\forgetparwrapper
+\permanent\protected\def\forgetparwrapper
   {\csname\??bparwrap\the\currentgrouplevel\endcsname\emptytoks
    \csname\??eparwrap\the\currentgrouplevel\endcsname\emptytoks}
 
-\protected\def\unregisterparwrapper#1%
+\permanent\protected\def\unregisterparwrapper#1%
   {\csname\??parwrapcount#1\endcsname\zerocount
    \ifcsname\??parwrapbefore#1\endcsname
      \lastnamedcs\emptytoks
      \csname\??parwrapafter#1\endcsname\emptytoks
    \fi}
 
-\def\directparwrapper#1#2%
+\permanent\def\directparwrapper#1#2%
   {#1\wrapuppar{#2}}
 
-% \protected\def\doifelseparwrapper#1%
-%   {\ifcsname\??parwrapbefore#1\endcsname
-%      \unless\iftok\lastnamedcs\emptytoks
-%        \doubleexpandafter\firstoftwoarguments
-%      \orelse\iftok\csname\??parwrapafter#1\endcsname\emptytoks
-%        \doubleexpandafter\secondoftwoarguments
-%      \else
-%        \doubleexpandafter\firstoftwoarguments
-%      \fi
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
-
-\protected\def\doifelseparwrapper#1%
+\permanent\protected\def\doifelseparwrapper#1%
   {\unless\ifcsname\??parwrapcount#1\endcsname
      \expandafter\secondoftwoarguments
    \orelse\ifcase\lastnamedcs
@@ -217,7 +184,7 @@
 % \getparwrapper  % defined in lua
 % \lastparwrapper % defined in lua
 
-\protected\def\showparwrapperstate#1%
+\permanent\protected\def\showparwrapperstate#1%
   {\begingroup
    \infofont ¶#1\hilo
      {\smallinfofont\getparwrapper {#1}}%
@@ -230,7 +197,7 @@
 
 \setparagraphfreezing
 
-\appendtoks\let\spac_paragraph_wrap\relax\to\everyforgetall
+\appendtoks\enforced\let\spac_paragraph_wrap\relax\to\everyforgetall
 
 %D In due time, the code below will be upgraded using the above mechanisms.
 
@@ -240,24 +207,25 @@
 %D indentation as set (by the output routine) inside the group are forgotten
 %D afterwards. (I must not forget its existence).
 
-\def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
+\permanent\def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded
      {\noexpand#1%
       \hangindent\the\hangindent
       \hangafter \the\hangafter
       \parskip   \the\parskip
       \leftskip  \the\leftskip
-      \rightskip \the\rightskip}}
+      \rightskip \the\rightskip
+      \relax}}
 
-\unexpanded\def\pushparagraphproperties
+\permanent\protected\def\pushparagraphproperties
   {\edef\currentparagraphproperties{\carryoverpar\relax}%
    \pushmacro\currentparagraphproperties}
 
-\unexpanded\def\popparagraphproperties
+\permanent\protected\def\popparagraphproperties
   {\popmacro\currentparagraphproperties
    \currentparagraphproperties}
 
-\unexpanded\def\flushparagraphproperties
+\permanent\protected\def\flushparagraphproperties
   {\popmacro\currentparagraphproperties}
 
 %D Beware, changing this will break some code (like pos/backgrounds) but it has been
@@ -275,10 +243,7 @@
 \newconditional\c_spac_paragraphs_intro_next
 \newconditional\c_spac_paragraphs_intro_each
 
-\unexpanded\def\setupparagraphintro
-  {\dodoubleempty\spac_paragraphs_intro}
-
-\unexpanded\def\spac_paragraphs_intro[#1][#2]%
+\permanent\protected\tolerant\def\setupparagraphintro[#1]#*[#2]%
   {\def\spac_paragraphs_intro_step##1%
      {\csname\??paragraphintro\ifcsname\??paragraphintro##1\endcsname##1\fi\endcsname{#2}}%
    \processcommacommand[#1]\spac_paragraphs_intro_step}
@@ -345,7 +310,7 @@
 %D some paragraph \par
 %D \stoptyping
 
-\unexpanded\def\flushatparagraph#1%
+\permanent\protected\def\flushatparagraph#1%
   {\global\c_spac_paragraphs_intro_first\plusone
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
@@ -353,7 +318,7 @@
 %D Here comes the flusher (we misuse the one level expansion of token registers to
 %D feed a nice stream into the paragraph.)
 
-\unexpanded\def\spac_paragraphs_flush_intro % we make sure that the token lists expand directly
+\protected\def\spac_paragraphs_flush_intro % we make sure that the token lists expand directly
   {\normalexpanded{%                        % after another so the first code is there twice
      \ifconditional\c_spac_paragraphs_intro_each
        \ifconditional\c_spac_paragraphs_intro_next
@@ -378,7 +343,7 @@
        \fi
      \fi}}
 
-\unexpanded\def\spac_paragraphs_flush_intro_next
+\protected\def\spac_paragraphs_flush_intro_next
   {\normalexpanded{%
      \global\setfalse\c_spac_paragraphs_intro_next
      \global\t_spac_paragraphs_intro_next\emptytoks
@@ -391,7 +356,7 @@
        \the\t_spac_paragraphs_intro_next
      \fi}}
 
-\unexpanded\def\spac_paragraphs_flush_intro_each
+\protected\def\spac_paragraphs_flush_intro_each
   {\the\t_spac_paragraphs_intro_each}
 
 %D \macros
@@ -409,11 +374,11 @@
 %
 % \initializeboxstack\??postponednodesstack
 %
-% \unexpanded\def\pushpostponednodedata
+% \protected\def\pushpostponednodedata
 %   {\global\advance\c_spac_postponed_data\plusone
 %    \savebox\??postponednodesstack{\the\c_spac_postponed_data}{\box\b_spac_postponed_data}}
 %
-% \unexpanded\def\poppostponednodedata
+% \protected\def\poppostponednodedata
 %   {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
 %    \global\advance\c_spac_postponed_data\minusone
 %    \ifvoid\b_spac_postponed_data\else
@@ -422,16 +387,16 @@
 
 \newtoks\everyflushatnextpar
 
-\unexpanded\def\pushpostponednodedata
+\permanent\protected\def\pushpostponednodedata
   {\globalpushbox\b_spac_postponed_data}
 
-\unexpanded\def\poppostponednodedata
+\permanent\protected\def\poppostponednodedata
   {\globalpopbox\b_spac_postponed_data
    \ifvoid\b_spac_postponed_data\else
      \glet\flushpostponednodedata\spac_postponed_data_flush
    \fi}
 
-\unexpanded\def\flushatnextpar
+\permanent\protected\def\flushatnextpar
   {\begingroup
    \the\everyflushatnextpar
    \glet\flushpostponednodedata\spac_postponed_data_flush
@@ -471,7 +436,7 @@
      \glet\flushpostponednodedata\relax
    }%\fi}
 
-\unexpanded\def\doflushatpar % might be renamed
+\permanent\protected\def\doflushatpar % might be renamed
   {\ifvmode
      \expandafter\flushatnextpar
    \else

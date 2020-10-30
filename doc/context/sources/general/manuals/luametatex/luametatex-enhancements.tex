@@ -35,8 +35,8 @@ assigned to them at this early time (giving a \quote {Missing number} error), so
 it may be needed to put these assignments before the above line:
 
 \starttyping
-\catcode `\{=1
-\catcode `\}=2
+\catcode `\{ = 1
+\catcode `\} = 2
 \stoptyping
 
 More fine|-|grained primitives control is possible and you can look up the
@@ -819,102 +819,122 @@ but faster (only measurable with millions of calls) and probably more convenient
 
 \stopsubsection
 
-\startsubsection[title={\lpr {expanded}, \lpr {immediateassignment} and \lpr {immediateassigned}}]
+\startsubsection[title={\lpr {expanded}}]
 
 \topicindex {expansion}
 
-The \lpr {expanded} primitive takes a token list and expands its content which can
-come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
-You can compare it with what happens inside the body of an \prm {edef}. But this
-kind of expansion still doesn't expand some primitive operations.
-
-\startbuffer
-\newcount\NumberOfCalls
-
-\def\TestMe{\advance\NumberOfCalls1 }
-
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-
-\meaning\Tested
-\stopbuffer
-
-\typebuffer
-
-The result is a macro that has the not expanded code in its body:
-
-\getbuffer
-
-Instead we can define \tex {TestMe} in a way that expands the assignment
-immediately. You need of course to be aware of preventing look ahead interference
-by using a space or \tex {relax} (often an expression works better as it doesn't
-leave an \tex {relax}).
-
-\startbuffer
-\def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
-
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-\edef\Tested{\TestMe foo:\the\NumberOfCalls}
-
-\meaning\Tested
-\stopbuffer
-
-\typebuffer
-
-This time the counter gets updates and we don't see interference in the
-resulting \tex {Tested} macro:
-
-\getbuffer
-
-Here is a somewhat silly example of expanded comparison:
-
-\startbuffer
-\def\expandeddoifelse#1#2#3#4%
-  {\immediateassignment\edef\tempa{#1}%
-   \immediateassignment\edef\tempb{#2}%
-   \ifx\tempa\tempb
-     \immediateassignment\def\next{#3}%
-   \else
-     \immediateassignment\def\next{#4}%
-   \fi
-   \next}
-
-\edef\Tested
-  {(\expandeddoifelse{abc}{def}{yes}{nop}/%
-    \expandeddoifelse{abc}{abc}{yes}{nop})}
-
-\meaning\Tested
-\stopbuffer
-
-\typebuffer
-
-It gives:
-
-\getbuffer
-
-A variant is:
+The \lpr {expanded} primitive takes a token list and expands its content which
+can come in handy: it avoids a tricky mix of \prm {expandafter} and \prm
+{noexpand}. You can compare it with what happens inside the body of an \prm
+{edef}. The \tex {immediateassignment} and \tex {immediateassigned} commands are
+gone because we have the more powerful local control commands. They are a tad
+slower but this mechanism isn't used that much anyway. Inside an \prm {edef} you
+can use the \type {\immediate} prefix anyway, so if you really want these
+primitives back you can say:
 
 \starttyping
-\def\expandeddoifelse#1#2#3#4%
-  {\immediateassigned{
-     \edef\tempa{#1}%
-     \edef\tempb{#2}%
-   }%
-   \ifx\tempa\tempb
-     \immediateassignment\def\next{#3}%
-   \else
-     \immediateassignment\def\next{#4}%
-   \fi
-   \next}
+\let\immediateassignment\immediate
+\let\immediateassigned  \localcontrolled
 \stoptyping
 
-The possible error messages are the same as using assignments in preambles of
-alignments and after the \prm {accent} command. The supported assignments are the
-so called prefixed commands (except box assignments).
-
 \stopsubsection
+
+% \startsubsection[title={\lpr {expanded}, \lpr {immediateassignment} and \lpr {immediateassigned}}]
+%
+% \topicindex {expansion}
+%
+% The \lpr {expanded} primitive takes a token list and expands its content which can
+% come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
+% You can compare it with what happens inside the body of an \prm {edef}. But this
+% kind of expansion still doesn't expand some primitive operations.
+%
+% \startbuffer
+% \newcount\NumberOfCalls
+%
+% \def\TestMe{\advance\NumberOfCalls1 }
+%
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+%
+% \meaning\Tested
+% \stopbuffer
+%
+% \typebuffer
+%
+% The result is a macro that has the not expanded code in its body:
+%
+% \getbuffer
+%
+% Instead we can define \tex {TestMe} in a way that expands the assignment
+% immediately. You need of course to be aware of preventing look ahead interference
+% by using a space or \tex {relax} (often an expression works better as it doesn't
+% leave an \tex {relax}).
+%
+% \startbuffer
+% \def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
+%
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
+%
+% \meaning\Tested
+% \stopbuffer
+%
+% \typebuffer
+%
+% This time the counter gets updates and we don't see interference in the
+% resulting \tex {Tested} macro:
+%
+% \getbuffer
+%
+% Here is a somewhat silly example of expanded comparison:
+%
+% \startbuffer
+% \def\expandeddoifelse#1#2#3#4%
+%   {\immediateassignment\edef\tempa{#1}%
+%    \immediateassignment\edef\tempb{#2}%
+%    \ifx\tempa\tempb
+%      \immediateassignment\def\next{#3}%
+%    \else
+%      \immediateassignment\def\next{#4}%
+%    \fi
+%    \next}
+%
+% \edef\Tested
+%   {(\expandeddoifelse{abc}{def}{yes}{nop}/%
+%     \expandeddoifelse{abc}{abc}{yes}{nop})}
+%
+% \meaning\Tested
+% \stopbuffer
+%
+% \typebuffer
+%
+% It gives:
+%
+% \getbuffer
+%
+% A variant is:
+%
+% \starttyping
+% \def\expandeddoifelse#1#2#3#4%
+%   {\immediateassigned{
+%      \edef\tempa{#1}%
+%      \edef\tempb{#2}%
+%    }%
+%    \ifx\tempa\tempb
+%      \immediateassignment\def\next{#3}%
+%    \else
+%      \immediateassignment\def\next{#4}%
+%    \fi
+%    \next}
+% \stoptyping
+%
+% The possible error messages are the same as using assignments in preambles of
+% alignments and after the \prm {accent} command. The supported assignments are the
+% so called prefixed commands (except box assignments).
+%
+% \stopsubsection
 
 \startsubsection[title={\lpr {ignorepars}}]
 
@@ -1291,6 +1311,24 @@ the acceptable range is from 0 to 65535.
 
 \stopsubsection
 
+\startsubsection[title={\prm {hrule} and \prm {vrule}}]
+
+\topicindex {rules}
+
+Both rule drawing commands take an optional \type {xoffset} and \type {yoffset}
+parameter. The displacement is virtual and not taken into account when the
+dimensions are calculated.
+
+\stopsubsection
+
+\topicindex {splitting}
+
+The \prm {vsplit} primitive has to be followed by a specification of the required
+height. As alternative for the \type {to} keyword you can use \type {upto} to get
+a split of the given size but result has the natural dimensions then.
+
+\stopsubsection
+
 \startsubsection[title={\prm {vsplit}}]
 
 \topicindex {splitting}
@@ -1317,12 +1355,12 @@ point this approach was abandoned and a more natural trick was used: images (and
 box resources) became a special kind of rules, and as rules already have
 dimensions, the code could be simplified.
 
-When direction nodes and localpar nodes also became first class nodes, whatsits
-again became just that: nodes representing whatever you want, but without
-dimensions, and therefore they could again be ignored when dimensions mattered.
-And, because images were disguised as rules, as mentioned, their dimensions
-automatically were taken into account. This seperation between front and backend
-cleaned up the code base already quite a bit.
+When direction nodes and (formerly local) par nodes also became first class
+nodes, whatsits again became just that: nodes representing whatever you want, but
+without dimensions, and therefore they could again be ignored when dimensions
+mattered. And, because images were disguised as rules, as mentioned, their
+dimensions automatically were taken into account. This separation between front
+and backend cleaned up the code base already quite a bit.
 
 In \LUAMETATEX\ we still have the image specific subtypes for rules, but the
 engine never looks at subtypes of rules. That was up to the backend. This means
@@ -1840,6 +1878,47 @@ when I've used it more in \CONTEXT\ and the specification is frozen. This might
 take some time (and user input).}
 
 \stopsubsection
+
+\stopsection
+
+\startsection[title=Keywords]
+
+Some primitives accept one or more keywords and \LUAMETATEX\ adds some more. In
+order to deal with this efficiently the keyword scanner has been optimized, where
+even the context was taken into account. As a result the scanner was quite a bit
+faster. This kind of optimization was a graduate process the eventually ended up
+in what we have now. In traditional \TEX\ (and also \LUATEX) the order of
+keywords is sometimes mixed and sometimes prescribed. In most cases only one
+occurrence is permitted. So, for instance, this is valid in \LUATEX:
+
+\starttyping
+\hbox attr 123 456 attr 123 456 spread 10cm { }
+\hrule width 10cm depth 3mm
+\hskip 3pt plus 2pt minus 1pt
+\stoptyping
+
+The \type {attr} comes before the \type {spread}, rules can have multiple mixed
+dimension specifiers, and in glue the optional \type {minus} part always comes
+last. The last two commands are famous for look ahead side effects which is why
+macro packages will end them with something not keyword, like \type {\relax},
+when needed.
+
+In \LUAMETATEX\ the following is okay. Watch the few more keywords in box and
+rule specifications.
+
+\starttyping
+\hbox reverse to 10cm attr 123 456 orientation 4 xoffset 10pt spread 10cm { }
+\hrule xoffset 10pt width 10cm depth 3mm
+\hskip 3pt minus 1pt plus 2pt
+\stoptyping
+
+Here the order is not prescribed and, as demonstrated with the box specifier, for
+instance dimensions (specified by \type {to} or \type {spread} can be overloaded
+by later settings. In case you wonder if that breaks compatibility: in some way
+it does but bad or sloppy keyword usage breaks a run anyway. For instance \type
+{minuscule} results in \type {minus} with no dimension being seen. So, in the end
+the user should not noticed it and when a user does, the macro package already
+had an issue that had to be fixed.
 
 \stopsection
 

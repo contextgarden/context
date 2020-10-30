@@ -1,5 +1,10 @@
 % language=us
 
+% Talking of keywords: Jacob Collier, Count The People is definitely an example
+% of showing keywords and no way that the fonts used there are done by tex:
+%
+% https://www.youtube.com/watch?v=icplHV25fqs
+
 \environment evenmore-style
 
 \startcomponent evenmore-keywords
@@ -288,6 +293,103 @@ weren't the case.
 % \luaexpr{(0.076+0.085+0.088+0.073+0.078)/5} 0.080\crlf
 % \luaexpr{(0.136+0.138+0.142+0.135+0.140)/5} 0.138\crlf
 
+After the \CONTEXT\ 2020 meeting I entered another round of staring at the code.
+One of the decision made at that meeting was to drop the \type {nd} and \type
+{nc} units as they were never official. That made me (again) wonder of that bit
+of the code could be done nicer as there is a mix of scanning units like \type
+{pt}, \type {bp} and \type {cm}, fillers like \type {fi} and \type {fill}, pseudo
+units like \type {ex} and \type {em}, special interception of \type {mu}, as well
+as the \type {plus} and \type {minus} parsing for glue. That code was already
+redone a bit so that here was less push back of tokens which had the side effect
+of dimension scanning being some 50\% faster than in \LUATEX.
+
+The same is true for scanning rule specs and scanning the box properties. In the
+later case part of the optimization came from not checking properties that
+already had been set, or only scanning them when for instance the \type
+{orientation} flag had been set (a new option in \LUAMETATEX\ with an additional
+four offset and move parameters). Also, some options, like the target dimensions,
+came after scanning the new ones. Again, this was quite a bit faster than in
+\LUATEX, not that it is noticeable on a normal run. All is mixed with skipping
+spacers and relax tokens plus quitting at a brace.
+
+Similar mixed scanning happens in some of the (new) math command, but these are
+less critical. Actually there some new commands had to be used because for
+instance \type {\over} takes any character as valid argument and keywords would
+definitely be incompatible there.
+
+Anyway, I started wondering if some could be done differently and finally decided
+to use a method that I already played with years ago. The main reason for not
+using it was that I wanted to remain compatible with the way traditional \TEX\
+scans. However, as we have many more keyword we already are no longer compatible
+in that department and the alternative implementation makes the code look nicer
+and has the benefit of being (more than) twice as fast. And when I run into
+issues in \CONTEXT\ I should just fix sloppy code.
+
+The compatibility issue is not really a problem when you consider the following
+cases.
+
+\starttyping
+\hbox reverse attr 123 456 orientation 4 xoffset 10pt spread 10cm { }
+\hrule xoffset 10pt width 10cm depth 3mm
+\hskip 3pt plus 2pt minus 1pt
+\stoptyping
+
+In the original approach these three case each have their own special side
+effects. In the case of a \type {\hbox} the scanning stops at a relax or left
+brace. An unknown keyword gives an error. So, there is no real benefit in pushing
+back tokens here. The order matters: the \type {spread} or \type {to} comes last.
+
+In the case of a \type {\hrule} the scanning stops when the keyword is not one of
+the known. This has the side effect that when such a rule definition is hidden in
+a macro and followed by for instance \type {width} without unit one gets an error
+and when a unit is given the rule can come out different than expected and the
+text is gone. For that reason a rule specification like this is often closed by
+\type {\relax} (any command that doesn't expand to a keyword works too). Here
+keywords can occur multiple times. As we have additional keyword a lookahead
+becomes even more an issue (not that \type {xoffset}) is a likely candidate.
+
+The last example is special in a different way: order matters in the sense that a
+\type {minus} specifier can follow a \type {plus} but not the reverse. And only
+one \type {plus} and \type {minus} can be given. Again one can best finish this
+specification by a something that doesn't look like a keyword, so often one will
+see a \type {\relax}.
+
+The advantage of the new method is that the order doesn't matter any more and
+that using a keyword multiple times overloads earlier settings. And this is
+consistent for all commands that used keywords (with a few exceptions in math
+where keywords drive later parsing and for font definitions where we need to be
+compatible. We give a slightly better error message: we mention the expected
+keyword. Another side effect is that any characters that is a legal start of a
+known keyword will trigger further parsing and issue an error message when it
+fails. Indeed, \LUAMETATEX\ has no mercy.
+
+In practice the mentioned special effects mean that a macro package will not run
+into trouble with boxes because unknown keywords make it crash and that rules and
+glue is terminated in a way that prevents lookahead. The new method kind of
+assumes this and one can argue that when something breaks one has to fix the
+macro code. Macro writers know that one cannot predict what users come up with
+and that users also don't look into the macros and therefore they take
+precautions. Also, a more rigorous parsing results in hopefully a better message.
+
+And yes, when I ran the test suite there was indeed a case where I had to add a
+\type {\relax}, but I can live with that. As long as users don't notice it.
+
+Now, one of the interesting properties of the slightly different scanning is
+that we can do this:
+
+\starttyping
+\hbox to 4cm attr 123 456 reverse to 3cm {...}
+\stoptyping
+
+So, we have a less strict order and we can overload arguments too. We'll see how
+this will be applied in \CONTEXT.
+
 \stopchapter
 
 \stopcomponent
+
+% another nice example: \the is expanded so we get the old value
+
+% \scratchskip = 10pt plus 1fill     \the\scratchskip  % old value
+% \scratchskip = 10pt plus 1fill    [\the\scratchskip] % new value
+% \scratchskip = 10pt plus 1fi l l  [\the\scratchskip] % also works

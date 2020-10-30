@@ -510,7 +510,7 @@ local validstamps = {
     ForPublicRelease    = true,
 }
 
--- todo: we can use runtoks instead of steps
+-- todo: we can use runlocal instead of steps
 
 local function validStamp(v)
     local name = "Stamped" -- fallback

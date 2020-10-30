@@ -1,0 +1,761 @@
+%D \module
+%D   [       file=chem-ini,
+%D        version=2009.05.13,
+%D       subtitle=Chemistry,
+%D         author=Hans Hagen \& Alan Braslau,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The original \PPCHTEX\ code was written in pure \TEX\, although later we made
+%D the move from \PICTEX\ to \METAPOST\. The current implementation is a mix between
+%D \TEX\, \LUA\ and \METAPOST. Although the first objective is to get a compatible
+%D but better implementation, later versions might provide more,
+
+%D NOT YET LMTX'd
+
+\writestatus{loading}{ConTeXt Chemistry Macros / Structure}
+
+\registerctxluafile{chem-str}{}
+
+% We have a slightly different interface. This is unchanged:
+%
+% \startchemical[axis=on]
+%     \chemical[SIX,ROT2,B,R6,SUB1,FIVE,ROT1,B][1]
+% \stopchemical
+%
+% Here we use chemicalformula instead, so no longer a mix:
+%
+% \startchemicalformula
+%     \chemical{2H_2}{top}{bottom}
+%     \chemical{PLUS}{top}{bottom}
+%     \chemical{O_2}{top}{bottom}
+%     \chemical{GIVES}{top}{bottom}
+%     \chemical{2H_2O}{top}{bottom}
+% \stopchemicalformula
+%
+% \startchemicalformula
+%     \chemical{2H_2}
+%     \chemical{PLUS}
+%     \chemical{O_2}
+%     \chemical{GIVES}
+%     \chemical{2H_2O}
+% \stopchemicalformula
+%
+% The inline variant has only one argument:
+%
+% \chemical{2H_2,PLUS,O_2,GIVES,2H_2O}
+
+\unprotect
+
+\installcorenamespace{chemical}
+\installcorenamespace{chemicalsymbol}
+\installcorenamespace{chemicalframed}
+\installcorenamespace{chemicalsize}
+
+% \installsimplecommandhandler \??chemical {chemical} \??chemical % no \define...
+\installcommandhandler \??chemical {chemical} \??chemical % no \define...
+
+\let\setupchemicals \setupchemical
+\let\definechemicals\definechemical
+
+%D We use a dedicated framed macro instead of inheriting one. This is both
+%D a historical and practical reason (like shared keys with different meaning
+%D that could clash, e.g.\ align).
+
+\defineMPinstance % not really needed as we set in lua
+  [chemistry]
+  [\s!format=metafun,
+  %\s!extensions=\v!yes,      % Should we add extensions and initializations?
+  %\s!initializations=\v!yes, % Would this give EmWidth, etc.?
+   \c!method=\s!double]
+
+\startMPdefinitions{chemistry}
+    loadmodule "chem" ;
+\stopMPdefinitions
+
+\defineframed
+  [\??chemicalframed]
+  [\c!align=\v!normal,
+   \c!strut=\v!no]
+
+\unexpanded\def\setupchemicalframed
+  {\setupframed[\??chemicalframed]}
+
+\unexpanded\overloaded\def\definechemical % is global (so we don't use the commandhandler)
+  {\dosingleargument\chem_define}
+
+\def\chem_define[#1]#2%
+  {\startnointerference
+   \edef\currentdefinedchemical{#1}%
+   \let\chemical\chem_chemical_nested
+   \clf_undefinechemical{#1}%
+   #2% flush
+   \stopnointerference}
+
+\unexpanded\def\chem_chemical_nested
+  {\dodoubleempty\chem_chemical_nested_indeed}
+
+\def\chem_chemical_nested_indeed[#1][#2]%
+  {\clf_definechemical{\currentdefinedchemical}{#1}{\detokenize{#2}}}
+
+% chemical symbols
+
+\unexpanded\def\definechemicalsymbol
+  {\dodoubleempty\chem_symbol_define}
+
+\def\chem_symbol_define[#1][#2]%
+  {\setvalue{\??chemicalsymbol#1}{#2}}
+
+\unexpanded\def\chemicalsymbol[#1]%
+  {\csname\??chemicalsymbol\ifcsname\??chemicalsymbol#1\endcsname#1\else\s!unknown\fi\endcsname}
+
+\definechemicalsymbol[\s!unknown][] % \char"FFFD empty
+
+% size (small medium big)
+
+\edef\chemicaltoplocation{t}
+\edef\chemicalbotlocation{b}
+
+\unexpanded\def\chemicaltext#1%
+  {\mathematics
+     {\usechemicalstyleandcolor\c!style\c!color
+      \strut
+      \ifcase\currentxfontsize\or\scriptstyle\or\scriptscriptstyle\fi
+      #1}}
+
+\setvalue{\??chemicalsize\v!small }{\txx}
+\setvalue{\??chemicalsize\v!medium}{\tx}
+\setvalue{\??chemicalsize\v!big   }{}
+
+\newtoks       \everychemical
+\newtoks       \everystructurechemical
+\newconditional\indisplaychemical
+
+\newtoks       \t_chem_every_box
+\newbox        \b_chem_result
+\newconditional\c_chem_some_text
+\newdimen      \d_chem_width
+\newdimen      \d_chem_height
+\newdimen      \d_chem_depth
+
+\unexpanded\def\startchemical
+  {\dodoubleempty\chem_start}
+
+\def\chem_start[#1][#2]%
+  {\ifmmode\vcenter\else\vbox\fi % vpack ?
+   \bgroup
+   \synchronizestrut{\chemicalparameter\c!strut}%
+   \dontcomplain
+   \settrue\indisplaychemical
+   \forgetall
+   \ifsecondargument
+     \doifelseassignment{#1}
+       {\setupcurrentchemical[#1]}% same as \currentchemical
+       {\edef\currentchemical{#1}%
+        \setupcurrentchemical[#2]}%
+   \else\iffirstargument
+     \doifelseassignment{#1}
+       {\setupcurrentchemical[#1]}% same as \currentchemical
+       {\edef\currentchemical{#1}}%
+   \fi\fi
+   \the\everystructurechemical
+   \setbox\b_chem_result\hpack\bgroup
+   \clf_startchemical
+     width         {\chemicalparameter\c!width}%
+     height        {\chemicalparameter\c!height}%
+     left          {\chemicalparameter\c!left}%
+     right         {\chemicalparameter\c!right}%
+     top           {\chemicalparameter\c!top}%
+     bottom        {\chemicalparameter\c!bottom}%
+     scale         {\chemicalparameter\c!scale}%
+     rotation      {\chemicalparameter\c!rotation}%
+     symalign      {\chemicalparameter\c!symalign}%
+     axis          {\chemicalparameter\c!axis}% was \MPcolor{...}
+     framecolor    {\chemicalparameter\c!framecolor}%
+     rulethickness {\number\dimexpr\chemicalparameter\c!rulethickness}%
+     offset        {\number\dimexpr\chemicalparameter\c!offset}%
+     unit          {\number\dimexpr\chemicalparameter\c!unit}%
+     factor        {\number\chemicalparameter\c!factor}%
+   \relax
+   \startnointerference}
+
+\unexpanded\def\stopchemical
+  {\stopnointerference
+   \clf_stopchemical
+   \egroup
+   \d_chem_width \wd\b_chem_result
+   \d_chem_height\ht\b_chem_result
+   \d_chem_depth \dp\b_chem_result
+   \the\t_chem_every_box
+   \doifelsenothing{\chemicalparameter\c!frame}\chem_framed_nop\chem_framed_yes
+   \egroup}
+
+\unexpanded\def\chem_framed_yes
+  {\localframedwithsettings
+     [\??chemicalframed]%
+     [\c!frame=\chemicalparameter\c!frame,
+      \c!rulethickness=\chemicalparameter\c!rulethickness,
+      \c!framecolor=\chemicalparameter\c!framecolor]%
+     {\vpack{\box\b_chem_result\vss}}} % remove depth
+
+\unexpanded\def\chem_framed_nop
+  {\directlocalframed
+     [\??chemicalframed]%
+     {\vpack{\box\b_chem_result\vss}}} % remove depth
+
+\let\startstructurechemical\startchemical
+\let\stopstructurechemical \stopchemical
+
+\unexpanded\def\structurechemical
+  {\dotripleempty\strc_chem_indeed}
+
+\appendtoks
+    \let\chemical\structurechemical
+\to\everystructurechemical
+
+\def\strc_chem_indeed
+  {\ifthirdargument
+     \expandafter\strc_chem_indeed_three
+   \else
+     \expandafter\strc_chem_indeed_two
+   \fi}
+
+\def\strc_chem_indeed_three[#1][#2][#3]%
+  {\writestatus\m!chemicals{hyperlinked chemicals not yet supported}% todo reference, for the moment ignored
+   \clf_chemicalcomponent
+      {#2}%
+      {\detokenize{#3}}%
+      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\chemicalparameter\c!rulecolor}%
+   \relax
+   \ignorespaces}
+
+\def\strc_chem_indeed_two[#1][#2]%
+  {\clf_chemicalcomponent
+      {#1}%
+      {\detokenize{#2}}%
+      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\chemicalparameter\c!rulecolor}%
+   \relax
+   \ignorespaces}
+
+\appendtoks
+    \setbox\b_chem_result\hpack{\raise\MPlly\box\b_chem_result}%
+    \d_chem_width \wd\b_chem_result
+    \d_chem_height\ht\b_chem_result
+    \d_chem_depth \dp\b_chem_result
+\to \t_chem_every_box
+
+% kind of compatible, but text sizes instead of math sizes (i.e. tx is larger than scriptsize)
+
+\appendtoks
+   \edef\chemicalbodyfont{\chemicalparameter\c!bodyfont}% public?
+   \ifx\chemicalbodyfont\empty
+     \switchtobodyfont[\chemicalbodyfont]%
+   \fi
+   \getvalue{\??chemicalsize\chemicalparameter\c!size}%
+% \to \everystructurechemical
+\to \everychemical
+
+\def\chemicaltoptext#1{\global\settrue\c_chem_some_text\gdef\m_chem_top_text{#1}\ignorespaces}
+\def\chemicalbottext#1{\global\settrue\c_chem_some_text\gdef\m_chem_bot_text{#1}\ignorespaces}
+\def\chemicalmidtext#1{\global\settrue\c_chem_some_text\gdef\m_chem_mid_text{#1}\ignorespaces}
+
+\appendtoks
+    \let\toptext\chemicaltoptext \glet\m_chem_top_text\empty
+    \let\bottext\chemicalbottext \glet\m_chem_bot_text\empty
+    \let\midtext\chemicalmidtext \glet\m_chem_mid_text\empty
+    \global\setfalse\c_chem_some_text
+\to \everystructurechemical
+
+\def\chem_add_texts
+  {\setbox2\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_mid_text}\hss}%
+   \setbox4\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_top_text}\hss}%
+   \setbox6\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_bot_text}\hss}%
+   \setbox\b_chem_result\hpack \bgroup
+     \box\b_chem_result
+     \hskip-\d_chem_width
+     \raise\d_chem_height\hpack{\lower\ht4\box4}%
+     \hskip-\d_chem_width
+     \lower.5\dimexpr\ht2-\dp2\relax\box2%
+     \hskip-\d_chem_width
+     \lower\d_chem_depth \hpack{\raise\dp6\box6}%
+     \hss
+   \egroup} % text on top of chemicals
+
+\appendtoks
+    \ifconditional\c_chem_some_text
+      \chem_add_texts
+      \d_chem_width \wd\b_chem_result
+      \d_chem_height\ht\b_chem_result
+      \d_chem_depth \dp\b_chem_result
+    \fi
+\to \t_chem_every_box
+
+% todo: enspace or emspace
+
+\definechemicalsymbol[space]       [\enspace\quad\enspace]
+\definechemicalsymbol[plus]        [\enspace+\enspace]
+\definechemicalsymbol[minus]       [\enspace-\enspace]
+\definechemicalsymbol[gives]       [\chem_arrow_construct\xrightarrow]
+\definechemicalsymbol[equilibrium] [\chem_arrow_construct\xrightoverleftarrow]
+\definechemicalsymbol[mesomeric]   [\chem_arrow_construct\xleftrightarrow]
+\definechemicalsymbol[opencomplex] [\mathematics{\Bigg[}] % not yet ok
+\definechemicalsymbol[closecomplex][\mathematics{\Bigg]}] % not yet ok
+
+\definechemicalsymbol[SPACE]       [{\chemicalsymbol[space]}]
+\definechemicalsymbol[PLUS]        [{\chemicalsymbol[plus]}]
+\definechemicalsymbol[MINUS]       [{\chemicalsymbol[minus]}]
+\definechemicalsymbol[GIVES]       [{\chemicalsymbol[gives]}]
+\definechemicalsymbol[EQUILIBRIUM] [{\chemicalsymbol[equilibrium]}]
+\definechemicalsymbol[MESOMERIC]   [{\chemicalsymbol[mesomeric]}]
+\definechemicalsymbol[OPENCOMPLEX] [{\chemicalsymbol[opencomplex]}]
+\definechemicalsymbol[CLOSECOMPLEX][{\chemicalsymbol[closecomplex]}]
+
+\def\chem_arrow_construct#1#2#3%
+  {\enspace
+   \mathematics{#1%
+     {\strut\hbox \s!spread 2\emwidth{\hss\clf_inlinechemical{#3}\hss}}%   {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\clf_inlinechemical{#2}\hss}}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
+   \enspace}
+
+% special macros (probably needs some more work)
+
+\let\chem_box_normal_yes\hbox
+\let\chem_box_visual_yes\hbox
+\let\chem_box_visual_nop\relax
+
+\installtextracker
+  {chemistry.boxes}
+  {\let\chem_box_visual_yes\ruledhbox \let\chem_box_visual_nop\ruledhbox}
+  {\let\chem_box_visual_yes\hbox      \let\chem_box_visual_nop\relax    }
+
+\def\chem_top_construct#1#2#3#4%
+  {\hpack\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\raise\dimexpr\dp\scratchboxone+\ht\scratchboxtwo\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
+
+\def\chem_bottom_construct#1#2#3#4%
+  {\hpack\bgroup
+   \setstrut
+   \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\lower\dimexpr\dp\scratchboxtwo+\ht\scratchboxone\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \smashbox\scratchboxone
+   \box\scratchboxone
+   \box\scratchboxtwo
+   \egroup}
+
+\unexpanded\def\chemicalleft#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup % hpack ?
+   \setstrut
+   \llap{\chem_box_visual_nop{\strut#1}}%
+   \chem_box_visual_nop{\strut#2}%
+   \egroup}
+
+\unexpanded\def\chemicalright#1#2% redundant boxes thanks to visual
+  {\hbox\bgroup % hpack ?
+   \setstrut
+   \chem_box_visual_yes{\strut#2}%
+   \rlap{\chem_box_visual_nop{\strut#1}}%
+   \egroup}
+
+\unexpanded\def\chemicaltop            {\chem_top_construct    \hss   \hss  }
+\unexpanded\def\chemicallefttop        {\chem_top_construct    \relax \hss  }
+\unexpanded\def\chemicalrighttop       {\chem_top_construct    \hss   \relax}
+\unexpanded\def\chemicalbottom         {\chem_bottom_construct \hss   \hss  }
+\unexpanded\def\chemicalleftbottom     {\chem_bottom_construct \relax \hss  }
+\unexpanded\def\chemicalrightbottom    {\chem_bottom_construct \hss   \relax}
+
+\unexpanded\def\chemicaltopleft      #1{\chemicalleft {\chemicalrighttop   {#1}{}}}
+\unexpanded\def\chemicalbottomleft   #1{\chemicalleft {\chemicalrightbottom{#1}{}}}
+\unexpanded\def\chemicaltopright     #1{\chemicalright{\chemicallefttop    {#1}{}}}
+\unexpanded\def\chemicalbottomright  #1{\chemicalright{\chemicalleftbottom {#1}{}}}
+
+% \unexpanded\def\chemicalcentered     #1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1\hss}}
+% \unexpanded\def\chemicalleftcentered #1{\hbox to \fontcharwd\font`C{\setstrut\strut    #1\hss}}
+% \unexpanded\def\chemicalrightcentered#1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1}}
+
+% \let\chemicalsmashedmiddle\chemicalcentered
+% \let\chemicalsmashedleft  \chemicalleftcentered
+% \let\chemicalsmashedright \chemicalrightcentered
+
+\unexpanded\def\chemicalalignedtext
+  {\ifmmode
+     \expandafter\chem_aligned_text_math
+   \else
+     \expandafter\chem_aligned_text_text
+   \fi}
+
+\let\chemicaltighttext\relax % maybe smaller strut
+
+\def\chem_aligned_text_text#1#2#3%
+  {\dontleavehmode
+   \begingroup
+   \usechemicalstyleandcolor\c!style\c!color
+   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\molecule{#3}#2%
+   \egroup
+   \endgroup}
+
+\def\chem_aligned_text_math#1#2#3%
+  {\dontleavehmode
+   \begingroup
+   \scratchcounter\normalmathstyle
+   \usechemicalstyleandcolor\c!style\c!color
+   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+     \setstrut\strut
+     #1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2%
+   \egroup
+   \endgroup}
+
+\unexpanded\def\chemicalcentered     {\chemicalalignedtext\hss  \hss  }
+\unexpanded\def\chemicalleftcentered {\chemicalalignedtext\relax\hss  }
+\unexpanded\def\chemicalrightcentered{\chemicalalignedtext\hss  \relax}
+
+\let\chemicalsmashedmiddle\chemicalcentered
+\let\chemicalsmashedleft  \chemicalleftcentered
+\let\chemicalsmashedright \chemicalrightcentered
+
+\unexpanded\def\chemicaloxidation#1#2#3%
+  {\chemicaltop{\txx\ifcase#2\relax0\else#1\convertnumber{I}{#2}\fi}{#3}}
+
+\unexpanded\def\chemicaloxidationplus {\dotriplegroupempty\chemicaloxidation{\textplus }} % {} needed!
+\unexpanded\def\chemicaloxidationminus{\dotriplegroupempty\chemicaloxidation{\textminus}} % {} needed!
+\unexpanded\def\chemicalforeveropen   {\dotriplegroupempty\chemicalleft     {$\big[$}}    % {} needed!
+\unexpanded\def\chemicalforeverclose  {\dotriplegroupempty\chemicalright    {$\big]$}}    % {} needed!
+\unexpanded\def\chemicaloxidationone  {\chemicaloxidation\relax1}
+\unexpanded\def\chemicaloxidationtwo  {\chemicaloxidation\relax2}
+\unexpanded\def\chemicaloxidationthree{\chemicaloxidation\relax3}
+\unexpanded\def\chemicaloxidationfour {\chemicaloxidation\relax4}
+\unexpanded\def\chemicaloxidationfive {\chemicaloxidation\relax5}
+\unexpanded\def\chemicaloxidationsix  {\chemicaloxidation\relax6}
+\unexpanded\def\chemicaloxidationseven{\chemicaloxidation\relax7}
+
+\unexpanded\def\chemicalbar
+  {\hpack \s!spread .5\emwidth \bgroup
+     \hss
+     \vrule \s!height .9\strutht \s!depth .65\strutdp \s!width .1\exheight
+     \hss
+   \egroup}
+
+\appendtoks
+   \enforced\let  |\chemicalbar % \SR{N|NH}
+   \enforced\let \+\chemicaloxidationplus
+   \enforced\let \-\chemicaloxidationminus
+   \enforced\let \[\chemicalforeveropen
+   \enforced\let \]\chemicalforeverclose
+   \enforced\let \1\chemicaloxidationone
+   \enforced\let \2\chemicaloxidationtwo
+   \enforced\let \3\chemicaloxidationthree
+   \enforced\let \4\chemicaloxidationfour
+   \enforced\let \5\chemicaloxidationfive
+   \enforced\let \6\chemicaloxidationsix
+   \enforced\let \7\chemicaloxidationseven
+   \enforced\let \X\chemicaltighttext
+   \enforced\let \T\chemicaltop
+   \enforced\let \B\chemicalbottom
+   \enforced\let \L\chemicalleft
+   \enforced\let\LC\chemicalleftcentered
+   \enforced\let \R\chemicalright
+   \enforced\let\RC\chemicalrightcentered
+   \enforced\let\TL\chemicaltopleft
+   \enforced\let\BL\chemicalbottomleft
+   \enforced\let\TR\chemicaltopright
+   \enforced\let\BR\chemicalbottomright
+   \enforced\let\LT\chemicallefttop
+   \enforced\let\LB\chemicalleftbottom
+   \enforced\let\RT\chemicalrighttop
+   \enforced\let\RB\chemicalrightbottom
+   \enforced\let\SL\chemicalsmashedleft
+   \enforced\let\SM\chemicalsmashedmiddle
+   \enforced\let\SR\chemicalsmashedright
+\to \everychemical
+
+% Should these also be defined in lower case, so as to be case independent?
+
+\appendtoks
+    \the\everychemical
+\to \everystructurechemical
+
+% inline
+
+% \unexpanded\def\chemical
+%   {\ifinformula
+%      \expandafter\displaychemical
+%    \else
+%      \expandafter\inlinechemical
+%    \fi}
+
+\unexpanded\def\chemical
+  {\ifinformula
+     \expandafter\indisplaychemical
+   \else
+     \expandafter\inlinechemical
+   \fi}
+
+\unexpanded\def\indisplaychemical
+  {\mathstylecommand\displaychemical\inlinechemical\inlinechemical}
+
+\unexpanded\def\inlinechemical#1%
+  {\dontleavehmode
+   \begingroup
+   \scratchcounter\normalmathstyle
+   \usechemicalstyleandcolor\c!style\c!color
+   \hbox{\mathematics{\tf\triggermathstyle\scratchcounter\clf_inlinechemical{#1}}}%
+   \endgroup}
+
+\unexpanded\def\displaychemical
+  {\dotriplegroupempty\chem_display}
+
+\def\chem_display#1#2#3%
+  {\the\everychemical
+   \everychemical\emptytoks
+   \quad
+   \vcenter\bgroup
+     \usechemicalstyleandcolor\c!style\c!color
+     \ifthirdargument
+       \ifsecondargument
+         \halign{\aligntab\hss\alignmark\alignmark\hss\cr#2\cr\molecule{#1}\cr#3\cr}%
+       \else
+         \halign{\aligntab\hss\alignmark\alignmark\hss     \cr\molecule{#1}\cr#2\cr}%
+       \fi
+     \else
+       \hbox{\molecule{#1}}%
+     \fi
+   \egroup
+   \quad}
+
+\unexpanded\def\inlinechemical#1%
+  {\dontleavehmode
+   \hbox{\usechemicalstyleandcolor\c!style\c!color\clf_inlinechemical{#1}}}
+
+\unexpanded\def\chemicalbondrule
+  {\hpack{\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}}
+
+\definechemicalsymbol[i:space]       [\enspace\quad\enspace]
+\definechemicalsymbol[i:plus]        [\enspace\mathematics{+}\enspace]
+\definechemicalsymbol[i:minus]       [\enspace\mathematics{-}\enspace]
+\definechemicalsymbol[i:equals]      [\enspace\mathematics{=}\enspace]
+\definechemicalsymbol[i:gives]       [\enspace\mathematics{\xrightarrow{}{}}\enspace]
+\definechemicalsymbol[i:equilibrium] [\enspace\mathematics{\xrightoverleftarrow{}{}}\enspace]
+\definechemicalsymbol[i:mesomeric]   [\enspace\mathematics{\xleftrightarrow{}{}}\enspace]
+\definechemicalsymbol[i:single]      [\chemicalbondrule]
+\definechemicalsymbol[i:double]      [\hpack{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[i:triple]      [\hpack{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+
+\unexpanded\def\chemicalsinglebond {\chemicalsymbol[i:single]}
+\unexpanded\def\chemicaldoublebond {\chemicalsymbol[i:double]}
+\unexpanded\def\chemicaltriplebond {\chemicalsymbol[i:triple]}
+\unexpanded\def\chemicalgives      {\chemicalsymbol[i:gives]}
+\unexpanded\def\chemicalmesomeric  {\chemicalsymbol[i:mesomeric]}
+\unexpanded\def\chemicalequilibrium{\chemicalsymbol[i:equilibrium]}
+\unexpanded\def\chemicalplus       {\chemicalsymbol[i:plus]}
+\unexpanded\def\chemicalminus      {\chemicalsymbol[i:minus]}
+\unexpanded\def\chemicalequals     {\chemicalsymbol[i:equals]}
+\unexpanded\def\chemicalspace      {\chemicalsymbol[i:space]}
+\unexpanded\def\chemicalinline   #1{#1}
+
+% display
+
+\newconditional\c_chem_has_top
+\newconditional\c_chem_has_bot
+
+\newtoks\t_chem_top
+\newtoks\t_chem_mid
+\newtoks\t_chem_bot
+
+\newif\ifinchemicalformula
+
+\unexpanded\def\startchemicalformula
+  {\mathortext\vcenter\vbox\bgroup
+   \forgetall
+   \inchemicalformulatrue
+   \the\everychemical
+   \everychemical\emptytoks
+   \t_chem_top\emptytoks % not needed
+   \t_chem_mid\emptytoks % not needed
+   \t_chem_bot\emptytoks % not needed
+   \let\chemical\formulachemical
+   \setfalse\c_chem_has_top
+   \setfalse\c_chem_has_bot}
+
+\unexpanded\def\stopchemicalformula
+  {\tabskip\emwidth\relax
+   \nointerlineskip
+   \ifconditional\c_chem_has_top
+     \ifconditional\c_chem_has_bot
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+     \else
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr}%
+     \fi
+   \else
+     \ifconditional\c_chem_has_bot
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+     \else
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr}%
+     \fi
+   \fi
+   \egroup}
+
+% for the moment we have a special set
+
+\definechemicalsymbol[d:space]       [\enspace\quad\enspace]
+\definechemicalsymbol[d:plus]        [\enspace+\enspace]
+\definechemicalsymbol[d:minus]       [\enspace-\enspace]
+\definechemicalsymbol[d:equals]      [\enspace=\enspace]
+\definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
+\definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
+\definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
+\definechemicalsymbol[d:single]      [\chemicalbondrule]
+\definechemicalsymbol[d:double]      [\hpack{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
+\definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
+
+\definechemicalsymbol[d:SPACE]       [{\chemicalsymbol[d:space]}]
+\definechemicalsymbol[d:PLUS]        [{\chemicalsymbol[d:plus]}]
+\definechemicalsymbol[d:MINUS]       [{\chemicalsymbol[d:minus]}]
+\definechemicalsymbol[d:EQUALS]      [{\chemicalsymbol[d:equals]}]
+\definechemicalsymbol[d:GIVES]       [{\chemicalsymbol[d:gives]}]
+\definechemicalsymbol[d:EQUILIBRIUM] [{\chemicalsymbol[d:equilibrium]}]
+\definechemicalsymbol[d:MESOMERIC]   [{\chemicalsymbol[d:mesomeric]}]
+\definechemicalsymbol[d:SINGLE]      [{\chemicalsymbol[d:single]}]
+\definechemicalsymbol[d:DOUBLE]      [{\chemicalsymbol[d:double]}]
+\definechemicalsymbol[d:TRIPLE]      [{\chemicalsymbol[d:triple]}]
+\definechemicalsymbol[d:OPENCOMPLEX] [{\chemicalsymbol[d:opencomplex]}]
+\definechemicalsymbol[d:CLOSECOMPLEX][{\chemicalsymbol[d:closecomplex]}]
+
+\unexpanded\def\formulachemical
+  {\relax\dotriplegroupempty\chem_formula}
+
+\def\chem_formula#1#2#3% we could do hboxes and measure
+  {\ifthirdargument
+     \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
+     \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
+   \else\ifsecondargument
+     \chem_formula_top_nop
+     \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
+   \else
+     \chem_formula_top_nop
+     \chem_formula_bot_nop
+   \fi\fi
+   \ifcsname\??chemicalsymbol d:\detokenize{#1}\endcsname
+     \toksapp\t_chem_mid{\chemicalsymbol[d:#1]\aligntab}%
+   \else
+     \toksapp\t_chem_mid{\molecule{#1}\aligntab}%
+   \fi}
+
+\def\chem_formula_mid#1%
+  {\csname\??chemicalsymbol\detokenize{#1}\endcsname}
+
+\def\chem_formula_top_nop  {\toksapp\t_chem_top{\aligntab}}
+\def\chem_formula_bot_nop  {\toksapp\t_chem_bot{\aligntab}}
+\def\chem_formula_top_yes#1{\toksapp\t_chem_top{\chem_formula_top_indeed{#1}\aligntab}\settrue\c_chem_has_top}
+\def\chem_formula_bot_yes#1{\toksapp\t_chem_bot{\chem_formula_bot_indeed{#1}\aligntab}\settrue\c_chem_has_bot}
+
+\def\chem_formula_top_indeed#1{\strut#1}
+\def\chem_formula_bot_indeed#1{\strut#1}
+
+% Experimental: defaults might change.
+
+\definefloat
+  [\v!chemical]
+  [\v!chemicals]
+
+\setuplabeltext
+  [\v!chemical=]
+
+\setupfloat
+  [\v!chemical]
+  [\c!location=\v!here,
+   \c!inner=\hsize.8\textwidth\dontleavehmode, % brr
+   \c!align={\v!flushleft,\v!lohi}]
+
+\setupcaption
+  [\v!chemical]
+  [\c!location=\v!right,
+   \c!distance=\zeropoint,
+   \c!width=.2\textwidth,
+   \c!align=\v!flushright]
+
+% Can be used as for displayed math: \startplaceformula... to display a chemical formula
+% or a chemical structure:
+%
+% \startplacechemical
+%   \startchemicalformula
+%     \chemical{2H_2}
+%     \chemical{PLUS}
+%     \chemical{O_2}
+%     \chemical{GIVES}
+%     \chemical{2H_2O}
+%   \stopchemicalformula
+% \stopplacechemical
+
+% gone: state option resolution offset (now frame offset) alternative
+
+\setupchemicalframed
+  [\c!align=\v!normal,
+   \c!strut=\v!no,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+\definecolor % private color
+  [chemicalframecolor]
+  [r=.75,g=.85,b=.95]
+
+\setupchemical
+  [\c!frame=,
+   \c!width=\v!fit,  % or unitless number, multiplies scale*unit
+   \c!height=\v!fit, % or unitless number, multiplies scale*unit
+   \c!left=\v!fit,   % or unitless number, multiplies scale*unit
+   \c!right=\v!fit,  % or unitless number, multiplies scale*unit
+   \c!top=\v!fit,    % or unitless number, multiplies scale*unit
+   \c!bottom=\v!fit, % or unitless number, multiplies scale*unit
+   \c!bodyfont=,
+   \c!scale=\v!normal, % small, normal or medium, big, or unitless number (multiplies unit)
+   \c!size=\v!medium,
+   \c!textsize=\v!big, % how is textsize used??
+   \c!axis=\v!off,
+   \c!style=\rm,
+   \c!rotation=0,    % unitless number (interpreted as degrees)
+   \c!symalign=\v!auto,
+   \c!location=,     % not yet used (was interaction related in mkii)
+   \c!offset=.25\emwidth,
+   \c!unit=\emwidth,
+   \c!factor=3,
+   \c!color=,
+   \c!strut=\v!yes,
+   \c!framecolor=chemicalframecolor,
+   \c!rulethickness=0.6pt, %1.5\linewidth,
+   \c!rulecolor=]
+
+%D Compatibility:
+
+\definechemical[+R]               {\chemical[RR]}
+\definechemical[-R]               {\chemical[LR]}
+
+\definechemical[CARBON:CB]        {\chemical[NEWMANSTAGGER,C,SB]}
+\definechemical[NEWMANSTAGGER:CB] {\chemical[NEWMANSTAGGER,C,SB]}
+\definechemical[NEWMANECLIPSED:CB]{\chemical[NEWMANECLIPSED,C,SB]}
+\definechemical[CARBON:CB1]       {\chemical[CARBON,C,SB,Z234,1.5MOV1,MIR0,C,SB,Z234]}
+
+\definechemical[NEWMAN]           {\chemical[]}
+\definechemical[STAGGER]          {\chemical[NEWMANSTAGGER]}
+\definechemical[ECLIPSE]          {\chemical[NEWMANECLIPSED]}
+\definechemical[ECLIPSED]         {\chemical[NEWMANECLIPSED]}
+\definechemical[SIX:FRONT]        {\chemical[SIXFRONT]}
+\definechemical[FIVE:FRONT]       {\chemical[FIVEFRONT]}
+
+\protect \endinput

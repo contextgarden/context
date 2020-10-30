@@ -37,26 +37,27 @@
 
 \unprotect
 
-%D New stuff.
+%D Probbaly not yet used by many.
 
-\unexpanded\def\setupfontexpansion {\dodoubleargument\font_expansion_setup }
-\unexpanded\def\setupfontprotrusion{\dodoubleargument\font_protrusion_setup}
-
-\def\font_expansion_setup [#1][#2]{\clf_setupfontexpansion {#1}{#2}}
-\def\font_protrusion_setup[#1][#2]{\clf_setupfontprotrusion{#1}{#2}}
+\permanent\tolerant\protected\def\setupfontexpansion [#1]#*[#2]{\clf_setupfontexpansion {#1}{#2}}
+\permanent\tolerant\protected\def\setupfontprotrusion[#1]#*[#2]{\clf_setupfontprotrusion{#1}{#2}}
 
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
 
-\let\adjustspacing\relax \newcount\adjustspacing % a little bit protection
-\let\protrudechars\relax \newcount\protrudechars % a little bit protection
+\pushoverloadmode
 
-% at some point we can introduce extreme expansion, i.e. \normaladjustspacing\plustwo
+    \let\adjustspacing\relax \newcount\adjustspacing % a little bit protection
+    \let\protrudechars\relax \newcount\protrudechars % a little bit protection
+
+\popoverloadmode
+
+%D At some point we can introduce extreme expansion, i.e. \type {\normaladjustspacing\plustwo}.
 
 % 0 = disabled
-% 1 = notused (thesis)
+% 1 = notused      (thesis)
 % 2 = glyph + kern
-% 3 = glyph only
+% 3 = glyph only   (default)
 
 \def\font_expansion_enable  {\normaladjustspacing\plusthree}
 \def\font_expansion_enable_k{\normaladjustspacing\plustwo}
@@ -74,9 +75,9 @@
 %
 % \let\fonthandling\empty
 %
-% \unexpanded\def\startfonthandling  #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
-% \unexpanded\def\definefonthandling   {\dotripleempty\dodefinefonthandling}
-% \unexpanded\def\setupfonthandling    {\dodoubleempty\dosetupfonthandling }
+% \protected\def\startfonthandling  #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+% \protected\def\definefonthandling   {\dotripleempty\dodefinefonthandling}
+% \protected\def\setupfonthandling    {\dodoubleempty\dosetupfonthandling }
 % \def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
 % \def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
 % \def\usehandling                 [#1]{\fonthandlingerror}
@@ -102,10 +103,11 @@
 %   [\c!stretch=50,
 %    \c!shrink=20]
 
-\unexpanded\def\setexpansion
-  {\dosingleempty\font_expansion_set}
+\permanent\tolerant\protected\def\setexpansion[#1]{\begincsname\??expansion:#1\endcsname}
 
-\unexpanded\def\font_expansion_set[#1]%
-  {\begincsname\??expansion:#1\endcsname}
+%D New in \LMTX: can be used grouped.
+
+\permanent\protected\def\noexpansion {\bitwiseflip\glyphoptions\noexpansioncode}
+\permanent\protected\def\noprotrusion{\bitwiseflip\glyphoptions\noprotrusioncode}
 
 \protect \endinput

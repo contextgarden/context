@@ -223,7 +223,11 @@
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
+\pushoverloadmode
+
 \let\month\monthlong
+
+\popoverloadmode
 
 \unexpanded\def\MONTH     #1{\WORD{\clf_monthname\numexpr#1\relax}}
 \unexpanded\def\MONTHLONG #1{\WORD{\clf_monthname\numexpr#1\relax}}

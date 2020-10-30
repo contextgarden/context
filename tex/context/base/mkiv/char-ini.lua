@@ -766,7 +766,7 @@ local is_mark = allocate ( tohash {
 } )
 
 local is_punctuation = allocate ( tohash {
-    "pc","pd","ps","pe","pi","pf","po",
+    "pc", "pd", "ps", "pe", "pi", "pf", "po",
 } )
 
 local is_symbol = allocate ( tohash {

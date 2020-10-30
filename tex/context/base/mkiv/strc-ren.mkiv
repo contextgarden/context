@@ -187,7 +187,7 @@
    \ifx\p_strut\v!no
      \setnostrut
    \fi
-   \let\\\strc_rendering_shortcut_backslash}
+   \enforced\let\\\strc_rendering_shortcut_backslash}
 
 \unexpanded\def\strc_rendering_shortcut_backslash
   {\crlf
@@ -745,8 +745,8 @@
     \vbox {
         \headsetupspacing
         \veryraggedcenter
-        \let\\\endgraf
-        \let\crlf\endgraf
+        \enforced\let\\\endgraf
+        \enforced\let\crlf\endgraf
         \ifconditional\headshownumber
             \strut
             \headnumbercontent

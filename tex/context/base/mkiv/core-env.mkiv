@@ -17,7 +17,7 @@
 
 \unprotect
 
-\def\wildcardsymbol{*}
+\ifdefined\wildcardsymbol \else \def\wildcardsymbol{*} \fi
 
 %D Modes:
 %D
@@ -104,9 +104,13 @@
 
 % demo: trialtypesetting is a systemmode as well as an if
 
+\pushoverloadmode
+
 \newsystemmode{trialtypesetting}
 
 \expandafter\let\csname\??mode\systemmodeprefix trialtypesetting\endcsname\trialtypesettingstate
+
+\popoverloadmode
 
 \appendtoks
     \trialtypesettingstate\enabledmode
@@ -588,13 +592,15 @@
 \def\syst_setups_start_loc{\ifsecondargument\expandafter\syst_setups_start_loc_c\else\expandafter\syst_setups_start_loc_d\fi}
 \def\syst_setups_start_tex{\ifsecondargument\expandafter\syst_setups_start_tex_c\else\expandafter\syst_setups_start_tex_d\fi}
 
+% no need for \the\t_syst_setups_lua in the next, now too often
+
 \def\syst_setups_start_lua_a{\the\t_syst_setups_lua\dodoubleempty\syst_setups_start_lua} % [ ] delimited
 \def\syst_setups_start_xml_a{\the\t_syst_setups_xml\dodoubleempty\syst_setups_start_xml} % [ ] delimited
 \def\syst_setups_start_raw_a{\the\t_syst_setups_raw\dodoubleempty\syst_setups_start_raw} % [ ] delimited
 \def\syst_setups_start_loc_a{\the\t_syst_setups_loc\dodoubleempty\syst_setups_start_loc} % [ ] delimited
 \def\syst_setups_start_tex_a{\the\t_syst_setups_tex\dodoubleempty\syst_setups_start_tex} % [ ] delimited
 
-% empty preserves inner {} (is removed by the \expandafter{#3})
+% empty preserves inner {} (is removed by the \expandafter{#3}) .. hm, looks old
 
 \def\syst_setups_start_lua_b#1 {\the\t_syst_setups_lua\syst_setups_start_lua_indeed\empty{#1}\empty} % space delimited
 \def\syst_setups_start_xml_b#1 {\the\t_syst_setups_xml\syst_setups_start_xml_indeed\empty{#1}\empty} % space delimited

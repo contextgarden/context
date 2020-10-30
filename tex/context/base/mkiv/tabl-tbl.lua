@@ -18,12 +18,15 @@ local commands    = commands
 
 local texsetcount = tex.setcount
 
-local separator   = P("|")
-local nested      = lpeg.patterns.nested
-local pattern     = Ct((separator * (C(nested) + Cc("")) * C((1-separator)^0))^0)
+local separator   = P("|")                  -- keep   { }
+----- nested      = C(lpeg.patterns.nested) -- remove { }
+local nested      = lpeg.patterns.argument
+local pattern     = Ct((separator * (nested + Cc("")) * C((1-separator)^0))^0)
 
 local ctx_settabulatelastentry = context.settabulatelastentry
 local ctx_settabulateentry     = context.settabulateentry
+
+-- the lmtx raw processor handles {} like the normal one so we need to prune
 
 local function presettabulate(preamble)
     preamble = gsub(preamble,"~","d") -- let's get rid of ~ mess here

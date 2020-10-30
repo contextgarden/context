@@ -211,7 +211,7 @@
 
 \let\strc_floats_define_saved\definefloat
 
-\unexpanded\def\definefloat
+\unexpanded\overloaded\def\definefloat
   {\dotripleempty\strc_floats_define}
 
 \def\strc_floats_define[#1][#2][#3]% name+plural+parent | name+parent+settings
@@ -1230,7 +1230,7 @@
 \let\doifoddpagefloatelse  \doifelseoddpagefloat
 
 \appendtoks
-    \let\rightorleftpageaction\doifelserightpagefloat
+    \overloaded\frozen\let\rightorleftpageaction\doifelserightpagefloat
 \to \everyinsidefloat
 
 % \let\movesidefloat\gobbleoneargument

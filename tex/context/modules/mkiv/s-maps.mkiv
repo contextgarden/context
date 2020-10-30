@@ -363,8 +363,8 @@
 \def\doarticleheader
   {\startbaselinecorrection
    \bgroup
-     \hsize = 457pt
-     \let\\\crlf
+     \hsize= 457pt
+     \enforced\let\\\crlf
      \blank[35pt,force]
      \switchtobodyfont[24pt]
      \startalign[flushleft,verytolerant,extremestretch]
@@ -419,7 +419,8 @@
 \def\signArticle
   {\doifnothing
     {\MapsSkipFooter}
-    {\blank[line]\let\\\crlf
+    {\blank[line]%
+     \enforced\let\\\crlf
      \noindent\switchtobodyfont[ss,9pt]%
      \MapsAuthor
      \doifsomething{\MapsAddress}{\\\MapsAddress}%

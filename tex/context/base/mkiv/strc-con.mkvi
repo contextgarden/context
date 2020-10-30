@@ -620,7 +620,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!left:\v!none]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \strc_constructions_set_pure_box\v!flushleft
     \leftskip\dimexpr\leftconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
@@ -646,7 +646,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!right:\v!none]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \leftskip\leftconstructionskip
     \rightskip\dimexpr\rightconstructionskip+\constructionsheadwidth\relax
@@ -672,7 +672,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!left:\v!margin]%
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \strc_constructions_set_pure_box\v!flushleft
     \llap {
@@ -687,7 +687,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!right:\v!margin]%
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \strc_constructions_set_pure_box\v!flushright
     \rlap {
@@ -702,7 +702,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!left:\v!hanging]%
-    \let\\=\crlf
+    \let\\\crlf
     \dontcomplain
     \advance\constructionsheadwidth \constructionsheaddistance
     \strc_constructions_set_hang_box\v!flushleft
@@ -719,7 +719,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!right:\v!hanging]%
-    \let\\=\crlf
+    \let\\\crlf
     \dontcomplain
     \advance\constructionsheadwidth \constructionsheaddistance
     \strc_constructions_set_hang_box\v!flushright
@@ -740,7 +740,7 @@
 
 \startsetups[\??constructionrenderings:\v!top]
   % \strc_sectioning_prevent_page_break % commented per 31/5/2019
-    \let\\=\space
+    \let\\\space
     \noindent
     \copy\constructionheadbox % why copy ?
     \par
@@ -758,7 +758,7 @@
 % why copy? historic reason?
 
 \startsetups[\??constructionrenderings:\v!margin]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \inmargin[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
@@ -766,7 +766,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!leftmargin]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \inleft[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
@@ -774,7 +774,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!rightmargin]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \inright[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
@@ -782,7 +782,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!innermargin]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \ininner[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
@@ -790,7 +790,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!outermargin]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \inouter[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
@@ -820,7 +820,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried:\v!fit]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \flushconstructionheadbox
     \nobreak
@@ -830,7 +830,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried:\v!broad]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \flushconstructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
@@ -849,7 +849,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried:\v!wide]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \hbox to \constructionsheadwidth {
         \flushconstructionheadbox
@@ -863,7 +863,7 @@
 
 \startsetups[\??constructionrenderings:\v!hanging]
     % tricky: leftskipadaption is somewhat unpredictable
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \advance\leftskip-\leftskipadaption\relax
     \ifdim\leftskipadaption=\zeropoint
@@ -939,7 +939,7 @@
    \c!renderingsetup=\??constructionrenderings:\v!right:\v!bottom]
 
 \startsetups[\??constructionrenderings:\v!right:\v!bottom]
-    \let\\=\crlf
+    \let\\\crlf
     \noindent
     \leftskip\leftconstructionskip
     \rightskip\dimexpr\rightconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax

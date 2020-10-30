@@ -70,26 +70,18 @@
 
 \unexpanded\def\ruledmbox#1{\ruledhbox{\startimath#1\stopimath}}
 
-\ifcase\contextlmtxmode
+\unexpanded\def\sys_ruled_vcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual {simplevbox}}
 
-    \unexpanded\def\sys_ruled_vcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual {simplevbox}}
+\unexpanded\def\ruledvcenter
+  {\ruledvbox\bgroup
+   \dowithnextboxcs\syst_boxes_ruled_vcenter_finish\ruledvbox}
 
-    \unexpanded\def\ruledvcenter
-      {\ruledvbox\bgroup
-       \dowithnextboxcs\syst_boxes_ruled_vcenter_finish\ruledvbox}
+\def\syst_boxes_ruled_vcenter_finish
+  {\ruledhpack{\normalstartimath\ruledvcenter{\box\nextbox}\normalstopimath}%
+   \egroup}
 
-    \def\syst_boxes_ruled_vcenter_finish
-      {\ruledhpack{\normalstartimath\ruledvcenter{\box\nextbox}\normalstopimath}%
-       \egroup}
-
-    \prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everymath
-    \prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everydisplay
-
-\else
-
-    \unexpanded\def\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual {simplevbox}}
-
-\fi
+\prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everymath
+\prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everydisplay
 
 \appendtoks
     \ifcase\c_syst_visualizers_state\else

@@ -1,0 +1,194 @@
+%D \module
+%D   [       file=strc-des,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Descriptions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Descriptions}
+
+\unprotect
+
+\installcorenamespace{description}
+
+\installcommandhandler \??description {description} \??description
+
+\aliased\let\setupdescriptions\setupdescription
+
+% \setupdescription % check with old
+%   [\c!alternative=\descriptionparameter\c!location,
+%    \c!location=\v!left]
+
+\setupdescription % check with old
+  [\c!alternative=\v!left,
+   \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
+  %\c!style=,
+  %\c!color=,
+  %\c!headcolor=,
+  %\c!titlecolor=,
+   \c!width=7\emwidth,
+   \c!distance=\emwidth,
+   \c!titledistance=.5\emwidth,
+  %\c!hang=,
+  %\c!sample=,
+  %\c!align=,
+  %\c!headalign=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+  %\c!closesymbol=,
+   \c!closecommand=\wordright,
+   \c!display=\v!yes,
+  %\c!command=,
+   \c!titlecommand=,
+   \c!expansion=\v!no,
+  %\c!xmlsetup=,
+  %\s!catcodes=,
+   \c!title=\v!yes,
+  %\c!text=,
+  ]
+
+\appendtoks
+    \ifx\currentdescriptionparent\empty
+        \defineconstruction[\currentdescription][\currentdescriptionparent][\s!handler=\v!description,\c!level=1]%
+    \else
+        \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%
+    \fi
+    % We can combine these but in tracing (or errors) using a different caller is nicer.
+    \instance\setuevalue        {\currentdescription}{\strc_descriptions_command[\currentdescription]}%
+    \instance\setuevalue{\e!start\currentdescription}{\strc_descriptions_start  [\currentdescription]}%
+    \instance\setuevalue{\e!stop \currentdescription}{\strc_descriptions_stop}%
+\to \everydefinedescription
+
+\let\p_strc_constructions_title \empty
+
+\protected\setvalue{\??constructioninitializer\v!description}%
+  {\let         \currentdescription              \currentconstruction
+   \enforced\let\constructionparameter           \descriptionparameter
+   \enforced\let\constructionnamespace           \??description
+   \enforced\let\detokenizedconstructionparameter\detokenizeddescriptionparameter
+   \enforced\let\letconstructionparameter        \letdescriptionparameter
+   \enforced\let\useconstructionstyleandcolor    \usedescriptionstyleandcolor
+   \enforced\let\setupcurrentconstruction        \setupcurrentdescription
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
+     \settrue\c_strc_constructions_title_state
+   \else
+     \setfalse\c_strc_constructions_title_state
+   \fi}
+
+% We keep the command variant around but rather would move to the
+% start-stop one. Also, passing the title as argument has some
+% history so we need to keep that as well.
+
+% \startdescription [reference]                text \stopdescription
+% \startdescription [reference]{title}         text \stopdescription
+% \startdescription [title=,title=,reference=] text \stopdescription
+
+% A bit over the top, the optional title but mkii has it too.
+
+\tolerant\protected\def\strc_descriptions_start[#1]#*[#2]%
+  {\begingroup
+   \strc_constructions_initialize{#1}%
+   \ifhastok={#2}%
+     \expandafter\strc_descriptions_start_setups
+   \orelse\ifconditional\c_strc_constructions_title_state
+     \expandafter\strc_descriptions_start_title
+   \else
+     \expandafter\strc_descriptions_start_reference
+   \fi[#2]}
+
+\protected\def\strc_descriptions_start_setups[#1]%
+  {\setfalse\c_strc_constructions_title_state
+   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\protected\tolerant\def\strc_descriptions_start_title[#1]#*#=%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\protected\def\strc_descriptions_start_reference[#1]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\protected\def\strc_descriptions_stop
+  {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
+
+% \description [reference]         text \par
+% \description [reference] {title} text \par
+
+\tolerant\protected\def\strc_descriptions_command[#1]#*[#2]#:#*#=%
+  {\begingroup
+   \strc_constructions_initialize{#1}%
+   \ifhastok={#2}%
+     \expandafter\strc_descriptions_command_setups
+   \orelse\ifconditional\c_strc_constructions_title_state
+     \expandafter\strc_descriptions_command_title
+   \else
+     \expandafter\strc_descriptions_command_reference
+   \fi[#2]}
+
+\protected\def\strc_descriptions_command_setups[#1]%
+  {\setfalse\c_strc_constructions_title_state
+   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+   \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
+\protected\tolerant\def\strc_descriptions_command_title[#1]#:#*#=%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+   \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
+\protected\def\strc_descriptions_command_reference[#1]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
+   \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
+%D Handlers:
+
+\expandafter\let\csname\??constructionmainhandler   \v!description\expandafter\endcsname\csname\??constructionmainhandler   \v!construction\endcsname
+\expandafter\let\csname\??constructioncommandhandler\v!description\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
+\expandafter\let\csname\??constructiontexthandler   \v!description\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
+
+\protected\setvalue{\??constructioncommandhandler\v!description}%
+  {\dowithpar
+     {\csname\??constructionstarthandler\v!construction\endcsname}%
+     {\csname\??constructionstophandler \v!construction\endcsname\endgroup}}
+
+\protected\setvalue{\??constructionstarthandler\v!description}%
+  {\dogotopar
+     {\csname\??constructionstarthandler\v!construction\endcsname}}
+
+\protected\setvalue{\??constructionstophandler\v!description}%
+  {\csname\??constructionstophandler\v!construction\endcsname
+   \endgroup}
+
+%D For historic reasons we have (from now on undocumented):
+
+\definedescription
+  [tab]
+  [\c!alternative=\v!left,
+   \c!headstyle=\v!normal,
+   \c!headcolor=,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!width=\v!broad,
+   \c!sample=\kern4\emwidth, % was \hskip but that no longer is okay
+   \c!before=,
+   \c!after=]
+
+\protected\def\setuptab
+  {\setupdescription[tab]}
+
+%D Maybe we should remove this definition.
+
+\protect \endinput

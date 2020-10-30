@@ -1,4 +1,4 @@
-.TH "mtx-context" "1" "01-01-2020" "version 1.03" "ConTeXt Process Management"
+.TH "mtx-context" "1" "01-01-2020" "version 1.04" "ConTeXt Process Management"
 .SH NAME
  mtx-context - ConTeXt Process Management
 .SH SYNOPSIS
@@ -173,6 +173,9 @@ keep previous log files (jobname-log-[run].tmp)
 .TP
 .B --lmtx
 force lmtx mode (when available)
+.TP
+.B --overloadmode=error|warning|0--6|255
+enable csname overload checking
 .TP
 .B --extra=name
 process extra (mtx-context-... in distribution)

@@ -56,7 +56,7 @@ local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
-local localpar_code      = nodecodes.localpar
+local par_code           = nodecodes.par
 
 local spaceskip_code     = nodes.gluecodes.spaceskip
 
@@ -372,7 +372,7 @@ end
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
-    if getid(head) == localpar_code and start_of_par(head) then
+    if getid(head) == par_code and start_of_par(head) then
         local settings = getprop(head,a_firstline)
         if settings then
             disableaction("processors","typesetters.firstlines.handler")

@@ -892,7 +892,7 @@
 
 \appendtoks
     % better is to use a special list entry but we keep this for compatibility
-    \let\\=\space
+    \enforced\let\\\space
     % so expanding this token register has to come *after* the font switch
     \dontconvertfont % (**) this has to become an option (see publ)
 \to \t_lists_every_renderingtext

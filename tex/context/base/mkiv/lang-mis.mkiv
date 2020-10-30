@@ -254,12 +254,12 @@
 \def\lang_discretionaries_check_after
   {\setfalse\punctafterdiscretionary
    \setfalse\spaceafterdiscretionary
-   \ifx\blankspace\nextnext \settrue \spaceafterdiscretionary \else
-   \ifx\space     \nextnext \settrue \spaceafterdiscretionary \else
-   \ifx          .\nextnext \settrue \punctafterdiscretionary \else
-   \ifx          ,\nextnext \settrue \punctafterdiscretionary \else
-   \ifx          :\nextnext \settrue \punctafterdiscretionary \else
-   \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
+   \ifx\blankspace\nexttoken \settrue \spaceafterdiscretionary \else
+   \ifx\space     \nexttoken \settrue \spaceafterdiscretionary \else
+   \ifx          .\nexttoken \settrue \punctafterdiscretionary \else
+   \ifx          ,\nexttoken \settrue \punctafterdiscretionary \else
+   \ifx          :\nexttoken \settrue \punctafterdiscretionary \else
+   \ifx          ;\nexttoken \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
 \letvalue{\??discretionarymode m}\handlemathmodediscretionary
 
@@ -268,7 +268,7 @@
    \let\nextnextnext\egroup
    \def\next##1#1%
      {\def\next{\activedododotextmodediscretionary#1{##1}}%
-      \futurelet\nextnext\next}%
+      \futurelet\nexttoken\next}%
    \next}
 
 \let\discretionarytoken   \relax
@@ -279,7 +279,7 @@
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
    \lang_discretionaries_check_after
    \ifx\discretionarytoken\empty
-     \ifx#1\nextnext % takes care of ||| and +++ and ......
+     \ifx#1\nexttoken % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
          \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
@@ -296,7 +296,7 @@
      \else
        \lang_discretionaries_check_before
        % the next line has been changed (20050203)
-       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\postwordbreak
+       % \prewordbreak\hbox{\textmodediscretionary\nexttoken}\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
          \lastnamedcs

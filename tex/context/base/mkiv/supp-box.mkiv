@@ -112,16 +112,16 @@
 %D Smashing is introduced in \PLAIN\ \TEX, and stands for reducing the dimensions of
 %D a box to zero. The most resolute one is presented first.
 
-\protected\def\smashbox#1%
-  {\wd#1\zeropoint
-   \ht#1\zeropoint
-   \dp#1\zeropoint}
+% \protected\def\smashbox#1%
+%   {\wd#1\zeropoint
+%    \ht#1\zeropoint
+%    \dp#1\zeropoint}
 
-\protected\def\smashboxed#1%
-  {\wd#1\zeropoint
-   \ht#1\zeropoint
-   \dp#1\zeropoint
-   \box#1\relax}
+% \protected\def\smashboxed#1%
+%   {\wd#1\zeropoint
+%    \ht#1\zeropoint
+%    \dp#1\zeropoint
+%    \box#1\relax}
 
 %D \macros
 %D   {hsmashbox,vsmashbox}
@@ -169,6 +169,8 @@
    \ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint
    \box\c_boxes_register}
+
+\let\smashboxed\smashedbox
 
 %D \macros
 %D   {hsmash,vsmash,
@@ -1105,8 +1107,8 @@
 \protected\def\processtokens#1#2#3#4#5%
   {\begingroup
    \def\lastcharacter{\lastcharacter}% hm, recursive ?
+   \let\\\space
    \def\space{ }%
-   \let\\=\space
    \def\before {#1}%
    \def\between{#2}%
    \def\after  {#3}%
@@ -2263,9 +2265,9 @@
    \scratchdimen\zeropoint
    \def\docommand
      {\advance\sizeofbox\scratchdimen
-      \futurelet\next\dodocommand}%
+      \futurelet\nexttoken\dodocommand}%
    \def\dodocommand
-     {\ifx\next\bgroup
+     {\ifx\nexttoken\bgroup
         \expanded{\egroup#1 to \the\sizeofbox}%
       \else
         \expandafter\afterassignment\expandafter\docommand\expandafter\scratchdimen

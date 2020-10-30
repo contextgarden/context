@@ -82,7 +82,12 @@
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 
-\setnewconstant\kindofpagetextareas\plustwo % \plusone can become default some day
+% We really need a setting! Todo, what key to use?
+
+\pushoverloadmode
+    \setnewconstant\kindofpagetextareas\plustwo % \plusone can become default some day
+    \overloaded\let\kindofpagetextareas\kindofpagetextareas
+\popoverloadmode
 
 \def\page_one_registered_text_area_a % two arguments: (un)vbox n
   {\ifconditional\c_page_areas_enabled

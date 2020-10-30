@@ -185,7 +185,7 @@ local glue_code           = nodecodes.glue
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local rule_code           = nodecodes.rule
-local localpar_code       = nodecodes.localpar
+local par_code            = nodecodes.par
 
 local userskip_code       = gluecodes.userskip
 local lineskip_code       = gluecodes.lineskip
@@ -293,7 +293,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and start_of_par(list) then
+        if id == par_code and start_of_par(list) then
             list = getnext(list)
             if not next then
                 return nil
@@ -329,7 +329,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and start_of_par(list) then
+        if id == par_code and start_of_par(list) then
             list = getnext(list)
             if not list then
                 return false
@@ -1263,7 +1263,7 @@ do
             end
         end
         -- in fact, we could try again later ... so then no remove (a few tries)
-        return remove_node(head, current, true)
+        return remove_node(head,current,true)
     end
 
     local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
@@ -1501,7 +1501,7 @@ do
              -- if trace then
              --     trace_done("removed penalty",current)
              -- end
-             -- head, current = remove_node(head, current, true)
+             -- head, current = remove_node(head,current,true)
                 current = getnext(current)
             elseif id == kern_code then
                 if snap and trace_vsnapping and getkern(current) ~= 0 then
@@ -1539,7 +1539,7 @@ do
                         if trace then
                             trace_skip("penalty in skip",sc,so,sp,current)
                         end
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     elseif not sc then  -- if not sc then
                         if glue_data then
                             if trace then
@@ -1562,7 +1562,7 @@ do
                                     if trace then
                                         trace_natural("removed",current)
                                     end
-                                    head, current = remove_node(head, current, true)
+                                    head, current = remove_node(head,current,true)
                                     if trace then
                                         trace_natural("collapsed",previous)
                                     end
@@ -1587,7 +1587,7 @@ do
                             if trace then
                                 trace_skip(sc == disable and "disable" or "enable",sc,so,sp,current)
                             end
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         else
                             current = next
                         end
@@ -1596,12 +1596,12 @@ do
                             trace_skip("packed",sc,so,sp,current)
                         end
                         -- can't happen !
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     elseif sc == nowhite then
                         local next = getnext(current)
                         if next then
                             ignore_whitespace = true
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         else
                             current = next
                         end
@@ -1609,7 +1609,7 @@ do
                         if trace then
                             trace_skip("discard",sc,so,sp,current)
                         end
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     elseif sc == overlay then
                         -- todo (overlay following line over previous
                         if trace then
@@ -1622,20 +1622,20 @@ do
                         if trace then
                             trace_skip("disabled",sc,so,sp,current)
                         end
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     elseif not glue_data then
                         if trace then
                             trace_skip("assign",sc,so,sp,current)
                         end
                         glue_order = so
-                        head, current, glue_data = remove_node(head, current)
+                        head, current, glue_data = remove_node(head,current)
                     elseif glue_order < so then
                         if trace then
                             trace_skip("force",sc,so,sp,current)
                         end
                         glue_order = so
                         flush_node(glue_data)
-                        head, current, glue_data = remove_node(head, current)
+                        head, current, glue_data = remove_node(head,current)
                     elseif glue_order == so then
                         -- is now exclusive, maybe support goback as combi, else why a set
                         if sc == largest then
@@ -1651,7 +1651,7 @@ do
                                 if trace then
                                     trace_skip("remove smallest",sc,so,sp,current)
                                 end
-                                head, current = remove_node(head, current, true)
+                                head, current = remove_node(head,current,true)
                             end
                         elseif sc == goback then
                             if trace then
@@ -1666,34 +1666,34 @@ do
                                 trace_skip("force",sc,so,sp,current)
                             end
                             flush_node(glue_data)
-                            head, current, glue_data = remove_node(head, current)
+                            head, current, glue_data = remove_node(head,current)
                         elseif sc == penalty then
                             if trace then
                                 trace_skip("penalty",sc,so,sp,current)
                             end
                             flush_node(glue_data)
                             glue_data = nil
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         elseif sc == add then
                             if trace then
                                 trace_skip("add",sc,so,sp,current)
                             end
                             local cwidth, cstretch, cshrink = getglue(current)
                             local gwidth, gstretch, gshrink = getglue(glue_data)
-                            setglue(old,gwidth + cwidth, gstretch + cstretch, gshrink + cshrink)
+                            setglue(glue_data,gwidth + cwidth, gstretch + cstretch,gshrink + cshrink)
                             -- toto: order
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         else
                             if trace then
                                 trace_skip("unknown",sc,so,sp,current)
                             end
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         end
                     else
                         if trace then
                             trace_skip("unknown",sc,so,sp,current)
                         end
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     end
                     if sc == force then
                         force_glue = true
@@ -1748,7 +1748,7 @@ do
                         if trace then
                             trace_natural("ignored parskip",current)
                         end
-                        head, current = remove_node(head, current, true)
+                        head, current = remove_node(head,current,true)
                     elseif glue_data then
                         local w = getwidth(current)
                         if (w ~= 0) and (w > getwidth(glue_data)) then
@@ -1756,18 +1756,18 @@ do
                             if trace then
                                 trace_natural("taking parskip",current)
                             end
-                            head, current = remove_node(head, current)
+                            head, current = remove_node(head,current)
                         else
                             if trace then
                                 trace_natural("removed parskip",current)
                             end
-                            head, current = remove_node(head, current, true)
+                            head, current = remove_node(head,current,true)
                         end
                     else
                         if trace then
                             trace_natural("honored parskip",current)
                         end
-                        head, current, glue_data = remove_node(head, current)
+                        head, current, glue_data = remove_node(head,current)
                     end
                 elseif subtype == topskip_code or subtype == splittopskip_code then
                     local next = getnext(current)
@@ -1902,18 +1902,6 @@ do
         return head
     end
 
-    -- alignment after_output end box new_graf vmode_par hmode_par insert penalty before_display after_display
-    -- \par -> vmode_par
-    --
-    -- status.best_page_break
-    -- tex.lists.best_page_break
-    -- tex.lists.best_size (natural size to best_page_break)
-    -- tex.lists.least_page_cost (badness of best_page_break)
-    -- tex.lists.page_head
-    -- tex.lists.contrib_head
-
-    -- do
-
     local stackhead, stacktail, stackhack = nil, nil, false
 
     local function report(message,where,lst)
@@ -1930,7 +1918,6 @@ do
     local forceflush = false
 
     function vspacing.pagehandler(newhead,where)
-        -- local newhead = texlists.contrib_head
         if newhead then
             local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
             local flush = false
@@ -1972,11 +1959,9 @@ do
                 if stackhack then
                     stackhack = false
                     if trace_collect_vspacing then report("%s > processing %s nodes: %s",where,newhead) end
-                 -- texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
                     newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
                 else
                     if trace_collect_vspacing then report("%s > flushing %s nodes: %s",where,newhead) end
-                 -- texlists.contrib_head = newhead
                 end
                 return newhead
             else
@@ -1992,20 +1977,6 @@ do
         end
         return nil
     end
-
- -- function vspacing.flushpagestack()
- --     if stackhead then
- --         local head = texlists.contrib_head
- --         if head then
- --             local tail = find_node_tail(head)
- --             setlink(tail,stackhead)
- --         else
- --             texlists.contrib_head = tonode(stackhead)
- --         end
- --         stackhead, stacktail = nil, nil
- --     end
- --
- -- end
 
     function vspacing.pageoverflow()
         local h = 0
@@ -2187,6 +2158,8 @@ do
                             tail.depth = depth
                         end
                         nest.prevdepth = depth
+                        -- only works in lmtx
+                        texset("pagedepth",depth)
                     end
                 end
             end

@@ -53,7 +53,8 @@
     \c_attr_linenumber\attributeunsetvalue
 \to \everyinsidefloat
 
-\newcount   \linenumber % not used
+\mutable\let\linenumber\!!zerocount
+
 \newbox     \b_page_lines_scratch
 \newcount   \c_page_lines_reference
 \newconstant\c_page_lines_nesting

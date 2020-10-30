@@ -75,7 +75,6 @@
 %D \stoptext
 %D \stoptyping
 
-\unexpanded\def\setupoutput[#1]%
-  {\clf_enabledriver{#1}}
+\permanent\protected\def\setupoutput[#1]{\clf_enabledriver{#1}}
 
 \protect \endinput

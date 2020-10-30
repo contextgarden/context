@@ -55,7 +55,7 @@ local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local dir_code         = nodecodes.dir
-local localpar_code    = nodecodes.localpar
+local par_code         = nodecodes.par
 
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
@@ -396,7 +396,7 @@ function step_tracers.codes(i,command,space)
         local char, id = isglyph(c)
         if char then
             showchar(char,id)
-        elseif id == dir_code or (id == localpar_code and start_of_par(c)) then
+        elseif id == dir_code or (id == par_code and start_of_par(c)) then
             context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)

@@ -25,18 +25,6 @@
 
 % \fixupboxesmode\plusone % gone: is now the default
 
-%D \macros
-%D   {dontcomplain}
-%D
-%D The next macro suppresses over- and underfull messages which often makes sense
-%D when we deal with boxes.
-
-\protected\def\dontcomplain
-  {\hbadness\plustenthousand
-   \vbadness\plustenthousand
-   \hfuzz   \maxdimen
-   \vfuzz   \maxdimen}
-
 %D This module implements some box manipulation macros. Some are quite simple, some
 %D are more advanced and when understood well, all can be of use.
 %D
@@ -46,6 +34,8 @@
 %D The next shortcuts save memory and keying. The width is normally zero points (if
 %D not, you're in trouble). These shortcuts can be used like a dimension, opposite
 %D to the core macros \type {\strutdepth} and alike, which are values.
+
+%D These will be overloaded in spac-ver:
 
 \def\strutdp  {\dp\strutbox}
 \def\strutht  {\ht\strutbox}
@@ -72,21 +62,21 @@
 \newdimen\nextdepth
 
 %D \macros
-%D   {smashbox, smashedbox}
+%D   {smashbox, smashboxed, smashedbox}
 %D
 %D Smashing is introduced in \PLAIN\ \TEX, and stands for reducing the dimensions of
 %D a box to zero. The most resolute one is presented first.
 
-\protected\def\smashbox#1%
-  {\wd#1\zeropoint
-   \ht#1\zeropoint
-   \dp#1\zeropoint}
-
-\protected\def\smashboxed#1%
-  {\wd#1\zeropoint
-   \ht#1\zeropoint
-   \dp#1\zeropoint
-   \box#1\relax}
+% \permanent\protected\def\smashbox#1%
+%   {\wd#1\zeropoint
+%    \ht#1\zeropoint
+%    \dp#1\zeropoint}
+%
+% \permanent\protected\def\smashboxed#1%
+%   {\wd#1\zeropoint
+%    \ht#1\zeropoint
+%    \dp#1\zeropoint
+%    \box#1\relax}
 
 %D \macros
 %D   {hsmashbox,vsmashbox}
@@ -94,18 +84,18 @@
 %D Smashing can be used for overlaying boxes. Depending on the mode, horizontal or
 %D vertical, one can use:
 
-\protected\def\hsmashbox#1%
-  {\wd#1\zeropoint}
-
-\protected\def\vsmashbox#1%
-  {\ht#1\zeropoint
-   \dp#1\zeropoint}
+% \permanent\protected\def\hsmashbox#1%
+%   {\wd#1\zeropoint}
+%
+% \permanent\protected\def\vsmashbox#1%
+%   {\ht#1\zeropoint
+%    \dp#1\zeropoint}
 
 %D The next implementation is less sensitive for spurious spaces.
 
 \newcount\c_boxes_register
 
-\protected\def\smashbox
+\permanent\protected\def\smashbox
   {\afterassignment\syst_boxes_smash_boxes_register\c_boxes_register}
 
 \def\syst_boxes_smash_boxes_register
@@ -113,20 +103,20 @@
    \ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint}
 
-\protected\def\hsmashbox
+\permanent\protected\def\hsmashbox
   {\afterassignment\syst_boxes_hsmashed_boxes_register\c_boxes_register}
 
 \def\syst_boxes_hsmashed_boxes_register
   {\wd\c_boxes_register\zeropoint}
 
-\protected\def\vsmashbox
+\permanent\protected\def\vsmashbox
   {\afterassignment\syst_boxes_vsmashed_boxes_register\c_boxes_register}
 
 \def\syst_boxes_vsmashed_boxes_register
   {\ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint}
 
-\protected\def\smashedbox
+\permanent\protected\def\smashedbox
   {\afterassignment\syst_boxes_smashed_boxes_register\c_boxes_register}
 
 \protected\def\syst_boxes_smashed_boxes_register
@@ -134,6 +124,8 @@
    \ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint
    \box\c_boxes_register}
+
+\let\smashboxed\smashedbox
 
 %D \macros
 %D   {hsmash,vsmash,
@@ -143,10 +135,10 @@
 %D some subtle differences betreen the smash and smashed alternatives. The later
 %D ones reduce all dimensions to zero.
 
-\protected\def\hsmash  {\bgroup\dowithnextboxcs\syst_boxes_hsmashed_nextbox\hbox}
-\protected\def\vsmash  {\bgroup\dowithnextboxcs\syst_boxes_vsmashed_nextbox\vbox}
-\protected\def\hsmashed{\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox \hbox}
-\protected\def\vsmashed{\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox \vbox}
+\permanent\protected\def\hsmash  {\bgroup\dowithnextboxcs\syst_boxes_hsmashed_nextbox\hbox}
+\permanent\protected\def\vsmash  {\bgroup\dowithnextboxcs\syst_boxes_vsmashed_nextbox\vbox}
+\permanent\protected\def\hsmashed{\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox \hbox}
+\permanent\protected\def\vsmashed{\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox \vbox}
 
 \protected\def\syst_boxes_hsmashed_nextbox
   {\wd\nextbox\zeropoint
@@ -176,8 +168,8 @@
 %D \smashedvbox to ... {...}
 %D \stoptyping
 
-\protected\def\smashedhbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\hbox}
-\protected\def\smashedvbox{\vpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\vbox}
+\permanent\protected\def\smashedhbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\hbox}
+\permanent\protected\def\smashedvbox{\vpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\vbox}
 
 %D First we define a helper. We use a \LUATEX\ feature in order to avoid
 %D mathpalettes.
@@ -195,7 +187,7 @@
 %D catcode safer. It is needed by the math module (although the \type {\leavevmode}
 %D is not added here).
 
-\protected\def\smash
+\permanent\protected\def\smash
   {\begingroup
    \futureexpandis[\syst_boxes_smash_yes\syst_boxes_smash_nop}
 
@@ -267,9 +259,9 @@
 %D {\mathchoice}, the next macro looks ugly. We also take care of non||braced
 %D arguments.
 
-\protected\def\phantom {\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed  }
-\protected\def\vphantom{\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed_v}
-\protected\def\hphantom{\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed_h}
+\permanent\protected\def\phantom {\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed  }
+\permanent\protected\def\vphantom{\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed_v}
+\permanent\protected\def\hphantom{\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed_h}
 
 \def\syst_boxes_phantom_math  #1{\syst_boxes_math_set_nextbox{#1}\syst_boxes_phantom_make  }
 \def\syst_boxes_phantom_math_v#1{\syst_boxes_math_set_nextbox{#1}\syst_boxes_phantom_make_v}
@@ -333,7 +325,7 @@
 
 %D We also define plain's \type {\mathstrut}.
 
-\protected\def\mathstrut{\vphantom(} % can be made faster by inlining
+\permanent\protected\def\mathstrut{\vphantom(} % can be made faster by inlining
 
 %D \macros
 %D   {getboxheight}
@@ -367,7 +359,7 @@
 %D The next alternative is slightly more clever, since it accepts \type {{12}} as
 %D well as \type {12} as box number.
 
-\protected\def\getboxheight#1\of#2\box#3%
+\permanent\protected\def\getboxheight#1\of#2\box#3%
   {\def\next{#1\htdp\c_boxes_register}%
    \afterassignment\next\c_boxes_register=#3}
 
@@ -416,7 +408,7 @@
 \newcount\noflines
 \newdimen\noflinesheight
 
-\protected\def\getnoflines#1%
+\permanent\protected\def\getnoflines#1%
   {\noflinesheight#1\relax
    \ifzeropt\noflinesheight
      \noflines\zerocount
@@ -432,7 +424,7 @@
      \advance\noflines\minusone
    \fi}
 
-\protected\def\getroundednoflines#1%
+\permanent\protected\def\getroundednoflines#1%
   {\noflinesheight#1\relax
    \ifzeropt\noflinesheight
      \noflines\zerocount
@@ -446,7 +438,7 @@
      \noflines\noflinesheight
    \fi}
 
-\protected\def\getrawnoflines#1%
+\permanent\protected\def\getrawnoflines#1%
   {\noflinesheight#1\relax
    \ifzeropt\noflinesheight
      \noflines\zerocount
@@ -510,11 +502,11 @@
 \def\syst_boxes_determine_noflines
   {\expandafter\egroup\expandafter\noflines\noflinesinbox\nextbox\relax}
 
-\protected\def\determinenoflines
+\permanent\protected\def\determinenoflines
   {\bgroup
    \forgetall
-   \let\crlf\endgraf
-   \let\\\endgraf
+   \enforced\let\crlf\endgraf
+   \enforced\let\\\endgraf
    \dowithnextboxcs\syst_boxes_determine_noflines\vbox}
 
 %D \macros
@@ -528,7 +520,7 @@
 %D \doiftext     {data} {then branch}
 %D \stoptyping
 
-\protected\def\doifelsetext#1%
+\permanent\protected\def\doifelsetext#1%
   {\begingroup
    \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
      {\settrialtypesetting
@@ -539,7 +531,7 @@
      \endgroup\expandafter\firstoftwoarguments
    \fi}
 
-\protected\def\doiftext#1%
+\permanent\protected\def\doiftext#1%
   {\begingroup
    \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
      {\settrialtypesetting
@@ -589,7 +581,7 @@
 %D In this implementation the \type {\aftergroup} construction is needed because
 %D \type {\afterassignment} is executed inside the box.
 
-\protected\def\dowithnextbox#1%
+\permanent\protected\def\dowithnextbox#1%
   {\def\syst_boxes_with_next_box{#1}%
    \afterassignment\syst_boxes_with_next_box_indeed
    \setbox\nextbox}
@@ -597,7 +589,7 @@
 \def\syst_boxes_with_next_box_indeed
   {\aftergroup\syst_boxes_with_next_box}
 
-\protected\def\dowithnextboxcs#1%
+\permanent\protected\def\dowithnextboxcs#1%
   {\let\syst_boxes_with_next_box#1%
    \afterassignment\syst_boxes_with_next_box_indeed
    \setbox\nextbox}
@@ -642,12 +634,12 @@
 %D The next couple of shortcuts saves us memory as well as \type {{}}'s in passing
 %D parameters.
 
-\def\nextboxht  {\ht\nextbox}
-\def\nextboxwd  {\wd\nextbox}
-\def\nextboxdp  {\dp\nextbox}
-\def\nextboxhtdp{\htdp\nextbox}
+\permanent\def\nextboxht  {\ht\nextbox}
+\permanent\def\nextboxwd  {\wd\nextbox}
+\permanent\def\nextboxdp  {\dp\nextbox}
+\permanent\def\nextboxhtdp{\htdp\nextbox}
 
-\protected\def\flushnextbox{\box\nextbox}
+\permanent\protected\def\flushnextbox{\box\nextbox}
 
 %D \macros
 %D   {dowithnextboxcontent}
@@ -661,16 +653,24 @@
 %D
 %D {\em todo: Search source for potential usage!}
 
-\protected\def\dowithnextboxcontent#1#2% inside, after
-  {\def\syst_boxes_with_next_box_one{#2}%
-   \def\syst_boxes_with_next_box_two{#1}%
-   \afterassignment\syst_boxes_with_next_box_content_indeed
+% \protected\def\dowithnextboxcontent#1#2% inside, after
+%   {\def\syst_boxes_with_next_box_one{#2}%
+%    \def\syst_boxes_with_next_box_two{#1}%
+%    \afterassignment\syst_boxes_with_next_box_content_indeed
+%    \setbox\nextbox}
+%
+% \protected\def\dowithnextboxcontentcs#1#2% inside, after
+%   {\let\syst_boxes_with_next_box_one#2%
+%    \let\syst_boxes_with_next_box_two#1%
+%    \afterassignment\syst_boxes_with_next_box_content_indeed
+%    \setbox\nextbox}
+
+\permanent\unexpanded\def\dowithnextboxcontent#1#2% inside, after
+  {\afterassigned{#1\aftergrouped{#2}}%
    \setbox\nextbox}
 
-\protected\def\dowithnextboxcontentcs#1#2% inside, after
-  {\let\syst_boxes_with_next_box_one#2%
-   \let\syst_boxes_with_next_box_two#1%
-   \afterassignment\syst_boxes_with_next_box_content_indeed
+\permanent\unexpanded\def\dowithnextboxcontentcs#1#2% inside, after
+  {\afterassigned{#1\aftergroup#2}%
    \setbox\nextbox}
 
 \def\syst_boxes_with_next_box_content_indeed
@@ -682,27 +682,28 @@
 %D Some well known friends, but we implement them our own way. We want the macros to
 %D work in both math and text mode.
 
-\def\dodorlap{\hpack to \zeropoint{\box\nextbox\hss}\endgroup}
-\def\dodollap{\hpack to \zeropoint{\hss\box\nextbox}\endgroup}
-\def\dodoclap{\hpack to \zeropoint{\hss\box\nextbox\hss}\endgroup}
+\def\syst_boxes_do_rlap{\hpack to \zeropoint{\box\nextbox\hss}\endgroup}
+\def\syst_boxes_do_llap{\hpack to \zeropoint{\hss\box\nextbox}\endgroup}
+\def\syst_boxes_do_clap{\hpack to \zeropoint{\hss\box\nextbox\hss}\endgroup}
+\def\syst_boxes_do_tlap{\vpack to \zeropoint{\vss\box\nextbox}\endgroup}
+\def\syst_boxes_do_blap{\vpack to \zeropoint{\box\nextbox\vss}\endgroup}
 
-\def\dorlap{\begingroup\dowithnextboxcs\dodorlap\hbox}
-\def\dollap{\begingroup\dowithnextboxcs\dodollap\hbox}
-\def\doclap{\begingroup\dowithnextboxcs\dodoclap\hbox}
+\def\syst_boxes_rlap     {\begingroup\dowithnextboxcs\syst_boxes_do_rlap\hbox}
+\def\syst_boxes_llap     {\begingroup\dowithnextboxcs\syst_boxes_do_llap\hbox}
+\def\syst_boxes_clap     {\begingroup\dowithnextboxcs\syst_boxes_do_clap\hbox}
+\def\syst_boxes_math_clap{\mathpalette\syst_boxes_do_math_clap}
+\def\syst_boxes_math_llap{\mathpalette\syst_boxes_do_math_llap}
+\def\syst_boxes_math_rlap{\mathpalette\syst_boxes_do_math_rlap}
 
-\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
-\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
-\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+\def\syst_boxes_do_math_clap#1#2{\syst_boxes_clap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+\def\syst_boxes_do_math_llap#1#2{\syst_boxes_llap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+\def\syst_boxes_do_math_rlap#1#2{\syst_boxes_rlap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
 
-\protected\def\rlap{\mathortext\domathrlap\dorlap}
-\protected\def\llap{\mathortext\domathllap\dollap}
-\protected\def\clap{\mathortext\domathclap\doclap}
-
-\def\dodotlap{\vpack to \zeropoint{\vss\box\nextbox}\endgroup}
-\def\dodoblap{\vpack to \zeropoint{\box\nextbox\vss}\endgroup}
-
-\protected\def\tlap{\begingroup\dowithnextboxcs\dodotlap\vbox}
-\protected\def\blap{\begingroup\dowithnextboxcs\dodoblap\vbox}
+\permanent\protected\def\rlap{\mathortext\syst_boxes_math_rlap\syst_boxes_rlap}
+\permanent\protected\def\llap{\mathortext\syst_boxes_math_llap\syst_boxes_llap}
+\permanent\protected\def\clap{\mathortext\syst_boxes_math_clap\syst_boxes_clap}
+\permanent\protected\def\tlap{\begingroup\dowithnextboxcs\syst_boxes_do_tlap\vbox}
+\permanent\protected\def\blap{\begingroup\dowithnextboxcs\syst_boxes_do_blap\vbox}
 
 %D \macros
 %D   {beginofshapebox,
@@ -816,6 +817,10 @@
 %D bad spacing. This means that for instance linenumbers etc. should be given zero
 %D height and depth before being lapped into the margin. The previous examples
 %D ignore this side effect, but beware!
+%D
+%D This is ancient stuff and proably not used any more but we keep it around or
+%D maybe turn it into a module some day. It shows the kind of struggling that we
+%D needed before \LUATEX\ came around.
 
 \newif    \ifsomeshapeleft
 \newif    \ifreshapingbox
@@ -836,7 +841,7 @@
 
 \def\shapesignal{.12345678pt} % or 12345sp
 
-\protected\def\reshapebox#1%
+\permanent\protected\def\reshapebox#1%
   {\doreshapebox
      {#1}%
      {\penalty\shapepenalty}%
@@ -860,14 +865,14 @@
 
 % We will turn this into a \MKIV\ variant (we can use \type {\vpack} too).
 
-\protected\def\insertshapesignal
+\permanent\protected\def\insertshapesignal
   {\hpack to \shapesignal{\strut\hss}% plus \strut
    \prevdepth\strutdp} % never \nointerlineskip
 
-\protected\def\restoreshapebox % compensates for the signal
+\permanent\protected\def\restoreshapebox % compensates for the signal
   {\global\setbox\tmpshapebox\vbox{\vskip-\lineheight\unvcopy\oldshapebox}}
 
-\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+\permanent\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\ifnum\lastnodetype=\gluenodecode
      \shapeskip\lastskip
      \global\setbox\tmpshapebox\vbox{#4\unvbox\tmpshapebox}%
@@ -901,21 +906,21 @@
      \advance\shapecounter \plusone
    \fi}
 
-\protected\def\beginofshapebox
+\permanent\protected\def\beginofshapebox
   {\setbox\oldshapebox\vbox
      \bgroup
      \reshapingboxtrue
      \the\everyshapebox
      \insertshapesignal}
 
-\protected\def\endofshapebox
+\permanent\protected\def\endofshapebox
   {\endgraf
    \egroup}
 
 \let\beginshapebox\beginofshapebox
 \let\endshapebox  \endofshapebox
 
-\protected\def\flushshapebox
+\permanent\protected\def\flushshapebox
   {\bgroup
    \ifzeropt\ht\newshapebox
    \else
@@ -966,7 +971,7 @@
 %
 % \omlijnd[offset=0pt,hoogte=8mm,uitlijnen={rechts,laho}]{\bfa test}
 
-\protected\def\innerflushshapebox
+\permanent\protected\def\innerflushshapebox
   {\ifzeropt\ht\newshapebox \else
      \unvcopy\newshapebox\relax % unvcopy ! else spacing problem
    % \kern-\dp\newshapebox\relax
@@ -989,7 +994,7 @@
 %D use \type {\shapedhbox} instead of \type {\hbox}, since it manages the height and
 %D depth of the line.
 
-\protected\def\shapedhbox        % lines with non strutted dimensions have
+\permanent\protected\def\shapedhbox        % lines with non strutted dimensions have
   {\expanded{\dowithnextbox       % interlineskip so if we want the original
      {\ht\nextbox\the\ht\shapebox % spacing, we need to preserve the original
       \dp\nextbox\the\dp\shapebox % height and depth which is definitely
@@ -1009,10 +1014,10 @@
 %D \showhyphens{dohyphenatedword}
 %D \stoptyping
 
-\protected\def\doshowhyphenatednextbox
+\permanent\protected\def\doshowhyphenatednextbox
   {\clf_showhyphenatedinlist\nextbox}
 
-\protected\def\showhyphens % hpack: so no processing (we hyphenate in lua)
+\permanent\protected\def\showhyphens % hpack: so no processing (we hyphenate in lua)
   {\dowithnextboxcs\doshowhyphenatednextbox\hpack}
 
 %D The following macros are seldom used but handy for tracing.
@@ -1023,19 +1028,13 @@
 %D \hyphenatedfile{tufte}
 %D \stoptyping
 
-\protected\def\dohyphenatednextbox
-  {\clf_hyphenatedlist\nextbox false\relax
-   \unhbox\nextbox}
+\def\syst_boxes_hyphenatednextbox     {\clf_hyphenatedlist\nextbox false\relax\unhbox\nextbox}
+\def\syst_boxes_hyphenatednextboxcolor{\clf_hyphenatedlist\nextbox true \relax\unhbox\nextbox}
 
-\protected\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox\hbox}
-\protected\def\hyphenatedpar   {\dowithnextboxcs\dohyphenatednextbox\hbox}
-\protected\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
-
-\protected\def\dohyphenatednextboxcolor
-  {\clf_hyphenatedlist\nextbox true\relax
-   \unhbox\nextbox}
-
-\protected\def\hyphenatedcoloredword{\dowithnextboxcs\dohyphenatednextboxcolor\hbox}
+\permanent\protected\def\hyphenatedword       {\dowithnextboxcs\syst_boxes_hyphenatednextbox\hbox}
+\permanent\protected\def\hyphenatedpar        {\dowithnextboxcs\syst_boxes_hyphenatednextbox\hbox}
+\permanent\protected\def\hyphenatedfile     #1{\dowithnextboxcs\syst_boxes_hyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
+\permanent\protected\def\hyphenatedcoloredword{\dowithnextboxcs\syst_boxes_hyphenatednextboxcolor\hbox}
 
 %D \macros
 %D   {processtokens}
@@ -1064,34 +1063,36 @@
 %D The list of tokens may contain spaces, while \type {\\}, \type {{}} and \type {\
 %D } are handled as space too.
 
-\protected\def\processtokens#1#2#3#4#5%
+%D This can be done in a more modern way but for nostalgic reasons we keep it.
+
+\permanent\protected\def\processtokens#1#2#3#4#5%
   {\begingroup
    \def\lastcharacter{\lastcharacter}% hm, recursive ?
-   \def\space{ }%
-   \let\\=\space
+   \enforced\permanent\def\space{ }%
+   \enforced\let\\\space
    \def\before {#1}%
    \def\between{#2}%
    \def\after  {#3}%
    \def\white  {#4}%
    \let\savedbefore\before
-   \doprocesstokens#5\lastcharacter
+   \syst_boxes_processtokens#5\lastcharacter
    \endgroup}
 
-\def\doprocesstokens% the space after = is essential
-  {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
+\def\syst_boxes_processtokens% the space after = is essential
+  {\afterassignment\syst_boxes_do_processtokens\let\nextprocessedtoken= }
 
-\def\redoprocessedtoken
+\def\syst_boxes_redo_processedtoken
   {\dowithnextbox
      {\before{\copy\nextbox}% \before can use nextbox several times
       \let\before\between
-      \doprocesstokens}
+      \syst_boxes_processtokens}
       \hbox\bgroup}
 
-\def\dodoprocesstokens
+\def\syst_boxes_do_processtokens
   {\ifx\nextprocessedtoken\lastcharacter
      \after
    \orelse\ifx\nextprocessedtoken\bgroup
-     \expandafter\redoprocessedtoken
+     \expandafter\syst_boxes_redo_processedtoken
    \else
      \expandafter\if\space\nextprocessedtoken
        \after\white
@@ -1100,7 +1101,7 @@
        \before\nextprocessedtoken
        \let\before\between
      \fi
-     \expandafter\doprocesstokens
+     \expandafter\syst_boxes_processtokens
    \fi}
 
 %D \macros
@@ -1118,20 +1119,22 @@
 %D
 %D When calculating the room needed, we take the width of the third argument into
 %D account, which leads to a bit more complex macro than needed at first sight.
+%D
+%D Sort of obsolete I guess:
 
-\def\dodoboundtext#1%
+\def\syst_boxes_boundtext#1%
   {\setbox\scratchboxone\hbox{#1}%
    \advance\scratchdimen -\wd\scratchboxone
    \ifdim\scratchdimen>\zeropoint\relax#1\fi}
 
-\def\doboundtext#1#2#3% still used?
+\permanent\protected\def\doboundtext#1#2#3% still used?
   {\hbox
      {\setbox\scratchbox\hbox{#1}%
       \scratchdimen#2\relax
       \ifdim\wd\scratchbox>\scratchdimen
         \setbox\scratchbox\hbox{#3}%
         \advance\scratchdimen -\wd\scratchbox
-        \handletokens#1\with\dodoboundtext
+        \handletokens#1\with\syst_boxes_boundtext
       \fi
       \box\scratchbox}}
 
@@ -1155,7 +1158,7 @@
 
 %D See \MKIV\ file for the older implementation.
 
-\protected\def\limitatetext#1#2#3%
+\permanent\protected\def\limitatetext#1#2#3%
   {\splitatcomma{#2}\leftlimit\rightlimit
    \limitated
       left     \leftlimit
@@ -1173,7 +1176,7 @@
 %D \limitatefirstline{\input tufte\relax}{10cm}{\unknown}
 %D \stoptyping
 
-\protected\def\limitatefirstline#1#2#3%
+\permanent\protected\def\limitatefirstline#1#2#3%
   {\hbox\bgroup\strut % \hpack
    \setbox\scratchbox\hbox{\begstrut#1\endstrut}%
    \ifdim\wd\scratchbox>#2\relax
@@ -1216,7 +1219,7 @@
 
 % todo: provide variant with #1 picked up as box
 
-\protected\def\processisolatedchars#1#2%
+\permanent\protected\def\processisolatedchars#1#2%
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\hbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
@@ -1229,7 +1232,7 @@
    \relax
    \endgroup}
 
-\protected\def\processisolatedwords#1#2%
+\permanent\protected\def\processisolatedwords#1#2%
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\hbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
@@ -1244,7 +1247,7 @@
 
 %D A variant:
 
-\protected\def\applytocharacters#1%
+\permanent\protected\def\applytocharacters#1%
   {\dontleavehmode
    \dowithnextbox{\clf_applytobox
      method  {char}%
@@ -1254,7 +1257,7 @@
    \relax}%
    \hbox}
 
-\protected\def\applytowords#1%
+\permanent\protected\def\applytowords#1%
   {\dontleavehmode
    \dowithnextbox{\clf_applytobox
      method  {word}%
@@ -1266,33 +1269,33 @@
 
 %D The old call:
 
-\protected\def\processwords#1%
+\permanent\protected\def\processwords#1%
   {\processisolatedwords{#1}\processword}
 
 \let\processword\relax
 
-\protected\def\applytosplitstringchar#1#2%
+\permanent\protected\def\applytosplitstringchar#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
      method  {char}%
    \relax}
 
-\protected\def\applytosplitstringword#1#2%
+\permanent\protected\def\applytosplitstringword#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
      method  {word}%
    \relax}
 
-\protected\def\applytosplitstringline#1#2%
+\permanent\protected\def\applytosplitstringline#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
      method  {line}%
    \relax}
 
-\protected\def\applytosplitstringcharspaced#1#2%
+\permanent\protected\def\applytosplitstringcharspaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
@@ -1300,7 +1303,7 @@
      spaced  true%
    \relax}
 
-\protected\def\applytosplitstringwordspaced#1#2%
+\permanent\protected\def\applytosplitstringwordspaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
@@ -1308,7 +1311,7 @@
      spaced  true%
    \relax}
 
-\protected\def\applytosplitstringlinespaced#1#2%
+\permanent\protected\def\applytosplitstringlinespaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
      command {\csstring#1}%
@@ -1341,11 +1344,11 @@
 %D would have ended up in the text. This macro can be useful when building
 %D complicated menus, headers and footers and|/|or margin material.
 
-\protected\def\sbox
+\permanent\protected\def\sbox
   {\vpack\bgroup
    \dowithnextboxcs\syst_boxes_sbox_finish\vbox}
 
-\protected\def\syst_boxes_sbox_finish
+\def\syst_boxes_sbox_finish
   {\boxyoffset\nextbox-\strutdp
    \dp\nextbox\strutdp
    \ht\nextbox\strutht
@@ -1358,11 +1361,11 @@
 %D xx \ruledhbox{\inlinedbox{\tfd test}} xx
 %D \stoptyping
 
-\protected\def\inlinedbox
+\permanent\protected\def\inlinedbox
   {\bgroup
    \dowithnextboxcs\syst_boxes_inlined_finish\hbox}
 
-\protected\def\syst_boxes_inlined_finish
+\def\syst_boxes_inlined_finish
   {\boxyoffset\nextbox-\dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
@@ -1374,7 +1377,7 @@
 %D
 %D This boxing macro limits the height and depth to those of a strut.
 
-\protected\def\struttedbox
+\permanent\protected\def\struttedbox
   {\hpack\bgroup
    \dowithnextboxcs\syst_boxes_struttedbox_finish\hbox}
 
@@ -1390,7 +1393,7 @@
 %D This macro compensates the difference between the topskip and strutheight. Watch
 %D how we preserve the depth when it equals strutdepth.
 
-\protected\def\topskippedbox
+\permanent\protected\def\topskippedbox
   {\hpack\bgroup\dowithnextboxcs\syst_boxes_topskippedbox_finish\hbox}
 
 \def\syst_boxes_topskippedbox_finish
@@ -1442,7 +1445,7 @@
 %D The dimensions of the surrounding box are kept intact. This commands handles
 %D positive and negative dimensions (which is why we need two boxes with rules).
 
-\protected\def\centeredbox#1#%   height +/-dimen width +/-dimen
+\permanent\protected\def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
    \dontcomplain
    \forgetall
@@ -1479,7 +1482,7 @@
 %D
 %D Do you see why we call this one \type {next}?
 
-\protected\def\centerednextbox#1#%
+\permanent\protected\def\centerednextbox#1#%
   {\bgroup
    \dowithnextbox
      {\hsize\wd\nextbox
@@ -1500,7 +1503,7 @@
 %D When omitted, the current \type {\hsize} and \type {\vsize} are used. Local
 %D dimensions are supported.
 
-\protected\def\centerbox#1#%   optional height +/-dimen width +/-dimen
+\permanent\protected\def\centerbox#1#%   optional height +/-dimen width +/-dimen
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
@@ -1530,7 +1533,7 @@
 \newif\ifstretchrigidcolumns
 \newif\iftightrigidcolumns    % if true: just a vbox, no depth/noflines/gridsnap corrrections
 
-\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
+\permanent\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
   {\xdef\savedrigidhsize{\the\hsize}%
    \hsize#1\relax
    \global\chardef\rigidcolumns#3\relax
@@ -1551,7 +1554,7 @@
 
 \let\rigidcolumnlines\!!zerocount
 
-\protected\def\rigidcolumnbalance#1%
+\permanent\protected\def\rigidcolumnbalance#1%
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
      \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax
    \else
@@ -1676,17 +1679,17 @@
 %newbox\d_syst_boxes_vboxtohbox
 \newbox\d_syst_boxes_separator
 
-\protected\def\startvboxtohboxseparator
+\permanent\protected\def\startvboxtohboxseparator
   {\setbox\d_syst_boxes_separator\hbox attr \vboxtohboxseparatorattribute\plusone\bgroup}
 
-\protected\def\stopvboxtohboxseparator
+\permanent\protected\def\stopvboxtohboxseparator
   {\egroup}
 
-\protected\def\startvboxtohbox
+\permanent\protected\def\startvboxtohbox
   {\begingroup
    \setbox\scratchbox\hbox\bgroup}
 
-\protected\def\stopvboxtohbox
+\permanent\protected\def\stopvboxtohbox
   {\ifvoid\d_syst_boxes_separator
      \hskip\zeropoint\ifcase\vboxtohboxslack\else\s!minus\vboxtohboxslack\fi % we really need a skip
    \else
@@ -1699,12 +1702,12 @@
 
 % A possible reconstruction:
 
-\protected\def\convertvboxtohbox
+\permanent\protected\def\convertvboxtohbox
   {\makehboxofhboxes
    \setbox\scratchboxone\hpack{\unhbox\scratchboxone\removehboxes}% \hpack
    \noindent\unhbox\scratchboxone\par}
 
-\protected\def\makehboxofhboxes
+\permanent\protected\def\makehboxofhboxes
   {\setbox\scratchboxone\emptyhbox
    \loop % \doloop { .. \exitloop .. }
      \setbox\scratchboxtwo\lastbox
@@ -1712,7 +1715,7 @@
        \setbox\scratchboxone\hpack{\box\scratchboxtwo\unhbox\scratchboxone}%
    \repeat}
 
-\protected\def\removehboxes
+\permanent\protected\def\removehboxes
   {\setbox\scratchboxone\lastbox
    \ifhbox\scratchboxone
      {\removehboxes}\unhbox\scratchboxone
@@ -1720,11 +1723,11 @@
 
 % And one special for notes:
 
-\protected\def\starthboxestohbox
+\permanent\protected\def\starthboxestohbox
   {\bgroup
    \setbox\scratchbox\vbox\bgroup}
 
-\protected\def\stophboxestohbox
+\permanent\protected\def\stophboxestohbox
   {\egroup
    \clf_vboxlisttohbox\scratchbox\nextbox\dimexpr\hboxestohboxslack\relax
    \dontleavehmode
@@ -1744,7 +1747,7 @@
 \newdimen \lasthhboxwidth
 \newskip  \hhboxindent
 
-\protected\def\unhhbox#1\with#2%
+\permanent\protected\def\unhhbox#1\with#2%
   {\bgroup
    \nopenalties
    \dontcomplain
@@ -1770,14 +1773,14 @@
       \fi}%
    \egroup}
 
-\def\dohboxofvbox
+\def\syst_boxes_hboxofvbox
   {\setbox0\vpack{\unvbox\scratchcounter\global\setbox1\lastbox}%
    \unhbox1
    \egroup}
 
-\protected\def\hboxofvbox
+\permanent\protected\def\hboxofvbox
   {\bgroup
-   \afterassignment\dohboxofvbox
+   \afterassignment\syst_boxes_hboxofvbox
    \scratchcounter=}
 
 %D This macro can be used to break a paragraph apart and treat each line seperately,
@@ -1818,7 +1821,7 @@
 %D dimension of this box suggest some content, the resulting box is unboxed and
 %D surrounded by the first two arguments, else the third arguments is executed.
 
-\protected\def\doifcontent#1#2#3%
+\permanent\protected\def\doifcontent#1#2#3%
   {\dowithnextbox
      {\ifhbox\nextbox
         \ifdim\wd\nextbox>\zeropoint
@@ -1861,7 +1864,7 @@
 
 \newbox\processbox % public : this is the one where \nextbox's end up in
 
-\protected\def\processboxes#1%
+\permanent\protected\def\processboxes#1%
   {\bgroup
    \def\syst_boxes_process_indeed{#1}% #1 can be redefined halfway
    \setbox\processbox\emptybox
@@ -1899,7 +1902,7 @@
 %D
 %D \leavevmode\getbuffer
 
-\def\boxisempty#1%
+\permanent\def\boxisempty#1%
   {\ifdim\wd#1=\zeropoint
      \ifdim\ht#1=\zeropoint
        \ifdim\dp#1=\zeropoint
@@ -1935,7 +1938,7 @@
       \kern-\scratchwidth
       \hpack to \scratchwidth{\hss\box\nextbox   \hss}}}
 
-\protected\def\startoverlay
+\permanent\protected\def\startoverlay
   {\bgroup
    \let\stopoverlay\egroup
    \processboxes\syst_boxes_overlay_process}
@@ -1953,7 +1956,7 @@
 %D
 %D returns an empty box with the dimensions of the box specified, here being zero.
 
-\protected\def\fakebox
+\permanent\protected\def\fakebox
   {\bgroup
    \afterassignment\syst_boxes_fakebox_finish\scratchcounter}
 
@@ -1980,15 +1983,20 @@
 %D \type {to 3cm}, but align to the left, middle and right. These box types can be
 %D used to typeset paragraphs.
 
-\def\syst_boxes_lrc_process#1{\bgroup\forgetall\let\\\endgraf#1\let\next}
+\def\syst_boxes_lrc_process#1%
+  {\bgroup
+   \forgetall
+   \enforced\let\\\endgraf
+   #1%
+   \let\nexttoken}
 
-\protected\def\lbox#1#{\vbox#1\syst_boxes_lrc_process\raggedleft  }
-\protected\def\cbox#1#{\vbox#1\syst_boxes_lrc_process\raggedcenter}
-\protected\def\rbox#1#{\vbox#1\syst_boxes_lrc_process\raggedright }
+\permanent\protected\def\lbox#1#{\vbox#1\syst_boxes_lrc_process\raggedleft  }
+\permanent\protected\def\cbox#1#{\vbox#1\syst_boxes_lrc_process\raggedcenter}
+\permanent\protected\def\rbox#1#{\vbox#1\syst_boxes_lrc_process\raggedright }
 
-\protected\def\ltop#1#{\vtop#1\syst_boxes_lrc_process\raggedleft  }
-\protected\def\ctop#1#{\vtop#1\syst_boxes_lrc_process\raggedcenter}
-\protected\def\rtop#1#{\vtop#1\syst_boxes_lrc_process\raggedright }
+\permanent\protected\def\ltop#1#{\vtop#1\syst_boxes_lrc_process\raggedleft  }
+\permanent\protected\def\ctop#1#{\vtop#1\syst_boxes_lrc_process\raggedcenter}
+\permanent\protected\def\rtop#1#{\vtop#1\syst_boxes_lrc_process\raggedright }
 
 %D The alternatives \type {\tbox} and \type {\bbox} can be used to properly align
 %D boxes, like in:
@@ -2010,8 +2018,8 @@
 %D
 %D \getbuffer
 
-\protected\def\tbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_tbox_finish\hbox}
-\protected\def\bbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_bbox_finish\hbox}
+\permanent\protected\def\tbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_tbox_finish\hbox}
+\permanent\protected\def\bbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_bbox_finish\hbox}
 
 \def\syst_boxes_tbox_finish
   {\scratchheight\ht\strutbox
@@ -2036,13 +2044,13 @@
 %D
 %D A few more boxes.
 
-\def\dodolhbox{\hpack to \hsize{\box\nextbox\hss    }}
-\def\dodomhbox{\hpack to \hsize{\hss\box\nextbox\hss}}
-\def\dodorhbox{\hpack to \hsize{\hss\box\nextbox    }}
+\def\syst_boxes_lhbox{\hpack to \hsize{\box\nextbox\hss    }}
+\def\syst_boxes_mhbox{\hpack to \hsize{\hss\box\nextbox\hss}}
+\def\syst_boxes_rhbox{\hpack to \hsize{\hss\box\nextbox    }}
 
-\protected\def\lhbox{\dowithnextboxcs\dodolhbox\hbox}
-\protected\def\mhbox{\dowithnextboxcs\dodomhbox\hbox}
-\protected\def\rhbox{\dowithnextboxcs\dodorhbox\hbox}
+\permanent\protected\def\lhbox{\dowithnextboxcs\syst_boxes_lhbox\hbox}
+\permanent\protected\def\mhbox{\dowithnextboxcs\syst_boxes_mhbox\hbox}
+\permanent\protected\def\rhbox{\dowithnextboxcs\syst_boxes_rhbox\hbox}
 
 \let\lefthbox \lhbox
 \let\midhbox  \mhbox
@@ -2063,15 +2071,15 @@
 
 \newdimen\sizeofbox
 
-\protected\def\boxofsize#1%
+\permanent\protected\def\boxofsize#1%
   {\bgroup
    \sizeofbox\zeropoint
    \scratchdimen\zeropoint
    \def\docommand
      {\advance\sizeofbox\scratchdimen
-      \futurelet\next\dodocommand}%
+      \futurelet\nexttoken\dodocommand}%
    \def\dodocommand
-     {\ifx\next\bgroup
+     {\ifx\nexttoken\bgroup
         \expanded{\egroup#1 to \the\sizeofbox}%
       \else
         \expandafter\afterassignment\expandafter\docommand\expandafter\scratchdimen
@@ -2085,7 +2093,7 @@
 % \limitvbox
 % \limithbox
 
-\protected\def\limitatelines#1#2% size sentinel
+\permanent\protected\def\limitatelines#1#2% size sentinel
   {\dowithnextbox
      {\scratchdimen#1\hsize
       \ifdim\wd\nextbox>\scratchdimen
@@ -2096,7 +2104,7 @@
       \unhbox\nextbox}
      \hbox}
 
-\protected\def\fittoptobaselinegrid % weg hier
+\permanent\protected\def\fittoptobaselinegrid % weg hier
   {\dowithnextbox
      {\bgroup
       \par
@@ -2125,7 +2133,7 @@
 \setbox\fakedboxcursor\hpack
   {\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\zeropoint}
 
-\protected\def\boxcursor % overloaded in core-vis
+\permanent\protected\def\boxcursor % overloaded in core-vis
   {\iftraceboxplacement
      \bgroup
      \scratchdimen2\onepoint
@@ -2142,21 +2150,21 @@
      \copy\fakedboxcursor
    \fi}
 
-\protected\def\placedbox
+\permanent\protected\def\placedbox
   {\iftraceboxplacement\ruledhbox\else\hbox\fi}
 
 \newdimen\boxoffset
 \newdimen\boxhdisplacement
 \newdimen\boxvdisplacement
 
-\protected\def\rightbox      {\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbox_finish      \placedbox}
-\protected\def\leftbox       {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbox_finish       \placedbox}
-\protected\def\topbox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_topbox_finish        \placedbox}
-\protected\def\bottombox     {\hpack\bgroup\dowithnextboxcs\syst_boxes_bottombox_finish     \placedbox}
-\protected\def\lefttopbox    {\hpack\bgroup\dowithnextboxcs\syst_boxes_lefttopbox_finish    \placedbox}
-\protected\def\righttopbox   {\hpack\bgroup\dowithnextboxcs\syst_boxes_righttopbox_finish   \placedbox}
-\protected\def\leftbottombox {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbottombox_finish \placedbox}
-\protected\def\rightbottombox{\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbottombox_finish\placedbox}
+\permanent\protected\def\rightbox      {\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbox_finish      \placedbox}
+\permanent\protected\def\leftbox       {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbox_finish       \placedbox}
+\permanent\protected\def\topbox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_topbox_finish        \placedbox}
+\permanent\protected\def\bottombox     {\hpack\bgroup\dowithnextboxcs\syst_boxes_bottombox_finish     \placedbox}
+\permanent\protected\def\lefttopbox    {\hpack\bgroup\dowithnextboxcs\syst_boxes_lefttopbox_finish    \placedbox}
+\permanent\protected\def\righttopbox   {\hpack\bgroup\dowithnextboxcs\syst_boxes_righttopbox_finish   \placedbox}
+\permanent\protected\def\leftbottombox {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbottombox_finish \placedbox}
+\permanent\protected\def\rightbottombox{\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbottombox_finish\placedbox}
 
 \let\topleftbox    \lefttopbox
 \let\toprightbox   \righttopbox
@@ -2235,10 +2243,10 @@
    \box\nextbox
    \egroup}
 
-\protected\def\middlebox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
-\protected\def\baselinemiddlebox{\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinemiddlebox_finish\placedbox}
-\protected\def\baselineleftbox  {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
-\protected\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
+\permanent\protected\def\middlebox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
+\permanent\protected\def\baselinemiddlebox{\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinemiddlebox_finish\placedbox}
+\permanent\protected\def\baselineleftbox  {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
+\permanent\protected\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
 
 \def\syst_boxes_middlebox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
@@ -2281,7 +2289,7 @@
 %D
 %D Experimental, not yet frozen:
 
-\protected\def\lrtbbox#1#2#3#4% l r t b
+\permanent\protected\def\lrtbbox#1#2#3#4% l r t b
   {\bgroup
    \dowithnextboxcontent
      {\advance\hsize-#1\advance\hsize-#2\relax
@@ -2294,7 +2302,7 @@
 %D
 %D See core-tbl.tex for an example of its usage:
 
-\protected\def\toplinebox
+\permanent\protected\def\toplinebox
   {\dowithnextboxcs\syst_boxes_toplinebox_finish\tbox}
 
 \def\syst_boxes_toplinebox_finish
@@ -2333,20 +2341,20 @@
 \installcorenamespace {stackbox}
 \installcorenamespace {stacklst}
 
-\protected\def\setstackbox#1#2%
+\permanent\protected\def\setstackbox#1#2%
   {\ifcsname\??stackbox#1:#2\endcsname\else
      \expandafter\newbox\csname\??stackbox#1:#2\endcsname
    \fi
    \global\setbox\csname\??stackbox#1:#2\endcsname\vbox}
 
-\protected\def\initializeboxstack#1%
+\permanent\protected\def\initializeboxstack#1%
   {\def\docommand##1{\setstackbox{#1}{##1}{}}%
    \ifcsname\??stacklst#1\endcsname
      \expandafter\processcommacommand\expandafter[\lastnamedcs]\docommand
    \fi
    \letgvalueempty{\??stacklst#1}}
 
-\protected\def\savebox#1#2% stack name
+\permanent\protected\def\savebox#1#2% stack name
   {% beware, \setxvalue defines the cs beforehand so we cannot use the
    % test inside the { }
    \ifcsname\??stacklst#1\endcsname
@@ -2357,27 +2365,27 @@
    \fi
    \setstackbox{#1}{#2}}
 
-\protected\def\flushbox#1#2% unwrapped
+\permanent\protected\def\flushbox#1#2% unwrapped
   {\ifcsname\??stackbox#1:#2\endcsname
      \box\lastnamedcs
    \else
      \emptybox
    \fi}
 
-\protected\def\restorebox#1#2% unwrapped
+\permanent\protected\def\restorebox#1#2% unwrapped
   {\ifcsname\??stackbox#1:#2\endcsname
      \copy\lastnamedcs
    \else
      \emptybox
    \fi}
 
-\protected\def\foundbox#1#2% wrapped
+\permanent\protected\def\foundbox#1#2% wrapped
   {\vpack
      {\ifcsname\??stackbox#1:#2\endcsname
         \copy\lastnamedcs
       \fi}}
 
-\protected\def\doifelsebox#1#2%
+\permanent\protected\def\doifelsebox#1#2%
   {\ifcsname\??stackbox#1:#2\endcsname
      \ifvoid\lastnamedcs
        \doubleexpandafter\secondoftwoarguments
@@ -2395,7 +2403,8 @@
 \installcorenamespace {boxstack}
 
 \newcount\c_syst_boxes_stack
-\let     \b_syst_boxes_stack\relax
+
+\mutable\let\b_syst_boxes_stack\relax
 
 \protected\def\syst_boxes_stack_allocate
   {\newbox\b_syst_boxes_stack
@@ -2413,11 +2422,11 @@
   {#1\setbox#2\box\csname\??boxstack\number\c_syst_boxes_stack\endcsname
    \global\advance\c_syst_boxes_stack\minusone}
 
-\protected\def\localpushbox {\syst_boxes_push\relax}
-\protected\def\localpopbox  {\syst_boxes_pop \relax}
+\permanent\protected\def\localpushbox {\syst_boxes_push\relax}
+\permanent\protected\def\localpopbox  {\syst_boxes_pop \relax}
 
-\protected\def\globalpushbox{\syst_boxes_push\global}
-\protected\def\globalpopbox {\syst_boxes_pop \global}
+\permanent\protected\def\globalpushbox{\syst_boxes_push\global}
+\permanent\protected\def\globalpopbox {\syst_boxes_pop \global}
 
 %D And here is a more modern one (not yet in i-*):
 %D
@@ -2435,15 +2444,15 @@
 %D \resetboxesincache{foo}
 %D \stoptyping
 
-\protected\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
-\protected\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
-\protected\def\doifelseboxincache    #1#2{\clf_doifelseboxincache    {#1}{#2}}
-\protected\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
-\protected\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
-\protected\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}
-\protected\def\resetboxesincache       #1{\clf_resetboxesincache     {#1}}
+\permanent\protected\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
+\permanent\protected\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
+\permanent\protected\def\doifelseboxincache    #1#2{\clf_doifelseboxincache    {#1}{#2}}
+\permanent\protected\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
+\permanent\protected\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
+\permanent\protected\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}
+\permanent\protected\def\resetboxesincache       #1{\clf_resetboxesincache     {#1}}
 
-\protected\def\putnextboxincache#1#2%
+\permanent\protected\def\putnextboxincache#1#2%
   {\dowithnextbox{\putboxincache{#1}{#2}\nextbox}}
 
 %D \macros
@@ -2452,21 +2461,21 @@
 %D While \type {\removedepth} removes the preceding depth, \type {\obeydepth} makes
 %D sure we have depth. Both macros leave the \type {\prevdepth} untouched.
 
-\protected\def\removedepth
+\permanent\protected\def\removedepth
   {\ifvmode
      \ifdim\prevdepth>\zeropoint
        \kern-\prevdepth
      \fi
    \fi}
 
-\protected\def\obeydepth
+\permanent\protected\def\obeydepth
   {\par % watch out for changes in math formulas
    \ifvmode\ifdim\prevdepth<\zeropoint\orelse\ifdim\prevdepth<\strutdp
      \kern\dimexpr\strutdp-\prevdepth\relax
      \prevdepth\strutdp
    \fi\fi}
 
-\protected\def\undepthed
+\permanent\protected\def\undepthed
   {\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\hbox}
 
 %D \macros
@@ -2474,10 +2483,10 @@
 %D
 %D A funny (but rather stupid) one, plus a redefinition.
 
-\protected\def\removebottomthings
+\permanent\protected\def\removebottomthings
   {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
 
-\protected\def\removelastskip % \ifvmode the plain tex one \fi
+\permanent\protected\def\removelastskip % \ifvmode the plain tex one \fi, overloaded to \permanent in spac-ver
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
 
 %D \macros
@@ -2486,7 +2495,7 @@
 %D This macro sets the dimensions of a box to those of a strut. Sort of obsolete so
 %D it will go away.
 
-\protected\def\makestrutofbox % not used
+\permanent\protected\def\makestrutofbox % not used
   {\afterassignment\syst_boxes_makestrutofbox\c_boxes_register}
 
 \def\syst_boxes_makestrutofbox
@@ -2505,8 +2514,8 @@
 %D \hsmash{\raisebox{100pt}\hbox{test}}
 %D \stoptyping
 
-\protected\def\raisebox#1{\bgroup\afterassignment\syst_boxes_raise_indeed\scratchdimen#1} % so both 10pt and {10pt} is accepted
-\protected\def\lowerbox#1{\bgroup\afterassignment\syst_boxes_lower_indeed\scratchdimen#1} % so both 10pt and {10pt} is accepted
+\permanent\protected\def\raisebox#1{\bgroup\afterassignment\syst_boxes_raise_indeed\scratchdimen#1} % so both 10pt and {10pt} is accepted
+\permanent\protected\def\lowerbox#1{\bgroup\afterassignment\syst_boxes_lower_indeed\scratchdimen#1} % so both 10pt and {10pt} is accepted
 
 \def\syst_boxes_raise_indeed{\dowithnextboxcs\syst_boxes_raise_finish}
 \def\syst_boxes_lower_indeed{\dowithnextboxcs\syst_boxes_lower_finish}
@@ -2527,7 +2536,7 @@
 
 % vcenter in text, we kunnen vcenter overloaden
 
-\protected\def\halfwaybox
+\permanent\protected\def\halfwaybox
   {\hpack\bgroup
    \dowithnextboxcs\syst_boxes_halfwaybox_finish\hbox}
 
@@ -2536,7 +2545,7 @@
    \lower.5\ht\nextbox\box\nextbox
    \egroup}
 
-\protected\def\depthonlybox
+\permanent\protected\def\depthonlybox
   {\tpack\bgroup
    \dowithnextboxcs\syst_boxes_depthonlybox_finish\vbox}
 
@@ -2547,8 +2556,8 @@
 
 %D New:
 
-\def\setdimentoatleast#1#2{\ifdim#1>\zeropoint\else#1=#2\fi}
-\def\setdimentoatmost #1#2{\ifdim#1>#2\relax  \else#1=#2\fi}
+\permanent\def\setdimentoatleast#1#2{\ifdim#1>\zeropoint\else#1=#2\fi}
+\permanent\def\setdimentoatmost #1#2{\ifdim#1>#2\relax  \else#1=#2\fi}
 
 %D And even rawer:
 
@@ -2561,7 +2570,7 @@
 %D
 %D A not so well unhboxable box can be made with:
 
-\protected\def\frozenhbox
+\permanent\protected\def\frozenhbox
   {\hpack\bgroup
    \dowithnextboxcs\syst_boxes_frozenhbox_finish\hbox}
 
@@ -2577,19 +2586,17 @@
 \installcorenamespace {box_x}
 \installcorenamespace {box_y}
 
-\protected\def\setboxllx #1#2{\expandafter\edef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\protected\def\setboxlly #1#2{\expandafter\edef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\setboxllx #1#2{\expandafter\edef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\setboxlly #1#2{\expandafter\edef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-\protected\def\gsetboxllx#1#2{\expandafter\xdef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\protected\def\gsetboxlly#1#2{\expandafter\xdef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\gsetboxllx#1#2{\expandafter\xdef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\gsetboxlly#1#2{\expandafter\xdef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-%def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\csname\??box_x\number#1\endcsname\else\zeropoint\fi}
-%def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\csname\??box_y\number#1\endcsname\else\zeropoint\fi}
-\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
-\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\permanent\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\permanent\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 
-\def\directgetboxllx#1{\csname\??box_x\number#1\endcsname} % use when sure existence
-\def\directgetboxlly#1{\csname\??box_y\number#1\endcsname} % use when sure existence
+\permanent\def\directgetboxllx#1{\csname\??box_x\number#1\endcsname} % use when sure existence
+\permanent\def\directgetboxlly#1{\csname\??box_y\number#1\endcsname} % use when sure existence
 
 %D \macros
 %D   {shownextbox}
@@ -2604,7 +2611,7 @@
 %D \shownextbox\vbox{\setupwhitespace[big]test\endgraf\thinrule}
 %D \stoptyping
 
-\protected\def\shownextbox % seldom used
+\permanent\protected\def\shownextbox % seldom used
   {\dowithnextbox
      {\bgroup
       \showboxbreadth\maxdimen
@@ -2616,7 +2623,7 @@
       \interactionmode\scratchcounter
       \egroup}}
 
-\protected\def\spreadhbox#1% rebuilds \hbox{<box><hss><box><hss><box>}
+\permanent\protected\def\spreadhbox#1% rebuilds \hbox{<box><hss><box><hss><box>}
   {\bgroup
    \ifhbox#1\relax
      \setbox\scratchboxtwo\emptybox
@@ -2648,7 +2655,7 @@
 %D \minimalhbox 100pt {test}
 %D \stoptyping
 
-\protected\def\minimalhbox#1#%
+\permanent\protected\def\minimalhbox#1#%
   {\dowithnextbox
      {\bgroup
       \setbox\scratchbox\hpack#1{\hss}%
@@ -2659,7 +2666,7 @@
 
 %D A bit dirty:
 
-\protected\def\nodestostring#1#2% more tolerant for #2=\cs
+\permanent\protected\def\nodestostring#1#2% more tolerant for #2=\cs
   {\begingroup
    \setbox\nextbox\hbox{#2}%
    \normalexpanded{\endgroup\edef\noexpand#1{\clf_boxtostring\nextbox}}}
@@ -2690,7 +2697,7 @@
 \let\getnaturalwd\clf_getnaturalwd % no intermediate
 \let\setnaturalwd\clf_setnaturalwd % no intermediate
 
-\protected\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
+\permanent\protected\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
 
 \let\doifrighttoleftinboxelse\doifelserighttoleftinbox
 
@@ -2698,24 +2705,23 @@
 
 \definesystemattribute [runningtext] [public]
 
-%unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
-\protected\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
+\permanent\protected\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
 
 %D To complement lua (yet undocumented):
 
-\protected\def\beginhbox{\hbox\bgroup}  \let\endhbox\egroup
-\protected\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
-\protected\def\beginvtop{\vtop\bgroup}  \let\endvtop\egroup
+\permanent\protected\def\beginhbox{\hbox\bgroup}  \let\endhbox\egroup
+\permanent\protected\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
+\permanent\protected\def\beginvtop{\vtop\bgroup}  \let\endvtop\egroup
 
-\protected\def\sethboxregister#1{\setbox#1\hbox}
-\protected\def\setvboxregister#1{\setbox#1\vbox}
-\protected\def\setvtopregister#1{\setbox#1\vtop}
+\permanent\protected\def\sethboxregister#1{\setbox#1\hbox}
+\permanent\protected\def\setvboxregister#1{\setbox#1\vbox}
+\permanent\protected\def\setvtopregister#1{\setbox#1\vtop}
 
-\protected\def\flushboxregister#1{\box\numexpr#1\relax}
+\permanent\protected\def\flushboxregister#1{\box\numexpr#1\relax}
 
-\protected\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
-\protected\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \let\stopvboxregister\egroup
-\protected\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \let\stopvtopregister\egroup
+\permanent\protected\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
+\permanent\protected\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \let\stopvboxregister\egroup
+\permanent\protected\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \let\stopvtopregister\egroup
 
 %D For whatever third party package needs it:
 %D
@@ -2731,7 +2737,7 @@
 
 \installcorenamespace{localbox}
 
-\protected\def\newlocalbox#1%
+\permanent\protected\def\newlocalbox#1%
   {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
    \ifx#1\relax
      \syst_aux_new_localbox#1%
@@ -2743,7 +2749,7 @@
 
 %D Who knows when this comes in handy:
 
-\protected\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax}
+\permanent\protected\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax}
 
 %D Keep as reference:
 
@@ -2753,11 +2759,11 @@
 %D This one keeps dimensions and sets the shift field (and so it's more for testing
 %D than for real usage):
 
-\protected\def\shiftbox  {\clf_shiftbox}
-\protected\def\vpackbox  {\clf_vpackbox}
-\protected\def\hpackbox  {\clf_hpackbox}
-\protected\def\vpackedbox{\clf_vpackedbox}
-\protected\def\hpackedbox{\clf_hpackedbox}
+\permanent\protected\def\shiftbox  {\clf_shiftbox}
+\permanent\protected\def\vpackbox  {\clf_vpackbox}
+\permanent\protected\def\hpackbox  {\clf_hpackbox}
+\permanent\protected\def\vpackedbox{\clf_vpackedbox}
+\permanent\protected\def\hpackedbox{\clf_hpackedbox}
 
 %D This one has been moved from a 2 decade old file. It makes something boxed
 %D sit on the baseline.
@@ -2772,7 +2778,6 @@
       \egroup}
      \hbox}
 
-
 %D \macros
 %D   {widthuptohere}
 %D
@@ -2784,9 +2789,9 @@
 %D \stopbuffer
 %D
 %D \typebuffer \blank \getbuffer \blank
-
+%D
 %D Implemented elsewhere:
-
+%D
 %D \starttyping
 %D \boxlines    <box>
 %D \boxline     <box> <line>
@@ -2817,6 +2822,25 @@
 %    \fi}
 %
 % \protected\def\namedbox#1{\csname\??namedboxes#1\endcsname}
+
+%D Implemented elsewhere:
+%D
+%D \startbuffer
+%D \setbox0\hbox{test \footnote{test}} (\prelistbox0) (\postlistbox0)
+%D \setprelistbox0\hbox{BEFORE} \setpostlistbox0\hbox{AFTER}
+%D \box0
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
+%D \starttyping
+%D \prelistbox     <box>
+%D \postlistbox    <box>
+%D \prelistcopy    <box>
+%D \postlistcopy   <box>
+%D \setprelistbox  <box> <hbox|vbox|vtop|somebox>
+%D \setpostlistbox <box> <hbox|vbox|vtop|somebox>
+%D \stoptyping
 
 \protect \endinput
 

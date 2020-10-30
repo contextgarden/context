@@ -289,7 +289,7 @@
 \unexpanded\def\StartTitlePage
   {\startstandardmakeup
      \switchtobodyfont[big]
-     \def\\{\vfill\bfb\let\\=\par}
+     \enforced\protected\def\\{\vfill\bfb\enforced\let\\\par}%
      \bfd\setupinterlinespace\gray
      \vskip.5cm\relax}
 

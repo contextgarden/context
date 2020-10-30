@@ -28,43 +28,60 @@ happened in a series of documents, parts of which were published as articles in
 user group journals, but all are in the \CONTEXT\ distribution. I did the same
 with the development of \LUAMETATEX.
 
-The \LUAMETATEX\ engine is, as said, a lightweight version of \LUATEX, that for
-now targets \CONTEXT. We will use it for possibly drastic experiments but without
-affecting \LUATEX. As we can easily adapt \CONTEXT\ to support both, no other
-macro package will be harmed when (for instance) interfaces change as part of an
-experiment. Of course, when we consider something to be useful, it can be ported
-back to \LUATEX, but only when there are good reasons for doing so and when no
-compatibility issues are involved. When considering this follow up one
-consideration was that a lean and mean version with an extension mechanism is a
-bit closer to original \TEX. Of course, because we also have new primitives, this
-is not entirely true. The move to \LUA\ already meant that some aspects,
-especially system dependent ones, no longer made sense and therefore had
-consequences for the interface at the system level.
+The \LUAMETATEX\ engine is, as said, a follow up on \LUATEX. Just as we have
+\CONTEXT\ \MKII\ for \PDFTEX\ and \XETEX, we have \MKIV\ for \LUATEX. For
+\LUAMETATEX\ we have yet another version of \CONTEXT: \LMTX. By freezing \MKII,
+and at soem point freezing \MKIV, we can move on as we like, but we try to remain
+downward compatible where possible, something that the user interface makes
+possible. Although \LUAMETATEX\ can be used for production we can also use it for
+possibly drastic experiments but without affecting \LUATEX. Because we can easily
+adapt \CONTEXT\ to support both, no other macro package will be harmed when (for
+instance) the interface that the engine provides change as part of an experiment
+or cleanup of code. Of course, when we consider something to be useful, it can be
+ported back to \LUATEX, but only when there are good reasons for doing so and
+when no compatibility issues are involved.
 
-This manual currently has quite a bit of overlap with the \LUATEX\ manual but
-some chapters are removed, others added and the rest has been (and will be
-further) adapted. It also discusses the (main) differences. Some of the new
-primitives or functions that show up in \LUAMETATEX\ might show up in \LUATEX\ at
-some point, others might not, so don't take this manual as reference for \LUATEX
-! For now it is an experimental engine in which we can change things at will but
-with \CONTEXT\ in tandem so that this macro package will keep working. Often you
-can find examples of usage in \CONTEXT\ related documents and the source code.
+By now the code of these two related engines differs a lot so in retrospect it
+makes less sense to waste time on backporting anyway. When considering this
+follow up one consideration was that a lean and mean version with an extension
+mechanism is a bit closer to original \TEX. Of course, because we also have new
+primitives, this is not entirely true. The basic algorithms remain the same but
+code got reshuffled and because we expose internals names of variables and such
+are sometimes changed, something that is noticeable in the token and node
+interfaces. Delegating tasks to \LUA\ already meant that some aspects, especially
+system dependent ones, no longer made sense and therefore had consequences for
+the interface at the system level. In \LUAMETATEX\ more got delegated, like all
+file related operations. The penalty of moving more responsibility to \LUA\ has
+been compensated by (hopefully) harmless optimization of code in the engine and
+some more core functionality.
 
-For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. The
-\CONTEXT\ variant for this engine is tagged \LMTX. The pair can be used in
-production, just as with \LUATEX\ and \MKIV. In fact, most users will probably
-not really notice the difference. In some cases there will be a drop in
+This manual started as an adaptation of the \LUATEX\ manual and therefore looks
+similar. Some chapters are removed, others were added and the rest has been (and
+will be further) adapted. It also discusses the (main) differences. Some of the
+new primitives or functions that show up in \LUAMETATEX\ might show up in
+\LUATEX\ at some point, but most will be exclusive to \LUAMETATEX, so don't take
+this manual as reference for \LUATEX ! As long as we're experimenting we can
+change things at will but as we keep \CONTEXT\ \LMTX\ synchronized users normally
+won't notice this. Often you can find examples of usage in \CONTEXT\ related
+documents and the source code so that serves a reference too.
+
+For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. As
+mentioned, the \CONTEXT\ variant for this engine is tagged \LMTX. The pair can be
+used in production, just as with \LUATEX\ and \MKIV. In fact, most users will
+probably not really notice the difference. In some cases there will be a drop in
 performance, due to more work being delegated to \LUA, but on the average
 performance will be better, also due to some changes below the hood of the
-engine. Memory consumption is also less.
+engine. Memory consumption is also less. The timeline of development is roughly:
+from 2018 upto 2020 engine development, 2019 upto 2021 the stepwise code split
+between \MKIV\ and \LMTX, while in 2020 we will (mostly) freeze \MKIV\ and \LMTX\
+will be the default.
 
 As this follow up is closely related to \CONTEXT\ development, and because we
 expect stock \LUATEX\ to be used outside the \CONTEXT\ proper, there will be no
 special mailing list nor coverage (or pollution) on the \LUATEX\ related mailing
 lists. We have the \CONTEXT\ mailing lists for that. In due time the source code
-will be part of the regular \CONTEXT\ distribution.
-
-% \testpage[8]
+will be part of the regular \CONTEXT\ distribution so that is then also the
+reference implementation: if needed users can compile the binary themselves.
 
 This manual sometimes refers to \LUATEX, especially when we talk of features
 common to both engine, as well as to \LUAMETATEX, when it is more specific to the
@@ -113,15 +130,17 @@ progress all around.
 
 {\bf remark:} When there are non|-|intrusive features that also make sense in
 \LUATEX, these will be applied in the experimental branch first, so that there is
-no interference with the stable release.
+no interference with the stable release. However, given that in the meantime the
+code bases differs a lot, it is unlikely that much will trickle back. This is no
+real problem as there's not much demand for that anyway.
 
 {\bf remark:} Most \CONTEXT\ users seem always willing to keep up with the latest
 versions which means that \LMTX\ is tested well. We can therefore safely claim
 that end of 2019 the code has become quite stable. There are no complaints about
-performance (on my laptop this manual compiles at 22.5 pps with \LMTX\ versus
-20.7 pps for the \LUATEX\ manual with \MKIV). Probably no one notices it, but
-memory consumption stepwise got reduced too. And \unknown\ the binary is still
-below 3~MegaBytes on all platforms.
+performance (on my 2013 laptop this manual compiles at 24.5 pps with \LMTX\
+versus 20.7 pps for the \LUATEX\ manual with \MKIV). Probably no one notices it,
+but memory consumption stepwise got reduced too. And \unknown\ the binary is
+still below 3~MegaBytes on all platforms.
 
 \stopchapter
 

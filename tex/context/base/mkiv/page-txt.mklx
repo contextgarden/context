@@ -77,11 +77,8 @@
 \definelayoutelement[\v!footer:\v!edge]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
 \definelayoutelement[\v!bottom:\v!edge]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
 
-\unexpanded\def\setuplayouttext
-  {\dotripleempty\page_layouts_setup_text}
-
-\def\page_layouts_setup_text[#vertical][#horizontal][#settings]%
-  {\ifthirdargument
+\permanent\tolerant\protected\def\setuplayouttext[#vertical]#spacer[#horizontal]#spacer[#settings]%
+  {\ifnum\lastarguments>\plustwo
      \setuplayoutelement[#vertical:#horizontal][#settings]%
    \else
      \setuplayoutelement[#vertical][#horizontal]%
@@ -116,11 +113,11 @@
    \ifx\previoustextstate\v!none \calculatevsizes\page_backgrounds_recalculate \fi
    \letgvalue{\??layouttextssynchronize#vertical}\currenttextstate}
 
-\unexpanded\def\setuptop   {\dotripleempty\page_layouts_setup_text[\v!top   ]}
-\unexpanded\def\setupheader{\dotripleempty\page_layouts_setup_text[\v!header]}
-\unexpanded\def\setuptext  {\dotripleempty\page_layouts_setup_text[\v!text  ]}
-\unexpanded\def\setupfooter{\dotripleempty\page_layouts_setup_text[\v!footer]}
-\unexpanded\def\setupbottom{\dotripleempty\page_layouts_setup_text[\v!bottom]}
+\permanent\protected\def\setuptop   {\setuplayouttext[\v!top   ]}
+\permanent\protected\def\setupheader{\setuplayouttext[\v!header]}
+\permanent\protected\def\setuptext  {\setuplayouttext[\v!text  ]}
+\permanent\protected\def\setupfooter{\setuplayouttext[\v!footer]}
+\permanent\protected\def\setupbottom{\setuplayouttext[\v!bottom]}
 
 %D We inherit some settings:
 
@@ -143,11 +140,11 @@
 %D \showsetup{noheaderandfooterlines}
 %D \showsetup{notopandbottomlines}
 
-\unexpanded\def\noheaderandfooterlines
+\permanent\protected\def\noheaderandfooterlines
   {\setuplayoutelement[\v!header][\c!state=\v!empty]%
    \setuplayoutelement[\v!footer][\c!state=\v!empty]}
 
-\unexpanded\def\notopandbottomlines
+\permanent\protected\def\notopandbottomlines
   {\setuplayoutelement[\v!top   ][\c!state=\v!empty]%
    \setuplayoutelement[\v!bottom][\c!state=\v!empty]}
 
@@ -169,59 +166,50 @@
 %D someone uses the key|/|value interface these things have to be set explicitly as
 %D part of the text.
 
-\unexpanded\def\setuptoptexts   {\dosixtupleempty\page_layouts_setup_texts[\v!top   ]}
-\unexpanded\def\setupheadertexts{\dosixtupleempty\page_layouts_setup_texts[\v!header]}
-\unexpanded\def\setuptexttexts  {\dosixtupleempty\page_layouts_setup_texts[\v!text  ]}
-\unexpanded\def\setupfootertexts{\dosixtupleempty\page_layouts_setup_texts[\v!footer]}
-\unexpanded\def\setupbottomtexts{\dosixtupleempty\page_layouts_setup_texts[\v!bottom]}
+\permanent\protected\def\setuptoptexts   {\setuptexts[\v!top   ]}
+\permanent\protected\def\setupheadertexts{\setuptexts[\v!header]}
+\permanent\protected\def\setuptexttexts  {\setuptexts[\v!text  ]}
+\permanent\protected\def\setupfootertexts{\setuptexts[\v!footer]}
+\permanent\protected\def\setupbottomtexts{\setuptexts[\v!bottom]}
 
-\unexpanded\def\page_layouts_setup_text_six[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#a}{#d}}%
-   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#b}{#c}}}
-
-\unexpanded\def\page_layouts_setup_text_five[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:\v!text}%
-   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#horizontal}{#c}}%
-   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#a}{#b}}}
-
-\unexpanded\def\page_layouts_setup_text_four[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#a}}%
-   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#b}}}
-
-\unexpanded\def\page_layouts_setup_text_three[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:\v!text}%
-   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#horizontal}}%
-   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#a}}}
-
-\unexpanded\def\page_layouts_setup_text_two[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:\v!text}%
-   \resetlayoutelementparameter\c!lefttext
-   \resetlayoutelementparameter\c!righttext
-   \setlayoutelementparameter  \c!middletext{\page_layouts_process_element_single{#horizontal}}}
-
-\unexpanded\def\page_layouts_setup_text_one[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\edef\currentlayoutelement{#vertical:\v!text}%
-   \resetlayoutelementparameter\c!lefttext
-   \resetlayoutelementparameter\c!righttext
-   \resetlayoutelementparameter\c!middletext
-   \edef\currentlayoutelement{#vertical:\v!margin}%
-   \resetlayoutelementparameter\c!lefttext
-   \resetlayoutelementparameter\c!righttext
-   \resetlayoutelementparameter\c!middletext
-   \edef\currentlayoutelement{#vertical:\v!edge}%
-   \resetlayoutelementparameter\c!lefttext
-   \resetlayoutelementparameter\c!righttext
-   \resetlayoutelementparameter\c!middletext}
-
-\unexpanded\def\page_layouts_setup_texts
-  {\ifsixthargument \expandafter\page_layouts_setup_text_six  \orelse
-   \iffifthargument \expandafter\page_layouts_setup_text_five \orelse
-   \iffourthargument\expandafter\page_layouts_setup_text_four \orelse
-   \ifthirdargument \expandafter\page_layouts_setup_text_three\orelse
-   \ifsecondargument\expandafter\page_layouts_setup_text_two  \else
-                    \expandafter\page_layouts_setup_text_one  \fi}
+\permanent\tolerant\protected\def\setuptexts[#vertical]#spacer[#horizontal]#spacer[#a]#spacer[#b]#spacer[#c]#spacer[#d]%
+  {\ifarguments
+     % there is always one
+   \or
+     \edef\currentlayoutelement{#vertical:\v!text}%
+     \resetlayoutelementparameter\c!lefttext
+     \resetlayoutelementparameter\c!righttext
+     \resetlayoutelementparameter\c!middletext
+     \edef\currentlayoutelement{#vertical:\v!margin}%
+     \resetlayoutelementparameter\c!lefttext
+     \resetlayoutelementparameter\c!righttext
+     \resetlayoutelementparameter\c!middletext
+     \edef\currentlayoutelement{#vertical:\v!edge}%
+     \resetlayoutelementparameter\c!lefttext
+     \resetlayoutelementparameter\c!righttext
+     \resetlayoutelementparameter\c!middletext
+   \or
+     \edef\currentlayoutelement{#vertical:\v!text}%
+     \resetlayoutelementparameter\c!lefttext
+     \resetlayoutelementparameter\c!righttext
+     \setlayoutelementparameter  \c!middletext{\page_layouts_process_element_single{#horizontal}}%
+   \or
+     \edef\currentlayoutelement{#vertical:\v!text}%
+     \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#horizontal}}%
+     \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#a}}%
+   \or
+     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#a}}%
+     \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#b}}%
+   \or
+     \edef\currentlayoutelement{#vertical:\v!text}%
+     \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#horizontal}{#c}}%
+     \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#a}{#b}}%
+   \or
+     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#a}{#d}}%
+     \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#b}{#c}}%
+   \fi}
 
 %D Left and right texts are swapped on odd and even pages, but only when double
 %D sided typesetting is enabled.
@@ -230,7 +218,7 @@
 
 \let\m_page_layouts_element_content\empty
 
-\unexpanded\def\page_layouts_process_element_single#content%
+\protected\def\page_layouts_process_element_single#content%
   {\edef\m_page_layouts_element_content{\detokenize{#content}}% so no \v!xxx
    \ifcsname\??layouttextspecial\m_page_layouts_element_content\endcsname
      \lastnamedcs
@@ -240,12 +228,12 @@
        {#content}%
    \fi}
 
-\unexpanded\def\page_layouts_process_element_double#first#second%
+\protected\def\page_layouts_process_element_double#first#second%
   {\doifelseoddpage
      {\page_layouts_process_element_single{#first}}
      {\page_layouts_process_element_single{#second}}}
 
-\unexpanded\def\page_layouts_process_element_indeed#style#color#width%
+\protected\def\page_layouts_process_element_indeed#style#color#width%
   {\begingroup
    \uselayoutelementstyleandcolor#style#color%
    \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
@@ -257,7 +245,6 @@
    \endgroup}
 
 \def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
-% {\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}
   {\limitated
       left     \currentlayoutelementwidth
       text     {#content}
@@ -294,7 +281,7 @@
    \doifinset\v!footer\floatspecification{\setxvalue{\namedlayoutelementhash\v!footer\c!n}{1}}%
 \to \everybeforeflushedpagefloat
 
-\unexpanded\def\page_layouts_place_text_line#vertical%
+\protected\def\page_layouts_place_text_line#vertical%
   {\page_layouts_set_element_status#vertical\relax
    \ifcsname\??layouttextsline\textlinestatus\endcsname
      \expandafter\lastnamedcs
@@ -302,7 +289,7 @@
      \expandafter\page_layouts_place_text_line_unknown
    \fi#vertical}
 
-\unexpanded\def\doifelselayouttextline#vertical% shown or not
+\permanent\protected\def\doifelselayouttextline#vertical% shown or not
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!normal
       \expandafter\firstoftwoarguments
@@ -312,7 +299,7 @@
       \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifelselayoutsomeline#vertical% present or not
+\permanent\protected\def\doifelselayoutsomeline#vertical% present or not
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!none
      \expandafter\secondoftwoarguments
@@ -377,7 +364,7 @@
 
 %D The following macro has to be called after a page is flushed.
 
-\unexpanded\def\resetlayouttextlines % public
+\permanent\protected\def\resetlayouttextlines % public
   {\begincsname\??layouttextsreset\v!top   \endcsname
    \begincsname\??layouttextsreset\v!header\endcsname
    \begincsname\??layouttextsreset\v!text  \endcsname
@@ -389,39 +376,36 @@
      \global\setfalse\resyncaftertextline
    \fi}
 
-\def\getspecificlayouttext#vertical#horizontal#what%
+\permanent\def\getspecificlayouttext#vertical#horizontal#what%
   {\begincsname\namedlayoutelementhash{#vertical:#horizontal}#what\endcsname}
 
 % \settext[header][text][middle][xxx][yyy]
 
-\unexpanded\def\settextcontent
-  {\doquintupleempty\page_layouts_set_text_content}
-
-\def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
-  {\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
-       {\page_layouts_process_element_double{#two}{#three}}%
-   \orelse\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
-       {\page_layouts_process_element_double{#two}{#two}}%
-   \orelse\ifthirdargument
+\permanent\tolerant\protected\def\settextcontent[#vertical]#spacer[#horizontal]#spacer[#one]#spacer[#two]#spacer[#three]% header text middle text/text
+  {\ifarguments\or\or\or % 3
      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\c!middletext}%
        {\page_layouts_process_element_double{#one}{#one}}%
+   \or % 4
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#two}}%
+   \or % 5
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#three}}%
    \fi}
 
 \let\currentlayoutelement\relax
 
-\unexpanded\def\resettextcontent
-  {\dotripleempty\page_layouts_reset_text_content}
+%D This will be redefined, so no \type {\frozen} here!
 
-\def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
-  {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \ifthirdargument
-     \letvalueempty{\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext}%
-   \orelse\ifsecondargument
+\permanent\tolerant\protected\def\resettextcontent[#vertical]#spacer[#horizontal]#spacer[#tag]% header text middle
+  {\ifarguments\or\or % 2
+     \edef\currentlayoutelement{#vertical:#horizontal}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
+   \or % 3
+     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \letvalueempty{\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext}%
    \fi}
 
 \letvalue{\??layouttextcontent\v!text:\c!middle}\c!middletext
@@ -718,20 +702,17 @@
 %D \chapter{tweede} \dorecurse{20}{\input tufte \relax}
 %D \stoptyping
 
-\unexpanded\def\definetext
-  {\doseventupleempty\page_layouts_define_text}
-
-\def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
-  {\ifseventhargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  [#vertical][#horizontal][#a][#b][#c][#d]}%
-   \orelse\ifsixthargument
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five [#vertical][#horizontal][#a][#b][#c][]}%
-   \orelse\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four [#vertical][#horizontal][#a][#b][][]}%
-   \orelse\iffourthargument
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three[#vertical][#horizontal][#a][][][]}%
-   \else
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  [#vertical][#horizontal][][][][]}%
+\permanent\tolerant\protected\def\definetext[#tag]#spacer[#vertical]#spacer[#horizontal]#spacer[#a]#spacer[#b]#spacer[#c]#spacer[#d]%
+  {\ifnum\lastarguments<\plusfour
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\setuptexts[#vertical][#horizontal]\relax}% 1, 2, 3
+   \orelse\ifarguments\or\or\or\or
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\setuptexts[#vertical][#horizontal][#a]\relax}% 4
+   \or
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\setuptexts[#vertical][#horizontal][#a][#b]\relax}% 5
+   \or
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\setuptexts[#vertical][#horizontal][#a][#b][#c]\relax}% 6
+   \or
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\setuptexts[#vertical][#horizontal][#a][#b][#c][#d]\relax}% 7
    \fi}
 
 %D A few more page breakers:
@@ -769,7 +750,7 @@
 \let\m_page_layouts_page_number_location_h\relax
 \let\m_page_layouts_page_number_location_x\relax
 
-\def\page_layouts_place_page_number   % also elsewhere .. beware, not \unexpanded else
+\def\page_layouts_place_page_number   % also elsewhere .. beware, not \protected else
   {\strc_pagenumbers_place_location}  % test below fails
 
 \def\page_layouts_reset_page_number_location
@@ -817,7 +798,7 @@
       \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
                      \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
 
-\unexpanded\def\strc_pagenumbers_set_location
+\protected\def\strc_pagenumbers_set_location
   {\edef\p_strc_pagenumbers_location{\directpagenumberingparameter\c!location}%
    \ifx\p_strc_pagenumbers_location\m_page_layouts_page_number_location
       % unchanged
@@ -949,10 +930,10 @@
 %D The main text area has to be combined with some additional (tracing) information.
 %D
 %D This will be stored as normal and overloaded in page-lyr and later in page-spr we
-%D overload the the stored version .. evenatually i will clear up the experimental
+%D overload the the stored version .. eventually i will clear up the experimental
 %D mess.
 
-\def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
+\protected\def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
   {\setbox#1\hpack to \makeupwidth
      {\hss                     % so don't change this
       \setlayoutcomponentattribute{\v!page:\v!text}%

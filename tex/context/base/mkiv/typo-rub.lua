@@ -63,7 +63,7 @@ local glue_code       = nodecodes.glue
 local penalty_code    = nodecodes.penalty
 local hlist_code      = nodecodes.hlist
 local vlist_code      = nodecodes.vlist
-local localpar_code   = nodecodes.localpar
+local par_code        = nodecodes.par
 local dir_code        = nodecodes.dir
 
 local kerncodes       = nodes.kerncodes
@@ -310,7 +310,7 @@ local function whatever(current)
                         -- go on
                     elseif id == hlist_code and getwidth(c) == 0 then
                         -- go on
-                    elseif id == whatsit_code or id == localpar_code or id == dir_code then
+                    elseif id == whatsit_code or id == par_code or id == dir_code then
                         -- go on
                     else
                         l = false

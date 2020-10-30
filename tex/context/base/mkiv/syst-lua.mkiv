@@ -57,8 +57,8 @@
 \def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
 \def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
 
-\def\expdoifcommonelse\expdoifelsecommon
-\def\expdoifinsetelse \expdoifelseinset
+\let\expdoifcommonelse\expdoifelsecommon
+\let\expdoifinsetelse \expdoifelseinset
 
 %D We define these here, just in case. This permits \typefile {self} otherwise
 %D nested b|/|e sep problems.

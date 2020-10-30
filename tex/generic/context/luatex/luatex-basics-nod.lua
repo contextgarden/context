@@ -107,6 +107,7 @@ nuts.getkern             = direct.getkern
 nuts.getlist             = direct.getlist
 nuts.getnext             = direct.getnext
 nuts.getoffsets          = direct.getoffsets
+nuts.getoptions          = direct.getoptions or function() return 0 end
 nuts.getprev             = direct.getprev
 nuts.getsubtype          = direct.getsubtype
 nuts.getwidth            = direct.getwidth
@@ -205,6 +206,19 @@ local copy_node     = nuts.copy_node
 
 local glyph_code    = nodes.nodecodes.glyph
 local ligature_code = nodes.glyphcodes.ligature
+
+do -- this is consistent with the rest of context, not that we need it
+
+    local p = nodecodes.localpar or nodecodes.local_par
+
+    if p then
+        nodecodes.par = p
+        nodecodes[p] = "par"
+        nodecodes.localpar  = p -- for old times sake
+        nodecodes.local_par = p -- for old times sake
+    end
+
+end
 
 do
 

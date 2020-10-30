@@ -91,7 +91,7 @@ local boundarycodes     = nodes.boundarycodes
 local subtypes          = nodes.subtypes
 
 local glyph_code        = nodecodes.glyph
-local localpar_code     = nodecodes.localpar
+local par_code          = nodecodes.par
 local boundary_code     = nodecodes.boundary
 
 local wordboundary_code = boundarycodes.word
@@ -175,7 +175,7 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                if prev.id == localpar_code then -- and start_of_par(prev)
+                if prev.id == par_code then -- and start_of_par(prev)
                     break
                 else
                     first = prev

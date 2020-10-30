@@ -3770,7 +3770,7 @@ return {
    ["en"]="resetsystemmode",
    ["fr"]="razmodesysteme",
   },
-  ["resettext"]={
+  ["resettextcontent"]={
    ["cs"]="resettextcontent",
    ["de"]="resettextcontent",
    ["en"]="resettextcontent",
@@ -16239,6 +16239,9 @@ return {
    ["pe"]="پیشگفتار",
    ["ro"]="intro",
   },
+  ["invertedshort"]={
+   ["en"]="invertedshort",
+  },
   ["italic"]={
    ["cs"]="kurziva",
    ["de"]="italic",
@@ -17168,6 +17171,9 @@ return {
    ["pe"]="نرمال",
    ["ro"]="normal",
   },
+  ["normalshort"]={
+   ["en"]="normalshort",
+  },
   ["nospacing"]={
    ["cs"]="nospacing",
    ["de"]="nospacing",
@@ -17788,6 +17794,11 @@ return {
    ["nl"]="kenmerk",
    ["pe"]="مراجعه",
    ["ro"]="referinta",
+  },
+  ["region"]={
+   ["en"]="region",
+   ["fr"]="region",
+   ["nl"]="gebied",
   },
   ["register"]={
    ["cs"]="rejstrik",

@@ -29,7 +29,12 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.09.20 22:59}
+\edef\contextversion{2020.10.30 22:24}
+
+%overloadmode 1 % check frozen / warning
+%overloadmode 2 % check frozen / error
+%overloadmode 3 % check frozen, primitive, permanent / warning
+\overloadmode 4 % check frozen, primitive, permanent / error
 
 %D Kind of special:
 
@@ -89,10 +94,10 @@
 \loadmarkfile{luat-lib}
 \loadmarkfile{luat-soc}
 
-\loadmarkfile{catc-ini}
+\loadmkxlfile{catc-ini}
 \loadmarkfile{catc-act}
 \loadmarkfile{catc-def}
-\loadmarkfile{catc-ctx}
+\loadmkxlfile{catc-ctx}
 \loadmarkfile{catc-sym}
 
 \loadmarkfile{toks-ini}
@@ -129,12 +134,12 @@
 
 \loadmarkfile{supp-dir}
 
-\loadmarkfile{char-utf} % generic code (i.e. not much tex) ... could become unic-ini
-\loadmarkfile{char-ini} % tex / context specific
-\loadmarkfile{char-act} % even more specific
+\loadmarkfile{char-utf}
+\loadmkxlfile{char-ini}
+\loadmarkfile{char-act}
 
-\loadmarkfile{mult-ini}
-\loadmarkfile{mult-sys}
+\loadmkxlfile{mult-ini}
+\loadmkxlfile{mult-sys}
 \loadmkxlfile{mult-aux} % LMTX
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
@@ -146,10 +151,10 @@
 
 \loadmarkfile{toks-aux}
 
-\loadmarkfile{attr-ini}
+\loadmkxlfile{attr-ini}
 
 \loadmarkfile{core-ini}
-\loadmarkfile{core-env}
+\loadmkxlfile{core-env}
 
 \loadmarkfile{layo-ini}
 
@@ -171,7 +176,7 @@
 \loadmarkfile{attr-col}
 \loadmarkfile{attr-lay}
 \loadmarkfile{attr-neg}
-\loadmarkfile{attr-eff}
+\loadmkxlfile{attr-eff}
 \loadmarkfile{attr-mkr}
 
 \loadmarkfile{trac-tex}
@@ -193,16 +198,16 @@
 
 \loadmarkfile{typo-inj}
 
-\loadmkvifile{file-syn}
+\loadmklxfile{file-syn}
 \loadmkvifile{file-mod}
 
 \loadmarkfile{core-sys}
-\loadmarkfile{core-con}
+\loadmkxlfile{core-con}
 
 \loadmarkfile{cont-fil}
 
 \loadmarkfile{regi-ini}
-\loadmarkfile{enco-ini}
+\loadmkxlfile{enco-ini}
 \loadmkxlfile{hand-ini}
 
 \loadmkxlfile{lang-ini} % LMTX
@@ -240,7 +245,7 @@
 \loadmkvifile{pack-bck}
 \loadmarkfile{pack-fen}
 
-\loadmarkfile{lxml-ini}
+\loadmkxlfile{lxml-ini}
 \loadmarkfile{lxml-sor}
 
 \loadmkvifile{typo-prc}
@@ -253,9 +258,9 @@
 \loadmarkfile{strc-doc}
 \loadmarkfile{strc-num}
 \loadmarkfile{strc-mar}
-\loadmarkfile{strc-sbe}
+\loadmkxlfile{strc-sbe}
 \loadmkvifile{strc-lst}
-\loadmarkfile{strc-sec}
+\loadmkxlfile{strc-sec}
 \loadmarkfile{strc-pag} % hm, depends on core-num
 \loadmarkfile{strc-ren}
 \loadmarkfile{strc-xml}
@@ -284,29 +289,29 @@
 
 \loadmklxfile{strc-itm} % LMTX
 
-\loadmkvifile{strc-con}
-\loadmkvifile{strc-des}
-\loadmkvifile{strc-enu}
+\loadmklxfile{strc-con}
+\loadmklxfile{strc-des}
+\loadmklxfile{strc-enu}
 
 \loadmarkfile{strc-ind}
-\loadmarkfile{strc-lab}
-\loadmarkfile{strc-syn}
+\loadmkxlfile{strc-lab}
+\loadmkxlfile{strc-syn}
 
 % \loadmarkfile{core-sys}
 
 \loadmarkfile{page-var}
 \loadmkvifile{page-otr}
-\loadmarkfile{page-ini}
+\loadmkxlfile{page-ini}
 \loadmarkfile{page-ins}
 \loadmarkfile{page-fac}
 \loadmarkfile{page-brk}
 \loadmarkfile{page-col}
 \loadmarkfile{page-inf}
 \loadmarkfile{page-flt}
-\loadmarkfile{page-bck}
+\loadmkxlfile{page-bck}
 \loadmarkfile{page-not}
 \loadmarkfile{page-one}
-\loadmarkfile{page-lay}
+\loadmkxlfile{page-lay}
 \loadmkvifile{page-box}
 \loadmklxfile{page-txt} % LMTX
 \loadmarkfile{page-sid} % when
@@ -371,7 +376,7 @@
 \loadmkvifile{font-lib} % way too late but after language
 \loadmklxfile{font-fil} % LMTX
 \loadmkvifile{font-var}
-\loadmkvifile{font-fea}
+\loadmklxfile{font-fea}
 \loadmklxfile{font-mat} % LMTX
 \loadmklxfile{font-ini} % LMTX
 \loadmklxfile{font-sym} % LMTX
@@ -391,18 +396,18 @@
 \loadmarkfile{typo-tal}
 \loadmarkfile{typo-par} % par builders (uses fonts)
 
-\loadmarkfile{tabl-com}
+\loadmkxlfile{tabl-com}
 \loadmarkfile{tabl-pln}
 
-\loadmarkfile{tabl-tab} % thrd-tab stripped and merged
+\loadmkxlfile{tabl-tab} % thrd-tab stripped and merged
 
 \loadmkxlfile{tabl-tbl} % LMTX
 \loadmkxlfile{tabl-ntb} % LMTX
-\loadmarkfile{tabl-nte}
-\loadmarkfile{tabl-ltb}
-\loadmarkfile{tabl-frm}
+\loadmkxlfile{tabl-nte}
+\loadmkxlfile{tabl-ltb}
+\loadmkxlfile{tabl-frm}
 \loadmarkfile{tabl-tsp}
-\loadmkvifile{tabl-xtb}
+\loadmklxfile{tabl-xtb}
 \loadmarkfile{tabl-mis}
 
 \loadmarkfile{typo-lan}
@@ -413,7 +418,7 @@
 
 \loadmkxlfile{blob-ini}
 
-\loadmarkfile{trac-vis}
+\loadmkxlfile{trac-vis}
 \loadmarkfile{trac-jus}
 
 \loadmarkfile{typo-cln}
@@ -430,7 +435,7 @@
 \loadmarkfile{typo-drp}
 \loadmarkfile{typo-fln}
 \loadmarkfile{typo-sus}
-\loadmarkfile{typo-lig}
+\loadmkxlfile{typo-lig}
 \loadmarkfile{typo-chr}
 \loadmarkfile{typo-rub}
 \loadmkivfile{typo-fkr}
@@ -463,7 +468,7 @@
 \loadmarkfile{page-mrk} % depends on mp
 
 \loadmarkfile{page-flw}
-\loadmarkfile{page-spr}
+\loadmkxlfile{page-spr}
 \loadmarkfile{page-plg}
 \loadmarkfile{page-str}
 
@@ -474,13 +479,13 @@
 %loadmarkfile{anch-snc} % when needed this one will be redone
 
 \loadmkxlfile{math-ini} % way after font-pre !
-\loadmarkfile{math-pln}
+\loadmkxlfile{math-pln}
 \loadmarkfile{math-for}
 \loadmarkfile{math-def} % also saves some meanings
-\loadmarkfile{math-ali}
+\loadmkxlfile{math-ali}
 %loadmarkfile{math-arr}
 \loadmkvifile{math-stc}
-\loadmarkfile{math-frc}
+\loadmkxlfile{math-frc}
 \loadmarkfile{math-mis}
 \loadmarkfile{math-scr}
 \loadmarkfile{math-int}
@@ -498,7 +503,7 @@
 \loadmarkfile{strc-mat}
 
 \loadmarkfile{chem-ini}
-\loadmarkfile{chem-str}
+\loadmkxlfile{chem-str}
 
 \loadmarkfile{typo-scr}
 \loadmarkfile{phys-dim}
@@ -506,12 +511,12 @@
 \loadmarkfile{node-rul} % beware, defined \underbar so after math
 \loadmkvifile{font-sol} % font solutions
 
-\loadmkvifile{strc-not}
+\loadmklxfile{strc-not}
 \loadmkvifile{strc-lnt}
 \loadmkivfile{strc-tnt}
 \loadmkivfile{strc-usr}
 
-\loadmarkfile{pack-com}
+\loadmkxlfile{pack-com}
 \loadmarkfile{typo-del}
 
 \loadmarkfile{grph-trf}
@@ -519,9 +524,9 @@
 \loadmarkfile{grph-fig}
 \loadmarkfile{grph-raw}
 \loadmarkfile{grph-rul}
-\loadmarkfile{grph-pat}
+\loadmkxlfile{grph-pat}
 
-\loadmarkfile{pack-box}
+\loadmkxlfile{pack-box}
 \loadmarkfile{pack-bar}
 \loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
@@ -610,5 +615,13 @@
 \appendtoks
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkxl","\contextbanner")}% can become automatic
 \to \everydump
+
+% some day:
+%
+% \prependtoks
+%     \overloadmode 255
+% \to \everyjob
+
+\overloadmode   0  % for now
 
 \errorstopmode \dump \endinput

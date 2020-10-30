@@ -651,10 +651,10 @@
    \appendtoks\dontshowwhatsits\to\everystoptext}
 
 \unexpanded\def\immediatewhatsit
-  {\bgroup\futurelet\next\doimmediatewhatsit}
+  {\bgroup\futurelet\nexttoken\doimmediatewhatsit}
 
 \unexpanded\def\doimmediatewhatsit
-  {\ifx\next\write
+  {\ifx\nexttoken\write
      \egroup\immediatewritetrue
    \else
      \egroup\expandafter\normalimmediate

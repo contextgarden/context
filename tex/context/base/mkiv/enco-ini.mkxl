@@ -1,0 +1,570 @@
+%D \module
+%D   [       file=enco-ini,
+%D        version=2007.02.19, % 2000.12.27, % 1998.12.03,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is stripped down version of th eoriginal enco-ini.tex file. For more details
+%D you might want to study the \MKII\ file but since \LUATEX\ is unicode inside we
+%D need less code.
+
+%D Much in here will disappear in \LMTX\ because we assume proper \UNICODE\ usage.
+
+% When dealing with characters we have four cases to take into account when moving
+% from mkii to mkiv:
+
+% 1. <byte 200>   => ref to slot 200 in current font
+% 2. \char 200    => ref to slot 200 in current font
+% 3. <active 200> => can (e.g.) map to another slot in current font
+% 4. \namedglyph  => can map to some slot in some font
+
+% Using case 2 for special characters is doomed to fail because we are not going
+% to intercept these on the fly as happens automatically with traditional font
+% encoding handling. We could do that in a node pass but it's not worth the effort
+% because we seldom use this case in a document source.
+
+% We can consider using utf as internal format for mkii. The main reason for not
+% doing this before was that it was slow. On the other hand, it would make dealing
+% with utility files easier. However, we've now kind of frozen mkii.
+
+\writestatus{loading}{ConTeXt Encoding Macros / Initialization}
+
+\unprotect
+
+%D Obsolete (but sometimes used in styles)
+
+\let\defaultencoding\s!default
+
+%D \macros
+%D   {defineaccent, definecharacter, definecommand}
+%D
+%D Some of these are used at the \LUA\ end!
+
+\installcorenamespace{accents}
+
+\permanent\protected\def\defineaccent#1 #2 #3 %
+  {\dodefineaccentcommand{#1}%
+   \dodefineaccent{#1}{#2}{#3}}
+
+\permanent\protected\def\dodefineaccentcommand#1%
+  {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}}
+
+\permanent\protected\def\dodefineaccent#1#2#3% no spaces, used low level
+  {\setvalue{\??accents\string#1\string#2\empty}{#3}}
+
+% the following dirty trick is needed to catch \asciimath{\^{1/5}log}:
+
+\permanent\protected\def\dohandleaccent#1#2% expandable because we want them in the tuc file
+  {\csname\??accents
+     \ifcsname\??accents\string#1#2\empty\endcsname
+       \string#1#2\empty
+     \orelse\ifcsname\??accents\string#1\string#2\empty\endcsname
+       \string#1\string#2\empty
+     \else
+       \endcsname#2\csname\??accents % very dirty trick: ignore accent but keep char
+     \fi
+   \endcsname}
+
+\immutable\letvalue{\??accents}\empty
+
+\permanent\protected\def\dodefinecommand#1#2%
+  {\frozen\setuvalue{\string#1}{#2}} % not permanent as these are kind of obsolete
+
+\permanent\protected\def\definecharacter#1 #2 %
+  {\doifelsenumber{\string#2}
+     {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
+     {\setuvalue{\string#1}{#2}}}
+
+\permanent\protected\def\definecommand#1 #2 %
+  {\setuvalue{\string#1}{#2}}
+
+%D \macros
+%D   {everyuppercase, everylowercase, everysanitize}
+
+\newtoks \everyuppercase
+\newtoks \everylowercase
+\newtoks \everysanitize
+
+%D Accent handling (try to avoid this):
+
+% \buildtextaccent\greekdasia\greekalphamacron
+% \buildtextaccent\textacute q
+
+%D We can use offsets in \LMTX\ but even that makes n o sense because we have
+%D a virtual feature already in \MKIV.
+
+%D We define them frozen so that we can overload them.
+
+\newbox\b_enco_accent
+
+\permanent\protected\def\buildmathaccent#1%
+  {\mathaccent#1 }
+
+\permanent\protected\def\buildtextaccent#1#2% we could do all at the lua end
+  {\dontleavehmode\begingroup      % but that's no fun (yet)
+   \setbox\scratchboxone\hbox{#1}% accent
+   \setbox\scratchboxtwo\hbox{#2}% character
+   \scratchheight\dimexpr\ht\scratchboxtwo-\ht\scratchboxone\relax
+   \scratchdepth \dimexpr\dp\scratchboxtwo-\dp\scratchboxone\relax
+   \scratchwidth \wd\scratchboxtwo
+   \hbox to \wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi\bgroup
+     \hss\box\scratchboxtwo\hss
+     \hskip-\scratchwidth
+     \hss
+     \ifdim\ht\scratchboxone>\exheight
+       % top accent
+       \raise\dimexpr\scratchheight+\exheight/3\relax
+     \else
+       \lower-\dimexpr\scratchdepth+\exheight/3\relax
+     \fi
+     \box\scratchboxone
+     \hss
+   \egroup
+   \endgroup}
+
+\permanent\protected\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char
+  {\dontleavehmode % why this align mess
+   \vtop
+     {\forgetall
+      \baselineskip\zeropoint
+      \lineskip#1%
+      \everycr\emptytoks
+      \tabskip\zeropoint
+      \lineskiplimit\zeropoint
+      \setbox0\hbox{#4}%
+      \halign
+        {##\crcr\hbox{#5}\crcr
+         \hidewidth
+         \hskip#2\wd0
+         \hskip-#3\slantperpoint % in plain 1ex * dimenless value
+         \vpack to .2\exheight{\box0\vss}\hidewidth
+         \crcr}}}
+
+\permanent\protected\def\buildtextmacron     {\bottomaccent{.25ex}{0}{15}{\textmacron}}
+\permanent\protected\def\buildtextbottomdot  {\bottomaccent{.25ex}{0}{5}{\textbottomdot}}
+\permanent\protected\def\buildtextcedilla    {\bottomaccent{0ex}{0}{5}{\textcedilla}}
+\permanent\protected\def\buildtextogonek     {\bottomaccent{-.1ex}{.5}{0}{\textogonek}}
+\permanent\protected\def\buildtextbottomcomma{\bottomaccent{.15ex}{0}{5}{\tx,}}
+
+\aliased\let\d\buildtextbottomdot
+
+\permanent\protected\def\topaccent#1#2#3#4#5% down right slantcorrection accent char
+  {\dontleavehmode
+   \bgroup
+     \setbox0\hbox{#4}%
+     \setbox2\hbox{#5}%
+     \hbox to \wd2 \bgroup
+        \hss\copy2\hss
+        \hskip-\wd2
+        \hss\hskip#2\wd0\hskip-#3\slantperpoint\raise#1\hbox{#4}\hss
+     \egroup
+   \egroup}
+
+\permanent\protected\def\buildtextgrave
+  {\topaccent{0pt}{0}{15}{\textgrave}} % e.g.
+
+\permanent\protected\def\definemathaccent#1 #2%
+  {\setvalue{#1}{\mathaccent#2 }}
+
+%D Math (will move):
+
+\definemathaccent acute     \mathacute
+\definemathaccent grave     \mathgrave
+\definemathaccent ddot      \mathddot
+\definemathaccent tilde     \mathtilde
+\definemathaccent bar       \mathbar
+\definemathaccent breve     \mathbreve
+\definemathaccent check     \mathcheck
+\definemathaccent hat       \mathhat
+\definemathaccent vec       \mathvec
+\definemathaccent dot       \mathdot
+%definemathaccent widetilde \mathwidetilde
+%definemathaccent widehat   \mathwidehat
+
+% from enco-def:
+
+% \aliased\let\i\dotlessi
+% \aliased\let\j\dotlessj
+
+% \aliased\let\P\paragraphmark \aliased\let\textP\paragraphmark % obsolete (surfaced in bibliographic files)
+% \aliased\let\S\sectionmark   \aliased\let\textS\sectionmark   % obsolete (surfaced in bibliographic files)
+
+\permanent\def\eszett  {ß} \permanent\def\Eszett  {SS} \permanent\def\Ssharp{SS}
+\permanent\def\lslash  {ł} \permanent\def\Lslash  {Ł}
+\permanent\def\dslash  {đ} \permanent\def\Dslash  {Đ}
+%permanent\def\oslash  {ø} %permanent\def\Oslash  {Ø} % clashes with math: use \Ostroke
+\permanent\def\dcroat  {đ} \permanent\def\Dcroat  {Đ}
+\permanent\def\kcedilla{ķ} \permanent\def\Kcedilla{Ķ}
+\permanent\def\lcedilla{ļ} \permanent\def\Lcedilla{Ļ}
+\permanent\def\ncedilla{ņ} \permanent\def\Ncedilla{Ņ}
+\permanent\def\rcedilla{ŗ} \permanent\def\Rcedilla{Ŗ}
+\permanent\def\aumlaut {ä} \permanent\def\Aumlaut {Ä}
+\permanent\def\eumlaut {ë} \permanent\def\Eumlaut {Ë}
+\permanent\def\iumlaut {ï} \permanent\def\Iumlaut {Ï}
+\permanent\def\oumlaut {ö} \permanent\def\Oumlaut {Ö}
+\permanent\def\uumlaut {ü} \permanent\def\Uumlaut {Ü}
+
+% from enco-com:
+
+% \aliased\let\AE\AEligature   \aliased\let\ae\aeligature
+% \aliased\let\OE\OEligature   \aliased\let\oe\oeligature
+% \aliased\let\IJ\IJligature   \aliased\let\ij\ijligature
+% \aliased\let\AA\textAngstrom \aliased\let\aa\aring
+% \aliased\let\CC\Ccedilla     \aliased\let\cc\ccedilla
+% \aliased\let\L \Lslash       \aliased\let\l \lslash
+% \aliased\let\O \Oslash       \aliased\let\o \oslash
+% \aliased\let\SZ\Eszett       \aliased\let\sz\eszett    % \aliased\let\SS\Ssharp
+
+% for old times sake (obsolete)
+
+\def\textflorin{ƒ} \def\florin  {ƒ}
+\def\pound     {£} \def\sterling{£}
+\def\promille  {‰} \def\permille{‰}
+
+% tex specific
+
+\pushoverloadmode
+
+%D Was missing:
+
+\permanent\protected\def\ampersand{\mathortext\mathampersand\textampersand}
+
+
+\ifdefined\textpercent
+    \permanent\let\percent   \textpercent
+    \permanent\let\procent   \textpercent
+   %\permanent\let\ampersand \textampersand
+    \permanent\let\dollar    \textdollar
+    \permanent\let\hash      \texthash
+\else
+    \permanent\def\percent   {\textpercent}
+    \permanent\def\procent   {\textpercent}
+   %\permanent\def\ampersand {\textampersand}
+    \permanent\def\dollar    {\textdollar}
+    \permanent\def\hash      {\texthash}
+\fi
+
+\popoverloadmode
+
+% from enco-mis:
+
+\permanent\protected\def\fakepercent
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
+
+\permanent\protected\def\fakeperthousand
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
+
+\permanent\protected\def\fakepermine
+  {\dontleavehmode
+   \bgroup
+   \setbox\scratchbox\hbox
+     {\mathematics{+}}%
+   \hbox to \wd\scratchbox
+     {\hss
+      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
+\def\permine{\fakepermine}
+
+% some more: what with freezing here?
+
+\ifdefined\softhyphen \else
+    \aliased\let\softhyphen\explicitdiscretionary
+\fi
+
+\def\hyphen           {\softhyphen}
+\def\compoundwordmark {\hyphen}
+\def\cwm              {\hyphen}
+\def\nonbreakinghyphen{\hyphen}
+\def\breakinghyphen   {\hyphen\prewordbreak}
+
+% quotes
+
+\def\lowerleftsingleninequote  {\quotesinglebase}
+\def\lowerleftdoubleninequote  {\quotedblbase}
+\def\lowerrightsingleninequote {\quotesinglebase}
+\def\lowerrightdoubleninequote {\quotedblbase}
+
+\def\upperleftsingleninequote  {\quoteright}
+\def\upperleftdoubleninequote  {\quotedblright}
+\def\upperrightsingleninequote {\quoteright}
+\def\upperrightdoubleninequote {\quotedblright}
+
+\def\upperleftsinglesixquote   {\quoteleft}
+\def\upperleftdoublesixquote   {\quotedblleft}
+\def\upperrightsinglesixquote  {\quoteleft}
+\def\upperrightdoublesixquote  {\quotedblleft}
+
+\def\leftsubguillemot          {\guilsingleleft}
+\def\rightsubguillemot         {\guilsingleright}
+
+% left-overs (some day in private unicode space, so that we can roundtrip)
+
+\permanent\protected\def\textblacksquare{\dontleavehmode\hbox{\vrule\s!width.3\s!em\s!height.4\s!em\s!depth-.1\s!em}}
+%permanent\protected\def\schwa          {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
+\permanent\protected\def\schwagrave     {\buildtextgrave\schwa}
+
+\chardef\textcontrolspace"2423
+
+\installcorenamespace{controlspace}
+
+% \protected\def\fallbackcontrolspace % beware: non-matching widths
+%   {\hbox to \interwordspace{\hss\getglyph{LMTypewriter-Regular}\textcontrolspace\hss}%
+
+\permanent\protected\def\fallbackcontrolspace % beware, current font, we also need to honor color
+  {\hbox to \interwordspace \bgroup
+     \hss
+     \ifcsname\??controlspace\number\interwordspace\endcsname
+       \csname\??controlspace\number\interwordspace\endcsname
+     \else
+       \enco_fast_control_space_define % only regular
+     \fi
+     \textcontrolspace
+     \hss
+   \egroup}
+
+\protected\def\enco_fast_control_space_define
+  {\scratchdimen\interwordspace
+   \definedfont[LMTypewriter-Regular at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody]% see font-sym.mkiv
+   \expandafter\glet\csname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
+
+\permanent\protected\def\normalcontrolspace
+  {\iffontchar\font\textcontrolspace
+     \textcontrolspace
+   \else
+     \fallbackcontrolspace
+   \fi}
+
+\let\textvisiblespace\normalcontrolspace
+
+\permanent\protected\def\optionalcontrolspace
+  {\iffontchar\font\textcontrolspace
+     \textcontrolspace
+   \else
+     \asciispacechar % used for export !
+   \fi}
+
+% \protected\def\fastcontrolspace % no glyph resolving after first (use grouped)
+%   {\enco_fast_control_space}
+%
+% \def\enco_fast_control_space
+%   {\iffontchar\font\textcontrolspace
+%      \enco_fast_control_space_nop
+%    \else
+%      \enco_fast_control_space_yes
+%    \fi
+%    \enco_fast_control_space}
+%
+% \newbox\b_enco_control_space
+%
+% \def\enco_fast_control_space_nop
+%   {\let\enco_fast_control_space\textcontrolspace}
+%
+% \def\enco_fast_control_space_yes
+%   {\setbox\b_enco_control_space\fallbackcontrolspace
+%    \let\enco_fast_control_space\flushcontrolspacebox}
+%
+% \def\flushcontrolspacebox
+%   {\copy\b_enco_control_space}
+
+% a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
+% stringified .. anyhow, we define this at the lua end now but keep it here as a
+% reference
+%
+% \defineaccent ^ {\empty} {\textcircumflex}
+% \defineaccent ` {\empty} {\textgrave}
+% \defineaccent ~ {\empty} {\texttilde}
+% \defineaccent " {\empty} {\textdiaeresis}
+% \defineaccent ' {\empty} {\textacute}
+% \defineaccent . {\empty} {\textdotaccent}
+% \defineaccent = {\empty} {\textmacron}
+% \defineaccent c {\empty} {\textcedilla}
+% \defineaccent H {\empty} {\texthungarumlaut}
+% \defineaccent k {\empty} {\textogonek}
+% \defineaccent r {\empty} {\textring}
+% \defineaccent u {\empty} {\textbreve}
+% \defineaccent v {\empty} {\textcaron}
+
+\clf_defineaccents % one time
+
+%D A smaller and bolder variant, more like the math and monospaced ones.
+
+\permanent\protected\def\fakeunderscore
+  {\relax\ifmmode
+     \vrule\s!depth .12\fontexheight\mathstylefont\normalmathstyle\s!width \fontinterwordspace\mathstylefont\normalmathstyle\s!height\zeropoint\relax
+   \else
+     \dontleavehmode\hbox{\vrule\s!depth .12\fontexheight\font\s!width \fontinterwordspace\font\s!height\zeropoint}%
+   \fi}
+
+\permanent\protected\def\fakeunderscores{\let\_\fakeunderscore}
+\permanent\protected\def\textunderscores{\let\_\textunderscore}
+
+\textunderscores
+
+\ifdefined\mathunderscore \else \aliased\let\mathunderscore\fakeunderscore \fi
+\ifdefined\textunderscore \else \aliased\let\textunderscore\fakeunderscore \fi
+
+\permanent\protected\def\normalunderscore{\ifmmode\mathunderscore\else\textunderscore\fi}
+
+\let\_\normalunderscore
+
+%D To be sorted out:
+
+\pushoverloadmode
+
+\permanent\protected\def\textminus
+  {\char  \iffontchar\font"2012 "2012 % figuredash
+     \else\iffontchar\font"2013 "2013 % endash
+     \else\iffontchar\font"2212 "2212 % math minus
+                                "002D % hyphen
+     \fi\fi\fi}
+
+\permanent\protected\def\textplus
+  {\char"002B } % plus
+
+\popoverloadmode
+
+%D Moved from core-mis:
+
+\permanent\protected\def\celsius   #1{#1\mathematics{^\circ}C}
+\permanent\protected\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
+\permanent\protected\def\fraction#1#2{\mathematics{#1\over#2}}
+
+% \def\periodswidth  {.5em}
+% \def\periodsdefault{3}    % was 5, but now it's like \unknown
+%
+% \protected\def\periods
+%   {\dosingleempty\enco_periods}
+%
+% \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \begingroup
+%    \scratchdimen\periodswidth
+%    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
+%      {\leaders\hbox to \scratchdimen{\hss\periodsymbol\hss}\hss}%
+%    \endgroup}
+%
+% better for export:
+%
+% \protected\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \hbox\bgroup
+%    \setbox\scratchbox\hbox to \periodswidth{\hss\periodsymbol\hss}%
+%    \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+%    \egroup}
+%
+% \protected\def\unknown
+%   {\periods\relax} % relax prevents lookahead for []
+%
+% per request:
+
+%D \startbuffer
+%D \startlines
+%D     x\periods x
+%D     x\periods[10]x
+%D     x\periods[n=10,symbol={,}]x
+%D     x\periods[n=4,symbol={!!},width=1em]x
+%D     x\periods[n=4,symbol={!!},width=fit]x
+%D     x\periods[n=4,symbol={!!},width=fit,distance=1em]x
+%D     x\unknown x
+%D \stoplines
+%D \stopbuffer
+%D
+%D \typbuffer \getbuffer
+
+\def\periodswidth  {.5\emwidth}  % downward compatible
+\def\periodsdefault{3}           % downward compatible
+
+\installcorenamespace {periods}
+
+\installsetuponlycommandhandler \??periods {periods}
+
+\setupperiods
+  [\c!n=\periodsdefault,
+   \c!width=\periodswidth, % can also be \v!fit
+   \c!distance=.25\emwidth,
+   \c!symbol=.]
+
+\permanent\protected\def\periods
+  {\dontleavehmode
+   \hbox\bgroup
+   \doifelsenextoptional\enco_periods_yes\enco_periods_nop}
+
+\protected\def\enco_periods_yes[#1]%
+  {\doifelseassignment{#1}
+     {\setupcurrentperiods[#1]%
+      \scratchcounter\periodsparameter\c!n}
+     {\doifelsenothing{#1}
+        {\scratchcounter\periodsparameter\c!n}%
+        {\scratchcounter#1}}%
+   \enco_periods_finish}
+
+\protected\def\enco_periods_nop
+  {\scratchcounter\periodsparameter\c!n
+   \enco_periods_finish}
+
+\protected\def\enco_periods_finish
+  {\edef\p_width{\periodsparameter\c!width}%
+   \ifx\p_width\v!fit
+     \enco_periods_finish_fit
+   \else
+     \enco_periods_finish_width
+   \fi
+   \egroup}
+
+\protected\def\enco_periods_finish_width
+  {\setbox\scratchbox\hbox to \p_width
+     {\hss\periodsparameter\c!symbol\hss}%
+   \dorecurse\scratchcounter{\copy\scratchbox}}
+
+\protected\def\enco_periods_finish_fit
+  {\edef\p_symbol{\periodsparameter\c!symbol}%
+   \scratchdistance\periodsparameter\c!distance
+   \hskip\scratchdistance
+   \dorecurse\scratchcounter{\p_symbol\hskip\scratchdistance}}
+
+\permanent\protected\def\unknown
+  {\dontleavehmode
+   \hbox\bgroup
+   \enco_periods_nop}
+
+%D Left-overs:
+
+\appendtoks
+    \enforced\let\buildtextaccent\secondoftwoarguments
+\to \everysimplifycommands
+
+%D A plain one:
+
+% \protected\def\t#1{%
+%   \dontleavehmode
+%   \begingroup
+%     \setbox\scratchboxone\hpack{#1}%
+%     \setbox\scratchboxtwo\hpack\bgroup
+%       \iffontchar\font"0361\relax
+%          \char"0361\relax
+%       \else
+%          \iffontchar\font"2040\relax\else
+%            \the\textfont0
+%          \fi
+%          \char"2040
+%       \fi
+%     \egroup
+%     \scratchdimenone\wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi
+%     \scratchdimentwo\dimexpr-\ht\scratchboxtwo+\ht\scratchboxone+.45\exheight\relax
+%     \hpack to \scratchdimenone\bgroup
+%       \hpack to \scratchdimenone{\hss\box\scratchboxone\hss}%
+%       \hskip   -\scratchdimenone
+%       \hpack to \scratchdimenone{\hss\raise\scratchdimentwo\box\scratchboxtwo\hss}%
+%     \egroup
+%   \endgroup}
+
+\protect \endinput

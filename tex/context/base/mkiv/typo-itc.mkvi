@@ -37,7 +37,11 @@
 \unexpanded\def\italiccorrection
   {\ifnum\c_attr_italics<\plusone\normalitaliccorrection\fi}
 
+\pushoverloadmode
+
 \let\/\italiccorrection
+
+\popoverloadmode
 
 % 1 = end of word
 % 2 = end of word and end of a list

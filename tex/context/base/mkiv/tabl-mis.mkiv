@@ -130,7 +130,7 @@
 
 \let\typo_paragraphs_setup_saved\setupparagraphs
 
-\unexpanded\def\setupparagraphs
+\unexpanded\overloaded\def\setupparagraphs
   {\dotripleempty\typo_paragraphs_setup}
 
 \def\typo_paragraphs_setup[#1][#2][#3]% we are downward compatible with [each] and [1,3]
@@ -193,7 +193,7 @@
    \fi
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
-   \let\\=\typo_paragraphs_next % downward compatible
+   \enforced\let\\\typo_paragraphs_next % downward compatible
    \edef\p_offset{\paragraphsparameter\c!offset}%
    \doifelsedimension\p_offset
      {\scratchoffset\p_offset}%

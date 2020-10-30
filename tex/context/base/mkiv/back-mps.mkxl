@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifcase\contextlmtxmode \else
-    \registerctxluafile{back-mps}{autosuffix,optimize}
-\fi
+\registerctxluafile{back-mps}{autosuffix,optimize}
 
 \endinput

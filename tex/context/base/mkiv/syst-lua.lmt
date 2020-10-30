@@ -41,10 +41,6 @@ local char_given_code          = cmd.char_given
 local math_given_code          = cmd.math_given
 local xmath_given_code         = cmd.xmath_given
 local some_item_code           = cmd.some_item
------ call_code                = cmd.call
------ the_code                 = cmd.the
------ convert_code             = cmd.convert
------ lua_expandable_call_code = cmd.lua_expandable_call
 
 local getdimen                 = tex.getdimen
 local getglue                  = tex.getglue
@@ -410,13 +406,28 @@ do
         end,
     }
 
+    local boolean_value = tokens.values.boolean
+
     implement {
         name      = "ifeof",
         public    = true,
         usage     = "condition",
-        actions   = function(prefix)
+        actions   = function()
             local n = scaninteger()
-            return tokens.values.boolean, not channels[n]
+            return boolean_value, not channels[n]
+        end,
+    }
+
+    -- for the moment here:
+
+    local getnest = tex.getnest
+
+    implement {
+        name      = "ifmvl",
+        public    = true,
+        usage     = "condition",
+        actions   = function()
+            return boolean_value, getnest("ptr") == 0
         end,
     }
 

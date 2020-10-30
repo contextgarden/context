@@ -13086,7 +13086,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 33699, stripped down to: 22084
+-- original size: 16017, stripped down to: 11045
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -13102,9 +13102,8 @@ local topattern=string.topattern
 local utfchar=utf.char
 local datetime=os.date
 local openfile=io.open
-local runningtex=tex and (tex.jobname or tex.formatname)
-local write_nl=runningtex and texio and texio.write_nl or print
-local write=runningtex and texio and texio.write or io.write
+local write_nl=print
+local write=io.write
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local settings_to_hash=utilities.parsers.settings_to_hash
@@ -13140,273 +13139,7 @@ local function ansisupported(specification)
   return false
  end
 end
-if runningtex and texio then
- if texio.setescape then
-  texio.setescape(0) 
- end
- if arg and ansisupported then
-  for k,v in next,arg do 
-   if v=="--ansi" or v=="--c:ansi" then
-    if ansisupported("ansi") then
-     variant="ansi"
-    end
-    break
-   elseif v=="--ansilog" or v=="--c:ansilog" then
-    if ansisupported("ansilog") then
-     variant="ansilog"
-    end
-    break
-   end
-  end
- end
- local function useluawrites()
-  local texio_write_nl=texio.write_nl
-  local texio_write=texio.write
-  local io_write=io.write
-  write_nl=function(target,...)
-   if not io_write then
-    io_write=io.write
-   end
-   if target=="term and log" then
-    texio_write_nl("log",...)
-    texio_write_nl("term","")
-    io_write(...)
-   elseif target=="log" then
-    texio_write_nl("log",...)
-   elseif target=="term" then
-    texio_write_nl("term","")
-    io_write(...)
-   elseif type(target)=="number" then
-    texio_write_nl(target,...) 
-   elseif target~="none" then
-    texio_write_nl("log",target,...)
-    texio_write_nl("term","")
-    io_write(target,...)
-   end
-  end
-  write=function(target,...)
-   if not io_write then
-    io_write=io.write
-   end
-   if target=="term and log" then
-    texio_write("log",...)
-    io_write(...)
-   elseif target=="log" then
-    texio_write("log",...)
-   elseif target=="term" then
-    io_write(...)
-   elseif type(target)=="number" then
-    texio_write(target,...) 
-   elseif target~="none" then
-    texio_write("log",target,...)
-    io_write(target,...)
-   end
-  end
-  texio.write=write
-  texio.write_nl=write_nl
-  useluawrites=ignore
- end
- local whereto="both"
- local target=nil
- local targets=nil
- local formats=table.setmetatableindex("self")
- local translations=table.setmetatableindex("self")
- local report_yes,subreport_yes,direct_yes,subdirect_yes,status_yes
- local report_nop,subreport_nop,direct_nop,subdirect_nop,status_nop
- local variants={
-  default={
-   formats={
-    report_yes=formatters["%-15s > %s\n"],
-    report_nop=formatters["%-15s >\n"],
-    direct_yes=formatters["%-15s > %s"],
-    direct_nop=formatters["%-15s >"],
-    subreport_yes=formatters["%-15s > %s > %s\n"],
-    subreport_nop=formatters["%-15s > %s >\n"],
-    subdirect_yes=formatters["%-15s > %s > %s"],
-    subdirect_nop=formatters["%-15s > %s >"],
-    status_yes=formatters["%-15s : %s\n"],
-    status_nop=formatters["%-15s :\n"],
-   },
-   targets={
-    logfile="log",
-    log="log",
-    file="log",
-    console="term",
-    terminal="term",
-    both="term and log",
-   },
-  },
-  ansi={
-   formats={
-    report_yes=formatters["[0;33m%-15s [0;1m>[0m %s\n"],
-    report_nop=formatters["[0;33m%-15s [0;1m>[0m\n"],
-    direct_yes=formatters["[0;33m%-15s [0;1m>[0m %s"],
-    direct_nop=formatters["[0;33m%-15s [0;1m>[0m"],
-    subreport_yes=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s\n"],
-    subreport_nop=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m\n"],
-    subdirect_yes=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s"],
-    subdirect_nop=formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m"],
-    status_yes=formatters["[0;33m%-15s [0;1m:[0m %s\n"],
-    status_nop=formatters["[0;33m%-15s [0;1m:[0m\n"],
-   },
-   targets={
-    logfile="none",
-    log="none",
-    file="none",
-    console="term",
-    terminal="term",
-    both="term",
-   },
-  }
- }
- variants.ansilog={
-  formats=variants.ansi.formats,
-  targets=variants.default.targets,
- }
- logs.flush=io.flush
- writer=function(...)
-  write_nl(target,...)
- end
- newline=function()
-  write_nl(target,"\n")
- end
- report=function(a,b,c,...)
-  if c~=nil then
-   write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
-  elseif b then
-   write_nl(target,report_yes(translations[a],formats[b]))
-  elseif a then
-   write_nl(target,report_nop(translations[a]))
-  else
-   write_nl(target,"\n")
-  end
- end
- direct=function(a,b,c,...)
-  if c~=nil then
-   return direct_yes(translations[a],formatters[formats[b]](c,...))
-  elseif b then
-   return direct_yes(translations[a],formats[b])
-  elseif a then
-   return direct_nop(translations[a])
-  else
-   return ""
-  end
- end
- subreport=function(a,s,b,c,...)
-  if c~=nil then
-   write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
-  elseif b then
-   write_nl(target,subreport_yes(translations[a],translations[s],formats[b]))
-  elseif a then
-   write_nl(target,subreport_nop(translations[a],translations[s]))
-  else
-   write_nl(target,"\n")
-  end
- end
- subdirect=function(a,s,b,c,...)
-  if c~=nil then
-   return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
-  elseif b then
-   return subdirect_yes(translations[a],translations[s],formats[b])
-  elseif a then
-   return subdirect_nop(translations[a],translations[s])
-  else
-   return ""
-  end
- end
- status=function(a,b,c,...)
-  if c~=nil then
-   write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
-  elseif b then
-   write_nl(target,status_yes(translations[a],formats[b]))
-  elseif a then
-   write_nl(target,status_nop(translations[a]))
-  else
-   write_nl(target,"\n")
-  end
- end
- settarget=function(askedwhereto)
-  whereto=askedwhereto or whereto or "both"
-  target=targets[whereto]
-  if not target then
-   whereto="both"
-   target=targets[whereto]
-  end
-  if target=="term" or target=="term and log" then
-   logs.flush=io.flush
-  else
-   logs.flush=ignore
-  end
- end
- local stack={}
- pushtarget=function(newtarget)
-  insert(stack,target)
-  settarget(newtarget)
- end
- poptarget=function()
-  if #stack>0 then
-   settarget(remove(stack))
-  end
- end
- setformats=function(f)
-  formats=f
- end
- settranslations=function(t)
-  translations=t
- end
- setprocessor=function(f)
-  local writeline=write_nl
-  write_nl=function(target,...)
-   writeline(target,f(...))
-  end
- end
- setformatters=function(specification)
-  local t=nil
-  local f=nil
-  local d=variants.default
-  if not specification then
-  elseif type(specification)=="table" then
-   t=specification.targets
-   f=specification.formats or specification
-  else
-   if not ansisupported(specification) then
-    specification="default"
-   end
-   local v=variants[specification]
-   if v then
-    t=v.targets
-    f=v.formats
-    variant=specification
-   end
-  end
-  targets=t or d.targets
-  target=targets[whereto] or target
-  if f then
-   d=d.formats
-  else
-   f=d.formats
-   d=f
-  end
-  setmetatableindex(f,d)
-  report_yes=f.report_yes
-  report_nop=f.report_nop
-  subreport_yes=f.subreport_yes
-  subreport_nop=f.subreport_nop
-  direct_yes=f.direct_yes
-  direct_nop=f.direct_nop
-  subdirect_yes=f.subdirect_yes
-  subdirect_nop=f.subdirect_nop
-  status_yes=f.status_yes
-  status_nop=f.status_nop
-  if variant=="ansi" or variant=="ansilog" then
-   useluawrites() 
-  end
-  settarget(whereto)
- end
- setformatters(variant)
- setlogfile=ignore
- settimedlog=ignore
-else
+do
  local report_yes,subreport_yes,status_yes
  local report_nop,subreport_nop,status_nop
  local variants={
@@ -13706,69 +13439,6 @@ end)
 directives.register("logs.target",function(v)
  settarget(v)
 end)
-if tex then
- local report=logs.reporter("pages") 
- local texgetcount=tex and tex.getcount
- local real,user,sub=0,0,0
- function logs.start_page_number()
-  real=texgetcount("realpageno")
-  user=texgetcount("userpageno")
-  sub=texgetcount("subpageno")
- end
- local timing=false
- local usage=false
- local lasttime=nil
- logs.private={
-  enablepagetiming=function()
-   usage=true
-  end,
-  getpagetiming=function()
-   return type(usage)=="table" and usage
-  end,
- }
- trackers.register("pages.timing",function() timing="" end)
- function logs.stop_page_number() 
-  if timing or usage then
-   local elapsed=statistics.currenttime(statistics)
-   local average,page
-   if not lasttime or real<2 then
-    average=elapsed
-    page=elapsed
-   else
-    average=elapsed/(real-1)
-    page=elapsed-lasttime
-   end
-   lasttime=elapsed
-   if timing then
-    timing=formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
-   end
-   if usage then
-    usage={
-     page={
-      real=real,
-      user=user,
-      sub=sub,
-     },
-     time={
-      elapsed=elapsed,
-      page=page,
-      average=average,
-     }
-    }
-   end
-  end
-  if real<=0 then
-   report("flushing page%s",timing)
-  elseif user<=0 then
-   report("flushing realpage %s%s",real,timing)
-  elseif sub<=0 then
-   report("flushing realpage %s, userpage %s%s",real,user,timing)
-  else
-   report("flushing realpage %s, userpage %s, subpage %s%s",real,user,sub,timing)
-  end
-  logs.flush()
- end
-end
 local nesting=0
 local verbose=false
 local hasscheme=url.hasscheme
@@ -13880,130 +13550,11 @@ function logs.system(whereto,process,jobname,category,fmt,arg,...)
  end
 end
 local report_system=logs.reporter("system","logs")
-function logs.obsolete(old,new)
- local o=loadstring("return "..new)()
- if type(o)=="function" then
-  return function(...)
-   report_system("function %a is obsolete, use %a",old,new)
-   loadstring(old.."="..new.." return "..old)()(...)
-  end
- elseif type(o)=="table" then
-  local t,m={},{}
-  m.__index=function(t,k)
-   report_system("table %a is obsolete, use %a",old,new)
-   m.__index,m.__newindex=o,o
-   return o[k]
-  end
-  m.__newindex=function(t,k,v)
-   report_system("table %a is obsolete, use %a",old,new)
-   m.__index,m.__newindex=o,o
-   o[k]=v
-  end
-  if libraries then
-   libraries.obsolete[old]=t 
-  end
-  setmetatable(t,m)
-  return t
- end
-end
 if utilities then
  utilities.report=report_system
 end
-do
- local texerror=tex and tex.error or print
- local formatters=string.formatters
- function logs.texerrormessage(fmt,first,...) 
-  texerror(first and formatters[fmt](first,...) or fmt)
- end
-end
 if package.helpers.report then
  package.helpers.report=logs.reporter("package loader") 
-end
-if tex then
- local finalactions={}
- local fatalerrors={}
- local possiblefatal={}
- local loggingerrors=false
- function logs.loggingerrors()
-  return loggingerrors
- end
- directives.register("logs.errors",function(v)
-  loggingerrors=v
-  if type(v)=="string" then
-   fatalerrors=settings_to_hash(v)
-  else
-   fatalerrors={}
-  end
- end)
- function logs.registerfinalactions(...)
-  insert(finalactions,...) 
- end
- local what=nil
- local report=nil
- local state=nil
- local target=nil
- local function startlogging(t,r,w,s)
-  target=t
-  state=force
-  force=true
-  report=type(r)=="function" and r or logs.reporter(r)
-  what=w
-  pushtarget(target)
-  newline()
-  if s then
-   report("start %s: %s",what,s)
-  else
-   report("start %s",what)
-  end
-  if target=="logfile" then
-   newline()
-  end
-  return report
- end
- local function stoplogging()
-  if target=="logfile" then
-   newline()
-  end
-  report("stop %s",what)
-  if target=="logfile" then
-   newline()
-  end
-  poptarget()
-  state=oldstate
- end
- function logs.startfilelogging(...)
-  return startlogging("logfile",...)
- end
- logs.stopfilelogging=stoplogging
- local done=false
- function logs.starterrorlogging(r,w,...)
-  if not done then
-   pushtarget("terminal")
-   newline()
-   logs.report("error logging","start possible issues")
-   poptarget()
-   done=true
-  end
-  if fatalerrors[w] then
-   possiblefatal[w]=true
-  end
-  return startlogging("terminal",r,w,...)
- end
- logs.stoperrorlogging=stoplogging
- function logs.finalactions()
-  if #finalactions>0 then
-   for i=1,#finalactions do
-    finalactions[i]()
-   end
-   if done then
-    pushtarget("terminal")
-    newline()
-    logs.report("error logging","stop possible issues")
-    poptarget()
-   end
-   return next(possiblefatal) and sortedkeys(possiblefatal) or false
-  end
- end
 end
 
 
@@ -25923,7 +25474,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 11612, stripped down to: 8339
+-- original size: 11655, stripped down to: 8311
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -26069,8 +25620,7 @@ function environment.make_format(formatname)
  end
  local binarypath=validbinarypath()
  report_format("changing to format path %a",validformatpath)
- lfs.chdir(validformatpath)
- if dir.current()~=validformatpath then
+ if not lfs.chdir(validformatpath) then
   return fatalerror(startupdir,"unable to change to format path %a",validformatpath)
  end
  local primaryflags=primaryflags(arguments)
@@ -26211,8 +25761,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040785
--- stripped bytes    : 410998
+-- original bytes    : 1023146
+-- stripped bytes    : 404426
 
 -- end library merge
 

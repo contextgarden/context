@@ -3,11 +3,15 @@
 \unprotect
 
     \ifcase\contextlmtxmode \else
-        \unexpanded\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
-        \unexpanded\def\pdflastypos{\numexpr\clf_lastypos\relax}
+        \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
+        \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
     \fi
 
 \protect
+
+\ifcase\contextlmtxmode \else
+    \overloadmode\zerocount
+\fi
 
 \pushcatcodetable
 
@@ -23,7 +27,14 @@
 
 \popcatcodetable
 
-\let\starttikzpicture\tikzpicture
-\let\stoptikzpicture \endtikzpicture
+\protected\def\starttikzpicture
+  {\begingroup
+   \overloadmode\zerocount
+   \tikzpicture}
+
+\protected\def\stoptikzpicture
+  {\endtikzpicture
+   \endgroup}
+
 
 \stopmodule

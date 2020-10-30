@@ -293,6 +293,32 @@ end)
 --     end
 -- end)
 
+local report   = logs.reporter("csname overload")
+local reported = { }
+
+callback.register("handle_overload", function(fatal,overload,csname,flags)
+    if not reported[csname] then
+        logs.newline()
+        local readstate  = status.readstate
+        local filename   = readstate.filename
+        local linenumber = readstate.linenumber
+        if filename and linenumber then
+            report("%s, protection level %i, control sequence %a, properties '% t', file %a, line %i",
+                fatal and "fatal error" or "warning",overload,csname,tokens.flags(csname),filename,linenumber)
+        else
+            report("%s, protection level %i, control sequence %a, properties '% t'",
+                fatal and "fatal error" or "warning",overload,csname,tokens.flags(csname))
+        end
+        reported[csname] = true
+        logs.newline()
+        if fatal then
+            cleanup_run()
+            osexit(1)
+        end
+    end
+end)
+
+-- bonus
 
 if environment.initex then
 

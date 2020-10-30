@@ -38,13 +38,14 @@
 %D \macros
 %D   {definenamedlua}
 %D
-%D We provide an interface for defining instances:
+%D We provide an interface for defining instances. We don't have the definers yet
+%D so we do itlow level:
 
 \def\s!lua  {lua}
 \def\s!code {code}
 \def\s!data {data}
-%def\s!start{start}
-%def\s!stop {stop}
+\def\s!start{start}
+\def\s!stop {stop}
 
 %D Beware: because \type {\expanded} is een convert command, the error
 %D message will show \type{<inserted text>} as part of the message.

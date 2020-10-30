@@ -82,7 +82,7 @@ local glyph_code        = nodecodes.glyph
 local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
-local localpar_code     = nodecodes.localpar
+local par_code          = nodecodes.par
 
 local actions           = { }
 initials.actions        = actions
@@ -270,7 +270,7 @@ actions[v_default] = function(head,setting)
         end
         -- We pack so that successive handling cannot touch the dropped cap. Packaging
         -- in a hlist is also needed because we cannot locally adapt e.g. parindent (not
-        -- yet stored in with localpar).
+        -- yet stored in with par).
         local prev = getprev(first)
         local next = getnext(last)
         --
@@ -339,7 +339,7 @@ end
 -- we can count ... when all done, we can disable ...
 
 function initials.handler(head)
-    if getid(head) == localpar_code and start_of_par(head) then
+    if getid(head) == par_code and start_of_par(head) then
         local settings = getprop(head,a_initial)
         if settings then
             disableaction("processors","typesetters.initials.handler")

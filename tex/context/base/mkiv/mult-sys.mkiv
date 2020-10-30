@@ -49,13 +49,13 @@
 \definesystemconstant {bokmal}         \definesystemconstant {nb}
 \definesystemconstant {catalan}        \definesystemconstant {ca}
 \definesystemconstant {chinese}        \definesystemconstant {cn}
-\definesystemconstant {chinese}        \definesystemconstant {cn}
 \definesystemconstant {croatian}       \definesystemconstant {hr}
 \definesystemconstant {czech}          \definesystemconstant {cs}
 \definesystemconstant {danish}         \definesystemconstant {da}
 \definesystemconstant {dutch}          \definesystemconstant {nl}
 \definesystemconstant {english}        \definesystemconstant {en}
 \definesystemconstant {estonian}       \definesystemconstant {et}
+\definesystemconstant {esperanto}    % \definesystemconstant {eo}
 \definesystemconstant {farsi}          \definesystemconstant {fa} % just persian
 \definesystemconstant {finnish}        \definesystemconstant {fi}
 \definesystemconstant {french}         \definesystemconstant {fr}
@@ -275,6 +275,7 @@
 \definesystemconstant {start}
 \definesystemconstant {stop}
 \definesystemconstant {unknown}
+\definesystemconstant {unexpanded}
 
 % translating setups is asking for a mess so we keep them as-is:
 
@@ -408,8 +409,11 @@
 \definesystemconstant {text}
 \definesystemconstant {paragraph}
 \definesystemconstant {margintext}
+\definesystemconstant {themaintextcolor}
 \definesystemconstant {line}
+\definesystemconstant {itemgroupcolumns}
 
+\definesystemconstant {vfrac}
 \definesystemconstant {number}
 \definesystemconstant {symbol}
 \definesystemconstant {format}
@@ -574,19 +578,19 @@
 \defineinterfaceconstant {e} {e} % can go
 \defineinterfaceconstant {f} {f} % can go
 
-\defineinterfaceconstant {s} {s}
+%defineinterfaceconstant {s} {s}
 \defineinterfaceconstant {r} {r}
 \defineinterfaceconstant {g} {g}
-\defineinterfaceconstant {b} {b}
-\defineinterfaceconstant {c} {c}
+%defineinterfaceconstant {b} {b}
+%defineinterfaceconstant {c} {c}
 \defineinterfaceconstant {m} {m}
-\defineinterfaceconstant {y} {y}
+%defineinterfaceconstant {y} {y}
 \defineinterfaceconstant {k} {k}
-\defineinterfaceconstant {a} {a} % alternative
-\defineinterfaceconstant {t} {t} % transparency
+%defineinterfaceconstant {a} {a} % alternative
+%defineinterfaceconstant {t} {t} % transparency
 \defineinterfaceconstant {p} {p} % percentage
-\defineinterfaceconstant {h} {h}
-\defineinterfaceconstant {s} {s}
+%defineinterfaceconstant {h} {h}
+%defineinterfaceconstant {s} {s}
 \defineinterfaceconstant {v} {v}
 
 \defineinterfaceconstant {rgb}  {rgb}
@@ -673,7 +677,7 @@
 
 \selectinterface
 
-%D Ok, here are some more, because we've got ouselves some extensions to \CONTEXT.
+%D Ok, here are some more, because we've got ourselves some extensions to \CONTEXT.
 
 \definemessageconstant {addresses}
 \definemessageconstant {documents}

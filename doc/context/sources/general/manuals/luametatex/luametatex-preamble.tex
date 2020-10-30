@@ -10,12 +10,12 @@
 \topicindex{boxes}
 \topicindex{\LUA}
 
-This is a reference manual, not a tutorial. This means that we discuss changes
-relative to traditional \TEX\ and also present new functionality. As a
-consequence we will refer to concepts that we assume to be known or that might be
-explained later. Because the \LUATEX\ and \LUAMETATEX\ engines open up \TEX\
-there's suddenly quite some more to explain, especially about the way a (to be)
-typeset stream moves through the machinery. However, discussing all that in
+This is a reference manual and not a tutorial. This means that we discuss changes
+relative to traditional \TEX\ and also present new (or extended) functionality.
+As a consequence we will refer to concepts that we assume to be known or that
+might be explained later. Because the \LUATEX\ and \LUAMETATEX\ engines open up
+\TEX\ there's suddenly quite some more to explain, especially about the way a (to
+be) typeset stream moves through the machinery. However, discussing all that in
 detail makes not much sense, because deep knowledge is only relevant for those
 who write code not possible with regular \TEX\ and who are already familiar with
 these internals (or willing to spend time on figuring it out).
@@ -57,11 +57,11 @@ H <=> i <=> [glue] <=> T <=> h <=> e <=> r <=> e ...
 \stoptyping
 
 When we have a paragraph, we actually get something like this, where a \type
-{localpar} node stores some metadata and is followed by a \type {hlist} flagged
-as indent box:
+{par} node stores some metadata and is followed by a \type {hlist} flagged as
+indent box:
 
 \starttyping
-[localpar] <=> [hlist] <=> H <=> i <=> [glue] <=> T <=> h <=> e <=> r <=> e ...
+[par] <=> [hlist] <=> H <=> i <=> [glue] <=> T <=> h <=> e <=> r <=> e ...
 \stoptyping
 
 Each character becomes a so called glyph node, a record with properties like the
@@ -71,14 +71,14 @@ back to a previous node or next node, given that these exist. Sometimes
 multiple characters are represented by one glyphs, so one can also get:
 
 \starttyping
-[localpar] <=> [hlist] <=> H <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+[par] <=> [hlist] <=> H <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
 \stoptyping
 
 And maybe some characters get positioned relative to each other, so we might
 see:
 
 \starttyping
-[localpar] <=> [hlist] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+[par] <=> [hlist] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
 \stoptyping
 
 It's also good to know beforehand that \TEX\ is basically centered around
@@ -131,6 +131,12 @@ what commands relate to them. Here are a few:
 \LL
 \stoptabulate
 
+Whatever we feed into \TEX\ at some point becomes a token which is either
+interpreted directly or stored in a linked list. A token is just a number that
+encodes a specific command (operator) and some value (operand) that further
+specifies what that command is supposed to do. In addition to an interface to
+nodes, there is an interface to tokens, as later chapters will demonstrate.
+
 Text (interspersed with macros) comes from an input medium. This can be a file,
 token list, macro body cq.\ arguments, \ some internal quantity (like a number),
 \LUA, etc. Macros get expanded. In the process \TEX\ can enter a group. Inside
@@ -150,14 +156,14 @@ of the content is calculated and the box gets its width, height and depth. What
 happens with the box depends on what macros do with it.
 
 The other thing that can happen is that the text starts a new paragraph. In that
-case some information is stored in a leading \type {localpar} node. Then
-indentation is appended and the paragraph ends with some glue. Again the three
-stages are applied but this time, afterwards, the long line is broken into lines
-and the result is either added to the content of a box or to the main vertical
-list (the running text so to say). This is called par building. At some point
-\TEX\ decides that enough is enough and it will trigger the page builder. So,
-building is another concept we will encounter. Another example of a builder is
-the one that turns an intermediate math list into something typeset.
+case some information is stored in a leading \type {par} node. Then indentation
+is appended and the paragraph ends with some glue. Again the three stages are
+applied but this time, afterwards, the long line is broken into lines and the
+result is either added to the content of a box or to the main vertical list (the
+running text so to say). This is called par building. At some point \TEX\ decides
+that enough is enough and it will trigger the page builder. So, building is
+another concept we will encounter. Another example of a builder is the one that
+turns an intermediate math list into something typeset.
 
 Wrapping something in a box is called packing. Adding something to a list is
 described in terms of contributing. The more complicated processes are wrapped

@@ -48,7 +48,6 @@ local sethjcode        = lang.sethjcode
 local uccodes          = characters.uccodes
 local lccodes          = characters.lccodes
 
-lang.exceptions        = lang.hyphenation
 local new_language     = lang.new
 
 languages              = languages or {}

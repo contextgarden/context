@@ -21,7 +21,7 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
-local localpar_code      = nodecodes.localpar
+local par_code           = nodecodes.par
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -364,9 +364,9 @@ end
 
 do
 
-    local localparcodes = nodes.localparcodes
-    local hmodepar_code = localparcodes.hmode_par
-    local vmodepar_code = localparcodes.vmode_par
+    local parcodes      = nodes.parcodes
+    local hmodepar_code = parcodes.hmode_par
+    local vmodepar_code = parcodes.vmode_par
 
     local getnest       = tex.getnest
     local getsubtype    = nuts.getsubtype
@@ -374,7 +374,7 @@ do
     function nuts.setparproperty(action,...)
         local tail = tonut(getnest().tail)
         while tail do
-            if getid(tail) == localpar_code then
+            if getid(tail) == par_code then
                 local s = getsubtype(tail)
                 if s == hmodepar_code or s == vmodepar_code then
                     return action(tail,...)

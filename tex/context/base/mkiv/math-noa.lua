@@ -203,7 +203,7 @@ local subbox_code        = nodecodes.subbox         -- attr list
 local submlist_code      = nodecodes.submlist       -- attr list
 local mathchar_code      = nodecodes.mathchar       -- attr fam char
 local mathtextchar_code  = nodecodes.mathtextchar   -- attr fam char
-local delim_code         = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local delimiter_code     = nodecodes.delimiter      -- attr small_fam small_char large_fam large_char
 ----- style_code         = nodecodes.style          -- attr style
 ----- parameter_code     = nodecodes.parameter      -- attr style
 local math_choice        = nodecodes.choice         -- attr display text script scriptscript
@@ -282,7 +282,7 @@ local function process(start,what,n,parent)
                   noad = getsuppre (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsubpre (start)              if noad then process(noad,what,n,start) end -- list
                 end
-        elseif id == mathchar_code or id == mathtextchar_code or id == delim_code then
+        elseif id == mathchar_code or id == mathtextchar_code or id == delimiter_code then
             break
         elseif id == subbox_code or id == submlist_code then
             local noad = getlist(start)                 if noad then process(noad,what,n,start) end -- list (not getlist !)
@@ -583,7 +583,7 @@ do
             end
         end
     end
-    families[delim_code] = function(pointer)
+    families[delimiter_code] = function(pointer)
         if getfield(pointer,"small_fam") == 0 then
             local a = getattr(pointer,a_mathfamily)
             if a and a > 0 then
@@ -615,7 +615,7 @@ do
 
     -- will become:
 
-    -- families[delim_code] = function(pointer)
+    -- families[delimiter_code] = function(pointer)
     --     if getfam(pointer) == 0 then
     --         local a = getattr(pointer,a_mathfamily)
     --         if a and a > 0 then
@@ -758,7 +758,7 @@ do
         end
     end
 
-    relocate[delim_code] = function(pointer)
+    relocate[delimiter_code] = function(pointer)
         if trace_analyzing then
             setnodecolor(pointer,"font:fina")
         end

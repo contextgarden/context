@@ -174,12 +174,12 @@ discussed here (yet).
 
 \stopsubsection
 
-\startsubsection[title={\nod {ins} nodes}]
+\startsubsection[title={\nod {insert} nodes}]
 
 \topicindex {nodes+insertions}
 \topicindex {insertions}
 
-This node relates to the \prm {insert} primitive and support the fields: \showfields{ins}.
+This node relates to the \prm {insert} primitive and support the fields: \showfields{insert}.
 
 \starttabulate[|l|l|p|]
 \DB field          \BC type   \BC explanation \NC \NR
@@ -455,7 +455,7 @@ fields: \showfields {glyph}.
 \NC \type{attr}             \NC node    \NC list of attributes \NC \NR
 \NC \type{char}             \NC number  \NC the character index in the font \NC \NR
 \NC \type{font}             \NC number  \NC the font identifier \NC \NR
-\NC \type{lang}             \NC number  \NC the language identifier \NC \NR
+\NC \type{language}         \NC number  \NC the language identifier \NC \NR
 \NC \type{left}             \NC number  \NC the frozen \type {\lefthyphenmnin} value \NC \NR
 \NC \type{right}            \NC number  \NC the frozen \type {\righthyphenmnin} value \NC \NR
 \NC \type{uchyph}           \NC boolean \NC the frozen \prm {uchyph} value \NC \NR
@@ -527,13 +527,13 @@ nodes: \showfields {boundary} are the only fields.
 
 \stopsubsection
 
-\startsubsection[title={\nod {local_par} nodes}]
+\startsubsection[title={\nod {par} nodes}]
 
 \topicindex {nodes+paragraphs}
 \topicindex {paragraphs}
 
 This node is inserted at the start of a paragraph. You should not mess
-too much with this one. Valid fields are: \showfields {local_par}.
+too much with this one. Valid fields are: \showfields {par}.
 
 \starttabulate[|l|l|p|]
 \DB field                  \BC type   \BC explanation \NC \NR
@@ -613,7 +613,7 @@ into a single node type with separate subtypes for differentiation: \showfields
 
 Many object fields in math mode are either simple characters in a specific family
 or math lists or node lists: \type {math_char}, \type {math_text_char}, {sub_box}
-and \type {sub_mlist} and \type {delim}. These are endpoints and therefore the
+and \type {sub_mlist} and \type {delimiter}. These are endpoints and therefore the
 \type {next} and \type {prev} fields of these these subnodes are unused.
 
 Some of the more elaborate noads have an option field. The values in this bitset
@@ -681,11 +681,11 @@ its internal link structure is correct, otherwise an error is triggered.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\nod {delim} subnodes}]
+\startsubsubsection[title={\nod {delimiter} subnodes}]
 
 There is a fifth subnode type that is used exclusively for delimiter fields. As
 before, the \type {next} and \type {prev} fields are unused, but we do have:
-\showfields {delim}.
+\showfields {delimiter}.
 
 \starttabulate[|l|l|p|]
 \DB field             \BC type   \BC explanation \NC \NR
@@ -854,14 +854,14 @@ renderer and might get adapted in the process.
 \starttabulate[|l|l|p|]
 \DB field          \BC type           \BC explanation \NC \NR
 \TB
-\NC \type{subtype} \NC number         \NC \showsubtypes{fence} \NC \NR
-\NC \type{attr}    \NC node           \NC list of attributes \NC \NR
-\NC \type{delim}   \NC delimiter node \NC delimiter specification \NC \NR
-\NC \type{italic}  \NC number         \NC italic correction \NC \NR
-\NC \type{height}  \NC number         \NC required height \NC \NR
-\NC \type{depth}   \NC number         \NC required depth \NC \NR
-\NC \type{options} \NC number         \NC bitset of rendering options \NC \NR
-\NC \type{class}   \NC number         \NC spacing related class \NC \NR
+\NC \type{subtype}   \NC number         \NC \showsubtypes{fence} \NC \NR
+\NC \type{attr}      \NC node           \NC list of attributes \NC \NR
+\NC \type{delimiter} \NC delimiter node \NC delimiter specification \NC \NR
+\NC \type{italic}    \NC number         \NC italic correction \NC \NR
+\NC \type{height}    \NC number         \NC required height \NC \NR
+\NC \type{depth}     \NC number         \NC required depth \NC \NR
+\NC \type{options}   \NC number         \NC bitset of rendering options \NC \NR
+\NC \type{class}     \NC number         \NC spacing related class \NC \NR
 \LL
 \stoptabulate
 

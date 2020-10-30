@@ -644,7 +644,7 @@ if context then
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
     local getlist            = nuts.getlist
-    local getlang            = nuts.getlang
+    local getlanguage        = nuts.getlanguage
     local getattrlist        = nuts.getattrlist
     local setattrlist        = nuts.setattrlist
     local isglyph            = nuts.isglyph
@@ -1410,7 +1410,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                 if skipping then
                     current = getnext(current)
                 else
-                    local lang = getlang(current)
+                    local lang = getlanguage(current)
                     local font = getfont(current)
                     if lang ~= language or font ~= lastfont then
                         if dictionary and size > charmin and leftmin + rightmin <= size then

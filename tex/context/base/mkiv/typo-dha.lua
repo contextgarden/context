@@ -78,7 +78,7 @@ local math_code          = nodecodes.math
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
 local dir_code           = nodecodes.dir
-local localpar_code      = nodecodes.localpar
+local par_code           = nodecodes.par
 
 local dirvalues          = nodes.dirvalues
 local lefttoright_code   = dirvalues.lefttoright
@@ -332,7 +332,7 @@ local function process(start)
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
-            elseif id == localpar_code and start_of_par(current) then
+            elseif id == par_code and start_of_par(current) then
                 local direction = getdirection(current)
                 if direction == righttoleft_code then
                     autodir = -1

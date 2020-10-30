@@ -52,7 +52,7 @@ local subbox_code       = nodecodes.subbox         -- attr list
 local submlist_code     = nodecodes.submlist       -- attr list
 local mathchar_code     = nodecodes.mathchar       -- attr fam char
 local mathtextchar_code = nodecodes.mathtextchar   -- attr fam char
-local delim_code        = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local delimiter_code    = nodecodes.delimiter      -- attr small_fam small_char large_fam large_char
 local style_code        = nodecodes.style          -- attr style
 local choice_code       = nodecodes.choice         -- attr display text script scriptscript
 local fence_code        = nodecodes.fence          -- attr subtype
@@ -259,7 +259,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
              -- showtag(start,id,false)
                 break
-            elseif id == delim_code then
+            elseif id == delimiter_code then
                 -- check for code
                 setattr(start,a_tagged,start_tagged("mo"))
                 stop_tagged()

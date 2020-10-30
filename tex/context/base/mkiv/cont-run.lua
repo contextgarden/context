@@ -190,9 +190,15 @@ else
 
 end
 
-local preparejob  preparejob = function() -- tricky: we need a hook for this
+local function processjob()
+
+    tokens.setters.macro("processjob","") -- make a
+
+    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
     local arguments = environment.arguments
+    local suffix    = environment.suffix
+    local filename  = environment.filename -- hm, not inputfilename !
 
     environment.lmtxmode = CONTEXTLMTXMODE
 
@@ -207,25 +213,21 @@ local preparejob  preparejob = function() -- tricky: we need a hook for this
         }
     end
 
-    preparejob = function() end
+    if CONTEXTLMTXMODE then
 
-    job.prepare = preparejob
+        local overloadmode = arguments.overloadmode
 
-end
+        if overloadmode == "warning" then
+            overloadmode = 3 -- 5
+        elseif overloadmode == "error" then
+            overloadmode = 4 -- 6
+        else
+            overloadmode = tonumber(overloadmode) or 0
+        end
 
-job.prepare = preparejob
+        tex.set("overloadmode",overloadmode)
 
-local function processjob()
-
-    tokens.setters.macro("processjob","") -- make a
-
-    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
-
-    local arguments = environment.arguments
-    local suffix    = environment.suffix
-    local filename  = environment.filename -- hm, not inputfilename !
-
-    preparejob()
+    end
 
     if not filename or filename == "" then
         -- skip

@@ -21,14 +21,14 @@
 
 % Allocation:
 
-\countdef\realpageno \zerocount  \realpageno \plusone
-\countdef\userpageno \plusone    \userpageno \plusone
-\countdef\subpageno  \plustwo    \subpageno  \plusone % was \zerocount but that doesn't work well with bytext
-\countdef\arrangeno  \plusthree  \arrangeno  \zerocount % !
-\countdef\pagenoshift\plusfour   \pagenoshift\zerocount % !
-\countdef\lastpageno \plusfive   \lastpageno \zerocount % !
+\ifdefined\realpageno  \else \countdef\realpageno \zerocount  \fi \realpageno \plusone
+\ifdefined\userpageno  \else \countdef\userpageno \plusone    \fi \userpageno \plusone
+\ifdefined\subpageno   \else \countdef\subpageno  \plustwo    \fi \subpageno  \plusone % was \zerocount but that doesn't work well with bytext
+\ifdefined\arrangeno   \else \countdef\arrangeno  \plusthree  \fi \arrangeno  \zerocount % !
+\ifdefined\pagenoshift \else \countdef\pagenoshift\plusfour   \fi \pagenoshift\zerocount % !
+\ifdefined\lastpageno  \else \countdef\lastpageno \plusfive   \fi \lastpageno \zerocount % !
 
-\let\pageno\userpageno
+\ifdefined\pageno \else \let\pageno\userpageno \fi
 
 \def\realfolio{\the\realpageno}
 \def\userfolio{\the\userpageno}
@@ -268,8 +268,8 @@
 
 % States:
 
-\newif\ifdoublesided  \newconditional\layoutisdoublesided
-\newif\ifsinglesided  \newconditional\layoutissinglesided
+\newconditional\layoutisdoublesided % already defined: \newif\ifdoublesided
+\newconditional\layoutissinglesided % already defined: \newif\ifsinglesided
 
 % Realpage and subpage numbers:
 
@@ -316,7 +316,8 @@
    \doublesidedfalse \setfalse\layoutissinglesided
    \resetsystemmode\v!singlesided
    \resetsystemmode\v!doublesided
-   \processallactionsinset[\directpagenumberingparameter\c!alternative]
+   \processallactionsinset
+     [\directpagenumberingparameter\c!alternative]%
      [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\settrue\layoutissinglesided,
        \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\settrue\layoutisdoublesided]%
    \the\everysidedswitch

@@ -69,8 +69,8 @@
 
     \unexpanded\def\creativecommons#1%
       {\dontleavehmode\lower.15\exheight\hbox\bgroup
-         \let\inbetween\relax
-         \processseparatedlist[#1][-]{\inbetween\let\inbetween\enspace\directsymbol{cc}}%
+         \overloaded\let\inbetween\relax
+         \processseparatedlist[#1][-]{\inbetween\overloaded\let\inbetween\enspace\directsymbol{cc}}%
        \egroup}
 
     \definesymbol [cc-by-sa-nc] [\creativecommons{cc-by-sa-nc}]

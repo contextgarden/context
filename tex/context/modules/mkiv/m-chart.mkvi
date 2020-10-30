@@ -46,7 +46,7 @@
 \let\setupFLOWcharts\setupFLOWchart
 \let\setupFLOWlines \setupFLOWline
 \let\setupFLOWshapes\setupFLOWshape
-\let\setupFLOWsets  \setupFLOWset
+%let\setupFLOWset  \setupFLOWsets
 
 \setupFLOWcharts
   [\c!width=12\bodyfontsize,
@@ -285,7 +285,7 @@
    \let\connect    \FLOW_connection
    \let\locate     \FLOW_location
    %
-   \let\includeFLOWchart\include
+   \overloaded\let\includeFLOWchart\include
 \to \everyFLOWchart
 
 \unexpanded\def\FLOW_name              #name{\clf_flow_set_name{#name}\ignorespaces}

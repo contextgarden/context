@@ -242,31 +242,65 @@ end
 -- this will be split into contribute_filter for these 4 so at some point
 -- the check can go away
 
-function builders.buildpage_filter(groupcode)
-    -- the next check saves 1% runtime on 1000 tufte pages
-    local head = texlists.contrib_head
-    local done = false
-    if head then
-        -- called quite often ... maybe time to remove timing
-        starttiming(builders)
-        if trace_page_builder then
-            report(groupcode,head)
+if CONTEXTLMTXMODE > 0 then
+
+    -- Todo: contrib_head can be any head (kind of) not per se the page one so maybe I will
+    -- intercept that in the engine with page_contribute_head or so.
+
+    function builders.buildpage_filter(groupcode)
+        local head = texlists.contribute_head
+        if head then
+            local done = false
+            -- called quite often ... maybe time to remove timing
+            starttiming(builders)
+            if trace_page_builder then
+                report(groupcode,head)
+            end
+            head, done = pageactions(head,groupcode)
+            stoptiming(builders)
+         -- -- doesn't work here (not passed on?)
+         -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
+            texlists.contribute_head = head or nil -- needs checking
+         -- tex.setlist("contribute_head",head,head and nodes.tail(head))
+            return done and head or true -- no return value needed
+        else
+            -- happens quite often
+            if trace_page_builder then
+                report(groupcode)
+            end
+    --         return nil, false -- no return value needed
+            return nil
         end
-        head, done = pageactions(head,groupcode)
-        stoptiming(builders)
-     -- -- doesn't work here (not passed on?)
-     -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
-        texlists.contrib_head = head or nil -- needs checking
-     -- tex.setlist("contrib_head",head,head and nodes.tail(head))
-        return done and head or true -- no return value needed
-    else
-        -- happens quite often
-        if trace_page_builder then
-            report(groupcode)
-        end
---         return nil, false -- no return value needed
-        return nil
     end
+
+else
+
+    function builders.buildpage_filter(groupcode)
+        local head = texlists.contrib_head
+        if head then
+            local done = false
+            -- called quite often ... maybe time to remove timing
+            starttiming(builders)
+            if trace_page_builder then
+                report(groupcode,head)
+            end
+            head, done = pageactions(head,groupcode)
+            stoptiming(builders)
+         -- -- doesn't work here (not passed on?)
+         -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
+            texlists.contrib_head = head or nil -- needs checking
+         -- tex.setlist("contrib_head",head,head and nodes.tail(head))
+            return done and head or true -- no return value needed
+        else
+            -- happens quite often
+            if trace_page_builder then
+                report(groupcode)
+            end
+    --         return nil, false -- no return value needed
+            return nil
+        end
+    end
+
 end
 
 registercallback('vpack_filter',          builders.vpack_filter,      "vertical spacing etc")

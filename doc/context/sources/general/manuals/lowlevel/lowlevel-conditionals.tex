@@ -1224,6 +1224,15 @@ defined at the user level or is a build in one. This one might evolve.
 
 \stopsubsection
 
+\startsubsection[title={\tex{ifarguments}}]
+
+This conditional can be used to check how many arguments were matched. It only
+makes sense when used with macros defined with the \type {\tolerant} prefix
+and|/|or when the sentinel \type {\ignorearguments} after the arguments is used.
+More details can be found in the lowlevel macros manual.
+
+\stopsubsection
+
 \startsubsection[title={\tex{orelse}}]
 
 This it not really a test primitive but it does act that way. Say that we have this:
@@ -1254,13 +1263,16 @@ A bit nicer looks this:
 \fi
 \stoptyping
 
-We stay at the same level and the only test that cannot be used this way is \type
-{\ifcondition} but that is no real problem. Sometimes a more flat test tree had
-advantages but if you think that it gives better performance then you will be
-disappointed. The fact that we stay at the same level is compensated by a bit
-more parsing, so unless you have millions such cases (or expansions) it might
-make a bit of a difference. As mentioned, I'm a bit sensitive for how code looks so
-that was the main motivation for introducing it.
+% We stay at the same level and the only test that cannot be used this way is \type
+% {\ifcondition} but that is no real problem. Sometimes a more flat test tree had
+
+We stay at the same level. Sometimes a more flat test tree had advantages but if
+you think that it gives better performance then you will be disappointed. The
+fact that we stay at the same level is compensated by a bit more parsing, so
+unless you have millions such cases (or expansions) it might make a bit of a
+difference. As mentioned, I'm a bit sensitive for how code looks so that was the
+main motivation for introducing it. There is a companion \type {\orunless}
+continuation primitive.
 
 A rather neat trick is the definition of \type {\quitcondition}:
 

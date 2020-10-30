@@ -27,8 +27,6 @@
 
 \unprotect
 
-\definesystemvariable {ts} % TypeScript / for the moment we keep this one
-
 \newcount      \c_font_typescripts_n_of_preloaded
 \newconditional\c_font_typescripts_quit
 \newtoks       \c_font_typescripts_document
@@ -69,7 +67,7 @@
 \installmacrostack\m_font_typescripts_two
 \installmacrostack\m_font_typescripts_three
 
-\let\t_font_typescripts\relax % uses as synonym
+\mutable\let\t_font_typescripts\relax % uses as synonym
 
 \installcorenamespace{typescriptcache}
 \installcorenamespace{typescriptfiles}
@@ -97,29 +95,41 @@
 %D that one is also grouped and loading bodyfonts grouped is a real bad idea.
 %D Ignoring all spaces is also not a solution. So, our verdict is: no catch.
 
-\unexpanded\def\starttypescriptcollection
+\permanent\protected\def\starttypescriptcollection % redefined on the fly
   {\dosingleempty\font_typescripts_collection_start}
 
 \def\font_typescripts_collection_start[#tag]%
   {}
 
-\let\stoptypescriptcollection\relax
+\permanent\let\stoptypescriptcollection\relax
 
-\unexpanded\def\usetypescriptfile[#filename]%
-  {\doifelse{#filename}\v!reset
-     {\let\typescriptfiles\empty}
-     {\splitfilename{#filename}%
-      \addtocommalist\splitoffbase\typescriptfiles}}
+\permanent\protected\def\usetypescriptfile[#filename]%
+  {\iftok{#filename}{\v!reset}%
+     \let\typescriptfiles\empty
+   \else
+     \splitfilename{#filename}%
+     \addtocommalist\splitoffbase\typescriptfiles
+   \fi}
 
-\unexpanded\def\usetypescript     {\dotripleempty\font_typescripts_use_one}
-\unexpanded\def\usetypescriptexact{\dotripleempty\font_typescripts_use_two}
+\installmacrostack\stoptypescript
+
+% \permanent\protected\def\usetypescript     {\dotripleempty\font_typescripts_use_one}
+% \permanent\protected\def\usetypescriptexact{\dotripleempty\font_typescripts_use_two}
+%
+% \def\font_typescripts_use_one{\let\typescriptmethod\plusone\font_typescripts_use}
+% \def\font_typescripts_use_two{\let\typescriptmethod\plustwo\font_typescripts_use}
+%
+% \protected\def\font_typescripts_use[#one][#two][#three]%
+
+% todo: just pass the method ... also further on then .. first test
 
 \def\font_typescripts_use_one{\let\typescriptmethod\plusone\font_typescripts_use}
 \def\font_typescripts_use_two{\let\typescriptmethod\plustwo\font_typescripts_use}
 
-\installmacrostack\stoptypescript
+\permanent\protected\def\usetypescript     {\font_typescripts_use_one}
+\permanent\protected\def\usetypescriptexact{\font_typescripts_use_two}
 
-\unexpanded\def\font_typescripts_use[#one][#two][#three]%
+\tolerant\protected\def\font_typescripts_use[#one]#spacer[#two]#spacer[#three]%
   {\push_macro_m_font_typescripts_one
    \push_macro_m_font_typescripts_two
    \push_macro_m_font_typescripts_three
@@ -159,20 +169,20 @@
 
 \let\font_typescripts_use_inline\font_typescripts_use_display
 
-\unexpanded\def\preloadtypescripts
+\permanent\protected\def\preloadtypescripts
   {\ifproductionrun\settrue\c_font_typescripts_preload\fi}
 
 \prependtoks
     \preloadtypescripts
 \to \everyjob
 
-\unexpanded\def\loadtypescriptfile[#1]%
+\permanent\protected\def\loadtypescriptfile[#1]%
   {\push_macro_typescriptstate
    \let\typescriptstate\plustwo % assumes 2 at the outer level
    \clf_loadtypescriptfile{#1}%
    \pop_macro_typescriptstate}
 
-\unexpanded\def\loadfoundtypescriptfile#1#2% name foundname / not a user command
+\permanent\protected\def\loadfoundtypescriptfile#1#2% name foundname / not a user command
   {\startreadingfile
    \unprotect
    \pushendofline
@@ -181,17 +191,17 @@
    \protect
    \stopreadingfile}
 
-\unexpanded\def\quittypescriptscanning
+\permanent\protected\def\quittypescriptscanning
   {\settrue\c_font_typescripts_quit} % public
 
-\def\font_typescripts_start_store#definitions\stoptypescript
+\permanent\protected\def\font_typescripts_start_store#definitions\stoptypescript
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
    \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescript#definitions\stoptypescript}%
    \gtoksapp\t_font_typescripts\expandafter
      {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
 
-\def\font_typescripts_collection_start_store#definitions\stoptypescriptcollection
+\permanent\protected\def\font_typescripts_collection_start_store#definitions\stoptypescriptcollection
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
    \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescriptcollection#definitions\stoptypescriptcollection}%
@@ -215,6 +225,7 @@
 
 \def\font_typescript_process_typescript_file_and_store
   {\expandafter\let\expandafter\t_font_typescripts\csname\??typescriptfiles\currenttypefile\endcsname
+% {\aliased\expandafter\let\expandafter\t_font_typescripts\csname\??typescriptfiles\currenttypefile\endcsname
    \ifx\t_font_typescripts\relax
      \font_typescript_process_typescript_store_indeed
    \fi
@@ -223,8 +234,8 @@
 \def\font_typescript_process_typescript_store_indeed
   {\newtoks\t_font_typescripts % is \relaxed elsewhere
    \begingroup
-     \let\starttypescript          \font_typescripts_start_store
-     \let\starttypescriptcollection\font_typescripts_collection_start_store
+     \enforced\let\starttypescript          \font_typescripts_start_store
+     \enforced\let\starttypescriptcollection\font_typescripts_collection_start_store
      \font_typescript_process_typescript_file
    \endgroup
    \expandafter\let\csname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
@@ -232,10 +243,7 @@
 \def\font_typescript_process_typescript_file
   {\clf_doprocesstypescriptfile{\currenttypefile}}
 
-\unexpanded\def\usetypescriptonce
-  {\dotripleempty\font_typescripts_use_once}
-
-\def\font_typescripts_use_once[#one][#two][#three]%
+\permanent\tolerant\protected\def\usetypescriptonce[#one]#spacer[#two]#spacer[#three]%
   {\ifcsname\??typescriptonce#one:#two:#three\endcsname
      \writestatus\m!fonts{once (#one) (#two) (#three)}%
    \else
@@ -245,13 +253,10 @@
 
 % \definetypescriptsynonym[lbr][cmr]
 
-\unexpanded\def\definetypescriptsynonym
-  {\dodoubleempty\font_typescripts_synonym_define}
-
-\def\font_typescripts_synonym_define[#name][#synonym]%
+\permanent\tolerant\protected\def\definetypescriptsynonym[#name]#spacer[#synonym]%
   {\ifsecondargument\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
 
-\def\truetypescript#name% recursive so no \lastnamedcs
+\permanent\def\truetypescript#name% recursive so no \lastnamedcs
   {\ifcsname\??typescriptsynonyms#name\endcsname
     %\expandafter\truetypescript\csname\??typescriptsynonyms#name\endcsname
      \expandafter\truetypescript\lastnamedcs
@@ -269,7 +274,7 @@
     \settrue\c_font_typescripts_first_pass
 \to \everyjob
 
-\unexpanded\def\starttypescript
+\permanent\protected\def\starttypescript
   {\ifcase\typescriptstate
      % 0 = skip
      \expandafter\font_typescripts_start_gobble
@@ -338,7 +343,7 @@
 \def\font_typescripts_start_process_indeed
   {\push_macro_fontclass}
 
-\unexpanded\def\stoptypescript
+\permanent\protected\def\stoptypescript
   {\pop_macro_fontclass}
 
 \def\font_typescripts_check#asked#target#followup[#value]% script use value next
@@ -366,23 +371,15 @@
      \expandafter\font_typescripts_start_gobble
    \fi}
 
-\def\extendtypescriptmatch
+\permanent\protected\def\extendtypescriptmatch
   {\edef\m_font_typescripts_match{\m_font_typescripts_match\space[\m_font_typescripts_check]}}
 
 %D Map files will go away in \LUATEX, but till that happens we use stripped down
 %D support for loading them.
 
-\unexpanded\def\loadmapfile{\dosingleempty\font_map_load_file}
-\unexpanded\def\loadmapline{\dodoubleempty\font_map_load_line}
-
-\def\font_map_load_file[#filename]%
-  {\clf_loadmapfile{#filename}}
-
-\def\font_map_load_line[#kind][#data]%
-  {\clf_loadmapline{#kind}{#data}}
-
-\unexpanded\def\forgetmapfiles
-  {\clf_resetmapfiles}
+\permanent\tolerant\protected\def\loadmapfile             [#filename]{\clf_loadmapfile{#filename}}
+\permanent\tolerant\protected\def\loadmapline   [#kind]#spacer[#data]{\clf_loadmapline{#kind}{#data}}
+\permanent         \protected\def\forgetmapfiles                     {\clf_resetmapfiles}
 
 % \prependtoks
 %     \loadmapfile[mkiv-base.map]% can't we preload this one?
@@ -398,10 +395,13 @@
 %  \setupfontsynonym [\typescriptprefix\typescriptone] [handling=\typescriptthree]
 % \stoptypescript
 
-\unexpanded\def\definetypescriptprefix
-  {\dodoubleargument\font_typescripts_define_prefix}
+% \protected\def\definetypescriptprefix
+%   {\dodoubleargument\font_typescripts_define_prefix}
+%
+% \def\font_typescripts_define_prefix[#name][#prefix]%
+%   {\setgvalue{\??typescriptprefix#name}{#prefix}} % made global
 
-\def\font_typescripts_define_prefix[#name][#prefix]%
+\permanent\tolerant\protected\def\definetypescriptprefix[#name]#spacer[#prefix]%
   {\setgvalue{\??typescriptprefix#name}{#prefix}} % made global
 
 \def\typescriptprefix#name%
@@ -417,9 +417,6 @@
 % \definetypeface [joke] [rm] [serif] [lucida] [size] [settings]
 % \definetypeface [joke] [specification]
 
-\unexpanded\def\definetypeface
-  {\dosixtupleargument\font_typefaces_define}
-
 \appendtoks
     \font_helpers_reset_fontclass_math_families\fontclass
 \to \everybeforedefinetypeface
@@ -428,7 +425,7 @@
 
 \settrue\autotypescripts
 
-\unexpanded\def\trycurrentfontclass#typeface%
+\protected\def\trycurrentfontclass#typeface%
   {\ifconditional\autotypescripts
      \usetypescript[#typeface]%
      \ifcsname\??fontclassyes#typeface\endcsname
@@ -451,16 +448,25 @@
 
 %D Now we define:
 
-\def\font_typefaces_define
-  {\iffifthargument
-     \expandafter\font_typefaces_define_a
-   \orelse\iffourthargument
-     \expandafter\font_typefaces_define_b
-   \orelse\ifthirdargument
-     \expandafter\font_typefaces_define_c
-   \else
+\permanent\tolerant\protected\def\definetypeface[#name]#spacer[#style]#spacer[#fontshape]#spacer[#fontname]#spacer[#fontsize]#spacer[#settings]%
+  {\ifarguments
+     \expandafter\font_typefaces_define_e
+   \or
      \expandafter\font_typefaces_define_d
-   \fi}
+   \or
+     \expandafter\font_typefaces_define_d
+   \or
+     \expandafter\font_typefaces_define_c
+   \or
+     \expandafter\font_typefaces_define_b
+   \or
+     \expandafter\font_typefaces_define_a
+   \or
+     \expandafter\font_typefaces_define_a
+   \fi[#name][#style][#fontshape][#fontname][#fontsize][#settings]}
+
+\def\font_typefaces_define_e[#name][#style][#fontshape][#fontname][#fontsize][#settings]%
+  {}
 
 \def\font_typefaces_define_a[#name][#style][#fontshape][#fontname][#fontsize][#settings]%
   {\iftracetypescripts\writestatus\m!fonts{define: [#name] [#style] [#fontshape] [#fontname]}\fi
@@ -477,13 +483,13 @@
      \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
    \font_typefaces_defining_stop}
 
-\def\font_typefaces_define_b[#name][#style][#fontshape][#fontname][#dummya][#dummyb]%
-  {\font_typefaces_define_a[#name][#style][#fontshape][#fontname][\s!default][#dummyb]}
+\def\font_typefaces_define_b[#name][#style][#fontshape][#fontname][#discard][#discard]%
+  {\font_typefaces_define_a[#name][#style][#fontshape][#fontname][\s!default][#discard]}
 
-\def\font_typefaces_define_c[#name][#style][#dummya][#dummyb][#dummyc][#dummyd]%
+\def\font_typefaces_define_c[#name][#style][#discard][#discard][#discard][#discard]%
   {\font_typefaces_define_indeed[#name][#style]}
 
-\def\font_typefaces_define_d[#name][#specification][#dummya][#dummyb][#dummyc][#dummyd]% use definitions in lfg file
+\def\font_typefaces_define_d[#name][#specification][#discard][#discard][#discard][#discard]% use definitions in lfg file
   {\clf_definetypeface{#name}{#specification}}
 
 \def\font_typefaces_define_indeed[#name][#style]% saveguard against redefinition
@@ -496,21 +502,62 @@
         \setugvalue{#name}{\switchtotypeface[#name][#style]}%
       \fi}}
 
+% needs testing first ... let'd do it stepwise
+
+% \permanent\tolerant\protected\def\definetypeface[#name]#spacer[#style]#spacer[#fontshape]#spacer[#fontname]#spacer[#fontsize]#spacer[#settings]%
+%   {\ifarguments
+%    \or
+%      \clf_definetypeface{#name}{#specification}%
+%    \or
+%      \clf_definetypeface{#name}{#specification}%
+%    \or
+%      \font_typefaces_define_simplex[#name][#style]%
+%    \or
+%      \font_typefaces_define_complex[#name][#style][#fontshape][#fontname][\s!default][#discard]%
+%    \else
+%      \font_typefaces_define_complex[#name][#style][#fontshape][#fontname][#fontsize][#settings]%
+%    \fi}
+%
+% \def\font_typefaces_define_complex[#name][#style][#fontshape][#fontname][#fontsize][#settings]%
+%   {\iftracetypescripts\writestatus\m!fonts{define: [#name] [#style] [#fontshape] [#fontname]}\fi
+%    \font_typefaces_define_simplex[#name][#style]%
+%    \font_typefaces_defining_start{#name}{#style}{#settings}%
+%      \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+%      \iftypescriptfound
+%        % we're okay
+%      \orelse\ifconditional\autotypescripts
+%        \iftracetypescripts\writestatus\m!fonts{auto load typescript file 2: [#fontname]}\fi
+%        \usetypescriptfile[#fontname]%
+%        \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+%      \fi
+%      \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
+%    \font_typefaces_defining_stop}
+%
+% \def\font_typefaces_define_simplex[#name][#style]% saveguard against redefinition
+%   {\doifsomething{#name}
+%      {\ifcsname\??typescriptdefaultstyles#name\endcsname \else
+%         \registerfontclass{#name}%
+%         \setxvalue{\??typescriptdefaultstyles#name}{#style}%
+%       \fi
+%       \ifcsname#name\endcsname \else
+%         \setugvalue{#name}{\switchtotypeface[#name][#style]}%
+%       \fi}}
+
 \def\font_typefaces_defining_start#name#style#settings%
-  {\let\@@tsrscale    \!!plusone % as we push/pop
-   \let\@@tsfeatures  \empty
-   \let\@@tsfallbacks \empty
-   \let\@@tsgoodies   \empty
-   \let\@@tsdirection \empty
-   \let\@@tsdesignsize\empty
-   \geteparameters[\??ts][#settings]% todo raw
+  {\let\m_ts_rscale    \!!plusone % as we push/pop
+   \let\m_ts_features  \empty
+   \let\m_ts_fallbacks \empty
+   \let\m_ts_goodies   \empty
+   \let\m_ts_direction \empty
+   \let\m_ts_designsize\empty
+   \geteparameters[m_ts_][#settings]% todo raw ... no need for key interpretation
    \push_macro_fontclass
    \push_macro_fontclassstyle
    \setcurrentfontclass{#name}%
-   \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
+   \savefontclassparameters{#style}\m_ts_rscale\m_ts_features\m_ts_fallbacks\m_ts_goodies\m_ts_designsize\m_ts_direction
    \the\everybeforedefinetypeface}
 
-\def\tsvar#key#default% undocumented and unofficial
+\permanent\def\tsvar#key#default% undocumented and unofficial
   {\expandafter\ifempty\csname\??ts#key\endcsname
      #default%
    \else
@@ -528,39 +575,77 @@
    \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
    \font_typefaces_defining_stop}
 
-\unexpanded\def\setuptypeface% [class] [settings]
-  {\dodoubleempty\font_typefaces_setup}
+% \protected\def\setuptypeface% [class] [settings]
+%   {\dodoubleempty\font_typefaces_setup}
+%
+% \protected\def\switchtotypeface% [class] [settings]
+%   {\dodoubleempty\font_typefaces_switch}
+%
+% \def\font_typefaces_setup[#class][#settings]%
+%   {\setcurrentfontclass{#class}%
+%    \let\globalfontclass\fontclass
+%    \ifsecondargument
+%      \setupbodyfont[#settings]%
+%    \orelse\ifempty\fontclass
+%      \setupbodyfont[\s!rm]%
+%    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+%     %\setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+%      \expandafter\setupbodyfont\expandafter[\lastnamedcs]%
+%    \else
+%      \setupbodyfont[\s!rm]%
+%    \fi
+%    \ifmmode\mr\else\tf\fi} % needed ?
+%
+% \def\font_typefaces_switch[#class]#spacer[#settings]%
+%   {\setcurrentfontclass{#class}%
+%    \let\globalfontclass\globalfontclass
+%    \ifsecondargument
+%      \switchtobodyfont[#settings]%
+%    \orelse\ifempty\fontclass
+%      \switchtobodyfont[\s!rm]%
+%    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+%     %\switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+%      \expandafter\switchtobodyfont\expandafter[\lastnamedcs]%
+%    \else
+%      \switchtobodyfont[\s!rm]%
+%    \fi
+%    \ifmmode\mr\else\tf\fi} % needed ?
 
-\unexpanded\def\switchtotypeface% [class] [settings]
-  {\dodoubleempty\font_typefaces_switch}
-
-\def\font_typefaces_setup[#class][#settings]%
-  {\setcurrentfontclass{#class}%
-   \let\globalfontclass\fontclass
-   \ifsecondargument
+\permanent\tolerant\protected\def\setuptypeface[#class]#spacer[#settings]%
+  {\ifarguments
+   \or
+     \setcurrentfontclass{#class}%
+     \let\globalfontclass\fontclass
+     \ifempty\fontclass
+       \setupbodyfont[\s!rm]%
+     \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+       \expandafter\setupbodyfont\expandafter[\lastnamedcs]%
+     \else
+       \setupbodyfont[\s!rm]%
+     \fi
+   \or
+     \setcurrentfontclass{#class}%
+     \let\globalfontclass\fontclass
      \setupbodyfont[#settings]%
-   \orelse\ifempty\fontclass
-     \setupbodyfont[\s!rm]%
-   \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
-    %\setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
-     \expandafter\setupbodyfont\expandafter[\lastnamedcs]%
-   \else
-     \setupbodyfont[\s!rm]%
    \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
-\def\font_typefaces_switch[#class][#settings]%
-  {\setcurrentfontclass{#class}%
-   \let\globalfontclass\globalfontclass
-   \ifsecondargument
-     \switchtobodyfont[#settings]%
-   \orelse\ifempty\fontclass
-     \switchtobodyfont[\s!rm]%
-   \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
-    %\switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
-     \expandafter\switchtobodyfont\expandafter[\lastnamedcs]%
-   \else
-     \switchtobodyfont[\s!rm]%
+\permanent\tolerant\protected\def\switchtotypeface[#class]#spacer[#settings]%
+  {\ifarguments
+   \or
+     \setcurrentfontclass{#class}%
+     \let\globalfontclass\globalfontclass
+     \ifempty\fontclass
+       \switchtobodyfont[\s!rm]%
+     \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+       \expandafter\switchtobodyfont\expandafter[\lastnamedcs]%
+     \else
+       \switchtobodyfont[\s!rm]%
+     \fi
+   \or
+     \setcurrentfontclass{#class}%
+     \let\globalfontclass\globalfontclass
+       \switchtobodyfont[#settings]%
    \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
@@ -573,16 +658,14 @@
 %D \inherittypeface[palatino] % == [rm,ss,tt,mm]
 %D \stoptyping
 
-\unexpanded\def\inherittypeface
-  {\dotripleempty\font_typescripts_inherit_indeed}
-
-\def\font_typescripts_inherit_indeed[#name][#styles][#parentclass]%
-  {\doifelsenothing{#styles}
-     {\font_typescripts_inherit_indeed[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]}
-     {\doifnot{#name}{#parentclass}
-        {\glet\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
-         \def\font_typescripts_inherit_check_step#style{\setevalue{\??typescriptinheritances#name:#style}{#parentclass}}%
-         \processcommalist[#styles]\font_typescripts_inherit_check_step}}}
+\permanent\tolerant\protected\def\inherittypeface[#name]#spacer[#styles]#spacer[#parentclass]%
+  {\iftok{#styles}\emptytoks
+     \font_typescripts_inherit_indeed[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]%
+   \orelse\iftok{#name}{#parentclass}\else
+     \glet\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
+     \def\font_typescripts_inherit_check_step#style{\setevalue{\??typescriptinheritances#name:#style}{#parentclass}}%
+     \processcommalist[#styles]\font_typescripts_inherit_check_step
+   \fi}
 
 \let\font_typescripts_inherit_check_step\relax
 
@@ -612,7 +695,7 @@
    \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!tt \s!Mono  \else
                                                                               \s!Serif \fi\fi\fi}
 
-\unexpanded\def\font_helpers_set_fontstyle_of_fontclass
+\protected\def\font_helpers_set_fontstyle_of_fontclass
   {\ifempty\fontclass
      \let\fontstyle\s!rm
    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname

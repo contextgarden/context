@@ -1,4 +1,4 @@
-%D \module
+    %D \module
 %D   [       file=math-tex,
 %D        version=2001.04.12,
 %D          title=\CONTEXT\ Math Macros,
@@ -80,6 +80,8 @@
   {\savenormalmeaning{#1}%
    \expandafter\def\expandafter#1\expandafter{\csname normal\csstring#1\endcsname#2}}
 
+\pushoverloadmode
+
 \setoperatorlimits \int              \intlimits
 \setoperatorlimits \iint             \intlimits
 \setoperatorlimits \iiint            \intlimits
@@ -89,6 +91,8 @@
 \setoperatorlimits \intclockwise     \intlimits
 \setoperatorlimits \ointclockwise    \intlimits
 \setoperatorlimits \ointctrclockwise \intlimits
+
+\popoverloadmode
 
 %D \macros
 %D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
@@ -131,6 +135,8 @@
 %D The next macros take care of the space between the colon and the
 %D relation symbol.
 
+\pushoverloadmode
+
 \definemathcommand  [colonsep]        {\mkern-1.2mu}
 \definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
 
@@ -153,6 +159,8 @@
 \definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
 \definemathcommand [coloncolonsim]    [rel] {\coloncolon\colonsep\sim}
 \definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+
+\popoverloadmode
 
 % \appendtoks
 %     \def\over{\primitive\over}%

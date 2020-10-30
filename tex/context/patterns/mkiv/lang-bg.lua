@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="bg",
   ["source"]="hyph-bg",
-  ["texcomment"]="% no comment",
+  ["texcomment"]="% \n% \\message{Bulgarian hyphenation patterns (options: --safe-morphology --standalone-tex, version 21 October 2017)}",
  },
  ["patterns"]={
   ["characters"]="абвгдежзийклмнопрстуфхцчшщъюя",

@@ -65,8 +65,8 @@
 \let\buff_parallel_define_saved\defineparallel
 \let\buff_parallel_setup_saved \setupparallel
 
-\unexpanded\def\defineparallel{\dodoubleargument\buff_parallel_define}
-\unexpanded\def\setupparallel {\dotripleargument\buff_parallel_setup}
+\unexpanded\overloaded\def\defineparallel{\dodoubleargument\buff_parallel_define}
+\unexpanded\overloaded\def\setupparallel {\dotripleargument\buff_parallel_setup}
 
 \def\buff_parallel_define[#name][#instances]%
   {\buff_parallel_define_saved[#name][\c!list={#instances}]% list is internal

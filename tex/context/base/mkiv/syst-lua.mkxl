@@ -15,48 +15,48 @@
 
 \unprotect
 
-\def\expdoifelse#1#2{\clf_doifelsesame{#1}{#2}}
-\def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
-\def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
+\permanent\def\expdoifelse#1#2{\clf_doifelsesame{#1}{#2}}
+\permanent\def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
+\permanent\def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
 
 %D Here is variant using a brainwave of the 12\high{+} hour \quotation {Long Road
 %D Out of Eden}\footnote {Eden being Backo\TeX\ 2018, where the virtues of the \type
 %D {\expanded} primitive were mentioned in talks.} trip. For now I don't really see
 %D other useful applications.
 
-\def\expandeddoifelse#1#2{\iftok{#1}{#2}\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
-\def\expandeddoif    #1#2{\iftok{#1}{#2}\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\def\expandeddoifnot #1#2{\iftok{#1}{#2}\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
+\permanent\def\expandeddoifelse#1#2{\iftok{#1}{#2}\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\permanent\def\expandeddoif    #1#2{\iftok{#1}{#2}\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\permanent\def\expandeddoifnot #1#2{\iftok{#1}{#2}\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
-\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
-\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
+\permanent\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+\permanent\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
 
-\def\expdoifcommonelse\expdoifelsecommon
-\def\expdoifinsetelse \expdoifelseinset
+\aliased\let\expdoifcommonelse\expdoifelsecommon
+\aliased\let\expdoifinsetelse \expdoifelseinset
 
 %D We define these here, just in case. This permits \typefile {self} otherwise
 %D nested b|/|e sep problems.
 
-\def\luastringsep{===}
+\immutable\def\luastringsep{===}
 
-\edef\!!bs{[\luastringsep[}
-\edef\!!es{]\luastringsep]}
+\immutable\edef\!!bs{[\luastringsep[}
+\immutable\edef\!!es{]\luastringsep]}
 
-\protected\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
+\permanent\overloaded\protected\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
 
 %D We can omit the tex.ctxcatcodes here as nowadays we seldom change the regime at
 %D the \TEX\ end:
 
 %def\luaexpr#1{\ctxlua{context  (tostring(#1))}} % more efficient:
-\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
+\permanent\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
 
 %D But as we only use write 16 we could as well do all in \LUA\ and ignore the rest.
 %D Okay, we still can do writes here but only when not blocked.
 
-\let\syst_write_execute\clf_execute % always {...}
+\aliased\let\syst_write_execute\clf_execute % always {...}
 
 %D There is a probably rather useless \type {\expression} command that can mix \LUA\ numeric
 %D expressions with \TEX\ commands (for as far that makes sense) that works like this:

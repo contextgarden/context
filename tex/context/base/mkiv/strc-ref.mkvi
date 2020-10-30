@@ -1006,8 +1006,8 @@
 \unexpanded\def\strc_references_about[#label]%
   {\dontleavehmode
    \begingroup
-   \let\crlf\space
-   \let\\\space
+   \enforced\let\crlf\space
+   \enforced\let\\\space
    \postponenotes % might go
    \referencingparameter\c!left
    \doifelsereferencefound{#label}

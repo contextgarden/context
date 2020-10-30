@@ -97,7 +97,6 @@ local tex               = tex
 local texsprint         = tex.sprint    -- just appended (no space,eol treatment)
 local texprint          = tex.print     -- each arg a separate line (not last in directlua)
 ----- texwrite          = tex.write     -- all 'space' and 'character'
-local texgetcount       = tex.getcount
 
 local isnode            = node.is_node
 local writenode         = node.write
@@ -112,6 +111,15 @@ local setluatoken       = token.set_lua
 
 local isprintable       = tex.isprintable or function(n)
     return n and (type(n) == "string" or isnode(n) or istoken(n))
+end
+
+if tex.runlocal then
+    -- obselete names
+    tex.runtoks  = tex.runlocal
+    tex.quittoks = tex.quitlocal
+else
+    tex.runlocal  = tex.runtoks
+    tex.quitlocal = tex.quittoks
 end
 
 local catcodenumbers    = catcodes.numbers
@@ -133,12 +141,14 @@ local report_cld        = logs.reporter("cld","stack")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
-local trialtypesettingstate = createtoken("trialtypesettingstate").index
+local trialtypesetting  = function() return false end
 
-function context.trialtypesetting()
-    return texgetcount(trialtypesettingstate) ~= 0
- -- return texgetcount("trialtypesettingstate") ~= 0
+function context.settrialtypesettingmethod(f)
+    trialtypesetting         = f
+    context.trialtypesetting = f
 end
+
+context.trialtypesetting = function() return trialtypesetting() end -- can be aliased !
 
 local knownfunctions = (lua.getfunctionstable or lua.get_functions_table)(true)
 local showstackusage = false
@@ -154,14 +164,12 @@ local usedstack = function()
 end
 
 local flushfunction = function(slot,arg)
-    if arg() then
+    if arg() or trialtypesetting() then
         -- keep
-    elseif texgetcount(trialtypesettingstate) == 0 then
+    else
         noffreed = noffreed + 1
         freed[noffreed] = slot
         knownfunctions[slot] = false
-    else
-        -- keep
     end
 end
 
@@ -181,13 +189,13 @@ local storefunction = function(arg)
 end
 
 local flushnode = function(slot,arg)
-    if texgetcount(trialtypesettingstate) == 0 then
+    if trialtypesetting() then
+        writenode(copynodelist(arg))
+    else
         writenode(arg)
         noffreed = noffreed + 1
         freed[noffreed] = slot
         knownfunctions[slot] = false
-    else
-        writenode(copynodelist(arg))
     end
 end
 
@@ -378,15 +386,61 @@ interfaces.namesofscanners = namesofscanners
 
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
-local function registerscanner(name,action,protected,public,usage) -- todo: combine value and condition
-    rawset(interfacescanners,name,action)
-    local n = storedscanners[name]
-    n = registerfunction("interfaces.scanners."..name,true,n)
-    storedscanners[name] = n
-    namesofscanners[n] = name
-    name = public and name or (privatenamespace .. name)
- -- print(">>",name,protected and "protected" or "",usage or "macro")
-    setluatoken(name,n,"global",protected and "protected" or "",usage or "macro")
+-- local function registerscanner(name,action,protected,public,usage) -- todo: combine value and condition
+--     rawset(interfacescanners,name,action)
+--     local n = storedscanners[name]
+--     n = registerfunction("interfaces.scanners."..name,true,n)
+--     storedscanners[name] = n
+--     namesofscanners[n] = name
+--     name = public and name or (privatenamespace .. name)
+--  -- print(">>",name,protected and "protected" or "",usage or "macro")
+--     setluatoken(name,n,"global",protected and "protected" or "",usage or "macro")
+-- end
+
+-- todo: bitmap
+
+local registerscanner if CONTEXTLMTXMODE > 0 then
+
+    -- always permanent but we can consider to obey permanent==false
+
+    local function toflags(specification)
+        local protected = specification.protected and "protected" -- or ""
+        local usage     = specification.usage
+        if usage == "value" then
+            return "global", "value", "permanent", protected
+        elseif usage == "condition" then
+            return "global", "conditional", "permanent", protected
+        elseif specification.frozen then
+            return "global", "frozen", protected
+        elseif specification.permanent == false or specification.onlyonce then -- for now onlyonce here
+            return "global", protected
+        else
+            return "global", "permanent", protected
+        end
+    end
+
+
+    registerscanner = function(name,action,specification)
+        rawset(interfacescanners,name,action)
+        local n = registerfunction("interfaces.scanners."..name,true,storedscanners[name])
+        storedscanners[name] = n
+        namesofscanners[n] = name
+        name = specification.public and name or (privatenamespace .. name)
+        setluatoken(name,n,toflags(specification))
+    end
+
+else
+
+    registerscanner = function(name,action,specification)
+        rawset(interfacescanners,name,action)
+        local n = storedscanners[name]
+        n = registerfunction("interfaces.scanners."..name,true,n)
+        storedscanners[name] = n
+        namesofscanners[n] = name
+        name = specification.public and name or (privatenamespace .. name)
+        setluatoken(name,n,"global",specification.protected and "protected" or "")
+    end
+
 end
 
 interfaces.registerscanner = registerscanner
@@ -696,7 +750,7 @@ end
 
 local containseol = patterns.containseol
 
-local lua_expandable_call_code = tokens.commands.lua_expandable_call
+local lua_call_code = tokens.commands.lua_expandable_call or tokens.commands.lua_call
 
 local sortedhashindeed = false
 
@@ -793,7 +847,7 @@ local function writer(parent,command,...) -- already optimized before call
                     local tj = ti[1]
                     if type(tj) == "function" then
                         tj = storefunction(tj)
-                        flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+                        flush(currentcatcodes,"[",newtoken(tj,lua_call_code),"]")
                     else
                         flush(currentcatcodes,"[",tj,"]")
                     end
@@ -803,7 +857,7 @@ local function writer(parent,command,...) -- already optimized before call
                         local tj = ti[j]
                         if type(tj) == "function" then
                             tj = storefunction(tj)
-                            flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
+                            flush(currentcatcodes,"[",newtoken(tj,lua_call_code),j == tn and "]" or ",")
                         else
                             if j == tn then
                                 flush(currentcatcodes,tj,"]")
@@ -816,7 +870,7 @@ local function writer(parent,command,...) -- already optimized before call
             elseif typ == "function" then
                 -- todo: ctx|prt|texcatcodes
                 ti = storefunction(ti)
-                flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
+                flush(currentcatcodes,"{",newtoken(ti,lua_call_code),"}")
             elseif typ == "boolean" then
                 if ti then
                     flushdirect(currentcatcodes,"\r")
@@ -972,7 +1026,7 @@ local caller = function(parent,f,a,...)
         elseif typ == "function" then
             -- ignored: a ...
             f = storefunction(f)
-            flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
+            flush(currentcatcodes,"{",newtoken(f,lua_call_code),"}")
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
@@ -1083,6 +1137,14 @@ statistics.register("traced context", function()
     end
 end)
 
+-- The cmd names were synchronized with the normal call cmd names.
+
+local luacalls = {              --  luatex     luametatex
+    lua_expandable_call = true, --  normal
+    lua_call            = true, --  protected  normal
+    lua_protected_call  = true, --             protected
+}
+
 local function userdata(argument)
     if isnode(argument) then
         return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
@@ -1092,8 +1154,7 @@ local function userdata(argument)
          -- return formatters["<<\\%s>>"](csname)
             return formatters["\\%s"](csname)
         end
-        local cmdname = argument.cmdname
-        if cmdname == "lua_expandable_call" or cmdname == "lua_call" then
+        if luacall[argument.cmdname] then
             return "<<function>>" -- argument.mode
         end
         return "<<token>>"
@@ -1735,8 +1796,10 @@ do
 
     if CONTEXTLMTXMODE > 0 then
 
-        local prefixcodes = tex.getprefixvalues()
-        tex.prefixcodes   = table.swapped(prefixcodes,prefixcodes) -- utilities.storage.allocate()
+        -- also elsewhere
+
+        local flagcodes = tex.getflagvalues()
+        tex.flagcodes   = table.swapped(flagcodes,flagcodes) -- utilities.storage.allocate()
 
     end
 

@@ -243,6 +243,8 @@ local f_root      = formatters[ [[\ugdef\%s{\Uroot "%X "%X }]] ]
 ----- f_char      = formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]]
 local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
 
+local texmathchardef = tex.mathchardef
+
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
         ctx_sprint(f_accent(name,family,slot))
@@ -264,6 +266,8 @@ local setmathsymbol = function(name,class,family,slot) -- hex is nicer for traci
         ctx_sprint(f_radical(name,family,slot))
     elseif class == classes.root then
         ctx_sprint(f_root(name,family,slot))
+    elseif texmathchardef then
+        texmathchardef(name,class,family,slot,"permanent")
     else
         -- beware, open/close and other specials should not end up here
         ctx_sprint(f_char(name,class,family,slot))

@@ -35,7 +35,7 @@ local function pushmacro(name,global)
     if s then
         insert(stack[name],s)
     else
-        report("no macro %a",name)
+        report("no macro %a to push",name)
         insert(stack[name],false)
     end
 end
@@ -45,7 +45,7 @@ local function popmacro(name)
     if s then
         pop_macro(s)
     else
-        -- error
+        report("no macro %a to pop",name)
     end
 end
 

@@ -334,9 +334,10 @@ end
 -- Watch out: in lmtx the font dimen array is no longer resized automatically.
 
 implement {
-    name     = "resetnullfont",
-    onlyonce = true,
-    actions  = function()
+    name      = "resetnullfont",
+    onlyonce  = true,
+    permanent = false,
+    actions   = function()
         for i=1,7 do
             if CONTEXTLMTXMODE > 0 then
                 font.setfontdimen(0,i,0)
@@ -1020,7 +1021,8 @@ end
 
 local function splitcontext(features) -- presetcontext creates dummy here
     local n, sf
-    if find(features,",") then
+    -- We can have: "a=yes,b=yes" "a,b" "a" "a=yes" etc.
+    if find(features,"[,=]") then
         --
         -- from elsewhere (!)
         --

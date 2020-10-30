@@ -57,7 +57,7 @@ local skip_code         = values.skip
 local boolean_code      = values.boolean
 local float_code        = values.float
 
-local global_code      = tex.prefixcodes.global
+local global_code      = tex.flagcodes.global
 
 local context           = context
 
@@ -428,8 +428,8 @@ local slots      = { }
 local nofslots   = 0
 local nofgrouped = 0
 
-local getdata = tokens.getdata
-local setdata = tokens.setdata
+local getinteger = tokens.getinteger
+local setinteger = tokens.setinteger
 
 local report = logs.reporter("lua table")
 
@@ -448,7 +448,7 @@ local function newluatable(name,mt,dispose)
         t = nofgrouped
     end
     if mt then
-        mt = getdata(name)
+        mt = getinteger(name)
         if mt then
             mt = grouped[mt]
             if mt then
@@ -457,7 +457,7 @@ local function newluatable(name,mt,dispose)
         end
     end
     grouped[t] = g
-    setdata(name,t)
+    setinteger(name,t)
     -- This is the slow part. Doing this at the TeX end saved 10% runtime. I'll
     -- think of something that we can set it at the Lua end.
     if dispose then
@@ -466,7 +466,7 @@ local function newluatable(name,mt,dispose)
 end
 
 local function disposeluatable(name)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g then
         grouped[t] = false
@@ -476,7 +476,7 @@ local function disposeluatable(name)
 end
 
 local function setluatable(name,kv)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g and kv then
         for k, v in next, kv do
@@ -486,7 +486,7 @@ local function setluatable(name,kv)
 end
 
 local function getfromluatable(name,k)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g then
         local v = g[k]
@@ -505,7 +505,7 @@ local function getfromluatable(name,k)
 end
 
 local function idxfromluatable(name,k)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g then
         local v = g[k]
@@ -516,7 +516,7 @@ local function idxfromluatable(name,k)
 end
 
 local function getluatable(name,k)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g then
         return g
@@ -524,7 +524,7 @@ local function getluatable(name,k)
 end
 
 local function inspectluatable(name)
-    local t = getdata(name)
+    local t = getinteger(name)
     local g = grouped[t]
     if g then
         report("%s", serialize(g,'[grouped slot ' .. t .. ']'))

@@ -161,8 +161,6 @@
 % trialtypesetting: no need for margin stuff while trialing as
 % is has no dimensions
 
-\definesystemconstant{margintext}
-
 \newcount\nofmargintexts
 
 \definepagestate[\s!margintext]
@@ -337,7 +335,7 @@
   {\endgraf\ifhmode\space\fi}
 
 \appendtoks
-    \let\\\spaceorpar
+    \enforced\let\\\spaceorpar
 \to \everymargindatacontent
 
 %D Another one:

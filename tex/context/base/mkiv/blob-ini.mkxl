@@ -28,19 +28,19 @@
 % \depthofstring          % defined in lua
 % \heightanddepthofstring % defined in lua
 
-\def\wdofstring#1{\dimexpr\widthofstring {#1}\relax} % assured an dimen
-\def\htofstring#1{\dimexpr\heightofstring{#1}\relax} % assured an dimen
-\def\dpofstring#1{\dimexpr\depthofstring {#1}\relax} % assured an dimen
-\def\hdofstring#1{\dimexpr\totalofstring {#1}\relax} % assured an dimen
+\permanent\def\wdofstring#1{\dimexpr\widthofstring {#1}\relax} % assured an dimen
+\permanent\def\htofstring#1{\dimexpr\heightofstring{#1}\relax} % assured an dimen
+\permanent\def\dpofstring#1{\dimexpr\depthofstring {#1}\relax} % assured an dimen
+\permanent\def\hdofstring#1{\dimexpr\totalofstring {#1}\relax} % assured an dimen
 
-\let\heightanddepthofstring\totalofstring
-\let\htdpofstring          \hdofstring
+\aliased\let\heightanddepthofstring\totalofstring
+\aliased\let\htdpofstring          \hdofstring
 
 \let\hd\htdp % if yes then move this
 
 % This one takes anything that can be typeset
 
-\unexpanded\def\setwidthof#1\to#2{\edef#2{\widthofstring{#1}}}
+\permanent\protected\def\setwidthof#1\to#2{\edef#2{\widthofstring{#1}}}
 
 \protect \endinput
 

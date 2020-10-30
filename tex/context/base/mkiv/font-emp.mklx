@@ -32,8 +32,8 @@
 %D But we prefer:
 %D
 %D \starttyping
-%D \unexpanded\def\emphasistypeface{\sl}
-%D \unexpanded\def\emphasisboldface{\bs}
+%D \protected\def\emphasistypeface{\sl}
+%D \protected\def\emphasisboldface{\bs}
 %D \stoptyping
 %D
 %D or even better:
@@ -52,33 +52,33 @@
      \csname\m_font_emphasized_typeface\endcsname
    \fi}
 
-\unexpanded\def\emphasistypeface{\font_emphasis_checked_typeface\sl\it}
-\unexpanded\def\emphasisboldface{\font_emphasis_checked_typeface\bs\bi}
+\permanent\protected\def\emphasistypeface{\font_emphasis_checked_typeface\sl\it}
+\permanent\protected\def\emphasisboldface{\font_emphasis_checked_typeface\bs\bi}
 
-\unexpanded\def\normalboldface % public
+\permanent\protected\def\normalboldface % public
   {\relax
    \ifx\fontalternative\s!it\bi\orelse
    \ifx\fontalternative\s!sl\bs\else
                             \bf\fi}
 
-\unexpanded\def\normalitalicface % public
+\permanent\protected\def\normalitalicface % public
   {\relax
    \ifx\fontalternative\s!tf\it\orelse
    \ifx\fontalternative\s!bf\bi\else
                             \tf\fi}
 
-\unexpanded\def\normalslantedface % public
+\permanent\protected\def\normalslantedface % public
   {\relax \ifx\fontalternative\s!tf\sl
    \orelse\ifx\fontalternative\s!bf\bs
    \else                           \tf\fi}
 
-\unexpanded\def\normaltypeface % public
+\permanent\protected\def\normaltypeface % public
   {\relax
    \ifx\fontalternative\s!bi \it \orelse
    \ifx\fontalternative\s!bs \sl \else
                              \tf \fi}
 
-\unexpanded\def\swaptypeface % public
+\permanent\protected\def\swaptypeface % public
   {\relax
    \ifx\fontalternative\s!it \tf               \orelse
    \ifx\fontalternative\s!sl \tf               \orelse
@@ -93,14 +93,14 @@
 \let\italicface \normalitalicface  % public
 \let\swapface   \swaptypeface      % public
 
-%D To be set with the default body font environment: \type
-%D {em} being \type {slanted} or \type {italic}.
+%D To be set with the default body font environment: \type {em} being \type
+%D {slanted} or \type {italic}.
 
 % maybe a \csname...\fontalternative\endcsname
 
 \newconditional\c_font_emphasis_needed
 
-\unexpanded\def\em
+\permanent\protected\def\em
   {\relax
    \ifdim\slantperpoint>\zeropoint
      \settrue\c_font_emphasis_needed
@@ -109,15 +109,15 @@
    \fi
    \font_emphasis_set_emphasis_boldface % new
    \ifx\fontalternative\s!it
-     \unexpanded\def\emphasistypeface{\it}\tf
+     \enforced\permanent\protected\def\emphasistypeface{\it}\tf
    \orelse\ifx\fontalternative\s!sl
-     \unexpanded\def\emphasistypeface{\sl}\tf
+     \enforced\permanent\protected\def\emphasistypeface{\sl}\tf
    \orelse\ifx\fontalternative\s!bf
      \emphasisboldface
    \orelse\ifx\fontalternative\s!bs
-     \unexpanded\def\emphasisboldface{\bs}\bf
+     \enforced\permanent\protected\def\emphasisboldface{\bs}\bf
    \orelse\ifx\fontalternative\s!bi
-     \unexpanded\def\emphasisboldface{\bi}\bf
+     \enforced\permanent\protected\def\emphasisboldface{\bi}\bf
    \else
      \emphasistypeface
    \fi
@@ -126,8 +126,8 @@
    \fi
    \emphasiscorrection}
 
-%D The next feature was not present in previous versions. It
-%D takes care of \type {\em \bf ...} situations.
+%D The next feature was not present in previous versions. It takes care of \type
+%D {\em \bf ...} situations.
 
 \let\font_emphasis_saved_emphasis_boldface\relax
 
@@ -136,7 +136,7 @@
    \let\font_emphasis_set_emphasis_boldface\relax
    \let\bf\font_emphasis_bold_bold}
 
-\unexpanded\def\font_emphasis_bold_bold
+\protected\def\font_emphasis_bold_bold
   {%\relax
    \let\bf\relax % new
    \ifx\fontalternative\s!it
@@ -154,7 +154,7 @@
 
 \let\italiccorrection=\/ % tex primitive
 
-\def\emphasiscorrection % public, not in raw alignment groups, else omit problem
+\permanent\protected\def\emphasiscorrection % public, not in raw alignment groups, else omit problem
   {\ifhmode\ifnum\currentgrouptype=\aligngroupcode\else
      \expandafter\expandafter\expandafter\font_emphasis_look
    \fi\fi}
@@ -224,24 +224,24 @@
 %D The next emphasis alternatives are for \THANH. They adapt their style as good as
 %D possible. These macros are obsolete in \MKIV.
 
-% \unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
-% \unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
-% \unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
-% \unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
-% \unexpanded\def\emph  {\groupedcommand{\em}{}}
+% \protected\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
+% \protected\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
+% \protected\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
+% \protected\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
+% \protected\def\emph  {\groupedcommand{\em}{}}
 
-\unexpanded\def\font_emphasis_bf{\bf\def\emphit{\bi}\def\emphsl{\bs}}
-\unexpanded\def\font_emphasis_it{\it\def\emphbf{\bi}\def\emphsl{\sl}}
-\unexpanded\def\font_emphasis_sl{\sl\def\emphbf{\bs}\def\emphit{\it}}
-\unexpanded\def\font_emphasis_tf{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}
+\protected\def\font_emphasis_bf{\bf\def\emphit{\bi}\def\emphsl{\bs}}
+\protected\def\font_emphasis_it{\it\def\emphbf{\bi}\def\emphsl{\sl}}
+\protected\def\font_emphasis_sl{\sl\def\emphbf{\bs}\def\emphit{\it}}
+\protected\def\font_emphasis_tf{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}
 
-\unexpanded\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
-\unexpanded\def\emphit{\triggergroupedcommandcs\font_emphasis_it}
-\unexpanded\def\emphsl{\triggergroupedcommandcs\font_emphasis_sl}
-\unexpanded\def\emphtf{\triggergroupedcommandcs\font_emphasis_tf}
-\unexpanded\def\emph  {\triggergroupedcommandcs\em}
+\permanent\protected\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
+\permanent\protected\def\emphit{\triggergroupedcommandcs\font_emphasis_it}
+\permanent\protected\def\emphsl{\triggergroupedcommandcs\font_emphasis_sl}
+\permanent\protected\def\emphtf{\triggergroupedcommandcs\font_emphasis_tf}
+\permanent\protected\def\emph  {\triggergroupedcommandcs\em}
 
-\unexpanded\def\emphasized{\bgroup\em\let\nexttoken}
+\permanent\protected\def\emphasized{\bgroup\em\let\nexttoken}
 
 %D \startbuffer
 %D TEXT {\emphbf text \emphit text  \emphtf text  \emphsl text}  TEXT

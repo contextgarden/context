@@ -2984,7 +2984,7 @@ local collectresults  do -- too many locals otherwise
     local kern_code        = nodecodes.kern
     local disc_code        = nodecodes.disc
     local whatsit_code     = nodecodes.whatsit
-    local localpar_code    = nodecodes.localpar
+    local par_code         = nodecodes.par
 
     local userskip_code    = gluecodes.userskip
     local rightskip_code   = gluecodes.rightskip
@@ -3059,7 +3059,7 @@ local collectresults  do -- too many locals otherwise
 
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
         local p
-        local localparagraph
+        local paragraph
         local maybewrong
         local pid
         for n, id, subtype in nextnode, head do
@@ -3077,7 +3077,7 @@ local collectresults  do -- too many locals otherwise
                     if last ~= at then
                         local tl = taglist[at]
                         local ap = getattr(n,a_taggedpar) or pap
-                        if localparagraph and (not ap or ap < localparagraph) then
+                        if paragraph and (not ap or ap < paragraph) then
                             maybewrong = addtomaybe(maybewrong,c,1)
                         end
                         pushcontent()
@@ -3113,7 +3113,7 @@ local collectresults  do -- too many locals otherwise
                             currentattribute = last
                             currentparagraph = ap
                         end
-                        if localparagraph and (not ap or ap < localparagraph) then
+                        if paragraph and (not ap or ap < paragraph) then
                             maybewrong = addtomaybe(maybewrong,c,2)
                         end
                         if trace_export then
@@ -3390,8 +3390,8 @@ end
                     last = nil
                     currentparagraph = nil
                 end
-            elseif not localparagraph and id == localpar_code and start_of_par(n) then
-                localparagraph = getattr(n,a_taggedpar)
+            elseif not paragraph and id == par_code and start_of_par(n) then
+                paragraph = getattr(n,a_taggedpar)
             elseif id == disc_code then
                 -- very unlikely because we stripped them
                 local pre, post, replace = getdisc(n)

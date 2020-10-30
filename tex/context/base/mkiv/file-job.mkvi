@@ -133,9 +133,14 @@
 \unexpanded\def\starttext    {\clf_starttext}
 \unexpanded\def\stoptext     {\clf_stoptext}
 \unexpanded\def\forcequitjob {\clf_forcequitjob}
-\unexpanded\def\end          {\clf_forceendjob}
 \unexpanded\def\autostarttext{\clf_autostarttext}
 \unexpanded\def\autostoptext {\clf_autostoptext}
+
+\pushoverloadmode
+
+\unexpanded\def\end          {\clf_forceendjob}
+
+\popoverloadmode
 
 \unexpanded\def\finishjob{\stoptext} % nicer in luatex call commandline
 

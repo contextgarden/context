@@ -90,7 +90,9 @@
 
 \pushmacro\setuptext
 
-\defineframedtext
+\ifcase\contextlmtxmode \else \pushoverloadmode \let\setuptext\setuptext \popoverloadmode \fi
+
+\defineframedtext % todo commands=no
   [setuptext]
   [\c!width=\hsize,
    \c!height=\v!fit,
@@ -492,8 +494,14 @@
 
 \unexpanded\def\basicsetup{\c_cmd_kind\zerocount\cmd_show_setup}
 \unexpanded\def\shortsetup{\c_cmd_kind\plusone  \cmd_show_setup}
-\unexpanded\def\setup     {\c_cmd_kind\plustwo  \cmd_show_setup}
+%unexpanded\def\setup     {\c_cmd_kind\plustwo  \cmd_show_setup}
 \unexpanded\def\showsetup {\c_cmd_kind\plustwo  \cmd_show_setup}
+
+\ifcase\contextlmtxmode \else
+    \pushoverloadmode
+        \unexpanded\def\setup{\c_cmd_kind\plustwo\cmd_show_setup}
+    \popoverloadmode
+\fi
 
 \unexpanded\def\showsetupinlist#1#2#3%
   {%(#1)(#2)(#3)\par

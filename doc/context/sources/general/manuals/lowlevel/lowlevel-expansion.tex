@@ -315,7 +315,7 @@ Although you can never really get back to the original input, you can come prett
 close, with:
 
 \startbuffer
-\normaldetokenize{this can $ be anything \bgroup}
+\detokenize{this can $ be anything \bgroup}
 \stopbuffer
 
 \typebuffer[option=TEX]
@@ -432,9 +432,26 @@ These two macros now have the meaning:
 
 \startsection[title={\LUAMETATEX\ primitives}]
 
-{\em todo}
+To be discussed:
+
+\starttyping
+\expand
+\expandtoken
+\localcontrol
+\localcontrolled
+\beginlocalcontrol ... \endlocalcontrol
+\immediate
+\stoptyping
+
+And maybe also here:
+
+\starttyping
+\tokenized  : a bonus
+\scantokens : original etex, now using the lua method
+\stoptyping
 
 % \aftergroups
+% \aftergrouped
 
 \stopsection
 

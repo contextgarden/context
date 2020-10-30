@@ -499,6 +499,8 @@
 %D
 %D Otherwise we get a missing \type {$$} error reported.
 
+\pushoverloadmode
+
 \let\reqno\eqno % no longer valid as we just nil it
 
 \let\math_native_leqno\leqno
@@ -512,6 +514,8 @@
 \let\leqno\normaleqno
 \let\reqno\normaleqno
 \let\eqno \normaleqno
+
+\popoverloadmode
 
 %D \macros
 %D   {startsubformulas}

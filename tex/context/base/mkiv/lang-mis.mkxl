@@ -150,8 +150,8 @@
 
 % hm why ex
 
-\ifx\compoundhyphen    \undefined
-    \unexpanded\def\compoundhyphen {\hbox{-\kern-.10775\emwidth-}} % .25\exheight
+\ifx\compoundhyphen\undefined
+    \permanent\protected\def\compoundhyphen{\hbox{-\kern-.10775\emwidth-}} % .25\exheight
 \fi
 
 %D The last two variables are needed for subsentences |<|like this one|>| which we
@@ -159,12 +159,12 @@
 %D compound characters like |-| or || to be separated from the words. \TEX\ hackers
 %D will recognise the next two macro's:
 
-\ifx\prewordbreak \undefined \unexpanded\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-\ifx\postwordbreak\undefined \unexpanded\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
-\ifx\hspaceamount \undefined            \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % language specific
+\ifx\prewordbreak \undefined \permanent\protected\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
+\ifx\postwordbreak\undefined \permanent\protected\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
+\ifx\hspaceamount \undefined                     \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % will be overloaded
 
-%unexpanded\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
-\unexpanded\def\permithyphenation{\ifhmode\wordboundary\fi} % doesn't remove spaces
+%frozen\protected\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
+\permanent\protected\def\permithyphenation{\ifhmode\wordboundary\fi} % doesn't remove spaces
 
 %D \macros
 %D   {beginofsubsentence,endofsubsentence,
@@ -191,22 +191,22 @@
 \installcorenamespace{discretionaryboth}
 \installcorenamespace{discretionarymode}
 
-\unexpanded\def\installdiscretionary#1#2%
+\permanent\protected\def\installdiscretionary#1#2%
   {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
    \setvalue {\??discretionarytext\detokenize{#1}}{#2}%
    \setvalue {\??discretionaryboth\detokenize{#1}}{\lang_discretionaries_command#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
-\unexpanded\def\handlemathmodediscretionary#1{\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
-\unexpanded\def\handletextmodediscretionary#1{\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
+\permanent\protected\def\handlemathmodediscretionary#1{\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
+\permanent\protected\def\handletextmodediscretionary#1{\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
 
-\unexpanded\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
+\permanent\protected\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
 
 \setnewconstant\discretionarymode\plusone
 
-\unexpanded\def\ignorediscretionaries{\discretionarymode\zerocount}
-\unexpanded\def\obeydiscretionaries  {\discretionarymode\plusone}
+\permanent\protected\def\ignorediscretionaries{\discretionarymode\zerocount}
+\permanent\protected\def\obeydiscretionaries  {\discretionarymode\plusone}
 
 \def\lang_discretionaries_command
   {% if direct if, we need \relax for lookahead in math mode
@@ -252,12 +252,12 @@
 \def\lang_discretionaries_check_after
   {\setfalse\punctafterdiscretionary
    \setfalse\spaceafterdiscretionary
-   \ifx\blankspace\nextnext \settrue \spaceafterdiscretionary \orelse
-   \ifx\space     \nextnext \settrue \spaceafterdiscretionary \orelse
-   \ifx          .\nextnext \settrue \punctafterdiscretionary \orelse
-   \ifx          ,\nextnext \settrue \punctafterdiscretionary \orelse
-   \ifx          :\nextnext \settrue \punctafterdiscretionary \orelse
-   \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi}
+   \ifx\blankspace\nexttoken \settrue \spaceafterdiscretionary \orelse
+   \ifx\space     \nexttoken \settrue \spaceafterdiscretionary \orelse
+   \ifx          .\nexttoken \settrue \punctafterdiscretionary \orelse
+   \ifx          ,\nexttoken \settrue \punctafterdiscretionary \orelse
+   \ifx          :\nexttoken \settrue \punctafterdiscretionary \orelse
+   \ifx          ;\nexttoken \settrue \punctafterdiscretionary \fi}
 
 \letvalue{\??discretionarymode m}\handlemathmodediscretionary
 
@@ -266,18 +266,18 @@
    \let\nextnextnext\egroup
    \def\next##1#1%
      {\def\next{\activedododotextmodediscretionary#1{##1}}%
-      \futurelet\nextnext\next}%
+      \futurelet\nexttoken\next}%
    \next}
 
 \let\discretionarytoken   \relax
 \let\textmodediscretionary\relax
 
-\unexpanded\def\activedododotextmodediscretionary#1#2%
+\permanent\protected\def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
    \lang_discretionaries_check_after
    \ifx\discretionarytoken\empty
-     \ifx#1\nextnext % takes care of ||| and +++ and ......
+     \ifx#1\nexttoken % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
          \lastnamedcs
        \orelse\ifconditional\spaceafterdiscretionary
@@ -294,7 +294,7 @@
      \else
        \lang_discretionaries_check_before
        % the next line has been changed (20050203)
-       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\postwordbreak
+       % \prewordbreak\hbox{\textmodediscretionary\nexttoken}\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
          \lastnamedcs
@@ -333,7 +333,7 @@
 %D In those situations where the nature of characters is less predictable, we can
 %D use the more direct approach:
 
-\unexpanded\def\directdiscretionary
+\permanent\protected\def\directdiscretionary
   {\csname\??discretionarymode
      \ifcase\discretionarymode
        n%
@@ -342,7 +342,7 @@
      \fi
    \endcsname}
 
-\unexpanded\def\indirectdiscretionary
+\permanent\protected\def\indirectdiscretionary
   {\csname\??discretionarymode
      \ifcase\discretionarymode
        n%
@@ -365,7 +365,7 @@
   {\wordboundary\discretionary{\hbox{#1}}{}{\hbox{#1}}\wordboundary}
  %{\discretionary options \plusthree{\hbox{#1}}{}{\hbox{#1}}}
 
-\unexpanded\def\definetextmodediscretionary #1
+\permanent\protected\def\definetextmodediscretionary #1
   {\setvalue{\??discretionaryaction\detokenize{#1}}}
 
 % \start \hsize 1mm
@@ -479,7 +479,7 @@
 %D \installdiscretionary | +
 %D \installdiscretionary + =
 
-\def\defaultdiscretionaryhyphen{\compoundhyphen}
+\permanent\protected\def\defaultdiscretionaryhyphen{\compoundhyphen}
 
 \installdiscretionary | \defaultdiscretionaryhyphen % installs in ctx and prt will fall back on it
 
@@ -494,11 +494,11 @@
 %D \goto{Some||Long||Word}
 %D \stoptyping
 
-\unexpanded\def\fakecompoundhyphen
-  {\def\|{\mathortext\vert\lang_compounds_fake_hyphen}}
+\permanent\protected\def\fakecompoundhyphen
+  {\enforced\permanent\protected\def\|{\mathortext\vert\lang_compounds_fake_hyphen}}
 
 \def\lang_compounds_fake_hyphen
-  {\def##1|%
+  {\enforced\permanent\protected\def##1|%
      {\doifelsenothing{##1}\compoundhyphen{##1}%
       \kern\compoundbreakpoint\allowbreak}}
 
@@ -510,7 +510,7 @@
 %D but, like the ones implemented earlier, this one also looks ahead for spaces and
 %D grouping tokens.
 
-\unexpanded\def\midworddiscretionary
+\permanent\protected\def\midworddiscretionary
   {\futurelet\nexttoken\lang_discretionaries_mid_word}
 
 \def\lang_discretionaries_mid_word
@@ -552,10 +552,10 @@
 
     \catcode\barasciicode\activecatcode
 
-    \unexpanded\gdef\compound#1{|#1|}
+    \permanent\protected\gdef\compound#1{|#1|}
 
     \doglobal \appendtoks
-        \def|#1|{\ifx#1\empty\empty-\else#1\fi}%
+        \enforced\permanent\protected\def|#1|{\ifx#1\empty\empty-\else#1\fi}%
     \to \everysimplifycommands
 
 \egroup
@@ -575,7 +575,7 @@
 %D
 %D \typebuffer \blank {\hsize3mm\getbuffer\par} \blank
 
-\unexpanded\def\compounddiscretionary
+\permanent\protected\def\compounddiscretionary
    {\discretionary
       options \plusthree
       {\ifnum\prehyphenchar >\zerocount\char\prehyphenchar \fi}%

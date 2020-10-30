@@ -363,18 +363,20 @@ end
 local stack = { }
 
 local function pushproperties(figure)
+    -- maybe there will be getters in lmtx
     local boundingbox = figure:boundingbox()
+    local slot = figure:charcode() or 0
     local properties = {
         llx    = boundingbox[1],
         lly    = boundingbox[2],
         urx    = boundingbox[3],
         ury    = boundingbox[4],
-        slot   = figure:charcode(),
+        slot   = slot,
         width  = figure:width(),
         height = figure:height(),
         depth  = figure:depth(),
-        italic = figure:italcorr(),
-        number = figure:charcode() or 0,
+        italic = figure:italcorr(), -- figure:italic() in lmtx
+        number = slot,
     }
     insert(stack,properties)
     metapost.properties = properties

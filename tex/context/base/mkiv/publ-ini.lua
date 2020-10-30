@@ -3500,7 +3500,7 @@ do
 
     function publications.prerollcmdstring(str)
         btxstring = str or ""
-        tex.runtoks("t_btx_cmd")
+        tex.runlocal("t_btx_cmd")
         return nodes.toutf(tex.getbox("b_btx_cmd").list) or str
     end
 

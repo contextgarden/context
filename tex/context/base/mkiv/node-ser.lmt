@@ -1,0 +1,285 @@
+if not modules then modules = { } end modules ['node-ser'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type, tostring = type, tostring
+local concat, tohash, sortedkeys, sortedhash, printtable, serialize = table.concat, table.tohash, table.sortedkeys, table.sortedhash, table.print, table.serialize
+local formatters, format, rep = string.formatters, string.format, string.rep
+
+local allocate = utilities.storage.allocate
+
+local context     = context
+local nodes       = nodes
+local node        = node
+
+local getfields   = node.fields
+
+local traverse    = nodes.traverse
+local is_node     = nodes.is_node
+
+local nodecodes   = nodes.nodecodes
+local subtypes    = nodes.subtypes
+
+local tonode      = nodes.tonode
+local tonut       = nodes.tonut
+
+local hlist_code  = nodecodes.hlist
+local vlist_code  = nodecodes.vlist
+
+local f_char      = formatters["%U"]
+local f_attr      = formatters["<attribute : %i>"]
+local f_recurse   = formatters["<recursive : %i>"]
+
+-- flat    : don't use next, but indexes
+-- verbose : also add type
+
+local canbezero = {
+    integer   = true,
+    dimension = true,
+    number    = true,
+}
+
+local canbelist = {
+    attribute      = "<attribute>",
+    node           = "<node>",
+    token          = "<token>",
+    attribute_list = "<attributes>",
+    node_list      = "<nodes>",
+    token_list     = "<tokens>",
+}
+
+local canbeignored = {
+    prev = "<node>"
+}
+
+local canbechar = {
+    char       = true,
+    small_char = true,
+    large_char = true,
+}
+
+local fieldtypes = table.setmetatableindex(function(t,k)
+    local v = getfields(k,true) or false
+    t[k] = v
+    return v
+end)
+
+nodes.fieldtypes = fieldtypes
+
+local function astable(n)
+    n = tonode(n)
+    if n then
+        local fields = fieldtypes[n.id]
+        if fields then
+            local result = { }
+            for field, fieldtype in sortedhash(fields) do
+                local value = n[field]
+                if value then
+                    if canbeignored[field] then
+                        value = nil
+                    elseif canbezero[fieldtype] and value == 0 then
+                        value = nil
+                    elseif canbelist[fieldtype] then
+                        value = canbelist[fieldtype]
+                    end
+                    if value then
+                        result[field] = value
+                    end
+                end
+            end
+            local id = n.id
+            if id then
+                id = nodecodes[id]
+                result.id = id
+                local subtype = n.subtype
+                if subtype then
+                    local subtypes = subtypes[id]
+                    if subtypes then
+                        result.subtype = subtypes[subtype]
+                    end
+                end
+            end
+            return result
+        end
+    end
+end
+
+nodes.astable = astable
+
+setinspector("node",function(v) if is_node(v) then printtable(astable(v),tostring(v)) return true end end)
+
+local function to_table(n,flat,verbose,noattributes,done)
+    local d = tonut(n)
+    if done[d] then
+        return f_recurse(d)
+    else
+        done[d] = true
+        local fields = fieldtypes[n.id]
+        if fields then
+            local result = { }
+            for field, fieldtype in sortedhash(fields) do
+                local value = n[field]
+                if value then
+                    if fieldtype == "attribute_list" or fieldtype == "attribute" then
+                        if noattributes then
+                            result[value] = canbeignored[value]
+                        else
+                            result[value] = to_table(value,flat,verbose,noattributes,done)
+                        end
+                    elseif canbeignored[field] then
+                        result[value] = canbeignored[value]
+                    elseif not verbose and canbezero[fieldtype] and value == 0 then
+                        value = nil
+                    elseif canbelist[fieldtype] then
+                        if flat then
+                            result[value] = canbelist[value]
+                        else
+                            result[value] = to_table(value,flat,verbose,noattributes,done)
+                        end
+                    end
+                    if value then
+                        result[field] = value
+                    end
+                end
+            end
+            if verbose then
+                local id = result.id
+                if id then
+                    id = nodecodes[id]
+                    result.id = id
+                    local subtype = result.subtype
+                    if subtype then
+                        local subtypes = subtypes[id]
+                        if subtypes then
+                            result.subtype = subtypes[subtype]
+                        end
+                    end
+                end
+                for k, v in next, canbechar do
+                    local v = result[k]
+                    if v then
+                        result[k] = f_char(v)
+                    end
+                end
+            end
+            return result
+        end
+    end
+end
+
+local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
+    if n then
+        local d = { }
+        if flat then
+            local t, tn = { }, 0
+            while n do
+                tn = tn + 1
+                local nt = to_table(n,flat,verbose,noattributes,d)
+                t[tn] = nt
+                nt.next = nil
+                nt.prev = nil
+                n = n.next
+            end
+            done = nil
+            return t
+        else
+            local t = to_table(n,flat,verbose,noattributes,d)
+            local n = n.next
+            if n then
+                t.next = totable(n,flat,verbose,noattributes,d)
+            end
+            return t
+        end
+    else
+        return { }
+    end
+end
+
+nodes.totable = function(n,...) return totable(tonode(n),...) end
+nodes.totree  = function(n)     return totable(tonode(n),true,true,true) end -- no attributes, todo: attributes in k,v list
+
+local function key(k)
+    return ((type(k) == "number") and "["..k.."]") or k
+end
+
+function nodes.serialize(root,flat,verbose,noattributes,name)
+    return serialize(totable(tonode(root),flat,verbose,noattributes),name)
+end
+
+function nodes.serializebox(n,flat,verbose,noattributes,name)
+    return serialize(totable(tex.box[n],flat,verbose,noattributes),name)
+end
+
+function nodes.visualizebox(n,flat,verbose,noattributes,name)
+    context.tocontext(totable(tex.box[n],flat,verbose,noattributes),name)
+end
+
+function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway
+    head = tonode(head)
+    if not n then
+        context.starttyping(true)
+    end
+    while head do
+        local id = head.id
+        context(rep(" ",n or 0) .. tostring(head) .. "\n")
+        if id == hlist_code or id == vlist_code then
+            nodes.list(head.list,(n or 0)+1)
+        end
+        head = head.next
+    end
+    if not n then
+        context.stoptyping(true)
+    end
+end
+
+function nodes.print(head,n)
+    head = tonode(head)
+    while head do
+        local id = head.id
+        logs.writer(string.formatters["%w%S"],n or 0,head)
+        if id == hlist_code or id == vlist_code then
+            nodes.print(head.list,(n or 0)+1)
+        end
+        head = head.next
+    end
+end
+
+-- quick hack, nicer is to have a proper expand per node type already prepared
+
+local function apply(n,action)
+    while n do
+        action(n)
+        local id = n.id
+        if id == hlist_code or id == vlist_code then
+            apply(n.list,action)
+        end
+        n = n.next
+    end
+end
+
+nodes.apply = apply
+
+local nuts    = nodes.nuts
+local getid   = nuts.getid
+local getlist = nuts.getlist
+local getnext = nuts.getnext
+
+local function apply(n,action)
+    while n do
+        action(n)
+        local id = getid(n)
+        if id == hlist_code or id == vlist_code then
+            local list = getlist(n,action)
+            if list then
+                apply(list,action)
+            end
+        end
+        n = getnext(n)
+    end
+end
+
+nuts.apply = apply

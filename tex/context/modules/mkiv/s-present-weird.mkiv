@@ -288,7 +288,7 @@
 
 \starttexdefinition TitlePage #1
     \begingroup
-        \def\\{\vskip1ex\bfc\def\\{\vskip1ex\bfb}}
+        \enforced\protected\def\\{\vskip1ex\bfc\def\\{\vskip1ex\bfb}}
         \enablemode[SpreadPage]
         \StartPage{#1}
         \StopPage

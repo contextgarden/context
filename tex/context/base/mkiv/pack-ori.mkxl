@@ -54,7 +54,7 @@
 
 %D There will be some more helpers here.
 
-\def\theorientation#1%
+\permanent\def\theorientation#1%
   {\numexpr
      \ifcsname\??orientations#1\endcsname
        \lastnamedcs
@@ -63,7 +63,7 @@
      \fi
   \relax}
 
-\def\autoorientation#1%
+\permanent\def\autoorientation#1%
   {\numexpr
      \ifcsname\??orientations#1\endcsname
        \lastnamedcs
@@ -85,7 +85,7 @@
  %{\localcontrolled{\global\expandafter\chardef\csname\??orientations#1\endcsname\stringtoorientation{#1}}%                % a bit slower
    \csname\??orientations#1\endcsname}
 
-\unexpanded\def\doifelseorientation#1%
+\permanent\protected\def\doifelseorientation#1%
   {\ifcsname\??orientations#1\endcsname
      \expandafter\firstoftwoarguments
    \else

@@ -24,7 +24,6 @@ local setlist            = nuts.setlist
 local end_of_math        = nuts.end_of_math
 
 local nodecodes          = nodes.nodecodes
-local leadercodes        = nodes.leadercodes
 local gluecodes          = nodes.gluecodes
 local kerncodes          = nodes.kerncodes
 
@@ -43,8 +42,7 @@ local vlist_code         = nodecodes.vlist
 local userskip_code      = gluecodes.userskip
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
-
-local leaders_code       = leadercodes.leaders
+local leaders_code       = gluecodes.leaders
 
 local fontkern_code      = kerncodes.fontkern
 

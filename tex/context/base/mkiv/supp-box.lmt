@@ -29,7 +29,7 @@ local vlist_code    = nodecodes.vlist
 local glue_code     = nodecodes.glue
 local penalty_code  = nodecodes.penalty
 local glyph_code    = nodecodes.glyph
-local localpar_code = nodecodes.localpar
+local par_code      = nodecodes.par
 
 local indent_code   = nodes.listcodes.indent
 
@@ -887,7 +887,7 @@ implement {
                             b = getwidth(n) > 0
                             break
                         end
-                    elseif id ~= localpar_code then
+                    elseif id ~= par_code then
                         break
                     end
                 end
@@ -1237,5 +1237,85 @@ do
     define_two("boxrangewd",  "wd")
     define_two("boxrangeht",  "ht")
     define_two("boxrangedp",  "dp")
+
+end
+
+do
+
+    local getbox   = tex.getbox
+    local setfield = nodes.setfield
+    local getfield = nodes.getfield
+    local flush    = nodes.flush
+    local copynode = nodes.copy
+
+    local function get(n,field,copy)
+        local b = getbox(n)
+        if b then
+            local p = getfield(b,field)
+            if copy then
+                p = copynode(p)
+            else
+                setfield(b,field)
+            end
+            context(p)
+        end
+    end
+
+    local function set(n,l,field)
+        local b = getbox(n)
+        if b then
+            setfield(b,field,l)
+        else
+            flush(l)
+        end
+    end
+
+    implement {
+        name      = "prelistbox",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", '"pre"' },
+        actions   = get,
+    }
+
+    implement {
+        name      = "postlistbox",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", '"post"' },
+        actions   = get,
+    }
+
+    implement {
+        name      = "prelistcopy",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", '"pre"', true },
+        actions   = get,
+    }
+
+    implement {
+        name      = "postlistcopy",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", '"post"', true },
+        actions   = get,
+    }
+
+    implement {
+        name      = "setprelistbox",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", "box", '"pre"' },
+        actions   = set,
+    }
+
+    implement {
+        name      = "setpostlistbox",
+        public    = true,
+        usage     = "value",
+        arguments = { "integer", "box", '"post"' },
+        actions   = set,
+    }
 
 end

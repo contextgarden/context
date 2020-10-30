@@ -62,8 +62,8 @@ function formatters.dir(n,comment)
     return format("\\doFLOWdirnode{%s}{%s}{%s}",comment,"dir",n.dir)
 end
 
-function formatters.localpar(n,comment)
-    return format("\\doFLOWdirnode{%s}{%s}{%s}",comment,"localpar",n.dir)
+function formatters.par(n,comment)
+    return format("\\doFLOWdirnode{%s}{%s}{%s}",comment,"par",n.dir)
 end
 
 -- I will make a dedicated set of shapes for this.

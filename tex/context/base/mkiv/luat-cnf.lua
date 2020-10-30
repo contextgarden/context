@@ -37,7 +37,7 @@ texconfig.save_size       =   500000
 texconfig.stack_size      =   100000
 texconfig.buffer_size     = 10000000
 texconfig.token_size      = 10000000
-texconfig.node_size       = 20000000
+texconfig.node_size       = 50000000
 texconfig.max_pool        = 10000000
 
 else
@@ -121,15 +121,17 @@ function texconfig.init()
         },
         basictex = {
             -- always
-            "callback", "font", "lang", "lua", "node", "status", "tex", "texconfig", "texio", "token",
-             -- not in luametatex
-            "img", "pdf",
+            "callback", "font", "lua", "node", "status", "tex", "texconfig", "texio", "token",
+            -- not in luametatex
+            "img", "pdf", "lang",
+            -- in luametatex
+            "language",
         },
         extralua = {
             -- not in luametatex
             "unicode", "utf", "gzip",  "zip", "zlib",
             -- in luametatex
-            "xzip", "xmath", "xcomplex", "basexx",
+            "xzip", "xmath", "xcomplex", "xdecimal", "basexx",
             -- maybe some day in luametatex
             "lz4", "lzo",
             -- always (mime can go)

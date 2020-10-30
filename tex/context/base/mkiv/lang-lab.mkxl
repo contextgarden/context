@@ -21,7 +21,7 @@
 %D Left-overs:
 
 \ifdefined\sixperemspace \else
-    \def\sixperemspace{\normalUchar"2006}
+    \permanent\def\sixperemspace{\normalUchar"2006}
 \fi
 
 %D In this module we deal with language dependant labels and prefixes, like in {\em
@@ -62,14 +62,11 @@
 
 \let\currentlabelcategory\empty
 
-\unexpanded\def\definelabelclass
-  {\dodoubleempty\lang_labels_define_class}
-
-\def\lang_labels_define_class[#1][#2]%
+\permanent\tolerant\protected\def\definelabelclass[#1]#*[#2]%
   {\normalexpanded
      {\lang_labels_define_class_indeed
         {#1}%
-        {\ifsecondargument#2\else\zerocount\fi}%
+        {\ifchknum#2\or#2\else\zerocount\fi}%
         \expandafter\noexpand\csname   dogetupsome#1text\endcsname
         \expandafter\noexpand\csname          #1language\endcsname
         \expandafter\noexpand\csname dodogetupsome#1text\endcsname
@@ -82,11 +79,11 @@
 
 \let\thetextprefix\empty
 
-\unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
-  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
-   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
-   \setuvalue{copy#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_copy}%
-   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
+\protected\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
+  {\setuvalue {setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \setuvalue{preset#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \setuvalue  {copy#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_copy }%
+   \setuvalue {start#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_start[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo % used for math and tags
@@ -117,27 +114,27 @@
      \let#8\gobbletwoarguments
      \let#9#3%
    \else
-     \unexpanded\def#3{#5#4}%
-     \unexpanded\def#5##1##2%
+     \protected\def#3{#5#4}%
+     \protected\def#5##1##2%
        {\ifcsname\??label#1:##1:##2\endcsname
          %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+          \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \orelse\ifcsname\??language#4\s!default\endcsname
          %\expandafter#5\csname\??language#4\s!default\endcsname{##2}%
           \expandafter#5\lastnamedcs{##2}%
         \orelse\ifcsname\??label#1:##2\endcsname
          %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+          \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \orelse\ifcsname\??label#1:\s!en:##2\endcsname
          %\expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+          \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \else
-          \let\thetextprefix\dummytextprefix
+          \enforced\let\thetextprefix\dummytextprefix
         \fi}%
-     \unexpanded\def#6##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
-     \unexpanded\def#7##1{#3{##1}\expandafter\flushrightlabelclass\thetextprefix}%
-     \unexpanded\def#8##1{#3{##1}\expandafter\flushbothlabelclass \thetextprefix}% #2
-     \unexpanded\def#9##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+     \protected\def#6##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+     \protected\def#7##1{#3{##1}\expandafter\flushrightlabelclass\thetextprefix}%
+     \protected\def#8##1{#3{##1}\expandafter\flushbothlabelclass \thetextprefix}% #2
+     \protected\def#9##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
    \fi
    \appendtoks
      \let#6\firstofoneargument % to be checked
@@ -146,10 +143,14 @@
      \let#9\firstofoneargument % to be checked
    \to \everysimplifycommands}
 
+% why not lang_* ?
+
 \let\flushleftlabelclass \firstoftwoarguments
 \let\flushrightlabelclass\secondoftwoarguments
-\def\flushbothlabelclass #1#2#3{#1#3#2}
-\def\dummytextprefix     {\empty\empty}
+
+\permanent\def\flushbothlabelclass#1#2#3{#1#3#2}
+
+\permanent\def\dummytextprefix{\empty\empty}
 
 %D \macros
 %D   {headtext, labeltext, leftlabeltext, rightlabeltext, labeltexts}
@@ -172,13 +173,13 @@
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
 
-\def\lang_labels_text_prefix_start[#1][#2][#3]% class language name
-  {\ifthirdargument
-     \edef\currenttextprefixtag{\reallanguagetag{#2}}%
-     \edef\currenttextprefixname{#3}%
-   \else
+\tolerant\def\lang_labels_text_prefix_start[#1]#*[#2]#*[#3]% class language name
+  {\ifarguments\or\or
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
      \edef\currenttextprefixname{#2}%
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag{#2}}%
+     \edef\currenttextprefixname{#3}%
    \fi
    \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
@@ -186,13 +187,13 @@
   {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname%
      {{\clf_strip{#1}}\empty}}
 
-\def\lang_labels_text_prefix_setup[#1][#2]%
-  {\ifsecondargument
-     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
-     \processcommalist[#2]\lang_labels_text_prefix_setup_indeed
-   \else
+\tolerant\def\lang_labels_text_prefix_setup[#1]#*[#2]%
+  {\ifarguments\or
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
      \processcommalist[#1]\lang_labels_text_prefix_setup_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_setup_indeed
    \fi}
 
 \def\lang_labels_text_prefix_setup_indeed#1%
@@ -240,17 +241,17 @@
 \def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
-\unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
+\permanent\protected\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
   {%\writestatus{!!!!}{#1:\reallanguagetag{#2}:#3}%
    \expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
 
-\def\lang_labels_text_prefix_copy[#1][#2]%
-  {\ifsecondargument
-     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
-     \processcommalist[#2]\lang_labels_text_prefix_copy_indeed
-   \else
+\tolerant\def\lang_labels_text_prefix_copy[#1]#*[#2]%
+  {\ifarguments\or
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
      \processcommalist[#1]\lang_labels_text_prefix_copy_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_copy_indeed
    \fi}
 
 \def\lang_labels_text_prefix_copy_indeed#1%
@@ -298,10 +299,7 @@
 
 \installcorenamespace{translation}
 
-\unexpanded\def\translate
-  {\dosingleempty\lang_translate}
-
-\def\lang_translate[#1]%
+\permanent\tolerant\protected\def\translate[#1]%
   {\getparameters[\??translation][#1]%
    \ifcsname\??translation\currentlanguage\endcsname
      \lastnamedcs
@@ -328,7 +326,9 @@
 %D \assigntranslation[en=something,nl=iets]\to\command
 %D \stoptyping
 
-\unexpanded\def\assigntranslation[#1]\to#2% bad, this \to
+% nicer is \edef\command{\translated[...]} ... todo
+
+\permanent\protected\def\assigntranslation[#1]\to#2% bad, this \to
   {\getparameters[\??translation][#1]%
    \edef#2{\begincsname\??translation\currentlanguage\endcsname}}
 
@@ -352,10 +352,7 @@
 %D \getbuffer
 %D \stoplines
 
-\unexpanded\def\commalistsentence
-  {\dodoubleempty\typo_helpers_concat_comma_list}
-
-\def\typo_helpers_concat_comma_list[#1][#2]%
+\permanent\tolerant\protected\def\commalistsentence[#1]#*[#2]%
   {\clf_concatcommalist
      text       {#1}%
      separators {#2}%
@@ -370,6 +367,6 @@
 
 %D Goodie (handy at \LUA\ end):
 
-\unexpanded\def\LABELTEXT#1{\WORD{\labeltext{#1}}} % only for simple cases!
+\permanent\protected\def\LABELTEXT#1{\WORD{\labeltext{#1}}} % only for simple cases!
 
 \protect \endinput

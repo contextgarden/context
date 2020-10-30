@@ -72,23 +72,60 @@ local stack, top, n, hashes = { }, nil, 0, { }
 --     end
 -- end
 
-local function set(s)
-    if top then
-        local ns = #stack
-        local h = hashes[ns]
-        if not h then
-            h = rep("#",2^(ns-1))
-            hashes[ns] = h
+local set = CONTEXTLMTXMODE > 0 and
+    function(s)
+        if top then
+            local ns = #stack
+            local h = hashes[ns]
+            if not h then
+                h = rep("#",2^(ns-1))
+                hashes[ns] = h
+            end
+            if s == "ignore" then
+                return h .. "-"
+            elseif s == "spacer" then
+                return h .. "*"
+            elseif s == "pickup" then
+                return h .. ":"
+            else
+                n = n + 1
+                if n > 9 then
+                    report_macros("number of arguments > 9, ignoring %s",s)
+                elseif s == "discard" then
+                    top[s] = ""
+                    return h .. "0"
+                elseif s == "keepbraces" then
+                    top[s] = ""
+                    return h .. "+"
+                elseif s == "mandate" then
+                    top[s] = ""
+                    return h .. "="
+                elseif s == "keepmandate" then
+                    top[s] = ""
+                    return h .. "_"
+                elseif s == "prunespacing" then
+                    top[s] = ""
+                    return h .. "/"
+                else
+                    local m = h .. n
+                    top[s] = m
+                    return m
+                end
+            end
         end
-        if s == "ignore" then
-            return h .. "-"
-        else
+    end
+or
+    function(s)
+        if top then
+            local ns = #stack
+            local h = hashes[ns]
+            if not h then
+                h = rep("#",2^(ns-1))
+                hashes[ns] = h
+            end
             n = n + 1
             if n > 9 then
                 report_macros("number of arguments > 9, ignoring %s",s)
-            elseif s == "discard" then
-                top[s] = ""
-                return h .. "0"
             else
                 local m = h .. n
                 top[s] = m
@@ -96,7 +133,6 @@ local function set(s)
             end
         end
     end
-end
 
 local function get(s)
     if s == "ignore" or s == "discard" then
@@ -262,7 +298,7 @@ end
 
 function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
     local data = loadtexfile(oldname)
-    data = interfaces.preprocessed(data) or "" -- interfaces not yet defined
+    data = macros.preprocessed(data) or "" -- interfaces not yet defined
     savedata(newname,data)
 end
 

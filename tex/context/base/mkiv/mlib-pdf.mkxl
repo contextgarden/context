@@ -30,7 +30,7 @@
 
 \ifdefined\MPbox    \else \newbox  \MPbox    \fi
 
-\unexpanded\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
+\permanent\protected\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
   {\global\MPllx   #1\onebasepoint
    \global\MPlly   #2\onebasepoint
    \global\MPurx   #3\onebasepoint
@@ -38,7 +38,7 @@
    \global\MPwidth \dimexpr\MPurx-\MPllx\relax
    \global\MPheight\dimexpr\MPury-\MPlly\relax}
 
-\unexpanded\def\resetMPboundingbox
+\permanent\protected\def\resetMPboundingbox
   {\global\MPwidth \zeropoint
    \global\MPheight\zeropoint
    \global\MPllx   \zeropoint
@@ -48,8 +48,8 @@
 
 \let\popMPboundingbox\relax
 
-\unexpanded\def\pushMPboundingbox
-  {\edef\popMPboundingbox
+\permanent\protected\def\pushMPboundingbox
+  {\enforced\permanent\protected\edef\popMPboundingbox
      {\global\MPwidth \the\MPwidth
       \global\MPheight\the\MPheight
       \global\MPllx   \the\MPllx
@@ -60,14 +60,14 @@
 
 % we need to combine these
 
-\unexpanded\def\repositionMPboxindeed
+\permanent\protected\def\repositionMPboxindeed
   {\setbox\MPbox\hpack\bgroup
      \kern-\MPllx
      \raise-\MPlly
      \box\MPbox
    \egroup}
 
-\unexpanded\def\repositionMPbox
+\permanent\protected\def\repositionMPbox
   {\ifzeropt\MPllx
      \ifzeropt\MPlly
        % okay
@@ -78,20 +78,9 @@
      \repositionMPboxindeed
    \fi}
 
-\unexpanded\def\finalizeMPbox
-  {\repositionMPbox
-   \setbox\MPbox\vpack to \MPheight\bgroup
-     \vfill
-     \hsize\MPwidth
-     \smashbox\MPbox
-     \box\MPbox
-   \egroup
-   \wd\MPbox\MPwidth
-   \ht\MPbox\MPheight}
-
 % combined
 
-\unexpanded\def\finalizeMPbox
+\permanent\protected\def\finalizeMPbox
   {\boxxoffset\MPbox-\MPllx\relax
    \boxyoffset\MPbox\dimexpr\boxyoffset\MPbox-\MPheight-\MPlly\relax
    \wd\MPbox\MPwidth
@@ -99,9 +88,9 @@
 
 % MPLIB specific:
 
-\def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
+\permanent\def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
 
-\unexpanded\def\startMPLIBtoPDF#1#2#3#4%
+\permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
    \dostarttagged\t!mpgraphic\empty
    \naturalhpack attr \imageattribute \plusone \bgroup
@@ -111,7 +100,7 @@
  % \forgetall % already done elsewhere
    \noindent} % forces the proper cm in the backend
 
-\unexpanded\def\stopMPLIBtoPDF
+\permanent\protected\def\stopMPLIBtoPDF
   {\egroup
    \finalizeMPbox
    \box\MPbox
@@ -119,7 +108,7 @@
    \dostoptagged
    \meta_process_graphic_figure_stop}
 
-\def\MPLIBflushreset % This can (will) move to the Lua end.
+\permanent\protected\def\MPLIBflushreset % This can (will) move to the Lua end.
   {\clf_mpflushreset}
 
 %D Kind of special:
@@ -136,19 +125,21 @@
 %     \directMPgraphic{input "test.mp" ;}
 % \stoptext
 
-\let\normalstartMPLIBtoPDF\startMPLIBtoPDF
-\let\normalstopMPLIBtoPDF \stopMPLIBtoPDF
+\aliased\let\normalstartMPLIBtoPDF\startMPLIBtoPDF
+\aliased\let\normalstopMPLIBtoPDF \stopMPLIBtoPDF
 
-\unexpanded\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
-\unexpanded\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
+\permanent\protected\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
+\permanent\protected\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
 
-\unexpanded\def\directMPgraphic
+% can become \permanent\protected\def\directMPgraphic#=#*#=% but best test first
+
+\permanent\protected\def\directMPgraphic
   {\dodoublegroupempty\mlib_direct_graphic}
 
 \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
   {\meta_begin_graphic_group{#1}%
-   \let\startMPLIBtoPDF\directstartMPLIBtoPDF
-   \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
+   \enforced\let\startMPLIBtoPDF\directstartMPLIBtoPDF
+   \enforced\let\stopMPLIBtoPDF \directstopMPLIBtoPDF
    \meta_start_current_graphic
      \forgetall
      \edef\p_extensions{\MPinstanceparameter\s!extensions}%

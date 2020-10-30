@@ -25,7 +25,7 @@ end
 callbacks.register("insert_local_par",everypar,"after paragraph start")
 
 local actions = sequencers.new {
-    name         = "newgraf",
+    name         = "paragraph",
     arguments    = "mode,indented",
     returnvalues = "indented",
     results      = "indented",
@@ -35,7 +35,7 @@ sequencers.appendgroup(actions,"before") -- user
 sequencers.appendgroup(actions,"system") -- private
 sequencers.appendgroup(actions,"after" ) -- user
 
-local function newgraf(mode,indented)
+local function paragraph(mode,indented)
     local runner = actions.runner
     if runner then
         starttiming(builders)
@@ -45,4 +45,4 @@ local function newgraf(mode,indented)
     return indented
 end
 
-callbacks.register("new_graf",newgraf,"before paragraph start")
+callbacks.register("new_graf",paragraph,"before paragraph start")

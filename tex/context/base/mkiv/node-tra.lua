@@ -77,7 +77,7 @@ local glue_code       = nodecodes.glue
 local kern_code       = nodecodes.kern
 local rule_code       = nodecodes.rule
 local dir_code        = nodecodes.dir
-local localpar_code   = nodecodes.localpar
+local par_code        = nodecodes.par
 local whatsit_code    = nodecodes.whatsit
 
 local dimenfactors    = number.dimenfactors
@@ -113,19 +113,6 @@ function nodes.handlers.checkglyphs(head,message)
         report_nodes("%s glyphs: % t",n,t)
     end
     return false
-end
-
-function nodes.handlers.checkforleaks(sparse)
-    local l = { }
-    local q = used_nodes()
-    for p, id in nextnode, q do
-        local s = table.serialize(nodes.astable(p,sparse),nodecodes[id])
-        l[s] = (l[s] or 0) + 1
-    end
-    flush_list(q)
-    for k, v in next, l do
-        report_nodes("%s * %s",v,k)
-    end
 end
 
 local fontcharacters -- = fonts.hashes.descriptions
@@ -167,7 +154,7 @@ local function tosequence(start,stop,compact)
             elseif id == dir_code then
                 local d, p = getdirection(start)
                 n = n + 1 ; t[n] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
-            elseif id == localpar_code and start_of_par(current) then
+            elseif id == par_code and start_of_par(current) then
                 n = n + 1 ; t[n] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
                 n = n + 1 ; t[n] = "[]"
@@ -324,14 +311,6 @@ local function showsimplelist(h,depth,n)
         h = getnext(h)
     end
 end
-
--- \startluacode
--- callbacks.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
--- \stopluacode
--- \vbox{b\footnote{n}a}
--- \startluacode
--- callbacks.register('buildpage_filter',nil)
--- \stopluacode
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 

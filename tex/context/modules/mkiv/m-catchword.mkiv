@@ -27,7 +27,7 @@ local hlist_code    = nodecodes.hlist
 local fontkern_code = kerncodes.fontkern
 
 local function set_catchword(t)
-    local nextpage = tex.lists.contrib_head
+    local nextpage = tex.lists.contribute_head or tex.lists.contrib_head
     if not nextpage then
         return
     end

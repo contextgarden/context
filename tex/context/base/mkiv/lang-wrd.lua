@@ -39,7 +39,7 @@ local getid           = nuts.getid
 local getchar         = nuts.getchar
 local setattr         = nuts.setattr
 ----- getattr         = nuts.getattr
-local getlang         = nuts.getlang
+local getlanguage     = nuts.getlanguage
 local ischar          = nuts.ischar
 
 local nextnode        = nuts.traversers.node
@@ -163,7 +163,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     while current do
         local code, id = ischar(current) -- not isglyph because otherwise we can run into
         if code then                     -- processed streams (\about[foo] does that)
-            local a = getlang(current)
+            local a = getlanguage(current)
             if a then
                 if a ~= language then
                     if s > 0 then

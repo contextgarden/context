@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['lang-url'] = {
 local utfcharacters, utfbyte, utfchar = utf.characters, utf.byte, utf.char
 local min, max = math.min, math.max
 
-local context   = context
+local context          = context
+local ctx_pushcatcodes = context.pushcatcodes
+local ctx_popcatcodes  = context.popcatcodes
 
 local implement = interfaces.implement
 local variables = interfaces.variables
@@ -190,9 +192,9 @@ local function action(hyphenatedurl,str,left,right,disc)
             end
         end
         if dodi then
-            list[i] = "\\d"
+            list[i] = "\\lang_url_d "
         else
-            list[i] = "\\" .. what .. "{" .. utfbyte(char) .. "}"
+            list[i] = "\\lang_url_" .. what .. "{" .. utfbyte(char) .. "}"
         end
         prev = char
     end
@@ -200,7 +202,9 @@ local function action(hyphenatedurl,str,left,right,disc)
         report("old : %s",str)
         report("new : %t",list)
     end
+    ctx_pushcatcodes("prtcatcodes")
     context("%t",list)
+    ctx_popcatcodes()
 end
 
 -- urls.action = function(_,...) action(...) end -- sort of obsolete

@@ -22,9 +22,9 @@
 
 \installcorenamespace{lastnodepusher}
 
-\let\poplastnode\relax
+\permanent\let\poplastnode\relax
 
-\unexpanded\def\pushlastnode
+\permanent\protected\def\pushlastnode
   {\csname\??lastnodepusher
      \ifcsname\??lastnodepusher\the\lastnodetype\endcsname
        \the\lastnodetype
@@ -34,19 +34,19 @@
    \endcsname}
 
 \setvalue{\??lastnodepusher\number\kernnodecode}%
-  {\unexpanded\edef\poplastnode{\kern\the\lastkern\relax}%
+  {\enforced\permanent\protected\edef\poplastnode{\kern\the\lastkern\relax}%
    \kern-\lastkern}
 
 \setvalue{\??lastnodepusher\number\gluenodecode}%
-  {\unexpanded\edef\poplastnode{\vskip\the\lastskip\relax}%
+  {\enforced\permanent\protected\edef\poplastnode{\vskip\the\lastskip\relax}%
    \vskip-\lastskip}
 
 \setvalue{\??lastnodepusher\number\penaltynodecode}%
-  {\unexpanded\edef\poplastnode{\penalty\the\lastpenalty\relax}%
+  {\enforced\permanent\protected\edef\poplastnode{\penalty\the\lastpenalty\relax}%
    \nobreak}
 
 \setvalue{\??lastnodepusher\s!unknown}%
-  {\let\poplastnode\relax}
+  {\enforced\permanent\let\poplastnode\relax}
 
 %D Moved from supp-box:
 
@@ -115,9 +115,6 @@
    \ifdim\d_spac_lines_correction_before<\zeropoint\d_spac_lines_correction_before\zeropoint\fi
    \ifdim\d_spac_lines_correction_after <\zeropoint\d_spac_lines_correction_after \zeropoint\fi}
 
-%unexpanded\def\dotopbaselinecorrection{\kern\d_spac_lines_correction_before}
-%unexpanded\def\dobotbaselinecorrection{\kern\d_spac_lines_correction_after }
-
 % experiment, todo: proper mkiv mechanism
 %
 % \input ward \par
@@ -136,11 +133,11 @@
 
 % to be redone:
 
-\unexpanded\def\dotopbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_before]}
-\unexpanded\def\dobotbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_after ]}
+\permanent\protected\def\dotopbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_before]}
+\permanent\protected\def\dobotbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_after ]}
 
-\def\showbaselinecorrection
-  {\def\dobaselinecorrection % visualization is not watertight!
+\permanent\def\showbaselinecorrection
+  {\enforced\permanent\protected\def\dobaselinecorrection % visualization is not watertight!
      {\bgroup
       \ifdim\prevdepth>\zeropoint
         \kern-\prevdepth
@@ -153,17 +150,15 @@
       \ruledvpack{\box\scratchbox}%
       \egroup
       \prevdepth\strutdp}%
-   \def\dotopbaselinecorrection
-     {\hrule\s!height\d_spac_lines_correction_before}%
-   \def\dobotbaselinecorrection
-     {\hrule\s!height\d_spac_lines_correction_after}}
+   \enforced\permanent\protected\def\dotopbaselinecorrection{\hrule\s!height\d_spac_lines_correction_before}%
+   \enforced\permanent\protected\def\dobotbaselinecorrection{\hrule\s!height\d_spac_lines_correction_after }}
 
 % \def\dobaselinecorrection % beware, this one is redefined below
 %   {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
 %    \kern\strutdp
 %    \prevdepth\strutdp}
 
-\def\baselinecorrection
+\permanent\protected\def\baselinecorrection
   {\endgraf
    \ifvmode
      \ifdim\prevdepth<\maxdimen
@@ -177,7 +172,7 @@
      \fi
    \fi}
 
-\def\pagebaselinecorrection
+\permanent\protected\def\pagebaselinecorrection
   {\ifdim\pagegoal<\maxdimen
      \ifdim\pagetotal>\lineheight % or \topskip
        \scratchdimen\pagetotal
@@ -188,35 +183,35 @@
      \fi
    \fi}
 
-\unexpanded\def\startbaselinecorrection
+\permanent\protected\def\startbaselinecorrection
   {\bgroup
-   \let\stopbaselinecorrection\egroup
+   \enforced\let\stopbaselinecorrection\egroup
    \ifcase\baselinecorrectionmode
    \or % normal
      \baselinecorrection
      \ifvmode
        \setbox\scratchbox\vbox\bgroup\ignorespaces
-       \let\stopbaselinecorrection\donormalstopbaselinecorrection
+       \enforced\let\stopbaselinecorrection\donormalstopbaselinecorrection
      \fi
    \or % off
    \or % force
      \baselinecorrection
      \ifvmode
        \setbox\scratchbox\vbox\bgroup\ignorespaces
-       \let\stopbaselinecorrection\doforcedstopbaselinecorrection
+       \enforced\let\stopbaselinecorrection\doforcedstopbaselinecorrection
      \fi
    \fi}
 
-\let\stopbaselinecorrection\relax
+\permanent\let\stopbaselinecorrection\relax
 
-\def\donormalstopbaselinecorrection % I have to check columns yet.
+\permanent\protected\def\donormalstopbaselinecorrection % I have to check columns yet.
   {\egroup
    \topbaselinecorrection
    \box\scratchbox
    \botbaselinecorrection
    \egroup}
 
-\def\doforcedstopbaselinecorrection % I have to check columns yet.
+\permanent\protected\def\doforcedstopbaselinecorrection % I have to check columns yet.
   {\egroup
    \forcedtopbaselinecorrection
    \box\scratchbox
@@ -229,31 +224,31 @@
 
 \setnewconstant\baselinecorrectionmode\plusone
 
-\def\onbaselinecorrection   {\baselinecorrectionmode\plusone  }
-\def\offbaselinecorrection  {\baselinecorrectionmode\plustwo  }
-\def\forcebaselinecorrection{\baselinecorrectionmode\plusthree}
+\permanent\protected\def\onbaselinecorrection   {\baselinecorrectionmode\plusone  }
+\permanent\protected\def\offbaselinecorrection  {\baselinecorrectionmode\plustwo  }
+\permanent\protected\def\forcebaselinecorrection{\baselinecorrectionmode\plusthree}
 
 %D \macros
 %D  {topbaselinecorrection,botbaselinecorrection}
 %D
 %D The actual top and bottom corrections are implemented as:
 
-\def\topbaselinecorrection
+\permanent\protected\def\topbaselinecorrection
   {\ifvmode \ifdim\pagegoal<\maxdimen
      \forcedtopbaselinecorrection
    \fi \fi}
 
-\def\forcedtopbaselinecorrection
-  {\ifvmode
-     \bgroup
-     \spac_lines_initialize_corrections
-     \whitespace % no longer ok
-     \nointerlineskip
-     \dotopbaselinecorrection
-     \egroup
-   \fi}
+% \permanent\protected\def\forcedtopbaselinecorrection
+%   {\ifvmode
+%      \bgroup
+%      \spac_lines_initialize_corrections
+%      \whitespace % no longer ok
+%      \nointerlineskip
+%      \dotopbaselinecorrection
+%      \egroup
+%    \fi}
 
-\def\botbaselinecorrection
+\permanent\protected\def\botbaselinecorrection
   {\ifvmode
      \bgroup
      \spac_lines_initialize_corrections
@@ -263,8 +258,6 @@
      \egroup
    \fi}
 
-\let\forcedbotbaselinecorrection\botbaselinecorrection
-
 % nointerlineskip
 %
 % startpacked
@@ -272,17 +265,17 @@
 %     \startlinecorrection \framed{test} \stoplinecorrection
 % \stoppacked
 
-\def\forcedtopbaselinecorrection
+\permanent\protected\def\forcedtopbaselinecorrection
   {\ifvmode
      \bgroup
      \spac_lines_initialize_corrections
      \vspacing[\v!white]
-%      \nointerlineskip %
+    %\nointerlineskip %
      \dotopbaselinecorrection
      \egroup
-\fi}
+  \fi}
 
-\def\dobaselinecorrection
+\permanent\protected\def\dobaselinecorrection
   {\ifdim\prevdepth>\zeropoint
      \vspacing[\the\dimexpr-\prevdepth+\strutdp\relax]%
    \else
@@ -290,17 +283,17 @@
    \fi
    \prevdepth\strutdp}
 
-% \def\dobaselinecorrection
+% \permanent\protected\def\dobaselinecorrection
 %   {\scratchdimen\dimexpr\ifdim\prevdepth>\zeropoint-\prevdepth+\fi\strutdp\relax
 %    \vspacing[\the\scratchdimen]%
 %    \prevdepth\strutdp}
 %
 % some day:
 %
-% \def\dobaselinecorrection
+% \permanent\protected\def\dobaselinecorrection
 %   {\clf_checkstrutdepth\strutdp}
 %
-% \def\baselinecorrection
+% \permanent\protected\def\baselinecorrection
 %   {\endgraf
 %    \ifvmode
 %      \ifdim\prevdepth<\maxdimen
@@ -321,7 +314,7 @@
 
 %D For the moment only with placefloats (should work in mvl and boxes):
 
-\unexpanded\def\checkprevdepth
+\permanent\protected\def\checkprevdepth
   {\endgraf
    \ifvmode
      \ifdim\prevdepth<\maxdimen
@@ -335,18 +328,22 @@
 
 \let\normalstartbaselinecorrection\startbaselinecorrection
 
-\unexpanded\def\startbaselinecorrection
+\pushoverloadmode
+
+\permanent\protected\def\startbaselinecorrection
   {\ifgridsnapping
      \snaptogrid[\v!normal]\vbox\bgroup
-     \let\stopbaselinecorrection\egroup
+     \enforced\let\stopbaselinecorrection\egroup
    \else
      \normalstartbaselinecorrection
    \fi}
 
+\popoverloadmode
+
 % This is new (and experimental) and might replace some of the above. beware it doesn't always work
 % out well, e.g. when used grouped and such (e.g. before display math doesn't work out well).
 
-% \unexpanded\def\fakenextstrutline
+% \permanent\protected\def\fakenextstrutline
 %   {\par
 %    \begingroup
 %    \reseteverypar
@@ -355,7 +352,7 @@
 %    \vskip-\struttotal
 %    \endgroup}
 
-% \unexpanded\def\fakenextstrutline
+% \permanent\protected\def\fakenextstrutline
 %   {\par
 %    \begingroup
 %    \reseteverypar
@@ -366,7 +363,7 @@
 %    \fi
 %    \endgroup}
 
-% \unexpanded\def\fakenextstrutline
+% \permanent\protected\def\fakenextstrutline
 %   {\par
 %    \begingroup
 %    \reseteverypar

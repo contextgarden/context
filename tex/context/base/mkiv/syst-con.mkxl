@@ -20,40 +20,40 @@
 %D In addition to the uppercase hex conversion, as needed in math families, we
 %D occasionally need a lowercase one.
 
-\def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
-\def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
-\def\lchexnumbers#1{\clf_lchexnumbers\numexpr#1\relax}
-\def\uchexnumbers#1{\clf_uchexnumbers\numexpr#1\relax}
+\permanent\def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
+\permanent\def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
+\permanent\def\lchexnumbers#1{\clf_lchexnumbers\numexpr#1\relax}
+\permanent\def\uchexnumbers#1{\clf_uchexnumbers\numexpr#1\relax}
 
-\let\hexnumber\uchexnumber
+\aliased\let\hexnumber\uchexnumber
 
 %D \macros{octnumber}
 %D
 %D For \UNICODE\ remapping purposes, we need octal numbers.
 
-\def\octnumber#1{\clf_octnumber\numexpr#1\relax}
+\permanent\def\octnumber#1{\clf_octnumber\numexpr#1\relax}
 
 %D \macros{hexstringtonumber,octstringtonumber}
 %D
 %D This macro converts a two character hexadecimal number into a decimal number,
 %D thereby taking care of lowercase characters as well.
 
-\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
-\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
+\permanent\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
+\permanent\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
 
 %D \macros{rawcharacter}
 %D
 %D This macro can be used to produce proper 8 bit characters that we sometimes need
 %D in backends and round||trips.
 
-\def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
+\permanent\def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
 
 %D \macros{twodigits, threedigits}
 %D
 %D These macros provides two or three digits always:
 
-\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
-\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
+\permanent\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
+\permanent\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
 
 %D \macros{modulonumber}
 %D
@@ -68,25 +68,20 @@
 %D have behaved like \TEX's normal\type {\divide}, then the expression could have
 %D been somewhat simpler, like \type {#2-(#2/#1)*#1}. This works just as well, but a
 %D bit more complex.
-%D
-%D \starttyping
-%D \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
-%D \stoptyping
-%D
-%D But \unknown\ now we can also do this:
 
-\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
+%permanent\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+%permanent\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
 
 %D \macros{setcalculatedsin,setcalculatedcos,setcalculatedtan}
 
-\protected\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
-\protected\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
-\protected\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
+\permanent\protected\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
+\permanent\protected\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
+\permanent\protected\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
 
 %D \macros{formatted,format}
 
-          \def\formatted#1{\ctxcommand{format(#1)}} % not clf
-\protected\def\format   #1{\ctxcommand{format(#1)}} % not clf
+\permanent          \def\formatted#1{\ctxcommand{format(#1)}} % not clf
+\permanent\protected\def\format   #1{\ctxcommand{format(#1)}} % not clf
 
 %D The \type {\modulatednumber} and \type {\realnumber} macros have been removed.
 

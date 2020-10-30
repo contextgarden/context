@@ -94,7 +94,7 @@ local glue_code            = nodecodes.glue
 local glyph_code           = nodecodes.glyph
 local rule_code            = nodecodes.rule
 local dir_code             = nodecodes.dir
-local localpar_code        = nodecodes.localpar
+local par_code             = nodecodes.par
 
 local leftskip_code        = gluecodes.leftskip
 local rightskip_code       = gluecodes.rightskip
@@ -420,7 +420,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         elseif id == dir_code then
             local direction, pop = getdirection(current)
             txtdir = not pop and direction -- we might need a stack
-        elseif id == localpar_code then
+        elseif id == par_code then
             if start_of_par(current) then
                 pardir = getdirection(current)
             end

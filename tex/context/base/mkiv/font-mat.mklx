@@ -40,10 +40,10 @@
 \newtoks       \t_font_math_strategies
 \newconditional\c_font_synchronize_math_fonts \settrue\c_font_synchronize_math_fonts
 
-\unexpanded\def\font_helpers_synchronize_math % math stuff in mmode
+\protected\def\font_helpers_synchronize_math % math stuff in mmode
   {\ifconditional\c_font_synchronize_math_fonts\the\t_font_math_strategies\fi}
 
-\unexpanded\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
+\permanent\protected\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
 
 %D The main math font definer. We have removed some optimized code simply because we
 %D now always have a fontclass. We could check for fontclass being default or empty
@@ -66,6 +66,8 @@
 
 \newconditional\c_font_bidirectional_mathstrategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_mathstrategy
 \newconditional\c_font_complete_bold_mathstrategy  \settrue\c_font_complete_bold_mathstrategy
+
+% \frozen ...
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
@@ -343,7 +345,7 @@
     \fam\defaultmathfamily % all characters and symbols are in this family
 \to \everymathematics
 
-\unexpanded\def\font_helpers_synchronize_math_family_mr
+\protected\def\font_helpers_synchronize_math_family_mr
   {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
      \ifconditional\c_math_right_to_left
        \plustwo
@@ -354,7 +356,7 @@
      \zerocount
    \fi}
 
-\unexpanded\def\font_helpers_synchronize_math_family_mb
+\protected\def\font_helpers_synchronize_math_family_mb
   {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
      \ifconditional\c_math_right_to_left
        \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
@@ -415,7 +417,7 @@
 
 \newconditional\c_math_bold
 
-\unexpanded\def\mr % math regular
+\protected\def\mr % math regular
   {\ifmmode
      \font_helpers_synchronize_math_family_mr
    \else
@@ -424,7 +426,7 @@
    \mathdefault
    \setfalse\c_math_bold}
 
-\unexpanded\def\mb % math bold
+\protected\def\mb % math bold
   {\ifmmode
      \font_helpers_synchronize_math_family_mb
    \else
@@ -462,13 +464,13 @@
   \fi
 \to \everymathematics
 
-\unexpanded\def\nobigmath  {\synchronizebigmathflag\zerocount}
-\unexpanded\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
-\unexpanded\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
+\protected\def\nobigmath  {\synchronizebigmathflag\zerocount}
+\protected\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
+\protected\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
 
 \let\bigmathfontsize\empty
 
-\unexpanded\def\synchronizebigmath
+\protected\def\synchronizebigmath
   {\ifx\bigmathfontsize\fontsize
      % already in sync
    \else
@@ -476,7 +478,7 @@
      \font_helpers_synchronize_math
    \fi}
 
-\unexpanded\def\font_helpers_check_big_math_synchronization
+\protected\def\font_helpers_check_big_math_synchronization
   {\ifcase\synchronizebigmathflag
      % never
    \or

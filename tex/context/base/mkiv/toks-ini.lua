@@ -66,9 +66,6 @@ tokens.istoken         = is_token
 tokens.isdefined       = is_defined
 tokens.defined         = is_defined
 
-tokens.getdata         = token.get_data -- only lmtx
-tokens.setdata         = token.set_data -- only lmtx
-
 local bits = {
     escape      = 0x00000001, -- 2^00
     begingroup  = 0x00000002, -- 2^01

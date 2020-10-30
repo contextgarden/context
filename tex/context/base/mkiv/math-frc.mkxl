@@ -1,0 +1,753 @@
+%D \module
+%D   [       file=math-frc,
+%D        version=2013.04.06, % 2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Fractions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Fractions}
+
+\unprotect
+
+%D I need to check it all again as there was a bug in luatex with dimensions that could
+%D resulted in side effects that made me mess with spacing.
+
+\unexpanded\def\topstrut{\vrule\s!width\zeropoint\s!height\strutht\s!depth\zeropoint\relax}
+\unexpanded\def\botstrut{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp\relax}
+
+\unexpanded\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
+\unexpanded\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
+
+%D This module is reimplemented in \MKIV\ style.
+
+\registerctxluafile{math-frc}{}
+
+%D \macros
+%D   {frac, xfrac, xxfrac}
+%D
+%D This is another one Tobias asked for. It replaces the primitive \type
+%D {\over}. We also take the opportunity to handle math style restoring,
+%D which makes sure units and chemicals come out ok. The \type {\frac}
+%D macro kind of replaces the awkward \type {\over} primitive. Say that
+%D we have the following formulas:
+%D
+%D \startbuffer[sample]
+%D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$
+%D test $\xfrac {1}{2}$ test $$1 + \xfrac {1}{2} = 1.5$$
+%D test $\xxfrac{1}{2}$ test $$1 + \xxfrac{1}{2} = 1.5$$
+%D \stopbuffer
+%D
+%D \typebuffer[sample]
+%D
+%D With the most straightforward definitions, we get:
+%D
+%D \startbuffer[code]
+%D \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
+%D
+%D \def\frac  {\dofrac\mathstyle}
+%D \def\xfrac {\dofrac\scriptstyle}
+%D \def\xxfrac{\dofrac\scriptscriptstyle}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D Since this does not work well, we can try:
+%D
+%D \startbuffer[code]
+%D \def\xfrac #1#2{\hbox{$\dofrac\scriptstyle      {#1}{#2}$}}
+%D \def\xxfrac#1#2{\hbox{$\dofrac\scriptscriptstyle{#1}{#2}$}}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D This for sure looks better than:
+%D
+%D \startbuffer[code]
+%D \def\xfrac #1#2{{\scriptstyle      \dofrac\relax{#1}{#2}}}
+%D \def\xxfrac#1#2{{\scriptscriptstyle\dofrac\relax{#1}{#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer[code] \getbuffer[code,sample]
+%D
+%D So we stick to the next definitions (watch the local overloading of
+%D \type {\xfrac}).
+%D
+%D In the meantime, in \LUATEX, we have better control over styles so the
+%D following macros are different from the \MKII\ ones.
+
+% obsolete, is now c!mathstyle
+%
+% 0=auto, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle, 5=mathstyle
+%
+% $\mathfracmode0 \frac{1}{2}$
+% $\mathfracmode1 \frac{1}{2}$
+% $\mathfracmode2 \frac{1}{2}$
+% $\mathfracmode3 \frac{1}{2}$
+% $\mathfracmode4 \frac{1}{2}$
+% $\mathfracmode5 \frac{1}{2}$
+%
+% we keep the constant for a while
+
+\setnewconstant\mathfracmode\zerocount
+
+\installcorenamespace{mathfractions}
+\installcorenamespace{mathfractionstyle}
+\installcorenamespace{mathfractionalternative}
+
+\installcommandhandler \??mathfractions {mathfraction} \??mathfractions
+
+\let\setupmathfractions\setupmathfraction
+
+% color only applies to rule, use regular color for rest
+
+\setupmathfractions
+  [\c!mathstyle=,
+   \c!alternative=\v!inner,
+   \c!margin=\zeropoint,
+   \c!rulethickness=.25\exheight,
+   \c!left=0x2E,
+   \c!right=0x2E,
+   \c!strut=\v!yes,
+   \c!topdistance=,
+   \c!bottomdistance=,
+   \c!rule=\v!auto]
+
+\appendtoks
+    \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
+\to \everydefinemathfraction
+
+% Sometimes users want control over the distances:
+
+\let\math_fraction_set_distance\relax
+
+\appendtoks
+    \math_fraction_set_distance
+\to \everymathematics
+
+% why only displaystyle .. a bit weak
+
+\unexpanded\def\math_fraction_set_distance_top
+  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
+   \relax}
+
+\unexpanded\def\math_fraction_set_distance_bot
+  {\Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
+   \relax}
+
+\unexpanded\def\math_fraction_set_distance_all
+  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
+   \Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
+   \relax}
+
+\appendtoks
+    \ifx\currentmathfraction\empty
+      \edef\m_math_fraction_distance_top{\mathfractionparameter\c!topdistance}%
+      \edef\m_math_fraction_distance_bot{\mathfractionparameter\c!bottomdistance}%
+      \ifx\m_math_fraction_distance_top\empty
+        \ifx\m_math_fraction_distance_bot\empty
+          \let\math_fraction_set_distance\relax
+        \else
+          \let\math_fraction_set_distance\math_fraction_set_distance_bot
+        \fi
+      \else
+        \ifx\m_math_fraction_distance_bot\empty
+          \let\math_fraction_set_distance\math_fraction_set_distance_top
+        \else
+          \let\math_fraction_set_distance\math_fraction_set_distance_all
+        \fi
+      \fi
+    \fi
+\to \everysetupmathfraction
+
+% So far for control.
+
+\installcorenamespace{mathfractionstrut}
+
+\def\math_frac_no_strut
+  {\enforced\let\m_fractions_strut_top\relax
+   \enforced\let\m_fractions_strut_bot\relax}
+
+\setvalue{\??mathfractionstrut\v!yes}%
+  {\enforced\let\m_fractions_strut_top\mathstrut
+   \enforced\let\m_fractions_strut_bot\mathstrut}
+
+\setvalue{\??mathfractionstrut\v!math}%
+  {\enforced\let\m_fractions_strut_top\mathstrut
+   \enforced\let\m_fractions_strut_bot\mathstrut}
+
+\letvalue{\??mathfractionstrut\v!no}\math_frac_no_strut
+
+\setvalue{\??mathfractionstrut\v!tight}%
+  {\enforced\let\m_fractions_strut_top\mathbotstrut  % indeed swapped name
+   \enforced\let\m_fractions_strut_bot\mathtopstrut} % indeed swapped name
+
+\math_frac_no_strut
+
+\newdimen\d_math_fraction_margin
+
+\unexpanded\def\math_frac#1%
+  {\begingroup
+   \edef\currentmathfraction{#1}%
+   %
+   \edef\p_math_fraction_fences{\mathfractionparameter\c!fences}%
+   \ifx\p_math_fraction_fences\empty \else
+     \math_fenced_fenced_start\p_math_fraction_fences
+   \fi
+   %
+   \d_math_fraction_margin\mathfractionparameter\c!margin
+   %
+   \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
+   %
+   \edef\p_math_fractions_strut{\mathfractionparameter\c!strut}%
+   \ifcsname\??mathfractionstrut\p_math_fractions_strut\endcsname
+     \lastnamedcs
+   \else
+     \math_frac_no_strut
+   \fi
+   %
+   \ifx\p_math_fractions_color\empty
+     \expandafter\math_frac_normal
+   \else
+     \expandafter\math_frac_colored
+   \fi}
+
+\unexpanded\def\math_frac_wrapup
+  {\ifx\p_math_fraction_fences\empty \else
+     \math_fenced_fenced_stop\p_math_fraction_fences
+   \fi
+   \endgroup}
+
+\unexpanded\def\math_frac_colored#1#2%
+  {\savecolor
+   \colo_helpers_activate\p_math_fractions_color
+   \math_frac_normal{\restorecolor#1}{\restorecolor#2}}
+
+\unexpanded\def\math_frac_normal
+  {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
+
+% we use utfchar anyway so we can as well do all at the lua end
+
+\def\math_frac_no_delim{0x2E}
+
+\def\math_frac_command
+  {\clf_mathfraction
+     {\mathfractionparameter\c!rule}%
+     \ifx\p_math_fraction_fences\empty
+       \mathfractionparameter\c!left \space
+       \mathfractionparameter\c!right\space
+     \else
+       \math_frac_no_delim\space
+       \math_frac_no_delim\space
+     \fi
+     \dimexpr\mathfractionparameter\c!rulethickness\relax
+   \relax}
+
+% Having a \withmarginornot{#1}{#2} makes not much sense nor do 4 tests or 4 redundant
+% kerns (longer node lists plus possible interference). A split in normal and margin
+% also makes testing easier. When left and right margins are needed we might merge the
+% variants again. After all, these are not real installers.
+
+% the denominator is in cramped!
+
+\setvalue{\??mathfractionalternative\v!inner}%
+  {\ifcase\d_math_fraction_margin
+      \expandafter\math_fraction_inner_normal
+   \else
+      \expandafter\math_fraction_inner_margin
+   \fi}
+
+\setvalue{\??mathfractionalternative\v!outer}%
+  {\ifcase\d_math_fraction_margin
+      \expandafter\math_fraction_outer_normal
+   \else
+      \expandafter\math_fraction_outer_margin
+   \fi}
+
+\setvalue{\??mathfractionalternative\v!both}%
+  {\ifcase\d_math_fraction_margin
+      \expandafter\math_fraction_both_normal
+   \else
+      \expandafter\math_fraction_both_margin
+   \fi}
+
+% todo: store first state and reuse second time
+
+\def\math_fraction_inner_normal#1#2%
+  {\Ustack{%
+     {%
+       {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}%
+       \math_frac_command
+       {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\def\math_fraction_outer_normal#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+       {\m_fractions_strut_top#1}%
+       \math_frac_command
+       {\m_fractions_strut_bot#2}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\def\math_fraction_both_normal#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+       {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
+       \math_frac_command
+       {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\def\math_fraction_inner_margin#1#2%
+  {\Ustack{%
+     {%
+       {\kern\d_math_fraction_margin
+        \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
+        \kern\d_math_fraction_margin}%
+       \math_frac_command
+       {\kern\d_math_fraction_margin
+        \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
+        \kern\d_math_fraction_margin}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\def\math_fraction_outer_margin#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+       {\kern\d_math_fraction_margin
+        \m_fractions_strut_top#1%
+        \kern\d_math_fraction_margin}%
+       \math_frac_command
+       {\kern\d_math_fraction_margin
+        \m_fractions_strut_bot#2%
+        \kern\d_math_fraction_margin}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\def\math_fraction_both_margin#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+       {\kern\d_math_fraction_margin
+        \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
+        \kern\d_math_fraction_margin}%
+       \math_frac_command
+       {\kern\d_math_fraction_margin
+        \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
+        \kern\d_math_fraction_margin}%
+     }%
+   }%
+   \math_frac_wrapup}
+
+\definemathfraction[xfrac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
+\definemathfraction[xxfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
+
+\let\normalxfrac\xfrac
+
+\unexpanded\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
+
+%D Spacing (sensitive for definition of \triggermathstyle:
+
+% \ifcase\contextlmtxmode
+
+\unexpanded\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \mathstyletrigger\mathstyle}} % maybe collect settings
+\unexpanded\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\mathstyletrigger\mathstyle}} % maybe collect settings
+
+\unexpanded\def\math_no_fraction_gaps#1%
+  {\Umathfractionnumup    #1\zeropoint
+   \Umathfractiondenomdown#1\zeropoint}
+
+\unexpanded\def\math_overlay_fraction_gaps#1%
+  {\Umathfractionnumup    #1\zeropoint
+   \Umathfractionnumvgap  #1\zeropoint
+   %Umathfractionrule     #1\zeropoint
+   \Umathfractiondenomvgap#1\zeropoint
+   \Umathfractiondenomdown#1\zeropoint}
+
+% \else
+
+% \unexpanded\def\math_no_fraction_gaps
+%   {\Umathfractionnumup    \mathstyle\zeropoint
+%    \Umathfractiondenomdown\mathstyle\zeropoint}
+%
+% \unexpanded\def\math_overlay_fraction_gaps
+%   {\Umathfractionnumup    \mathstyle\zeropoint
+%    \Umathfractionnumvgap  \mathstyle\zeropoint
+%    %Umathfractionrule     \mathstyle\zeropoint
+%    \Umathfractiondenomvgap\mathstyle\zeropoint
+%    \Umathfractiondenomdown\mathstyle\zeropoint}
+
+% \fi
+
+\installcorenamespace{mathfractiondistance}
+
+\letvalue{\??mathfractiondistance\v!none   }\nomathfractiongaps
+\letvalue{\??mathfractiondistance\v!no     }\nomathfractiongaps
+\letvalue{\??mathfractiondistance\v!overlay}\overlaymathfractiongaps
+
+\setupmathfractions
+  [\c!distance=\v!none]
+
+\appendtoks
+    \edef\p_distance{\rootmathfractionparameter\c!distance}%
+    \ifx\p_distance\empty\else
+        \ifcsname\??mathfractiondistance\p_distance\endcsname
+            \lastnamedcs
+        \fi
+    \fi
+\to \everymathematics
+
+% theshold is new!
+
+\let\math_fraction_set_threshold_inline \relax
+\let\math_fraction_set_threshold_display\relax
+
+\appendtoks
+    \math_fraction_set_threshold_inline
+    \math_fraction_set_threshold_display
+\to \everymathematics
+
+\appendtoks
+    \ifx\currentmathfraction\empty
+      \edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
+      \ifx\p_threshold\empty
+        \let\math_fraction_set_threshold_inline\relax
+      \else\ifx\p_threshold\v!auto
+        \let\math_fraction_set_threshold_inline\relax
+      \else
+        \let\math_fraction_set_threshold_inline\math_fraction_set_theshold_inline
+      \fi\fi
+      \edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
+      \ifx\p_threshold\empty
+        \let\math_fraction_set_threshold_display\relax
+      \else\ifx\p_threshold\v!auto
+        \let\math_fraction_set_threshold_display\relax
+      \else
+        \let\math_fraction_set_threshold_display\math_fraction_set_theshold_display
+      \fi\fi
+    \fi
+\to \everysetupmathfraction
+
+\def\math_fraction_set_theshold_inline
+  {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
+   \Umathfractiondelsize\textstyle        \p_threshold\dimexpr\textface\relax
+   \Umathfractiondelsize\scriptstyle      \p_threshold\dimexpr\scriptface\relax
+   \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax}
+
+\def\math_fraction_set_theshold_display
+  {\edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
+   \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax}
+
+%D \macros
+%D   {dfrac, tfrac, frac, dbinom, tbinom, binom}
+%D
+%D \startbuffer
+%D $\dfrac {1}{2} \tfrac {1}{2} \frac {1}{2}$
+%D $\dbinom{1}{2} \tbinom{1}{2} \binom{1}{2}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+
+% $$
+%     {{a}\over{b}} +
+%     {{a}\overwithdelims(){b}} +
+%     {{a}\atopwithdelims(){b}} +
+%     {{a}\abovewithdelims()\zeropoint{b}} +
+%     \left({{a}\over{b}}\right)
+% $$
+
+% \dorecurse {10} { % weird
+%     $$ {{a}\abovewithdelims()#1pt{b}} $$
+% }
+
+\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=]  % was script and then small but nothing needed
+\definemathfraction[i:tfrac][\c!alternative=\v!inner,\c!mathstyle=\s!text] % was script (before luatex fix)
+\definemathfraction[i:sfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
+\definemathfraction[i:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
+
+\definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!cramped] % was cramped,text
+\definemathfraction[d:tfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!text}] % was cramped,script (before luatex fix)
+\definemathfraction[d:sfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!scriptscript}]
+\definemathfraction[d:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
+
+%D \unexpanded\def\ShowMathFractions#1#2%
+%D   {\dontleavehmode
+%D    \begingroup
+%D    \showmathstruts
+%D    \mathematics{x+\tfrac{#1}{#2}+1+\frac{#1}{#2}+2+\sfrac{#1}{#2}+g}%
+%D    \endgroup}
+%D
+%D The default \type {tfrac}, \type {frac} and \type \sfrac} look like this:
+%D
+%D \blank
+%D \ShowMathFractions{a}{a}\par
+%D \ShowMathFractions{1}{x}\par
+%D \ShowMathFractions{a}{b}\par
+%D \ShowMathFractions{1}{b}\par
+%D \blank
+
+\unexpanded\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
+\unexpanded\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
+\unexpanded\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
+\unexpanded\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
+
+\definemathfraction[ams]            [\c!strut=\v!no,\c!alternative=\v!outer]
+\definemathfraction[i:ams:frac][ams][\c!mathstyle={\s!cramped,\s!text}]
+\definemathfraction[d:ams:frac][ams][\c!mathstyle={\s!cramped,\s!display}]
+
+\unexpanded\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
+\unexpanded\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
+
+% \appendtoks
+%     \doifelse{\mathfractionparameter\c!option}{ams}%
+%       {\let\frac\amsfrac}%
+%       {\let\frac\ctxfrac}%
+% \to \everysetupmathfraction
+
+\appendtoks
+    \doifelse{\mathematicsparameter\c!fractions}{ams}%
+      {\let\frac\amsfrac}%
+      {\let\frac\ctxfrac}%
+\to \everysetupmathematics
+
+% \definemathfraction[ddfrac][\c!mathstyle=\s!display]
+% \definemathfraction[ttfrac][\c!mathstyle=\s!text]
+% \definemathfraction[ssfrac][\c!mathstyle=\s!script]
+
+% \unexpanded\def\binom #1#2{{\Ustack      {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \unexpanded\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \unexpanded\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+
+\definemathfraction
+  [binom]
+  [\c!alternative=\v!outer,
+   \c!rule=\v!no,
+   \c!left=0x28,
+   \c!right=0x29,
+   \c!mathstyle=\s!auto]
+
+\definemathfraction
+  [dbinom]
+  [binom]
+  [\c!mathstyle=\s!display]
+
+\definemathfraction
+  [tbinom]
+  [binom]
+  [\c!mathstyle=\s!text]
+
+%D \macros
+%D   {cfrac}
+%D
+%D \startbuffer
+%D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
+%D $\cfrac{1}{23} \cfrac[l]{1}{23} \cfrac[c]{1}{23} \cfrac[r]{1}{23}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D Now we can align every combination we want:
+%D
+%D \startbuffer
+%D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
+%D $\cfrac{1}{23} \cfrac[l]{1}{23} \cfrac[c]{1}{23} \cfrac[r]{1}{23}$
+%D $\cfrac[cl]{12}{3} \cfrac[cc]{12}{3} \cfrac[cr]{12}{3}$
+%D $\cfrac[lc]{1}{23} \cfrac[cc]{1}{23} \cfrac[rc]{1}{23}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+\unexpanded\def\cfrac
+  {\doifelsenextoptionalcs\math_cfrac_yes\math_cfrac_nop}
+
+\def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
+\def\math_cfrac_yes[#1]{\math_cfrac_indeed[#1cc]}
+
+\def\math_cfrac_indeed[#1#2#3]#4#5%
+  {{\displaystyle
+    \frac
+      {\strut
+       \ifx r#1\hfill\fi#4\ifx l#1\hfill\fi}%
+      {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
+    \kern-\nulldelimiterspace}}
+
+%D \macros
+%D   {splitfrac, splitdfrac}
+%D
+%D Occasionally one needs to typeset multi||line fractions.
+%D These commands use \tex{genfrac} to create such fractions.
+%D
+%D \startbuffer
+%D \startformula
+%D      a=\frac{
+%D          \splitfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D      =\frac{
+%D          \splitdfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D These macros are based on Michael J.~Downes posting on
+%D comp.text.tex on 2001/12/06 but adapted a bit.
+
+\unexpanded\def\splitfrac #1#2%
+  {{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
+
+\unexpanded\def\splitdfrac#1#2%
+  {{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
+
+%D For testing:
+
+% \unexpanded\def\ShowMathFractions#1#2%
+%  {\mathematics{x+\tfrac{#1}{#2}+1+\frac{#1}{#2}+2+\sfrac{#1}{#2}+g}}
+
+%D More fracking (for Alan):
+
+\unexpanded\def\math_frac_colored_vulgar#1#2%
+  {\savecolor
+   \colo_helpers_activate\p_math_fractions_color
+   {\restorecolor#1}\Uskewed/{\restorecolor#2}}
+
+\unexpanded\def\math_frac_normal_vulgar#1#2%
+  {{#1}\Uskewed/{#2}}
+
+\unexpanded\def\vfrac#1#2%
+  {\bgroup
+   \edef\p_math_fractions_color{\namedmathfractionparameter\s!vfrac\c!color}%
+   \ifx\p_math_fractions_color\empty
+     \expandafter\math_frac_normal_vulgar
+   \else
+     \expandafter\math_frac_colored_vulgar
+   \fi
+   {#1}%
+   {#2}%
+   \egroup}
+
+\appendtoks
+    \edef\p_hfactor{\namedmathfractionparameter\s!vfrac\c!hfactor}%
+    \edef\p_vfactor{\namedmathfractionparameter\s!vfrac\c!vfactor}%
+    \Umathskewedfractionhgap\textstyle        \p_hfactor\fontemwidth \mathstylefont\textstyle
+    \Umathskewedfractionhgap\scriptstyle      \p_hfactor\fontemwidth \mathstylefont\scriptstyle
+    \Umathskewedfractionhgap\scriptscriptstyle\p_hfactor\fontemwidth \mathstylefont\scriptscriptstyle
+    \Umathskewedfractionvgap\textstyle        \p_vfactor\fontexheight\mathstylefont\textstyle
+    \Umathskewedfractionvgap\scriptstyle      \p_vfactor\fontexheight\mathstylefont\scriptstyle
+    \Umathskewedfractionvgap\scriptscriptstyle\p_vfactor\fontexheight\mathstylefont\scriptscriptstyle
+\to \everysetupmathfraction
+
+\setupmathfraction
+  [\s!vfrac]
+  [\c!hfactor=.2,
+   \c!vfactor=.1]
+
+\protect \endinput
+
+% I have no clue what \mthfrac and \mthsqrt are supposed to do but
+% I guess that it can be done with tweaking luatex's math parameters.
+% Otherwise I'll write something from scratch.
+
+% \def\math_stylebuilders_frac#1#2#3#4#5#6#7%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #6$}%
+%    \setbox2\hbox{$#1 #7$}%
+%    \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
+%    \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
+%    \mathord{\vcenter{{\offinterlineskip
+%      \hbox to \dimen0{\hss\box0\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\copy4\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\box2\hss}}}}%
+%    \endgroup}
+%
+% \def\math_stylebuilders_sqrt#1#2#3#4#5%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #5$}%
+%    \ht0\dimexpr1.05\ht0+\onepoint\relax
+%    \dp0\dimexpr1.05\dp0+\onepoint\relax
+%    \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
+%    \delimitershortfall\zeropoint
+%    \nulldelimiterspace\zeropoint
+%    \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
+%    \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
+%    \endgroup}
+%
+% \def\mthfrac#1#2#3#4#5{\mathchoice
+%   {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
+%
+% \def\mthsqrt#1#2#3{\mathchoice
+%   {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
+
+% \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
+% \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
+
+% used for prototyping \Uskewed
+%
+% \unexpanded\def\skewedfractiona#1#2{%
+%     \raise
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax$%
+%         \egroup
+%         \hbox to \zeropoint\bgroup
+%             \hss$\textstyle/$\hss
+%         \egroup
+%     \lower
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax\scriptstyle#2$%
+%         \egroup
+% }
+%
+% \unexpanded\def\skewedfractionb#1#2{%
+%     \raise
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax$%
+%         \egroup
+%         \hbox to \zeropoint\bgroup
+%             \hss$\textstyle/$\hss
+%         \egroup
+%     \lower
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax\scriptstyle#2$%
+%         \egroup
+% }
+%
+% $\skewedfractiona{1}{2}$
+% $\skewedfractionb{1}{2}$

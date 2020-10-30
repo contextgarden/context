@@ -16,7 +16,6 @@ local hyphenate   = lang.hyphenate
 local hyphenating = nuts.hyphenating
 local ligaturing  = nuts.ligaturing
 local kerning     = nuts.kerning
-local cleanup     = nuts.flush_components
 
 function kernel.hyphenation(head)
     return (hyphenate(head)) -- nodes !
@@ -32,14 +31,6 @@ end
 
 function kernel.kerning(head)
     return (kerning(head))
-end
-
-if cleanup then
-
-    function kernel.cleanup(head)
-        return (cleanup(head))
-    end
-
 end
 
 callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")

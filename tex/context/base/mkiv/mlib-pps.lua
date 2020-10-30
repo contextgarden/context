@@ -25,7 +25,7 @@ local setmacro             = interfaces.setmacro
 
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox -- or: nodes.takebox
-local texruntoks           = tex.runtoks
+local texrunlocal          = tex.runlocal
 local copy_list            = node.copy_list
 local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -858,7 +858,7 @@ local tx_reset, tx_process  do
         mp_t      = nil
         top.texstrings[mp_index] = str
         top.texregimes[mp_index] = regime or -1
-        texruntoks("mptexttoks")
+        texrunlocal("mptexttoks")
         local box = textakebox("mptextbox")
         top.textexts[mp_target] = box
         mp.triplet(bp*box.width,bp*box.height,bp*box.depth)
@@ -922,7 +922,7 @@ local tx_reset, tx_process  do
             if overload then
                 top.texstrings[mp_index] = map.template or map.label or "error"
                 top.texregimes[mp_index] = regime or -1
-                texruntoks("mptexttoks")
+                texrunlocal("mptexttoks")
                 local box = textakebox("mptextbox") or new_hlist()
                 width = bp * box.width
                 where = overload.where
@@ -930,7 +930,7 @@ local tx_reset, tx_process  do
             -- the real text
             top.texstrings[mp_index] = overload and overload.text or text or "error"
             top.texregimes[mp_index] = regime or -1
-            texruntoks("mptexttoks")
+            texrunlocal("mptexttoks")
             local box = textakebox("mptextbox") or new_hlist()
             local twd = bp * box.width
             local tht = bp * box.height
@@ -1047,7 +1047,7 @@ local tx_reset, tx_process  do
             local mp_hash = prescript.tx_cache
             local box
             if mp_hash == "no" then
-                texruntoks("mptexttoks")
+                texrunlocal("mptexttoks")
                 box = textakebox("mptextbox")
             else
                 local cache = data.texhash
@@ -1080,7 +1080,7 @@ local tx_reset, tx_process  do
                 if box then
                     box = copy_list(box)
                 else
-                    texruntoks("mptexttoks")
+                    texrunlocal("mptexttoks")
                     box = textakebox("mptextbox")
                     cache[mp_hash] = box
                 end
@@ -1163,7 +1163,7 @@ local gt_reset, gt_process do
         if not graphics[index] then
             mp_index = index
             mp_str   = str
-            texruntoks("mpgraphictexttoks")
+            texrunlocal("mpgraphictexttoks")
         end
     end
 
@@ -1584,7 +1584,7 @@ local ot_reset, ot_process do
             mp_index = index
             mp_kind  = kind
             mp_str   = str
-            texruntoks("mpoutlinetoks")
+            texrunlocal("mpoutlinetoks")
         end
     end
 

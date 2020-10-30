@@ -393,7 +393,7 @@
   % \blank[halfline]
 
     \start
-        \def\\{\unskip\space\&\space\ignorespaces}
+        \enforced\protected\def\\{\unskip\space\&\space\ignorespaces}
         \hbox{\indent\getvariable{tugboat}{author}}
         \par
     \stop
@@ -431,7 +431,7 @@
         \hrule height .6pt
         \blank[halfline]
         \start
-            \let\\=\par
+            \enforced\let\\\par
             {\bf\getvariable{tugboat}{title}}
             \par
             \blank[halfline]
@@ -441,7 +441,7 @@
         \blank[line]
 
         \doiftext {\getbuffer[abstract]} {
-            \let\\=\endgraf
+            \enforced\let\\\endgraf
             \setups{tugboat:abstract:setup}
             \subject{Abstract}
             \getbuffer[abstract]

@@ -26,7 +26,6 @@ local gluecodes      = nodes.gluecodes
 local kerncodes      = nodes.kerncodes
 local rulecodes      = nodes.rulecodes
 local nodecodes      = nodes.nodecodes
-local leadercodes    = nodes.leadercodes
 local boundarycodes  = nodes.boundarycodes
 local usercodes      = nodes.usercodes
 
@@ -200,7 +199,7 @@ local correctionskip    = register_nut(new_nut(glue_code,gluecodes.correctionski
 local temp              = register_nut(new_nut(nodecodes.temp,0))
 
 local noad              = register_nut(new_nut(nodecodes.noad))
-local delimiter         = register_nut(new_nut(nodecodes.delim))
+local delimiter         = register_nut(new_nut(nodecodes.delimiter))
 local fence             = register_nut(new_nut(nodecodes.fence))
 local submlist          = register_nut(new_nut(nodecodes.submlist))
 local accent            = register_nut(new_nut(nodecodes.accent))
@@ -214,7 +213,7 @@ local choice            = register_nut(new_nut(nodecodes.choice))
 local boundary          = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
 local wordboundary      = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
 
-local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,leadercodes.cleaders) setglue(cleader,0,65536,0,2,0)
+local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
@@ -627,10 +626,10 @@ do
         return v
     end)
 
-                                traversers.node  = nodes.traverse      (glyph)
-                                traversers.char  = nodes.traverse_char (glyph)
-    if nuts.traverse_glyph then traversers.glyph = nodes.traverse_glyph(glyph) end
-    if nuts.traverse_list  then traversers.list  = nodes.traverse_list (glyph) end
+                                  traversers.node    = nodes.traverse        (glyph)
+                                  traversers.char    = nodes.traverse_char   (glyph)
+    if nuts.traverse_glyph   then traversers.glyph   = nodes.traverse_glyph  (glyph) end
+    if nuts.traverse_list    then traversers.list    = nodes.traverse_list   (glyph) end
 
     nodes.traversers = traversers
 
@@ -647,10 +646,11 @@ do
         return v
     end)
 
-                                traversers.node  = nuts.traverse      (glyph)
-                                traversers.char  = nuts.traverse_char (glyph)
-    if nuts.traverse_glyph then traversers.glyph = nuts.traverse_glyph(glyph) end
-    if nuts.traverse_list  then traversers.list  = nuts.traverse_list (glyph) end
+                                  traversers.node    = nuts.traverse        (glyph)
+                                  traversers.char    = nuts.traverse_char   (glyph)
+    if nuts.traverse_glyph   then traversers.glyph   = nuts.traverse_glyph  (glyph) end
+    if nuts.traverse_list    then traversers.list    = nuts.traverse_list   (glyph) end
+    if nuts.traverse_content then traversers.content = nuts.traverse_content(glyph) end
 
     nuts.traversers = traversers
 

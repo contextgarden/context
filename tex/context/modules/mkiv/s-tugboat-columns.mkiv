@@ -320,7 +320,7 @@
 \startsetups tugboat:introduction:article
 
     \start
-        \unexpanded\def\\{\unskip\space\&\space\ignorespaces}
+        \enforced\protected\def\\{\unskip\space\&\space\ignorespaces}
         \hbox{\indent\getvariable{tugboat}{author}}
         \par
     \stop
@@ -333,14 +333,14 @@
 
     \start
         \switchtobodyfont[12pt]
-        \def\\{\unskip\space\&\space\ignorespaces}
+        \enforced\protected\def\\{\unskip\space\&\space\ignorespaces}
         \getvariable{tugboat}{author}
         \par
     \stop
 
     \start
         \switchtobodyfont[9pt]
-        \unexpanded\def\\{\unskip,\space\ignorespaces}
+        \enforced\protected\def\\{\unskip,\space\ignorespaces}
         \getvariable{tugboat}{address}
         \par
         \start
@@ -380,7 +380,7 @@
         \hrule height .6pt
         \blank[halfline]
         \start
-            \let\\=\par
+            \enforced\let\\\par
             \start
                 \bf
                 \getvariable{tugboat}{title}
@@ -393,7 +393,7 @@
         \blank[line]
 
         \doiftext {\getbuffer[abstract]} {
-            \let\\=\endgraf
+            \enforced\let\\\endgraf
             \setups[tugboat:abstract:setup]
             \startsubject[title={Abstract}]
                 \getbuffer[abstract]
@@ -421,7 +421,7 @@
 
         \start
             \switchtobodyfont[14.4pt]
-            \let\\=\par
+            \enforced\let\\\par
             \getvariable{tugboat}{title}
             \par
         \stop
@@ -430,7 +430,7 @@
 
         \blank[tugmedium]
 
-        \let\\=\par
+        \enforced\let\\\par
 
         \setups[tugboat:abstract:setup]
 
@@ -458,7 +458,7 @@
 
         \leftskip=\dimexpr\textwidth-\signaturewidth\relax
 
-        \let\\=\par
+        \enforced\let\\\par
 
         \dontleavehmode\llap {
             $\diamond$\enspace

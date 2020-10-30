@@ -328,7 +328,7 @@
 
 \installcommandhandler \??itemgroup {itemgroup} \??itemgroup
 
-\let\setupitemgroups\setupitemgroup
+\aliased\let\setupitemgroups\setupitemgroup
 
 \appendtoks
     \setuevalue{\e!start\currentitemgroup}{\startitemgroup[\currentitemgroup]}%
@@ -386,12 +386,12 @@
                                                 \vspacing[\v!item @500]%
                                               \fi}
 
-\unexpanded\def\strc_itemgroups_process_options#options%
+\protected\def\strc_itemgroups_process_options#options%
   {\processcommacommand[#options]\strc_itemgroups_process_option} % expansion of options is handy for xml
 
 % \installcommalistprocessorcommand \strc_itemgroups_process_option_list \strc_itemgroups_process_option
 %
-% \unexpanded\def\strc_itemgroups_process_options#options%
+% \protected\def\strc_itemgroups_process_options#options%
 %   {\normalexpanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
 
 \def\strc_itemgroups_process_option#option%
@@ -599,12 +599,24 @@
 
 \let\strc_itemgroups_normal_setup\setupitemgroup
 
-\unexpanded\def\setupitemgroup
-  {\doquadrupleempty\strc_itemgroups_setup}
-
-\def\strc_itemgroups_setup[#category][#levels][#options][#settings]% category level|each options|settings settings|options
-  {\edef\strc_itemgroups_setup_what{#levels}%
-   \iffourthargument
+\permanent\overloaded\tolerant\protected\def\setupitemgroup[#category]#spacer[#levels]#spacer[#options]#spacer[#settings]% category level|each options|settings settings|options
+  {\ifarguments
+     % nothing to set up
+   \or
+     \edef\strc_itemgroups_setup_what{#levels}%
+     \strc_itemgroups_normal_setup[#category]% == settings
+   \or
+     \edef\strc_itemgroups_setup_what{#levels}%
+     \strc_itemgroups_setup_each{#category}{#levels}%
+   \or
+     \edef\strc_itemgroups_setup_what{#levels}%
+     \ifx\strc_itemgroups_setup_what\v!each
+       \strc_itemgroups_setup_each{#category}{#options}%
+     \else
+       \strc_itemgroups_setup_list{#levels}{#category}{#options}%
+     \fi
+   \or
+     \edef\strc_itemgroups_setup_what{#levels}%
      \ifx\strc_itemgroups_setup_what\v!each
        \strc_itemgroups_setup_each{#category}{#options}%
        \strc_itemgroups_setup_each{#category}{#settings}%
@@ -612,16 +624,6 @@
        \strc_itemgroups_setup_list{#levels}{#category}{#options}%
        \strc_itemgroups_setup_list{#levels}{#category}{#settings}%
      \fi
-   \orelse\ifthirdargument
-     \ifx\strc_itemgroups_setup_what\v!each
-       \strc_itemgroups_setup_each{#category}{#options}%
-     \else
-       \strc_itemgroups_setup_list{#levels}{#category}{#options}%
-     \fi
-   \orelse\ifsecondargument
-     \strc_itemgroups_setup_each{#category}{#levels}%
-   \else
-     \strc_itemgroups_normal_setup[#category]% == settings
    \fi}
 
 % can be made a bit faster
@@ -663,7 +665,7 @@
      \fi
    \fi}
 
-\unexpanded\def\strc_itemgroups_insert_item_counter
+\protected\def\strc_itemgroups_insert_item_counter
   {\ifconditional\c_strc_itemgroups_repeat
      \ifcase\c_strc_itemgroups_nesting
        % skip
@@ -792,11 +794,9 @@
    \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
    \let\currentitemgroup\savedcurrentitemgroup}
 
-\unexpanded\def\startitemgroup
-  {\dotripleempty\strc_itemgroups_start}
-
-\def\strc_itemgroups_start[#category][#options][#settings]%
+\permanent\tolerant\protected\def\startitemgroup[#category]#spacer[#options]#spacer[#settings]%
   {\begingroup % (1)
+   \nofarguments\lastarguments
    \def\currentitemgroup{#category}% no nested mixing of itemgroups
    \let\currentparentitemgroup\currentitemgroup
    \global\advance\c_strc_itemgroups_nesting\plusone
@@ -804,22 +804,26 @@
    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
    %
-   \ifthirdargument
-     \strc_itemgroups_start_indeed[#options][#settings]%
-   \orelse\ifsecondargument
+   \edef\itemgroupoptions{\itemgroupparameter\c!option}%
+   \let\itemgroupextraoptions\empty
+   \ifcase\nofarguments
+     \strc_itemgroups_start_indeed{}%
+   \or
+     \strc_itemgroups_start_indeed{}%
+   \or
      \ifcondition\validassignment{#options}%
-       \strc_itemgroups_start_indeed[][#options]%
+       \strc_itemgroups_start_indeed{#options}%
      \else
-       \strc_itemgroups_start_indeed[#options][]%
+       \edef\itemgroupextraoptions{#options}%
+       \strc_itemgroups_start_indeed{}%
      \fi
-   \else
-     \strc_itemgroups_start_indeed[][]%
+   \or
+     \edef\itemgroupextraoptions{#options}%
+     \strc_itemgroups_start_indeed{#settings}%
    \fi}
 
-\def\strc_itemgroups_start_indeed[#options][#settings]%
-  {\edef\itemgroupoptions{\itemgroupparameter\c!option}%
-   \edef\itemgroupextraoptions{#options}%
-   \ifempty\itemgroupoptions
+\def\strc_itemgroups_start_indeed#settings%
+  {\ifempty\itemgroupoptions
      \let\itemgroupoptions\itemgroupextraoptions
    \orelse\ifempty\itemgroupextraoptions
      % ok
@@ -998,8 +1002,8 @@
     % will be redefined in page-mix
 
     \ifdefined\startcolumns \else
-        \unexpanded\def\startcolumns[#settings]{}
-        \unexpanded\def\stopcolumns            {}
+        \protected\def\startcolumns[#settings]{}
+        \protected\def\stopcolumns            {}
     \fi
 
     \def\strc_itemgroups_start_columns
@@ -1015,7 +1019,7 @@
 
 \fi
 
-\unexpanded\def\stopitemgroup
+\permanent\protected\def\stopitemgroup
   {\stopcollectitems
    \ifconditional\c_strc_itemgroups_text
      \removeunwantedspaces
@@ -1068,9 +1072,6 @@
    \dorechecknextindentation}
 
 % The items.
-
-\unexpanded\def\startitemgroupitem
-  {\dosingleempty\strc_itemgroups_start_item}
 
 \def\strc_itemgroups_start_item_first
   {\setfalse\c_strc_itemgroups_first
@@ -1133,7 +1134,7 @@
 %     \stopitemize
 % \stopitemize
 
-\unexpanded\def\strc_itemgroups_start_item[#reference]% we can reuse more
+\tolerant\protected\def\startitemgroupitem[#reference]% we can reuse more
   {\def\currentitemreference{#reference}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
@@ -1171,7 +1172,7 @@
    \hskip\d_strc_itemgroups_signal     % concat
    \itemgroupparameter\c!command}
 
-\unexpanded\def\stopitemgroupitem
+\protected\def\stopitemgroupitem
   {\ifhmode
      \endstrut % new per 2017-12-15
    \fi
@@ -1180,10 +1181,8 @@
    \else
      \endgraf
    \fi}
-\unexpanded\def\startitemgrouphead
-  {\dosingleempty\strc_itemgroups_start_head}
 
-\unexpanded\def\strc_itemgroups_start_head[#reference]%
+\tolerant\protected\def\startitemgrouphead[#reference]%
   {\ifconditional\c_strc_itemgroups_first \else
      \strc_itemgroups_insert_breakallow
    \fi
@@ -1197,23 +1196,24 @@
        \fi
      \fi
    \fi
-   \strc_itemgroups_start_item[#reference]%
+  %\strc_itemgroups_start_item[#reference]%
+   \startitemgroupitem[#reference]%
    \pickupgroupedcommand
      \strc_itemgroups_start_head_indeed
      \strc_itemgroups_stop_head_indeed
      \strc_itemgroups_head_body_indeed}
 
-\unexpanded\def\stopitemgrouphead
+\protected\def\stopitemgrouphead
   {\dostoptagged
    \stopitemgroupitem}
 
-\unexpanded\def\strc_itemgroups_start_head_indeed
+\protected\def\strc_itemgroups_start_head_indeed
   {\settrue\c_strc_itemgroups_head
    \dotagsetitem\s!head% % weird place
    \dostarttagged\t!itemhead\empty
    \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
 
-\unexpanded\def\strc_itemgroups_stop_head_indeed
+\protected\def\strc_itemgroups_stop_head_indeed
   {\removeunwantedspaces
    \dostoptagged
    \ifconditional\c_strc_itemgroups_inline_head
@@ -1231,17 +1231,17 @@
      \strc_itemgroups_insert_breakno
   \fi}
 
-\unexpanded\def\strc_itemgroups_head_body_indeed
+\protected\def\strc_itemgroups_head_body_indeed
   {\dostarttagged\t!itembody\empty
    \noindentation
    \ignorespaces}
 
 % Simple commands.
 
-\unexpanded\def\strc_itemgroups_start_do_item
+\protected\def\strc_itemgroups_start_do_item
   {\startitemgroupitem}
 
-\unexpanded\def\strc_itemgroups_start_no_item
+\protected\def\strc_itemgroups_start_no_item
   {\let\currentitemreference\empty
    \strc_itemgroups_increment_item_counter
   %\advance\c_strc_itemgroups_n_of_items\plusone
@@ -1249,27 +1249,27 @@
    \strc_itemgroups_check_for_repeated
    \ignorespaces}
 
-\unexpanded\def\strc_itemgroups_start_button[#destination]%
+\protected\def\strc_itemgroups_start_button[#destination]%
   {\edef\m_strc_itemgroups_destination{#destination}%
    \startitemgroupitem}
 
-\unexpanded\def\strc_itemgroups_start_symbol#text%
+\protected\def\strc_itemgroups_start_symbol#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \settrue\c_strc_itemgroups_symbol
    \startitemgroupitem
    \dotagsetitem\s!symbol}
 
-\unexpanded\def\strc_itemgroups_start_dummy
+\protected\def\strc_itemgroups_start_dummy
   {\strc_itemgroups_start_symbol
   %\strut\strut} % two ?
    \begstrut}
 
-\unexpanded\def\strc_itemgroups_start_subitem
+\protected\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub
    \startitemgroupitem
    \dotagsetitem\s!sub}
 
-\unexpanded\def\strc_itemgroups_start_edge#text%
+\protected\def\strc_itemgroups_start_edge#text%
   {\strc_itemgroups_start_symbol
      {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
       \dostarttagged\t!ignore\empty % for the moment, maybe an attribute
@@ -1277,7 +1277,7 @@
         {#text\hskip\itemgroupparameter\c!distance}%
       \dostoptagged}}
 
-\unexpanded\def\strc_itemgroups_start_margin#text%
+\protected\def\strc_itemgroups_start_margin#text%
   {\def\strc_itemgroups_margin_symbol % brrr
      {\dostarttagged\t!ignore\empty % for the moment, maybe an attribute
       \llap
@@ -1290,35 +1290,32 @@
    \startitemgroupitem
    \dotagsetitem\s!margin}
 
-\unexpanded\def\strc_itemgroups_start_text#text%
+\protected\def\strc_itemgroups_start_text#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_txt
    \startitemgroupitem}
 
-% \unexpanded\def\strc_itemgroups_start_head
+% \protected\def\strc_itemgroups_start_head
 %   {\settrue\c_strc_itemgroups_head
 %    \startitemgrouphead}
 
-\unexpanded\def\strc_itemgroups_start_items
+\protected\def\strc_itemgroups_start_items
   {\dosingleempty\strc_itemgroups_start_items_indeed}
 
-\unexpanded\def\strc_itemgroups_start_items_indeed[#whatever]% something got lost
+\protected\def\strc_itemgroups_start_items_indeed[#whatever]% something got lost
   {\strc_itemgroups_start_edge
      {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
       \unskip}}
 
-% \unexpanded\def\startspecialitemgroupitem[#name]%
-%   {\csname\??itemgroupstart\ifcsname\??itemgroupstart#name\endcsname#name\else\v!item\fi\endcsname}
-
-\unexpanded\def\startspecialitemgroupitem[#name]%
+\protected\def\startspecialitemgroupitem[#name]% todo: frozen
   {\ifcsname\??itemgroupstart#name\endcsname
       \expandafter\lastnamedcs
     \else
       \expandafter\strc_itemgroups_start_do_item
     \fi}
 
-\unexpanded\def\stopspecialitemgroupitem
+\protected\def\stopspecialitemgroupitem % todo: frozen
   {\stopitemgroupitem}
 
 \letvalue{\??itemgroupstart\v!item}\strc_itemgroups_start_do_item
@@ -1329,7 +1326,7 @@
 \letvalue{\??itemgroupstart\v!mar }\strc_itemgroups_start_margin
 \letvalue{\??itemgroupstart\v!txt }\strc_itemgroups_start_text
 
-\def\optimizelistitemsbreak
+\def\strc_itemgroups_optimize_breaks
   {\ifcase\c_strc_itemgroups_column_depth
      \ifconditional\c_strc_itemgroups_optimize
        \ifcase\c_strc_itemgroups_max_items
@@ -1411,11 +1408,12 @@
       \box\b_strc_itemgroups
       \hss}} % was: \hfill
 
-\unexpanded\def\strc_itemgroups_start_head_sym#text%
+\protected\def\strc_itemgroups_start_head_sym#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_head
-   \strc_itemgroups_start_head}
+  %\strc_itemgroups_start_head}
+   \startitemgrouphead}
 
 \def\strc_itemgroups_make_symbol_box
   {\setbox\b_strc_itemgroups\autodirhbox
@@ -1490,7 +1488,7 @@
      \par % done twice?
    \fi
    \advance\c_strc_itemgroups_n_of_items\plusone
-   \optimizelistitemsbreak
+   \strc_itemgroups_optimize_breaks
    \strc_itemgroups_check_indenting
    \dontleavehmode
    \ifconditional\c_strc_itemgroups_indented_first
@@ -1551,7 +1549,7 @@
 \setvalue\??itemgroupdistance % catches empty value
   {\let\m_strc_itemgroups_text_distance\zeropoint}
 
-\unexpanded\def\strc_itemgroups_set_text_item_distance
+\protected\def\strc_itemgroups_set_text_item_distance
   {\edef\m_strc_itemgroups_text_distance{\itemgroupparameter\c!textdistance}%
    \ifempty\m_strc_itemgroups_text_distance
      %
@@ -1569,45 +1567,45 @@
      {\interwordspace  \s!plus  \emwidth}%
      {\emwidth         \s!plus  \interwordstretch\s!minus\interwordshrink}}
 
-% \unexpanded\def\strc_itemgroups_default_command
+% \protected\def\strc_itemgroups_default_command
 %   {\EveryPar{\ignorespaces}% needed ?
 %    \ignorespaces}
 
-\unexpanded\def\strc_itemgroups_default_command
+\protected\def\strc_itemgroups_default_command
   {\ignorespaces}
 
 %D Special case:
 
-\unexpanded\def\strc_itemgroups_head#text\par
+\protected\def\strc_itemgroups_head#text\par
   {\startitemgrouphead{#text}}
 
 %D The local commands:
 
 \appendtoks
-    \let\item            \strc_itemgroups_start_do_item
-    \let\sub             \strc_itemgroups_start_subitem
-    \let\sym             \strc_itemgroups_start_symbol
-    \let\ran             \strc_itemgroups_start_edge
-    \let\its             \strc_itemgroups_start_items
-    \let\mar             \strc_itemgroups_start_margin
-    \let\noitem          \strc_itemgroups_start_no_item
-    \let\itm             \strc_itemgroups_start_do_item
-    \let\but             \strc_itemgroups_start_button
-    \let\nop             \strc_itemgroups_start_dummy
-    \let\txt             \strc_itemgroups_start_text
-    \let\head            \strc_itemgroups_head
-    \let\headsym         \strc_itemgroups_start_head_sym
-    \let\startitem       \startitemgroupitem
-    \let\stopitem        \stopitemgroupitem
-    \let\starthead       \startitemgrouphead
-    \let\stophead        \stopitemgrouphead
-    \let\startspecialitem\startspecialitemgroupitem
-    \let\stopspecialitem \stopspecialitemgroupitem
+    \enforced\let\item            \strc_itemgroups_start_do_item
+    \enforced\let\sub             \strc_itemgroups_start_subitem
+    \enforced\let\sym             \strc_itemgroups_start_symbol
+    \enforced\let\ran             \strc_itemgroups_start_edge
+    \enforced\let\its             \strc_itemgroups_start_items
+    \enforced\let\mar             \strc_itemgroups_start_margin
+    \enforced\let\noitem          \strc_itemgroups_start_no_item
+    \enforced\let\itm             \strc_itemgroups_start_do_item
+    \enforced\let\but             \strc_itemgroups_start_button
+    \enforced\let\nop             \strc_itemgroups_start_dummy
+    \enforced\let\txt             \strc_itemgroups_start_text
+    \enforced\let\head            \strc_itemgroups_head
+    \enforced\let\headsym         \strc_itemgroups_start_head_sym
+    \enforced\let\startitem       \startitemgroupitem
+    \enforced\let\stopitem        \stopitemgroupitem
+    \enforced\let\starthead       \startitemgrouphead
+    \enforced\let\stophead        \stopitemgrouphead
+    \enforced\let\startspecialitem\startspecialitemgroupitem
+    \enforced\let\stopspecialitem \stopspecialitemgroupitem
 \to \itemgroupcommands
 
 \ifx\currentinterface \s!english \else
 
-    \def\next#1#2{\ifcsname#1\endcsname\else\let\csname#1\endcsname#2\fi}
+    \def\next#1#2{\ifcsname#1\endcsname\else\enforced\expandafter\let\csname#1\endcsname#2\fi}
 
     \etoksapp\itemgroupcommands{%
         \next{\v!item        }\strc_itemgroups_start_do_item
@@ -1666,10 +1664,6 @@
 \newcount\c_strc_itemgroups_collected_done
 \newcount\c_strc_itemgroups_collected_current
 
-% \expandafter\def\expandafter\strc_itemgroups_collected_store\expandafter#\expandafter1\csname\e!stop\v!item\endcsname % use grabuntil
-%   {\advance\c_strc_itemgroups_collected_stored\plusone
-%    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
-
 \let\strc_itemgroups_collected_store\relax
 
 \normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
@@ -1722,7 +1716,7 @@
      \expandafter\strc_itemgroups_collected_flush
    \fi}
 
-\unexpanded\def\stopcollectitems
+\protected\def\stopcollectitems % todo: frozen
   {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_done   \zerocount
      \c_strc_itemgroups_collected_current\zerocount
@@ -1738,7 +1732,7 @@
      \fi
    \fi}
 
-\unexpanded\def\startcollectitems
+\protected\def\startcollectitems % todo: frozen
   {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_stored\zerocount
      \letvalue{\e!start\v!item}\strc_itemgroups_collected_store
@@ -1746,7 +1740,7 @@
 
 %D Left-overs:
 
-\unexpanded\def\item
+\protected\def\item % todo: frozen
   {\strc_itemgroups_item_alone}
 
 \def\strc_itemgroups_item_alone[#category]#text\par
@@ -1754,7 +1748,7 @@
    \startitem#text\stopitem
    \stopitemgroup}
 
-\unexpanded\def\head
+\protected\def\head % todo: frozen
   {\strc_itemgroups_head_alone}
 
 \def\strc_itemgroups_head_alone[#category]#head\par#body\par
@@ -1762,10 +1756,10 @@
    \starthead{#head}#body\stophead
    \stopitemgroup}
 
-\setuvalue{\e!start\v!item}%
+\setuvalue{\e!start\v!item}% todo: frozen
   {\startitemgroup[\v!itemize]%
    \startitemgroupitem
-   \setuvalue{\e!stop\v!item}{\stopitemgroupitem\stopitemgroup}}
+   \setuvalue{\e!stop\v!item}{\stopitemgroupitem\stopitemgroup}} % todo: frozen
 
 % \def\sym#text%
 %   {\noindent
@@ -1779,11 +1773,9 @@
 
 %D Something for tables:
 
-\unexpanded\def\itemtag
-  {\dosingleempty\strc_itemgroups_item_tag}
-
-\unexpanded\def\strc_itemgroups_item_tag[#reference]% we can reuse more
-  {\def\currentitemreference{#reference}%
+\permanent\tolerant\protected\def\itemtag[#reference]% we can reuse more
+  {% what if empty
+   \def\currentitemreference{#reference}%
    \iftrialtypesetting
      \strc_counters_save\v_strc_itemgroups_counter
      \strc_itemgroups_increment_item_counter
@@ -1888,8 +1880,8 @@
    \global\c_strc_itemgroups_column_depth\zerocount
    \global\c_strc_itemgroups_nesting     \zerocount
    \glet\currentitemlevel\!!zerocount
-   \unexpanded\def\startitemize{\startitemgroup[\v!itemize:\v!note]}%
-   \unexpanded\def\stopitemize {\stopitemgroup}}
+   \enforced\permanent\protected\def\startitemize{\startitemgroup[\v!itemize:\v!note]}%
+   \enforced\permanent\protected\def\stopitemize {\stopitemgroup}}
 
 \let\strc_itemgroups_pop\relax
 

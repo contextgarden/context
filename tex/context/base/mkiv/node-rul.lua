@@ -75,7 +75,7 @@ local gluecodes          = nodes.gluecodes
 local listcodes          = nodes.listcodes
 
 local glyph_code         = nodecodes.glyph
-local localpar_code      = nodecodes.localpar
+local par_code           = nodecodes.par
 local dir_code           = nodecodes.dir
 local glue_code          = nodecodes.glue
 local hlist_code         = nodecodes.hlist
@@ -588,7 +588,7 @@ function linefillers.handler(head)
                                 else
                                     break
                                 end
-                            elseif id == localpar_code or id == dir_code then
+                            elseif id == par_code or id == dir_code then
                                 -- go on
                             elseif id == hlist_code then
                                 if getsubtype(head) == indentlist_code then

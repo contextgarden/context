@@ -116,7 +116,7 @@ if LUATEXVERSION < 1.005 then -- not loaded any more
                     end
                 end
                 if template then
-                    local language = template and getlang(template)
+                    local language = template and getlanguage(template)
                     local data     = getlanguagedata(language)
                     local prechar  = data.prehyphenchar
                     local postchar = data.posthyphenchar

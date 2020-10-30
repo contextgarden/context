@@ -234,11 +234,20 @@
   {\ifdim\p_sx\onepoint=\onepoint\else\edef\p_width {\the\dimexpr\p_sx\d_grph_scale_wd}\fi
    \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\the\dimexpr\p_sy\d_grph_scale_ht}\fi}
 
-\def\grph_scale_rounded#1%
-  {\expandafter\expandafter\expandafter\grph_scale_rounded_indeed
-     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768\scaledpoint\relax.\relax}
+\ifcase\contextlmtxmode
 
-\def\grph_scale_rounded_indeed#1.#2\relax{#1}
+    \def\grph_scale_rounded#1%
+      {\expandafter\expandafter\expandafter\grph_scale_rounded_indeed
+         \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768\scaledpoint\relax.\relax}
+
+    \def\grph_scale_rounded_indeed#1.#2\relax{#1}
+
+\else
+
+    \def\grph_scale_rounded#1%
+      {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax}
+
+\fi
 
 \def\grph_scale_calculations_nop
   {\settrue\c_grph_scale_done

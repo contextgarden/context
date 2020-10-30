@@ -33,7 +33,7 @@ local getid              = nuts.getid
 ----- getattr            = nuts.getattr
 local getattrlist        = nuts.getattrlist
 local takeattr           = nuts.takeattr
-local getlang            = nuts.getlang
+local getlanguage        = nuts.getlanguage
 local isglyph            = nuts.isglyph
 
 local setattr            = nuts.setattr
@@ -168,7 +168,7 @@ methods[2] = function(head,start) -- ( => (-
         head, start, replace = remove_node(head,start)
         local post   = copy_node(replace)
         local hyphen = copy_node(post)
-        setchar(hyphen,languages.prehyphenchar(getlang(post)))
+        setchar(hyphen,languages.prehyphenchar(getlanguage(post)))
         setlink(post,hyphen)
         head, start = insert_node_before(head,start,new_disc(nil,post,replace))
         setattrlist(start,replace)
@@ -184,7 +184,7 @@ methods[3] = function(head,start) -- ) => -)
         head, start, replace = remove_node(head,start)
         local pre    = copy_node(replace)
         local hyphen = copy_node(pre)
-        setchar(hyphen,languages.prehyphenchar(getlang(pre)))
+        setchar(hyphen,languages.prehyphenchar(getlanguage(pre)))
         setlink(hyphen,pre)
         head, start = insert_node_before(head,start,new_disc(hyphen,nil,replace)) -- so not pre !
         setattrlist(start,tmp)
@@ -264,7 +264,7 @@ function breakpoints.handler(head)
                      -- setattr(current,a_breakpoints,unsetvalue) -- should not be needed
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
-                        local lang = getlang(current)
+                        local lang = getlanguage(current)
                         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[languages.numbers[lang]] or cmap[""])
                         if smap then
                             local skip  = smap.skip
@@ -322,7 +322,7 @@ function breakpoints.handler(head)
         local cmap  = data[3]
         local smap  = data[4]
         -- we do a sanity check for language
-     -- local lang  = getlang(start)
+     -- local lang  = getlanguage(start)
      -- local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
      -- if smap then
             local nleft = smap.nleft

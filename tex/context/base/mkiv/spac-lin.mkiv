@@ -171,7 +171,7 @@
    \dostoptagged % can be a dummy one as we don't look ahead
    \par
    \dostarttagged\t!line\empty
-   \futurelet\next\spac_lines_between}
+   \futurelet\nexttoken\spac_lines_between}
 
 \unexpanded\def\spac_lines_stop
   {\dostoptagged
@@ -182,10 +182,10 @@
    \egroup}
 
 \def\spac_lines_between
-  {\ifx\next\spac_lines_stop
+  {\ifx\nexttoken\spac_lines_stop
      \donefalse
    \else
-     \doifelsemeaning\next\obeyedline % brrr
+     \doifelsemeaning\nexttoken\obeyedline % brrr
        {\donefalse\linesparameter\c!inbetween}
        {\donetrue\spac_after_first_obeyed_line}%
    \fi}

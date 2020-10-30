@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=core-nte,
+%D        version=2009.03.08,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Natural Tables Extensions,
+%D         author=Hans Hagen \& Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Module / Natural Tables Extensions}
+
+\unprotect
+
+%D This module is suggested by Wolfgang Schuster who also prototyped
+%D it and came up with the rationale:
+%D
+%D This module provides an easy way to use natural in a similiar
+%D way as the older table module (based on the \TABLE\ macros) and
+%D the newer tabulate module.
+%D
+%D You can see the advantage in the following table, once created
+%D with the new macros and once with the normal macros provided
+%D with the natural table module.
+%D
+%D Let us start with the original macros:
+%D
+%D \startbuffer
+%D \bTABLE
+%D   \bTR
+%D     \bTD Text 1 \eTD
+%D     \bTD Text 2 \eTD
+%D   \eTR
+%D   \bTR
+%D     \bTD Text 3 \eTD
+%D     \bTD Text 4 \eTD
+%D   \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Watch how the new macros use less code:
+%D
+%D \startbuffer
+%D \startTABLE
+%D \NC Text 1 \NC Text 2 \NC\NR
+%D \NC Text 3 \NC Text 4 \NC\NR
+%D \stopTABLE
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D The actual code differs from the prototype that it does not need
+%D to collect whole rows and parse them but looks ahead instead.
+
+\newconditional\c_tabl_nte_in_nc
+
+\permanent\tolerant\protected\def\startTABLE[#1]%
+  {\bgroup
+   \bTABLE[#1]%
+   \enforced\let\NC\tabl_nte_start_nc
+   \enforced\let\NR\tabl_nte_start_nr
+   \enforced\let\bTR\relax
+   \enforced\let\bTD\relax
+   \enforced\let\bTH\relax
+   \enforced\let\bTN\relax}
+
+\permanent\protected\def\stopTABLE
+  {\eTABLE
+   \egroup}
+
+\permanent\protected\def\tabl_nte_start_nr
+  {\eTR
+   \setfalse\c_tabl_nte_in_nc}
+
+\permanent\protected\def\tabl_nte_start_nc
+  {\futurelet\nexttoken\tabl_nte_start_nc_indeed}
+
+\def\tabl_nte_start_nc_indeed
+  {\ifx\nexttoken\tabl_nte_start_nr \else
+     \expandafter\tabl_nte_start_nc_finish
+   \fi}
+
+\def\tabl_nte_start_nc_finish#1\NC
+  {\ifconditional\c_tabl_nte_in_nc \else
+     \settrue\c_tabl_nte_in_nc
+     \dobTR[]%
+   \fi
+   \dobTD#1\eTD\NC}
+
+%D The related structure commands are also available:
+
+\permanent\let\stopTABLEhead\relax
+\permanent\let\stopTABLEnext\relax
+\permanent\let\stopTABLEbody\relax
+\permanent\let\stopTABLEfoot\relax
+
+\permanent\tolerant\protected\def\startTABLEhead[#1]#:#2\stopTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
+\permanent\tolerant\protected\def\startTABLEnext[#1]#:#2\stopTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
+\permanent\tolerant\protected\def\startTABLEbody[#1]#:#2\stopTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
+\permanent\tolerant\protected\def\startTABLEfoot[#1]#:#2\stopTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
+
+\protect \endinput

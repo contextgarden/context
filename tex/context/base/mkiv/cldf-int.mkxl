@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=mult-ini,
-%D        version=2008.10.22, % 1996.06.01,
-%D          title=\CONTEXT\ Multilingual Macros,
-%D       subtitle=Initialization,
+%D   [       file=cldf-int,
+%D        version=2019.01.01,
+%D          title=\CONTEXT\ Data Macros,
+%D       subtitle=Integer,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -15,17 +15,20 @@
 
 \registerctxluafile{cldf-int}{autosuffix}
 
+%D These are user commands so we don't add any protection against overloading
+%D here.
+
 \unprotect
 
-\unexpanded\def\newluatable#1{\clf_newluatable#1\atendofgrouped{\disposeluatable#1}}
-\unexpanded\def\useluatable#1{\clf_useluatable#1\atendofgrouped{\disposeluatable#1}}
+\permanent\protected\def\newluatable#1{\clf_newluatable#1\atendofgrouped{\disposeluatable#1}}
+\permanent\protected\def\useluatable#1{\clf_useluatable#1\atendofgrouped{\disposeluatable#1}}
 
 \installcorenamespace{datavalue}
 
-\unexpanded\def\setdatavalue#1#2% #2 is a number (expression)
-  {\expandafter\letdatacode\csname\??datavalue#1\endcsname\numexpr#2\relax}
+\permanent\protected\def\setdatavalue#1#2% #2 is a number (expression)
+  {\expandafter\integerdef\csname\??datavalue#1\endcsname\numexpr#2\relax}
 
-\def\getdatavalue#1{\begincsname\??datavalue#1\endcsname}
-\def\thedatavalue#1{\the\begincsname\??datavalue#1\endcsname}
+\permanent\def\getdatavalue#1{\begincsname\??datavalue#1\endcsname}
+\permanent\def\thedatavalue#1{\the\begincsname\??datavalue#1\endcsname}
 
 \protect \endinput

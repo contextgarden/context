@@ -105,7 +105,7 @@ local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 local dir_code           = nodecodes.dir
-local localpar_code      = nodecodes.localpar
+local par_code           = nodecodes.par
 
 local whatsit_code       = nodecodes.whatsit
 
@@ -437,7 +437,7 @@ function splitters.split(head) -- best also pass the direction
             end
             local direction, pop = getdirection(current)
             r2l = not pop and direction == righttoleft_code
-        elseif id == localpar_code and start_of_par(current) then
+        elseif id == par_code and start_of_par(current) then
             if start then
                 flush() -- very unlikely as this starts a paragraph
             end

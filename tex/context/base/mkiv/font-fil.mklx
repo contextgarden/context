@@ -41,26 +41,22 @@
 %
 % \setupbodyfont[palatino]
 
-\unexpanded\def\startfontclass
-  {\dosingleempty\font_basics_start_font_class}
-
-\def\font_basics_start_font_class[#class]%
+\permanent\protected\tolerant\protected\def\startfontclass[#class]%
   {\push_macro_fontclass
    \doifelse{#class}\v!each
      {\let\fontclass\empty}
      {\doifsomething{#class}{\def\fontclass{#class}}}}
 
-\unexpanded\def\stopfontclass
+\permanent\protected\def\stopfontclass
   {\pop_macro_fontclass}
 
-\def\classfont#class#name{#class#name} % \definefont[whatever][\classfont{xx}{yy} at 10pt]
+\permanent\def\classfont#class#name{#class#name} % \definefont[whatever][\classfont{xx}{yy} at 10pt]
 
 %D \macros
 %D   {definefontsynonym, doifelsefontsynonym,
 %D    expandfontsynonym, truefontname, truefontdata}
 %D
-%D While looking for fonts, fontsynonyms are used for accessing
-%D the files!
+%D While looking for fonts, fontsynonyms are used for accessing the files!
 %D
 %D \starttyping
 %D \definefontsynonym[Serif][Lucida-Bright]
@@ -75,7 +71,7 @@
 \def \defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
 \edef\nullfontname   {\fontname\nullfont}
 
-\unexpanded\def\definefontsynonym[#name]#crap[#file]%
+\permanent\protected\def\definefontsynonym[#name]#spacer[#file]%
   {\edef\m_font_name{#name}%
    \edef\m_font_file{#file}%
    \ifempty\fontclass
@@ -84,15 +80,15 @@
       \expandafter\font_basics_define_font_synonym_yes
    \fi}
 
-\unexpanded\def\font_basics_define_font_synonym_nop
+\protected\def\font_basics_define_font_synonym_nop
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
 
-\unexpanded\def\font_basics_define_font_synonym_yes
+\protected\def\font_basics_define_font_synonym_yes
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
-\unexpanded\def\edefinefontsynonym[#name]#ignore[#file]%
+\protected\def\edefinefontsynonym[#name]#spacer[#file]%
   {\edef\m_font_name{#name}%
    \edef\m_font_file{#file}%
    \ifempty\fontclass
@@ -101,55 +97,22 @@
       \expandafter\font_basics_define_font_synonym_yes_expanded
    \fi}
 
-\unexpanded\def\font_basics_define_font_synonym_nop_expanded#ignore[#spec]%
+\protected\def\font_basics_define_font_synonym_nop_expanded#ignore[#spec]%
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_nop_opt[#spec]}}
 
-\unexpanded\def\font_basics_define_font_synonym_yes_expanded#ignore[#spec]%
+\protected\def\font_basics_define_font_synonym_yes_expanded#ignore[#spec]%
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
 
-% \unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
-%   {\let\p_features  \undefined
-%    \let\p_fallbacks \undefined
-%    \let\p_goodies   \undefined
-%    \let\p_designsize\undefined
-%    \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
-%
-% \unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
-%   {\let\p_features  \undefined
-%    \let\p_fallbacks \undefined
-%    \let\p_goodies   \undefined
-%    \let\p_designsize\undefined
-%    \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
-%
-% % todo: check if we can use \edef but then we need to protect \mathsizesuffix .. in fact that
-% % can be default then: \let\mathsizesuffix\relax .. i need to play with it first
-%
-% \def\font_basics_get_font_parameter_nop#key=#value,%
-%   {\if]#key%
-%      \font_basics_get_font_parameter_nop_finish
-%    \else
-%      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
-%      \expandafter\font_basics_get_font_parameter_nop
-%    \fi}
-%
-% \def\font_basics_get_font_parameter_yes#key=#value,%
-%   {\if]#key%
-%      \font_basics_get_font_parameter_yes_finish
-%    \else
-%      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
-%      \expandafter\font_basics_get_font_parameter_yes
-%    \fi}
-
-\unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
+\protected\def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined
    \let\p_designsize\undefined
    \expandafter\font_basics_get_font_parameter_nop#specification,\ignorearguments}
 
-\unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
+\protected\def\font_basics_define_font_synonym_yes_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined
@@ -213,73 +176,23 @@
    \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
 
 %\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
-%
 %\defineclassfontsynonym [KopFont] [officina] [SerifBold]
-
-\unexpanded\def\defineclassfontsynonym
-  {\dotripleargument\font_basics_define_class_font_synonym}
-
 %\definefontsynonym[#tag][\fontclassname{#class}{#fileortag}]}
 
-\def\font_basics_define_class_font_synonym[#tag][#class][#fileortag]% needs testing
+\permanent\tolerant\protected\def\defineclassfontsynonym[#tag]#spacer[#class]#spacer[#fileortag]% needs testing
   {\expandafter\normaldef\csname\??fontfile\fontclass#tag\endcsname{\fontclassname{#class}{#fileortag}}%
    \font_basics_define_font_synonym_yes_nil}
 
-\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
+\aliased\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
-\unexpanded\def\setupfontsynonym
-  {\dodoubleempty\dosetupfontsynonym}
-
-\def\dosetupfontsynonym[#name][#settings]% not yet supported, will do when needed
+\permanent\tolerant\protected\def\setupfontsynonym[#name]#spacer[#settings]% not yet supported, will do when needed
   {}
 
 % todo: replace * by ... less messy with features
 
-% % no \ifempty here as #1 can be empty
-%
-% \def\truefontname#name%
-%   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
-%
-% \def\font_helpers_true_fontname#name*#first#rest*#crap\relax
-%   {\ifcsname\??fontfile\fontclass#name\endcsname
-%      \ifx#first\empty
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%      \ifx#first\empty
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \orelse\ifcsname\??fontfile#name\endcsname
-%      \ifx#first\empty
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \else
-%      #name\ifempty#first\else*#first#rest\fi
-%    \fi}
-%
-% \def\font_helpers_true_fontname_check#name%
-%   {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
-%
-% \def\font_helpers_true_fontname_check_indeed#name*#crap\relax
-%   {\ifcsname\??fontfile\fontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \orelse\ifcsname\??fontfile#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \else
-%      #name%
-%    \fi}
-
 % no \ifempty here as #1 can be empty
 
-\def\truefontname#name%
+\permanent\def\truefontname#name%
   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
 
 \def\font_helpers_true_fontname#name*#first#rest*#ignore\relax
@@ -320,31 +233,15 @@
    \fi}
 
 % ok when the last lookup is not stripped .. we need to be able to define synonyms for symbols
-%
-% \def\truefontname#name%
-%  %{\normalexpanded{\noexpand\font_helpers_true_fontname{\clf_truefontname{#name}}}}
-%   {\expandafter\expandafter\expandafter\font_helpers_true_fontname\expandafter\expandafter\expandafter{\clf_truefontname{#name}}}
-%
-% \def\font_helpers_true_fontname#name%
-%   {\ifcsname\??fontfile\fontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
-%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
-%    \orelse\ifcsname\??fontfile#name\endcsname
-%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
-%    \else
-%    % \clf_truefontname{#name}%
-%      #name% so the last one can have features !
-%    \fi}
 
-\def\expandfontsynonym#command#name% one level expansion
+\permanent\def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname
      \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \orelse\ifcsname\??fontfile\defaultfontclass#2\endcsname
      \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \fi}
 
-\def\doifelsefontsynonym#name%
+\permanent\def\doifelsefontsynonym#name%
   {\ifcsname\??fontfile\fontclass#name\endcsname
      \expandafter\firstoftwoarguments
    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
@@ -353,14 +250,14 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\let\doiffontsynonymelse\doifelsefontsynonym
+\aliased\let\doiffontsynonymelse\doifelsefontsynonym
 
 %D \macros
 %D   {tracedfontname}
 %D
 %D A goody:
 
-\def\tracedfontname#name%
+\permanent\def\tracedfontname#name%
   {#name\ifcsname\??fontfile\fontclass#name\endcsname
     %\expandafter\tracedfontname\csname\??fontfile\fontclass#name\endcsname
      \expandafter\tracedfontname\lastnamedcs
@@ -379,7 +276,7 @@
 \let\fontclass       \empty
 \let\defaultfontclass\empty
 
-\def\fontclassname#class#name% tricky ... no lastnamedcs here due to nesting
+\permanent\def\fontclassname#class#name% tricky ... no lastnamedcs here due to nesting
   {\ifcsname\??fontfile#class#name\endcsname
      \fontclassname{#class}{\csname\??fontfile#class#name\endcsname}%
    \orelse\ifcsname\??fontfile#name\endcsname
@@ -394,8 +291,8 @@
 %D They can inherit them.
 
 % Why these expanded and rscale not ... maybe not worth the trouble (delayed
-% expansion actually would be better i.e. macros in feature specs). Test
-% without pre-expansion.
+% expansion actually would be better i.e. macros in feature specs). Test without
+% pre-expansion.
 
 \def\font_helpers_update_font_class_parameters
   {\edef\m_font_class_direction {\begincsname\??fontclass\fontclass\fontstyle\s!direction \endcsname}%
@@ -473,7 +370,7 @@
 
 % we can pack them (don't use \setxvalue!)
 
-\unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
+\permanent\protected\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
   {\letgvalue{\??fontclass\fontclass#style\s!rscale    }#rscale%
    \letgvalue{\??fontclass\fontclass#style\s!features  }#features%
    \letgvalue{\??fontclass\fontclass#style\s!fallbacks }#fallbacks%

@@ -12,7 +12,7 @@ return {
     ["constants"] = {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
-        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen",
+        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "pluseleven", "plustwelve", "plussixteen",
         "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
@@ -67,15 +67,11 @@ return {
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
         "primeasciicode", "hyphenasciicode",
         --
-        "frozenhsizecode", "frozenleftskipcode", "frozenrightskipcode", "frozenhangindentcode",
-        "frozenhangaftercode", "frozenparindentcode", "frozenparfillskipcode", "frozenparfillleftskipcode",
-        "frozenadjustspacingcode", "frozenprotrudecharscode", "frozenpretolerancecode", "frozentolerancecode",
-        "frozenemergencystretchcode", "frozenloosenesscode", "frozenlastlinefitcode", "frozenlinepenaltycode",
-        "frozeninterlinepenaltycode", "frozenclubpenaltycode", "frozenwidowpenaltycode",
-        "frozendisplaywidowpenaltycode", "frozenbrokenpenaltycode", "frozenadjdemeritscode",
-        "frozendoublehyphendemeritscode", "frozenfinalhyphendemeritscode", "frozenparshapecode",
-        "frozeninterlinepenaltiescode", "frozenclubpenaltiescode", "frozenwidowpenaltiescode",
-        "frozendisplaywidowpenaltiescode",
+        "frozenhsizecode", "frozenskipcode", "frozenhangcode", "frozenindentcode", "frozenparfillcode",
+        "frozenadjustcode", "frozenprotrudecode", "frozentolerancecode", "frozenstretchcode",
+        "frozenloosenesscode", "frozenlastlinecode", "frozenlinepenaltycode", "frozenclubpenaltycode",
+        "frozenwidowpenaltycode", "frozendisplaypenaltycode", "frozenbrokenpenaltycode",
+        "frozendemeritscode", "frozenshapecode", "frozenlinecode",  "frozenallcode",
         --
         "activemathcharcode",
         --
@@ -85,7 +81,7 @@ return {
         --
         "bottomlevelgroupcode", "simplegroupcode", "hboxgroupcode", "adjustedhboxgroupcode", "vboxgroupcode",
         "vtopgroupcode", "aligngroupcode", "noaligngroupcode", "outputgroupcode", "mathgroupcode",
-        "discgroupcode", "insertgroupcode", "vadjustgroupcode", "vcentergroupcode", "mathabovegroupcode",
+        "discretionarygroupcode", "insertgroupcode", "vadjustgroupcode", "vcentergroupcode", "mathabovegroupcode",
         "mathchoicegroupcode", "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode",
         "localboxgroupcode", "splitoffgroupcode", "splitkeepgroupcode", "preamblegroupcode",
         "alignsetgroupcode", "finrowgroupcode", "discretionarygroupcode",
@@ -166,6 +162,14 @@ return {
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         --
         "normalizelinemodecode", "indentskipmodecode", "swaphangindentmodecode", "swapparskipmodecode", "breakafterdirmodecode",
+        --
+        "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
+        "noexpansioncode", "noprotrusioncode",
+        --
+        "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode", "mutableflagcode",
+        "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
+        --
+        "continuewhenlmtxmode"
     },
     ["helpers"] = {
         --
@@ -200,6 +204,7 @@ return {
         --
         "strippedcsname","checkedstrippedcsname",
         --
+        "nofarguments",
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
         "thirdargumentfalse", "thirdargumenttrue",
@@ -477,7 +482,7 @@ return {
         "carryoverpar",
         "freezeparagraphproperties", "defrostparagraphproperties",
         "setparagraphfreezing", "forgetparagraphfreezing",
-        "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits", "updateparagraphshapes",
+        "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits", "updateparagraphshapes", "updateparagraphlines",
         --
         "lastlinewidth",
         --
@@ -526,5 +531,13 @@ return {
         "ifbitwiseand", "bitwise", "bitwiseshift", "bitwiseflip",
         -- old ... very low level
         "textdir", "linedir", "pardir", "boxdir",
+        --
+        "prelistbox", "postlistbox", "prelistcopy", "postlistcopy", "setprelistbox", "setpostlistbox",
+        --
+        "noligaturing", "nokerning", "noexpansion", "noprotrusion",
+        --
+        "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
+        --
+        "pushoverloadmode", "popoverloadmode",
     }
 }

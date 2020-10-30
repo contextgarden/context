@@ -188,7 +188,7 @@ local initializeoverlay  do
                 n = n + 1 ; t[n] = "}"
             end
             token.set_macro("typethreemacro",concat(t))
-            tex.runtoks("typethreetoks")
+            tex.runlocal("typethreetoks")
             registertypethreeresource(specification,c,tex.saveboxresource(0,nil,lpdf.collectedresources(),true))
          -- registertypethreefont(specification,mainid,lpdf.reference(lpdf.getfontobjnumber(mainid)))
             return 0, 0

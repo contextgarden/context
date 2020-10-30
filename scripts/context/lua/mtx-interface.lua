@@ -169,6 +169,10 @@ function flushers.raw(collected)
     end
 end
 
+function flushers.data(collected)
+    return collected -- table.save("cont-en-filenames.lua",collected.filenames)
+end
+
 local textpadcreator = "mtx-interface-textpad.lua"
 
 function flushers.text(collected)
@@ -257,9 +261,10 @@ end
 function scripts.interface.editor(editor,split,forcedinterfaces)
     require("char-def")
 
-    local interfaces = forcedinterfaces or environment.files
-    if #interfaces == 0 then
-        interfaces= userinterfaces
+    local interfaces = forcedinterfaces or environment.files or userinterfaces
+    if not interfaces.en then
+        -- loaded as script so we have "cont-yes.*" as name
+        interfaces = { "en" }
     end
     --
  -- local filename = "i-context.xml"
@@ -377,13 +382,13 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
                     end
                     -- skip (for now)
                 elseif type ~= "environment" then
-                    i_commands[n] = true
+                    i_commands[n] = at.file or true
                 elseif split then
-                    i_environments[n] = true
+                    i_environments[n] = at.file or true
                 else
                     -- variables ?
-                    i_commands[start..n] = true
-                    i_commands[stop ..n] = true
+                    i_commands[start..n] = at.file or true
+                    i_commands[stop ..n] = at.file or true
                 end
             end
         end
@@ -417,6 +422,19 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
                 if not commonenvironments[k] then
                     commonenvironments[k] = nil
                 end
+            end
+        end
+    end
+    local filenames = { }
+    if collected.en then
+        for k, v in next, collected.en.commands do
+            if v ~= true then
+                filenames[k] = v
+            end
+        end
+        for k, v in next, collected.en.environments do
+            if v ~= true then
+                filenames[k] = v
             end
         end
     end
@@ -461,9 +479,13 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
         mathnames    = sortedkeys(mathnames),
         commands     = sortedkeys(commoncommands),
         environments = sortedkeys(commonenvironments),
+        filenames    = filenames,
     }
     --
-    flushers[editor](collected)
+    local flusher = flushers[editor]
+    if flusher then
+        return flusher(collected)
+    end
 end
 
 function scripts.interface.check()

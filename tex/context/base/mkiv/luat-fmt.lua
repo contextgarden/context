@@ -178,8 +178,9 @@ function environment.make_format(formatname)
     -- because we can have half qualified paths (in lxc)
     local binarypath = validbinarypath()
     report_format("changing to format path %a",validformatpath)
-    lfs.chdir(validformatpath)
-    if dir.current() ~= validformatpath then
+ -- lfs.chdir(validformatpath)
+ -- if dir.current() ~= validformatpath then
+    if not lfs.chdir(validformatpath) then
         return fatalerror(startupdir,"unable to change to format path %a",validformatpath)
     end
     -- now we can generate the format, where we use a couple of flags,

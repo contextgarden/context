@@ -1,0 +1,143 @@
+%D \module
+%D   [       file=attr-ini,
+%D        version=2007.06.06,
+%D          title=\CONTEXT\ Attribute Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Attribute Macros / Initialization}
+
+%D Although it's still somewhat experimental, here we introduce code
+%D related to attributes. Housekeeping will move completely to \LUA\
+%D and \type {\newattribute} will go away.
+
+\unprotect
+
+\registerctxluafile{attr-ini}{}
+
+\installcorenamespace{attributecount}  % the counter representing the attribute (attrdef'd)
+\installcorenamespace{attributeid}     % the internal number
+\installcorenamespace{attributestack}  % the attribute specific stack
+\installcorenamespace{attributepickup}
+
+\permanent\protected\def\pushattribute#1%
+  {\global\advance\csname\??attributestack\string#1\endcsname\plusone
+   \expandafter\xdef\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname{\number\attribute#1}}
+
+\permanent\protected\def\popattribute#1%
+  {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\relax
+   \global\advance\csname\??attributestack\string#1\endcsname\minusone}
+
+\permanent\protected\def\installattributestack#1%
+  {\ifcsname\??attributestack\string#1\endcsname \else
+     \expandafter\newcount\csname\??attributestack\string#1\endcsname
+   \fi}
+
+\newtoks \t_attr_list_global
+\newtoks \t_attr_list_local
+\newtoks \t_attr_list_pickup
+\newtoks \t_attr_list_nomath
+
+\ifdefined \s!global    \else \immutable\def\s!global   {global}    \fi % for metatex % or hard check later
+\ifdefined \s!public    \else \immutable\def\s!public   {public}    \fi % for metatex % or hard check later
+\ifdefined \s!private   \else \immutable\def\s!private  {private}   \fi % for metatex % or hard check later
+\ifdefined \s!attribute \else \immutable\def\s!attribute{attribute} \fi % for metatex % or hard check later
+\ifdefined \s!pickup    \else \immutable\def\s!pickup   {pickup}    \fi % for metatex % or hard check later
+\ifdefined \s!forget    \else \immutable\def\s!forget   {forget}    \fi % for metatex % or hard check later
+
+\immutable\def\??attributeprefix{c_attr_}
+
+\permanent\protected\def\defineattribute      {\attr_basics_define_indeed[\s!public ]}
+\permanent\protected\def\definesystemattribute{\attr_basics_define_indeed[\s!private]}
+
+\tolerant\def\attr_basics_define_indeed[#1]#*[#2]#*[#3]%
+  {\ifcsname\??attributeprefix#2\endcsname\else
+     \scratchcounter\clf_defineattribute{#2}{#1}\relax
+    %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
+     \global\expandafter\attributedef\csname\??attributeprefix#2\endcsname\scratchcounter %           \foo = 123
+     \global\expandafter\integerdef  \csname\??attributeid    #2\endcsname\scratchcounter % \attribute\foo = 123
+     % some attributes are always global
+     \doifelseinset\s!global{#3}%
+       {\xtoksapp\t_attr_list_global{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}% \c_attr_foo
+       {\xtoksapp\t_attr_list_local {\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}%
+     \doifinset\s!nomath{#3}%
+       {\xtoksapp\t_attr_list_nomath{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}%
+     \doifinset\s!public{#3}%
+       {\aliased\expandafter\glet\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}% \attribute\fooattribute
+     \doifinset\s!pickup{#3}%
+       {\global\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue
+        \xtoksapp\t_attr_list_pickup{\csname\??attributeprefix#2\endcsname\csname\??attributepickup#2\endcsname}%
+        \ifcsname#2\s!attribute\endcsname
+          \expandafter\xdef\csname\s!pickup#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\csname\??attributeprefix#2\endcsname}%
+          \expandafter\xdef\csname\s!forget#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
+        \fi}%
+   \fi}
+
+\permanent\protected\def\pickupattributes
+  {\the\t_attr_list_pickup\relax}
+
+\permanent\protected\def\newattribute#1%
+  {\attr_basics_define_indeed\s!public[\csstring#1][]%
+   \expandafter\glet\expandafter#1\csname\??attributeid\csstring#1\endcsname}
+
+% expandable so we can \edef them for speed
+
+\permanent\def\dosetattribute#1#2{\csname\??attributeprefix#1\endcsname#2\relax}
+\permanent\def\doresetattribute#1{\csname\??attributeprefix#1\endcsname\attributeunsetvalue}
+\permanent\def\dogetattribute  #1{\number\csname\??attributeprefix#1\endcsname}
+\permanent\def\dogetattributeid#1{\number\csname\??attributeid    #1\endcsname}
+
+\aliased\let\dompattribute\gobbletwoarguments
+
+\permanent\protected\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield\zerocount\glyphscriptfield\zerocount}
+\permanent\protected\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield\zerocount\glyphscriptfield\zerocount}
+
+\aliased\let\resetallattributes\resetlocalattributes
+
+%D Rather special.
+
+\permanent\protected\def\savecurrentattributes   #1{\clf_savecurrentattributes   {#1}}
+\permanent\protected\def\restorecurrentattributes#1{\clf_restorecurrentattributes{#1}}
+
+%D For the moment we put this here. The order of definition matters a bit because
+%D performance is better when we put frequently accessed attributes at the front.
+%D So, we might move more here.
+
+%definesystemattribute [state]                                  % nomath
+\definesystemattribute [color]               [public]           % global
+\definesystemattribute [colormodel]          [public,global]
+%definesystemattribute [skip]
+%definesystemattribute [penalty]
+\definesystemattribute [transparency]        [public]
+\definesystemattribute [reference]           [public]
+\definesystemattribute [destination]         [public]
+\definesystemattribute [case]                [public]
+\definesystemattribute [visual]              [public,global]
+\definesystemattribute [viewerlayer]         [public]
+\definesystemattribute [background]          [public]
+\definesystemattribute [alignbackground]     [public]
+\definesystemattribute [colorintent]         [public]
+\definesystemattribute [negative]            [public]
+\definesystemattribute [effect]              [public]
+\definesystemattribute [layoutcomponent]     [public]
+\definesystemattribute [internal]            [public]
+\definesystemattribute [ruled]               [public]
+\definesystemattribute [shifted]             [public]
+\definesystemattribute [checkedbreak]        [public]
+\definesystemattribute [vboxtohboxseparator] [public]
+
+\permanent\protected\let\showattributes\clf_showattributes % maybe at lua end
+
+%D Todo:
+
+% \appendtoks
+%     \clf_cleanupattributes
+% \to \everyafterpagebreak
+
+\protect \endinput

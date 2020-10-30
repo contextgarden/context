@@ -797,7 +797,7 @@
 \unexpanded\def\ibox
   {\vbox\bgroup
      \forgetall
-     \let\\=\endgraf
+     \let\\\endgraf
      \ifdoublesided\signalinnerrealign\fi
      \doifelserightpage\spac_align_set_horizontal_right\spac_align_set_horizontal_left
      \let\next}
@@ -805,7 +805,7 @@
 \unexpanded\def\obox
   {\vbox\bgroup
      \forgetall
-     \let\\=\endgraf
+     \let\\\endgraf
      \ifdoublesided\signalouterrealign\fi
      \doifelserightpage\c_spac_align_state_horizontal_left\spac_align_set_horizontal_right
      \let\next}
@@ -956,7 +956,7 @@
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize % new
-   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
+   \protected\def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
    \dowithnextbox
      {\hbox to \localhsize
         {\ifcase\alignstrutmode\or\strut\fi
@@ -1036,7 +1036,7 @@
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize
-   \def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
+   \protected\def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
    \dowithnextbox
      {\hbox to \localhsize
         {#1\hskip\ifdone#2\else#3\fi#4%

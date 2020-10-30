@@ -293,7 +293,7 @@ function mp.mf_inject_blob(category,str)
     newblob(category,str) -- only for tracing
     mp_category = category
     mp_str      = str
-    tex.runtoks("mpblobtext")
+    tex.runlocal("mpblobtext")
 end
 
 interfaces.implement {

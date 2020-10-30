@@ -40,7 +40,7 @@ local function mergegoodies(optionlist)
 end
 
 function figures.mergegoodies(optionlist)
-    -- todo: we can use runtoks instead
+    -- todo: we can use runlocal instead
     context.stepwise(function()
         -- we use stepwise because we might need to define symbols
         -- for stamps that have no default appearance

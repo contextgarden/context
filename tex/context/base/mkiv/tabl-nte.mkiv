@@ -81,10 +81,10 @@
    \setfalse\c_tabl_nte_in_nc}
 
 \unexpanded\def\tabl_nte_start_nc
-  {\futurelet\next\tabl_nte_start_nc_indeed}
+  {\futurelet\nexttoken\tabl_nte_start_nc_indeed}
 
 \def\tabl_nte_start_nc_indeed
-  {\ifx\next\tabl_nte_start_nr \else
+  {\ifx\nexttoken\tabl_nte_start_nr \else
      \expandafter\tabl_nte_start_nc_finish
    \fi}
 

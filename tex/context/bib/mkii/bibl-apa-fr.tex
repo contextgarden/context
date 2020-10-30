@@ -105,7 +105,7 @@
 %D Some shortcuts.
 
 % ((#1(type\ |)chapter#2)|#3)
- 
+
 \def\insertchap#1#2#3%
   {\insertchapter
     {#1\insertbibtype{}{\ }{chapitre\ }}{#2}%
@@ -137,16 +137,16 @@
    \insertcomment{}{.}{}%
 }
 
-\newif\ifeditedbook
+% \newif\ifeditedbook
 \setuppublicationlayout[book]{%
    \insertauthors{}{ }{\inserteditors{}{, \'editeur%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
    \inserttitle
         {\bgroup\it }%
-        {\/\egroup 
+        {\/\egroup
          \ifeditedbook
            \global\editedbookfalse
            \insertvolume
@@ -186,7 +186,7 @@
 \setuppublicationlayout[inbook]{%
    \insertauthors{}{ }{\inserteditors{}{, \'editeur%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
    \inserttitle
@@ -262,13 +262,13 @@
         {, \'editeur\ifnum\getvalue{editor@num}> 1 s\fi, }%
         {}%
     \bgroup\it}%
-    {\egroup 
+    {\egroup
          \insertseries
               {\insertvolume{, num\'ero }{~dans }{ }}%
               {}%
               {}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
          \insertpublisher
          {}%
          {\insertedition{, }{ \'edition. }{. }}%
@@ -276,7 +276,7 @@
         }%
         {Dans \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
         }%
    \insertnote{ }{.}{}%
 }
@@ -290,7 +290,7 @@
         {, \'editeur\ifnum\getvalue{editor@num}> 1 s\fi, }%
         {}%
     \bgroup\it}%
-    {\egroup 
+    {\egroup
          \insertseries
               {\insertvolume{, num\'ero }{~dans }{ }}%
               {}%
@@ -299,7 +299,7 @@
          \insertpages
                 {\unskip, pages~}
 	            {\insertcity{, }{. }{. }}
-                {\unskip. }% 
+                {\unskip. }%
          \insertorganization
          {}%
          {\insertpubname{, }{. }{. }}%
@@ -307,7 +307,7 @@
         }%
         {Dans \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, pages~}{. }{\unskip. }% 
+         \insertpages{\unskip, pages~}{. }{\unskip. }%
         }%
    \insertnote{ }{.}{}%
 }
@@ -315,19 +315,19 @@
 \setuppublicationlayout[proceedings]{%
    \inserteditors{}{, \'editeur%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{ }{}}%
    \insertpubyear{(}{). }{}%
    \inserttitle
     {\bgroup\it}%
-    {\egroup 
+    {\egroup
          \insertseries
               {\insertvolume{, num\'ero }{~dans }{ }}%
               {}%
               {}%
          \insertchap{\unskip, }{ }{ }%
          \insertpages{\unskip, pages~}{\insertcity{, }{. }{. }}
-        {\unskip\insertcity{, }{. }{. }}% 
+        {\unskip\insertcity{, }{. }{. }}%
          \insertorganization
          {}%
          {\insertpubname{, }{. }{. }}%

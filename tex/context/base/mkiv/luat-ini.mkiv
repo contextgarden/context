@@ -77,21 +77,25 @@
 \edef\lua_letter_seven    {\string\7} \edef\lua_letter_eight    {\string\8}
 \edef\lua_letter_nine     {\string\9} \edef\lua_letter_zero     {\string\0}
 
+\pushoverloadmode
+    \let\-\explicitdiscretionary
+\popoverloadmode
+
 \everyluacode {% \appendtoks
-   \let\\\lua_letter_backslash
-   \let\|\lua_letter_bar       \let\-\lua_letter_dash
-   \let\(\lua_letter_lparent   \let\)\lua_letter_rparent
-   \let\{\lua_letter_lbrace    \let\}\lua_letter_rbrace
-   \let\'\lua_letter_squote    \let\"\lua_letter_dquote
-   \let\n\lua_letter_n         \let\r\lua_letter_r
-   \let\f\lua_letter_f         \let\t\lua_letter_t
-   \let\a\lua_letter_a         \let\b\lua_letter_b
-   \let\v\lua_letter_v         \let\s\lua_letter_s
-   \let\1\lua_letter_one       \let\2\lua_letter_two
-   \let\3\lua_letter_three     \let\4\lua_letter_four
-   \let\5\lua_letter_five      \let\6\lua_letter_six
-   \let\7\lua_letter_seven     \let\8\lua_letter_eight
-   \let\9\lua_letter_nine      \let\0\lua_letter_zero
+   \enforced\let\\\lua_letter_backslash
+   \enforced\let\|\lua_letter_bar       \enforced\let\-\lua_letter_dash
+   \enforced\let\(\lua_letter_lparent   \enforced\let\)\lua_letter_rparent
+   \enforced\let\{\lua_letter_lbrace    \enforced\let\}\lua_letter_rbrace
+   \enforced\let\'\lua_letter_squote    \enforced\let\"\lua_letter_dquote
+   \enforced\let\n\lua_letter_n         \enforced\let\r\lua_letter_r
+   \enforced\let\f\lua_letter_f         \enforced\let\t\lua_letter_t
+   \enforced\let\a\lua_letter_a         \enforced\let\b\lua_letter_b
+   \enforced\let\v\lua_letter_v         \enforced\let\s\lua_letter_s
+   \enforced\let\1\lua_letter_one       \enforced\let\2\lua_letter_two
+   \enforced\let\3\lua_letter_three     \enforced\let\4\lua_letter_four
+   \enforced\let\5\lua_letter_five      \enforced\let\6\lua_letter_six
+   \enforced\let\7\lua_letter_seven     \enforced\let\8\lua_letter_eight
+   \enforced\let\9\lua_letter_nine      \enforced\let\0\lua_letter_zero
 } % \to \everyluacode
 
 \protected\def\obeyluatokens

@@ -43,7 +43,7 @@ local pageliteral_code    = literalvalues.page
 local directliteral_code  = literalvalues.direct
 local rawliteral_code     = literalvalues.raw
 
-local immediate_code      = tex.prefixcodes.immediate
+local immediate_code      = tex.flagcodes.immediate
 
 local nodeproperties      = nodes.properties.data
 

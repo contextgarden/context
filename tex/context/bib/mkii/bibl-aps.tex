@@ -122,7 +122,7 @@
 %D Some shortcuts.
 
 % ((#1(type\ |)chapter#2)|#3)
- 
+
 \def\insertchap#1#2#3%
   {\insertchapter
     {#1\insertbibtype{}{\ }{chapter\ }}{#2}%
@@ -169,15 +169,15 @@
    \insertcomment{}{.}{}%
 }
 
-\newif\ifeditedbook
+% \newif\ifeditedbook
 \setuppublicationlayout[book]{%
    \insertauthors{}{ }{\inserteditors{}{, editor%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \inserttitle
         {\unskip, \bgroup\it }%
-        {\/\egroup 
+        {\/\egroup
     \ifeditedbook
            \global\editedbookfalse
        \insertvolume
@@ -219,7 +219,7 @@
 \setuppublicationlayout[inbook]{%
    \insertauthors{}{}{\inserteditors{}{, editor%
                          \ifnum\getvalue{editor@num}> 1 s\fi
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \inserttitle
         {, \bgroup\it }%
@@ -289,7 +289,7 @@
    \inserttitle
     {, in %
     \bgroup\it}%
-    {\egroup 
+    {\egroup
      \inserteditors{, edited by }%
         {}%
         {}
@@ -301,22 +301,22 @@
          \insertpubyear{(%
            \insertpublisher{}%{, }%{}%
           }{)\insertEdition{, }{ ed. }{}}{}%
-         \insertpages{\unskip, p.~}{. }{\unskip. }% 
+         \insertpages{\unskip, p.~}{. }{\unskip. }%
         }%
         {In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, p.~}{. }{\unskip. }% 
+         \insertpages{\unskip, p.~}{. }{\unskip. }%
         }%
    \insertNote{ }{.}{}%
 }
 
 \setuppublicationlayout[inproceedings]{%
    \insertauthors{}{ }{}%
-%   
+%
 %   \insertarttitle{\bgroup }{\egroup. }{}%%
    \inserttitle
     {\unskip, in \bgroup\it}%
-    {\egroup 
+    {\egroup
 	\inserteditors{, edited by }%
         {}%
         {}%
@@ -340,11 +340,11 @@
          \insertpages
                 {\unskip, \fixpp.~}
 	            {\unskip.}
-                {\unskip.}% 
+                {\unskip.}%
         }%
         { In \insertcrossref{}{}{}%
          \insertchap{\unskip, }{ }{ }%
-         \insertpages{\unskip, \fixpp.~}{. }{\unskip. }% 
+         \insertpages{\unskip, \fixpp.~}{. }{\unskip. }%
         }%
    \insertNote{ }{.}{}%
 }
@@ -352,11 +352,11 @@
 \setuppublicationlayout[proceedings]{%
    \inserteditors{}{, ed%
                          \ifnum\getvalue{editor@num}> 1 s\fi.,
-                             \ \global\editedbooktrue 
+                             \ \global\editedbooktrue
                      }{\insertthekey{}{ }{}}%
    \inserttitle
     {\bgroup\it}%
-    {\egroup 
+    {\egroup
       \insertseries
          {\insertvolume{, number }{~in }{ }}%
          {}%
@@ -373,7 +373,7 @@
       \insertpages
             {\unskip, p.~}
             {\insertcity{, }{}{}}
-            {\unskip\insertcity{, }{}{}}% 
+            {\unskip\insertcity{, }{}{}}%
    }%
    {}%
    \insertNote{\unskip. }{.}{.}%

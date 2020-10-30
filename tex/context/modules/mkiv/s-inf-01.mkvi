@@ -31,7 +31,6 @@
     local list = { }
     local size = { }
     local comp = { }
-    local used = setmetatableindex("table")
     local nope = setmetatableindex("number")
 
     local omit = {
@@ -44,7 +43,7 @@
         "colo%-pan.tex", ".*test.*"
     }
     local types = {
-        "tex", "mkii", "mkiv", "mkvi", "mkxl", "mklx", "lua", -- "mpiv"
+        "tex", "mkii", "mkiv", "mkvi", "lua", "mkxl", "mklx", "lmt" -- "mpiv"
     }
     local patterns = {
         "^([a-z][a-z][a-z][a-z])%-[a-z0-9%-]+%.[a-z]+",
@@ -90,7 +89,7 @@
                         end
                         local data = io.loaddata(name)
                         if data then
-                            if suffix == "lua" then
+                            if suffix == "lua" or suffix == "lmt" then
                                 data = gsub(data,"%-%-%[%[.-%]%]%-%-","")
                                 data = gsub(data,"%-%-.-[\n\r]","")
                             else
@@ -120,15 +119,6 @@
             for i=1,#types do
                 collect(list,types[i],i)
             end
-            for category in next, list do
-                pattern ="{"..category.."%-"
-                for suffix, t in next, used do
-                    local data = io.loaddata(resolvers.find_file("context."..suffix))
-                    if data and find(data,pattern) then
-                        t[category] = true
-                    end
-                end
-            end
         end
         local max, what = 0, (what == "size" and size) or list
         for k, v in table.sortedpairs(what) do
@@ -141,9 +131,9 @@
 
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
-        context.starttabulate { "|Tl|T|T|T|T|T|T|T|" }
+        context.starttabulate { "|Tl|T|T|T|T|T|T|T|T|" }
         context.NC()
-        context(category)
+        context("category")
         context.NC()
         for i=1,#types do
             local n, m = 0, 0
@@ -156,20 +146,13 @@
             context.Top(types[i],norm(max),n,m)
             context.NC()
         end
-        context.NC()
+     -- context.NC()
         context.NR()
         context.HL()
         for k, v in table.sortedpairs(what) do
             local c = what == size and comp[k] or nope
             context.NC()
-            context("\\bf %s~%s~~%s~~%s~~%s~~%s",
-                (used.mkii[k] and "ii") or "~~",
-                (used.mkiv[k] and "iv") or "~~",
-                (used.mkvi[k] and "vi") or "~~",
-                (used.mkiv[k] and "xl") or "~~",
-                (used.mkvi[k] and "lx") or "~~",
-                k
-            )
+            context(k)
             context.NC()
             for i=1,#types do
                 context.Bar(types[i],v[i],c[i],f_norm(norm(v[i])))
@@ -201,13 +184,14 @@
 \definecolor[bar:mkxl][middlemagenta]
 \definecolor[bar:mklx][middlecyan]
 \definecolor[bar:lua] [middlegray]
+\definecolor[bar:lmt] [middleorange]
 
 \newcount\UpCounter
 
 \starttexdefinition Top #what#fraction#total#bigones
     \hbox to 7em{\hss#total}%
     \enspace
-    \hbox {{\bf#what}\ifnum#total=#bigones\else~#bigones\rlap{~+}\fi\hss}%
+    \hbox to 4em{{{\bf#what}\ifnum#total=#bigones\else\ifnum#bigones>0~#bigones\rlap{~+}\fi\fi\hss}}%
 \stoptexdefinition
 
 \starttexdefinition Bar #color#size#nobigones#fraction
@@ -215,6 +199,8 @@
         \hbox to 7em{\hss\ifcase#nobigones\else\llap{-~}\fi#size}%
         \enspace
         \blackrule[color=bar:#color,width=#fraction\dimexpr 20em\relax,height=.8\strutht]%
+%         \quad
+%         \quad
     \fi
 \stoptexdefinition
 
@@ -269,9 +255,9 @@
         {The size of (core) files used in ConTeXt (- : large data files excluded; + : large data files included; comment and spaces removed)}
         {1}{size}
     \Show
-        {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua).}
+        {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua, lmt).}
         {2}{number}
     \Show
-        {The relative size of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua).}
+        {The relative size of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua, lmt).}
         {2}{size}
 \stoptext

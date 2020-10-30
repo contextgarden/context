@@ -44,12 +44,12 @@
 %     \eTR
 % \eTABLE
 
-% \unexpanded\def\startrow            {\bTR}
-% \unexpanded\def\stoprow             {\eTR}
-% \unexpanded\def\startcell#1\stopcell{\bTD#1\eTD}
-%            \let\stopcell             \relax
-%            \let\startcelltable       \bTABLE
-%            \let\stopcelltable        \eTABLE
+% \protected\def\startrow            {\bTR}
+% \protected\def\stoprow             {\eTR}
+% \protected\def\startcell#1\stopcell{\bTD#1\eTD}
+%           \let\stopcell             \relax
+%           \let\startcelltable       \bTABLE
+%           \let\stopcelltable        \eTABLE
 
 % \starttext
 %     \startcelltable
@@ -100,7 +100,7 @@
     % maybe: \the\neverypar
 \to \t_tabl_ntb_cell_start
 
-\unexpanded\def\tabl_ntb_cell_start
+\protected\def\tabl_ntb_cell_start
   {% \inhibitblank
    \dotagTABLEcell
   %\tabl_ntb_next_level
@@ -109,7 +109,7 @@
    \everypar\t_tabl_ntb_cell_start
    \font_styles_math_start}
 
-\unexpanded\def\tabl_ntb_cell_stop
+\protected\def\tabl_ntb_cell_stop
   {\font_styles_math_stop
    \ifhmode
      \the\t_tabl_ntb_cell_stop
@@ -123,7 +123,7 @@
 
 % maybe:
 %
-% \unexpanded\def\tabl_ntb_cell_stop
+% \protected\def\tabl_ntb_cell_stop
 %   {\ifhmode
 %      \the\t_tabl_ntb_cell_stop
 %      \par % added 13/4/2006
@@ -213,7 +213,7 @@
 \installglobalmacrostack\m_tabl_ntb_saved_row
 \installglobalmacrostack\m_tabl_ntb_saved_col
 
-\unexpanded\def\tabl_ntb_table_push
+\protected\def\tabl_ntb_table_push
   {\ifnum\m_tabl_tbl_level>\plusone
      \tabl_ntb_parameters_reset
      % we need a proper count push/pop
@@ -223,7 +223,7 @@
      \global\intabletrue
    \fi}
 
-\unexpanded\def\tabl_ntb_table_pop
+\protected\def\tabl_ntb_table_pop
   {\ifnum\m_tabl_tbl_level>\plusone
      \pop_macro_m_tabl_ntb_saved_row\global\c_tabl_ntb_row\m_tabl_ntb_saved_row
      \pop_macro_m_tabl_ntb_saved_col\global\c_tabl_ntb_col\m_tabl_ntb_saved_col
@@ -231,11 +231,11 @@
      \global\intablefalse
    \fi}
 
-\unexpanded\def\tabl_ntb_next_level
+\protected\def\tabl_ntb_next_level
   {\advance\c_tabl_level\plusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
-\unexpanded\def\tabl_ntb_prev_level
+\protected\def\tabl_ntb_prev_level
   {\advance\c_tabl_level\minusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
@@ -247,8 +247,8 @@
 \installdirectcommandhandler       \??naturaltable      {naturaltable}      % \??naturaltable
 \installsimpleframedcommandhandler \??naturaltablelocal {naturaltablelocal} \??naturaltablelocal
 
-\unexpanded\def\bTABLEnested{\tabl_ntb_next_level\bTABLE}
-\unexpanded\def\eTABLEnested{\eTABLE\tabl_ntb_prev_level}
+\permanent\protected\def\bTABLEnested{\tabl_ntb_next_level\bTABLE}
+\permanent\protected\def\eTABLEnested{\eTABLE\tabl_ntb_prev_level}
 
 \installcorenamespace{naturaltabletal}
 \installcorenamespace{naturaltablegal}
@@ -353,18 +353,6 @@
 %      \c_tabl_ntb_none
 %    \fi}
 
-% not used
-%
-% \def\tabl_ntb_tag_state#1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
-% \def\tabl_ntb_row_state#1#2{\ifcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
-% \def\tabl_ntb_col_state#1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
-
-%def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
-%def\tabl_ntb_spn_doifelse#1{\doifelse      {\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}\!!plusone}
-
-%def\tabl_ntb_set_spn     #1{\setvalue     {\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-%def\tabl_ntb_spn_doifelse#1{\doifelsevalue{\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-
 \def\tabl_ntb_let_ref   #1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_set_ref   #1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 %def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
@@ -379,11 +367,11 @@
 
 % keep for a while:
 %
-% \unexpanded\def\tabl_ntb_set_txt_process#1#2#3#4#5#6% nasty: we restore the level
+% \protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6% nasty: we restore the level
 %   {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\expandafter\endcsname\expandafter
 %      {\expandafter\def\expandafter\m_tabl_tbl_level\expandafter{\m_tabl_tbl_level}\tabl_ntb_cell_process{#3}{#4}[#5]{#6}}}
 
-\unexpanded\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
+\protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
   {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
      {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
 
@@ -414,25 +402,24 @@
 
 % so far
 
-\unexpanded\def\tabl_ntb_cell_process#1#2[#3]{}
+\protected\def\tabl_ntb_cell_process#1#2[#3]{}
 
-\unexpanded\def\bTC#1\eTC{\bTD#1\eTD} \let\eTC\relax
-\unexpanded\def\bTX#1\eTX{\bTD#1\eTD} \let\eTX\relax
-\unexpanded\def\bTY#1\eTY{\bTR#1\eTR} \let\eTY\relax
-
-\unexpanded\def\setupTABLE
-  {\dotripleempty\tabl_ntb_setup}
+\permanent\protected\def\bTC#1\eTC{\bTD#1\eTD} \let\eTC\relax
+\permanent\protected\def\bTX#1\eTX{\bTD#1\eTD} \let\eTX\relax
+\permanent\protected\def\bTY#1\eTY{\bTR#1\eTR} \let\eTY\relax
 
 \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
 
-\def\tabl_ntb_setup
-  {\ifthirdargument
+\permanent\tolerant\protected\def\setupTABLE[#1]#*[#2]#*[#3]%
+  {\ifarguments
+     \expandafter\gobblethreeoptionals
+   \or
+     \expandafter\tabl_ntb_setup_one
+   \or
+     \expandafter\tabl_ntb_setup_two
+   \or
      \expandafter\tabl_ntb_setup_three
-   \orelse\ifsecondargument
-     \doubleexpandafter\tabl_ntb_setup_two
-   \else
-     \doubleexpandafter\tabl_ntb_setup_one
-   \fi}
+   \fi[#1][#2][#3]}
 
 \def\tabl_ntb_setup_one[#1][#2][#3]%
   {\setupcurrentnaturaltablelocal[#1]}
@@ -456,9 +443,6 @@
 
 \installcorenamespace{naturaltablesetupthree}
 \installcorenamespace{naturaltablesetuptwo}
-
-%def\tabl_ntb_setup_three[#1]{\csname\??naturaltablesetupthree\ifcsname\??naturaltablesetupthree#1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
-%def\tabl_ntb_setup_two  [#1]{\csname\??naturaltablesetuptwo  \ifcsname\??naturaltablesetuptwo  #1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
 
 \def\tabl_ntb_setup_three[#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
 \def\tabl_ntb_setup_two  [#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
@@ -492,7 +476,7 @@
        \def\tabl_ntb_parameters_get[##1]%
          {\setvalue{\??naturaltableset\m_tabl_tbl_level:#1}{\tabl_ntb_parameters_get[##1,#2]}}%
        \csname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
-       \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
+       \enforced\let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
      \else
        \setvalue{\??naturaltableset\m_tabl_tbl_level:#1}{\tabl_ntb_parameters_get[#2]}%
      \fi
@@ -562,7 +546,7 @@
 
 \let\tabl_ntb_setup_section\relax
 
-\unexpanded\def\tabl_ntb_setup_cell#1#2% cell over col over row
+\protected\def\tabl_ntb_setup_cell#1#2% cell over col over row
   {\tabl_ntb_setup_section % already forgotten
    \edef\m_tabl_ntb_positive_row{\number#1}%
    \edef\m_tabl_ntb_positive_col{\number#2}%
@@ -671,7 +655,7 @@
 % \bTR \bTD left \eTD\bTD right \eTD\eTR
 % \eTABLE
 
-\unexpanded\def\tabl_ntb_tr
+\protected\def\tabl_ntb_tr
   {\c_tabl_ntb_running_col\zerocount
    \c_tabl_ntb_encountered_col\zerocount
    \advance\c_tabl_ntb_maximum_row\plusone
@@ -687,7 +671,7 @@
 \def\m_tabl_ntb_default_nr{\naturaltableparameter\c!nr}
 \def\m_tabl_ntb_default_nc{\naturaltableparameter\c!nc}
 
-\unexpanded\def\tabl_ntb_td
+\protected\def\tabl_ntb_td
   {\advance\c_tabl_ntb_encountered_col\plusone
    \iffirstargument
      \expandafter\tabl_ntb_td_yes
@@ -912,18 +896,18 @@
 
 % to be done: head <raw> foot, dus state var
 
-\unexpanded\def\bTABLEhead{\dosingleempty\tabl_ntb_head} \let\eTABLEhead\relax
-\unexpanded\def\bTABLEnext{\dosingleempty\tabl_ntb_next} \let\eTABLEnext\relax
-\unexpanded\def\bTABLEbody{\dosingleempty\tabl_ntb_body} \let\eTABLEbody\relax
-\unexpanded\def\bTABLEfoot{\dosingleempty\tabl_ntb_foot} \let\eTABLEfoot\relax
+\let\eTABLEhead\relax
+\let\eTABLEnext\relax
+\let\eTABLEbody\relax
+\let\eTABLEfoot\relax
 
-\def\tabl_ntb_head[#1]#2\eTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
-\def\tabl_ntb_next[#1]#2\eTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
-\def\tabl_ntb_body[#1]#2\eTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
-\def\tabl_ntb_foot[#1]#2\eTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
+\permanent\tolerant\protected\def\bTABLEhead[#1]#2\eTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
+\permanent\tolerant\protected\def\bTABLEnext[#1]#2\eTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
+\permanent\tolerant\protected\def\bTABLEbody[#1]#2\eTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
+\permanent\tolerant\protected\def\bTABLEfoot[#1]#2\eTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
 
 \def\tabl_ntb_section[#1]#2% also used in tabl-nte
-  {\unexpanded\def\tabl_ntb_setup_section{\setupcurrentnaturaltablelocal[#1]}%
+  {\protected\def\tabl_ntb_setup_section{\setupcurrentnaturaltablelocal[#1]}%
    #2%
    \let\tabl_ntb_setup_section\relax}
 
@@ -932,10 +916,7 @@
    \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
    \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname}
 
-\unexpanded\def\bTABLE
-  {\dosingleempty\tabl_ntb_table}
-
-\def\tabl_ntb_table[#1]%
+\permanent\tolerant\protected\def\bTABLE[#1]%
   {\tabl_ntb_table_push
    % box not here
    \bgroup
@@ -984,10 +965,10 @@
    \let\currentTABLEcolumn\tabl_ntb_current_column
    \let\nofTABLErows      \tabl_ntb_n_of_rows
    \let\nofTABLEcolumns   \tabl_ntb_n_of_columns
-   \let\bTR\dobTR
-   \let\bTD\dobTD
-   \let\bTH\dobTH
-   \let\bTN\dobTN}
+   \enforced\let\bTR\dobTR
+   \enforced\let\bTD\dobTD
+   \enforced\let\bTH\dobTH
+   \enforced\let\bTN\dobTN}
 
 \def\tabl_ntb_current_row   {\m_tabl_ntb_positive_row}
 \def\tabl_ntb_current_column{\m_tabl_ntb_positive_col}
@@ -1001,19 +982,21 @@
 
 % there is no gain in a \doifelsenextoptionalcs variant
 
-\unexpanded\def\dobTR{\dosingleempty\tabl_ntb_tr} % also used in tabl-nte
-\unexpanded\def\dobTD{\dosingleempty\tabl_ntb_td} % also used in tabl-nte
-\unexpanded\def\dobTH{\dosingleempty\tabl_ntb_th} % also used in tabl-nte
-\unexpanded\def\dobTN{\dosingleempty\tabl_ntb_tn} % also used in tabl-nte
+% todo with tolerant:
+
+\permanent\protected\def\dobTR{\dosingleempty\tabl_ntb_tr} % also used in tabl-nte
+\permanent\protected\def\dobTD{\dosingleempty\tabl_ntb_td} % also used in tabl-nte
+\permanent\protected\def\dobTH{\dosingleempty\tabl_ntb_th} % also used in tabl-nte
+\permanent\protected\def\dobTN{\dosingleempty\tabl_ntb_tn} % also used in tabl-nte
 
 % permits \expanded{\bTD ... \eTD}
 
-\let\bTR\relax \unexpanded\def\eTR{\ignorespaces} % handy in case we use a macro to generate rows
-\let\bTD\relax \unexpanded\def\eTD{\ignorespaces}
-\let\bTH\relax \unexpanded\def\eTH{\ignorespaces}
-\let\bTN\relax \unexpanded\def\eTN{\ignorespaces}
+\permanent\let\bTR\relax \permanent\protected\def\eTR{\ignorespaces} % handy in case we use a macro to generate rows
+\permanent\let\bTD\relax \permanent\protected\def\eTD{\ignorespaces}
+\permanent\let\bTH\relax \permanent\protected\def\eTH{\ignorespaces}
+\permanent\let\bTN\relax \permanent\protected\def\eTN{\ignorespaces}
 
-\unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
+\protected\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
    \setfalse\c_tabl_ntb_okay
    % head
@@ -1214,12 +1197,12 @@
       \the\t_tabl_ntb_row
       \tabl_ntb_row_align_stop}}
 
-\unexpanded\def\tabl_ntb_row_align_set#1#2#3%
+\protected\def\tabl_ntb_row_align_set#1#2#3%
   {\xdef\m_tabl_ntb_before_split{#1}%
    \xdef\m_tabl_ntb_after_split {#2}%
    \xdef\m_tabl_ntb_same_page   {#3}}
 
-\unexpanded\def\tabl_ntb_row_align_reset
+\protected\def\tabl_ntb_row_align_reset
   {\glet\m_tabl_ntb_before_split\empty
    \glet\m_tabl_ntb_after_split \empty
    \glet\m_tabl_ntb_same_page   \empty}
@@ -1229,7 +1212,7 @@
 
 % \prelocateTBLrows{1000} % may speed up large tables
 
-\def\prelocateTBLrows#1% we start at zero so we have one to much, better play safe anyway
+\permanent\protected\def\prelocateTBLrows#1% we start at zero so we have one to much, better play safe anyway
   {\dostepwiserecurse\c_tabl_prelocated_rows{#1}\plusone
      {\expandafter\newtoks\csname\??naturaltabletok\recurselevel\endcsname}%
    \def\tabl_ntb_row_start
@@ -1296,7 +1279,7 @@
      \fi
    \fi}
 
-\unexpanded\def\tabl_ntb_row_align_start
+\protected\def\tabl_ntb_row_align_start
   {\global\advance\c_tabl_ntb_row\plusone
    \global\c_tabl_ntb_col\plusone
    \global\c_tabl_ntb_spn\zerocount
@@ -1307,7 +1290,7 @@
    \hbox\bgroup
    \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
 
-\unexpanded\def\tabl_ntb_row_align_stop
+\protected\def\tabl_ntb_row_align_stop
   {\kern\dimexpr\d_tabl_ntb_rightmargindistance-\d_tabl_ntb_columndistance\relax
    \egroup
    \ifconditional\c_strc_tags_enabled
@@ -1315,7 +1298,7 @@
    \fi
    \tabl_ntb_row_align_stop_inject}
 
-\unexpanded\def\tabl_ntb_before_page
+\protected\def\tabl_ntb_before_page
   {\ifx\m_tabl_ntb_same_page\v!before
    % \blank[\v!samepage,\v!strong]%
      \unpenalty
@@ -1326,7 +1309,7 @@
      \nobreak
    \fi}
 
-\unexpanded\def\tabl_ntb_after_page
+\protected\def\tabl_ntb_after_page
   {\ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
      \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
        \unpenalty
@@ -1346,7 +1329,7 @@
      \allowbreak % else no proper head split off
    \fi}
 
-\unexpanded\def\tabl_ntb_inbetween
+\protected\def\tabl_ntb_inbetween
   {\scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
    \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
      \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
@@ -1357,7 +1340,7 @@
      \fi
    \fi}
 
-\unexpanded\def\tabl_ntb_row_align_start_inject
+\protected\def\tabl_ntb_row_align_start_inject
   {\bgroup % protect local vars
      \m_tabl_ntb_before_split
    \egroup
@@ -1365,7 +1348,7 @@
      \tabl_ntb_before_page
    \fi}
 
-\unexpanded\def\tabl_ntb_row_align_stop_inject
+\protected\def\tabl_ntb_row_align_stop_inject
   {\par
    \nointerlineskip
    \ifenableTBLbreak
@@ -1389,16 +1372,16 @@
    \the\t_tabl_ntb
    \dostoptagged}
 
-\unexpanded\def\tabl_ntb_span#1%
+\protected\def\tabl_ntb_span#1%
   {\hskip\tabl_ntb_get_dis\c_tabl_ntb_col
    \dorecurse{#1}
      {\hskip\tabl_ntb_get_wid\c_tabl_ntb_col\relax
       \global\advance\c_tabl_ntb_col\plusone}}
 
-\unexpanded\def\tabl_ntb_skip#1%
+\protected\def\tabl_ntb_skip#1%
   {\global\advance\c_tabl_ntb_col#1\relax}
 
-\unexpanded\def\tabl_ntb_plus
+\protected\def\tabl_ntb_plus
   {\global\advance\c_tabl_ntb_col\plusone
    \kern\d_tabl_ntb_columndistance}
 
@@ -1421,10 +1404,10 @@
          \fi}%
    \fi}
 
-\unexpanded\def\tabl_ntb_cell#1#2%
+\protected\def\tabl_ntb_cell#1#2%
   {\csname\??naturaltablecell\the\tabl_ntb_get_tag{#1}{#2}\endcsname{#1}{#2}}
 
-\unexpanded\def\tabl_ntb_table_start
+\protected\def\tabl_ntb_table_start
   {\global\c_tabl_ntb_spn\zerocount
    \global\c_tabl_ntb_row\zerocount
    \global\c_tabl_ntb_col\zerocount
@@ -1521,13 +1504,6 @@
      \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
    \fi
    \dostoptagged} % right spot
-
-% \def\tabl_ntb_cell_finalize
-%   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
-%      {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
-%       \ifdim\localwidth>\scratchdimen
-%         \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
-%       \fi}}
 
 \def\tabl_ntb_cell_finalize
   {\ifx\localwidth\v!fit
@@ -1643,11 +1619,11 @@
    \c_tabl_tbl_pass\plusthree
    \let\tabl_ntb_pass\tabl_ntb_pass_three
    \ifnum\m_tabl_tbl_level>\plusone
-     \tabl_tbl_split_nop
+     \tabl_ntb_split_nop
    \orelse\ifenableTBLbreak
-     \tabl_tbl_split_yes
+     \tabl_ntb_split_yes
    \else
-     \tabl_tbl_split_nop
+     \tabl_ntb_split_nop
    \fi}
 
 \def\tabl_ntb_stretch_widths % more variants, e.g. a max to \dimend
@@ -1677,7 +1653,7 @@
      \fi
    \fi}
 
-\def\tabl_tbl_split_nop
+\def\tabl_ntb_split_nop
   {\setbox\b_tabl_ntb_final\vbox{\tabl_ntb_flush_content}%
    \postprocessTABLEbox\b_tabl_ntb_final
    \beforeTABLEbox
@@ -1693,7 +1669,7 @@
    \box\b_tabl_ntb_final
    \afterTABLEbox}
 
-\def\tabl_tbl_split_yes
+\def\tabl_ntb_split_yes
   {\ifinsidesplitfloat
      \donetrue
    \orelse\ifinsidefloat
@@ -1704,7 +1680,7 @@
    \ifdone
      \expandafter\tabl_ntb_split_box
    \else
-     \expandafter\tabl_tbl_split_nop
+     \expandafter\tabl_ntb_split_nop
    \fi}
 
 \newbox\TABLEsplitbox % public, don't change
@@ -1897,14 +1873,14 @@
    \typo_charalign_adapt_font
    \signalcharacteralign{#2}{#1}}
 
-\unexpanded\def\tabl_ntb_cell_process_a_extra#1#2%
+\protected\def\tabl_ntb_cell_process_a_extra#1#2%
   {\ifcase\tabl_ntb_get_tal{#2}\relax
      \expandafter\tabl_ntb_cell_process_x
    \else
      \expandafter\tabl_ntb_cell_process_a
    \fi{#1}{#2}}
 
-\unexpanded\def\tabl_ntb_cell_process_x#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_x#1#2[#3]#4%
   {}
 
 % problem: when span doesn't break we can have a span that is the sum of cells but
@@ -1933,7 +1909,7 @@
      \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
    \fi}
 
-\unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
+\protected\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
    \letnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
@@ -1993,7 +1969,7 @@
    \box\scratchboxone
    \egroup}
 
-\unexpanded\def\tabl_ntb_cell_process_b_c#1#2#3[#4]#5%
+\protected\def\tabl_ntb_cell_process_b_c#1#2#3[#4]#5%
   {\setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
       \setupcurrentnaturaltablelocal[#4,#1]%
@@ -2017,7 +1993,7 @@
    \fi
    \box2 }
 
-\unexpanded\def\tabl_ntb_cell_process_b#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_b#1#2[#3]#4%
    {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
     \ifdim\scratchdimen>\zeropoint\relax
     \else
@@ -2031,10 +2007,10 @@
     \normalexpanded{\tabl_ntb_cell_process_b_c{\ifdim\scratchdimen>\zeropoint \c!width=\the\scratchdimen\fi}}%
       {#1}{#2}[#3]{\tabl_ntb_char_align{#1}{#2}#4}}
 
-\unexpanded\def\tabl_ntb_cell_process_c
+\protected\def\tabl_ntb_cell_process_c
   {\tabl_ntb_cell_process_b_c{}}
 
-\unexpanded\def\tabl_ntb_cell_process_d#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_d#1#2[#3]#4%
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
    \setupcurrentnaturaltablelocal[#3]%
@@ -2044,7 +2020,7 @@
    \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
    \egroup}
 
-\unexpanded\def\tabl_ntb_cell_process_e#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_e#1#2[#3]#4%
   {\tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]% to get the color right, the way we
    \color % handle color here prevents interference due to whatsit nodes
@@ -2185,19 +2161,16 @@
 
 \installcorenamespace{naturaltablesetup}
 
-\unexpanded\def\defineTABLEsetup
-  {\dodoubleargument\tabl_ntb_define_setup}
+\permanent\tolerant\protected\def\defineTABLEsetup[#1]#*[#2]%
+  {\ifarguments\else\setvalue{\??naturaltablesetup#1}{#2}\fi}
 
-\def\tabl_ntb_define_setup[#1][#2]%
-  {\setvalue{\??naturaltablesetup#1}{#2}}
+\permanent\let\eTDs\relax
+\permanent\let\eTRs\relax
 
-\let\eTDs\relax
-\let\eTRs\relax
-
-\unexpanded\def\bTDs[#1]#2\eTDs
+\permanent\protected\def\bTDs[#1]#2\eTDs
   {\normalexpanded{\bTD[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTD}
 
-\unexpanded\def\bTRs[#1]#2\eTRs
+\permanent\protected\def\bTRs[#1]#2\eTRs
   {\normalexpanded{\bTR[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTR}
 
 \protect \endinput

@@ -1,0 +1,245 @@
+%D \module
+%D   [       file=math-pln,
+%D        version=2001.11.16,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Plain Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Here we collect some Plain \TEX\ leftovers.
+
+\writestatus{loading}{ConTeXt Math Macros / Plain Helpers}
+
+\unprotect
+
+% we need proper unicode:
+
+\def\relbar{\mathrel{\smash-}} % - has the same height as + .. no clue what this refers to
+
+% might change
+
+\protected\def\hrulefill{\leaders\hrule\hfill}
+\protected\def\dotfill  {\cleaders\hbox{\normalstartimath\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu\normalstopimath}\hfill}
+
+% will move
+
+\def\oalign#1%
+  {\leavevmode % plain tex uses this
+   \vtop
+     {\baselineskip\zeroskip
+      \lineskip.25\exheight
+      \ialign{\alignmark\alignmark\crcr#1\crcr}}}
+
+\def\ooalign % chars over each other
+  {\lineskiplimit-\maxdimen
+   \oalign}
+
+% needs checking
+
+\def\choose{\atopwithdelims()}
+\def\brack {\atopwithdelims[]}
+\def\brace {\atopwithdelims\{\}}
+
+% needs checking
+
+\protected\def\buildrel#1\over#2%
+  {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\protected\def\bmod
+  {\nonscript
+   \mskip-\medmuskip
+   \mkern5mu
+   \mfunction{mod}%
+   \penalty900
+   \mkern5mu
+   \nonscript
+   \mskip-\medmuskip}
+
+\protected\def\pmod#1%
+  {\allowbreak
+   \mkern18mu
+   (\mfunction{mod}\mskip\medmuskip#1)}
+
+\protected\def\cases#1%
+  {\left\{%
+   \mskip\thinmuskip
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \ialign{%
+        \normalstartimath\alignmark\alignmark\hfil\normalstopimath
+        \aligntab
+        \quad\alignmark\alignmark\hfil
+        \crcr
+        #1%
+        \crcr}}%
+   \right.}
+
+\protected\def\matrix#1%
+  {\emptyhbox
+   \mskip\thinmuskip
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \ialign{%
+        \hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \aligntab
+        \aligntab
+        \quad\hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}
+        #1\crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}}}%
+   \mskip\thinmuskip}
+
+\protected\def\pmatrix#1%
+  {\left(\matrix{#1}\right)}
+
+% \protected\def\openup
+%   {\afterassignment\math_openup\scratchdimen=}
+%
+% \def\math_openup
+%   {\advance\lineskip     \scratchdimen
+%    \advance\baselineskip \scratchdimen
+%    \advance\lineskiplimit\scratchdimen}
+
+\let\math_closeup\relax
+
+\protected\def\math_openup
+  {\afterassignment\math_openup_indeed\scratchdimen}
+
+\def\math_openup_indeed
+  {\protected\edef\math_closeup
+     {\lineskip     \the\lineskip
+      \baselineskip \the\baselineskip
+      \lineskiplimit\the\lineskiplimit
+      \relax}%
+   \advance \lineskip      \scratchdimen
+   \advance \baselineskip  \scratchdimen
+   \advance \lineskiplimit \scratchdimen}
+
+\let\openup  \math_openup
+\def\closeup{\math_closeup} % dynamic
+
+\protected\def\displaylines#1%
+  {\the\mathdisplayaligntweaks
+   \tabskip\zeroskip
+   \halign
+     {\hbox to \displaywidth{%
+        \normalstartimath\tabskip\zeroskip\everycr\emptytoks\hfil\displaystyle\alignmark\alignmark\hfil\normalstopimath}\crcr
+        #1\crcr}}
+
+%D This comes from plain but I gave it a \CONTEXT\ touch:
+
+\permanent\def\math_border_NC_indeed
+  {\enforced\global\def\math_border_NC{\aligntab}}
+
+\aliased\let\math_border_NC\math_border_NC_indeed
+
+\permanent\def\math_border_NR
+  {\enforced\global\let\math_border_NC\math_border_NC_indeed
+   \cr}
+
+\protected\def\math_border_matrix#1#2#3% adapted plain
+  {\begingroup
+   %
+   \setbox\scratchbox\hbox\bgroup
+     \mr B%
+   \egroup
+   \scratchdimenone\wd\scratchbox
+   %
+   \scratchdimentwo.2\bodyfontsize
+   %
+   \mathsurround\zeropoint
+   %
+   \enforced\def\NC{\math_border_NC}%
+   \enforced\def\NR{\math_border_NR}%
+   %
+   \gdef\m_math_border_matrix
+     {\kern\scratchdimentwo
+      \glet\m_math_border_matrix\relax}%
+   %
+   \setbox\scratchboxone\vbox\bgroup
+     \everycr{\noalign\bgroup\m_math_border_matrix\egroup}%
+     \tabskip \zeroskip
+     \halign{% \ialign resets everycr
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \kern\dimexpr\scratchdimentwo+\scratchdimenone\relax
+       \aligntab
+       \thinspace
+       \hfil
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \aligntab
+       \aligntab
+       \quad
+       \hfil
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \crcr
+       \omit
+       \strut
+       \hfil
+       \crcr
+       \noalign{\kern-\baselineskip}%
+       #3\crcr
+       \omit
+       \strut
+       \cr}%
+   \egroup
+   \setbox\scratchboxtwo\vbox\bgroup
+     \unvcopy\scratchboxone
+     \global\setbox\globalscratchbox\lastbox
+   \egroup
+   \setbox\scratchboxtwo\hbox\bgroup
+     \unhbox\globalscratchbox
+     \unskip
+     \global\setbox\globalscratchbox\lastbox
+   \egroup
+   \setbox\scratchboxtwo\hbox\bgroup
+     \startimath
+     \kern\dimexpr\wd\globalscratchbox-\scratchdimenone\relax
+     \left#1\relax
+     \kern-\wd\globalscratchbox
+     \global\setbox\globalscratchbox\vbox\bgroup
+       \box\globalscratchbox
+       \kern\scratchdimentwo
+     \egroup
+     \vcenter\bgroup
+       \kern-\ht\globalscratchbox
+       \unvbox\scratchboxone
+       \kern-\baselineskip
+     \egroup
+     \thinspace
+     \right#2\relax
+     \stopimath
+   \egroup
+   \null
+   \thickspace
+   \vbox\bgroup
+     \kern\ht\globalscratchbox
+     \box\scratchboxtwo
+   \egroup
+   %
+   \endgroup}
+
+\permanent\protected\def\bordermatrix {\math_border_matrix()}
+\permanent\protected\def\bbordermatrix{\math_border_matrix[]}
+
+\permanent\protected\def\startbordermatrix #1\stopbordermatrix {\math_border_matrix(){#1}}
+\permanent\protected\def\startbbordermatrix#1\stopbbordermatrix{\math_border_matrix[]{#1}}
+
+\permanent\let\stopbordermatrix \relax
+\permanent\let\stopbbordermatrix\relax
+
+\protect \endinput

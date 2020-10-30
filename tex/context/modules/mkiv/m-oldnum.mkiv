@@ -109,7 +109,7 @@
   {\mbox{\grabdigit#1\relax}} % adding $ $ goes wrong in tabulate
 
 \def\grabdigit
-  {\futurelet\next\scandigit}
+  {\futurelet\nexttoken\scandigit}
 
 %D Watch the test for \type {\nextobeyedline}, because the
 %D endofline token can be \type {\def'd}, not \type {\let}'d,
@@ -119,15 +119,15 @@
 \ifx\normalmathshift\undefined \let\normalmathshift=$ \fi
 
 \unexpanded\def\scandigit
-  {\ifx\next\blankspace
+  {\ifx\nexttoken\blankspace
      \let\next\handledigits
-   \else\ifx\next\nextobeyedline % the indirect one
+   \else\ifx\nexttoken\nextobeyedline % the indirect one
      \let\next\handledigits
-   \else\ifx\next\bgroup
+   \else\ifx\nexttoken\bgroup
      \let\next\handledigits
-   \else\ifx\next\egroup
+   \else\ifx\nexttoken\egroup
      \let\next\handledigits
-   \else\ifx\next\normalmathshift
+   \else\ifx\nexttoken\normalmathshift
      \let\next\handledigits
    \else
      \let\next\collectdigit

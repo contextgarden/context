@@ -192,7 +192,6 @@ end
 local uses_font            = direct.uses_font
 local has_glyph            = direct.has_glyph
 local protrusion_skippable = direct.protrusion_skippable
-local prepend_prevdepth    = direct.prepend_prevdepth
 local make_extensible      = direct.make_extensible
 
 function node.uses_font(n,f)
@@ -205,11 +204,6 @@ end
 
 function node.protrusion_skippable(n)
     return protrusion_skippable(todirect(n))
-end
-
-function node.prepend_prevdepth(n)
-    local n, d = prepend_prevdepth(todirect(n))
-    return tonode(n), d
 end
 
 function node.make_extensible(...)

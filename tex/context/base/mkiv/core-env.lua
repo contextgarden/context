@@ -47,13 +47,12 @@ local cache = tokens.cache
 
 local iftrue        = cache["iftrue"].mode
 
-local dimencode     = cache["scratchdimen"]    .command -- tokens.commands.assign_dimen
-local countcode     = cache["scratchcounter"]  .command -- tokens.commands.assign_int
-local tokencode     = cache["scratchtoken"]    .command -- tokens.commands.assign_toks
-local skipcode      = cache["scratchskip"]     .command -- tokens.commands.assign_glue
-local muskipcode    = cache["scratchmuskip"]   .command -- tokens.commands.assign_mu_glue
------ attributecode = cache["scratchattribute"].command -- tokens.commands.assign_attr
-local conditioncode = cache["iftrue"]          .command -- tokens.commands.if_test
+local dimencode     = cache["scratchdimen"]  .command -- tokens.commands.register_dimen
+local countcode     = cache["scratchcounter"].command -- tokens.commands.register_int
+local tokencode     = cache["scratchtoks"]   .command -- tokens.commands.register_toks
+local skipcode      = cache["scratchskip"]   .command -- tokens.commands.register_glue
+local muskipcode    = cache["scratchmuskip"] .command -- tokens.commands.register_mu_glue
+local conditioncode = cache["iftrue"]        .command -- tokens.commands.if_test
 
 local types = {
     [dimencode]     = "dimen",
@@ -82,10 +81,6 @@ setmetatableindex(texmodes, function(t,k)
     end
 end)
 
-setmetatablenewindex(texmodes, function(t,k)
-    report_mode("you cannot set the %s named %a this way","mode",k)
-end)
-
 setmetatableindex(texsystemmodes, function(t,k)
     local m = systemmodes[k]
     if m then
@@ -101,59 +96,38 @@ setmetatableindex(texsystemmodes, function(t,k)
     end
 end)
 
-setmetatablenewindex(texsystemmodes, function(t,k)
-    report_mode("you cannot set the %s named %a this way","systemmode",k)
-end)
+do  -- we could do the same as in lmtx (use the mode)
 
-setmetatablenewindex(texconstants, function(t,k)
-    report_mode("you cannot set the %s named %a this way","constant",k)
-end)
+    local trialtypesettingstate = createtoken("trialtypesettingstate").index
+    local texgetcount           = tex.getcount
 
-setmetatablenewindex(texconditionals, function(t,k)
-    report_mode("you cannot set the %s named %a this way","conditional",k)
-end)
+    context.settrialtypesettingmethod(function()
+        return texgetcount(trialtypesettingstate) ~= 0
+    end)
+
+end
+
+setmetatablenewindex(texmodes,        function(t,k) report_mode("you cannot set the %s named %a this way","mode",       k) end)
+setmetatablenewindex(texsystemmodes,  function(t,k) report_mode("you cannot set the %s named %a this way","systemmode", k) end)
+setmetatablenewindex(texconstants,    function(t,k) report_mode("you cannot set the %s named %a this way","constant",   k) end)
+setmetatablenewindex(texconditionals, function(t,k) report_mode("you cannot set the %s named %a this way","conditional",k) end)
+setmetatablenewindex(texifs,          function(t,k) end)
 
 setmetatablenewindex(texifs, function(t,k)
     -- just ignore
 end)
 
-if CONTEXTLMTXMODE > 0 then
+setmetatableindex(texconstants, function(t,k)
+    return cache[k].mode ~= 0 and texgetcount(k) or 0
+end)
 
-    iftrue = cache["iftrue"].index
+setmetatableindex(texconditionals, function(t,k) -- 0 == true
+    return cache[k].mode ~= 0 and texgetcount(k) == 0
+end)
 
-    -- if we really need performance we can have a dedicated cache for each
-    -- kind of variable
-
-    setmetatableindex(texconstants, function(t,k)
-        return cache[k].command == countcode and texgetcount(k) or 0
-    end)
-
-    setmetatableindex(texconditionals, function(t,k) -- 0 == true
-        return cache[k].command == countcode and texgetcount(k) == 0
-    end)
-
-    setmetatableindex(texifs, function(t,k)
-        local c = cache[k]
-        print(k)
-        inspect(c)
-        return c.command == conditioncode and c.index == iftrue
-    end)
-
-else
-
-    setmetatableindex(texconstants, function(t,k)
-        return cache[k].mode ~= 0 and texgetcount(k) or 0
-    end)
-
-    setmetatableindex(texconditionals, function(t,k) -- 0 == true
-        return cache[k].mode ~= 0 and texgetcount(k) == 0
-    end)
-
-    setmetatableindex(texifs, function(t,k)
-        return cache[k].mode == iftrue
-    end)
-
-end
+setmetatableindex(texifs, function(t,k)
+    return cache[k].mode == iftrue
+end)
 
 tex.isdefined = isdefined
 

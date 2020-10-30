@@ -1,0 +1,142 @@
+% macros=mkvi
+
+%D \module
+%D   [       file=tabl-xtb,
+%D        version=2011.10.28,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Natural to Xtreme Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Natural to Xtreme Tables}
+
+\unprotect
+
+%D Don't expect wonders but it might come in handy:
+%D
+%D \starttyping
+%D \mapTABLEtoxtable
+%D \restoreTABLEfromxtable
+%D \stoptyping
+%D
+%D We stick to a simple example:
+%D
+%D \startbuffer
+%D \bTABLE
+%D   \bTR
+%D     \bTD[width=1cm,background=color,backgroundcolor=red] one \eTD
+%D     \bTD[width=2cm] two \eTD
+%D   \eTR
+%D   \bTR
+%D     \bTD alpha \eTD
+%D     \bTD beta  \eTD
+%D   \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startbuffer
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \mapTABLEtoxtable \getbuffer
+%D \stoplinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\pushoverloadmode % this file is runtime loaded
+
+\overloaded\permanent\let\tabl_x_normal_bTABLEhead\bTABLEhead
+\overloaded\permanent\let\tabl_x_normal_eTABLEhead\eTABLEhead
+\overloaded\permanent\let\tabl_x_normal_bTABLEnext\bTABLEnext
+\overloaded\permanent\let\tabl_x_normal_eTABLEnext\eTABLEnext
+\overloaded\permanent\let\tabl_x_normal_bTABLEfoot\bTABLEfoot
+\overloaded\permanent\let\tabl_x_normal_eTABLEfoot\eTABLEfoot
+\overloaded\permanent\let\tabl_x_normal_bTABLEbody\bTABLEbody
+\overloaded\permanent\let\tabl_x_normal_eTABLEbody\eTABLEbody
+\overloaded\permanent\let\tabl_x_normal_bTR       \bTR
+\overloaded\permanent\let\tabl_x_normal_eTR       \eTR
+\overloaded\permanent\let\tabl_x_normal_bTD       \bTD
+\overloaded\permanent\let\tabl_x_normal_eTD       \eTD
+\overloaded\permanent\let\tabl_x_normal_bTH       \bTH
+\overloaded\permanent\let\tabl_x_normal_eTH       \eTH
+\overloaded\permanent\let\tabl_x_normal_setupTABLE\setupTABLE
+\overloaded\permanent\let\tabl_x_normal_bTABLE    \bTABLE
+\overloaded\permanent\let\tabl_x_normal_eTABLE    \eTABLE
+
+\permanent\protected\def\restoreTABLEfromxtable
+  {\enforced\let\bTABLEhead\tabl_x_normal_bTABLEhead
+   \enforced\let\eTABLEhead\tabl_x_normal_eTABLEhead
+   \enforced\let\bTABLEnext\tabl_x_normal_bTABLEnext
+   \enforced\let\eTABLEnext\tabl_x_normal_eTABLEnext
+   \enforced\let\bTABLEfoot\tabl_x_normal_bTABLEfoot
+   \enforced\let\eTABLEfoot\tabl_x_normal_eTABLEfoot
+   \enforced\let\bTABLEbody\tabl_x_normal_bTABLEbody
+   \enforced\let\eTABLEbody\tabl_x_normal_eTABLEbody
+   \enforced\let\bTR       \tabl_x_normal_bTR
+   \enforced\let\eTR       \tabl_x_normal_eTR
+   \enforced\let\bTD       \tabl_x_normal_bTD
+   \enforced\let\eTD       \tabl_x_normal_eTD
+   \enforced\let\bTH       \tabl_x_normal_bTH
+   \enforced\let\eTH       \tabl_x_normal_eTH
+   \enforced\let\setupTABLE\tabl_x_normal_setupTABLE
+   \enforced\let\bTABLE    \tabl_x_normal_bTABLE
+   \enforced\let\eTABLE    \tabl_x_normal_eTABLE}
+
+\permanent\protected\def\mapTABLEtoxtable
+  {\enforced\let\bTABLEhead\startxtablehead
+   \enforced\let\eTABLEhead\stopxtablehead
+   \enforced\let\bTABLEnext\startxtablefoot
+   \enforced\let\eTABLEnext\stopxtablefoot
+   \enforced\let\bTABLEfoot\startxtablefoot
+   \enforced\let\eTABLEfoot\stopxtablefoot
+   \enforced\let\bTABLEbody\startxtablebody
+   \enforced\let\eTABLEbody\stopxtablebody
+   \enforced\let\bTR       \startxrow
+   \enforced\let\eTR       \stopxrow
+   \enforced\let\bTD       \startxcell
+   \enforced\let\eTD       \stopxcell
+   \enforced\let\bTH       \tabl_x_TABLE_TH_start_cell
+   \enforced\let\eTH       \tabl_x_TABLE_TH_stop_cell
+   \enforced\let\setupTABLE\tabl_x_TABLE_setup
+   \enforced\let\bTABLE    \tabl_x_TABLE_start
+   \enforced\let\eTABLE    \tabl_x_TABLE_stop}
+
+\popoverloadmode
+
+\permanent\protected\def\tabl_x_TABLE_TH_start_cell
+  {\startxcellgroup[\c!foregroundstyle=\v!bold]%
+   \startxcell}
+
+\permanent\protected\def\tabl_x_TABLE_TH_stop_cell
+  {\stopxcell
+   \stopxcellgroup}
+
+\permanent\protected\tolerant\def\tabl_x_TABLE_setup[#settings]%
+  {\ifarguments\or
+  %\ifparameter#1\or
+     \setupxtable[#settings]%
+   \fi}
+
+\permanent\protected\tolerant\def\tabl_x_TABLE_start[#settings]%
+  {\bgroup
+   \ifarguments\or
+  %\ifparameter#1\or
+     \tabl_x_prepare{#settings}%
+   \fi
+   \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
+   \buff_pickup\tabl_x_current_buffer{bTABLE}{eTABLE}\relax\tabl_x_process\zerocount}
+
+\permanent\protected\def\tabl_x_TABLE_stop
+  {\stopxtable}
+
+\protect \endinput

@@ -98,7 +98,7 @@
 
 \fi
 
-\unexpanded\def\page_mcl_command_set_hsize
+\protected\def\page_mcl_command_set_hsize
   {\d_page_mcl_available_width\dimexpr
       \makeupwidth
      -\d_page_mcl_leftskip
@@ -112,7 +112,7 @@
    \textwidth\d_page_mcl_used_width
    \hsize\d_page_mcl_used_width}
 
-\unexpanded\def\page_mcl_set_n_of_lines#1%
+\protected\def\page_mcl_set_n_of_lines#1%
   {\d_page_mcl_temp\dimexpr
      +\textheight
       \ifdim\d_page_mcl_preceding_height>\zeropoint -\d_page_mcl_preceding_height \fi
@@ -125,7 +125,7 @@
    \fi \fi
    \c_page_mcl_n_of_lines\noflines}
 
-\unexpanded\def\page_mcl_command_set_vsize
+\protected\def\page_mcl_command_set_vsize
   {%%\page_one_command_set_vsize % indeed?
    \page_mcl_set_n_of_lines\zeropoint
    \d_page_mcl_temp\nofcolumns\dimexpr
@@ -135,7 +135,7 @@
    \global\vsize   \d_page_mcl_temp
    \global\pagegoal\d_page_mcl_temp} % let's do it only here, reports maxdimen anyway
 
-\unexpanded\def\page_mcl_command_routine
+\protected\def\page_mcl_command_routine
   {\ifcase\c_page_mcl_routine
      \page_one_command_routine
    \or
@@ -159,7 +159,7 @@
   {\showmessage\m!columns3\empty
    \page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
-\unexpanded\def\page_mcl_initialize_variables
+\protected\def\page_mcl_initialize_variables
   {\reseteverypar % maybe still freeze ....
    \dontcomplain
    \settopskip
@@ -370,17 +370,12 @@
   {%\global\setbox\currentcolumnbox\box\currentcolumnbox
    \ht\currentcolumnbox\ht\firstcolumnbox}
 
-\unexpanded\def\startmulticolumns
-  {\dosingleempty\page_mcl_start}
-
-\def\page_mcl_start[#1]%
+\tolerant\protected\def\startmulticolumns[#1]%
   {\bgroup
    \ifinsidecolumns
      \page_mcl_start_nop
    \else
-     \iffirstargument
-       \setupmulticolumns[#1]%
-     \fi
+     \setupmulticolumns[#1]%
      \nofcolumns\multicolumnsparameter\c!n\relax
      \ifnum\nofcolumns>\plusone
        \page_mcl_start_yes
@@ -390,16 +385,16 @@
      \fi
    \fi}
 
-\unexpanded\def\page_mcl_start_nop
-  {\let\stopmulticolumns\page_mcl_stop_nop}
+\def\page_mcl_start_nop
+  {\enforced\let\stopmulticolumns\page_mcl_stop_nop}
 
-\unexpanded\def\page_mcl_stop_nop
+\permanent\protected\def\page_mcl_stop_nop
   {\egroup}
 
-\unexpanded\def\page_mcl_start_yes
+\protected\def\page_mcl_start_yes
   {\whitespace
    \begingroup
-   \let\stopmulticolumns\page_mcl_stop_indeed
+   \enforced\let\stopmulticolumns\page_mcl_stop_indeed
    \global\insidecolumnstrue
    \global\insidemulticolumnstrue
    %
@@ -471,7 +466,7 @@
    \page_otr_command_set_hsize
    \page_otr_command_set_vsize}
 
-\unexpanded\def\page_mcl_stop_indeed
+\permanent\protected\def\page_mcl_stop_indeed
   {\relax
    \synchronizeoutput
    \par

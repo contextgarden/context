@@ -444,6 +444,8 @@
 \chardef \pluseight              8
 \chardef \plusnine               9
 \chardef \plusten               10
+\chardef \pluseleven            11
+\chardef \plustwelve            12
 \chardef \plussixteen           16
 \chardef \plusfifty             50
 \chardef \plushundred          100
@@ -1137,9 +1139,31 @@
 
 \matheqnogapstep\zerocount % for now
 
-%D Experiment:
+%D For as long as we share code between \MKIV\ and \LMTX\ we need these:
 
-\ifdefined\frozen \else \def\frozen{} \let\normalfrozen\frozen \fi
+\ifdefined\overloadmode \else
+    \newcount\overloadmode
+    %
+    \let\frozen    \empty
+    \let\tolerant  \empty
+    \let\overloaded\empty
+    \let\aliased   \empty
+    \let\permanent \empty
+    \let\immutable \empty
+    \let\mutable   \empty
+    \let\instance  \empty
+    \let\noaligned \empty
+    \let\enforced  \empty
+    %
+    \let\unletfrozen\gobbleoneargument
+    \let\letfrozen  \gobbleoneargument
+    \def\letcsname  {\expandafter\let \csname}
+    \def\defcsname  {\expandafter\def \csname}
+    \def\edefcsname {\expandafter\edef\csname}
+    %
+    \let\pushoverloadmode\relax
+    \let\popoverloadmode\relax
+\fi
 
 %D Now we define a few helpers that we need in a very early stage. We have no
 %D message system yet but redundant definitions are fatal anyway.
@@ -1197,5 +1221,9 @@
     \let\unhpack\unhbox
     \let\unvpack\unvbox
 \fi
+
+%D Needed:
+
+\let\nexttoken\relax
 
 \protect \endinput

@@ -27,19 +27,18 @@
 %D $\dorecurse{199}{x_{#1} \ifodd#1\relax\Plus\else\Minus\fi} x_{200} \Equal n$ \blank
 %D \stoptyping
 
-\unexpanded\def\definemathtoysymbol
-  {\dotripleargument\math_toy_define_symbol}
+\permanent\tolerant\protected\def\definemathtoysymbol[#1]#*[#2]#*[#3]%
+  {\ifarguments\or\or\or
+     \setuevalue{#1}{\math_toy_define_symbol_indeed{\mathcodechecked{#2}}{#3}}%
+   \fi}
 
-\def\math_toy_define_symbol[#1][#2][#3]%
-  {\setuevalue{#1}{\math_toy_define_symbol_indeed{\mathcodechecked{#2}}{#3}}}
-
-\unexpanded\def\math_toy_define_symbol_traced#1#2%
+\protected\def\math_toy_define_symbol_traced#1#2%
   {\normalexpanded{\discretionary class #1 %
      {$\Ustyle\number\mathstyle \darkred   #2$}%
      {$\Ustyle\number\mathstyle \darkblue  #2$}%
      {$\Ustyle\number\mathstyle \darkgreen #2$}}}
 
-\unexpanded\def\math_toy_define_symbol_normal#1#2%
+\protected\def\math_toy_define_symbol_normal#1#2%
   {\normalexpanded{\discretionary class #1 %
      {$\Ustyle\number\mathstyle #2$}%
      {$\Ustyle\number\mathstyle #2$}%

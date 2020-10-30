@@ -82,7 +82,9 @@
 %D The next macro is used to map non latin fontnames on fonts. See \type
 %D {font-uni} for an example of its use.
 
-\def\fontstylesuffix% why the \s!Regular ? see \getglyph
+% \frozen ...
+
+\permanent\def\fontstylesuffix% why the \s!Regular ? see \getglyph
   {\ifx\fontalternative\s!tf     \s!Regular \orelse
    \ifx\fontalternative\s!bf        \s!Bold \orelse
    \ifx\fontalternative\s!sl     \s!Slanted \orelse
@@ -92,7 +94,7 @@
    \ifx\fontalternative\s!sc        \s!Caps \else
                                  \s!Regular \fi}
 
-\def\glyphfontfile#base% appends
+\permanent\def\glyphfontfile#base% appends
   {#base%
    \ifcsname\??fontfile#base\v_font_string_a\v_font_string_c\endcsname
      \v_font_string_a\v_font_string_c
@@ -108,7 +110,7 @@
 
 %D The next macro can be used to make decisions based on the shape:
 
-\def\doifelseitalic#yes#nop%
+\permanent\def\doifelseitalic#yes#nop%
   {\ifx\fontalternative\s!sl#yes\orelse
    \ifx\fontalternative\s!it#yes\orelse
    \ifx\fontalternative\s!bs#yes\orelse
@@ -129,7 +131,7 @@
 
 \let\thedefinedfont\relax
 
-\def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
+\permanent\protected\def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
@@ -137,7 +139,7 @@
      \font_basics_define_symbolic_font
    \fi}
 
-\def\setscaleddirectsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
+\permanent\protected\def\setscaleddirectsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{#3} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
@@ -145,7 +147,7 @@
      \font_basics_define_symbolic_font
    \fi}
 
-\def\setstyledsymbolicfont#fontname% quite a slowdown, glyphfontfile
+\permanent\protected\def\setstyledsymbolicfont#fontname% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#fontname}} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
@@ -153,7 +155,7 @@
      \font_basics_define_symbolic_font
    \fi}
 
-\def\setdirectsymbolicfont#fontname%
+\permanent\protected\def\setdirectsymbolicfont#fontname%
   {\edef\askedsymbolfont{\truefontname{#fontname} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
@@ -166,16 +168,16 @@
    \currentsymbolfont
    \expandafter\glet\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
 
-\unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
-\unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
-\unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
-\unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
-\unexpanded\def\resolvedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_tochar{#character}}}
-\unexpanded\def\resolvedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_tochar{#character}}}
+\permanent\protected\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
+\permanent\protected\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
+\permanent\protected\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\permanent\protected\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\permanent\protected\def\resolvedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_tochar{#character}}}
+\permanent\protected\def\resolvedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_tochar{#character}}}
 
 % this one is wrong:
 
-\unexpanded\def\getscaledglyph#scale#name#content%
+\permanent\protected\def\getscaledglyph#scale#name#content%
   {{\setscaledstyledsymbolicfont\fontbody{#scale}{#name}\doifelsenumber{#content}\char\donothing#content}}
 
 \let\getglyph         \getglyphstyled               % old
@@ -183,8 +185,7 @@
 \let\symbolicsizedfont\setscaledstyledsymbolicfont  % old
 \let\symbolicfont     \setstyledsymbolicfont        % old
 
-\unexpanded\def\symbolicscaledfont{\setsscaledstyledsymbolicfont\fontbody}
-\unexpanded\def\symbolicscaledfont{\setscaledstyledsymbolicfont\fontbody}
+\permanent\protected\def\symbolicscaledfont{\setscaledstyledsymbolicfont\fontbody}
 
 %D The last implementation of \type {\getglyph} permits definitions like:
 %D
@@ -215,7 +216,7 @@
 %D Every now and then we want to define a font directly, for instance when we
 %D typeset title pages. The next macro saves some typing:
 
-\unexpanded\def\setfont% geen \font_helpers_set_font mogelijk
+\permanent\protected\def\setfont% geen \font_helpers_set_font mogelijk
   {\afterassignment\font_basics_set_font\font\nextfont=}
 
 \def\font_basics_set_font
@@ -231,7 +232,7 @@
 
 %D \macros{doiffontcharelse}
 
-\unexpanded\def\doifelsefontchar#specification#unicode% this could be a direct lua call
+\permanent\protected\def\doifelsefontchar#specification#unicode% this could be a direct lua call
   {\begingroup
    \font_basics_define_font_without_parameters{thedefinedfont}{#specification}%
    \iffontchar\font#unicode\relax
@@ -240,6 +241,6 @@
      \endgroup\expandafter\secondoftwoarguments
    \fi}
 
-\let\doiffontcharelse\doifelsefontchar
+\aliased\let\doiffontcharelse\doifelsefontchar
 
 \protect \endinput

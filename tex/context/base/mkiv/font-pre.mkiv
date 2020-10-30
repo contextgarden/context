@@ -931,9 +931,13 @@
 \unexpanded\def\normalss{\font_helpers_set_current_font_style{\s!ss}}
 \unexpanded\def\normaltt{\font_helpers_set_current_font_style{\s!tt}}
 
+\pushoverloadmode
+
 \let\rm\normalrm
 \let\ss\normalss
 \let\tt\normaltt
+
+\popoverloadmode
 
 \protect \endinput
 

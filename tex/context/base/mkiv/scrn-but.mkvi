@@ -337,7 +337,7 @@
 
 \let\scrn_menu_define_original\defineinteractionmenu
 
-\unexpanded\def\defineinteractionmenu
+\unexpanded\overloaded\def\defineinteractionmenu
   {\dotripleempty\scrn_menu_define}
 
 \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent

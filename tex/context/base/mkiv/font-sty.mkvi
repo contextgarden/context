@@ -181,6 +181,9 @@
 
 \setfalse\fontattributeisset
 
+\let\currentstyleparameter           \empty % these might become private
+\let\currentdetokenizedstyleparameter\empty % these might become private
+
 \unexpanded\def\dousestyleparameter#value%
   {\edef\currentstyleparameter{#value}%
    \ifx\currentstyleparameter\empty\else
@@ -193,11 +196,11 @@
    \fi}
 
 \unexpanded\def\dousecurrentstyleparameter % empty check outside here
-  {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+  {\edef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
-   \ifcsname\??alternativestyle\detokenizedstyleparameter\endcsname
+   \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
-   \else\ifcsname\detokenizedstyleparameter\endcsname
+   \else\ifcsname\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
    \else
      \currentstyleparameter

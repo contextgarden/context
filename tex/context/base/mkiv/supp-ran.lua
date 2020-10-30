@@ -53,6 +53,9 @@ end
 math.setrandomseedi = setrandomseedi
 
 local function getrandomnumber(min,max)
+    if min > max then
+        min, max = max, min
+    end
     last = random(min,max)
     if trace_details then
         report_system("number %s",last)

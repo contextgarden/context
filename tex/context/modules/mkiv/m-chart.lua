@@ -1016,7 +1016,7 @@ local function makechart_indeed(chart)
     --
 end
 
--- We need to wrap because of tex.runtoks!
+-- We need to wrap because of tex.runlocal!
 
 local function makechart(chart)
     context.hbox()

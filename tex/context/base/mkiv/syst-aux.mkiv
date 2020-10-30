@@ -56,21 +56,10 @@
 
 \let\unexpanded\normalprotected
 
-\ifcase\contextlmtxmode
-
-    \def\startlmtxmode#1\stoplmtxmode{}
-    \let\stoplmtxmode \relax
-    \let\startmkivmode\relax
-    \let\stopmkivmode \relax
-
-\else
-
-    \let\startlmtxmode\relax
-    \let\stoplmtxmode \relax
-    \def\startmkivmode#1\stopmkivmode{}
-    \let\stopmkivmode \relax
-
-\fi
+\def\startlmtxmode#1\stoplmtxmode{}
+\let\stoplmtxmode \relax
+\let\startmkivmode\relax
+\let\stopmkivmode \relax
 
 %D As we don't have namespace definers yet, we use a special one:
 

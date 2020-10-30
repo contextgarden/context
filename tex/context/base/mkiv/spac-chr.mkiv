@@ -54,6 +54,8 @@
 % Making them active is also not an option unless we do that in every
 % catcode vector.
 
+\pushoverloadmode
+
 %    \nobreakspace            {\begingroup\setalignstateattribute\normalUchar"00A0\endgroup} % 1 = left
 \edef\nobreakspace            {\normalUchar"00A0} % space
 \edef\softhyphen              {\normalUchar"00AD} % softhyohen
@@ -62,6 +64,9 @@
 
 \let\ideographicspace         \enquad
 \let\ideographichalffillspace \emquad
+
+\unletfrozen\hairspace
+\unletfrozen\sixperemspace
 
 \edef\twoperemspace           {\normalUchar"2002} % quad/2
 %                             %            "2003  % quad == \quad == \hskip\emwidth
@@ -87,6 +92,8 @@
 \let\zwnj                     \zerowidthnonjoiner
 \let\zwj                      \zerowidthjoiner
 \let\nbsp                     \nobreakspace
+
+\popoverloadmode
 
 \chardef\optionalspace"1F % will be space unless before punctuation
 

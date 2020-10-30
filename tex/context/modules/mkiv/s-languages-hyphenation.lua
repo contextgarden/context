@@ -40,8 +40,8 @@ local getdisc           = nuts.getdisc
 local getattr           = nuts.getattr
 local getfont           = nuts.getfont
 local getfield          = nuts.getfield
-local getlang           = nuts.getlang
-local setlang           = nuts.setlang
+local getlanguage       = nuts.getlanguage
+local setlanguage       = nuts.setlanguage
 local setlink           = nuts.setlink
 local setdisc           = nuts.setdisc
 local setfield          = nuts.setfield
@@ -63,10 +63,12 @@ local states      = table.setmetatableindex(function(t,k)
     }
 end)
 
+local currentlanguage = language.current or function() return tex.language end
+
 interfaces.implement {
     name    = "storelanguagestate",
     actions = function()
-        states[tex.language] = {
+        states[currentlanguage()] = {
             lefthyphenmin  = tex.lefthyphenmin,
             righthyphenmin = tex.righthyphenmin,
             hyphenationmin = tex.hyphenationmin,
@@ -128,17 +130,6 @@ local function mark(head,marked,w,h,d,how)
     end
 end
 
-local function getlanguage(head,l,left,right)
-    local t = { }
-    for n in nextglyph, tonut(head) do
-        t[n] = {
-            getlang(n),
-            getfield(n,"left"),
-            getfield(n,"right"),
-        }
-    end
-end
-
 local langs        = { }
 local tags         = { }
 local noflanguages = 0
@@ -151,7 +142,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
         -- somehow assigning -1 fails
         for n in nextglyph, tonut(head) do
             cached[n] = {
-                getlang(n),
+                getlanguage(n),
                 getfield(n,"left"),
                 getfield(n,"right")
             }
@@ -164,7 +155,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
             local lmin = s.lefthyphenmin
             local rmin = s.righthyphenmin
             for n in next, cached do
-                setlang(n,l)
+                setlanguage(n,l)
                 setfield(n,"left",lmin)
                 setfield(n,"right",rmin)
             end
@@ -176,7 +167,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
             mark(head,marked[i],1/16,l/2,l/4,"hyphenation:"..(colorbytag and tags[i] or i))
         end
         for n, d in next, cached do
-            setlang(n,d[1])
+            setlanguage(n,d[1])
             setfield(n,"left",d[2])
             setfield(n,"right",d[3])
         end
