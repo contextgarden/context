@@ -1366,7 +1366,7 @@
 
 \protected\def\rawdoifelseinset#1%
   {\edef\m_syst_sub_string{#1}% expand #1 here
-   \ifx\m_syst_sub_string\empty
+   \ifempty\m_syst_sub_string
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_do_if_else_in_set

@@ -378,13 +378,13 @@
 
 \def\doprocesslocalsetups#1% sort of public, fast local variant
   {\edef\m_syst_setups_asked{#1}%
-   \ifx\m_syst_setups_asked\empty\else
+   \ifempty\m_syst_setups_asked\else
      \expandafter\syst_setups_process_local
    \fi}
 
 \protected\def\usesetupsparameter#1%
   {\edef\m_syst_setups_asked{#1\c!setups}%
-   \ifx\m_syst_setups_asked\empty\else
+   \ifempty\m_syst_setups_asked\else
      \expandafter\syst_setups_process_local
    \fi}
 
@@ -692,7 +692,7 @@
 \def\syst_variables_check_value#1#2#3%
   {\ifcsname\??variables#1:#2\endcsname
      \edef\m_syst_variables_temp{\lastnamedcs}%
-     \ifx\m_syst_variables_temp\empty
+     \ifempty\m_syst_variables_temp
        \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
      \fi
    \else
@@ -734,7 +734,7 @@
 
 \permanent\protected\def\doifelseemptyvariable#1#2%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -744,7 +744,7 @@
 
 \permanent\protected\def\doifemptyvariable#1#2%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
@@ -752,7 +752,7 @@
 
 \permanent\protected\def\doifnotemptyvariable#1#2%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument

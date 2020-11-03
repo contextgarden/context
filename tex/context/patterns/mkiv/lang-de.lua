@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="de",
   ["source"]="hyph-de-1996",
-  ["texcomment"]="% \n% \\message{German Hyphenation Patterns (Reformed Orthography, 2006) `dehyphn-x' 2019-04-04 (WL)}",
+  ["texcomment"]="% no comment",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzßàáâäçèéêëíïñóôöü",

@@ -252,7 +252,7 @@
 \def\pack_boxes_collector_finish
   {\edef\p_collector_rotation{\collectorparameter\c!rotation}%
    \edef\p_collector_corner  {\collectorparameter\c!corner}%
-   \ifx\p_collector_rotation\empty \else
+   \ifempty\p_collector_rotation \else
      \setbox\nextbox\hpack
        {\rotate
           [\c!location=\v!high,
@@ -575,11 +575,11 @@
      \ifdone
        \ifconditional\c_pack_boxes_l
          \scratchwidth+\MPx\currentbgposition-\MPx\currentpageposition
-       \else\ifconditional\c_pack_boxes_r
+       \orelse\ifconditional\c_pack_boxes_r
          \paperwidth  -\MPx\currentbgposition+\MPx\currentpageposition % not checked
        \else
          \scratchwidth
-       \fi\fi
+       \fi
      \else
        \scratchwidth
      \fi+\scratchhoffset
@@ -588,11 +588,11 @@
      \ifdone
        \ifconditional\c_pack_boxes_t
          \paperheight  -\MPy\currentbgposition+\MPy\currentpageposition % not checked
-       \else\ifconditional\c_pack_boxes_b
+       \orelse\ifconditional\c_pack_boxes_b
          \scratchheight+\MPy\currentbgposition-\MPy\currentpageposition + \MPh\currentbgposition % not checked (\MPh added)
        \else
          \scratchheight
-       \fi\fi
+       \fi
      \else
        \scratchheight
      \fi+\scratchvoffset
@@ -917,7 +917,7 @@
    \setbox\nextbox\hpack
      {\kern\scratchxposition
       \lower\scratchyposition\hpack
-        {\ifx\p_location\empty
+        {\ifempty\p_location
            \box\nextbox
          \else
            \alignedbox[\p_location]\hpack{\box\nextbox}%

@@ -169,7 +169,7 @@
     \normalexpanded
       {\definelabel
          [\v!combination:\currentcombination]%
-         [\v!combination\ifx\currentcombinationparent\empty\else:\currentcombinationparent\fi]}%
+         [\v!combination\ifempty\currentcombinationparent\else:\currentcombinationparent\fi]}%
          [\s!counter=\currentcombination,\c!levels=1]%
     \settrue\c_strc_constructions_define_commands
 \to \everydefinecombination
@@ -235,7 +235,7 @@
    \pack_combinations_push
    \edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
-   \ifx\currentcombinationspec\empty
+   \ifempty\currentcombinationspec
      \ifcondition\validassignment{#1}%
        \let\currentcombination\empty
        \setupcurrentcombination[#1]%
@@ -343,7 +343,7 @@
      \usealignparameter\combinationparameter
      \usecombinationstyleandcolor\c!style\c!color
      \begstrut
-       \normalexpanded{\strc_labels_command[\v!combination\ifx\currentcombination\empty\else:\currentcombination\fi]}%
+       \normalexpanded{\strc_labels_command[\v!combination\ifempty\currentcombination\else:\currentcombination\fi]}%
      \endstrut
    \egroup}
 
@@ -352,7 +352,7 @@
     \ifx\p_pack_combinations_alternative\v!label
       \edef\p_continue{\combinationparameter\c!continue}%
       \ifx\p_continue\v!yes \else
-        \normalexpanded{\strc_labels_reset{\v!combination\ifx\currentcombination\empty\else:\currentcombination\fi}{1}}%
+        \normalexpanded{\strc_labels_reset{\v!combination\ifempty\currentcombination\else:\currentcombination\fi}{1}}%
      \fi
     \fi
 \to \everycombination
@@ -816,7 +816,7 @@
 \def\pack_pairedbox_halign#1{\setbox#1\hpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
 
 \def\pack_pairedboxes_before
-  {\ifx\p_location\empty
+  {\ifempty\p_location
       \csname\??pairedboxnature\v!left  \endcsname
       \csname\??pairedboxalign \v!middle\endcsname
    \else

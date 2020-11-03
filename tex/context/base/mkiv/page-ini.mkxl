@@ -225,15 +225,15 @@
 \newconditional\c_page_marks_building_successive_pages \settrue\c_page_marks_building_successive_pages
 
 \def\page_marks_synchronize_page#1% box
-  {\strc_markings_synchronize[\v!page][#1][\ifconditional\c_page_marks_building_successive_pages\v!keep\fi]}
+  {\strc_markings_synchronize\v!page{#1}{\ifconditional\c_page_marks_building_successive_pages\v!keep\fi}}
 
 \def\page_marks_synchronize_column#1#2#3#4% first last column box
   {\ifnum#3=#1\relax
-     \strc_markings_synchronize[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
+     \strc_markings_synchronize{\number#3,\v!column:\number#3,\v!first,\v!column:\v!first}{#4}{}%
    \orelse\ifnum#3=#2\relax
-     \strc_markings_synchronize[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
+     \strc_markings_synchronize{\number#3,\v!column:\number#3,\v!last, \v!column:\v!last }{#4}{}%
    \else
-     \strc_markings_synchronize[\number#3,\v!column:\number#3                            ][#4][]%
+     \strc_markings_synchronize{\number#3,\v!column:\number#3                            }{#4}{}%
    \fi}
 
 % Page body building

@@ -142,7 +142,7 @@
    \instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
 
 \appendtoks
-    \ifx\currentenumerationparent\empty
+    \ifempty\currentenumerationparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \let\currentenumerationsub\empty
        \strc_define_commands_enumeration
@@ -168,7 +168,7 @@
           \edef\currentenumerationsub{\v!sub\currentenumerationsub}}%
    \fi
    \edef\p_counter{\enumerationparameter\s!counter}% can inherit from parent
-   \ifx\p_counter\empty %
+   \ifempty\p_counter %
        \let\p_counter\currentenumeration
    \fi
    \doifelsecounter\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
@@ -264,18 +264,18 @@
    \ifconditional\c_strc_constructions_number_state
      \ifx\currentconstructionreference\!!plustoken
        \strc_enumerations_full_number_symbol
-     \else\ifx\currentconstructionreference\!!minustoken
+     \orelse\ifx\currentconstructionreference\!!minustoken
        \strc_enumerations_full_number_nop
      \else
        \strc_enumerations_full_number_coupling
-     \fi\fi
+     \fi
    \else
      \strc_enumerations_full_number_nop
    \fi}
 
 \protected\def\strc_enumerations_inject_text_with_space
   {\edef\p_text{\constructionparameter\c!text}%
-   \ifx\p_text\empty \else
+   \ifempty\p_text \else
       \p_text
       \removeunwantedspaces
       \nobreakspace
@@ -364,7 +364,7 @@
      \fi
      \strc_enumerations_full_number_yes
      \edef\p_coupling{\constructionparameter\c!coupling}%
-     \ifx\p_coupling\empty \else
+     \ifempty\p_coupling \else
        \symbolreference[order(construction:\p_coupling:\the\locationorder)]%
      \fi
    \fi}

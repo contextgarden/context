@@ -23,11 +23,6 @@
 \registerctxluafile{grph-img}{}
 \registerctxluafile{grph-inc}{}
 
-\ifcase\contextlmtxmode \else
-    \registerctxluafile{grph-bmp}{}
-    \registerctxluafile{grph-chk}{}
-\fi
-
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}
 \registerctxluafile{grph-mem}{}
@@ -416,7 +411,7 @@
      \else\ifx\p_crossreference\v!no
         % nothing
      \else\ifx\p_crossreference\v!yes
-       \ifassignment
+       \ifcondition\validassignment{#2}%
          \scratchcounter\clf_figure_register_page{#1}{}{#2}\relax
        \else
          \scratchcounter\clf_figure_register_page{#1}{#2}{#3}\relax
@@ -902,25 +897,6 @@
 
 \unexpanded\def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\d_overlay_width,\c!height=\d_overlay_height]}
-
-% Experimental (will become cleaner):
-
-\ifcase\contextlmtxmode \else
-
-    \unexpanded\def\includesvgfile  {\dontleavehmode\begingroup\dodoubleempty\grph_include_svg_file}
-    \unexpanded\def\includesvgbuffer{\dontleavehmode\begingroup\dodoubleempty\grph_include_svg_buffer}
-
-    \def\grph_include_svg_file[#1][#2]%
-      {\getdummyparameters[\c!offset=\zeropoint,#2]%
-       \clf_includesvgfile{#1}\dimexpr\dummyparameter\c!offset\relax
-       \endgroup}
-
-    \def\grph_include_svg_buffer[#1][#2]%
-      {\getdummyparameters[\c!offset=\zeropoint,#2]%
-       \clf_includesvgbuffer{#1}\dimexpr\dummyparameter\c!offset\relax
-       \endgroup}
-
-\fi
 
 % Bonus:
 

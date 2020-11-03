@@ -1,0 +1,37 @@
+%D \module
+%D   [       file=regi-ini,
+%D        version=2005.04.25,
+%D          title=\CONTEXT\ Regime Macros,
+%D       subtitle=Regime Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{regi-ini}{}
+
+\unprotect
+
+%D \macros
+%D   {enableregime,disableregime,
+%D    startregime,stopregime,
+%D    currentregime}
+%D
+%D Beware, the enable and disable commands are global switches, so best use the
+%D start|/|stop commands.
+
+\let\currentregime\empty
+
+\permanent\protected\def\enableregime[#1]{\clf_enableregime{#1}}
+\permanent\protected\def\disableregime   {\clf_disableregime}
+\permanent\protected\def\startregime [#1]{\clf_startregime{#1}}
+\permanent\protected\def\stopregime      {\clf_stopregime}
+
+% only for diagnostics:
+
+% \def\codepagename#1{\cldcontext{os.tocodepage("#1")}}
+
+\protect \endinput

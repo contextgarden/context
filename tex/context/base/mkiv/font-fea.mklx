@@ -345,7 +345,7 @@
 
 \permanent\protected\def\useaddfontfeatureparameter#namespace% faster local variant
   {\edef\m_font_feature_asked{#namespace\c!features}%
-   \ifx\m_font_feature_asked\empty\else
+   \ifempty\m_font_feature_asked\else
      \font_feature_add
    \fi}
 

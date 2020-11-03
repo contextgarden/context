@@ -1,0 +1,375 @@
+%D \module
+%D   [       file=anch-pgr, % moved from anch-pgr (1999.08.01)
+%D        version=2011.12.19, % 1999.08.01,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Table Extensions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Table Extensions}
+
+%D This is just a playground and functionality might change or even dissappear in
+%D favour of better solutions. Anyway, it now has been aroudn too long to bother.
+
+\unprotect
+
+\newcount\c_anch_tabs
+
+\protected\def\tabl_tabulate_hook_b
+  {\iftrialtypesetting\else
+     \ifpositioning
+       \ifconditional\tablehaspositions
+         \ifcase\c_tabl_tabulate_noflines % \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines
+           \tabl_tabulate_hook_b_first
+         \else
+           \tabl_tabulate_hook_b_next
+         \fi
+        \fi
+     \fi
+   \fi}
+
+\protected\def\tabl_tabulate_hook_e
+  {\iftrialtypesetting\else
+     \ifpositioning
+       \ifconditional\tablehaspositions
+         \ifcase\c_tabl_tabulate_noflines % \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines
+           \tabl_tabulate_hook_e_first
+         \else
+           \tabl_tabulate_hook_e_next
+         \fi
+       \fi
+     \fi
+   \fi}
+
+\protected\def\tabl_tabulate_hook_b_first{\clf_bposcolumnregistered{tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column}}
+\protected\def\tabl_tabulate_hook_b_next {\clf_bposcolumn{tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column}}
+\protected\def\tabl_tabulate_hook_e_first{\clf_eposcolumnregistered}
+\protected\def\tabl_tabulate_hook_e_next {\clf_eposcolumn}
+
+% \appendtoks \registerparoptions \to \everypar
+
+\appendtoks
+    \global\advance\c_anch_tabs\plusone
+\to \everytabulate
+
+% for text backgrounds
+
+\appendtoks
+    \settrue\c_anch_backgrounds_pos_no_shape
+\to \everytabulate
+
+%D Beware, the following code is somewhat weird and experimental and might be
+%D dropped or become a loadable module.
+
+%D \macros
+%D   {GFC, GTC, GSC}
+%D
+%D The next macros extend tables and tabulation with backgrounds and position
+%D related features. Areas are specified with symbolic names, and symbolic
+%D references to the graphics involved. Each table has its own namespace.
+
+\newconditional\tablehaspositions
+\newcount      \noftabpositions
+\newtoks       \posXCtoks
+
+\protected\def\anch_tabulate_bpos{\bpos}
+\protected\def\anch_tabulate_epos{\epos}
+
+\installcorenamespace{positiontables}
+
+\permanent\def\tbPOSprefix{\??positiontables\number\noftabpositions:}
+
+\protected\def\tablepos
+  {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
+
+\permanent\tolerant\protected\def\tbXC [#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_XC [#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGSC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGFC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGTC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}
+
+\def\anch_table_check_state
+  {\iftrialtypesetting
+     \global\settrue\tablehaspositions
+     \firstargumentfalse
+   \fi}
+
+\def\anch_tables_indeed_XC[#1]%
+  {{\overloaded\let\NC\relax\processcommalist[#1]\anch_tables_step_XC}}
+
+\def\anch_tables_step_XC#1%
+  {\anch_tables_step_indeed_XC[#1]}
+
+\def\anch_tables_step_indeed_XC[#1#2]%
+  {\if#1>\anch_tables_indeed_GFC[#2:#2]\orelse
+   \if#1+\anch_tables_indeed_GFC[#2:#2]\orelse
+   \if#1<\anch_tables_indeed_GTC[#2:#2]\orelse
+   \if#1-\anch_tables_indeed_GTC[#2:#2]\orelse
+   \if#1=\anch_tables_indeed_GSC[#2:#2]\orelse
+         \anch_tables_indeed_GSC[#1#2:#1#2]\fi}
+
+\def\anch_tables_indeed_GSC[#1]%
+  {\processcommalist[#1]\anch_tables_step_GSC}
+
+\def\anch_tables_step_GSC#1%
+  {\anch_tables_append_GSC[#1:#1]}
+
+\def\anch_tables_append_GSC[#1:#2:#3]%
+% {\doglobal\appendtoks\anch_tables_process_GSC[#1:#2]\to\posXCtoks\NC}
+  {\gtoksapp\posXCtoks{\anch_tables_process_GSC[#1:#2]}\NC}
+
+\def\anch_tables_process_GSC[#1:#2]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \anch_tabulate_bpos{\tbPOSprefix#1}%
+   \doglobal\appendtoks\expandafter\anch_tabulate_epos\expandafter{\tbPOSprefix#1}\to\posXCtoks}
+%  \xtoksapp\posXCtoks{\anch_tabulate_epos{\tbPOSprefix#1}}}
+
+\def\anch_tables_indeed_GFC[#1]%
+  {\doglobal\appendtoks\anch_tables_delayed_GFC[#1]\to\posXCtoks\NC}
+% {\gtoksapp\posXCtoks{\anch_tables_delayed_GFC[#1]}\NC}
+
+\def\anch_tables_delayed_GFC[#1]%
+  {\processcommalist[#1]\anch_tables_step_GFC}
+
+\def\anch_tables_step_GFC#1%
+  {\anch_tables_process_GFC[#1:#1]}
+
+\def\anch_tables_process_GFC[#1:#2:#3]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \anch_tabulate_bpos{\tbPOSprefix#1}}
+
+\def\anch_tables_indeed_GTC[#1]%
+  {\doglobal\appendtoks\anch_tables_delayed_GTC[#1]\to\posXCtoks\NC}
+% {\gtoksapp\posXCtoks{\anch_tables_delayed_GTC[#1]}\NC}
+
+\def\anch_tables_delayed_GTC[#1]%
+  {\doglobal\appendtoks\anch_tables_process_GTC[#1]\to\posXCtoks}
+% {\gtoksapp\posXCtoks{\anch_tables_process_GTC[#1]}\NC}
+
+\def\anch_tables_process_GTC[#1]%
+  {\processcommalist[#1]\anch_tables_step_GTC}
+
+\def\anch_tables_step_GTC#1%
+  {\anch_tables_step_indeed_GTC[#1:#1]}
+
+\def\anch_tables_step_indeed_GTC[#1:#2]%
+  {\anch_tabulate_epos{\tbPOSprefix#1}}
+
+%D The amount of code to support tables and tabulation is rather minimalistic.
+
+\aliased\let\tabulatepos\tablepos
+
+\def\tabulatenormalpos
+  {\iftrialtypesetting
+     % nothing
+   \orelse\ifconditional\tablehaspositions
+     \hss\tabulatepos\hss
+   \else
+     % nothing
+   \fi}
+
+\def\tabulateequalpos
+  {\iftrialtypesetting
+     \tabulateEQ
+   \orelse\ifconditional\tablehaspositions
+     \tabulateEQpos
+   \else
+     \tabulateEQ
+   \fi}
+
+\def\tabulateEQpos
+  {\setbox\scratchbox\hbox{\tabulateEQ}%
+   \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}% hpack
+   \kern-\wd\scratchbox
+   \box\scratchbox}
+
+\appendtoks
+    \global\advance\noftabpositions\plusone
+    \global\setfalse\tablehaspositions
+\to \everytabulate
+
+% We need to handle paragraphs as well.
+
+\let\anch_tabulate_flush_epos\relax
+
+\protected\def\anch_tabulate_bpos_indeed
+  {\bpos}
+
+\protected\def\anch_tabulate_epos_indeed#1%
+  {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
+     \epos{#1}%
+     \glet\anch_tabulate_flush_epos\relax
+   \else
+     \gdef\anch_tabulate_flush_epos{\epos{#1}}%
+   \fi}
+
+\permanent\def\flushtabulatesplitbox
+  {\box\b_tabl_tabulate
+   \iftrialtypesetting\orelse\ifconditional\tablehaspositions\anch_tabulate_flush_epos\fi}
+
+\appendtoks
+    \let\anch_tabulate_bpos\anch_tabulate_bpos_indeed % ?
+    \let\anch_tabulate_epos\anch_tabulate_epos_indeed % ?
+    \glet\anch_tabulate_flush_epos\relax
+\to \everytabulate
+
+%D In order to prevent potential clashes with abbreviations, postpone the mapping.
+
+\appendtoks
+    \enforced\let\GSC\tbGSC
+    \enforced\let\GFC\tbGFC
+    \enforced\let\GTC\tbGTC
+    \enforced\let\XC \tbXC
+\to \everytabulate
+
+%D \macros
+%D   {definepositionframed}
+%D
+%D The next example show how to provide backgrounds to table cells. First we define
+%D some framed backgrounds.
+%D
+%D \startbuffer
+%D \definepositionframed[x][background=color,backgroundcolor=red]
+%D \definepositionframed[y][background=color,backgroundcolor=green]
+%D \definepositionframed[z][background=color,backgroundcolor=blue]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D % \getbuffer
+%D
+%D \startbuffer
+%D \starttabulate[|c|c|c|]
+%D \GFC[f:x] this is a small  \NC       table            \NC     in which we \NC \FR
+%D \NC       will demonstrate \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+%D \GSC[e:y] mechanism also   \GTC[f]   works quite well \NC     in tables   \NC \LR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D The table itself defines three areas (a, b and~c) using these frames.
+%D
+%D \typebuffer
+%D % \getbuffer
+%D
+%D Tables (based on \TABLE) are supported by:
+
+\permanent\def\normalTABLEsimplebar {\unskip\!ttRightGlue&\tablepos&}                       % |
+\permanent\def\normalTABLEcomplexbar{\unskip\!ttRightGlue&\omit\tablepos\!ttAlternateVrule} % \|
+\permanent\def\normalTABLEquote     {\unskip\!ttRightGlue&\omit\tablepos&}                  % "
+
+\appendtoks
+    \global\advance\noftabpositions\plusone
+    \global\setfalse\tablehaspositions
+\to \everytable
+
+%D Since we don't want nameclashes:
+
+\appendtoks
+    \enforced\let\GSC\tbGSC
+    \enforced\let\GFC\tbGFC
+    \enforced\let\GTC\tbGTC
+    \enforced\let\XC \tbXC
+\to \everytable
+
+%D In the previous example, we could have provided an overlay to the framed definition.
+%D A more direct approach is demonstrated below:
+%D
+%D \startbuffer
+%D \def\cw#1{\color[white]{#1}}
+%D
+%D \startMPpositiongraphic{tableshade}
+%D   initialize_area(\MPpos{\MPvar{from}},\MPpos{\MPvar{to}}) ;
+%D   color c ; c := \MPvar{color} ;
+%D   linear_shade(pxy,0,.4c,.9c) ;
+%D   anchor_area(\MPanchor{\MPvar{from}}) ;
+%D \stopMPpositiongraphic
+%D
+%D \setMPpositiongraphic{b:x}{tableshade}{from=b:x,to=e:x,color=red}
+%D \setMPpositiongraphic{b:y}{tableshade}{from=b:y,to=e:y,color=green}
+%D \setMPpositiongraphic{b:z}{tableshade}{from=b:z,to=e:z,color=blue}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D The definition of the table looks about the same as the previous one:
+%D
+%D \startbuffer
+%D \starttable[|c|c|c|]
+%D \GFC[b:z] \cw{this is a small}  \NC       \cw{table}            \NC     in which we      \NC \FR
+%D \NC       \cw{will demonstrate} \GFC[c:y] \cw{that this}        \GTC[c] \cw{positioning} \NC \MR
+%D \GSC[a:x] \cw{mechanism also}   \GTC[b]   \cw{works quite well} \NC     in tables        \NC \LR
+%D \stoptable
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+% \definepositionframed[w][background=color,backgroundcolor=yellow]
+% \definepositionframed[x][background=color,backgroundcolor=red]
+% \definepositionframed[y][background=color,backgroundcolor=green]
+% \definepositionframed[z][background=color,backgroundcolor=blue]
+%
+% \starttabulate[|c|c|c|]
+% \NC this is a small  \NC table            \NC in which we \NC \FR
+% \NC will demonstrate \NC that this        \NC positioning \NC \MR
+% \NC mechanism also   \NC works quite well \NC in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \GFC[f:x] this is a small      \GTC      table            \NC     in which we \NC \FR
+% \NC       will demonstrate     \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+% \GSC[e:y] mechanism also       \GTC[f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \GFC[f:x,d:w] this is a small  \GTC[d]   table            \NC     in which we \NC \FR
+% \NC           will demonstrate \GFC[g:z] that this        \GTC[g] positioning \NC \MR
+% \GSC[e:y]     mechanism also   \GTC[f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \XC[+f:x] this is a small  \XC      table            \NC     in which we \NC \FR
+% \NC      will demonstrate  \XC[+g:z] that this       \XC[-g] positioning \NC \MR
+% \XC[=e:y] mechanism also   \XC[-f]  works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+%
+% \starttabulate[|c|c|c|]
+% \XC[+f:x,+d:w] this is a small  \XC[-d]   table            \NC     in which we \NC \FR
+% \NC            will demonstrate \XC[+g:z] that this        \XC[-g] positioning \NC \MR
+% \XC[=e:y]       mechanism also  \XC[-f]   works quite well \NC     in tables   \NC \LR
+% \stoptabulate
+
+% evt                  [b:x]
+%
+% \definepositionframed[x][background=color,fillcolor=red]
+% \definepositionframed[y][background=color,fillcolor=green]
+% \definepositionframed[z][background=color,fillcolor=blue]
+
+\permanent\protected\def\remappositionframed#1#2% from to
+  {\copyposition{b:#1}{b:#2}%
+   \copyposition{e:#1}{e:#2}%
+   \anch_positions_set_action{b:#2}{\dopositionaction{b:#1}}}
+
+\permanent\tolerant\protected\def\definepositionframed[#1]#*[#2]%
+  {\anch_positions_set_action{b:#1}{\anch_framed_handle[#1][#2]}}
+
+\protected\def\anch_framed_handle
+  {\bgroup
+   \anch_framed_indeed}
+
+\permanent\tolerant\protected\def\positionframed[#1]#*[#2]%
+  {\setbox\scratchbox\hpack
+     {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
+      \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax
+      \scratchheight\dimexpr\scratchdepth+\MPh{b:#1}\relax
+      \lower\scratchdepth\hpack
+        {\framed[\c!width=\scratchwidth,\c!height=\scratchheight,\c!offset=\v!overlay,#2]{}}}%
+   \smashedbox\scratchbox
+   \egroup}
+
+\protect \endinput

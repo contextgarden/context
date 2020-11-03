@@ -1,0 +1,99 @@
+%D \module
+%D   [       file=colo-ext, % mostof thsi code used to be in colo-ini.tex
+%D        version=1997.04.01,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Extras,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Color Macros / Extras}
+
+\unprotect
+
+%D \macros
+%D   {negatecolorcomponent, negativecolorbox}
+%D
+%D Sometimes, especially when we deal with typesetting devices, we want to reverse
+%D the color scheme. Instead of recalculating all those colors, we use a quick and
+%D dirty approach:
+%D
+%D \starttyping
+%D \negativecolorbox0
+%D \stoptyping
+%D
+%D will negate the colors in box zero.
+
+\permanent\protected\def\negatecolorbox#1% or just set attr of #1
+  {\setbox#1\hpack to \wd#1%
+     {\scratchdimen\wd#1\relax
+      \startnegative % might change
+      \blackrule[\c!color=\s!white,\c!height=\ht#1,\c!depth=\dp#1,\c!width=\scratchdimen]%
+      \hskip-\scratchdimen
+      \leaders\box#1\hfill% this triggers application to the box .. a real dirty hack!
+      \stopnegative}}
+
+%D There are in principle two ways to handle overprint: bound to colors or
+%D independent. For the moment we only support independent overprint handling. Here
+%D we deal with a per-document setting.
+
+%D We can move the stack and attribute setting to the \LUA\ end.
+
+\installcorenamespace{colorintent}
+
+\permanent\protected\def\registercolorintent#1#2% \relax is needed !
+  {\setevalue{\??colorintent#1}{\c_attr_colorintent\clf_registercolorintent{#2}\relax}}
+
+\protected\def\colo_intents_set
+  {\clf_enablecolorintents
+   \protected\gdef\colo_intents_set##1{\csname\??colorintent##1\endcsname}%
+   \colo_intents_set}
+
+\registercolorintent{knockout} {knockout}
+\registercolorintent{overprint}{overprint}
+
+\installattributestack\colorintentattribute
+
+\setevalue{\??colorintent\v!none}{\c_attr_colorintent\attributeunsetvalue} % or reset? used at all?
+
+\permanent\protected\def\startcolorintent[#1]%
+  {\pushattribute\colorintentattribute
+   \colo_intents_set{#1}}
+
+\permanent\protected\def\stopcolorintent
+  {\popattribute\colorintentattribute}
+
+\permanent\protected\def\startoverprint{\startcolorintent[\v!overprint]}
+\permanent\protected\def\startknockout {\startcolorintent[\v!knockout ]}
+
+\aliased\let\stopoverprint\stopcolorintent
+\aliased\let\stopknockout \stopcolorintent
+
+\aliased\let\starttextcolorintent\relax
+\aliased\let\stoptextcolorintent \relax
+
+\appendtoks
+    \colo_intents_set_text
+\to \everysetupcolors
+
+\let\p_colo_intent\empty
+
+\def\colo_intents_set_text
+  {\edef\p_colo_intent{\colorsparameter\c!intent}%
+   \ifx\p_colo_intent\v!none \else
+     \enforced\protected\xdef\starttextcolorintent{\colo_intents_set{\p_colo_intent}}%
+     \glet\colo_intents_set_text\relax
+     \colo_intents_set\p_colo_intent
+   \fi}
+
+\appendtoks \starttextcolorintent \to \everystarttextproperties
+\appendtoks \stoptextcolorintent  \to \everystoptextproperties
+
+\setupcolors
+  [\c!intent=\v!none]
+
+\protect \endinput

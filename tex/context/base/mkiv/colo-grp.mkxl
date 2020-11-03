@@ -1,0 +1,163 @@
+%D \module
+%D   [       file=colo-grp,
+%D        version=2011.12.27, % moved from colo-ini
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Groups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Regular colors and palets are used most, contrary to groups which is why we
+%D define their support in a separate module.
+
+\writestatus{loading}{ConTeXt Color Macros / Groups}
+
+\unprotect
+
+%D \macros
+%D   {definecolorgroup}
+%D
+%D The naming of the colors in this palet suggests some ordening, which in turn is
+%D suported by color grouping.
+%D
+%D \starttyping
+%D \definecolorgroup
+%D   [red]
+%D   [1.00:0.90:0.90,
+%D    1.00:0.80:0.80,
+%D    1.00:0.70:0.70,
+%D    1.00:0.55:0.55,
+%D    1.00:0.40:0.40,
+%D    1.00:0.25:0.25,
+%D    1.00:0.15:0.15,
+%D    0.90:0.00:0.00]
+%D \stoptyping
+%D
+%D In such a color group colors are numbered from~$1$ to~$n$.
+%D
+%D \showsetup{definecolorgroup}
+%D
+%D This kind of specification is not only more compact than defining each color
+%D separate, it also loads faster and takes less bytes.
+
+\installcorenamespace{colorgroup}
+\installcorenamespace{colorgroupsetter}
+
+\newcount\c_colo_groups_n % scratch counter
+
+\permanent\tolerant\protected\def\definecolorgroup[#1]#*[#2]#*[#3]% % sort of obsolete, just use palets directly
+  {\ifarguments\or\or
+     \ifhastok:{#2}%
+       \colo_groups_define_normal[#1][\v!rgb][#2]
+     \else
+       \colo_groups_define_checked[#1][#2][]%
+     \fi
+   \else
+     \colo_groups_define_normal[#1][#2][#3]%
+   \fi}
+
+\def\colo_groups_define_normal[#1][#2][#3]%
+  {\c_colo_groups_n\zerocount
+   \processcommalist[#3]{\colo_groups_define_entry{#1}{#2}}}
+
+\def\colo_groups_define_checked[#1][#2][#3]%
+  {\doloop % inherited
+     {\ifcsname#2:##1\endcsname
+        \definecolor[#1:##1][#2:##1]%
+      \else
+        \exitloop
+      \fi}}
+
+\def\colo_groups_define_entry#1#2#3% name mode specification
+  {\advance\c_colo_groups_n\plusone
+   \csname\??colorgroupsetter\ifcsname\??colorgroupsetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
+
+\setvalue{\??colorgroupsetter\s!gray}[#1][#2:#3]{\definecolor[#1][s=#2]}
+\setvalue{\??colorgroupsetter\s!rgb }[#1][#2:#3:#4:#5]{\definecolor[#1][r=#2,g=#3,b=#4]}
+\setvalue{\??colorgroupsetter\s!cmyk}[#1][#2:#3:#4:#5:#6]{\definecolor[#1][c=#2,m=#3=,y=#4,k=#5]}
+\setvalue{\??colorgroupsetter\s!spot}[#1][#2:#3:#4]{\definespotcolor[#1][#2][p=#3]}
+
+%D \macros
+%D   {showcolorgroup}
+%D
+%D We can show the group by:
+%D
+%D \startbuffer
+%D \showcolorgroup [blue] [horizontal,name,number,value]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D or in color:
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D which uses:
+%D
+%D \showsetup{showcolorgroup}
+
+\fetchruntimecommand \showcolorgroup \f!colo_run
+
+%D There are ten predefined color groups, like \color [green] {\em groen}, \color
+%D [red] {\em rood}, \color [blue] {\em blauw}, \color [cyan] {\em cyaan}, \color
+%D [magenta] {\em magenta} and \color [yellow] {\em geel}.
+%D
+%D \startlinecorrection
+%D \hbox to \hsize
+%D   {\hss
+%D    \showcolorgroup [red]    [vertical,name,number]\hss
+%D    \showcolorgroup [green]  [vertical,name]\hss
+%D    \showcolorgroup [blue]   [vertical,name]\hss
+%D    \showcolorgroup [cyan]   [vertical,name]\hss
+%D    \showcolorgroup [magenta][vertical,name]\hss
+%D    \showcolorgroup [yellow] [vertical,name]\hss}
+%D \stoplinecorrection
+%D
+%D These groups are used to define palets {\em alfa} upto {\em zeta}. As long as we
+%D don't use colors from the same row, we get ourselves distinctive palets. By
+%D activating such a palet one gains access to its members {\em top} to {\em charm}
+%D (of course one should use more suitable names than these).
+%D
+%D \startlinecorrection
+%D \hbox to \hsize
+%D   {\showpalet [alfa]    [vertical,name,number]\hss
+%D    \showpalet [beta]    [vertical,name]\hss
+%D    \showpalet [gamma]   [vertical,name]\hss
+%D    \showpalet [delta]   [vertical,name]\hss
+%D    \showpalet [epsilon] [vertical,name]\hss
+%D    \showpalet [zeta]    [vertical,name]}
+%D \stoplinecorrection
+%D
+%D By using the keyword \type {value} the individual color components are shown too.
+%D When printed in color, these showcases show both the colors and the gray value.
+
+%D \macros
+%D   {comparecolorgroup}
+%D
+%D The similar command:
+%D
+%D \startbuffer
+%D \comparecolorgroup [blue]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D shows color groups:
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D this commands are defined as:
+%D
+%D \showsetup{comparecolorgroup}
+
+\fetchruntimecommand \comparecolorgroup \f!colo_run
+
+\protect \endinput

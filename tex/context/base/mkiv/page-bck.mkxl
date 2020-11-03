@@ -59,7 +59,7 @@
   {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
      \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\empty
+     \ifempty\page_background_temp
        \expandafter\expandafter\expandafter\page_backgrounds_check_frame
      \else
        \page_backgrounds_set_yes
@@ -178,7 +178,7 @@
 
 \def\page_backgrounds_add_to_box_indeed#1#2#3#4% area box width height / always non zero
   {\edef\p_page_backgrounds_setups{\namedframedparameter{\??layoutbackgrounds#1}\c!setups}%
-   \ifx\p_page_backgrounds_setups\empty \else
+   \ifempty\p_page_backgrounds_setups \else
      \doprocesslocalsetups\p_page_backgrounds_setups % should not produce funny spaces !
    \fi
    % #2 has the right dimensions already
@@ -437,11 +437,11 @@
 \def\page_backgrounds_set_box_cell#1#2#3#4% pos pos width height
   {\begingroup
    \edef\p_page_backgrounds_setups{\namedframedparameter{\??layoutbackgrounds#1#2}\c!setups}%
-   \ifx\p_page_backgrounds_setups\empty \else
+   \ifempty\p_page_backgrounds_setups \else
      \doprocesslocalsetups\p_page_backgrounds_setups % should not produce funny spaces !
    \fi
    \edef\p_page_backgrounds_command{\namedframedparameter{\??layoutbackgrounds#1#2}\c!command}%
-   \ifx\p_page_backgrounds_command\empty
+   \ifempty\p_page_backgrounds_command
      \expandafter\page_backgrounds_set_box_cell_nop
    \else
      \expandafter\page_backgrounds_set_box_cell_yes
@@ -505,8 +505,8 @@
    \edef\p_page_backgrounds_offset{\namedframedparameter{\??layoutbackgrounds\v!page}\c!offset}%
    \edef\p_page_backgrounds_depth {\namedframedparameter{\??layoutbackgrounds\v!page}\c!depth }%
    \edef\p_page_backgrounds_state {\namedframedparameter{\??layoutbackgrounds       }\c!state }%
-   \global\d_page_backgrounds_offset\ifx\p_offset\empty\zeropoint\else\p_page_backgrounds_offset\fi
-   \global\d_page_backgrounds_depth \ifx\p_depth \empty\zeropoint\else\p_page_backgrounds_depth \fi
+   \global\d_page_backgrounds_offset\ifempty\p_offset\zeropoint\else\p_page_backgrounds_offset\fi
+   \global\d_page_backgrounds_depth \ifempty\p_depth \zeropoint\else\p_page_backgrounds_depth \fi
    \global\pagebackgroundoffset\d_page_backgrounds_offset\relax
    \global\pagebackgrounddepth \d_page_backgrounds_depth \relax
    \ifx\p_page_backgrounds_state\v!stop

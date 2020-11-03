@@ -1,0 +1,504 @@
+%D \module
+%D   [       file=anch-pos, % was core-pos
+%D        version=1999.08.01,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Positioning Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Positioning}
+
+%D In \MKIV\ there was already a different housekeeping model for positions quite
+%D early, but starting in 2012 more dramatic changes started to happen, especially
+%D in relation to background graphics. It will probably take some time to settle.
+
+\registerctxluafile{anch-pos}{autosuffix}
+
+\unprotect
+
+%D The first application of positional information was embedded graphics. Since we
+%D are interacting with text, it made sense to take the current line height and
+%D depth into account too. This is why we have position macros for simple positions
+%D and one boxes.
+%D
+%D \starttyping
+%D \dosetposition          {identifier}
+%D \dosetpositionwhd       {identifier} {width} {height} {depth}
+%D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
+%D \stoptyping
+
+% \dosaveposition             #1#2#3#4 % defined at lua end
+% \dosavepositionwhd    #1#2#3#4#5#6#7 % defined at lua end
+% \dosavepositionplus #1#2#3#4#5#6#7#8 % defined at lua end
+
+% \dosetposition                    #1 % defined at lua end
+% \dosetpositionwhd           #1#2#3#4 % defined at lua end
+% \dosetpositionplus        #1#2#3#4#5 % defined at lua end
+% \dosetpositionbox               #1#2 % defined at lua end
+% \dosetpositionstrut               #1 % defined at lua end
+% \dosetpositionstrutkind         #1#2 % defined at lua end
+
+\newbox\b_anch_position
+\newif \ifpositioning   % sort of public
+
+%D Sometimes we want to trick the position handler a bit:
+
+% \replacepospxywhd #1#2#3#4#5#6#7 % defined at lua end
+
+%D \macros
+%D   {MPp, MPx, MPy, MPw, MPh, MPd, MPxy, MPll, MPlr, MPur, MPul, MPpos, MPanchor}
+%D
+%D Access to the positional information is provided by macros with short names
+%S that are clearly meant for \METAPOST\ but nowadays also used for other purposes.
+
+% \MPp       : defined at lua end
+% \MPr       : defined at lua end
+% \MPc       : defined at lua end
+% \MPn       : defined at lua end
+% \MPx       : defined at lua end
+% \MPy       : defined at lua end
+% \MPw       : defined at lua end
+% \MPh       : defined at lua end
+% \MPd       : defined at lua end
+% \MPxy      : defined at lua end
+% \MPwhd     : defined at lua end
+% \MPll      : defined at lua end
+% \MPlr      : defined at lua end
+% \MPur      : defined at lua end
+% \MPul      : defined at lua end
+% \MPpos     : defined at lua end
+% \MPls      : defined at lua end
+% \MPrs      : defined at lua end
+% \MPpardata : defined at lua end
+% \MPxywhd   : defined at lua end
+% \MPposset  : defined at lua end
+
+\aliased\let\MPpage     \MPp
+\aliased\let\MPregion   \MPr
+\aliased\let\MPcolumn   \MPc
+\aliased\let\MPparagraph\MPn
+
+        \let\MPanchor   \MPpos % overloaded locally when needed  (todo: LMTX)
+
+\aliased\let\MPleftskip \MPls  % compatible feature
+\aliased\let\MPrightkip \MPrs  % compatible feature
+
+%D \macros
+%D  {MPplus, MPrest, MPv, MPvv}
+%D
+%D Since we will probably keep on extending, we provide a general extension
+%D macro. The plus alternative takes an extra argument, denoting what additional
+%D parameter to pick up. So, the third extra is fetched with,
+%D
+%D \starttyping
+%D \MPplus{identifier}{3}{default}
+%D \stoptyping
+%D
+%D All extras (comma separated) are fetched with:
+%D
+%D \starttyping
+%D \MPrest{identifier}
+%D \stoptyping
+%D
+%D The extra parameters are not treated.
+
+% \MPplus #1#2#3 % defined at lua end
+% \MPrest #1     % defined at lua end
+
+\aliased\let\MPv \MPplus
+\aliased\let\MPvv\MPrest
+
+%D There are two low level positioning macros. Both store the position as well
+%D as execute an action associated with that position.
+
+\let\dopositionaction\gobbleoneargument % implemented later
+
+\def\anch_positions_initialize
+  {\ifpositioning \else
+     \global\positioningtrue
+   \fi}
+
+\permanent\protected\def\setpositiononly
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\anch_positions_set_only_indeed
+   \fi}
+
+\def\anch_positions_set_only_indeed#1%
+  {\anch_positions_initialize
+   \edef\currentposition{#1}%
+   \dosetposition\currentposition}
+
+\permanent\protected\def\setposition
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\anch_positions_set_indeed
+   \fi}
+
+\def\anch_positions_set_indeed#1%
+  {\anch_positions_initialize
+   \edef\currentposition{#1}%
+   \dosetposition\currentposition
+   \anch_positions_trace_left
+   \dopositionaction\currentposition}
+
+\permanent\protected\def\setpositiondata
+  {\iftrialtypesetting
+     \expandafter\gobblefourarguments
+   \else
+     \expandafter\anch_positions_set_data_indeed
+   \fi}
+
+\def\anch_positions_set_data_indeed#1#2#3#4%
+  {\anch_positions_initialize
+   \hbox % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
+      \anch_positions_trace_left
+      \dopositionaction\currentposition
+      \hss}}
+
+\permanent\protected\def\setpositionbox
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_box_nop
+   \else
+     \expandafter\anch_positions_set_box_yes
+   \fi}
+
+\def\anch_positions_set_box_nop#1%
+  {\dowithnextboxcs\flushnextbox}
+
+\def\anch_positions_set_box_yes#1%
+  {\dowithnextbox{\anch_positions_set_box_finish{#1}}}
+
+\def\anch_positions_set_box_finish#1%
+  {\anch_positions_initialize
+   \hbox to \wd\nextbox % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionbox\currentposition\nextbox
+      \anch_positions_trace_left
+      \setbox\b_anch_position\box\nextbox
+      \dopositionaction\currentposition
+      \box\b_anch_position
+      \hss}}
+
+\permanent\protected\def\setpositionstrut
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_strut_nop
+   \else
+     \expandafter\anch_positions_set_strut_yes
+   \fi}
+
+\def\anch_positions_set_strut_nop#1%
+  {\strut}
+
+\def\anch_positions_set_strut_yes#1%
+  {\anch_positions_initialize
+   \hbox to \zeropoint % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionstrut\currentposition
+      \anch_positions_trace_left
+      \dopositionaction\currentposition
+      \strut
+      \hss}}
+
+\permanent\protected\def\setpositionstrutkind
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_strut_kind_nop
+   \else
+     \expandafter\anch_positions_set_strut_kind_yes
+   \fi}
+
+\def\anch_positions_set_strut_kind_yes#1#2%
+  {\anch_positions_initialize
+   \hbox to \zeropoint % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionstrutkind\currentposition{#2}%
+      \anch_positions_trace_left
+      \dopositionaction\currentposition
+      \strut
+      \hss}}
+
+\def\anch_positions_set_strut_kind_nop#1#2%
+  {\strut}
+
+\permanent\protected\def\setpositiondataplus
+  {\iftrialtypesetting
+     \expandafter\gobblefivearguments
+   \else
+     \expandafter\anch_positions_set_plus_indeed
+   \fi}
+
+\def\anch_positions_set_plus_indeed#1#2#3#4#5%
+  {\anch_positions_initialize
+   \hbox % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
+      \anch_positions_trace_right
+      \dopositionaction\currentposition
+      \hss}}
+
+\permanent\protected\def\setpositionplus
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_plus_nop
+   \else
+     \expandafter\anch_positions_set_plus_yes
+   \fi}
+
+\def\anch_positions_set_plus_nop#1#2%
+  {\dowithnextboxcs\flushnextbox}
+
+\def\anch_positions_set_plus_yes#1#2%
+  {\dowithnextbox{\anch_positions_set_plus_yes_finish{#1}{#2}}}
+
+\def\anch_positions_set_plus_yes_finish#1#2%
+  {\anch_positions_initialize
+   \hbox to \nextboxwd % \hpack
+     {\edef\currentposition{#1}%
+      \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
+      \anch_positions_trace_right
+      \setbox\b_anch_position\flushnextbox
+      \dopositionaction\currentposition
+      \box\b_anch_position
+      \hss}}
+
+\let\currentposition\s!unknown
+
+%D A few special ones .. will be cleaned up
+
+\def\pageanchor  {page:\the\realpageno} % for the moment only one pagesize
+\def\textanchor  {text:\the\realpageno}
+\def\regionanchor{region:0}
+
+\newcount\c_anch_column % will be delegated to lua
+\newcount\c_anch_text   % will be delegated to lua
+
+% beware we need to pass \somethingexpanded or { }
+
+\protected\def\anch_mark_column_box#1#2% box n
+  {\global\advance\c_anch_column\plusone
+   \clf_markregionboxtaggedn#1{columnarea:\the\c_anch_column}#2\relax} % extra height
+
+\protected\def\anch_mark_region_box
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \orelse\ifpositioning
+     \expandafter\anch_mark_region_box_indeed
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\protected\def\anch_mark_region_box_indeed#1%
+  {\clf_markregionbox#1\relax}
+
+\protected\def\anch_mark_flow_box#1% will be extended / renamed
+  {\hpack\bgroup
+   \global\advance\c_anch_text\plusone
+   \clf_markregionboxtagged#1{textarea:\the\c_anch_text}%
+   \box#1%
+   \egroup}
+
+\protected\def\anch_mark_tagged_box#1#2%
+  {\clf_markregionboxtagged#1{#2}}
+
+\protected\def\anch_mark_flow_only#1% will be extended / renamed
+  {\global\advance\c_anch_text\plusone
+   \clf_markregionboxcorrected#1{textarea:\the\c_anch_text}}
+
+\protected\def\anch_make_page_box#1% maybe like text
+  {\clf_setregionboxtagged#1{page:\the\realpageno}}
+
+\protected\def\anch_mark_text_box#1%
+  {\clf_markregionboxtagged#1{text:\the\realpageno}} % needs an hbox
+
+\newcount\c_anch_free
+
+\protected\def\anch_mark_tagged_box_free#1#2#3#4#5#6% only needed when positions
+  {\ifpositioning
+     \global\advance\c_anch_free\plusone % could be done at the lua end
+     \clf_markregionboxtaggedkind
+       #1%
+       {free:\number\c_anch_free}%
+       #2\space % kind
+       #3\space % leftoffset
+       #4\space % rightoffset
+       #5\space % topoffset
+       #6\relax % bottomoffset
+   \fi}
+
+% \reservedautoregiontag % define at lua end
+
+%D We can copy a position with:
+%D
+%D \starttyping
+%D \copyposition {to} {from}
+%D \stoptyping
+%D
+%D Again, this is a global operation.
+
+% \copyposition #1#2 % defined at lua end
+
+%D The fact that handling positions is a two pass operation, is one of the
+%D reasons why we need to be able to test for existence, using:
+%D
+%D \starttyping
+%D \doifpositionelse {identifier} {found action} {not found action}
+%D \stoptyping
+
+% \doifposition            #1   % defined at lua end
+% \doifelseposition        #1#2 % defined at lua end
+% \doifelsepositiononpage  #1#2 % defined at lua end
+
+\aliased\let\doifpositionelse      \doifelseposition
+\aliased\let\doifpositiononpageelse\doifelsepositiononpage
+
+%D \macros
+%D   {xypos}
+%D
+%D We have several macros available to save positions. Later we will see
+%D applications.
+%D
+%D \starttabulate[|l|l||]
+%D \NC \type {\xypos} \NC    \NC simple position with no dimensions \NC \NR
+%D \NC \type {\hpos}  \NC    \NC position and characteristics of a \type {\hbox} \NC \NR
+%D \NC \type {\vpos}  \NC    \NC position and characteristics of a \type {\vbox} \NC \NR
+%D \NC \type {\bpos}  \NC b: \NC begin point in a line \NC \NR
+%D \NC \type {\epos}  \NC e: \NC end point in a line \NC \NR
+%D \stoptabulate
+%D
+%D Each macro takes an identifier as argument, and the \type {\hpos} and
+%D \type {\vpos} also expect box content.
+
+\aliased\let\xypos\setpositiononly
+
+\permanent\protected\def\hpos      #1{\dontleavehmode\setpositionbox{#1}\hbox}
+\permanent\protected\def\vpos      #1{\setpositionbox{#1}\vbox}
+\permanent\protected\def\bpos      #1{\dontleavehmode\setpositionstrut{b:#1}\ignorespaces}
+\permanent\protected\def\epos      #1{\removeunwantedspaces\setpositionstrut{e:#1}}
+\permanent\protected\def\bposkind#1#2{\dontleavehmode\setpositionstrutkind{b:#1}{#2}\ignorespaces} % not public, used in backgrounds
+\permanent\protected\def\eposkind#1#2{\removeunwantedspaces\setpositionstrutkind{e:#1}{#2}}        % not public, used in backgrounds
+
+%D When we want to calculate more complex backgrounds, we need to know what the
+%D current indentation scheme is. At the cost of many positions and memory, we
+%D can keep track of them. This mechanism is activated automatically based on
+%D information collected in the previous pass.
+
+\newtoks \t_anch_positions_tracers
+\newcount\c_anch_positions_paragraph
+
+\permanent\protected\def\tracepositions
+  {\the\t_anch_positions_tracers}
+
+\permanent\protected\def\enableparpositions % global
+  {\glet\registerparoptions\doregisterparoptions
+   \global\positioningtrue}
+
+\permanent\let\disableparpositions\relax
+
+\let\registerparoptions\relax
+
+\protected\def\doregisterparoptions
+  {\iftrialtypesetting \else
+     \ifinpagebody \else \ifmmode \else \ifinformula \else
+       \anch_positions_register_par_options
+     \fi \fi \fi
+   \fi}
+
+\def\anch_positions_register_par_options_normal
+  {\dontleavehmode\clf_parpos}
+
+\def\anch_positions_register_par_options_traced
+  {\anch_positions_register_par_options_normal
+   \smashedhbox to \zeropoint
+     {\hss
+      \startcolor[blue]%
+      \llap{\infofont\number\c_anch_positions_paragraph}%
+      \vrule
+        \s!width 4\onepoint
+        \s!height2\onepoint
+        \s!depth 2\onepoint
+      \stopcolor
+      \hss}}
+
+\let\anch_positions_register_par_options\anch_positions_register_par_options_normal
+
+\appendtoks
+    \let\anch_positions_register_par_options\anch_positions_register_par_options_traced
+\to \t_anch_positions_tracers
+
+\protected\def\anch_positions_trace#1#2#3%
+  {\smashedhbox
+     {#1{\infofont#2#3}%
+      \kern-\onepoint
+      \vrule\s!width2\onepoint\s!height\halfapoint\s!depth\halfapoint}}
+
+\protected\def\anch_positions_trace_left_indeed
+  {\anch_positions_trace\llap\darkmagenta{\currentposition>}}
+
+\protected\def\anch_positions_trace_right_indeed
+  {\anch_positions_trace\rlap\darkcyan{<\currentposition}}
+
+\let\anch_positions_trace_left \relax
+\let\anch_positions_trace_right\relax
+
+\appendtoks
+    \let\anch_positions_trace_left  \anch_positions_trace_left_indeed
+    \let\anch_positions_trace_right \anch_positions_trace_right_indeed
+\to \t_anch_positions_tracers
+
+% \appendtoks \registerparoptions \to \everypar
+
+%D \macros
+%D   {doifoverlappingelse}
+%D
+%D A first application of positional information, is to determine if two boxes do
+%D overlap:
+%D
+%D \starttyping
+%D \doifoverlappingelse{point a}{point b}
+%D   {action when overlapping}
+%D   {action when not overlapping}
+%D \stoptyping
+
+% \doifelseoverlapping #1#2#3#4 % defined at lua end
+
+\aliased\let\doifoverlappingelse\doifelseoverlapping
+
+%D \macros
+%D   {doifpositionsonsamepageelse,
+%D    doifpositionsonthispageelse}
+%D
+%D Instead of letting the user handle fuzzy expansion, we provide a simple test on
+%D positions being on the same page.
+%D
+%D \starttyping
+%D \doifpositionsonsamepageelse{point a}{point b}
+%D   {action when on same page}
+%D   {action when not on same page}
+%D \doifpositionsonthispageelse{point a}{point b}
+%D   {action when on this page}
+%D   {action when not on this page}
+%D \stoptyping
+
+% \doifelsepositionsonsamepage #1 % defined at lua end
+% \doifelsepositionsonthispage #1 % defined at lua end
+% \doifelsepositionsused          % defined at lua end
+
+\aliased\let\doifpositionsonsamepageelse\doifelsepositionsonsamepage
+\aliased\let\doifpositionsonthispageelse\doifelsepositionsonthispage
+\aliased\let\doifpositionsusedelse      \doifelsepositionsused
+
+%D Moved here:
+
+\permanent\protected\def\savepos {\clf_savepos}
+\permanent\protected\def\lastxpos{\numexpr\clf_lastxpos\relax}
+\permanent\protected\def\lastypos{\numexpr\clf_lastypos\relax}
+
+\protect \endinput

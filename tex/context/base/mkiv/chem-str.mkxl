@@ -157,11 +157,11 @@
        {\setupcurrentchemical[#1]}% same as \currentchemical
        {\edef\currentchemical{#1}%
         \setupcurrentchemical[#2]}%
-   \else\iffirstargument
+   \orelse\iffirstargument
      \doifelseassignment{#1}
        {\setupcurrentchemical[#1]}% same as \currentchemical
        {\edef\currentchemical{#1}}%
-   \fi\fi
+   \fi
    \the\everystructurechemical
    \setbox\b_chem_result\hpack\bgroup
    \clf_startchemical
@@ -254,7 +254,7 @@
 
 \appendtoks
    \edef\chemicalbodyfont{\chemicalparameter\c!bodyfont}% public?
-   \ifx\chemicalbodyfont\empty
+   \ifempty\chemicalbodyfont
      \switchtobodyfont[\chemicalbodyfont]%
    \fi
    \getvalue{\??chemicalsize\chemicalparameter\c!size}%

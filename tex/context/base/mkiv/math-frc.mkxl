@@ -146,17 +146,17 @@
    \relax}
 
 \appendtoks
-    \ifx\currentmathfraction\empty
+    \ifempty\currentmathfraction
       \edef\m_math_fraction_distance_top{\mathfractionparameter\c!topdistance}%
       \edef\m_math_fraction_distance_bot{\mathfractionparameter\c!bottomdistance}%
-      \ifx\m_math_fraction_distance_top\empty
-        \ifx\m_math_fraction_distance_bot\empty
+      \ifempty\m_math_fraction_distance_top
+        \ifempty\m_math_fraction_distance_bot
           \let\math_fraction_set_distance\relax
         \else
           \let\math_fraction_set_distance\math_fraction_set_distance_bot
         \fi
       \else
-        \ifx\m_math_fraction_distance_bot\empty
+        \ifempty\m_math_fraction_distance_bot
           \let\math_fraction_set_distance\math_fraction_set_distance_top
         \else
           \let\math_fraction_set_distance\math_fraction_set_distance_all
@@ -196,7 +196,7 @@
    \edef\currentmathfraction{#1}%
    %
    \edef\p_math_fraction_fences{\mathfractionparameter\c!fences}%
-   \ifx\p_math_fraction_fences\empty \else
+   \ifempty\p_math_fraction_fences \else
      \math_fenced_fenced_start\p_math_fraction_fences
    \fi
    %
@@ -211,14 +211,14 @@
      \math_frac_no_strut
    \fi
    %
-   \ifx\p_math_fractions_color\empty
+   \ifempty\p_math_fractions_color
      \expandafter\math_frac_normal
    \else
      \expandafter\math_frac_colored
    \fi}
 
 \unexpanded\def\math_frac_wrapup
-  {\ifx\p_math_fraction_fences\empty \else
+  {\ifempty\p_math_fraction_fences \else
      \math_fenced_fenced_stop\p_math_fraction_fences
    \fi
    \endgroup}
@@ -238,7 +238,7 @@
 \def\math_frac_command
   {\clf_mathfraction
      {\mathfractionparameter\c!rule}%
-     \ifx\p_math_fraction_fences\empty
+     \ifempty\p_math_fraction_fences
        \mathfractionparameter\c!left \space
        \mathfractionparameter\c!right\space
      \else
@@ -405,7 +405,7 @@
 
 \appendtoks
     \edef\p_distance{\rootmathfractionparameter\c!distance}%
-    \ifx\p_distance\empty\else
+    \ifempty\p_distance\else
         \ifcsname\??mathfractiondistance\p_distance\endcsname
             \lastnamedcs
         \fi
@@ -423,23 +423,23 @@
 \to \everymathematics
 
 \appendtoks
-    \ifx\currentmathfraction\empty
+    \ifempty\currentmathfraction
       \edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
-      \ifx\p_threshold\empty
+      \ifempty\p_threshold
         \let\math_fraction_set_threshold_inline\relax
-      \else\ifx\p_threshold\v!auto
+      \orelse\ifx\p_threshold\v!auto
         \let\math_fraction_set_threshold_inline\relax
       \else
         \let\math_fraction_set_threshold_inline\math_fraction_set_theshold_inline
-      \fi\fi
+      \fi
       \edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
-      \ifx\p_threshold\empty
+      \ifempty\p_threshold
         \let\math_fraction_set_threshold_display\relax
-      \else\ifx\p_threshold\v!auto
+      \orelse\ifx\p_threshold\v!auto
         \let\math_fraction_set_threshold_display\relax
       \else
         \let\math_fraction_set_threshold_display\math_fraction_set_theshold_display
-      \fi\fi
+      \fi
     \fi
 \to \everysetupmathfraction
 
@@ -641,7 +641,7 @@
 \unexpanded\def\vfrac#1#2%
   {\bgroup
    \edef\p_math_fractions_color{\namedmathfractionparameter\s!vfrac\c!color}%
-   \ifx\p_math_fractions_color\empty
+   \ifempty\p_math_fractions_color
      \expandafter\math_frac_normal_vulgar
    \else
      \expandafter\math_frac_colored_vulgar

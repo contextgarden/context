@@ -110,7 +110,7 @@
 \settrue\c_strc_constructions_define_commands % use with care, might become a proper key
 
 \appendtoks
-    \ifx\currentconstructionparent\empty
+    \ifempty\currentconstructionparent
         \letvalue{\??constructionmain\currentconstruction}\currentconstruction
         \definelist[\currentconstruction]% goodie
     \else
@@ -316,7 +316,7 @@
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
    \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
    % catch fuzzyness
-   \ifx\p_strc_constructions_renderingsetup\empty
+   \ifempty\p_strc_constructions_renderingsetup
       \letconstructionparameter\c!alternative\v!left
       \let\currentconstructionalternative\v!left
       \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
@@ -351,7 +351,7 @@
    % maybe we should have an option as i cannot oversee the consequences now
    %
    % \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
-   % \ifx\p_strc_constructions_sample\empty
+   % \ifempty\p_strc_constructions_sample
    %   \strc_constructions_preroll_head\currentconstructiontext
    % \else
    %   \strc_constructions_preroll_head\currentconstructiontextsample
@@ -363,7 +363,7 @@
      \strc_constructions_ignore_head
    \else
      \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
-     \ifx\p_strc_constructions_sample\empty
+     \ifempty\p_strc_constructions_sample
        \strc_constructions_set_width_and_distance
      \else
        \strc_constructions_preroll_head\currentconstructionsample
@@ -395,7 +395,7 @@
      \fi
    \fi
    \edef\p_strc_constructions_align{\constructionparameter\c!align}%
-   \ifx\p_strc_constructions_align\empty \else
+   \ifempty\p_strc_constructions_align \else
      \setupalign[\p_strc_constructions_align]% \use...
    \fi
    \ifcase\c_strc_constructions_nested_state
@@ -410,7 +410,7 @@
    \directsetup\p_strc_constructions_renderingsetup\relax
    % moved to here 2014-07-03
    \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
-   \ifx\p_strc_constructions_indenting\empty \else
+   \ifempty\p_strc_constructions_indenting \else
      \indenting[\p_strc_constructions_indenting]% \use...
    \fi
    %
@@ -436,7 +436,7 @@
   {\doifelse{\constructionalternativeparameter\c!alignbottom}{\v!yes}\vbox\vtop
      {\hsize\constructionsheadwidth
       \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
-      \ifx\p_strc_constructions_headalign\empty \else
+      \ifempty\p_strc_constructions_headalign \else
         \setupalign[\p_strc_constructions_headalign]% \use...
       \fi
       #1}}
@@ -540,7 +540,7 @@
      {\forgetall
       \dontcomplain
       \hsize\constructionsheadwidth\relax
-      \ifx\p_strc_constructions_headalign\empty
+      \ifempty\p_strc_constructions_headalign
         \setupalign[#1]% use fast one
       \else
         \setupalign[\p_strc_constructions_headalign]% use fast one
@@ -558,7 +558,7 @@
      {\forgetall
       \dontcomplain
       \hsize\constructionsheadwidth\relax
-      \ifx\p_strc_constructions_headalign\empty
+      \ifempty\p_strc_constructions_headalign
         \setupalign[#1]% use fast one
       \else
         \setupalign[\p_strc_constructions_headalign]% use fast one
@@ -569,7 +569,7 @@
    \dp\constructionheadbox\strutdp}
 
 \def\strc_constructions_set_hang#1%
-  {\ifx\p_strc_constructions_hang\empty
+  {\ifempty\p_strc_constructions_hang
      % nothing
    \orelse\ifx\p_strc_constructions_hang\v!fit
      \scratchdimen\htdp\constructionheadbox
@@ -741,7 +741,7 @@
     \par
     \nobreak
     \edef\p_strc_constructions_inbetween{\constructionparameter\c!inbetween}%
-    \ifx\p_strc_constructions_inbetween\empty \else
+    \ifempty\p_strc_constructions_inbetween \else
       \p_strc_constructions_inbetween
       % shouldn't this move to after the fi?
       \directcheckedvspacing\v!samepage
@@ -970,7 +970,7 @@
   {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
      \global\expandafter\setfalse\csname\??constructionclosesymbol\currentconstruction\endcsname
      \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
-     \ifx\p_strc_constructions_closesymbol\empty \else
+     \ifempty\p_strc_constructions_closesymbol \else
        \constructionparameter\c!closecommand{\p_strc_constructions_closesymbol}% hm why {} maybe because box expected
      \fi
    \fi}
@@ -1014,11 +1014,11 @@
    %xdef\currentconstructionshownumber     {\constructionparameter\c!number}%
    \xdef\currentconstructionincrementnumber{\constructionparameter\c!incrementnumber}%
    %
-   \ifx\currentconstructionexpansion\empty
+   \ifempty\currentconstructionexpansion
      \glet\currentconstructionexpansion\v!no
    \fi
    %
-   \ifx\currentconstructionreferenceprefix\empty
+   \ifempty\currentconstructionreferenceprefix
      \glet\currentconstructionreferenceprefix\referenceprefix
    \fi
    \ifx\currentconstructionexpansion\s!xml
@@ -1028,7 +1028,7 @@
        \xdef\currentconstructionmarking {\constructionparameter\c!marking}%
        \xdef\currentconstructionlist    {\constructionparameter\c!list}%
      \xmlstopraw
-     \ifx\currentconstructionlist\empty
+     \ifempty\currentconstructionlist
        \glet\currentconstructionlist\currentconstructiontitle
      \fi
      \glet\currentconstructioncoding\s!xml
@@ -1043,14 +1043,14 @@
        \xdef\currentconstructionbookmark{\detokenizedconstructionparameter\c!bookmark}%
        \xdef\currentconstructionmarking {\detokenizedconstructionparameter\c!marking}%
        \xdef\currentconstructionlist    {\detokenizedconstructionparameter\c!list}%
-       \iflocation \ifx\currentconstructionbookmark\empty
+       \iflocation \ifempty\currentconstructionbookmark
          \begingroup
          \simplifycommands
          \xdef\currentconstructionbookmark{\detokenize\expandafter{\normalexpanded{\constructionparameter\c!title}}}%
          \endgroup
        \fi \fi
      \fi
-     \ifx\currentconstructionlist\empty
+     \ifempty\currentconstructionlist
        \glet\currentconstructionlist\currentconstructiontitle
      \fi
      \glet\currentconstructioncoding\s!tex

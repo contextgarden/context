@@ -61,9 +61,9 @@
    \else
      \vrule
    \fi
-   \ifx\p_width \v!max\s!width \emwidth\orelse\ifx\p_width \empty\else\s!width \p_width \fi
-   \ifx\p_height\v!max\s!height\strutht\orelse\ifx\p_height\empty\else\s!height\p_height\fi
-   \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifx\p_depth \empty\else\s!depth \p_depth \fi
+   \ifx\p_width \v!max\s!width \emwidth\orelse\ifempty\p_width \else\s!width \p_width \fi
+   \ifx\p_height\v!max\s!height\strutht\orelse\ifempty\p_height\else\s!height\p_height\fi
+   \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifempty\p_depth \else\s!depth \p_depth \fi
    \egroup}
 
 \setupblackrules
@@ -380,7 +380,7 @@
           \thinrule
           \ifnum\recurselevel<\scratchcounter\relax
             % test needed, else messed up whitespace
-            \ifx\p_inbetween\empty
+            \ifempty\p_inbetween
               \softbreak % \ifhmode \hskip \parfillskip \break \fi
             \else
               \endgraf
@@ -390,7 +390,7 @@
           \fi}%
      \fi
    \fi
-   \ifx\p_after\empty
+   \ifempty\p_after
      \carryoverpar\egroup
    \else
      \p_after\egroup

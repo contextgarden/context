@@ -1419,3 +1419,15 @@ with \type {\ifcondition} (it has bitten me already a few times).
 \stopsubject
 
 \stopdocument
+
+% \def\foo{foo=bar}
+% \def\oof{foo!bar}
+% \scratchtoks{=}
+
+% \ifhasxtoks\scratchtoks{foo!bar} YES\else NOP\fi\par
+% \ifhasxtoks\scratchtoks{foo=bar} YES\else NOP\fi\par
+
+% \showluatokens\foo
+
+% \ifhastoks\scratchtoks\oof YES\else NOP\fi\par
+% \ifhastoks\scratchtoks\foo YES\else NOP\fi\par

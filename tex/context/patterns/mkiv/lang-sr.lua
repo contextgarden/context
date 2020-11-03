@@ -8,8 +8,8 @@ return {
  },
  ["metadata"]={
   ["mnemonic"]="sr",
-  ["source"]="hyph-sr-cyrl",
-  ["texcomment"]="% no comment",
+  ["source"]="hyph-sr",
+  ["texcomment"]="% \n% \n% \n% \n% ",
  },
  ["patterns"]={
   ["characters"]="абвгдежзиклмнопрстуфхцчшђјљњћџ",

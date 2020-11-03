@@ -373,7 +373,7 @@
    \dostarttagged\t!mathtable\currentmathalignment
    \numberedeqalign}
 
-\def\math_alignment_stop
+\def\math_alignment_stop % can be protected
   {\math_finish_eqalign_no
    \dostoptagged
    \dostoptagged
@@ -728,7 +728,11 @@
      \span\math_text_in_eqalign{\alignmark\alignmark}%
      \crcr} % todo: number
 
-\def\math_cases_stop
+% When we have just protected we get an extra row but we can no flag
+% this as a proper alignment related command which means that uit gets
+% expanded.
+
+\noaligned\permanent\protected\def\math_cases_stop
   {\crcr
    \egroup
    \popmacro\math_cases_NC
@@ -1161,7 +1165,7 @@
 
 \appendtoks
     \edef\p_simplecommand{\mathmatrixparameter\c!simplecommand}%
-    \ifx\p_simplecommand\empty\else
+    \ifempty\p_simplecommand\else
         \setuevalue{\p_simplecommand}{\math_matrix_simple[\currentmathmatrix]}%
     \fi
 \to \everydefinemathmatrix
@@ -1266,7 +1270,7 @@
    \enforced\let\NR\crcr
    \halign\bgroup\hfil\normalstartimath\scriptstyle\alignmark\alignmark\normalstopimath\hfil\crcr}
 
-\permanent\def\stopsubstack % todo: \protected and delayed
+\noaligned\permanent\protected\def\stopsubstack
   {\crcr
    \egroup
    \egroup
@@ -1434,7 +1438,7 @@
        \fi
      \fi
      \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
-     \ifx\p_interlinespace\empty\else\baselineskip\p_interlinespace\fi
+     \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
      \global\d_strc_math_indent\zeropoint
      \ifcase\mathraggedstatus\or\raggedleft\or\raggedcenter\or\raggedright\fi
      \unhbox\b_strc_math_display

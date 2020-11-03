@@ -421,11 +421,11 @@
 \pushoverloadmode
 
 \permanent\protected\def\textminus
-  {\char  \iffontchar\font"2012 "2012 % figuredash
-     \else\iffontchar\font"2013 "2013 % endash
-     \else\iffontchar\font"2212 "2212 % math minus
-                                "002D % hyphen
-     \fi\fi\fi}
+  {\char
+     \iffontchar\font"2012 "2012 \orelse % figuredash
+     \iffontchar\font"2013 "2013 \orelse % endash
+     \iffontchar\font"2212 "2212 \else   % math minus
+                           "002D \fi}    % hyphen
 
 \permanent\protected\def\textplus
   {\char"002B } % plus

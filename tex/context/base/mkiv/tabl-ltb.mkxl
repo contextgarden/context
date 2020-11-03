@@ -112,11 +112,11 @@
 \permanent\protected\def\doifelselinetablecparameter#1%
   {\ifcsname\??linetable c:\number\c_tabl_lines_column#1\endcsname
      \expandafter\firstoftwoarguments
-   \else\ifcsname\??linetable c:#1\endcsname
-     \doubleexpandafter\firstoftwoarguments
+   \orelse\ifcsname\??linetable c:#1\endcsname
+     \expandafter\firstoftwoarguments
    \else
-     \doubleexpandafter\secondoftwoarguments
-   \fi\fi}
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \aliased\let\doiflinetablecparameterelse\doifelselinetablecparameter
 
@@ -125,9 +125,9 @@
      \??linetable
      \ifcsname\??linetable c:\number\c_tabl_lines_column#1\endcsname
        c:\number\c_tabl_lines_column
-     \else\ifcsname\??linetable c:#1\endcsname
+     \orelse\ifcsname\??linetable c:#1\endcsname
        c:%
-     \fi\fi
+     \fi
      #1%
    \endcsname}
 
@@ -137,15 +137,15 @@
      \ifnum\c_tabl_lines_row=\zerocount % geen ifcase
        \ifcsname\??linetable r:\v!header#1\endcsname
          r:\v!header
-       \else\ifcsname\??linetable r:0#1\endcsname
+       \orelse\ifcsname\??linetable r:0#1\endcsname
          r:0%
-       \fi\fi
+       \fi
      \else
        \ifcsname\??linetable r:\number\c_tabl_lines_row#1\endcsname
          r:\number\c_tabl_lines_row
-       \else\ifcsname\??linetable r:\v!oddeven\c_tabl_lines_row#1\endcsname
+       \orelse\ifcsname\??linetable r:\v!oddeven\c_tabl_lines_row#1\endcsname
          r:\v!oddeven\c_tabl_lines_row
-       \fi\fi
+       \fi
      \fi
      #1%
    \endcsname}
@@ -292,8 +292,8 @@
            \c!type=\linetablecparameter\c!type,
              \c!mp=\linetablecparameter\c!mp,
   \c!rulethickness=\linetablecparameter\c!rulethickness,
-         \c!height=\ifx\p_height\empty\ht\scratchbox\else\p_height\fi,
-          \c!depth=\ifx\p_depth \empty\dp\scratchbox\else\p_depth \fi,
+         \c!height=\ifempty\p_height\ht\scratchbox\else\p_height\fi,
+          \c!depth=\ifempty\p_depth \dp\scratchbox\else\p_depth \fi,
           \c!width=\wd\scratchbox]%
       \hskip-\wd\scratchbox\box\scratchbox}}
 
@@ -324,7 +324,7 @@
           \backgroundline[\linetablerparameter\c!backgroundcolor]{\box\scratchbox}%
         \else
           \edef\p_type{\linetablerparameter\c!type}%
-          \ifx\p_type\empty
+          \ifempty\p_type
             \box\scratchbox
           \else
             \tabl_lines_wrap_up_auto_r
@@ -584,7 +584,7 @@
    \global\c_tabl_lines_subcol\plusone
    \d_tabl_lines_height\zeropoint
    \edef\p_height{\linetablerparameter\c!height}%
-   \ifx\p_height\empty
+   \ifempty\p_height
      \c_tabl_lines_hmode \zerocount
    \orelse\ifx\p_height\v!fit
      \c_tabl_lines_hmode \plusone

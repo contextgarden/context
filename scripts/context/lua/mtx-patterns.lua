@@ -150,7 +150,8 @@ scripts.patterns.list = {
  -- { "sa",  "hyph-sa",            "sanskrit" },
     { "sk",  "hyph-sk",            "slovak" },
     { "sl",  "hyph-sl",            "slovenian" },
-    { "sr",  "hyph-sr-cyrl",       "serbian" },
+    { "sr",  "hyph-sr",            "serbian", false, { "hyph-sr-cyrl", "hyph-sr-latn" }, },
+ -- { "sr",  "hyph-sr-cyrl",       "serbian", false },
  -- { "sr",  "hyph-sr-latn",       "serbian" },
     { "sv",  "hyph-sv",            "swedish" },
  -- { "ta",  "hyph-ta",            "tamil" },
@@ -171,23 +172,32 @@ end
 -- *.tex
 -- *.hyp.txt *.pat.txt *.lic.txt *.chr.txt
 
-function scripts.patterns.load(path,name,mnemonic,ignored)
-    local basename = name
+function scripts.patterns.load(path,name,mnemonic,ignored, merged)
     local fullname = file.join(path,name)
-    local texfile = addsuffix(fullname,"tex")
-    local hypfile = addsuffix(fullname,"hyp.txt")
-    local patfile = addsuffix(fullname,"pat.txt")
-    local licfile = addsuffix(fullname,"lic.txt")
- -- local chrfile = addsuffix(fullname,"chr.txt")
+    local basename = name
+    local texfile  = addsuffix(fullname,"tex")
+    local hypfile  = addsuffix(fullname,"hyp.txt")
+    local patfile  = addsuffix(fullname,"pat.txt")
+    local licfile  = addsuffix(fullname,"lic.txt")
+ -- local chrfile  = addsuffix(fullname,"chr.txt")
     local okay = true
     local hyphenations, patterns, comment, stripset = "", "", "", ""
     local splitpatternsnew, splithyphenationsnew = { }, { }
     local splitpatternsold, splithyphenationsold = { }, { }
     local usedpatterncharactersnew, usedhyphenationcharactersnew = { }, { }
-    if lfs.isfile(patfile) then
+    if merged then
+        report("using merged txt files %s.[hyp|pat|lic].txt",name)
+        for i=1,#merged do
+            local fullname = file.join(path,merged[i])
+            comment      = comment       .. (io.loaddata(addsuffix(fullname,"lic.txt")) or "") .. "\n\n"
+            patterns     = patterns      .. (io.loaddata(addsuffix(fullname,"pat.txt")) or "") .. "\n\n"
+            hyphenations = hyphenations  .. (io.loaddata(addsuffix(fullname,"hyp.txt")) or "") .. "\n\n"
+        end
+    elseif lfs.isfile(patfile) then
         report("using txt files %s.[hyp|pat|lic].txt",name)
-        comment, patterns, hyphenations = io.loaddata(licfile) or "", io.loaddata(patfile) or "", io.loaddata(hypfile) or ""
-        hypfile, patfile, licfile = hypfile, patfile, licfile
+        comment      = io.loaddata(licfile) or ""
+        patterns     = io.loaddata(patfile) or ""
+        hyphenations = io.loaddata(hypfile) or ""
     elseif lfs.isfile(texfile) then
         report("using tex file %s.txt",name)
         local data = io.loaddata(texfile) or ""
@@ -203,9 +213,9 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
             end)
             data = gsub(data,"%%.-[\n\r]","")
             data = gsub(data," *[\n\r]+","\n")
-            patterns = match(data,"\\patterns[%s]*{[%s]*(.-)[%s]*}") or ""
+            patterns     = match(data,"\\patterns[%s]*{[%s]*(.-)[%s]*}") or ""
             hyphenations = match(data,"\\hyphenation[%s]*{[%s]*(.-)[%s]*}") or ""
-            comment = match(data,"^(.-)[\n\r]\\patterns") or ""
+            comment      = match(data,"^(.-)[\n\r]\\patterns") or ""
         else
             okay = false
         end
@@ -514,10 +524,10 @@ function scripts.patterns.check()
         only = table.tohash(files)
     end
     for k, v in next, scripts.patterns.list do
-        local mnemonic, name, ignored = v[1], v[2], v[4]
+        local mnemonic, name, ignored, merged = v[1], v[2], v[4], v[5]
         if not only or only[mnemonic] then
             report("checking language %s, file %s", mnemonic, name)
-            local okay = scripts.patterns.load(path,name,mnemonic,ignored)
+            local okay = scripts.patterns.load(path,name,mnemonic,ignored, merged)
             if not okay then
                 report("there are errors that need to be fixed")
             end
@@ -541,11 +551,11 @@ function scripts.patterns.convert()
                 only = table.tohash(files)
             end
             for k, v in next, scripts.patterns.list do
-                local mnemonic, name, ignored = v[1], v[2], v[4]
+                local mnemonic, name, ignored, merged = v[1], v[2], v[4], v[5]
                 if not only or only[mnemonic] then
                     report("converting language %s, file %s", mnemonic, name)
                     local okay, patternsnew, hyphenationsnew, patternsold, hyphenationsold, comment, stripped,
-                        pusednew, husednew, pusedold, husedold = scripts.patterns.load(path,name,mnemonic,ignored)
+                        pusednew, husednew, pusedold, husedold = scripts.patterns.load(path,name,mnemonic,ignored,merged)
                     if okay then
                         scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenationsnew,patternsold,hyphenationsold,comment,stripped,
                             pusednew,husednew,pusedold,husedold,ignored)
@@ -689,8 +699,8 @@ end
 
 -- mtxrun --script pattern --check   hyph-*.tex
 -- mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
--- mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
--- mtxrun --script pattern --convert --path=c:/data/repositories/tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
+-- mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
+-- mtxrun --script pattern --convert --path=c:/data/repositories/tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
 --
 -- use this call:
 --

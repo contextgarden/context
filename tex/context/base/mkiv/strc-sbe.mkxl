@@ -53,7 +53,7 @@
 
 \def\strc_sectionblock_handle_page
   {\edef\p_strc_sectionblock_page{\sectionblockparameter\c!page}%
-   \ifx\p_strc_sectionblock_page\empty \else
+   \ifempty\p_strc_sectionblock_page \else
       \page[\p_strc_sectionblock_page]%
    \fi}
 

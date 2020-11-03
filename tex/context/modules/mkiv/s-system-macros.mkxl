@@ -42,19 +42,20 @@
     local t = tex.hashtokens()
     table.sort(t)
     local function show(check)
-        context.starttabulate { "|l|l|l|l|l|l|l|l|" }
+        context.starttabulate { "|l|l|l|l|l|l|l|l|l|" }
         for i=1,#t do
             local k = t[i]
             if check(k) then
                 local v = create(k)
-                local frozen    = v.frozen    and "frozen"
-                local permanent = v.permanent and "permanent"
-                local immutable = v.immutable and "immutable"
-                local primitive = v.primitive and "primitive"
-                local mutable   = v.immutable and "mutable"
-                local tolerant  = v.tolerant  and "tolerant"
-                local noaligned = v.noaligned and "noaligned"
-                local instance  = v.instance  and "instance"
+                local frozen     = v.frozen     and "frozen"
+                local permanent  = v.permanent  and "permanent"
+                local immutable  = v.immutable  and "immutable"
+                local primitive  = v.primitive  and "primitive"
+                local mutable    = v.immutable  and "mutable"
+                local tolerant   = v.tolerant   and "tolerant"
+                local noaligned  = v.noaligned  and "noaligned"
+                local instance   = v.instance   and "instance"
+                local parameters = v.parameters or 0
                 local dealtwith = frozen or permanent or immutable or primitive or mutable -- beware: we can have combinations
                 local cscommand = gsub(v.cmdname or "","_"," ")
                 local whatever  = find(k,"^[a-z][a-z][a-z]+_")
@@ -62,12 +63,13 @@
                 local csname    = context.escape(k)
                 ctx_NC() if dealtwith then context("+") elseif whatever then context("-") elseif instance then context("!")end
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
+                ctx_NC() if parameters > 0 then context(parameters) end
                 ctx_NC() context(cscommand)
-                ctx_NC() if dealtwith then context(dealtwith) end
-                ctx_NC() if tolerant  then context(tolerant ) end
-                ctx_NC() if instance  then context(instance ) end
-                ctx_NC() if noaligned then context(noaligned) end
-                ctx_NC() if filename  then context(filename)  end
+                ctx_NC() if dealtwith      then context(dealtwith)  end
+                ctx_NC() if tolerant       then context(tolerant)   end
+                ctx_NC() if instance       then context(instance)   end
+                ctx_NC() if noaligned      then context(noaligned)  end
+                ctx_NC() if filename       then context(filename)   end
                 ctx_NC() ctx_NR()
             end
         end

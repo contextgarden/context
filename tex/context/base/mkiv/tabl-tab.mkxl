@@ -1338,7 +1338,8 @@
    \fi[#1]}
 
 % We cannot define the stopper as \type {\protected} because lookahead in
-% alignments fail then, so we relax it and define it locally.
+% alignments fail then, so we relax it and define it locally. Actually we
+% now can.
 
 \permanent\let\stoptable\relax
 

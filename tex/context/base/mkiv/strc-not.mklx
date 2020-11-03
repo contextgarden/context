@@ -150,7 +150,7 @@
    \instance\setuevalue{\e!stop #tag}{\strc_notations_stop   }}
 
 \appendtoks
-    \ifx\currentnotationparent\empty
+    \ifempty\currentnotationparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \let\currentnotationsub\empty
        \strc_define_commands_notation
@@ -178,7 +178,7 @@
         \definelist[\currentnotation][\currentnotationparent]% goodie
    \fi
    \edef\p_counter{\notationparameter\s!counter}% can inherit from parent
-   \ifx\p_counter\empty %
+   \ifempty\p_counter
        \let\p_counter\currentnotation
    \fi
    \doifelsecounter\p_counter\donothing{\strc_notes_define_counter\p_counter}%
@@ -402,7 +402,7 @@
 \permanent\def\currentnoteinsertionnumber{\namedinsertionnumber{\noteparameter\s!insert}}
 
 \appendtoks
-    \ifx\currentnoteparent\empty
+    \ifempty\currentnoteparent
         \doifelseinsertion\currentnote
           \donothing
           {\defineinsertion[\currentnote]% could be an option
@@ -641,7 +641,7 @@
 \def\strc_notes_set_style_color_special
   {\iftrialtypesetting
       % keep
-   \orelse\ifx\currentcolorparameter\empty
+   \orelse\ifempty\currentcolorparameter
      \scratchcounter\clf_notedeltapage{\currentnote}\currentnotenumber\relax % todo calculate once
      \setlocationcolorspecified\scratchcounter
    \fi}
@@ -725,7 +725,7 @@
 
 \protected\def\strc_notes_inject_separator % patch by WS due to request on list
   {\edef\p_textseparator{\noteparameter\c!textseparator}%
-   \ifx\p_textseparator\empty
+   \ifempty\p_textseparator
      \kern\noteparameter\c!distance
    \else
      % skip or kern
@@ -832,7 +832,7 @@
 \newtoks\everysynchronizenote % after a general setup has happened
 
 \appendtoks
-    \ifx\currentnote\empty \else
+    \ifempty\currentnote \else
         \setupnotations[\currentnote][]% also a synchronize
     \fi
 \to \everysynchronizenote
@@ -923,7 +923,7 @@
 
 \def\strc_notes_set_factor
   {\edef\p_factor{\noteparameter\c!factor}%
-   \ifx\p_factor\empty \else
+   \ifempty\p_factor \else
      \ifnum\p_factor<\zerocount \else
 %        \global
        \count\currentnoteinsertionnumber\p_factor % new: global
@@ -1012,13 +1012,13 @@
 
 \appendtoks
     \edef\p_spacebefore{\rootnoteparameter\c!spacebefore}%
-    \ifx\p_spacebefore\empty
+    \ifempty\p_spacebefore
         \global\s_strc_notes_before\zeropoint
     \else
         \setbox\scratchbox\vbox{\blank[\p_spacebefore]\global\s_strc_notes_before\lastskip}%
     \fi
     \edef\p_spaceinbetween{\rootnoteparameter\c!spaceinbetween}%
-    \ifx\p_spaceinbetween\empty
+    \ifempty\p_spaceinbetween
         \global\s_strc_notes_inbetween\zeropoint
     \else
         \setbox\scratchbox\vbox{\blank[\p_spaceinbetween]\global\s_strc_notes_inbetween\lastskip}%
@@ -1349,7 +1349,7 @@
      % \else
      %   \setnoteparameter\c!width{\makeupwidth}%
      % \fi
-     \orelse\ifx\p_width\empty
+     \orelse\ifempty\p_width
        \setnoteparameter\c!width{\hsize}%
      \fi
   \fi
@@ -1392,12 +1392,12 @@
        \whitespace
        \ifconditional\c_strc_notes_first_placed
          \edef\p_spaceinbetween{\noteparameter\c!spaceinbetween}%
-         \ifx\p_spaceinbetween\empty\else
+         \ifempty\p_spaceinbetween\else
            \blank[\p_spaceinbetween]%
          \fi
        \else
          \edef\p_spacebefore{\noteparameter\c!spacebefore}%
-         \ifx\p_spacebefore\empty\else
+         \ifempty\p_spacebefore\else
            \blank[\p_spacebefore]%
          \fi
        \fi

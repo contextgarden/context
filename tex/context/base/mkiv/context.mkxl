@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.10.30 22:24}
+\edef\contextversion{2020.11.03 16:50}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -61,7 +61,7 @@
 %D First we load the system modules. These implement a lot of manipulation macros.
 %D We start with setting up some basic \TEX\ machinery.
 
-\loadmkxlfile{syst-ini} % LMTX
+\loadmkxlfile{syst-ini}
 
 %D We just quit if new functionality is expected.
 
@@ -100,7 +100,7 @@
 \loadmkxlfile{catc-ctx}
 \loadmarkfile{catc-sym}
 
-\loadmarkfile{toks-ini}
+\loadmkxlfile{toks-ini}
 \loadmarkfile{cldf-ini}
 
 % \tracecatcodetables
@@ -109,13 +109,13 @@
 %D \type {\unexpanded} long before etex came around.
 
 \loadmarkfile{luat-ini}
-\loadmarkfile{toks-scn}
+\loadmkxlfile{toks-scn}
 
-\loadmkxlfile{syst-aux} % LMTX
-\loadmkxlfile{syst-lua} % LMTX
-\loadmkxlfile{syst-con} % LMTX
+\loadmkxlfile{syst-aux}
+\loadmkxlfile{syst-lua}
+\loadmkxlfile{syst-con}
 
-\loadmarkfile{syst-fnt}
+\loadmkxlfile{syst-fnt}
 \loadmarkfile{syst-rtp}
 
 \loadmarkfile{luat-usr}
@@ -124,7 +124,7 @@
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
 
-\loadmkxlfile{core-lmt} % LMTX
+\loadmkxlfile{core-lmt}
 
 %D This needs more checking for clashes:
 %D
@@ -134,13 +134,13 @@
 
 \loadmarkfile{supp-dir}
 
-\loadmarkfile{char-utf}
+\loadmkxlfile{char-utf}
 \loadmkxlfile{char-ini}
 \loadmarkfile{char-act}
 
 \loadmkxlfile{mult-ini}
 \loadmkxlfile{mult-sys}
-\loadmkxlfile{mult-aux} % LMTX
+\loadmkxlfile{mult-aux}
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
 \loadmkvifile{mult-dim}
@@ -166,12 +166,12 @@
 \loadmkxlfile{node-mig}
 %loadmarkfile{node-pag}
 
-\loadmkxlfile{driv-ini} % LMTX
+\loadmkxlfile{driv-ini}
 
-\loadmkxlfile{back-ini} % LMTX
+\loadmkxlfile{back-ini}
 \loadmarkfile{back-res}
 \loadmarkfile{back-trf}
-\loadmkxlfile{back-out} % LMTX
+\loadmkxlfile{back-out}
 
 \loadmarkfile{attr-col}
 \loadmarkfile{attr-lay}
@@ -182,7 +182,7 @@
 \loadmarkfile{trac-tex}
 \loadmarkfile{trac-deb} % will move up
 
-\loadmkxlfile{supp-box} % LMTX
+\loadmkxlfile{supp-box}
 
 \loadmarkfile{supp-ran}
 \loadmarkfile{supp-mat}
@@ -190,7 +190,7 @@
 \loadmarkfile{core-uti}
 \loadmkvifile{file-job}
 
-\loadmarkfile{anch-pos}
+\loadmkxlfile{anch-pos}
 
 \loadmarkfile{typo-ini}
 \loadmarkfile{typo-lin}
@@ -206,13 +206,13 @@
 
 \loadmarkfile{cont-fil}
 
-\loadmarkfile{regi-ini}
+\loadmkxlfile{regi-ini}
 \loadmkxlfile{enco-ini}
 \loadmkxlfile{hand-ini}
 
-\loadmkxlfile{lang-ini} % LMTX
+\loadmkxlfile{lang-ini}
 \loadmarkfile{lang-hyp} % also loads dis
-\loadmkxlfile{lang-lab} % LMTX
+\loadmkxlfile{lang-lab}
 
 \loadmarkfile{unic-ini}
 
@@ -220,28 +220,28 @@
 \loadmarkfile{core-two}
 \loadmarkfile{core-dat}
 
-\loadmkxlfile{colo-ini} % LMTX
+\loadmkxlfile{colo-ini}
 \loadmarkfile{colo-grp} % optional
-\loadmarkfile{colo-ext}
+\loadmkxlfile{colo-ext}
 
 \loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
 \loadmarkfile{pack-cut}
 
-\loadmkxlfile{lang-mis} % LMTX
+\loadmkxlfile{lang-mis}
 \loadmarkfile{lang-url}
 \loadmarkfile{lang-def}
 
 % \loadmkvifile{file-job} % why so late?
 
-\loadmarkfile{symb-ini} % brrr depends on fonts
+\loadmkxlfile{symb-ini} % brrr depends on fonts
 
 \loadmarkfile{sort-ini}
 
 \loadmkvifile{pack-mis}
-\loadmkxlfile{pack-ori} % LMTX
-\loadmkxlfile{pack-rul} % LMTX
-\loadmkxlfile{pack-mrl} % LMTX
+\loadmkxlfile{pack-ori}
+\loadmkxlfile{pack-rul}
+\loadmkxlfile{pack-mrl}
 \loadmkvifile{pack-bck}
 \loadmarkfile{pack-fen}
 
@@ -251,13 +251,11 @@
 \loadmkvifile{typo-prc}
 \loadmkivfile{typo-plc}
 
-% \loadmarkfile{anch-pos}
-
-\loadmkvifile{strc-ini}
+\loadmklxfile{strc-ini}
 \loadmarkfile{strc-tag}
 \loadmarkfile{strc-doc}
-\loadmarkfile{strc-num}
-\loadmarkfile{strc-mar}
+\loadmkxlfile{strc-num}
+\loadmkxlfile{strc-mar}
 \loadmkxlfile{strc-sbe}
 \loadmkvifile{strc-lst}
 \loadmkxlfile{strc-sec}
@@ -272,7 +270,7 @@
 \loadmkxlfile{spac-hor}
 \loadmkxlfile{spac-ali}
 \loadmarkfile{spac-flr}
-\loadmkxlfile{spac-ver} % LMTX beware, hooks into strc-sec
+\loadmkxlfile{spac-ver} % beware, hooks into strc-sec
 \loadmarkfile{spac-lin}
 \loadmarkfile{spac-pag}
 \loadmkxlfile{spac-par}
@@ -280,14 +278,12 @@
 \loadmkvifile{spac-prf}
 \loadmkxlfile{spac-grd}
 
-%loadmarkfile{anch-pos}
-
 \loadmkvifile{scrn-ini}
 \loadmkvifile{scrn-ref}
 
 \loadmarkfile{pack-obj}
 
-\loadmklxfile{strc-itm} % LMTX
+\loadmklxfile{strc-itm}
 
 \loadmklxfile{strc-con}
 \loadmklxfile{strc-des}
@@ -313,7 +309,7 @@
 \loadmarkfile{page-one}
 \loadmkxlfile{page-lay}
 \loadmkvifile{page-box}
-\loadmklxfile{page-txt} % LMTX
+\loadmklxfile{page-txt}
 \loadmarkfile{page-sid} % when
 
 \loadmkvifile{strc-flt}
@@ -326,10 +322,10 @@
 %loadmarkfile{page-set} % \usecolumns[old-columnsets]
 \loadmarkfile{page-cst}
 \loadmarkfile{page-pcl} % new
-\loadmkxlfile{pack-lyr} % LMTX
+\loadmkxlfile{pack-lyr}
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
-\loadmkxlfile{page-mcl} % LMTX
+\loadmkxlfile{page-mcl}
 
 \loadmarkfile{strc-reg} % uses mixed columns
 
@@ -340,7 +336,7 @@
 \loadmarkfile{typo-itm}
 
 \loadmarkfile{buff-ini}
-\loadmkxlfile{buff-ver} % LMTX
+\loadmkxlfile{buff-ver}
 \loadmkvifile{buff-par}
 
 \loadmarkfile{buff-imp-tex}        % optional as also runtime if not loaded
@@ -371,26 +367,26 @@
 \loadmkvifile{scrn-fld}
 \loadmkvifile{scrn-hlp}
 
-\loadmarkfile{char-enc} % will move up
+\loadmarkfile{char-enc} % will move up, can be in char-utf
 
 \loadmkvifile{font-lib} % way too late but after language
-\loadmklxfile{font-fil} % LMTX
+\loadmklxfile{font-fil}
 \loadmkvifile{font-var}
 \loadmklxfile{font-fea}
-\loadmklxfile{font-mat} % LMTX
-\loadmklxfile{font-ini} % LMTX
-\loadmklxfile{font-sym} % LMTX
-\loadmklxfile{font-sty} % LMTX
+\loadmklxfile{font-mat}
+\loadmklxfile{font-ini}
+\loadmklxfile{font-sym}
+\loadmklxfile{font-sty}
 \loadmkvifile{font-set}
-\loadmklxfile{font-emp} % LMTX
+\loadmklxfile{font-emp}
 \loadmarkfile{font-pre}
 \loadmarkfile{font-unk}
 \loadmarkfile{font-tra}
-\loadmarkfile{font-chk}
+\loadmkxlfile{font-chk}
 \loadmarkfile{font-uni}
-\loadmkvifile{font-col}
+\loadmklxfile{font-col}
 \loadmkvifile{font-gds}
-\loadmkvifile{font-aux}
+\loadmklxfile{font-aux}
 \loadmkvifile{font-sel}
 
 \loadmarkfile{typo-tal}
@@ -401,8 +397,8 @@
 
 \loadmkxlfile{tabl-tab} % thrd-tab stripped and merged
 
-\loadmkxlfile{tabl-tbl} % LMTX
-\loadmkxlfile{tabl-ntb} % LMTX
+\loadmkxlfile{tabl-tbl}
+\loadmkxlfile{tabl-ntb}
 \loadmkxlfile{tabl-nte}
 \loadmkxlfile{tabl-ltb}
 \loadmkxlfile{tabl-frm}
@@ -441,21 +437,22 @@
 \loadmkivfile{typo-fkr}
 \loadmkivfile{typo-pnc}
 
-\loadmklxfile{type-ini} % LMTX
+\loadmklxfile{type-ini}
 \loadmarkfile{type-set}
 
 \loadmarkfile{scrp-ini}
 
 \loadmarkfile{symb-emj}
 
+\loadmarkfile{lang-tra} % can be optional (discussion with mm sideeffect)
 \loadmarkfile{lang-wrd} % can be optional (discussion with mm sideeffect)
 \loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
 
 \loadmarkfile{prop-ini} % only for downward compatibility
 
-\loadmkxlfile{mlib-ctx} % LMTX % messy order
+\loadmkxlfile{mlib-ctx} % messy order
 
-\loadmkxlfile{meta-ini} % LMTX
+\loadmkxlfile{meta-ini}
 \loadmarkfile{meta-tex}
 \loadmarkfile{meta-fun}
 \loadmkxlfile{meta-pag}
@@ -463,7 +460,7 @@
 \loadmarkfile{meta-fnt}
 \loadmarkfile{meta-nod}
 \loadmarkfile{meta-lua}
-\loadmkxlfile{meta-mac} % LMTX
+\loadmkxlfile{meta-mac}
 
 \loadmarkfile{page-mrk} % depends on mp
 
@@ -474,7 +471,7 @@
 
 \loadmarkfile{anch-pgr} % can be moved up (nicer for dependencies)
 \loadmkvifile{anch-bck}
-\loadmarkfile{anch-tab} % overloads tabl-tbl
+\loadmkxlfile{anch-tab} % overloads tabl-tbl
 \loadmarkfile{anch-bar}
 %loadmarkfile{anch-snc} % when needed this one will be redone
 
@@ -520,7 +517,7 @@
 \loadmarkfile{typo-del}
 
 \loadmarkfile{grph-trf}
-\loadmarkfile{grph-inc}
+\loadmkxlfile{grph-inc}
 \loadmarkfile{grph-fig}
 \loadmarkfile{grph-raw}
 \loadmarkfile{grph-rul}
@@ -570,14 +567,14 @@
 
 % now we hook in backend code (needs checking)
 
-\loadmkxlfile{driv-shp} % LMTX
+\loadmkxlfile{driv-shp}
 
 \loadmarkfile{back-exp}
-\loadmkxlfile{back-pdf} % LMTX
-\loadmkxlfile{back-mps} % LMTX
-\loadmkxlfile{back-lua} % LMTX
+\loadmkxlfile{back-pdf}
+\loadmkxlfile{back-mps}
+\loadmkxlfile{back-lua}
 
-\loadmkxlfile{mlib-pdf} % LMTX
+\loadmkxlfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
 \loadmarkfile{meta-blb}

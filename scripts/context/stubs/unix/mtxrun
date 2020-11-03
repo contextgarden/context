@@ -849,7 +849,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11793, stripped down to: 8387
+-- original size: 11969, stripped down to: 8501
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -1083,7 +1083,10 @@ methods["already loaded"]=function(name)
  return package.loaded[name]
 end
 methods["preload table"]=function(name)
- return builtin["preload table"](name)
+ local f=builtin["preload table"]
+ if f then
+  return f(name)
+ end
 end
 methods["qualified path"]=function(name)
   return loadedbyname(addsuffix(lualibfile(name),"lua"),name)
@@ -1095,15 +1098,24 @@ methods["lib extra list"]=function(name)
  return loadedbypath(addsuffix(lualibfile(name),os.libsuffix),name,getextralibpaths(),true,"lib")
 end
 methods["path specification"]=function(name)
- getluapaths() 
- return builtin["path specification"](name)
+ local f=builtin["path specification"]
+ if f then
+  getluapaths() 
+  return f(name)
+ end
 end
 methods["cpath specification"]=function(name)
- getlibpaths() 
- return builtin["cpath specification"](name)
+ local f=builtin["cpath specification"]
+ if f then
+  getlibpaths() 
+  return f(name)
+ end
 end
 methods["all in one fallback"]=function(name)
- return builtin["all in one fallback"](name)
+ local f=builtin["all in one fallback"]
+ if f then
+  return f(name)
+ end
 end
 methods["not loaded"]=function(name)
  if helpers.trace then
@@ -25761,8 +25773,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1023146
--- stripped bytes    : 404426
+-- original bytes    : 1023322
+-- stripped bytes    : 404488
 
 -- end library merge
 

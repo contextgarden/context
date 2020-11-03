@@ -68,8 +68,8 @@
   {\doifelseinstring{:}{#2}
      {\colo_groups_define_normal[#1][\v!rgb][#2]}
      {\doloop % inherited
-        {\ifcsname\??colorgroup#2:\recurselevel\endcsname
-           \setevalue{\??colorgroup#1:\recurselevel}{\csname\??colorgroup#2:\recurselevel\endcsname}%
+        {\ifcsname#2:##1\endcsname
+           \definecolor[#1:##1][#2:##1]%
          \else
            \exitloop
          \fi}}}

@@ -29,6 +29,7 @@
 \registerctxluafile{supp-ran}{}
 
 \unprotect
+
 \protected\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax\relax}
 \protected\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen\dimexpr#2\relax\dimexpr#3\relax\scaledpoint\relax}
 \protected\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax}}

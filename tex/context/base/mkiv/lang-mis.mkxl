@@ -276,7 +276,7 @@
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
    \lang_discretionaries_check_after
-   \ifx\discretionarytoken\empty
+   \ifempty\discretionarytoken
      \ifx#1\nexttoken % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
          \lastnamedcs

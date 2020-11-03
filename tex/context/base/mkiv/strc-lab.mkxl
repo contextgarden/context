@@ -72,7 +72,7 @@
 % todo: \strc_labels_command for user
 
 \appendtoks
-    \ifx\currentlabelparent\empty
+    \ifempty\currentlabelparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \let\currentlabelsub\empty
        \strc_define_commands_label
@@ -98,7 +98,7 @@
           \edef\currentlabelsub{\v!sub\currentlabelsub}}%
    \fi
    \edef\p_counter{\labelparameter\s!counter}% can inherit from parent
-   \ifx\p_counter\empty %
+   \ifempty\p_counter %
        \let\p_counter\currentlabel
    \fi
    \doifelsecounter\p_counter\donothing{\strc_labels_define_counter\p_counter}%

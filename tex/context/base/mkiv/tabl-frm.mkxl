@@ -141,9 +141,9 @@
 %      {\??framedtablerow\currentframedtable
 %       \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
 %         :\currentframed
-%       \else\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
+%       \orelse\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
 %         :\v!each
-%       \fi\fi}%
+%       \fi}%
 %    \pack_framed_start_framed_whatever}
 %
 % \permanent\protected\def\stopframedrow
@@ -185,9 +185,9 @@
      {\??framedtablerow\currentframedtable
       \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
         :\currentframed
-      \else\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
+      \orelse\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
         :\v!each
-      \fi\fi}%
+      \fi}%
    \pack_framed_start_framed_whatever}
 
 \protected\def\stopframedrow_two
@@ -210,9 +210,9 @@
      {\??framedtablecolumn\currentframedtable
       \ifcsname\??framedtablecolumn\currentframedtable:\currentframed\endcsname
         :\currentframed
-      \else\ifcsname\??framedtablecolumn\currentframedtable:\v!each\endcsname
+      \orelse\ifcsname\??framedtablecolumn\currentframedtable:\v!each\endcsname
         :\v!each
-      \fi\fi}%
+      \fi}%
    \ifcase\c_tabl_framed_pass
    \or
      \letframedparameter\c!background\empty

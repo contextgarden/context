@@ -87,7 +87,7 @@ local replacements       = languages.replacements or { }
 languages.replacements   = replacements
 
 local a_replacements     = attributes.private("replacements")
-local a_noligature       = attributes.private("noligature")
+local a_noligature       = attributes.private("noligature")      -- to be adapted to lmtx !
 
 local lists = { }
 local last  = 0

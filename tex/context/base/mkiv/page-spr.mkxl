@@ -58,13 +58,13 @@
         \hss % right page
         \ifarrangingpages
           % writes don't matter anyway
-        \else\ifconditional\c_page_spread_once
+        \orelse\ifconditional\c_page_spread_once
           \global\setbox\b_page_spread_content\emptyhbox
           \wd\b_page_spread_content\makeupwidth
           \ht\b_page_spread_content\textheight
         \else
           % writes can interfere (todo: write stripper, but how about hyperlinks)
-        \fi \fi
+        \fi
         \box\b_page_spread_content
       \fi}}
 

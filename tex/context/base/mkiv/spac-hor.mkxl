@@ -48,7 +48,7 @@
 
 \def\spac_indentation_setup_options[#1]%
   {\edef\m_spac_indentation_options{#1}% comma separated list
-   \ifx\m_spac_indentation_options\empty \else
+   \ifempty\m_spac_indentation_options \else
      \spac_indentation_setup_indeed
    \fi}
 
@@ -73,7 +73,7 @@
 
 \permanent\protected\def\useindentingparameter#1% faster local variant
   {\edef\m_spac_indentation_options{#1\c!indenting}%
-   \ifx\m_spac_indentation_options\empty \else
+   \ifempty\m_spac_indentation_options \else
      \spac_indentation_setup_indeed
    \fi}
 
@@ -156,7 +156,7 @@
 \installindentingmethod \v!odd   {\c_spac_indentation_toggle_state\plusone}
 \installindentingmethod \v!even  {\c_spac_indentation_toggle_state\plustwo}
 
-\installindentingmethod \v!normal{\ifx\normalindentation\empty\else
+\installindentingmethod \v!normal{\ifempty\normalindentation\else
                                     \let\v_spac_indentation_current\normalindentation
                                     \spac_indentation_setup_size
                                   \fi}
@@ -286,7 +286,7 @@
 
 \permanent\protected\def\useindentnextparameter#1% new, the more efficient variant
   {\edef\p_indentnext{#1\c!indentnext}%
-   \ifx\p_indentnext\empty\else
+   \ifempty\p_indentnext\else
      \begincsname\??indentnext\p_indentnext\endcsname
    \fi}
 

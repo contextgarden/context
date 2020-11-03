@@ -176,7 +176,7 @@
 
 \appendtoks
     \setfalse\c_strc_constructions_define_commands
-    \ifx\currentsimplelistparent\empty
+    \ifempty\currentsimplelistparent
         \defineconstruction[\currentsimplelist][\s!handler=\v!simplelist,\c!level=1]%
     \else
         \defineconstruction[\currentsimplelist][\currentsimplelistparent][\s!handler=\v!simplelist,\c!level=1]%
@@ -592,7 +592,7 @@
    \strc_constructions_initialize{#1}%
    \setupcurrentsimplelist[#2]%
    \edef\p_simplelist_command{\simplelistparameter\c!command}%
-   \ifx\p_simplelist_command\empty
+   \ifempty\p_simplelist_command
      \let\synonymentry\strc_sorting_normal
    \else
      \let\synonymentry\strc_sorting_command

@@ -61,7 +61,7 @@
   ]
 
 \appendtoks
-    \ifx\currentdescriptionparent\empty
+    \ifempty\currentdescriptionparent
         \defineconstruction[\currentdescription][\currentdescriptionparent][\s!handler=\v!description,\c!level=1]%
     \else
         \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%

@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="deo",
   ["source"]="hyph-de-1901",
-  ["texcomment"]="% \n% \\message{German Hyphenation Patterns (Traditional Orthography) `dehypht-x' 2019-04-04 (WL)}",
+  ["texcomment"]="% no comment",
  },
  ["patterns"]={
   ["characters"]="abcdefghijklmnopqrstuvwxyzßàáâäçèéêëíïñóôöü",

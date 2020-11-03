@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=syst-fnt,
+%D        version=2006.08.11,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Font Things,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% formal names cf the tb \& tbt
+
+\unprotect
+
+\immutable\protected\def\fontslantperpoint   {\fontdimen\plusone  }
+\immutable\protected\def\fontinterwordspace  {\fontdimen\plustwo  }
+\immutable\protected\def\fontinterwordstretch{\fontdimen\plusthree}
+\immutable\protected\def\fontinterwordshrink {\fontdimen\plusfour }
+\immutable\protected\def\fontexheight        {\fontdimen\plusfive }
+\immutable\protected\def\fontemwidth         {\fontdimen\plussix  }
+\immutable\protected\def\fontextraspace      {\fontdimen\plusseven}
+
+\immutable\protected\def\slantperpoint       {\fontdimen\plusone  \font}
+\immutable\protected\def\interwordspace      {\fontdimen\plustwo  \font}
+\immutable\protected\def\interwordstretch    {\fontdimen\plusthree\font}
+\immutable\protected\def\interwordshrink     {\fontdimen\plusfour \font}
+\immutable\protected\def\exheight            {\fontdimen\plusfive \font}
+\immutable\protected\def\emwidth             {\fontdimen\plussix  \font}
+\immutable\protected\def\extraspace          {\fontdimen\plusseven\font}
+
+\aliased\let\mathaxisheight\Umathaxis % takes style
+
+\permanent\def\currentspaceskip{\interwordspace\s!plus\interwordstretch\s!minus\interwordshrink\relax}
+
+\permanent\def\currentspacevalue{\the\interwordspace
+  \ifzeropt\interwordstretch\else{ plus  }\the\interwordstretch\fi
+  \ifzeropt\interwordshrink \else{ minus }\the\interwordshrink \fi}
+
+\permanent\def\usedspacevalue{\ifzeropt\spaceskip\the\spaceskip\else\currentspacevalue\fi}
+
+\permanent\def\mathstacktotal{\dimexpr\Umathstacknumup\scriptstyle+\Umathstackdenomdown\scriptstyle\relax}
+\permanent\def\mathstackvgap {\Umathstackvgap\scriptstyle}
+
+\protect \endinput

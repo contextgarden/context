@@ -286,6 +286,7 @@
 		<cd:variable name='intermezzo' value='intermezzo'/>
 		<cd:variable name='intext' value='intekst'/>
 		<cd:variable name='intro' value='intro'/>
+		<cd:variable name='invertedshort' value='invertedshort'/>
 		<cd:variable name='italic' value='italic'/>
 		<cd:variable name='italicbold' value='italicvet'/>
 		<cd:variable name='item' value='som'/>
@@ -389,6 +390,7 @@
 		<cd:variable name='nonumber' value='geennummer'/>
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normaal'/>
+		<cd:variable name='normalshort' value='normalshort'/>
 		<cd:variable name='nospacing' value='geenspatiering'/>
 		<cd:variable name='nostopper' value='geenafsluiter'/>
 		<cd:variable name='not' value='niet'/>
@@ -456,6 +458,7 @@
 		<cd:variable name='rectangular' value='recht'/>
 		<cd:variable name='reference' value='referentie'/>
 		<cd:variable name='referral' value='kenmerk'/>
+		<cd:variable name='region' value='gebied'/>
 		<cd:variable name='register' value='register'/>
 		<cd:variable name='regular' value='regular'/>
 		<cd:variable name='relative' value='relatief'/>
@@ -1817,7 +1820,7 @@
 		<cd:command name='resetpath' value='resetpath'/>
 		<cd:command name='resetperiodkerning' value='resetperiodkerning'/>
 		<cd:command name='resetsystemmode' value='resetsystemmode'/>
-		<cd:command name='resettext' value='resettekstinhoud'/>
+		<cd:command name='resettextcontent' value='resettekstinhoud'/>
 		<cd:command name='resetvisualizers' value='resetvisualizers'/>
 		<cd:command name='restoreglobalbodyfont' value='restoreglobalbodyfont'/>
 		<cd:command name='retestfeature' value='retestfeature'/>

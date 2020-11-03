@@ -323,7 +323,7 @@
 \permanent\tolerant\protected\def\startxmldisplayverbatim[#1]%
   {\startpacked
    \edef\currenttyping{#1}%
-   \ifx\currenttyping\empty
+   \ifempty\currenttyping
      \let\currenttyping\v!typing
    \else % maybe test for existence
      \edef\currenttyping{xml:\currenttyping}%
@@ -339,7 +339,7 @@
 \permanent\tolerant\protected\def\startxmlinlineverbatim[#1]%
   {\begingroup
    \edef\currenttype{#1}%
-   \ifx\currenttype\empty
+   \ifempty\currenttype
      \let\currenttype\v!type
    \else % maybe test for existence
      \edef\currenttype{xml:\currenttype}%

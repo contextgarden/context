@@ -428,9 +428,9 @@
 \def\thenormalizedbodyfontsize#body%
   {\clf_nbfs\dimexpr#body\relax}
 
-\protected\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
-\protected\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
-\protected\edef\normalizedbodyfontsize      {\thenormalizedbodyfontsize\bodyfontsize}
+\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
+\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
+\edef\normalizedbodyfontsize      {\thenormalizedbodyfontsize\bodyfontsize}
 
 %D \macros
 %D   {mapfontsize}

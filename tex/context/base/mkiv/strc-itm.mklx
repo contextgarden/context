@@ -336,8 +336,6 @@
     \setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
     \let\currentparentitemgroup\currentitemgroup
     \definecounter[\v_strc_itemgroups_counter]%
-    % beware ... we cannot use _ as the conversion set is not expanded
-    % \defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
 \to \everydefineitemgroup
 
 %D Global states
@@ -702,8 +700,8 @@
       \c!numberconversionset=\v_strc_itemgroups_counter,
       \c!numbersegments=\currentitemgroupsegments]%
    % there will be a fixedconversion key
-  %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
-   \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   \normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+  %\normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
    %
    \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
    \strc_itemgroups_insert_reference

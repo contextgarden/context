@@ -1,0 +1,148 @@
+%D \module
+%D   [       file=font-col,
+%D        version=2008.06.11,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Fallbacks (collections),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo   : missing only, force always, multiple fallbacks with test, scale
+% beware : only english key/values
+%
+% \resetfontfallback [whatever]
+%
+% \definefontfallback [whatever] [Slanted]     [0x0060-0x007F] [force=yes]
+% \definefontfallback [whatever] [Bold]        [0x0080-0x00FF,0x00A0-0x00AF] [rscale=1.2]
+% \definefontfallback [whatever] [BoldSlanted] [0x00C0-0x00C7] [check=yes,force=yes]
+%
+% \definefontfeature [emboldened]     [effect={width=0.1,delta=0.4,factor=0.3}]
+% \definefontsynonym [SansEmboldened] [Sans]                           [features=emboldened]
+% \definefontfallback[FakeSansCaps]   [SansEmboldened] [0x0000-0xFFFF] [rscale=.8,method=uppercase]
+% \definefontsynonym [SansCaps]       [file:MyriadPro-Regular.otf]     [fallbacks=FakeSansCaps]
+
+\writestatus{loading}{ConTeXt Font Macros / Collections}
+
+\registerctxluafile{font-col}{}
+
+\unprotect
+
+\permanent\tolerant\protected\def\definefontfallback[#name]#spacer[#font]#spacer[#ranges]#spacer[#settings]%
+  {\let\mathsizesuffix\relax
+   \clf_fontcollectiondefine{#name}{#font}{#ranges}{#settings}%
+   \let\mathsizesuffix\empty}
+
+\permanent\tolerant\protected\def\resetfontfallback[#name]#spacer[#font]%
+  {\clf_fontcollectionreset{#name}{#font}}
+
+\def\font_fallbacks_prepare#name%
+  {\clf_fontcollectionprepare{#name}} % add fallbacks to last font
+
+% we might as well move the handling to lua but then we need to pass the
+% fallbacks, skewchar etc.
+
+\newconditional\c_font_fallbacks_in_progress
+
+\def\font_fallbacks_prepare_indeed#fallbacks%
+  {\begingroup
+     \settrue\c_font_fallbacks_in_progress
+     \lastrawfontcall % sets current font id
+     \font_fallbacks_prepare#fallbacks%
+   \endgroup}
+
+\let\m_font_fallbacks\empty % set in the font-ini
+
+\appendtoks
+    \ifconditional\c_font_fallbacks_in_progress\else
+        \ifempty\m_font_fallbacks
+            \ifempty\m_font_class_fallbacks\else
+                \font_fallbacks_prepare_indeed\m_font_class_fallbacks
+            \fi
+        \else
+            \font_fallbacks_prepare_indeed\m_font_fallbacks
+        \fi
+   \fi
+\to\everydefinefont
+
+\def\font_fallbacks_start_cloning
+  {\begingroup
+   \let\savedfontspec\somefontspec}
+
+\def\font_fallbacks_stop_cloning
+  {\endgroup}
+
+\def\font_fallbacks_clone_unique#specification#scale% kind of dododefinefont
+  {\clf_fontcollectionreport{defining #specification (relative scale: #scale)}% brrr
+   \setfalse\c_font_auto_size
+   \let\lastfontidentifier\s!dummy
+   \def\v_font_size_relative{#scale}%
+   \let\v_font_size_absolute\fontbody
+   \font_helpers_low_level_define{#specification}\v_font_identifier_basic
+   \csname\v_font_identifier_basic\endcsname
+   \setfalse\c_font_auto_size} % no \setfontcharacteristics and \the\everyfontswitch needed
+
+\def\font_fallbacks_clone_inherited#font% also a second argument
+  {\font_fallbacks_clone_unique{#font \savedfontspec}}
+
+\def\font_fallbacks_register_main        #name{\clf_fontcollectionregister{#name}}
+\def\font_fallbacks_prepare_clone_vectors#name{\clf_fontcollectionclone{#name}}
+
+% math (experiment, todo clf_)
+
+\def\font_fallbacks_register_math#1#2#3#4%
+  {\doifelsenothing{#3}%
+      {\definedfont[#2 at #4sp]}%
+      {\definedfont[#2*#3\space at #4\scaledpoint]}%
+   \clf_registerfontfallbackid#1\space\fontid\font\space{#2}}
+
+% \def\font_fallbacks_finish_math
+%   {\ctxlua{mathematics.finishfallbacks()}}
+
+% check : only replace when present in replacement font (default: no)
+% force : force replacent even when basefont has glyph  (default: yes)
+
+% \definefontfallback [whatever] [Slanted]     [0x0060-0x007F] [force=yes]
+% \definefontfallback [whatever] [Bold]        [0x0080:0x00FF,0x00A0:0x00AF] [rscale=2.0]
+% \definefontfallback [whatever] [BoldSlanted] ["00C0-"00C7] [check=yes,force=yes]
+% \definefontfallback [whatever] [Mono]        [latinextendeda] [force=yes] % 0x0100:0x017F
+% \definefontfallback [whatever] [Mono]        [latin extended a] [force=yes] % 0x0100:0x017F
+%
+% \definefontsynonym[SerifPlus][Serif][fallbacks=whatever]
+%
+% \showfont[SerifPlus][all]
+
+% \definefontfeature[zh][mode=node,script=hang,lang=zhs]
+% \definefontfallback[serifwhatever]          [lmroman10-regular]   [0x0000-0x0400][force=yes]
+% \definefontfallback[serifboldwhatever]      [lmroman10-bold]      [0x0000-0x0400][force=yes]
+% \definefontfallback[serifitalicwhatever]    [lmroman10-italic]    [0x0000-0x0400][force=yes]
+% \definefontfallback[serifbolditalicwhatever][lmroman10-bolditalic][0x0000-0x0400][force=yes]
+%
+% \starttypescript [serif] [zhfont]
+%    \definefontsynonym [zhserif]          [AdobeSongStd-Light]   [features=zh,fallbacks=serifwhatever]
+%    \definefontsynonym [zhserifbold]      [AdobeHeitiStd-Regular][features=zh,fallbacks=serifboldwhatever]
+%    \definefontsynonym [zhserifitalic]    [AdobeKaitiStd-Regular][features=zh,fallbacks=serifitalicwhatever]
+%    \definefontsynonym [zhserifbolditalic][AdobeHeitiStd-Regular][features=zh,fallbacks=serifbolditalicwhatever]
+% \stoptypescript
+%
+% \starttypescript [serif][zhfont][name]
+%    \definefontsynonym[Serif]             [zhserif]             % [fallbacks=serifwhatever]
+%    \definefontsynonym[SerifBold]         [zhserifbold]         % [fallbacks=serifboldwhatever]
+%    \definefontsynonym[SerifItalic]       [zhserifitalic]       % [fallbacks=serifitalicwhatever]
+%    \definefontsynonym[SerifBoldItalic]   [zhserifbolditalic]   % [fallbacks=serifbolditalicwhatever]
+% \stoptypescript
+%
+% \starttypescript[myfont]
+%    \definetypeface[myfont][rm][serif][zhfont]
+% \stoptypescript
+%
+% \usetypescript[myfont] \setupbodyfont[myfont,rm,12pt]
+%
+% \starttext
+%   fonts {\bf fonts} {\bi fonts} {\it fonts}
+% \stoptext
+
+\protect \endinput

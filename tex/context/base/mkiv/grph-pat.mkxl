@@ -49,10 +49,10 @@
    \edef\p_height {\dummyparameter\c!height}%
    \edef\p_hoffset{\dummyparameter\c!hoffset}%
    \edef\p_voffset{\dummyparameter\c!voffset}%
-   \scratchwidth  \dimexpr\ifx\p_width  \v!auto\wd  \nextbox   \else\p_width  \fi\relax
-   \scratchheight \dimexpr\ifx\p_height \v!auto\htdp\nextbox   \else\p_height \fi\relax
-   \scratchhoffset\dimexpr\ifx\p_hoffset\v!auto\scratchwidth /2\else\ifx\p_hoffset\v!auto_m-\scratchwidth /2\else\p_hoffset\fi\fi\relax
-   \scratchvoffset\dimexpr\ifx\p_voffset\v!auto\scratchheight/2\else\ifx\p_voffset\v!auto_m-\scratchheight/2\else\p_voffset\fi\fi\relax
+   \scratchwidth  \dimexpr\ifx\p_width  \v!auto\wd  \nextbox\else\p_width  \fi\relax
+   \scratchheight \dimexpr\ifx\p_height \v!auto\htdp\nextbox\else\p_height \fi\relax
+   \scratchhoffset\dimexpr\ifx\p_hoffset\v!auto\scratchwidth /2\orelse\ifx\p_hoffset\v!auto_m-\scratchwidth /2\else\p_hoffset\fi\relax
+   \scratchvoffset\dimexpr\ifx\p_voffset\v!auto\scratchheight/2\orelse\ifx\p_voffset\v!auto_m-\scratchheight/2\else\p_voffset\fi\relax
    \clf_registerpattern
       name    {\dummyparameter\c!name}
       number  \nextbox
