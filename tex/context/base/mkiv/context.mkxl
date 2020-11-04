@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.03 16:50}
+\edef\contextversion{2020.11.04 09:28}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -185,7 +185,7 @@
 \loadmkxlfile{supp-box}
 
 \loadmarkfile{supp-ran}
-\loadmarkfile{supp-mat}
+\loadmkxlfile{supp-mat}
 
 \loadmarkfile{core-uti}
 \loadmkvifile{file-job}

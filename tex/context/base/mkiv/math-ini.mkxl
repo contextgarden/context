@@ -244,8 +244,14 @@
 
 % Now we redefine \type {\mathematics} and \type {\m}:
 
-\permanent\protected\def\mathematics
-  {\doifelsenextoptionalcs\math_m_yes\math_m_nop}
+\pushoverloadmode
+
+    \permanent\protected\def\mathematics{\doifelsenextoptionalcs\math_m_yes\math_m_nop}
+
+    \aliased\let\m   \mathematics % we keep the simple versions
+    \aliased\let\math\mathematics % we keep the simple versions
+
+\popoverloadmode
 
 \def\math_m_yes
   {\relax
@@ -306,9 +312,6 @@
      #1%
      \normalstopimath
    \fi}
-
-\let\m   \mathematics
-\let\math\mathematics
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
@@ -1970,6 +1973,33 @@
      {#1\textstyle        {#2}}%
      {#1\scriptstyle      {#2}}%
      {#1\scriptscriptstyle{#2}}}
+
+%D \macros
+%D    {cramedllap, crampedrlap, crampedclap}
+%D
+%D In many cases, one wants to use the \tex {clap} macro in math mode while using
+%D subscripts. Normally, subscripts are in cramped mode, and these macros allow you
+%D to go to cramped mode. For example:
+%D
+%D \startbuffer
+%D \startformula
+%D   \sum_{a^2 < b^2 < c^2} \quad
+%D   \sum_{\clap{a^2 < b^2 < c^2}} \quad
+%D   \sum_{\crampedclap{a^2 < b^2 < c^2}}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \start
+%D   \typebuffer
+%D   \switchtobodyfont[24pt]
+%D   \getbuffer
+%D \stop
+%D
+%D This used to be in \type {supp-math.mkxl}:
+
+\permanent\protected\def\crampedllap#1{\llap{\cramped#1}}
+\permanent\protected\def\crampedrlap#1{\rlap{\cramped#1}}
+\permanent\protected\def\crampedclap#1{\clap{\cramped#1}}
 
 %D Often we can use:
 %D

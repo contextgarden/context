@@ -1,0 +1,180 @@
+%D \module
+%D   [       file=supp-mat,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For practical reasons, I decided to move some math things to a support module.
+%D There is nothing spectacular here. It may move back to math-ini.
+
+\writestatus{loading}{ConTeXt Support Macros / Math}
+
+\unprotect
+
+%D \macros
+%D   {mathematics, math, nomathematics, startmathmode}
+%D
+%D The \type {$} can be both an begin and end math character. This can lead to
+%D confusing and errorprone situations when macros insert \type {$}. When for
+%D instance we have defined:
+%D
+%D \starttyping
+%D \def\MyPlus{$\,+\,$}
+%D \stoptyping
+%D
+%D the sequence \type{$x^2 \MyPlus y^2 = r^2$} will expand to:
+%D
+%D \starttyping
+%D $x^2 $\,+\,$ y^2 = r^2$
+%D \stoptyping
+%D
+%D Here the \type {\,} are given outside math mode and \TEX\ will definitely
+%D complain about this. A more save definition would have been:
+%D
+%D \starttyping
+%D \def\MyPlus{\mathematics{\,+\,}}
+%D \stoptyping
+%D
+%D Which is implemented (in \type{syst-ini.mkiv}) as:
+
+\permanent\protected\def\Ucheckedstartdisplaymath
+  {\ifinner
+     \ifhmode
+       \normalUstartmath
+       \let\Ucheckedstopdisplaymath\normalUstopmath
+     \else
+       \normalUstartdisplaymath
+       \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
+     \fi
+   \else
+     \normalUstartdisplaymath
+     \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
+   \fi}
+
+\aliased\let\Ucheckedstopdisplaymath\relax
+
+\def\normalmathaligntab{&} % \let\normalmathaligntab\aligntab does to work well in a let to & (a def works ok)
+
+% \let\normalsuper\Usuperscript % obsolete
+% \let\normalsuber\Usubscript   % obsolete
+
+\aliased\let\startimath\Ustartmath
+\aliased\let\stopimath \Ustopmath
+\aliased\let\startdmath\Ustartdisplaymath  % \Ucheckedstartdisplaymath
+\aliased\let\stopdmath \Ustopdisplaymath   % \Ucheckedstopdisplaymath
+
+\permanent\protected\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\permanent\protected\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
+\permanent\protected\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\permanent\protected\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
+
+\aliased\let\stopmathmode\relax
+
+\permanent\protected\def\startmathmode % nested variant
+  {\relax\ifmmode
+     \begingroup
+     \enforced\let\stopmathmode\endgroup
+   \else
+     \normalstartimath
+     \enforced\let\stopmathmode\normalstopimath
+   \fi}
+
+\permanent\protected\def\nomathematics#1%
+  {\relax\ifmmode\hbox{#1}\else#1\fi}
+
+\aliased\let\m   \mathematics % \mathematics will be overloaded later
+\aliased\let\math\mathematics % \mathematics will be overloaded later
+
+%D \macros
+%D   {displaymathematics,inlinemathematics,automathematics}
+%D
+%D An example of usage of the following can be found in the MathML module:
+
+\ifdefined\strc_formulas_start_formula \else
+    \def\strc_formulas_start_formula{\normalstartdmath}
+    \def\strc_formulas_stop_formula {\normalstopdmath }
+\fi
+
+\permanent\protected\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
+\permanent\protected\def\inlinemathematics   {\dontleavehmode\mathematics}
+%permanent\protected\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
+
+% better, esp when used in bTABLE ... eTABLE
+
+\permanent\protected\def\automathematics
+  {\relax
+   \ifhmode
+     \expandafter\inlinemathematics
+   \orelse\ifintable
+     \doubleexpandafter\inlinemathematics
+   \else
+     \doubleexpandafter\displaymathematics
+   \fi}
+
+%D \macros
+%D   {dimension, nodimension}
+%D
+%D The next few macros are used for typesetting dimensions in such a way that
+%D spacing is acceptable. I won't spend much words on these macros, because they
+%D will be overloaded in the units module.
+%D
+%D REPLACED (keep commented):
+
+\newsignal\dimensionsignal
+
+\def\dimensiontypeface  {\tf}
+\def\dimensionhalfspace {\,}
+
+\protected\def\dimension#1%
+  {\pushmacro\dodimensionsignal
+   \gdef\dodimensionsignal{\kern\dimensionsignal}%
+   \ifzeropt\lastskip
+     \ifzeropt\lastkern
+       \ifmmode
+         \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+       \else
+         \mathematics{\dimensiontypeface#1}%
+       \fi
+     \orelse\ifdim\lastkern=\dimensionsignal
+       \mathematics{\dimensionhalfspace\dimensiontypeface#1}%
+     \else
+       \unkern\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+     \fi
+   \else
+     \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+   \fi
+   \dodimensionsignal
+   \popmacro\dodimensionsignal}
+
+\protected\def\nodimension#1%
+  {\unskip#1\glet\dodimensionsignal\relax}
+
+% experiment, not yet to be used
+
+% \protected\def\displaybreak
+%   {\ifhmode
+%      \removeunwantedspaces
+%      \ifcase\raggedstatus\hfill\fi
+%      \strut\penalty-9999 % \break fails on case (3)
+%    \fi}
+%
+% \def\startdisplay{\displaybreak\ignorespaces\startpacked}
+% \def\stopdisplay {\stoppacked\displaybreak\ignorespaces}
+
+\aliased\let\superscript     \Usuperscript
+\aliased\let\subscript       \Usubscript
+\aliased\let\nosuperscript   \Unosuperscript
+\aliased\let\nosubscript     \Unosubscript
+\aliased\let\superprescript  \Usuperprescript
+\aliased\let\subprescript    \Usubprescript
+\aliased\let\nosuperprescript\Unosuperprescript
+\aliased\let\nosubsprecript  \Unosubprescript
+
+\protect \endinput
