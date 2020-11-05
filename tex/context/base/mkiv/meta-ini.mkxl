@@ -547,16 +547,16 @@
    \fi}
 
 \def\meta_prepare_variable_nop
-  {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
+  {\expandafter\letcsname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
 
 \def\meta_prepare_variable_color % we use the attribute so we dont' go through namedcolor (why not)
-  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
+  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
 
 \def\meta_prepare_variable_number
-  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\number\m_meta_current_variable}}% also accepts 0.number
+  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\number\m_meta_current_variable}}% also accepts 0.number
 
 \def\meta_prepare_variable_dimension
-  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
+  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
 
 \def\meta_prepare_variable_yes
   {\ifchkdim\m_meta_current_variable\or

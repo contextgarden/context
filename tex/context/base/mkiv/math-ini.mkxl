@@ -2351,7 +2351,7 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[#2]\math_style_collect
-   \expandafter\let\csname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
+   \letcsname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
 
 % \def\math_style_set_indeed
 %   {\csname\??mathstyle

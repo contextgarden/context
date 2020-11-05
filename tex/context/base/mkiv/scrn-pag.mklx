@@ -1,0 +1,310 @@
+%D \module
+%D   [       file=scrn-pag,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Screen Macros,
+%D       subtitle=Pages, % moved code
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% pagecomments will be done differently
+
+\writestatus{loading}{ConTeXt Screen Macros / Pages}
+
+\registerctxluafile{scrn-pag}{}
+
+\unprotect
+
+\installcorenamespace{interactionscreen}
+
+\installparameterhandler \??interactionscreen {interactionscreen}
+\installsetuphandler     \??interactionscreen {interactionscreen}
+
+\newdimen\canvaswidth
+\newdimen\canvasheight
+\newdimen\canvasbackoffset
+\newdimen\canvastopoffset
+\newdimen\canvasmaxwidth
+\newdimen\canvasmaxheight
+\newdimen\canvascropoffset
+\newdimen\canvastrimoffset
+\newdimen\canvasbleedoffset
+\newdimen\canvasartoffset
+
+\newconditional\c_scrn_canvas_tight_page
+
+\def\scrn_canvas_calculate
+  {\begingroup
+   \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
+   \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
+   \canvasbackoffset\backspace
+   \canvastopoffset\topspace
+   \donetrue
+   \ifx\currentinteractionscreenwidth\v!max
+     \global\canvaswidth\printpaperwidth
+   \orelse\ifx\currentinteractionscreenwidth\v!fit
+     \donefalse
+     \global\canvaswidth\dimexpr
+       \leftcombitotal
+     + \makeupwidth
+     + \rightcombitotal
+     + 2\dimexpr
+          \interactionscreenparameter\c!backspace
+        + \interactionscreenparameter\c!horoffset
+        \relax
+     \relax
+   \orelse\ifx\currentinteractionscreenwidth\v!tight
+     \donefalse
+     \ifdim\backspace>\canvaswidth
+       \ifdim\backspace>\zeropoint\relax
+         \global\advance\canvasbackoffset -\canvaswidth
+       \fi
+     \fi
+     \global\advance\canvaswidth\dimexpr
+       \makeupwidth
+     + \rightcombitotal
+     + 2\dimexpr
+          \interactionscreenparameter\c!backspace
+        + \interactionscreenparameter\c!horoffset
+        \relax
+     \relax
+   \else
+     \donefalse
+     \global\canvaswidth\currentinteractionscreenwidth
+   \fi
+   \ifx\currentinteractionscreenheight\v!max
+     \global\canvasheight\printpaperheight
+   \orelse\ifx\currentinteractionscreenheight\v!fit
+     \donefalse
+     \global\canvasheight\dimexpr
+       \topheight
+     + \topdistance
+     + \makeupheight
+     + \bottomdistance
+     + \bottomheight
+     + 2\dimexpr
+          \interactionscreenparameter\c!topspace
+        + \interactionscreenparameter\c!veroffset
+        \relax
+     \relax
+   \orelse\ifx\currentinteractionscreenheight\v!tight
+     \donefalse
+     \global\canvasheight\dimexpr\topheight+\topdistance\relax
+     \ifdim\topspace>\canvasheight
+       \ifdim\topspace>\zeropoint\relax
+         \global\advance\canvastopoffset -\canvasheight
+       \fi
+     \fi
+     \global\advance\canvasheight\dimexpr
+       \makeupheight
+     + \bottomdistance
+     + \bottomheight
+     + 2\dimexpr
+          \interactionscreenparameter\c!topspace
+        + \interactionscreenparameter\c!veroffset
+        \relax
+     \relax
+   \else
+     \donefalse
+     \global\canvasheight\currentinteractionscreenheight
+   \fi
+   \ifconditional\c_page_layouts_location_is_set
+     \global\setfalse\c_scrn_canvas_tight_page
+   \fi
+   \ifconditional\c_scrn_canvas_tight_page
+     \global\canvasmaxwidth \paperwidth
+     \global\canvasmaxheight\paperheight
+   \else
+     \global\canvasmaxwidth \printpaperwidth
+     \global\canvasmaxheight\printpaperheight
+   \fi
+   % new:
+   \ifdone
+     \global\canvascropoffset \layoutcropoffset
+     \global\canvastrimoffset \layouttrimoffset
+     \global\canvasbleedoffset\layoutbleedoffset
+     \global\canvasartoffset  \layoutartoffset
+   \else
+     \global\canvascropoffset \zeropoint
+     \global\canvastrimoffset \zeropoint
+     \global\canvasbleedoffset\zeropoint
+     \global\canvasartoffset  \zeropoint
+   \fi
+   \endgroup}
+
+\newdimen\layoutcropoffset
+\newdimen\layouttrimoffset
+\newdimen\layoutbleedoffset
+\newdimen\layoutartoffset
+
+\appendtoks
+   \edef\p_cropoffset{\layoutparameter\c!cropoffset}%
+   \ifx\p_cropoffset\v!auto
+     \ifconditional\c_page_layouts_location_is_middle
+       \scratchheight\dimexpr(\printpaperheight-\paperheight)/2\relax
+       \scratchwidth \dimexpr(\printpaperwidth -\paperwidth )/2\relax
+       \layoutcropoffset\ifdim\scratchheight>\scratchwidth\scratchheight\else\scratchwidth\fi
+       \layouttrimoffset \layoutparameter\c!trimoffset
+       \layoutbleedoffset\layoutparameter\c!bleedoffset
+       \layoutartoffset  \layoutparameter\c!artoffset
+     \else
+       \writestatus\m!system{auto crop etc only supported when location=middle}%
+       \layoutcropoffset \zeropoint
+       \layouttrimoffset \zeropoint
+       \layoutbleedoffset\zeropoint
+       \layoutartoffset  \zeropoint
+     \fi
+   \else
+     \layoutcropoffset \layoutparameter\c!cropoffset
+     \layouttrimoffset \layoutparameter\c!trimoffset
+     \layoutbleedoffset\layoutparameter\c!bleedoffset
+     \layoutartoffset  \layoutparameter\c!artoffset
+   \fi
+   \relax
+\to \everysetuplayout
+
+\setuplayout
+  [\c!cropoffset=\zeropoint,
+   \c!trimoffset=\zeropoint,
+   \c!bleedoffset=\zeropoint,
+   \c!artoffset=\zeropoint]
+
+% test the next when something is changed here:
+%
+% \setuppapersize[A5][A3]  \showframe
+%
+% % \setuplayout[location=middle] \setupinteractionscreen[option=fit]
+% % \setuplayout[location=middle] \setupinteractionscreen[option=auto]
+% %                               \setupinteractionscreen[option=fit]
+% %                               \setupinteractionscreen[option=auto]
+%
+% \starttext \input ward \stoptext
+
+\let\scrn_canvas_synchronize_simple \relax
+\let\scrn_canvas_synchronize_complex\relax
+
+\appendtoks
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+\to \everysetuplayout
+
+\appendtoks
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+\to \everysetuplayouttarget
+
+\def\scrn_canvas_synchronize_only
+  {\clf_setupcanvas
+     paperwidth  \printpaperwidth
+     paperheight \printpaperheight
+   \relax}
+
+\def\scrn_canvas_synchronize_set#width#height%
+  {\clf_setupcanvas
+     paperwidth  \dimexpr#width\relax
+     paperheight \dimexpr#height\relax
+   \relax}
+
+\let\scrn_canvas_synchronize_reset\scrn_canvas_synchronize_only
+
+\def\scrn_canvas_synchronize_simple_indeed
+  {\scrn_canvas_synchronize_only
+  %\glet\scrn_canvas_synchronize_simple \relax
+   \glet\scrn_canvas_synchronize_complex\relax}
+
+\def\scrn_canvas_synchronize_complex_indeed
+  {\scrn_canvas_calculate % otherwise we need to hook it into setuppage etc
+   \clf_setupcanvas
+        mode        {\interactionscreenparameter\c!option}%
+        singlesided \ifsinglesided true\else false\fi\space
+        doublesided \ifdoublesided true\else false\fi\space
+        leftoffset  \canvasbackoffset
+        topoffset   \canvastopoffset
+        width       \canvaswidth
+        height      \canvasheight
+        paperwidth  \canvasmaxwidth
+        paperheight \canvasmaxheight
+        cropoffset  \canvascropoffset
+        trimoffset  \canvastrimoffset
+        bleedoffset \canvasbleedoffset
+        artoffset   \canvasartoffset
+        copies      \numexpr\interactionscreenparameter\c!copies\relax
+        print       {\interactionscreenparameter\c!print}%
+   \relax
+  %\glet\scrn_canvas_synchronize_simple \relax
+   \glet\scrn_canvas_synchronize_complex\relax}
+
+\appendtoks
+    \begingroup
+    \edef\p_option{\interactionscreenparameter\c!option}%
+    \ifx\p_option\v!max
+      \global\settrue \c_scrn_canvas_tight_page
+    \orelse\ifx\p_option\v!fit
+      \global\settrue \c_scrn_canvas_tight_page
+    \else
+      \global\setfalse\c_scrn_canvas_tight_page
+    \fi
+    \endgroup
+\to \everysetupinteractionscreen
+
+\setupinteractionscreen
+  [\c!width=\printpaperwidth,
+   \c!height=\printpaperheight,
+   \c!horoffset=\zeropoint,
+   \c!veroffset=\zeropoint,
+   \c!backspace=\backspace,
+   \c!topspace=\topspace,
+   \c!copies=\plusone, % not the best place but backend anyway
+   \c!option=\v!auto]
+
+\appendtoks
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+\to \everysetupinteractionscreen
+
+%D Conditional page breaks:
+
+\permanent\tolerant\protected\def\screen[#list]%
+  {\iflocation
+     \page[#list]%
+   \fi}
+
+%D Page transitions:
+
+\let\scrn_transitions_list\empty
+
+\permanent\tolerant\protected\def\setuppagetransitions[#list]%
+  {\edef\scrn_transitions_list{#list}%
+   \ifx\scrn_transitions_list\v!reset
+     \let\scrn_transitions_list\empty
+   \fi}
+
+\def\scrn_transitions_set
+  {\iflocation \ifx\scrn_transitions_list\empty \else
+     \scrn_transitions_set_indeed
+   \fi \fi}
+
+\def\scrn_transitions_set_indeed
+  {\begingroup
+   \edef\currentinteractionscreendelay{\interactionscreenparameter\c!delay}%
+   \clf_setpagetransition
+      n     {\scrn_transitions_list}%
+      delay \ifx\currentinteractionscreendelay\v!none \zerocount\else\currentinteractionscreendelay\fi
+   \relax
+   \endgroup}
+
+\prependtoks
+    \scrn_transitions_set
+\to \everyshipout
+
+\setupinteractionscreen
+  [\c!delay=\v!none]
+
+\setuppagetransitions
+  [\v!reset]
+
+\protect \endinput

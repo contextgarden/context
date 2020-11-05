@@ -60,6 +60,7 @@
 \immutable\def\m!prefix!{m!}
 \immutable\def\s!prefix!{s!}
 \immutable\def\v!prefix!{v!}
+\immutable\def\t!prefix!{t!}
 
 %D \macros
 %D   [constants,variables,commands]
@@ -168,9 +169,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-%permanent\protected\def\defineinterfaceconstant #1#2{\immutable\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
-\permanent\protected\def\defineinterfacevariable #1#2{\immutable\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
-\permanent\protected\def\defineinterfaceelement  #1#2{\immutable\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
+%permanent\protected\def\defineinterfaceconstant#1#2{\immutable\defcsname\c!prefix!#1\endcsname{#2}}
+\permanent\protected\def\defineinterfacevariable#1#2{\immutable\defcsname\v!prefix!#1\endcsname{#2}}
+\permanent\protected\def\defineinterfaceelement #1#2{\immutable\defcsname\e!prefix!#1\endcsname{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -178,7 +179,7 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\permanent\protected\def\definefileconstant #1#2{\immutable\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
+\permanent\protected\def\definefileconstant#1#2{\immutable\defcsname\f!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -187,10 +188,13 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-% for now we check if a system variable has been defined, till we fixed all duplicate definitions
+\permanent\protected\def\definesystemconstant #1{\immutable\defcsname\s!prefix!#1\endcsname{#1}}
+\permanent\protected\def\definemessageconstant#1{\immutable\defcsname\m!prefix!#1\endcsname{#1}}
 
-\permanent\protected\def\definesystemconstant  #1{\immutable\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
-\permanent\protected\def\definemessageconstant #1{\immutable\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
+%D For now here:
+
+\permanent\protected\def\definetagconstant  #1{\immutable\defcsname\t!prefix!#1\endcsname{#1}}
+\permanent\protected\def\aliastagconstant #1#2{\aliased  \letcsname\t!prefix!#1\expandafter\endcsname\csname\t!prefix!#2\endcsname}
 
 %D In a parameter driven system, some parameters are shared by more system
 %D components. In \CONTEXT\ we can distinguish parameters by a unique prefix. Such a
@@ -200,7 +204,7 @@
 %D \definesystemvariable {name}
 %D \stoptyping
 
-\permanent\protected\def\definesystemvariable#1{\immutable\expandafter\edef\csname\??prefix#1\endcsname{\@@prefix#1}}
+\permanent\protected\def\definesystemvariable#1{\immutable\edefcsname\??prefix#1\endcsname{\@@prefix#1}}
 
 \definesystemvariable{ms}
 
@@ -403,35 +407,35 @@
 
 \pushoverloadmode
 
-\permanent\protected\def\doletvalue     #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\permanent\protected\def\dosetvalue     #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\permanent\protected\def\dosetevalue    #1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\permanent\protected\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\permanent\protected\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\permanent\protected\def\doresetvalue   #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
-\permanent\protected\def\doignorevalue#1#2#3{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\permanent\protected\def\doletvalue     #1#2{\letcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\permanent\protected\def\dosetvalue     #1#2{\defcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\permanent\protected\def\dosetevalue    #1#2{\edefcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\permanent\protected\def\dosetgvalue    #1#2{\global\defcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\permanent\protected\def\dosetxvalue    #1#2{\global\edefcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\permanent\protected\def\doresetvalue   #1#2{\letcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\permanent\protected\def\doignorevalue#1#2#3{\letcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
 
 \permanent\protected\def\docopyvalue#1#2#3%
   {\ifcsname\k!prefix!#3\endcsname
-     \expandafter\def\csname#1\csname\k!prefix!#3\endcsname\expandafter\endcsname\expandafter
+     \defcsname#1\csname\k!prefix!#3\endcsname\expandafter\endcsname\expandafter
        {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \else
-     \expandafter\def\csname#1#3\expandafter\endcsname\expandafter
+     \defcsname#1#3\expandafter\endcsname\expandafter
        {\csname#2#3\endcsname}%
    \fi}
 
 \startinterface english
 
-    \permanent\protected\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
-    \permanent\protected\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
-    \permanent\protected\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
-    \permanent\protected\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
-    \permanent\protected\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
-    \permanent\protected\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
-    \permanent\protected\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
+    \permanent\protected\def\doletvalue     #1#2{\letcsname#1#2\endcsname}
+    \permanent\protected\def\dosetvalue     #1#2{\defcsname#1#2\endcsname}
+    \permanent\protected\def\dosetevalue    #1#2{\edefcsname#1#2\endcsname}
+    \permanent\protected\def\dosetgvalue    #1#2{\global\defcsname#1#2\endcsname}
+    \permanent\protected\def\dosetxvalue    #1#2{\global\edefcsname#1#2\endcsname}
+    \permanent\protected\def\doresetvalue   #1#2{\letcsname#1#2\endcsname\empty}
+    \permanent\protected\def\doignorevalue#1#2#3{\letcsname#1#2\endcsname\empty}
 
     \permanent\protected\def\docopyvalue#1#2#3%
-      {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter
+      {\defcsname#1#3\expandafter\endcsname\expandafter
          {\csname#2#3\endcsname}}
 
 \stopinterface
@@ -682,11 +686,11 @@
 
 \permanent\overloaded\protected\def\setinterfaceconstant#1#2%
   {\clf_setinterfaceconstant{#1}{#2}%
-   \immutable\expandafter\def\csname\c!prefix!#1\endcsname{#1}}
+   \immutable\defcsname\c!prefix!#1\endcsname{#1}}
 
 \permanent\overloaded\protected\def\setinterfacevariable#1#2%
   {\clf_setinterfacevariable{#1}{#2}%
-   \immutable\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
+   \immutable\defcsname\v!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {defineinterfaceconstant}
@@ -696,7 +700,7 @@
 %D c||version, but for documentation purposes the x||alternative comes in handy.
 
 \permanent\overloaded\protected\def\defineinterfaceconstant#1#2%
-  {\immutable\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
+  {\immutable\defcsname\c!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {startelements}
@@ -720,29 +724,29 @@
 
 \permanent\protected\def\setinterfacecommand#1#2% \frozen ? \permanent ?
   {\doifnot{#1}{#2}% todo: let when already defined
-     {\expandafter\def\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}}
+     {\defcsname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}}
 
 %D We just ignore these:
 
-\permanent\protected\def\startvariables{\gobbleuntil\stopvariables} \let\stopvariables\relax
-\permanent\protected\def\startconstants{\gobbleuntil\stopconstants} \let\stopconstants\relax
-\permanent\protected\def\startelements {\gobbleuntil\stopelements } \let\stopelements \relax
-\permanent\protected\def\startcommands {\gobbleuntil\stopcommands } \let\stopcommands \relax
+\permanent\protected\def\startvariables{\gobbleuntil\stopvariables} \aliased\let\stopvariables\relax
+\permanent\protected\def\startconstants{\gobbleuntil\stopconstants} \aliased\let\stopconstants\relax
+\permanent\protected\def\startelements {\gobbleuntil\stopelements } \aliased\let\stopelements \relax
+\permanent\protected\def\startcommands {\gobbleuntil\stopcommands } \aliased\let\stopcommands \relax
 
 %D For at the \LUA\ end (experiment):
 
-\def\ui_c#1#2{\immutable\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
-              \immutable\expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
-\def\ui_s  #1{\immutable\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
-              \immutable\expandafter\gdef\csname\k!prefix!#1\endcsname{#1}} % backmapping from non english
-\def\ui_v#1#2{\immutable\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
-\def\ui_e#1#2{\immutable\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
+\def\ui_c#1#2{\immutable\global\defcsname\c!prefix!#1\endcsname{#1}%
+              \immutable\global\defcsname\k!prefix!#2\endcsname{#1}} % backmapping from non english
+\def\ui_s  #1{\immutable\global\defcsname\c!prefix!#1\endcsname{#1}%
+              \immutable\global\defcsname\k!prefix!#1\endcsname{#1}} % backmapping from non english
+\def\ui_v#1#2{\immutable\global\defcsname\v!prefix!#1\endcsname{#2}}
+\def\ui_e#1#2{\immutable\global\defcsname\e!prefix!#1\endcsname{#2}}
 \def\ui_a#1#2{\frozen\protected\def#2{#1}} % will go away
 
 \startinterface english
 
-    \def\ui_c#1#2{\immutable\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
-    \def\ui_s  #1{\immutable\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+    \def\ui_c#1#2{\immutable\global\defcsname\c!prefix!#1\endcsname{#1}}
+    \def\ui_s  #1{\immutable\global\defcsname\c!prefix!#1\endcsname{#1}}
 
 \stopinterface
 

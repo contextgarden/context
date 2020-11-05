@@ -170,7 +170,7 @@
 
 % no start stop here
 
-\expandafter\let\csname\??constructionmainhandler\v!label\expandafter\endcsname\csname\??constructionmainhandler\v!description\endcsname
+\letcsname\??constructionmainhandler\v!label\expandafter\endcsname\csname\??constructionmainhandler\v!description\endcsname
 
 \protected\setevalue{\??constructioncommandhandler\v!label}%
   {\csname\??constructionstarthandler\v!construction\endcsname

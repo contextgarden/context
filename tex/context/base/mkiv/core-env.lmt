@@ -46,14 +46,33 @@ local cache = tokens.cache
 
 -- we can have a modes cache too
 
+local commandcodes  = tokens.commands
 local iftrue        = cache["iftrue"].index
 
-local dimencode     = cache["scratchdimen"]  .command -- tokens.commands.register_dimen
-local countcode     = cache["scratchcounter"].command -- tokens.commands.register_int
-local tokencode     = cache["scratchtoks"]   .command -- tokens.commands.register_toks
-local skipcode      = cache["scratchskip"]   .command -- tokens.commands.register_glue
-local muskipcode    = cache["scratchmuskip"] .command -- tokens.commands.register_mu_glue
-local conditioncode = cache["iftrue"]        .command -- tokens.commands.if_test
+-- local dimencode     = cache["scratchdimen"]  .command -- tokens.commands.register_dimen
+-- local countcode     = cache["scratchcounter"].command -- tokens.commands.register_int
+-- local tokencode     = cache["scratchtoks"]   .command -- tokens.commands.register_toks
+-- local skipcode      = cache["scratchskip"]   .command -- tokens.commands.register_glue
+-- local muskipcode    = cache["scratchmuskip"] .command -- tokens.commands.register_mu_glue
+-- local conditioncode = cache["iftrue"]        .command -- tokens.commands.if_test
+
+-- local types = {
+--     [dimencode]     = "dimen",
+--     [countcode]     = "count",
+--     [tokencode]     = "token",
+--     [skipcode]      = "skip",
+--     [muskipcode]    = "muskip",
+--  -- [attributecode] = "attribute",
+--     [conditioncode] = "condition"
+-- }
+
+local dimencode     = commandcodes.register_dimen   -- cache["scratchdimen"]  .command -- tokens.commands.register_dimen
+local countcode     = commandcodes.register_int     -- cache["scratchcounter"].command -- tokens.commands.register_int
+local tokencode     = commandcodes.register_toks    -- ["scratchtoks"]   .command -- tokens.commands.register_toks
+local skipcode      = commandcodes.register_glue    -- cache["scratchskip"]   .command -- tokens.commands.register_glue
+local muskipcode    = commandcodes.register_mu_glue -- cache["scratchmuskip"] .command -- tokens.commands.register_mu_glue
+local conditioncode = commandcodes.if_test          -- cache["iftrue"]        .command -- tokens.commands.if_test
+local integercode   = commandcodes.integer
 
 local types = {
     [dimencode]     = "dimen",
@@ -62,7 +81,8 @@ local types = {
     [skipcode]      = "skip",
     [muskipcode]    = "muskip",
  -- [attributecode] = "attribute",
-    [conditioncode] = "condition"
+    [conditioncode] = "condition",
+    [integercode]   = "integer",
 }
 
 setmetatableindex(texmodes, function(t,k)
@@ -96,20 +116,20 @@ setmetatablenewindex(texconditionals, function(t,k) report_mode("you cannot set 
 setmetatablenewindex(texifs,          function(t,k) end)
 
 -- if we really need performance we can have a dedicated cache for each
--- kind of variable
+-- kind of variable ... maybe we no longer have to cache anyway (in lmtx)
 
 setmetatableindex(texconstants, function(t,k)
-    return cache[k].command == countcode and texgetcount(k) or 0
+ -- return cache[k].command == countcode and texgetcount(k) or 0
+    return cache[k].command == integercode and texgetintegervalue(k) or 0
 end)
 
 setmetatableindex(texconditionals, function(t,k) -- 0 == true
-    return cache[k].command == countcode and texgetcount(k) == 0
+ -- return cache[k].command == countcode and texgetcount(k) == 0
+    return cache[k].command == integercode and texgetintegervalue(k) == 0
 end)
 
 setmetatableindex(texifs, function(t,k)
     local c = cache[k]
-    print(k)
-    inspect(c)
     return c.command == conditioncode and c.index == iftrue
 end)
 

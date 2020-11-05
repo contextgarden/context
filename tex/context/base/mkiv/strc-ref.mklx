@@ -1,0 +1,2196 @@
+%D \module
+%D   [       file=strc-ref,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Cross Referencing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: (1) configure references, (2) rendering => with presets
+%
+% \defineconversionset[default][Character,number,Romannumerals,Character][number]
+% \defineseparatorset [default][.,.,--][.]
+% \setuphead[subsection][sectionstopper=),sectionsegments=4:4]
+% \setupreferencestructureprefix[default][prefixsegments=2:4]
+% \setupreferencestructureprefix[figure][default][prefixsegments=3:4]
+% \chapter {One}
+% \section {One}
+% \subsection[sec:test]{Two}
+% See \in[sec:test] and \in[fig:xx] and \in[fig:yy]
+% \placefigure[here][fig:xx]{}{}
+% \placefigure[here][fig:yy]{}{}
+
+\writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
+
+\registerctxluafile{strc-rsc}{}
+\registerctxluafile{strc-ref}{}
+\registerctxluafile{node-ref}{optimize}
+
+\unprotect
+
+% todo : unknown/illegal reference no arg
+% todo : +n pages check on 'samepage' (contrastcolor)
+% todo : multiple text in reference
+
+% Makes more sense to build action data first, especially now openaction etc are
+% supported.
+%
+% \definespecial\doexecuteactionchain w h
+% \definespecial\dosetgotolocation
+% \definespecial\dosetexecuteJScode
+% ...
+
+%D This module deals with referencing. In \CONTEXT\ referencing is one of the core
+%D features, although at a first glance probably nobody will notice. This is good,
+%D because referencing should be as hidden as possible.
+%D
+%D Before we start implementing functionality we provide a way to set up this
+%D mechanism.
+%D
+%D \showsetup{setupreferencing}
+%D
+%D In interactive documents verbose references don't always make sense (what is a
+%D page number in an unnumbered document). By setting the \type{interaction}
+%D variable, one can influences the way interactive references are set.
+
+\let\referenceprefix\empty
+
+\installcorenamespace{referencing}
+
+\installdirectcommandhandler \??referencing {referencing} % \??referencing
+
+\newif\ifreferencing \referencingtrue
+
+\appendtoks
+    \edef\p_state{\referencingparameter\c!state}%
+    \ifx\p_state\v!start
+      \referencingtrue
+    \else
+      \referencingfalse
+    \fi
+\to \everysetupreferencing
+
+%D In paper documents, referencing comes down to cross referencing, but in
+%D their interactive counterparts, is also involves navigation. Many features
+%D implemented here are therefore closely related to navigation.
+%D
+%D Many \CONTEXT\ commands can optionally be fed with a reference. Such a
+%D reference, when called upon, returns the number of a figure, table, chapter
+%D etc, a piece of text, or a pagenumber.
+%D
+%D There are three ways of defining a reference:
+%D
+%D \starttyping
+%D \pagereference[here]
+%D \textreference[here]{some text}
+%D \stoptyping
+%D
+%D the third alternative combines them in:
+%D
+%D \starttyping
+%D \reference[here]{some text}
+%D \stoptyping
+
+\permanent\protected\def\showreferences{\enabletrackers[nodes.references.show,nodes.destinations.show]}
+
+%D These are implemented in a low level form as:
+
+\permanent\tolerant\protected\def\textreference                  [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
+\permanent\tolerant\protected\def\pagereference                  [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
+\permanent\tolerant\protected\def\reference                      [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
+\permanent\tolerant\protected\def\setreference [#labels]#spacer[#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
+
+\permanent\protected\def\dosetdirectpagereference#1{\strc_references_set_named_reference\s!page{#1}{}{}} % low level, maybe use _
+
+\permanent\protected\def\usereferenceparameter#1% faster local variant
+  {\edef\m_strc_references_asked{#1\c!reference}%
+   \ifempty\m_strc_references_asked\else
+     \dosetdirectpagereference\m_strc_references_asked
+   \fi}
+
+%D Actually there is not much difference between a text and a full reference, but
+%D it's the concept that counts. The low level implementation is:
+
+\newcount\lastreferenceattribute
+\newcount\lastdestinationattribute
+
+\def\strc_references_finish#prefix#reference#internal% gets expanded anyway
+  {\normalexpanded{\clf_deferredenhancereference{#prefix}{#reference}}}
+
+\permanent\let\dofinishreference\strc_references_finish % used at lua end
+
+%D This is somewhat tricky: we want to keep the reference with the following word but
+%D that word should also hyphenate. We need to find a better way.
+
+% 0 = nothing
+% 1 = bind to following word
+
+\setnewconstant\c_strc_references_bind_state\plusone
+
+\def\strc_references_inject_before
+  {}
+
+\def\strc_references_inject_after
+  {\ifcase\c_strc_references_bind_state
+     % nothing
+   \or
+     \prewordbreak % to be tested: \removeunwantedspaces\permithyphenation
+   \fi}
+
+
+\protected\def\strc_references_set_named_reference
+  {\ifreferencing
+     \expandafter\strc_references_set_named_reference_indeed
+   \else
+     \expandafter\gobblefourarguments
+   \fi}
+
+\newbox\b_strc_destination_nodes
+
+\protected\def\strc_references_flush_destination_nodes
+  {\ifvoid\b_strc_destination_nodes \else
+     \unhbox\b_strc_destination_nodes
+   \fi}
+
+\def\strc_references_placeholder
+  {\ifempty\dotaggedplaceholder\else
+     \c_attr_destination\lastdestinationattribute
+     \dotaggedplaceholder
+   \fi}
+
+\protected\def\strc_references_destination_point_yes
+  {\strc_references_inject_before % new
+   \dostarttagged\t!reference\empty
+   \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+     \strc_references_flush_destination_nodes
+     \strc_references_placeholder
+     \egroup
+   \dostoptagged
+   \strc_references_inject_after}
+
+\protected\def\strc_references_destination_point_nop
+  {\strc_references_inject_before % new
+   \dostarttagged\t!reference\empty
+   \dontleavehmode\hbox \bgroup
+     \strc_references_flush_destination_nodes
+     \strc_references_placeholder
+   \egroup
+   \dostoptagged
+   \strc_references_inject_after}
+
+\protected\def\strc_references_start_destination_nodes % messy but we need the delay
+  {\setbox\b_strc_destination_nodes\hbox\bgroup}       % also sets lastdestinationattribute
+
+\protected\def\strc_references_stop_destination_nodes
+  {\normalexpanded{\egroup\lastdestinationattribute\the\lastdestinationattribute\relax}}
+
+\protected\def\strc_references_set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
+  {\ifreferencing
+     % we could have a more efficient one for page references but for the moment
+     % we don't care too much
+     \edef\currentreferencekind     {#kind}%
+     \edef\currentreferencelabels   {#labels}%
+     \edef\currentreferenceuserdata {#userdata}%
+     \edef\currentreferenceexpansion{\referencingparameter\c!expansion}% {\referenceparameter\c!expansion}
+     \ifempty\currentreferencelabels
+       \lastdestinationattribute\attributeunsetvalue
+     \else
+       \ifx\currentreferenceexpansion\s!xml
+         \xmlstartraw
+           \xdef\currentreferencedata{#text}% data, no text else conflict
+         \xmlstopraw
+         \glet\currentreferencecoding\s!xml
+       \else
+         \ifx\currentreferenceexpansion\v!yes
+           \xdef\currentreferencedata{#text}%
+         \else
+           \xdef\currentreferencedata{\detokenize{#text}}%
+         \fi
+         \glet\currentreferencecoding\s!tex
+       \fi
+       % beware, the structures.references.set writes a
+       \setnextinternalreference
+       \strc_references_start_destination_nodes
+       \clf_setdestinationattribute
+            {%
+                references {%
+                    internal  \locationcount
+                  % block     {\currentsectionblock}%
+                    view      {\interactionparameter\c!focus}%
+                \ifempty\referenceprefix\else
+                    prefix    {\referenceprefix}%
+                \fi
+                    reference {\currentreferencelabels}%
+                }%
+                metadata {%
+                    kind     {\currentreferencekind}%
+            \ifx\currentreferencekind\s!page\else
+                \ifx\currentreferencecoding\s!xml
+                    xmlroot  {\xmldocument}%
+                \fi
+                    catcodes \catcodetable
+            \fi
+                }%
+            \ifempty\currentreferencedata\else
+                entries {%
+                    text {\currentreferencedata}%
+                }%
+            \fi
+            \ifempty\currentreferenceuserdata\else
+                userdata {\detokenize{#userdata}}%
+            \fi
+            }%
+       \relax
+       \strc_references_stop_destination_nodes
+     \fi
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \lastdestinationattribute\attributeunsetvalue
+   \fi
+   % will become obsolete:
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \strc_references_destination_point_yes
+   \orelse\ifvoid\b_strc_destination_nodes\else
+     \strc_references_destination_point_nop
+   \fi}
+
+\def\strc_references_set_page_only_destination_attribute#labels% could in fact be fully expandable
+  {\ifreferencing
+     \edef\currentreferencelabels{#labels}%
+     \ifempty\currentreferencelabels
+       \setbox\b_strc_destination_nodes\emptyhbox
+       \lastdestinationattribute\attributeunsetvalue
+     \else
+       \strc_references_start_destination_nodes
+       \setnextinternalreference
+       \clf_setdestinationattribute
+            {%
+                references {%
+                    internal  \locationcount
+                 %  block     {\currentsectionblock}%
+                    view      {\interactionparameter\c!focus}%
+                \ifempty\referenceprefix\else
+                    prefix    {\referenceprefix}%
+                \fi
+                    reference {\currentreferencelabels}%
+                }%
+                metadata {%
+                    kind {page}%
+                }%
+            }%
+       \relax
+       \strc_references_stop_destination_nodes
+     \fi
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \lastdestinationattribute\attributeunsetvalue
+   \fi}
+
+\protected\def\strc_references_direct_full_user#user#labels#text%
+  {\ifreferencing
+     \strc_references_start_destination_nodes
+     \setnextinternalreference
+     \edef\m_strc_references_user{#user}%
+     \edef\m_strc_references_text{#text}%
+     \clf_setdestinationattribute
+        {%
+            references {%
+                internal  \locationcount
+              % block     {\currentsectionblock}%
+                view      {\interactionparameter\c!focus}%
+            \ifempty\referenceprefix\else
+                prefix    {\referenceprefix}%
+            \fi
+                reference {#labels}%
+            }%
+            metadata {%
+                kind {\s!full}%
+            }%
+        \ifempty\m_strc_references_text \else
+            entries {%
+                text {\m_strc_references_text}%
+            }%
+        \fi
+        \ifempty\m_strc_references_user \else
+            userdata {\m_strc_references_user}% \detokenize\expandafter{\normalexpanded{...}}
+        \fi
+        }%
+     \relax
+     \strc_references_stop_destination_nodes
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \lastdestinationattribute\attributeunsetvalue
+   \fi
+   % will become obsolete:
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \strc_references_destination_point_yes
+   \orelse\ifvoid\b_strc_destination_nodes\else
+     \strc_references_destination_point_nop
+   \fi}
+
+\protected\def\strc_references_direct_full
+  {\strc_references_direct_full_user\empty}
+
+\permanent\let\dodirectfullreference\strc_references_direct_full % for at lua end (no longer)
+
+\def\strc_references_set_page_only_destination_box_attribute#cs#labels%
+  {\strc_references_set_page_only_destination_attribute{#labels}%
+   \ifnum\lastdestinationattribute>\zerocount
+     \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
+   \else
+     \let#cs\empty
+   \fi}
+
+%D It's about time to clean up references .. stable enough now.
+
+\permanent\protected\def\boxreference[#1]%
+  {\begingroup
+   \dowithnextbox
+    {\strc_references_set_page_only_destination_attribute{#1}%
+     \hpack % \hbox
+       \ifnum\lastdestinationattribute=\attributeunsetvalue\else attr \destinationattribute \lastdestinationattribute \fi
+       {\box\b_strc_destination_nodes\box\nextbox}%
+     \endgroup}}
+
+\permanent\protected\def\hboxreference[#1]{\boxreference[#1]\hbox}
+\permanent\protected\def\vboxreference[#1]{\boxreference[#1]\vbox}
+
+% \ifx\currentdestinationattribute\empty
+%   \begingroup\c_attr_destination\currentdestinationattribute\emptyhbox\endgroup % todo
+% \fi
+
+\def\defaultreferencepage#text{[[[#text]]]}
+\def\defaultreferencetext#text{[[[#text]]]}
+
+%D For internal usage:
+
+\def\strc_references_set_simple_reference#label%
+  {\iflocation
+     \strc_references_start_destination_nodes
+     \setnextinternalreference
+     \clf_setdestinationattribute
+        {%
+            references {%
+                view      {\interactionparameter\c!focus}%
+            \ifempty\referenceprefix\else
+                prefix    {\referenceprefix}%
+            \fi
+                reference {#label}%
+                internal  \locationcount
+            }%
+            metadata {%
+                kind {\s!page}%
+            }%
+        }%
+     \relax
+     \strc_references_stop_destination_nodes
+     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+   \fi}
+
+\def\strc_references_set_simple_internal_reference#label% no prefix
+  {\iflocation
+     \strc_references_start_destination_nodes
+     \setnextinternalreference
+     \clf_setdestinationattribute
+        {%
+            references {%
+                view      {\interactionparameter\c!focus}%
+                reference {#label}%
+                internal  \locationcount
+            }%
+            metadata {%
+                kind {\s!page}%
+            }%
+        }%
+     \relax
+     \strc_references_stop_destination_nodes
+     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+   \fi}
+
+\def\strc_references_get_simple_reference#label%
+  {\iflocation
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \ht\strutbox
+            depth  \dp\strutbox
+            \extrareferencearguments
+        }%
+     \relax
+     \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
+   \else
+     \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
+   \fi}
+
+%D \macros
+%D   {contentreference}
+%D
+%D \starttyping
+%D \setupinteraction
+%D   [state=start,
+%D    focus=standard]
+%D
+%D \setupheader
+%D   [state=stop]
+%D
+%D  See page \goto{page 2}[page2] \page
+%D
+%D  \contentreference
+%D    [page2]
+%D    [offset=1cm,toffset=2cm,frame=on]
+%D    {\externalfigure[cow.pdf][factor=fit]}
+%D
+%D \stoptyping
+
+\permanent\tolerant\protected\def\contentreference[#1]#*[#2]%
+  {\ifarguments
+     \expandafter\gobbletwoarguments
+   \or
+     \expandafter\strc_references_content_pickup_nop
+   \else
+     \expandafter\strc_references_content_pickup_yes
+   \fi{#1}{#2}}
+
+\def\strc_references_content_pickup_yes#1#2%
+ {\hbox\bgroup\dowithnextbox{\strc_references_content_yes_finish{#1}{#2}}\hbox}
+
+\def\strc_references_content_pickup_nop#1#2%
+ {\hbox\bgroup\dowithnextbox{\strc_references_content_nop_finish{#1}{#2}}\hbox}
+
+\def\strc_references_content_yes_finish#1#2%
+  {\scratchwidth \wd\nextbox
+   \scratchheight\ht\nextbox
+   \scratchdepth \dp\nextbox
+   \setbox\nextbox\hpack
+     {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
+   \strc_references_set_simple_reference{#1}%
+   \setbox\nextbox\hpack attr \destinationattribute \currentdestinationattribute % \hpack ?
+     {\strc_references_flush_destination_nodes
+      \box\nextbox}%
+   \setbox\nextbox\hpack{\box\nextbox}%
+   \wd\nextbox\scratchwidth
+   \ht\nextbox\scratchheight
+   \dp\nextbox\scratchdepth
+   \box\nextbox
+   \egroup}
+
+\def\strc_references_content_nop_finish#1#2%
+  {\strc_references_set_simple_reference{#1}%
+   \hpack attr \destinationattribute \currentdestinationattribute % \hpack ?
+     {\strc_references_flush_destination_nodes
+      \box\nextbox}%
+   \egroup}
+
+%D \macros
+%D   {everyreference}
+%D
+%D For rather tricky purposes, one can assign sanitizing macros to \type
+%D {\everyreference} (no longer that relevant).
+
+\newevery \everyreference \relax
+
+%D This is really needed, since for instance Polish has a different alphabet and
+%D needs accented entries in registers.
+
+\appendtoks
+    \cleanupfeatures
+\to \everyreference
+
+%D We did not yet discuss prefixing. Especially in interactive documents, it's not
+%D always easy to keep track of duplicate references. The prefix mechanism, which we
+%D will describe later on, solves this problem. By (automatically) adding a prefix
+%D one keeps references local, but the global ones in view. To enable this feature,
+%D we explictly split the prefix from the reference.
+
+\let\referenceprefix\empty
+
+%D For a long time the only way to access an external file was to use the file
+%D prefix (\type {somefile::}. However, when you split up a document, redefining the
+%D references may be such a pain, that another approach is feasible. By setting the
+%D \type {autofile} variable to \type {yes} or \type {page}, you can access the
+%D reference directly.
+%D
+%D \starttabulate[||||]
+%D \NC filename::tag \NC page(filename::pnum) \NC tag     \NC\NR
+%D \NC   $\star$     \NC                      \NC         \NC\NR
+%D \NC   $\star$     \NC $\star$              \NC $\star$ \NC\NR
+%D \NC               \NC $\star$              \NC         \NC\NR
+%D \stoptabulate
+
+\permanent\protected\def\usereferences[#filename]{} % obsolete
+
+%D As mentioned we will also use the cross reference mechanism for navigational
+%D purposes. The main reason for this is that we want to treat both categories
+%D alike:
+%D
+%D \starttyping
+%D \goto{go back}[PreviousJump]
+%D \goto{colofon}[colofon page]
+%D \stoptyping
+%D
+%D Here \type{PreviousJump} is handled by the viewer, while the
+%D \type{colofon page} reference is, apart from hyperlinking, a
+%D rather normal reference.
+%D
+%D We already saw that cross refences are written to and read from a file. The pure
+%D navigational ones don't need to be written to file, but both for fast processing
+%D and transparant integration, they are saved internally as a sort of reference. We
+%D can easily distinguish such system references from real cross reference ones by
+%D their tag.
+%D
+%D We also use the odd/even characteristic to determine the page state.
+
+\let\currentrealreference      \empty
+\let\currentpagereference      \empty
+\let\currenttextreference      \empty
+\let\currentreferenceorder     \empty
+\let\currentsubtextreference   \empty
+\let\currentsubsubtextreference\empty
+
+\newcount\referencehastexstate % set in backend
+
+% referencepagestate:
+%
+% 0 = no page ref, 1=same page, 2=before, 3=after
+
+%D Cross references appear as numbers (figure~1.1, chapter~2) or pagenumbers
+%D (page~2, page 3--2), and are called with \type {\in} and \type {\at}. In
+%D interactive documents we also have \type {\goto}, \type {\button} and alike.
+%D These are more versatile and look like:
+%D
+%D \starttyping
+%D \goto[reference]
+%D \goto[outer reference::]
+%D \goto[outer reference::inner reference]
+%D \goto[operation(argument)]
+%D \goto[operation(action{argument,argument})]
+%D \goto[action]
+%D \goto[action{argument}]
+%D \stoptyping
+%D
+%D The first one is a normal reference, the second and third are references to a
+%D file or \URL. The brace delimited references for instance refer to a \JAVASCRIPT.
+%D The last example shows that we can pass arguments to the actions.
+%D
+%D Now we've come to the testing step. As we can see below, this macro does bit more
+%D than testing: it also resolves the reference. This means that whenever we test
+%D for the existance of a reference at an outer level, we have all the relevant
+%D properties of that reference avaliable inside the true branche~(\type {#2}).
+%D
+%D The prefix has to do with localizing references. When a prefix is set, looking
+%D for a reference comes to looking for the prefixed one, and when not found,
+%D looking for the non prefixed one. Consider for instance the prefix set to \type
+%D {sidetrack}.
+%D
+%D \starttyping
+%D \pagereference[important]
+%D \pagereference[unimportant]
+%D \setupreferencing[prefix=sidetrack]
+%D \pagereference[important]
+%D \stoptyping
+%D
+%D results in saving (writing) the references
+%D
+%D \starttyping
+%D ...{}{important}
+%D ...{}{unimportant}
+%D ...{sidetrack}{important}...
+%D \stoptyping
+%D
+%D Now when we call for \type{unimportant}, we will indeed get the pagenumber
+%D associated to this reference. But when we call for \type{important}, while the
+%D prefix is still set, we will get the pagenumber bound to the prefixed one.
+%D
+%D {\em Some day, when processing time and memory are no longer
+%D performance factors, we will introduce multi||level
+%D prefixes.}
+%D
+%D Before we start analyzing, I introduce a general definition macro. Consider:
+%D
+%D \starttyping
+%D \goto{do}[JS(My_Script{"test",123}),titlepage]
+%D \stoptyping
+%D
+%D This can also be achieved by:
+%D
+%D \starttyping
+%D \definereference[startup][JS(My_Script{"test",123}),titlepage]
+%D \goto{do}[startup]
+%D \stoptyping
+%D
+%D Now is this is a handy feature or not?
+%D
+%D \showsetup{definereference}
+%D
+%D We can trace references by setting the next switch to true.
+
+\permanent\tolerant\protected\def\definereference[#name]#spacer[#specification]%
+  {\clf_definereference{\referenceprefix}{#name}{\detokenize{#specification}}}
+
+\permanent\protected\def\resetreference[#name]%
+  {\clf_resetreference{\referenceprefix}{#name}}
+
+\permanent\def\setpagereference#name#specification% hm,. low level ?
+  {\clf_definereference{}{#name}{\v!page(\detokenize{#specification}}} % is detokenize needed here?
+
+%D Chained references are defined as:
+%D
+%D \starttyping
+%D \goto{somewhere}[JS(somescript),nextpage,JS(anotherscript)]
+%D \stoptyping
+%D
+%D Actually supporting chains is up to the special driver. Here we only provide the
+%D hooks.
+
+%D \macros
+%D   {highlighthyperlinks}
+%D
+%D The next switch can be used to make user hyperlinks are not highlighted when
+%D clicked on.
+
+\newconditional\highlighthyperlinks \settrue\highlighthyperlinks
+
+%D \macros
+%D   {gotonewwindow}
+%D
+%D To make the {\em goto previous jump} feature more convenient when using more than
+%D one file, it makes sense to force the viewer to open a new window for each file
+%D opened.
+
+\newconditional\gotonewwindow \setfalse\gotonewwindow
+
+\permanent\def\expandtexincurrentreference % will happen in lua some time
+  {\ifcase\referencehastexstate\else\clf_expandcurrentreference\fi}
+
+\permanent\def\expandreferenceoperation#tag#content{\clf_setreferenceoperation#tag{#content}}
+\permanent\def\expandreferencearguments#tag#content{\clf_setreferencearguments#tag{#content}}
+
+\permanent\def\doifelsereferencefound#label#yes#nop%
+  {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+     {\expandtexincurrentreference
+      #yes}%
+     {#nop}}
+
+\aliased\let\doifreferencefoundelse\doifelsereferencefound
+
+%D The tester only splits the reference in components but does not look into them.
+%D The following macro does a preroll and determines for instance the current real
+%D reference pagenumber. The \type {\currentrealreference} macro does the same so
+%D unless one wants to use the pagestate the next macro seldom needs to be called.
+%D
+%D The inner case is simple. Only two cases have to be taken
+%D care of:
+%D
+%D \starttyping
+%D \goto{some text}[reference]
+%D \goto{some text}[prefix:reference]
+%D \stoptyping
+%D
+%D References to other files however are treated strict or tolerant, depending on
+%D their loading and availability:
+%D
+%D \starttyping
+%D \useexternaldocument[somefile][filename][a nice description]
+%D
+%D \goto{checked   reference}[somefile::reference]
+%D \goto{unchecked reference}[somefile::]
+%D \goto{unchecked reference}[anotherfile::reference]
+%D \stoptyping
+%D
+%D An unknown reference is reported on the screen, in the log file and, when
+%D enabled, in the left margin of the text.
+
+\let\unknownreference\gobbleoneargument
+
+%D When a reference is not found, we typeset a placeholder (two glyphs are often
+%D enough to represent the reference text).
+
+\def\dummyreference{{\tttf ??}}
+\def\emptyreference{{\tttf !!}}
+
+\installtextracker
+  {structures.referencing.show}
+  {\let\strc_references_dummy\strc_references_dummy_yes}
+  {\let\strc_references_dummy\strc_references_dummy_nop}
+
+\def\strc_references_dummy_nop
+  {\dummyreference}
+
+\def\strc_references_dummy_yes
+  {\dummyreference
+   \margindata
+     [\referencingparameter\c!labelalternative]% alternative?
+     [\c!style=\referencingparameter\c!labelstyle,
+      \c!color=\referencingparameter\c!labelcolor]
+     {\askedreference}}
+
+\let\strc_references_dummy\strc_references_dummy_nop
+
+\setupreferencing
+  [\c!labelalternative=\v!inleft,
+         \c!labelcolor=darkred,
+         \c!labelstyle=\smallinfofont]
+
+%D To prevent repetitive messages concerning a reference being defined, we set such
+%D an unknown reference to an empty one after the first encounter.
+%D
+%D Apart from cross references supplied by the user, \CONTEXT\ generates cross
+%D references itself. Most of them are not saved as a reference, but stored with
+%D their source, for instance a list or an index entry. Such automatically
+%D generated, for the user invisible, references are called {\em internal
+%D references}. The user supplied ones are labeled as {\em external references}.
+%D
+%D A second important characteristic is that when we want to support different
+%D backends (viewers), we need to support named destinations as well as page
+%D numbers. I invite readers to take a glance at the special driver modules to
+%D understand the fine points of this. As a result we will deal with {\em locations}
+%D as well as {\em real page numbers}. We explictly call this pagenumber a real one,
+%D because it is independant of the page numbering scheme used in the document.
+%D
+%D One of the reasons for \CONTEXT\ being the first \TEX\ base macropackage to
+%D support sophisticated interactive \PDF\ files, lays in the mere fact that real
+%D page numbers are available in most two pass data, like references, list data and
+%D index entries.
+%D
+%D We will speak of \type {thisis...} when we are marking a location, and
+%D \type {goto...} when we point to such a location. The latter one can be seen as a
+%D hyperlink to the former one. In the next macros one we use constructs like:
+%D
+%D \starttyping
+%D \dostart...
+%D \dostop...
+%D \stoptyping
+%D
+%D The flag \type {\iflocation} signals if we're in interactive mode.
+
+\ifdefined\buttonheight \else \newdimen\buttonheight \fi
+\ifdefined\buttonwidth  \else \newdimen\buttonwidth  \fi
+
+%D Internal references can best be set using the next few macros. Setting such
+%D references to unique values is completely up to the macros that call them.
+%D
+%D \starttyping
+%D \thisissomeinternal{tag}{identifier}
+%D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
+%D \stoptyping
+%D
+%D We could do this in \LUA\ \unknown
+
+\newif   \iflocation
+\newcount\locationcount
+\newcount\locationorder
+\newbox  \locationbox
+
+\permanent\def\nextinternalreference     {\the\locationcount}
+\permanent\def\nextinternalorderreference{\the\locationorder}
+
+\permanent\def\setnextinternalreference
+  {\global\advance\locationcount\plusone}
+
+\permanent\def\setnextinternalreferences#kind#name% plural
+  {\clf_setnextinternalreference{#kind}{#name}}
+
+\permanent\def\getinternalorderreference#kind#name%
+  {\clf_currentreferenceorder{#kind}{#name}}
+
+\permanent\def\thisissomeinternal#kind#name% only for old time sake, will go away
+  {\begingroup
+   \clf_setinternalreference
+     reference {#kind:#name}% no view
+   \relax
+   \hpack attr \destinationattribute\lastdestinationattribute{}%
+   \endgroup}
+
+\installcorenamespace{savedinternalreference}
+
+\letvalue{\??savedinternalreference\s!default}\!!zerocount
+
+\permanent\protected\def\storeinternalreference#1#2%
+  {\setxvalue{\??savedinternalreference\currentstructurename}{\number#2}}
+
+\newconditional\preferpagereferences
+
+\permanent\def\gotosomeinternal#kind#name#target#text%
+  {\ifconditional\preferpagereferences
+     \directgoto{#text}[page(#target)]%
+   \else
+     \directgoto{#text}[#kind:#name]%
+   \fi}
+
+\permanent\def\gotonextinternal#text#target%
+  {\directgoto{#text}[internal(#target)]}
+
+%D In this module we define three system references: one for handling navigational,
+%D viewer specific, commands, another for jumping to special pages, like the first
+%D or last one, and a third reference for linking tree like lists, like tables of
+%D contents. The latter two adapt themselves to the current state.
+%D
+%D An example of an action is:
+%D
+%D \starttyping
+%D \goto{some action}[PreviousJump]
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D \goto{some text}[\v!action(PreviousJump]
+%D \stoptyping
+%D
+%D One can also activate an automatic prefix mechanism. By setting the
+%D \type {\prefix} variable to \type {+}, the prefix is incremented, when set to
+%D \type {-} or empty, the prefix is reset. Other values become the prefix.
+
+\newcount\prefixcounter
+
+\newconditional\autocrossfilereferences
+
+\appendtoks
+    \edef\p_autofile{\referencingparameter\c!autofile}%
+    \ifx\p_autofile\v!yes
+      \settrue \autocrossfilereferences
+    \else
+      \setfalse\autocrossfilereferences
+    \fi
+\to \everysetupreferencing
+
+\appendtoks
+    \edef\p_export{\referencingparameter\c!export}%
+    \ifx\p_export\v!yes
+      \clf_exportreferences
+    \fi
+\to \everygoodbye
+
+\permanent\protected\def\setupglobalreferenceprefix[#prefix]%
+  {\xdef\referenceprefix{#prefix}}
+
+\permanent\protected\def\globalpushreferenceprefix#prefix%
+  {\xdef\referenceprefix{\clf_pushreferenceprefix{#prefix}}}
+
+\permanent\protected\def\globalpopreferenceprefix
+  {\xdef\referenceprefix{\clf_popreferenceprefix}}
+
+\permanent\protected\def\pushreferenceprefix#prefix%
+  {\edef\referenceprefix{\clf_pushreferenceprefix{#prefix}}}
+
+\permanent\protected\def\popreferenceprefix
+  {\edef\referenceprefix{\clf_popreferenceprefix}}
+
+\def\m_strc_references_prefix_yes{+}
+\def\m_strc_references_prefix_nop{-}
+
+\permanent\protected\def\setupreferenceprefix[#prefix]%
+  {\edef\p_prefix{#prefix}%
+   \ifempty\p_prefix
+     \let\referenceprefix\empty
+   \orelse\ifx\p_prefix\m_strc_references_prefix_yes
+     \letreferencingparameter\c!prefix\s!unknown
+     \global\advance\prefixcounter\plusone
+     \edef\referenceprefix{\the\prefixcounter}%
+   \orelse\ifx\p_prefix\m_strc_references_prefix_nop
+     \letreferencingparameter\c!prefix\s!unknown
+     \let\referenceprefix\empty
+   \orelse\ifx\p_prefix\s!unknown
+     % forget about it
+   \else
+     \let\referenceprefix\p_prefix
+   \fi}
+
+\appendtoks
+    \setupreferenceprefix[\referencingparameter\c!prefix]
+\to \everysetupreferencing
+
+%D We can typeset a reference using \type {\in}, \type {\at} and \type {\about} and
+%D goto specific locations using \type {\goto}. The last one does not make that much
+%D sense in a paper document. To complicate things, \PLAIN\ \TEX\ also implements an
+%D \type {\in} but fortunately that one only makes sense in math mode.
+%D
+%D Typesetting the reference is a bit more complicated than one would at first sight
+%D expect. This is due to the fact that we distinguish three (five) alternative
+%D calls:
+%D
+%D \placefigure
+%D   [here][three calls]
+%D   {Three alternatives reference calls.}
+%D   {\startcombination[1*3]
+%D      {\framed{\type{ \in }}} {a}
+%D      {\framed{\type{ \at }}} {b}
+%D      {\framed{\type{\goto}}} {c}
+%D    \stopcombination}
+%D
+%D \startbuffer
+%D \in figure[fig:three calls]
+%D \in{figure}[fig:three calls]
+%D \in figure a[fig:three calls]
+%D \in{figure}{a}[fig:three calls]
+%D figure~\in[fig:three calls]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This turns up as:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D The dual \type {{}} results in a split reference. In a document meant for paper,
+%D one is tempted to use the last (most straightforward) alternative. When a
+%D document is also meant voor electronic distribution, the former alternatives have
+%D preference, because everything between the \type {\in} and~\type {[} becomes
+%D active (and when asked for, typeset in a different color and typeface).
+
+\appendtoks
+    \ifdefined\in    \let\normalmathin   \in    \protected\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \let\in   \strc_references_in    \fi
+    \ifdefined\at    \let\normalmathat   \at    \protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \let\at   \strc_references_at    \fi
+    \ifdefined\about \let\normalmathabout\about \protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \let\about\strc_references_about \fi
+    \ifdefined\from  \let\normalmathfrom \from  \protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \let\from \strc_references_from  \fi
+    \ifdefined\over  \let\normalmathover \over  \protected\def\over {\mathortext\normalmathover \strc_references_about} \else \let\over \strc_references_about \fi
+\to \everydump
+
+\permanent          \def\filterreference  #key{\clf_filterreference{#key}} % no checking, expanded
+\permanent\protected\def\getreferenceentry#key{\clf_filterreference{#key}} % no checking, unexpanded
+
+\def\currentreferencenumber  {\clf_filterreference{number}}
+\def\currentreferencepage    {\clf_filterreference{page}}
+\def\currentreferencetitle   {\clf_filterreference{title}}
+\def\currentreferencetext    {\clf_filterreference{text}}
+\def\currentreferencedefault {\clf_filterreference{default}}
+\def\currentreferencerealpage{\clf_filterreference{realpage}}
+
+%D The most straightforward way of retrieving references is using \type {\ref}.
+
+\permanent\tolerant\protected\def\getreference[#key]#spacer[#label]% #key = number page title text default realpage ...
+  {\ifarguments\or
+     \strc_references_dummy
+   \else
+     \doifelsereferencefound{#label}{\clf_filterreference{#key}}\strc_references_dummy
+   \fi}
+
+\aliased\let\ref\getreference
+
+%D Special cases:
+
+\protected\def\strc_references_about[#label]%
+  {\dontleavehmode
+   \begingroup
+   \enforced\let\crlf\space
+   \enforced\let\\\space
+   \postponenotes % might go
+   \referencingparameter\c!left
+   \doifelsereferencefound{#label}
+     {\goto{\limitatetext\currentreferencetitle{\referencingparameter\c!width}\unknown}[#label]}% not so efficient (dup lookup)
+     {}% todo
+   \flushnotes % might go
+   \referencingparameter\c!right
+   \endgroup}
+
+%D The previously discussed setup macro lets us specify the representation of
+%D references. A symbol reference does not show the specific data, like the number
+%D of a figure, but shows one of: \hbox {$^\goforwardcharacter$
+%D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending on the direction to
+%D go.
+%D
+%D \starttyping
+%D ... \somewhere{backward text}{forward text}[someref] ...
+%D ... \atpage[someref] ...
+%D \stoptyping
+
+% standard      detail
+%
+% 0 = unknown   unknown
+% 1 = same      on same page
+% 2 = before    preceding page
+% 3 = after     following page
+%
+% 4 = above     above on same page
+% 5 = below     below on same page
+
+% todo: optimize for use in pagebody
+% todo: maybe make it optional
+
+% \setuppagenumbering[alternative=doublesided]
+% \setupreferencing  [doublesided=no] % yes is default
+%
+% \somewhere{backward}{foreward}[label]
+% \someplace{preceding}{backward}{current}{foreward}{following}[label]
+% \atpage[#label]
+% \doifcheckedpagestate{label}{preceding}{backward}{current}{foreward}{following}{otherwise}
+%
+% \dorecurse {20} {
+%     \placefigure[here][fig:#1]{}{\externalfigure[dummy]}
+%     \dorecurse {20} {
+%         ##1: \atpage[fig:##1] /
+%         \doifcheckedpagestate
+%             {fig:##1}
+%             {preceding}{backward}{current}{foreward}{following}
+%             {otherwise}
+%     }
+% }
+
+\newcount      \nofreferencestates
+\newconditional\pagestatespread
+
+\appendtoks
+    \doifelse{\referencingparameter\c!doublesided}\v!yes\settrue\setfalse\pagestatespread
+\to \everysetupreferencing
+
+\setupreferencing
+  [\c!doublesided=\v!yes]
+
+\permanent\def\referencepagestate
+  {\numexpr\clf_referencepagestate
+     {rst::\number\nofreferencestates}%
+   \relax}
+
+\permanent\def\referencepagedetail
+   {\numexpr\clf_referencepagedetail
+      {rst::\number\nofreferencestates}%
+      true %
+      \ifconditional\pagestatespread false\ifdoublesided true\else false\fi\fi
+    \relax}
+
+\permanent\def\referencerealpage    {\clf_referencerealpage} % todo: no need for wrapping
+\permanent\def\referencecolumnnumber{\clf_referencecolumn}   % todo: no need for wrapping
+
+% So we need : instead of \ but that's only lmtx:
+%
+% \def\referencecolumnnumber
+%   {\numexpr\dimexpr\clf_referenceposx-\cutspace\relax:\dimexpr\makeupwidth/\nofcolumns\relax+\plusone\relax}
+%
+% Tacos patch of the older one, kept here as illustration
+%
+% \def\referencecolumnnumber
+%   {\numexpr
+%       \dimexpr\clf_referenceposx-\cutspace-\makeupwidth/(2*\nofcolumns)\relax
+%      /\dimexpr                             \makeupwidth/   \nofcolumns \relax
+%      +\plusone
+%    \relax}
+
+
+\permanent\protected\def\tracedpagestate
+  {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}
+
+\permanent\protected\def\markreferencepage
+  {\dontleavehmode\begingroup
+   \iftrialtypesetting
+     % issue warning that not stable
+   \else
+     % needs checking ... but probably never in trialmode
+     \global\advance\nofreferencestates\plusone
+     \xypos{rst::\number\nofreferencestates}%
+     % \tracedpagestate
+   \fi
+   \endgroup}
+
+\permanent\protected\def\doifcheckedpagestate#label% #preceding#backward#current#foreward#following#otherwise%
+  {\doifelsereferencefound{#label}\strc_references_handle_page_state_yes\strc_references_handle_page_state_nop}
+
+\let\strc_references_handle_page_state_nop\sixthofsixarguments
+
+\def\strc_references_handle_page_state_yes
+  {\markreferencepage
+   \ifcase\referencepagedetail
+     \expandafter\sixthofsixarguments \or
+     \expandafter\thirdofsixarguments \or
+     \expandafter\firstofsixarguments \or
+     \expandafter\fifthofsixarguments \or
+     \expandafter\secondofsixarguments\or
+     \expandafter\fourthofsixarguments\else
+     \expandafter\sixthofsixarguments \fi}
+
+\permanent\protected\def\referencesymbol
+  {\hpack\bgroup
+     \strut
+     \markreferencepage
+     \high
+       {\setupsymbolset[\interactionparameter\c!symbolset]%
+        \symbol[\ifcase\referencepagedetail\v!somewhere\or\v!nowhere\or\v!previous\or\v!next\or\v!previous\or\v!next\else\v!somewhere\fi]}%
+   \egroup}
+
+%D Hereafter the \type {\ignorespaces} binds the state node to next character (more likely
+%D than a preceding one) and one can always add an explicit space.
+
+\permanent\protected\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+  {\doifcheckedpagestate{#label}%
+     {\goto{#backward}[#label]}%
+     {\goto{#backward}[#label]}%
+     {\ignorespaces}%
+     {\goto{#foreward}[#label]}%
+     {\goto{#foreward}[#label]}%
+     {#label}}%
+
+\permanent\protected\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
+  {\doifcheckedpagestate{#label}%
+     {\doifelsenothing{#preceding}{\goto{#preceding}[#label]}\ignorespaces}%
+     {\doifelsenothing {#backward}{\goto {#backward}[#label]}\ignorespaces}%
+     {\doifelsenothing  {#current}{\goto  {#current}[#label]}\ignorespaces}%
+     {\doifelsenothing {#foreward}{\goto {#foreward}[#label]}\ignorespaces}%
+     {\doifelsenothing{#following}{\goto{#following}[#label]}\ignorespaces}%
+     {#label}}
+
+\permanent\protected\def\atpage[#label]% todo
+  {\doifcheckedpagestate{#label}%
+     {\goto{\labeltext\v!precedingpage}[#label]}%
+     {\goto{\labeltext\v!hencefore}[#label]}%
+     {\ignorespaces}%
+     {\goto{\labeltext\v!hereafter}[#label]}%
+     {\goto{\labeltext\v!followingpage}[#label]}%
+     {\goto{\labeltexts\v!page\strc_references_dummy}[#label]}}
+
+% Someone requested this but in retrospect didn't need it so we keep it as example.
+% Beware: a node is injected which is why we add ignorespaces!
+%
+% \protected\def\strc_references_conditional#action#text[#condition]#dummy[#label]%
+%   {\doifcheckedpagestate{#label}%
+%      {\doifelse{#condition}\v!precedingpage{#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!hencefore    {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!current      {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!hereafter    {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!followingpage{#action{#text}[#label]}\ignorespaces}%
+%      {#label}}
+%
+% \protected\def\conditionalat   {\strc_references_conditional\at}
+% \protected\def\conditionalin   {\strc_references_conditional\in}
+% \protected\def\conditionalabout{\strc_references_conditional\about}
+
+%D The other alternatives just conform their names: only the label, only the text, or the
+%D label and the text.
+
+% \dounknownreference -> \dummyreference
+
+\permanent\def\symbolreference[#label]% for old times sake
+  {\goto{\referencesymbol}[#label]}
+
+% \referencecontentmode 0=all 1=label 2=text 3=symbol
+
+\newtoks\leftreferencetoks
+\newtoks\rightreferencetoks
+\newtoks\defaultleftreferencetoks
+\newtoks\defaultrightreferencetoks
+
+\permanent\let\rightofreferencecontent\empty
+\permanent\let\leftofreference        \empty
+\permanent\let\rightofreference       \empty
+
+\permanent\protected\def\leftofreferencecontent
+  {\removeunwantedspaces
+   \nonbreakablespace
+   \ignorespaces}
+
+\installcorenamespace{referencinginteraction}
+
+\def\strc_references_interaction_all
+  {\the\leftreferencetoks
+   \doifelsesometoks\leftreferencetoks \leftofreferencecontent \donothing
+   \leftofreference
+   \doifelsesometoks\leftreferencetoks\onlynonbreakablespace\relax % new, replace space by nonbreakable if present
+   \currentreferencecontent
+   \rightofreference
+   \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
+   \the\rightreferencetoks}
+
+\letvalue{\??referencinginteraction\v!all}\strc_references_interaction_all
+
+\setvalue{\??referencinginteraction\v!label}%
+  {\leftofreference
+   \the\leftreferencetoks
+   \the\rightreferencetoks
+   \rightofreference}
+
+\setvalue{\??referencinginteraction\v!text}%
+  {\leftofreference
+   \currentreferencecontent
+   \rightofreference}
+
+\setvalue{\??referencinginteraction\v!symbol}%
+  {\referencesymbol}
+
+\def\referencesequence
+  {\ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\strc_references_interaction_all
+   \fi}
+
+\newtoks\everyresetinatreference
+
+\appendtoks
+    \enforced\glet\leftofreference \relax
+    \enforced\glet\rightofreference\relax
+\to \everyresetinatreference
+
+\def\strc_references_start_goto
+  {\dontleavehmode
+   \begingroup}
+
+\def\strc_references_stop_goto
+  {\the\everyresetinatreference
+   \endgroup}
+
+\def\strc_references_pickup_goto
+  {\dodoublegroupempty\strc_references_pickup_goto_indeed}
+
+\def\strc_references_pickup_goto_indeed#left#right#dummy[#label]% #dummy gobbles spaces (really needed)
+  {\leftreferencetoks
+     \iffirstargument
+       {#left}%
+     \else
+       \defaultleftreferencetoks
+       \enforced\let\leftofreferencecontent\empty
+     \fi
+   \rightreferencetoks
+     \ifsecondargument
+       {#right}%
+     \else
+       \defaultrightreferencetoks
+       \enforced\let\rightofreferencecontent\empty
+     \fi
+   % inefficient: double resolve
+   \doifelsereferencefound{#label} % we need to resolve the text
+     {\goto{\referencesequence}[#label]}
+     {\let\currentreferencecontent\strc_references_dummy
+      \goto{\referencesequence}[#label]}%
+   \strc_references_stop_goto}
+
+\protected\def\strc_references_in
+  {\strc_references_start_goto
+   \let\currentreferencecontent\currentreferencedefault
+   \strc_references_pickup_goto}
+
+\protected\def\strc_references_at
+  {\strc_references_start_goto
+   \let\currentreferencecontent\currentreferencepage
+   \strc_references_pickup_goto}
+
+%D \macros
+%D   {definereferenceformat}
+%D
+%D The next few macros were made for for David Arnold and Taco Hoekwater. They can
+%D be used for predefining reference texts, and thereby stimulate efficiency.
+%D
+%D \starttyping
+%D \definereferenceformat[informula]  [left=(,right=),text=formula]
+%D \definereferenceformat[informulas] [left=(,right=),text=formulas]
+%D \definereferenceformat[andformula] [left=(,right=),text=and]
+%D \definereferenceformat[andformulas][left=(,right=),text=and]
+%D
+%D \informula [b] and \informula [for:c]
+%D the \informula {formulas}[b] \informula {and} [for:c]
+%D the \informulas {formulas}[b] \informula {and} [for:c]
+%D the \informulas [b] \informula {en} [for:c]
+%D the \informulas [b] \andformula [for:c]
+%D \stoptyping
+%D
+%D Instead of a text, one can specify a label, which should be defined with \type
+%D {\setuplabeltext}.
+%D
+%D Watch out: the second argument is somewhat special and mostly meant for a suffix
+%D to a number:
+%D
+%D \startbuffer
+%D \definereferenceformat [intesta] [left=(,right=),text=Whatever~]
+%D \definereferenceformat [intestb] [left=(,right=),label=figure]
+%D
+%D \placeformula[x]\startformula a \stopformula
+%D
+%D \starttabulate[|||||]
+%D \NC \in     [x] \NC \in     {left}[x] \NC \in     {}{right}[x] \NC \in     {left}{right}[x] \NC \NR
+%D \NC \intesta[x] \NC \intesta{left}[x] \NC \intesta{}{right}[x] \NC \intesta{left}{right}[x] \NC \NR
+%D \NC \intestb[x] \NC \intestb{left}[x] \NC \intestb{}{right}[x] \NC \intestb{left}{right}[x] \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% to be done: interfaced
+
+\installcorenamespace{referenceformat}
+
+\installcommandhandler \??referenceformat {referenceformat} \??referenceformat
+
+\appendtoks
+    \setuevalue\currentreferenceformat{\strc_references_apply_format{\currentreferenceformat}}%
+\to \everydefinereferenceformat
+
+\setupreferenceformat
+  [\c!left=,
+   \c!right=,
+   \c!text=,
+   \c!label=,
+   \c!autocase=\v!no,
+   \c!style=,
+   \c!type=default, % to be done: interfaced
+   \c!setups=,
+   \c!color=]
+
+\protected\def\strc_references_apply_format#name%
+  {\strc_references_start_goto
+   \edef\currentreferenceformat{#name}%
+   \enforced\gdef\leftofreference      {\referenceformatparameter\c!left    }%
+   \enforced\gdef\rightofreference     {\referenceformatparameter\c!right   }%
+   \edef\currentreferenceformatlabel   {\referenceformatparameter\c!label   }%
+   \edef\currentreferenceformattype    {\referenceformatparameter\c!type    }%
+   \edef\currentreferenceformatsetups  {\referenceformatparameter\c!setups  }%
+   \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
+   \usereferenceformatstyleandcolor\c!style\c!color
+   \ifempty\currentstyleparameter \else
+     \resetinteractionparameter\c!style
+   \fi
+   \ifempty\currentcolorparameter \else
+     \resetinteractionparameter\c!contrastcolor
+     \resetinteractionparameter\c!color
+   \fi
+   \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
+      \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
+   \fi
+   \ifx\currentreferenceformatautocase\v!yes
+     \setcharactercleaning[1]%
+   \fi
+   \ifempty\currentreferenceformatlabel
+     \defaultleftreferencetoks {\referenceformatparameter\c!text}%
+     \defaultrightreferencetoks\emptytoks
+   \else
+     \defaultleftreferencetoks {\leftlabeltext \currentreferenceformatlabel}%
+     \defaultrightreferencetoks{\rightlabeltext\currentreferenceformatlabel}%
+   \fi
+   \ifempty\currentreferenceformattype
+     \def\currentreferenceformattype{default}%
+   \fi
+   %
+   \ifempty\currentreferenceformatsetups
+     \def\currentreferencecontent{\filterreference\currentreferenceformattype}%
+   \else
+     \def\currentreferencecontent{\directsetup\currentreferenceformatsetups}%
+   \fi
+   %
+   \enforced\let\leftofreferencecontent \empty
+   \enforced\let\rightofreferencecontent\empty
+   \strc_references_pickup_goto}
+
+\def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
+
+\permanent\protected\def\autoreferencelabeltext
+  {\clf_getcurrentreferencemetadata{name}}
+
+% \starttext
+%     \definereferenceformat[inxx]  [left=(,right=),text=txt]
+%     \setupinteraction[state=start]
+%     \chapter[one]{xx}
+%     [\goto{state}[file(mk-last-state)]]
+%     [\goto{state} [file(mk-last-state)]]
+%     [\at{page} [one]]
+%     [\at{page}[one]]
+%     [\at{page}{okay}[one]]
+%     [\inxx{a}{b}[one]]
+% \stoptext
+
+% \startsetups referenceformat:numberplustext
+%     \filterreference{number}, \filterreference{title}
+% \stopsetups
+%
+% \definereferenceformat[hellup][text=Hellup ,setups=referenceformat:numberplustext]
+
+%D In interactive documents going to a specific location is not bound to cross
+%D references. The \type {\goto} commands can be used to let users access another
+%D part of the document. In this respect, interactive tables of contents and
+%D registers can be considered goto's. Because in fact a \type {\goto} is just a
+%D reference without reference specific data, the previous macros are implemented
+%D using the goto functionality.
+%D
+%D \showsetup{goto}
+%D
+%D One important characteristic is that the first argument of \type {\goto} (and
+%D therefore \type {\at} and \type {\in} is split at spaces. This means that,
+%D although hyphenation is prevented, long references can cross line endings.
+
+% \starttext
+%     \setupinteraction[state=start]
+%     [\goto{state}[file(mk-last-state)]]
+%     [\goto{state} [file(mk-last-state)]]
+% \stoptext
+
+\newconditional\uselocationstrut \settrue\uselocationstrut
+
+\permanent\def\extrareferencearguments
+  {highlight \luaconditional\highlighthyperlinks\space
+   newwindow \luaconditional\gotonewwindow\space
+   layer     {\currentviewerlayer}}
+
+\permanent\protected\def\directgoto
+  {\ifconditional\uselocationstrut
+     \expandafter\strc_references_direct_goto
+   \else
+     \expandafter\strc_references_direct_goto_htdp
+   \fi}
+
+\permanent\protected\def\goto
+  {\ifconditional\uselocationstrut
+     \expandafter\strc_references_goto
+   \else
+     \expandafter\strc_references_goto_htdp
+   \fi}
+
+% The unbox trick is needed in order to permit \par inside a reference. Otherwise
+% the reference attribute migrates to the outer boxes.
+
+\newcount\lastsavedreferenceattribute
+
+\newbox\referencebox
+
+\permanent\def\revivesavedreferenceattribute % sometimes handy as no test etc needed
+  {\c_attr_reference\lastsavedreferenceattribute}
+
+\def\strc_references_direct_goto#content[#label]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \c_attr_reference\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \iflocation
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \ht\strutbox
+            depth  \dp\strutbox
+            \extrareferencearguments
+        }%
+     \relax
+     \setlocationattributes
+     \setstrut % can be option
+     \global\lastsavedreferenceattribute\lastreferenceattribute
+     \c_attr_reference\lastreferenceattribute
+     \dostarttagged\t!link\empty % not here
+     #content%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\def\strc_references_direct_goto_htdp#content[#label]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \dimexpr\interactionparameter\c!height\relax
+            depth  \dimexpr\interactionparameter\c!depth \relax
+            \extrareferencearguments
+        }%
+     \relax
+     \setlocationattributes
+     \c_attr_reference\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
+     #content%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\def\strc_references_goto#content#dummy[#label]% #dummy gobbles spaces
+  {\dontleavehmode
+   \begingroup
+  %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+       {\expandtexincurrentreference
+        \clf_injectcurrentreferencehtdp
+          \ht\strutbox
+          \dp\strutbox
+        \relax
+        \setlocationattributes
+        \setstrut % can be option
+        \global\lastsavedreferenceattribute\lastreferenceattribute
+        \c_attr_reference\lastreferenceattribute
+        \dostarttagged\t!link\empty
+        #content%
+        \dostoptagged}%
+       {#content}%
+   \else
+     #content%
+   \fi
+  %\egroup\unhbox\referencebox}
+   \endgroup}
+
+\def\strc_references_goto_internal#content#dummy[#internal]% #dummy gobbles spaces
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \setstrut % can be option
+     \strc_references_get_simple_reference{#internal}%
+     \global\lastsavedreferenceattribute\currentreferenceattribute
+     \c_attr_reference\currentreferenceattribute
+     \setlocationattributes
+     \dostarttagged\t!link\empty
+     #content%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\startgoto[#label]%
+  {\dontleavehmode
+   \begingroup
+   \iflocation
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+       {\expandafter\strc_references_start_goto_yes}%
+       {\expandafter\strc_references_start_goto_nop}%
+   \else
+     \expandafter\strc_references_start_goto_nop
+   \fi}
+
+\permanent\protected\def\strc_references_start_goto_nop
+  {\let\stopgoto\strc_references_stop_goto_nop}
+
+\permanent\protected\def\strc_references_stop_goto_nop
+  {\endgroup}
+
+\protected\def\strc_references_start_goto_yes
+  {\expandtexincurrentreference
+   \clf_injectcurrentreferencehtdp
+     \ht\strutbox
+     \dp\strutbox
+   \relax
+   \setlocationattributes
+   \setstrut % can be option
+   \global\lastsavedreferenceattribute\lastreferenceattribute
+   \c_attr_reference\lastreferenceattribute
+   \dostarttagged\t!link\empty
+   \let\stopgoto\strc_references_stop_goto_yes}
+
+\protected\def\strc_references_stop_goto_yes
+  {\dostoptagged
+   \endgroup}
+
+\def\strc_references_goto_htdp#content#dummy[#label]% dummy gobbles spaces
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+       {\expandtexincurrentreference
+        \clf_injectcurrentreferencehtdp
+          \dimexpr\interactionparameter\c!height\relax
+          \dimexpr\interactionparameter\c!depth \relax
+        \relax
+        \setlocationattributes
+        \global\lastsavedreferenceattribute\lastreferenceattribute
+        \c_attr_reference\lastreferenceattribute
+        \dostarttagged\t!link\empty
+        #content%
+        \dostoptagged}%
+       {#content}%
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\directgotobox#content[#label]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
+     \setlocationattributes
+     \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\directgotospecbox#resolver#content[#label]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
+     \setlocationcolorspec{#resolver}% no consequence for strut
+     \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\directgotodumbbox#content[#label]% no test for valid references
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
+     \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
+     \dostoptagged
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\gotobox#content[#label]%
+  {\dontleavehmode
+   \begingroup
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \iflocation
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+       {\expandtexincurrentreference
+        \clf_injectcurrentreference
+        \setlocationattributes
+        \global\lastsavedreferenceattribute\lastreferenceattribute
+        \dostarttagged\t!link\empty
+        \hbox attr \referenceattribute \lastreferenceattribute {#content}%
+        \dostoptagged}%
+       {#content}%
+   \else
+     #content%
+   \fi
+   \endgroup}
+
+\permanent\protected\def\gotowdhtbox#width#height[#label]% fast variant for overlays
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\emptyhbox
+   \wd\scratchbox#width%
+   \ht\scratchbox#height%
+   \global\lastsavedreferenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
+   \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+     {\clf_injectcurrentreference
+      \global\lastsavedreferenceattribute\lastreferenceattribute
+      \hpack attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
+     {\box\scratchbox}%
+   \endgroup}
+
+%D An reference to another document can be specified as a file or as an \URL. Both
+%D are handled by the same mechanism and can be issued by saying something like:
+%D
+%D \starttyping
+%D \goto[dictionary::the letter a]
+%D \stoptyping
+%D
+%D One can imagine that many references to such a dictionary are made, so in most
+%D cases such a document reference in an indirect one.
+%D
+%D \showsetup{useexternaldocument}
+%D
+%D For example:
+%D
+%D \starttyping
+%D \useexternaldocument
+%D   [dictionary][engldict]
+%D   [The Famous English Dictionary]
+%D \stoptyping
+%D
+%D The next macro implements these relations, and also take care of loading the
+%D document specific references.
+%D
+%D The \URL\ alternative takes four arguments:
+%D
+%D \showsetup{useURL}
+%D
+%D like:
+%D
+%D \starttyping
+%D \useURL
+%D   [dictionary][http://www.publisher.com/public][engldict]
+%D   [The Famous English Dictionary]
+%D \stoptyping
+%D
+%D Several specifications are possible:
+%D
+%D \starttyping
+%D \useURL [id] [url] [file] [description]
+%D \useURL [id] [url] [file]
+%D \useURL [id] [url]
+%D \stoptyping
+%D
+%D This time we don't load the references when no file is specified. This is logical
+%D when one keeps in mind that a valid \URL\ can also be a mail address.
+
+\permanent\tolerant\protected\def\useurl[#label]#spacer[#url]#spacer[#file]#spacer[#description]%
+  {\clf_useurl{#label}{\detokenize{#url}}{\detokenize{#file}}{\detokenize{#description}}}
+
+\permanent\tolerant\protected\def\usefile[#label]#spacer[#file]#spacer[#description]%
+  {\clf_usefile{#label}{\detokenize{#file}}{\detokenize{#description}}}
+
+\aliased\let\useURL             \useurl
+\aliased\let\useexternaldocument\usefile
+
+\permanent\def\doifelseurldefined #label{\clf_doifelseurldefined {#label}} % todo: no wrap
+\permanent\def\doifelsefiledefined#label{\clf_doifelsefiledefined{#label}} % todo: no wrap
+
+\aliased\let\doifurldefinedelse \doifelseurldefined
+\aliased\let\doiffiledefinedelse\doifelsefiledefined
+
+%D \macros
+%D   {url,setupurl}
+%D
+%D We also have: \type {\url} for directly calling the description. So we can say:
+%D
+%D \starttyping
+%D \useURL [one] [http://www.test.nl]
+%D \useURL [two] [http://www.test.nl] [] [Some Site]
+%D
+%D \url[one] or \from[two] or \goto{Whatever Site}[URL(two)]
+%D \stoptyping
+%D
+%D An \URL\ can be set up with
+%D
+%D \showsetup{setupurl}
+
+\installcorenamespace{url}
+
+\installdirectcommandhandler \??url {url}
+
+\setupurl
+  [\c!style=\v!type,
+   \c!color=]
+
+\permanent\protected\def\url[#label]% move \hyphenatedurl to lua end (is already lua)
+  {\dontleavehmode
+   \begingroup
+   \useurlstyleandcolor\c!style\c!color
+   \hyphenatedurl{\clf_geturl{#label}}%
+   \endgroup}
+
+%D This macro is hooked into a support macro, and thereby \URL's break ok, according
+%D to the setting of a switch,
+%D
+%D \startbuffer
+%D \useURL
+%D   [test]
+%D   [sentence_sentence~sentence//sentence:sentence.sentence]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Such an \URL\ is, depending on the settings, hyphenated as:
+%D
+%D \getbuffer
+
+%D When defining the external source of information, one can also specify a suitable
+%D name (the last argument). This name can be called upon with:
+%D
+%D \showsetup{from}
+%D
+%D We keep this for compatibility reasons, hence the hackery.
+
+\permanent\tolerant\protected\def\strc_references_from[#label]%
+  {\dontleavehmode
+   \goto{\clf_from{#label}}[fileorurl(#label)]}
+
+\permanent\def\dofromurldescription#content% called at the lua end
+  {#content}
+
+\permanent\def\dofromurlliteral#content% called at the lua end
+  {\useurlstyleandcolor\c!style\c!color
+   \hyphenatedurl{#content}}
+
+\aliased\let\dofromfiledescription\dofromurldescription
+\aliased\let\dofromfileliteral    \dofromurlliteral     % maybe some day setupfile that inherits from url
+
+%D We also support:
+%D
+%D \starttyping
+%D \goto{some text}[file(identifier{location}]
+%D \stoptyping
+%D
+%D which is completely equivalent with
+%D
+%D \starttyping
+%D \goto{some text}[identifier::location]
+%D \stoptyping
+
+%D A special case of references are those to programs. These, very system dependant
+%D references are implemented by abusing some of the previous macros.
+%D
+%D \showsetup{setupprograms}
+%D \showsetup{defineprogram}
+%D \showsetup{program} % changed functionality !
+%D
+%D The latter gives access to the description of the program,
+%D being the last argument to the definition command.
+
+% also lua, like urls and files
+
+\installcorenamespace{programs}
+
+\installdirectcommandhandler \??programs {programs}
+
+\permanent\tolerant\protected\def\defineprogram[#name]#spacer[#program]#spacer[#description]%
+  {\clf_defineprogram{#name}{#program}{#description}}
+
+\permanent\protected\def\program[#name]% incompatible, more consistent, hardy used anyway
+  {\dontleavehmode
+   \begingroup
+   \useprogramsstyleandcolor\c!style\c!color
+   \clf_getprogram{#name}%
+   \endgroup}
+
+%D As we can see, we directly use the special reference mechanism, which means that
+%D
+%D \starttyping
+%D \goto{some text}[program(name{args})]
+%D \stoptyping
+%D
+%D is valid.
+
+%D The next macro provides access to the actual pagenumbers. When documenting and
+%D sanitizing the original reference macros, I decided to keep the present meaning
+%D as well as to make this meaning available as a special reference method. So now
+%D one can use:
+%D
+%D \starttyping
+%D \gotopage{some text}[location]
+%D \gotopage{some text}[number]
+%D \gotopage{some text}[file::number]
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D \goto{some text}[page(location)]
+%D \goto{some text}[page(number)]
+%D \goto{some text}[file::page(number)]
+%D \stoptyping
+%D
+%D Here location is a keyword like \type{nextpage}.
+%D
+%D \showsetup{gotopage}
+
+\permanent\tolerant\protected\def\definepage[#name]#spacer[#target]%
+  {\definereference[#name][page(#target)]}
+
+\permanent\protected\def\gotopage#text[#target]%
+  {\goto{#text}[\v!page(#target)]}
+
+%D The previous definitions are somewhat obsolete so we don't use it here.
+
+%D We can cross link documents by using:
+%D
+%D \showsetup{coupledocument}
+%D
+%D like:
+%D
+%D \starttyping
+%D \coupledocument[print][somefile][chapter,section]
+%D \stoptyping
+%D
+%D After which when applicable, we have available the references:
+%D
+%D \starttyping
+%D \goto{print version}[print::chapter]
+%D \stoptyping
+%D
+%D and alike. The title placement definition macros have a key \type {file}, which
+%D is interpreted as the file to jump to, that is, when one clicks on the title.
+
+\permanent\tolerant\protected\def\coupledocument[#name]#spacer[#file]#spacer[#sections]#spacer[#description]%
+  {\ifthirdargument
+     % this will be done differently (when it's needed)
+   \fi}
+
+%D \macros
+%D   {dotextprefix}
+%D
+%D In previous macros we used \type {\dotextprefix} to generate a space between
+%D a label and a number.
+%D
+%D \starttyping
+%D \dotextprefix{text}
+%D \stoptyping
+%D
+%D Only when \type {text} is not empty, a space is inserted.
+
+\permanent\protected\def\dotextprefix#text%
+  {\begingroup
+   \setbox\scratchbox\hbox{#text}% to be solved some day
+   \ifdim\wd\scratchbox>\zeropoint
+     \unhbox\scratchbox
+     \edef\p_separator{\referencingparameter\c!separator}%
+     \ifempty\p_separator \else
+        \removeunwantedspaces % remove is new
+        \p_separator
+     \fi
+   \else
+     \unhbox\scratchbox
+   \fi
+   \endgroup}
+
+%D In the next settings we see some variables that were not used here and that
+%D concern the way the pagenumbers refered to are typeset.
+
+\setupreferencing
+  [\c!state=\v!start,
+   \c!autofile=\v!no,
+   \v!part\c!number=\v!yes,
+   \v!chapter\c!number=\v!no,
+   \c!interaction=\v!all,
+   \c!convertfile=\v!no,
+  %\c!strut=\v!no, % some day an option
+   \c!prefix=,
+   \c!width=.75\makeupwidth,
+   \c!left=\quotation\bgroup,
+   \c!right=\egroup,
+   \c!global=\v!no,
+   \c!expansion=\v!no,
+   \c!separator=\nonbreakablespace,
+   \c!export=\v!no]
+
+\setupprograms
+  [\c!directory=,
+   \c!style=\v!type,
+   \c!color=]
+
+\definereference [\v!CloseDocument    ] [action(close)]
+\definereference [\v!ExitViewer       ] [action(exit)]
+\definereference [\v!FirstPage        ] [action(first)]
+\definereference [\v!LastPage         ] [action(last)]
+\definereference [\v!NextJump         ] [action(forward)]
+\definereference [\v!NextPage         ] [action(next)]
+\definereference [\v!PauseMovie       ] [action(pausemovie)]
+\definereference [\v!PauseSound       ] [action(pausesound)]
+\definereference [\v!PauseRendering   ] [action(pauserendering)]
+\definereference [\v!PreviousJump     ] [action(backward)]
+\definereference [\v!PreviousPage     ] [action(previous)]
+\definereference [\v!PrintDocument    ] [action(print)]
+\definereference [\v!SaveForm         ] [action(exportform)]
+\definereference [\v!LoadForm         ] [action(importform)]
+\definereference [\v!ResetForm        ] [action(resetform)]
+\definereference [\v!ResumeMovie      ] [action(resumemovie)]
+\definereference [\v!ResumeSound      ] [action(resumesound)]
+\definereference [\v!ResumeRendering  ] [action(resumerendering)]
+\definereference [\v!SaveDocument     ] [action(save)]
+\definereference [\v!SaveNamedDocument] [action(savenamed)]
+\definereference [\v!OpenNamedDocument] [action(opennamed)]
+\definereference [\v!SearchDocument   ] [action(search)]
+\definereference [\v!SearchAgain      ] [action(searchagain)]
+\definereference [\v!StartMovie       ] [action(startmovie)]
+\definereference [\v!StartSound       ] [action(startsound)]
+\definereference [\v!StartRendering   ] [action(startrendering)]
+\definereference [\v!StopMovie        ] [action(stopmovie)]
+\definereference [\v!StopSound        ] [action(stopsound)]
+\definereference [\v!StopRendering    ] [action(stoprendering)]
+\definereference [\v!SubmitForm       ] [action(submitform)]
+\definereference [\v!ToggleViewer     ] [action(toggle)]
+\definereference [\v!ViewerHelp       ] [action(help)]
+\definereference [\v!HideField        ] [action(hide)]
+\definereference [\v!ShowField        ] [action(show)]
+\definereference [\v!GotoPage         ] [action(gotopage)]
+\definereference [\v!Query            ] [action(query)]
+\definereference [\v!QueryAgain       ] [action(queryagain)]
+\definereference [\v!FitWidth         ] [action(fitwidth)]
+\definereference [\v!FitHeight        ] [action(fitheight)]
+\definereference [\v!ShowThumbs       ] [action(thumbnails)]
+\definereference [\v!ShowBookmarks    ] [action(bookmarks)]
+
+\definereference [\v!HideLayer        ] [action(hidelayer)]
+\definereference [\v!VideLayer        ] [action(videlayer)]
+\definereference [\v!ToggleLayer      ] [action(togglelayer)]
+
+\definereference [\v!firstpage]       [page(firstpage)]
+\definereference [\v!previouspage]    [page(previouspage)]
+\definereference [\v!nextpage]        [page(nextpage)]
+\definereference [\v!lastpage]        [page(lastpage)]
+\definereference [\v!forward]         [page(forward)]
+\definereference [\v!backward]        [page(backward)]
+\definereference [\v!firstsubpage]    [page(firstsubpage)]
+\definereference [\v!previoussubpage] [page(previoussubpage)]
+\definereference [\v!nextsubpage]     [page(nextsubpage)]
+\definereference [\v!lastsubpage]     [page(lastsubpage)]
+
+% we can do this but only when later in resolve (else problems with \chapter[first]{...}
+%
+% \definereference [\v!first]           [page(firstpage)]
+% \definereference [\v!previous]        [page(prevpage)]
+% \definereference [\v!next]            [page(nextpage)]
+% \definereference [\v!last]            [page(lastpage)]
+% \definereference [\v!first\v!sub]     [page(firstsubpage)]
+% \definereference [\v!previous\v!sub]  [page(prevsubpage)]
+% \definereference [\v!next\v!sub]      [page(nextsubpage)]
+% \definereference [\v!last\v!sub]      [page(lastsubpage)]
+
+%D We cannot set up buttons (not yet, this one calls a menu macro):
+
+%D New (and experimental):
+
+% \starttext
+%     \chapter{test}
+%     \placefigure[here][xx:1]{}{\framed{one}} \placefigure[here][xx:2]{}{\framed{three}}
+%     \placetable [here][xx:3]{}{\framed{two}} \placetable [here][xx:4]{}{\framed{four}}
+%     \start
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[float][default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank \start
+%         \setupreferencestructureprefix[figure][default][prefix=no]
+%         \in{fig}[xx:1] and \in{fig}[xx:2] \in{tab}[xx:3] and \in{tab}[xx:4]
+%     \stop \blank
+% \stoptext
+
+% todo: parameterhandler
+
+\installcorenamespace{referencingprefix}
+
+\permanent\def\getreferencestructureprefix#kind#name#category% name will change
+  {{%
+        prefix        {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix}%
+        separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset}%
+        conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion}%
+        conversionset {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset}%
+        starter       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstarter}%
+        stopper       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstopper}%
+        set           {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset}%
+        segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments}%
+        connector     {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector}%
+  }%
+  {%
+        separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberseparatorset}%
+        conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversion}%
+        conversionset {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversionset}%
+        starter       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstarter}%
+        stopper       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstopper}%
+        segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numbersegments}%
+  }}
+
+\permanent\tolerant\protected\def\setupreferencestructureprefix[#kind]#spacer[#category]#spacer[#settings]%
+  {\ifarguments\or\or
+     \getparameters[\??referencingprefix:#kind][#category]%
+   \else
+     \getparameters[\??referencingprefix#kind:#category][#settings]%
+   \fi}
+
+\def\referencestructureprefixparameter#kind#name#category#parameter%
+  {\ifcsname\??referencingprefix#name:#category#parameter\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??referencingprefix#kind:#category#parameter\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??referencingprefix:#category#parameter\endcsname
+     \lastnamedcs
+   \fi}
+
+\permanent\def\currentreferencedefault % for some reason we need to explicitly expand
+  {\normalexpanded{\noexpand\clf_filterdefaultreference
+     {\s!default}%
+     \noexpand\getreferencestructureprefix\clf_getcurrentprefixspec{\s!default}% returns #kind#name#category
+   \relax}}
+
+%D Not all support is visible by looking at the \TEX\ code; here is one of those:^
+%D
+%D \starttyping
+%D \startinteractionmenu[right]
+%D   \startbut [section(first   {chapter})]    first chapter \stopbut
+%D   \startbut [section(previous{chapter})] previous chapter \stopbut
+%D   \startbut [section(next    {chapter})]     next chapter \stopbut
+%D   \startbut [section(last    {chapter})]     last chapter \stopbut
+%D   \blank[2*big]
+%D   \startbut [section(first   {section})]    first section \stopbut
+%D   \startbut [section(previous{section})] previous section \stopbut
+%D   \startbut [section(next    {section})]     next section \stopbut
+%D   \startbut [section(last    {section})]     last section \stopbut
+%D \stopinteractionmenu
+%D \stoptyping
+
+%D Relatively new:
+%D
+%D \starttyping
+%D \chapter{The never ending story}
+%D
+%D \section{An ending story}
+%D
+%D \in{chapter}[match(complex bibliographies)]
+%D \in{chapter}[match(never ending)]
+%D \in{chapter}[match(ending)]
+%D \in{chapter}[match(chapter:never ending)]
+%D \in{chapter}[match(chapter:ending)]
+%D \in{section}[match(section:ending)]
+%D \in{figure}[match(float:mess)]
+%D \in{figure}[match(figure:mess)]
+%D \in{figure (not found)}[match(section:mess)]
+%D \in{figure (not found)}[match(section:xxxx)]
+%D \in{figure}[match(mess)]
+%D
+%D \placefigure{What a mess}{}
+%D
+%D \chapter{About complex bibliographies}
+%D
+%D \in{chapter}[match(complex bibliographies)]
+%D \in{chapter}[match(never ending)]
+%D \in{figure}[match(mess)]
+%D \stoptyping
+
+\protect \endinput
+
+% tricky:
+%
+% \enabletrackers[nodes.references]
+% \setupinteraction[state=start]
+% \def\KnuthTest{\input knuth }
+% \def\KnuthTest{\input tufte }
+% \def\TufteTest{\input tufte }
+% \defineoverlay[xxx][\overlaybutton{page(3)}]
+% \setupbackgrounds[text][background=xxx]
+% \starttext
+% test {\red \KnuthTest} test \par
+% \button{test}[page(1)] \par
+% \goto{page 2 \TeX}[page(2)] \goto{page 2 \TeX}[page(2)] \goto{\TufteTest}[page(2)] test \page
+% test \goto{page 3}[page(3)] \goto{\TufteTest\space\par\TufteTest}[page(4)] test \page
+% \goto{page 1}[page(1)] \goto{\TufteTest\space test}[page(1)] \page
+% \goto{page 1}[page(1)] \goto{\KnuthTest\space test}[page(1)] \page
+% test \goto{page 1}[page(1)] {\goto{\KnuthTest\space test}[page(1)]} test
+% \goto{page 1}[page(1)] \goto{\TufteTest}[page(1)] test \page
+% \stoptext

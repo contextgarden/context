@@ -356,7 +356,7 @@
 \appendtoks
     % we need to reassign the number because new patterns can be defined later on
     % so let's hope not that many \setups happen during a run
-    \expandafter\glet\csname\??languagenumbers\currentlanguage\endcsname\undefined
+    \global\letcsname\??languagenumbers\currentlanguage\endcsname\undefined
 \to \everysetuplanguage
 
 \def\lang_basics_synchronize_yes

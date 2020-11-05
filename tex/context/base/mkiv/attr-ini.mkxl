@@ -28,7 +28,7 @@
 
 \permanent\protected\def\pushattribute#1%
   {\global\advance\csname\??attributestack\string#1\endcsname\plusone
-   \expandafter\xdef\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname{\number\attribute#1}}
+   \global\defcsname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname{\number\attribute#1}}
 
 \permanent\protected\def\popattribute#1%
   {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\relax
@@ -69,13 +69,13 @@
      \doifinset\s!nomath{#3}%
        {\xtoksapp\t_attr_list_nomath{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!public{#3}%
-       {\aliased\expandafter\glet\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}% \attribute\fooattribute
+       {\aliased\global\letcsname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}% \attribute\fooattribute
      \doifinset\s!pickup{#3}%
        {\global\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue
         \xtoksapp\t_attr_list_pickup{\csname\??attributeprefix#2\endcsname\csname\??attributepickup#2\endcsname}%
         \ifcsname#2\s!attribute\endcsname
-          \expandafter\xdef\csname\s!pickup#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\csname\??attributeprefix#2\endcsname}%
-          \expandafter\xdef\csname\s!forget#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
+          \global\edefcsname\s!pickup#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\csname\??attributeprefix#2\endcsname}%
+          \global\edefcsname\s!forget#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
         \fi}%
    \fi}
 

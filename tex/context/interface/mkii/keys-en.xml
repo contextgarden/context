@@ -286,6 +286,7 @@
 		<cd:variable name='intermezzo' value='intermezzo'/>
 		<cd:variable name='intext' value='intext'/>
 		<cd:variable name='intro' value='intro'/>
+		<cd:variable name='invertedshort' value='invertedshort'/>
 		<cd:variable name='italic' value='italic'/>
 		<cd:variable name='italicbold' value='italicbold'/>
 		<cd:variable name='item' value='item'/>
@@ -389,6 +390,7 @@
 		<cd:variable name='nonumber' value='nonumber'/>
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normal'/>
+		<cd:variable name='normalshort' value='normalshort'/>
 		<cd:variable name='nospacing' value='nospacing'/>
 		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='not'/>
@@ -456,6 +458,7 @@
 		<cd:variable name='rectangular' value='rectangular'/>
 		<cd:variable name='reference' value='reference'/>
 		<cd:variable name='referral' value='referral'/>
+		<cd:variable name='region' value='region'/>
 		<cd:variable name='register' value='register'/>
 		<cd:variable name='regular' value='regular'/>
 		<cd:variable name='relative' value='relative'/>
@@ -1817,7 +1820,7 @@
 		<cd:command name='resetpath' value='resetpath'/>
 		<cd:command name='resetperiodkerning' value='resetperiodkerning'/>
 		<cd:command name='resetsystemmode' value='resetsystemmode'/>
-		<cd:command name='resettext' value='resettextcontent'/>
+		<cd:command name='resettextcontent' value='resettextcontent'/>
 		<cd:command name='resetvisualizers' value='resetvisualizers'/>
 		<cd:command name='restoreglobalbodyfont' value='restoreglobalbodyfont'/>
 		<cd:command name='retestfeature' value='retestfeature'/>

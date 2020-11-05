@@ -574,8 +574,8 @@
       }}% kept, nice for tracing
    \edef\raggedcommand    {\the\t_spac_align_collected }%
    \edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \expandafter\glet\csname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
-   \expandafter\glet\csname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
+   \global\letcsname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
+   \global\letcsname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
 
 \def\spac_align_collect#1%
   {\csname\??aligncommand#1\endcsname}

@@ -286,6 +286,7 @@
 		<cd:variable name='intermezzo' value='interlude'/>
 		<cd:variable name='intext' value='danstexte'/>
 		<cd:variable name='intro' value='intro'/>
+		<cd:variable name='invertedshort' value='invertedshort'/>
 		<cd:variable name='italic' value='italique'/>
 		<cd:variable name='italicbold' value='italiquegras'/>
 		<cd:variable name='item' value='élément'/>
@@ -389,6 +390,7 @@
 		<cd:variable name='nonumber' value='sansnumero'/>
 		<cd:variable name='norepeat' value='sansrepetition'/>
 		<cd:variable name='normal' value='normal'/>
+		<cd:variable name='normalshort' value='normalshort'/>
 		<cd:variable name='nospacing' value='sansespacement'/>
 		<cd:variable name='nostopper' value='sansstoppeur'/>
 		<cd:variable name='not' value='pas'/>
@@ -456,6 +458,7 @@
 		<cd:variable name='rectangular' value='rectangulaire'/>
 		<cd:variable name='reference' value='reference'/>
 		<cd:variable name='referral' value='redirection'/>
+		<cd:variable name='region' value='region'/>
 		<cd:variable name='register' value='registre'/>
 		<cd:variable name='regular' value='ordinaire'/>
 		<cd:variable name='relative' value='relatif'/>
@@ -1817,7 +1820,7 @@
 		<cd:command name='resetpath' value='razchemin'/>
 		<cd:command name='resetperiodkerning' value='razapprochepoint'/>
 		<cd:command name='resetsystemmode' value='razmodesysteme'/>
-		<cd:command name='resettext' value='raztexte'/>
+		<cd:command name='resettextcontent' value='raztexte'/>
 		<cd:command name='resetvisualizers' value='razvisualisateurs'/>
 		<cd:command name='restoreglobalbodyfont' value='restaurerpolicedecorpsglobale'/>
 		<cd:command name='retestfeature' value='retesterfonctionnalite'/>

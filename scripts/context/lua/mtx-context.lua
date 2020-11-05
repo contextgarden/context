@@ -669,6 +669,7 @@ function scripts.context.run(ctxdata,filename)
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
     local a_jithash       = getargument("jithash")
+    local a_permitloadlib = getargument("permitloadlib")
     local a_texformat     = getargument("texformat")
     local a_keeptuc       = getargument("keeptuc")
     local a_keeplog       = getargument("keeplog")
@@ -714,7 +715,8 @@ function scripts.context.run(ctxdata,filename)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
             --
-            a_jithash = validstring(a_jithash or analysis.jithash) or nil
+            a_jithash       = validstring(a_jithash or analysis.jithash) or nil
+            a_permitloadlib = a_permitloadlib or analysis.permitloadlib or nil
             --
             if not formatfile or not scriptfile then
                 report("warning: no format found, forcing remake (source driven)")
@@ -825,6 +827,7 @@ function scripts.context.run(ctxdata,filename)
 --                  ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
                     ["jithash"]               = a_jithash,
+                    ["permitloadlib"]         = a_permitloadlib,
                 }
                 --
                 local directives = { }

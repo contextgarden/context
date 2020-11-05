@@ -91,11 +91,11 @@
 \to \everysetuplayoutelement
 
 \def\page_layouts_reset_element_status#vertical%
-  {\expandafter\normalgdef\csname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
+  {\global\defcsname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
 
 \def\page_layouts_set_element_status_normal#vertical%
-  {\expandafter\glet\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
-   \expandafter\glet\csname\??layouttextsreset#vertical\endcsname\relax
+  {\global\letcsname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
+   \global\letcsname\??layouttextsreset#vertical\endcsname\relax
    \page_layouts_synchronize_element{#vertical}}
 
 \def\page_layouts_synchronize_element#vertical%
@@ -430,8 +430,8 @@
      %\hsize\zeropoint % hack so that e.g. after=\hairline gives predictable results
       \hsize\totaltextwidth
       \normalbaselines
-      \let\\\ignoredlinebreak
-      \let\crlf\ignoredlinebreak
+      \enforced\let\\\ignoredlinebreak
+      \enforced\let\crlf\ignoredlinebreak
       \namedlayoutelementparameter\currentlayouttextline\c!before
       \doifbothsidesoverruled
         \page_layouts_place_text_line_right

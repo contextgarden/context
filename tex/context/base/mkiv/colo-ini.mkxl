@@ -244,8 +244,7 @@
 \permanent\protected\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup
    \colo_helpers_activate{#1}%
-   \normalexpanded{\endgroup\edef\noexpand#2%
-     {\ifnum\c_attr_color=\attributeunsetvalue\else\number\c_attr_color\fi}}}
+   \normalexpanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\number\c_attr_color\fi}}}
 
 \let\grey\graycolor % these macros are only used in tracing
 
@@ -282,7 +281,7 @@
 \permanent\protected\def\stopcolorset     {\clf_stopcolorset}
 \permanent\protected\def\usecolors    [#1]{\clf_usecolors{#1}}
 
-\let\setupcolor\usecolors
+\aliased\let\setupcolor\usecolors
 
 \installsetuponlycommandhandler \??color {colors}
 
@@ -341,7 +340,7 @@
 
 \permanent\protected\def\pushcolor[#1]%
   {\global\advance\c_colo_nesting\plusone
-   \expandafter\edef\csname\??colorstack\number\c_colo_nesting\endcsname
+   \edefcsname\??colorstack\number\c_colo_nesting\endcsname
      {\c_attr_colormodel  \the\c_attr_colormodel
       \c_attr_color       \the\c_attr_color
       \c_attr_transparency\the\c_attr_transparency
@@ -431,7 +430,7 @@
 \let\c_colo_palet\relax
 
 \def\colo_palet_allocate#1%
-  {\expandafter\let\csname\??paletlist#1\endcsname\empty
+  {\letcsname\??paletlist#1\endcsname\empty
    \ifcsname\??paletsize#1\endcsname\else
      \expandafter\newcount\csname\??paletsize#1\endcsname
    \fi}
@@ -448,7 +447,7 @@
 
 \def\colo_palet_extend#1%
   {\addtocommalist{#1}\m_colo_palet
-   \expandafter\let\csname\??paletlist\colo_palet_name\endcsname\m_colo_palet
+   \letcsname\??paletlist\colo_palet_name\endcsname\m_colo_palet
   %\advance\csname\??paletsize\colo_palet_name\endcsname\plusone
    \advance\c_colo_palet\plusone}
 
@@ -471,19 +470,6 @@
    \else
      \let\paletsize\!!zerocount
    \fi}
-
-%% \protected\def\definepalet
-%%   {\dotripleempty\colo_palets_define}
-%%
-%% \def\colo_palets_define
-%%   {\ifthirdargument
-%%      \expandafter\colo_palets_define_b
-%%    \else
-%%      \expandafter\colo_palets_define_a
-%%    \fi}
-%%
-%% \protected\def\colo_palets_define_a[#1][#2][#3]%
-%% \protected\def\colo_palets_define_b[#1][#2][#3]%
 
 \permanent\tolerant\protected\def\definepalet[#1]#*[#2]#*[#3]%
   {\ifarguments
@@ -865,7 +851,7 @@
      \clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
      \colo_basics_synchronize{#1}%
      \ifcase\c_colo_protection
-       \protected\setvalue{#1}{\colo_helpers_activate{#1}}%
+       \protected\instance\setvalue{#1}{\colo_helpers_activate{#1}}%
      \fi
    \fi}
 
@@ -876,7 +862,7 @@
      \clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
      \colo_basics_synchronize{#1}%
      \ifcase\c_colo_protection
-       \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
+       \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
      \fi
    \fi}
 
@@ -900,7 +886,7 @@
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \protected\setvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\instance\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 %D Spotcolors used setxvalue but that messes up currentcolor and probably no global
@@ -911,14 +897,14 @@
   {\clf_definespotcolorglobal{#1}{#2}{#3}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemultitonecolor[#1]#*[#2]#*[#3]#*[#4]%
   {\clf_definemultitonecolorglobal{#1}{#2}{#3}{#4}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \protected\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 %D Transparencies (only):
@@ -987,7 +973,7 @@
      \v_colo_freeze_state
    \relax
    \colo_basics_synchronize{#1}%
-   \protected\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \protected\instance\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 %D Here is a more efficient helper for pgf:
 %D

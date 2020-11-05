@@ -196,14 +196,14 @@
 
 \permanent\protected\def\font_typescripts_start_store#definitions\stoptypescript
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
-   \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
+   \global\defcsname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescript#definitions\stoptypescript}%
    \gtoksapp\t_font_typescripts\expandafter
      {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
 
 \permanent\protected\def\font_typescripts_collection_start_store#definitions\stoptypescriptcollection
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
-   \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
+   \global\defcsname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescriptcollection#definitions\stoptypescriptcollection}%
    \gtoksapp\t_font_typescripts\expandafter
      {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
@@ -238,7 +238,7 @@
      \enforced\let\starttypescriptcollection\font_typescripts_collection_start_store
      \font_typescript_process_typescript_file
    \endgroup
-   \expandafter\let\csname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
+   \letcsname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
 
 \def\font_typescript_process_typescript_file
   {\clf_doprocesstypescriptfile{\currenttypefile}}
@@ -247,7 +247,7 @@
   {\ifcsname\??typescriptonce#one:#two:#three\endcsname
      \writestatus\m!fonts{once (#one) (#two) (#three)}%
    \else
-     \expandafter\let\csname\??typescriptonce#one:#two:#three\endcsname\relax
+     \letcsname\??typescriptonce#one:#two:#three\endcsname\relax
      \font_typescripts_use[#one][#two][#three]%
    \fi}
 
@@ -690,9 +690,9 @@
 %    \fi}
 
 \def\v_font_string_d % default fontstyle (expands to \s!Serif in font-ini)
-  {\expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!rm \s!Serif \else
-   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!ss \s!Sans  \else
-   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!tt \s!Mono  \else
+  {\expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!rm \s!Serif \else % no \orelse ! 
+   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!ss \s!Sans  \else % no \orelse !
+   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!tt \s!Mono  \else % no \orelse !
                                                                               \s!Serif \fi\fi\fi}
 
 \protected\def\font_helpers_set_fontstyle_of_fontclass

@@ -958,6 +958,8 @@ local hlist_out, vlist_out  do
                             local total = height + depth
                             if getid(leader) == rule_code then
                                 depth = 0 -- hm
+-- forgotten ... needs testing
+total = glueheight
                                 if total > 0 then
                                     if width == running then
                                         width = boxwidth

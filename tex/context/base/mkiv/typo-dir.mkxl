@@ -62,7 +62,7 @@
         method {\directionsparameter\c!method}%
         fences {\directionsparameter\c!fences}%
    }%
-   \expandafter\glet\csname\??directionsbidimode\currentbidistamp\endcsname\currentbidimode}
+   \global\letcsname\??directionsbidimode\currentbidistamp\endcsname\currentbidimode}
 
 \appendtoks
     \edef\p_bidi{\directionsparameter\c!bidi}%

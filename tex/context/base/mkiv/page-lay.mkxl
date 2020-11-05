@@ -1043,7 +1043,7 @@
 
 \def\page_adapts_reset
   {\ifcsname\??pageadaptations\the\realpageno\endcsname
-     \expandafter\glet\csname\??pageadaptations\the\realpageno\endcsname\relax
+     \global\letcsname\??pageadaptations\the\realpageno\endcsname\relax
    \fi}
 
 \def\page_adepts_push_indeed

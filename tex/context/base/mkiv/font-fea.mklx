@@ -148,7 +148,7 @@
 \permanent\tolerant\protected\def\subtractfeature   [#1]#;#2{\edef\m_font_feature_asked{#1#2}\font_feature_subtract}
 \permanent\tolerant\protected\def\replacefeature    [#1]#;#2{\edef\m_font_feature_asked{#1#2}\font_feature_replace}
 \permanent\tolerant\protected\def\resetandaddfeature[#1]#;#2{\edef\m_font_feature_asked{#1#2}\font_feature_reset_add}
-\permanent\tolerant\protected\def\feature           [#1]#;#2{\begincsname\??featureshortcut##1#2\endcsname{#1#2}}
+\permanent\tolerant\protected\def\feature           [#1]#;#2{\begincsname\??featureshortcut#1#2\endcsname}
 
 % for old times sake
 

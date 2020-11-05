@@ -134,11 +134,11 @@
 \def\font_emphasis_set_emphasis_boldface
   {\let\font_emphasis_saved_emphasis_boldface\bf
    \let\font_emphasis_set_emphasis_boldface\relax
-   \let\bf\font_emphasis_bold_bold}
+   \enforced\let\bf\font_emphasis_bold_bold}
 
 \protected\def\font_emphasis_bold_bold
   {%\relax
-   \let\bf\relax % new
+   \enforced\let\bf\relax % new
    \ifx\fontalternative\s!it
      \bi
    \orelse\ifx\fontalternative\s!sl
@@ -146,7 +146,7 @@
    \else
      \font_emphasis_saved_emphasis_boldface
    \fi
-   \let\bf\font_emphasis_saved_emphasis_boldface}
+   \enforced\let\bf\font_emphasis_saved_emphasis_boldface}
 
 %D Donald's (adapted) macros take the next character into account when placing
 %D italic correction. As a bonus we also look for something that looks like a dash,

@@ -334,7 +334,7 @@
 \protected\def\enco_fast_control_space_define
   {\scratchdimen\interwordspace
    \definedfont[LMTypewriter-Regular at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody]% see font-sym.mkiv
-   \expandafter\glet\csname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
+   \global\letcsname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
 
 \permanent\protected\def\normalcontrolspace
   {\iffontchar\font\textcontrolspace

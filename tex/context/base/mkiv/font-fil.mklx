@@ -81,11 +81,11 @@
    \fi}
 
 \protected\def\font_basics_define_font_synonym_nop
-  {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
+  {\letcsname\??fontfile\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
 
 \protected\def\font_basics_define_font_synonym_yes
-  {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
+  {\letcsname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
 \protected\def\edefinefontsynonym[#name]#spacer[#file]%
@@ -98,11 +98,11 @@
    \fi}
 
 \protected\def\font_basics_define_font_synonym_nop_expanded#ignore[#spec]%
-  {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
+  {\letcsname\??fontfile\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_nop_opt[#spec]}}
 
 \protected\def\font_basics_define_font_synonym_yes_expanded#ignore[#spec]%
-  {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
+  {\letcsname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
 
 \protected\def\font_basics_define_font_synonym_nop_opt[#specification]%
@@ -126,7 +126,7 @@
   {\ifarguments
      \font_basics_get_font_parameter_nop_finish
    \else
-     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+     \defcsname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
      \expandafter\font_basics_get_font_parameter_nop
    \fi}
 
@@ -134,7 +134,7 @@
   {\ifarguments
      \font_basics_get_font_parameter_yes_finish
    \else
-     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+     \defcsname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
      \expandafter\font_basics_get_font_parameter_yes
    \fi}
 
@@ -152,35 +152,35 @@
 % we could collect them in one macro (but no expansion)
 
 \def\font_basics_define_font_synonym_nop_nil
-  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\undefined
-   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\undefined
-   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\undefined
-   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\undefined}
+  {\letcsname\??fontfile\m_font_name\s!features  \endcsname\undefined
+   \letcsname\??fontfile\m_font_name\s!fallbacks \endcsname\undefined
+   \letcsname\??fontfile\m_font_name\s!goodies   \endcsname\undefined
+   \letcsname\??fontfile\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_define_font_synonym_yes_nil
-  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
+  {\global\letcsname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_get_font_parameter_nop_finish
-  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\p_features
-   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\p_fallbacks
-   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\p_goodies
-   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\p_designsize}
+  {\letcsname\??fontfile\m_font_name\s!features  \endcsname\p_features
+   \letcsname\??fontfile\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \letcsname\??fontfile\m_font_name\s!goodies   \endcsname\p_goodies
+   \letcsname\??fontfile\m_font_name\s!designsize\endcsname\p_designsize}
 
 \def\font_basics_get_font_parameter_yes_finish
-  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
-   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
+  {\global\letcsname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
+   \global\letcsname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
 
 %\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
 %\defineclassfontsynonym [KopFont] [officina] [SerifBold]
 %\definefontsynonym[#tag][\fontclassname{#class}{#fileortag}]}
 
 \permanent\tolerant\protected\def\defineclassfontsynonym[#tag]#spacer[#class]#spacer[#fileortag]% needs testing
-  {\expandafter\normaldef\csname\??fontfile\fontclass#tag\endcsname{\fontclassname{#class}{#fileortag}}%
+  {\defcsname\??fontfile\fontclass#tag\endcsname{\fontclassname{#class}{#fileortag}}%
    \font_basics_define_font_synonym_yes_nil}
 
 \aliased\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
@@ -371,12 +371,12 @@
 % we can pack them (don't use \setxvalue!)
 
 \permanent\protected\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
-  {\letgvalue{\??fontclass\fontclass#style\s!rscale    }#rscale%
-   \letgvalue{\??fontclass\fontclass#style\s!features  }#features%
-   \letgvalue{\??fontclass\fontclass#style\s!fallbacks }#fallbacks%
-   \letgvalue{\??fontclass\fontclass#style\s!goodies   }#goodies%
-   \letgvalue{\??fontclass\fontclass#style\s!designsize}#designsize%
-   \letgvalue{\??fontclass\fontclass#style\s!direction }#direction}% math
+  {\global\letcsname\??fontclass\fontclass#style\s!rscale    \endcsname#rscale%
+   \global\letcsname\??fontclass\fontclass#style\s!features  \endcsname#features%
+   \global\letcsname\??fontclass\fontclass#style\s!fallbacks \endcsname#fallbacks%
+   \global\letcsname\??fontclass\fontclass#style\s!goodies   \endcsname#goodies%
+   \global\letcsname\??fontclass\fontclass#style\s!designsize\endcsname#designsize%
+   \global\letcsname\??fontclass\fontclass#style\s!direction \endcsname#direction}% math
 
 % bonus
 

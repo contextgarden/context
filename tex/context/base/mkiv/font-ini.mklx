@@ -19,11 +19,6 @@
 % todo: split font-nam (style/alternative/size)
 % todo: split font-dim (scales etc)
 % todo: reconsider defaultfontclass
-%
-
-%D Watch out: as we define inside macros in sometimes special ways,
-%D an occasional \type {\normaldef} is used in order to please the
-%D \MKVI\ parser.
 
 %D Beware, we use a special set of parameters here:
 %D
@@ -423,7 +418,7 @@
 
 \def\normalizebodyfontsize_indeed#macro#body%
   {\edef#macro{\clf_nbfs\dimexpr#body\relax}%
-   \expandafter\glet\csname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
+   \global\letcsname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
 
 \def\thenormalizedbodyfontsize#body%
   {\clf_nbfs\dimexpr#body\relax}
@@ -519,7 +514,7 @@
    \fi}
 
 \def\font_helpers_register_fontbody#body%
-  {\expandafter\let\csname\??fontbodyknown#body\endcsname\empty}
+  {\letcsname\??fontbodyknown#body\endcsname\empty}
 
 %D \macros
 %D   {definefontstyle,definefontsize,definefontalternative}
@@ -552,9 +547,9 @@
 \def\font_helpers_process_size_list       #command{\def\m_font_size_command       {#command}\the\t_font_size_commands}
 \def\font_helpers_process_alternative_list#command{\def\m_font_alternative_command{#command}\the\t_font_alternative_commands}
 
-\def\font_helpers_register_style            #style{\expandafter\let\csname\??fontstyleknown            #style\endcsname\empty}
-\def\font_helpers_register_size              #size{\expandafter\let\csname\??fontsizeknown              #size\endcsname\empty}
-\def\font_helpers_register_alternative#alternative{\expandafter\let\csname\??fontalternativeknown#alternative\endcsname\empty}
+\def\font_helpers_register_style            #style{\letcsname\??fontstyleknown            #style\endcsname\empty}
+\def\font_helpers_register_size              #size{\letcsname\??fontsizeknown              #size\endcsname\empty}
+\def\font_helpers_register_alternative#alternative{\letcsname\??fontalternativeknown#alternative\endcsname\empty}
 
 \permanent\protected\def\definefontstyle[#commands]#spacer[#style]% style: rm ss tt ...
   {\ifcsname\??fontstyleknown#style\endcsname \else % can be delayed till used (cg, hw)
@@ -776,7 +771,7 @@
     %\scaledfontsize\plusone
      \let\somefontspec\empty
      \let\lastrawfontcall\relax
-     \expandafter\let\csname#csname\endcsname\relax
+     \letcsname#csname\endcsname\relax
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
@@ -807,14 +802,6 @@
      \let\f_font_body_scale\plusone
      \settrue\c_font_body_scale
    \fi}
-
-%D The following macros are used at the \LUA\ end. Watch the \type {\normal}
-%D hackery: this makes the mkvi parser happy.
-
-% \normaldef\fntsetdefname {\glet\somefontname\defaultfontfile}    % do before calling
-% \normaldef\fntsetnopsize {\let\somefontsize\empty}                     % do before calling
-% \normaldef\fntsetsomename{\normalgdef\somefontname} % takes argument
-% \normaldef\fntsetsomesize{\normaldef\somefontsize}  % takes argument
 
 \newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
 
@@ -930,7 +917,7 @@
      \csname#name\endcsname
      \glet\lastglobalrawfontcall\lastrawfontcall
      \endgroup
-     \expandafter\let\csname#name\endcsname\lastglobalrawfontcall
+     \letcsname#name\endcsname\lastglobalrawfontcall
    \fi}
 
 %D The instance namespace protection makes the switch local so that we can redefine a
@@ -1186,7 +1173,7 @@
 \installcorenamespace{fontenvironmentknown}
 
 \def\font_helpers_register_environment#class#body%
-  {\expandafter\let\csname\??fontenvironmentknown#class#body\endcsname\empty}
+  {\letcsname\??fontenvironmentknown#class#body\endcsname\empty}
 
 \newmacro\m_font_body
 \newmacro\m_font_body_normalized
@@ -1465,27 +1452,27 @@
 
 \protected\def\font_basics_define_body_font_nop_xx[#one#two#rest=#value]% local
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
-   \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname\undefined
-   \protected\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
+   \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname\undefined
+   \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname\undefined
-   \protected\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
+   \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname\undefined
+   \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname\undefined
-   \protected\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
+   \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname\undefined
+   \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
 \protected\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
-   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-1\endcsname\undefined
-   \protected\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
+   \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-1\endcsname\undefined
+   \global\protected\edefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-0}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-2\endcsname\undefined
-   \protected\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
+   \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-2\endcsname\undefined
+   \global\protected\edefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-4}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-3\endcsname\undefined
-   \protected\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
+   \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-3\endcsname\undefined
+   \global\protected\edefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-5}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
@@ -1496,10 +1483,10 @@
 
 \protected\def\font_basics_define_body_font_nop_mm[#one#two#rest=#value]% local
   {%\ifcsname\s!mm\endcsname\else\font_basics_check_fontname_combination\s!mm{#one#two}{#rest}\fi
-   \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
- % \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
- % \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
-   \protected\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\s!mm-#one#two#rest\endcsname
+   \letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
+ % \letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
+ % \letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
+   \global\protected\edefcsname\??fontinstanceready\m_font_asked_body-\s!mm-#one#two#rest\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
@@ -1507,10 +1494,10 @@
 
 \protected\def\font_basics_define_body_font_yes_mm[#one#two#rest=#value]% global
   {%\ifcsname\s!mm\endcsname\else\font_basics_check_fontname_combination\s!mm{#one#two}{#rest}\fi
-   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
- % \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
- % \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
-   \protected\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
+   \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
+ % \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
+ % \global\letcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
+   \global\protected\edefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
@@ -1534,7 +1521,7 @@
 
 \protected\def\font_basics_define_body_font_name_assignment_a#name#assignments#style%
   {%\writestatus\m!fonts{[#name:#style] => [#assignments]}%
-   \setevalue{\??fontdefinitions#name:#style}{\font_basics_define_body_font_default{#assignments}}}
+   \edefcsname\??fontdefinitions#name:#style\endcsname{\font_basics_define_body_font_default{#assignments}}}
 
 \protected\def\font_basics_define_body_font_name_identifier[#name][#stylelist][#identifier]%
   {\processcommalist[#stylelist]{\font_basics_define_body_font_name_identifier_a{#name}{#identifier}}}
@@ -1542,9 +1529,9 @@
 \protected\def\font_basics_define_body_font_name_identifier_a#name#identifier#style%
   {%\writestatus\m!fonts{[#name:#style] => [##identifier:#style]}%
    \ifcsname\??fontdefinitions#name:#style\endcsname
-     \expandafter\let\csname\??fontdefinitions#name:#style\expandafter\endcsname\csname\??fontdefinitions#identifier:#style\endcsname
+     \letcsname\??fontdefinitions#name:#style\expandafter\endcsname\csname\??fontdefinitions#identifier:#style\endcsname
    \else
-     \expandafter\def\csname\??fontdefinitions#name:#style\endcsname{\csname\??fontdefinitions#identifier:#style\endcsname}%
+     \defcsname\??fontdefinitions#name:#style\endcsname{\csname\??fontdefinitions#identifier:#style\endcsname}%
    \fi}
 
 %D The unknown:
@@ -2126,7 +2113,7 @@
      \noexpand\edef\noexpand\xtextface       {\currentbodyfontdimension\s!x           }%
      \noexpand\edef\noexpand\xxtextface      {\currentbodyfontdimension\s!xx          }%
    }%
-   \expandafter\glet\csname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
+   \global\letcsname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
 
 \def\currentbodyfontdimension#parameter% there can be factors here
   {\the\dimexpr
@@ -2445,7 +2432,7 @@
 
 \protected\def\font_basics_predefine#1#2%
   {\font_basics_defined_font_yes[#2]%
-   \expandafter\glet\csname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
+   \global\letcsname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
 
 \protected\def\font_basics_predefined#1%
   {\font_basics_predefine{\??predefinedfont#1}{#1}}

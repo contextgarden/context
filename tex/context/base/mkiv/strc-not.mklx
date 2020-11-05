@@ -436,11 +436,11 @@
 
 % so far
 
-%expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
-\expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
-\expandafter\let\csname\??constructionstophandler   \v!notation\expandafter\endcsname\csname\??constructionstophandler   \v!enumeration \endcsname
-\expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
-\expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
+%letcsname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
+\letcsname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
+\letcsname\??constructionstophandler   \v!notation\expandafter\endcsname\csname\??constructionstophandler   \v!enumeration \endcsname
+\letcsname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
+\letcsname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
 
 \protected\setvalue{\??constructionmainhandler\v!notation}#following%
   {\iftrialtypesetting \else
@@ -865,12 +865,12 @@
 \permanent\protected\def\currentnoterulecommandcommand{\noteparameter\c!rulecommand}
 \permanent\protected\def\currentnoterulecommandnormal {\normalnoterule} % no let as it can be changed afterwards
 
-\permanent\protected\def\letcurrentnoterulecommand{\enforced\expandafter\let\csname\??notecommand\currentnote\endcsname}
-\permanent\protected\def\letcurrentnoterulealign  {\enforced\expandafter\let\csname\??notealign  \currentnote\endcsname}
+\permanent\protected\def\letcurrentnoterulecommand{\enforced\letcsname\??notecommand\currentnote\endcsname}
+\permanent\protected\def\letcurrentnoterulealign  {\enforced\letcsname\??notealign  \currentnote\endcsname}
 
 \appendtoks
-    \enforced\expandafter\let\csname\??notecommand\currentnote\endcsname\currentnoterulecommandnormal
-    \enforced\expandafter\let\csname\??notealign  \currentnote\endcsname\lefttoright
+    \enforced\letcsname\??notecommand\currentnote\endcsname\currentnoterulecommandnormal
+    \enforced\letcsname\??notealign  \currentnote\endcsname\lefttoright
 \to \everysynchronizenote
 
 \def\strc_notes_set_rule
@@ -1501,7 +1501,7 @@
   {\ifcase\insertionmigrationmode
      \ifconditional\postponingnotes\else
        \global\settrue\postponingnotes
-       \glet\flushnotes\doflushnotes
+       \enforced\glet\flushnotes\doflushnotes
        \clf_postponenotes
      \fi
    \fi}
@@ -1534,7 +1534,7 @@
      \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
-     \glet\flushnotes\relax
+     \enforced\glet\flushnotes\relax
      \endgroup
    \fi}
 

@@ -802,7 +802,7 @@
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\setfalse\c_tabl_auto_align_mode
    \global\advance\c_tabl_tabulate_columns\plusone
-   \expandafter\let\csname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
+   \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \edef\currenttabulationtrulespec{#1}%
    \ifempty\currenttabulationtrulespec
      \global\d_tabl_tabulate_vrulethickness\zeropoint
@@ -1057,10 +1057,10 @@
    \fi}
 
 \appendtoks
-     \enforced\expandafter\edef\csname\e!start       \currenttabulation\endcsname{\tabl_start_defined[\currenttabulation]}%
-     \enforced\expandafter\let \csname\e!stop        \currenttabulation\endcsname\relax
-     \enforced\expandafter\let \csname\??tabulatehead\currenttabulation\endcsname\empty
-     \enforced\expandafter\let \csname\??tabulatefoot\currenttabulation\endcsname\empty
+     \enforced\edefcsname\e!start       \currenttabulation\endcsname{\tabl_start_defined[\currenttabulation]}%
+     \enforced\letcsname \e!stop        \currenttabulation\endcsname\relax
+     \enforced\letcsname \??tabulatehead\currenttabulation\endcsname\empty
+     \enforced\letcsname \??tabulatefoot\currenttabulation\endcsname\empty
 \to \everydefinetabulation
 
 \let\tabulateparameter\tabulationparameter % will stay for a while
@@ -1478,7 +1478,7 @@
   {\begincsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname}
 
 \def\tabl_tabulate_column_vruled_nop
-  {\expandafter\glet\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname\tabl_tabulate_column_vruled_preset
+  {\global\letcsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname\tabl_tabulate_column_vruled_preset
    \tabl_tabulate_column_normal}
 
 \def\tabl_tabulate_column_vruled_step#1%
@@ -1487,7 +1487,7 @@
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
 \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
-  {\expandafter\gdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+  {\global\defcsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
      {\tabl_tabulate_column_vruled_preset
       \rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step}%
    \tabl_tabulate_column_normal#1#2}
@@ -1502,20 +1502,11 @@
    \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
 
 \def\tabl_tabulate_vrule_reset_step % undefined or relax
-  {\expandafter\glet\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+  {\global\letcsname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
 
 \appendtoks
     \tabl_tabulate_vrule_reset
 \to \t_tabl_tabulate_every_after_row
-
-% sometimes more efficient:
-%
-% \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
-%   {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
-%    \expandafter\xdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
-%      {\global\d_tabl_tabulate_vrulethickness_local\the\d_tabl_tabulate_vrulethickness_default
-%       \noexpand\xdef\noexpand\m_tabl_tabulate_vrule_color_local{\m_tabl_tabulate_vrule_color_local}}%
-%    \tabl_tabulate_column_normal#1#2}
 
 \def\tabl_tabulate_column_vruled_normal
   {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
@@ -1672,7 +1663,7 @@
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
-   \expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
+   \global\edefcsname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
    \hpack \thealignbackgroundcolorattr{#1}{}% pack ?
    \endgroup}
 
@@ -1703,7 +1694,7 @@
   {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
 
 \def\tabl_tabulate_color_reset_step % undefined or empty?
-  {\expandafter\glet\csname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
+  {\global\letcsname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
 
 \appendtoks
     \tabl_tabulate_color_reset

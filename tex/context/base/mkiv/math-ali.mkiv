@@ -378,7 +378,7 @@
      {\advance\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
    \global\c_math_eqalign_column\plusone
    \dostarttagged\t!math\empty
-   \dostarttagged\t!mathtable\currentmathalignment
+   \dostarttagged\t!mtable\currentmathalignment
    \numberedeqalign}
 
 \def\math_alignment_stop
@@ -456,13 +456,13 @@
 
 \def\math_first_in_eqalign
   {\global\c_math_eqalign_column\plusone
-   \dostarttagged\t!mathtablerow \empty
-   \dostarttagged\t!mathtablecell\empty}
+   \dostarttagged\t!mtablerow \empty
+   \dostarttagged\t!mtablecell\empty}
 
 \def\math_next_in_eqalign
   {\global\advance\c_math_eqalign_column\plusone
    \dostoptagged % finish cell
-   \dostarttagged\t!mathtablecell\empty}
+   \dostarttagged\t!mtablecell\empty}
 
 \def\math_left_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
@@ -815,7 +815,7 @@
 \def\math_matrix_start_table
   {\global\c_math_eqalign_column\zerocount
    \dostarttagged\t!math\empty
-   \dostarttagged\t!mathtable\empty}
+   \dostarttagged\t!mtable\empty}
 
 \def\math_matrix_stop_table
   {\dostoptagged
@@ -823,13 +823,13 @@
 
 \def\math_matrix_start_row
   {\noalign{\global\c_math_eqalign_column\zerocount}%
-   \dostarttagged\t!mathtablerow\empty}
+   \dostarttagged\t!mtablerow\empty}
 
 \def\math_matrix_stop_row
   {\dostoptagged}
 
 \unexpanded\def\math_matrix_start_cell
-  {\dostarttagged\t!mathtablecell\empty
+  {\dostarttagged\t!mtablecell\empty
    \hss
    \math_left_of_eqalign
    \startimath

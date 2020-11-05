@@ -562,7 +562,7 @@
    \egroup}
 
 \permanent\def\checklinecolumndimension#1#2#3%
-  {\expandafter\xdef\csname#1\number#3\endcsname
+  {\global\edef#1\number#3\endcsname
      {\expandafter\ifx\csname#1\number#3\endcsname\relax
         \the#2\b_tabl_lines_cell
       \orelse\ifdim\csname#1\number#3\endcsname<#2\b_tabl_lines_cell

@@ -581,45 +581,20 @@
     \setuevalue{\e!type\currenttyping\v!file}{\typefile[\currenttyping]}%
 \to \everydefinetyping
 
-%% \protected\def\typefile
-%%   {\dodoubleempty\buff_verbatim_type_file}
-%%
-%% \def\buff_verbatim_type_file[#1][#2]#3%
-%%   {\begingroup
-%%    \ifsecondargument
-%%      \setuptyping[#1][#2]%
-%%      \buff_verbatim_type_file_checked{#1}{#3}%
-%%    \orelse\iffirstargument
-%%      \ifcondition\validassignment{#1}%
-%%        \setuptyping[\v!file][#1]%
-%%        \buff_verbatim_type_file_checked\v!file{#3}%
-%%      \else
-%%        \buff_verbatim_type_file_checked{#1}{#3}%
-%%      \fi
-%%    \else
-%%      \buff_verbatim_type_file_checked\v!file{#3}%
-%%    \fi
-%%    \useindentnextparameter\typingparameter % needs checking
-%%    \endgroup
-%%    \dorechecknextindentation} % needs checking
-
-\permanent\tolerant\protected\def\typefile[#1]#*[#2]%
-  {\buff_verbatim_type_file{#1}{#2}}
-
-\def\buff_verbatim_type_file#1#2#3%
+\permanent\tolerant\protected\def\typefile[#1]#*[#2]#:#3%
   {\begingroup
-   \ifarguments
-     \buff_verbatim_type_file_checked\v!file{#3}%
-   \or
-     \ifcondition\validassignment{#1}%
+   \ifparameter#2\or
+     \setuptyping[#1][#2]%
+     \buff_verbatim_type_file_checked{#1}{#3}%
+   \orelse\ifparameter#1\or
+     \ifhastok={#1}%
        \setuptyping[\v!file][#1]%
        \buff_verbatim_type_file_checked\v!file{#3}%
      \else
        \buff_verbatim_type_file_checked{#1}{#3}%
      \fi
-   \or
-     \setuptyping[#1][#2]%
-     \buff_verbatim_type_file_checked{#1}{#3}%
+   \else
+     \buff_verbatim_type_file_checked\v!file{#3}%
    \fi
    \useindentnextparameter\typingparameter % needs checking
    \endgroup

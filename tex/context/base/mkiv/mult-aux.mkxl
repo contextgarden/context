@@ -251,7 +251,7 @@
 
 %D Do, we only interface the assignment definition:
 
-\protected\def\mult_interfaces_adef#1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\mult_interfaces_adef#1#2{\defcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
 
 \startinterface english
     \protected\def\mult_interfaces_adef#1#2{\defcsname#1#2\endcsname}
@@ -319,7 +319,6 @@
    \frozen\protected\def#9##1{\edefcsname#1##1:\s!parent\endcsname{#1#2}}}
 
 \permanent\protected\def\installparameterhashhandler#1#2%
-%   {\expandafter\let\csname#2namespace\endcsname#1%
   {\letcsname#2namespace\endcsname#1%
    \normalexpanded
      {\mult_interfaces_install_parameter_hash_handler
@@ -388,7 +387,6 @@
 \def\mult_check_for_parent#1#2#3#4%
   {\ifcsname#1#4:\s!parent\endcsname\orelse\ifx#4\empty\else
      \writestatus\m!system{error: invalid parent #4 for #3, #4 defined too (best check it)}%
-%      \expandafter\edef\csname#1#4:\s!parent\endcsname{#2}%
      \edefcsname#1#4:\s!parent\endcsname{#2}%
    \fi}
 
@@ -753,7 +751,6 @@
 %D Here is another experiment:
 
 \protected\def\mult_interfaces_install_action_handler#1#2#3%
-%   {\frozen\tolerant\protected\expandafter\def\csname#1\endcsname[##1]##*[##2]%
   {\frozen\tolerant\protected\defcsname#1\endcsname[##1]##*[##2]%
      {\begingroup
       \ifarguments
@@ -1074,13 +1071,13 @@
 
 \permanent\protected\def\installmacrostack#1%
   {\ifdefined#1\else\let#1\empty\fi
-   \protected\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
-   \protected\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
+   \global\protected\defcsname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
+   \global\protected\defcsname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
 
 \permanent\protected\def\installglobalmacrostack#1%
   {\ifdefined#1\else\glet#1\empty\fi
-   \protected\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
-   \protected\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
+   \global\protected\defcsname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
+   \global\protected\defcsname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
 
 % \showmacrostack can be used to see if there are different entries
 

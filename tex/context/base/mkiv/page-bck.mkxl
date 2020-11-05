@@ -139,8 +139,8 @@
 \installcorenamespace{layoutbackgrounds}
 \installcorenamespace{layoutbackgroundcheck} % we need another hash as \??layoutbackgrounds<...> gets defined
 
-\def\page_backgrounds_set_yes{\expandafter\let\csname\currentotrbackground\endcsname\relax    }
-\def\page_backgrounds_set_nop{\expandafter\let\csname\currentotrbackground\endcsname\undefined}
+\def\page_backgrounds_set_yes{\letcsname\currentotrbackground\endcsname\relax    }
+\def\page_backgrounds_set_nop{\letcsname\currentotrbackground\endcsname\undefined}
 
 \protected\def\page_backgrounds_check#1%
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
@@ -657,7 +657,7 @@
 \permanent\protected\def\pushbackground[#1]%
   {\pushmacro\popbackground
    \edef\currentotrbackground{\??layoutbackgrounds#1}%
-   \overloaded\permanent\protected\edef\popbackground
+   \enforced\permanent\protected\edef\popbackground
      {\setupframed
         [\currentotrbackground]
         [\c!background=\namedframedparameter{\currentotrbackground}\c!background,

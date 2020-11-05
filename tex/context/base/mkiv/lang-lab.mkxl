@@ -93,10 +93,7 @@
           \lastnamedcs
         \orelse\ifcsname\??label#1:##1:##2\endcsname
           \lastnamedcs
-      % \orelse\ifcsname\??language#4\s!default\endcsname
-      %   \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \orelse\ifcsname\??language##1\s!default\endcsname
-         %\expandafter#5\csname\??language##1\s!default\endcsname{##2}%
           \expandafter#5\lastnamedcs{##2}%
         \orelse\ifcsname\??label\currentlabelcategory#1:##2\endcsname
           \lastnamedcs
@@ -117,16 +114,12 @@
      \protected\def#3{#5#4}%
      \protected\def#5##1##2%
        {\ifcsname\??label#1:##1:##2\endcsname
-         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
           \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \orelse\ifcsname\??language#4\s!default\endcsname
-         %\expandafter#5\csname\??language#4\s!default\endcsname{##2}%
           \expandafter#5\lastnamedcs{##2}%
         \orelse\ifcsname\??label#1:##2\endcsname
-         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
           \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \orelse\ifcsname\??label#1:\s!en:##2\endcsname
-         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
           \enforced\expandafter\let\expandafter\thetextprefix\lastnamedcs
         \else
           \enforced\let\thetextprefix\dummytextprefix
@@ -184,8 +177,7 @@
    \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
 \def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
-  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname%
-     {{\clf_strip{#1}}\empty}}
+  {\edefcsname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\clf_strip{#1}}\empty}}
 
 \tolerant\def\lang_labels_text_prefix_setup[#1]#*[#2]%
   {\ifarguments\or
@@ -224,7 +216,7 @@
 \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
-   \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1%
+   \defcsname\??label\currenttextprefixclass:\currenttextprefixtag:#1%
      \ifempty\m_lang_labels_right
        \ifempty\m_lang_labels_left
          \endcsname{\empty\empty}%
@@ -239,11 +231,11 @@
   {}
 
 \def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
-  {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
+  {\defcsname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 \permanent\protected\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
   {%\writestatus{!!!!}{#1:\reallanguagetag{#2}:#3}%
-   \expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+   \defcsname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
 
 \tolerant\def\lang_labels_text_prefix_copy[#1]#*[#2]%
   {\ifarguments\or
@@ -268,7 +260,7 @@
 % this delays the aliasing so that we can switch mainlanguage in between
 
 \def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
-  {\expandafter\edef\csname\??label\currenttextprefixclass:#1\endcsname
+  {\edefcsname\??label\currenttextprefixclass:#1\endcsname
      {{\noexpand\csname\??label\currenttextprefixclass:\noexpand\reallanguagetag\noexpand\currentmainlanguage:#2\endcsname}{}}}
 
 \definelabelclass [head]      [0] % titles

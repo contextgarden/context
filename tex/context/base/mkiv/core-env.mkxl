@@ -506,63 +506,17 @@
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
-% \protected\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups  \relax
-% \protected\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups  \relax
-% \protected\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups  \relax
-% \protected\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups\relax
-% \protected\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups     \relax
-%
-% \def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-% \def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-% \def\syst_setups_start_raw_indeed#1#2#3\stoprawsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-% \def\syst_setups_start_loc_indeed#1#2#3\stoplocalsetups{\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-% \def\syst_setups_start_tex_indeed#1#2#3\stopsetups     {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-%
-% \def\syst_setups_start_lua{\ifsecondargument\expandafter\syst_setups_start_lua_c\else\expandafter\syst_setups_start_lua_d\fi}
-% \def\syst_setups_start_xml{\ifsecondargument\expandafter\syst_setups_start_xml_c\else\expandafter\syst_setups_start_xml_d\fi}
-% \def\syst_setups_start_raw{\ifsecondargument\expandafter\syst_setups_start_raw_c\else\expandafter\syst_setups_start_raw_d\fi}
-% \def\syst_setups_start_loc{\ifsecondargument\expandafter\syst_setups_start_loc_c\else\expandafter\syst_setups_start_loc_d\fi}
-% \def\syst_setups_start_tex{\ifsecondargument\expandafter\syst_setups_start_tex_c\else\expandafter\syst_setups_start_tex_d\fi}
-%
-% % no need for \the\t_syst_setups_lua in the next, now too often
-%
-% \def\syst_setups_start_lua_a{\the\t_syst_setups_lua\dodoubleempty\syst_setups_start_lua} % [ ] delimited
-% \def\syst_setups_start_xml_a{\the\t_syst_setups_xml\dodoubleempty\syst_setups_start_xml} % [ ] delimited
-% \def\syst_setups_start_raw_a{\the\t_syst_setups_raw\dodoubleempty\syst_setups_start_raw} % [ ] delimited
-% \def\syst_setups_start_loc_a{\the\t_syst_setups_loc\dodoubleempty\syst_setups_start_loc} % [ ] delimited
-% \def\syst_setups_start_tex_a{\the\t_syst_setups_tex\dodoubleempty\syst_setups_start_tex} % [ ] delimited
-%
-% % empty preserves inner {} (is removed by the \expandafter{#3})
-%
-% \def\syst_setups_start_lua_b#1 {\the\t_syst_setups_lua\syst_setups_start_lua_indeed\empty{#1}\empty} % space delimited
-% \def\syst_setups_start_xml_b#1 {\the\t_syst_setups_xml\syst_setups_start_xml_indeed\empty{#1}\empty} % space delimited
-% \def\syst_setups_start_raw_b#1 {\the\t_syst_setups_raw\syst_setups_start_raw_indeed\empty{#1}\empty} % space delimited
-% \def\syst_setups_start_loc_b#1 {\the\t_syst_setups_loc\syst_setups_start_loc_indeed\empty{#1}\empty} % space delimited
-% \def\syst_setups_start_tex_b#1 {\the\t_syst_setups_tex\syst_setups_start_tex_indeed\empty{#1}\empty} % space delimited
-%
-% \def\syst_setups_start_lua_c[#1][#2]{\the\t_syst_setups_lua\syst_setups_start_lua_indeed{#1}{#2}\empty} % [..] [..]
-% \def\syst_setups_start_xml_c[#1][#2]{\the\t_syst_setups_xml\syst_setups_start_xml_indeed{#1}{#2}\empty} % [..] [..]
-% \def\syst_setups_start_raw_c[#1][#2]{\the\t_syst_setups_raw\syst_setups_start_raw_indeed{#1}{#2}\empty} % [..] [..]
-% \def\syst_setups_start_loc_c[#1][#2]{\the\t_syst_setups_loc\syst_setups_start_loc_indeed{#1}{#2}\empty} % [..] [..]
-% \def\syst_setups_start_tex_c[#1][#2]{\the\t_syst_setups_tex\syst_setups_start_tex_indeed{#1}{#2}\empty} % [..] [..]
-%
-% \def\syst_setups_start_lua_d[#1][#2]{\the\t_syst_setups_lua\syst_setups_start_lua_indeed\empty{#1}\empty} % [..]
-% \def\syst_setups_start_xml_d[#1][#2]{\the\t_syst_setups_xml\syst_setups_start_xml_indeed\empty{#1}\empty} % [..]
-% \def\syst_setups_start_raw_d[#1][#2]{\the\t_syst_setups_raw\syst_setups_start_raw_indeed\empty{#1}\empty} % [..]
-% \def\syst_setups_start_loc_d[#1][#2]{\the\t_syst_setups_loc\syst_setups_start_loc_indeed\empty{#1}\empty} % [..]
-% \def\syst_setups_start_tex_d[#1][#2]{\the\t_syst_setups_tex\syst_setups_start_tex_indeed\empty{#1}\empty} % [..]
-
 \permanent\protected\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_yes\syst_setups_start_lua_nop} \aliased\let\stopluasetups  \relax
 \permanent\protected\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_yes\syst_setups_start_xml_nop} \aliased\let\stopxmlsetups  \relax
 \permanent\protected\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_yes\syst_setups_start_raw_nop} \aliased\let\stoprawsetups  \relax
 \permanent\protected\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_yes\syst_setups_start_loc_nop} \aliased\let\stoplocalsetups\relax
 \permanent\protected\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_yes\syst_setups_start_tex_nop} \aliased\let\stopsetups     \relax
 
-\def\syst_setups_start_lua_two#1#2#+\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_xml_two#1#2#+\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_raw_two#1#2#+\stoprawsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_loc_two#1#2#+\stoplocalsetups{\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_tex_two#1#2#+\stopsetups     {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_lua_two#1#2#+\stopluasetups  {\endgroup\dodoglobal\defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_xml_two#1#2#+\stopxmlsetups  {\endgroup\dodoglobal\defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_raw_two#1#2#+\stoprawsetups  {\endgroup\dodoglobal\defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_loc_two#1#2#+\stoplocalsetups{\endgroup\dodoglobal\defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_tex_two#1#2#+\stopsetups     {\endgroup\dodoglobal\defcsname\??setup#1:#2\endcsname##1{#3}}
 
 \tolerant\def\syst_setups_start_lua_yes[#1]#*[#2]%
   {\the\t_syst_setups_lua
@@ -631,7 +585,7 @@
 
 \def\syst_setups_copy[#1][#2]%
   {\ifcsname\??setup:#2\endcsname
-      \expandafter\let\csname\??setup:#1\expandafter\endcsname\lastnamedcs
+      \letcsname\??setup:#1\expandafter\endcsname\lastnamedcs
    \fi}
 
 \protected\def\showsetupsdefinition[#1]%
@@ -669,10 +623,10 @@
       \getvariable{#2}\s!set
       \popmacro\currentvariableclass}}
 
-\permanent\protected\def\setvariable #1#2#3{\expandafter\def \csname\??variables#1:#2\endcsname{#3}}
-\permanent\protected\def\setevariable#1#2#3{\expandafter\edef\csname\??variables#1:#2\endcsname{#3}}
-\permanent\protected\def\setgvariable#1#2#3{\expandafter\gdef\csname\??variables#1:#2\endcsname{#3}}
-\permanent\protected\def\setxvariable#1#2#3{\expandafter\xdef\csname\??variables#1:#2\endcsname{#3}}
+\permanent\protected\def\setvariable #1#2#3{\defcsname        \??variables#1:#2\endcsname{#3}}
+\permanent\protected\def\setevariable#1#2#3{\edefcsname       \??variables#1:#2\endcsname{#3}}
+\permanent\protected\def\setgvariable#1#2#3{\global\defcsname \??variables#1:#2\endcsname{#3}}
+\permanent\protected\def\setxvariable#1#2#3{\global\edefcsname\??variables#1:#2\endcsname{#3}}
 
 \permanent          \def\getvariable #1#2{\begincsname\??variables#1:#2\endcsname}
 \permanent\protected\def\showvariable#1#2{\showvalue{\begincsname\??variables#1:#2\endcsname}}
@@ -693,10 +647,10 @@
   {\ifcsname\??variables#1:#2\endcsname
      \edef\m_syst_variables_temp{\lastnamedcs}%
      \ifempty\m_syst_variables_temp
-       \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
+       \defcsname\??variables#1:#2\endcsname{#3}%
      \fi
    \else
-     \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
+     \defcsname\??variables#1:#2\endcsname{#3}%
    \fi}
 
 %D \macros

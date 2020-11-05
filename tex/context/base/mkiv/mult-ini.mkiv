@@ -60,6 +60,7 @@
 \def\m!prefix!{m!}
 \def\s!prefix!{s!}
 \def\v!prefix!{v!}
+\def\t!prefix!{t!}
 
 %D \macros
 %D   [constants,variables,commands]
@@ -168,9 +169,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-\protected\def\defineinterfaceconstant #1#2{\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
-\protected\def\defineinterfacevariable #1#2{\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
-\protected\def\defineinterfaceelement  #1#2{\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfaceconstant#1#2{\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfacevariable#1#2{\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfaceelement #1#2{\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -178,7 +179,7 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\protected\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
+\protected\def\definefileconstant#1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -187,8 +188,13 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-\protected\def\definesystemconstant  #1{\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
-\protected\def\definemessageconstant #1{\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
+\protected\def\definesystemconstant #1{\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
+\protected\def\definemessageconstant#1{\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
+
+%D For now here:
+
+\protected\def\definetagconstant  #1{\expandafter\def\csname\t!prefix!#1\endcsname{#1}}
+\protected\def\aliastagconstant #1#2{\expandafter\let\csname\t!prefix!#1\expandafter\endcsname\csname\t!prefix!#2\endcsname}
 
 %D In a parameter driven system, some parameters are shared by more system
 %D components. In \CONTEXT\ we can distinguish parameters by a unique prefix. Such a

@@ -90,7 +90,7 @@
 
 \permanent\protected\def\newcatcodetable#1% we could move the cctdefcounter to lua
   {\global\advance\c_syst_catcodes_n\plusone
-   \expandafter\xdef\csname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
+   \global\defcsname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
   %\setnewconstant#1\c_syst_catcodes_n
    \overloaded\integerdef#1\c_syst_catcodes_n
    \ctxcommand{registercatcodetable("\expandafter\gobbleoneargument\string#1",\number#1)}}
@@ -178,22 +178,22 @@
    \fi}
 
 \def\syst_catcodes_let_c % only first time
-  {\frozen\enforced\global\expandafter\def\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname\expandafter
-     {\enforced\expandafter\let\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
+  {\frozen\enforced\global\defcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname\expandafter
+     {\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
    \syst_catcodes_reinstate_unexpanded
    \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
 
 \def\syst_catcodes_def_c % only first time (we could use \normalexpanded here)
-  {\frozen\enforced\global\expandafter\def\csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+  {\frozen\enforced\global\defcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\frozen\enforced\expandafter\def\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+       {\frozen\enforced\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
    \syst_catcodes_reinstate_normal
    \csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
 
 \def\syst_catcodes_ued_c % only first time
-  {\frozen\enforced\global\expandafter\def\csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+  {\frozen\enforced\global\defcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\frozen\enforced\protected\expandafter\def\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+       {\frozen\enforced\protected\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
    \syst_catcodes_reinstate_unexpanded
    \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
 

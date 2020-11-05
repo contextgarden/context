@@ -20,169 +20,173 @@
 
 \unprotect
 
-%D Eventually these labels will either move to the modules
-%D where they're used, or they will en dup in mult-tag.
+%D Eventually these labels will either move to the modules where they're used, or
+%D they will en dup in mult-tag.
 
-\def\t!document              {document}               % Div
+\definetagconstant{document}               % Div
 
-\def\t!division              {division}               % Div
-\def\t!paragraph             {paragraph}              % P
-\def\t!p                     {p}                      % P
-\def\t!construct             {construct}              % Span
-\def\t!highlight             {highlight}              % Span
+\definetagconstant{division}               % Div
+\definetagconstant{paragraph}              % P
+\definetagconstant{p}                      % P
+\definetagconstant{construct}              % Span
+\definetagconstant{highlight}              % Span
 
-\def\t!section               {section}                % Sect
-\def\t!sectioncaption        {sectioncaption}         % Div
-\def\t!sectiontitle          {sectiontitle}           % H
-\def\t!sectionnumber         {sectionnumber}          % H
-\def\t!sectioncontent        {sectioncontent}         % Div
+\definetagconstant{section}                % Sect
+\definetagconstant{sectioncaption}         % Div
+\definetagconstant{sectiontitle}           % H
+\definetagconstant{sectionnumber}          % H
+\definetagconstant{sectioncontent}         % Div
 
-\def\t!itemgroup             {itemgroup}              % L
-\def\t!item                  {item}                   % Li
-\def\t!itemtag               {itemtag}                % Lbl
-\def\t!itemcontent           {itemcontent}            % LBody
-\def\t!itemhead              {itemhead}               % Div
-\def\t!itembody              {itembody}               % Div
+\definetagconstant{itemgroup}              % L
+\definetagconstant{item}                   % Li
+\definetagconstant{itemtag}                % Lbl
+\definetagconstant{itemcontent}            % LBody
+\definetagconstant{itemhead}               % Div
+\definetagconstant{itembody}               % Div
 
-\def\t!description           {description}            % Li
-\def\t!descriptiontag        {descriptiontag}         % Lbl
-\def\t!descriptioncontent    {descriptioncontent}     % LBody
-\def\t!descriptionsymbol     {descriptionsymbol}      % Span
+\definetagconstant{description}            % Li
+\definetagconstant{descriptiontag}         % Lbl
+\definetagconstant{descriptioncontent}     % LBody
+\definetagconstant{descriptionsymbol}      % Span
 
-\let\t!construction          \t!description
-\let\t!constructiontag       \t!descriptiontag
-\let\t!constructioncontent   \t!descriptioncontent
-\let\t!constructionsymbol    \t!descriptionsymbol
+\aliastagconstant{construction}       {description}
+\aliastagconstant{constructiontag}    {descriptiontag}
+\aliastagconstant{constructioncontent}{descriptioncontent}
+\aliastagconstant{constructionsymbol} {descriptionsymbol}
 
-\def\t!verbatimblock         {verbatimblock}          % Code
-\def\t!verbatimlines         {verbatimlines}          % Code
-\def\t!verbatimline          {verbatimline}           % Code
-\def\t!verbatim              {verbatim}               % Code
+\definetagconstant{verbatimblock}          % Code
+\definetagconstant{verbatimlines}          % Code
+\definetagconstant{verbatimline}           % Code
+\definetagconstant{verbatim}               % Code
 
-\def\t!lines                 {lines}                  % Code
-\def\t!line                  {line}                   % Code
-\def\t!linenumber            {linenumber}             % Span
+\definetagconstant{lines}                  % Code
+\definetagconstant{line}                   % Code
+\definetagconstant{linenumber}             % Span
 
-\def\t!sorting               {sorting}                % Span
-\def\t!synonym               {synonym}                % Span
+\definetagconstant{sorting}                % Span
+\definetagconstant{synonym}                % Span
 
-\def\t!register              {register}               % Div
-\def\t!registerlocation      {registerlocation}       % Span
-\def\t!registersection       {registersection}        % Div
-\def\t!registertag           {registertag}            % Span
-\def\t!registerentries       {registerentries}        % Div
-\def\t!registerentry         {registerentry}          % Span
-\def\t!registercontent       {registercontent}        % Span
-\def\t!registersee           {registersee}            % Span
-\def\t!registersection       {registersection}        % Span
-\def\t!registerpages         {registerpages}          % Span
-\def\t!registerpage          {registerpage}           % Span
-\def\t!registerpagerange     {registerpagerange}      % Span
-\def\t!registerfrompage      {registerfrompage}       % Span
-\def\t!registertopage        {registertopage}         % Span
-\def\t!registerseparator     {registerseparator}      % Span
+\definetagconstant{register}               % Div
+\definetagconstant{registerlocation}       % Span
+\definetagconstant{registersection}        % Div
+\definetagconstant{registertag}            % Span
+\definetagconstant{registerentries}        % Div
+\definetagconstant{registerentry}          % Span
+\definetagconstant{registercontent}        % Span
+\definetagconstant{registersee}            % Span
+\definetagconstant{registerpages}          % Span
+\definetagconstant{registerpage}           % Span
+\definetagconstant{registerpagerange}      % Span
+\definetagconstant{registerfrompage}       % Span
+\definetagconstant{registertopage}         % Span
+\definetagconstant{registerseparator}      % Span
 
-\def\t!table                 {table}                  % Table
-\def\t!tablerow              {tablerow}               % TR
-\def\t!tablecell             {tablecell}              % TD
-\def\t!tableheadcell         {tableheadcell}          % TH
-\def\t!tablehead             {tablehead}              % THEAD
-\def\t!tablebody             {tablebody}              % TBODY
-\def\t!tablefoot             {tablefoot}              % TFOOT
+\definetagconstant{table}                  % Table
+\definetagconstant{tablerow}               % TR
+\definetagconstant{tablecell}              % TD
+\definetagconstant{tableheadcell}          % TH
+\definetagconstant{tablehead}              % THEAD
+\definetagconstant{tablebody}              % TBODY
+\definetagconstant{tablefoot}              % TFOOT
 
+\definetagconstant{tabulate}               % Table
+\definetagconstant{tabulaterow}            % TR
+\definetagconstant{tabulatecell}           % TD
+\definetagconstant{tabulateheadcell}       % TH
+\definetagconstant{tabulatehead}           % THEAD
+\definetagconstant{tabulatebody}           % TBODY
+\definetagconstant{tabulatefoot}           % TFOOT
 
-\def\t!tabulate              {tabulate}               % Table
-\def\t!tabulaterow           {tabulaterow}            % TR
-\def\t!tabulatecell          {tabulatecell}           % TD
-\def\t!tabulateheadcell      {tabulateheadcell}       % TH
-\def\t!tabulatehead          {tabulatehead}           % THEAD
-\def\t!tabulatebody          {tabulatebody}           % TBODY
-\def\t!tabulatefoot          {tabulatefoot}           % TFOOT
+\definetagconstant{math}                   % math
+\definetagconstant{mtable}                 % Table
+\definetagconstant{mtr}                    % TR
+\definetagconstant{mtd}                    % TD
+\definetagconstant{maction}                %
+\definetagconstant{mstacker}
+\definetagconstant{mstackertop}
+\definetagconstant{mstackermid}
+\definetagconstant{mstackerbot}
 
-\def\t!math                  {math}                   % math
-\def\t!mathtable             {mtable}                 % Table
-\def\t!mathtablerow          {mtr}                    % TR
-\def\t!mathtablecell         {mtd}                    % TD
-\def\t!mathaction            {maction}                %
-\def\t!mathstacker           {mstacker}
-\def\t!mathstackertop        {mstackertop}
-\def\t!mathstackermid        {mstackermid}
-\def\t!mathstackerbot        {mstackerbot}
+\aliastagconstant{mtablerow} {mtr}
+\aliastagconstant{mtablecell}{mtd}
 
-\def\t!munderover            {munderover}             % special cases
-\def\t!munder                {munder}                 % special cases
-\def\t!mover                 {mover}                  % special cases
+\definetagconstant{munderover}             % special cases
+\definetagconstant{munder}                 % special cases
+\definetagconstant{mover}                  % special cases
 
-\def\t!list                  {list}                   % TOC
-\def\t!listitem              {listitem}               % TOCI
-\def\t!listtag               {listtag}                % Lbl
-\def\t!listcontent           {listcontent}            % P
-\def\t!listdata              {listdata}               % P
-\def\t!listpage              {listpage}               % Reference
-\def\t!listtext              {listtext}               % Span
+\definetagconstant{list}                   % TOC
+\definetagconstant{listitem}               % TOCI
+\definetagconstant{listtag}                % Lbl
+\definetagconstant{listcontent}            % P
+\definetagconstant{listdata}               % P
+\definetagconstant{listpage}               % Reference
+\definetagconstant{listtext}               % Span
 
-\def\t!delimitedblock        {delimited}              % BlockQuote
-\def\t!delimited             {delimited}              % Quote
-\def\t!delimitedsymbol       {delimitedsymbol}        % Span
-\def\t!delimitedcontent      {delimitedcontent}       % Span
-\def\t!subsentence           {subsentence}            % Span
-\def\t!subsentencecontent    {subsentencecontent}     % Span
-\def\t!subsentencesymbol     {subsentencesymbol}      % Span
+\definetagconstant{delimited}              % BlockQuote
+%definetagconstant{delimited}              % Quote
+\definetagconstant{delimitedsymbol}        % Span
+\definetagconstant{delimitedcontent}       % Span
 
-\def\t!float                 {float}                  % Div
-\def\t!floatcaption          {floatcaption}           % Caption
-\def\t!floatlabel            {floatlabel}             % Span
-\def\t!floattext             {floattext}              % Span
-\def\t!floatnumber           {floatnumber}            % Span
-\def\t!floatcontent          {floatcontent}           % P
+\aliastagconstant{delimitedblock}{delimited}
 
-\def\t!image                 {image}                  % P
+\definetagconstant{subsentence}            % Span
+\definetagconstant{subsentencecontent}     % Span
+\definetagconstant{subsentencesymbol}      % Span
 
-\def\t!mpgraphic             {mpgraphic}              % P
+\definetagconstant{float}                  % Div
+\definetagconstant{floatcaption}           % Caption
+\definetagconstant{floatlabel}             % Span
+\definetagconstant{floattext}              % Span
+\definetagconstant{floatnumber}            % Span
+\definetagconstant{floatcontent}           % P
 
-\def\t!formulaset            {formulaset}             % Div
-\def\t!formula               {formula}                % Div
-\def\t!formulacaption        {formulacaption}         % Span
-\def\t!formulalabel          {formulalabel}           % Span
-\def\t!formulanumber         {formulanumber}          % P
-\def\t!formulacontent        {formulacontent}         % P
-\def\t!subformula            {subformula}             % Div
+\definetagconstant{image}                  % P
 
-\def\t!link                  {link}                   % Link
-\def\t!reference             {reference}              % Span
+\definetagconstant{mpgraphic}              % P
 
-\def\t!margintext            {margintext}             % Span
-\def\t!margintextblock       {margintextblock}        % Div
-\def\t!marginanchor          {marginanchor}           % Span
+\definetagconstant{formulaset}             % Div
+\definetagconstant{formula}                % Div
+\definetagconstant{formulacaption}         % Span
+\definetagconstant{formulalabel}           % Span
+\definetagconstant{formulanumber}          % P
+\definetagconstant{formulacontent}         % P
+\definetagconstant{subformula}             % Div
+
+\definetagconstant{link}                   % Link
+\definetagconstant{reference}              % Span
+
+\definetagconstant{margintext}             % Span
+\definetagconstant{margintextblock}        % Div
+\definetagconstant{marginanchor}           % Span
 
 % we might opt for verbose variants so this is experimental:
 
-\def\t!label                 {label}                  % Span
-\def\t!number                {number}                 % Span
+\definetagconstant{label}                  % Span
+\definetagconstant{number}                 % Span
 
-\def\t!ignore                {ignore}                 % Span
-\def\t!private               {private}                % Span
+\definetagconstant{ignore}                 % Span
+\definetagconstant{private}                % Span
 
-\def\t!mid                   {mid}                    % Span
-\def\t!sub                   {sub}                    % Span
-\def\t!sup                   {sup}                    % Span
-\def\t!subsup                {subsup}                 % Span
+\definetagconstant{mid}                    % Span
+\definetagconstant{sub}                    % Span
+\definetagconstant{sup}                    % Span
+\definetagconstant{subsup}                 % Span
 
-\def\t!unit                  {unit}                   % Span
-\def\t!quantity              {quantity}               % Span
-\def\t!number                {number}                 % Span
+\definetagconstant{unit}                   % Span
+\definetagconstant{quantity}               % Span
+%definetagconstant{number}                 % Span
 
-\def\t!combination           {combination}            % Span
-\def\t!combinationpair       {combinationpair}        % Span
-\def\t!combinationcontent    {combinationcontent}     % Span
-\def\t!combinationcaption    {combinationcaption}     % Span
+\definetagconstant{combination}            % Span
+\definetagconstant{combinationpair}        % Span
+\definetagconstant{combinationcontent}     % Span
+\definetagconstant{combinationcaption}     % Span
 
-\def\t!publications          {publications}           % Span
-\def\t!publication           {publication}            % Span
-\def\t!pubfld                {pubfld}                 % Span
+\definetagconstant{publications}           % Span
+\definetagconstant{publication}            % Span
+\definetagconstant{pubfld}                 % Span
 
-\def\t!block                 {block}                  % Div
-\def\t!userdata              {userdata}               % Div
+\definetagconstant{block}                  % Div
+\definetagconstant{userdata}               % Div
 
 % \setuptaglabeltext
 %   [en]

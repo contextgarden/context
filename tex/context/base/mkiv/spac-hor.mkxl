@@ -506,6 +506,8 @@
     \let\softhyphen\explicitdiscretionary
 \fi
 
+% todo:
+
 \cldcontext{"\string\\protected\string\\def\string\\\string\n{\string\\space}"}
 %cldcontext{"\string\\let\string\\\string\n=\string\\space"}
 
@@ -1001,7 +1003,8 @@
 \installcorenamespace{hspace}
 
 \permanent\protected\def\ignorecrlf
-  {\let\crlf\justonespace\let\\\crlf}
+  {\enforced\let\crlf\justonespace
+   \enforced\let\\\crlf}
 
 \permanent\protected\def\definehspace
   {\dotripleempty\spac_hspaces_define}

@@ -2408,7 +2408,7 @@
 
 \protected\def\syst_boxes_stack_allocate
   {\newbox\b_syst_boxes_stack
-   \expandafter\let\csname\??boxstack\number\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
+   \letcsname\??boxstack\number\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
 
 \protected\def\syst_boxes_push#1#2%
   {\global\advance\c_syst_boxes_stack\plusone
@@ -2586,11 +2586,11 @@
 \installcorenamespace {box_x}
 \installcorenamespace {box_y}
 
-\permanent\protected\def\setboxllx #1#2{\expandafter\edef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\permanent\protected\def\setboxlly #1#2{\expandafter\edef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\setboxllx #1#2{\edefcsname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\setboxlly #1#2{\edefcsname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-\permanent\protected\def\gsetboxllx#1#2{\expandafter\xdef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\permanent\protected\def\gsetboxlly#1#2{\expandafter\xdef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\gsetboxllx#1#2{\global\edefcsname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\gsetboxlly#1#2{\global\edefcsname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
 \permanent\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \permanent\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\lastnamedcs\else\zeropoint\fi}

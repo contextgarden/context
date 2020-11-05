@@ -150,9 +150,9 @@
 \let\math_stackers_stop_tagged     \relax
 
 \appendtoks
-    \def\math_stackers_start_tagged_mid{\dostarttagged\t!mathstackermid\empty\hbox\bgroup}%
-    \def\math_stackers_start_tagged_top{\dostarttagged\t!mathstackertop\empty\hbox\bgroup}%
-    \def\math_stackers_start_tagged_bot{\dostarttagged\t!mathstackerbot\empty\hbox\bgroup}%
+    \def\math_stackers_start_tagged_mid{\dostarttagged\t!mstackermid\empty\hbox\bgroup}%
+    \def\math_stackers_start_tagged_top{\dostarttagged\t!mstackertop\empty\hbox\bgroup}%
+    \def\math_stackers_start_tagged_bot{\dostarttagged\t!mstackerbot\empty\hbox\bgroup}%
     \def\math_stackers_stop_tagged     {\egroup\dostoptagged}%
 \to \everysetuptagging
 
@@ -328,7 +328,7 @@
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
-   \dostarttagged\t!mathstacker\currentmathstackers
+   \dostarttagged\t!mstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
@@ -415,7 +415,7 @@
       \advance\scratchwidth2\scratchhoffset
       %
       \ifcase#method\relax
-        \dostarttagged\t!mathstackermid\empty
+        \dostarttagged\t!mstackermid\empty
         \setbox\scratchboxthree\csname\??mathstackersalternative\p_alternative\endcsname
         \dostoptagged
       \fi
@@ -602,7 +602,7 @@
      \setupcurrentmathstackers[#settings]%
    \fi
    \mathstackersparameter\c!left\relax
-   \dostarttagged\t!mathstacker\currentmathstackers
+   \dostarttagged\t!mstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\m_math_stackers_text_middle {#text}%
       %
@@ -798,7 +798,7 @@
 \unexpanded\def\math_stackers_make_double_text#where#category#codepoint#text#extra%
   {\math_stackers_start_group{#category}%
    \mathstackersparameter\c!left\relax
-   \dostarttagged\t!mathstacker\currentmathstackers
+   \dostarttagged\t!mstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\currentmathstackers{#category}%
       %

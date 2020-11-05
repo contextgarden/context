@@ -1,13 +1,11 @@
 %D A fixed variant if the t-tikz module distributed with tikz.
 
-\unprotect
-
-    \ifcase\contextlmtxmode \else
+\ifdefined\pdflastxpos \else
+    \unprotect
         \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
         \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
-    \fi
-
-\protect
+    \protect
+\fi
 
 \ifcase\contextlmtxmode \else
     \overloadmode\zerocount

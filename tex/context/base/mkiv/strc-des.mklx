@@ -155,9 +155,9 @@
 
 %D Handlers:
 
-\expandafter\let\csname\??constructionmainhandler   \v!description\expandafter\endcsname\csname\??constructionmainhandler   \v!construction\endcsname
-\expandafter\let\csname\??constructioncommandhandler\v!description\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
-\expandafter\let\csname\??constructiontexthandler   \v!description\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
+\letcsname\??constructionmainhandler   \v!description\expandafter\endcsname\csname\??constructionmainhandler   \v!construction\endcsname
+\letcsname\??constructioncommandhandler\v!description\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
+\letcsname\??constructiontexthandler   \v!description\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
 
 \protected\setvalue{\??constructioncommandhandler\v!description}%
   {\dowithpar

@@ -222,10 +222,12 @@ local function processjob()
         elseif overloadmode == "error" then
             overloadmode = 4 -- 6
         else
-            overloadmode = tonumber(overloadmode) or 0
+            overloadmode = tonumber(overloadmode)
         end
 
-        tex.set("overloadmode",overloadmode)
+        if overloadmode then
+            tex.set("overloadmode",overloadmode)
+        end
 
     end
 

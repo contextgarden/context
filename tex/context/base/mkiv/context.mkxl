@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.04 09:28}
+\edef\contextversion{2020.11.05 15:20}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -263,7 +263,7 @@
 \loadmarkfile{strc-ren}
 \loadmarkfile{strc-xml}
 \loadmarkfile{strc-def} % might happen later
-\loadmkvifile{strc-ref}
+\loadmklxfile{strc-ref}
 %loadmarkfile{strc-reg}
 \loadmkvifile{strc-lev} % experiment
 
@@ -278,7 +278,7 @@
 \loadmkvifile{spac-prf}
 \loadmkxlfile{spac-grd}
 
-\loadmkvifile{scrn-ini}
+\loadmklxfile{scrn-ini}
 \loadmkvifile{scrn-ref}
 
 \loadmarkfile{pack-obj}
@@ -312,7 +312,7 @@
 \loadmklxfile{page-txt}
 \loadmarkfile{page-sid} % when
 
-\loadmkvifile{strc-flt}
+\loadmklxfile{strc-flt}
 
 \loadmarkfile{page-pst}
 \loadmkvifile{page-mbk}
@@ -353,7 +353,7 @@
 \loadmkvifile{page-sel} % optional
 \loadmkvifile{page-inj} % optional
 
-\loadmkvifile{scrn-pag}
+\loadmklxfile{scrn-pag}
 \loadmkvifile{scrn-wid}
 \loadmkvifile{scrn-but}
 \loadmkvifile{scrn-bar}
@@ -487,7 +487,7 @@
 \loadmarkfile{math-scr}
 \loadmarkfile{math-int}
 \loadmarkfile{math-del}
-\loadmarkfile{math-fen}
+\loadmkxlfile{math-fen}
 \loadmkvifile{math-acc}
 \loadmkvifile{math-rad}
 \loadmarkfile{math-inl}
@@ -524,7 +524,7 @@
 \loadmkxlfile{grph-pat}
 
 \loadmkxlfile{pack-box}
-\loadmarkfile{pack-bar}
+\loadmkxlfile{pack-bar}
 \loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
 

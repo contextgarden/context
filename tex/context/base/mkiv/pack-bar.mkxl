@@ -16,9 +16,9 @@
 
 \unprotect
 
-%D This code has been moved from scrn-int to here (was some old
-%D experimental code). It could be in scrn-bar but it's static. In
-%D the meantime the interface has been adapted to a key|/|value one.
+%D This code has been moved from scrn-int to here (was some old experimental code).
+%D It could be in scrn-bar but it's static. In the meantime the interface has been
+%D adapted to a key|/|value one.
 %D
 %D \startbuffer
 %D  \dorecurse{10}{
@@ -43,15 +43,15 @@
 \installsimplecommandhandler \??positionbar {positionbar} \??positionbar
 
 \setuppositionbar
-  [\c!min=1,
-   \c!max=1,
-   \c!n=1,
+  [\c!min=\plusone,
+   \c!max=\plusone,
+   \c!n=\plusone
    \c!text=?,
    \c!width=\emwidth,
    \c!height=\strutheight,
    \c!depth=\strutdepth]
 
-\unexpanded\def\horizontalpositionbar[#1]%
+\permanent\protected\def\horizontalpositionbar[#1]%
   {\hbox to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
@@ -61,7 +61,7 @@
       \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\unexpanded\def\verticalpositionbar[#1]%
+\permanent\protected\def\verticalpositionbar[#1]%
   {\vbox to \vsize
      {\hsize\positionbarparameter\c!width
       \setuppositionbar[#1]%
@@ -72,7 +72,7 @@
       \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\unexpanded\def\horizontalgrowingbar[#1]%
+\permanent\protected\def\horizontalgrowingbar[#1]%
   {\hpack to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
@@ -81,7 +81,7 @@
       \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\unexpanded\def\verticalgrowingbar[#1]%
+\permanent\protected\def\verticalgrowingbar[#1]%
   {\vpack to \vsize
      {\hsize\positionbarparameter\c!width
       \setuppositionbar[#1]%

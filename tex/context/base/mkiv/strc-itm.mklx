@@ -341,16 +341,16 @@
 %D Global states
 
 \def\strc_itemgroups_store_continue_state#options#settings%
-   {\setxvalue{\??itemgroupoption \currentitemgroup}{\strc_itemgroups_process_options{#options}}%
-    \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup[#settings]}}
+   {\global\edefcsname\??itemgroupoption \currentitemgroup\endcsname{\strc_itemgroups_process_options{#options}}%
+    \global\defcsname \??itemgroupsetting\currentitemgroup\endcsname{\setupcurrentitemgroup[#settings]}}
 
 \def\strc_itemgroups_fetch_continue_state
   {\csname\??itemgroupoption \currentitemgroup\endcsname
    \csname\??itemgroupsetting\currentitemgroup\endcsname}
 
 \def\strc_itemgroups_reset_continue_state
-  {\expandafter\glet\csname\??itemgroupoption \currentitemgroup\endcsname\relax
-   \expandafter\glet\csname\??itemgroupsetting\currentitemgroup\endcsname\relax}
+  {\global\letcsname\??itemgroupoption \currentitemgroup\endcsname\relax
+   \global\letcsname\??itemgroupsetting\currentitemgroup\endcsname\relax}
 
 % These will become keywords. We will also add a feature to keep the while set
 % together.
@@ -1603,7 +1603,7 @@
 
 \ifx\currentinterface \s!english \else
 
-    \def\next#1#2{\ifcsname#1\endcsname\else\enforced\expandafter\let\csname#1\endcsname#2\fi}
+    \def\next#1#2{\ifcsname#1\endcsname\else\enforced\letcsname#1\endcsname#2\fi}
 
     \etoksapp\itemgroupcommands{%
         \next{\v!item        }\strc_itemgroups_start_do_item

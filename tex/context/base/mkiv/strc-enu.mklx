@@ -248,10 +248,10 @@
     \disablepseudocaps % sorry, uppercase causes troubles
 \to \everyenumeration
 
-\expandafter\let\csname\??constructionmainhandler   \v!enumeration\expandafter\endcsname\csname\??constructionmainhandler   \v!description\endcsname
-\expandafter\let\csname\??constructioncommandhandler\v!enumeration\expandafter\endcsname\csname\??constructioncommandhandler\v!description\endcsname
-\expandafter\let\csname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
-\expandafter\let\csname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
+\letcsname\??constructionmainhandler   \v!enumeration\expandafter\endcsname\csname\??constructionmainhandler   \v!description\endcsname
+\letcsname\??constructioncommandhandler\v!enumeration\expandafter\endcsname\csname\??constructioncommandhandler\v!description\endcsname
+\letcsname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
+\letcsname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
 
 \protected\setvalue{\??constructiontexthandler\v!enumeration}%
   {\begingroup

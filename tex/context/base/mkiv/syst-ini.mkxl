@@ -147,9 +147,9 @@
 \permanent\letcharcode \tildeasciicode    \       %                 tilde
 \permanent\letcharcode \spaceasciicode    \space  %                 space
 
-\permanent\expandafter\def\csname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
-\permanent\expandafter\def\csname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
-\permanent\expandafter\def\csname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
+\permanent\defcsname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
+\permanent\defcsname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
+\permanent\defcsname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
 
 %D For now:
 
@@ -588,8 +588,8 @@
 % We wrap all into one macro (the frozen stuff adds 10% runtime):
 
 \permanent\protected\def\newif#1%
-  {\permanent\protected\expandafter\gdef\csname\expandafter\new_if_check\csstring#1true\endcsname {\overloaded\frozen\let#1\iftrue }%
-   \permanent\protected\expandafter\gdef\csname\expandafter\new_if_check\csstring#1false\endcsname{\overloaded\frozen\let#1\iffalse}%
+  {\permanent\protected\global\defcsname\expandafter\new_if_check\csstring#1true\endcsname {\overloaded\frozen\let#1\iftrue }%
+   \permanent\protected\global\defcsname\expandafter\new_if_check\csstring#1false\endcsname{\overloaded\frozen\let#1\iffalse}%
    \csname\expandafter\new_if_check\csstring#1false\endcsname}
 
 \normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
@@ -1029,7 +1029,7 @@
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
    \else
      \global\advance\c_syst_helpers_n_of_namespaces\plusone
-     \immutable\expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+     \immutable\edefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
 %D It makes more sense to have these here:

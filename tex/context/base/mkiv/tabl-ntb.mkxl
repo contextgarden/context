@@ -279,28 +279,28 @@
 \letvalue{\??naturaltablesqueeze\v!broad}\donetrue
 \letvalue{\??naturaltablesqueeze\v!local}\donetrue
 
-\def\tabl_ntb_let_gal{\expandafter\glet\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_let_gal{\global\letcsname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 \def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 
-\def\tabl_ntb_let_tal#1{\expandafter\glet\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_let_tal#1{\global\letcsname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 \def\tabl_ntb_get_tal#1{\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 
-\def\tabl_ntb_set_nob#1{\expandafter\let\csname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
+\def\tabl_ntb_set_nob#1{\letcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
 \def\tabl_ntb_get_nob#1{\ifcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
 
-%def\tabl_ntb_set_tag#1#2{\expandafter\edef\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_col#1#2{\expandafter\edef\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_row#1#2{\expandafter\edef\csname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+%def\tabl_ntb_set_tag#1#2{\edefcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_col#1#2{\edefcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_row#1#2{\edefcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_let_tag#1#2{\expandafter\let\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_let_col#1#2{\expandafter\let\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_let_row#1#2{\expandafter\let\csname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_tag#1#2{\letcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_col#1#2{\letcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_row#1#2{\letcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
-%def\tabl_ntb_set_wd#1#2{\expandafter\xdef\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
-\def\tabl_ntb_set_ht#1#2{\expandafter\xdef\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+%def\tabl_ntb_set_wd#1#2{\global\edefcsname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+\def\tabl_ntb_set_ht#1#2{\global\edefcsname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
 
-%def\tabl_ntb_let_wd#1#2{\expandafter\glet\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
-\def\tabl_ntb_let_ht#1#2{\expandafter\glet\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+%def\tabl_ntb_let_wd#1#2{\global\letcsname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+\def\tabl_ntb_let_ht#1#2{\global\letcsname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
 
 \def\tabl_ntb_get_tag#1#2{\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_get_col#1#2{\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -309,15 +309,15 @@
 %def\tabl_ntb_get_wd#1#2{\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_get_ht#1#2{\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_set_wid#1{\expandafter\xdef\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_hei#1{\expandafter\xdef\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_dis#1{\expandafter\xdef\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_aut#1{\expandafter\xdef\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_wid#1{\global\edefcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_hei#1{\global\edefcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_dis#1{\global\edefcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_aut#1{\global\edefcsname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 
-\def\tabl_ntb_let_wid#1{\expandafter\glet\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_hei#1{\expandafter\glet\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_dis#1{\expandafter\glet\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_aut#1{\expandafter\glet\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_wid#1{\global\letcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_hei#1{\global\letcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_dis#1{\global\letcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_aut#1{\global\letcsname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 
 \def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
@@ -343,7 +343,7 @@
 %
 % \def\tabl_ntb_let_tag#1#2#3%
 %   {\ifx#3\c_tabl_ntb_none\else
-%      \expandafter\let\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname#3%
+%      \letcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname#3%
 %    \fi}
 %
 % \def\tabl_ntb_get_tag#1#2%
@@ -353,26 +353,20 @@
 %      \c_tabl_ntb_none
 %    \fi}
 
-\def\tabl_ntb_let_ref   #1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_ref   #1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_ref   #1#2{\global\letcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_ref   #1#2{\global\edefcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 %def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
 \def\tabl_ntb_get_ref   #1#2{\begincsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
+\def\tabl_ntb_set_spn     #1{\letcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
 \def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\relax % could be inlined
                                \expandafter\secondoftwoarguments % unset
                              \else
                                \expandafter\firstoftwoarguments  % a span
                              \fi}
 
-% keep for a while:
-%
-% \protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6% nasty: we restore the level
-%   {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\expandafter\endcsname\expandafter
-%      {\expandafter\def\expandafter\m_tabl_tbl_level\expandafter{\m_tabl_tbl_level}\tabl_ntb_cell_process{#3}{#4}[#5]{#6}}}
-
 \protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
-  {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
+  {\defcsname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
      {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
 
 \def\tabl_ntb_get_txt#1#2%
