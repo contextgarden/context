@@ -134,12 +134,12 @@
       \setevalue{\??enumeration#tag:\s!parent}{\??enumeration}}%
      {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
       \setevalue{\??enumeration#tag:\s!parent}{\??enumeration#parent}}%
-   \instance\setuevalue{\e!next #tag}{\strc_enumerations_next   {#tag}{\number#level}}% obsolete
-   \instance\setuevalue{\c!reset#tag}{\strc_enumerations_reset  {#tag}{\number#level}}% obsolete
-   %instance\setuevalue{\c!set  #tag}{\strc_enumerations_set    {#tag}{\number#level}}% obsolete
-   \instance\setuevalue        {#tag}{\strc_enumerations_command[#tag]}% we could pass level here as well (faster)
-   \instance\setuevalue{\e!start#tag}{\strc_enumerations_start  [#tag]}% we could pass level here as well (faster)
-   \instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
+   \frozen\instance\setuevalue{\e!next #tag}{\strc_enumerations_next   {#tag}{\number#level}}% obsolete
+   \frozen\instance\setuevalue{\c!reset#tag}{\strc_enumerations_reset  {#tag}{\number#level}}% obsolete
+   %frozen\instance\setuevalue{\c!set  #tag}{\strc_enumerations_set    {#tag}{\number#level}}% obsolete
+   \frozen\instance\setuevalue        {#tag}{\strc_enumerations_command[#tag]}% we could pass level here as well (faster)
+   \frozen\instance\setuevalue{\e!start#tag}{\strc_enumerations_start  [#tag]}% we could pass level here as well (faster)
+   \frozen\instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
 
 \appendtoks
     \ifempty\currentenumerationparent

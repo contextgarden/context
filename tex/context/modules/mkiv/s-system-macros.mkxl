@@ -16,11 +16,17 @@
 
 % todo:  \permanent\protected\let\select\directselect : same value (add ref)
 
+% todo: when mutable, remove immutable
+
 \startmodule[system-macros]
 
 \continueifinputfile{s-system-macros.mkxl}
 
 \usemodule[article-basic] \setuplayout[tight] \setupbodyfont[7pt,tt]
+
+\setuppapersize
+  [A4,landscape]
+  [A4,landscape]
 
 \starttext
 
@@ -36,13 +42,51 @@
 
     local crap     = "[$>%|%&%#" .. string.char(0xEF) .. "]"
 
+    local basefile  = resolvers.findfile("context.mkxl")
+    local swapnames = { }
+
+    local pattern   = file.join(file.pathpart(basefile),"/*.mk*")
+        local filenames = dir.glob(pattern)
+    for i=1,#filenames do
+        swapnames[file.basename(filenames[i])] = true
+    end
+
+    local pattern   = file.join(file.pathpart(basefile),"/*.l**")
+    local filenames = dir.glob(pattern)
+    for i=1,#filenames do
+        swapnames[file.basename(filenames[i])] = true
+    end
+
+    local hashnames = table.setmetatableindex(function(t,k)
+        local s = file.suffix(k)
+        local v = k
+        if s == "mkiv" then
+            local n = file.replacesuffix(k,"mkxl")
+            if swapnames[n] then
+                v = n
+            end
+        elseif s == "mkvi" then
+            local n = file.replacesuffix(k,"mklx")
+            if swapnames[n] then
+                v = n
+            end
+        elseif s == "lua" then
+            local n = file.replacesuffix(k,"lmt")
+            if swapnames[n] then
+                v = n
+            end
+        end
+        t[k] = v
+        return v
+    end)
+
     require("mtx-interface")
     local data =  scripts.interface.editor("data")
     local files = data and data.common and data.common.filenames or { }
     local t = tex.hashtokens()
     table.sort(t)
     local function show(check)
-        context.starttabulate { "|l|l|l|l|l|l|l|l|l|" }
+        context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
         for i=1,#t do
             local k = t[i]
             if check(k) then
@@ -51,12 +95,12 @@
                 local permanent  = v.permanent  and "permanent"
                 local immutable  = v.immutable  and "immutable"
                 local primitive  = v.primitive  and "primitive"
-                local mutable    = v.immutable  and "mutable"
+                local mutable    = v.mutable    and "mutable"
                 local tolerant   = v.tolerant   and "tolerant"
                 local noaligned  = v.noaligned  and "noaligned"
                 local instance   = v.instance   and "instance"
                 local parameters = v.parameters or 0
-                local dealtwith = frozen or permanent or immutable or primitive or mutable -- beware: we can have combinations
+                local dealtwith = mutable or immutable or frozen or permanent or primitive -- beware: we can have combinations
                 local cscommand = gsub(v.cmdname or "","_"," ")
                 local whatever  = find(k,"^[a-z][a-z][a-z]+_")
                 local filename  = files[k]
@@ -65,11 +109,14 @@
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
                 ctx_NC() if parameters > 0 then context(parameters) end
                 ctx_NC() context(cscommand)
-                ctx_NC() if dealtwith      then context(dealtwith)  end
                 ctx_NC() if tolerant       then context(tolerant)   end
-                ctx_NC() if instance       then context(instance)   end
+                ctx_NC() if primitive      then context(primitive)  end
+                ctx_NC() if permanent      then context(permanent)  end
+                ctx_NC() if frozen         then context(frozen)     end
+                ctx_NC() if immutable      then context(immutable)  end
+                ctx_NC() if mutable        then context(mutable)    end
                 ctx_NC() if noaligned      then context(noaligned)  end
-                ctx_NC() if filename       then context(filename)   end
+                ctx_NC() if filename       then context(hashnames[filename]) end
                 ctx_NC() ctx_NR()
             end
         end
@@ -82,6 +129,23 @@
 
     show(function(k) return not find(k,"^[a-zA-Z]+$") and not find(k,crap) end)
 \stopluacode
+
+\page
+
+\starttabulate[|c|l|]
+\HL
+\NC \type {+}   \NC mutable, immutable, frozen, permanent, primitive \NC \NR
+\NC \type {-}   \NC protected by obscurity (underscores) \NC \NR
+\NC \type {!}   \NC instance (can be frozen) \NC \NR
+\NC \type {0-9} \NC the number of arguments (argument grabbing can be delegated) \NC \NR
+\HL
+\stoptabulate
+
+Often frozen commands are redefined on demand and they can be overloaded. Mutable
+doesn't mean that a user can change it without consequences, for instance the
+\type {\current...} ones. Primitives come with the engine, permanent macros are
+the core of \CONTEXT. Noaligned macros are special and dealt deep down when
+scanning for alignment specific primitives.
 
 \stoptext
 

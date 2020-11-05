@@ -67,9 +67,9 @@
         \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%
     \fi
     % We can combine these but in tracing (or errors) using a different caller is nicer.
-    \instance\setuevalue        {\currentdescription}{\strc_descriptions_command[\currentdescription]}%
-    \instance\setuevalue{\e!start\currentdescription}{\strc_descriptions_start  [\currentdescription]}%
-    \instance\setuevalue{\e!stop \currentdescription}{\strc_descriptions_stop}%
+    \frozen\instance\setuevalue        {\currentdescription}{\strc_descriptions_command[\currentdescription]}%
+    \frozen\instance\setuevalue{\e!start\currentdescription}{\strc_descriptions_start  [\currentdescription]}%
+    \frozen\instance\setuevalue{\e!stop \currentdescription}{\strc_descriptions_stop}%
 \to \everydefinedescription
 
 \let\p_strc_constructions_title \empty

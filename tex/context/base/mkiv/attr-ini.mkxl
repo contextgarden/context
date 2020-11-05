@@ -60,8 +60,8 @@
   {\ifcsname\??attributeprefix#2\endcsname\else
      \scratchcounter\clf_defineattribute{#2}{#1}\relax
     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-     \global\expandafter\attributedef\csname\??attributeprefix#2\endcsname\scratchcounter %           \foo = 123
-     \global\expandafter\integerdef  \csname\??attributeid    #2\endcsname\scratchcounter % \attribute\foo = 123
+     \global\permanent\expandafter\attributedef\csname\??attributeprefix#2\endcsname\scratchcounter %           \foo = 123
+     \global\permanent\expandafter\integerdef  \csname\??attributeid    #2\endcsname\scratchcounter % \attribute\foo = 123
      % some attributes are always global
      \doifelseinset\s!global{#3}%
        {\xtoksapp\t_attr_list_global{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}% \c_attr_foo

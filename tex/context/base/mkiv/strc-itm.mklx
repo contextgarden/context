@@ -331,9 +331,9 @@
 \aliased\let\setupitemgroups\setupitemgroup
 
 \appendtoks
-    \setuevalue{\e!start\currentitemgroup}{\startitemgroup[\currentitemgroup]}%
-    \setuevalue{\e!stop \currentitemgroup}{\stopitemgroup}%
-    \setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
+    \frozen\instance\setuevalue{\e!start\currentitemgroup}{\startitemgroup[\currentitemgroup]}%
+    \frozen\instance\setuevalue{\e!stop \currentitemgroup}{\stopitemgroup}%
+    \frozen\instance\setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
     \let\currentparentitemgroup\currentitemgroup
     \definecounter[\v_strc_itemgroups_counter]%
 \to \everydefineitemgroup

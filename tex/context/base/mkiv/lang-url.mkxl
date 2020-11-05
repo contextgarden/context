@@ -47,19 +47,19 @@
     \resetfontfeature
     \resetcharacterspacing
     %
-    \let\&\letterampersand
-    \let\#\letterhash
-    \let\~\lettertilde
-    \let\\\letterbackslash
-    \let\$\letterdollar
-    \let\^\letterhat
-    \let\_\letterunderscore
-    \let\{\letterleftbrace
-    \let\}\letterrightbrace
-    \let\|\letterbar
-    \let~=\lettertilde
-    \let|=\letterbar
-    \let\Ux\eUx
+    \enforced\let\&\letterampersand
+    \enforced\let\#\letterhash
+    \enforced\let\~\lettertilde
+    \enforced\let\\\letterbackslash
+    \enforced\let\$\letterdollar
+    \enforced\let\^\letterhat
+    \enforced\let\_\letterunderscore
+    \enforced\let\{\letterleftbrace
+    \enforced\let\}\letterrightbrace
+    \enforced\let\|\letterbar
+    \enforced\let~=\lettertilde
+    \enforced\let|=\letterbar
+    \enforced\let\Ux\eUx
 \to \everyhyphenatedurl
 
 \let\hyphenatedurlseparator    \empty % \periodcentered
@@ -80,7 +80,7 @@
 \def\lang_url_L#1{\lang_url_less\char#1\relax}
 \def\lang_url_C#1{\lang_url_more\char#1\relax}
 
-\unexpanded\def\showhyphenatedurlbreaks % for old times sake
+\permanent\protected\def\showhyphenatedurlbreaks % for old times sake
   {\let\lang_url_show\lang_url_trac}
 
 \installtextracker
@@ -90,13 +90,13 @@
 
 \let\lang_url_show\relax
 
-\unexpanded\def\sethyphenatedurlnormal#1{\clf_sethyphenatedurlcharacters{#1}{\v!normal}}
-\unexpanded\def\sethyphenatedurlbefore#1{\clf_sethyphenatedurlcharacters{#1}{\v!before}}
-\unexpanded\def\sethyphenatedurlafter #1{\clf_sethyphenatedurlcharacters{#1}{\v!after }}
+\permanent\protected\def\sethyphenatedurlnormal#1{\clf_sethyphenatedurlcharacters{#1}{\v!normal}}
+\permanent\protected\def\sethyphenatedurlbefore#1{\clf_sethyphenatedurlcharacters{#1}{\v!before}}
+\permanent\protected\def\sethyphenatedurlafter #1{\clf_sethyphenatedurlcharacters{#1}{\v!after }}
 
 % \sethyphenatedurlafter{ABCDEF}
 
-\unexpanded\def\hyphenatedurl#1%
+\permanent\protected\def\hyphenatedurl#1%
   {\dontleavehmode
    \begingroup
    \the\everyhyphenatedurl
@@ -122,7 +122,7 @@
 %D \hyphenatedfilename{here/there/filename.suffix}
 %D \stoptyping
 
-\ifx\hyphenatedfilename\undefined \let\hyphenatedfilename\hyphenatedurl \fi
+\ifx\hyphenatedfilename\undefined \aliased\let\hyphenatedfilename\hyphenatedurl \fi
 
 % \def\test#1%
 %   {\dontleavehmode
@@ -140,7 +140,7 @@
 
 % \setuppapersize[A7]
 %
-% \unexpanded\def\WhateverA#1%
+% \protected\def\WhateverA#1%
 %   {\dontleavehmode
 %    \begingroup
 %    \prehyphenchar"B7\relax
@@ -149,7 +149,7 @@
 %    \unhbox\scratchbox
 %    \endgroup}
 %
-% \unexpanded\def\WhateverB#1%
+% \protected\def\WhateverB#1%
 %   {\dontleavehmode
 %    \begingroup
 %    \tttf

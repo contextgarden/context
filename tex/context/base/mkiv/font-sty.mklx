@@ -235,9 +235,9 @@
     \letvalue{\??stylecheck\currentstyle}\relax
     \edef\p_method{\styleparameter\c!method}%
     \ifx\p_method\v!command
-        \setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
-        \setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
-        \setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
+        \frozen\instance\setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
+        \frozen\instance\setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
+        \frozen\instance\setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
     \fi
 \to \everydefinestyle
 

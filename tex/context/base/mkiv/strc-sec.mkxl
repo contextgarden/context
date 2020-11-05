@@ -474,8 +474,8 @@
 \to \everyredefinehead
 
 \appendtoks
-   \instance\setuevalue{\e!start\currenthead}{\strc_sectioning_start[\currenthead]}%
-   \instance\setuevalue{\e!stop \currenthead}{\strc_sectioning_stop [\currenthead]}%
+   \frozen\instance\setuevalue{\e!start\currenthead}{\strc_sectioning_start[\currenthead]}%
+   \frozen\instance\setuevalue{\e!stop \currenthead}{\strc_sectioning_stop [\currenthead]}%
 \to \everydefinehead
 
 % so \subject as well as \section will need two commands when ownnumber

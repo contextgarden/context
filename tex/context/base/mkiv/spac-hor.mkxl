@@ -654,8 +654,8 @@
    \c!default=\v!middle]
 
 \appendtoks
-   \setuevalue{\e!start\currentnarrower}{\spac_narrower_start[\currentnarrower]}%
-   \setuevalue{\e!stop \currentnarrower}{\spac_narrower_stop}%
+   \frozen\instance\setuevalue{\e!start\currentnarrower}{\spac_narrower_start[\currentnarrower]}%
+   \frozen\instance\setuevalue{\e!stop \currentnarrower}{\spac_narrower_stop}%
 \to \everydefinenarrower
 
 \permanent\protected\def\installnarrowermethod#1#2%

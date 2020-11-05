@@ -1152,9 +1152,13 @@
 %D edef, and the \type{\robustdoifinsetelse} doesn't listen to
 %D \type{\doglobal }
 
-\unexpanded\def\robustaddtocommalist#1#2% {item} \cs
-  {\robustdoifelseinset{#1}#2\resetglobal
-     {\dodoglobal\xdef#2{\ifx#2\empty\else#2,\fi#1}}}
+\pushoverloadmode
+
+    \unexpanded\def\robustaddtocommalist#1#2% {item} \cs
+      {\robustdoifelseinset{#1}#2\resetglobal
+         {\dodoglobal\xdef#2{\ifx#2\empty\else#2,\fi#1}}}
+
+\popoverloadmode
 
 %D \macros{donormalbibauthoryear}
 %D

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.05 15:20}
+\edef\contextversion{2020.11.05 22:57}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -132,7 +132,7 @@
 %D \doifelsefileexists{l-macro-imp-codes-luametatex.lua}{\registerctxluafile{l-macro-imp-codes-luametatex}{}}{}
 %D \stoptyping
 
-\loadmarkfile{supp-dir}
+\loadmkxlfile{supp-dir}
 
 \loadmkxlfile{char-utf}
 \loadmkxlfile{char-ini}
@@ -229,7 +229,7 @@
 \loadmarkfile{pack-cut}
 
 \loadmkxlfile{lang-mis}
-\loadmarkfile{lang-url}
+\loadmkxlfile{lang-url}
 \loadmarkfile{lang-def}
 
 % \loadmkvifile{file-job} % why so late?
@@ -253,7 +253,7 @@
 
 \loadmklxfile{strc-ini}
 \loadmarkfile{strc-tag}
-\loadmarkfile{strc-doc}
+\loadmkxlfile{strc-doc}
 \loadmkxlfile{strc-num}
 \loadmkxlfile{strc-mar}
 \loadmkxlfile{strc-sbe}
@@ -516,7 +516,7 @@
 \loadmkxlfile{pack-com}
 \loadmarkfile{typo-del}
 
-\loadmarkfile{grph-trf}
+\loadmkxlfile{grph-trf}
 \loadmkxlfile{grph-inc}
 \loadmarkfile{grph-fig}
 \loadmarkfile{grph-raw}

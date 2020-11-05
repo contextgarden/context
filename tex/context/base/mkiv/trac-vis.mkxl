@@ -193,27 +193,27 @@
 
 %D We keep these for a while:
 
-\let\ruledhss       \hss
-\let\ruledhfil      \hfil
-\let\ruledhfill     \hfill
-\let\ruledhfilll    \hfilll
-\let\ruledhfilneg   \hfilneg
-\let\ruledhfillneg  \hfillneg
-\let\ruledhfilllneg \hfilllneg
-\let\ruledvss       \vss
-\let\ruledvfil      \vfil
-\let\ruledvfill     \vfill
-\let\ruledvfilll    \vfilll
-\let\ruledvfilneg   \vfilneg
-\let\ruledvfillneg  \vfillneg
-\let\ruledvfilllneg \vfilllneg
-\let\ruledhskip     \hskip
-\let\ruledvskip     \vskip
-\let\ruledkern      \kern
-\let\ruledhglue     \hglue
-\let\ruledvglue     \vglue
-\let\ruledmkern     \mkern
-\let\ruledmskip     \mskip
-\let\ruledpenalty   \penalty
+% \aliased\let\ruledhss       \hss
+% \aliased\let\ruledhfil      \hfil
+% \aliased\let\ruledhfill     \hfill
+% \aliased\let\ruledhfilll    \hfilll
+% \aliased\let\ruledhfilneg   \hfilneg
+% \aliased\let\ruledhfillneg  \hfillneg
+% \aliased\let\ruledhfilllneg \hfilllneg
+% \aliased\let\ruledvss       \vss
+% \aliased\let\ruledvfil      \vfil
+% \aliased\let\ruledvfill     \vfill
+% \aliased\let\ruledvfilll    \vfilll
+% \aliased\let\ruledvfilneg   \vfilneg
+% \aliased\let\ruledvfillneg  \vfillneg
+% \aliased\let\ruledvfilllneg \vfilllneg
+% \aliased\let\ruledhskip     \hskip
+% \aliased\let\ruledvskip     \vskip
+% \aliased\let\ruledkern      \kern
+% \aliased\let\ruledhglue     \hglue
+% \aliased\let\ruledvglue     \vglue
+% \aliased\let\ruledmkern     \mkern
+% \aliased\let\ruledmskip     \mskip
+% \aliased\let\ruledpenalty   \penalty
 
 \protect \endinput

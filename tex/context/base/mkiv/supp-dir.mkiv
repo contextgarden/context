@@ -13,41 +13,34 @@
 
 \unprotect
 
-\chardef\directionlefttoright\zerocount
-\chardef\directionrighttoleft\plusone
+% \immutable\chardef\directionlefttoright\zerocount
+% \immutable\chardef\directionrighttoleft\plusone
 
-\edef\??bdir{\ifdefined\bodydir bdir\else direction\fi}
+\setnewconstant\directionlefttoright\zerocount
+\setnewconstant\directionrighttoleft\plusone
 
-\protected\edef\naturalhbox  {\hbox  \??bdir\directionlefttoright}
-\protected\edef\naturalvbox  {\vbox  \??bdir\directionlefttoright}
-\protected\edef\naturalvtop  {\vtop  \??bdir\directionlefttoright}
-\protected\edef\naturalhpack {\hpack \??bdir\directionlefttoright}
-\protected\edef\naturalvpack {\vpack \??bdir\directionlefttoright}
-\protected\edef\naturaltpack {\tpack \??bdir\directionlefttoright}
+\immutable\edef\??bdir{\ifdefined\bodydir bdir\else direction\fi}
 
-\protected\edef\reversehbox  {\hbox  \??bdir\directionrighttoleft}
-\protected\edef\reversevbox  {\vbox  \??bdir\directionrighttoleft}
-\protected\edef\reversevtop  {\vtop  \??bdir\directionrighttoleft}
-\protected\edef\reversehpack {\hpack \??bdir\directionrighttoleft}
-\protected\edef\reversevpack {\vpack \??bdir\directionrighttoleft}
-\protected\edef\reversetpack {\tpack \??bdir\directionrighttoleft}
+\permanent\protected\edef\naturalhbox  {\hbox  \??bdir\directionlefttoright}
+\permanent\protected\edef\naturalvbox  {\vbox  \??bdir\directionlefttoright}
+\permanent\protected\edef\naturalvtop  {\vtop  \??bdir\directionlefttoright}
+\permanent\protected\edef\naturalhpack {\hpack \??bdir\directionlefttoright}
+\permanent\protected\edef\naturalvpack {\vpack \??bdir\directionlefttoright}
+\permanent\protected\edef\naturaltpack {\tpack \??bdir\directionlefttoright}
 
-\ifdefined\bodydir
-    \let\bodydir      \undefined \let\normalbodydir      \undefined
-    \let\bodydirection\undefined \let\normalbodydirection\undefined
-\fi
-
-\ifdefined\pagedir
-    \let\pagedir      \undefined \let\normalpagedir      \undefined
-    \let\pagedirection\undefined \let\normalpagedirection\undefined
-\fi
+\permanent\protected\edef\reversehbox  {\hbox  \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversevbox  {\vbox  \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversevtop  {\vtop  \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversehpack {\hpack \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversevpack {\vpack \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversetpack {\tpack \??bdir\directionrighttoleft}
 
 % \expanded{\defineactivecharacter \number"2000E} {\textdirection\directionrighttoleft\relax}
 % \expanded{\defineactivecharacter \number"2000F} {\textdirection\directionlefttoright\relax}
 
 \def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 
-\protected\def\showdirsinmargin
+\permanent\protected\def\showdirsinmargin
   {\normalexpanded{\inleft{\naturalhbox
      {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
 

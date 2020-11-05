@@ -84,7 +84,7 @@
 \protected\def\doinstallinheritedframed#1#2#3#4#5#6#7#8#9%
   {\enforced\def#5##1##2{\ifx##1\relax#6{##2}\else#4{##1}{##2}\fi}%
    \enforced\def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\??empty\fi}% root
-   \protected\def#8%
+   \frozen\instance\protected\def#8%
      {\bgroup
       \bgroup
       \inframedtrue
@@ -93,7 +93,7 @@
       \enforced\let\framedparameterhash#3%
       \enforced\let\setupcurrentframed #7%
       \pack_framed_process_indeed}%
-   \protected\def#9%
+   \frozen\instance\protected\def#9%
      {\bgroup
       \inframedtrue
       \enforced\let\currentframed      #1%
@@ -190,7 +190,7 @@
 
 \permanent\protected\def\definesimplifiedframed[#1]% no settings
   {\defineframed[#1][\??simplifiedframed]%
-   \letcsname#1\endcsname\undefined}
+   \enforced\letcsname#1\endcsname\undefined}
 
 \letcsname\??simplifiedframed\endcsname\undefined
 
@@ -1877,7 +1877,7 @@
 \newtoks \t_pack_framed_mathframed
 
 \appendtoks
-    \setuevalue{\currentmathframed}{\pack_framed_mathframed{\currentmathframed}}%
+    \frozen\instance\setuevalue{\currentmathframed}{\pack_framed_mathframed{\currentmathframed}}%
 \to \everydefinemathframed
 
 \protected\def\pack_framed_mathframed#1%
@@ -2631,9 +2631,9 @@
    \c!margin=\v!standard]
 
 \appendtoks
-    \setuevalue{\e!start\currentframedtext}{\pack_framed_text_start {\currentframedtext}}%
-    \setuevalue{\e!stop \currentframedtext}{\pack_framed_text_stop                      }%
-    \setuevalue        {\currentframedtext}{\pack_framed_text_direct{\currentframedtext}}%
+    \frozen\instance\setuevalue{\e!start\currentframedtext}{\pack_framed_text_start {\currentframedtext}}%
+    \frozen\instance\setuevalue{\e!stop \currentframedtext}{\pack_framed_text_stop                      }%
+    \frozen\instance\setuevalue        {\currentframedtext}{\pack_framed_text_direct{\currentframedtext}}%
 \to \everydefineframedtext
 
 \setvalue{\??framedtextlocation\v!left  }{\letframedtextparameter\c!left \relax
@@ -2841,7 +2841,7 @@
 \to \everypresetframed
 
 \appendtoks
-   \setuevalue\currentframed{\pack_framed_defined_process[\currentframed]}%
+    \frozen\instance\setuevalue{\currentframed}{\pack_framed_defined_process[\currentframed]}%
 \to \everydefineframed
 
 \newcount\c_temp_framed_crap
@@ -2862,7 +2862,7 @@
    \setupcurrentframed[#2]% here !
    \pack_framed_process_indeed}
 
-\let\placeframed\pack_framed_defined_process % new per 2012/04/23
+\aliased\let\placeframed\pack_framed_defined_process % new per 2012/04/23
 
 %D We can do:
 %D

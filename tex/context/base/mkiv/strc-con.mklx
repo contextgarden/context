@@ -121,9 +121,11 @@
     \instance\setevalue{\??constructionclass\currentconstruction}{\constructionparameter\s!handler}%
 \to \everydefineconstruction
 
+% todo: inhibit this when we have a different handle .. current we cannot do \frozen
+
 \appendtoks
     \ifconditional\c_strc_constructions_define_commands
-     %% \setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
+     %% \instance\setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
         \instance\setuevalue{\e!start\currentconstruction}{\strc_constructions_start[\currentconstruction]}%
         \instance\setuevalue{\e!stop \currentconstruction}{\strc_constructions_stop}%
     \fi

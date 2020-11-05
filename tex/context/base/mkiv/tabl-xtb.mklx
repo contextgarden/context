@@ -179,11 +179,11 @@
 \aliased\permanent\let\stopxtable\relax
 
 % These direct buffers can be somewhat faster but it's probably neglectable.
-% Anyway, no nesting is supported as we then need to catch (e.g.) rows and
-% keep track of nesting and have a more complex redefinition of nested
-% instanced \unknown\ it's not worth the trouble. Only use them when you
-% really need them and use the embeddedxtable command when nesting them.
-% Implementing nesting would be slower than not using direct buffers.
+% Anyway, no nesting is supported as we then need to catch (e.g.) rows and keep
+% track of nesting and have a more complex redefinition of nested instanced
+% \unknown\ it's not worth the trouble. Only use them when you really need them and
+% use the embeddedxtable command when nesting them. Implementing nesting would be
+% slower than not using direct buffers.
 
 \permanent\tolerant\protected\def\processxtablebuffer[#name]%
   {\bgroup
@@ -203,7 +203,7 @@
 %D A bonus: you have to use the following construct inside a macro or
 %D direct buffer.
 
-\permanent\tolerant\protected\def\startembeddedxtable[#settings]#;#content\stopembeddedxtable
+\permanent\tolerant\protected\def\startembeddedxtable[#settings]#:#content\stopembeddedxtable
   {\tabl_x_prepare{#settings}%
    \clf_assignbuffer{embedded_x_table}{\detokenize{#content}}\catcodetable\relax
    \bgroup
@@ -482,7 +482,7 @@
 
 \permanent\protected\def\dummyxcell
   {\begingroup
-   \let\inheritedxtableframed\relax
+   \enforced\let\inheritedxtableframed\relax
    \tabl_x_start_cell_nop
    \tabl_x_stop_cell
    \endgroup}

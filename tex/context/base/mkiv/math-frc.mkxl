@@ -18,11 +18,11 @@
 %D I need to check it all again as there was a bug in luatex with dimensions that could
 %D resulted in side effects that made me mess with spacing.
 
-\unexpanded\def\topstrut{\vrule\s!width\zeropoint\s!height\strutht\s!depth\zeropoint\relax}
-\unexpanded\def\botstrut{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp\relax}
+\permanent\protected\def\topstrut{\vrule\s!width\zeropoint\s!height\strutht\s!depth\zeropoint\relax}
+\permanent\protected\def\botstrut{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp\relax}
 
-\unexpanded\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
-\unexpanded\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
+\permanent\protected\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
+\permanent\protected\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
 
 %D This module is reimplemented in \MKIV\ style.
 
@@ -102,7 +102,7 @@
 
 \installcommandhandler \??mathfractions {mathfraction} \??mathfractions
 
-\let\setupmathfractions\setupmathfraction
+\aliased\let\setupmathfractions\setupmathfraction
 
 % color only applies to rule, use regular color for rest
 
@@ -119,7 +119,7 @@
    \c!rule=\v!auto]
 
 \appendtoks
-    \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
+    \instance\setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
 
 % Sometimes users want control over the distances:
@@ -132,15 +132,15 @@
 
 % why only displaystyle .. a bit weak
 
-\unexpanded\def\math_fraction_set_distance_top
+\protected\def\math_fraction_set_distance_top
   {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
    \relax}
 
-\unexpanded\def\math_fraction_set_distance_bot
+\protected\def\math_fraction_set_distance_bot
   {\Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
    \relax}
 
-\unexpanded\def\math_fraction_set_distance_all
+\protected\def\math_fraction_set_distance_all
   {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
    \Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
    \relax}
@@ -191,7 +191,7 @@
 
 \newdimen\d_math_fraction_margin
 
-\unexpanded\def\math_frac#1%
+\protected\def\math_frac#1%
   {\begingroup
    \edef\currentmathfraction{#1}%
    %
@@ -217,18 +217,18 @@
      \expandafter\math_frac_colored
    \fi}
 
-\unexpanded\def\math_frac_wrapup
+\protected\def\math_frac_wrapup
   {\ifempty\p_math_fraction_fences \else
      \math_fenced_fenced_stop\p_math_fraction_fences
    \fi
    \endgroup}
 
-\unexpanded\def\math_frac_colored#1#2%
+\protected\def\math_frac_colored#1#2%
   {\savecolor
    \colo_helpers_activate\p_math_fractions_color
    \math_frac_normal{\restorecolor#1}{\restorecolor#2}}
 
-\unexpanded\def\math_frac_normal
+\protected\def\math_frac_normal
   {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
 
 % we use utfchar anyway so we can as well do all at the lua end
@@ -359,20 +359,20 @@
 
 \let\normalxfrac\xfrac
 
-\unexpanded\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
+\protected\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
 
 %D Spacing (sensitive for definition of \triggermathstyle:
 
 % \ifcase\contextlmtxmode
 
-\unexpanded\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \mathstyletrigger\mathstyle}} % maybe collect settings
-\unexpanded\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\mathstyletrigger\mathstyle}} % maybe collect settings
+\permanent\protected\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \mathstyletrigger\mathstyle}} % maybe collect settings
+\permanent\protected\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\mathstyletrigger\mathstyle}} % maybe collect settings
 
-\unexpanded\def\math_no_fraction_gaps#1%
+\protected\def\math_no_fraction_gaps#1%
   {\Umathfractionnumup    #1\zeropoint
    \Umathfractiondenomdown#1\zeropoint}
 
-\unexpanded\def\math_overlay_fraction_gaps#1%
+\protected\def\math_overlay_fraction_gaps#1%
   {\Umathfractionnumup    #1\zeropoint
    \Umathfractionnumvgap  #1\zeropoint
    %Umathfractionrule     #1\zeropoint
@@ -381,11 +381,11 @@
 
 % \else
 
-% \unexpanded\def\math_no_fraction_gaps
+% \protected\def\math_no_fraction_gaps
 %   {\Umathfractionnumup    \mathstyle\zeropoint
 %    \Umathfractiondenomdown\mathstyle\zeropoint}
 %
-% \unexpanded\def\math_overlay_fraction_gaps
+% \protected\def\math_overlay_fraction_gaps
 %   {\Umathfractionnumup    \mathstyle\zeropoint
 %    \Umathfractionnumvgap  \mathstyle\zeropoint
 %    %Umathfractionrule     \mathstyle\zeropoint
@@ -486,7 +486,7 @@
 \definemathfraction[d:sfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!scriptscript}]
 \definemathfraction[d:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
 
-%D \unexpanded\def\ShowMathFractions#1#2%
+%D \protected\def\ShowMathFractions#1#2%
 %D   {\dontleavehmode
 %D    \begingroup
 %D    \showmathstruts
@@ -502,17 +502,17 @@
 %D \ShowMathFractions{1}{b}\par
 %D \blank
 
-\unexpanded\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
-\unexpanded\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
-\unexpanded\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
-\unexpanded\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
+\permanent\protected\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
+\permanent\protected\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
+\permanent\protected\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
+\permanent\protected\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
 
 \definemathfraction[ams]            [\c!strut=\v!no,\c!alternative=\v!outer]
 \definemathfraction[i:ams:frac][ams][\c!mathstyle={\s!cramped,\s!text}]
 \definemathfraction[d:ams:frac][ams][\c!mathstyle={\s!cramped,\s!display}]
 
-\unexpanded\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
-\unexpanded\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
+\permanent\protected\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
+\permanent\protected\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
 
 % \appendtoks
 %     \doifelse{\mathfractionparameter\c!option}{ams}%
@@ -522,17 +522,17 @@
 
 \appendtoks
     \doifelse{\mathematicsparameter\c!fractions}{ams}%
-      {\let\frac\amsfrac}%
-      {\let\frac\ctxfrac}%
+      {\enforced\let\frac\amsfrac}%
+      {\enforced\let\frac\ctxfrac}%
 \to \everysetupmathematics
 
 % \definemathfraction[ddfrac][\c!mathstyle=\s!display]
 % \definemathfraction[ttfrac][\c!mathstyle=\s!text]
 % \definemathfraction[ssfrac][\c!mathstyle=\s!script]
 
-% \unexpanded\def\binom #1#2{{\Ustack      {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
-% \unexpanded\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
-% \unexpanded\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \protected\def\binom #1#2{{\Ustack      {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \protected\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \protected\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 
 \definemathfraction
   [binom]
@@ -577,7 +577,7 @@
 %D
 %D \getbuffer
 
-\unexpanded\def\cfrac
+\permanent\protected\def\cfrac
   {\doifelsenextoptionalcs\math_cfrac_yes\math_cfrac_nop}
 
 \def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
@@ -617,28 +617,25 @@
 %D These macros are based on Michael J.~Downes posting on
 %D comp.text.tex on 2001/12/06 but adapted a bit.
 
-\unexpanded\def\splitfrac #1#2%
-  {{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
-
-\unexpanded\def\splitdfrac#1#2%
-  {{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
+\protected\def\splitfrac #1#2{{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
+\protected\def\splitdfrac#1#2{{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
 
 %D For testing:
 
-% \unexpanded\def\ShowMathFractions#1#2%
+% \protected\def\ShowMathFractions#1#2%
 %  {\mathematics{x+\tfrac{#1}{#2}+1+\frac{#1}{#2}+2+\sfrac{#1}{#2}+g}}
 
 %D More fracking (for Alan):
 
-\unexpanded\def\math_frac_colored_vulgar#1#2%
+\protected\def\math_frac_colored_vulgar#1#2%
   {\savecolor
    \colo_helpers_activate\p_math_fractions_color
    {\restorecolor#1}\Uskewed/{\restorecolor#2}}
 
-\unexpanded\def\math_frac_normal_vulgar#1#2%
+\protected\def\math_frac_normal_vulgar#1#2%
   {{#1}\Uskewed/{#2}}
 
-\unexpanded\def\vfrac#1#2%
+\permanent\protected\def\vfrac#1#2%
   {\bgroup
    \edef\p_math_fractions_color{\namedmathfractionparameter\s!vfrac\c!color}%
    \ifempty\p_math_fractions_color
@@ -712,12 +709,12 @@
 %   {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
 %   {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
 
-% \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
-% \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
+% \protected\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
+% \protected\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
 
 % used for prototyping \Uskewed
 %
-% \unexpanded\def\skewedfractiona#1#2{%
+% \protected\def\skewedfractiona#1#2{%
 %     \raise
 %         \Umathskewedfractionvgap\textstyle
 %         \hbox\bgroup
@@ -733,7 +730,7 @@
 %         \egroup
 % }
 %
-% \unexpanded\def\skewedfractionb#1#2{%
+% \protected\def\skewedfractionb#1#2{%
 %     \raise
 %         \Umathskewedfractionvgap\textstyle
 %         \hbox\bgroup

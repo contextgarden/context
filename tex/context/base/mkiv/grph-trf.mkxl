@@ -100,22 +100,22 @@
    \c!maxwidth=\scaleparameter\c!width,
    \c!maxheight=\scaleparameter\c!height]
 
-\unexpanded\def\scale{\dodoubleempty\grph_scale}
-
-\def\grph_scale[#1][#2]%
+\permanent\tolerant\protected\def\scale[#1]#*[#2]%
   {\bgroup
    % this is quite common so we might make this a helper
-   \ifsecondargument
+   \ifarguments
+     \let\currentscale\empty
+   \or
+     \ifhastok={#1}%
+       \let\currentscale\empty
+       \setupcurrentscale[#1]%
+     \else
+       \edef\currentscale{#1}%
+     \fi
+   \or
      \edef\currentscale{#1}%
      \setupcurrentscale[#2]%
-   \else\iffirstargument
-     \doifelseassignment{#1}
-       {\let\currentscale\empty
-        \setupcurrentscale[#1]}
-       {\edef\currentscale{#1}}%
-   \else
-     \let\currentscale\empty
-   \fi\fi
+   \fi
    %
    \dowithnextboxcs\grph_scale_finish\hbox}
 
@@ -166,18 +166,6 @@
    \box\nextbox
    \egroup}
 
-% \def\grph_scale_apply
-%   {\d_grph_scale_wd\finalscaleboxxscale\d_grph_scale_wd
-%    \d_grph_scale_ht\finalscaleboxyscale\d_grph_scale_ht
-%    \d_grph_scale_dp\finalscaleboxyscale\d_grph_scale_dp
-%    \setbox\nextbox\naturalhpack
-%      {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
-%       \smashedbox\nextbox
-%       \dostopscaling}%
-%    \wd\nextbox\d_grph_scale_wd
-%    \ht\nextbox\d_grph_scale_ht
-%    \dp\nextbox\d_grph_scale_dp}
-
 \def\grph_scale_apply
   {\d_grph_scale_wd\finalscaleboxxscale\d_grph_scale_wd
    \d_grph_scale_ht\finalscaleboxyscale\d_grph_scale_ht
@@ -211,7 +199,7 @@
   {\ifdim\d_grph_scale_ht>\zeropoint \ifdim\d_grph_scale_wd>\zeropoint
      \edef\m_grph_scale_stamp_a{\p_scale\p_xscale\p_yscale\p_factor\p_wfactor\p_hfactor\p_lines\p_width\p_height}%
      \edef\m_grph_scale_stamp_b{\p_sx\p_sy}%
-     \ifx\m_grph_scale_stamp_a\empty
+     \ifempty\m_grph_scale_stamp_a
        \ifx\m_grph_scale_stamp_b\m_grph_scale_stamp_c
          % no scaling, don't change this (previous attempts failed anyway)
          \insidefloattrue % trick
@@ -221,7 +209,7 @@
          \grph_scale_calculations_nop
        \fi
      \else
-       \ifx\m_grph_scale_stamp_b\empty
+       \ifempty\m_grph_scale_stamp_b
          % no need to check further
        \else
          \grph_scale_check_sx_sy
@@ -235,10 +223,7 @@
    \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\the\dimexpr\p_sy\d_grph_scale_ht}\fi}
 
 \def\grph_scale_rounded#1%
-  {\expandafter\expandafter\expandafter\grph_scale_rounded_indeed
-     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768\scaledpoint\relax.\relax}
-
-\def\grph_scale_rounded_indeed#1.#2\relax{#1}
+  {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax}
 
 \def\grph_scale_calculations_nop
   {\settrue\c_grph_scale_done
@@ -246,8 +231,8 @@
    \xdef\finalscaleboxheight{\the\dimexpr\p_sy\d_grph_scale_ht\relax}%
    \glet\finalscaleboxxscale\p_sx
    \glet\finalscaleboxyscale\p_sy
-   \ifx\finalscaleboxxscale\empty\let\finalscaleboxxscale\!!plusone\fi
-   \ifx\finalscaleboxyscale\empty\let\finalscaleboxyscale\!!plusone\fi}
+   \ifempty\finalscaleboxxscale\let\finalscaleboxxscale\!!plusone\fi
+   \ifempty\finalscaleboxyscale\let\finalscaleboxyscale\!!plusone\fi}
 
 \let\grph_scale_calculations_report\relax
 
@@ -289,18 +274,18 @@
 \letvalue{\??scalegrid\empty     }\donothing
 
 \def\grph_scale_check_parameters % resolve self referencing loops
-  {\ifx\p_maxwidth \empty\else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
-   \ifx\p_maxheight\empty\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
-   \ifx\p_lines    \empty\else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
+  {\ifempty\p_maxwidth \else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
+   \ifempty\p_maxheight\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
+   \ifempty\p_lines    \else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
    \csname\??scalegrid\scaleparameter\c!grid\endcsname}
 
 \def\grph_scale_by_nature % where ! ! ! ! !
-  {\ifx\p_width \empty\else \global\d_grph_scale_used_x_size\p_width \fi
-   \ifx\p_height\empty\else \global\d_grph_scale_used_y_size\p_height\fi
-   \ifx\p_scale \empty\else        \c_grph_scale_used_x_scale\p_scale
-                                   \c_grph_scale_used_y_scale\p_scale \fi
-   \ifx\p_xscale\empty\else        \c_grph_scale_used_x_scale\p_xscale\fi
-   \ifx\p_yscale\empty\else        \c_grph_scale_used_y_scale\p_yscale\fi}
+  {\ifempty\p_width \else \global\d_grph_scale_used_x_size\p_width \fi
+   \ifempty\p_height\else \global\d_grph_scale_used_y_size\p_height\fi
+   \ifempty\p_scale \else        \c_grph_scale_used_x_scale\p_scale
+                                 \c_grph_scale_used_y_scale\p_scale \fi
+   \ifempty\p_xscale\else        \c_grph_scale_used_x_scale\p_xscale\fi
+   \ifempty\p_yscale\else        \c_grph_scale_used_y_scale\p_yscale\fi}
 
 % \defineexternalfigure[width-6][factor=auto,maxwidth=\textheight,maxheight=\textwidth]
 % \defineexternalfigure[width-7][factor=auto,maxwidth=\textwidth,maxheight=\textheight]
@@ -369,16 +354,16 @@
      \ifdim\d_grph_scale_used_x_size\ifconditional\c_grph_scale_swap_factor<\else>\fi\d_grph_scale_h_size
        \global\d_grph_scale_used_y_size\zeropoint
        \global\d_grph_scale_used_x_size\d_grph_scale_h_size
-     \else\ifdim\d_grph_scale_used_y_size\ifconditional\c_grph_scale_swap_factor<\else>\fi\d_grph_scale_v_size
+     \orelse\ifdim\d_grph_scale_used_y_size\ifconditional\c_grph_scale_swap_factor<\else>\fi\d_grph_scale_v_size
        \global\d_grph_scale_used_x_size\zeropoint
        \global\d_grph_scale_used_y_size\d_grph_scale_v_size
-     \fi\fi
+     \fi
    \fi
    \grph_scale_by_dimension}
 
 \def\grph_scale_by_scale
   {\edef\m_grph_scale_temp{\p_scale\p_xscale\p_yscale}%
-   \ifx\m_grph_scale_temp\empty \else
+   \ifempty\m_grph_scale_temp \else
      \grph_scale_apply_scale\m_grph_scale_used_x_scale\p_xscale
      \grph_scale_apply_scale\m_grph_scale_used_y_scale\p_yscale
    % \global\d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size\relax % no global needed here
@@ -387,8 +372,8 @@
      \global\d_grph_scale_used_x_size\zeropoint
      \global\d_grph_scale_used_y_size\zeropoint
      %
-     \ifx\p_maxwidth\empty
-       \ifx\p_maxheight\empty
+     \ifempty\p_maxwidth
+       \ifempty\p_maxheight
        \else
          \ifdim\d_grph_scale_y_size>\p_maxheight\relax
            \global\d_grph_scale_used_y_size\p_maxheight
@@ -456,13 +441,13 @@
 
 \def\grph_scale_by_dimension_indeed#1#2#3%
   {#1\relax
-   \ifx\p_maxwidth\empty \else
+   \ifempty\p_maxwidth \else
      \ifdim\d_grph_scale_used_x_size>\p_maxwidth\relax
        \global\d_grph_scale_used_x_size\p_maxwidth
        #2\relax
      \fi
    \fi
-   \ifx\p_maxheight\empty \else
+   \ifempty\p_maxheight \else
      \ifdim\d_grph_scale_used_y_size>\p_maxheight\relax
        \global\d_grph_scale_used_y_size\p_maxheight
         #3\relax
@@ -510,51 +495,49 @@
    \edef#1{\luaexpr
      {\number
       \ifx#2\empty
-        \ifx  \p_scale \empty     \plusthousand \else
-        \ifnum\p_scale=\zerocount \plusthousand \else
-                                  \p_scale      \fi\fi
-      \else\ifnum#2=\zerocount
-        \ifx  \p_scale \empty     \plusthousand \else
-        \ifnum\p_scale=\zerocount \plusthousand \else
-                                  \p_scale      \fi\fi
+        \ifempty\p_scale            \plusthousand \else
+        \ifnum  \p_scale=\zerocount \plusthousand \else
+                                    \p_scale      \fi\fi
+      \orelse\ifnum#2=\zerocount
+        \ifempty\p_scale            \plusthousand \else
+        \ifnum  \p_scale=\zerocount \plusthousand \else
+                                    \p_scale      \fi\fi
       \else
-                                  #2%
-      \fi\fi
+                                    #2%
+      \fi
       /1000}}}
 
 \def\grph_scale_apply_size
-  {\ifx\p_maxheight\empty
+  {\ifempty\p_maxheight
      \d_grph_scale_outer_v_size\textheight
      \ifinner
        \d_grph_scale_outer_v_size \vsize % \textheight =\vsize
        \scratchdimen\vsize % \scratchdimen=\textheight
-     \else\ifinsidefloat
+     \orelse\ifinsidefloat
        \d_grph_scale_outer_v_size \vsize % \textheight =\vsize
        \scratchdimen\vsize % \scratchdimen=\textheight
-     \else\ifinpagebody
+     \orelse\ifinpagebody
        \d_grph_scale_outer_v_size \vsize % \textheight =\vsize
        \scratchdimen\vsize % \scratchdimen=\textheight
-     \else % hm, there should be an option to force this
-       \ifdim\pagegoal<\maxdimen
-         \ifdim\pagetotal<\pagegoal
-           \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
-         \else
-           \scratchdimen\d_grph_scale_outer_v_size % \textheight
-         \fi
+     \orelse\ifdim\pagegoal<\maxdimen
+       \ifdim\pagetotal<\pagegoal
+         \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
        \else
          \scratchdimen\d_grph_scale_outer_v_size % \textheight
        \fi
-     \fi\fi\fi
+     \else
+       \scratchdimen\d_grph_scale_outer_v_size % \textheight
+     \fi
    \else
      \scratchdimen\p_maxheight
      \d_grph_scale_outer_v_size\scratchdimen
    \fi
-   \ifx\p_height\empty
+   \ifempty\p_height
      \d_grph_scale_v_size\scratchdimen
    \else
      \d_grph_scale_v_size\p_height
    \fi
-   \ifx\p_width\empty
+   \ifempty\p_width
      \d_grph_scale_h_size\hsize
    \else
      \d_grph_scale_h_size\p_width
@@ -566,20 +549,20 @@
 % \stopcombination
 
 \def\grph_scale_position
-  {\ifx\p_equalwidth\empty \else
+  {\ifempty\p_equalwidth \else
     \scratchdimen\p_equalwidth\relax
     \ifdim\d_grph_scale_wd<\scratchdimen
       \setbox\nextbox\naturalhpack to \scratchdimen{\hss\box\nextbox\hss}%
     \fi
    \fi
-   \ifx\p_equalheight\empty \else
+   \ifempty\p_equalheight \else
      \scratchdimen\p_equalheight\relax
      \ifdim\d_grph_scale_ht<\scratchdimen
        \setbox\nextbox\naturalvpack to \scratchdimen{\vss\box\nextbox\vss}%
      \fi
    \fi}
 
-\unexpanded\def\fastscale#1%
+\permanent\protected\def\fastscale#1%
   {\ifnum#1=1000\relax
      \expandafter\grph_scale_fast_nop
    \else
@@ -599,18 +582,11 @@
    \box\nextbox
    \endgroup}
 
-\unexpanded\def\fastsxsy#1#2%
+\permanent\protected\def\fastsxsy#1#2%
   {\bgroup
    \edef\p_sx{#1}%
    \edef\p_sy{#2}%
    \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
-
-% \def\grph_scale_fast_sx_xy_finish
-%   {\grph_scale_check_sx_sy
-%    \grph_scale_calculations_nop
-%    \grph_scale_apply
-%    \box\nextbox
-%    \egroup}
 
 \def\grph_scale_fast_sx_xy_finish
   {\grph_scale_check_sx_sy
@@ -655,12 +631,9 @@
 
 \installdirectcommandhandler \??clipping {clipping}
 
-\unexpanded\def\clip
-  {\dosingleempty\grph_clip}
-
-\def\grph_clip[#1]% nb top->bottom left->right
+\permanent\tolerant\protected\def\clip[#1]% nb top->bottom left->right
   {\bgroup
-   \iffirstargument
+   \ifparameter#1\or
      \setupcurrentclipping[#1]%
    \fi
    \dowithnextboxcs\grph_clip_finish\hbox}
@@ -754,7 +727,7 @@
 
 %D Mirroring.
 
-\unexpanded\def\mirror
+\permanent\protected\def\mirror
   {\bgroup
    \dowithnextboxcs\grph_mirror_finish\hbox}
 
@@ -807,17 +780,17 @@
 
 \newdimen\d_grph_rotate_used_height
 
-\let\d_grph_rotate_width \!!widtha
-\let\d_grph_rotate_height\!!heighta
-\let\d_grph_rotate_depth \!!deptha
+\newdimen\d_grph_rotate_width
+\newdimen\d_grph_rotate_height
+\newdimen\d_grph_rotate_depth
 
-\let\d_grph_rotate_saved_width \!!widthb
-\let\d_grph_rotate_saved_height\!!heightb
-\let\d_grph_rotate_saved_depth \!!depthb
+\newdimen\d_grph_rotate_saved_width
+\newdimen\d_grph_rotate_saved_height
+\newdimen\d_grph_rotate_saved_depth
 
-\let\d_grph_rotate_new_width \!!widthc
-\let\d_grph_rotate_new_height\!!heightc
-\let\d_grph_rotate_new_depth \!!depthc
+\newdimen\d_grph_rotate_new_width
+\newdimen\d_grph_rotate_new_height
+\newdimen\d_grph_rotate_new_depth
 
 \newconditional\c_grph_rotate_obey_depth
 \newconditional\c_grph_rotate_not_fit
@@ -836,12 +809,9 @@
 \let\p_rotation_location\empty
 \let\p_rotation_rotation\empty
 
-\unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
+\permanent\tolerant\protected\def\rotate[#1]% \bgroup: \rotate kan argument zijn
   {\bgroup
-   \dosingleempty\grph_rotate}
-
-\def\grph_rotate[#1]%
-  {\iffirstargument
+   \ifparameter#1\or
      \setupcurrentrotate[#1]%
    \fi
    \edef\p_rotation_location{\rotateparameter\c!location}%
@@ -898,7 +868,7 @@
    \settrue \c_grph_rotate_obey_depth
    \grph_rotate_framed}
 
-\unexpanded\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
+\protected\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
   {\ifcase#1\relax
      \expandafter\gobbleoneargument
    \else
@@ -921,7 +891,7 @@
 
 \def\grph_rotate_finish_indeed
   {\naturalhpack\bgroup
-     \ifx\p_rotation_rotation\empty
+     \ifempty\p_rotation_rotation
        \grph_rotate_finish_nop
      \else
        \grph_rotate_finish_yes
