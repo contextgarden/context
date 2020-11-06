@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=norm-ctx,
+%D        version=2009.03.19,
+%D          title=\CONTEXT\ Normal Macros,
+%D       subtitle=\CONTEXT,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D A few more might end up here (like the weird ones in syst-ini).
+
+\let\normalreqno\normaleqno
+
+% more friendly in setups:
+
+\aliased\let\ordordspacing    \Umathordordspacing
+\aliased\let\ordopspacing     \Umathordopspacing
+\aliased\let\ordbinspacing    \Umathordbinspacing
+\aliased\let\ordrelspacing    \Umathordrelspacing
+\aliased\let\ordopenspacing   \Umathordopenspacing
+\aliased\let\ordclosespacing  \Umathordclosespacing
+\aliased\let\ordpunctspacing  \Umathordpunctspacing
+\aliased\let\ordinnerspacing  \Umathordinnerspacing
+\aliased\let\opordspacing     \Umathopordspacing
+\aliased\let\opopspacing      \Umathopopspacing
+\aliased\let\opbinspacing     \Umathopbinspacing
+\aliased\let\oprelspacing     \Umathoprelspacing
+\aliased\let\opopenspacing    \Umathopopenspacing
+\aliased\let\opclosespacing   \Umathopclosespacing
+\aliased\let\oppunctspacing   \Umathoppunctspacing
+\aliased\let\opinnerspacing   \Umathopinnerspacing
+\aliased\let\binordspacing    \Umathbinordspacing
+\aliased\let\binopspacing     \Umathbinopspacing
+\aliased\let\binbinspacing    \Umathbinbinspacing
+\aliased\let\binrelspacing    \Umathbinrelspacing
+\aliased\let\binopenspacing   \Umathbinopenspacing
+\aliased\let\binclosespacing  \Umathbinclosespacing
+\aliased\let\binpunctspacing  \Umathbinpunctspacing
+\aliased\let\bininnerspacing  \Umathbininnerspacing
+\aliased\let\relordspacing    \Umathrelordspacing
+\aliased\let\relopspacing     \Umathrelopspacing
+\aliased\let\relbinspacing    \Umathrelbinspacing
+\aliased\let\relrelspacing    \Umathrelrelspacing
+\aliased\let\relopenspacing   \Umathrelopenspacing
+\aliased\let\relclosespacing  \Umathrelclosespacing
+\aliased\let\relpunctspacing  \Umathrelpunctspacing
+\aliased\let\relinnerspacing  \Umathrelinnerspacing
+\aliased\let\openordspacing   \Umathopenordspacing
+\aliased\let\openopspacing    \Umathopenopspacing
+\aliased\let\openbinspacing   \Umathopenbinspacing
+\aliased\let\openrelspacing   \Umathopenrelspacing
+\aliased\let\openopenspacing  \Umathopenopenspacing
+\aliased\let\openclosespacing \Umathopenclosespacing
+\aliased\let\openpunctspacing \Umathopenpunctspacing
+\aliased\let\openinnerspacing \Umathopeninnerspacing
+\aliased\let\closeordspacing  \Umathcloseordspacing
+\aliased\let\closeopspacing   \Umathcloseopspacing
+\aliased\let\closebinspacing  \Umathclosebinspacing
+\aliased\let\closerelspacing  \Umathcloserelspacing
+\aliased\let\closeopenspacing \Umathcloseopenspacing
+\aliased\let\closeclosespacing\Umathcloseclosespacing
+\aliased\let\closepunctspacing\Umathclosepunctspacing
+\aliased\let\closeinnerspacing\Umathcloseinnerspacing
+\aliased\let\punctordspacing  \Umathpunctordspacing
+\aliased\let\punctopspacing   \Umathpunctopspacing
+\aliased\let\punctbinspacing  \Umathpunctbinspacing
+\aliased\let\punctrelspacing  \Umathpunctrelspacing
+\aliased\let\punctopenspacing \Umathpunctopenspacing
+\aliased\let\punctclosespacing\Umathpunctclosespacing
+\aliased\let\punctpunctspacing\Umathpunctpunctspacing
+\aliased\let\punctinnerspacing\Umathpunctinnerspacing
+\aliased\let\innerordspacing  \Umathinnerordspacing
+\aliased\let\inneropspacing   \Umathinneropspacing
+\aliased\let\innerbinspacing  \Umathinnerbinspacing
+\aliased\let\innerrelspacing  \Umathinnerrelspacing
+\aliased\let\inneropenspacing \Umathinneropenspacing
+\aliased\let\innerclosespacing\Umathinnerclosespacing
+\aliased\let\innerpunctspacing\Umathinnerpunctspacing
+\aliased\let\innerinnerspacing\Umathinnerinnerspacing
+
+\protect  \endinput

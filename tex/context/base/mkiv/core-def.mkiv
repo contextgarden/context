@@ -152,7 +152,9 @@
 
 % temporary here:
 
-\unexpanded\def\arg{\mathortext\normalmatharg\normaltextarg}
+\pushoverloadmode
+    \frozen\unexpanded\def\arg{\mathortext\normalmatharg\normaltextarg}
+\popoverloadmode
 
 % might move to \everydump or even disappear:
 

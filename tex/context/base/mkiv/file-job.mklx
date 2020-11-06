@@ -1,0 +1,348 @@
+%D \module
+%D   [       file=file-job, % copied from main-001, later core-job
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt File Macros / Job Handling}
+
+\unprotect
+
+%D This module delegates most of the work to \LUA\ and therefore also let it
+%D define the commands, which is more efficient.
+
+\registerctxluafile{file-job}{autosuffix}
+
+%D Here are some helpers for processing and path control. In the following example
+%D the lookup order is \type {.}, {/foo}, \type {foo/bar} as one can always
+%D explicitly prefix a wanted file.
+%D
+%D \starttyping
+%D \pushpath[foo]
+%D     \pushpath[foo/bar]
+%D         \input test
+%D     \poppath
+%D \poppath
+%D \stoptyping
+
+% \usepath           [#path] % defined at lua end
+% \usesubpath        [#path] % defined at lua end
+% \pushpath          [#path] % defined at lua end
+% \poppath                   % defined at lua end
+% \resetpath                 % defined at lua end (not the pushed paths)
+% \allinputpaths             % defined at lua end
+% \doifelseinputfile #name   % defined at lua end
+% \processfile       #name   % defined at lua end
+
+\aliased\let\doifinputfileelse\doifelseinputfile
+
+% helper (not really needed nowadays)
+
+\mutable\let\locatedfilepath\empty
+
+\protected\def\locatefilepath#name{\edef\locatedfilepath{\clf_locatefilepath{#name}}} % todo: set at the lua end, catcodes and such
+
+% % maybe:
+%
+% % \dirlist{c:/data/temporary/foo}{images/bar.jpg}
+% % \dirfile{c:/data/temporary/foo}{images/bar.jpg}
+%
+% \def\dirlist#1#2{dirlist://#1/**/#2}
+% \def\dirfile#1#2{dirlist://#1/**/#2?option=fileonly}
+
+% zip files are tree'd
+% exa stuff might become obsolete:
+
+% \usezipfile   [#zipname]#spacer[#subtree] % defined at lua end
+% \loadexamodes [#name]                     % defined at lua end
+
+\protected\def\syst_files_load
+  {\syst_files_load_indeed\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \syst_files_load_indeed\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \syst_files_load_indeed\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \syst_files_load_indeed\f!sysfilename  % local settings, but probably not that good an idea to use
+  %\syst_files_load_indeed\f!fntfilename  % maybe some day, can load goodies and patches
+  }
+
+\def\syst_files_load_indeed#name% from now on we assume a suffix to be part of the name
+  {\readsysfile{#name}{\showmessage\m!system2{#name}}\donothing}
+
+% document structure
+
+\ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
+\ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
+
+\protected\def\dostarttext
+  {\enforced\glet\dostarttext\relax
+   \the\everystarttext
+   \global\everystarttext\emptytoks}
+
+\protected\def\dostoptext
+  {\enforced\glet\dostoptext\relax
+   \strc_pagenumbers_flush_final_page
+   \page % hm, bonus
+   \the\everystoptext
+   \global\everystoptext\emptytoks
+   \the\everybye
+   \global\everybye\emptytoks
+   \the\everygoodbye
+   \global\everygoodbye\emptytoks
+   \doifelsesometoks\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+   % tex's \end:
+   \normalend}
+
+% \starttext     % defined at lua end
+% \stoptext      % defined at lua end
+% \forcequitjob  % defined at lua end
+% \autostarttext % defined at lua end
+% \autostoptext  % defined at lua end
+
+\pushoverloadmode
+    \aliased\let\end\forceendjob
+\popoverloadmode
+
+\aliased\let\finishjob\stoptext % nicer in luatex call commandline
+
+\newtoks\everystartnotext
+\newtoks\everystopnotext
+
+\protected\def\startnotext{\the\everystartnotext}
+\protected\def\stopnotext {\the\everystopnotext\normalend}
+
+% protect structure
+
+% \processfilemany  {#name} % defined at lua end
+% \processfileonce  {#name} % defined at lua end
+% \processfilenone  {#name} % defined at lua end
+
+% \useproject       [#name] % defined at lua end
+% \useproduct       [#name] % defined at lua end
+% \usecomponent     [#name] % defined at lua end
+% \useenvironment   [#name] % defined at lua end
+
+% \project          [#name] or #name<space> % defined at lua end
+% \product          [#name] or #name<space> % defined at lua end
+% \component        [#name] or #name<space> % defined at lua end
+% \environment      [#name] or #name<space> % defined at lua end
+
+% \startproject     [#name] or #name<space> % defined at lua end
+% \startproduct     [#name] or #name<space> % defined at lua end
+% \startcomponent   [#name] or #name<space> % defined at lua end
+% \startenvironment [#name] or #name<space> % defined at lua end
+
+\newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
+
+% \protected\def\signalendofinput#1% argument just for tracing
+%   {\global\settrue\endofinput}
+%
+% \protected\def\honorendofinput
+%   {\ifconditional\endofinput
+%      \global\setfalse\endofinput
+%      \endinput
+%    \fi}
+
+% \protected\def\stopproject     {\clf_stopproject    \honorendofinput} % todo
+% \protected\def\stopproduct     {\clf_stopproduct    \honorendofinput} % todo
+% \protected\def\stopcomponent   {\clf_stopcomponent  \honorendofinput} % todo
+% \protected\def\stopenvironment {\clf_stopenvironment\honorendofinput} % todo
+
+% \currentproject            % defined at lua end
+% \currentproduct            % defined at lua end
+% \currentcomponent          % defined at lua end
+% \currentenvironment        % defined at lua end
+% \processedfile             % defined at lua end
+% \processedfiles            % defined at lua end
+%
+% \dostarttextfile    #name  % defined at lua end
+% \dostoptextfile            % defined at lua end
+%
+% \loadtexfile       [#name] % defined at lua end
+% \loadluafile       [#name] % defined at lua end
+% \loadcldfile       [#name] % defined at lua end
+% \loadanyfile       [#name] % defined at lua end
+%
+% \loadtexfileonce   [#name] % defined at lua end
+% \loadluafileonce   [#name] % defined at lua end
+% \loadcldfileonce   [#name] % defined at lua end
+% \loadanyfileonce   [#name] % defined at lua end
+
+%D Handy for modules that have a test/demo appended (true added).
+
+% \permanent\protected\def\continueifinputfile#name{\clf_doifelsecontinuewithfile{#name}\relax\endinput} % we cannot do \endinput via lua
+
+% \continueifinputfile #name % defined at lua end
+
+% \startproject test
+%     1: \startmode[*project] project \stopmode \endgraf
+%     2: \startmode[*product] product \stopmode \endgraf
+% \stopproject
+
+% A bit weird place:
+
+\neverypar\emptytoks
+
+%D Wrappers (the signal is a synchronization with lua hack):
+
+\newsystemmode\v!project
+\newsystemmode\v!product
+\newsystemmode\v!component
+\newsystemmode\v!environment
+
+\permanent\protected\def\startprojectindeed
+  {%starttext
+   \pushsystemmode\v!project
+   \setsystemmode\v!project}
+
+\permanent\protected\def\stopprojectindeed
+  {\popsystemmode\v!project
+   %stoptext
+   }%\signalendofinput\v!project}
+
+\permanent\protected\def\startproductindeed
+  {\starttext
+   \pushsystemmode\v!product
+   \setsystemmode\v!product}
+
+\permanent\protected\def\stopproductindeed
+  {\popsystemmode\v!product
+   \stoptext
+   }%\signalendofinput\v!product}
+
+\permanent\protected\def\startcomponentindeed
+  {\starttext
+   \pushreferenceprefix\currentcomponent
+   \pushsystemmode\v!component
+   \setsystemmode\v!component}
+
+\permanent\protected\def\stopcomponentindeed
+  {\popsystemmode\v!component
+   \popreferenceprefix
+   \stoptext
+   }%\signalendofinput\v!component}
+
+\permanent\protected\def\startenvironmentindeed
+  {\pushsystemmode\v!environment
+   \setsystemmode\v!environment}
+
+\permanent\protected\def\stopenvironmentindeed
+  {\popsystemmode\v!environment
+   }%\signalendofinput\v!environment}
+
+%D Upgraded after the ctx 2020 meeting:
+%D
+%D \starttyping
+%D \definedocument[thesis]
+%D
+%D \setupdocument[a=b,e=f]
+%D \setupdocument[thesis][a=x,c=d]
+%D
+%D % \startsetups[thesis:start]
+%D \startsetups[document:start]
+%D     START
+%D \stopsetups
+%D
+%D \startsetups[thesis:stop]
+%D % \startsetups[document:stop]
+%D     STOP
+%D \stopsetups
+%D
+%D % \startdocument[thesis]
+%D \startthesis
+%D     (\currentdocument/a): \documentvariable{a}\par
+%D     (\currentdocument/c): \documentvariable{c}\par
+%D     (\currentdocument/e): \documentvariable{e}\par
+%D \stopthesis
+%D % \stopdocument
+%D \stoptyping
+
+\installcorenamespace {document}
+
+\installcommandhandler \??document \s!document \??document
+
+\setupdocument
+  [\c!before=\directsetup{\s!document:\v!start},
+   \c!after =\directsetup{\s!document:\v!stop}]
+
+\def\syst_document_setup#1%
+  {\directsetup{\doifelsesetups{\currentdocument:\v!start}\currentdocument\s!document:\v!start}}
+
+\appendtoks
+    \normalexpanded {%
+        \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
+        \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifx\empty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
+        \permanent\setvalue{\e!start\currentdocument}{\startdocument[\currentdocument]}%
+        \permanent\setvalue{\e!stop \currentdocument}{\stopdocument}
+    }%
+\to \everydefinedocument
+
+% todo: dostarttagged\t!document
+
+\permanent\tolerant\protected\def\startdocument[#namespace]#spacer[#settings]%
+  {\pushmacro\currentdocument
+   \ifparameters
+   \or
+     \ifhastok={#namespace}%
+       \let\currentdocument\empty
+       \setupcurrentdocument[#namespace]%
+     \else
+       \edef\currentdocument{#namespace}%
+     \fi
+   \or
+     \edef\currentdocument{#namespace}%
+     \setupcurrentdocument[#settings]%
+   \fi
+   \ifempty\currentdocument\else\setmode\currentdocument\fi
+   \starttext
+   \the\everystartdocument
+   \documentvariable\c!before}
+
+\permanent\protected\def\stopdocument % todo: dostoptagged\t!document
+  {\documentvariable\c!after
+   \the\everystopdocument
+   \stoptext
+   \ifx\empty\currentdocument\else\resetmode\currentdocument\fi
+   \popmacro\currentdocument}
+
+\aliased          \let\documentvariable           \documentparameter
+\aliased\protected\def\unexpandeddocumentvariable{\documentparameter}
+
+\permanent\protected\def\doifelsedocumentvariable#name{\doifelsesomething{\documentvariable{#name}}}
+\permanent\protected\def\doifdocumentvariable    #name{\doifsomething    {\documentvariable{#name}}}
+\permanent\protected\def\doifnotdocumentvariable #name{\doifnot          {\documentvariable{#name}}}
+
+\aliased\let\doifdocumentvariableelse\doifelsedocumentvariable
+
+\permanent\tolerant\protected\def\presetdocument[#namespace]#spacer[#settings]%
+  {\pushmacro\currentdocument
+   \ifparameters
+   \or
+     \ifhastok={#namespace}%
+       \let\currentdocument\empty
+       \setupcurrentdocument[#namespace]%
+     \fi
+   \or
+     \edef\currentdocument{#namespace}%
+     \setupcurrentdocument[#settings]%
+   \fi
+   \popmacro\currentdocument}
+
+% Bonus:
+
+% \installcorenamespace{samplefile}
+%
+% \protected\def\samplefile#1%
+%   {\ifcsname\??samplefile#1\endcsname \else
+%      \setxvalue{\??samplefile#1}{\cldloadfile{#1}}%
+%    \fi
+%    \lastnamedcs}
+
+\permanent\protected\def\samplefile#1{\clf_samplefile{#1}}
+
+\protect \endinput

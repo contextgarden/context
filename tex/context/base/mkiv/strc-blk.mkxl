@@ -1,0 +1,171 @@
+%D \module
+%D   [       file=strc-blk,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Blockmoves,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Blockmoves}
+
+\registerctxluafile{strc-blk}{}
+
+\unprotect
+
+% we run on top of buffers and sections
+%
+% todo: prefix numbers (needs further integration elsewhere)
+%       check functionality
+%       alternative files (needs further integration elsewhere)
+%
+% order matters: \c!before (think of: \c!before=\startitemize)
+%
+% no \endgroups
+
+\installcorenamespace {block}
+\installcorenamespace {blocktemp}
+
+\installcommandhandler \??block {block} \??block
+
+\appendtoks
+    \clf_definestructureblock{\currentblock}%
+    \frozen\setuevalue{\e!begin\currentblock}{\strc_blocks_begin{\currentblock}}%
+    \frozen\letvalue  {\e!end  \currentblock}\donothing
+\to \everydefineblock
+
+% We need to prevent too much lookahead which will gobble newlines that are needed
+% for buffers. See blocks-002.tex as example.
+
+% maybe: systemmode "block:<name>"
+
+\let\m_block   \empty
+\let\m_subblock\empty
+
+\protected\def\strc_blocks_begin#1%
+  {\edef\m_block   {#1}%
+   \let \m_subblock\empty
+   \doifelsenextoptionalcs\strc_blocks_begin_yes\strc_blocks_begin_nop}
+
+\protected\def\strc_blocks_begin_yes[#1]%
+  {\doifelseassignmentcs{#1}%
+     \strc_blocks_begin_indeed
+     \strc_blocks_begin_tagged
+     {#1}}
+
+\protected\def\strc_blocks_begin_tagged#1%
+  {\edef\m_subblock{#1}%
+   \doifelsenextoptionalcs\strc_blocks_begin_yes_yes\strc_blocks_begin_nop}
+
+\protected\def\strc_blocks_begin_yes_yes[#1]%
+  {\strc_blocks_begin_indeed{#1}}
+
+\protected\def\strc_blocks_begin_nop
+  {\strc_blocks_begin_indeed{}}
+
+\protected\def\strc_blocks_begin_indeed#1%
+  {\normalexpanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
+     {}%
+     {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
+     \plusone}
+
+\let\strc_blocks_setup\relax
+
+\newconstant   \c_strc_blocks_index
+\newconditional\c_strc_blocks_display
+
+\permanent\protected\def\dostarthiddenblock % called at lua end
+  {\begingroup
+   \visiblefalse % blocks float
+   \startnointerference
+   \strc_start_block}
+
+\permanent\protected\def\dostophiddenblock % called at lua end
+  {\strc_stop_block
+   \stopnointerference
+   \endgroup}
+
+\permanent\protected\def\dostartnormalblock % called at lua end
+  {\begingroup
+   \visibletrue
+   \strc_start_block}
+
+\permanent\protected\def\dostopnormalblock % called at lua end
+  {\strc_stop_block
+   \endgroup}
+
+\def\strc_start_block#1#2%
+  {\edef\currentblock{#2}%
+   \c_strc_blocks_index#1\relax
+   \strc_blocks_setup
+   \let\strc_blocks_setup\relax
+   \edef\p_alternative{\blockparameter\c!alternative}%
+   \ifx\p_alternative\v!text
+      \setfalse\c_strc_blocks_display
+   \else
+      \settrue\c_strc_blocks_display
+   \fi
+   \ifconditional\c_strc_blocks_display
+      \blockparameter\c!before
+   \fi
+   \begingroup
+   \usesetupsparameter\blockparameter\relax
+   \dostarttagged\t!block\currentblock
+   \useblockstyleandcolor\c!style\c!color
+   \blockparameter\c!inner % old
+   \ifconditional\c_strc_blocks_display
+     \usealignparameter\blockparameter
+   \else
+     \blockparameter\c!left
+   \fi
+   \ignorespaces}
+
+\def\strc_stop_block
+  {\removeunwantedspaces
+   \ifconditional\c_strc_blocks_display
+     \par
+   \else
+     \blockparameter\c!right
+   \fi
+   \dostoptagged
+   \endgroup
+   \ifconditional\c_strc_blocks_display
+     \blockparameter\c!after
+   \fi}
+
+\tolerant\def\strc_blocks_set_state[#1]#*[#2]#*[#3]% state name tag % todo: we could use the lua one directly
+  {\clf_setstructureblockstate{#1}{#2}{#3}}
+
+\tolerant\def\strc_blocks_select[#1]#*[#2]#*[#3]#*[#4]% state name tag setups
+  {\begingroup
+   \ifhastok={#3}%
+     \getparameters[\??blocktemp][\c!criterium=\v!text,#3]%
+     \def\strc_blocks_setup{\setupcurrentblock[#3]}%
+     \clf_selectstructureblock{#1}{#2}{}{\csname\??blocktemp\c!criterium\endcsname}%
+   \else
+     \getparameters[\??blocktemp][\c!criterium=\v!text,#4]%
+     \def\strc_blocks_setup{\setupcurrentblock[#4]}%
+     \clf_selectstructureblock{#1}{#2}{#3}{\csname\??blocktemp\c!criterium\endcsname}%
+   \fi
+   \endgroup}
+
+\permanent\def\blockuservariable#1%
+  {\clf_structureblockuservariable\c_strc_blocks_index{#1}}
+
+% hide   : save, if [+] also hidden execute
+% keep   : save and normal execute
+% use    : normal execute unless [-]
+% process: hidden execute unless [-]
+% select : idem use
+
+\permanent\protected\def\hideblocks   {\strc_blocks_set_state[hide]}
+\permanent\protected\def\keepblocks   {\strc_blocks_set_state[keep]}
+\permanent\protected\def\useblocks    {\strc_blocks_select   [use]}
+\permanent\protected\def\processblocks{\strc_blocks_select   [process]}
+\permanent\protected\def\selectblocks {\strc_blocks_select   [use]}
+
+\protect \endinput

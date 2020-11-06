@@ -751,11 +751,19 @@
 \aliased\let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
 \aliased\let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
 
-\permanent\protected\def\settrue #1{\integerdef#1\conditionaltrue }
-\permanent\protected\def\setfalse#1{\integerdef#1\conditionalfalse}
+% \permanent\protected\def\settrue #1{\integerdef#1\conditionaltrue }
+% \permanent\protected\def\setfalse#1{\integerdef#1\conditionalfalse}
+%
+% \permanent\protected\def\settruevalue #1{\expandafter\integerdef\csname#1\endcsname\conditionaltrue }
+% \permanent\protected\def\setfalsevalue#1{\expandafter\integerdef\csname#1\endcsname\conditionalfalse}
 
-\permanent\protected\def\settruevalue #1{\expandafter\integerdef\csname#1\endcsname\conditionaltrue }
-\permanent\protected\def\setfalsevalue#1{\expandafter\integerdef\csname#1\endcsname\conditionalfalse}
+\permanent\protected\def\settrue       #1{\enforced\let#1\conditionaltrue }
+\permanent\protected\def\setfalse      #1{\enforced\let#1\conditionalfalse}
+\permanent\protected\def\setconditional#1{\enforced\let#1}
+
+\permanent\protected\def\settruevalue #1{\enforced\letcsname#1\endcsname\conditionaltrue }
+\permanent\protected\def\setfalsevalue#1{\enforced\letcsname#1\endcsname\conditionalfalse}
+
 
 \aliased\let\newconditional\setfalse
 \aliased\let\ifconditional \ifcase

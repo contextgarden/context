@@ -778,18 +778,18 @@
 
 % Visible commands:
 
-\let\notragged           \spac_align_set_horizontal_none
-\let\raggedleft          \spac_align_set_horizontal_left
-\let\raggedcenter        \spac_align_set_horizontal_center
-\let\raggedright         \spac_align_set_horizontal_right
-\let\veryraggedleft      \spac_align_set_horizontal_very_left
-\let\veryraggedcenter    \spac_align_set_horizontal_very_center
-\let\veryraggedright     \spac_align_set_horizontal_very_right
-\let\raggedwidecenter    \spac_align_set_horizontal_wide_center
-\let\centeredlastline    \spac_align_set_horizontal_centered_last_line
-\let\flushedrightlastline\spac_align_set_horizontal_flushedright_last_line
-\let\ttraggedright       \spac_align_set_horizontal_right_tt            % a plain command
-\let\forgetragged        \spac_align_set_horizontal_none
+\aliased\let\notragged           \spac_align_set_horizontal_none
+\aliased\let\raggedleft          \spac_align_set_horizontal_left
+\aliased\let\raggedcenter        \spac_align_set_horizontal_center
+\aliased\let\raggedright         \spac_align_set_horizontal_right
+\aliased\let\veryraggedleft      \spac_align_set_horizontal_very_left
+\aliased\let\veryraggedcenter    \spac_align_set_horizontal_very_center
+\aliased\let\veryraggedright     \spac_align_set_horizontal_very_right
+\aliased\let\raggedwidecenter    \spac_align_set_horizontal_wide_center
+\aliased\let\centeredlastline    \spac_align_set_horizontal_centered_last_line
+\aliased\let\flushedrightlastline\spac_align_set_horizontal_flushedright_last_line
+\aliased\let\ttraggedright       \spac_align_set_horizontal_right_tt            % a plain command
+\aliased\let\forgetragged        \spac_align_set_horizontal_none
 
 \appendtoks
     \spac_align_set_horizontal_none
@@ -892,8 +892,8 @@
 
 % older (context) names:
 
-\let\spaceamount  \interwordspace
-\let\emspaceamount\emwidth
+\aliased\let\spaceamount  \interwordspace
+\aliased\let\emspaceamount\emwidth
 
 % tracing:
 

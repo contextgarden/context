@@ -387,7 +387,7 @@ return {
         "doloopovermatch", "doloopovermatched", "doloopoverlist",
         --
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
-        "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",
+        "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue", "setconditional",
         --
         "newmacro", "setnewmacro", "newfraction",
         "newsignal",
@@ -488,7 +488,7 @@ return {
         --
         "assumelongusagecs",
         --
-        "Umathbotaccent",
+        "Umathbotaccent", "Umathtopaccent",
         --
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",

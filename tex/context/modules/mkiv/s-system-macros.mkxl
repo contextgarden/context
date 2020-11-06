@@ -81,14 +81,16 @@
     end)
 
     require("mtx-interface")
-    local data =  scripts.interface.editor("data")
+    local data  = scripts.interface.editor("data")
     local files = data and data.common and data.common.filenames or { }
-    local t = tex.hashtokens()
-    table.sort(t)
+    local okay  = 0
+    local list = tex.hashtokens()
+    table.sort(list)
     local function show(check)
-        context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
-        for i=1,#t do
-            local k = t[i]
+     -- context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
+        context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|" }
+        for i=1,#list do
+            local k = list[i]
             if check(k) then
                 local v = create(k)
                 local frozen     = v.frozen     and "frozen"
@@ -96,7 +98,7 @@
                 local immutable  = v.immutable  and "immutable"
                 local primitive  = v.primitive  and "primitive"
                 local mutable    = v.mutable    and "mutable"
-                local tolerant   = v.tolerant   and "tolerant"
+             -- local tolerant   = v.tolerant   and "tolerant"
                 local noaligned  = v.noaligned  and "noaligned"
                 local instance   = v.instance   and "instance"
                 local parameters = v.parameters or 0
@@ -109,7 +111,7 @@
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
                 ctx_NC() if parameters > 0 then context(parameters) end
                 ctx_NC() context(cscommand)
-                ctx_NC() if tolerant       then context(tolerant)   end
+             -- ctx_NC() if tolerant       then context(tolerant)   end
                 ctx_NC() if primitive      then context(primitive)  end
                 ctx_NC() if permanent      then context(permanent)  end
                 ctx_NC() if frozen         then context(frozen)     end

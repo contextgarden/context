@@ -273,9 +273,8 @@
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
-\protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
-  {\ifx#2\relax\mutable\let#2\empty\fi                                            % it is hardly faster but produces less expansion tracing
-   \frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+\protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9%
+  {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \frozen\edef#5##1##2{\noexpand\ifx##1\relax\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
    \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
@@ -285,7 +284,8 @@
    \frozen\def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
 
 \permanent\protected\def\installparameterhandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_parameter_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -309,8 +309,7 @@
         \expandafter\noexpand\csname root#2parameter\endcsname}}
 
 \protected\def\mult_interfaces_install_parameter_hash_handler#1#2#3#4#5#6#7#8#9%
-  {\ifx#2\relax\mutable\let#2\empty\fi
-   \frozen\def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
+  {\frozen\def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \frozen\def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
    \frozen\def#6{#1#2:}%
@@ -319,7 +318,8 @@
    \frozen\protected\def#9##1{\edefcsname#1##1:\s!parent\endcsname{#1#2}}}
 
 \permanent\protected\def\installparameterhashhandler#1#2%
-  {\letcsname#2namespace\endcsname#1%
+  {\mutable\letcsname current#2\endcsname\empty
+   \letcsname#2namespace\endcsname#1%
    \normalexpanded
      {\mult_interfaces_install_parameter_hash_handler
         {\noexpand#1}% \??aa
@@ -338,15 +338,15 @@
 
 % \startinterface english
     \protected\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
-      {\ifx#2\relax\mutable\let#2\empty\fi
-       \frozen\protected\def#3##1{\defcsname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+      {\frozen\protected\def#3##1{\defcsname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
        \frozen\protected\def#4##1{\edefcsname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
        \frozen\protected\def#5##1{\letcsname#1#2:##1\endcsname}%        ##1 ##2
        \frozen\protected\def#6##1{\letcsname#1#2:##1\endcsname\empty}}% ##1
 % \stopinterface
 
 \permanent\protected\def\installparametersethandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_parameter_set_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -390,13 +390,16 @@
      \edefcsname#1#4:\s!parent\endcsname{#2}%
    \fi}
 
-\def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\lastnamedcs\space\fi}
-\def\getparentchain       #1#2{\begincsname#1#2:\s!chain\endcsname}
-\def\getcurrentparentchain#1#2{\begincsname#1#2:\s!chain\endcsname}
+          \def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\lastnamedcs\space\fi}
+\permanent\def\getparentchain       #1#2{\begincsname#1#2:\s!chain\endcsname}
+\permanent\def\getcurrentparentchain#1#2{\begincsname#1#2:\s!chain\endcsname}
+
+% we could have a \setcurrent... macro and then always make them a frozen
+% but it might have a little impact on performance ... something to leave
+% to when we're done with the transition (it's kind of massive)
 
 \protected\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8% why is \expanded still needed in clones
-  {\ifx#4\relax\mutable\let#4\empty\fi                                       % see \defineregister
-   \newtoks#5%
+  {\newtoks#5%
    \newtoks#6%
    \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
      {\let#8#4%
@@ -446,7 +449,9 @@
       \let#4#8}}
 
 \permanent\protected\def\installdefinehandler#1#2#3%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \mutable\letcsname current#2parent\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_define_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname define#2\endcsname
@@ -458,10 +463,9 @@
         \expandafter\noexpand\csname saved_defined_#2\endcsname}}
 
 \protected\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8%
-  {\ifx#3\relax\mutable\let#3\empty\fi
-   \protected\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
-   \newtoks#4%
+  {\newtoks#4%
    \newtoks#7%
+   \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \frozen\tolerant\protected\def#2[##1]##*[##2]% maybe helper
      {\let#6#3%
       \ifnum\lastarguments=\plustwo
@@ -479,7 +483,8 @@
       \the#7}}
 
 \permanent\protected\def\installsetuphandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
@@ -496,15 +501,13 @@
 \let\doingrootsetroot   \plusfour   % \setuplayout
 
 \protected\def\mult_interfaces_install_switch_setup_handler_a#1#2#3%
-  {\ifx#2\relax\mutable\let#2\empty\fi
-   \frozen\protected\def#3{\mult_interfaces_get_parameters{#1#2:}}}
+  {\frozen\protected\def#3{\mult_interfaces_get_parameters{#1#2:}}}
 
 \protected\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
   {\newtoks#5%
    \newconstant#2%
    \newtoks#8%
    \newtoks#9%
-   \ifx#6\relax\let#6\empty\fi
    \frozen\tolerant\protected\def#4[##1]##*[##2]% maybe helper
      {\ifarguments
         % \setuplayout
@@ -555,7 +558,9 @@
       \the#9}}
 
 \permanent\protected\def\installswitchsetuphandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \mutable\letcsname previous#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_switch_setup_handler_a
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -572,9 +577,8 @@
         \expandafter\noexpand\csname everysetup#2root\endcsname}}
 
 \protected\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
-  {\ifx#3\relax\mutable\let#3\empty\fi
+  {\newtoks#4%
    \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}%
-   \newtoks#4%
    \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
      {\let#7#3%
       \ifarguments
@@ -602,7 +606,8 @@
       \let#3#7}}
 
 \permanent\protected\def\installautosetuphandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_auto_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
@@ -668,7 +673,8 @@
    \frozen\def#5##1{\begincsname#1##1\endcsname}}
 
 \permanent\protected\def\installdirectparameterhandler#1#2%
-  {\normalexpanded
+  {\mutable\letcsname current#2\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_direct_parameter_handler
         {\noexpand#1}%
         \expandafter\noexpand\csname current#2\endcsname
@@ -777,7 +783,8 @@
       \endgroup}}
 
 \permanent\protected\def\installactionhandler#1%
-  {\normalexpanded
+  {\mutable\letcsname current#1\endcsname\empty
+   \normalexpanded
      {\mult_interfaces_install_action_handler
         {#1}%
         \expandafter\noexpand\csname current#1\endcsname

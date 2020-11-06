@@ -88,9 +88,9 @@
 \def\tabl_nte_start_nc_finish#1\NC
   {\ifconditional\c_tabl_nte_in_nc \else
      \settrue\c_tabl_nte_in_nc
-     \dobTR[]%
+     \tabl_ntb_bTR[]%
    \fi
-   \dobTD#1\eTD\NC}
+   \tabl_ntb_bTD#1\eTD\NC}
 
 %D The related structure commands are also available:
 

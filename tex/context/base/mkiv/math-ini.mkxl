@@ -98,14 +98,14 @@
 
 %D A few compatibility helpers:
 
-\def\Umathbotaccent{\Umathaccent \s!bottom }
-\def\Umathtopaccent{\Umathaccent \s!top    }
-\def\Umathaccents  {\Umathaccent \s!both   } % strange highlighting
+\permanent\def\Umathbotaccent{\Umathaccent \s!bottom }
+\permanent\def\Umathtopaccent{\Umathaccent \s!top    }
+\permanent\def\Umathaccents  {\Umathaccent \s!both   } % strange highlighting
 
 \ifdefined\Umathcharclass \else
-    \def\Umathcharclass{\numexpr\cldcontext{tex.getmathcode(token.scan_int())[1]}\relax}
-    \def\Umathcharfam  {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[2]}\relax}
-    \def\Umathcharslot {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[3]}\relax}
+    \permanent\def\Umathcharclass{\numexpr\cldcontext{tex.getmathcode(token.scan_int())[1]}\relax}
+    \permanent\def\Umathcharfam  {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[2]}\relax}
+    \permanent\def\Umathcharslot {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[3]}\relax}
 \fi
 
 %D The attributes that we will use (todo: pack some into one but uglier code):
@@ -683,18 +683,18 @@
 
 \permanent\tolerant\protected\def\definemathcommand[#1]#*[#2]#*[#3]#:#*#4% command class args meaning
   {\ifparameter#3\or
-     \edef\nofmathcommandarguments{#3}%
+     \edef\nofmathcommandarguments{#3}% make this one m_arguments
      \ifx\nofmathcommandarguments\v!one
-       \setuvalue{\??mathcommand#1}##1{\mathcodecommand{#2}{#4{##1}}}%
+       \frozen\setuvalue{\??mathcommand#1}##1{\mathcodecommand{#2}{#4{##1}}}%
      \orelse\ifx\nofmathcommandarguments\v!two
-       \setuvalue{\??mathcommand#1}##1##2{\mathcodecommand{#2}{#4{##1}{##2}}}%
+       \frozen\setuvalue{\??mathcommand#1}##1##2{\mathcodecommand{#2}{#4{##1}{##2}}}%
      \else
-       \setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
+       \frozen\setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
      \fi
    \orelse\ifparameter#2\or
-     \setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
+     \frozen\setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
    \else
-     \setuvalue{\??mathcommand#1}{\mathcodecommand{nothing}{#4}}%
+     \frozen\setuvalue{\??mathcommand#1}{\mathcodecommand{nothing}{#4}}%
    \fi
    \ifparameter#1\or % safeguard
      \letcsnamecsname\csname#1\endcsname\csname\??mathcommand#1\endcsname

@@ -830,7 +830,7 @@
    \fi
    \begingroup % (2)
    \the\itemgroupcommands
-   \let\c_strc_itemgroups_text_saved\c_strc_itemgroups_text
+   \setconditional\c_strc_itemgroups_text_saved\c_strc_itemgroups_text
    \strc_itemgroups_initialize_local
    \strc_itemgroups_preset_stage_one\itemgroupoptions
 %

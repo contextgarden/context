@@ -467,7 +467,7 @@
 \def\tabl_ntb_parameters_set[#1][#2]%
   {\ifappendTBLsetups
      \ifcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
-       \def\tabl_ntb_parameters_get[##1]%
+       \enforced\def\tabl_ntb_parameters_get[##1]%
          {\setvalue{\??naturaltableset\m_tabl_tbl_level:#1}{\tabl_ntb_parameters_get[##1,#2]}}%
        \csname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
        \enforced\let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
@@ -959,10 +959,10 @@
    \let\currentTABLEcolumn\tabl_ntb_current_column
    \let\nofTABLErows      \tabl_ntb_n_of_rows
    \let\nofTABLEcolumns   \tabl_ntb_n_of_columns
-   \enforced\let\bTR\dobTR
-   \enforced\let\bTD\dobTD
-   \enforced\let\bTH\dobTH
-   \enforced\let\bTN\dobTN}
+   \enforced\let\bTR\tabl_ntb_bTR
+   \enforced\let\bTD\tabl_ntb_bTD
+   \enforced\let\bTH\tabl_ntb_bTH
+   \enforced\let\bTN\tabl_ntb_bTN}
 
 \def\tabl_ntb_current_row   {\m_tabl_ntb_positive_row}
 \def\tabl_ntb_current_column{\m_tabl_ntb_positive_col}
@@ -978,10 +978,10 @@
 
 % todo with tolerant:
 
-\permanent\protected\def\dobTR{\dosingleempty\tabl_ntb_tr} % also used in tabl-nte
-\permanent\protected\def\dobTD{\dosingleempty\tabl_ntb_td} % also used in tabl-nte
-\permanent\protected\def\dobTH{\dosingleempty\tabl_ntb_th} % also used in tabl-nte
-\permanent\protected\def\dobTN{\dosingleempty\tabl_ntb_tn} % also used in tabl-nte
+\permanent\protected\def\tabl_ntb_bTR{\dosingleempty\tabl_ntb_tr} % also used in tabl-nte
+\permanent\protected\def\tabl_ntb_bTD{\dosingleempty\tabl_ntb_td} % also used in tabl-nte
+\permanent\protected\def\tabl_ntb_bTH{\dosingleempty\tabl_ntb_th} % also used in tabl-nte
+\permanent\protected\def\tabl_ntb_bTN{\dosingleempty\tabl_ntb_tn} % also used in tabl-nte
 
 % permits \expanded{\bTD ... \eTD}
 

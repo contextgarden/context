@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.05 22:57}
+\edef\contextversion{2020.11.06 20:23}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -85,7 +85,7 @@
 
 %D Now the more fundamental code gets defined.
 
-\loadmarkfile{norm-ctx}
+\loadmkxlfile{norm-ctx}
 \loadmarkfile{syst-pln}
 \loadmarkfile{syst-mes}
 
@@ -188,7 +188,7 @@
 \loadmkxlfile{supp-mat}
 
 \loadmarkfile{core-uti}
-\loadmkvifile{file-job}
+\loadmklxfile{file-job}
 
 \loadmkxlfile{anch-pos}
 
@@ -199,7 +199,7 @@
 \loadmarkfile{typo-inj}
 
 \loadmklxfile{file-syn}
-\loadmkvifile{file-mod}
+\loadmklxfile{file-mod}
 
 \loadmarkfile{core-sys}
 \loadmkxlfile{core-con}
@@ -221,7 +221,7 @@
 \loadmarkfile{core-dat}
 
 \loadmkxlfile{colo-ini}
-\loadmarkfile{colo-grp} % optional
+\loadmkxlfile{colo-grp} % optional
 \loadmkxlfile{colo-ext}
 
 \loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
@@ -347,7 +347,7 @@
 \loadmarkfile{buff-imp-parsed-xml} % optional
 %loadmarkfile{buff-imp-parsed-lua} % optional
 
-\loadmarkfile{strc-blk}
+\loadmkxlfile{strc-blk}
 
 \loadmarkfile{page-imp}
 \loadmkvifile{page-sel} % optional
@@ -410,7 +410,7 @@
 
 \loadmarkfile{lxml-css}
 
-\loadmarkfile{spac-chr} % depends on fonts
+\loadmkxlfile{spac-chr} % depends on fonts
 
 \loadmkxlfile{blob-ini}
 
@@ -502,7 +502,7 @@
 \loadmarkfile{chem-ini}
 \loadmkxlfile{chem-str}
 
-\loadmarkfile{typo-scr}
+\loadmkxlfile{typo-scr}
 \loadmarkfile{phys-dim}
 
 \loadmarkfile{node-rul} % beware, defined \underbar so after math

@@ -17,16 +17,26 @@
 
 \pushoverloadmode
 
+% maybe frozen instead
+
 \permanent\let\AR\relax
 \permanent\let\BA\relax
 \permanent\let\BC\relax
+\permanent\let\BH\relax
 \permanent\let\BL\relax
+\permanent\let\BR\relax
 \permanent\let\CC\relax
 \permanent\let\CL\relax
 \permanent\let\CM\relax
 \permanent\let\CR\relax
 \permanent\let\DB\relax
+\permanent\let\DC\relax
+\permanent\let\DL\relax
+\permanent\let\DR\relax
+\permanent\let\DV\relax
+\permanent\let\EH\relax
 \permanent\let\EQ\relax
+\permanent\let\ER\relax
 \permanent\let\FB\relax
 \permanent\let\FL\relax
 \permanent\let\FR\relax
@@ -35,8 +45,11 @@
 \permanent\let\HQ\relax
 \permanent\let\HR\relax
 \permanent\let\LB\relax
+\permanent\let\LC\relax
+\permanent\let\LT\relax
 \permanent\let\LL\relax
 \permanent\let\LR\relax
+\permanent\let\MC\relax
 \permanent\let\ML\relax
 \permanent\let\MR\relax
 \permanent\let\NA\relax
@@ -53,9 +66,19 @@
 \permanent\let\PB\relax
 \permanent\let\RC\relax
 \permanent\let\RQ\relax
+\permanent\let\SL\relax
+\permanent\let\SM\relax
 \permanent\let\SR\relax
+\permanent\let\TB\relax
 \permanent\let\TL\relax
+\permanent\let\TR\relax
 \permanent\let\VL\relax
+\permanent\let\VC\relax
+\permanent\let\VD\relax
+\permanent\let\VN\relax
+\permanent\let\VS\relax
+\permanent\let\VT\relax
+\permanent\let\XC\relax
 
 \popoverloadmode
 

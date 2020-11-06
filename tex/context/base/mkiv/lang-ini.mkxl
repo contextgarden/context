@@ -185,7 +185,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\let\doiflanguageelse\doifelselanguage
+\aliased\let\doiflanguageelse\doifelselanguage
 
 \permanent\def\reallanguagetag#1%
   {\ifcsname\??languagelinked#1\endcsname\lastnamedcs\else#1\fi}
@@ -533,11 +533,11 @@
      \fi
    \fi}
 
-\protected\def\uselanguageparameter#1%
+\permanent\protected\def\uselanguageparameter#1%
   {\edef\askedlanguage{#1\c!language}%
    \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
-\protected\def\douselanguageparameter#1% fast setter
+\permanent\protected\def\douselanguageparameter#1% fast setter
   {\edef\askedlanguage{#1}%
    \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
