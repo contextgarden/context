@@ -1144,7 +1144,7 @@
   {\ifconditional\c_strc_sectioning_empty
      % this needs checking
      \penalty\plustenthousand
-     \vskivskip-\lineheight
+     \vskip-\lineheight
      \kern\zeropoint
      \prevdepth\strutdepth
    \fi}

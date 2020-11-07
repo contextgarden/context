@@ -176,6 +176,7 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
                 number = index,
                 page   = getcount("realpageno"),
             }
+            -- list is a rule
             setlink(list,page)
         end
         setbox("objectbox",hbox)
