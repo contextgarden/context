@@ -184,8 +184,8 @@
    \dp\scratchbox\strutdp
    \box\scratchbox}
 
-\permanent\tolerant\protected\def\typo_scripts_highlow_indeed[#1]#*[#2]#:#3#4%
-  {\typo_scripts_lowhigh_indeed[#1][#2]{#4}{#3}}
+\permanent\tolerant\protected\def\typo_scripts_highlow[#1]#*[#2]#:#3#4%
+  {\typo_scripts_lowhigh[#1][#2]{#4}{#3}}
 
 \permanent\protected\def\lohi{\typo_scripts_lowhigh[]}
 \permanent\protected\def\hilo{\typo_scripts_highlow[]}

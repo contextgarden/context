@@ -252,12 +252,13 @@
    \the\t_symb_setups
    \ifconditional\c_symb_found
      \endgroup\expandafter\firstoftwoarguments
-   \orelse\ifconditional\c_symb_found
-     \symb_fetch_second\currentsymbol
-     \endgroup\expandafter\firstoftwoarguments
    \else
      \symb_fetch_second\currentsymbol
-     \endgroup\expandafter\secondoftwoarguments
+     \ifconditional\c_symb_found
+       \endgroup\doubleexpandafter\firstoftwoarguments
+     \else
+       \endgroup\doubleexpandafter\secondoftwoarguments
+     \fi
    \fi}
 
 \aliased\let\doifsymboldefinedelse\doifelsesymboldefined

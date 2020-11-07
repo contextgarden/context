@@ -41,7 +41,7 @@
     \fi
 \to \everybeforepagebody
 
-\protected\def\initializepagebackgrounds
+\permanent\protected\def\initializepagebackgrounds
   {\setfalse\c_page_backgrounds_new
    \setfalse\c_page_backgrounds_new_right
    \setfalse\c_page_backgrounds_new_left

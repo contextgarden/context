@@ -98,6 +98,7 @@ local par_code             = nodecodes.par
 
 local leftskip_code        = gluecodes.leftskip
 local rightskip_code       = gluecodes.rightskip
+local parfillleftskip_code = gluecodes.parfillleftskip
 local parfillskip_code     = gluecodes.parfillskip
 
 ----- linelist_code        = listcodes.line
@@ -323,7 +324,8 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                 local last = find_node_tail(first)
                 if getid(last) == glue_code and getsubtype(last) == rightskip_code then
                     local prev = getprev(last)
-                    moveright = getid(first) == glue_code and getsubtype(first) == leftskip_code
+                    -- this can be more clever
+                    moveright = getid(first) == glue_code and (getsubtype(first) == leftskip_code or getsubtype(first) == parfillleftskip_code)
                     if prev and getid(prev) == glue_code and getsubtype(prev) == parfillskip_code then
                         width = dimensions(current,first,getprev(prev)) -- maybe not current as we already take care of it
                     else
@@ -415,8 +417,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             if r then
                 done[r] = done[r] - 1
             end
-        elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
-            --
         elseif id == dir_code then
             local direction, pop = getdirection(current)
             txtdir = not pop and direction -- we might need a stack
@@ -424,7 +424,17 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             if start_of_par(current) then
                 pardir = getdirection(current)
             end
+        elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
+            --
         else
+            if id == glue_code then
+                local subtype = getsubtype(current)
+                if subtype == leftskip_code or subtype == parfillleftskip_code then
+                    goto NEXT
+                elseif subtype == rightskip_code or subtype == parfillskip_code then
+                    goto NEXT
+                end
+            end
             local r = getattr(current,attribute)
             if not r then
                 -- just go on, can be kerns
@@ -432,7 +442,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 reference, first, last, firstdir = r, current, current, txtdir
             elseif r == reference then
                 last = current
-            elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
+            elseif (done[reference] or 0) == 0 then -- or (id == glue_code and getsubtype(current) == right_skip_code) then
                 if not skip or r > skip then -- maybe no > test
                     head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                     reference, first, last, firstdir = nil, nil, nil, nil
@@ -441,6 +451,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 reference, first, last, firstdir = r, current, current, txtdir
             end
         end
+      ::NEXT::
         current = getnext(current)
     end
     if reference and (done[reference] or 0) == 0 then

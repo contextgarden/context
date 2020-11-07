@@ -458,7 +458,7 @@
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
 
 \def\buff_verbatim_typing_start_nop
-  {\typingparameter\c!before
+  {\typingparameter\c!before\relax
    \startpacked[\v!blank]%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
@@ -466,7 +466,7 @@
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \def\buff_verbatim_typing_start_yes[#1]%
-  {\typingparameter\c!before
+  {\typingparameter\c!before\relax
    \startpacked[\v!blank]%
    \ifcondition\validassignment{#1}%
      \setupcurrenttyping[#1]%
@@ -519,7 +519,7 @@
 
 \protected\def\buff_verbatim_typing_stop#1% hm, currenttyping
   {\stoppacked
-   \typingparameter\c!after
+   \typingparameter\c!after\relax
    \useindentnextparameter\typingparameter
    \endgroup
    \dorechecknextindentation}
@@ -620,7 +620,7 @@
 
 \def\buff_verbatim_type_file_indeed#1#2% category name
   {\edef\currenttyping{#1}%
-   \typingparameter\c!before
+   \typingparameter\c!before\relax
    \startpacked[\v!blank]
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
@@ -641,7 +641,7 @@
    \endofverbatimlines
    \dostoptagged
    \stoppacked
-   \typingparameter\c!after}
+   \typingparameter\c!after\relax}
 
 %D Line numbering:
 
@@ -809,7 +809,7 @@
 
 \protected\def\buff_verbatim_type_buffer_indeed#1#2% category name
   {\edef\currenttyping{#1}%
-   \typingparameter\c!before
+   \typingparameter\c!before\relax
    \startpacked[\v!blank]
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
@@ -831,7 +831,7 @@
    \endofverbatimlines
    \dostoptagged
    \stoppacked
-   \typingparameter\c!after}
+   \typingparameter\c!after\relax}
 
 \permanent\protected\def\typeinlinebuffer
   {\dontleavehmode

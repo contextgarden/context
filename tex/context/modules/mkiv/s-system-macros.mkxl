@@ -156,11 +156,13 @@
 \HL
 \stoptabulate
 
+\start \hsize 15cm \veryraggedright
 Often frozen commands are redefined on demand and they can be overloaded. Mutable
 doesn't mean that a user can change it without consequences, for instance the
 \type {\current...} ones. Primitives come with the engine, permanent macros are
 the core of \CONTEXT. Noaligned macros are special and dealt deep down when
 scanning for alignment specific primitives.
+\par \stop
 
 \starttabulate
 \BC number of visible macros \NC \NumberOfVisible \NC \NR

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-11-07 12:43
+-- merge date  : 2020-11-07 18:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -36026,7 +36026,7 @@ if not modules then modules={} end modules ['font-shp']={
 }
 local tonumber,next=tonumber,next
 local concat=table.concat
-local formatters=string.formatters
+local formatters,lower=string.formatters,string.lower
 local otf=fonts.handlers.otf
 local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
@@ -36219,7 +36219,7 @@ end
 local function loadstreams(cache,filename,sub,instance)
  local base=file.basename(filename)
  local name=file.removesuffix(base)
- local kind=file.suffix(filename)
+ local kind=lower(file.suffix(filename))
  local attr=lfs.attributes(filename)
  local size=attr and attr.size or 0
  local time=attr and attr.modification or 0

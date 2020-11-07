@@ -286,6 +286,7 @@
 		<cd:variable name='intermezzo' value='intermezzo'/>
 		<cd:variable name='intext' value='dotextu'/>
 		<cd:variable name='intro' value='uvod'/>
+		<cd:variable name='invertedshort' value='invertedshort'/>
 		<cd:variable name='italic' value='kurziva'/>
 		<cd:variable name='italicbold' value='kurzivnitucne'/>
 		<cd:variable name='item' value='polozka'/>
@@ -389,6 +390,7 @@
 		<cd:variable name='nonumber' value='nonumber'/>
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normalni'/>
+		<cd:variable name='normalshort' value='normalshort'/>
 		<cd:variable name='nospacing' value='nospacing'/>
 		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='ne'/>
@@ -456,6 +458,7 @@
 		<cd:variable name='rectangular' value='pravouhly'/>
 		<cd:variable name='reference' value='odkaz'/>
 		<cd:variable name='referral' value='znacka'/>
+		<cd:variable name='region' value='region'/>
 		<cd:variable name='register' value='rejstrik'/>
 		<cd:variable name='regular' value='pravidelne'/>
 		<cd:variable name='relative' value='relativni'/>

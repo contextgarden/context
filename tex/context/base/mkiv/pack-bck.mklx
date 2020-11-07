@@ -1,0 +1,245 @@
+%D \module
+%D   [       file=pack-bck, % moved from  pack-rul,
+%D        version=20111115, % 1998.10.16,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Simple Backgrounds,
+%D         author=Hans Hagen \& Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Simple Backgrounds}
+
+%D The code here is already pretty old and is used for simple backgrounds. As it is
+%D still used WS adapted the code to the new command handler methods so that it gets
+%D a second life. So it made sense to mkvi as well. Some more code is moved here
+%D too.
+
+%D \macros
+%D   {setupbackground,startbackground,background}
+%D
+%D The section deals with backgrounds in the running text. This means that texts is
+%D to be collected and split over pages. To show what can be done, we provide this
+%D part of the documentation with some gray background and a red frame. Both the
+%D background and frame can have all characteristics of \type {\framed}.
+%D
+%D \starttyping
+%D \setupbackground
+%D   [backgroundoffset=4pt,
+%D    background=color,
+%D    frame=on,
+%D    framecolor=red,
+%D    leftoffset=2pt]
+%D \stoptyping
+%D
+%D The implementation is not that sophisticated, but suffices. The main problem with
+%D this kind of functionality is to get the spacing all right.
+%D
+%D Specifying the background is more or less the same as
+%D specifying a framed box.
+%D
+%D \showsetup{setupbackground}
+%D
+%D {\em This mechanism is sort of obsolete and textbackgrounds should be used
+%D instead.}
+
+\unprotect
+
+\installcorenamespace {background}
+
+\installframedcommandhandler \??background {background} \??background
+
+% The mode is not that public an dmostlu an initial mode:
+%
+% 0 : no split
+% 1 : no split, honoring leftskip (messy)
+% 2 : split
+% 3 : split, honoring leftskip (messy)
+%
+% While processing the modes will change from 3->1 or 2->0. Don't depend on the
+% mode being public currently as it could become a key.
+
+\setnewconstant\backgroundsplitmode\plusthree
+
+\appendtoks
+    \frozen\setuevalue{\e!start\currentbackground}{\pack_backgrounds_start [\currentbackground]}%
+    \frozen\setuevalue{\e!stop \currentbackground}{\pack_backgrounds_stop                      }%
+    \frozen\setuevalue        {\currentbackground}{\pack_backgrounds_direct[\currentbackground]}%
+\to \everydefinebackground
+
+\protected\def\pack_backgrounds_start[#tag]%
+  {\endgraf
+   \begingroup
+   \def\currentbackground{#tag}%
+   \doifelse{\backgroundparameter\c!state}\v!start
+     \pack_backgrounds_start_indeed
+     \pack_backgrounds_start_ignore}
+
+\tolerant\def\pack_backgrounds_start_indeed[#settings]%
+  {\setupcurrentbackground[#settings,\c!state=\v!start,\c!offset=\v!overlay]%
+   \let\pack_backgrounds_stop\pack_backgrounds_stop_indeed
+   \setbox\scratchboxone\vbox\bgroup
+     \strut
+     \vskip-2\lineheight
+     \strut
+     \blank[\v!disable]
+     \leftskip \backgroundparameter\c!leftoffset
+     \rightskip\backgroundparameter\c!rightoffset}
+
+\tolerant\def\pack_backgrounds_start_ignore[#settings]%
+  {\let\pack_backgrounds_stop\pack_backgrounds_stop_ignore}
+
+\let\pack_backgrounds_stop\relax
+
+\protected\def\pack_backgrounds_stop_indeed % we shoul duse the fast background variant of framed
+  {\endgraf
+   \removelastskip
+   \strut
+   \vskip-2\lineheight
+   \strut
+   % safeguard added
+   \ifdim\dimexpr\pagetotal+2\lineheight\relax>\pagegoal
+     \page
+   \fi
+   % till here
+   \egroup
+   \scratchdistance\leftskip % new **
+   \forgetall
+   \ifinsidefloat
+     \backgroundsplitmode\zerocount
+   \fi
+   \ifcase\backgroundsplitmode
+     \inheritedbackgroundframed{\box\scratchboxone}%
+   \or
+     \hskip\scratchdistance
+     \inheritedbackgroundframed{\box\scratchboxone}%
+   \else
+     \splitmaxdepth\boxmaxdepth
+     \splittopskip\topskip
+     \doloop
+       {\ifzeropt\pagetotal % empty page
+          \scratchdimen\textheight
+          \backgroundsplitmode\plusone % split to max height
+        \else
+          \setbox\scratchdimentwo\vbox{\backgroundparameter\c!before}%
+          \scratchdimen\dimexpr\pagegoal-\ht\scratchdimentwo-\pagetotal\relax
+          \backgroundsplitmode\plustwo % split to partial height
+        \fi
+        \ifdim\scratchdimen<\zeropoint
+            \scratchdimen\pagegoal
+        \fi
+        \advance\scratchdimen\dimexpr
+          -\backgroundparameter\c!topoffset
+          -\backgroundparameter\c!bottomoffset
+        \relax
+        \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
+          \ifdim\ht\scratchboxone>\scratchdimen % larger than page
+            \setbox\scratchdimentwo\vsplit\scratchboxone to \scratchdimen
+          \else
+            \setbox\scratchdimentwo\box\scratchboxone
+            \backgroundsplitmode\zerocount % no split
+          \fi
+          \setbox\scratchdimentwo\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
+            {\vskip\backgroundparameter\c!topoffset
+             \unvcopy\scratchdimentwo
+             \prevdepth\dp\scratchdimentwo
+             \obeydepth
+             \vskip\backgroundparameter\c!bottomoffset
+             \vfill}
+          \backgroundparameter\c!before
+          \ifcase\backgroundsplitmode\or\or % partial split
+            \ifdim\pagegoal<\maxdimen
+              \pagegoal=1.2\pagegoal % be a bit more tolerant
+            \fi
+          \fi
+          \startlinecorrection
+            \ifnum\backgroundsplitmode=\plusthree
+              \hskip\scratchdistance % new **
+            \fi
+            \inheritedbackgroundframed{\box\scratchdimentwo}%
+          \stoplinecorrection
+          \ifcase\backgroundsplitmode % no split
+            \backgroundparameter\c!after
+          \else % some split
+            \page_otr_fill_and_eject_page % no \page !
+          \fi
+        \else
+          \page
+        \fi
+        \ifdim\ht\scratchboxone>\zeropoint \else
+          \exitloop
+        \fi}%
+   \fi
+   \endgroup
+   \endgraf}
+
+\protected\def\pack_backgrounds_stop_ignore
+  {\endgroup
+   \endgraf}
+
+\protected\def\pack_backgrounds_direct[#tag]%
+  {\begingroup
+   \def\currentbackground{#tag}%
+   \doifelse{\backgroundparameter\c!state}\c!start
+     \pack_backgrounds_direct_indeed
+     \pack_backgrounds_direct_ignore}
+
+\def\pack_backgrounds_direct_indeed
+  {\dowithnextboxcs\pack_backgrounds_direct_finish\vbox}
+
+\def\pack_backgrounds_direct_finish
+  {\setupcurrentbackground[\c!offset=\v!overlay]%
+   \inheritedbackgroundframed{\flushnextbox}%
+   \endgroup}
+
+\def\pack_backgrounds_direct_ignore
+  {\endgroup}
+
+\definebackground[\v!background]
+
+\ifdefined\startbackground \else
+    \permanent\expandafter\let\expandafter\startbackground\csname\e!start\v!background\endcsname
+    \permanent\expandafter\let\expandafter\stopbackground \csname\e!stop \v!background\endcsname
+    \permanent\expandafter\let\expandafter\background     \csname        \v!background\endcsname
+\fi
+
+\setupbackground
+  [\c!leftoffset=.5\bodyfontsize,
+   \c!rightoffset=\backgroundparameter\c!leftoffset,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\backgroundparameter\c!topoffset,
+   \c!state=\v!start,
+   \c!radius=.5\bodyfontsize,
+   \c!corner=\v!rectangular,
+   \c!frame=\v!off,
+   \c!depth=\zeropoint,
+ % \c!color=,
+   \c!background=\v!color,
+   \c!backgroundcolor=lightgray,
+   \c!before=,
+   \c!after=]
+
+%D \startbuffer
+%D \setupbackground[state=start,frame=on]
+%D
+%D \startbackground
+%D \input ward
+%D \stopbackground
+%D
+%D \background{\input ward\par}
+%D
+%D \setupbackground[state=stop]
+%D
+%D \startbackground
+%D \input ward
+%D \stopbackground
+%D
+%D \background{\input ward\par}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\protect \endinput

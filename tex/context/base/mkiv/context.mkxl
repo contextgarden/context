@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.07 12:43}
+\edef\contextversion{2020.11.07 18:44}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -201,7 +201,7 @@
 \loadmklxfile{file-syn}
 \loadmklxfile{file-mod}
 
-\loadmarkfile{core-sys}
+\loadmkxlfile{core-sys}
 \loadmkxlfile{core-con}
 
 \loadmarkfile{cont-fil}
@@ -242,7 +242,7 @@
 \loadmkxlfile{pack-ori}
 \loadmkxlfile{pack-rul}
 \loadmkxlfile{pack-mrl}
-\loadmkvifile{pack-bck}
+\loadmklxfile{pack-bck}
 \loadmarkfile{pack-fen}
 
 \loadmkxlfile{lxml-ini}
@@ -259,7 +259,7 @@
 \loadmkxlfile{strc-sbe}
 \loadmkvifile{strc-lst}
 \loadmkxlfile{strc-sec}
-\loadmarkfile{strc-pag} % hm, depends on core-num
+\loadmkxlfile{strc-pag} % hm, depends on core-num
 \loadmarkfile{strc-ren}
 \loadmarkfile{strc-xml}
 \loadmarkfile{strc-def} % might happen later
