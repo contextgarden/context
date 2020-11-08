@@ -9,27 +9,27 @@ if not modules then modules = { } end modules ['cont-run'] = {
 -- When a style is loaded there is a good change that we never enter
 -- this code.
 
-local report = logs.reporter("system")
 
 local type, tostring = type, tostring
 
-local report        = logs.reporter("sandbox","call")
-local fastserialize = table.fastserialize
-local quoted        = string.quoted
-local possiblepath  = sandbox.possiblepath
+local report_sandbox = logs.reporter("sandbox","call")
+local report_system  = logs.reporter("system")
+local fastserialize  = table.fastserialize
+local quoted         = string.quoted
+local possiblepath   = sandbox.possiblepath
 
-local context       = context
-local implement     = interfaces.implement
+local context        = context
+local implement      = interfaces.implement
 
-local qualified     = { }
-local writeable     = { }
-local readable      = { }
-local blocked       = { }
-local trace_files   = false
-local trace_calls   = false
-local nofcalls      = 0
-local nofrejected   = 0
-local logfilename   = "sandbox.log"
+local qualified      = { }
+local writeable      = { }
+local readable       = { }
+local blocked        = { }
+local trace_files    = false
+local trace_calls    = false
+local nofcalls       = 0
+local nofrejected    = 0
+local logfilename    = "sandbox.log"
 
 local function registerstats()
     statistics.register("sandboxing", function()
@@ -82,7 +82,7 @@ local function logsandbox(details)
         end
     end
     if trace_calls then
-        report("%s(%,t) => %l",details.comment,arguments,result)
+        report_sandbox("%s(%,t) => %l",details.comment,arguments,result)
     end
     nofcalls = nofcalls + 1
     if not result then
@@ -146,7 +146,7 @@ local debugging  = environment.arguments.debug
 
 if sandboxing then
 
-    report("enabling sandbox")
+    report_system("enabling sandbox")
 
     sandbox.enable()
 
@@ -239,7 +239,7 @@ local function processjob()
         -- can be part of (any) loaded (sub) file. The \starttext
         -- wrapping might go away.
 
-        report("processing as xml: %s",filename)
+        report_system("processing as xml: %s",filename)
 
         context.starttext()
             context.xmlprocess("main",filename,"")
@@ -247,7 +247,7 @@ local function processjob()
 
     elseif suffix == "cld" or arguments.forcecld then
 
-        report("processing as cld: %s",filename)
+        report_system("processing as cld: %s",filename)
 
         context.runfile(filename)
 
@@ -256,7 +256,7 @@ local function processjob()
         -- The wrapping might go away. Why is is it there in the
         -- first place.
 
-        report("processing as lua: %s",filename)
+        report_system("processing as lua: %s",filename)
 
         context.starttext()
             context.ctxlua(string.format('dofile("%s")',filename))
@@ -264,7 +264,7 @@ local function processjob()
 
     elseif suffix == "mp" or arguments.forcemp then
 
-        report("processing as metapost: %s",filename)
+        report_system("processing as metapost: %s",filename)
 
         context.starttext()
             context.processMPfigurefile(filename)
@@ -281,7 +281,7 @@ local function processjob()
 
     elseif suffix == "mps" or arguments.forcemps then
 
-        report("processing metapost output: %s",filename)
+        report_system("processing metapost output: %s",filename)
 
         context.starttext()
             context.startTEXpage()

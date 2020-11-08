@@ -12746,7 +12746,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13766, stripped down to: 9174
+-- original size: 13901, stripped down to: 9175
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -12965,8 +12965,12 @@ local function show_setter(t)
   end
  end
 end
-local function report_setter(setter,fmt,...)
- print(formatters["%-15s : %s\n"](setter.name,formatters[fmt](...)))
+function setters.report(setter,fmt,...)
+ if fmt then
+  print(formatters["%-15s : %s"](setter.name,formatters[fmt](...)))
+ else
+  print("")
+ end
 end
 local function setter_default(setter,name)
  local d=setter.data[name]
@@ -12981,7 +12985,7 @@ local function new_setter(name)
  setter={
   data=allocate(),
   name=name,
-  report=function(...)   report_setter  (setter,...) end,
+  report=function(...)   setters.report (setter,...) end,
   enable=function(...)   enable_setter  (setter,...) end,
   disable=function(...)   disable_setter (setter,...) end,
   reset=function(...)   reset_setter   (setter,...) end,
@@ -12996,7 +13000,6 @@ local function new_setter(name)
 end
 setters.enable=enable_setter
 setters.disable=disable_setter
-setters.report=report_setter
 setters.register=register_setter
 setters.list=list_setter
 setters.show=show_setter
@@ -25773,8 +25776,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1023322
--- stripped bytes    : 404488
+-- original bytes    : 1023457
+-- stripped bytes    : 404622
 
 -- end library merge
 

@@ -17,6 +17,8 @@ local setmetatableindex = table.setmetatableindex
 xml.css            = xml.css or { }
 local css          = xml.css
 
+local report_css   = logs and logs.reporter("xml","css") or function(...) print(string.format(...)) end
+
 local getid        = lxml.getid
 
 if not number.dimenfactors then
@@ -787,7 +789,7 @@ local p_not              = P(":not") * Cc(true) * skipspace * P("(") * skipspace
 local p_yes              =             Cc(false)                     * skipspace * p_step
 
 local p_stepper          = Ct((skipspace * (p_not+p_yes))^1)
-local p_steps            = Ct((p_stepper * p_separator^0)^1) * skipspace * (P(-1) + function() print("error") end)
+local p_steps            = Ct((p_stepper * p_separator^0)^1) * skipspace * (P(-1) + function() report_css("recovering from error") end)
 
 local cache = setmetatableindex(function(t,k)
     local v = lpegmatch(p_steps,k) or false

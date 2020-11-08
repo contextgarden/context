@@ -49,13 +49,13 @@
 
 \immutable\def\??mode{mode>} % special namespace, also used at lua end
 
-\permanent\protected\def\newmode              #1{\ifcsname                            \??mode#1\endcsname\else\setmode{#1}\fi}
+\permanent\protected\def\newmode              #1{\ifcsname                            \??mode#1\endcsname\else\resetmode{#1}\fi}
 \permanent\protected\def\setmode              #1{\expandafter       \integerdef\csname\??mode#1\endcsname\plusone}
 \permanent\protected\def\resetmode            #1{\expandafter       \integerdef\csname\??mode#1\endcsname\zerocount}
 \permanent\protected\def\globalsetmode        #1{\global\expandafter\integerdef\csname\??mode#1\endcsname\plusone}
 \permanent\protected\def\globalresetmode      #1{\global\expandafter\integerdef\csname\??mode#1\endcsname\zerocount}
 
-\permanent\protected\def\newsystemmode        #1{\ifcsname                            \??mode\systemmodeprefix#1\endcsname\else\setsystemmode{#1}\fi}
+\permanent\protected\def\newsystemmode        #1{\ifcsname                            \??mode\systemmodeprefix#1\endcsname\else\resetsystemmode{#1}\fi}
 \permanent\protected\def\setsystemmode        #1{\expandafter       \integerdef\csname\??mode\systemmodeprefix#1\endcsname\plusone}
 \permanent\protected\def\resetsystemmode      #1{\expandafter       \integerdef\csname\??mode\systemmodeprefix#1\endcsname\zerocount}
 \permanent\protected\def\globalsetsystemmode  #1{\global\expandafter\integerdef\csname\??mode\systemmodeprefix#1\endcsname\plusone}
@@ -130,8 +130,10 @@
    \fi
    \ifx\m_modes_asked\v!keep
      % not changes, disabled when undefined
+   \orelse\ifx\m_modes_asked\v!yes
+     \setmode{#1}%
    \else
-     \expandafter\integerdef\lastnamedcs\ifx\m_modes_asked\v!yes\plusone\else\zerocount\fi
+     \resetmode{#1}%
    \fi}
 
 % handy for mp

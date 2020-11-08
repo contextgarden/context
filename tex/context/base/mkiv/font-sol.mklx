@@ -1,0 +1,131 @@
+%D \module
+%D   [       file=font-sol,
+%D        version=2009.05.19,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Solutions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Support / Splitters}
+
+% todo: pass color for tracing
+
+%D This module is specially made for the oriental \TEX\ project. The working is as
+%D follows (and tuned for fonts like Idris' Husayni. The following method came to
+%D my mind after a couple of Skype sessions with Idris while working on the rough
+%D edges of the Husayni font and playing with font dynamics.
+%D
+%D \startitemize[packed]
+%D
+%D \item We define a couple of features sets, some can have stylistics variants
+%D       that result in the same words getting a different width. Normally this
+%D       happens in a goodies file.
+%D
+%D \item We group such features in a solution set. A solutionset can be enabled
+%D       by setting an attribute.
+%D
+%D \item For each paragraph we identify words that get this set applied. We replace
+%D       these words by a user node that refers to the original.
+%D
+%D \item For each word we apply the features to a copy that we associate with this
+%D       original word.
+%D
+%D \item At the end we have a paragraph (node list) with user nodes that point to a
+%D       cache that has originals and processed variants.
+%D
+%D \item When the paragraph is broken into lines we optimize the spacing by
+%D       substituting variants.
+%D
+%D \stopitemize
+%D
+%D This approach permits us to use a dedicated paragraph builder, one that treats
+%D the user nodes special and takes the alternatives into account.
+%D
+%D Currently we assume only one solution being active. Maybe some day I'll support
+%D a mixture. This is only one way of optimizing and after several experiments this
+%D one was chosen as testcase. It took quite some experiments (and time) to get thus
+%D far.
+%D
+%D The is experimental code for the Oriental \TEX\ project and aspects of it might
+%D change.
+%D
+%D \starttyping
+%D \setupfontsolutions[method={random,preroll},criterium=1,randomseed=101]
+%D
+%D \definefontsolution % actually only the last run needs to be done this way
+%D   [FancyHusayni]
+%D   [goodies=husayni,
+%D    solution=experimental]
+%D
+%D \definedfont[husayni*husayni-default at 24pt]
+%D \setupinterlinespace[line=36pt]
+%D \righttoleft
+%D \enabletrackers[parbuilders.solutions.splitters.colors]
+%D \setfontsolution[FancyHusayni]
+%D alb alb alb \par
+%D \resetfontsolution
+%D \disabletrackers[parbuilders.solutions.splitters.colors]
+%D \stoptyping
+
+\registerctxluafile{font-sol}{}
+
+\unprotect
+
+\definesystemattribute[splitter][public]
+
+\installcorenamespace{fontsolution}
+
+\installcommandhandler \??fontsolution {fontsolution} \??fontsolution
+
+\aliased\let\setupfontsolutions\setupfontsolution
+
+\appendtoks
+    \clf_definefontsolution
+      {\currentfontsolution}%
+      {% these are frozen
+        goodies  {\fontsolutionparameter\s!goodies}%
+        solution {\fontsolutionparameter\c!solution}%
+        less     {\fontsolutionparameter\c!less}%
+        more     {\fontsolutionparameter\c!more}%
+      }%
+    \relax
+\to \everydefinefontsolution
+
+\permanent\protected\def\setfontsolution[#solution]% just one
+  {\edef\currentfontsolution{#solution}%
+   \clf_setfontsolution
+     {\currentfontsolution}%
+     {%
+        method     {\fontsolutionparameter\c!method}%
+        criterium  {\fontsolutionparameter\c!criterium}%
+      % randomseed {\fontsolutionparameter\c!random}%
+     }%
+   \relax}
+
+\let\currentfontsolution\empty
+
+\permanent\protected\def\resetfontsolution % resets all
+  {\clf_resetfontsolution
+   \let\currentfontsolution\empty}
+
+\permanent\protected\def\startfontsolution % [#1]
+  {\pushmacro\currentfontsolution
+   \setfontsolution}
+
+\permanent\protected\def\stopfontsolution
+  {\ifhmode\par\fi
+   \clf_stopfontsolution
+   \popmacro\currentfontsolution}
+
+% We initialize this module at the \LUA\ end.
+%
+% \setupfontsolutions
+%   [\c!method={\v!normal,preroll},
+%    \c!criterium=0]
+
+\protect

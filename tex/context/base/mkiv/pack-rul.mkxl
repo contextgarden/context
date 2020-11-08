@@ -70,7 +70,7 @@
 %D Inheritance:
 
 \permanent\protected\def\installinheritedframed#1%
-  {\normalexpanded{\doinstallinheritedframed
+  {\normalexpanded{\mult_interfaces_install_inherited_framed
      \expandafter\noexpand\csname current#1\endcsname
      \expandafter\noexpand\csname #1parameter\endcsname
      \expandafter\noexpand\csname #1parameterhash\endcsname
@@ -81,7 +81,7 @@
      \expandafter\noexpand\csname inherited#1framed\endcsname
      \expandafter\noexpand\csname inherited#1framedbox\endcsname}} % new
 
-\protected\def\doinstallinheritedframed#1#2#3#4#5#6#7#8#9%
+\protected\def\mult_interfaces_install_inherited_framed#1#2#3#4#5#6#7#8#9%
   {\enforced\frozen\def#5##1##2{\ifx##1\relax#6{##2}\else#4{##1}{##2}\fi}%
    \enforced\frozen\def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\??empty\fi}% root
    \frozen\instance\protected\def#8%

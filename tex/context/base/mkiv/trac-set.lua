@@ -254,8 +254,12 @@ end
 
 -- we could make this into a module but we also want the rest avaliable
 
-local function report_setter(setter,fmt,...)
-    print(formatters["%-15s : %s\n"](setter.name,formatters[fmt](...)))
+function setters.report(setter,fmt,...)
+    if fmt then
+        print(formatters["%-15s : %s"](setter.name,formatters[fmt](...)))
+    else
+        print("")
+    end
 end
 
 local function setter_default(setter,name)
@@ -273,7 +277,7 @@ local function new_setter(name) -- we could use foo:bar syntax (but not used tha
     setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        report   = function(...)         report_setter  (setter,...) end,
+        report   = function(...)         setters.report (setter,...) end, -- setters.report gets implemented later
         enable   = function(...)         enable_setter  (setter,...) end,
         disable  = function(...)         disable_setter (setter,...) end,
         reset    = function(...)         reset_setter   (setter,...) end, -- can be dangerous
@@ -289,7 +293,7 @@ end
 
 setters.enable     = enable_setter
 setters.disable    = disable_setter
-setters.report     = report_setter
+-------.report     = report_setter -- todo: adapt after call (defaults to print)
 setters.register   = register_setter
 setters.list       = list_setter
 setters.show       = show_setter

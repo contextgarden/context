@@ -202,7 +202,7 @@
    \c_font_feature_state\zerocount
    \let\currentfeature\m_font_feature_asked}
 
-\protected\def\resetfeature
+\permanent\protected\def\resetfeature
   {\ifx\currentfeature\s!current \else
      \font_feature_reset_indeed
    \fi}
@@ -213,7 +213,7 @@
    \let\m_font_feature_list \s!current
    \clf_resetfeature}
 
-\protected\def\revivefeature
+\permanent\protected\def\revivefeature
   {\ifx\currentfeature\s!current \else
      \font_feature_revive_indeed
    \fi}
@@ -296,28 +296,30 @@
    \let\m_font_feature_list\currentfeature
    \clf_setfontfeature{\currentfeature}}
 
-\let\resetfontfeature\resetfeature
+%  these are obsolete (don't use them any longer)
+
+\aliased\let\resetfontfeature\resetfeature % obsolete
 
 %  these are obsolete (don't use them any longer)
 
-% \let\addfontfeaturetoset        \font_feature_add_nop
-% \let\subtractfontfeaturefromset \font_feature_subtract_nop
-% \let\addfontfeaturetofont       \font_feature_add_nop
-% \let\subtractfontfeaturefromfont\font_feature_subtract_nop
+% \let\addfontfeaturetoset        \font_feature_add_nop      % obsolete
+% \let\subtractfontfeaturefromset \font_feature_subtract_nop % obsolete
+% \let\addfontfeaturetofont       \font_feature_add_nop      % obsolete
+% \let\subtractfontfeaturefromfont\font_feature_subtract_nop % obsolete
 
-% also old, maybe some day a comptability module
+% these are obsolete (don't use them any longer)
 
-\let\setff\setfontfeature
-\let\addfs\doaddfeature
-\let\subfs\dosubtractfeature
-\let\addff\doaddfeature
-\let\subff\dosubtractfeature
+\aliased\let\setff\setfontfeature    % obsolete
+\aliased\let\addfs\doaddfeature      % obsolete
+\aliased\let\subfs\dosubtractfeature % obsolete
+\aliased\let\addff\doaddfeature      % obsolete
+\aliased\let\subff\dosubtractfeature % obsolete
 
 %D \macros
 %D   {os}
 %D
-%D In good old \TEX, the old style numerals were often taken
-%D from the math fonts. No longer.
+%D In good old \TEX, the old style numerals were often taken from the math fonts. No
+%D longer.
 
 \definefontfeature
   [just-os]
@@ -334,8 +336,8 @@
 \permanent\def\doifelsefontfeature          #feature{\clf_doifelsefontfeature          {#feature}} % expandable
 \permanent\def\doifunknownfontfeature       #feature{\clf_doifunknownfontfeature       {#feature}} % expandable
 
-\let\doifcurrentfonthasfeatureelse\doifelsecurrentfonthasfeature
-\let\doiffontfeatureelse          \doifelsefontfeature
+\aliased\let\doifcurrentfonthasfeatureelse\doifelsecurrentfonthasfeature
+\aliased\let\doiffontfeatureelse          \doifelsefontfeature
 
 % new:
 

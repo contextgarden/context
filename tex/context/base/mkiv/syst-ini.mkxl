@@ -514,7 +514,7 @@
 \permanent\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
 \permanent\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
 
-\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
+\aliased\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
 %D \macros
 %D   {dontcomplain}
