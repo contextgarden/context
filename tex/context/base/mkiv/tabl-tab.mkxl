@@ -1919,7 +1919,7 @@
      \fi
      \bgroup
        \global\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax
-       \iffirstargument
+       \ifparameter#1\or
          \glet\m_tabl_table_hrule_color\empty
          \rawprocesscommalist[#1]\tabl_table_hrulecommand
          \ifempty\m_tabl_table_hrule_color\else
@@ -1969,7 +1969,7 @@
   {\tabl_tables_chuck_auto_row
    \tabl_table_finish_row
    \noalign\bgroup
-   \blank[\iftok{#1}\emptytoks\c!NL\else#1\fi]%
+   \blank[\iftok{#1}\emptytoks\directtablesparameter\c!NL\else#1\fi]%
    \nobreak
    \egroup}
 

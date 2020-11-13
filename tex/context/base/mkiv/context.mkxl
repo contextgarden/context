@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.08 12:31}
+\edef\contextversion{2020.11.13 19:08}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -296,7 +296,7 @@
 % \loadmarkfile{core-sys}
 
 \loadmarkfile{page-var}
-\loadmkvifile{page-otr}
+\loadmklxfile{page-otr}
 \loadmkxlfile{page-ini}
 \loadmarkfile{page-ins}
 \loadmarkfile{page-fac}
@@ -305,8 +305,8 @@
 \loadmarkfile{page-inf}
 \loadmarkfile{page-flt}
 \loadmkxlfile{page-bck}
-\loadmarkfile{page-not}
-\loadmarkfile{page-one}
+\loadmkxlfile{page-not}
+\loadmkxlfile{page-one}
 \loadmkxlfile{page-lay}
 \loadmkvifile{page-box}
 \loadmklxfile{page-txt}
@@ -481,7 +481,7 @@
 \loadmarkfile{math-def} % also saves some meanings
 \loadmkxlfile{math-ali}
 %loadmarkfile{math-arr}
-\loadmkvifile{math-stc}
+\loadmklxfile{math-stc}
 \loadmkxlfile{math-frc}
 \loadmarkfile{math-mis}
 \loadmarkfile{math-scr}
@@ -495,15 +495,13 @@
 %loadmarkfile{math-lan}
 \loadmkxlfile{math-toy}
 
-%loadmarkfile{phys-dim} % moved to after typo-scr
-
 \loadmarkfile{strc-mat}
 
 \loadmarkfile{chem-ini}
 \loadmkxlfile{chem-str}
 
 \loadmkxlfile{typo-scr}
-\loadmarkfile{phys-dim}
+\loadmkxlfile{phys-dim}
 
 \loadmarkfile{node-rul} % beware, defined \underbar so after math
 \loadmklxfile{font-sol} % font solutions
@@ -518,9 +516,9 @@
 
 \loadmkxlfile{grph-trf}
 \loadmkxlfile{grph-inc}
-\loadmarkfile{grph-fig}
-\loadmarkfile{grph-raw}
-\loadmarkfile{grph-rul}
+\loadmkxlfile{grph-fig}
+\loadmkxlfile{grph-raw}
+\loadmkxlfile{grph-rul}
 \loadmkxlfile{grph-pat}
 
 \loadmkxlfile{pack-box}
@@ -578,7 +576,7 @@
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
 \loadmarkfile{meta-blb}
-\loadmarkfile{grph-epd}
+\loadmkxlfile{grph-epd}
 
 \loadmarkfile{math-inc} % an experiment
 \loadmarkfile{publ-inc} % an experiment

@@ -1,0 +1,64 @@
+%D \module
+%D   [       file=grph-raw,
+%D        version=2006.08.26, % overhaul of 1997.03.31
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Raw Bitmaps,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Graphic Macros / Raw Bitmaps}
+
+%D \startluacode
+%D     function document.TestBitmap(nx,ny)
+%D         local random = math.random
+%D         local maxbit = 2^24
+%D         for i=1,nx do
+%D             for i=1,ny do
+%D                 context("%06x",random(0,maxbit))
+%D             end
+%D         end
+%D     end
+%D \stopluacode
+%D
+%D \def\TestBitmap#1#2{\ctxlua{document.TestBitmap(#1,#2)}}
+%D
+%D \blank
+%D
+%D \startMPcode
+%D     draw textext("\bitmapimage[x=100,y=100]{\TestBitmap{100}{100}}") xsized 10cm ;
+%D \stopMPcode
+%D
+%D \blank
+%D
+%D \startMPcode
+%D     draw textext("\bitmapimage[x=200,y=50]{\TestBitmap{50}{200}}") xsized 10cm ;
+%D \stopMPcode
+
+\registerctxluafile{grph-raw}{}
+
+\unprotect
+
+\permanent\protected\def\bitmapimage[#1]#2%
+  {\hbox\bgroup
+     \getdummyparameters[\c!color=rgb,\c!width=,\c!height=,\c!x=,\c!y=,#1]%
+     \clf_bitmapimage
+       data        {#2}%
+       colorspace  {\directdummyparameter\c!color}%
+       width       {\directdummyparameter\c!width}%
+       height      {\directdummyparameter\c!height}%
+       xresolution {\directdummyparameter\c!x}%
+       yresolution {\directdummyparameter\c!y}%
+     \relax
+   \egroup}
+
+\permanent\protected\def\startbitmapimage[#1]#2\stopbitmapimage
+  {\bitmapimage[#1]{#2}}
+
+\aliased\let\stopbitmapimage\relax
+
+\protect \endinput

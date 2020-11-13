@@ -143,7 +143,7 @@
 % \definemixedcolumns
 %   [\v!columns]
 %
-% \unexpanded\def\setupcolumns
+% \protected\def\setupcolumns
 %   {\setupmixedcolumns[\v!columns]}
 
 %D In itemizations we also need columns, so let's define a apecial instance
@@ -209,10 +209,10 @@
 
 % the fast hooks:
 
-\unexpanded\def\strc_itemgroups_start_columns
+\protected\def\strc_itemgroups_start_columns
   {\startmixedcolumns[\s!itemgroupcolumns]} % we could have a fast one
 
-\unexpanded\def\strc_itemgroups_stop_columns
+\protected\def\strc_itemgroups_stop_columns
   {\stopmixedcolumns}
 
 %D The mixed output routine can be in different states. First we need to intercept
@@ -221,7 +221,7 @@
 %D Finally, when we finish the mixed columns mode, we can (optionally) balance the
 %D last page.
 
-\unexpanded\def\page_mix_command_routine
+\protected\def\page_mix_command_routine
   {\ifcase\c_page_mix_routine
      \page_one_command_routine
    \or
@@ -267,7 +267,7 @@
 %D Some settings (and actions) depend on the current output routine and setting the
 %D hsize and vsize is among them. The calculation of the hsize is done elsewhere.
 
-\unexpanded\def\page_mix_command_set_hsize
+\protected\def\page_mix_command_set_hsize
   {\hsize\d_page_mix_column_width
    \columnwidth\d_page_mix_column_width}
 
@@ -275,9 +275,14 @@
 %D so that we have enough to split over the columns. Collecting too much is somewhat
 %D tricky as they will spill over to the next page.
 
-\unexpanded\def\page_mix_command_set_vsize
+\protected\def\page_mix_command_set_vsize
   {\vsize\dimexpr\c_page_mix_n_of_columns\textheight+\c_page_mix_n_of_columns\lineheight\relax
-   \pagegoal\vsize}
+   \pagegoal\dimexpr
+     \vsize
+%   -\d_page_floats_inserted_top    % needs checking
+%   -\d_page_floats_inserted_bottom % needs checking
+    -\c_page_mix_n_of_columns\insertheights
+   \relax}
 
 %D As we use \LUA\ there is the usual amount of tracing at that end. At the tex end
 %D we only visualize boxes.
@@ -308,7 +313,7 @@
 \def\page_mix_enable_grid_snapping
   {\edef\p_grid{\mixedcolumnsparameter\c!grid}%
    \setfalse\c_page_mix_grid_snapping
-   \ifx\p_grid\empty
+   \ifempty\p_grid
      % just follow the default grid settings
    \else
      \ifgridsnapping\settrue\c_page_mix_grid_snapping\fi
@@ -333,7 +338,7 @@
 
 \installcorenamespace{mixedcolumnsseparator}
 
-\unexpanded\def\installmixedcolumnseparator#1#2%
+\protected\def\installmixedcolumnseparator#1#2%
   {\setvalue{\??mixedcolumnsseparator#1}{#2}}
 
 \installmixedcolumnseparator\v!rule
@@ -343,7 +348,7 @@
      \s!depth \mixedcolumnseparatordepth
    \relax}
 
-\unexpanded\def\page_mix_command_inject_separator
+\protected\def\page_mix_command_inject_separator
   {\begingroup
    \setbox\scratchbox\hbox to \zeropoint \bgroup
      \hss
@@ -384,29 +389,29 @@
 \installmacrostack\currentmixedcolumns
 \installmacrostack\currentmixedcolumnsmethod
 
-\unexpanded\def\startmixedcolumns
+\protected\def\startmixedcolumns
   {\dodoubleempty\page_mix_start_columns}
 
 \def\page_mix_start_columns_checked#1#2%
   {\edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \ifx\currentmixedcolumnsmethod\v!box
      \singleexpandafter#1%
-   \else\ifinsidecolumns
+   \orelse\ifinsidecolumns
      \doubleexpandafter#2%
    \else
      \doubleexpandafter#1%
-   \fi\fi}
+   \fi}
 
-\unexpanded\def\page_mix_start_columns
+\protected\def\page_mix_start_columns
   {\push_macro_currentmixedcolumns
    \push_macro_currentmixedcolumnsmethod
    \ifsecondargument
      \singleexpandafter\page_mix_start_columns_a
-   \else\iffirstargument
+   \orelse\iffirstargument
      \doubleexpandafter\page_mix_start_columns_b
    \else
      \doubleexpandafter\page_mix_start_columns_c
-   \fi\fi}
+   \fi}
 
 \def\page_mix_start_columns_a[#1]% [#2]%
   {\edef\currentmixedcolumns{#1}%
@@ -474,7 +479,7 @@
   {\begingroup
    \let\stopmixedcolumns\page_mix_columns_stop_nop}
 
-\unexpanded\def\page_mix_fast_columns_start#1%
+\protected\def\page_mix_fast_columns_start#1%
   {\push_macro_currentmixedcolumns
    \push_macro_currentmixedcolumnsmethod
    \edef\currentmixedcolumns{#1}%
@@ -499,7 +504,7 @@
      \global\t_page_mix_at_the_end{\stoppostponingnotes}%
    \fi}
 
-\unexpanded\def\page_mix_columns_stop_yes
+\protected\def\page_mix_columns_stop_yes
   {\begincsname\??mixedcolumnsstop\currentmixedcolumnsmethod\endcsname % no \relax
    \page_mix_finalize_columns
    \endgroup
@@ -509,14 +514,14 @@
    \pop_macro_currentmixedcolumns
    \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
-\unexpanded\def\page_mix_columns_stop_nop
+\protected\def\page_mix_columns_stop_nop
   {\page_mix_finalize_columns
    \endgroup
    \pop_macro_currentmixedcolumnsmethod
    \pop_macro_currentmixedcolumns
    \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
-% \unexpanded\def\page_mix_columns_stop_yes
+% \protected\def\page_mix_columns_stop_yes
 %   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
 %    \endgroup
 %    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
@@ -533,10 +538,10 @@
 
 %D This is how the fast one is used:
 
-\unexpanded\def\strc_itemgroups_start_columns
+\protected\def\strc_itemgroups_start_columns
   {\page_mix_fast_columns_start\s!itemgroupcolumns}
 
-\unexpanded\def\strc_itemgroups_stop_columns
+\protected\def\strc_itemgroups_stop_columns
   {\page_mix_fast_columns_stop} % set by start
 
 % not used nor documented so commented:
@@ -681,7 +686,7 @@
 %D more readable code and also makes it easier to deal with insertions like
 %D footnotes. Eventually we will have multiple strategies available.
 
-\unexpanded\def\page_mix_routine_construct#1%
+\protected\def\page_mix_routine_construct#1%
   {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
    \ifconditional\c_page_mix_process_notes
      \totalnoteheight\zeropoint
@@ -734,7 +739,7 @@
      \hss
    \fi}
 
-\unexpanded\def\page_mix_routine_package
+\protected\def\page_mix_routine_package
   {\clf_mixfinalize
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
@@ -774,7 +779,7 @@
     +\d_page_mix_leftskip
    \relax }
 
-\unexpanded\def\page_mix_command_package_column
+\protected\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup
      % maybe intercept empty
      \clf_mixgetsplit\recurselevel\relax
@@ -788,7 +793,7 @@
      \hss
    \egroup}
 
-% \unexpanded\def\page_mix_command_package_column
+% \protected\def\page_mix_command_package_column
 %   {\page_mix_hbox to \d_page_mix_column_width \bgroup
 %      % maybe intercept empty
 %      \ruledhpack\bgroup
@@ -804,7 +809,7 @@
 %      \hss
 %    \egroup}
 
-\unexpanded\def\page_mix_routine_continue
+\protected\def\page_mix_routine_continue
   {\bgroup
    \forgetall
    \dontcomplain
@@ -816,7 +821,7 @@
    \clf_mixcleanup
    \egroup}
 
-\unexpanded\def\page_mix_routine_balance
+\protected\def\page_mix_routine_balance
   {\bgroup
    \forgetall
    \dontcomplain
@@ -939,7 +944,7 @@
    \fi
    \egroup
    \edef\p_profile{\mixedcolumnsparameter\c!profile}%
-   \ifx\p_profile\empty \else
+   \ifempty\p_profile \else
       % this can never be ok because we cheat with depth and height
       % and glue in between and when we're too large we run into issues
       % so mayb best limit correction to one line
@@ -952,7 +957,7 @@
 
 %D The related balancer is only a few lines:
 
-\unexpanded\def\page_mix_box_balance
+\protected\def\page_mix_box_balance
   {\bgroup
    \dontcomplain
    \page_mix_routine_construct\v!yes
@@ -968,10 +973,10 @@
 \let\page_mix_command_package_contents\page_one_command_package_contents
 \let\page_mix_command_flush_float_box \page_one_command_flush_float_box
 
-\unexpanded\def\page_mix_command_check_if_float_fits
+\protected\def\page_mix_command_check_if_float_fits
   {\ifpostponecolumnfloats
      \global\setfalse\c_page_floats_room
-   \else\ifconditional\c_page_floats_not_permitted
+   \orelse\ifconditional\c_page_floats_not_permitted
      \global\setfalse\c_page_floats_room
    \else
 %        \bgroup
@@ -985,54 +990,54 @@
 %          \global\setfalse\c_page_floats_room
 %    \else
       \global\settrue\c_page_floats_room
-   \fi\fi
+   \fi
    \ifdim\floatwidth>\hsize
      \showmessage\m!columns{11}\empty
      \global\setfalse\c_page_floats_room
    \fi}
 
-\unexpanded\def\page_mix_command_flush_floats
+\protected\def\page_mix_command_flush_floats
   {\page_one_command_flush_floats}
 
-\unexpanded\def\page_mix_command_flush_saved_floats
+\protected\def\page_mix_command_flush_saved_floats
   {\page_one_command_flush_saved_floats}
 
-% \unexpanded\def\page_mix_command_flush_top_insertions
+% \protected\def\page_mix_command_flush_top_insertions
 %   {\page_one_command_flush_top_insertions}
 
-\unexpanded\def\page_mix_place_float_top
+\protected\def\page_mix_place_float_top
   {\showmessage\m!columns4\empty\page_one_place_float_here}
 
-\unexpanded\def\page_mix_place_float_bottom
+\protected\def\page_mix_place_float_bottom
   {\showmessage\m!columns5\empty\page_one_place_float_here}
 
-\unexpanded\def\page_mix_place_float_here
+\protected\def\page_mix_place_float_here
   {\page_one_place_float_here}
 
-\unexpanded\def\page_mix_place_float_force
+\protected\def\page_mix_place_float_force
   {\page_one_place_float_force}
 
-\unexpanded\def\page_mix_command_side_float_output
+\protected\def\page_mix_command_side_float_output
   {\page_mix_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
-\unexpanded\def\page_mix_command_synchronize_side_floats
+\protected\def\page_mix_command_synchronize_side_floats
   {\page_sides_forget_floats}
 
-\unexpanded\def\page_mix_command_flush_side_floats
+\protected\def\page_mix_command_flush_side_floats
   {\page_sides_forget_floats}
 
-\unexpanded\def\page_mix_command_next_page
+\protected\def\page_mix_command_next_page
   {\page_otr_eject_page}
 
-\unexpanded\def\page_mix_command_next_page_and_inserts
+\protected\def\page_mix_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
 
 %D Moved here and dedicated:
 
-\unexpanded\def\page_mix_command_test_column
+\protected\def\page_mix_command_test_column
   {\dodoubleempty\page_mix_command_test_column_indeed}
 
-\unexpanded\def\page_mix_command_test_column_indeed[#1][#2]% works on last column
+\protected\def\page_mix_command_test_column_indeed[#1][#2]% works on last column
   {\par
    \begingroup
    \scratchdimen\dimexpr#1\lineheight\ifsecondargument+#2\fi\relax

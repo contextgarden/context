@@ -33,13 +33,12 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 local next, type, tonumber = next, type, tonumber
 local gmatch, concat = string.gmatch, table.concat
-local ceil, floor = math.ceil, math.floor
+local ceil, floor, abs = math.ceil, math.floor, math.abs
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local allocate = utilities.storage.allocate
 local todimen = string.todimen
 local formatters = string.formatters
-local abs = math.abs
 
 local nodes        =  nodes
 local trackers     =  trackers
@@ -51,6 +50,7 @@ local texlists     = tex.lists
 local texget       = tex.get
 local texgetcount  = tex.getcount
 local texgetdimen  = tex.getdimen
+local texgetglue   = tex.getglue
 local texset       = tex.set
 local texsetdimen  = tex.setdimen
 local texsetcount  = tex.setcount
@@ -119,7 +119,6 @@ local a_snapvbox          = attributes.private('snapvbox')
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local getnext             = nuts.getnext
 local setlink             = nuts.setlink
@@ -943,7 +942,7 @@ do
     --  local cmd = token.create("vspacingfromtempstring")
         local cmd = token.create("vspacingpredefinedvalue")
 
-        local function handler(amount, keyword, detail)
+        local function handler(multiplier, keyword, detail)
             if not keyword then
                 report_vspacing("unknown directive %a",s)
             else
@@ -978,11 +977,11 @@ do
                         flush()
                     end
                 else
-                    amount = tonumber(amount) or 1
+                    local amount, stretch, shrink
+                    multiplier = tonumber(multiplier) or 1
                     local sk = skip[keyword]
                     if sk then
-                        -- amount, keyword
-                        b_done = true
+                        -- multiplier, keyword
                         -- best, for now, todo: runlocal with arguments
                      -- expandmacro("vspacingpredefinedvalue",true,keyword)
                         expandmacro(cmd,true,keyword)
@@ -997,11 +996,21 @@ do
                      -- setmacro("tempstring",keyword)
                      -- runlocal(ctx_vspacingfromtempstring)
                         --
-                        b_amount = b_amount + amount * texgetdimen("scratchdimen")
-                    else -- no check
-                        b_done = true
-                        b_amount = b_amount + amount * toscaled(keyword)
+                        amount, stretch, shrink = texgetglue("scratchskip")
+                        if stretch == 0 and shrink == 0 then
+                            stretch = gluefactor * amount -- always unless grid
+                            shrink  = stretch             -- always unless grid
+                        end
+                    else -- no check, todo: parse plus and minus
+                        amount  = toscaled(keyword)
+                        stretch = gluefactor * amount -- always unless grid
+                        shrink  = stretch             -- always unless grid
                     end
+                    -- we look at fixed later
+                    b_amount  = b_amount  + multiplier * amount
+                    b_stretch = b_stretch + multiplier * stretch
+                    b_shrink  = b_shrink  + multiplier * shrink
+                    b_done    = true
                 end
             end
         end

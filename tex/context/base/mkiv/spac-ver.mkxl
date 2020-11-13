@@ -2581,7 +2581,7 @@
 % experimental (for the moment only for hh and ws)
 
 %def\vspacingfromscratchtoks  {\scratchdimen\dimexpr\csname\??vspacingamount\the\scratchtoks\endcsname\relax}
-\def\vspacingpredefinedvalue#1{\scratchdimen\dimexpr\csname\??vspacingamount#1\endcsname\relax}
+\def\vspacingpredefinedvalue#1{\scratchskip\glueexpr\csname\??vspacingamount#1\endcsname\relax}
 %def\vspacingfromtempstring   {\scratchdimen\dimexpr\csname\??vspacingamount\tempstring\endcsname\relax}
 
 \let\spac_vspacing_yes_indeed_old\spac_vspacing_yes_indeed
@@ -2606,21 +2606,29 @@
 \protected\def\directvskip_new   #1{\ifmmode\else\par\ifvmode\clf_injectvskip   #1\relax\fi\fi}
 \protected\def\inhibitblank_new    {\ifmmode\else\par\ifvmode\clf_injectdisable         \fi\fi}
 
-\installtexdirective
-  {vspacing.experimental}
+% we need to ensure \enforced
+
+\def\spac_vspacing_temp_yes
   {\writestatus{vspacing}{enabling experimental handler}%
-   \let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_new
-   \let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_new
+   \enforced\let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_new
+   \enforced\let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_new
    \enforced\let\directvspacing\directvspacing_new
    \enforced\let\directvpenalty\directvpenalty_new
    \enforced\let\directvskip\directvskip_new
    \enforced\let\inhibitblank\inhibitblank_new}
+
+\def\spac_vspacing_temp_nop
   {\writestatus{vspacing}{disabling experimental handler}%
-   \let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_old
-   \let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_old
+   \enforced\let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_old
+   \enforced\let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_old
    \enforced\let\directvspacing\directvspacing_old
    \enforced\let\directvpenalty\directvpenalty_old
    \enforced\let\directvskip\directvskip_old
    \enforced\let\inhibitblank\inhibitblank_old}
+
+\installtexdirective
+  {vspacing.experimental}
+  {\spac_vspacing_temp_yes}
+  {\spac_vspacing_temp_nop}
 
 \protect \endinput

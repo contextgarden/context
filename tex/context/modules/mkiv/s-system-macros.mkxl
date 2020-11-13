@@ -115,14 +115,14 @@
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
                 ctx_NC() if parameters > 0 then context(parameters) end
                 ctx_NC() context(cscommand)
-             -- ctx_NC() if tolerant       then context(tolerant)   end
-                ctx_NC() if primitive      then context(primitive)  end
-                ctx_NC() if permanent      then context(permanent)  end
-                ctx_NC() if frozen         then context(frozen)     end
-                ctx_NC() if immutable      then context(immutable)  end
-                ctx_NC() if mutable        then context(mutable)    end
-                ctx_NC() if noaligned      then context(noaligned)  end
-                ctx_NC() if filename       then context(hashnames[filename]) end
+             -- ctx_NC() if tolerant  then context(tolerant)   end
+                ctx_NC() if primitive then context(primitive)  end
+                ctx_NC() if permanent then context(permanent)  end
+                ctx_NC() if frozen    then context(frozen)     end
+                ctx_NC() if immutable then context(immutable)  end
+                ctx_NC() if mutable   then context(mutable)    end
+                ctx_NC() if noaligned then context(noaligned)  end
+                ctx_NC() if filename  then context(hashnames[filename]) end
                 ctx_NC() ctx_NR()
                 if visible then
                     total = total + 1

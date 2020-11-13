@@ -104,72 +104,84 @@
 \permanent\tolerant\protected\def\setcounter[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
      \clf_setcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
+   \else
      \clf_setsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax
    \fi}
 
 \permanent\tolerant\protected\def\setcounterown[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
      \clf_setowncounter   {\namedcounterparameter{#1}\s!name}{#2}\or
+   \else
      \clf_setownsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax{#3}%
    \fi}
 
 \permanent\tolerant\protected\def\restartcounter[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
      \clf_restartcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
+   \else
      \clf_restartsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax
    \fi}
 
 \permanent\tolerant\protected\def\resetcounter[#1]#*[#2]%
   {\ifarguments\or
      \clf_resetcounter   {\namedcounterparameter{#1}\s!name}\or
+   \else
      \clf_resetsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \fi}
 
 \permanent\tolerant\protected\def\incrementcounter[#1]#*[#2]%
   {\ifarguments\or
      \strc_counters_increment_sub{#1}\plusone\or
+   \else
      \strc_counters_increment_sub{#1}{#2}%
    \fi}
 
 \permanent\tolerant\protected\def\decrementcounter[#1]#*[#2]%
   {\ifarguments\or
      \clf_decrementcounter   {\namedcounterparameter{#1}\s!name}\or
+   \else
      \clf_decrementsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \fi}
 
 \permanent\tolerant\protected\def\rawcounter[#1]#*[#2]%
   {\ifarguments\or\or
      \clf_countervalue   {\namedcounterparameter{#1}\s!name}%
+   \else
      \clf_subcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\lastcounter[#1]#*[#2]%
   {\ifarguments\or\or
      \clf_lastcountervalue   {\namedcounterparameter{#1}\s!name}%
+   \else
      \clf_lastsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\firstcounter[#1]#*[#2]%
   {\ifarguments\or\or
      \clf_firstcountervalue   {\namedcounterparameter{#1}\s!name}%
+   \else
      \clf_firstsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\prevcounter[#1]#*[#2]%
   {\ifarguments\or\or
      \clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}%}
+   \else
      \clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\nextcounter[#1]#*[#2]%
   {\ifarguments\or\or
      \clf_nextcountervalue   {\namedcounterparameter{#1}\s!name}%
+   \else
      \clf_nextsubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
 \permanent\tolerant\protected\def\countersubs[#1]#*[#2]%
   {\ifarguments\or\or
     \clf_subcountervalues   {\namedcounterparameter{#1}\s!name}%
+   \else
     \clf_subsubcountervalues{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
 
@@ -312,9 +324,9 @@
 
 \permanent\tolerant\protected\def\convertedsubcounter[#1]#*[#2]#*[#3]% #2 can be n or n:m
   {\ifarguments\or
-     \strc_counters_converted[#1][]%
+     \convertedcounter[#1][]%
    \else
-     \strc_counters_converted[#1][\c!numbersegments=#2,#3]%
+     \convertedcounter[#1][\c!numbersegments=#2,#3]%
    \fi}
 
 \permanent\protected\def\doifdefinedcounter    {\doifcommandhandler    \??counter}

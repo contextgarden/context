@@ -13,9 +13,6 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Footnotes}
 
-%D This is an old mechanism that will be replaced as soon as the multicolumn
-%D code is redone.
-
 %D We've moved some footnote handling to a separate page module. The macros below
 %D are used in the single and multi column page handlers and permit mixed usage of
 %D column and page notes.
@@ -24,31 +21,12 @@
 
 \newdimen\totalinsertionheight
 
-\unexpanded\def\settotalinsertionheight
+\protected\def\settotalinsertionheight
   {\calculatetotalnoteheight
    \totalinsertionheight\dimexpr
      \totalnoteheight
     +\page_insert_insertion_height\s!topfloat
     +\page_insert_insertion_height\s!bottomfloat
    \relax}
-
-% hm
-
-\def\checkbegincolumnfootnotes % should happen inside otr
-  {\ifcase\c_strc_notes_page_location
-     \erasenotebackup
-   \else
-     \flushnotes
-     \savenotecontent
-   \fi
-   \savenotedata}
-
-\def\checkendcolumnfootnotes
-  {\restorenotedata
-   \ifinsidecolumns
-     \ifcase\c_strc_notes_page_location\else
-       \restorenotecontent
-     \fi
-   \fi}
 
 \protect \endinput

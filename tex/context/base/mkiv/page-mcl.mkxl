@@ -125,15 +125,24 @@
    \fi \fi
    \c_page_mcl_n_of_lines\noflines}
 
+% \protected\def\page_mcl_command_set_vsize
+%   {%%\page_one_command_set_vsize % indeed?
+%    \page_mcl_set_n_of_lines\zeropoint
+%    \d_page_mcl_temp\nofcolumns\dimexpr
+%       \c_page_mcl_n_of_lines\openlineheight
+%     %      +\m_page_mcl_overshoot_ratio\openlineheight % collect enough data
+%    \relax
+%    \global\vsize   \d_page_mcl_temp
+%    \global\pagegoal\d_page_mcl_temp} % let's do it only here, reports maxdimen anyway
+
 \protected\def\page_mcl_command_set_vsize
-  {%%\page_one_command_set_vsize % indeed?
-   \page_mcl_set_n_of_lines\zeropoint
-   \d_page_mcl_temp\nofcolumns\dimexpr
-      \c_page_mcl_n_of_lines\openlineheight
-%      +\m_page_mcl_overshoot_ratio\openlineheight % collect enough data
-   \relax
-   \global\vsize   \d_page_mcl_temp
-   \global\pagegoal\d_page_mcl_temp} % let's do it only here, reports maxdimen anyway
+  {\global\vsize\dimexpr\nofcolumns\textheight+\nofcolumns\lineheight\relax
+   \pagegoal\dimexpr
+     \vsize
+%   -\d_page_floats_inserted_top    % needs checking
+%   -\d_page_floats_inserted_bottom % needs checking
+    -\c_page_mix_n_of_columns\insertheights
+   \relax}
 
 \protected\def\page_mcl_command_routine
   {\ifcase\c_page_mcl_routine
@@ -518,8 +527,11 @@
 \let\strc_itemgroups_start_columns_old\strc_itemgroups_start_columns
 \let\strc_itemgroups_stop_columns_old \strc_itemgroups_stop_columns
 
-\def\strc_itemgroups_start_columns_new{\startmulticolumns\relax}
-\def\strc_itemgroups_stop_columns_new {\stopmulticolumns}
+\def\strc_itemgroups_start_columns_new
+  {\startmulticolumns[\c!n=\itemgroupparameter\c!n]}
+
+\def\strc_itemgroups_stop_columns_new
+  {\stopmulticolumns}
 
 \installtexexperiment
   {itemize.columns}

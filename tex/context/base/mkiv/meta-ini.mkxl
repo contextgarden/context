@@ -1228,10 +1228,10 @@
 \permanent\let\stopstaticMPgraphic\relax
 
 \permanent\tolerant\protected\def\usestaticMPfigure[#1]#*[#2]%
-  {\ifsecondargument
-     \scale[#2]{\reuseMPgraphic{\??mpstaticgraphic#1}}%
-   \else
+  {\ifarguments\or
      \reuseMPgraphic{\??mpstaticgraphic#1}%
+   \else
+     \scale[#2]{\reuseMPgraphic{\??mpstaticgraphic#1}}%
    \fi}
 
 %D Goody for preventing overflows:

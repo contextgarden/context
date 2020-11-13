@@ -1,0 +1,91 @@
+%D \module
+%D   [       file=grph-epd,
+%D        version=2010.07.29,
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Merging Goodies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Graphic Macros / Merging Goodies}
+
+\unprotect
+
+\registerctxluafile{grph-epd}{}
+
+\def\figurereference{\clf_figurestatus{reference}{}} % might become private
+
+\defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]
+
+\startsetups system:graphics:epdf
+    \clf_figure_mergegoodies{\externalfigureparameter\c!interaction}%
+    \reference[\figurereference]{}% todo: dest area
+\stopsetups
+
+\defineframed
+  [system_graphics_epdf]
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!background={\v!foreground,system:graphics:epdf}]
+
+\protected\def\grph_epdf_add_overlay
+  {\global\setbox\foundexternalfigure\vbox\bgroup % vpack ?
+     \system_graphics_epdf{\box\foundexternalfigure}%
+   \egroup}
+
+\appendtoks
+    \iflocation
+      \doif\figurefiletype{pdf}{\doifnot{\externalfigureparameter\c!interaction}\v!none\grph_epdf_add_overlay}%
+    \fi
+\to \externalfigurepostprocessors
+
+\defineframed
+  [epdfstampsymbol]
+  [\c!foregroundstyle=\v!mono,
+   \c!background=\c!color,
+   \c!rulethickness=.125\exheight,
+   \c!offset=.250\exheight,
+   \c!backgroundcolor=lightgray,   % can be adapted before first usage
+   \c!framecolor=darkgray,         % can be adapted before first usage
+   \c!corner=\v!round]
+
+\definesymbol[Stamped]             [\epdfstampsymbol{Stamped}]
+
+\definesymbol[Approved]            [\epdfstampsymbol{Approved}]
+\definesymbol[Experimental]        [\epdfstampsymbol{Experimental}]
+\definesymbol[NotApproved]         [\epdfstampsymbol{NotApproved}]
+\definesymbol[AsIs]                [\epdfstampsymbol{AsIs}]
+\definesymbol[Expired]             [\epdfstampsymbol{Expired}]
+\definesymbol[NotForPublicRelease] [\epdfstampsymbol{NotForPublicRelease}]
+\definesymbol[Confidential]        [\epdfstampsymbol{Confidential}]
+\definesymbol[Final]               [\epdfstampsymbol{Final}]
+\definesymbol[Sold]                [\epdfstampsymbol{Sold}]
+\definesymbol[Departmental]        [\epdfstampsymbol{Departmental}]
+\definesymbol[ForComment]          [\epdfstampsymbol{ForComment}]
+\definesymbol[TopSecret]           [\epdfstampsymbol{TopSecret}]
+\definesymbol[Draft]               [\epdfstampsymbol{Draft}]
+\definesymbol[ForPublicRelease]    [\epdfstampsymbol{ForPublicRelease}]
+
+\protect \endinput
+
+% /Properties << /xxxx 22 0 R >>
+% 21 0 obj << /Type /OCG /Name (xxxx) >> endobj
+% 22 0 obj << /OCGs [ 21 0 R ] /Type /OCMD >> endobj
+
+% \def\setepdflayer#1#2#3#4#5#6% x y w h (in bp) 0/1 destination
+%   {\setlayer
+%     [epdflinks]
+%     [\c!x=#1bp,\c!y=#1\s!bp,\c!preset=\v!leftbottom]
+%     {\button
+%        [\c!width=#3\s!bp,\c!height=#4\s!bp,\c!offset=\v!overlay,\c!frame=\ifnum#5=1 on\else\v!off]%
+%        {}[#6]}}
+
+% \def\setepdflayer#1#2#3#4#5#6% x y w h (in bp) 0/1 destination
+%   {\setlayer
+%     [epdflinks]
+%     [\c!x=#1bp,\c!y=#1\s!bp,\c!preset=\v!leftbottom]
+%     {\gotowdhtbox{#3\s!bp}{#4\s!bp}[#6]}}

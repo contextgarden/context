@@ -153,7 +153,7 @@
    \ifarguments
      \dowithnextbox
        {\endgroup}%
-   \or
+   \else
      \dowithnextbox
        {\checkpositionoverlays
         \setbox\b_pack_anchors\box\nextbox

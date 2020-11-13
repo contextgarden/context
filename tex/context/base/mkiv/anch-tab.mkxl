@@ -87,10 +87,10 @@
 \protected\def\tablepos
   {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
 
-\permanent\tolerant\protected\def\tbXC [#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_XC [#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGSC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGFC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGTC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbXC [#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_XC [#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGSC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGFC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
+\permanent\tolerant\protected\def\tbGTC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}
 
 \def\anch_table_check_state
   {\iftrialtypesetting

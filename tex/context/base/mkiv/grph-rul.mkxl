@@ -1,0 +1,89 @@
+%D \module
+%D   [       file=grph-rul,
+%D        version=2016.02.05, % from experiments
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Rule Trickery,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Graphic Macros / Rule Trickery}
+
+\registerctxluafile{grph-rul}{}
+
+\unprotect
+
+\permanent\protected\def\frule{\relax\clf_frule} % will become a public implementer
+
+% just for fun:
+
+% \defineoverlay[normalframe]
+%   [\frule
+%      width \overlaywidth
+%      height\overlayheight
+%      line  \overlaylinewidth
+%    \relax]
+
+% \defineoverlay[ovalframe]
+%   [\frule
+%      width  \overlaywidth
+%      height \overlayheight
+%      line   \overlaylinewidth
+%      radius \overlayradius
+%    \relax]
+
+\protect \endinput
+
+% \starttext
+%
+% \testfeatureonce{25}{\dontleavehmode
+%     \ruledhbox\bgroup
+%         \red   \frule width 2cm height 2cm depth 1cm radius 2mm  line 2pt type fill\relax
+%         \hskip-2cm
+%         \green \frule width 2cm height 2cm depth 1cm radius 2mm line 2pt\relax
+%     \egroup
+% \space}
+%
+% \blank
+%
+% \startuseMPgraphic{demoshape:back}
+%     fill
+%         unitcircle xysized (RuleWidth,RuleHeight+RuleDepth)
+%         withcolor RuleColor ;
+% \stopuseMPgraphic
+%
+% \startuseMPgraphic{demoshape:fore}
+%     draw
+%         unitcircle xysized (RuleWidth,RuleHeight+RuleDepth)
+%         withcolor RuleColor
+%         withpen pencircle scaled RuleThickness ;
+% \stopuseMPgraphic
+%
+% \testfeatureonce{100}{\dontleavehmode
+%     \ruledhbox\bgroup
+%         \red   \frule width 1cm height 3mm depth 1mm type mp line 2pt data {\includeMPgraphic{demoshape:back}}\relax
+%         \hskip-1cm
+%         \green \frule width 1cm height 3mm depth 1mm type mp line 2pt data {\includeMPgraphic{demoshape:fore}}\relax
+%     \egroup
+% \space}
+%
+% \blank
+%
+% \dontleavehmode
+% \testfeatureonce{1}{\setbox\scratchbox\hbox{\framed                                  {test}}}
+%                                             \framed                                  {test}
+% \testfeatureonce{1}{\setbox\scratchbox\hbox{\framed[background=normalframe,frame=off]{test}}}
+%                                             \framed[background=normalframe,frame=off]{test}
+% \testfeatureonce{1}{\setbox\scratchbox\hbox{\framed[corner=round]                    {test}}}
+%                                             \framed[corner=round]                    {test}
+% \testfeatureonce{1}{\setbox\scratchbox\hbox{\framed[background=ovalframe,frame=off]  {test}}}
+%                                             \framed[background=ovalframe,frame=off]  {test}
+% \testfeatureonce{1}{\setbox\scratchbox\hbox{\framed[background=ovalframe,frame=on]   {test}}}
+%                                             \framed[background=ovalframe,frame=on]   {test}
+%
+% \stoptext
+

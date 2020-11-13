@@ -221,6 +221,8 @@
 % \definebar[touchbar]    [\c!method=0,\c!dy=-0.4,\c!offset=-0.0]
 % \definebar[touchbars]   [touchbar]   [\c!continue=\v!yes]
 
+\pushoverloadmode
+
 \let\normalmathoverbar    \overbar
 \let\normalmathunderbar   \underbar
 \let\normalmathoverstrike \overstrike
@@ -229,6 +231,8 @@
 \definebar[\v!overbar]   [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
 \definebar[\v!underbar]  [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
 \definebar[\v!overstrike][\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
+
+\popoverloadmode
 
 \definebar
   [\v!understrike]

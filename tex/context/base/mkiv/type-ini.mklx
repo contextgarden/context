@@ -254,7 +254,7 @@
 % \definetypescriptsynonym[lbr][cmr]
 
 \permanent\tolerant\protected\def\definetypescriptsynonym[#name]#spacer[#synonym]%
-  {\ifsecondargument\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
+  {\ifarguments\or\or\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
 
 \permanent\def\truetypescript#name% recursive so no \lastnamedcs
   {\ifcsname\??typescriptsynonyms#name\endcsname
@@ -690,7 +690,7 @@
 %    \fi}
 
 \def\v_font_string_d % default fontstyle (expands to \s!Serif in font-ini)
-  {\expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!rm \s!Serif \else % no \orelse ! 
+  {\expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!rm \s!Serif \else % no \orelse !
    \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!ss \s!Sans  \else % no \orelse !
    \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!tt \s!Mono  \else % no \orelse !
                                                                               \s!Serif \fi\fi\fi}

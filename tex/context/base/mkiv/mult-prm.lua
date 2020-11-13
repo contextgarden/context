@@ -331,6 +331,7 @@ return {
   "immediate",
   "immutable",
   "initcatcodetable",
+  "insertheights",
   "insertht",
   "instance",
   "integerdef",

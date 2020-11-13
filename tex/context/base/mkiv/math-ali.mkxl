@@ -299,26 +299,33 @@
 \permanent\protected\def\math_alignment_EQ
   {\NC=}
 
+\noaligned\tolerant\protected\def\math_common_TB[#1]%
+  {\noalign{\blank[#1]}}
+
 \installmacrostack\NC % maybe more to shared table definitions
 \installmacrostack\NN % maybe more to shared table definitions
 \installmacrostack\EQ % maybe more to shared table definitions
 \installmacrostack\NR % maybe more to shared table definitions
 \installmacrostack\BC % maybe more to shared table definitions
 \installmacrostack\EC % maybe more to shared table definitions
+\installmacrostack\TB % maybe more to shared table definitions
 
 \appendtoks
     \push_macro_NC
     \push_macro_NN
     \push_macro_EQ
     \push_macro_NR
+    \push_macro_TB
     \enforced\let\NC\math_alignment_NC
     \enforced\let\NN\math_alignment_NN
     \enforced\let\EQ\math_alignment_EQ
     \enforced\let\NR\math_alignment_NR
+    \enforced\let\TB\math_common_TB
     \global\settrue\c_math_eqalign_first
 \to \everymathalignment
 
 \appendtoks
+    \pop_macro_TB
     \pop_macro_NR
     \pop_macro_EQ
     \pop_macro_NN
@@ -700,6 +707,7 @@
    \enforced\let\NC\math_cases_NC_zero
    \enforced\let\MC\math_cases_MC_zero
    \enforced\let\NR\math_cases_NR_zero
+   \enforced\let\TB\math_common_TB
    \global\enforced\let\math_cases_NC\math_cases_NC_first
    \normalbaselines
    \mathsurround\zeropoint
@@ -731,7 +739,7 @@
 \noaligned\permanent\protected\def\math_cases_stop
   {\crcr
    \egroup
-   \popmacro\math_cases_NC
+   \pop_macro_math_cases_NC
    \egroup
    \mathcasesparameter\c!right
    \endgroup}
@@ -890,6 +898,7 @@
    \enforced\let\NR\math_matrix_NR
    \enforced\let\NC\math_matrix_NC
    \enforced\let\MC\math_matrix_NC
+   \enforced\let\TB\math_common_TB
    %
    \enforced\let\endmath\relax
    %

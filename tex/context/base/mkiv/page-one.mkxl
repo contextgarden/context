@@ -22,48 +22,20 @@
 
 \newconstant \c_page_one_float_method
 
-\unexpanded\def\page_one_command_next_page
+\protected\def\page_one_command_next_page
   {\page_otr_eject_page}
 
-\unexpanded\def\page_one_command_next_page_and_inserts
+\protected\def\page_one_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
 
-\unexpanded\def\page_one_command_set_hsize
+\protected\def\page_one_command_set_hsize
   {\global\hsize\textwidth
    \columnwidth\textwidth} % bonus so that it's not zero
 
-\unexpanded\def\page_one_command_set_float_hsize
+\protected\def\page_one_command_set_float_hsize
   {\global\hsize\textwidth}
 
-% \newdimen\d_page_one_saved_vsize
-%
-% \unexpanded\def\page_one_command_set_vsize
-%   {\ifgridsnapping
-%      \ifcase\layoutlines
-%        \getrawnoflines\textheight
-%      \else
-%        \noflines\layoutlines
-%      \fi
-%      \global\vsize\noflines\openlineheight
-%    \else
-%      \global\vsize\textheight
-%    \fi
-%    \ifdim\pagegoal<\maxdimen
-%      \ifdim\d_page_one_saved_vsize=\vsize
-%        % let's assume that the layout didn't change
-%      \else
-%        \global\d_page_one_saved_vsize\vsize
-%        \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax
-%      % \bgroup
-%      %   \global\d_page_one_saved_vsize\vsize
-%      %   \advance\vsize-\d_page_floats_inserted_top
-%      %   \advance\vsize-\d_page_floats_inserted_bottom
-%      %   \pagegoal\vsize
-%      % \egroup
-%      \fi
-%    \fi}
-
-\unexpanded\def\page_one_command_set_vsize
+\protected\def\page_one_command_set_vsize
   {\ifgridsnapping
      \ifcase\layoutlines
        \getrawnoflines\textheight
@@ -77,8 +49,12 @@
    \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
-   \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
-
+   \pagegoal\dimexpr
+      \vsize
+     -\d_page_floats_inserted_top
+     -\d_page_floats_inserted_bottom
+     -\insertheights
+   \relax}
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 
@@ -135,7 +111,7 @@
 %
 % we can also have bottom notes on top of bottom insertions
 
-\unexpanded\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+\protected\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \strc_notes_check_if_bottom_present
    \d_page_one_natural_depth\dp#2\relax
@@ -157,7 +133,7 @@
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
-      \else\ifcase\bottomraggednessmode
+      \orelse\ifcase\bottomraggednessmode
         % ragged (default)
         \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
@@ -174,7 +150,7 @@
         \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
-      \fi\fi
+      \fi
       \fakepagenotes}%
    \page_one_command_package_show_state
    \ifconditional\c_notes_bottom_present
@@ -203,10 +179,10 @@
    \fi
    \egroup}
 
-\unexpanded\def\page_one_command_side_float_output
+\protected\def\page_one_command_side_float_output
   {\page_otr_construct_and_shipout\unvbox\normalpagebox\plusone} % three arguments, we need to be in the output group
 
-\unexpanded\def\page_one_command_routine
+\protected\def\page_one_command_routine
   {\page_sides_output_routine}
 
 %D Insertions
@@ -243,7 +219,7 @@
 \let\totaltopinserted\!!zeropoint
 \let\totalbotinserted\!!zeropoint
 
-\unexpanded\def\page_one_command_set_top_insertions
+\protected\def\page_one_command_set_top_insertions
   {\bgroup
    \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
@@ -287,7 +263,7 @@
    \fi
    \page_one_command_set_top_insertions_indeed}
 
-\unexpanded\def\page_one_command_set_bottom_insertions
+\protected\def\page_one_command_set_bottom_insertions
   {\bgroup
    \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
@@ -325,7 +301,7 @@
    \fi
    \page_one_command_set_bottom_insertions_indeed}
 
-\unexpanded\def\page_one_command_flush_top_insertions
+\protected\def\page_one_command_flush_top_insertions
   {\ifvoid\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
    \fi
@@ -347,7 +323,7 @@
      \unvbox\namedinsertionnumber\s!topfloat
    \fi}
 
-\unexpanded\def\page_one_command_flush_bottom_insertions
+\protected\def\page_one_command_flush_bottom_insertions
   {\ifvoid\namedinsertionnumber\s!bottomfloat\else
      \page_one_command_flush_bottom_insertions_indeed
    \fi
@@ -365,7 +341,7 @@
      \floatparameter\c!bottomafter
    \fi}
 
-\unexpanded\def\page_one_command_flush_floats
+\protected\def\page_one_command_flush_floats
   {\global\settrue\c_page_floats_flushing
    \ifconditional\c_page_floats_some_waiting
      \par
@@ -377,7 +353,7 @@
    \global\setfalse\c_page_floats_some_waiting
    \global\setfalse\c_page_floats_flushing}
 
-\unexpanded\def\page_one_command_flush_float_box
+\protected\def\page_one_command_flush_float_box
   {\ifconditional\c_page_floats_center_box \ifdim\wd\floatbox<\hsize
      \global\setbox\floatbox\hpack to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
@@ -425,7 +401,7 @@
      \expandafter\page_one_command_flush_floats_indeed
    \fi}
 
-\unexpanded\def\page_one_command_flush_margin_blocks
+\protected\def\page_one_command_flush_margin_blocks
   {\ifconditional\c_page_margin_blocks_present % \ifvoid\b_page_margin_blocks \else
      \ifdim\pagetotal=\zeropoint
         \null % \fixedspace
@@ -438,7 +414,7 @@
      \fi
    \fi}
 
-\unexpanded\def\page_one_command_check_if_float_fits
+\protected\def\page_one_command_check_if_float_fits
   {\ifconditional\c_page_floats_not_permitted
      \global\setfalse\c_page_floats_room
    \else
@@ -477,7 +453,7 @@
      \fi
    \fi}
 
-\unexpanded\def\page_one_command_flush_saved_floats
+\protected\def\page_one_command_flush_saved_floats
   {\global\d_page_floats_inserted_top\zeropoint
    \global\d_page_floats_inserted_bottom\zeropoint
    \ifconditional\c_page_floats_flushing \else
@@ -485,9 +461,9 @@
      \page_one_command_set_bottom_insertions
      \ifconditional\c_page_floats_some_waiting
         \doif{\rootfloatparameter\c!cache}\v!no\page_one_command_flush_floats % could be _otr_
-     \else\ifconditional\c_page_margin_blocks_present
+     \orelse\ifconditional\c_page_margin_blocks_present
        \page_one_command_flush_floats
-     \fi\fi
+     \fi
    \fi}
 
 % \def\page_one_place_float_here_indeed
@@ -644,11 +620,11 @@
    \else
      \ifx\floatmethod\v!top
        \page_one_place_float_top_indeed
-     \else\ifx\floatmethod\v!bottom
+     \orelse\ifx\floatmethod\v!bottom
        \page_one_place_float_bottom_indeed
      \else
        \page_one_place_float_here_indeed
-     \fi\fi
+     \fi
    \fi}
 
 \def\page_one_place_float_top_indeed % maybe remember last beforeskip
@@ -673,16 +649,16 @@
    \stopopposite
   }%\page_floats_report_total}
 
-\unexpanded\def\page_one_command_flush_side_floats
+\protected\def\page_one_command_flush_side_floats
   {\page_sides_flush_floats}
 
-\unexpanded\def\page_one_command_synchronize_side_floats
+\protected\def\page_one_command_synchronize_side_floats
   {\page_sides_synchronize_floats}
 
-\unexpanded\def\page_one_command_test_page
+\protected\def\page_one_command_test_page
   {\testpage}
 
-\unexpanded\def\page_one_command_flush_all_floats
+\protected\def\page_one_command_flush_all_floats
   {\ifconditional\c_page_floats_some_waiting
      \begingroup
      \c_page_floats_n_of_top\plusthousand
@@ -697,7 +673,7 @@
      \endgroup
    \fi}
 
-\unexpanded\def\page_one_command_flush_facing_floats
+\protected\def\page_one_command_flush_facing_floats
   {\strc_floats_facing_flush}
 
 \defineoutputroutine

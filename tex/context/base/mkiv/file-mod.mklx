@@ -114,7 +114,7 @@
    \fi
    \the\everysetupmodule}
 
-\def\syst_modules_setup_yes[#name]#spacer[#parameters]%
+\tolerant\def\syst_modules_setup_yes[#name]#spacer[#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifparameters
      \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
