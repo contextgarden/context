@@ -319,7 +319,7 @@
 
 \permanent\protected\def\installparameterhashhandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \letcsname#2namespace\endcsname#1%
+   \immutable\letcsname#2namespace\endcsname#1%
    \normalexpanded
      {\mult_interfaces_install_parameter_hash_handler
         {\noexpand#1}% \??aa
@@ -749,7 +749,7 @@
 % yes:\twoparameter{beta}\par
 
 \permanent\protected\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
-  {\edefcsname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
+  {\immutable\edefcsname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
 \permanent\protected\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
   {\edefcsname#1#2:\s!parent\endcsname{#3#4}}

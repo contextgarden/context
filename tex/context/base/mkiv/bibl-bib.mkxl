@@ -1,0 +1,982 @@
+%D \module
+%D   [       file=bibl-bib,
+%D        version=2007.08.17,
+%D          title=\CONTEXT\ Bibliography Support,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen \& Taco Hoekwater,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is really obsolete in \LMTX. For now I keep it but it will either go
+%D away. The code is not upgraded, we only deal with macro protection.
+
+\writestatus{loading}{ConTeXt Bibliography Support / Experimental BibTeX}
+
+\registerctxluafile{bibl-bib}{}
+
+\unprotect
+
+% todo: et al limiters
+% todo: split: citationvariant and publicationvariant
+
+%D This interface is under development. As I don't use \BIBTEX\ myself I need some
+%D motivation to spend time on it, and an occasional question on the list can be a
+%D reason. A few examples. As \BIBTEX\ databases can be poluted by local commands,
+%D we need to catch:
+%D
+%D \startbuffer
+%D \defbibtexcommand\MF  {MF}
+%D \defbibtexcommand\MP  {MP}
+%D \defbibtexcommand\TUB {TUGboat}
+%D \defbibtexcommand\Mc  {Mac}
+%D \defbibtexcommand\sltt{\tt}
+%D \defbibtexcommand\<#1>{\type{#1}}
+%D \defbibtexcommand\acro#1{#1}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Let's define a session and load a few databases. We convert to \UTF\ and strip
+%D commands.
+%D
+%D \startbuffer
+%D \definebibtexsession  [somebibtex]
+%D \registerbibtexfile   [somebibtex] [tugboat.bib]
+%D \registerbibtexfile   [somebibtex] [komoedie.bib]
+%D \preparebibtexsession [somebibtex] [convert,strip]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This loads an mapping (work in progress):
+%D
+%D \startbuffer
+%D \def\currentbibtexformat{apa} \input bxml-\currentbibtexformat.mkiv
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D There are several ways to handle the \XML. It helps if you're a bit familiar with
+%D \XML\ processing in \MKIV.
+%D
+%D Here we regular setups. Three elements are mapped but only one is actually used
+%D and applied to root element \type {/bibtex}.
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex
+%D     \xmlregistereddocumentsetups{#1}{}
+%D     \xmlsetsetup{#1}{bibtex|entry|field}{bibtex:*}
+%D     \xmlmain{#1}
+%D \stopxmlsetups
+%D
+%D \startxmlsetups bibtex:bibtex
+%D     \xmlfilter{#1}{
+%D         /entry[@category='article']
+%D         /field[@name='author' and (find(text(),'Hagen') or find(text(),'Hoekwater'))]
+%D         /../command(bibtex:format)
+%D     }
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D A simpler setup is given next. Here we just apply a setup to the root element
+%D directly:
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex:list
+%D     \xmlfilter{#1}{/bibtex/entry/command(bibtex:format)}
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex:list]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D A slightly more complex expression:
+%D
+%D \startbuffer
+%D \startxmlsetups bibtex:filter
+%D     \xmlfilter{#1}{
+%D         /bibtex
+%D         /entry[@category='article']
+%D         /field[@name='author' and (find(text(),'Hagen') or find(text(),'Hoekwater'))]
+%D         /../command(bibtex:format)
+%D     }
+%D \stopxmlsetups
+%D
+%D \applytobibtexsession[somebibtex][bibtex:filter]
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\newtoks  \everydefinebibtexsession
+\newtoks  \everypreparebibtexsession
+\newtoks  \everysetupbibtexsession
+\setfalse \tracebibtexformat
+
+\protected\def\definebibtexsession {\dosingleargument\dodefinebibtexsession}
+          \def\preparebibtexsession{\dodoubleempty   \dopreparebibtexsession}
+\protected\def\setupbibtexsession  {\dodoubleargument\dosetupbibtexsession}
+
+\def\dodefinebibtexsession     [#1]{\edef\currentbibtexsession{#1}%
+                                    \ctxcommand{definebibtexsession("#1")}%
+                                    \the\everydefinebibtexsession}
+
+\def\dopreparebibtexsession[#1][#2]{\edef\currentbibtexsession{#1}%
+                                    \ctxcommand{preparebibtexsession("#1","bibtex:#1","#2")}%
+                                    \the\everypreparebibtexsession}
+
+\def\dosetupbibtexsession  [#1][#2]{\edef\currentbibtexsession{#1}%
+                                    \getparameters[\??pb#1][#2]%
+                                    \the\everysetupbibtexsession}
+
+\def\registerbibtexfile            {\dodoubleargument\doregisterbibtexfile}
+\def\registerbibtexentry           {\dodoubleargument\doregisterbibtexentry}
+\def\applytobibtexsession          {\dodoubleargument\doapplytobibtexsession}
+
+\def\doregisterbibtexfile  [#1][#2]{\ctxcommand{registerbibtexfile("#1","#2")}}
+\def\doregisterbibtexentry [#1][#2]{\ctxcommand{registerbibtexentry("#1","#2")}}
+\def\doapplytobibtexsession[#1][#2]{\xmlprocess{bibtex:#1}{#2}{#2}}
+
+\protected\def\bibtexcommand#1%
+  {\ifcsname\??pb:c:#1\endcsname \else
+     \fakebibtexcommand{#1}%
+   \fi
+   \csname\??pb:c:#1\endcsname}
+
+\def\fakebibtexcommand#1%
+  {\ifcsname#1\endcsname
+     \writestatus{bibtex}{unknown command: #1, using built-in context variant}%
+     \setugvalue{\??pb:c:#1}{\dosomebibtexcommand{#1}}%
+   \else
+     \writestatus{bibtex}{unknown command: #1}%
+     \setugvalue{\??pb:c:#1}{\dofakebibtexcommand{#1}}%
+   \fi}
+
+\let\dosomebibtexcommand  \getvalue
+\def\dofakebibtexcommand#1{{\tttf#1}}
+\def\defbibtexcommand   #1{\setuvalue{\strippedcsname#1}}
+
+\def\bibxmldoifelse#1{\xmldoifelse\currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmldoif    #1{\xmldoif    \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmldoifnot #1{\xmldoifnot \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmlflush   #1{\xmlcontext \currentbibxmlnode{/field[@name='#1']}}
+\def\bibxmlsetup     {\xmlsetup   \currentbibxmlnode} % {#1}
+
+\def\currentbibtexformat{apa}    % how to interface this, maybe split loading and key
+\def\currentbibxmlnode  {unset}
+\def\currentbibxmltag   {unset}
+
+\startxmlsetups bibtex
+    \xmlregistereddocumentsetups{#1}{}
+    \xmlsetsetup{#1}{bibtex|entry|field}{bibtex:*}
+    \xmlmain{#1}
+\stopxmlsetups
+
+\startxmlsetups bibtex:format
+    \bibtexpublicationsparameter\c!before\relax % prevents lookahead
+    \edef\currentbibxmlnode    {#1}
+    \edef\currentbibxmltag     {\xmlatt{#1}{tag}}
+    \edef\currentbibxmlcategory{\xmlatt{#1}{category}}
+    \ifconditional\tracebibtexformat
+        \tracedbibxmlintro\currentbibxmltag
+        \tracedbibxmlintro\currentbibxmlcategory
+    \fi
+    \ignorespaces
+    \xmlcommand{#1}{.}{bibtex:\currentbibtexformat:\currentbibxmlcategory}
+    \removeunwantedspaces
+    \bibtexpublicationsparameter\c!after\relax % prevents lookahead
+\stopxmlsetups
+
+\startxmlsetups bibtex:list
+    \xmlfilter{#1}{/bibtex/entry/command(bibtex:format)}
+\stopxmlsetups
+
+\startxmlsetups bibtex:bibtex
+    \xmlfilter{#1}{/entry/command(bibtex:format)}
+\stopxmlsetups
+
+% formatters
+
+\let\normalbibxmlflush\bibxmlflush
+
+\definecolor[bibtextracecolor:field]   [darkred]
+\definecolor[bibtextracecolor:crossref][darkblue]
+\definecolor[bibtextracecolor:key]     [darkgreen]
+
+\def\tracedbibxmlintro   #1{{\tttf#1 -> }}
+\def\tracedbibxmlflush   #1{\color[bibtextracecolor:field]   {\tttf[#1]}}
+\def\tracedbibxmltexts   #1{\color[bibtextracecolor:field]   {\tttf<#1>}}
+\def\tracedbibxmlcrossref#1{\color[bibtextracecolor:crossref]{\tttf#1}}
+\def\tracedbibxmlkey     #1{\color[bibtextracecolor:key]     {\tttf#1}}
+
+\def\tracedbibxmltext
+  {\ifconditional\tracebibtexformat
+     \expandafter\tracedbibxmltexts % plural
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\bibxmlflush
+  {\ifconditional\tracebibtexformat
+     \expandafter\tracedbibxmlflush
+   \else
+     \expandafter\normalbibxmlflush
+   \fi}
+
+\startxmlsetups bibtex:format:crossref
+    \ifconditional\tracebibtexformat
+        \tracedbibxmlcrossref{\xmlfirst\currentbibxmlnode{/field[@name='crossref']/lower()}}
+    \else
+        \cite[\xmlfirst\currentbibxmlnode{/field[@name='crossref']/lower()}]
+    \fi
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:key
+    \ifconditional\tracebibtexformat
+        \tracedbibxmlkey{\normalbibxmlflush{key}}
+    \else
+        \bibxmlflush{key}
+    \fi
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:common:author
+   \ifconditional\tracebibtexformat
+        \bibxmlflush\currentbibtexvariant
+   \else
+        \xmlfilter{#1}{/field[@name='\currentbibtexvariant']/bibtexconcat('\currentbibtexvariant')}
+    \fi
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:author
+    \begingroup
+        \def\currentbibtexvariant{author}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:artauthor
+    \begingroup
+        \def\currentbibtexvariant{artauthor}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:editor
+    \begingroup
+        \def\currentbibtexvariant{editor}
+        \xmlsetup{#1}{bibtex:format:common:author}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:doi
+%   \bibdoifelse{\@@pb@doi}{#1\expanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}
+    *doi*
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:doi
+%   \bibdoifelse{\@@pb@biburl}{#1\expanded{\bibgotoURL{\@@pb@thekey}{\@@pb@biburl}}#2}{#3}
+    *url*
+\stopxmlsetups
+
+\startxmlsetups bibtex:format:month
+%   {\bibdoifelse\@@pb@month
+%      {#1\doifnumberelse\@@pb@month
+%        {\doifconversiondefinedelse\@@pbmonthconversion
+%           {\convertnumber\@@pbmonthconversion\@@pb@month}{\@@pb@month}}%
+%           {\@@pb@month}#2}%
+%      {#3}
+    *month*
+\stopxmlsetups
+
+% lists
+
+\def\bibtexlistprocessor
+  {\ctxlua{bibtex.hacks.add(structures.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
+
+\appendtoks
+    \definelist[\currentbibtexsession]%
+    \setuplist[\currentbibtexsession][\c!state=\v!start,\c!width=]%
+    \installstructurelistprocessor{\currentbibtexsession:userdata}{\bibtexlistprocessor}%
+\to \everydefinebibtexsession
+
+% \def\installbibtexsorter#1#2%
+%   {\setvalue{\??pb:\c!sort:#1}{#2}}
+
+% \installbibtexsorter\v!no     {no}
+% \installbibtexsorter\v!author {au}
+% \installbibtexsorter\v!title  {ti}
+% \installbibtexsorter\v!short  {ab}
+% \installbibtexsorter\empty    {no}
+% \installbibtexsorter\s!default{no}
+
+% \setupbibtex
+%   [\c!sorttype=\v!cite,
+%    \c!sort=no]
+
+% \protected\def\startpublication#1\stoppublication
+%   {\blank
+%    todo
+%    \blank}
+
+% \let\stoppublication\relax
+
+\protected\def\bibtexspace   {\removeunwantedspaces\space}
+\protected\def\bibtexperiod  {\removeunwantedspaces.\space}
+\protected\def\bibtexcomma   {\removeunwantedspaces,\space}
+\protected\def\bibtexlparent {\removeunwantedspaces\space(}
+\protected\def\bibtexrparent {\removeunwantedspaces)\space}
+\protected\def\bibtexlbracket{\removeunwantedspaces\space[}
+\protected\def\bibtexrbracket{\removeunwantedspaces]\space}
+
+% interfacing
+
+% todo : lang en language
+% todo : directions
+
+% variables
+
+\ifdefined\bibtexblock   \else \newcount\bibtexblock   \fi \bibtexblock\plusone
+\ifdefined\bibtexcounter \else \newcount\bibtexcounter \fi
+
+\newtoks \everysetupbibtexpublications
+\newtoks \everysetupbibtexcitations
+
+\def\bibtexrefprefix{\number\bibtexblock:}
+
+\let\currentbibtexsession\s!default
+\let\currentbibtexvariant\s!default
+
+% parameters: session+variant variant session shared
+
+\def\bibtexpublicationsparameter#1%
+  {\csname
+     \ifcsname\??pb\currentbibtexsession:\currentbibtexvariant#1\endcsname
+       \??pb\currentbibtexsession:\currentbibtexvariant#1%
+     \else\ifcsname\??pb:\currentbibtexvariant#1\endcsname
+       \??pb:\currentbibtexvariant#1%
+     \else\ifcsname\??pb\currentbibtexsession#1\endcsname
+       \??pb\currentbibtexsession#1%
+     \else\ifcsname\??pb#1\endcsname
+       \??pb#1%
+     \else
+       \s!empty
+     \fi\fi\fi\fi
+   \endcsname}
+
+\def\bibtexcitationparameter#1%
+  {\csname
+     \ifcsname\??pv\currentbibtexsession:\currentbibtexvariant#1\endcsname
+       \??pv\currentbibtexsession:\currentbibtexvariant#1%
+     \else\ifcsname\??pv:\currentbibtexvariant#1\endcsname
+       \??pv:\currentbibtexvariant#1%
+     \else\ifcsname\??pv\currentbibtexsession#1\endcsname
+       \??pv\currentbibtexsession#1%
+     \else\ifcsname\??pv#1\endcsname
+       \??pv#1%
+     \else
+       \s!empty
+     \fi\fi\fi\fi
+   \endcsname}
+
+% setup commands
+
+\protected\def\setupbibtexpublications
+  {\let\currentpublicationclass\??pb
+   \let\everysetupbibtexwhatever\everysetupbibtexpublications
+   \dodoubleargument\dosetupbibtexwhatever}
+
+\protected\def\setupbibtexcitations
+  {\let\currentpublicationclass\??pv
+   \let\everysetupbibtexwhatever\everysetupbibtexcitations
+   \dodoubleargument\dosetupbibtexwhatever}
+
+\protected\def\setupbibtexpublicationvariants
+  {\let\currentpublicationclass\??pb
+   \let\everysetupbibtexwhatever\everysetupbibtexpublications
+   \dotripleargument\dosetupbibtexwhatevervariant}
+
+\protected\def\setupbibtexcitationvariants
+  {\let\currentpublicationclass\??pv
+   \let\everysetupbibtexwhatever\everysetupbibtexcitations
+   \dotripleargument\dosetupbibtexwhatevervariant}
+
+\def\dosetupbibtexwhatever[#1][#2]% [sessionlist] [setup]
+  {\ifsecondargument
+     % sessions setups
+     \def\dobtxcommand##1{\getparameters[\currentpublicationclass##1][#2]}%
+     \processcommalist[#1]\dobtxcommand
+   \else
+     % setups
+     \getparameters[\currentpublicationclass][#1]%
+     \the\everysetupbibtexwhatever
+   \fi}
+
+\def\dosetupbibtexwhatevervariant[#1][#2][#3]% [sessionlist] [variantlist] [setup]
+  {\ifthirdargument
+     % sessions variants setups
+     \def\dobtxcommand##1%
+       {\def\dodobtxcommand####1{\getparameters[\currentpublicationclass##1:####1][#3]}%
+        \processcommalist[#2]\dodobtxcommand}%
+     \processcommalist[#1]\docbtxommand
+   \else\ifsecondargument
+     % variants setups
+     \def\dobtxcommand##1{\getparameters[\currentpublicationclass:##1][#2]}%
+     \processcommalist[#1]\dobtxcommand
+   \else
+     % setups
+     \getparameters[\currentpublicationclass][#1]%
+     \the\everysetupbibtexwhatever
+   \fi\fi}
+
+% some initializations
+
+\setupbibtexcitationvariants
+  [author,authoryear,authoryears]
+  [\c!namesep={, }]
+
+% loading alternatives (apa etc)
+
+\def\doloadbibtexpublicationalternative
+  {\ifproductionrun
+     \edef\bibtexpublicationsalternative{\@@pbalternative}% parent
+     \ifx\bibtexpublicationsalternative\empty \else
+       \processcommacommand[\bibtexpublicationsalternative]\dodoloadbibtexpublicationalternative
+       \let\@@pbalternative\empty
+     \fi
+   \fi}
+
+\def\dodoloadbibtexpublicationalternative#1%
+  {\doonlyonce{#1}
+     {\startreadingfile
+      \readsysfile{bxml-#1.mkiv}
+        {\showmessage\m!publications{6}{bxml-#1}}
+        {\showmessage\m!publications{1}{bxml-#1}}%
+      \stopreadingfile}}
+
+\appendtoks
+    \doloadbibtexpublicationalternative
+\to \everysetupbibtexpublications
+
+% we expect at least one invocation of the setup commands
+% because otherwise we always load the apa style even if
+% no publications are used
+%
+% \appendtoks
+%     \doloadbibtexpublicationalternative
+% \to \everystarttext
+
+% whatever, should be key
+
+\def\bibtexleftnumber#1{#1\hfill~}
+
+% testing
+
+% \showmessage\m!publications{5}{#1 is unknown}\secondoftwoarguments}
+
+\let\doifbibreferencefoundelse\secondofthreearguments
+
+% lists
+
+\newtoks\everysetupbibtexlistplacement
+
+% this will change as we need it too often .. we will use context.thebibtexnamesep
+
+\appendtoks
+    \ctxlua {bibtex.authors.setsettings {
+        namesep      = \!!bs\bibtexpublicationsparameter\c!namesep\!!es,
+        lastnamesep  = \!!bs\bibtexpublicationsparameter\c!lastnamesep\!!es,
+        finalnamesep = \!!bs\bibtexpublicationsparameter\c!finalnamesep\!!es,
+        firstnamesep = \!!bs\bibtexpublicationsparameter\c!firstnamesep\!!es,
+        juniorsep    = \!!bs\bibtexpublicationsparameter\c!juniorsep\!!es,
+        vonsep       = \!!bs\bibtexpublicationsparameter\c!vonsep\!!es,
+        surnamesep   = \!!bs\bibtexpublicationsparameter\c!surnamesep\!!es,
+        namesep      = \!!bs\bibtexpublicationsparameter\c!namesep\!!es,
+        lastnamesep  = \!!bs\bibtexpublicationsparameter\c!lastnamesep\!!es,
+        finalnamesep = \!!bs\bibtexpublicationsparameter\c!finalnamesep\!!es,
+        author = {
+            etallimit   = \!!bs\bibtexpublicationsparameter\c!authoretallimit\!!es,
+            etaldisplay = \!!bs\bibtexpublicationsparameter\c!authoretaldisplay\!!es,
+            etaltext    = \!!bs\bibtexpublicationsparameter\c!authoretaltext\!!es,
+        },
+        editor = {
+            etallimit   = \!!bs\bibtexpublicationsparameter\c!editoretallimit\!!es,
+            etaldisplay = \!!bs\bibtexpublicationsparameter\c!editoretaldisplay\!!es,
+            etaltext    = \!!bs\bibtexpublicationsparameter\c!editoretaltext\!!es,
+        },
+        artauthor = {
+            etallimit   = \!!bs\bibtexpublicationsparameter\c!artauthoretallimit\!!es,
+            etaldisplay = \!!bs\bibtexpublicationsparameter\c!artauthoretaldisplay\!!es,
+            etaltext    = \!!bs\bibtexpublicationsparameter\c!artauthoretaltext\!!es,
+        },
+    } }%
+\to \everysetupbibtexlistplacement
+
+\def\completebibtexpublications{\dodoubleempty\docompletebibtexpublications}
+\protected\def\placebibtexpublications   {\dodoubleempty\doplacebibtexpublications}
+
+\def\docompletebibtexpublications[#1][#2]% title might become obsolete, just headtext
+  {\begingroup
+   \edef\currentbibtexsession{#1}%
+   \let\currentlist\currentbibtexsession
+   \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]
+   \edef\currentbibtexsessiontitle{\namedlistparameter\currentbibtexsession\c!title}%
+   \ifx\currentbibtexsessiontitle\empty
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\headtext{\currentbibtexsession}}]}%
+   \else
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\currentbibtexsessiontitle}]}%
+   \fi
+   \dodoplacebibtexpublications
+   \stopnamedsection
+   \endgroup}
+
+\def\doplacebibtexpublications[#1][#2]%
+  {\begingroup
+   \edef\currentbibtexsession{#1}%
+   \let\currentlist\currentbibtexsession
+   \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]%
+   \dodoplacebibtexpublications
+   \endgroup}
+
+\def\dodoplacebibtexpublications
+  {\determinelistcharacteristics[\currentbibtexsession]%
+   \the\everysetupbibtexlistplacement
+   \forgetall
+   \typesetbibtexlist
+   \global\advance\bibtexblock\plusone}
+
+\setvalue{\??pb:\c!numbering:\v!short}#1% todo var s -> short tag
+  {\bibtexlistnumberbox{\bibtexpublicationsparameter\c!numbercommand{\bibtexgetshort\currentpublicationtag}}}
+
+\setvalue{\??pb:\c!numbering:\v!bib}#1% todo var n -> number
+  {\bibtexlistnumberbox{\bibtexpublicationsparameter\c!numbercommand{\bibtexgetnumber\currentpublicationtag}}}
+
+\setvalue{\??pb:\c!numbering:\s!unknown}#1%
+  {\bibtexlistnumberbox{\bibtexpublicationsparameter\c!numbercommand{#1}}}
+
+\def\@@pblimitednumber % name
+  {\csname\??pb:\c!numbering:%
+     \ifcsname\??pb:\c!numbering:\currentbibtexnumbering\endcsname
+       \currentbibtexnumbering
+     \else
+       \s!unknown
+     \fi
+   \endcsname}
+
+\appendtoks
+   \edef\currentbibtexnumbering{\bibtexpublicationsparameter\c!numbering}%
+   \ifx\currentbibtexnumbering\v!no
+     \setuplist[\currentbibtexsession][\c!numbercommand=,\c!symbol=\v!none,\c!textcommand=\outdented]%
+   \else
+     \setuplist[\currentbibtexsession][\c!numbercommand=\@@pblimitednumber]%
+   \fi
+\to \everysetupbibtexlistplacement
+
+\newdimen\bibtexnumberwidth
+
+\def\bibtexlistnumberbox{\hbox \ifcase\bibtexnumberwidth\else to \bibtexnumberwidth\fi}
+
+\appendtoks
+   \doifelse{\bibtexpublicationsparameter\c!autohang}\v!yes
+     {\ifx\currentbibtexnumbering\v!short
+        \setbox\scratchbox\hbox{\bibtexpublicationsparameter\c!numbercommand{\bibtexpublicationsparameter\c!samplesize}}%
+      \else
+        \setbox\scratchbox\hbox{\bibtexpublicationsparameter\c!numbercommand{\ctxlua{tex.write(structures.lists.size())}}}%
+      \fi
+      \bibtexnumberwidth\wd\scratchbox
+      \setuplist[\currentbibtexsession][\c!distance=\zeropoint]}
+     {\doifelsenothing{\bibtexpublicationsparameter\c!width}
+        {\bibtexnumberwidth\zeropoint}
+        {\bibtexnumberwidth\bibtexpublicationsparameter\c!width}}%
+   \setuplist[\currentbibtexsession][\c!width=\bibtexnumberwidth]%
+\to \everysetupbibtexlistplacement
+
+\appendtoks
+    \let\maybeyear\gobbleoneargument
+    \let\noopsort \gobbleoneargument
+\to \everysetupbibtexlistplacement
+
+\appendtoks
+   \doifelse{\bibtexpublicationsparameter\c!maybeyear}\v!off
+     {\let\maybeyear\gobbleoneargument}
+     {\let\maybeyear\firstofoneargument}%
+\to \everysetupbibtexlistplacement
+
+\appendtoks
+   \doifnot{\bibtexpublicationsparameter\c!option}\v!continue
+     {\global\bibtexcounter\zerocount}%
+\to \everysetupbibtexlistplacement
+
+\appendtoks
+    \edef\currentbibtexcriterium{\namedlistparameter\currentbibtexsession\c!criterium}%
+\to \everysetupbibtexlistplacement
+
+\def\typesetbibtexlist
+  {\begingroup
+   \startpacked[\v!blank]%
+   \doif{\namedlistparameter\currentbibtexsession\c!criterium}\v!cite
+     {\setuplist[\currentbibtexsession][\c!criterium=\v!here]}%
+   \doifelse{\bibtexpublicationsparameter\c!method}\v!local
+     {\ctxlua{bibtex.hacks.reset(1)}}% function can take method
+     {\ctxlua{bibtex.hacks.reset(2)}}%
+   \strc_lists_place_current
+     {\currentbibtexsession}
+     {\currentbibtexcriterium}
+     {}%
+     {\namedlistparameter\currentbibtexsession\c!extras}%
+     {\namedlistparameter\currentbibtexsession\c!order}%
+   \ctxlua{bibtex.hacks.flush("\bibtexpublicationsparameter\c!sorttype")}%
+   \stoppacked
+   \endgroup}
+
+\protected\def\typesetbibtexpublication#1%
+  {\edef\currentbibtexsessiontag{#1}%
+   \ifx\currentbibtexsessiontag\empty
+     % can't really happen
+   \else\ifx\currentbibtexcriterium\v!all
+     \dotypesetbibtexpublication % was \doplacepublicationindeed
+   \else
+     \ctxlua{bibtex.hacks.doifalreadyplaced("\currentbibtexsessiontag")}
+       \donothing
+       \dotypesetbibtexpublication
+   \fi\fi}
+
+\def\dotypesetbibtexpublication
+  {\doifelsebibreferencefound\currentbibtexsessiontag
+     {\global\advance\bibtexcounter\plusone
+      \ctxlua{bibtex.hacks.registerplaced("\currentbibtexsessiontag")}%
+      \let\currentlist\currentbibtexsession
+      \let\currentlistentrynumber    \bibtexcounter
+      \let\currentlistentrytitle     \thebibtexpublicationlistelement
+      \let\currentlistentrypagenumber\empty
+      \strc_lists_apply_renderingsetup}
+     {}} % invalid
+
+\def\thebibtexpublicationlistelement
+   {\strut
+    \expanded{\reference[\bibtexrefprefix\currentbibtexsessiontag]{\number\bibtexcounter}}%
+    \dotypesetabibtexpublication\currentbibtexsessiontag
+    \strut}
+
+\def\dotypesetabibtexpublication#1%
+  {\begingroup
+   \ignorespaces
+   \xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/command(bibtex:format)}%
+   \removeunwantedspaces
+%  \ignorespaces
+%  \bibalternative{\bibgetvart{#1}}%
+%  \removeunwantedspaces
+   \endgroup}
+
+\def\doprocessbibtexentry#1{\typesetbibtexpublication{#1}}
+
+% citations
+
+\protected\def\bibtexcitation[#1]%
+  {\edef\currentbibtexsession{#1}%
+   \strictdoifelsenextoptional\dobibtexcitation\dobibtexref}
+
+\def\dobibtexref#1%
+  {\dodobibtexcitation[#1][]}
+
+\def\dobibtexcitation[#1]%
+  {\strictdoifelsenextoptional{\dodobibtexcitation[#1]}{\dodobibtexcitation[#1][]}}
+
+\def\dodobibtexcitation[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+   \doifelsenothing{#2}\secondargumentfalse\secondargumenttrue
+   \ifsecondargument
+     \dowhateverbibtexcitation{#1}{#2}%
+   \else
+     \donumberedbibtexcitation{#1}%
+   \fi
+   \endgroup}
+
+\def\dowhatevercitation#1#2%
+  {\processcommalist[#2]\dobibtexcitationindeed
+   \setupinteraction[\c!style=]% use flag instead
+   \doifelseassignment{#1}
+     {\getparameters[\??pb\??pb][\c!alternative=,\c!extras=,#1]%
+      \edef\currentbibtexvariant{\@@pb@@pbalternative}%
+      \ifx\currentbibtexvariant\empty
+        \edef\currentbibtexvariant{\bibtexpublicationparameter\c!refcommand}%
+      \fi
+      \ifx\@@pb@@pbextras\empty
+        \setupcite[\currentbibtexvariant][#1]%
+      \else
+        \edef\@@pb@@pbextras{{\@@pb@@pbextras\ifdefined\@@pb@@pbright\@@pb@@pbright\else\bibtexpublicationparameter\c!right\fi}}%
+        \expanded{\setupcite[\currentbibtexvariant][#1,\c!right=\@@pb@@pbextras]}%
+      \fi}%
+     {\def\currentbibtexvariant{#1}}%
+   \getvalue{bibtex\currentbibtexvariant ref}[#2]}
+
+\def\donumberedbibtexcitation#1%
+  {\processcommalist[#1]\dobibtexcitationindeed
+   \setupinteraction[\c!style=]%
+   \edef\currentbibtexvariant{\bibtexcitationparameter\c!refcommand}%
+   \getvalue{bibtex\currentbibtexvariant ref}[#1]}
+
+\def\dobibtexcitationindeed#1%
+  {\iftrialtypesetting \else
+     \expanded{\writedatatolist[\currentbibtexsession][bibref=#1]}%
+   \fi}
+
+\def\nobibtexcitation[#1]%
+  {\processcommalist[#1]\dobibtexcitationindeed}
+
+\def\bibtexnumref[#1]%
+  {\dontleavehmode
+   \begingroup
+   \bibtexcitationparameter\v!left
+   \penalty\plustenthousand
+   \ctxlua{bibtex.hacks.resolve("","\number\bibtexblock","#1")}%
+   \bibtexcitationparameter\v!right
+   \endgroup}
+
+\def\dowithbibtexnumrefconnector#1#2%
+  {\ifnum#1>\plusone
+     \ifnum#2>\plusone
+       \ifnum#2=#1\relax
+         \bibtexpublicationsparameter\c!lastpubsep
+       \else
+         \bibtexpublicationsparameter\c!pubsep
+       \fi
+     \fi
+   \fi}
+
+\def\dowithbibtexnumref#1#2#3#4#5% n, i, prefix block ref
+  {\dowithbibtexnumrefconnector{#1}{#2}%
+   \def\bibtexrefprefix{#4:}%
+   \inbiblink[#5]}
+
+\def\dowithbibtexnumrefrange#1#2#3#4#5#6#7% n, i, prefix block ref
+  {\dowithbibtexnumrefconnector{#1}{#2}%
+   \def\bibtexrefprefix{#4:}%
+   \inbiblink[#5]%
+   \endash
+   \def\bibtexrefprefix{#6:}%
+   \inbiblink[#7]}
+
+\def\nobibtexnumref#1%
+  {[#1]}
+
+% hm
+
+%     \def\@@pbinumbercommand{\executeifdefined{\??pb:\c!numbercommand:\@@pbnumbering}\firstofoneargument}
+
+%     \letvalue{\??pb:\c!numbercommand:\v!yes  }\firstofoneargument
+%     \letvalue{\??pb:\c!numbercommand:\v!no   }\gobbleoneargument
+%     \setvalue{\??pb:\c!numbercommand:\v!short}{\bibtexgetshort\currentpublicationtag\gobbleoneargument}
+%     \setvalue{\??pb:\c!numbercommand:\v!bib  }{\bibtexgetnumber\currentpublicationtag\gobbleoneargument}
+
+%     \def\bibalternative#1{\csname\??pv\@@currentalternative#1\endcsname}
+
+% basic setup
+
+% parent -> publicationlist
+%
+% \setuplist
+%   [\currentbibtexsession]
+%   [\c!samplesize={AA99},
+%    \c!alternative=a,
+%    \c!interaction=,
+%    \c!pagenumber=\v!no,
+%    #1,
+%    \c!command=]
+
+% \setuppublicationlist
+%   [\c!title=,
+%    \c!command=\dospecialbibinsert,
+%    \c!maybeyear=\v!on]
+
+\setupbibtexpublications
+  [\c!monthconversion=,
+   \c!alternative=apa,
+   \c!method=\v!global,
+   \c!refcommand=num,
+   \c!numbercommand=\bibtexleftnumber]
+
+\setupbibtexcitations % command ?
+  [\c!refcommand=num]
+
+% helpers
+
+\protected\def\doifelsebibtexinteraction
+  {\iflocation
+     \edef\temp{\bibtexcitationparameter\c!interaction}%
+     \ifx\temp\v!stop
+       \doubleexpandafter\secondoftwoarguments
+     \else
+       \doubleexpandafter\firstoftwoarguments
+     \fi
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifbibtexinteractionelse\doifelsebibtexinteraction
+
+% variants
+
+% todo: lastsep here
+
+\newconditional\firstbibtexrefsep
+
+\def\bibtexresetrefsep
+  {\settrue\firstbibtexrefsep}
+
+\def\bibtexinsertrefsep
+  {\ifconditional\firstbibtexrefsep
+     \setfalse\firstbibtexrefsep
+   \else
+     \bibtexcitationparameter\c!pubsep
+   \fi}
+
+\def\inbibtexlink#1#2%
+  {\doifelsereferencefound{\bibtexrefprefix#1}
+     {\goto{#2}[\bibtexrefprefix#1]}
+     {!#1!}}
+
+\def\dobibtexgotolink#1#2%
+  {\doifelsereferencefound{\bibtexrefprefix#1}
+     {\goto{#2}[\bibtexrefprefix#1]}
+     {!#1!}}
+
+\def\dobibattexlink#1#2%
+  {\doifelsereferencefound{\bibtexrefprefix#1}
+    {\at{#2}[\bibtexrefprefix#1]}
+    {!#1!}}
+
+\def\dobibtexurllink#1#2%
+  {\expanded{\useURL[bibtex:url:#1][#2]}%
+   \doifelsebibtexinteraction
+     {\goto{\url[bibtex:url:#1]}[url(bibtex:url:#1)]}
+     {\url[bibtex:url:#1]}}
+
+% todo: style, color
+
+\protected\def\bibtexdataref       {\dodoubleargument\dobibtexdataref}
+\protected\def\bibtextyperef       {\dodoubleargument\dobibtextyperef}
+\protected\def\bibtexkeyref        {\dodoubleargument\dobibtexkeyref}
+\protected\def\bibtexserialref     {\dodoubleargument\dobibtexserialref}
+\protected\def\bibtexurlref        {\dodoubleargument\dobibtexurlref}
+\protected\def\bibtexdoiref        {\dodoubleargument\dobibtexdoiref}
+\protected\def\bibtexpageref       {\dodoubleargument\dobibtexpageref}
+\protected\def\bibtexnoneref       {\dodoubleargument\dobibtexnoneref}
+\protected\def\bibtexshortref      {\dodoubleargument\dobibtexshortref}
+\protected\def\bibtexyearref       {\dodoubleargument\dobibtexyearref}
+\protected\def\bibtexauthorref     {\dodoubleargument\dobibtexauthorref}
+\protected\def\bibtexauthoryearref {\dodoubleargument\dobibtexauthoryearref}
+\protected\def\bibtexauthoryearsref{\dodoubleargument\dobibtexauthoryearsref}
+
+\def\dobibtexdataref       {\doprocessbibtexref\dodobibtexdataref       {ref}}    % [#1][#2]
+\def\dobibtextyperef       {\doprocessbibtexref\dodobibtextyperef       {type}}   % [#1][#2]
+\def\dobibtexkeyref        {\doprocessbibtexref\dodobibtexkeyref        {key}}    % [#1][#2]
+\def\dobibtexserialref     {\doprocessbibtexref\dodobibtexserialref     {serial}} % [#1][#2]
+\def\dobibtexurlref        {\doprocessbibtexref\dodobibtexurlref        {url}}    % [#1][#2]
+\def\dobibtexdoiref        {\doprocessbibtexref\dodobibtexdoiref        {doi}}    % [#1][#2]
+\def\dobibtexpageref       {\doprocessbibtexref\dodobibtexpageref       {page}}   % [#1][#2]
+\def\dobibtexnoneref       {\doprocessbibtexref\dodobibtexnoneref       {none}}   % [#1][#2]
+\def\dobibtexshortref      {\doprocessbibtexref\dodobibtexshortref      {short}}  % [#1][#2]
+\def\dobibtexyearref       {\doprocessbibtexref\dodobibtexyearref       {year}}   % [#1][#2]
+\def\dobibtexauthorref     {\doprocessbibtexref\dodobibtexauthorref     {author}} % [#1][#2]
+\def\dobibtexauthoryearref {\doprocessbibtexref\dodobibtexauthoryearref {authoryear}} % [#1][#2]
+\def\dobibtexauthoryearsref{\doprocessbibtexref\dodobibtexauthoryearsref{authoryears}} % [#1][#2]
+
+\def\doprocessbibtexref#1#2[#3][#4]%
+  {\edef\currentbibtexsession{#3}%
+   \edef\currentbibtexvariant{#2}%
+   \def\dodoprocessbibtexref##1%
+     {% test for existence
+      \edef\currentbibtextag{##1}%
+      \bibtexinsertrefsep
+      #1{##1}}%
+   \bibtexresetrefsep
+   \bibtexcitationparameter\v!left
+   \processcommalist[#4]\dodoprocessbibtexref\relax
+   \bibtexcitationparameter\v!right}
+
+\def\dodobibtexdataref#1%
+  {\dotypesetabibtexpublication{#1}}
+
+\def\dodobibtextyperef#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/attribute('category')}}%
+   \bibtexrefcontent}
+
+\def\dodobibtexkeyref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='key']/context()}}%
+   \dobibtexgotolink{#1}{\bibtexrefcontent}}
+
+\def\dodobibtexserialref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/match()}}%
+   \dobibtexgotolink{#1}{\bibtexrefcontent}}
+
+\def\dodobibtexurlref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/field[@name='url']/context()}}%
+   \dobibtexurllink{#1}{\bibtexrefcontent}}
+
+\def\dodobibtexdoiref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/field[@name='doi']/context()}}%
+   \dobibtexurllink{#1}{http://dx.doi.org/\bibtexrefcontent}}
+
+\def\dodobibtexpageref#1%
+  {\dobibtexatlink{#1}{}} % second argument can become 'page'
+
+\def\dodobibtexnoneref#1%
+  {}
+
+\def\dodobibtexshortref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/bibtexshort()}}%
+   \dobibtexgotolink{#1}{\bibtexrefcontent}}
+
+\def\dodobibtexyearref#1%
+  {\edef\bibtexrefcontent{\xmlfilter{bibtex:\currentbibtexsession}{/bibtex/entry[@tag='#1']/field[@name='year']/context()}}%
+   \bibtexrefcontent}
+
+% \def\bibmaybeinteractive#1#2%
+%   {\doifelsevalue{@@pv\@@currentalternative\c!compress}
+%      {\ifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}}
+%      {#2}}
+
+% \def\bibauthornumref[#1]%
+%   {\getcommalistsize[#1]%
+%    \global\bibitemcounter\commalistsize
+%    \bibresetrefsep
+%    \processcommalist[#1]\dobibauthornumref }
+%
+% \def\dobibauthornumref#1%
+%  {\bibinsertrefsep
+%   \doifbibreferencefoundelse{#1}
+%     {\begingroup
+%      \bibgetvara{#1}%
+%      \bibalternative\c!inbetween
+%      \setuppublications[\c!refcommand=num]%
+%      \cite[#1]%
+%      \endgroup}
+%     {}}
+
+% compress years
+% andtext namesep
+% otherstext authoretallimit
+
+% we will use context.* instead at the lua end because it saves us passing settings
+
+% \def\thebibtexpubsep           {\bibtexpublicationsparameter\c!pubsep}
+% \def\thebibtexlastpubsep       {\bibtexpublicationsparameter\c!lastpubsep}
+% \def\thebibtexfinalpubseparator{\bibtexpublicationsparameter\c!lastpubsep}
+
+\def\dodobibtexauthorref     #1{\ctxlua{bibtex.authorref     ("bibtex:\currentbibtexsession","#1","normal","author")}}
+\def\dodobibtexauthoryearref #1{\ctxlua{bibtex.authoryearref ("bibtex:\currentbibtexsession","#1","normal","author")}}
+\def\dodobibtexauthoryearsref#1{\ctxlua{bibtex.authoryearsref("bibtex:\currentbibtexsession","#1","normal","author")}}
+
+\protected\def\bibtexsingularplural#1#2{\ctxlua{bibtex.singularorplural(\!!bs#1\!!es,\!!bs#2\!!es)}}
+
+\protect \endinput
+

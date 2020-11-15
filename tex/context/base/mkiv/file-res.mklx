@@ -1,0 +1,145 @@
+%D \module
+%D   [       file=file-mod, % was supp-fil,
+%D        version=20110701, % 1995.10.10,
+%D          title=\CONTEXT\ File Macros,
+%D       subtitle=Resolvers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We could move some more to the lua end (implementors).
+
+\writestatus{loading}{ConTeXt File Macros / Resolvers}
+
+\unprotect
+
+\registerctxluafile{file-res}{}
+
+%D \macros
+%D   {readfile,ReadFile}
+%D
+%D One cannot be sure if a file exists. When no file can be found, the \type
+%D {\input} primitive gives an error message and switches to interactive mode. The
+%D macro \type {\readfile} takes care of non||existing files. This macro has two
+%D faces.
+%D
+%D \starttyping
+%D \ReadFile {filename}
+%D \readfile {filename} {before loading} {not found}
+%D \stoptyping
+%D
+%D Many \TEX\ implementations have laid out some strategy for locating files. This
+%D can lead to unexpected results, especially when one loads files that are not
+%D found in the current directory. Let's give an example of this. In \CONTEXT\
+%D illustrations can be defined in an external file. The resizing macro first looks
+%D if an illustration is defined in the local definitions file. When no such file is
+%D found, it searches for a global file and when this file is not found either, the
+%D illustration itself is scanned for dimensions. One can imagine what happens if an
+%D adapted, localy stored illustration, is scaled according to dimensions stored
+%D somewhere else.
+%D
+%D When some \TEX\ implementation starts looking for a file, it normally first looks
+%D in the current directory. When no file is found, \TEX\ starts searching on the
+%D path where format and|/|or style files are stored. Depending on the
+%D implementation this can considerably slow down processing speed.
+%D
+%D In \CONTEXT, we support a project||wise ordening of files. In such an approach it
+%D seems feasible to store common files in a lower directory. When for instance
+%D searching for a general layout file, we therefore have to backtrack.
+%D
+%D These three considerations have lead to a more advanced approach for loading
+%D files.
+%D
+%D We first present an earlier implementation of \type {\readfile}. This command
+%D backtracks parent directories, upto a predefined level. Users can change this
+%D level (on the commandline using a directive); we default to~3.
+%D
+%D We use \type {\normalinput} instead of \type {\input} because we want to be able
+%D to redefine the original \type {\input} when needed, for instance when loading
+%D third party libraries.
+
+\let\readfilename\empty
+
+\def\syst_files_read_file#protocol#path#name% #true #false
+  {\edef\readfilename{\clf_getreadfilename{#protocol}{#path}{#name}}%
+   \ifempty\readfilename
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\syst_files_read_file_indeed
+   \fi}
+
+\def\syst_files_read_file_indeed#true#false%
+  {#true%
+   \relax
+   \normalinput{\readfilename}%
+   \relax}
+
+%D \macros
+%D   {readjobfile,readlocfile,readsysfile,
+%D    readfixfile,readsetfile}
+%D
+%D This implementation honnors the third situation, but we still can get unwanted
+%D files loaded and/or can get involved in extensive searching.
+%D
+%D Due to different needs, we decided to offer four alternative loading commands.
+%D With \type {\readjobfile} we load a local file and do no backtracking, while
+%D \type {\readlocfile} backtracks~\number \maxreadlevel\ directories, including the
+%D current one.
+%D
+%D System files can be anywhere and therefore \type {\readsysfile} is not bound to
+%D the current directory and obeys the \TEX\ implementation.
+%D
+%D Of the last two, \type {\readfixfile} searches on the directory specified and
+%D backtracks too, while \type {\readsetfile} does only search on the specified
+%D path.
+%D
+%D The most liberal is \type {\readfile}.
+
+\permanent\protected\def\readjobfile     #name{\syst_files_read_file{job}    {.}{#name}} % current path, no backtracking
+\permanent\protected\def\readlocfile     #name{\syst_files_read_file{loc}    {.}{#name}} % current path, backtracking
+\permanent\protected\def\readsysfile     #name{\syst_files_read_file{sys}    {.}{#name}} % current path, obeys tex search
+\permanent\protected\def\readfixfile#path#name{\syst_files_read_file{fix}{#path}{#name}} % specified path, backtracking
+\permanent\protected\def\readsetfile#path#name{\syst_files_read_file{set}{#path}{#name}} % specified path, no backtracking
+\permanent\protected\def\readfile        #name{\syst_files_read_file{any}    {.}{#name}}
+\permanent\protected\def\ReadFile        #name{\syst_files_read_file{any}    {.}{#name}\donothing\donothing}
+
+%D So now we've got ourselves five file loading commands:
+%D
+%D \starttyping
+%D \readfile                {filename} {before loading} {not found}
+%D
+%D \readjobfile             {filename} {before loading} {not found}
+%D \readlocfile             {filename} {before loading} {not found}
+%D \readfixfile             {filename} {before loading} {not found}
+%D \readsysfile {directory} {filename} {before loading} {not found}
+%D \stoptyping
+
+\permanent\protected\def\readtexfile#name#true#false%
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes
+   \readfile{#name}{#true}{#false}%
+   \popcatcodetable}
+
+\permanent\protected\def\readxmlfile#name#true#false%
+  {\pushcatcodetable
+   \catcodetable\xmlcatcodes
+   \readfile{#name}{#true}{#false}%
+   \popcatcodetable}
+
+%D \macros
+%D   {doiflocfileelse,locfilename}
+%D
+%D \starttyping
+%D \doiflocfileelse {filename} {before loading} {not found}
+%D \stoptyping
+
+\permanent\protected\def\doifelselocfile#name{\clf_doifelselocfile{#name}}
+\permanent          \def\locfilename    #name{\clf_locfilename    {#name}}
+
+\aliased\let\doiflocfileelse\doifelselocfile
+
+\protect \endinput

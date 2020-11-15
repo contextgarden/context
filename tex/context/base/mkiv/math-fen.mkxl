@@ -223,7 +223,7 @@
   {\advance\c_math_fenced_nesting\plusone
    \begingroup
    \edef\currentmathfence{#1}%
-   \ifparameter#2\or\setupcurrentmathfence[#1]\fi
+   \ifparameter#2\or\setupcurrentmathfence[#2]\fi
    \math_fenced_fenced_common
    \edef\p_size{\mathfenceparameter\c!size}%
    \ifempty\p_size

@@ -1,0 +1,231 @@
+%D \module
+%D   [       file=file-ini, % was supp-fil,
+%D        version=20110701, % 1995.10.10,
+%D          title=\CONTEXT\ File Macros,
+%D       subtitle=Helpers,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D \TEX\ operates on files, so one wouldn't wonder that there is a separate module
+%D for file commands. In \CONTEXT\ files are used for several purposes:
+%D
+%D \startitemize[packed]
+%D \item  general textual input
+%D \item  logging status information
+%D \item  saving registers, lists and references
+%D \item  buffering defered textual input
+%D \stopitemize
+%D
+%D When dealing with files we can load them as a whole, using the \type {\input}
+%D primitive or load them on a line||by||line basis, using \type {\read}. Writing is
+%D always done line by line, using \type {\write}.
+
+\writestatus{loading}{ConTeXt File Macros / Helpers}
+
+\registerctxluafile{file-ini}{}
+
+\unprotect
+
+%D \macros
+%D   {scratchread, scratchwrite}
+%D
+%D We define a scratch file for reading. Keep in mind that the number of files is
+%D limited to~16, so use this one when possible. We also define a scratch output
+%D file. In \MKIV\ and \LMTX\ we never use these file handles.
+
+\ifdefined\scratchread  \else \newread \scratchread  \fi
+\ifdefined\scratchwrite \else \newwrite\scratchwrite \fi
+
+%D Seldom needed:
+
+\permanent\def\openinputfile  #handle#name{\immediate\openin #handle={#name}\relax}
+\permanent\def\openoutputfile #handle#name{\immediate\openout#handle={#name}\relax}
+
+\permanent\def\closeinputfile #handle{\immediate\closein #handle\relax}
+\permanent\def\closeoutputfile#handle{\immediate\closeout#handle\relax}
+
+%D \macros
+%D   {writeln}
+%D
+%D This saves a few tokens:
+
+\permanent\def\writeln#handle{\write#handle{}}
+
+%D \macros
+%D   {pushendofline,popendofline}
+%D
+%D When we are loading files in the middle of the typesetting process, for instance
+%D when we load references, we have to be sure that the reading process does not
+%D generate so called 'spurious spaces'. This can be prevented by assigning the line
+%D ending character the \CATCODE\ comment. This is accomplished by
+%D
+%D \starttyping
+%D \pushendofline
+%D ... reading ...
+%D \popendofline
+%D \stoptyping
+
+\installsystemnamespace{eolstack}
+
+\newcount\c_system_files_eol_level
+
+\permanent\protected\def\pushendofline
+  {\advance\c_system_files_eol_level\plusone
+   \expandafter\chardef\csname\??eolstack\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
+   \catcode\endoflineasciicode\commentcatcode}
+
+\permanent\protected\def\popendofline
+  {\catcode\endoflineasciicode\csname\??eolstack\number\c_system_files_eol_level\endcsname
+   \advance\c_system_files_eol_level\minusone}
+
+\permanent\protected\def\restoreendofline
+  {\catcode\endoflineasciicode\endoflinecatcode}
+
+%D \macros
+%D   {startreadingfile,stopreadingfile}
+%D
+%D A low level capsule:
+
+\newcount\readingfilelevel       % no longer needed
+\newtoks \everystartreadingfile
+\newtoks \everystopreadingfile
+
+\protected\def\startreadingfile% beter een every en \setnormalcatcodes
+  {\global\advance\readingfilelevel\plusone
+   \the\everystartreadingfile
+   \pushcatcodetable       % saveguard
+   \setcatcodetable\ctxcatcodes
+   \clf_pushregime}% temporarily this way
+
+\protected\def\stopreadingfile
+  {\popcatcodetable      % saveguard
+   \clf_popregime % temporarily this way
+   \the\everystopreadingfile
+   \global\advance\readingfilelevel\minusone}
+
+%D \macros
+%D   {input, normalinput}
+%D
+%D Sometimes we run into troubles when \type {\input} wants to get expanded, e.g. in
+%D a \type {\write} (which happens in the metafun manual when we permit long MP
+%D lines). So, instead of fixing that, we go for a redefinition of \type {\input}.
+%D Of course it's better to use \type {\readfile} or \type {\processfile}.
+
+\permanent\def\inputgivenfile#name{\normalinput{#name}} % expands
+
+%D \macros
+%D   {doifelsefile}
+%D
+%D The next alternative only looks if a file is present. No loading is done. This
+%D one obeys the standard \TEX\ lookup.
+%D
+%D \starttyping
+%D \doiffileelse {filename} {found} {not found}
+%D \stoptyping
+
+\permanent\protected\def\doifelsefile     {\clf_doifelsefileexist}
+\permanent\protected\def\doifelsepath     {\clf_doifelsepathexist}
+\permanent\protected\def\doiffile    #name{\clf_doifelsefileexist{#name}\firstofoneargument\gobbleoneargument}
+\permanent\protected\def\doifnotfile #name{\clf_doifelsefileexist{#name}\gobbleoneargument\firstofoneargument}
+
+\aliased\let\doiffileelse\doifelsefile
+\aliased\let\doifpathelse\doifelsepath
+
+\aliased\let\doifelsefileexists\doifelsefile
+\aliased\let\doifelsepathexists\doifelsepath
+
+\aliased\let\doiffileexistselse\doifelsefileexists
+\aliased\let\doifpathexistselse\doifelsepathexists
+
+%D \macros
+%D   {doifparentfileelse}
+%D
+%D \starttyping
+%D \doifparentfileelse{filename}{yes}{no}
+%D \stoptyping
+
+\ifdefined\outputfilename \else \def\outputfilename{\jobname} \fi
+
+\permanent\protected\def\doifelseparentfile{\clf_doifelseparentfile}
+
+\aliased\let\doifparentfileelse\doifelseparentfile
+
+%D \macros
+%D   {splitfilename}
+%D
+%D \startbuffer
+%D \def\showfilesplit
+%D   {\bgroup \tttf
+%D      \hbox{(full: \splitofffull)}\space
+%D      \hbox{(path: \splitoffpath)}\space
+%D      \hbox{(base: \splitoffbase)}\space
+%D      \hbox{(name: \splitoffname)}\space
+%D      \hbox{(type: \splitofftype)}\space
+%D    \egroup}
+%D
+%D \splitfilename{c:/aa/bb/cc/dd.ee.ff} \showfilesplit \endgraf
+%D \splitfilename{c:/aa/bb/cc/dd.ee}    \showfilesplit \endgraf
+%D \splitfilename{c:/aa/bb/cc/dd}       \showfilesplit \endgraf
+%D
+%D \splitfilename{dd.ee.ff} \showfilesplit \endgraf
+%D \splitfilename{dd.ee}    \showfilesplit \endgraf
+%D \splitfilename{dd}       \showfilesplit \endgraf
+%D \stopbuffer
+%D
+%D \start \typebuffer \getbuffer \stop
+
+\newconstant\kindoffile % 0=normal 1=full path spec (or http) / set at the lua end
+
+\def\splitoffroot{.} \newconstant\splitoffkind
+
+\let\splitofffull\empty
+\let\splitoffpath\empty
+\let\splitoffbase\empty
+\let\splitoffname\empty
+\let\splitofftype\empty
+
+\permanent\protected\def\splitfilename{\clf_splitfilename}
+
+%D \macros
+%D   {doonlyonce, doinputonce, doendinputonce}
+%D
+%D Especially macropackages need only be loaded once. Repetitive loading not only
+%D costs time, relocating registers often leads to abortion of the processing
+%D because \TEX's capacity is limited. One can prevent multiple execution and
+%D loading by using one of both:
+%D
+%D \starttyping
+%D \doonlyonce{actions}
+%D \doinputonce{filename}
+%D \doendinputonce{filename}
+%D \stoptyping
+%D
+%D This command obeys the standard method for locating files. We could move this
+%D function to the \LUA\ end.
+
+\installsystemnamespace {fileonce}
+
+\permanent\protected\def\doonlyonce#whatever%
+  {\ifcsname\??fileonce#whatever\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \letgvalue{\??fileonce#whatever}\relax
+     \expandafter\firstofoneargument
+   \fi}
+
+\permanent\protected\def\doinputonce#name%
+  {\doonlyonce{#name}{\doifelsefile{#name}{\inputgivenfile{#name}}\donothing}}
+
+\permanent\protected\def\doendinputonce#name%
+  {\ifcsname\??fileonce#name\endcsname
+     \expandafter\endinput
+   \fi}
+
+\permanent\protected\def\forgetdoingonce#whatever%
+  {\global\undefinevalue{\??fileonce#whatever}}
+
+\protect \endinput

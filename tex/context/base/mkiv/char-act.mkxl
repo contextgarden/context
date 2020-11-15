@@ -1,0 +1,112 @@
+%D \module
+%D   [       file=char-act,
+%D        version=2006.12.05,
+%D          title=\CONTEXT\ Character Support,
+%D       subtitle=Active,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Character Support / Active}
+
+\unprotect
+
+\ifdefined\page_otr_fill_and_eject_page \else \let\page_otr_fill_and_eject_page\relax \fi % forward reference
+
+%D \macros
+%D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
+%D
+%D We have followed Knuth in naming macros that make \SPACE, \NEWLINE\ and \NEWPAGE\
+%D active and assigning them \type {\obeysomething}, but first we set some default
+%D values.
+%D
+%D These are expandable:
+
+\permanent\def\obeyedspace{\space}
+\permanent\def\obeyedtab  {\obeyedspace}
+\permanent\def\obeyedline {\par}
+\permanent\def\obeyedpage {\page_otr_fill_and_eject_page}
+
+%D \macros
+%D   {controlspace,setcontrolspaces}
+%D
+%D First we define \type {\obeyspaces}. When we want visible spaces (control spaces)
+%D we only have to adapt the definition of \type {\obeyedspace} to:
+
+\immutable\chardef\asciispacechar\spaceasciicode % a real space character
+
+\permanent\protected\def\naturalspace{\asciispacechar}
+\permanent\protected\def\controlspace{\hbox{\asciispacechar}} % rather tex, we need the unicode value
+\permanent\protected\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
+
+% \bgroup
+%     \catcode\spaceasciicode\activecatcode
+%     \protected\gdef\obeyspaces      {\catcode\spaceasciicode\activecatcode\def {\obeyedspace }}
+%     \protected\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
+% \egroup
+
+%permanent\protected\def\obeyspaces      {\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\obeyedspace }
+%permanent\protected\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\controlspace}
+
+%D \macros
+%D   {obeytabs, obeylines, obeypages,ignoretabs, ignorelines, ignorepages}
+%D
+%D Next we take care of \NEWLINE\ and \NEWPAGE\ and because we want to be able to
+%D typeset listings that contain \TAB, we have to handle those too. Because we have
+%D to redefine the \NEWPAGE\ character locally, we redefine the meaning of this
+%D (often already) active character.
+
+% \expandafter\def\activeformfeedtoken{\par}
+
+\letcharcode\formfeedasciicode\par
+
+%D The following indirect definitions enable us to implement all kind of \type
+%D {\obeyed} handlers.
+
+% \protected\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
+% \protected\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
+% \protected\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
+
+% \protected\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
+% \protected\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
+% \protected\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+% \protected\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
+
+% but ... as we don't want to freeze to \obeyedspace etc which can be set after
+% \obeyspaces, we use an idirectness
+
+\def\_obeyed_space_{\obeyedspace}
+\def\_obeyed_tab_  {\obeyedtab}
+\def\_obeyed_line_ {\obeyedline}
+\def\_obeyed_page_ {\obeyedpage}
+
+\permanent\protected\def\obeyspaces {\catcode\spaceasciicode    \activecatcode\enforced\letcharcode\spaceasciicode    \_obeyed_space_}
+\permanent\protected\def\obeytabs   {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \_obeyed_tab_}
+\permanent\protected\def\obeylines  {\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\_obeyed_line_}
+\permanent\protected\def\obeypages  {\catcode\formfeedasciicode \activecatcode\enforced\letcharcode\formfeedasciicode \_obeyed_page_}
+
+\permanent\protected\def\ignoretabs {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \_obeyed_space_}
+\permanent\protected\def\ignorelines{\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\_obeyed_space_}
+\permanent\protected\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+\permanent\protected\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
+
+\permanent\protected\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\enforced\letcharcode\spaceasciicode\_control_space_}
+
+%D \macros
+%D   {naturaltextext}
+%D
+%D When one uses \ETEX, switching to normal \TEX\ is possible too. We also introduce
+%D a switch that can be used in the drivers and set in higher level shell macros.
+
+\permanent\protected\def\naturaltextext#1\relax % this command will become obsolete
+  {\begingroup
+   \def\ascii{#1}%
+   \setcatcodetable\ctxcatcodes
+   \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
+   \endgroup}
+
+\endinput \protect

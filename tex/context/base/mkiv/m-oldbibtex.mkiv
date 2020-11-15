@@ -10,7 +10,12 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
-\loadmarkfile{bibl-bib}
-\loadmarkfile{bibl-tra}
+\ifconditional\contextlmtxmode
+    \loadmkivfile{bibl-bib}
+    \loadmkivfile{bibl-tra}
+\else
+    \loadmkivfile{bibl-bib}
+    \loadmkxlfile{bibl-tra}
+\fi
 
 \endinput

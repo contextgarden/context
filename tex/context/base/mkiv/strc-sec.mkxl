@@ -1119,11 +1119,11 @@
 \newcount      \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone
 \newconditional\c_strc_sectioning_auto_break          \settrue\c_strc_sectioning_auto_break
 \newconditional\c_strc_sectioning_ignore_page
-\newsignal     \s_strc_sectioning_continuous_signal
+\newsignal     \d_strc_sectioning_continuous_signal
 
 \protected\def\strc_sectioning_inject_continuous_signal
   {\ifhmode
-     \hskip\s_strc_sectioning_continuous_signal\relax
+     \hskip\d_strc_sectioning_continuous_signal\relax
    \fi}
 
 % \let\dotagsectionlevel\relax
@@ -1156,7 +1156,7 @@
   {\ifhmode
      \scratchcounter\lastpenalty
      \unpenalty % no beauty in this
-     \ifdim\lastskip=\s_strc_sectioning_continuous_signal
+     \ifdim\lastskip=\d_strc_sectioning_continuous_signal
        % no page break
        \ifconditional\c_strc_sectioning_ignore_page
          \setfalse\c_strc_sectioning_ignore_page

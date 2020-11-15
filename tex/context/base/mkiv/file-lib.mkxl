@@ -1,0 +1,20 @@
+%D \module
+%D   [       file=file-lib, % was core-fil,
+%D        version=20110701, % 1997.11.15,
+%D          title=\CONTEXT\ File Macros,
+%D       subtitle=Module Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt File Macros / Libraries}
+
+\unprotect
+
+\registerctxluafile{file-lib}{}
+
+\protect \endinput

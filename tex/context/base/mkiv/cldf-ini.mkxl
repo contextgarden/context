@@ -1,0 +1,45 @@
+%D \module
+%D   [       file=cldf-int,
+%D        version=2019.01.01,
+%D          title=\CONTEXT\ Data Macros,
+%D       subtitle=Integer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Documents / Initialization}
+
+\newcount\trialtypesettingstate % gets aliased at the Lua end
+
+\registerctxluafile{cldf-ini}{autosuffix}
+
+%D With each new update of \MKIV\ we can join Within Temptation in singing:
+%D
+%D \startbuffer
+%D \startluacode
+%D     context("I go faster%s",string.rep(" and faster",6))
+%D \stopluacode
+%D
+%D \cldcontext{"I go faster\letterpercent s",
+%D     string.rep(" and faster",6)}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Anyway \unknown\ the following are {\em not} user commands:
+
+% \catcode`=\activecatcode \let\luafunction % saves 10% on the call
+
+% todo: these can become implementers
+
+\permanent\protected\def\cldprocessfile#1{\directlua{context.runfile("#1")}}
+\permanent          \def\cldloadfile   #1{\directlua{context.loadfile("#1")}}
+\permanent          \def\cldloadviafile#1{\directlua{context.loadviafile("#1")}}
+\permanent          \def\cldcontext    #1{\directlua{context(#1)}}
+\permanent          \def\cldcommand    #1{\directlua{context.#1}}
+
+\endinput

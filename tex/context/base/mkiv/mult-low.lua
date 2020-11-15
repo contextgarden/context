@@ -333,8 +333,9 @@ return {
         -- "everyendpar",
         --
         "endgraf", "endpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "emspace", "charspace", "nbsp", "crlf",
-        "obeyspaces", "obeylines", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
-        "normalspace",
+        "obeyspaces", "obeylines", "obeytabs", "obeypages", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
+        "normalspace", "naturalspace", "controlspace", "normalspaces",
+        "ignoretabs", "ignorelines", "ignorepages", "ignoreeofs", "setcontrolspaces",
         --
         "executeifdefined",
         --

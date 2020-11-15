@@ -227,7 +227,7 @@
 %D \type{||word}, while it counterpart \type {\lang_discretionaries_check_after} is
 %D responsible for handling the comma.
 
-\newsignal\compoundbreakpoint
+\newsignal\d_lang_discretionaries_breakpoint % todo: never consulted so maybe obsolete
 
 \newconditional\punctafterdiscretionary
 \newconditional\spaceafterdiscretionary
@@ -500,7 +500,8 @@
 \def\lang_compounds_fake_hyphen
   {\enforced\permanent\protected\def##1|%
      {\doifelsenothing{##1}\compoundhyphen{##1}%
-      \kern\compoundbreakpoint\allowbreak}}
+      \kern\d_lang_discretionaries_breakpoint
+      \allowbreak}}
 
 %D \macros
 %D   {midworddiscretionary}

@@ -302,12 +302,13 @@ callback.register("handle_overload", function(fatal,overload,csname,flags)
         local readstate  = status.readstate
         local filename   = readstate.filename
         local linenumber = readstate.linenumber
+        local flags      = tokens.flags and tokens.flags(csname) or { }
         if filename and linenumber then
             report("%s, protection level %i, control sequence %a, properties '% t', file %a, line %i",
-                fatal and "fatal error" or "warning",overload,csname,tokens.flags(csname),filename,linenumber)
+                fatal and "fatal error" or "warning",overload,csname,flags,filename,linenumber)
         else
             report("%s, protection level %i, control sequence %a, properties '% t'",
-                fatal and "fatal error" or "warning",overload,csname,tokens.flags(csname))
+                fatal and "fatal error" or "warning",overload,csname,flags)
         end
         reported[csname] = true
         logs.newline()

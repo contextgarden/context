@@ -1,0 +1,32 @@
+%D \module
+%D   [       file=mult-def,
+%D        version=2008.10.22,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\installcorenamespace{multilingual}
+
+\immutable\setvalue{\??multilingual    czech}{cs}
+\immutable\setvalue{\??multilingual   german}{de}
+\immutable\setvalue{\??multilingual  english}{en}
+\immutable\setvalue{\??multilingual   french}{fr}
+\immutable\setvalue{\??multilingual  italian}{it}
+\immutable\setvalue{\??multilingual    dutch}{nl}
+\immutable\setvalue{\??multilingual  persian}{pe}
+\immutable\setvalue{\??multilingual romanian}{ro}
+
+\permanent\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\lastnamedcs\else en\fi}
+\permanent\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\lastnamedcs\else en\fi}
+
+\clf_setuserinterface{\userinterfacetag}{\userresponsestag}
+
+\protect \endinput

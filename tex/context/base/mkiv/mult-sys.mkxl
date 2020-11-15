@@ -91,6 +91,12 @@
 \definesystemconstant {usenglish}      \definesystemconstant {us}
 \definesystemconstant {vietnamese}     \definesystemconstant {vi}
 
+%D Left|-|overs:
+
+\defineinterfaceconstant {HL} {HL}
+\defineinterfaceconstant {VL} {VL}
+\defineinterfaceconstant {NL} {NL}
+
 %D For proper \UNICODE\ support we need a few font related constants.
 
 \definesystemconstant {action}

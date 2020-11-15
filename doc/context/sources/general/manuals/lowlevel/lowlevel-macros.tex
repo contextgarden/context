@@ -1,0 +1,886 @@
+% language=us
+
+% Extending the macro argument parser happened stepwise and at each step a bit of
+% \CONTEXT\ code was adapted for testing. At the beginning of October the 20201010
+% version of \LUAMETATEX\ was more of less complete, and I decided to adapt some
+% more and more intrusive too. Of course that resulted in some more files than I
+% had intended so mid October about 100 files were adapted. When this works out
+% well, I'll do some more. In the process many macros got the frozen property so
+% that was also a test and we'll see how that works out (as it can backfire). As
+% usual, here is a musical timestamp: working on this happened when Pineapple Thief
+% released \quotation {Versions of the Truth} which again a magnificent drumming by
+% Gavin Harrison.
+
+
+% \permanent\tolerant\protected\def\xx[#1]#*#;[#2]#:#3% loops .. todo
+
+
+\usemodule[system-tokens]
+
+\environment lowlevel-style
+
+\startdocument
+  [title=macros,
+   color=middleorange]
+
+\startsection[title=Preamble]
+
+This chapter overlaps with other chapters but brings together some extensions to
+the macro definition and expansion parts. As these mechanisms were stepwise
+extended, the other chapters describe intermediate steps in the development.
+
+Now, in spite of the extensions discussed here the main ides is still that we
+have \TEX\ act like before. We keep the charm of the macro language but these
+additions make for easier definitions, but (at least initially) none that could
+not be done before using more code.
+
+\stopsection
+
+\startsection[title=Definitions]
+
+A macro definition normally looks like like this: \footnote {The \type
+{\dontleavehmode} command make the examples stay on one line.}
+
+\startbuffer[definition]
+\def\macro#1#2%
+  {\dontleavehmode\hbox to 6em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+Such a macro can be used as:
+
+\startbuffer[example]
+\macro {1}{2}
+\macro {1} {2}  middle space gobbled
+\macro 1 {2}    middle space gobbled
+\macro {1} 2    middle space gobbled
+\macro 1 2      middle space gobbled
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+We show the result with some comments about how spaces are handled:
+
+\startlines \getbuffer[example] \stoplines
+
+A definition with delimited parameters looks like this:
+
+\startbuffer[definition]
+\def\macro[#1]%
+  {\dontleavehmode\hbox to 6em{\vl\type{#1}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+When we use this we get:
+
+\startbuffer[example]
+\macro [1]
+\macro [ 1]    leading space kept
+\macro [1 ]    trailing space kept
+\macro [ 1 ]   both spaces kept
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Again, watch the handling of spaces:
+
+\startlines \getbuffer[example] \stoplines
+
+Just for the record we show a combination:
+
+\startbuffer[definition]
+\def\macro[#1]#2%
+  {\dontleavehmode\hbox to 6em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+With this:
+
+\startbuffer[example]
+\macro [1]{2}
+\macro [1] {2}
+\macro [1] 2
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+we can again see the spaces go away:
+
+\startlines \getbuffer[example] \stoplines
+
+A definition with two separately delimited parameters is given next:
+
+\startbuffer[definition]
+\def\macro[#1#2]%
+  {\dontleavehmode\hbox to 6em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+When used:
+
+\startbuffer[example]
+\macro [12]
+\macro [ 12]     leading space gobbled
+\macro [12 ]     trailing space kept
+\macro [ 12 ]    leading space gobbled, trailing space kept
+\macro [1 2]     middle space kept
+\macro [ 1 2 ]   leading space gobbled, middle and trailing space kept
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+We get ourselves:
+
+\startlines \getbuffer[example] \stoplines
+
+These examples demonstrate that the engine does some magic with spaces before
+(and therefore also between multiple) parameters.
+
+We will now go a bit beyond what traditional \TEX\ engines do and enter the
+domain of \LUAMETATEX\ specific parameter specifiers. We start with one that
+deals with this hard coded space behavior:
+
+\startbuffer[definition]
+\def\macro[#^#^]%
+  {\dontleavehmode\hbox to 6em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+The \type {#^} specifier will count the parameter, so here we expect again two
+arguments but the space is kept when parsing for them.
+
+\startbuffer[example]
+\macro [12]
+\macro [ 12]
+\macro [12 ]
+\macro [ 12 ]
+\macro [1 2]
+\macro [ 1 2 ]
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Now keep in mind that we could deal well with all kind of parameter handling in
+\CONTEXT\ for decades, so this is not really something we missed, but it
+complements the to be discussed other ones and it makes sense to have that level
+of control. Also, availability triggers usage. Nevertheless, some day the \type
+{#^} specifier will come in handy.
+
+\startlines \getbuffer[example] \stoplines
+
+We now come back to an earlier example:
+
+\startbuffer[definition]
+\def\macro[#1]%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+When we use this we see that the braces in the second call are removed:
+
+\startbuffer[example]
+\macro [1]
+\macro [{1}]
+\stopbuffer
+
+\typebuffer[example][option=TEX] \getbuffer[example]
+
+This can be prohibited by the \type {#+} specifier, as in:
+
+\startbuffer[definition]
+\def\macro[#+]%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+As we see, the braces are kept:
+
+\startbuffer[example]
+\macro [1]
+\macro [{1}]
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Again, we could easily get around that (for sure intended) side effect but it just makes nicer
+code when we have a feature like this.
+
+\getbuffer[example]
+
+Sometimes you want to grab an argument but are not interested in the results. For this we have
+two specifiers: one that just ignores the argument, and another one that keeps counting but
+discards it, i.e.\ the related parameter is empty.
+
+\startbuffer[definition]
+\def\macro[#1][#0][#3][#-][#4]%
+  {\dontleavehmode\hbox spread 1em
+     {\vl\type{#1}\vl\type{#2}\vl\type{#3}\vl\type{#4}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+The second argument is empty and the fourth argument is simply ignored which is why we need
+\type {#4} for the fifth entry.
+
+\startbuffer[example]
+\macro [1][2][3][4][5]
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Here is proof that it works:
+
+\getbuffer[example]
+
+The reasoning behind dropping arguments is that for some cases we get around the
+nine argument limitation, but more important is that we don't construct token
+lists that are not used, which is more memory (and maybe even \CPU\ cache)
+friendly.
+
+Spaces are always kind of special in \TEX, so it will be no surprise that we have
+another specifier that relates to spaces.
+
+\startbuffer[definition]
+\def\macro[#1]#*[#2]%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+This permits usage like the following:
+
+\startbuffer[example]
+\macro [1][2]
+\macro [1] [2]
+\stopbuffer
+
+\typebuffer[example][option=TEX] \getbuffer[example]
+
+Without the optional \quote {grab spaces} specifier the second line would
+possibly throw an error. This because \TEX\ then tries to match \type{][} so the
+\type {] [} in the input is simply added to the first argument and the next
+occurrence of \type {][} will be used. That one can be someplace further in your
+source and if not \TEX\ complains about a premature end of file. But, with the
+\type {#*} option it works out okay (unless of course you don't have that second
+argument \type {[2]}.
+
+Now, you might wonder if there is a way to deal with that second delimited
+argument being optional and of course that can be programmed quite well in
+traditional macro code. In fact, \CONTEXT\ does that a lot because it is set up
+as a parameter driven system with optional arguments. That subsystem has been
+optimized to the max over years and it works quite well and performance wise
+there is very little to gain. However, as soon as you enable tracing you end up
+in an avalanche of expansions and that is no fun.
+
+This time the solution is not in some special specifier but in the way a macro
+gets defined.
+
+\startbuffer[definition]
+\tolerant\def\macro[#1]#*[#2]%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+The magic \type {\tolerant} prefix with delimited arguments and just quits when
+there is no match. So, this is acceptable:
+
+\startbuffer[example]
+\macro [1][2]
+\macro [1] [2]
+\macro [1]
+\macro
+\stopbuffer
+
+\typebuffer[example][option=TEX] \getbuffer[example]
+
+We can check how many arguments have been processed with a dedicated conditional:
+
+\startbuffer[definition]
+\tolerant\def\macro[#1]#*[#2]%
+  {\ifarguments 0\or 1\or 2\or ?\fi: \vl\type{#1}\vl\type{#2}\vl}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+We use this test:
+
+\startbuffer[example]
+\macro [1][2] \macro [1] [2] \macro [1] \macro
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+The result is: \inlinebuffer[example]\ which is what we expect because we flush
+inline and there is no change of mode. When the following definition is used in
+display mode, the leading \type {n=} can for instance start a new paragraph and
+when code in \type {\everypar} you can loose the right number when macros get
+expanded before the \type {n} gets injected.
+
+\starttyping[option=TEX]
+\tolerant\def\macro[#1]#*[#2]%
+  {n=\ifarguments 0\or 1\or 2\or ?\fi: \vl\type{#1}\vl\type{#2}\vl}
+\stoptyping
+
+In addition to the \type {\ifarguments} test primitive there is also a related
+internal counter \type {\lastarguments} set that you can consult, so the \type
+{\ifarguments} is actually just a shortcut for \typ {\ifcase \lastarguments}.
+
+We now continue with the argument specifiers and the next two relate to this optional
+grabbing. Consider the next definition:
+
+\startbuffer[definition]
+\tolerant\def\macro#1#*#2%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+With this test:
+
+\startbuffer[example]
+\macro {1} {2}
+\macro {1}
+\macro
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+We get:
+
+\getbuffer[example]
+
+This is okay because the last \type {\macro} is a valid (single token) argument. But, we
+can make the braces mandate:
+
+\startbuffer[definition]
+\tolerant\def\macro#=#*#=%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+Here the \type {#=} forces a check for braces, so:
+
+\startbuffer[example]
+\macro {1} {2}
+\macro {1}
+\macro
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+gives this:
+
+\getbuffer[example]
+
+However, we do loose these braces and sometimes you don't want that. Of course when you pass the
+results downstream to another macro you can always add them, but it was cheap to add a related
+specifier:
+
+\startbuffer[definition]
+\tolerant\def\macro#_#*#_%
+  {\dontleavehmode\hbox spread 1em{\vl\type{#1}\vl\type{#2}\vl\hss}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+Again, the magic \type {\tolerant} prefix works will quit scanning when there is
+no match. So:
+
+\startbuffer[example]
+\macro {1} {2}
+\macro {1}
+\macro
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+leads to:
+
+\getbuffer[example]
+
+When you're tolerant it can be that you still want to pick up some argument
+later on. This is why we have a continuation option.
+
+\startbuffer[definition]
+\tolerant\def\foo      [#1]#*[#2]#:#3{!#1!#2!#3!}
+\tolerant\def\oof[#1]#*[#2]#:(#3)#:#4{!#1!#2!#3!#4!}
+\tolerant\def\ofo      [#1]#:(#2)#:#3{!#1!#2!#3!}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+Hopefully the next example demonstrates how it works:
+
+\startbuffer[example]
+\foo{3} \foo[1]{3} \foo[1][2]{3}
+\oof{4} \oof[1]{4} \oof[1][2]{4}
+\oof[1][2](3){4} \oof[1](3){4} \oof(3){4}
+\ofo{3} \ofo[1]{3}
+\ofo[1](2){3} \ofo(2){3}
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+As you can see we can have multiple continuations using the \type {#:} directive:
+
+\startlines \getbuffer[example] \stoplines
+
+The last specifier doesn't work well with the \type {\ifarguments} state because
+we no longer know what arguments were skipped. This is why we have another test
+for arguments. A zero value means that the next token is not a parameter
+reference, a value of one means that a parameter has been set and a value of two
+signals an empty parameter. So, it reports the state of the given parameter as
+a kind if \type {\ifcase}.
+
+\startbuffer[definition]
+\def\foo#1#2{ [\ifparameter#1\or(ONE)\fi\ifparameter#2\or(TWO)\fi] }
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+\startbuffer[example]
+\foo{1}{2} \foo{1}{} \foo{}{2} \foo{}{}
+\stopbuffer
+
+Of course the test has to be followed by a valid parameter specifier:
+
+\typebuffer[example][option=TEX]
+
+The previous code gives this:
+
+\getbuffer[example]
+
+A combination check \type {\ifparameters}, again a case, matches the first
+parameter that has a value set.
+
+We could add plenty of specifiers but we need to keep in ind that we're not
+talking of an expression scanner. We need to keep performance in mind, so nesting
+and backtracking are no option. We also have a limited set of useable single
+characters, but here's one that uses a symbol that we had left:
+
+\startbuffer[definition]
+\def\startfoo[#/]#/\stopfoo{ [#1](#2) }
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+\startbuffer[example]
+\startfoo [x ] x \stopfoo
+\startfoo [ x ] x \stopfoo
+\startfoo [ x] x \stopfoo
+\startfoo [ x] \par x \par \par \stopfoo
+\stopbuffer
+
+The slash directive removes leading and trailing so called spacers as well as tokens
+that represent a paragraph end:
+
+\typebuffer[example][option=TEX]
+
+So we get this:
+
+\getbuffer[example]
+
+The next directive, the quitter \type {#;}, is demonstrated with an example. When
+no match has occurred, scanning picks up after this signal, otherwise we just
+quit.
+
+\startbuffer[example]
+\tolerant\def\foo[#1]#;(#2){/#1/#2/}
+
+\foo[1]\quad\foo[2]\quad\foo[3]\par
+\foo(1)\quad\foo(2)\quad\foo(3)\par
+
+\tolerant\def\foo[#1]#;#={/#1/#2/}
+
+\foo[1]\quad\foo[2]\quad\foo[3]\par
+\foo{1}\quad\foo{2}\quad\foo{3}\par
+
+\tolerant\def\foo[#1]#;#2{/#1/#2/}
+
+\foo[1]\quad\foo[2]\quad\foo[3]\par
+\foo{1}\quad\foo{2}\quad\foo{3}\par
+
+\tolerant\def\foo[#1]#;(#2)#;#={/#1/#2/#3/}
+
+\foo[1]\quad\foo[2]\quad\foo[3]\par
+\foo(1)\quad\foo(2)\quad\foo(3)\par
+\foo{1}\quad\foo{2}\quad\foo{3}\par
+\stopbuffer
+
+\typebuffer[example][option=TEX] \startpacked \getbuffer[example] \stoppacked
+
+I have to admit that I don't really need it but it made some macros that I was
+redefining behave better, so there is some self|-|interest here. Anyway, I
+considered some other features, like picking up a detokenized argument but I
+don't expect that to be of much use. In the meantime we ran out of reasonable characters,
+but some day \type {#?} and \type {#!} might show up, or maybe I find a use for \type {#<}
+and \type {#>}.
+
+\stopsection
+
+\startsection[title=Runaway arguments]
+
+There is a particular troublesome case left: a runaway argument. The solution is
+not pretty but it's the only way: we need to tell the parser that it can quit.
+
+\startbuffer[definition]
+\tolerant\def\foo[#1=#2]%
+  {\ifarguments 0\or 1\or 2\or 3\or 4\fi:\vl\type{#1}\vl\type{#2}\vl}
+\stopbuffer
+
+\typebuffer[definition][option=TEX] \getbuffer[definition]
+
+\startbuffer[example]
+\dontleavehmode \foo[a=1]
+\dontleavehmode \foo[b=]
+\dontleavehmode \foo[=]
+\dontleavehmode \foo[x]\ignorearguments
+\stopbuffer
+
+The outcome demonstrates that one still has to do some additional checking for sane
+results and there are alternative way to (ab)use this mechanism. It all boils down
+to a clever combination of delimiters and \type {\ignorearguments}.
+
+\typebuffer[example][option=TEX]
+
+All calls are accepted:
+
+\startlines \getbuffer[example] \stoplines
+
+Just in case you wonder about performance: don't expect miracles here. On the one
+hand there is some extra overhead in the engine (when defining macros as well as
+when collecting arguments during a macro call) and maybe using these new features
+can sort of compensate that. As mentioned: the gain is mostly in cleaner macro
+code and less clutter in tracing. And I just want the \CONTEXT\ code to look
+nice: that way users can look in the source to see what happens and not drown in
+all these show|-|off tricks, special characters like underscores, at signs,
+question marks and exclamation marks.
+
+For the record: I normally run tests to see if there are performance side effects
+and as long as processing the test suite that has thousands of files of all kind
+doesn't take more time it's okay. Actually, there is a little gain in \CONTEXT\
+but that is to be expected, but I bet users won't notice it, because it's easily
+offset by some inefficient styling. Of course another gain of loosing some
+indirectness is that error messages point to the macro that the user called for
+and not to some follow up.
+
+\stopsection
+
+\startsection[title=Introspection]
+
+A macro has a meaning. You can serialize that meaning as follows:
+
+\startbuffer[definition]
+\tolerant\protected\def\foo#1[#2]#*[#3]%
+  {(1=#1) (2=#3) (3=#3)}
+
+\meaning\foo
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+The meaning of \type {\foo} comes out as:
+
+\startnarrower \getbuffer[definition] \stopnarrower
+
+When you load the module \type {system-tokens} you can also say:
+
+\startbuffer[example]
+\luatokentable\foo
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+This produces a table of tokens specifications:
+
+{\getbuffer[definition]\getbuffer[example]}
+
+A token list is a linked list of tokens. The magic numbers in the first column
+are the token memory pointers. and because macros (and token lists) get recycled
+at some point the available tokens get scattered, which is reflected in the order
+of these numbers. Normally macros defined in the macro package are more sequential
+because they stay around from the start. The second and third row show the so
+called command code and the specifier. The command code groups primitives in
+categories, the specifier is an indicator of what specific action will follow, a
+register number a reference, etc. Users don't need to know these details. This
+macro is a special version of the online variant:
+
+\starttyping[option=TEX]
+\showluatokens\foo
+\stoptyping
+
+That one is always available and shows a similar list on the console. Again, users
+normally don't want to know such details.
+
+\startsection[title=nesting]
+
+You can nest macros, as in:
+
+\startbuffer
+\def\foo#1#2{\def\oof##1{<#1>##1<#2>}}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+At first sight the duplication of \type {#} looks strange but this is what
+happens. When \TEX\ scans the definition of \type {\foo} it sees two arguments.
+Their specification ends up in the preamble that defines the matching. When the
+body is scanned, the \type {#1} and \type {#2} are turned into a parameter
+reference. In order to make nested macros with arguments possible a \type {#}
+followed by another \type {#} becomes just one \type {#}. Keep in mind that the
+definition of \type {\oof} is delayed till the macro \type {\foo} gets expanded.
+That definition is just stored and the only thing that get's replaced are the two
+references to a macro parameter
+
+\luatokentable\foo
+
+Now, when we look at these details, it might become clear why for instance we
+have \quote {variable} names like \type {#4} and not \type {#whatever} (with or
+without hash). Macros are essentially token lists and token lists can be seen as
+a sequence of numbers. This is not that different from other programming
+environments. When you run into buzzwords like \quote {bytecode} and \quote
+{virtual machines} there is actually nothing special about it: some high level
+programming (using whatever concept, and in the case of \TEX\ it's macros)
+eventually ends up as a sequence of instructions, say bytecodes. Then you need
+some machinery to run over that and act upon those numbers. It's something you
+arrive at naturally when you play with interpreting languages. \footnote {I
+actually did when I wrote an interpreter for some computer assisted learning
+system, think of a kind of interpreted \PASCAL, but later realized that it was a a
+bytecode plus virtual machine thing. I'd just applied what I learned when playing
+with eight bit processors that took bytes, and interpreted opcodes and such.
+There's nothing spectacular about all this and I only realized decades later that
+the buzzwords describes old natural concepts.}
+
+So, internally a \type {#4} is just one token, a operator|-|operand combination
+where the operator is \quotation {grab a parameter} and the operand tells
+\quotation {where to store} it. Using names is of course an option but then one
+has to do more parsing and turn the name into a number \footnote {This is kind of
+what \METAPOST\ does with parameters to macros. The side effect is that in
+reporting you get \type {text0}, \type {expr2} and such reported which doesn't
+make things more clear.}, add additional checking in the macro body, figure out
+some way to retain the name for the purpose of reporting (which then uses more
+token memory or strings). It is simply not worth the trouble, let alone the fact
+that we loose performance, and when \TEX\ showed up those things really mattered.
+
+It is also important to realize that a \type {#} becomes either a preamble token
+(grab an argument) or a reference token (inject the passed tokens into a new
+input level). Therefore the duplication of hash tokens \type {##} that you see in
+macro nested bodies also makes sense: it makes it possible for the parser to
+distinguish between levels. Take:
+
+\starttyping[option=TEX]
+\def\foo#1{\def\oof##1{#1##1#1}}
+\stoptyping
+
+Of course one can think of this:
+
+\starttyping[option=TEX]
+\def\foo#fence{\def\oof#text{#fence#text#fence}}
+\stoptyping
+
+But such names really have to be unique then! Actually \CONTEXT\ does have an
+input method that supports such names, but discussing it here is a bit out of
+scope. Now, imagine that in the above case we use this:
+
+\starttyping[option=TEX]
+\def\foo[#1][#2]{\def\oof##1{#1##1#2}}
+\stoptyping
+
+If you're a bit familiar with the fact that \TEX\ has a model of category codes
+you can imagine that a predictable \quotation {hash followed by a number} is way
+more robust than enforcing the user to ensure that catcodes of \quote {names} are
+in the right category (read: is a bracket part of the name or not). So, say that
+we go completely arbitrary names, we then suddenly needs some escaping, like:
+
+\starttyping[option=TEX]
+\def\foo[#{left}][#{right}]{\def\oof#{text}{#{left}#{text}#{right}}}
+\stoptyping
+
+And, if you ever looked into macro packages, you will notice that they differ in
+the way they assign category codes. Asking users to take that into account when
+defining macros makes not that much sense.
+
+So, before one complains about \TEX\ being obscure (the hash thing), think twice.
+Your demand for simplicity for your coding demand will make coding more
+cumbersome for the complex cases that macro packages have to deal with. It's
+comparable using \TEX\ for input or using (say) mark down. For simple documents
+the later is fine, but when things become complex, you end up with similar
+complexity (or even worse because you lost the enforced detailed structure). So,
+just accept the unavoidable: any language has its peculiar properties (and for
+sure I do know why I dislike some languages for it). The \TEX\ system is not the
+only one where dollars, percent signs, ampersands and hashes have special
+meaning.
+
+\stopsection
+
+\startsection[title=Prefixes]
+
+Traditional \TEX\ has three prefixes that can be used with macros: \type {\global},
+\type {\outer} and \type {\long}. The last two are no|-|op's in \LUAMETATEX\ and
+if you want to know what they do (did) you can look it up in the \TEX book. The
+\ETEX\ extension gave us \type {\protected}.
+
+In \LUAMETATEX\ we have \type {\global}, \type {\protected}, \type {\tolerant}
+and overload related prefixes like \type {\frozen}. A protected macro is one that
+doesn't expand in an expandable context, so for instance inside an \type {\edef}.
+You can force expansion by using the \type {\expand} primitive in front which is
+also something \LUAMETATEX.
+
+% A protected macro can be made expandable by \typ {\unletprotected} and can be
+% protected with \typ {\letprotected}.
+%
+% \startbuffer[example]
+%                \def\foo{foo} \edef\oof{oof\foo} 1: \meaning\oof
+%      \protected\def\foo{foo} \edef\oof{oof\foo} 2: \meaning\oof
+% \unletprotected    \foo      \edef\oof{oof\foo} 3: \meaning\oof
+% \stopbuffer
+%
+% \typebuffer[example][option=TEX]
+%
+% \startlines \getbuffer[example] \stoplines
+
+Frozen macros cannot be redefined without some effort. This feature can to some
+extent be used to prevent a user from overloading, but it also makes it harder
+for the macro package itself to redefine on the fly. You can remove the lock with
+\typ {\unletfrozen} and add a lock with \typ {\letfrozen} so in the end users
+still have all the freedoms that \TEX\ normally provides.
+
+\startbuffer[example]
+                 \def\foo{foo} 1: \meaning\foo
+          \frozen\def\foo{foo} 2: \meaning\foo
+     \unletfrozen    \foo      3: \meaning\foo
+\protected\frozen\def\foo{foo} 4: \meaning\foo
+     \unletfrozen    \foo      5: \meaning\foo
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+\startlines \overloadmode0 \getbuffer[example] \stoplines
+
+This actually only works when you have set \type {\overloadmode} to a value that
+permits redefining a frozen macro, so for the purpose of this example we set it
+to zero.
+
+A \type {\tolerant} macro is one that will quit scanning arguments when a
+delimiter cannot be matched. We saw examples of that in a previous section.
+
+These prefixes can be chained (in arbitrary order):
+
+\starttyping[option=TEX]
+\frozen\tolerant\protected\global\def\foo[#1]#*[#2]{...}
+\stoptyping
+
+There is actually an additional prefix, \type {\immediate} but that one is there
+as signal for a macro that is defined in and handled by \LUA. This prefix can
+then perform the same function as the one in traditional \TEX, where it is used
+for backend related tasks like \type {\write}.
+
+Now, the question is of course, to what extent will \CONTEXT\ use these new
+features. One important argument in favor of using \type {\tolerant} is that it
+gives (hopefully) better error messages. It also needs less code due to lack of
+indirectness. Using \type {\frozen} adds some safeguards although in some places
+where \CONTEXT\ itself overloads commands, we need to defrost. Adapting the code
+is a tedious process and it can introduce errors due to mistypings, although
+these can easily be fixed. So, it will be used but it will take a while to adapt
+the code base.
+
+One problem with frozen macros is that they don't play nice with for instance
+\type {\futurelet}. Also, there are places in \CONTEXT\ where we actually do
+redefine some core macro that we also want to protect from redefinition by a
+user. One can of course \type {\unletfrozen} such a command first but as a bonus
+we have a prefix \type {\overloaded} that can be used as prefix. So, one can easily
+redefine a frozen macro but it takes a little effort. After all, this feature is
+mainly meant to protect a user for side effects of definitions, and not as final
+blocker. \footnote {As usual adding features like this takes some experimenting
+and we're now at the third variant of the implementation, so we're getting there.
+The fact that we can apply such features in large macro package like \CONTEXT\
+helps figuring out the needs and best approaches.}
+
+A frozen macro can still be overloaded, so what if we want to prevent that? For
+this we have the \type {\permanent} prefix. Internally we also create primitives
+but we don't have a prefix for that. But we do have one for a very special case
+which we demonstrate with an example:
+
+\startbuffer[example]
+\def\FOO % trickery needed to pick up an optional argument
+  {\noalign{\vskip10pt}}
+
+\noaligned\protected\tolerant\def\OOF[#1]%
+  {\noalign{\vskip\iftok{#1}\emptytoks10pt\else#1\fi}}
+
+\starttabulate[|l|l|]
+    \NC test \NC test \NC \NR
+    \NC test \NC test \NC \NR
+    \FOO
+    \NC test \NC test \NC \NR
+    \OOF[30pt]
+    \NC test \NC test \NC \NR
+    \OOF
+    \NC test \NC test \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+When \TEX\ scans input (from a file or token list) and starts an alignment, it
+will pick up rows. When a row is finished it will look ahead for a \type
+{\noalign} and it expands the next token. However, when that token is protected,
+the scanner will not see a \type {\noalign} in that macro so it will likely start
+complaining when that next macro does get expanded and produces a \type
+{\noalign} when a cell is built. The \type {\noaligned} prefix flags a macro as
+being one that will do some \type {\noalign} as part of its expansion. This trick
+permits clean macros that pick up arguments. Of course it can be done with
+traditional means but this whole exercise is about making the code look nice.
+
+The table comes out as:
+
+\getbuffer[example]
+
+One can check the flags with \type {\ifflags} which takes a control sequence and
+a number, where valid numbers are:
+
+\starttabulate[|r|lw(8em)|r|lw(8em)|r|lw(8em)|r|lw(8em)|]
+\NC \the\frozenflagcode    \NC frozen
+\NC \the\permanentflagcode \NC permanent
+\NC \the\immutableflagcode \NC immutable
+\NC \the\primitiveflagcode \NC primitive  \NC \NR
+\NC \the\mutableflagcode   \NC mutable
+\NC \the\noalignedflagcode \NC noaligned
+\NC \the\instanceflagcode  \NC instance
+\NC                        \NC            \NC \NR
+\stoptabulate
+
+The level of checking is controlled with the \type {\overloadmode} but I'm still
+not sure about how many levels we need there. A zero value disables checking,
+the values 1 and 3 give warnings and the values 2 and 4 trigger an error.
+
+\stopsection
+
+\stopdocument
+
+freezing pitfalls:
+
+- \futurelet  : \overloaded needed
+- \let        : \overloaded sometimes needed
+
+primitive protection:
+
+\newif\iffoo \footrue \foofalse : problem when we make iftrue and iffalse
+permanent ... they inherit, so we can't let them, we need a not permanent
+alias which is again tricky ... something native?
+
+immutable : still \count000 but we can consider blocking that, for instance
+by \def\count{some error}
+
+\defcsname
+\edefcsname
+\letcsname

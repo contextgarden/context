@@ -1,0 +1,84 @@
+%D \module
+%D   [       file=publ-tra,
+%D        version=2013.12.24,
+%D          title=\CONTEXT\ Publication Support,
+%D       subtitle=Tracing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: make this a runtime module
+% todo: use the module interface
+
+\writestatus{loading}{ConTeXt Publication Support / Tracing}
+
+\registerctxluafile{publ-tra}{}
+
+\unprotect
+
+\permanent\protected\gdef\showbtxdatasetfields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
+\permanent\protected\gdef\showbtxdatasetcompleteness{\publ_show_dataset_whatever{showbtxdatasetcompleteness}}
+\permanent\protected\gdef\showbtxdatasetauthors     {\publ_show_dataset_whatever{showbtxdatasetauthors}}
+
+\tolerant\gdef\publ_show_dataset_whatever#1[#2]%
+  {\begingroup
+   \letdummyparameter\c!specification\currentbtxspecification
+   \setdummyparameter\c!dataset      {\currentbtxdataset}%
+   \letdummyparameter\c!field        \empty
+   \ifparameter#2\or
+     \ifhastok={#2}%
+       \getdummyparameters[#2]%
+     \else
+       \setdummyparameter\c!dataset{#2}%
+     \fi
+   \fi
+   \ctxcommand{#1{
+      dataset       = "\dummyparameter\c!dataset",
+      specification = "\dummyparameter\c!specification",
+      field         = "\dummyparameter\c!field",
+   }}%
+   \endgroup}
+
+\permanent\tolerant\protected\gdef\showbtxfields[#1]%
+  {\begingroup
+   \setdummyparameter\c!rotation{90}%
+   \ifparameter#1\or
+     \ifhastok={#1}%
+       \letdummyparameter\c!specification\currentbtxspecification
+       \getdummyparameters[#1]%
+     \else
+       \setdummyparameter\c!specification{#1}%
+     \fi
+   \else
+     \letdummyparameter\c!specification\currentbtxspecification
+   \fi
+   \ctxcommand{showbtxfields{
+      rotation      = "\dummyparameter\c!rotation",
+      specification = "\dummyparameter\c!specification"
+   }}%
+   \endgroup}
+
+\permanent\tolerant\protected\gdef\showbtxtables[#1]%
+  {\begingroup
+   \ctxcommand{showbtxtables{}}%
+   \endgroup}
+
+\permanent\tolerant\protected\gdef\showbtxhashedauthors[#1]%
+  {\ctxcommand{showbtxhashedauthors{}}}
+
+\protect
+
+\continueifinputfile{publ-tra.mkiv}
+
+\starttext
+
+    \showbtxfields[rotation=85] \page
+    \showbtxfields[rotation=90] \page
+
+    \showbtxtables \page
+
+\stoptext

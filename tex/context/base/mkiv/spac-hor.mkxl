@@ -530,14 +530,14 @@
     \enforced\let\ \space
 \to \everysimplifycommands
 
-\newsignal\s_spac_keep_unwanted_space
+\newsignal\d_spac_keep_unwanted_space_signal
 
 % \parindentmode\plusone
 
 \permanent\protected\def\keepunwantedspaces
   {\ifhmode
-     \ifdim\lastskip=\s_spac_keep_unwanted_space\else
-        \hskip\s_spac_keep_unwanted_space\relax
+     \ifdim\lastskip=\d_spac_keep_unwanted_space_signal\else
+        \hskip\d_spac_keep_unwanted_space_signal\relax
      \fi
    \fi}
 
@@ -550,7 +550,7 @@
   {\ifnum\lastnodetype=\gluenodecode\relax
      \ifnum\lastnodesubtype=\indentskipsubtypecode\relax
        % keep parindent
-     \orelse\ifdim\lastskip=\s_spac_keep_unwanted_space\relax
+     \orelse\ifdim\lastskip=\d_spac_keep_unwanted_space_signal\relax
         \unskip
      \else
         \unskip
@@ -1222,13 +1222,13 @@
 %D    \oeps}
 %D \stoptyping
 
-\newsignal\s_spac_ignore_spaces
+\newsignal\d_spac_ignore_spaces_signal
 \newcount \c_spac_ignore_spaces
 
 \protected\def\startignorespaces
   {\advance\c_spac_ignore_spaces\plusone
    \ifcase\c_spac_ignore_spaces\or \ifhmode
-     \hskip\s_spac_ignore_spaces
+     \hskip\d_spac_ignore_spaces_signal
    \fi \fi
    \ignorespaces}
 
@@ -1243,7 +1243,7 @@
 \def\spac_ignore_spaces_body
   {\ifzeropt\lastskip
      \exitloop
-   \orelse\ifdim\lastskip=\s_spac_ignore_spaces
+   \orelse\ifdim\lastskip=\d_spac_ignore_spaces_signal
      \unskip
      \exitloop
    \else

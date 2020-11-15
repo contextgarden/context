@@ -1,0 +1,215 @@
+%D \module
+%D   [       file=mlib-pps,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Basics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: remove MPenvironment code
+
+\unprotect
+
+\registerctxluafile{mlib-pps}{}
+
+%D Todo: catch nested graphics like external figures with dummies.
+
+% todo: figure out why this is shifted
+%
+% \setupbodyfont[palatino]
+%
+% \starttext
+%     \startMPpage
+%         draw textext("123") ;
+%     \stopMPpage
+% \stoptext
+%
+% A slightly larger picture works ok so maybe there is some kind
+% of interference with the page builder.
+
+\newbox \MPtextbox
+\newtoks\everyMPLIBsettext % not used
+
+\def\mlib_flush_environment
+  {%\writestatus\m!metapost{flushing environment}%
+   \clf_mptexget
+   \enforced\let\MPLIBflushenvironment\relax}% MPenvironments are depricated}
+
+\aliased\let\MPLIBflushenvironment\mlib_flush_environment
+
+\permanent\protected\def\MPLIBsetNtext#1% #2% box text
+  {\MPLIBflushenvironment
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
+     \meta_set_current_color
+     \enforced\let\MPLIBflushenvironment\mlib_flush_environment
+     \let\next} % gobble open brace
+
+\permanent\protected\def\MPLIBsetCtext#1#2% #3% box colorspec text
+  {\MPLIBflushenvironment
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
+     \directcolored[#2]%
+     \meta_set_current_color % so, textcolor wins !
+     \enforced\let\MPLIBflushenvironment\mlib_flush_environment
+     \let\next} % gobble open brace
+
+\aliased\let\MPLIBsettext\MPLIBsetNtext
+
+\permanent\protected\def\MPLIBsetNtextX#1% #2% box text
+  {\MPLIBflushenvironment
+   \hbox\bgroup % text
+   \meta_set_current_color
+   \enforced\let\MPLIBflushenvironment\mlib_flush_environment
+   \let\next}
+
+\permanent\protected\def\MPLIBsetCtextX#1#2% #3% box colorspec text
+  {\MPLIBflushenvironment
+   \hbox\bgroup % text
+   \directcolored[#2]%
+   \meta_set_current_color % so, textcolor wins !
+   \enforced\let\MPLIBflushenvironment\mlib_flush_environment
+   \let\next}
+
+\aliased\let\MPLIBsettextX\MPLIBsetNtextX
+
+\permanent\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
+  {\clf_mpgettext\MPtextbox #1%
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
+
+\permanent\protected\def\MPLIBfigure#1#2%
+  {\setbox\scratchbox\hpack{\externalfigure[#1][\c!mask=#2]}%
+   \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\fastsxsy{\sx}{\sy}{\box\scratchbox}\hss}}}
+
+% horrible (we could inline scale and matrix code):
+
+\permanent\protected\def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
+  {\clf_mpgettext\MPtextbox #1%
+   \setbox\MPbox\hpack\bgroup
+     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
+       \vpack to \zeropoint\bgroup
+          \vss
+          \hpack to \zeropoint \bgroup
+           % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
+           % \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
+             \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
+             % This gives: LuaTeX warning: Misplaced \pdfrestore .. don't ask me why.
+             % but I'll retry it some day soon.
+             % \dostartscaling{#8}{#9}%
+             %   \raise\dp\MPtextbox\box\MPtextbox
+             % \dostopscaling
+             \forcecolorhack % can go away ... already in the scale macro
+             \hss
+         \egroup
+       \egroup
+   \egroup
+   \smashbox\MPbox
+   \box\MPbox}
+
+% \putnextboxincache{hans}{1}\hbox{foo}
+%
+% \startMPcode
+%     draw boundingbox rawtexbox("hans",1) ;
+%     draw rawtexbox("hans",1) ;
+% \stopMPcode
+
+\permanent\protected\def\MPLIBgetboxscaledcm#1#2%
+  {\begingroup
+   \copyboxfromcache{#1}{#2}\MPtextbox % can be \clf_
+   \mlib_get_box_scaled_cm_next}
+
+\protected\def\mlib_get_box_scaled_cm_next#1#2#3#4#5#6#7#8% 1-6: sx,rx,ry,sy,tx,ty
+  {\setbox\MPbox\hpack\bgroup
+     \dotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}%
+       \vpack to \zeropoint\bgroup
+          \vss
+          \hpack to \zeropoint \bgroup
+             \fastsxsy{#7}{#8}{\raise\dp\MPtextbox\box\MPtextbox}%
+             \hss
+         \egroup
+       \egroup
+   \egroup
+   \smashbox\MPbox
+   \box\MPbox
+   \endgroup}
+
+\permanent\protected\def\MPLIBgraphictext#1% use at mp end
+  {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
+
+%D \startbuffer
+%D \definelayer[test]
+%D
+%D \setlayerframed
+%D   [test]
+%D   [x=\MPx{somepos-1},y=\MPy{somepos-1}]
+%D   [width=\MPw{somepos-1},height=\MPh{somepos-1}]
+%D   {Whatever we want here!}
+%D
+%D \setlayerframed
+%D   [test]
+%D   [x=\MPx{somepos-2},y=\MPy{somepos-2}]
+%D   [width=\MPw{somepos-2},height=\MPh{somepos-2}]
+%D   {Whatever we need there!}
+%D
+%D \startuseMPgraphic{oeps}
+%D     draw fullcircle scaled 6cm withcolor red ;
+%D     register ("somepos-1",5cm,1cm,center currentpicture) ;
+%D     register ("somepos-2",4cm,3cm,(-1cm,-2cm)) ;
+%D \stopuseMPgraphic
+%D
+%D \framed[background=test,offset=overlay]{\useMPgraphic{oeps}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\permanent\protected\def\MPLIBpositionwhd#1#2#3#4#5% bp !
+  {\dosavepositionwhd{#1}\zerocount{#2\onebasepoint}{#3\onebasepoint}{#4\onebasepoint}{#5\onebasepoint}\zeropoint}
+
+\def\mlib_stop_group#1#2#3#4#5#6% some day this might happen elsewhere
+  {\egroup
+   \setbox\scratchbox\hpack{\kern\onebasepoint\box\scratchbox}% weird correction
+   \wd\scratchbox \dimexpr#5\onebasepoint-#3\onebasepoint+2\onebasepoint\relax
+   \ht\scratchbox #6\onebasepoint
+   \dp\scratchbox-#4\onebasepoint
+   \setbox\scratchbox\hpack\bgroup
+     \kern-#3\onebasepoint
+     \box\scratchbox
+   \egroup
+   \saveboxresource
+     attr      {/Group << /S /Transparency /I \ifnum#1=1 true \else false \fi /K \ifnum#2=1 true \else false \fi >>}
+     resources {\pdfbackendcurrentresources}
+     \scratchbox
+   \setbox\scratchbox\hpack\bgroup
+     \kern#3\onebasepoint
+     \kern-\onebasepoint
+     \useboxresource\lastsavedboxresourceindex
+   \egroup
+   \wd\scratchbox\zeropoint
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
+   \endgroup}
+
+\aliased\let\MPLIBstopgroup\relax
+
+\permanent\protected\def\MPLIBstartgroup#1#2#3#4#5#6% isolated 0/1, knockout 0/1 llx lly urx ury
+  {\begingroup
+   \setbox\scratchbox\hpack\bgroup
+   \enforced\permanent\protected\def\MPLIBstopgroup{\mlib_stop_group{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+% For now here ... will be cleaned up:
+
+\newtoks\mptexttoks
+\newbox \mptextbox
+\newtoks\mpoutlinetoks
+\newtoks\mpgraphictexttoks
+
+\mptexttoks       {\global\setbox\mptextbox\hbox{\clf_mptexttoks}}
+\mpoutlinetoks    {\global\setbox\mptextbox\vbox{\clf_mpoutlinetoks}}
+\mpgraphictexttoks{\global\setbox\mptextbox\vbox{\clf_mpgraphictexttoks}}
+
+\protect \endinput

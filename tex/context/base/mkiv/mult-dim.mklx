@@ -1,0 +1,156 @@
+%D \module
+%D   [       file=core-gen,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=General,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / General}
+
+% we could write a proper parser now in lua
+
+\unprotect
+
+%D \macros
+%D   {assigndimension,assignalfadimension}
+%D
+%D The following commands are used to process keyword based dimension setters.
+%D
+%D \starttyping
+%D \assigndimension
+%D   {<value>|small|medium|big|-small|-medium|-big|none}
+%D   {\dimension}
+%D   {value small}
+%D   {value medium}
+%D   {value big}
+%D \stoptyping
+%D
+%D The given keyword determines the result.
+
+\installcorenamespace{dimensionnormal}
+
+\def\assign_dimension_direct#value#dimension#small#medium#big{#dimension=#value\relax}
+
+\immutable\setvalue{\??dimensionnormal \v!none  }#value#dimension#small#medium#big{#dimension\zeropoint}
+\immutable\setvalue{\??dimensionnormal \empty   }#value#dimension#small#medium#big{#dimension\zeropoint}
+\immutable\setvalue{\??dimensionnormal \v!small }#value#dimension#small#medium#big{#dimension=#small\relax}
+\immutable\setvalue{\??dimensionnormal \v!medium}#value#dimension#small#medium#big{#dimension=#medium\relax}
+\immutable\setvalue{\??dimensionnormal \v!big   }#value#dimension#small#medium#big{#dimension=#big\relax}
+\immutable\setvalue{\??dimensionnormal-\v!small }#value#dimension#small#medium#big{#dimension=-#small\relax}
+\immutable\setvalue{\??dimensionnormal-\v!medium}#value#dimension#small#medium#big{#dimension=-#medium\relax}
+\immutable\setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
+\immutable\letvalue{\??dimensionnormal\s!unknown}\assign_dimension_direct
+
+\permanent\protected\def\assigndimension#value%
+  {\ifcsname\??dimensionnormal#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_dimension_direct
+   \fi{#value}}
+
+%D The next variant assigns to a macro instead of a dimension.
+%D
+%D \starttyping
+%D \assignalfadimension
+%D   {<value>|small|medium|big|none}
+%D   {\macro}
+%D   {value small}
+%D   {value medium}
+%D   {value big}
+%D \stoptyping
+%D
+%D This one is used for factors.
+
+\installcorenamespace{dimensionalfa}
+
+\def\assign_alpha_dimension_direct#value#macro#small#medium#big{\edef#macro{#value}}
+
+\immutable\setvalue{\??dimensionalfa\v!none   }#value#macro#small#medium#big{\let #macro\!!zerocount}
+\immutable\setvalue{\??dimensionalfa\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
+\immutable\setvalue{\??dimensionalfa\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
+\immutable\setvalue{\??dimensionalfa\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
+\immutable\letvalue{\??dimensionalfa\s!unknown}\assign_alpha_dimension_direct
+
+\permanent\protected\def\assignalfadimension#value%
+  {\ifcsname\??dimensionalfa#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_alpha_dimension_direct
+   \fi
+   {#value}}
+
+%D \macros
+%D   {assignvalue}
+%D
+%D A variant that does not assume dimenions ios the following:
+%D
+%D \starttyping
+%D \assignvalue
+%D   {<value>|small|medium|big}
+%D   {\macro}
+%D   {value small}
+%D   {value medium}
+%D   {value big}
+%D \stoptyping
+
+\installcorenamespace{dimensionvalue}
+
+\def\assign_value_direct#value#macro#small#medium#big{\edef#macro{#value}}
+
+\immutable\setvalue{\??dimensionvalue\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
+\immutable\setvalue{\??dimensionvalue\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
+\immutable\setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
+\immutable\letvalue{\??dimensionvalue\s!unknown}\assign_value_direct
+
+\permanent\protected\def\assignvalue#value%
+  {\ifcsname\??dimensionvalue#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_value_direct
+  \fi{#value}}
+
+%D \macros
+%D   {assignwidth}
+%D
+%D This one is used a few times.
+%D
+%D \starttyping
+%D \assignwidth
+%D   {<value>|fit|broad}
+%D   {\dimension}
+%D   {text}
+%D   {extra}
+%D \stoptyping
+
+\installcorenamespace{dimensionwidth}
+
+\newbox\b_assign_width
+
+\def\assign_width_direct#value#dimension#content#extra{#dimension=#value\relax}
+
+% line is like fit but can be used later as signal for ...
+
+\immutable\setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+                                                                               \setbox\b_assign_width\emptybox}
+\immutable\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+                                                                               \setbox\b_assign_width\emptybox}
+\immutable\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
+                                                                               \setbox\b_assign_width\emptybox}
+\immutable\setvalue{\??dimensionwidth\v!line   }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+                                                                               \setbox\b_assign_width\emptybox}
+\immutable\letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
+
+\permanent\protected\def\assignwidth#value%
+  {\ifcsname\??dimensionwidth#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_width_direct
+   \fi{#value}}
+
+\protect \endinput

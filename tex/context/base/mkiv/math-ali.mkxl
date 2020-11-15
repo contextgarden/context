@@ -1418,7 +1418,7 @@
 \newdimen      \d_strc_math_indent
 \newconditional\c_strc_math_indent
 
-\let\d_strc_math_framed_width\displaywidth
+\newdimen\d_strc_math_framed_width
 
 \setvalue{\??formulaoption\v!frame}%
   {\edef\p_frame{\formulaparameter\c!frame}%
@@ -1459,17 +1459,13 @@
    \fi}
 
 \def\strc_math_flush_box_framed_common
-  {\setformulaframedparameter\c!align{\formulaparameter\c!align}%
+  {\d_strc_math_framed_width\displaywidth
+   \setformulaframedparameter\c!align{\formulaparameter\c!align}%
    \letformulaframedparameter\c!strut\v!no
    \d_framed_formula\ht\b_strc_math_display
    \ifcase\mathraggedstatus\or\hfill\or\hfill         \fi
    \inheritedformulaframedframed{\box\b_strc_math_display}%
    \ifcase\mathraggedstatus\or      \or\hfill\or\hfill\fi}
-
-% \def\strc_math_flush_box_framed_inline
-%   {\letformulaframedparameter\c!location\empty
-%    \letformulaframedparameter\c!width\displaywidth
-%    \strc_math_flush_box_framed_common}
 
 \def\strc_math_flush_box_framed_display
   {\let\currentformulaframed\currentformula
@@ -1631,9 +1627,9 @@
    \fi
    % still ok?
    \ifnum\mathraggedstatus=\plustwo
-     \edef\d_strc_math_framed_width{\the\dimexpr\displaywidth-2\wd\b_strc_formulas_number\relax}%
+     \d_strc_math_framed_width\dimexpr\displaywidth-2\wd\b_strc_formulas_number\relax
    \else
-     \edef\d_strc_math_framed_width{\the\dimexpr\displaywidth-\wd\b_strc_formulas_number\relax}%
+     \d_strc_math_framed_width\dimexpr\displaywidth- \wd\b_strc_formulas_number\relax
    \fi}
 
 \let\strc_math_number_check_inside\strc_math_number_check_outside

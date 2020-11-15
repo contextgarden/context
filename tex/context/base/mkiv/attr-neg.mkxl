@@ -1,0 +1,28 @@
+%D \module
+%D   [       file=attr-neg,
+%D        version=2007.06.06,
+%D          title=\CONTEXT\ Attribute Macros,
+%D       subtitle=Negation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Attribute Macros / Negation}
+
+\registerctxluafile{attr-neg}{}
+
+\unprotect
+
+% positive and negative are preregistered
+
+\permanent\protected\def\startnegative{\clf_setnegative{\v!negative}}
+\permanent\protected\def\stopnegative {\clf_setnegative{\v!positive}}
+
+\permanent\protected\def\startpositive{\clf_setnegative{\v!positive}}
+\permanent\protected\def\stoppositive {\clf_setnegative{\v!negative}}
+
+\protect \endinput

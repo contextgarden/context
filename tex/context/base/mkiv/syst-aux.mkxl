@@ -3044,12 +3044,12 @@
 %D Signals old dimensions and can be used in skips, kerns and tests like \type
 %D {\ifdim}.
 
-\newdimen\maximumsignal % step is about 0.00025pt
+\newdimen\d_syst_maximum_signal % step is about 0.00025pt
 
 \permanent\protected\def\newsignal#1%
   {\ifdefined#1\else
-     \advance\maximumsignal 2\scaledpoint % to be save in rounding
-     \edef#1{\the\maximumsignal}%
+     \advance\d_syst_maximum_signal2\scaledpoint % to be save in rounding
+     \immutable\dimensiondef#1\d_syst_maximum_signal
    \fi}
 
 %D \macros

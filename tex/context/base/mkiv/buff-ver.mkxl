@@ -377,7 +377,7 @@
 \permanent\protected\def\explicitcontrolspace  {\optionalcontrolspace\allowbreak} % uses asciispace
 
 \appendtoks
-    \protected\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
+    \enforced\protected\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
 \to \everyenableelements
 
 \permanent\protected\def\obeyhyphens

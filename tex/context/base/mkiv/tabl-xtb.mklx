@@ -76,16 +76,16 @@
 % \let\tsplitafter       \donothing
 % \let\postprocesstsplit \donothing
 
-\let\dotagxtablecell  \relax % names will change
-\let\dotagxtablesignal\relax % names will change
+\aliased\let\dotagxtablecell  \relax % names will change
+\aliased\let\dotagxtablesignal\relax % names will change
 
 \appendtoks
-    \def\dotagxtablecell
+    \enforced\permanent\protected\def\dotagxtablecell
       {\clf_settagtablecell
          \numexpr\tablecellrows\relax
          \numexpr\tablecellcolumns\relax
          \numexpr\raggedstatus\relax}%
-    \def\dotagxtablesignal
+    \enforced\permanent\protected\def\dotagxtablesignal
       {\signalcharacter}% not used
 \to \everyenableelements
 

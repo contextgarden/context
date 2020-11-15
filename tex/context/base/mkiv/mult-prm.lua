@@ -264,6 +264,7 @@ return {
   "crampedtextstyle",
   "csstring",
   "defcsname",
+  "dimensiondef",
   "directlua",
   "edefcsname",
   "efcode",

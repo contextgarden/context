@@ -492,7 +492,7 @@
    \ifconditional\c_strc_notes_skip
      \global\setfalse\c_strc_notes_skip
    \else
-     \kern\notesignal\relax % \relax is needed to honor spaces
+     \kern\d_strc_notes_signal\relax % \relax is needed to honor spaces
    \fi}
 
 %D Interaction in notes is somewhat complex due to the way notes get flushed. In
@@ -691,7 +691,7 @@
      \removeunwantedspaces
      \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
    \fi
-   \ifdim\lastkern=\notesignal
+   \ifdim\lastkern=\d_strc_notes_signal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
    \fi
@@ -715,7 +715,7 @@
 \protected\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
    \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
-   \ifdim\lastkern=\notesignal
+   \ifdim\lastkern=\d_strc_notes_signal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
    \fi
@@ -1271,7 +1271,7 @@
 \let\startpushnote\relax
 \let\stoppushnote \relax
 
-\newsignal\notesignal
+\newsignal\d_strc_notes_signal
 
 \newconditional\processingnote
 \newconditional\postponednote

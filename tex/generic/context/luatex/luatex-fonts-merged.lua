@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-11-13 19:08
+-- merge date  : 2020-11-15 20:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -15157,7 +15157,7 @@ local function mergecomposites(glyphs,shapes)
   shape.components=nil
   return contours,points
  end
- for index=0,#glyphs-1 do
+ for index=0,#glyphs do
   local shape=shapes[index]
   if shape then
    local components=shape.components
@@ -15587,7 +15587,7 @@ local function repackpoints(glyphs,shapes)
  local result={} 
  local xpoints={} 
  local ypoints={} 
- for index=0,#glyphs-1 do
+ for index=0,#glyphs do
   local shape=shapes[index]
   if shape then
    local r=0
@@ -20776,7 +20776,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.111 
+otf.version=3.112 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
