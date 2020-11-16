@@ -380,12 +380,13 @@
 \permanent\tolerant\def\startMPdrawing[#1]% todo: use pickup #:
   {\meta_start_drawing#1}
 
-\def\meta_start_drawing#1#2\stopMPdrawing % to be redone, this ascii stuff
+\def\meta_start_drawing#1#2\stopMPdrawing
   {\relax
    \bgroup
    \meta_enable_include
-   \doifelse{#1}{-}{\convertargument#2\to\asciia}{\def\asciia{#2}}%
-   \xdef\MPdrawingdata{\MPdrawingdata\asciia}%
+   \doifelse{#1}{-}
+     {\xdef\MPdrawingdata{\MPdrawingdata\detokenize{#2}}}%
+     {\xdef\MPdrawingdata{\MPdrawingdata#2}}%
    \egroup}
 
 \permanent\let\stopMPdrawing\relax
@@ -981,13 +982,10 @@
 
 \installcorenamespace{mptext}
 
-\permanent\protected\def\setMPtext#1#2% todo : #1 must be made : safe
-  {\defconvertedargument\ascii{#2}% hm, kind of old fashioned, this
-   \dodoglobal\letvalue{\??mptext#1}\ascii}
-
-\permanent\def\MPtext  #1{\begincsname\??mptext#1\endcsname\empty}
-\permanent\def\MPstring#1{"\begincsname\??mptext#1\endcsname\empty"}
-\permanent\def\MPbetex #1{btex \begincsname\??mptext#1\endcsname\space etex}
+\permanent\protected\def\setMPtext#1#2{\dodoglobal\edefcsname\??mptext#1\endcsname{\detokenize{#2}}}
+\permanent          \def\MPtext     #1{\begincsname\??mptext#1\endcsname\empty}
+\permanent          \def\MPstring   #1{"\begincsname\??mptext#1\endcsname\empty"}
+\permanent          \def\MPbetex    #1{btex \begincsname\??mptext#1\endcsname\space etex}
 
 %D In order to communicate conveniently with the \TEX\ engine, we introduce some
 %D typesetting variables.

@@ -1,0 +1,160 @@
+%D \module
+%D   [       file=anch-snc,
+%D        version=2003.12.01, % actually 1999 so real old
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Synchronization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The original is in the mkii file. It does more at the \TEX\ end and
+%D has some more magic. If we really need that I'll add it. After all,
+%D in mkiv we can do things different.
+
+%D TODO: bleed : + left , minus right oro check if it touches page ... autobleed
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Synchronization}
+
+\registerctxluafile{anch-snc}{}
+
+\unprotect
+
+\ifx\??syncposcounter\undefined \installcorenamespace{syncposcounter} \fi
+\ifx\s!syncpos       \undefined \def\s!syncpos       {syncpos}        \fi
+
+\let\c_sync_n\relax
+
+\unexpanded\def\definesyncpositions[#1]%
+  {\ifcsname\??syncposcounter:#1\endcsname \else
+     \expandafter\newcount\csname\??syncposcounter:#1\endcsname
+   \fi}
+
+\unexpanded\def\syncposition
+  {\dodoubleempty\anch_sync_position}
+
+\def\anch_sync_position[#1][#2]% we could actually use par positions
+  {\dontleavehmode
+   \ifcsname\??syncposcounter:#1\endcsname
+     \let\c_sync_n\lastnamedcs
+     \global\advance\c_sync_n\plusone
+     \enabletextarearegistration
+     \setpositionplus{\s!syncpos:#1:\the\c_sync_n}{#2}\hpack{\strut}%
+   \else
+     \strut
+   \fi
+   \ignorespaces}
+
+\protect
+
+\continueifinputfile{anch-snc.mkiv}
+
+\starttext
+
+% \setuppapersize[A4][A3]
+
+\setuplayout[location=middle]
+
+\setupbodyfont[dejavu]
+
+\definesyncpositions[1]
+\definesyncpositions[2]
+
+% \enabletrackers[metapost.lua]
+
+\startMPdefinitions
+    input "mp-asnc.mpiv" ;
+
+    SetSyncColor(1,0,"magenta") ;
+    SetSyncColor(1,1,"red") ;
+    SetSyncColor(1,2,"green") ;
+    SetSyncColor(1,3,"blue") ;
+    SetSyncColor(1,4,"yellow") ;
+
+    SetSyncColor(2,0,"magenta") ;
+    SetSyncColor(2,1,"red") ;
+    SetSyncColor(2,2,"green") ;
+    SetSyncColor(2,3,"blue") ;
+    SetSyncColor(2,4,"yellow") ;
+\stopMPdefinitions
+
+\startuseMPgraphic{sync1}
+    StartPage ;
+        StartSync(1) ;
+            SyncHOffset := 0 ;
+            SyncWidth   := BackSpace - LeftMarginDistance;
+            CollectSyncDataPage ;
+         %  ExtendSyncPaths ;  % to top of text area
+            PruneSyncPaths ;   % clip top / bottom
+            CollapseSyncPaths ;
+            MakeSyncPaths ;
+          % DrawSyncPaths ;
+            FillSyncPaths ;
+        StopSync ;
+        clip currentpicture to Page ;
+        setbounds currentpicture to Page ;
+    StopPage ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{sync2}
+    StartSync(2) ;
+        SyncHOffset := -1cm ;
+        SyncWidth   :=  1cm ;
+        CollectSyncDataRegion(OverlayRegion) ;
+        ExtendSyncPaths ;  % to top of text area
+        MakeSyncPaths ;
+        FillSyncPaths ;
+    StopSync ;
+    clip currentpicture to OverlayBox leftenlarged 1cm;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+
+\defineoverlay[tempoverlay1][\useMPgraphic{sync1}]
+\defineoverlay[tempoverlay2][\useMPgraphic{sync2}]
+
+\setupbackgrounds[page][background=tempoverlay1]
+
+\framed[region=yes,background=tempoverlay2,width=14cm,align=normal]{
+    \syncposition[2][1]\samplefile{ward}\endgraf
+    \syncposition[2][2]\samplefile{ward}\endgraf
+    \syncposition[2][3]\samplefile{ward}\endgraf
+}
+
+
+\vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=16cm,align=normal]{
+    \syncposition[2][1]\samplefile{ward}\endgraf
+    \syncposition[2][2]\samplefile{ward}\endgraf
+    \syncposition[2][3]\samplefile{ward}\endgraf
+}
+
+\vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=10cm,align=normal]{
+    \syncposition[2][1]\samplefile{ward}\endgraf
+    \syncposition[2][2]\samplefile{ward}\endgraf
+    \syncposition[2][3]\samplefile{ward}\endgraf
+}
+
+
+\dorecurse {100} {
+% \dorecurse {1} {
+    \startchapter[title={Test #1}]
+        \syncposition[1][1,reset]\dorecurse{20}{\samplefile{ward}\endgraf}
+        \syncposition[1][2]\dorecurse {4}{\samplefile{ward}\endgraf}
+        \syncposition[1][3]\dorecurse {7}{\samplefile{ward}\endgraf}
+        \syncposition[1][4]\dorecurse {3}{\samplefile{ward}\endgraf}
+    \stopchapter
+}
+
+\dorecurse {100} {
+% \dorecurse {1} {
+    \startchapter[title={Test #1}]
+        \syncposition[1][1]\dorecurse{1}{\samplefile{ward}\endgraf}
+        \syncposition[1][2]\dorecurse{1}{\samplefile{ward}\endgraf}
+        \syncposition[1][3]\dorecurse{1}{\samplefile{ward}\endgraf}
+        \syncposition[1][4]\dorecurse{1}{\samplefile{ward}\endgraf}
+    \stopchapter
+}
+
+\stoptext

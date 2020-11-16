@@ -1,0 +1,474 @@
+% macros=mkvi
+
+%D \module
+%D   [       file=typo-mar,
+%D        version=2010.02.15, % was experimental code
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Margindata,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% maybe dontleavehmode when scope is local
+
+% todo: tags
+% todo: force inline with option (saves pos)
+% todo: margintitle (also less position then)
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Margindata}
+
+\unprotect
+
+%D This module has been on the agenda for a while. Actually, it is one of the things
+%D that I really need myself, for instance when rendering rather unpredictable
+%D (educational) tests encoded in XML. This module permits anchoring for instance
+%D item numbers and also overload them when they have subnumbers. In the future it
+%D might replace the current maginal note mechanism (that then will be just an
+%D instance).
+%D
+%D In spite of what might be expected, the more advanced \LUA\ based variant is upto
+%D twice as fast on simple entries. Also, we no longer need an extra pass to get
+%D inner and outer alignments in sync with the pagebuilder.
+
+\registerctxluafile{typo-mar}{}
+
+%definesystemattribute[margindata] % only at the lua end
+
+%D In \MKII\ we have three categories and their historically meaning is as follows:
+%D
+%D marginlines: These are flushed relative to the start of a line and need to be
+%D invoked there.
+%D
+%D marginwords: These can be issued in the text flow and will migrate sidewards; in
+%D spite of the name, it can be a paragraph of text as well, but normally it's
+%D words.
+%D
+%D margintexts: These can be set beforehand and are flushed at the next paragraph of
+%D text (of header).
+%D
+%D In \MKIV\ we have further integrated the mechanism and we now have:
+%D
+%D margindata: This can be anything that needs to go into the margin. It can be
+%D anchored in the text or given beforehand in which case it gets flushed at the
+%D first occasion.
+%D
+%D margintext: This runs on top of margindata and the only difference is that it
+%D uses the framed mechanism for packaging.
+%D
+%D Stacking is done differently as is inner and outer alignment (in most cases more
+%D efficient). The functionality is mostly the same as in \MKII, but there are a few
+%D additions, like names entries, where later ones overload preceding not yet
+%D flushed ones. Data can get catagorized and is then treated as a group (e.g. when
+%D stacking is needed).
+%D
+%D The amount of \TEX\ code is less than in \MKII\ because we do all trickery in at
+%D the \LUA\ end. At the end of this file we define several commands, like \type
+%D {\inleftmargin} and \type {\inleft}. You can configure them individually or as a
+%D group. There is an inheritance model in place.
+%D
+%D The following notes will be stacked:
+%D
+%D \starttyping
+%D \ininner[line=2]{IM A}
+%D \ininner[stack=yes]{IM B}
+%D \ininner[stack=yes]{IM C}
+%D \stoptyping
+%D
+%D The distance between them is determined by \type {dy}:
+%D
+%D \starttyping
+%D \ininner[stack=yes,dy=2ex][frame=on] {IM A}
+%D \ininner[stack=yes,dy=2ex][frame=on] {IM B}
+%D \stoptyping
+%D
+%D There are several methods of vertical alignment.
+%D
+%D \starttyping
+%D \inmargin [method=first]             [frame=on]                              {first\\second} \input ward \par
+%D \inmargin [method=first]             [frame=on,offset=3pt]                   {first\\second} \input ward \par
+%D \inmargin [method=first,voffset=-3pt][frame=on,offset=3pt,rulethickness=3pt] {first\\second} \input ward \par
+%D \inmargin [method=first,voffset=-6pt][frame=on,offset=3pt,rulethickness=3pt] {first\\second} \input ward \par
+%D \stoptyping
+%D
+%D You sometimes need to combine \type {voffset} with \type {offset}. The first
+%D argument concerns the data, the second the framed. Not sharing the setup is on
+%D purpose: location, offset, alignment and other parameters might clash.
+
+\installcorenamespace{margindata}
+\installcorenamespace{marginframed}
+
+\installcommandhandler       \??margindata   {margindata}   \??margindata
+\installframedcommandhandler \??marginframed {marginframed} \??marginframed
+
+\setupmargindata
+  [\c!location=\v!left,
+ % \c!align=,
+ % \c!method=,
+   \c!style=\v!bold,
+   \c!color=, % maybe \maintextcolor
+ % \c!name=,
+ % \c!category=,
+   \c!threshold=.25\exheight,
+   \c!margin=\v!normal,
+   \c!scope=\v!global,
+   \c!width=,
+ % \c!stack=,
+ % \c!stackname=,
+ % \c!option=, % \v!paragraph (follow shape)
+   \c!line=0,
+   \c!anchor=\v!text,
+   \c!bottomspace=\strutdepth, % slack used for keeptogether
+   \c!dy=\zeropoint,
+   \c!distance=\zeropoint,
+   \c!hoffset=\zeropoint,
+   \c!voffset=\zeropoint]
+
+\setupmarginframed  % so, align should be set with the data command
+  [\c!strut=\v!yes, % so by default we scale the strut to the font !
+   \c!offset=\v!overlay,
+   \c!fr!analyze=\v!yes,
+   \c!frame=\v!off,
+   \c!width=\margindataparameter\c!width,
+   \c!align=\margindataparameter\c!align]
+
+\appendtoks
+    \frozen\instance\setuevalue\currentmargindata{\margindata[\currentmargindata]}%
+\to \everydefinemargindata
+
+\newconditional\inhibitmargindata      % This one is used at the Lua end!
+\newtoks       \everymargindatacontent % Later on we will set this one.
+
+\appendtoks
+    \settrue\inhibitmargindata
+\to \everyforgetall
+
+\appendtoks
+    \forgetall
+    \tf
+    \resetallattributes % \deactivatecolor % needed, but maybe we should switch to maintextcolor: \onlyinheritmaintextcolor
+    \pickupattributes
+\to \everymargindatacontent
+
+% trialtypesetting: no need for margin stuff while trialing as
+% is has no dimensions
+
+\newcount\nofmargintexts
+\newcount\c_typo_margins_n
+
+\ifdefined\dotagmarginanchor \else \let\dotagmarginanchor\gobbleoneargument \fi
+\ifdefined\dotagmargintext   \else \let\dotagmargintext  \gobbleoneargument \fi
+
+\definepagestate[\s!margintext]
+
+\protected\def\typo_margins_data_synchronize
+  {\doforcedtrackpagestate\s!margintext\nofmargintexts % includes increment
+   \docheckpagestate\s!margintext\nofmargintexts
+  %\doifelserightpagestate\s!margintext\nofmargintexts\relax\relax
+   \realpageno\realpagestateno
+   \swapmargins}
+
+\permanent\protected\def\margindata
+  {\iftrialtypesetting
+     \expandafter\typo_margins_data_nop
+   \else
+     \expandafter\typo_margins_data_yes
+   \fi}
+
+\permanent\tolerant\protected\def\typo_margins_data_nop[#name]#spacer[#dataparameters]#spacer[#textparameters]#:#content%
+  {}
+
+\permanent\tolerant\protected\def\typo_margins_data_yes[#name]#spacer[#dataparameters]#spacer[#textparameters]#:#content%
+  {\setfalse\inhibitmargindata % flushing afterwards
+   \begingroup
+  %\settrue\inhibitmargindata  % no flushing in here
+   \def\currentmargindata{#name}%
+   \let\currentmarginframed\currentmargindata
+   \ifparameter#dataparameters\or
+     \setupcurrentmargindata[#dataparameters]%
+   \fi
+   \doifelsenothing{#content}\donefalse\donetrue
+   \global\advance\c_typo_margins_n\plusone
+   \ifdone
+     \edef\currentmarginreference{\margindataparameter\c!reference}%
+     \ifempty\currentmarginreference \else
+       \strc_references_set_page_only_destination_box_attribute\currentmarginreference\currentmarginreference
+     \fi
+     \edef\currentmargindatastrut{\margindataparameter\c!strut}%
+     \dostarttaggedchained\t!margintext\currentmargindata\??margindata
+     \dotagmargintext\c_typo_margins_n
+     \ifcsname\currentmarginframedhash\s!parent\endcsname
+       \setbox\nextbox\naturalhbox \currentmarginreference \bgroup
+         \the\everymargindatacontent
+         \usemargindatastyleandcolor\c!style\c!color
+         \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
+         \typo_margins_data_synchronize
+         \inheritedmarginframedframed\bgroup
+           \ifempty\currentmargindatastrut \else
+             \synchronizestrut\currentmargindatastrut
+           \fi
+           \begstrut
+           \strc_references_flush_destination_nodes
+           \margindataparameter\c!command{#content}%
+           \endstrut
+         \egroup
+       \egroup
+       \edef\currentmarginfirstheight{\number\dimexpr\framedfirstheight}%
+     \else
+       \edef\currentmargindatawidth{\margindataparameter\c!width}%
+       \ifempty\currentmargindatawidth
+         \setbox\nextbox\naturalhbox \currentmarginreference \bgroup
+           \typo_margins_data_synchronize
+           \the\everymargindatacontent
+           \usemargindatastyleandcolor\c!style\c!color
+           \ifempty\currentmargindatastrut \else
+             \synchronizestrut\currentmargindatastrut
+           \fi
+           \begstrut
+           \strc_references_flush_destination_nodes
+           \margindataparameter\c!command{#content}%
+           \endstrut
+         \egroup
+         \let\currentmarginfirstheight\empty
+       \else
+         \setbox\nextbox\naturalhbox \currentmarginreference \bgroup
+           \typo_margins_data_synchronize
+           \dosetraggedcommand{\margindataparameter\c!align}%
+           \vtop \bgroup
+             \the\everymargindatacontent
+             \usemargindatastyleandcolor\c!style\c!color
+             \hsize\currentmargindatawidth
+             \raggedcommand
+             \ifempty\currentmargindatastrut \else
+               \synchronizestrut\currentmargindatastrut
+             \fi
+             \begstrut
+             \strc_references_flush_destination_nodes
+             \margindataparameter\c!command{#content}%
+             \endstrut
+           \egroup
+         \egroup
+         \edef\currentmarginfirstheight{true}%
+       \fi
+     \fi
+     \dostoptagged
+   \fi
+   \ifdone
+     \edef\p_anchor{\margindataparameter\c!anchor}%
+     \anch_positions_initialize % we use positions at the lua end
+     \dostarttagged\t!marginanchor\empty
+     \dotagmarginanchor\c_typo_margins_n
+     \clf_savemargindata
+       location    {\margindataparameter\c!location}%
+       method      {\margindataparameter\c!method}%
+       category    {\margindataparameter\c!category}%
+       name        {\margindataparameter\c!name}%
+       scope       {\margindataparameter\c!scope}%
+       option      {\margindataparameter\c!option}%
+       number      \nextbox
+       margin      {\margindataparameter\c!margin}% local normal margin edge
+       distance    \dimexpr\margindataparameter\c!distance\relax
+       hoffset     \dimexpr\margindataparameter\c!hoffset\relax
+       voffset     \dimexpr\margindataparameter\c!voffset\relax
+       dy          \dimexpr\margindataparameter\c!dy\relax
+       bottomspace \dimexpr\margindataparameter\c!bottomspace\relax
+     \ifempty\currentmarginfirstheight \else
+       baseline    {\currentmarginfirstheight}%
+     \fi
+       threshold   \dimexpr\margindataparameter\c!threshold\relax % overlap related, will change
+     \ifhmode
+       inline      true %
+     \fi
+       anchor      {\p_anchor\ifx\p_anchor\v!region:0\fi}% kind of a hack to force column anchoring (for now)
+   %
+   % we're not in forgetall
+   %
+   % \ifzeropt\leftskip \else
+   %   leftskip    \dimexpr\leftskip\relax
+   % \fi
+   % \ifzeropt\leftskip \else
+   %   rightskip   \dimexpr\rightskip\relax
+   % \fi
+       align       {\margindataparameter\c!align}%
+       line        \numexpr\margindataparameter\c!line\relax
+       stackname   {\margindataparameter\c!stackname}%
+       stack       {\margindataparameter\c!stack}%
+       index       \c_typo_margins_n
+     \relax
+     \dostoptagged
+   \else
+     \clf_savemargindata
+       location    {\margindataparameter\c!location}%
+       method      {\margindataparameter\c!method}%
+       category    {\margindataparameter\c!category}%
+       name        {\margindataparameter\c!name}%
+       scope       {\margindataparameter\c!scope}%
+       number      \nextbox
+     \relax
+   \fi
+   \endgroup}
+
+%D Downward compatible hack:
+
+\permanent\protected\def\typo_margins_space_or_par
+  {\endgraf\ifhmode\space\fi}
+
+\appendtoks
+    \enforced\let\\\typo_margins_space_or_par
+\to \everymargindatacontent
+
+%D Another one:
+
+% \installcorenamespace{oppositemargin}
+%
+% \letvalue{\??oppositemargin\v!left  }\v!right
+% \letvalue{\??oppositemargin\v!right }\v!left
+% \letvalue{\??oppositemargin\v!inner }\v!outer
+% \letvalue{\??oppositemargin\v!outer }\v!inner
+% \letvalue{\??oppositemargin\v!normal}\v!normal
+%
+% \def\oppositemargin#1%
+%   {\csname\??oppositemargin\ifcsname\??oppositemargin#1\endcsname#1\else\v!normal\fi\endcsname}
+
+%D Definitions:
+
+% common to lines and text
+
+\setupmargindata [\v!left ] [\c!method=\v!first,\c!location=\v!left ,\c!margin=\v!margin,\c!align=\v!flushright,\s!parent=\??margindata] % we could autoparent when no define yet
+\setupmargindata [\v!right] [\c!method=\v!first,\c!location=\v!right,\c!margin=\v!margin,\c!align=\v!flushleft, \s!parent=\??margindata]
+\setupmargindata [\v!outer] [\c!method=\v!first,\c!location=\v!outer,\c!margin=\v!margin,\c!align=\v!inner,     \s!parent=\??margindata]
+\setupmargindata [\v!inner] [\c!method=\v!first,\c!location=\v!inner,\c!margin=\v!margin,\c!align=\v!outer,     \s!parent=\??margindata]
+
+% lines
+
+\definemargindata [\v!inleftmargin]  [\v!left ] [\c!margin=\v!margin,\c!width=\leftmarginwidth ,\c!style=,\c!color=]
+\definemargindata [\v!inrightmargin] [\v!right] [\c!margin=\v!margin,\c!width=\rightmarginwidth,\c!style=,\c!color=]
+\definemargindata [\v!inoutermargin] [\v!outer] [\c!margin=\v!margin,\c!width=\outermarginwidth,\c!style=,\c!color=]
+\definemargindata [\v!ininnermargin] [\v!inner] [\c!margin=\v!margin,\c!width=\innermarginwidth,\c!style=,\c!color=]
+
+\definemargindata [\v!inleftedge]    [\v!left ] [\c!margin=\v!edge  ,\c!width=\leftedgewidth   ,\c!style=,\c!color=,\c!category=\v!edge]
+\definemargindata [\v!inrightedge]   [\v!right] [\c!margin=\v!edge  ,\c!width=\rightedgewidth  ,\c!style=,\c!color=,\c!category=\v!edge]
+\definemargindata [\v!inouteredge]   [\v!outer] [\c!margin=\v!edge  ,\c!width=\outeredgewidth  ,\c!style=,\c!color=,\c!category=\v!edge]
+\definemargindata [\v!ininneredge]   [\v!inner] [\c!margin=\v!edge  ,\c!width=\inneredgewidth  ,\c!style=,\c!color=,\c!category=\v!edge]
+
+\definemargindata [\v!atleftmargin]  [\v!left ] [\c!margin=\v!normal,\c!width=\leftmarginwidth ,\c!style=,\c!color=]
+\definemargindata [\v!atrightmargin] [\v!right] [\c!margin=\v!normal,\c!width=\rightmarginwidth,\c!style=,\c!color=]
+
+% text: \v!added
+
+\definemargindata [\v!inleft]     [\v!left ]    [\c!margin=\v!margin,\c!width=\leftmarginwidth ,\c!align=\v!flushright]
+\definemargindata [\v!inright]    [\v!right]    [\c!margin=\v!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
+\definemargindata [\v!inouter]    [\v!outer]    [\c!margin=\v!margin,\c!width=\outermarginwidth,\c!align=\v!inner]
+\definemargindata [\v!ininner]    [\v!inner]    [\c!margin=\v!margin,\c!width=\innermarginwidth,\c!align=\v!outer]
+
+% no longer auto auto-other
+
+\definemargindata [\v!inmargin]   [\v!left]     [\c!margin=\v!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
+\definemargindata [\v!inother]    [\v!right]    [\c!margin=\v!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
+
+\definemargindata [\v!margintext] [\v!left]     [\c!margin=\v!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright,\c!stack=\v!yes]
+
+\setupmarginframed [\v!left ] [\c!method=\v!first,\c!align=\v!flushright,\s!parent=\??marginframed] % we could autoparent when no define yet
+\setupmarginframed [\v!right] [\c!method=\v!first,\c!align=\v!flushleft, \s!parent=\??marginframed]
+\setupmarginframed [\v!outer] [\c!method=\v!first,\c!align=\v!inner,     \s!parent=\??marginframed]
+\setupmarginframed [\v!inner] [\c!method=\v!first,\c!align=\v!outer,     \s!parent=\??marginframed]
+
+\definemarginframed [\v!inleft]   [\v!left ]
+\definemarginframed [\v!inright]  [\v!right]
+\definemarginframed [\v!inouter]  [\v!outer]
+\definemarginframed [\v!ininner]  [\v!inner]
+\definemarginframed [\v!inmargin] [\v!inleft]
+\definemarginframed [\v!inother]  [\v!inright]
+
+\aliased\let\marginword   \margintext
+\aliased\let\margintitle  \margintext
+\aliased\let\inothermargin\inother    % for old times sake
+
+%definemargindata [inouterextra] [\v!outer] [\c!margin=\v!edge,\c!location=\v!outer,\c!width=\outeredgewidth,\c!align=\v!outer,\c!category=\v!edge]
+%definemargindata [ininnerextra] [\v!inner] [\c!margin=\v!edge,\c!location=\v!inner,\c!width=\inneredgewidth,\c!align=\v!inner,\c!category=\v!edge]
+%
+%definemarginframed [inouterextra] [\v!outer]
+%definemarginframed [ininnerextra] [\v!inner]
+
+%D As we have more control we are not backward compatible although in
+%D practice it won't hurt that much. So, from now on use:
+%D
+%D \starttyping
+%D \definemargindata
+%D \setupmargindata
+%D \definemarginframed
+%D \setupmarginframed
+%D \stoptyping
+
+% The following sort of works okay but is to be avoided ... it will disappear from lmtx:
+
+\permanent\tolerant\protected\def\defineinmargin[#name]#spacer[#location]#spacer[#align]#spacer[#settings]% not completely compatible
+  {\ifarguments\else
+     \definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
+     \definemarginframed[#name][#location][\c!align=#align,#settings]%
+   \fi}
+
+\aliased\let\definemarginline\definemargindata % for old times sake
+\aliased\let\setupinmargin   \setupmargindata  % only partial (no framed), for old times sake
+
+% begin of experimental code (will move)
+%
+% \dosetanchor{x}test \dostarthanchoring{x}\llap{crap}\dostophanchoring{x}test test test
+% test \dostarthanchoring{text}\llap{crap}\dostophanchoring{text}test test test
+
+% \def\dosetanchor      #1{\dontleavehmode\latelua{anchors.set("#1")}}
+% \def\doresetanchor    #1{\dontleavehmode\latelua{anchors.reset("#1")}}
+% \def\doresetanchornow #1{\directlua{anchors.reset("#1")}}
+% \def\dostartanchoring #1{\dontleavehmode\latelua{anchors.startmove("#1")}}
+% \def\dostopanchoring  #1{\dontleavehmode\latelua{anchors.stopmove("#1")}}
+% \def\dostarthanchoring#1{\dontleavehmode\latelua{anchors.startmove("#1","h")}}
+% \def\dostartvanchoring#1{\dontleavehmode\latelua{anchors.startmove("#1","v")}}
+% \let\dostophanchoring    \dostopanchoring
+% \let\dostopvanchoring    \dostopanchoring
+
+%D Here because in strc-ren we are too early:
+
+% % \definemargindata
+% %   [margintext:chapter]
+% %   [margintext:section]
+% %
+% % \defineheadalternative
+% %   [margintext:chapter]
+% %   [margintext]
+% %   [margintext=margintext:chapter]
+% %
+% % \setuphead
+% %   [chapter]
+% %   [alternative=margintext:chapter]
+%
+% \setuphead
+%   [chapter]
+%   [alternative=margintext]
+
+\definemargindata
+  [\v!margintext:\v!section]
+  [\v!left]
+  [\c!margin=\v!margin,
+   \c!width=\leftmarginwidth,
+   \c!align=\v!flushright]
+
+\defineheadalternative
+  [\v!margintext]
+  [\c!alternative=\v!somewhere,
+   \c!margintext=\v!margintext:\v!section,
+   \c!renderingsetup=\??headrenderings:\v!margintext]
+
+\startsetups[\??headrenderings:\v!margintext]
+    \executeifdefined{\headalternativeparameter\c!margintext}\margintext {
+        \ifconditional\headshownumber
+            \headnumbercontent
+            \hskip\headnumberdistance
+        \fi
+        \headtextcontent
+    }
+\stopsetups
+
+\protect \endinput

@@ -87,19 +87,26 @@
 \protected\def\tablepos
   {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
 
-\permanent\tolerant\protected\def\tbXC [#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_XC [#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGSC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGFC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
-\permanent\tolerant\protected\def\tbGTC[#1]{\anch_table_check_state\ifparameters#1\or\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}
+\permanent\protected\def\tbXC {\anch_table_checked\anch_tables_indeed_XC }
+\permanent\protected\def\tbGSC{\anch_table_checked\anch_tables_indeed_GSC}
+\permanent\protected\def\tbGFC{\anch_table_checked\anch_tables_indeed_GFC}
+\permanent\protected\def\tbGTC{\anch_table_checked\anch_tables_indeed_GTC}
 
-\def\anch_table_check_state
+\tolerant\def\anch_table_checked#1[#2]%
   {\iftrialtypesetting
      \global\settrue\tablehaspositions
-     \firstargumentfalse
-   \fi}
+     \expandafter\anch_tables_indeed_NC
+   \orelse\ifparameter#2\or
+     \expandafter#1%
+   \else
+     \expandafter\anch_tables_indeed_NC
+   \fi[#2]}
+
+\def\anch_tables_indeed_NC[#1]%
+  {\NC}
 
 \def\anch_tables_indeed_XC[#1]%
-  {{\overloaded\let\NC\relax\processcommalist[#1]\anch_tables_step_XC}}
+  {{\enforced\let\NC\relax\processcommalist[#1]\anch_tables_step_XC}}
 
 \def\anch_tables_step_XC#1%
   {\anch_tables_step_indeed_XC[#1]}

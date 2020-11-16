@@ -105,7 +105,7 @@
              -- local tolerant   = v.tolerant   and "tolerant"
                 local noaligned  = v.noaligned  and "noaligned"
                 local instance   = v.instance   and "instance"
-                local parameters = v.parameters or 0
+                local parameters = v.parameters
                 local dealtwith = mutable or immutable or frozen or permanent or primitive -- beware: we can have combinations
                 local cscommand = gsub(v.cmdname or "","_"," ")
                 local whatever  = find(k,"^[a-z][a-z][a-z]+_")
@@ -113,7 +113,7 @@
                 local csname    = context.escape(k)
                 ctx_NC() if dealtwith then context("+") elseif whatever then context("-") elseif instance then context("!")end
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
-                ctx_NC() if parameters > 0 then context(parameters) end
+                ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
                 ctx_NC() context(cscommand)
              -- ctx_NC() if tolerant  then context(tolerant)   end
                 ctx_NC() if primitive then context(primitive)  end

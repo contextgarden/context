@@ -1,0 +1,265 @@
+%D \module
+%D   [       file=typo-cap,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Capping,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Caps}
+
+\unprotect
+
+%D Maybe we need a more clever system: either command or style mode etc. so
+%D that we can avoid the grouped mess in a simple style switch.
+
+\registerctxluafile{typo-cap}{optimize}
+
+% \definesystemattribute[case][public] % already predefined
+
+%D \macros
+%D   {setupcapitals}
+%D
+%D By default we use pseudo small caps in titles. This can be set up with:
+%D
+%D \showsetup{setupcapitals}
+
+\installcorenamespace{capitals}
+
+\installcommandhandler \??capitals {capitals} \??capitals
+
+%D Beware, these are not really defines (yet).
+
+\definecapitals[\v!WORD]            % all upper
+\definecapitals[\v!capital]         % one upper + font
+\definecapitals[\v!Capital]         % some upper + font
+\definecapitals[\v!mixed]           % UpperCase
+\definecapitals[\v!Word]            % one upper + font
+\definecapitals[\v!Words]           % some upper
+\definecapitals[\v!camel]           % lowers first
+\definecapitals[\v!word][\c!style=] % nothing
+
+%D \macros
+%D   {Word, Words, WORD, WORDS}
+%D
+%D This is probably not the right place to present the next set of macros.
+%D
+%D \starttyping
+%D \Word {far too many words}
+%D \Words{far too many words}
+%D \WORD {far too many words}
+%D \WORDS{far too many words}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D This calls result in:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D \showsetup{Word}
+%D \showsetup{Words}
+%D \showsetup{WORD}
+%D \showsetup{WORDS}
+
+% test \WORD{test TEST \TeX} test
+% test \word{test TEST \TeX} test
+% test \Word{test TEST \TeX} test
+
+\permanent\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}\fontid\font} % can be public implementor
+
+\protected\def\typo_capitale_WORD {\clf_setcharactercasing{\v!WORD }\fontid\font}
+\protected\def\typo_capitale_word {\clf_setcharactercasing{\v!word }\fontid\font}
+\protected\def\typo_capitale_Word {\clf_setcharactercasing{\v!Word }\fontid\font}
+\protected\def\typo_capitale_Words{\clf_setcharactercasing{\v!Words}\fontid\font}
+\protected\def\typo_capitale_camel{\clf_setcharactercasing{\v!camel}\fontid\font}
+
+\permanent\protected\def\WORD {\triggergroupedcommandcs\typo_capitale_WORD }
+\permanent\protected\def\word {\triggergroupedcommandcs\typo_capitale_word }
+\permanent\protected\def\Word {\triggergroupedcommandcs\typo_capitale_Word }
+\permanent\protected\def\Words{\triggergroupedcommandcs\typo_capitale_Words}
+\permanent\protected\def\camel{\triggergroupedcommandcs\typo_capitale_camel}
+
+\aliased\let\WORDS\WORD
+\aliased\let\words\word
+
+%D \macros
+%D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
+%D
+%D We already introduced \type {\cap} as way to capitalize words. This command comes
+%D in several versions:
+%D
+%D \startbuffer
+%D \cap {let's put on a \cap{cap}}
+%D \cap {let's put on a \nocap{cap}}
+%D \CAP {let's put on a \\{cap}}
+%D \Cap {let's put on a \\{cap}}
+%D \Caps{let's put on a cap}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Note the use of \type {\nocap}, \type {\\} and the nested \type {\cap}.
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D These macros show te main reason why we introduced the smaller \type {\tx} and
+%D \type {\txx}.
+%D
+%D \starttyping
+%D \cap\romannumerals{1995}
+%D \stoptyping
+%D
+%D This at first sight unusual capitilization is completely legal.
+%D
+%D \showsetup{smallcapped}
+%D \showsetup{notsmallcapped}
+%D \showsetup{CAPPED}
+%D \showsetup{SmallCapped}
+%D \showsetup{SmallCaps}
+%D
+%D The difference between pseudo and real caps is demonstrated below:
+%D
+%D \startbuffer
+%D \usepseudocaps \cap{Hans Hagen}
+%D \userealcaps   \cap{Hans Hagen}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D The \type {\bgroup} trickery below is needed because of \type {\groupedcommand}.
+
+\newconditional\c_typo_capitals_pseudo
+
+\permanent\protected\def\usepseudocaps{\settrue \c_typo_capitals_pseudo}
+\permanent\protected\def\userealcaps  {\setfalse\c_typo_capitals_pseudo}
+
+\usepseudocaps
+
+% we use char0 as placeholder for the larger font
+%
+% here we keep the \groupedcommand
+
+\def\typo_capitals_set_fake#1%
+  {\edef\currentcapitals{#1}%
+   \clf_setcharactercasing{\currentcapitals}\fontid\font
+   \usecapitalsstyleparameter\c!style}
+
+\def\typo_capitals_set_real#1%
+  {\edef\currentcapitals{#1}%
+   \sc
+   \clf_setcharactercasing{\currentcapitals}\fontid\font}
+
+\permanent\protected\def\pseudosmallcapped{\triggergroupedcommandcs\font_style_pseudosmallcapped}
+\permanent\protected\def\pseudoSmallcapped{\triggergroupedcommandcs\font_style_pseudoSmallcapped}
+\permanent\protected\def\pseudoSmallCapped{\triggergroupedcommandcs\font_style_pseudoSmallCapped}
+\permanent\protected\def\pseudoMixedCapped{\triggergroupedcommandcs\font_style_pseudoMixedCapped}
+
+\permanent\protected\def\realsmallcapped  {\triggergroupedcommandcs\font_style_realsmallcapped}
+\permanent\protected\def\realSmallcapped  {\triggergroupedcommandcs\font_style_realSmallcapped}
+\permanent\protected\def\realSmallCapped  {\triggergroupedcommandcs\font_style_realSmallCapped}
+
+\permanent\protected\def\notsmallcapped   {\triggergroupedcommandcs\font_style_notsmallcapped}
+
+\protected\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD   } % all upper
+\protected\def\font_style_pseudoSmallcapped{\typo_capitals_set_fake\v!capital} % one upper + font
+\protected\def\font_style_pseudoSmallCapped{\typo_capitals_set_fake\v!Capital} % some upper + font
+\protected\def\font_style_pseudoMixedCapped{\typo_capitals_set_fake\v!mixed  }
+
+\protected\def\font_style_realsmallcapped  {\typo_capitals_set_real\v!WORD   } % all lower
+\protected\def\font_style_realSmallcapped  {\typo_capitals_set_real\v!Word   } % one upper + font
+\protected\def\font_style_realSmallCapped  {\typo_capitals_set_real\v!Words  } % some upper
+
+\protected\def\font_style_notsmallcapped   {\typo_capitals_set_fake\v!word   }
+
+\protected\def\typo_capitals_smallcaps
+  {\ifconditional\c_typo_capitals_pseudo
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\permanent\protected\def\smallcapped{\typo_capitals_smallcaps\pseudosmallcapped\realsmallcapped}
+\permanent\protected\def\Smallcapped{\typo_capitals_smallcaps\pseudoSmallcapped\realSmallcapped}
+\permanent\protected\def\SmallCapped{\typo_capitals_smallcaps\pseudoSmallCapped\realSmallCapped}
+
+\permanent\protected\def\font_style_smallcapped{\typo_capitals_smallcaps\font_style_pseudosmallcapped\font_style_realsmallcapped}
+\permanent\protected\def\font_style_Smallcapped{\typo_capitals_smallcaps\font_style_pseudoSmallcapped\font_style_realSmallcapped}
+\permanent\protected\def\font_style_SmallCapped{\typo_capitals_smallcaps\font_style_pseudoSmallCapped\font_style_realSmallCapped}
+
+\permanent\protected\def\autocap{\ifmmode\expandafter\normalcap\else\expandafter\smallcapped\fi}
+
+\prependtoks
+    \enforced\let\normalcap\cap % mathmode cap
+\to \everydump
+
+\appendtoks
+    \enforced\let\cap\autocap
+\to \everydump
+
+\aliased\let\kap\cap          % for old times sake
+\aliased\let\Caps\SmallCapped % for old times sake
+
+\aliased\let\mixedcaps\pseudoMixedCapped
+
+\aliased\let\normalsmallcapped\smallcapped
+\aliased\let\normalWORD       \WORD
+\aliased\let\normalword       \word
+
+\aliased\let\font_style_normalsmallcapped\font_style_smallcapped
+\aliased\let\font_style_normalWORD       \WORD
+\aliased\let\font_style_normalword       \word
+
+\appendtoks
+    \ifx\currentcapitals\empty
+      \doifelse{\directcapitalsparameter\c!title}\v!yes
+        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
+         \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}
+        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
+         \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]}%
+      \doifelse{\directcapitalsparameter\s!sc}\v!yes
+        \userealcaps
+        \usepseudocaps
+    \fi
+\to \everysetupcapitals
+
+\aliased\let\uppercased\normalWORD
+\aliased\let\lowercased\normalword
+
+\setupcapitals
+  [\c!title=\v!yes,
+   \c!style=\tx,
+   \s!sc=\v!no] % no \c!sc any longer
+
+\definefont
+  [MixedCaps]
+  [CurrentFont*default cp 1.2\exheight]
+
+\setupcapitals
+  [\v!mixed]
+  [\c!style=MixedCaps]
+
+% \definestartstop is not yet in available at core-spa time
+%
+% \startrandomized \input tufte \stoprandomized
+%
+% \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
+
+% \protected\def\randomizetext{\groupedcommand{\c_attr_case\pluseight}{}}
+
+\permanent\protected\def\randomizetext{\triggergroupedcommand{\c_attr_case\pluseight}}
+
+\definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
+
+\protect \endinput

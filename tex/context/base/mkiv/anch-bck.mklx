@@ -1,0 +1,747 @@
+%D \module
+%D   [       file=anch-bck, % moved from anch-pgr (1999.08.01)
+%D        version=2011.12.19,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Backgrounds,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Backgrounds}
+
+%D This module is quite okay but at some point I might add methods that use
+%D attributes although not too much is to be expected, apart from better anchoring.
+%D In fact better anchoring can be done independent of that.
+
+\unprotect
+
+% This might be overloaded later on:
+
+% \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
+% \defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
+% \defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
+% \defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+
+% Paragraph positions:
+
+\newcount\c_anch_backgrounds_text_n
+
+\def\v_anch_backgrounds_text_current    {tbg:0}
+\def\v_anch_backgrounds_anchor_current_b{b:\v_anch_backgrounds_text_current}
+\def\v_anch_backgrounds_anchor_current_e{e:\v_anch_backgrounds_text_current}
+
+\def\anch_backgrounds_text_initialize_next
+  {\global\advance\c_anch_backgrounds_text_n\plusone
+   \edef\v_anch_backgrounds_text_current{tbg:\number\c_anch_backgrounds_text_n}}
+
+% The first position can be used in the middle of a paragraph in which case we're
+% too late with initializing par positions. Therefore we check if positions are
+% used at all.
+%
+% tricky: we need to catch newly set! otherwise an old run can have positions
+
+\protected\def\anch_backgrounds_text_initialize
+  {\doifelsepositionsused\enableparpositions\donothing
+   \glet\anch_backgrounds_text_initialize\relax}
+
+\appendtoks
+    \anch_backgrounds_text_initialize
+\to \everystarttext
+
+%D Some MP
+
+\newcount\MPparcounter
+
+\permanent\def\MPself     {\MPvar{self}}
+\permanent\def\MPbself    {b:\MPvar{self}}
+\permanent\def\MPeself    {e:\MPvar{self}}
+\permanent\def\MPparanchor{p:\number\MPparcounter}
+
+% \carryoverpar is needed for left/right floats
+
+% \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
+% \definetextbackground[test][state=start,backgroundcolor=green]
+%
+% \page \placefigure[left]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+%
+% \page \placefigure[right]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+
+\newcount\c_anch_backgrounds_text_level
+
+\installcorenamespace{textbackground}
+\installcorenamespace{textbackgroundlevel}
+
+\installcommandhandler \??textbackground {textbackground} \??textbackground
+
+\appendtoks
+    \frozen\instance\setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
+    \frozen\instance\setuevalue{\e!start\currenttextbackground}{\starttextbackground[\currenttextbackground]}%
+    \frozen\instance\setuevalue{\e!stop \currenttextbackground}{\stoptextbackground}%
+\to \everydefinetextbackground
+
+\newconstant   \c_anch_backgrounds_pos_state
+\newconditional\c_anch_backgrounds_pos_no_shape
+
+\def\anch_backgrounds_bpos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \bposkind\v_anch_backgrounds_text_current\plusthree
+   \else
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+   \fi}
+
+\def\anch_backgrounds_epos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \eposkind\v_anch_backgrounds_text_current\plusthree
+   \else
+     \eposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+   \fi}
+
+% \permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#settings]%
+%   {\begingroup
+%    \advance\c_anch_backgrounds_text_level\plusone
+%    \def\currenttextbackground{#tag}%
+%    \anch_backgrounds_text_initialize_next
+%    \ifparameter#settings\or
+%      \setupcurrenttextbackground[#settings]%
+%    \fi
+%    \doifelse{\textbackgroundparameter\c!state}\v!start
+%      \anch_backgrounds_text_preset_yes
+%      \anch_backgrounds_text_preset_nop
+%    \anch_backgrounds_text_start_indeed}
+
+% ugly hack to register usage
+
+\newcount   \c_anch_backgrounds_text_count
+\newcount   \c_anch_backgrounds_text_check
+\newconstant\c_anch_backgrounds_text_state
+
+\permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#settings]%
+  {\begingroup
+   \global\advance\c_anch_backgrounds_text_count\plusone
+   \advance\c_anch_backgrounds_text_level\plusone
+   \def\currenttextbackground{#tag}%
+   \anch_backgrounds_text_initialize_next
+   \ifparameter#settings\or
+     \setupcurrenttextbackground[#settings]%
+   \fi
+   \doifelse{\textbackgroundparameter\c!state}\v!start
+     \anch_backgrounds_text_preset_yes
+     \anch_backgrounds_text_preset_nop
+   \anch_backgrounds_text_start_indeed}
+
+\def\anch_backgrounds_text_level_start
+  {\c_anch_backgrounds_text_check\c_anch_backgrounds_text_count}
+
+\def\anch_backgrounds_text_level_stop
+  {\c_anch_backgrounds_text_state
+     \ifnum\c_anch_backgrounds_text_count>\c_anch_backgrounds_text_check
+       \plusone
+     \else
+       \zerocount
+     \fi}
+
+% todo \backgroundvariable\c!variant
+
+% criterium determines when we fall back on text
+% always is always forcing paragraphs
+
+\let\anch_backgrounds_text_start_indeed\relax
+\let\anch_backgrounds_text_stop_indeed \relax
+
+\setvalue{\??textbackgroundlevel\v!text}%
+  {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
+   \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt}
+
+\setvalue{\??textbackgroundlevel\v!paragraph}%
+  {\ifnum\c_anch_backgrounds_text_level>\textbackgroundparameter\c!criterium\relax
+     \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
+     \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt
+   \else
+     \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_par
+     \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_par
+   \fi}
+
+\setvalue{\??textbackgroundlevel\v!always}%
+  {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_par
+   \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_par}
+
+\setvalue{\??textbackgroundlevel\v!none}%
+  {\anch_backgrounds_text_preset_nop}
+
+\def\anch_backgrounds_text_preset_nop
+  {\let\anch_backgrounds_text_start_indeed\relax
+   \let\anch_backgrounds_text_stop_indeed \relax}
+
+\def\anch_backgrounds_text_preset_yes
+  {\anch_backgrounds_text_preset_nop
+   \csname\??textbackgroundlevel\textbackgroundparameter\c!location\endcsname
+   \edef\p_anch_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
+   \edef\p_anch_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
+   \edef\p_anch_backgrounds_text_background{\textbackgroundparameter\c!background}%
+   \ifx\p_anch_backgrounds_text_frame\v!on
+     \ifx\p_anch_backgrounds_text_corner\v!round
+       \let\p_anch_backgrounds_text_frame\!!plustwo
+     \else
+       \let\p_anch_backgrounds_text_frame\!!plusone
+     \fi
+   \else
+     \let\p_anch_backgrounds_text_frame\!!zerocount
+   \fi
+   \ifx\p_anch_backgrounds_text_background\v!color
+     \let\p_anch_backgrounds_text_background\!!plusone
+   \else
+     \let\p_anch_backgrounds_text_background\!!zerocount
+   \fi
+   \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
+     \anch_backgrounds_text_meta_graphic % gets expanded directly
+   \stoppositionoverlay}
+
+\def\anch_backgrounds_text_meta_graphic
+  {\normalexpanded
+     {\setMPpositiongraphicrange % needs to be optimized
+        {\v_anch_backgrounds_anchor_current_b}%
+        {\v_anch_backgrounds_anchor_current_e}%
+        {\textbackgroundparameter\c!method}%
+        {self=\v_anch_backgrounds_text_current,
+         mp=\textbackgroundparameter\c!mp,
+         gridtype=\textbackgroundparameter\c!alternative,
+         filltype=\p_anch_backgrounds_text_background,
+         linetype=\p_anch_backgrounds_text_frame,
+         dashtype=\textbackgroundparameter\c!dash,
+         gridcolor=\textbackgroundparameter\c!framecolor,
+         linecolor=\textbackgroundparameter\c!framecolor,
+         lineoffset=\textbackgroundparameter\c!frameoffset,
+         fillcolor=\textbackgroundparameter\c!backgroundcolor,
+         filloffset=\textbackgroundparameter\c!backgroundoffset,
+         gridwidth=\textbackgroundparameter\c!rulethickness,
+         gridshift=\textbackgroundparameter\c!voffset,
+         linewidth=\textbackgroundparameter\c!rulethickness,
+         lineradius=\textbackgroundparameter\c!radius}}}
+
+\permanent\protected\def\stoptextbackground
+  {\anch_backgrounds_text_stop_indeed
+   \carryoverpar\endgroup} % why doesn't this work ?
+
+\permanent\protected\def\starttextbackgroundmanual
+  {\begingroup
+   \c_anch_backgrounds_pos_state\plusone
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \anch_backgrounds_bpos}
+
+\permanent\protected\def\stoptextbackgroundmanual
+  {\anch_backgrounds_epos
+   \carryoverpar\endgroup}
+
+\def\anch_backgrounds_text_start_txt
+  {\ifvmode \dontleavehmode \fi
+   \begingroup
+   \c_anch_backgrounds_pos_state\plusone
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \anch_backgrounds_bpos}
+
+\def\anch_backgrounds_text_stop_txt
+  {\anch_backgrounds_epos
+   \carryoverpar\endgroup}
+
+\newskip\textbackgroundskip
+
+% maybe we should have a resetter for such compensation struts
+
+\def\anch_backgrounds_reset_attributes
+  {\scratchcounter\c_attr_snapmethod
+   \resetallattributes % \c_attr_linenumber\attributeunsetvalue
+   \c_attr_snapmethod\scratchcounter}
+
+\def\anch_backgrounds_text_start_par % beware .. background shapes
+  {\endgraf % new
+   \textbackgroundparameter\c!before
+   \begingroup
+   \c_anch_backgrounds_pos_state\plustwo
+   \begingroup
+   \anch_backgrounds_reset_attributes
+   \noindent
+   \ifgridsnapping
+     \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox % not always ok (e.g. setups)
+         {\hpack{\raise\textbackgroundskip\hpack{\anch_backgrounds_bpos}}}%
+     \else
+       \anch_backgrounds_bpos
+     \fi
+   \else
+     \anch_backgrounds_bpos
+   \fi
+   \endgraf % we need a vertical nobreak - 29/06/2004
+   \endgroup
+   \nobreak
+   \vskip-\lineheight
+   \nobreak
+   \ifgridsnapping \else
+     \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
+     \ifdim\textbackgroundskip>\zeropoint
+        \kern\textbackgroundskip\nobreak
+     \fi
+   \fi
+   \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
+   \advance\leftskip\leftskipadaption
+   \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
+   \advance\rightskip\leftskipadaption
+   % new
+   \dosetraggedcommand{\textbackgroundparameter\c!align}%
+   \raggedcommand
+   %
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \nowhitespace
+   \seteffectivehsize
+   \doinhibitblank %   \blank[\v!disable]% new
+   \par}
+
+\def\anch_backgrounds_text_stop_par
+  {\par
+   \removelastskip % new
+   \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
+   \ifdim\lastskip>\zeropoint
+     \advance\textbackgroundskip-\lastskip
+   \fi
+   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+     \kern\textbackgroundskip\nobreak
+   \fi \fi
+   \nobreak
+   \vskip-\dimexpr\lineheight+\parskip\relax % problem: we loose the hangindent
+   \nobreak
+   \endgroup
+   \begingroup
+   \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+   \anch_backgrounds_reset_attributes
+   \nobreak \noindent \strut \hfill \kern\zeropoint
+   % so far
+   \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
+   \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox % not always ok (e.g. setups)
+         {\hpack{\lower\textbackgroundskip\hpack{\anch_backgrounds_epos}}}%
+     \else
+       \anch_backgrounds_epos
+     \fi
+   \else
+     \anch_backgrounds_epos
+   \fi
+   \endgraf
+   \carryoverpar\endgroup
+   \endgraf % new
+   \textbackgroundparameter\c!after}
+
+\permanent\protected\def\checkpositionoverlays % overloads \relax in anch-pgr
+  {\ifproductionrun
+     \enabletextarearegistration
+     \enablehiddenbackground
+     \enforced\glet\checkpositionoverlays\relax
+   \fi}
+
+% shape handling
+
+\definesystemattribute[textbackground][public]
+
+% \def\page_prepare_backgrounds#1%
+%   {\clf_collectbackgrounds\realpageno#1\relax}
+
+\def\anch_backgrounds_bpos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \c_attr_textbackground\attributeunsetvalue
+     \bposkind\v_anch_backgrounds_text_current\plusthree
+   \orelse\ifnum\c_anch_backgrounds_pos_state=\plusone
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+     \clf_registerbackground{\v_anch_backgrounds_text_current}%
+   \else
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+     \c_attr_textbackground\attributeunsetvalue
+   \fi}
+
+% plugs into other code
+
+\def\strc_floats_wrap_free_region
+  {\global\setbox\floatbox\hpack % we always need to wrap
+     {\ifconditional\c_strc_floats_trace_free
+        \strc_floats_show_free_region
+      \fi
+      \box\floatbox}}
+
+\startuseMPgraphic{floatfree}
+    draw_free_region(
+        \the\wd\floatbox,
+        \the\ht\floatbox,
+        \the\dp\floatbox,
+        \the\d_free_offset_left,
+        \the\d_free_offset_right,
+        \the\d_free_offset_top,
+        \the\d_free_offset_bottom
+    ) ;
+\stopuseMPgraphic
+
+\def\strc_floats_show_free_region
+  {\lower\dp\floatbox\hpack to \zeropoint {\useMPgraphic{floatfree}}}
+
+\newconditional\c_strc_floats_mark_as_free
+\newconditional\c_strc_floats_trace_free
+\newconstant   \c_free_offset_kind
+\newdimen      \d_free_offset_left
+\newdimen      \d_free_offset_right
+\newdimen      \d_free_offset_top
+\newdimen      \d_free_offset_bottom
+
+\installtextracker{floats.freeregion}
+  {\settrue \c_strc_floats_trace_free}
+  {\setfalse\c_strc_floats_trace_free}
+
+\def\strc_floats_mark_as_free#1#2#3#4#5%
+  {\c_free_offset_kind  #1%
+   \d_free_offset_left  #2%
+   \d_free_offset_right #3%
+   \d_free_offset_top   #4%
+   \d_free_offset_bottom#5%
+   \strc_floats_wrap_free_region
+   \anch_mark_tagged_box_free
+     \floatbox
+     \c_free_offset_kind
+     \d_free_offset_left
+     \d_free_offset_right
+     \d_free_offset_top
+     \d_free_offset_bottom}
+
+\ifx\strc_floats_mark_pag_as_free\relax \else
+    \writestatus{error}{wrong place for pag_as_free}\wait
+\fi
+
+\ifx\strc_floats_mark_par_as_free\relax \else
+    \writestatus{error}{wrong place for par_as_free}\wait
+\fi
+
+\def\strc_floats_mark_pag_as_free
+  {\ifpositioning
+     \ifconditional\c_strc_floats_mark_as_free
+       \strc_floats_mark_as_free
+         \plusone
+         \zeropoint
+         \zeropoint
+         \d_strc_floats_top
+         \d_strc_floats_bottom
+     \fi
+   \fi}
+
+\def\strc_floats_mark_par_as_free
+  {\ifpositioning
+     \ifconditional\c_strc_floats_mark_as_free
+       \ifcase\c_page_sides_float_type
+       \or % backspace
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_rightoffset
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftedge
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_rightoffset
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftmargin
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_rightoffset
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftside
+         \strc_floats_mark_as_free
+           \plustwo
+           \d_page_sides_leftskip % maybe too
+           \d_page_sides_margin
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightside
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_margin
+           \d_page_sides_rightskip % maybe too
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightmargin
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_leftoffset
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightedge
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_leftoffset
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % cutspace
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_leftoffset
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \fi
+     \fi
+   \fi}
+
+% so far
+
+\setuptextbackground
+  [\c!mp=mpos:region:draw,
+   \c!method=mpos:region,
+   \c!state=\v!start,
+   \c!location=\v!text,
+   \c!leftoffset=\!!zeropoint, % 1em,
+   \c!rightoffset=\textbackgroundparameter\c!leftoffset,
+   \c!topoffset=\!!zeropoint,  % \v!medium,
+   \c!bottomoffset=\textbackgroundparameter\c!topoffset,
+   \c!criterium=\plusone,
+   \c!level=-1,
+   \c!alternative=0,
+   \c!align=,
+   \c!dash=0, % to be internationalized
+   \c!background=\v!color,
+   \c!backgroundcolor=lightgray,
+   \c!backgroundoffset=\!!zeropoint,
+   \c!corner=\v!rectangular,
+   \c!radius=.5\bodyfontsize,
+   \c!voffset=\!!zeropoint,
+   \c!frame=\v!on,
+   \c!framecolor=blue,
+   \c!frameoffset=\!!zeropoint,
+   \c!rulethickness=\linewidth]
+
+%D The \METAPOST\ connection:
+
+% gridtype = 1 => baseline
+% gridtype = 2 => betweenline
+
+\setupMPvariables
+  [mpos:region]
+  [mp=mpos:region:unset,
+   gridtype=0,
+   linetype=1,
+   filltype=1,
+   dashtype=0, % 1 = dashed, 2 = dashed with background
+   gridcolor=red,
+   linecolor=blue,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linewidth=\linewidth,
+   gridwidth=\linewidth,
+   gridshift=\!!zeropoint,
+   lineradius=.5\bodyfontsize,
+   lineoffset=\!!zeropoint,
+   dashtype=1]
+
+\startuseMPgraphic{mpos:region:setup}
+    boxgridtype   := \MPvar{gridtype} ;
+    boxlinetype   := \MPvar{linetype} ;
+    boxfilltype   := \MPvar{filltype} ;
+    boxdashtype   := \MPvar{dashtype} ;
+    boxfilloffset := \MPvar{filloffset} ;
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxgridwidth  := \MPvar{gridwidth} ;
+    boxgridshift  := \MPvar{gridshift} ;
+    boxlineradius := \MPvar{lineradius} ;
+    boxlineoffset := \MPvar{lineoffset} ;
+    %
+    def boxgridcolor = \MPvar{gridcolor} enddef ;
+    def boxlinecolor = \MPvar{linecolor} enddef ;
+    def boxfillcolor = \MPvar{fillcolor} enddef ;
+    %
+    def boxgridoptions = withcolor boxgridcolor enddef ;
+    def boxlineoptions = withcolor boxlinecolor enddef ;
+    def boxfilloptions = withcolor boxfillcolor enddef ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:extra}
+    % user stuff
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:anchor}
+    setbounds currentpicture to multibox ;
+\stopuseMPgraphic
+
+\startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
+    \includeMPgraphic{mpos:region:setup} ;
+    \includeMPgraphic{mpos:region:extra} ;
+    \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
+    \includeMPgraphic{\MPvar{mp}} ;
+    \includeMPgraphic{mpos:region:anchor} ;
+\stopMPpositiongraphic
+
+%D For old times sake:
+
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+    string tag; tag := "\MPvar{self}" ;
+    path box ; box := positionbox(tag) ;
+
+    box := box enlarged  \MPvar{filloffset} ;
+    fill box withcolor \MPvar{fillcolor} ;
+    draw box withcolor \MPvar{linecolor} withpen pencircle scaled \MPvar{linewidth} ;
+
+    positioninregion;
+\stopMPpositiongraphic
+
+\startMPpositionmethod{mpos:region}
+    \MPpositiongraphic{mpos:region}{}%
+\stopMPpositionmethod
+
+\startuseMPgraphic{mpos:region:draw}
+    draw_multi_pars
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:show}
+    show_multi_pars
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:kind}
+    show_multi_kind
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:sideline}
+    draw_multi_side
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:region:sideline:dashed}
+    draw_multi_side_path dashed evenly ;
+\stopuseMPgraphic
+
+%D As an example we define a grid background:
+
+\definetextbackground
+  [\v!grid]
+  [\c!state=\v!stop,
+   \c!location=\v!paragraph,
+   \c!frame=\v!off,
+   \c!framecolor=red,
+   \c!background=,
+   \c!alternative=1]
+
+\ifx\basegrid\undefined \else \overloaded\aliased\letcsname\v!grid\endcsname\basegrid \fi
+
+%D Some examples (that might become modules anch-imp-whatever):
+
+\setupMPvariables
+  [mpos:encircle]
+  [fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linecolor=blue,
+   lineoffset=5pt,
+   linewidth=1pt]
+
+\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
+    \MPgetposboxes{\MPvar{self}}{\MPanchorid}
+    if nofposboxes = 1 :
+        posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
+        fill posboxes[1] withcolor \MPvar{fillcolor} ;
+        draw posboxes[1] withpen pencircle scaled \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+    fi ;
+\stopMPpositiongraphic
+
+\setupMPvariables
+  [mpos:connect]
+  [linecolor=red,
+   lineoffset=.25ex,
+   linewidth=1pt]
+
+\startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxlineoffset := \MPvar{lineoffset} ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    \MPgetposboxes{\MPvar{from},\MPvar{to}}{\MPanchorid}
+    connect_positions ;
+\stopMPpositiongraphic
+
+\protect \endinput
+
+\definetextbackground[underline]    [location=text,alternative=1,background=,frame=off]
+\definetextbackground[overstrike]   [location=text,alternative=2,background=,frame=off]
+\definetextbackground[exlines]      [location=text,alternative=3,background=,frame=off]
+\definetextbackground[strikethrough][location=text,alternative=4,background=,frame=off]
+
+\definestartstop [underline]
+  [before={\starttextbackground[underline]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [overstrike]
+  [before={\starttextbackground[overstrike]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [exlines]
+  [before={\starttextbackground[exlines]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [strikethrough]
+  [before={\starttextbackground[strikethrough]},
+   after=\stoptextbackground]
+
+\definetextbackground
+  [sideline]
+  [mp=mpos:region:sideline,
+   location=paragraph,
+   framecolor=red,
+   frameoffset=5mm]
+
+\definestartstop [sideline]
+  [before={\starttextbackground[sideline]},
+   after=\stoptextbackground]
+
+\starttext
+
+    \startunderline     \input tufte \stopunderline      \blank
+    \startoverstrike    \input tufte \stopoverstrike     \blank
+    \startexlines       \input tufte \stopexlines        \blank
+    \startstrikethrough \input tufte \stopstrikethrough  \blank
+    \startsideline      \input tufte \stopsideline       \blank
+
+    \page
+
+    \startpositionoverlay{text-1}
+        \setMPpositiongraphic{connect-1-b}{mpos:connect}{from=connect-1-b,to=connect-1-e}
+        \setMPpositiongraphic{connect-1-e}{mpos:connect}{from=connect-1-b,to=connect-1-e}
+    \stoppositionoverlay
+
+    \startpositionoverlay{text-1}
+        \setMPpositiongraphic{encircle-1}{mpos:encircle}{self=encircle-1}
+    \stoppositionoverlay
+
+    test \hpos{connect-1-b}{START}
+        \dorecurse{10}{\input ward}
+    \hpos{encircle-1}{\strut HERE}
+        \dorecurse{10}{\input ward}
+    \hpos{connect-1-e}{STOP} test
+
+\stoptext

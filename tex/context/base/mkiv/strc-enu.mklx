@@ -244,10 +244,6 @@
 
 \newtoks\everyenumeration
 
-\appendtoks
-    \disablepseudocaps % sorry, uppercase causes troubles
-\to \everyenumeration
-
 \letcsname\??constructionmainhandler   \v!enumeration\expandafter\endcsname\csname\??constructionmainhandler   \v!description\endcsname
 \letcsname\??constructioncommandhandler\v!enumeration\expandafter\endcsname\csname\??constructioncommandhandler\v!description\endcsname
 \letcsname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname

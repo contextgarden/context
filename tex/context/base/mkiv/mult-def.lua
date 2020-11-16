@@ -11,16 +11,16 @@ if not modules then modules = { } end modules ['mult-def'] = {
 
 return {
  ["commands"]={
-  ["CAPPED"]={
-   ["cs"]="KAP",
-   ["de"]="KAP",
-   ["en"]="CAP",
-   ["fr"]="CAP",
-   ["it"]="CAP",
-   ["nl"]="KAP",
-   ["pe"]="CAP",
-   ["ro"]="KAP",
-  },
+--["CAPPED"]={
+-- ["cs"]="KAP",
+-- ["de"]="KAP",
+-- ["en"]="CAP",
+-- ["fr"]="CAP",
+-- ["it"]="CAP",
+-- ["nl"]="KAP",
+-- ["pe"]="CAP",
+-- ["ro"]="KAP",
+--},
   ["Character"]={
    ["cs"]="Znak",
    ["de"]="Buchstabe",

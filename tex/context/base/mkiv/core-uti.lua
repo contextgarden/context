@@ -392,53 +392,24 @@ statistics.register("jobdata time",function()
     end
 end)
 
-if CONTEXTLMTXMODE > 0 then
-
-    function statistics.callbacks()
-        local backend  = backends.getcallbackstate()
-        local frontend = status.getcallbackstate()
-        local pages    = structures.pages.nofpages or 0
-        local total    = frontend.count + backend.count
-        local average  = pages > 0 and math.round(total/pages) or 0
-        local result   = format (
-            "file: %s, saved: %s, direct: %s, function: %s, value: %s, message: %s, bytecode: %s, late %s, total: %s (%s per page)",
-            frontend.file,  frontend.saved,   frontend.direct,   frontend["function"],
-            frontend.value, frontend.message, frontend.bytecode, backend.count,
-            total, average
-        )
-        statistics.callbacks = function()
-            return result
-        end
+statistics.register("callbacks", function()
+    local c_internal = status.callbacks or 0
+    local c_file     = status.indirect_callbacks or 0
+    local c_direct   = status.direct_callbacks or 0
+    local c_late     = backends.getcallbackstate().count
+    local c_function = status.function_callbacks or 0
+    local c_total    = c_internal + c_file + c_direct + c_late + c_function
+    local n_pages    = structures.pages.nofpages or 0
+    local c_average  = n_pages > 0 and math.round(c_total/n_pages) or 0
+    local result     = format (
+        "internal: %s, file: %s, direct: %s, late: %s, function %s, total: %s (%s per page)",
+        c_internal, c_file, c_direct, c_late, c_function, c_total, c_average
+    )
+    statistics.callbacks = function()
         return result
     end
-
-    statistics.register("callbacks", statistics.callbacks)
-
-else
-
-    function statistics.callbacks()
-        local c_internal = status.callbacks or 0
-        local c_file     = status.indirect_callbacks or 0
-        local c_direct   = status.direct_callbacks or 0
-        local c_late     = backends.getcallbackstate().count
-        local c_function = status.function_callbacks or 0
-        local c_total    = c_internal + c_file + c_direct + c_late + c_function
-        local n_pages    = structures.pages.nofpages or 0
-        local c_average  = n_pages > 0 and math.round(c_total/n_pages) or 0
-        local result     = format (
-            "internal: %s, file: %s, direct: %s, late: %s, function %s, total: %s (%s per page)",
-            c_internal, c_file, c_direct, c_late, c_function, c_total, c_average
-        )
-        statistics.callbacks = function()
-            return result
-        end
-        return result
-    end
-
-    statistics.register("callbacks", statistics.callbacks)
-
-end
-
+    return result
+end)
 
 statistics.register("randomizer", function()
     if rmethod and rvalue then

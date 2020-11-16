@@ -1380,7 +1380,6 @@
 	<!-- definitions for interface commands for language cs -->
 
 	<cd:commands>
-		<cd:command name='CAPPED' value='KAP'/>
 		<cd:command name='Character' value='Znak'/>
 		<cd:command name='Characters' value='Znaky'/>
 		<cd:command name='MONTH' value='MESIC'/>

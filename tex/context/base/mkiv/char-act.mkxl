@@ -79,34 +79,21 @@
 % but ... as we don't want to freeze to \obeyedspace etc which can be set after
 % \obeyspaces, we use an idirectness
 
-\def\_obeyed_space_{\obeyedspace}
-\def\_obeyed_tab_  {\obeyedtab}
-\def\_obeyed_line_ {\obeyedline}
-\def\_obeyed_page_ {\obeyedpage}
+\def\syst_obeyed_space{\obeyedspace}
+\def\syst_obeyed_tab  {\obeyedtab}
+\def\syst_obeyed_line {\obeyedline}
+\def\syst_obeyed_page {\obeyedpage}
 
-\permanent\protected\def\obeyspaces {\catcode\spaceasciicode    \activecatcode\enforced\letcharcode\spaceasciicode    \_obeyed_space_}
-\permanent\protected\def\obeytabs   {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \_obeyed_tab_}
-\permanent\protected\def\obeylines  {\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\_obeyed_line_}
-\permanent\protected\def\obeypages  {\catcode\formfeedasciicode \activecatcode\enforced\letcharcode\formfeedasciicode \_obeyed_page_}
+\permanent\protected\def\obeyspaces {\catcode\spaceasciicode    \activecatcode\enforced\letcharcode\spaceasciicode    \syst_obeyed_space}
+\permanent\protected\def\obeytabs   {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \syst_obeyed_tab  }
+\permanent\protected\def\obeylines  {\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\syst_obeyed_line }
+\permanent\protected\def\obeypages  {\catcode\formfeedasciicode \activecatcode\enforced\letcharcode\formfeedasciicode \syst_obeyed_page }
 
-\permanent\protected\def\ignoretabs {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \_obeyed_space_}
-\permanent\protected\def\ignorelines{\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\_obeyed_space_}
+\permanent\protected\def\ignoretabs {\catcode\tabasciicode      \activecatcode\enforced\letcharcode\tabasciicode      \syst_obeyed_space}
+\permanent\protected\def\ignorelines{\catcode\endoflineasciicode\activecatcode\enforced\letcharcode\endoflineasciicode\syst_obeyed_space}
 \permanent\protected\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 \permanent\protected\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
-\permanent\protected\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\enforced\letcharcode\spaceasciicode\_control_space_}
-
-%D \macros
-%D   {naturaltextext}
-%D
-%D When one uses \ETEX, switching to normal \TEX\ is possible too. We also introduce
-%D a switch that can be used in the drivers and set in higher level shell macros.
-
-\permanent\protected\def\naturaltextext#1\relax % this command will become obsolete
-  {\begingroup
-   \def\ascii{#1}%
-   \setcatcodetable\ctxcatcodes
-   \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
-   \endgroup}
+\permanent\protected\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\enforced\letcharcode\spaceasciicode\controlspace}
 
 \endinput \protect

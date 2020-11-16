@@ -1,0 +1,445 @@
+%D \module
+%D   [       file=anch-pgr, % split off core-pos
+%D        version=1999.08.01,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Positioning Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Grapics}
+
+%D Before we come to graphics support, we have to make sure of the reference point
+%D on the page. The next macros do so and are hooked into the page building routine.
+
+\registerctxluafile{anch-pgr}{}
+
+\unprotect
+
+%D A few more low level macros take care of defining and recalling actions. Actions
+%D are saved globally! The lists can become quite long because there can be lots of
+%D parameters passed on so we clean up the list afterwards.
+
+\newtoks\everypositionaction
+\newtoks\everyinsertpositionaction
+\newtoks\everycleanpositionaction
+
+\installcorenamespace{positionaction}
+\installcorenamespace{positioncleanup}
+
+\protected\def\anch_positions_set_action#1%
+  {\expandafter\gdef\csname\??positionaction#1\endcsname} % nicely gobbles spaces
+
+\permanent\protected\def\doifpositionaction#1%
+  {\ifcsname\??positionaction#1\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\permanent\protected\def\doifelsepositionaction#1%
+  {\ifcsname\??positionaction#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\aliased\let\doifpositionactionelse\doifelsepositionaction
+
+\protected\def\dopositionaction#1%
+  {\edef\currentpositionaction{#1}%
+   \ifcsname\??positionaction\currentpositionaction\endcsname
+     \anch_positions_action_indeed
+   \fi}
+
+\def\anch_positions_action_indeed
+  {\doifelseposition\currentpositionaction
+     \anch_positions_action_indeed_yes
+     \anch_positions_action_indeed_nop}
+
+\def\anch_positions_action_indeed_nop
+  {\anch_positions_trace_action_nop}
+
+\def\anch_positions_action_indeed_yes % we need a way to figure out if we have actions
+  {\begingroup
+   \setbox\scratchbox\hbox % \hpack
+     {\anch_positions_trace_action_yes
+      \the\everyinsertpositionaction
+      \the\everypositionaction
+      \begincsname\??positionaction\currentpositionaction\endcsname
+      \anch_positions_cleanup_action}%
+   \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
+   \endgroup}
+
+\protected\def\anch_positions_trace_action_nop_indeed
+  {\anch_positions_trace\clap\darkred{<\currentpositionaction>}}
+
+\protected\def\anch_positions_trace_action_yes_indeed
+  {\anch_positions_trace\clap\darkgreen{<\currentpositionaction>}}
+
+\let\anch_positions_trace_action_nop\relax
+\let\anch_positions_trace_action_yes\relax
+
+\appendtoks
+    \let\anch_positions_trace_action_nop\anch_positions_trace_action_nop_indeed
+    \let\anch_positions_trace_action_yes\anch_positions_trace_action_yes_indeed
+\to \t_anch_positions_tracers
+
+%D Here the complication has to do with collecting actions for later execution. This
+%D collection is especially handy when we want to move actions to a specific layer.
+%D Such series of actions are stored in a macro that is cleaned up after each
+%D invocation.
+
+\def\anch_positions_cleanup_action % not in trialtypesetting
+  {\ifcsname\??positioncleanup\currentpositionaction\endcsname
+     \the\everycleanpositionaction
+     \setxvalue{\??positioncleanup\currentpositionaction}{\csname\??positioncleanup\currentpositionaction\endcsname}%
+   \fi}
+
+\permanent\protected\def\handlepositionaction#1\with#2\on#3% ugly, will change
+  {\begingroup
+   \edef\currentpositionanchor
+     {\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
+   \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\getvalue{\??positioncleanup\currentpositionanchor}}}%
+   \let#1\relax
+   \ifcsname\??positioncleanup\currentpositionanchor\endcsname
+     \setxvalue{\??positioncleanup\currentpositionanchor}%
+       {\csname\??positioncleanup\currentpositionanchor\endcsname#1#2}%
+   \else
+     \setxvalue{\??positioncleanup\currentpositionanchor}%
+       {#1#2}%
+   \fi
+   \endgroup}
+
+%D The first version of this module implemented head and tail anchors. Currently we
+%D stick to just one anchor and derive the head and tail anchors from this one. We
+%D set these anchors before and after each page.
+
+\newdimen\c_anch_page_width
+\newdimen\c_anch_page_height
+
+\protected\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
+  {\ifpositioning\ifcase\realpageno\or
+     \ifdim\c_anch_page_height=\paperheight
+       \ifdim\c_anch_page_width=\paperwidth
+         % no change
+       \else
+         \c_anch_page_width \paperwidth
+         \c_anch_page_height\paperheight
+         \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hpack{\box#1}\fi
+       \fi
+     \else
+       \c_anch_page_width \paperwidth
+       \c_anch_page_height\paperheight
+       \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hpack{\box#1}\fi
+     \fi
+   \fi\fi}
+
+\protected\def\anch_positions_place_anchors
+  {\ifpositioning
+     \anch_positions_place_anchors_yes
+   \else
+     \anch_positions_place_anchors_nop
+   \fi}
+
+\def\anch_positions_place_anchors_yes % todo : depth pagebox
+  {\begingroup
+   \setbox\scratchbox\emptyhbox
+   \ht\scratchbox\textheight
+   \dp\scratchbox\zeropoint % redundant
+   \wd\scratchbox\makeupwidth
+   \anch_mark_text_box\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+\def\anch_positions_place_anchors_nop
+  {\vkern\textheight}
+
+%D \macros
+%D   {positionoverlay,startpositionoverlay}
+%D
+%D As long as we're dealing with graphics it makes much sense to use the available
+%D overlay mechanism. For this purpose, we define some dedicated overlay extensions.
+%D
+%D \startbuffer[sample]
+%D \defineoverlay [sample] [\positionoverlay{sample}]
+%D
+%D \startpositionoverlay{sample}
+%D   \setMPpositiongraphic{A-1}{connectcenter}{from=A-1,to=A-2}
+%D \stoppositionoverlay
+%D \stopbuffer
+%D
+%D \typebuffer[sample]
+%D
+%D \startbuffer[graphic]
+%D \startMPpositiongraphic{connectcenter}
+%D   path pa, pb ; pair ca, cb ;
+%D   initialize_box(\MPpos{\MPvar{from}}) ; pa := pxy ; ca := cxy ;
+%D   initialize_box(\MPpos{\MPvar{to}}) ; pb := pxy ; cb := cxy ;
+%D   draw pa withcolor red ;
+%D   draw pb withcolor red ;
+%D   draw ca -- cb withcolor blue ;
+%D   anchor_box(\MPanchor{\MPvar{from}}) ;
+%D \stopMPpositiongraphic
+%D \stopbuffer
+%D
+%D We can best demonstrate this in an example, say:
+%D
+%D \startbuffer[text]
+%D \framed
+%D   [backgroundachtergrond=sample,align=middle,width=7cm]
+%D   {We want to connect \hpos {A-1} {this} word with its
+%D    grammatical cousin \hpos {A-2} {that}.}
+%D \stopbuffer
+%D
+%D \typebuffer[text]
+%D
+%D \startlinecorrection
+%D %\getbuffer[graphic,sample,text]
+%D \stoplinecorrection
+%D
+%D The graphic is defined in the following way, using some macros defined in an
+%D auxiliary \METAPOST\ module that is preloaded.
+%D
+%D \typebuffer[graphic]
+
+\def\MPanchoridentifier{mpa}  % {mp-anchor}
+
+%D The rest of the definitions concerning such overlays may look complicated,
+
+\let\currentpositionoverlay\empty
+
+%D Position actions are automatically executed when a position is set.
+
+\def\textbackgroundoverlay#1{\v!text#1}
+\def\MPanchornumber         {\the\realpageno}
+
+\permanent\protected\def\positionoverlay % the test prevents too many redundant positions
+  {\ifpositioning               % in (not used) text* position layers
+     \expandafter\anch_positions_overlay_indeed
+   \else % also \iftrialtypesetting test here?
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\anch_positions_overlay_indeed#1%
+  {\begingroup
+   \edef\currentpositionoverlay{#1}%
+   \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
+     \anch_positions_overlay_compose
+   \fi
+   \endgroup}
+
+\def\MPoverlayanchor#1{\MPpos\MPanchorid}
+
+\def\anch_positions_overlay_compose
+  {\vpack to \d_overlay_height
+     {%\writestatus{!!!}{\currentpositionoverlay/\MPanchoridentifier/\MPanchornumber}%
+      \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
+    % \edef\MPanchor##1{\MPpos\MPanchorid}%
+      \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
+      \the\everyinsertpositionaction
+      \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
+      \setbox\scratchbox\hbox to \d_overlay_width % \hpack
+        {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
+      \dp\scratchbox\zeropoint
+      \anch_mark_tagged_box\scratchbox\MPanchorid % needs an hbox
+      \box\scratchbox
+      \vfill}}
+
+\permanent\protected\def\positionregionoverlay  % shares regions
+  {\ifpositioning
+     \expandafter\anch_positions_region_overlay_indeed
+   \else % also \iftrialtypesetting test here?
+     \expandafter\gobbletwoarguments
+   \fi}
+
+\let\currentpositionregion\empty
+
+\def\anch_positions_region_overlay_indeed#1#2%
+  {\begingroup
+   \edef\currentpositionregion {#1}%
+   \edef\currentpositionoverlay{#2}%
+   \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
+     \anch_positions_region_overlay_compose
+   \fi
+   \endgroup}
+
+\def\anch_positions_region_overlay_compose
+  {\vpack to \d_overlay_height
+     {\let\MPanchorid\currentpositionregion
+      \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
+      \the\everyinsertpositionaction
+      \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
+      \setbox\scratchbox\hbox to \d_overlay_width % \hpack
+        {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
+      \dp\scratchbox\zeropoint
+      \box\scratchbox
+      \vfill}}
+
+% \let\anch_positions_overlay_nop\gobbleoneargument
+
+\permanent\protected\def\startpositionoverlay
+  {\iftrialtypesetting
+     \expandafter\anch_positions_overlay_start_nop
+   \else
+     \expandafter\anch_positions_overlay_start_yes
+   \fi}
+
+\def\anch_positions_overlay_start_nop#1\stoppositionoverlay
+  {}
+
+\ifdefined\checkpositionoverlays \else \let\checkpositionoverlays\relax \fi
+
+\let\currentpositionoverlay\empty
+
+\def\anch_positions_overlay_start_yes#1%
+  {\checkpositionoverlays
+   \edef\currentpositionoverlay{#1}}
+
+\permanent\protected\def\stoppositionoverlay
+  {\let\currentpositionoverlay\empty}
+
+%D A position graphic is a normal (non||reused) \METAPOST\ graphic, used
+%D immediately, with zero dimensions, so that a sequence of them does not harm.
+
+\installcorenamespace{positiongraphic}
+\installcorenamespace{positionmethod}
+%installcorenamespace{graphicvariable}
+
+\newbox\b_anch_positions_graphic
+
+\permanent\tolerant\protected\def\startMPpositiongraphic#=#*#=#:#3\stopMPpositiongraphic % tag list mpcode
+  {\setgvalue{\??positiongraphic#1}{\anch_positions_meta_graphic_use{#1}{#2}{#3}}}
+
+\aliased\let\stopMPpositiongraphic\relax
+
+\def\anch_positions_meta_graphic_prepare
+  {\ifcsname\??graphicvariable\currentmpvariableclass:self\endcsname \else
+     \letvalue{\??graphicvariable\currentmpvariableclass:self}\currentposition
+   \fi
+   \ifcsname\??graphicvariable\currentmpvariableclass:from\endcsname \else
+     \letvalue{\??graphicvariable\currentmpvariableclass:from}\currentposition
+   \fi}
+
+\def\anch_positions_meta_graphic_use#1#2#3%
+  {\begingroup
+   \meta_prepare_variables{#2}%
+   \anch_positions_meta_graphic_prepare
+   \startMPcode#3\stopMPcode
+   \endgroup}
+
+\permanent\tolerant\protected\def\MPpositiongraphic#=#*#=%
+  {\ifcsname\??positionmethod#1\endcsname % method
+     \expandafter\anch_positions_meta_graphic_direct_method
+   \orelse\ifcsname\??positiongraphic#1\endcsname
+     \expandafter\anch_positions_meta_graphic_direct_normal
+   \else
+     \expandafter\gobbletwoarguments
+   \fi{#1}{#2}}
+
+\def\anch_positions_meta_graphic_direct_method{\anch_positions_meta_graphic_direct\??positionmethod }
+\def\anch_positions_meta_graphic_direct_normal{\anch_positions_meta_graphic_direct\??positiongraphic}
+
+\def\anch_positions_meta_graphic_direct#1#2#3% what tag setups
+  {\begingroup
+   \setupMPvariables[#2][#3]%
+   \edef\currentmpvariableclass{#2}%
+   \anch_positions_meta_graphic_prepare
+   \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
+   \enforced\def\MPpositiongraphic{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
+   \setbox\b_anch_positions_graphic\hbox % \hpack
+     {\ignorespaces\begincsname#1#2\endcsname\removelastspace}%
+   \smashbox\b_anch_positions_graphic
+   \box\b_anch_positions_graphic
+   \endgroup}
+
+\def\anch_positions_meta_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
+  {\begingroup
+   \setupMPvariables[#2][#1,#3]%
+   \edef\currentmpvariableclass{#2}%
+   \anch_positions_meta_graphic_prepare
+   \begincsname\??positiongraphic#2\endcsname
+   \endgroup}%
+
+\permanent\def\startMPpositionmethod#1#2\stopMPpositionmethod
+  {\setgvalue{\??positionmethod#1}{#2}} % todo: var list here
+
+\aliased\let\stopMPpositionmethod\relax
+
+%D Simple one position graphics.
+
+\permanent\tolerant\protected\def\setMPpositiongraphic#=#*#=#*#=%
+  {\ifempty\currentpositionoverlay
+     \anch_positions_set_action{#1}{\MPpositiongraphic{#2}{#3}}%
+   \else % silly can be one
+     \anch_positions_meta_graphic_handle{#1}{#2}{#3}%
+   \fi}
+
+\def\anch_positions_meta_graphic_handle#1#2#3% combine with boxes
+  {\handlepositionaction\anch_positions_meta_graphic_handle_indeed\with{#1}{#2}{#3}\on{#2}}
+
+\def\anch_positions_meta_graphic_insert#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
+     \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
+   \fi}
+
+\let\anch_positions_meta_graphic_handle_indeed\relax
+
+\appendtoks
+    \let\anch_positions_meta_graphic_handle_indeed\anch_positions_meta_graphic_insert
+\to \everyinsertpositionaction
+
+\def\anch_positions_meta_graphic_cleanup#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}<\realpageno \else
+     \noexpand\anch_positions_meta_graphic_handle_indeed{#1}{#2}{#3}%
+   \fi}
+
+\appendtoks
+    \let\anch_positions_meta_graphic_handle_indeed\anch_positions_meta_graphic_cleanup
+\to \everycleanpositionaction
+
+%D Graphics that span two positions (beware, does not cross pages).
+
+\permanent\tolerant\protected\def\setMPpositiongraphicrange#=#*#=#*#=#*#=%
+  {\ifempty\currentpositionoverlay
+     \anch_positions_set_action{#1}{\MPpositiongraphic{#3}{#4}}%
+   \else
+     \anch_positions_meta_graphic_handle_range{#1}{#2}{#3}{#4}%
+   \fi}
+
+\def\anch_positions_meta_graphic_handle_range#1#2#3#4%
+  {\handlepositionaction\anch_positions_meta_graphic_handle_range_indeed\with{#1}{#2}{#3}{#4}\on{#2}}
+
+\def\anch_positions_meta_graphic_insert_range#1#2#3#4% pos pos tag setups
+  {\clf_doifelserangeonpage{#1}{#2}\realpageno
+     {\def\currentposition{#1}%
+      \MPpositiongraphic{#3}{#4}}%
+     {}}
+
+\appendtoks
+    \let\anch_positions_meta_graphic_handle_range_indeed\anch_positions_meta_graphic_insert_range
+\to \everyinsertpositionaction
+
+\def\anch_positions_meta_graphic_cleanup_range#1#2#3#4% pos tag setups
+  {\ifnum\MPp{#2}<\realpageno \else
+     \noexpand \anch_positions_meta_graphic_handle_range_indeed{#1}{#2}{#3}{#4}%
+   \fi}
+
+\appendtoks
+    \let\anch_positions_meta_graphic_handle_range_indeed\anch_positions_meta_graphic_cleanup_range
+\to \everycleanpositionaction
+
+\let\anch_positions_meta_graphic_handle_range_indeed\gobblefourarguments
+
+% Helpers:
+
+\permanent\def\MPgetposboxes #1#2{\clf_fetchposboxes{#1}{#2}\realpageno}
+\permanent\def\MPgetmultipars#1#2{\clf_fetchmultipar{#1}{#2}\realpageno}
+
+\protect \endinput

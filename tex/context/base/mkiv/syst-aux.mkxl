@@ -219,7 +219,7 @@
 %D is more efficient but it probably won't be noticed. It's anyway cheaper on memory
 %D access. We use versions that don't even store the arguments.
 
-%def\gobbleoneargument               #-{}
+%permanent\def\gobbleoneargument               #-{}
 \permanent\def\gobbletwoarguments            #-#-{}
 \permanent\def\gobblethreearguments        #-#-#-{}
 \permanent\def\gobblefourarguments       #-#-#-#-{}
@@ -258,9 +258,6 @@
 % \mutable\let\nextnext      \relax % kind of obsolete
 % \mutable\let\nextnextnext  \relax % kind of obsolete
 % \mutable\let\nexttoken     \relax
-
-\let\m_syst_action_yes\relax
-\let\m_syst_action_nop\relax
 
 \permanent\protected\def\doifelsenextchar#1#2#3% #1 should not be {} !
   {\def\m_syst_action_yes{#2}%
@@ -3756,75 +3753,13 @@
 
 \aliased\let\doifsamestringelse\doifelsesamestring
 
-% BEGIN OF OBSOLETE %
-
-%D \macros
-%D   {ConvertToConstant,ConvertConstantAfter}
-%D
-%D When comparing arguments with a constant, we can get into trouble when this
-%D argument consists of tricky expandable commands. One solution for this is
-%D converting the argument to a string of unexpandable characters. To make
-%D comparison possible, we have to convert the constant too.
+%D These are obsolete in MTX:
 %D
 %D \starttyping
-%D \ConvertToConstant\doifelse {...} {...} {then ...} {else ...}
+%D \ConvertToConstant    #1#2#3
+%D \CheckConstantAfter   #1#2
+%D \ConvertConstantAfter #1#2#3
 %D \stoptyping
-%D
-%D This construction is only needed when the first argument can give troubles.
-%D Misuse can slow down processing.
-%D
-%D \starttyping
-%D \ConvertToConstant\doifelse{\c!alfa}        {\c!alfa}{...}{...}
-%D \ConvertToConstant\doifelse{alfa}           {\c!alfa}{...}{...}
-%D \ConvertToConstant\doifelse{alfa}           {alfa}   {...}{...}
-%D \ConvertToConstant\doifelse{alfa \alfa test}{\c!alfa}{...}{...}
-%D \stoptyping
-%D
-%D In examples~2 and~3 both arguments equal, in~1 and~4 they differ.
-
-\permanent\protected\def\ConvertToConstant#1#2#3% will go
-  {\edef\m_syst_string_one{\expandafter\detokenize\expandafter{#2}}%
-   \edef\m_syst_string_two{\expandafter\detokenize\expandafter{#3}}%
-   #1{\m_syst_string_one}{\m_syst_string_two}}
-
-%D When the argument \type{#1} consists of commands, we had better use
-%D
-%D \starttyping
-%D \ConvertConstantAfter\processaction[#1][...]
-%D \ConvertConstantAfter\doifelse{#1}{\v!something}{}{}
-%D \stoptyping
-%D
-%D This commands accepts things like:
-%D
-%D \starttyping
-%D \v!constant
-%D constant
-%D \hbox to \hsize{\rubish}
-%D \stoptyping
-%D
-%D As we will see in the core modules, this macro permits constructions like:
-%D
-%D \starttyping
-%D \setupfootertexts[...][...]
-%D \setupfootertexts[margin][...][...]
-%D \setupfootertexts[\v!margin][...][...]
-%D \stoptyping
-%D
-%D where \type {...} can be anything legally \TEX.
-
-\permanent\protected\def\CheckConstantAfter#1#2% will go
-  {\expandafter\convertargument\v!prefix!\to\ascii
-   \convertargument#1\to#2\relax
-   \doifelseinstring\ascii{#2}
-     {\expandafter\convertargument#1\to#2}
-     {}}
-
-\permanent\protected\def\ConvertConstantAfter#1#2#3% will go
-  {\CheckConstantAfter{#2}\asciia
-   \CheckConstantAfter{#3}\asciib
-   #1{\asciia}{\asciib}}
-
-% END OF OBSOLETE %
 
 %D \macros
 %D   {assignifempty}

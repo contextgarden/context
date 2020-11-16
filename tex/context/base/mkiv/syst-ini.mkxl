@@ -67,7 +67,9 @@
 \immutable\integerdef\morethanasciicode        62 % > used as alternative verbatim }
 \immutable\integerdef\questionmarkasciicode    63 % ? used in namespace protection
 \immutable\integerdef\atsignasciicode          64 % @ used in namespace protection
+\immutable\integerdef\leftbracketasciicode     91
 \immutable\integerdef\backslashasciicode       92 % `\\
+\immutable\integerdef\rightbracketasciicode    93
 \immutable\integerdef\circumflexasciicode      94
 \immutable\integerdef\underscoreasciicode      95
 \immutable\integerdef\leftbraceasciicode      123 % `\{
@@ -75,6 +77,8 @@
 \immutable\integerdef\rightbraceasciicode     125 % `\}
 \immutable\integerdef\tildeasciicode          126 % `\~
 \immutable\integerdef\delasciicode            127
+
+\aliased\let\percentasciicode\commentasciicode
 
 %catcode\zeroasciicode           \ignorecatcode      % `\^^@   ascii null is ignored
 \catcode\tabasciicode            \spacecatcode       % `\^^I   ascii tab is a blank space
@@ -155,8 +159,8 @@
 
 \permanent\def\gobbleoneargument#-{} % will be defined later on anyway
 
-%D First we define a simplified version of the \CONTEXT\ protection mechanism.
-%D Later we will implement a better variant.
+%D First we define a simplified version of the \CONTEXT\ protection mechanism. Later
+%D we will implement a better variant.
 
 \def\unprotect
   {\edef\protect
@@ -387,6 +391,10 @@
 \newcount\globalscratchcounterone
 \newcount\globalscratchcountertwo
 \newcount\globalscratchcounterthree
+
+\mutable\let\scratchmacro   \relax
+\mutable\let\scratchmacroone\relax
+\mutable\let\scratchmacrotwo\relax
 
 %D \macros
 %D   {tempstring}

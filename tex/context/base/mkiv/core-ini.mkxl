@@ -66,9 +66,9 @@
 
 \newconditional\simplifyingcommands % public
 
-\unexpanded\def\forgetall       {\the\everyforgetall}
-\unexpanded\def\cleanupfeatures {\the\everycleanupfeatures}
-\unexpanded\def\simplifycommands{\the\everysimplifycommands}
+\permanent\protected\def\forgetall       {\the\everyforgetall}
+\permanent\protected\def\cleanupfeatures {\the\everycleanupfeatures}
+\permanent\protected\def\simplifycommands{\the\everysimplifycommands}
 
 \appendtoks
     \settrue\simplifyingcommands
@@ -83,7 +83,7 @@
 \newtoks \everybeforepagebody
 \newtoks \everyafterpagebody
 
-\let\everypagebody\everybeforepagebody % backward compatible, will become obsolete
+\aliased\let\everypagebody\everybeforepagebody % backward compatible, will become obsolete
 
 %D Floats:
 
@@ -103,8 +103,8 @@
 \newtoks \everyendofpar
 %newtoks \everyparflush
 
-\unexpanded\def\bpar{\the\everybeginofpar\ignorespaces}                  % may interfere with \everypar
-\unexpanded\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+\protected\def\bpar{\the\everybeginofpar\ignorespaces}                  % may interfere with \everypar
+\protected\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
 
 %D Lists:
 
@@ -138,14 +138,6 @@
 %D Tables:
 
 %newtoks \everytable % we need to disstinguish kinds
-
-%D State mess:
-
-\newtoks \everypushsomestate
-\newtoks \everypopsomestate
-
-\unexpanded\def\pushsomestates{\the\everypushsomestate}
-\unexpanded\def\popsomestates {\the\everypopsomestate }
 
 %D More generic (used to be pushcolor etc)
 

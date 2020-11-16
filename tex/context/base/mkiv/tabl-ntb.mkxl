@@ -895,10 +895,10 @@
 \let\eTABLEbody\relax
 \let\eTABLEfoot\relax
 
-\permanent\tolerant\protected\def\bTABLEhead[#1]#2\eTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
-\permanent\tolerant\protected\def\bTABLEnext[#1]#2\eTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
-\permanent\tolerant\protected\def\bTABLEbody[#1]#2\eTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
-\permanent\tolerant\protected\def\bTABLEfoot[#1]#2\eTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
+\permanent\tolerant\protected\def\bTABLEhead[#1]#:#2\eTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
+\permanent\tolerant\protected\def\bTABLEnext[#1]#:#2\eTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
+\permanent\tolerant\protected\def\bTABLEbody[#1]#:#2\eTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
+\permanent\tolerant\protected\def\bTABLEfoot[#1]#:#2\eTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
 
 \def\tabl_ntb_section[#1]#2% also used in tabl-nte
   {\protected\def\tabl_ntb_setup_section{\setupcurrentnaturaltablelocal[#1]}%

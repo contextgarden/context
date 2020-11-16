@@ -1,0 +1,94 @@
+%D \module
+%D   [       file=typo-brk,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Breakpoints,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Breakpoints}
+
+\unprotect
+
+% hm, we cannot prebuild lists, font dependent
+%
+% -- type nleft nright language left right middle
+%
+% -- we might eventually stick to only method 5
+
+\registerctxluafile{typo-brk}{}
+
+\definesystemattribute[breakpoint][public,global]
+
+% see below: \exhyphenchar \minusone % we use a different order than base tex, so we really need this
+
+\permanent\tolerant\protected\def\definebreakpoints[#1]%
+  {\clf_definebreakpoints{#1}} % todo: public implementor
+
+\permanent\tolerant\protected\def\definebreakpoint[#1]#*[#2]#*[#3]% name char settings
+  {\begingroup
+   \getdummyparameters
+     [\c!type=\plusone,\c!nleft=\plusthree,\c!nright=\plusthree,%
+      \s!language=,\c!left=,\c!right=,\c!middle=,\c!range=\v!no,%
+      #3]%
+   \clf_definebreakpoint
+     {#1}%
+     {#2}%
+     {\reallanguagetag{\directdummyparameter\s!language}}%
+     {% maybe deal with #3 at the lua end
+          type \directdummyparameter\c!type
+         nleft \directdummyparameter\c!nleft
+        nright \directdummyparameter\c!nright
+         right {\directdummyparameter\c!right}%
+          left {\directdummyparameter\c!left}%
+        middle {\directdummyparameter\c!middle}%
+        range  {\directdummyparameter\c!range}%
+     }%
+   \relax
+   \endgroup}
+
+\permanent\protected\def\setbreakpoints[#1]%
+  {\exhyphenchar\minusone % we use a different order than base tex, so we really need this
+   \clf_setbreakpoints{#1}}
+
+\permanent\protected\def\resetbreakpoints
+  {\exhyphenchar\hyphenasciicode % 2020.03.05
+   \c_attr_breakpoint\attributeunsetvalue}
+
+\definebreakpoints[compound]
+
+% 1: simple break
+% 6: simple break but skip same
+
+\definebreakpoint [compound] [+] [\c!nleft=3,\c!nright=3,\c!type=1]                 % middle=+,left=,right=
+%definebreakpoint [compound] [-] [\c!nleft=3,\c!nright=3,\c!type=1,\c!range=\v!yes] % middle=+,left=,right=
+\definebreakpoint [compound] [-] [\c!nleft=3,\c!nright=3,\c!type=6,\c!range=\v!yes] % middle=+,left=,right=
+\definebreakpoint [compound] [/] [\c!nleft=3,\c!nright=3,\c!type=1]                 % middle=+,left=,right=
+\definebreakpoint [compound] [(] [\c!nleft=3,\c!nright=3,\c!type=2]                 % type=5,middle=(,left=(-,right=
+\definebreakpoint [compound] [)] [\c!nleft=3,\c!nright=3,\c!type=3]                 % type=5,middle=),left=,right=-)
+
+\aliased\let\installbreakpoint\definebreakpoint % for a while
+
+% \start \hsize 1.5cm \setbreakpoints[compound]
+%     \definebreakpoint [compound] [-] [nleft=3,nright=3,type=5,left=,right={-},middle={-}]
+%     \definebreakpoint [compound] [(] [nleft=3,nright=3,type=5,left=,right={(-},middle={(}]
+%     \definebreakpoint [compound] [)] [nleft=3,nright=3,type=5,left={-)},right=,middle={)}]
+%     composed-word\par composed(word)\par
+% \stop
+
+% \mainlanguage[czech]
+% \definebreakpoint [compound] [\number`-] [language=cs,nleft=3,nright=3,type=4]
+% \setbreakpoints[compound]
+% \start \hsize 1mm test-test \par \stop
+
+%D Maybe some day default:
+%
+% \setbreakpoints[compound]
+
+\protect \endinput
+

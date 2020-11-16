@@ -1,0 +1,29 @@
+%D \module
+%D   [       file=core-ctx,
+%D        version=2006.08.16, % old stuff
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Control,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Job Control}
+
+\registerctxluafile{core-ctx}{}
+
+\unprotect
+
+% called directly in core-def.mkiv
+%
+% \unexpanded\def\job_options_get_commandline {\clf_setdocumentcommandline}
+% \unexpanded\def\job_options_get_ctxfile     {\clf_setdocumentctxfile}
+% \unexpanded\def\job_options_set_modes       {\clf_setdocumentmodes}
+% \unexpanded\def\job_options_set_modules     {\clf_setdocumentmodules}
+% \unexpanded\def\job_options_set_environments{\clf_setdocumentenvironments}
+% \unexpanded\def\job_options_set_filenames   {\clf_setdocumentfilenames}
+
+\protect \endinput

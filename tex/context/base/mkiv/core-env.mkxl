@@ -304,8 +304,10 @@
 
 \newconditional\c_syst_modes_set_done % conditionals can be pushed/popped
 
+\installmacrostack\c_syst_modes_set_done
+
 \permanent\protected\def\startmodeset
-  {\pushmacro\c_syst_modes_set_done
+  {\push_macro_c_syst_modes_set_done
    \setfalse\c_syst_modes_set_done
    \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
 
@@ -333,7 +335,7 @@
   {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_quit#-\stopmodeset
-  {\popmacro\c_syst_modes_set_done}
+  {\pop_macro_c_syst_modes_set_done}
 
 %D Lets now set a mode:
 
@@ -358,7 +360,7 @@
 
 \letvalue{\??setup:\??empty}\gobbleoneargument
 
-\def\syst_setups#1% the grid option will be extended to other main modes
+\permanent\def\syst_setups#1% the grid option will be extended to other main modes
   {\csname\??setup
      \ifgridsnapping
        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
@@ -369,22 +371,22 @@
 
 % no checking and we assume it being defined:
 
-\def\fastsetup                     #1{\csname\??setup:#1\endcsname\empty}
-\def\fastsetupwithargument         #1{\csname\??setup:#1\endcsname}    % swapped per 2015-08-30
-\def\fastsetupwithargumentswapped#1#2{\csname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
+\permanent\def\fastsetup                     #1{\csname\??setup:#1\endcsname\empty}
+\permanent\def\fastsetupwithargument         #1{\csname\??setup:#1\endcsname}    % swapped per 2015-08-30
+\permanent\def\fastsetupwithargumentswapped#1#2{\csname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
 
 % the next one is meant for \c!setups situations, hence the check for
 % a shortcut
 
 \let\m_syst_setups_asked\empty
 
-\def\doprocesslocalsetups#1% sort of public, fast local variant
+\permanent\protected\def\doprocesslocalsetups#1% sort of public, fast local variant
   {\edef\m_syst_setups_asked{#1}%
    \ifempty\m_syst_setups_asked\else
      \expandafter\syst_setups_process_local
    \fi}
 
-\protected\def\usesetupsparameter#1%
+\permanent\protected\def\usesetupsparameter#1%
   {\edef\m_syst_setups_asked{#1\c!setups}%
    \ifempty\m_syst_setups_asked\else
      \expandafter\syst_setups_process_local
@@ -399,35 +401,34 @@
   {\clf_autosetups{\m_syst_setups_asked}%
    \relax} % let's prevent lookahead
 
-\def\autosetups#1%
-  {\clf_autosetups{#1}}
+\permanent\def\autosetups#1{\clf_autosetups{#1}} % todo: public implementor
 
-\edef\setupwithargument#1% saves a few expansions
+\permanent\edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
 
-\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
+\permanent\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\??empty\noexpand\fi\endcsname{#1}}
 
-\let\directsetup\syst_setups
-\let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
+\aliased\let\directsetup\syst_setups
+\aliased\let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
-\protected\def\doifelsesetups#1% to be done: grid
+\permanent\protected\def\doifelsesetups#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\let\doifsetupselse\doifelsesetups
+\aliased\let\doifsetupselse\doifelsesetups
 
-\protected\def\doifsetups#1% to be done: grid
+\permanent\protected\def\doifsetups#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\protected\def\doifnotsetups#1% to be done: grid
+\permanent\protected\def\doifnotsetups#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
      \expandafter\gobbleoneargument
    \else
@@ -571,26 +572,23 @@
 
 %D System setups:
 
-\let\systemsetupsprefix\wildcardsymbol
+\aliased\let\systemsetupsprefix\wildcardsymbol
 
-\def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
+\permanent\def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
 
-\protected\def\resetsetups[#1]% see x-fo for usage
+\permanent\protected\def\resetsetups[#1]% see x-fo for usage
   {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1\endcsname
      \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1}%
    \else
      \dodoglobal\undefinevalue{\??setup:#1}%
    \fi}
 
-\protected\def\copysetups
-  {\dodoubleargument\syst_setups_copy}
-
-\def\syst_setups_copy[#1][#2]%
+\permanent\tolerant\protected\def\copysetups[#1]#*[#2]%
   {\ifcsname\??setup:#2\endcsname
       \letcsname\??setup:#1\expandafter\endcsname\lastnamedcs
    \fi}
 
-\protected\def\showsetupsdefinition[#1]%
+\permanent\protected\def\showsetupsdefinition[#1]%
   {\showvalue{\??setup:#1}} % temp hack for debugging
 
 %D \macros
@@ -611,9 +609,6 @@
 \permanent\protected\def\setevariables{\syst_variables_set[\getraweparameters]}
 \permanent\protected\def\setgvariables{\syst_variables_set[\getrawgparameters]}
 \permanent\protected\def\setxvariables{\syst_variables_set[\getrawxparameters]}
-
-% \protected\def\globalsetvariables % obsolete
-%   {\dotripleargument\syst_variables_set[\globalgetrawparameters]}
 
 \tolerant\def\syst_variables_set[#1]#*[#2]#*[#3]% tricky, test on s-pre-60
   {\doifelse{#2}\currentvariableclass

@@ -1,0 +1,170 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=grouping,
+   color=middlecyan]
+
+\startsection[title=Introduction]
+
+This is a rather short explanation. I decided to write it after presenting the
+other topics at the 2019 \CONTEXT\ meeting where there was a question about
+grouping.
+
+\stopsection
+
+\startsection[title=\PASCAL]
+
+In a language like \PASCAL, the language that \TEX\ has been written in, or
+\MODULA, its successor, there is no concept of grouping like in \TEX. But we can
+find keywords that suggests this:
+
+\starttyping
+for i := 1 to 10 do begin ... end
+\stoptyping
+
+This language probably inspired some of the syntax of \TEX\ and \METAPOST. For
+instance an assignment in \METAPOST\ uses \type {:=} too. However, the \type
+{begin} and \type {end} don't really group but define a block of statements. You
+can have local variables in a procedure or function but the block is just a way
+to pack a sequence of statements.
+
+\stopsection
+
+\startsection[title=\TEX]
+
+In \TEX\ macros (or source code) the following can occur:
+
+\starttyping
+\begingroup
+    ...
+\endgroup
+\stoptyping
+
+as well as:
+
+\starttyping
+\bgroup
+    ...
+\egroup
+\stoptyping
+
+Here we really group in the sense that assignments to variables inside a group
+are forgotten afterwards. All assignments are local to the group unless they are
+explicitly done global:
+
+\starttyping
+\scratchcounter=1
+\def\foo{foo}
+\begingroup
+    \scratchcounter=2
+    \global\globalscratchcounter=2
+    \gdef\foo{FOO}
+\endgroup
+\stoptyping
+
+Here \type {\scratchcounter} is still one after the group is left but its global
+counterpart is now two. The \type {\foo} macro is also changed globally.
+
+Although you can use both sets of commands to group, you cannot mix them, so this
+will trigger an error:
+
+\starttyping
+\bgroup
+\endgroup
+\stoptyping
+
+The bottomline is: if you want a value to persist after the group, you need to
+explicitly change its value globally. This makes a lot of sense in the perspective
+of \TEX.
+
+\stopsection
+
+\startsection[title=\METAPOST]
+
+The \METAPOST\ language also has a concept of grouping but in this case it's more like a
+programming language.
+
+\starttyping
+begingroup ;
+    n := 123 ;
+engroup ;
+\stoptyping
+
+In this case the value of \type {n} is 123 after the group is left, unless you do
+this (for numerics there is actually no need to declare them):
+
+\starttyping
+begingroup ;
+    save n ; numeric n ; n := 123 ;
+engroup ;
+\stoptyping
+
+Given the use of \METAPOST\ (read: \METAFONT) this makes a lot of sense: often
+you use macros to simplify code and you do want variables to change. Grouping in
+this language serves other purposes, like hiding what is between these commands
+and let the last expression become the result. In a \type {vardef} grouping is
+implicit.
+
+So, in \METAPOST\ all assignments are global, unless a variable is explicitly
+saved inside a group.
+
+\stopsection
+
+\startsection[title=\LUA]
+
+In \LUA\ all assignments are global unless a variable is defines local:
+
+\starttyping
+local x = 1
+local y = 1
+for i = 1, 10 do
+    local x = 2
+    y = 2
+end
+\stoptyping
+
+Here the value of \type {x} after the loop is still one but \type {y} is now two.
+As in \LUATEX\ we mix \TEX, \METAPOST\ and \LUA\ you can mix up these concepts.
+Another mixup is using \type {:=}, \type {endfor}, \type {fi} in \LUA\ after done
+some \METAPOST\ coding or using \type {end} instead of \type {endfor} in
+\METAPOST\ which can make the library wait for more without triggering an error.
+Proper syntax highlighting in an editor clearly helps.
+
+\stopsection
+
+\startsection[title=\CCODE]
+
+The \LUA\ language is a mix between \PASCAL\ (which is one reason why I like it)
+and \CCODE.
+
+\starttyping
+int x = 1 ;
+int y = 1 ;
+for (i=1; i<=10;i++) {
+    int x = 2 ;
+    y = 2 ;
+}
+\stoptyping
+
+The semicolon is also used in \PASCAL\ but there it is a separator and not a
+statement end, while in \METAPOST\ it does end a statement (expression).
+
+\stopsection
+
+\stopsection
+
+\startsubject[title=Colofon]
+
+\starttabulate
+\NC Author      \NC Hans Hagen         \NC \NR
+\NC \CONTEXT    \NC \contextversion    \NC \NR
+\NC \LUAMETATEX \NC \texengineversion  \NC \NR
+\NC Support     \NC www.pragma-ade.com \NC \NR
+\NC             \NC contextgarden.net  \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument

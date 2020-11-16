@@ -1,0 +1,110 @@
+%D \module
+%D   [       file=core-dat,
+%D        version=20122.04.17, % replaces core-two from 1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Multipass Datasets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Multipass Datasets}
+
+%D \starttyping
+%D \definedataset[test-1]
+%D \definedataset[test-2][delay=yes]
+%D
+%D \startlines
+%D set 1: \setdataset[test-1][whatever=this-or-that-1]
+%D set 2: \setdataset[test-2][whatever=this-or-that-2]
+%D set 3: \setdataset[test-2][whatever=this-or-that-3]
+%D \stoplines
+%D
+%D \startlines
+%D get 1: \datasetvariable{test-1}{1}{whatever} / \datasetvariable{test-1}{1}{realpage}
+%D get 2: \datasetvariable{test-2}{1}{whatever} / \datasetvariable{test-2}{1}{realpage}
+%D get 3: \datasetvariable{test-2}{2}{whatever} / \datasetvariable{test-2}{2}{realpage}
+%D \stoplines
+%D \stoptyping
+
+\unprotect
+
+\registerctxluafile{core-dat}{}
+
+\installcorenamespace{dataset}
+
+\installcommandhandler \??dataset {dataset} \??dataset
+
+\permanent\tolerant\protected\def\setdataset[#1]#*[#2]#*[#3]%
+  {\begingroup
+   \edef\currentdataset{#1}%
+   \ifparameters\or\or
+     \clf_setdataset
+        name  {\currentdataset}%
+        delay {\datasetparameter\c!delay}%
+        data  {#2}%
+     \relax
+   \or
+     \edef\currentdataset{#1}%
+     \clf_setdataset
+        name  {\currentdataset}%
+        tag   {#2}%
+        delay {\datasetparameter\c!delay}%
+        data  {#3}%
+     \relax
+   \fi
+   \endgroup}
+
+\permanent\def\datasetvariable#1#2#3%
+  {\clf_datasetvariable{#1}{#2}{#3}}
+
+\installcorenamespace{pagestate}
+\installcorenamespace{pagestatecounter}
+
+\installcommandhandler \??pagestate {pagestate} \??pagestate
+
+\def\syst_pagestates_allocate
+  {\expandafter\newcount\csname\??pagestatecounter\currentpagestate\endcsname}
+
+\appendtoks
+    \syst_pagestates_allocate
+\to \everydefinepagestate
+
+\setuppagestate
+  [\c!delay=\v!yes]
+
+\permanent\tolerant\protected\def\setpagestate[#1]#*[#2]%
+  {\begingroup
+   \edef\currentpagestate{#1}%
+   \ifcsname\??pagestatecounter\currentpagestate\endcsname
+     \scratchcounter\lastnamedcs
+     \advance\scratchcounter\plusone
+   \else
+     \scratchcounter\plusone
+     \syst_pagestates_allocate
+   \fi
+   \global\csname\??pagestatecounter\currentpagestate\endcsname\scratchcounter
+   \clf_setpagestate
+      name  {\currentpagestate}%
+      tag   {\ifparameter#2\or#2\else\number\scratchcounter\fi}%
+      delay {\pagestateparameter\c!delay}%
+   \relax
+   \endgroup}
+
+\permanent\protected\def\autosetpagestate#1%
+  {\syst_pagestates_set[#1]\relax}
+
+\permanent\def\autopagestatenumber#1{\begincsname\??pagestatecounter#1\endcsname}
+
+\permanent\def\pagestaterealpage     #1#2{\clf_pagestaterealpage     {#1}{#2}}
+\permanent\def\setpagestaterealpageno#1#2{\clf_setpagestaterealpageno{#1}{#2}}
+\permanent\def\pagestaterealpageorder#1#2{\clf_pagestaterealpageorder{#1}#2\relax}
+
+\permanent\def\autopagestaterealpage     #1{\clf_pagestaterealpage     {#1}{\number\autopagestatenumber{#1}}}
+\permanent\def\setautopagestaterealpageno#1{\clf_setpagestaterealpageno{#1}{\number\autopagestatenumber{#1}}}
+\permanent\def\autopagestaterealpageorder#1{\clf_pagestaterealpageorder{#1}\numexpr\autopagestatenumber{#1}\relax}
+
+\protect

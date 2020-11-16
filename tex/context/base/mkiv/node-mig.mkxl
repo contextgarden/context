@@ -38,7 +38,7 @@
 
 \registerctxluafile{node-mig}{autosuffix}
 
-\let\automigrateinserts\relax
-\let\automigratemarks  \relax
+\aliased\let\automigrateinserts\donothing
+\aliased\let\automigratemarks  \donothing
 
 \protect

@@ -178,10 +178,9 @@
 
 %newif\ifindentation \indentationtrue  % will become a mode
 
-\let\checkindentation\relax
+\aliased\let\checkindentation\relax
 
 \installmacrostack\checkindentation
-%installmacrostack\ifindentation
 
 \def\spac_indentation_remove
   {\ifzeropt\parindent \else
@@ -194,25 +193,25 @@
   {%\global\indentationfalse
    \spac_indentation_remove}
 
-\def\spac_indentation_do_toggle_indeed
+\permanent\protected\def\spac_indentation_do_toggle_indeed
   {%\global\indentationfalse
-   \glet\checkindentation\spac_indentation_no_toggle_indeed
+   \enforced\glet\checkindentation\spac_indentation_no_toggle_indeed
    \spac_indentation_remove}
 
-\def\spac_indentation_no_toggle_indeed
+\permanent\protected\def\spac_indentation_no_toggle_indeed
   {%\global\indentationtrue
-   \glet\checkindentation\spac_indentation_do_toggle_indeed}
+   \enforced\glet\checkindentation\spac_indentation_do_toggle_indeed}
 
-\def\spac_indentation_do_indeed
+\permanent\protected\def\spac_indentation_do_indeed
   {}%\global\indentationtrue}
 
-\def\spac_indentation_do_toggle
-  {\glet\checkindentation\spac_indentation_do_toggle_indeed}
+\permanent\protected\def\spac_indentation_do_toggle
+  {\enforced\glet\checkindentation\spac_indentation_do_toggle_indeed}
 
-\def\spac_indentation_no_toggle
-  {\glet\checkindentation\spac_indentation_no_toggle_indeed}
+\permanent\protected\def\spac_indentation_no_toggle
+  {\enforced\glet\checkindentation\spac_indentation_no_toggle_indeed}
 
-\def\spac_indentation_check_toggle
+\permanent\protected\def\spac_indentation_check_toggle
   {\ifcase\c_spac_indentation_toggle_state
      % nothing
    \or
@@ -221,23 +220,23 @@
      \spac_indentation_do_toggle
    \fi}
 
-\def\spac_indentation_variant_yes
-  {\glet\checkindentation\spac_indentation_do_indeed}
+\permanent\protected\def\spac_indentation_variant_yes
+  {\enforced\glet\checkindentation\spac_indentation_do_indeed}
 
-\def\spac_indentation_no_next_check
+\permanent\protected\def\spac_indentation_no_next_check
   {\spac_indentation_remove
-   \glet\checkindentation\spac_indentation_do_indeed}
+   \enforced\glet\checkindentation\spac_indentation_do_indeed}
 
 \permanent\protected\def\spac_indentation_variant_no % made global
   {\ifinpagebody \else
      %\global\indentationfalse
-     \glet\checkindentation\spac_indentation_no_next_check
+     \enforced\glet\checkindentation\spac_indentation_no_next_check
    \fi}
 
 \permanent\protected\def\nonoindentation % bv bij floats
   {\ifinpagebody \else
      %\global\indentationtrue
-     \glet\checkindentation\spac_indentation_do_indeed
+     \enforced\glet\checkindentation\spac_indentation_do_indeed
    \fi}
 
 \permanent\protected\def\spac_indentation_variant_force
@@ -248,26 +247,16 @@
      \noindent\hskip\parindent
    \fi \fi}
 
-\appendtoks
-    \push_macro_checkindentation
-    \push_macro_ifindentation
-\to \everypushsomestate
-
-\appendtoks
-    \pop_macro_ifindentation
-    \pop_macro_checkindentation
-\to \everypopsomestate
-
 % public:
 
-\let\indentation  \spac_indentation_variant_force
-\let\noindentation\spac_indentation_variant_no    % public
-\let\doindentation\spac_indentation_variant_yes   % public
+\aliased\let\indentation  \spac_indentation_variant_force
+\aliased\let\noindentation\spac_indentation_variant_no    % public
+\aliased\let\doindentation\spac_indentation_variant_yes   % public
 
 \permanent\protected\def\dontrechecknextindentation  % public (in macros)
   {\global\enforced\let\dorechecknextindentation\relax}
 
-\let\dorechecknextindentation\relax                  % public (in macros)
+\aliased\let\dorechecknextindentation\relax % public (in macros)
 
 \permanent\protected\protected\def\spac_indentation_check_next_indentation
   {\global\enforced\let\dorechecknextindentation\relax

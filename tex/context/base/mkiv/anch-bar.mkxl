@@ -1,0 +1,220 @@
+%D \module
+%D   [       file=anch-bar,
+%D        version=2003.03.16,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Margin Bars and alike,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Margin Bars}
+
+\unprotect
+
+%D This can be done better now ...
+
+%D We will implement a sidebar mechanism using the functionality from
+%D \type {core-pos}.
+%D
+%D \starttyping
+%D \definesidebar[whow][rulecolor=green,distance=0pt]
+%D
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \startsidebar[whow]
+%D     \input tufte \par
+%D     \input tufte \par
+%D     \input tufte
+%D   \stopsidebar \par
+%D   \input tufte \par
+%D   \input tufte
+%D \stopsidebar \par
+%D \input tufte \par
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte \par
+%D   \input tufte
+%D \stopsidebar \par
+%D \input tufte \par
+%D \input tufte \par
+%D \startsidebar
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D   \input tufte
+%D \stopsidebar
+%D \stoptyping
+
+\installcorenamespace{sidebar}
+
+\installcommandhandler \??sidebar {sidebar} \??sidebar
+
+\newcount\c_anch_sidebars_n
+\newcount\c_anch_sidebars_current % local
+\newdimen\d_anch_sidebars_distance
+\newcount\c_anch_sidebars_level
+
+% \setupMPvariables
+%   [mpos:sidebar]
+%   [linecolor=red,
+%    linewidth=2pt,
+%    distance=5pt]
+
+\setupsidebar
+  [\c!rulethickness=\dimexpr\bodyfontsize/6\relax, % 2pt default
+   \c!rulecolor=\s!black,
+   \c!alternative=0,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
+   \c!distance=.5\bodyfontsize,
+   \c!level=,
+   \c!leftmargindistance=\zeropoint]
+
+\aliased\let\setupsidebars\setupsidebar
+
+\permanent\tolerant\protected\def\startsidebar[#1]#*[#2]%
+  {\bgroup
+   \dontleavehmode
+   \advance\c_anch_sidebars_level\plusone
+   \global\advance\c_anch_sidebars_n\plusone
+   \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
+   \ifhastok={#1}%
+     \edef\currentsidebar{\the\c_anch_sidebars_level}%
+     \checksidebarparent
+     \setupcurrentsidebar[#1]%
+   \else
+     \def\currentsidebar{#1}%
+     \setupcurrentsidebar[#2]%
+   \fi
+   \scratchdistance\sidebarparameter\c!distance\relax
+   \scratchdimen\sidebarparameter\c!leftmargindistance\relax
+   \edef\m_level{\sidebarparameter\c!level}%
+   \ifempty\m_level
+     \ifnum\c_anch_sidebars_level=\plusone
+       \ifzeropt\scratchdimen
+         \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \else
+         \d_anch_sidebars_distance\scratchdimen
+       \fi
+     \else
+       \advance\d_anch_sidebars_distance\scratchdistance\relax
+     \fi
+   \else
+     \ifnum\m_level=\plusone
+       \ifzeropt\scratchdimen
+         \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \else
+         \d_anch_sidebars_distance\scratchdimen
+       \fi
+     \else
+       \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
+     \fi
+   \fi
+   \startpositionoverlay{\v!text-1}%
+     \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
+       {b:sidebar:\the\c_anch_sidebars_n}%
+       {e:sidebar:\the\c_anch_sidebars_n}%
+       {mpos:sidebar}%
+       {self=sidebar:\the\c_anch_sidebars_n,
+        linewidth=\sidebarparameter\c!rulethickness,
+        linecolor=\sidebarparameter\c!rulecolor,
+        alternative=\sidebarparameter\c!alternative,
+        topoffset=\the\dimexpr\sidebarparameter\c!topoffset,
+        bottomoffset=\the\dimexpr\sidebarparameter\c!bottomoffset,
+        distance=\the\d_anch_sidebars_distance}%
+     }%
+   \stoppositionoverlay
+   \bpos{sidebar:\the\c_anch_sidebars_current}%
+   \ignorespaces}
+
+\permanent\protected\def\stopsidebar
+  {\removelastspace
+   \epos{sidebar:\the\c_anch_sidebars_current}
+   \carryoverpar\egroup}
+
+%D Let's keep this nice and simple (okay, we could pass the 6 variables in
+%D one lua call).
+
+\startMPpositionmethod{mpos:sidebar}
+    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance,alternative}%
+        anch_sidebars_draw (
+            \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
+            \MPx{\textanchor},\MPy{\textanchor},\MPw{\textanchor},\MPh{\textanchor},
+            \MPvar{alternative},\MPvar{distance},\MPvar{linewidth},\MPvar{linecolor},
+            \MPvar{topoffset}, \MPvar{bottomoffset}
+        ) ;
+    \stopMPpositiongraphic
+    \MPpositiongraphic{mpos:sidebar}{}%
+\stopMPpositionmethod
+
+%D We now reimplement the \MKII\ margin rules handler in a more
+%D modern way.
+%D
+%D \setupmarginrules
+%D   [rulecolor=darkred,
+%D    rulethickness=2pt]
+%D
+%D \setupmarginrules % sidebar
+%D   [2]
+%D   [rulecolor=darkblue]
+%D
+%D \startmarginrule[1]
+%D     \input ward
+%D     \startmarginrule[2]
+%D         \input ward
+%D         \startmarginrule[3]
+%D             \input ward
+%D             \startmarginrule[level=6,rulecolor=darkgreen]
+%D                 \input ward
+%D             \stopmarginrule
+%D             \input ward
+%D         \stopmarginrule
+%D         \input ward
+%D     \stopmarginrule
+%D     \input ward
+%D \stopmarginrule
+%D
+%D Compared to the old mechanism we now can pass settings too.
+
+\definesidebar
+  [\v!margin]
+  [\c!leftmargindistance=\dimexpr\leftmargindistance+\sidebarparameter\c!rulethickness/2\relax]
+
+\dorecurse{5}{\definesidebar[\v!margin:#1][\v!margin]} % let's be nice and predefine 5 levels
+
+\permanent\tolerant\protected\def\setupmarginrule[#1]#*[#2]%
+  {\ifarguments\or
+     \setupsidebar[\v!margin][#1]%
+   \or
+     \setupsidebar[\v!margin:#1][#2]%
+   \fi}
+
+\aliased\let\setupmarginrules\setupmarginrule
+
+\permanent\tolerant\protected\def\startmarginrule[#1]% pretty inefficient checking
+  {\edef\m_anch_marginrules_kind{#1}%
+   \ifempty\m_anch_marginrules_kind
+     \startsidebar[\v!margin][]%
+   \orelse\ifhastok={\m_anch_marginrules_kind}%
+     \startsidebar[\v!margin][#1]%
+   \else
+     \anch_marginrules_check{#1}%
+     \startsidebar[\v!margin:#1][\c!level=#1]%
+   \fi}
+
+\def\anch_marginrules_check#1%
+  {\doifnotcommandhandler\??sidebar{\v!margin:#1}{\definesidebar[\v!margin:#1][\v!margin]}}
+
+\aliased\let\stopmarginrule\stopsidebar
+
+\protect \endinput

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.15 20:40}
+\edef\contextversion{2020.11.16 19:37}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -95,10 +95,10 @@
 \loadmarkfile{luat-soc}
 
 \loadmkxlfile{catc-ini}
-\loadmarkfile{catc-act}
-\loadmarkfile{catc-def}
+\loadmkxlfile{catc-act}
+\loadmkxlfile{catc-def}
 \loadmkxlfile{catc-ctx}
-\loadmarkfile{catc-sym}
+\loadmkxlfile{catc-sym}
 
 \loadmkxlfile{toks-ini}
 \loadmkxlfile{cldf-ini}
@@ -153,7 +153,7 @@
 
 \loadmkxlfile{attr-ini}
 
-\loadmarkfile{core-ini}
+\loadmkxlfile{core-ini}
 \loadmkxlfile{core-env}
 
 \loadmkxlfile{layo-ini}
@@ -187,16 +187,16 @@
 \loadmarkfile{supp-ran}
 \loadmkxlfile{supp-mat}
 
-\loadmarkfile{core-uti}
+\loadmkxlfile{core-uti}
 \loadmklxfile{file-job}
 
 \loadmkxlfile{anch-pos}
 
-\loadmarkfile{typo-ini}
+\loadmkxlfile{typo-ini}
 \loadmarkfile{typo-lin}
 \loadmarkfile{typo-bld} % par builders
 
-\loadmarkfile{typo-inj}
+\loadmkxlfile{typo-inj}
 
 \loadmklxfile{file-syn}
 \loadmklxfile{file-mod}
@@ -216,9 +216,8 @@
 
 \loadmkxlfile{unic-ini}
 
-% \loadmarkfile{core-uti}
-\loadmarkfile{core-two}
-\loadmarkfile{core-dat}
+\loadmkxlfile{core-two}
+\loadmkxlfile{core-dat}
 
 \loadmkxlfile{colo-ini}
 \loadmkxlfile{colo-grp} % optional
@@ -332,7 +331,7 @@
 \loadmkvifile{page-lin}
 \loadmarkfile{page-par}
 \loadmarkfile{typo-pag}
-\loadmarkfile{typo-mar}
+\loadmkxlfile{typo-mar}
 \loadmarkfile{typo-itm}
 
 \loadmarkfile{buff-ini}
@@ -423,8 +422,8 @@
 \loadmarkfile{typo-krn}
 \loadmkvifile{typo-itc}
 \loadmkxlfile{typo-dir}
-\loadmarkfile{typo-brk}
-\loadmarkfile{typo-cap}
+\loadmkxlfile{typo-brk}
+\loadmkxlfile{typo-cap}
 \loadmarkfile{typo-dig}
 \loadmarkfile{typo-rep}
 \loadmkvifile{typo-txt}
@@ -469,11 +468,11 @@
 \loadmarkfile{page-plg}
 \loadmarkfile{page-str}
 
-\loadmarkfile{anch-pgr} % can be moved up (nicer for dependencies)
-\loadmkvifile{anch-bck}
+\loadmkxlfile{anch-pgr} % can be moved up (nicer for dependencies)
+\loadmklxfile{anch-bck}
 \loadmkxlfile{anch-tab} % overloads tabl-tbl
-\loadmarkfile{anch-bar}
-%loadmarkfile{anch-snc} % when needed this one will be redone
+\loadmkxlfile{anch-bar}
+%loadmkxlfile{anch-snc} % when needed this one will be redone
 
 \loadmkxlfile{math-ini} % way after font-pre !
 \loadmkxlfile{math-pln}
@@ -497,7 +496,7 @@
 
 \loadmarkfile{strc-mat}
 
-\loadmarkfile{chem-ini}
+\loadmkxlfile{chem-ini}
 \loadmkxlfile{chem-str}
 
 \loadmkxlfile{typo-scr}
@@ -555,9 +554,9 @@
 \loadmkxlfile{cldf-ver} % verbatim, this can come late
 \loadmkxlfile{cldf-com} % commands, this can come late
 
-\loadmarkfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
+\loadmkxlfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
 
-\loadmarkfile{core-def}
+\loadmkxlfile{core-def}
 
 %usemodule[x][res-04] % xml resource libraries
 %usemodule[x][res-08] % rlx runtime conversion

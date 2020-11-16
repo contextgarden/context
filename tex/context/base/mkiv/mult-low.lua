@@ -65,7 +65,7 @@ return {
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
-        "primeasciicode", "hyphenasciicode",
+        "primeasciicode", "hyphenasciicode", "percentasciicode", "leftbracketasciicode", "rightbracketasciicode",
         --
         "frozenhsizecode", "frozenskipcode", "frozenhangcode", "frozenindentcode", "frozenparfillcode",
         "frozenadjustcode", "frozenprotrudecode", "frozentolerancecode", "frozenstretchcode",
@@ -255,6 +255,7 @@ return {
         "scratchmuskip", "globalscratchmuskip", "privatescratchmuskip",
         "scratchtoks", "globalscratchtoks", "privatescratchtoks",
         "scratchbox", "globalscratchbox", "privatescratchbox",
+        "scratchmacro", "scratchmacroone", "scratchmacrotwo",
         --
         "globalscratchcounterone", "globalscratchcountertwo", "globalscratchcounterthree",
         --

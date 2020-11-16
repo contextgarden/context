@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=catc-act,
+%D        version=2006.09.18,
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Default Catcode Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D \macros
+%D   {installactivecharacter, defineactivecharacter}
+%D
+%D This module deals with some active character handling and I still need to
+%D update it to use \typ {\letcharcode <number> = \something}. This module
+%D will be simplified stepwise. Look into the \MKIV\ variant for originals.
+%D
+%D There was a time when we had active double quotes and such but we no longer
+%D do that. In fact, only the tilde and bar can be active in \CONTEXT.
+%D
+%D For those who love the more obscure features of \TEX: whenever you see
+%D uppercase magic with active characters, keep in mind that this is something
+%D deep down in the engine: handling of that specific case. The code here is
+%D not used and not really tested.
+
+\permanent\protected\def\installactivecharacter#1 %
+  {\ifchknum#1\or
+     \scratchcounter #1\edef\scratchmacro{\expandtoken\othercatcode\scratchcounter}%
+   \else
+     \scratchcounter`#1\let \scratchmacro #1%
+   \fi
+   \normalexpanded{\startextendcatcodetable\ctxcatcodes\catcode\the\scratchcounter\activecatcode\stopextendcatcodetable}%
+   \letcatcodecommand \ctxcatcodes \scratchcounter \scratchmacro
+   \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
+
+\permanent\protected\def\defineactivecharacter #1 #2%
+  {\ifchknum#1\or\letcharcode#1=#2\relax\else\letcharcode`#1=#2\relax\fi}
+
+\permanent\protected\def\makecharacteractive #1 %
+  {\catcode`#1\activecatcode}
+
+\permanent\protected\def\installanddefineactivecharacter #1 #2%
+  {\normalexpanded{\installactivecharacter \utfchar{#1} }%
+   \defineactivecharacter #1 #2}
+
+\protect \endinput

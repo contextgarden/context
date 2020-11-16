@@ -47,6 +47,9 @@
     \insertparagraphintro
     \typo_initial_handle
     \typo_firstline_handle
+    %
+    \spac_paragraph_wrap
+    \spac_paragraph_freeze
 \to \everypar
 
 \appendtoks
