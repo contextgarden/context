@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.16 19:37}
+\edef\contextversion{2020.11.17 12:39}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -193,7 +193,7 @@
 \loadmkxlfile{anch-pos}
 
 \loadmkxlfile{typo-ini}
-\loadmarkfile{typo-lin}
+\loadmkxlfile{typo-lin}
 \loadmarkfile{typo-bld} % par builders
 
 \loadmkxlfile{typo-inj}
@@ -405,7 +405,7 @@
 \loadmklxfile{tabl-xtb}
 \loadmarkfile{tabl-mis}
 
-\loadmarkfile{typo-lan}
+\loadmkxlfile{typo-lan}
 
 \loadmarkfile{lxml-css}
 
@@ -416,11 +416,11 @@
 \loadmkxlfile{trac-vis}
 \loadmarkfile{trac-jus}
 
-\loadmarkfile{typo-cln}
+\loadmkxlfile{typo-cln}
 \loadmarkfile{typo-wrp}
 \loadmarkfile{typo-spa}
-\loadmarkfile{typo-krn}
-\loadmkvifile{typo-itc}
+\loadmkxlfile{typo-krn}
+\loadmklxfile{typo-itc}
 \loadmkxlfile{typo-dir}
 \loadmkxlfile{typo-brk}
 \loadmkxlfile{typo-cap}
@@ -434,7 +434,7 @@
 \loadmarkfile{typo-chr}
 \loadmarkfile{typo-rub}
 \loadmkivfile{typo-fkr}
-\loadmkivfile{typo-pnc}
+\loadmkxlfile{typo-pnc}
 
 \loadmklxfile{type-ini}
 \loadmarkfile{type-set}
@@ -511,7 +511,7 @@
 \loadmkivfile{strc-usr}
 
 \loadmkxlfile{pack-com}
-\loadmarkfile{typo-del}
+\loadmkxlfile{typo-del}
 
 \loadmkxlfile{grph-trf}
 \loadmkxlfile{grph-inc}

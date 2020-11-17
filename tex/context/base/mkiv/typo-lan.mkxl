@@ -1,0 +1,64 @@
+%D \module
+%D   [       file=typo-lan,
+%D        version=2013.03.22,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Language Goodies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typography Macros / Languages}
+
+\unprotect
+
+\registerctxluafile{typo-lan}{}
+
+%D \macros
+%D   {averagecharwidth, charwidthlanguage}
+%D
+%D This is a more \MKIV-ish variant of lang-frq.mkiv. The methods are gone as one
+%D doesn't need the tables for them. The main macro is \type {\averagecharwidth}
+%D which behaves like a dimension register.
+%D
+%D I finally decided to reimplement this as I needed it for a manual (which is often
+%D a reason for such a rewrite). With some inspiring Porcupine Tree in the
+%D background it's not the worst thing to do.
+
+\mutable\def\charwidthlanguage{\currentmainlanguage}
+
+\permanent\def\averagecharwidth   {\dimexpr\clf_averagecharwidth{\charwidthlanguage}\scaledpoint\relax}
+\permanent\def\languagecharwidth#1{\dimexpr\clf_averagecharwidth{#1}\scaledpoint\relax}
+
+\protect
+
+\continueifinputfile{typo-lan.mkiv}
+
+\setuplayout[backspace=4cm]
+
+\showframe
+
+\starttext
+
+\startbuffer
+
+\mainlanguage[en] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+\mainlanguage[de] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+\mainlanguage[nl] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+
+\stopbuffer
+
+\getbuffer \blank
+
+\switchtobodyfont[pagella]
+
+\getbuffer \blank
+
+\switchtobodyfont[tt,8pt]
+
+\getbuffer
+
+\stoptext

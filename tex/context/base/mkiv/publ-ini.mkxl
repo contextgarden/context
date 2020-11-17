@@ -111,8 +111,8 @@
 %D to split between cite and list here as it only complicates matters (timing) and is
 %D not clear either.
 
-\let\currentbtxspecification        \empty
-\let\currentbtxspecificationfallback\empty
+\mutable\let\currentbtxspecification        \empty
+\mutable\let\currentbtxspecificationfallback\empty
 
 \installmacrostack\currentbtxspecification
 \installmacrostack\currentbtxspecificationfallback
@@ -432,30 +432,30 @@
 
 %D Variables:
 
-\let\currentbtxbacklink     \empty    \permanent\protected\def\btxsetbacklink     {\def\currentbtxbacklink}
-\let\currentbtxcategory     \empty    \permanent\protected\def\btxsetcategory     {\def\currentbtxcategory}
-\let\currentbtxcombis       \empty    \permanent\protected\def\btxsetcombis       {\def\currentbtxcombis}
-\let\currentbtxdataset      \empty    \permanent\protected\def\btxsetdataset      {\def\currentbtxdataset}
-\let\currentbtxfirst        \empty    \permanent\protected\def\btxsetfirst        {\def\currentbtxfirst}
-\let\currentbtxsecond       \empty    \permanent\protected\def\btxsetsecond       {\def\currentbtxsecond}
-\let\currentbtxsuffix       \empty    \permanent\protected\def\btxsetsuffix       {\def\currentbtxsuffix}
-\let\currentbtxinternal     \empty    \permanent\protected\def\btxsetinternal     {\def\currentbtxinternal}
-\let\currentbtxlefttext     \empty    \permanent\protected\def\btxsetlefttext     {\def\currentbtxlefttext}
-\let\currentbtxrighttext    \empty    \permanent\protected\def\btxsetrighttext    {\def\currentbtxrighttext}
-\let\currentbtxbefore       \empty    \permanent\protected\def\btxsetbefore       {\def\currentbtxbefore}
-\let\currentbtxafter        \empty    \permanent\protected\def\btxsetafter        {\def\currentbtxafter}
-\let\currentbtxlanguage     \empty    \permanent\protected\def\btxsetlanguage     {\def\currentbtxlanguage}
-\let\currentbtxtag          \empty    \permanent\protected\def\btxsettag          {\def\currentbtxtag}
-\let\currentbtxnumber       \empty    \permanent\protected\def\btxsetnumber       {\def\currentbtxnumber}
-\let\currentbtxfirstinternal\empty    \permanent\protected\def\btxsetfirstinternal{\def\currentbtxfirstinternal}
-\let\currentbtxlastinternal \empty    \permanent\protected\def\btxsetlastinternal {\def\currentbtxlastinternal}
+\mutable\let\currentbtxbacklink     \empty    \permanent\protected\def\btxsetbacklink     {\def\currentbtxbacklink}
+\mutable\let\currentbtxcategory     \empty    \permanent\protected\def\btxsetcategory     {\def\currentbtxcategory}
+\mutable\let\currentbtxcombis       \empty    \permanent\protected\def\btxsetcombis       {\def\currentbtxcombis}
+\mutable\let\currentbtxdataset      \empty    \permanent\protected\def\btxsetdataset      {\def\currentbtxdataset}
+\mutable\let\currentbtxfirst        \empty    \permanent\protected\def\btxsetfirst        {\def\currentbtxfirst}
+\mutable\let\currentbtxsecond       \empty    \permanent\protected\def\btxsetsecond       {\def\currentbtxsecond}
+\mutable\let\currentbtxsuffix       \empty    \permanent\protected\def\btxsetsuffix       {\def\currentbtxsuffix}
+\mutable\let\currentbtxinternal     \empty    \permanent\protected\def\btxsetinternal     {\def\currentbtxinternal}
+\mutable\let\currentbtxlefttext     \empty    \permanent\protected\def\btxsetlefttext     {\def\currentbtxlefttext}
+\mutable\let\currentbtxrighttext    \empty    \permanent\protected\def\btxsetrighttext    {\def\currentbtxrighttext}
+\mutable\let\currentbtxbefore       \empty    \permanent\protected\def\btxsetbefore       {\def\currentbtxbefore}
+\mutable\let\currentbtxafter        \empty    \permanent\protected\def\btxsetafter        {\def\currentbtxafter}
+\mutable\let\currentbtxlanguage     \empty    \permanent\protected\def\btxsetlanguage     {\def\currentbtxlanguage}
+\mutable\let\currentbtxtag          \empty    \permanent\protected\def\btxsettag          {\def\currentbtxtag}
+\mutable\let\currentbtxnumber       \empty    \permanent\protected\def\btxsetnumber       {\def\currentbtxnumber}
+\mutable\let\currentbtxfirstinternal\empty    \permanent\protected\def\btxsetfirstinternal{\def\currentbtxfirstinternal}
+\mutable\let\currentbtxlastinternal \empty    \permanent\protected\def\btxsetlastinternal {\def\currentbtxlastinternal}
 
-\let\currentbtxauthorvariant\v!normal \permanent\protected\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
-\let\currentbtxfirstnames   \empty    \permanent\protected\def\btxsetfirstnames   {\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
-\let\currentbtxinitials     \empty    \permanent\protected\def\btxsetinitials     {\let\currentbtxinitials  \currentbtxinitials_indeed  }
-\let\currentbtxjuniors      \empty    \permanent\protected\def\btxsetjuniors      {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
-\let\currentbtxsurnames     \empty    \permanent\protected\def\btxsetsurnames     {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
-\let\currentbtxvons         \empty    \permanent\protected\def\btxsetvons         {\let\currentbtxvons      \currentbtxvons_indeed      }
+\mutable\let\currentbtxauthorvariant\v!normal \permanent\protected\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
+\mutable\let\currentbtxfirstnames   \empty    \permanent\protected\def\btxsetfirstnames   {\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
+\mutable\let\currentbtxinitials     \empty    \permanent\protected\def\btxsetinitials     {\let\currentbtxinitials  \currentbtxinitials_indeed  }
+\mutable\let\currentbtxjuniors      \empty    \permanent\protected\def\btxsetjuniors      {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
+\mutable\let\currentbtxsurnames     \empty    \permanent\protected\def\btxsetsurnames     {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
+\mutable\let\currentbtxvons         \empty    \permanent\protected\def\btxsetvons         {\let\currentbtxvons      \currentbtxvons_indeed      }
 
 \newconstant\currentbtxoverflow       \permanent\protected\def\btxsetoverflow   #1{\currentbtxoverflow   #1\relax}
 \newconstant\currentbtxconcat         \permanent\protected\def\btxsetconcat     #1{\currentbtxconcat     #1\relax}
@@ -470,10 +470,23 @@
 \protected\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  \numexpr\currentbtxauthorindex\relax}
 \protected\def\currentbtxvons_indeed      {\clf_btxcurrentvons      \numexpr\currentbtxauthorindex\relax}
 
-\let\currentbtxfirstpage    \empty    \permanent\protected\def\btxsetfirstpage#1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
-\let\currentbtxlastpage     \empty    \permanent\protected\def\btxsetlastpage #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
+\mutable\let\currentbtxfirstpage    \empty    \permanent\protected\def\btxsetfirstpage#1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
+\mutable\let\currentbtxlastpage     \empty    \permanent\protected\def\btxsetlastpage #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
 
-\def\currentbtxauthorvariant{normal}
+\mutable\let\currentbtxfield          \empty
+\mutable\let\currentbtxfielddoi       \empty
+\mutable\let\currentbtxfieldmonth     \empty
+\mutable\let\currentbtxfieldyear      \empty
+\mutable\let\currentbtxfieldurl       \empty
+\mutable\let\currentbtxcriterium      \empty
+\mutable\let\currentbtxlist           \empty
+\mutable\let\currentbtxlistentry      \empty
+\mutable\let\currentbtxlistindex      \empty
+\mutable\let\currentbtxreference      \empty
+\mutable\let\currentbtxrenderingtitle \empty
+\mutable\let\currentbtxcitetag        \empty
+
+\mutable\def\currentbtxauthorvariant{normal}
 
 \protected\def\btx_reset_list % not needed as we're grouped
   {\let\currentbtxcombis   \empty
@@ -531,7 +544,7 @@
 
 %D Language:
 
-\def\mainbtxlanguage{\currentmainlanguage}
+\mutable\def\mainbtxlanguage{\currentmainlanguage}
 
 \protected\def\btx_check_language
   {\let\mainbtxlanguage\currentlanguage
@@ -560,8 +573,7 @@
 
 %D Rendering lists and citations.
 
-\protected\def\btxtodo#1%
-  {[#1]}
+\permanent\protected\def\btxtodo#1{[#1]}
 
 %D Lists:
 
@@ -987,7 +999,7 @@
 
 %D So far.
 
-\def\currentbtxblock{\number\btxblock}
+\permanent\def\currentbtxblock{\number\btxblock}
 
 % called at the lua end, for determining the width
 
@@ -1110,7 +1122,7 @@
 
 \newconditional\c_btx_cite_reference_injected
 
-\protected\def\btx_cite_reference_inject
+\permanent\protected\def\btx_cite_reference_inject
   {\ifconditional\c_btx_cite_reference_injected \else
      \dontleavehmode
      \iftrialtypesetting \else
@@ -1145,8 +1157,8 @@
 
 \aliased\let\btxcitereference\btx_cite_reference_inject
 
-\let\currentbtxnumbering       \empty
-\let\currentbtxcitealternative \empty
+\mutable\let\currentbtxnumbering       \empty
+\mutable\let\currentbtxcitealternative \empty
 
 \appendtoks
     \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
@@ -1215,7 +1227,7 @@
 \permanent\protected\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
 \permanent\protected\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
-\let\currentbtxauthorfield\s!author
+\mutable\let\currentbtxauthorfield\s!author
 
 \permanent\protected\def\btxsetauthorfield#1{\edef\currentbtxauthorfield{#1}}
 
@@ -1278,7 +1290,7 @@
 \newconditional\btxinteractivetext
 \newconditional\btxinteractivepage
 
-\let\currentbtxinteraction\empty
+\mutable\let\currentbtxinteraction\empty
 
 \installcorenamespace{btxinteraction}
 
@@ -1356,8 +1368,8 @@
 \let\p_publ_cite_lefttext \empty
 \let\p_publ_cite_righttext\empty
 
-\let\currentbtxciteuservariables\empty
-\let\currentbtxcitealternative  \empty
+\mutable\let\currentbtxciteuservariables\empty
+\mutable\let\currentbtxcitealternative  \empty
 
 \permanent\protected\def\btxhybridcite % so one can alias the old
   {\dontleavehmode
@@ -1432,8 +1444,7 @@
 
 \newconditional\btxcitecompress
 
-\let\currentbtxreference \empty
-\let\currentbtxcitemethod\v!hidden
+\mutable\let\currentbtxcitemethod\v!hidden
 
 \def\publ_cite_variant
   {\begingroup

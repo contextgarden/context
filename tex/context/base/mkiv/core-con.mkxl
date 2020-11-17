@@ -449,7 +449,7 @@
      \normalyear\normalmonth\normalday
    \endgroup}
 
-\permanent\tolerant\protected\def\date[#1][#2]% sets the date !
+\permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
   {\dontleavehmode
    \ifparameter#1\or
      \begingroup

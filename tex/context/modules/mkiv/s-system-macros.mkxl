@@ -92,7 +92,7 @@
 
     local function show(visible, check)
      -- context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
-        context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|" }
+        context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
         for i=1,#list do
             local k = list[i]
             if check(k) then
@@ -102,7 +102,6 @@
                 local immutable  = v.immutable  and "immutable"
                 local primitive  = v.primitive  and "primitive"
                 local mutable    = v.mutable    and "mutable"
-             -- local tolerant   = v.tolerant   and "tolerant"
                 local noaligned  = v.noaligned  and "noaligned"
                 local instance   = v.instance   and "instance"
                 local parameters = v.parameters
@@ -115,12 +114,12 @@
                 ctx_NC() if primitive then ctx_bold(csname) else context(csname) end
                 ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
                 ctx_NC() context(cscommand)
-             -- ctx_NC() if tolerant  then context(tolerant)   end
                 ctx_NC() if primitive then context(primitive)  end
                 ctx_NC() if permanent then context(permanent)  end
                 ctx_NC() if frozen    then context(frozen)     end
                 ctx_NC() if immutable then context(immutable)  end
                 ctx_NC() if mutable   then context(mutable)    end
+                ctx_NC() if instance  then context(instance)   end
                 ctx_NC() if noaligned then context(noaligned)  end
                 ctx_NC() if filename  then context(hashnames[filename]) end
                 ctx_NC() ctx_NR()

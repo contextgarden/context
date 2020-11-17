@@ -68,11 +68,11 @@
   {}
 
 \protected\def\buff_verbatim_obey_breakpoints
-  {\language\minusone  % tricky as this affects the pagebuilder
+  {\nohyphens
    \veryraggedright}
 
 \protected\def\buff_verbatim_ignore_hyphens
-  {\language\minusone} % tricky as this affects the pagebuilder
+  {\nohyphens}
 
 \def\buff_verbatim_initialize_type_one
   {\enforced\let\obeylines\ignorelines
@@ -390,7 +390,7 @@
    \veryraggedright}
 
 \permanent\protected\def\ignorehyphens
-  {\language\minusone % extra bonus, the \null should do the job too
+  {\nohyphens
    \enforced\let\obeyedspace \specialobeyedspace
    \enforced\let\controlspace\specialcontrolspace
    \spaceskip.5\emwidth\relax}

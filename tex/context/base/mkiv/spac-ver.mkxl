@@ -2171,7 +2171,7 @@
 
 %D These depend on bigskipamount cum suis so we'd better sync them:
 
-\let\currentvspacing\s!default % hm, default, standard ...
+\mutable\let\currentvspacing\s!default % hm, default, standard ...
 
 \permanent\tolerant\protected\def\setupvspacing[#1]%
   {\ifarguments\else
