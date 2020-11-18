@@ -1065,13 +1065,15 @@ end
 -- -- faster interface (1.02):
 
 interfaces.implement {
-    name      = "xmlstylevalue",
+    name      = "xmlcssstylevalue",
+    public    = true,
     actions   = css.stylevalue,
     arguments = "2 strings",
 }
 
 interfaces.implement {
-    name      = "xmlmappedstylevalue",
+    name      = "xmlcssmappedstylevalue",
+    public    = true,
     actions   = css.mappedstylevalue,
     arguments = "3 strings",
 }

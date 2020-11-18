@@ -643,8 +643,11 @@
      }%
    \relax}
 
+% \def\strc_registers_limited_entry#1%
+%   {\limitatetext{#1}\currentregistermaxwidth\unknown}%
+
 \def\strc_registers_limited_entry#1%
-  {\limitatetext{#1}\currentregistermaxwidth\unknown}%
+  {\limitated left \currentregistermaxwidth sentinel {\unknown} text {#1} freeze true\relax}
 
 \aliased\let\limitedregisterentry\firstofoneargument
 

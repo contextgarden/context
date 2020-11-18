@@ -351,11 +351,10 @@
 
 % \permanent\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
-%D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
-%D strings instead of tokens that take more memory. It's a trick to trick to force
-%D strings. This macro is never used in \CONTEXT.
-
-\permanent\protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
+% %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
+% %D strings instead of tokens that take more memory.
+%
+% \permanent\protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
 
 %D \macros
 %D   {scratchcounter,
@@ -399,7 +398,7 @@
 %D \macros
 %D   {tempstring}
 
-\let\tempstring\empty
+\mutable\let\tempstring\empty
 
 %D \macros
 %D   {scratchwidth, scratchheight, scratchdepth, scratchoffset, scratchdistance}
@@ -606,6 +605,10 @@
 
 \newif\ifdone
 \newif\iffound
+
+\newif\ifscratchcondition
+\newif\ifscratchconditionone
+\newif\ifscratchconditiontwo
 
 \let\htdp\boxtotal
 

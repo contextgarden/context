@@ -240,8 +240,8 @@
    \else
      \frozen\instance\setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
-   \ifnum\lastarguments>\plustwo
-     \protected\frozen\instance\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
+   \ifparameter#3\or
+     \frozen\instance\protected\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
    \fi
    \edef\currentsynonym{#1}%
    %

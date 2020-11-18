@@ -71,6 +71,7 @@ local setshift      = nuts.setshift
 local setsplit      = nuts.setsplit
 local setattrlist   = nuts.setattrlist
 local setwhd        = nuts.setwhd
+local setglue       = nuts.setglue
 
 local flush_node    = nuts.flush_node
 local flush_list    = nuts.flush_list
@@ -85,6 +86,7 @@ local traverse      = nuts.traverse
 local free          = nuts.free
 local findtail      = nuts.tail
 local reverse       = nuts.reverse
+local effective_glue= nuts.effective_glue
 
 local nextdisc      = nuts.traversers.disc
 local nextdir       = nuts.traversers.dir
@@ -769,7 +771,8 @@ local function limitate(t) -- don't pack the result !
     end
     local left  = t.left or 0
     local right = t.right or 0
-    if left + right < width then
+    local total = left + right
+    if total < width then
         local last     = nil
         local first    = nil
         local maxleft  = left
@@ -828,6 +831,16 @@ local function limitate(t) -- don't pack the result !
     end
     setlist(text)
     free(text)
+
+    if t.freeze then
+        local l = hpack(list,total,"exactly")
+        for n in traverse_id(glue_code,list) do
+            setglue(n,(effective_glue(n,l)))
+        end
+        setlist(l)
+        flush_node(l)
+    end
+
     return tonode(list)
 end
 
@@ -842,6 +855,7 @@ implement {
             { "text",     "hbox" },
             { "sentinel", "hbox" },
             { "strip",    "boolean" },
+            { "freeze",   "boolean" },
         }
     },
     actions   = function(t)

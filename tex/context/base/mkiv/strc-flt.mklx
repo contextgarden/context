@@ -254,17 +254,17 @@
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_commands#1#2%
-  {\setuvalue         {\e!place\e!listof#2}{\dodoubleempty\strc_lists_place[#1]}% call will change
-   \setuvalue      {\e!complete\e!listof#2}{\dotripleempty\strc_lists_complete_indeed[#1][#2]}% call will change
-   \setuevalue                 {\e!place#1}{\strc_floats_place[#1]}%
-   \setuevalue         {\e!start\e!place#1}{\strc_floats_start_place[#1]}%
-   \setuevalue          {\e!stop\e!place#1}{\strc_floats_stop_place}%
-   \setuevalue          {\e!start#1\e!text}{\strc_floats_start_text[#1]}%
-   \setuevalue           {\e!stop#1\e!text}{\strc_floats_stop_text}%
+  {\frozen\instance\setuevalue{\e!place\e!listof#2}{\strc_lists_place[#1]}% call will change
+   \frozen\instance\setuevalue{\e!complete\e!listof#2}{\strc_lists_complete[#1][#2]}% call will change
+   \frozen\instance\setuevalue{\e!place#1}{\strc_floats_place[#1]}%
+   \frozen\instance\setuevalue{\e!start\e!place#1}{\strc_floats_start_place[#1]}%
+   \frozen\instance\setuevalue{\e!stop\e!place#1}{\strc_floats_stop_place}%
+   \frozen\instance\setuevalue{\e!start#1\e!text}{\strc_floats_start_text[#1]}%
+   \frozen\instance\setuevalue{\e!stop#1\e!text}{\strc_floats_stop_text}%
    % these will become obsolete:
-   \setuevalue               {\e!reserve#1}{\strc_floats_reserve[#1]}%
+   \setuevalue{\e!reserve#1}{\strc_floats_reserve[#1]}%
    \setuevalue{\e!start\e!reserve#1\e!text}{\strc_floats_start_reserve_text[#1]}%
-   \setuevalue {\e!stop\e!reserve#1\e!text}{\strc_floats_stop_reserve_text}}
+   \setuevalue{\e!stop\e!reserve#1\e!text}{\strc_floats_stop_reserve_text}}
 
 %D Fallback float body:
 
@@ -1256,24 +1256,24 @@
   {\begincsname\??floatmovement#setting\endcsname}
 
 \def\strc_floats_move_down_line#sign%
-  {\if!!donea \else
+  {\ifscratchconditionone \else
      \global\d_page_sides_downshift\zeropoint
-     \!!doneatrue
+     \scratchconditiononetrue
    \fi
    \global\advance\d_page_sides_downshift#sign\lineheight}
 
 \def\strc_floats_move_down_hang#lines%
-  {\if!!doneb \else
+  {\ifscratchconditiontwo \else
      \global\c_page_sides_n_of_lines\zerocount
-     \!!donebtrue
+     \scratchconditiontwotrue
    \fi
    \global\advance\c_page_sides_n_of_lines#lines\relax}
 
 \permanent\protected\def\movedownsidefloat[#settings]% already in core
   {\unless\ifhastok:{#settings}%
      \begingroup
-     \!!doneafalse
-     \!!donebfalse
+     \scratchconditiononefalse
+     \scratchconditiontwofalse
      \normalexpanded{\dorepeatwithcommand[#settings]}\strc_floats_move_down
      \endgroup
    \fi}

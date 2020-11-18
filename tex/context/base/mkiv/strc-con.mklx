@@ -534,8 +534,8 @@
 \newbox   \constructionheadbox
 \newskip  \leftconstructionskip
 \newskip  \rightconstructionskip
-\newdimen \constructionsheadwidth    % replaces \!!widtha % TODO: proper namespace dimens
-\newdimen \constructionsheaddistance % replaces \!!widthb % TODO: proper namespace dimens
+\newdimen \constructionsheadwidth
+\newdimen \constructionsheaddistance
 
 \def\strc_constructions_set_hang_box#1% messy left/rightskip
   {\setbox\constructionheadbox\vtop   % \vbox gaat fout in hang

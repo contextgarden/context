@@ -343,13 +343,13 @@
        \ifnum\scratchcounterthree<\plusone \scratchcounterthree\plusone \fi
        \scratchcounterfive\zerocount
        \dostepwiserecurse\firstsubpage\lastsubpage\plusone
-         {\!!doneafalse
+         {\donefalse
           \advance\scratchcounterfive \plusone
-          \ifnum\recurselevel=\firstsubpage\relax \!!doneatrue \fi
-          \ifnum\recurselevel=\lastsubpage \relax \!!doneatrue \fi
+          \ifnum\recurselevel=\firstsubpage\relax \donetrue \fi
+          \ifnum\recurselevel=\lastsubpage \relax \donetrue \fi
           \scratchcountersix\therealsubpageno\recurselevel\relax
           \c_scrn_bar_mode
-            \if!!donea
+            \ifdone
               \ifnum\scratchcountersix<\realpageno
                 \zerocount
               \else\ifnum\scratchcountersix>\realpageno

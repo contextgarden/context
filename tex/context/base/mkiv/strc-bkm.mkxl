@@ -1,0 +1,182 @@
+%D \module
+%D   [       file=strc-bkm,
+%D        version=2009.04.01,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Bookmarks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Bookmarks}
+
+\registerctxluafile{strc-bkm}{}
+
+% \enabledirectives[references.bookmarks.preroll]
+
+\unprotect
+
+%D Bookmarks are a very viewer dependent feature. They are mostly used as additional
+%D table of contents and therefore relate directly to lists.
+%D
+%D A bookmark list is added to the document only when interaction is enabled. The
+%D given lists are bookmarked and a second argument specifies the opened bookmark
+%D trees.
+%D
+%D \starttyping
+%D \placebookmarks
+%D   [chapter,section,subsection,mylist]
+%D   [chapter]
+%D \stoptyping
+%D
+%D You can overloads the last set bookmark in a sectioning command:
+%D
+%D \starttyping
+%D \chapter {the first chapter}
+%D \bookmark {the first bookmark}
+%D \stoptyping
+%D
+%D However, in practice you can better use \type {\startchapter} and set the \type
+%D {bookmark} parameter.
+%D
+%D You can add entries to the bookmarklist:
+%D
+%D \starttyping
+%D \bookmark[mylist]{whatever}
+%D \stoptyping
+%D
+%D Use force to get titles in the bookmarklist. This is somewhat tricky as one does
+%D not want \quotation {Contents} in a table of contents but it has to be in the
+%D bookmark list.
+
+\installcorenamespace{bookmark}
+
+\installsetuponlycommandhandler \??bookmark {bookmark} % installdirectparametersethandler
+
+\setupbookmark
+  [\c!force=\v!no,        % it's easier to force that to inhibit
+   \c!number=\v!yes,      % might become v!no
+   \c!sectionblock=\v!no] % show sectionblock level + title
+
+\aliased\let\setupbookmarks\setupbookmark
+
+\permanent\protected\def\bookmark
+  {\iflocation
+     \expandafter\strc_bookmarks_bookmark_yes
+   \else
+     \expandafter\strc_bookmarks_bookmark_nop
+   \fi}
+
+\tolerant\def\strc_bookmarks_bookmark_yes[#1]#:#2%
+  {\begingroup
+   \simplifycommands
+   \ifnum\thenamedheadlevel{#1}>\zerocount
+     \clf_overloadbookmark{#1}{\detokenize\expandafter{\normalexpanded{#2}}}%
+   \else
+     \writetolist[#1]{#2}{}% todo: a dedicated bookmark writer
+   \fi
+   \endgroup}
+
+\tolerant\def\strc_bookmarks_bookmark_nop[#1]#:#2%
+  {}
+
+\permanent\protected\def\placebookmarks
+  {\iflocation
+     \expandafter\strc_bookmarks_place_yes
+   \else
+     \expandafter\gobblethreeoptionals
+   \fi}
+
+\let\m_bookmarks_names \empty
+\let\m_bookmarks_opened\empty
+
+\tolerant\def\strc_bookmarks_place_yes[#1]#*[#2]#*[#3]%
+  {\begingroup
+   \edef\m_bookmarks_names{#1}%
+   \edef\m_bookmarks_opened{#2}%
+   \ifempty\m_bookmarks_names
+     \edef\m_bookmarks_names{\namedlistparameter\v!content\c!list}%
+   \fi
+   \ifempty\m_bookmarks_names
+     \let\m_bookmarks_names\v!all
+   \fi
+   \ifparameters\or\or
+     \doifelseassignment{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
+   \or
+     \setupcurrentbookmark[#3]% no every so not all possible
+   \fi
+   \clf_registerbookmark
+     names  {\m_bookmarks_names}%
+     opened {\m_bookmarks_opened}%
+     force  {\bookmarkparameter\c!force}%
+     number {\bookmarkparameter\c!number}%
+   \relax
+   \endgroup}
+
+\appendtoks
+    \clf_setupbookmarks
+      separatorset   {\bookmarkparameter\c!numberseparatorset}%
+      conversionset  {\bookmarkparameter\c!numberconversionset}%
+      starter        {\bookmarkparameter\c!numberstarter}%
+      stopper        {\bookmarkparameter\c!numberstopper}%
+      segments       {\bookmarkparameter\c!numbersegments}%
+      showblocktitle {\bookmarkparameter\c!sectionblock}%
+    \relax
+\to \everysetupbookmark
+
+%D There is a plugin mechanism but this is for experts only. The intermediate
+%D data structures are stable.
+%D
+%D \starttyping
+%D \startluacode
+%D     structures.bookmarks.installhandler("check before","before",function(levels)
+%D         logs.report("extra bookmarks","before (normal bookmarks)")
+%D         inspect(levels)
+%D         logs.report("extra bookmarks","before (extra bookmarks)")
+%D         inspect(structures.bookmarks.extras.get())
+%D         return levels
+%D     end)
+%D     structures.bookmarks.installhandler("check after", "after", function(levels)
+%D         logs.report("extra bookmarks","after (merged bookmarks)")
+%D         inspect(levels)
+%D         return levels
+%D     end)
+%D \stopluacode
+%D \starttyping
+%D
+%D This mechanism was added when bookmark inclusion became (optional) part of graphic
+%D inclusion (which is needed by Taco).
+%D
+%D \starttyping
+%D \getfiguredimensions[somefile.pdf]
+%D \dorecurse {\noffigurepages} {
+%D     \startTEXpage
+%D         \externalfigure[somefile.pdf][interaction=bookmark,page=\recurselevel]
+%D     \stopTEXpage
+%D }
+%D \starttyping
+
+\protect \endinput
+
+% \starttext
+% \setupinteraction[state=start]\setupinteractionscreen[option=bookmark]
+% \placebookmarks[chapter,section,subsection][chapter]
+% \chapter{First}
+% \bookmark{The First Indeed}
+% \section{alpha}
+% \bookmark[chapter]{The First Indeed Again}
+% \section{beta}
+% \chapter{Second}
+% \bookmark{The Second Indeed}
+% \section{gamma \tex{radiation}}
+% \subsection{a}
+% \subsection{b}
+% \section{delta}
+% \section{epsilon}
+% \chapter{Third \relax}
+% \chapter{我〈能吞下玻璃而不傷身〉體。} % whatever that means
+% \chapter{Idris Samawi Hamid ادريس سماوي حامد}
+% \stoptext

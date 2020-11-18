@@ -765,301 +765,196 @@ do
         end
     end
 
-    do -- old variant
+    local expandmacro = token.expand_macro
+ -- local runlocal    = tex.runlocal
+ -- local setmacro    = tokens.setters.macro
+ -- local settoks     = tex.settoks
+    local toscaled    = tex.toscaled
 
-        local ctx_fixedblankskip         = context.fixedblankskip
-        local ctx_flexibleblankskip      = context.flexibleblankskip
-        local ctx_setblankcategory       = context.setblankcategory
-        local ctx_setblankorder          = context.setblankorder
-        local ctx_setblankpenalty        = context.setblankpenalty
-        ----- ctx_setblankhandling       = context.setblankhandling
-        local ctx_flushblankhandling     = context.flushblankhandling
-        local ctx_addpredefinedblankskip = context.addpredefinedblankskip
-        local ctx_addaskedblankskip      = context.addaskedblankskip
-        local ctx_setblankpacked         = context.setblankpacked
+    local setattrs    = nuts.setattrs
 
-        local ctx_pushlogger             = context.pushlogger
-        local ctx_startblankhandling     = context.startblankhandling
-        local ctx_stopblankhandling      = context.stopblankhandling
-        local ctx_poplogger              = context.poplogger
+    local b_done     = false
+    local b_packed   = false
 
-        local pattern = nil
+    local b_amount   = 0
+    local b_stretch  = 0
+    local b_shrink   = 0
+    local b_category = false
+    local b_penalty  = false
+    local b_order    = false
+    local b_fixed    = false
+    local b_grid     = false
 
-        local packed  = categories.packed
+    local pattern    = nil
 
-        local function handler(amount, keyword, detail)
-            if not keyword then
-                report_vspacing("unknown directive %a",s)
-            else
-                local mk = map[keyword]
-                if mk then
-                    lpegmatch(pattern,mk)
-                elseif keyword == k_fixed then
-                    ctx_fixedblankskip()
-                elseif keyword == k_flexible then
-                    ctx_flexibleblankskip()
-                elseif keyword == k_category then
-                    local category = tonumber(detail)
-                    if category == packed then
-                        ctx_setblankpacked()
-                    elseif category then
-                        ctx_setblankcategory(category)
-                        ctx_flushblankhandling()
-                    end
-                elseif keyword == k_order and detail then
-                    local order = tonumber(detail)
-                    if order then
-                        ctx_setblankorder(order)
-                    end
-                elseif keyword == k_penalty and detail then
-                    local penalty = tonumber(detail)
-                    if penalty then
-                        ctx_setblankpenalty(penalty)
-                    end
-                else
-                    amount = tonumber(amount) or 1
-                    local sk = skip[keyword]
-                    if sk then
-                        ctx_addpredefinedblankskip(amount,keyword)
-                    else -- no check
-                        ctx_addaskedblankskip(amount,keyword)
-                    end
-                end
-            end
-        end
+    local packed     = categories.packed
 
-        local splitter = ((multiplier + singlefier) * keyword * (category + Cc(false))) / handler
-              pattern  = (splitter + separator^1)^0
+    local gluefactor = .25
 
-        function vspacing.analyze(str)
-            if trace_vspacing then
-                ctx_pushlogger(report_vspacing)
-                ctx_startblankhandling()
-                lpegmatch(pattern,str)
-                ctx_stopblankhandling()
-                ctx_poplogger()
-            else
-                ctx_startblankhandling()
-                lpegmatch(pattern,str)
-                ctx_stopblankhandling()
-            end
-        end
+    local ctx_ignoreparskip = context.core.ignoreparskip
 
+    local function before()
+        b_amount   = 0
+        b_stretch  = 0
+        b_shrink   = 0
+        b_category = 1
+        b_penalty  = false
+        b_order    = false
+        b_fixed    = b_grid
     end
 
-    do -- new variant
-
-        local expandmacro = token.expand_macro
-     -- local runlocal    = tex.runlocal
-     -- local setmacro    = tokens.setters.macro
-     -- local settoks     = tex.settoks
-        local toscaled    = tex.toscaled
-
-        local setattrs    = nuts.setattrs
-
-        local b_done     = false
-        local b_packed   = false
-
-        local b_amount   = 0
-        local b_stretch  = 0
-        local b_shrink   = 0
-        local b_category = false
-        local b_penalty  = false
-        local b_order    = false
-        local b_fixed    = false
-        local b_grid     = false
-
-        local pattern    = nil
-
-        local packed     = categories.packed
-
-        local gluefactor = .25
-
-        local ctx_ignoreparskip           = context.core.ignoreparskip
-
-     -- local ctx_vspacingfromtempstring  = context.core.vspacingfromtempstring
-     -- local ctx_vspacingfromscratchtoks = context.core.vspacingfromscratchtoks
-
-     -- local ctx_vspacingpredefinedvalue = context.core.vspacingpredefinedvalue
-     --
-     -- local cache = table.setmetatableindex(function(t,k)
-     --     local v = function() ctx_vspacingpredefinedvalue(k) end
-     --     t[k] = v
-     --     return v
-     -- end)
-
-        local function before()
-            b_amount   = 0
-            b_stretch  = 0
-            b_shrink   = 0
-            b_category = 1
-            b_penalty  = false
-            b_order    = false
-            b_fixed    = b_grid
+    local function after()
+        if fixed then
+            b_stretch = 0
+            b_shrink  = 0
+        else
+            b_stretch = gluefactor * b_amount
+            b_shrink  = gluefactor * b_amount
         end
+    end
 
-        local function after()
-            if fixed then
-                b_stretch = 0
-                b_shrink  = 0
+    -- use a cache for predefined ones
+
+    local function inject()
+        local n = new_glue(b_amount,b_stretch,b_shrink)
+        setattrs(n,false,a_skipcategory,b_category,a_skippenalty,b_penalty,a_skiporder,b_order or 1)
+        write_node(n)
+    end
+
+    local function flush()
+        after()
+        if b_done then
+            inject()
+            b_done = false
+        end
+        before()
+    end
+
+ -- local cmd = token.create("vspacingfromtempstring")
+ -- local cmd = token.create("vspacingpredefinedvalue") -- not yet known
+
+    local function handler(multiplier, keyword, detail)
+        if not keyword then
+            report_vspacing("unknown directive %a",s)
+        else
+            local mk = map[keyword]
+            if mk then
+                lpegmatch(pattern,mk)
+            elseif keyword == k_fixed then
+                b_fixed = true
+            elseif keyword == k_flexible then
+                b_flexible = false
+            elseif keyword == k_category then
+                local category = tonumber(detail)
+                if category == packed then
+                    b_packed = true
+                elseif category then
+                    b_category = category
+                    b_done     = true
+                    flush()
+                end
+            elseif keyword == k_order and detail then
+                local order = tonumber(detail)
+                if order then
+                    b_order = order
+                end
+            elseif keyword == k_penalty and detail then
+                local penalty = tonumber(detail)
+                if penalty then
+                    flush()
+                    b_done = true
+                    b_category = 3
+                    b_penalty = penalty
+                    flush()
+                end
             else
-                b_stretch = gluefactor * b_amount
-                b_shrink  = gluefactor * b_amount
-            end
-        end
-
-        -- use a cache for predefined ones
-
-     -- local function inject()
-     --     local n = new_glue(b_amount,b_stretch,b_shrink)
-     --     if b_category then
-     --         setattr(n,a_skipcategory,b_category)
-     --     end
-     --     if b_penalty then
-     --         setattr(n,a_skippenalty,b_penalty)
-     --     end
-     --     if b_order then
-     --         setattr(n,a_skiporder,b_order or 1)
-     --     end
-     --     write_node(n)
-     -- end
-
-        local function inject()
-            local n = new_glue(b_amount,b_stretch,b_shrink)
-            setattrs(n,false,a_skipcategory,b_category,a_skippenalty,b_penalty,a_skiporder,b_order or 1)
-            write_node(n)
-        end
-
-        local function flush()
-            after()
-            if b_done then
-                inject()
-                b_done = false
-            end
-            before()
-        end
-
-    --  local cmd = token.create("vspacingfromtempstring")
-        local cmd = token.create("vspacingpredefinedvalue")
-
-        local function handler(multiplier, keyword, detail)
-            if not keyword then
-                report_vspacing("unknown directive %a",s)
-            else
-                local mk = map[keyword]
-                if mk then
-                    lpegmatch(pattern,mk)
-                elseif keyword == k_fixed then
-                    b_fixed = true
-                elseif keyword == k_flexible then
-                    b_flexible = false
-                elseif keyword == k_category then
-                    local category = tonumber(detail)
-                    if category == packed then
-                        b_packed = true
-                    elseif category then
-                        b_category = category
-                        b_done     = true
-                        flush()
+                local amount, stretch, shrink
+                multiplier = tonumber(multiplier) or 1
+                local sk = skip[keyword]
+                if sk then
+                    -- multiplier, keyword
+                    -- best, for now, todo: runlocal with arguments
+                    expandmacro("vspacingpredefinedvalue",true,keyword)
+                 -- expandmacro(cmd,true,keyword)
+                 -- setmacro("tempstring",keyword)
+                 -- runlocal(cmd)
+                    -- nicest
+                 -- runlocal(cache[keyword])
+                    -- fast
+                 -- settoks("scratchtoks",keyword)
+                 -- runlocal("vspacingfromscratchtoks")
+                    -- middleground
+                 -- setmacro("tempstring",keyword)
+                 -- runlocal(ctx_vspacingfromtempstring)
+                    --
+                    amount, stretch, shrink = texgetglue("scratchskip")
+                    if not stretch then
+                        stretch = 0
                     end
-                elseif keyword == k_order and detail then
-                    local order = tonumber(detail)
-                    if order then
-                        b_order = order
+                    if not shrink then
+                        shrink = 0
                     end
-                elseif keyword == k_penalty and detail then
-                    local penalty = tonumber(detail)
-                    if penalty then
-                        flush()
-                        b_done = true
-                        b_category = 3
-                        b_penalty = penalty
-                        flush()
-                    end
-                else
-                    local amount, stretch, shrink
-                    multiplier = tonumber(multiplier) or 1
-                    local sk = skip[keyword]
-                    if sk then
-                        -- multiplier, keyword
-                        -- best, for now, todo: runlocal with arguments
-                     -- expandmacro("vspacingpredefinedvalue",true,keyword)
-                        expandmacro(cmd,true,keyword)
-                     -- setmacro("tempstring",keyword)
-                     -- runlocal(cmd)
-                        -- nicest
-                     -- runlocal(cache[keyword])
-                        -- fast
-                     -- settoks("scratchtoks",keyword)
-                     -- runlocal("vspacingfromscratchtoks")
-                        -- middleground
-                     -- setmacro("tempstring",keyword)
-                     -- runlocal(ctx_vspacingfromtempstring)
-                        --
-                        amount, stretch, shrink = texgetglue("scratchskip")
-                        if stretch == 0 and shrink == 0 then
-                            stretch = gluefactor * amount -- always unless grid
-                            shrink  = stretch             -- always unless grid
-                        end
-                    else -- no check, todo: parse plus and minus
-                        amount  = toscaled(keyword)
+                    if stretch == 0 and shrink == 0 then
                         stretch = gluefactor * amount -- always unless grid
                         shrink  = stretch             -- always unless grid
                     end
-                    -- we look at fixed later
-                    b_amount  = b_amount  + multiplier * amount
-                    b_stretch = b_stretch + multiplier * stretch
-                    b_shrink  = b_shrink  + multiplier * shrink
-                    b_done    = true
+                else -- no check, todo: parse plus and minus
+                    amount  = toscaled(keyword)
+                    stretch = gluefactor * amount -- always unless grid
+                    shrink  = stretch             -- always unless grid
                 end
+                -- we look at fixed later
+                b_amount  = b_amount  + multiplier * amount
+                b_stretch = b_stretch + multiplier * stretch
+                b_shrink  = b_shrink  + multiplier * shrink
+                b_done    = true
             end
         end
+    end
 
-        -- alternatively we can make a table and have a keyword -> split cache but this is probably
-        -- not really a bottleneck
+    -- alternatively we can make a table and have a keyword -> split cache but this is probably
+    -- not really a bottleneck
 
-        local splitter = ((multiplier + singlefier) * keyword * (category + Cc(false))) / handler
-              pattern  = (splitter + separator^1)^0
+    local splitter = ((multiplier + singlefier) * keyword * (category + Cc(false))) / handler
+          pattern  = (splitter + separator^1)^0
 
-        function vspacing.inject(grid,str)
-            if trace_vspacing then
-             -- ctx_pushlogger(report_vspacing)
-            end
-            b_done   = false
-            b_packed = false
-            b_grid   = gridsnapping
-            before()
-            lpegmatch(pattern,str)
-            after()
-            if b_done then
-                inject()
-            end
-            if b_packed then
-                ctx_ignoreparskip()
-            end
-            if trace_vspacing then
-             -- ctx_poplogger()
-            end
+    function vspacing.inject(grid,str)
+        if trace_vspacing then
+         -- ctx_pushlogger(report_vspacing)
         end
-
-        function vspacing.injectpenalty(penalty)
-            local n = new_glue()
-            setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
-            write_node(n)
+        b_done   = false
+        b_packed = false
+        b_grid   = gridsnapping
+        before()
+        lpegmatch(pattern,str)
+        after()
+        if b_done then
+            inject()
         end
-
-        function vspacing.injectskip(amount)
-            local n = new_glue(amount)
-            setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
-            write_node(n)
+        if b_packed then
+            ctx_ignoreparskip()
         end
-
-        function vspacing.injectdisable(amount)
-            local n = new_glue()
-            setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
-            write_node(n)
+        if trace_vspacing then
+         -- ctx_poplogger()
         end
+    end
 
+    function vspacing.injectpenalty(penalty)
+        local n = new_glue()
+        setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
+        write_node(n)
+    end
+
+    function vspacing.injectskip(amount)
+        local n = new_glue(amount)
+        setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
+        write_node(n)
+    end
+
+    function vspacing.injectdisable(amount)
+        local n = new_glue()
+        setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
+        write_node(n)
     end
 
 end
@@ -2466,12 +2361,12 @@ do
 
     -- old variant
 
-    implement {
-        name      = "vspacing",
-        actions   = vspacing.analyze,
-        scope     = "private",
-        arguments = "string"
-    }
+--     implement {
+--         name      = "vspacing",
+--         actions   = vspacing.analyze,
+--         scope     = "private",
+--         arguments = "string"
+--     }
 
     -- new variant
 

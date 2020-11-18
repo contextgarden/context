@@ -1931,6 +1931,10 @@
 \def\spac_vspacing_no_topskip % use grouped
   {\c_attr_skipcategory\pluseleven}
 
+%permanent\def\vspacingfromscratchtoks  {\scratchdimen\dimexpr\csname\??vspacingamount\the\scratchtoks\endcsname\relax}
+\permanent\def\vspacingpredefinedvalue#1{\scratchskip\glueexpr\csname\??vspacingamount#1\endcsname\relax}
+%permanent\def\vspacingfromtempstring   {\scratchdimen\dimexpr\csname\??vspacingamount\tempstring\endcsname\relax}
+
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}
 
@@ -1976,81 +1980,6 @@
     \relax
 \to \everyafterblankhandling
 
-\permanent\protected\def\setblankpacked
-  {\settrue\c_space_ignore_parskip}
-
-\permanent\protected\def\setblankcategory#1%
-  {\settrue\c_space_vspacing_done
-   \c_attr_skipcategory#1\relax}
-
-\permanent\protected\def\setblankorder#1%
-  {\c_attr_skiporder#1\relax}
-
-\permanent\protected\def\fixedblankskip
-  {\settrue\c_space_vspacing_fixed}
-
-\permanent\protected\def\flexibleblankskip
-  {\setfalse\c_space_vspacing_fixed}
-
-% \protected\def\addblankskip#1#2#3%
-%   {\settrue\c_space_vspacing_done
-%    \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
-
-\permanent\protected\def\setblankpenalty#1%
-  {\flushblankhandling
-   \settrue\c_space_vspacing_done
-   \c_attr_skipcategory\plusthree
-   \c_attr_skippenalty #1\relax
-   \flushblankhandling}
-
-\permanent\protected\def\startblankhandling % move this to \vspacing
-  {\par
-   \ifvmode
-     \expandafter\dostartblankhandling
-   \else
-     \expandafter\nostartblankhandling
-   \fi}
-
-\permanent\protected\def\nostartblankhandling#1\stopblankhandling
-  {}
-
-\permanent\def\dostartblankhandling
-  {\begingroup
-   \setfalse\c_space_vspacing_done
-   \setfalse\c_space_ignore_parskip
-   \the\everybeforeblankhandling}
-
-\permanent\protected\def\stopblankhandling
-  {\the\everyafterblankhandling
-   \ifconditional\c_space_vspacing_done
-     \vskip\s_spac_vspacing_temp
-   \fi
-   \ifconditional\c_space_ignore_parskip
-     \endgroup\ignoreparskip
-   \else
-     \endgroup
-   \fi}
-
-\permanent\protected\def\flushblankhandling
-  {\the\everyafterblankhandling
-   \ifconditional\c_space_vspacing_done
-     \vskip\s_spac_vspacing_temp
-     \setfalse\c_space_vspacing_done
-   \fi
-   \the\everybeforeblankhandling}
-
-\permanent\protected\def\addpredefinedblankskip#1#2%
-  {\settrue\c_space_vspacing_done
-   \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
-
-% \protected\def\addpredefinedblankskip#1#2%
-%   {\settrue\c_space_vspacing_done
-%    \advance\s_spac_vspacing_temp#1\dimexpr\the\csname\ifgridsnapping g\else n\fi>#2\endcsname\relax}
-
-\permanent\protected\def\addaskedblankskip#1#2%
-  {\settrue\c_space_vspacing_done
-   \advance\s_spac_vspacing_temp#1\dimexpr#2\relax}
-
 % The main spacer:
 
 % \protected\def\vspacing
@@ -2081,29 +2010,16 @@
      \expandafter\spac_vspacing_nop_ignore
    \fi}
 
-\def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else\par\clf_vspacing{#1}\fi}
+\def\spac_vspacing_yes_indeed[#1]{\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{#1}\fi\fi}
+\def\spac_vspacing_nop_indeed    {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\currentvspacing}\fi\fi}
 
-\def\spac_vspacing_yes_ignore[#1]%
-  {\ifmmode\else\par\fi}
-
-\def\spac_vspacing_nop_indeed
-  {\ifmmode\else\par\clf_vspacing{\currentvspacing}\fi}
-
-\def\spac_vspacing_nop_ignore
-  {\ifmmode\else\par\fi}
+\def\spac_vspacing_yes_ignore[#1]{\ifmmode\else\par\fi}
+\def\spac_vspacing_nop_ignore    {\ifmmode\else\par\fi}
 
 \installcorenamespace{vspacing}
 
-\protected\def\directvspacing#1%
-  {\par
-   \ifchkdim#1\or
-     \spac_vspacing_dim_preset{\the\dimexpr#1}%
-   \orelse\ifcsname\??vspacing#1\endcsname
-     \lastnamedcs
-   \else
-     \spac_vspacing_yes_preset{#1}%
-   \fi}
+\permanent\protected\def\directvspacing#1%
+ {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\iftok{#1}\emptytoks\currentvspacing\else#1\fi}\fi\fi}
 
 \def\spac_vspacing_dim_preset#1%
   {\ifcsname\??vspacing#1\endcsname
@@ -2118,16 +2034,6 @@
   %\writestatus{#1}{\expandafter\meaning\csname\??vspacing#1\endcsname}%
   %\writestatus{}{}%
    \csname\??vspacing#1\endcsname}
-
-\def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else
-     \directvspacing{#1}%
-   \fi}
-
-\def\spac_vspacing_nop_indeed
-  {\ifmmode\else
-     \directvspacing\currentvspacing
-   \fi}
 
 \permanent\protected\def\directdefaultvspacing
   {\ifinpagebody % somewhat weird
@@ -2153,21 +2059,8 @@
 
 %D Handy (and faster):
 
-\permanent\protected\def\directvpenalty#1%
-  {\begingroup
-   \c_attr_skipcategory\plusthree
-   \c_attr_skippenalty #1\relax
-   \c_attr_skiporder   \attributeunsetvalue
-   \vskip\zeropoint
-   \endgroup}
-
-\permanent\protected\def\directvskip#1%
-  {\begingroup
-   \c_attr_skipcategory\plusone
-   \c_attr_skippenalty \attributeunsetvalue
-   \c_attr_skiporder   \attributeunsetvalue
-   \vskip#1\relax
-   \endgroup}
+\permanent\protected\def\directvpenalty#1{\ifmmode\else\par\ifvmode\clf_injectvpenalty#1\relax\fi\fi}
+\permanent\protected\def\directvskip   #1{\ifmmode\else\par\ifvmode\clf_injectvskip   #1\relax\fi\fi}
 
 %D These depend on bigskipamount cum suis so we'd better sync them:
 
@@ -2310,13 +2203,7 @@
 %
 % but use the following more efficient variant instead:
 
-\permanent\protected\def\inhibitblank
-  {\ifvmode
-     \begingroup
-     \c_attr_skipcategory\plusfive
-     \vskip\zeropoint
-     \endgroup
-   \fi}
+\permanent\protected\def\inhibitblank{\ifmmode\else\par\ifvmode\clf_injectdisable\fi\fi}
 
 \let\doinhibitblank\inhibitblank % keep this command, used in styles
 
@@ -2577,58 +2464,5 @@
 % test \par
 
 \protected\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
-
-% experimental (for the moment only for hh and ws)
-
-%def\vspacingfromscratchtoks  {\scratchdimen\dimexpr\csname\??vspacingamount\the\scratchtoks\endcsname\relax}
-\def\vspacingpredefinedvalue#1{\scratchskip\glueexpr\csname\??vspacingamount#1\endcsname\relax}
-%def\vspacingfromtempstring   {\scratchdimen\dimexpr\csname\??vspacingamount\tempstring\endcsname\relax}
-
-\let\spac_vspacing_yes_indeed_old\spac_vspacing_yes_indeed
-\let\spac_vspacing_nop_indeed_old\spac_vspacing_nop_indeed
-\let\directvspacing_old          \directvspacing
-
-\def\spac_vspacing_yes_indeed_new[#1]%
-  {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{#1}\fi\fi}
-
-\def\spac_vspacing_nop_indeed_new
-  {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\currentvspacing}\fi\fi}
-
-\protected\def\directvspacing_new#1%
-%{\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{#1}\fi\fi}
- {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\iftok{#1}\emptytoks\currentvspacing\else#1\fi}\fi\fi}
-
-\let\directvpenalty_old\directvpenalty
-\let\directvskip_old   \directvskip
-\let\inhibitblank_old  \inhibitblank
-
-\protected\def\directvpenalty_new#1{\ifmmode\else\par\ifvmode\clf_injectvpenalty#1\relax\fi\fi}
-\protected\def\directvskip_new   #1{\ifmmode\else\par\ifvmode\clf_injectvskip   #1\relax\fi\fi}
-\protected\def\inhibitblank_new    {\ifmmode\else\par\ifvmode\clf_injectdisable         \fi\fi}
-
-% we need to ensure \enforced
-
-\def\spac_vspacing_temp_yes
-  {\writestatus{vspacing}{enabling experimental handler}%
-   \enforced\let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_new
-   \enforced\let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_new
-   \enforced\let\directvspacing\directvspacing_new
-   \enforced\let\directvpenalty\directvpenalty_new
-   \enforced\let\directvskip\directvskip_new
-   \enforced\let\inhibitblank\inhibitblank_new}
-
-\def\spac_vspacing_temp_nop
-  {\writestatus{vspacing}{disabling experimental handler}%
-   \enforced\let\spac_vspacing_yes_indeed\spac_vspacing_yes_indeed_old
-   \enforced\let\spac_vspacing_nop_indeed\spac_vspacing_nop_indeed_old
-   \enforced\let\directvspacing\directvspacing_old
-   \enforced\let\directvpenalty\directvpenalty_old
-   \enforced\let\directvskip\directvskip_old
-   \enforced\let\inhibitblank\inhibitblank_old}
-
-\installtexdirective
-  {vspacing.experimental}
-  {\spac_vspacing_temp_yes}
-  {\spac_vspacing_temp_nop}
 
 \protect \endinput

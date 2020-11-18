@@ -21,12 +21,6 @@
 
 \registerctxluafile{spac-ali}{optimize}
 
-\immutable\chardef\normalizelinemodecode  = "01
-\immutable\chardef\indentskipmodecode     = "02
-\immutable\chardef\swaphangindentmodecode = "04
-\immutable\chardef\swapparskipmodecode    = "08
-\immutable\chardef\breakafterdirmodecode  = "10
-
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
 
@@ -508,7 +502,7 @@
   {\bottomraggednessmode\plustwo
    \settopskip}
 
-\let\normalbottom\alignbottom % downward compatible
+\aliased\let\normalbottom\alignbottom % downward compatible
 
 \permanent\protected\def\setbottomalignmode#1%
   {\bottomraggednessmode#1%
@@ -1240,5 +1234,10 @@
 \setvalue{\??reverse\v!reverse}{\ifconditional\inlinelefttoright     \s!reverse\fi}
 
 \permanent\def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
+
+%D Now official:
+
+\permanent\protected\def\spaceorpar
+  {\endgraf\ifhmode\space\fi}
 
 \protect \endinput

@@ -68,13 +68,6 @@
 % cells: option=fixed    : nils autostretch (not yet complete)
 
 % \setbox\scratchbox\hbox attr \taggedattribute \c_attr_tagged {...}
-%
-% \let\tsplitbeforeresult\donothing
-% \let\tsplitafterresult \donothing
-% \let\tsplitinbetween   \donothing
-% \let\tsplitbefore      \donothing
-% \let\tsplitafter       \donothing
-% \let\postprocesstsplit \donothing
 
 \aliased\let\dotagxtablecell  \relax % names will change
 \aliased\let\dotagxtablesignal\relax % names will change
@@ -426,15 +419,15 @@
 
 \protected\def\tabl_x_flush_float_split
   {\resetdirecttsplit
-   \edef\extrasplitfloatlines  {\xtableparameter\c!split}%
-   \edef\tsplitminimumfreespace{\the\dimexpr\extratxtablesplitheight+\xtableparameter\c!splitoffset\relax}%
- % \edef\tsplitminimumfreelines{2}% not needed here as we're precise enough
+   \edef\extrasplitfloatlines{\xtableparameter\c!split}%
+   \d_split_minimum_free_space\dimexpr\extratxtablesplitheight+\xtableparameter\c!splitoffset\relax
+  %\c_split_minimum_free_lines\plustwo % not needed here as we're precise enough
    \let\tsplitdirectsplitter\tabl_x_split_splitter
    \let\tsplitdirectwidth   \d_tabl_x_final_width
    \handledirecttsplit}
 
 \protected\def\tabl_x_split_splitter#height%
-  {\setbox\tsplitresult\vbox
+  {\setbox\b_split_result\vbox
      {\clf_x_table_flush
         method {\v!split}%
         height \dimexpr#height\relax

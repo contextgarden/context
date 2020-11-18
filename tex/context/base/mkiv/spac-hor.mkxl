@@ -19,6 +19,9 @@
 
 \let\parfillrightskip\parfillskip
 
+\bitwiseflip \normalizelinemode \parindentskipcode
+\bitwiseflip \normalizelinemode \normalizelinecode
+
 \let\v_spac_indentation_current\empty % amount/keyword
 
 \newdimen \d_spac_indentation_par

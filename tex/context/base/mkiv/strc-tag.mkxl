@@ -1,0 +1,531 @@
+%D \module
+%D   [       file=strc-tag,
+%D        version=2010.07.16,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Tags,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% labels: no language needed
+% key/values and other names might change (and probably will)
+
+\writestatus{loading}{ConTeXt Structure Macros / Tags}
+
+\registerctxluafile{strc-tag}{autosuffix}
+
+\unprotect
+
+%D Eventually these labels will either move to the modules where they're used, or
+%D they will en dup in mult-tag.
+
+\definetagconstant{document}               % Div
+
+\definetagconstant{division}               % Div
+\definetagconstant{paragraph}              % P
+\definetagconstant{p}                      % P
+\definetagconstant{construct}              % Span
+\definetagconstant{highlight}              % Span
+
+\definetagconstant{section}                % Sect
+\definetagconstant{sectioncaption}         % Div
+\definetagconstant{sectiontitle}           % H
+\definetagconstant{sectionnumber}          % H
+\definetagconstant{sectioncontent}         % Div
+
+\definetagconstant{itemgroup}              % L
+\definetagconstant{item}                   % Li
+\definetagconstant{itemtag}                % Lbl
+\definetagconstant{itemcontent}            % LBody
+\definetagconstant{itemhead}               % Div
+\definetagconstant{itembody}               % Div
+
+\definetagconstant{description}            % Li
+\definetagconstant{descriptiontag}         % Lbl
+\definetagconstant{descriptioncontent}     % LBody
+\definetagconstant{descriptionsymbol}      % Span
+
+\aliastagconstant{construction}       {description}
+\aliastagconstant{constructiontag}    {descriptiontag}
+\aliastagconstant{constructioncontent}{descriptioncontent}
+\aliastagconstant{constructionsymbol} {descriptionsymbol}
+
+\definetagconstant{verbatimblock}          % Code
+\definetagconstant{verbatimlines}          % Code
+\definetagconstant{verbatimline}           % Code
+\definetagconstant{verbatim}               % Code
+
+\definetagconstant{lines}                  % Code
+\definetagconstant{line}                   % Code
+\definetagconstant{linenumber}             % Span
+
+\definetagconstant{sorting}                % Span
+\definetagconstant{synonym}                % Span
+
+\definetagconstant{register}               % Div
+\definetagconstant{registerlocation}       % Span
+\definetagconstant{registersection}        % Div
+\definetagconstant{registertag}            % Span
+\definetagconstant{registerentries}        % Div
+\definetagconstant{registerentry}          % Span
+\definetagconstant{registercontent}        % Span
+\definetagconstant{registersee}            % Span
+\definetagconstant{registerpages}          % Span
+\definetagconstant{registerpage}           % Span
+\definetagconstant{registerpagerange}      % Span
+\definetagconstant{registerfrompage}       % Span
+\definetagconstant{registertopage}         % Span
+\definetagconstant{registerseparator}      % Span
+
+\definetagconstant{table}                  % Table
+\definetagconstant{tablerow}               % TR
+\definetagconstant{tablecell}              % TD
+\definetagconstant{tableheadcell}          % TH
+\definetagconstant{tablehead}              % THEAD
+\definetagconstant{tablebody}              % TBODY
+\definetagconstant{tablefoot}              % TFOOT
+
+\definetagconstant{tabulate}               % Table
+\definetagconstant{tabulaterow}            % TR
+\definetagconstant{tabulatecell}           % TD
+\definetagconstant{tabulateheadcell}       % TH
+\definetagconstant{tabulatehead}           % THEAD
+\definetagconstant{tabulatebody}           % TBODY
+\definetagconstant{tabulatefoot}           % TFOOT
+
+\definetagconstant{math}                   % math
+\definetagconstant{mtable}                 % Table
+\definetagconstant{mtr}                    % TR
+\definetagconstant{mtd}                    % TD
+\definetagconstant{maction}                %
+\definetagconstant{mstacker}
+\definetagconstant{mstackertop}
+\definetagconstant{mstackermid}
+\definetagconstant{mstackerbot}
+
+\aliastagconstant{mtablerow} {mtr}
+\aliastagconstant{mtablecell}{mtd}
+
+\definetagconstant{munderover}             % special cases
+\definetagconstant{munder}                 % special cases
+\definetagconstant{mover}                  % special cases
+
+\definetagconstant{list}                   % TOC
+\definetagconstant{listitem}               % TOCI
+\definetagconstant{listtag}                % Lbl
+\definetagconstant{listcontent}            % P
+\definetagconstant{listdata}               % P
+\definetagconstant{listpage}               % Reference
+\definetagconstant{listtext}               % Span
+
+\definetagconstant{delimited}              % BlockQuote
+%definetagconstant{delimited}              % Quote
+\definetagconstant{delimitedsymbol}        % Span
+\definetagconstant{delimitedcontent}       % Span
+
+\aliastagconstant{delimitedblock}{delimited}
+
+\definetagconstant{subsentence}            % Span
+\definetagconstant{subsentencecontent}     % Span
+\definetagconstant{subsentencesymbol}      % Span
+
+\definetagconstant{float}                  % Div
+\definetagconstant{floatcaption}           % Caption
+\definetagconstant{floatlabel}             % Span
+\definetagconstant{floattext}              % Span
+\definetagconstant{floatnumber}            % Span
+\definetagconstant{floatcontent}           % P
+
+\definetagconstant{image}                  % P
+
+\definetagconstant{mpgraphic}              % P
+
+\definetagconstant{formulaset}             % Div
+\definetagconstant{formula}                % Div
+\definetagconstant{formulacaption}         % Span
+\definetagconstant{formulalabel}           % Span
+\definetagconstant{formulanumber}          % P
+\definetagconstant{formulacontent}         % P
+\definetagconstant{subformula}             % Div
+
+\definetagconstant{link}                   % Link
+\definetagconstant{reference}              % Span
+
+\definetagconstant{margintext}             % Span
+\definetagconstant{margintextblock}        % Div
+\definetagconstant{marginanchor}           % Span
+
+% we might opt for verbose variants so this is experimental:
+
+\definetagconstant{label}                  % Span
+\definetagconstant{number}                 % Span
+
+\definetagconstant{ignore}                 % Span
+\definetagconstant{private}                % Span
+
+\definetagconstant{mid}                    % Span
+\definetagconstant{sub}                    % Span
+\definetagconstant{sup}                    % Span
+\definetagconstant{subsup}                 % Span
+
+\definetagconstant{unit}                   % Span
+\definetagconstant{quantity}               % Span
+%definetagconstant{number}                 % Span
+
+\definetagconstant{combination}            % Span
+\definetagconstant{combinationpair}        % Span
+\definetagconstant{combinationcontent}     % Span
+\definetagconstant{combinationcaption}     % Span
+
+\definetagconstant{publications}           % Span
+\definetagconstant{publication}            % Span
+\definetagconstant{pubfld}                 % Span
+
+\definetagconstant{block}                  % Div
+\definetagconstant{userdata}               % Div
+
+% \setuptaglabeltext
+%   [en]
+%   [\t!document=document]
+
+% the real code
+
+\definesystemattribute[tagged][public]
+\definesystemattribute[image] [public]
+
+% \setelementbackendtag [#1][#2] % define at the lua end
+% \setelementnature     [#1][#2] % define at the lua end
+
+\permanent\protected\def\ignoretagsinexport[#1]{\clf_ignoretagsinexport{#1}} % todo: public implementor
+
+\installcorenamespace{tagging}
+
+\installsetuponlycommandhandler \??tagging {tagging}
+
+\def\strc_tags_report_hyphen#1%
+  {\writestatus\m!languages{setting #1 to U+00AD}}
+
+\protected\def\strc_tags_patch_hyphen
+  {% for the moment here
+   \ifnum\languageparameter\s!lefthyphenchar>\zerocount
+     \setuplanguage[\s!default][\s!lefthyphenchar="AD]%
+     \strc_tags_report_hyphen\s!lefthyphenchar
+   \fi
+   \ifnum\languageparameter\s!righthyphenchar>\zerocount
+     \setuplanguage[\s!default][\s!righthyphenchar="AD]%
+     \strc_tags_report_hyphen\s!righthyphenchar
+   \fi
+   \let\strc_tags_report_hyphen\gobbleoneargument}
+
+% It makes no sense to have labels ... maybe some day as a last 'replace' in the export
+% which might be more efficient then ... okay, we now cannot overload but who cares.
+
+% \strc_tags_start_userdata              % defined at the lua end
+% \strc_tags_stop                        % defined at the lua end
+% \strc_tags_set_aspect                  % defined at the lua end
+% \strc_tags_get_element_tag             % defined at the lua end
+% \strc_tags_set_element_user_properties % defined at the lua end
+
+\permanent\protected\def\strc_tags_element_start_yes
+  {\iftrialtypesetting
+     \expandafter\gobbletwooptionals
+   \else
+     \expandafter\strc_tags_start_userdata
+   \fi}
+
+\permanent\protected\def\strc_tags_element_stop_yes
+  {\iftrialtypesetting
+     % nothing
+   \else
+     \expandafter\strc_tags_stop
+   \fi}
+
+\protected\def\strc_tags_enable_elements
+  {\strc_tags_patch_hyphen
+   \enforced\let\startelement    \strc_tags_element_start_yes
+   \enforced\let\stopelement     \strc_tags_element_stop_yes
+   \enforced\let\dosettagproperty\strc_tags_set_aspect}
+
+\protected\def\strc_tags_disable_elements
+  {\enforced\let\startelement    \gobbletwooptionals
+   \enforced\let\stopelement     \relax
+   \enforced\let\dosettagproperty\gobbletwoarguments}
+
+% beware: making these unexpanded spoils tables (noalign problem)
+
+\def\strc_tags_enabled_start_no_detail
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\strc_tags_start
+   \fi}
+
+\def\strc_tags_enabled_start_detail
+  {\iftrialtypesetting
+     \expandafter\gobbletwoarguments
+   \else
+     \expandafter\strc_tags_start_detail
+   \fi}
+
+\def\strc_tags_enabled_start_chained
+  {\iftrialtypesetting
+     \expandafter\gobblethreearguments
+   \else
+     \expandafter\strc_tags_start_chained_indeed
+   \fi}
+
+\def\strc_tags_enabled_start_ignore
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\strc_tags_start_ignore
+   \fi}
+
+\def\strc_tags_enabled_stop
+  {\iftrialtypesetting
+     % do nothing
+   \else
+     \expandafter\strc_tags_stop
+  \fi}
+
+\def\strc_tags_start_chained_indeed#1#2#3{\strc_tags_start_chained{#1}{#2}{\getcurrentparentchain#3{#2}}}
+
+\newconditional\c_strc_tags_enabled
+
+\permanent\let\dotaggedplaceholder\empty
+
+\immutable\chardef\strc_tags_placeholder_char\zerocount % "FFFC
+
+\protected\def\strc_tags_enable_indeed
+  {\enforced\let\dotaggedplaceholder  \strc_tags_placeholder_char
+   \enforced\let\dostarttagged        \strc_tags_enabled_start_detail
+   \enforced\let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
+   \enforced\let\dostarttaggedchained \strc_tags_enabled_start_chained
+   \enforced\let\dostoptagged         \strc_tags_enabled_stop
+   \enforced\let\dostartignoretagging \strc_tags_enabled_start_ignore
+   \enforced\let\dostopignoretagging  \strc_tags_stop}
+
+\protected\def\strc_tags_enable
+  {% once enable one is toast
+   \global\settrue\c_strc_tags_enabled
+   % and gets:
+   \strc_tags_enable_indeed}
+
+\protected\def\strc_tags_disable
+  {\ifconditional\c_strc_tags_enabled
+     % so now all are artifacts
+     \enforced\let\dotaggedplaceholder  \strc_tags_placeholder_char
+     \enforced\let\dostarttagged        \gobbletwoarguments
+     \enforced\let\dostarttaggednodetail\gobbleoneargument
+     \enforced\let\dostarttaggedchained \gobblethreearguments
+     \enforced\let\dostoptagged         \donothing
+   \else
+     % initial
+     \enforced\let\dotaggedplaceholder  \empty
+     \enforced\let\dostarttagged        \gobbletwoarguments
+     \enforced\let\dostarttaggednodetail\gobbleoneargument
+     \enforced\let\dostarttaggedchained \gobblethreearguments
+     \enforced\let\dostoptagged         \donothing
+     \enforced\let\dostartignoretagging \donothing
+     \enforced\let\dostopignoretagging  \donothing
+   \fi}
+
+% for luigi (beware: fully expandable):
+
+\protected\def\strc_tags_setup_element_user_properties
+  {\iftrialtypesetting
+     \expandafter\gobbletwooptionals
+   \else
+     \expandafterstrc_set_element_user_properties
+   \fi}
+
+\protected\def\strc_tags_enable_properties
+  {\let\getelementtag             \strc_tags_get_element_tag
+   \let\setupelementuserproperties\strc_tags_set_element_user_properties}
+
+\protected\def\strc_tags_disable_properties
+  {\let\getelementtag             \donothing
+   \let\setupelementuserproperties\gobbletwooptionals}
+
+%D The triggers:
+
+\newtoks\everyenableelements
+\newtoks\everydisableelements
+
+\appendtoks
+    \strc_tags_enable_elements
+    \strc_tags_enable_properties
+    \doifelse{\taggingparameter\c!method}\v!auto\strc_tags_enable\strc_tags_disable
+\to \everyenableelements
+
+\appendtoks
+    \strc_tags_disable_elements
+    \strc_tags_disable_properties
+    \strc_tags_disable
+\to \everydisableelements
+
+\appendtoks
+   \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
+\to \everysetuptagging
+
+\permanent\protected\def\forgettagging
+  {\c_attr_tagged\attributeunsetvalue}
+
+\setuptagging
+  [\c!state=\v!stop,
+   \c!method=\v!auto]
+
+% Cf suggestion by Wolfgang we now have named paragraphs. Watch out, the content
+% is grouped but only when we have an instance.
+%
+% \defineparagraph[red] [color=red]
+% \defineparagraph[bold][style=bold]
+%
+% \startparagraph       \input ward \stopparagraph
+% \startparagraph[red]  \input ward \stopparagraph
+% \startparagraph[bold] \input ward \stopparagraph
+
+\installcorenamespace               {paragraph}
+\installcommandhandler \??paragraph {paragraph} \??paragraph
+
+\setupparagraph % someday maybe also strut (beg/end) and align
+  [\c!color=,
+   \c!style=]
+
+\ifdefined\dotagparagraph \else \let\dotagparagraph\gobbleoneargument \fi
+
+\permanent\tolerant\protected\def\startparagraph[#1]#*[#2]%
+  {\endgraf % we end before the group
+   \begingroup
+   \ifarguments
+     \let\currentparagraph\empty
+   \or
+     \ifhastok={#1}%
+       \let\currentparagraph\empty
+       \setupcurrentparagraph[#1]
+     \else
+       \edef\currentparagraph{#1}%
+     \fi
+   \or
+     \edef\currentparagraph{#1}%
+     \setupcurrentparagraph[#2]%
+   \fi
+   \useparagraphstyleandcolor\c!style\c!color
+   \usealignparameter\paragraphparameter
+   \usesetupsparameter\paragraphparameter
+   \dostarttagged\t!paragraph\currentparagraph
+   \dotagparagraph{\paragraphparameter\c!align}}
+
+\permanent\protected\def\stopparagraph
+  {\dostoptagged
+   \endgraf % we end inside the group
+   \endgroup}
+
+\aliased\let\startpar\startparagraph
+\aliased\let\stoppar \stopparagraph
+
+\def\strc_tags_document_start_indeed
+  {\glet\strc_tags_document_start_indeed\relax
+   \dostarttagged\t!document\empty}
+
+\def\strc_tags_document_stop_indeed
+  {\glet\strc_tags_document_stop_indeed\relax
+   \dostoptagged}
+
+\appendtoks
+    \strc_tags_document_start_indeed % here because otherwise products don't get a root (starttext before env)
+\to \everyenableelements
+
+% \appendtoks
+%     \strc_tags_document_start_indeed
+% \to \everystarttext
+
+\appendtoks
+    \strc_tags_document_stop_indeed
+\to \everystoptext
+
+\appendtoks
+    \strc_tags_disable_elements
+    \strc_tags_disable
+\to \everybeforepagebody
+
+% This doesn't work well either, so instead we handle the ornaments in the tagging
+% in a different way (see attr -> false code).
+
+% \appendtoks
+%     \dostartignoretagging
+% \to \everybeforepagebody
+%
+% \appendtoks
+%     \dostopignoretagging
+% \to \everyafterpagebody
+
+% \doifelseinelement{structure:section}            {yes} {no}
+% \doifelseinelement{structure:chapter}            {yes} {no}
+% \doifelseinelement{division:*-structure:chapter} {yes} {no}
+
+\aliased\let\doifinelementelse\doifelseinelement % define at the lua end
+
+\permanent\protected\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
+  {\begingroup
+   \dostarttagged\t!label{#1}%
+   \labeltexts{#1}%
+     {\dostoptagged
+      \dostarttagged\t!number{#2}%
+      #3%
+      \dostoptagged
+      \dostarttagged\t!label{#1}}%
+   \dostoptagged
+   \endgroup}
+
+\permanent\protected\def\namedtaggedlabeltexts#1#2#3#4#5% experimental: labeltag label numbertag numberdetail numbercontent
+  {\begingroup
+   \dostarttagged{#1}{#2}%
+   \labeltexts{#2}%
+     {\dostoptagged
+      \dostarttagged{#3}{#4}%
+      #5%
+      \dostoptagged
+      \dostarttagged{#1}{#2}}%
+   \dostoptagged
+   \endgroup}
+
+%D Metadata is added after the following structure element so here we get some as
+%D child of the document root and some as child of the chapter element.
+%D
+%D \settaggedmetadata[title=Hello World!,author=Hans Hagen]
+%D
+%D \starttyping
+%D \starttext
+%D   \startelement[ignore]
+%D     \input tufte
+%D   \stopelement
+%D   \par \input ward \par
+%D   \settaggedmetadata[whatever=Again and Again]
+%D   \startchapter[title=test]
+%D     \input ward
+%D   \stopchapter
+%D \stoptext
+%D \stoptyping
+
+% \settaggedmetadata[#1] % define at the lua end
+
+%D An overload:
+
+\pushoverloadmode
+
+\aliased\let\strc_tagged_saved_bpar\bpar
+\aliased\let\strc_tagged_saved_epar\epar
+
+\enforced\permanent\protected\def\bpar{\dostarttagged\t!paragraph\empty\strc_tagged_saved_bpar}
+\enforced\permanent\protected\def\epar{\strc_tagged_saved_epar\dostoptagged}
+
+\popoverloadmode
+
+% \permanent\def\untagged{attr \taggedattribute\attributeunsetvalue}
+
+\protect

@@ -1563,20 +1563,20 @@
 
 \def\tabl_table_split_box#1%
   {\resettsplit
-   \def\tsplitminimumfreelines{2}%
-   \def\tsplitminimumfreespace{\zeropoint}%
-   \setbox\tsplitcontent\box#1%
+   \c_split_minimum_free_lines\plustwo
+   \d_split_minimum_free_space\zeropoint
+   \setbox\b_split_content\box#1%
    \ifconditional\c_tabl_table_repeat_head \ifconditional\hassometablehead
-     \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
-     \setbox\tsplithead\vbox{\unvbox\tsplithead}% \vpack ?
+     \setbox\b_split_head\vsplit\b_split_content to \lineheight
+     \setbox\b_split_head\vbox{\unvbox\b_split_head}% \vpack ?
    \fi \fi
    \ifconditional\c_tabl_table_repeat_tail \ifconditional\hassometabletail
-     \setbox\tsplittail\vsplit\tsplitcontent to \lineheight
-     \setbox\tsplittail\vbox{\unvbox\tsplittail}% \vpack ?
+     \setbox\b_split_tail\vsplit\b_split_content to \lineheight
+     \setbox\b_split_tail\vbox{\unvbox\b_split_tail}% \vpack ?
    \fi \fi
    \ifinsidefloat\else
-     \def\tsplitbeforeresult{\startbaselinecorrection}%
-     \def\tsplitafterresult {\stopbaselinecorrection}%
+     \t_split_before_result{\startbaselinecorrection}%
+     \t_split_after_result {\stopbaselinecorrection}%
    \fi
    \handletsplit}
 

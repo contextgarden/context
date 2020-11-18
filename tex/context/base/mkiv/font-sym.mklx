@@ -180,10 +180,10 @@
 \permanent\protected\def\getscaledglyph#scale#name#content%
   {{\setscaledstyledsymbolicfont\fontbody{#scale}{#name}\doifelsenumber{#content}\char\donothing#content}}
 
-\let\getglyph         \getglyphstyled               % old
-\let\getrawglyph      \getglyphdirect               % old
-\let\symbolicsizedfont\setscaledstyledsymbolicfont  % old
-\let\symbolicfont     \setstyledsymbolicfont        % old
+\aliased\let\getglyph         \getglyphstyled              % old, soon obsolete
+\aliased\let\getrawglyph      \getglyphdirect              % old, soon obsolete
+\aliased\let\symbolicsizedfont\setscaledstyledsymbolicfont % old, soon obsolete
+\aliased\let\symbolicfont     \setstyledsymbolicfont       % old, soon obsolete
 
 \permanent\protected\def\symbolicscaledfont{\setscaledstyledsymbolicfont\fontbody}
 

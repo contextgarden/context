@@ -1167,18 +1167,18 @@
 \definemathunderextensible [\v!bottom] [underrightharpoondown]  ["21C1]
 \definemathunderextensible [\v!bottom] [underrightharpoonup]    ["21C0]
 
-% We don't use overline and underline. This is one of the overlooked aspects of
-% unicode cq. opentype math: why treat rules different than e.g. arrows and
-% accents. It is a bit unfortunate that the opportunity to move math to new
-% technologies happened outside the tex domain (and/or some aspects were kept while
-% in fact they were side effects of limitations of traditional fonts). From the
-% unicode aware tex engines' implementation point of view things could have been
-% done a bit nicer but then: the community didn't seem to care too much and just
-% has to follow now.
-%
-% Anyhow, we use a character based approach so that at least we get unicode stuff
-% in the backend (okay, we still need to deal with some cut and paste issues but at
-% least we now know what we deal with.
+%D We don't use overline and underline. This is one of the overlooked aspects of
+%D unicode cq. opentype math: why treat rules different than e.g. arrows and
+%D accents. It is a bit unfortunate that the opportunity to move math to new
+%D technologies happened outside the tex domain (and/or some aspects were kept while
+%D in fact they were side effects of limitations of traditional fonts). From the
+%D unicode aware tex engines' implementation point of view things could have been
+%D done a bit nicer but then: the community didn't seem to care too much and just
+%D has to follow now.
+%D
+%D Anyhow, we use a character based approach so that at least we get unicode stuff
+%D in the backend (okay, we still need to deal with some cut and paste issues but at
+%D least we now know what we deal with.
 
 % alternatively we can move the original to FE*
 
@@ -1202,19 +1202,19 @@
 
 %D For mathml:
 
-\definemathdoubleextensible     [\v!both]     [overbarunderbar]         ["FE33E] ["FE33F]
-\definemathdoubleextensible     [\v!both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
-\definemathdoubleextensible     [\v!both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
-\definemathdoubleextensible     [\v!both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
+\definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["FE33E] ["FE33F]
+\definemathdoubleextensible    [\v!both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
+\definemathdoubleextensible    [\v!both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
+\definemathdoubleextensible    [\v!both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
 
-\definemathovertextextensible   [\v!bothtext] [overbartext]             ["FE33E]
-\definemathundertextextensible  [\v!bothtext] [underbartext]                     ["FE33F]
-\definemathovertextextensible   [\v!bothtext] [overbracetext]           ["FE3DE]
-\definemathundertextextensible  [\v!bothtext] [underbracetext]                   ["FE3DF]
-\definemathovertextextensible   [\v!bothtext] [overparenttext]          ["FE3DC]
-\definemathundertextextensible  [\v!bothtext] [underparenttext]                  ["FE3DD]
-\definemathovertextextensible   [\v!bothtext] [overbrackettext]         ["FE3B4]
-\definemathundertextextensible  [\v!bothtext] [underbrackettext]                 ["FE3B5]
+\definemathovertextextensible  [\v!bothtext] [overbartext]             ["FE33E]
+\definemathundertextextensible [\v!bothtext] [underbartext]                     ["FE33F]
+\definemathovertextextensible  [\v!bothtext] [overbracetext]           ["FE3DE]
+\definemathundertextextensible [\v!bothtext] [underbracetext]                   ["FE3DF]
+\definemathovertextextensible  [\v!bothtext] [overparenttext]          ["FE3DC]
+\definemathundertextextensible [\v!bothtext] [underparenttext]                  ["FE3DD]
+\definemathovertextextensible  [\v!bothtext] [overbrackettext]         ["FE3B4]
+\definemathundertextextensible [\v!bothtext] [underbrackettext]                 ["FE3B5]
 
 %D Some bonus ones (for the moment here):
 
@@ -1302,14 +1302,26 @@
 \defineextensiblefiller [Leftrightarrowfill]     ["27FA]
 %\defineextensiblefiller[Rightleftarrowfill]     [.....]
 
-%defineextensiblefiller [overbarfill]            ["FE33E] % untested
-%defineextensiblefiller [underbarfill]           ["FE33F] % untested
-\defineextensiblefiller [overbracefill]          ["FE3DE] % untested
-\defineextensiblefiller [underbracefill]         ["FE3DF] % untested
-\defineextensiblefiller [overparentfill]         ["FE3DC] % untested
-\defineextensiblefiller [underparentfill]        ["FE3DD] % untested
-\defineextensiblefiller [overbracketfill]        ["FE3B4] % untested
-\defineextensiblefiller [underbracketfill]       ["FE3B5] % untested
+% These are fishy ... we need to check this because now these commands relax (there
+% are some entries in char-def.)
+%
+% %definemathoverextensible  [overbarfill]      ["FE33E]
+% %definemathunderextensible [underbarfill]     ["FE33F]
+% \definemathoverextensible  [overbracefill]    ["FE3DE]
+% \definemathunderextensible [underbracefill]   ["FE3DF]
+% \definemathoverextensible  [overparentfill]   ["FE3DC]
+% \definemathunderextensible [underparentfill]  ["FE3DD]
+% \definemathoverextensible  [overbracketfill]  ["FE3B4]
+% \definemathunderextensible [underbracketfill] ["FE3B5]
+%
+% %defineextensiblefiller [overbarfill]      ["FE33E]
+% %defineextensiblefiller [underbarfill]     ["FE33F]
+% \defineextensiblefiller [overbracefill]    ["FE3DE]
+% \defineextensiblefiller [underbracefill]   ["FE3DF]
+% \defineextensiblefiller [overparentfill]   ["FE3DC]
+% \defineextensiblefiller [underparentfill]  ["FE3DD]
+% \defineextensiblefiller [overbracketfill]  ["FE3B4]
+% \defineextensiblefiller [underbracketfill] ["FE3B5]
 
 %D Extra:
 

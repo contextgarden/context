@@ -1414,17 +1414,17 @@
 \def\tabl_ntb_pass_two#1 #2 % meer in cellD
   {\d_tabl_ntb_width\zeropoint
    \scratchcounter\c_tabl_ntb_col
-   \!!counta\tabl_ntb_get_col{#1}{#2}\relax
-   \ifcase\!!counta\or
+   \scratchcounterone\tabl_ntb_get_col{#1}{#2}\relax
+   \ifcase\scratchcounterone\or
      \advance\d_tabl_ntb_width\dimexpr
        \tabl_ntb_get_wid\scratchcounter
      \relax
      \advance\scratchcounter\plusone
    \else
-     \dorecurse\!!counta
+     \dorecurse\scratchcounterone
        {\advance\d_tabl_ntb_width\dimexpr
           \tabl_ntb_get_wid\scratchcounter
-          \ifnum\recurselevel<\!!counta
+          \ifnum\recurselevel<\scratchcounterone
             +\d_tabl_ntb_columndistance
             +\tabl_ntb_get_dis\scratchcounter
           \fi
@@ -1441,36 +1441,36 @@
 \def\tabl_ntb_pass_three#1 #2 %
   {% height
    \dostarttagged\t!tablecell\empty
-   \!!counta \tabl_ntb_get_col{#1}{#2}\relax
-   \!!countb \tabl_ntb_get_row{#1}{#2}\relax
-   \!!heighta\tabl_ntb_get_ht {#1}{#2}\relax
-   \tablecellcolumns\!!counta % used later so don't adapt these
-   \tablecellrows   \!!countb % used later so don't adapt these
+   \scratchcounterone\tabl_ntb_get_col{#1}{#2}\relax
+   \scratchcountertwo\tabl_ntb_get_row{#1}{#2}\relax
+   \scratchheight\tabl_ntb_get_ht {#1}{#2}\relax
+   \tablecellcolumns\scratchcounterone % used later so don't adapt these
+   \tablecellrows   \scratchcountertwo % used later so don't adapt these
    \d_tabl_ntb_height\zeropoint
-   \ifnum\!!counta=\c_tabl_ntb_maximum_col\relax
+   \ifnum\scratchcounterone=\c_tabl_ntb_maximum_col\relax
      % case: nc=maxcolumns
    \else
      \scratchcounter#1\relax
-     \dorecurse\!!countb
+     \dorecurse\scratchcountertwo
        {\advance\d_tabl_ntb_height\tabl_ntb_get_hei\scratchcounter
         \advance\scratchcounter\plusone}%
-     \ifdim\d_tabl_ntb_height<\!!heighta\relax
-       \d_tabl_ntb_height\!!heighta
+     \ifdim\d_tabl_ntb_height<\scratchheight\relax
+       \d_tabl_ntb_height\scratchheight
      \fi
    \fi
    % width
    \d_tabl_ntb_width\zeropoint
    \scratchcounter\c_tabl_ntb_col
-   \ifcase\!!counta\or
+   \ifcase\scratchcounterone\or
      \advance\d_tabl_ntb_width\dimexpr
        \tabl_ntb_get_wid\scratchcounter
      \relax
      \advance\scratchcounter\plusone
    \else
-     \dorecurse\!!counta
+     \dorecurse\scratchcounterone
        {\advance\d_tabl_ntb_width\dimexpr
           \tabl_ntb_get_wid\scratchcounter
-          \ifnum\recurselevel<\!!counta
+          \ifnum\recurselevel<\scratchcounterone
             +\d_tabl_ntb_columndistance
             +\tabl_ntb_get_dis\scratchcounter
           \fi
@@ -1482,7 +1482,7 @@
       \dotagTABLEsignal % maybe we need to add some packaging in this case
       \tabl_ntb_get_txt{#1}{#2}%
    \egroup
-   \ifnum\!!counta=\c_tabl_ntb_maximum_col\relax
+   \ifnum\scratchcounterone=\c_tabl_ntb_maximum_col\relax
      % case: nc=maxcolumns
    \else
      \scratchdimen\tabl_ntb_get_hei{#1}%
@@ -1491,11 +1491,11 @@
      \ht\scratchbox\scratchdimen
    \fi
    \dp\scratchbox\zeropoint
-   \edef\!!stringa{\tabl_ntb_get_ref{#1}{#2}}%
-   \ifempty\!!stringa
+   \edef\scratchmacro{\tabl_ntb_get_ref{#1}{#2}}%
+   \ifempty\scratchmacro
      \box\scratchbox
    \else
-     \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
+     \normalexpanded{\directgotobox{\box\scratchbox}[\scratchmacro]}% to be checked
    \fi
    \dostoptagged} % right spot
 
@@ -1622,28 +1622,28 @@
 
 \def\tabl_ntb_stretch_widths % more variants, e.g. a max to \dimend
   {\ifcase\c_tabl_ntb_maximum_col\else % else division by zero
-     \!!dimend\zeropoint
-     \!!dimene\dimexpr
+     \scratchdimenfour\zeropoint
+     \scratchdimenfive\dimexpr
         \hsize
        -\d_tabl_ntb_leftmargindistance
        -\d_tabl_ntb_rightmargindistance
        +\d_tabl_ntb_columndistance
      \relax
      \dorecurse\c_tabl_ntb_maximum_col
-       {\advance\!!dimend\dimexpr
+       {\advance\scratchdimenfour\dimexpr
           \tabl_ntb_get_wid\recurselevel
         \relax
-        \advance\!!dimene\dimexpr
+        \advance\scratchdimenfive\dimexpr
           -\tabl_ntb_get_dis\recurselevel
           -\d_tabl_ntb_columndistance
         \relax}%
      \relax
      % distribute width (stretch)
-     \ifdim\!!dimend<\!!dimene
-       \advance\!!dimend-\!!dimene
-       \divide\!!dimend\c_tabl_ntb_maximum_col
+     \ifdim\scratchdimenfour<\scratchdimenfive
+       \advance\scratchdimenfour-\scratchdimenfive
+       \divide\scratchdimenfour\c_tabl_ntb_maximum_col
        \dorecurse\c_tabl_ntb_maximum_col
-         {\tabl_ntb_set_wid\recurselevel{\the\dimexpr\tabl_ntb_get_wid\recurselevel-\!!dimend\relax}}%
+         {\tabl_ntb_set_wid\recurselevel{\the\dimexpr\tabl_ntb_get_wid\recurselevel-\scratchdimenfour\relax}}%
      \fi
    \fi}
 
@@ -1683,26 +1683,26 @@
 
 \def\tabl_ntb_split_box
   {\resettsplit
-   \def\tsplitminimumfreelines{2}%
-   \def\tsplitminimumfreespace{\dimexpr\extratblsplitheight+\naturaltablelocalparameter\c!splitoffset\relax}%
-   \def\tsplitbeforeresult    {\beforeTABLEsplitbox}%
-   \def\tsplitafterresult     {\afterTABLEsplitbox}%
-   \def\tsplitafter           {\m_tabl_ntb_after_split}%
-   \def\tsplitbefore          {\m_tabl_ntb_before_split}% supported ?
-   \setbox\tsplitcontent\vbox{\tabl_ntb_flush_content}%
+   \c_split_minimum_free_lines\plustwo
+   \d_split_minimum_free_space\dimexpr\extratblsplitheight+\naturaltablelocalparameter\c!splitoffset\relax
+   \t_split_before_result{\beforeTABLEsplitbox}%
+   \t_split_after_result{\afterTABLEsplitbox}%
+   \t_split_after{\m_tabl_ntb_after_split}%
+   \t_split_before{\m_tabl_ntb_before_split}% not used (yet)
+   \setbox\b_split_content\vbox{\tabl_ntb_flush_content}%
    \ifmultipleTBLheads
      \dorecurse\c_tabl_ntb_n_of_head_lines
-       {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}% \vpack ?
+       {\setbox\scratchbox\vsplit\b_split_content to \lineheight
+        \setbox\b_split_head\vbox{\unvcopy\b_split_head\unvcopy\scratchbox}}% \vpack ?
      \dorecurse\c_tabl_ntb_n_of_next_lines
-       {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}% \vpack ?
+       {\setbox\scratchbox\vsplit\b_split_content to \lineheight
+        \setbox\b_split_next\vbox{\unvcopy\b_split_next\unvcopy\scratchbox}}% \vpack ?
    \fi
    \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
    \ifempty\p_spaceinbetween\else
      \blank[\p_spaceinbetween]%
    \fi
-   \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\tsplitresult}}%
+   \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\b_split_result}}%
    \handletsplit}
 
 % ! ! ! ! TODO: naast \postprocessTABLEsplitbox ook evt \postprocessTABLEbox voor niet split
@@ -1720,8 +1720,8 @@
 
 \def\tabl_ntb_check_widths_indeed#1%
   {\ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths B#1\fi
-   \!!counta\zerocount
-   \!!dimena\dimexpr
+   \scratchcounterone\zerocount
+   \scratchdimenone\dimexpr
      \hsize
     -\d_tabl_ntb_leftmargindistance
     -\d_tabl_ntb_rightmargindistance
@@ -1729,38 +1729,38 @@
    \relax
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_aut\recurselevel\relax
-      \advance\!!dimena\dimexpr
+      \advance\scratchdimenone\dimexpr
         -\tabl_ntb_get_dis\recurselevel
         -\d_tabl_ntb_columndistance
       \relax
       \ifdim\scratchdimen>\zeropoint\relax
-        \advance\!!dimena -\scratchdimen
+        \advance\scratchdimenone -\scratchdimen
       \else
         \scratchdimen\tabl_ntb_get_wid\recurselevel\relax
         \ifdim\scratchdimen>\d_tabl_ntb_maxwidth\relax
           \ifcase#1\else\tabl_ntb_let_wid\recurselevel\zeropoint\fi
-          \advance\!!counta \plusone
+          \advance\scratchcounterone \plusone
         \orelse\ifdim\scratchdimen>\zeropoint\relax
-          \advance\!!dimena -\scratchdimen
+          \advance\scratchdimenone -\scratchdimen
         \else
           % eigenlijk moet dit alleen als de kolom wordt overspannen door een
           % vorige, maw extra dubbele loop en status var
           \ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
-            \advance\!!counta \plusone % setting maxwidth to a large value also works
+            \advance\scratchcounterone \plusone % setting maxwidth to a large value also works
           \fi
         \fi
       \fi}%
    \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths M#1\fi
-   \ifcase\!!counta \else \divide\!!dimena \!!counta \fi
+   \ifcase\scratchcounterone \else \divide\scratchdimenone \scratchcounterone \fi
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
       \ifcase#1\relax
-        \ifdim\scratchdimen<\!!dimena  % take natural width
+        \ifdim\scratchdimen<\scratchdimenone  % take natural width
           \tabl_ntb_set_aut\recurselevel{\the\scratchdimen}%
         \fi
       \else
         \ifzeropt\scratchdimen % auto set width
-          \tabl_ntb_set_wid\recurselevel{\the\!!dimena}%
+          \tabl_ntb_set_wid\recurselevel{\the\scratchdimenone}%
         \fi
       \fi}%
    \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths E#1\fi}
@@ -1768,9 +1768,9 @@
 % todo: use scratchcounters, not !! ones
 
 \def\tabl_ntb_check_heights_one_indeed
-  {\!!countb\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax
+  {\scratchcountertwo\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax
     % check row span
-   \ifnum\!!countb>\plusone
+   \ifnum\scratchcountertwo>\plusone
      % current height in row
      \dimen0=\tabl_ntb_get_ht\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three
      % find nearest height in row
@@ -1778,8 +1778,8 @@
      \dorecurse\c_tabl_ntb_maximum_col
        {\ifnum\recurselevel=\c_tabl_ntb_current_col_three\else
           \ifcsname\tabl_ntb_row_pattern\c_tabl_ntb_current_row_three\recurselevel\endcsname
-            \!!countc=\tabl_ntb_get_row\c_tabl_ntb_current_row_three\recurselevel\relax
-            \ifnum\!!countc=\plusone
+            \scratchcounterthree\tabl_ntb_get_row\c_tabl_ntb_current_row_three\recurselevel\relax
+            \ifnum\scratchcounterthree=\plusone
               \dimen4=\tabl_ntb_get_ht\c_tabl_ntb_current_row_three\recurselevel\relax
               \ifdim\dimen2<\dimen4
                 \dimen2=\dimen4
@@ -1790,25 +1790,25 @@
      \c_tabl_ntb_current_row_four\c_tabl_ntb_current_row_three
      % calculate cummulative height
      \dimen4=\dimen2
-     \!!countc\c_tabl_ntb_current_row_three
-     \advance\!!countc\minusone
-     \dorecurse\!!countb
+     \scratchcounterthree\c_tabl_ntb_current_row_three
+     \advance\scratchcounterthree\minusone
+     \dorecurse\scratchcountertwo
        {\ifnum\c_tabl_ntb_current_row_four=\c_tabl_ntb_current_row_three\else
           \advance\dimen4 \tabl_ntb_get_hei\c_tabl_ntb_current_row_four
         \fi
-        \ifnum\recurselevel=\!!countb\else
-          \tabl_ntb_set_nob\!!countc
-          \advance\!!countc\plusone
+        \ifnum\recurselevel=\scratchcountertwo\else
+          \tabl_ntb_set_nob\scratchcounterthree
+          \advance\scratchcounterthree\plusone
        \fi
         \advance\c_tabl_ntb_current_row_four\plusone}%
      % distribute overshoot equally
      \ifdim\dimen2>\zeropoint % new: test on natural-003
        \ifdim\dimen4<\dimen0
          \advance\dimen0 -\dimen4
-         \divide\dimen0 \!!countb
+         \divide\dimen0 \scratchcountertwo
          \c_tabl_ntb_current_row_four\c_tabl_ntb_current_row_three
          \tabl_ntb_set_hei\c_tabl_ntb_current_row_three{\the\dimen2}%
-         \dorecurse\!!countb
+         \dorecurse\scratchcountertwo
            {\dorecurse\c_tabl_ntb_maximum_col
               {\ifnum\recurselevel=\c_tabl_ntb_current_col_three\else
                  \scratchdimen\dimexpr\tabl_ntb_get_ht\c_tabl_ntb_current_row_four\recurselevel+\dimen0\relax

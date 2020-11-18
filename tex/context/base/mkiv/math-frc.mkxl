@@ -278,45 +278,128 @@
 
 % todo: store first state and reuse second time
 
+% \def\math_fraction_inner_normal#1#2%
+%   {\Ustack{%
+%      {%
+%        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}%
+%        \math_frac_command
+%        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+%
+% \def\math_fraction_outer_normal#1#2%
+%   {\Ustack{%
+%      \usemathstyleparameter\mathfractionparameter
+%      {%
+%        {\m_fractions_strut_top#1}%
+%        \math_frac_command
+%        {\m_fractions_strut_bot#2}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+%
+% \def\math_fraction_both_normal#1#2%
+%   {\Ustack{%
+%      \usemathstyleparameter\mathfractionparameter
+%      {%
+%        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
+%        \math_frac_command
+%        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+%
+% \def\math_fraction_inner_margin#1#2%
+%   {\Ustack{%
+%      {%
+%        {\kern\d_math_fraction_margin
+%         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
+%         \kern\d_math_fraction_margin}%
+%        \math_frac_command
+%        {\kern\d_math_fraction_margin
+%         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
+%         \kern\d_math_fraction_margin}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+%
+% \def\math_fraction_outer_margin#1#2%
+%   {\Ustack{%
+%      \usemathstyleparameter\mathfractionparameter
+%      {%
+%        {\kern\d_math_fraction_margin
+%         \m_fractions_strut_top#1%
+%         \kern\d_math_fraction_margin}%
+%        \math_frac_command
+%        {\kern\d_math_fraction_margin
+%         \m_fractions_strut_bot#2%
+%         \kern\d_math_fraction_margin}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+%
+% \def\math_fraction_both_margin#1#2%
+%   {\Ustack{%
+%      \usemathstyleparameter\mathfractionparameter
+%      {%
+%        {\kern\d_math_fraction_margin
+%         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
+%         \kern\d_math_fraction_margin}%
+%        \math_frac_command
+%        {\kern\d_math_fraction_margin
+%         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
+%         \kern\d_math_fraction_margin}%
+%      }%
+%    }%
+%    \math_frac_wrapup}
+
+\def\math_frac_command_u
+  {\clf_umathfraction
+     {\mathfractionparameter\c!rule}%
+     \ifx\p_math_fraction_fences\empty
+       \mathfractionparameter\c!left \space
+       \mathfractionparameter\c!right\space
+     \else
+       \math_frac_no_delim\space
+       \math_frac_no_delim\space
+     \fi
+     \dimexpr\mathfractionparameter\c!rulethickness\relax
+   \relax}
+
 \def\math_fraction_inner_normal#1#2%
-  {\Ustack{%
-     {%
+  {\Ustack{% forces num style
+     \math_frac_command_u
        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}%
-       \math_frac_command
        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
-     }%
    }%
    \math_frac_wrapup}
 
 \def\math_fraction_outer_normal#1#2%
-  {\Ustack{%
+  {\Ustack{% forces num style
      \usemathstyleparameter\mathfractionparameter
-     {%
+     \math_frac_command_u
        {\m_fractions_strut_top#1}%
-       \math_frac_command
        {\m_fractions_strut_bot#2}%
-     }%
    }%
    \math_frac_wrapup}
 
 \def\math_fraction_both_normal#1#2%
-  {\Ustack{%
+  {\Ustack{% forces num style
      \usemathstyleparameter\mathfractionparameter
-     {%
+     \math_frac_command_u
        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
-       \math_frac_command
        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
-     }%
    }%
    \math_frac_wrapup}
 
 \def\math_fraction_inner_margin#1#2%
   {\Ustack{%
      {%
+       \math_frac_command_u
        {\kern\d_math_fraction_margin
         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
         \kern\d_math_fraction_margin}%
-       \math_frac_command
        {\kern\d_math_fraction_margin
         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
         \kern\d_math_fraction_margin}%
@@ -328,10 +411,10 @@
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
+       \math_frac_command_u
        {\kern\d_math_fraction_margin
         \m_fractions_strut_top#1%
         \kern\d_math_fraction_margin}%
-       \math_frac_command
        {\kern\d_math_fraction_margin
         \m_fractions_strut_bot#2%
         \kern\d_math_fraction_margin}%
@@ -343,10 +426,10 @@
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
+       \math_frac_command_u
        {\kern\d_math_fraction_margin
         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
         \kern\d_math_fraction_margin}%
-       \math_frac_command
        {\kern\d_math_fraction_margin
         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
         \kern\d_math_fraction_margin}%

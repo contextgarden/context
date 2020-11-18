@@ -393,6 +393,7 @@ return {
   "outputbox",
   "overloaded",
   "overloadmode",
+  "parametercount",
   "parattr",
   "pardirection",
   "permanent",

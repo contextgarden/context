@@ -59,9 +59,9 @@
 
 % presets are global and are currently defined in lua
 
-\appendtoks
-    \setuevalue\currentscript{\setscript[\currentscript]}%
-\to \everydefinescript
+% \appendtoks
+%     \setuevalue\currentscript{\setscript[\currentscript]}%
+% \to \everydefinescript
 
 \unexpanded\def\scripts_basics_set
   {\clf_setscript{\currentscript}{\scriptparameter\c!method}{\scriptparameter\c!preset}}
@@ -96,7 +96,7 @@
 % \def\scripts_basics_set_splitter_list[#1][#2]%
 %   {\ctxcommand{setscriptsplitterlist("#1","#2")}
 
-% \setscript[hangul] \hangul \startscript[hangul]
+% \setscript[hangul] \startscript[hangul]
 
 \definescript [hangul]   [\c!method=hangul]
 \definescript [hanzi]    [\c!method=hanzi]

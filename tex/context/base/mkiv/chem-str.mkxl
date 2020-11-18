@@ -111,8 +111,8 @@
 
 % size (small medium big)
 
-\edef\chemicaltoplocation{t}
-\edef\chemicalbotlocation{b}
+% \edef\chemicaltoplocation{t}
+% \edef\chemicalbotlocation{b}
 
 \permanent\protected\def\chemicaltext#1%
   {\mathematics
@@ -248,9 +248,9 @@
 % kind of compatible, but text sizes instead of math sizes (i.e. tx is larger than scriptsize)
 
 \appendtoks
-   \edef\chemicalbodyfont{\chemicalparameter\c!bodyfont}% public?
-   \ifempty\chemicalbodyfont
-     \switchtobodyfont[\chemicalbodyfont]%
+   \edef\m_bodyfont{\chemicalparameter\c!bodyfont}%
+   \ifempty\m_bodyfont
+     \switchtobodyfont[\m_bodyfont]%
    \fi
    \getvalue{\??chemicalsize\chemicalparameter\c!size}%
 % \to \everystructurechemical
@@ -351,14 +351,14 @@
    \box\scratchboxtwo
    \egroup}
 
-\protected\def\chemicalleft#1#2% redundant boxes thanks to visual
+\permanent\protected\def\chemicalleft#1#2% redundant boxes thanks to visual
   {\hbox\bgroup % hpack ?
    \setstrut
    \llap{\chem_box_visual_nop{\strut#1}}%
    \chem_box_visual_nop{\strut#2}%
    \egroup}
 
-\protected\def\chemicalright#1#2% redundant boxes thanks to visual
+\permanent\protected\def\chemicalright#1#2% redundant boxes thanks to visual
   {\hbox\bgroup % hpack ?
    \setstrut
    \chem_box_visual_yes{\strut#2}%

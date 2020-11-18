@@ -161,7 +161,7 @@ return {
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         --
-        "normalizelinemodecode", "indentskipmodecode", "swaphangindentmodecode", "swapparskipmodecode", "breakafterdirmodecode",
+        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
         --
         "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
         "noexpansioncode", "noprotrusioncode",
@@ -256,6 +256,10 @@ return {
         "scratchtoks", "globalscratchtoks", "privatescratchtoks",
         "scratchbox", "globalscratchbox", "privatescratchbox",
         "scratchmacro", "scratchmacroone", "scratchmacrotwo",
+        --
+        "scratchconditiontrue", "scratchconditionfalse", "ifscratchcondition",
+        "scratchconditiononetrue", "scratchconditiononefalse", "ifscratchconditionone",
+        "scratchconditiontwotrue", "scratchconditiontwofalse", "ifscratchconditiontwo",
         --
         "globalscratchcounterone", "globalscratchcountertwo", "globalscratchcounterthree",
         --

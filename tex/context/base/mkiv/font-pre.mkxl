@@ -1,0 +1,999 @@
+%D \module
+%D   [       file=font-pre,
+%D        version=2012.01.04, % moved from font-ini
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Predefined,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Predefined}
+
+\unprotect
+
+%D A basic set of features is defined here.
+
+% beware, base mode + dynamics can give weird effects
+
+% frac : with numr dnom
+%
+% vkrn valt vert vrt2 vpal : when vertical
+%
+% rtlm rtla : in r2l runs
+% ltrm ltra : in l2r runs
+%
+% rvrn : variable fonts
+%
+% rtbd lfbd : opbd
+%
+% rkrf rphf vatu vjmo tjmo rclt psts pstf ljmo haln
+% pres pref nukt
+% abvs abvm blwm blws cjct blwf akhn (indic)
+% half
+% abvf cfar (khmer)
+%
+% ccmp locl calt clig liga rlig
+%
+% mkmk mark kern (palt pwid) curs (by choice but some fonts need it)
+%
+% init medi isol fina (unicode)
+% fin3 fin2 med2 : syriac
+%
+% cpsp : percentage spacing (todo)
+%
+% dtls flac :math
+
+\definefontfeature
+  [always]
+  [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
+   script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
+   autoscript=position,
+   autolanguage=position,
+   kern=yes,     % consider skipping the base passes when no base mode is used
+   mark=yes,
+   mkmk=yes,
+   curs=yes]
+
+\definefontfeature
+  [default]
+  [always]
+  [liga=yes,
+% ccmp=yes, % maybe too
+% locl=yes, % maybe too
+% calt=yes, % maybe too
+% clig=yes, % maybe too
+% rlig=yes, % maybe too
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature
+  [original] % a clone of default so we can revert
+  [default]
+
+\definefontfeature
+  [smallcaps]
+  [always]
+  [smcp=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature
+  [oldstyle]
+  [always]
+  [onum=yes,
+   liga=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature
+  [inlinenumbers]
+  [pnum=yes,
+   tnum=no]
+
+\definefontfeature
+  [tabularnumbers]
+  [tnum=yes,
+   pnum=no]
+
+\definefontfeature
+  [oldstylenumbers]
+  [onum=yes]
+
+\definefontfeature
+  [zero]
+  [zero=yes]
+
+% \definefontfeature
+%   [newstyle]
+%   [onum=no]
+
+\definefontfeature % == default unless redefined
+  [ligatures]
+  [always]
+  [liga=yes,
+   tlig=yes,
+   trep=yes]
+
+\definefontfeature
+  [letterspacing]
+  [liga=no,
+   rlig=no,
+   clig=no,
+   dlig=no,
+   ccmp=yes,
+   keepligatures=auto]
+
+\definefontfeature % can be used for type1 fonts
+  [complete]
+  [always]
+  [compose=yes,
+   liga=yes,
+% ccmp=yes,
+% locl=yes,
+% calt=yes,
+% clig=yes,
+% rlig=yes,
+   tlig=yes,
+   trep=yes]
+
+\definefontfeature
+  [none]
+  [mode=none,
+   features=no]
+
+\definefontfeature
+  [semitic-complete]
+  [mode=node,analyze=yes,language=dflt,ccmp=yes,
+   autoscript=position,autolanguage=position,
+   init=yes,medi=yes,fina=yes,isol=yes,
+ % fin2=yes,fin3=yes,med2=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
+
+\definefontfeature
+  [semitic-simple]
+  [mode=node,analyze=yes,language=dflt,ccmp=yes,
+   autoscript=position,autolanguage=position,
+   init=yes,medi=yes,fina=yes,isol=yes,
+ % fin2=yes,fin3=yes,med2=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   rlig=yes,calt=yes]
+
+\definefontfeature
+  [arabic]
+  [semitic-complete]
+  [script=arab]
+
+\definefontfeature
+  [syriac]
+  [arabic]
+  [fin2=yes,fin3=yes,med2=yes]
+
+\definefontfeature
+  [reordercombining]
+  [reordercombining=yes]
+
+\definefontfeature
+  [hebrew]
+  [semitic-complete]
+  [script=hebr,
+   reordercombining=yes] % seems to work best with reasonable fonts
+
+\definefontfeature
+  [simplearabic]
+  [semitic-simple]
+  [script=arab]
+
+\definefontfeature
+  [simplehebrew]
+  [semitic-simple]
+  [script=hebr]
+
+% indic
+
+\definefontfeature
+  [indic-common]
+  [mode=node,
+   language=dflt,
+   % localized
+   locl=yes,
+   % positioning
+   kern=yes,
+   dist=yes,
+   % above/below base marks
+   abvm=yes,
+   blwm=yes,
+   % basic shaping
+   nukt=yes,
+   akhn=yes,
+   rphf=yes,
+   % presentation
+   pres=yes,
+   abvs=yes,
+   blws=yes,
+   psts=yes,
+   haln=yes,
+   calt=yes]
+
+\definefontfeature
+  [devanagari-one]
+  [indic-common]
+  [script=deva,
+   % basic shaping
+   rkrf=yes,
+   blwf=yes,
+   half=yes,
+   vatu=yes,
+   cjct=yes]
+
+\definefontfeature
+  [bengali-one]
+  [indic-common]
+  [script=beng,
+   % basic shaping
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   vatu=yes,
+   cjct=yes,
+   % presentation
+   init=yes]
+
+\definefontfeature
+  [gujarati-one]
+  [indic-common]
+  [script=gujr,
+   % basic shaping
+   rkrf=yes,
+   blwf=yes,
+   half=yes,
+   vatu=yes,
+   cjct=yes]
+
+\definefontfeature
+  [gurmukhi-one]
+  [indic-common]
+  [script=guru,
+   % basic shaping
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   vatu=yes,
+   cjct=yes]
+
+\definefontfeature
+  [kannada-one]
+  [indic-common]
+  [script=knda,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
+  [malayalam-one]
+  [indic-common]
+  [script=mlym,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
+  [oriya-one]
+  [indic-common]
+  [script=orya,
+   % basic shaping
+   blwf=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
+  [tamil-one]
+  [indic-common]
+  [script=taml,
+   % basic shaping
+   pref=yes,
+   half=yes]
+
+\definefontfeature
+  [telugu-one]
+  [indic-common]
+  [script=telu,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature [devanagari-two] [devanagari-one] [script=dev2]
+\definefontfeature [bengali-two]    [bengali-one]    [script=bng2]
+\definefontfeature [gujarati-two]   [gujarati-one]   [script=gjr2]
+\definefontfeature [gurmukhi-two]   [gurmukhi-one]   [script=gur2]
+\definefontfeature [kannada-two]    [kannada-one]    [script=knd2]
+\definefontfeature [malayalam-two]  [malayalam-one]  [script=mlm2]
+\definefontfeature [oriya-two]      [oriya-one]      [script=ory2]
+\definefontfeature [tamil-two]      [tamil-one]      [script=tml2]
+\definefontfeature [telugu-two]     [telugu-one]     [script=tel2]
+
+% mongolian
+
+\definefontfeature
+  [mongolian]
+  [default]
+  [script=mong,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   rlig=yes,rclt=yes,calt=yes,
+  %dlig=yes,cswh=yes, % optional
+   mset]
+
+% tibetan
+
+\definefontfeature
+  [tibetan]
+  [always]
+  [script=tibt,
+   language=dflt,
+   locl=yes,
+   ccmp=yes,
+   abvs=yes,
+   blws=yes,
+   calt=yes,
+   liga=yes,
+   abvm=yes,
+   blwm=yes]
+
+% cjk
+
+\definefontfeature
+  [jamoforms]
+  [ljmo=yes,
+   tjmo=yes,
+   vjmo=yes]
+
+% \definefontfeature
+%   [japanese]
+%   [default]
+%   [language=jan]
+
+% \definefontfeature
+%   [simplified-chinese]
+%   [default]
+%   [language=zhs]
+
+% \definefontfeature
+%   [traditional-chinese]
+%   [default]
+%   [language=zht]
+
+% \definefontfeature
+%   [chinese]
+%   [simplified-chinese]
+
+% \definefontfeature
+%   [korean]
+%   [default]
+%   [language=kor]
+
+% symbols:
+
+\definefontfeature
+  [dingbats]
+  [mode=base,
+   goodies=dingbats,
+   unicoding=yes]
+
+% math:
+
+\definefontfeature
+  [mathematics]
+  [mode=base,
+   kern=yes,
+ % liga=yes, % makes no sense
+ % tlig=yes, % makes no sense
+ % trep=yes, % makes no sense
+   mathnolimitsmode={0,800}, % this looks okay on the average font
+   mathalternates=yes,
+   mathitalics=yes, % we pass them
+   mathdimensions=all,
+ % mathgaps=yes,
+   language=dflt,
+   script=math]
+
+\ifdefined\mathnolimitsmode
+    \mathnolimitsmode\plusone % font driven (only opentype)
+\fi
+
+\ifdefined\mathitalicsmode
+    \mathitalicsmode\plusone   % simple noads become zero
+  % \mathitalicsmode\plustwo   % idem but inner is kept (for testing)
+\fi
+
+% \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
+
+\definefontfeature
+  [mathematics-l2r]
+  [mathematics]
+  []
+
+% \definefontfeature
+%   [mathematics-r2l]
+%   [mathematics]
+%   [language=ara,
+%    rtlm=yes,
+%    locl=yes]
+
+\definefontfeature
+  [mathematics-r2l]
+  [mathematics]
+  [rtlm=yes,
+   locl=yes]
+
+\definefontfeature[virtualmath]              [mathematics]      % downward compatibility
+\definefontfeature[virtualmath-l2r]          [mathematics-l2r]  % downward compatibility
+\definefontfeature[virtualmath-r2l]          [mathematics-r2l]  % downward compatibility
+
+\definefontfeature[math-text]                [mathematics]      [ssty=no]
+\definefontfeature[math-script]              [mathematics]      [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript]        [mathematics]      [ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-l2r]            [mathematics-l2r]  [ssty=no]
+\definefontfeature[math-script-l2r]          [mathematics-l2r]  [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-l2r]    [mathematics-l2r]  [ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-r2l]            [mathematics-r2l]  [ssty=no]
+\definefontfeature[math-script-r2l]          [mathematics-r2l]  [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-r2l]    [mathematics-r2l]  [ssty=2,mathsize=yes]
+
+\definefontfeature[math-nostack-text]        [math-text]        [nostackmath=yes]
+\definefontfeature[math-nostack-script]      [math-script]      [nostackmath=yes]
+\definefontfeature[math-nostack-scriptscript][math-scriptscript][nostackmath=yes]
+
+% \definefontfeature[mathtext]         [math-text]
+% \definefontfeature[mathscript]       [math-script]
+% \definefontfeature[mathscriptscript] [math-scriptscript]
+
+\definefontfeature
+  [missing]
+  [missing=yes]
+
+%D Nice to have too:
+
+\definefontfeature
+  [quality]
+  [expansion=quality,
+   protrusion=quality]
+
+\definefontfeature
+  [fullprotrusion]
+  [protrusion=pure]
+
+\definefontfeature
+  [slanted]
+  [slant=.2]
+
+% \definefontfeature
+%   [boldened]
+%   [extend=1.2]
+
+%D Neat:
+
+% By eye:
+%
+% \definefontfeature[boldened-10][effect={width=0.10,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.125,extend=1.025,squeeze=0.99250}]
+% \definefontfeature[boldened-15][effect={width=0.15,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.250,extend=1.050,squeeze=0.98750}]
+% \definefontfeature[boldened-20][effect={width=0.20,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.375,extend=1.075,squeeze=0.98125}]
+% \definefontfeature[boldened-30][effect={width=0.30,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.500,extend=1.100,squeeze=0.97500}]
+%
+% By calculation:
+%
+% \definefontfeature[boldened-10][effect={width=0.10,delta=1.0,hdelta=0.02500,ddelta=0.02500,vshift=0.02500,extend=1.050,squeeze=0.99500}]
+% \definefontfeature[boldened-15][effect={width=0.15,delta=1.0,hdelta=0.05625,ddelta=0.05625,vshift=0.05625,extend=1.075,squeeze=0.99250}]
+% \definefontfeature[boldened-20][effect={width=0.20,delta=1.0,hdelta=0.10000,ddelta=0.10000,vshift=0.10000,extend=1.100,squeeze=0.99000}]
+% \definefontfeature[boldened-30][effect={width=0.30,delta=1.0,hdelta=0.22500,ddelta=0.22500,vshift=0.22500,extend=1.150,squeeze=0.98500}]
+%
+% So we can do this:
+
+\definefontfeature[boldened-10][effect={width=0.10,auto=yes}]
+\definefontfeature[boldened-15][effect={width=0.15,auto=yes}]
+\definefontfeature[boldened-20][effect={width=0.20,auto=yes}]
+\definefontfeature[boldened-25][effect={width=0.25,auto=yes}]
+\definefontfeature[boldened-30][effect={width=0.30,auto=yes}]
+
+\definefontfeature
+  [boldened]
+  [boldened-30]
+
+%D Emoji etc:
+
+\definefontfeature[bandw:overlay][ccmp=yes,dist=yes]
+\definefontfeature[color:overlay][ccmp=yes,dist=yes,colr=yes]
+%definefontfeature[bandw:svg]    [ccmp=yes,dist=yes]
+\definefontfeature[color:svg]    [ccmp=yes,dist=yes,svg=yes]
+%definefontfeature[bandw:bitmap] [ccmp=yes,dist=yes,sbix=yes]
+\definefontfeature[color:bitmap] [ccmp=yes,dist=yes,sbix=yes] % also cblc
+
+% Plus an automatic one:
+
+\definefontfeature[color]        [ccmp=yes,dist=yes,color=auto]
+
+%D We define some colors that are used in tracing (for instance \OPENTYPE\
+%D features). We cannot yet inherit because no colors are predefined.
+
+\definecolor[font:init][r=.75]
+\definecolor[font:medi][g=.75]
+\definecolor[font:fina][b=.75]
+\definecolor[font:isol][r=.75,g=.75] % [y=.75]
+\definecolor[font:mark][r=.75,b=.75] % [m=.75]
+\definecolor[font:rest][b=.75,g=.75] % [c=.75]
+
+\definecolor[font:0] [s=1]
+\definecolor[font:1] [r=.75]
+\definecolor[font:2] [g=.75]
+\definecolor[font:3] [b=.75]
+\definecolor[font:4] [r=.75,g=.75]
+\definecolor[font:5] [r=.75,b=.75]
+\definecolor[font:6] [b=.75,g=.75]
+\definecolor[font:7] [r=.75]
+\definecolor[font:8] [g=.75]
+\definecolor[font:9] [b=.75]
+
+\definecolor[f:r:t][a=1,t=.25,r=1]
+\definecolor[f:g:t][a=1,t=.25,g=1]
+\definecolor[f:b:t][a=1,t=.25,b=1]
+\definecolor[f:c:t][a=1,t=.25,c=1]
+\definecolor[f:m:t][a=1,t=.25,m=1]
+\definecolor[f:y:t][a=1,t=.25,y=1]
+\definecolor[f:k:t][a=1,t=.25,s=0]
+\definecolor[f:s:t][a=1,t=.25,s=0]
+
+\definepalet % weird place
+  [layout]
+  [grid=trace:dr,
+   page=trace:dg,
+   profile=f:s:t,
+   one=f:y:t,
+   mix=f:b:t]
+
+%D Now we're up to some definitions.
+
+\definebodyfontenvironment
+  [\s!default]
+  [        \s!text=1.0,
+         \s!script=0.7,
+   \s!scriptscript=0.5,
+              \s!a=1.200,
+              \s!b=1.440,
+              \s!c=1.728,
+              \s!d=2.074,
+                 *=\font_currentfontscale, % wildcard
+              \s!x=0.8,
+             \s!xx=0.6,
+            \v!big=1.2,
+          \v!small=0.8,
+ \c!interlinespace=,
+             \s!em=\v!slanted]
+
+\definebodyfontenvironment
+  [20.7pt]
+  [        \s!text=20.7pt,
+         \s!script=\!!fourteenpointfour,
+   \s!scriptscript=\!!twelvepoint,
+              \s!x=17.3pt,
+             \s!xx=\!!fourteenpointfour,
+            \v!big=20.7pt,    % !!!!
+          \v!small=17.3pt]
+
+\definebodyfontenvironment
+  [17.3pt]
+  [        \s!text=17.3pt,
+         \s!script=\!!twelvepoint,
+   \s!scriptscript=\!!tenpoint,
+              \s!x=\!!fourteenpointfour,
+             \s!xx=\!!twelvepoint,
+            \v!big=20.7pt,
+          \v!small=\!!fourteenpointfour]
+
+\definebodyfontenvironment
+  [\!!fourteenpointfour]
+  [        \s!text=\!!fourteenpointfour,
+         \s!script=\!!elevenpoint,
+   \s!scriptscript=\!!ninepoint,
+              \s!x=\!!twelvepoint,
+             \s!xx=\!!tenpoint,
+            \v!big=17.3pt,
+          \v!small=\!!twelvepoint]
+
+\definebodyfontenvironment
+  [\!!twelvepoint]
+  [        \s!text=\!!twelvepoint,
+         \s!script=\!!ninepoint,
+   \s!scriptscript=\!!sevenpoint,
+              \s!x=\!!tenpoint,
+             \s!xx=\!!eightpoint,
+            \v!big=\!!fourteenpointfour,
+          \v!small=\!!tenpoint]
+
+\definebodyfontenvironment
+  [\!!elevenpoint]
+  [        \s!text=\!!elevenpoint,
+         \s!script=\!!eightpoint,
+   \s!scriptscript=\!!sixpoint,
+              \s!x=\!!ninepoint,
+             \s!xx=\!!sevenpoint,
+            \v!big=\!!twelvepoint,
+          \v!small=\!!ninepoint]
+
+\definebodyfontenvironment
+  [\!!tenpoint]
+  [        \s!text=\!!tenpoint,
+         \s!script=\!!sevenpoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!eightpoint,
+             \s!xx=\!!sixpoint,
+            \v!big=\!!twelvepoint,
+          \v!small=\!!eightpoint]
+
+\definebodyfontenvironment
+  [\!!ninepoint]
+  [        \s!text=\!!ninepoint,
+         \s!script=\!!sevenpoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!sevenpoint,
+             \s!xx=\!!fivepoint,
+            \v!big=\!!elevenpoint,
+          \v!small=\!!sevenpoint]
+
+\definebodyfontenvironment
+  [\!!eightpoint]
+  [        \s!text=\!!eightpoint,
+         \s!script=\!!sixpoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!sixpoint,
+             \s!xx=\!!fivepoint,
+            \v!big=\!!tenpoint,
+          \v!small=\!!sixpoint]
+
+\definebodyfontenvironment
+  [\!!sevenpoint]
+  [        \s!text=\!!sevenpoint,
+         \s!script=\!!sixpoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!sixpoint,
+             \s!xx=\!!fivepoint,
+            \v!big=\!!ninepoint,
+          \v!small=\!!fivepoint]
+
+\definebodyfontenvironment
+  [\!!sixpoint]
+  [        \s!text=\!!sixpoint,
+         \s!script=\!!fivepoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!fivepoint,
+             \s!xx=\!!fivepoint,
+            \v!big=\!!eightpoint,
+          \v!small=\!!fivepoint]
+
+\definebodyfontenvironment
+  [\!!fivepoint]
+  [        \s!text=\!!fivepoint,
+         \s!script=\!!fivepoint,
+   \s!scriptscript=\!!fivepoint,
+              \s!x=\!!fivepoint,
+             \s!xx=\!!fivepoint,
+            \v!big=\!!sevenpoint,
+          \v!small=\!!fivepoint]
+
+\definebodyfontenvironment
+  [\!!fourpoint]
+  [        \s!text=\!!fourpoint,
+         \s!script=\!!fourpoint,
+   \s!scriptscript=\!!fourpoint,
+              \s!x=\!!fourpoint,
+             \s!xx=\!!fourpoint,
+            \v!big=\!!sixpoint,
+          \v!small=\!!fourpoint]
+
+\definebodyfontswitch [fourteenpointfour] [\!!fourteenpointfour]
+\definebodyfontswitch [twelvepoint]       [\!!twelvepoint]
+\definebodyfontswitch [elevenpoint]       [\!!elevenpoint]
+\definebodyfontswitch [tenpoint]          [\!!tenpoint]
+\definebodyfontswitch [ninepoint]         [\!!ninepoint]
+\definebodyfontswitch [eightpoint]        [\!!eightpoint]
+\definebodyfontswitch [sevenpoint]        [\!!sevenpoint]
+\definebodyfontswitch [sixpoint]          [\!!sixpoint]
+\definebodyfontswitch [fivepoint]         [\!!fivepoint]
+\definebodyfontswitch [fourpoint]         [\!!fourpoint]
+
+%D So far.
+
+\definefontstyle [\s!hw] [\s!hw]
+\definefontstyle [\s!cg] [\s!cg]
+
+\definefontstyle [\v!roman,\v!serif,\v!regular]    [\s!rm]
+\definefontstyle [\v!sansserif,\v!sans,\v!support] [\s!ss]
+\definefontstyle [\v!teletype,\v!type,\v!mono]     [\s!tt]
+\definefontstyle [\v!handwritten]                  [\s!hw]
+\definefontstyle [\v!calligraphic]                 [\s!cg]
+\definefontstyle [\v!math,\v!mathematics]          [\s!mm]
+
+\definefontalternative[\s!tf]
+\definefontalternative[\s!bf]
+\definefontalternative[\s!it]
+\definefontalternative[\s!sl]
+\definefontalternative[\s!bs]
+\definefontalternative[\s!bi]
+\definefontalternative[\s!sc]
+
+\definefontsize[\s!a] \definefontsize[\s!b]
+\definefontsize[\s!c] \definefontsize[\s!d]
+
+\definealternativestyle [\v!mediaeval]                              [\os]    []
+\definealternativestyle [\v!normal]                                 [\tf]    []
+\definealternativestyle [\v!bold]                                   [\bf]    []
+\definealternativestyle [\v!type]                                   [\tt]    []
+\definealternativestyle [\v!mono]                                   [\tt]    []
+\definealternativestyle [\v!slanted]                                [\sl]    []
+\definealternativestyle [\v!italic]                                 [\it]    []
+\definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs]    []
+\definealternativestyle [\v!bolditalic,\v!italicbold]               [\bi]    []
+
+\definealternativestyle [\v!small,\v!smallnormal]                   [\setsmallbodyfont\tf] []
+\definealternativestyle [\v!smallbold]                              [\setsmallbodyfont\bf] []
+\definealternativestyle [\v!smalltype]                              [\setsmallbodyfont\tt] []
+\definealternativestyle [\v!smallitalic,\v!smallslanted]            [\setsmallbodyfont\sl] []
+\definealternativestyle [\v!smallboldslanted,\v!smallslantedbold]   [\setsmallbodyfont\bs] []
+\definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]     [\setsmallbodyfont\bi] []
+
+\definealternativestyle [\v!bigger]                                 [\setbigbodyfont  \tf] []
+\definealternativestyle [\v!smaller]                                [\setsmallbodyfont\tf] []
+
+\definealternativestyle [\v!sans,\v!sansserif]                      [\ss]
+\definealternativestyle [\v!roman,\v!serif,\v!regular]              [\rm]
+\definealternativestyle [\v!handwritten]                            [\hw]
+\definealternativestyle [\v!calligraphic]                           [\cg]
+
+\definealternativestyle [\v!sansnormal]  [\ss\tf] []
+\definealternativestyle [\v!sansbold]    [\ss\bf] []
+\definealternativestyle [\v!serifnormal] [\rm\tf] []
+\definealternativestyle [\v!serifbold]   [\rm\bf] []
+\definealternativestyle [\v!mononormal]  [\tt\tf] []
+\definealternativestyle [\v!monobold]    [\tt\bf] []
+
+\definealternativestyle [typeface]    [\typeface]    [] % no translation here (quite basic)
+\definealternativestyle [boldface]    [\boldface]    []
+\definealternativestyle [slantedface] [\slantedface] []
+\definealternativestyle [italicface]  [\italicface]  []
+\definealternativestyle [swapface]    [\swapface]    []
+
+\definealternativestyle [emphasize]   [\em]          [\em] % new
+
+% For Alan:
+
+\definealternativestyle
+  [\v!camel]
+  [{\setcharactercasing[\v!camel]}]
+  [{\setcharactercasing[\v!camel]}]
+
+% % maybe we need interface neutral as well (for use in cld):
+%
+% \letcscsname\mediaeval       \csname\v!mediaeval       \endcsname
+% \letcscsname\normal          \csname\v!normal          \endcsname
+% \letcscsname\bold            \csname\v!bold            \endcsname
+% \letcscsname\mono            \csname\v!mono            \endcsname
+% \letcscsname\slanted         \csname\v!slanted         \endcsname
+% \letcscsname\italic          \csname\v!italic          \endcsname
+% \letcscsname\boldslanted     \csname\v!boldslanted     \endcsname
+% \letcscsname\slantedbold     \csname\v!slantedbold     \endcsname
+% \letcscsname\bolditalic      \csname\v!bolditalic      \endcsname
+% \letcscsname\italicbold      \csname\v!italicbold      \endcsname
+%
+% \letcscsname\small           \csname\v!small           \endcsname
+% \letcscsname\smallnormal     \csname\v!smallnormal     \endcsname
+% \letcscsname\smallbold       \csname\v!smallbold       \endcsname
+% \letcscsname\smalltype       \csname\v!smalltype       \endcsname
+% \letcscsname\smallslanted    \csname\v!smallslanted    \endcsname
+% \letcscsname\smallboldslanted\csname\v!smallboldslanted\endcsname
+% \letcscsname\smallslantedbold\csname\v!smallslantedbold\endcsname
+% \letcscsname\smallbolditalic \csname\v!smallbolditalic \endcsname
+% \letcscsname\smallitalicbold \csname\v!smallitalicbold \endcsname
+%
+% \letcscsname\bigger          \csname\v!bigger          \endcsname
+% \letcscsname\smaller         \csname\v!smaller         \endcsname
+%
+% \letcscsname\sans            \csname\v!sans            \endcsname
+% \letcscsname\sansserif       \csname\v!sansserif       \endcsname
+% \letcscsname\sansbold        \csname\v!sansbold        \endcsname
+
+%D We can go on and on and on:
+%D
+%D \starttyping
+%D \setupbodyfontenvironment[default][p=0.8,q=0.6]
+%D \definefontsize[p]
+%D \definefontsize[q]
+%D \stoptyping
+
+%D Slow but handy:
+
+\definealternativestyle [\v!smallbodyfont] [\setsmallbodyfont] []
+\definealternativestyle [\v!bigbodyfont]   [\setbigbodyfont]   []
+
+%D We treat {\sc Small Caps} and \cap {Pseudo Caps} a bit different. We also provide
+%D an \WORD {uppercase} style.
+
+\definealternativestyle [\v!WORD]    [{\setcharactercasing[\v!WORD   ]}] [{\setcharactercasing[\v!WORD   ]}]
+\definealternativestyle [\v!word]    [{\setcharactercasing[\v!word   ]}] [{\setcharactercasing[\v!word   ]}]
+\definealternativestyle [\v!Word]    [{\setcharactercasing[\v!Word   ]}] [{\setcharactercasing[\v!Word   ]}]
+\definealternativestyle [\v!Words]   [{\setcharactercasing[\v!Words  ]}] [{\setcharactercasing[\v!Words  ]}]
+\definealternativestyle [\v!capital] [{\setcharactercasing[\v!capital]}] [{\setcharactercasing[\v!capital]}]
+\definealternativestyle [\v!Capital] [{\setcharactercasing[\v!Capital]}] [{\setcharactercasing[\v!Capital]}]
+\definealternativestyle [\v!mixed]   [{\setcharactercasing[\v!mixed  ]}] [{\setcharactercasing[\v!mixed  ]}]
+
+\definealternativestyle [\v!cap]     [{\setcharactercasing[\v!cap    ]}] [{\setcharactercasing[\v!cap    ]}]
+\definealternativestyle [\v!Cap]     [{\setcharactercasing[\v!Cap    ]}] [{\setcharactercasing[\v!Cap    ]}]
+
+%D From now (2013-03-17) on we have:
+
+\definefontfeature[f:smallcaps][smcp=yes]
+\definefontfeature[f:oldstyle] [onum=yes]
+\definefontfeature[f:tabular]  [tnum=yes]
+\definefontfeature[f:superiors][sups=yes]
+\definefontfeature[f:inferiors][subs=yes]
+\definefontfeature[f:fractions][frac=yes]
+\definefontfeature[f:kern]     [kern=yes]
+\definefontfeature[f:kerns]    [kern=yes]
+
+\definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
+\definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
+\definealternativestyle [\v!fractions] [\setfractions\resetbreakpoints] [\setfractions\resetbreakpoints]
+
+\permanent\protected\def\setsmallcaps{\doaddfeature{f:smallcaps}}
+\permanent\protected\def\setoldstyle {\doaddfeature{f:oldstyle}}
+\permanent\protected\def\settabular  {\doaddfeature{f:tabular}}
+\permanent\protected\def\setsuperiors{\doaddfeature{f:superiors}}
+\permanent\protected\def\setfractions{\doaddfeature{f:fractions}}
+
+% \permanent\protected\def\frc#1#2%
+%   {\dontleavehmode
+%    \begingroup
+%    \addff{frac}%
+%    \resetbreakpoints
+%    #1/#2%
+%    \endgroup}
+
+%D \macros
+%D   {uppercasing, lowercasing}
+
+\definefontfeature[lowercasing][lowercasing=yes]
+\definefontfeature[uppercasing][uppercasing=yes]
+
+\permanent\protected\def\uppercasing{\addff{uppercasing}}
+\permanent\protected\def\lowercasing{\addff{lowercasing}}
+
+%D \macros
+%D   {tinyfont}
+%D
+%D By default we load the Computer Modern Roman fonts (but not yet at this moment)
+%D and activate the 12pt roman bodyfont. Sans serif and teletype are also available
+%D and can be called for by \type {\ss} and \type {\tt}. Loading takes place
+%D elsewhere. For tracing purposes we define:
+
+\definefont[tinyfont][file:dejavusansmono at 1ex]
+
+%D \macros
+%D   {infofont}
+%D
+%D The second situation occurs when we enable the info mode, and put all kind of
+%D status information in the margin. We don't want huge switches to the main
+%D bodyfont and style, so here too we use a direct method.
+
+\pushoverloadmode
+
+\let\infofont         \relax
+\let\infofontbold     \relax
+\let\smallinfofont    \relax
+\let\smallinfofontbold\relax
+
+\definefont[infofont]         [file:dejavusansmono*none      at 6pt]
+\definefont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]
+\definefont[smallinfofont]    [file:dejavusansmono*none      at 3pt]
+\definefont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]
+
+%D Optimization (later we overload in math). Also needed in order to get \type {\ss}
+%D properly defined.
+
+\permanent\protected\def\normaltf{\let\fontalternative\s!tf\font_helpers_synchronize_font}
+\permanent\protected\def\normalbf{\let\fontalternative\s!bf\font_helpers_synchronize_font}
+\permanent\protected\def\normalit{\let\fontalternative\s!it\font_helpers_synchronize_font}
+\permanent\protected\def\normalsl{\let\fontalternative\s!sl\font_helpers_synchronize_font}
+\permanent\protected\def\normalbi{\let\fontalternative\s!bi\font_helpers_synchronize_font}
+\permanent\protected\def\normalbs{\let\fontalternative\s!bs\font_helpers_synchronize_font}
+
+\let\tf\normaltf
+\let\bf\normalbf
+\let\it\normalit
+\let\sl\normalsl
+\let\bi\normalbi
+\let\bs\normalbs
+
+\permanent\protected\def\normalrm{\font_helpers_set_current_font_style{\s!rm}}
+\permanent\protected\def\normalss{\font_helpers_set_current_font_style{\s!ss}}
+\permanent\protected\def\normaltt{\font_helpers_set_current_font_style{\s!tt}}
+
+\let\rm\normalrm
+\let\ss\normalss
+\let\tt\normaltt
+
+\popoverloadmode
+
+\protect \endinput
+
+% LM math vs CM math (analysis by Taco):
+%
+% Computer Modern Roman : Donald Knuth
+% Latin Modern          : LM Font Revision Team
+%
+% lmex10.tfm  % identical
+% lmmi5.tfm   % identical
+% lmmi6.tfm   % identical
+% lmmi7.tfm   % identical
+% lmmi8.tfm   % identical
+% lmmi9.tfm   % identical
+% lmmi10.tfm  % identical
+% lmmi12.tfm  % identical
+% lmmib10.tfm % identical
+% lmsy5.tfm   % extra chars: 254,255 (octal)
+% lmsy6.tfm   % extra chars: 254,255 (octal)
+% lmsy7.tfm   % extra chars: 254,255 (octal)
+% lmsy8.tfm   % extra chars: 254,255 (octal)
+% lmsy9.tfm   % extra chars: 254,255 (octal)
+% lmsy10.tfm  % extra chars: 254,255 (octal)
+% lmbsy10.tfm % extra chars: 254,255 (octal)
+%
+% From the 'AMS' set:
+%
+% lmmib5.tfm  % identical
+% lmmib7.tfm  % identical
+% lmbsy5.tfm  % extra chars: 254,255 (octal)
+% lmbsy7.tfm  % extra chars: 254,255 (octal)
+%
+% The two extra characters are:
+%
+%   /lessorequalslant
+%   /greaterorequalslant
+
+% \unprotect
+%
+% \definehighlight[\v!italic    ][\c!command=\v!no,\c!style=\v!italic]
+% \definehighlight[\v!bold      ][\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[\v!bolditalic][\c!command=\v!no,\c!style=\v!bolditalic]
+% \definehighlight[\v!mono]      [\c!command=\v!no,\c!style=\v!mono]
+% \definehighlight[\v!monobold]  [\c!command=\v!no,\c!style=\v!monobold]
+%
+% \definehighlight[important]    [\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[unimportant]  [\c!command=\v!no,\c!color=darkgray]
+% \definehighlight[warning]      [\c!command=\v!no,\c!style=\v!bold,\c!color=darkblue]
+% \definehighlight[error]        [\c!command=\v!no,\c!style=\v!bold,\c!color=darkred]
+%
+% \protect
+%
+% \starttext
+%     \highlight[italic]     {italic}
+%     \highlight[bolditalic] {bolditalic}
+%     \highlight[bold]       {bold}
+%     \highlight[mono]       {mono}
+%     \highlight[monobold]   {monobold}
+%     \highlight[important]  {important}
+%     \highlight[unimportant]{unimportant}
+%     \highlight[warning]    {warning}
+%     \highlight[error]      {error}
+% \stoptext

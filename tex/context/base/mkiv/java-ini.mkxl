@@ -1,0 +1,157 @@
+%D \module
+%D   [       file=java-ini,
+%D        version=1998.01.30,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt JavaScript Macros / Initialization}
+
+\registerctxluafile{java-ini}{}
+
+\unprotect
+
+%D \macros
+%D   {JS*}
+%D
+%D Because \JAVASCRIPT's are activated by the user, for instance by activating on a
+%D button, their support is closely related to the referencing mechanism.
+%D Integration takes place by
+%D
+%D \starttyping
+%D \goto{calculate total}[Sum()]
+%D \stoptyping
+%D
+%D The \type {()} classify this as a script. If they are absent, the keyword is
+%D treated as a normal reference. One can pass arguments to such a script by saying:
+%D
+%D \starttyping
+%D \goto{calculate total}[Sum(1.5,2.3)]
+%D \stoptyping
+
+%D \macros
+%D   {startJScode}
+%D
+%D A piece of \JAVASCRIPT\ code is defined by saying:
+%D
+%D \starttyping
+%D \startJScode{name}
+%D   name = 4 ;
+%D \stopJScode
+%D \stoptyping
+%D
+%D This assumes uses no preamble or presumes that the preamble is always loaded, the
+%D next definition also tells \CONTEXT\ to actually include the preamble needed.
+%D
+%D \starttyping
+%D \startJScode{uses} used {later}
+%D   uses = 6 ;
+%D \stopJScode
+%D \stoptyping
+%D
+%D \macros
+%D   {startJSpreamble}
+%D
+%D One can define insert \JAVASCRIPT\ code at the document level by using:
+%D
+%D \starttyping
+%D \startJSpreamble{oeps}
+%D   oeps = 1 ;
+%D \stopJSpreamble
+%D \stoptyping
+%D
+%D which is the same as:
+%D
+%D \starttyping
+%D \startJSpreamble{now} used now
+%D   now = 2 ;
+%D \stopJSpreamble
+%D \stoptyping
+%D
+%D while the next definition is only included when actually used.
+%D
+%D \starttyping
+%D \startJSpreamble{later} used later
+%D   later = 3 ;
+%D \stopJSpreamble
+%D \stoptyping
+%D
+%D This command may be used more that once, but always before the first page is
+%D shipped out.
+%D
+%D \macros
+%D   {setJSpreamble, addtoJSpreamble}
+%D
+%D In addition to the previous preamble definitions, we can set a preamble \quote
+%D {in||line} and add tokens to a preamble.
+%D
+%D \macros
+%D   {useJSpreamblenow}
+%D
+%D This macro can be used to force inclusion of postponed \JAVASCRIPT\ preambles.
+
+\def\m_java_escape_u{\letterbackslash u}
+
+\permanent\protected\def\startJScode
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \let\u\m_java_escape_u
+   \java_start_code}
+
+\def\java_start_code#1\stopJScode
+  {\normalexpanded{\endgroup\clf_storejavascriptcode{#1}}}
+
+\aliased\let\stopJScode\relax
+
+\permanent\protected\def\startJSpreamble
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \let\u\m_java_escape_u
+   \java_start_preamble}
+
+\def\java_start_preamble#1\stopJSpreamble
+  {\normalexpanded{\endgroup\clf_storejavascriptpreamble{#1}}}
+
+\aliased\let\stopJSpreamble\relax
+
+\permanent\protected\def\setJSpreamble  #1#2{\clf_setjavascriptpreamble  {#1}{#2}}
+\permanent\protected\def\addtoJSpreamble#1#2{\clf_addtojavascriptpreamble{#1}{#2}}
+
+%D \macros
+%D   {useJSscripts}
+%D
+%D In due time, users will build their collections of scripts, which can be used
+%D (loaded) when applicable. Although not all public, we will provide some general
+%D purpose scripts, collected in files with names like \type {java-...}. One can
+%D load these scripts with \type {\useJSscripts}, like:
+%D
+%D \starttyping
+%D \useJSscripts[fld]
+%D \stoptyping
+%D
+%D The not so complicated implementation of this macro is:
+
+\permanent\tolerant\protected\def\useJSscripts[#1]#*[#2]%
+  {\clf_usejavascriptscripts {#1}%  two steps as this one calls tex code
+   \clf_usejavascriptpreamble{#2}}% so this one comes later
+
+\permanent\tolerant\protected\def\useJSpreamble[#1]%
+  {\clf_usejavascriptpreamble{#1}}% so this one comes later
+
+%D Here:
+
+\definefilesynonym[java-imp-fld.mkiv] [java-imp-fields.mkiv]
+\definefilesynonym[java-imp-stp.mkiv] [java-imp-steps.mkiv]
+\definefilesynonym[java-imp-fil.mkiv] [java-imp-print.mkiv]
+\definefilesynonym[java-imp-rhh.mkiv] [java-imp-highlight.mkiv]
+\definefilesynonym[java-imp-exa.mkiv] [java-imp-example.mkiv]
+
+\protect \endinput

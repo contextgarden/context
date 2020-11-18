@@ -1,0 +1,575 @@
+%D \module
+%D   [       file=tabl-tsp,
+%D        version=2000.10.20,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Splitting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Splitting}
+
+%D The code in this file is moved here from other places and needs a mkiv cleanup.
+%D As it mostly targets at tables the code lives in the tabl and page namespaces.
+
+% work in progress
+
+\unprotect
+
+%D Although the name resembles floats, and therefore this should be a page module,
+%D we decided to make it core functionality because the table code depends on it.
+%D Othrwise there would be too much overloading afterwards involved. Actually, the
+%D float part is rather generic and not that related to floats.
+
+% \splitfloat [settings] {\placetable[optional args]{test}} {content}
+
+%D When \type {inbetween} is made empty instead of the default \type {\page}, we
+%D will get delayed flushing and text may continue below the graphic.
+%D
+%D \starttyping
+%D \dorecurse{2}{\input tufte }
+%D
+%D \splitfloat[lines=auto,inbetween=]
+%D   {\placetable{\dorecurse{5}{test\recurselevel\endgraf}}}
+%D   {\bTABLE[split=yes]
+%D    \bTR \bTD 11 \eTD \bTD \input tufte \eTD \eTR
+%D    \bTR \bTD 12 \eTD \bTD \input zapf \eTD \eTR
+%D    \bTR \bTD 13 \eTD \bTD \input bryson \eTD \eTR
+%D    \bTR \bTD 14 \eTD \bTD test  \eTD \eTR
+%D    \bTR \bTD 21 \eTD \bTD \input tufte \eTD \eTR
+%D    \bTR \bTD 22 \eTD \bTD \input zapf \eTD \eTR
+%D    \bTR \bTD 23 \eTD \bTD \input bryson \eTD \eTR
+%D    \bTR \bTD 24 \eTD \bTD test  \eTD \eTR
+%D    \bTR \bTD 31 \eTD \bTD \input tufte \eTD \eTR
+%D    \bTR \bTD 32 \eTD \bTD \input zapf \eTD \eTR
+%D    \bTR \bTD 33 \eTD \bTD \input bryson \eTD \eTR
+%D    \bTR \bTD 34 \eTD \bTD test  \eTD \eTR
+%D    \eTABLE}
+%D
+%D \dorecurse{10}{\input tufte }
+%D \stoptyping
+
+\installcorenamespace{floatsplitting}
+
+\installdirectcommandhandler \??floatsplitting {floatsplitting} % \??floatsplitting
+
+\setupfloatsplitting
+  [\c!conversion=\v!character, % \v!romannumerals
+   \c!lines=3,
+   \c!before=,
+   \c!inbetween=\page,
+   \c!after=]
+
+\newconditional\splitfloatfirstdone
+\newconditional\somenextsplitofffloat
+\newconditional\splitfloatdone
+\newconditional\onlyonesplitofffloat   \settrue\onlyonesplitofffloat
+
+\newif         \ifinsidesplitfloat   % will become conditional
+
+\newcount      \noffloatssplits
+\newtoks       \everysplitfloatsetup
+
+\let           \extrasplitfloatlines \!!zerocount
+\let           \splitfloatfinalizer  \relax
+
+\mutable\let   \floatcaptionsuffix   \empty
+
+\permanent\tolerant\protected\def\splitfloat[#1]#:#2% nog dubbele refs
+  {\bgroup
+   \global\setfalse\splitfloatdone
+   \aftergroup\page_split_float_check
+   \insidefloattrue
+   \insidesplitfloattrue
+   \setupcurrentfloatsplitting[#1]%
+   \global\noffloatssplits\zerocount
+   \let\floatcaptionsuffix\page_split_float_suffix
+   \edef\extrasplitfloatlines{\floatsplittingparameter\c!lines}%
+   \the\everysplitfloatsetup
+   \def\splitfloatcommand{#2}%
+   \global\settrue \onlyonesplitofffloat
+   \global\setfalse\somenextsplitofffloat
+   \page_floats_push_saved
+   \floatsplittingparameter\c!before
+   \let\next} % \bgroup
+
+\protected\def\page_split_float_suffix
+  {\begingroup
+   \usefloatsplittingstyleandcolor\c!style\c!color % only the suffix
+   \convertnumber{\floatsplittingparameter\c!conversion}\noffloatssplits
+   \endgroup}
+
+\protected\def\page_split_float_check
+  {\ifconditional\splitfloatdone
+     \splitfloatfinalizer % a weird place (could interfere with flushing)
+   \else
+     \blank
+     \begingroup
+     \tttf \dontleavehmode \getmessage\m!floatblocks{13}\empty
+     \endgroup
+     \blank
+     \showmessage\m!floatblocks{13}\empty
+   \fi}
+
+\def\page_split_float_process % nextbox
+  {\ifinsidesplitfloat
+     \expandafter\page_split_float_process_yes
+   \else
+     \expandafter\page_split_float_process_nop
+   \fi}
+
+\def\page_split_float_process_yes
+  {\dowithnextboxcs\page_split_float_process_finish\vbox}
+
+\def\page_split_float_process_finish
+  {\forgetall
+   \dontcomplain
+   \global\settrue\splitfloatdone
+ % \nodelocationmode\zerocount % bypass auto-renumbering
+   \global\advance\noffloatssplits\plusone
+   \ifcase\noffloatssplits\relax \or
+     \ifconditional\onlyonesplitofffloat
+       \let\floatcaptionsuffix\empty
+     \fi
+   \fi
+   \bgroup
+     \ifconditional\somenextsplitofffloat
+       \notesenabledfalse % best here, experimental, brrr; test with note in caption
+     \fi
+     \splitfloatcommand{\box\nextbox}%
+   \egroup
+   \ifconditional\somenextsplitofffloat
+     \edef\p_inbetween{\floatsplittingparameter\c!inbetween}%
+     \ifempty\p_inbetween
+       \ifconditional\splitfloatfirstdone\else\page\fi
+     \else
+       \p_inbetween
+     \fi
+   \else
+     \floatsplittingparameter\c!after
+     \page_floats_pop_saved
+     \page_floats_flush_saved
+   \fi
+   \global\settrue\splitfloatfirstdone}
+
+\def\page_split_float_process_nop
+  {\dowithnextboxcs\page_split_float_process_nop_finish\vbox}
+
+\def\page_split_float_process_nop_finish
+  {\forgetall
+   \dontcomplain
+   \box\nextbox % maybe an option to unvbox
+   \global\settrue\splitfloatfirstdone}
+
+\def\page_split_float_check_content#1% box
+  {\ifinsidesplitfloat
+   % \ifdim\ht#1=\zeropoint % funny: \ifcase does not check for overflow
+     \ifcase\ht#1\relax
+       \global\setfalse\somenextsplitofffloat
+     \else
+       \global\settrue \somenextsplitofffloat
+       \global\setfalse\onlyonesplitofffloat
+     \fi
+   \fi}
+
+\def\page_split_float_check_caption#1% depends on page-flt .. pretty messy
+  {\edef\extrasplitfloatlines{\extrasplitfloatlines}%
+   \ifx\extrasplitfloatlines\v!auto
+      \bgroup
+      \forcelocalfloats
+      \setuplocalfloats[\c!before=,\c!after=,\c!inbetween=]%
+      % This controls samepage resetting too but it also messes up the numbering
+      % so I need another fix.
+%       \settrialtypesetting
+      \splitfloatcommand{\hbox to #1{\strut}}% dummy line
+%       \resettrialtypesetting
+      \setbox\scratchbox\vbox{\flushlocalfloats}% \vpack ?
+      \getnoflines{\ht\scratchbox}%
+      \resetlocalfloats
+      \advance\noflines\minusone % compensate dummy line
+      \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
+      \global\settrue\usesamefloatnumber
+   \else
+      \doifelsenumber\extrasplitfloatlines\donothing{\def\extrasplitfloatlines{1}}%
+   \fi}
+
+\permanent\protected\def\doifnotinsidesplitfloat
+  {\ifinsidesplitfloat
+     \expandafter\gobbleoneargument
+   \fi}
+
+%D Table splitter, on top of previous code:
+
+% todo: keep tail to rest, so we need a lookahead
+
+\newbox\b_split_content
+\newbox\b_split_result
+\newbox\b_split_head
+\newbox\b_split_next
+\newbox\b_split_tail
+
+\newtoks\t_split_before_result
+\newtoks\t_split_after_result
+\newtoks\t_split_before
+\newtoks\t_split_inbetween
+\newtoks\t_split_after
+
+\newtoks\everyresettsplit
+
+\newcount\c_split_minimum_free_lines
+
+\newdimen\d_split_minimum_free_space
+\newdimen\d_split_available_height
+\newdimen\d_split_inbetween_height
+
+\newconditional\c_tabl_split_done
+\newconditional\c_tabl_split_head
+\newconditional\c_tabl_split_full
+
+\newconditional\tabl_split_forced_page
+
+\appendtoks
+   \c_split_minimum_free_lines\zerocount
+   \d_split_minimum_free_space\zeropoint
+   \setbox\b_split_content    \emptyvbox
+   \setbox\b_split_result     \emptyvbox
+   \setbox\b_split_head       \emptyvbox
+   \setbox\b_split_next       \emptyvbox
+   \setbox\b_split_tail       \emptyvbox
+   \t_split_before_result     \emptytoks
+   \t_split_after_result      \emptytoks
+   \t_split_inbetween         \emptytoks
+   \t_split_before            \emptytoks
+   \t_split_after             \emptytoks
+   \let\postprocesstsplit     \donothing
+\to \everyresettsplit
+
+\permanent\protected\def\resettsplit
+  {\the\everyresettsplit}
+
+\resettsplit
+
+\def\tsplitdirectwidth{\hsize}
+
+\protected\def\handletsplit
+  {\page_split_float_check_caption{\wd\b_split_content}%
+   \global\setfalse\splitfloatfirstdone
+   \testpagesync % new, sync, but still tricky
+     [\number\c_split_minimum_free_lines]
+     [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
+   \setbox\scratchbox\vbox{\the\t_split_inbetween}%
+   \d_split_inbetween_height\htdp\scratchbox
+   \setfalse\c_tabl_split_done
+   \doloop\tabl_split_loop_body
+   \global\setfalse\usesamefloatnumber % new, prevent next increment
+   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+
+\def\tabl_split_loop_body
+  {\ifinsidecolumns
+     % brrr, assumes empty columns
+     \global\setfalse\splitfloatfirstdone
+     \d_split_available_height\textheight
+     \settrue\c_tabl_split_full
+   \else
+     \ifconditional\splitfloatfirstdone
+       \d_split_available_height\textheight
+       \settrue\c_tabl_split_full
+     \orelse\ifdim\pagegoal<\maxdimen
+       \d_split_available_height\dimexpr\pagegoal-\pagetotal\relax
+       \setfalse\c_tabl_split_full
+     \else
+       \d_split_available_height\textheight
+       \settrue\c_tabl_split_full
+     \fi
+   \fi
+   \d_split_available_height \dimexpr
+      \d_split_available_height
+     -\d_split_inbetween_height
+     -\d_split_minimum_free_space
+     -\extrasplitfloatlines\lineheight
+   \relax
+   \ifdim\htdp\b_split_tail>\zeropoint
+     \advance\d_split_available_height-\htdp\b_split_tail
+   \fi
+   \setbox\b_split_result\vbox
+     {\ifdim\ht\b_split_head>\zeropoint
+        \unvcopy\b_split_head
+        \the\t_split_inbetween
+      \fi}%
+   \ifconditional\c_tabl_split_done \else
+     \ifdim\ht\b_split_next>\zeropoint
+       \setbox\b_split_head\box\b_split_next
+     \fi
+   \fi
+   \settrue\c_tabl_split_done
+   \ifdim\ht\b_split_result>\zeropoint
+     \settrue\c_tabl_split_head  % table head
+   \else
+     \setfalse\c_tabl_split_head % no tablehead
+   \fi
+   \splittopskip\zeropoint
+   \doloop % inner loop
+     {\setbox\scratchbox\vsplit\b_split_content to \onepoint % \lineheight
+      \setbox\scratchbox\vbox % \vpack
+        {\unvbox\scratchbox
+         \setbox\scratchbox\vbox % \vpack
+           {\splitdiscards
+            \ifnum\lastpenalty>-\plustenthousand\else
+               % so that \bTR[before=\page] works
+               \global\settrue\tabl_split_forced_page
+            \fi}}%
+      \ifconditional\tabl_split_forced_page
+        \global\setfalse\tabl_split_forced_page
+        \setbox\b_split_result\vbox
+          {\unvbox\b_split_result
+           \the\t_split_inbetween
+           \unvbox\scratchbox}%
+        \exitloop
+      \orelse\ifdim\dimexpr\d_split_available_height-\htdp\scratchbox-\htdp\b_split_result\relax>\zeropoint
+        \setbox\b_split_result\vbox
+          {\unvbox\b_split_result
+           \the\t_split_inbetween
+           \unvbox\scratchbox}%
+        \ifvoid\b_split_content \exitloop \fi
+      \orelse\ifconditional\c_tabl_split_head
+        % we only have a tablehead so far
+        \setbox\b_split_result\vbox{\unvbox\b_split_result\unvbox\scratchbox}% \vpack
+        \exitloop
+      \orelse\ifconditional\c_tabl_split_full
+        % we have text height available, but the (one) cell is too
+        % large to fit, so, in order to avoid loops/deadcycles we do:
+        \setbox\b_split_result\vbox
+          {\unvbox\b_split_result
+           \the\t_split_inbetween
+           \unvbox\scratchbox}%
+        \exitloop
+      \else
+        \setbox\b_split_content\vbox
+          {\unvbox\scratchbox
+           \the\t_split_inbetween
+           \ifvoid\b_split_content\else\unvbox\b_split_content\fi}%
+        \exitloop
+      \fi
+      \setfalse\c_tabl_split_head
+      \setfalse\c_tabl_split_full}%
+   \postprocesstsplit
+   \page_split_float_check_content\b_split_content
+   \ifvoid\b_split_content
+     \setbox\b_split_result\vbox
+       {\unvbox\b_split_result
+        \the\t_split_inbetween
+        \unvcopy\b_split_tail}%
+     \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
+     \doifnotinsidesplitfloat{\the\t_split_after}%
+     \endgraf
+     \exitloop
+   \else
+     % hack
+     \ifdim\pagegoal<\maxdimen
+       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+     \fi
+     % brrr
+     \ifdim\ht\b_split_result>\zeropoint
+       \setbox\b_split_result\vbox
+         {\unvbox\b_split_result
+          \the\t_split_inbetween
+          \unvcopy\b_split_tail}%
+       \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
+       \doifnotinsidesplitfloat{\the\t_split_after}%
+       \endgraf
+       \global\settrue\usesamefloatnumber % new, prevent next increment
+     \fi
+     \ifinsidecolumns
+       \goodbreak % was \doifnotinsidesplitfloat\goodbreak
+     \else
+       \page      % was \doifnotinsidesplitfloat\page
+     \fi
+   \fi}
+
+%D The next one assumes that the split takes place elsewhere. This is used in
+%D xtables.
+
+\aliased\let\resetdirecttsplit\resettsplit
+
+\permanent\protected\def\handledirecttsplit
+  {\page_split_float_check_caption{\tsplitdirectwidth}%
+   \global\setfalse\splitfloatfirstdone
+   \testpagesync % new, sync, but still tricky
+     [\number\c_split_minimum_free_lines]
+     [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
+   \doloop\tabl_split_direct_loop_body
+   \global\setfalse\usesamefloatnumber   % new, prevent next increment
+   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+
+\def\tabl_split_direct_loop_body
+  {\ifinsidecolumns
+     \global\setfalse\splitfloatfirstdone
+     \d_split_available_height\textheight
+   \orelse\ifconditional\splitfloatfirstdone
+     \d_split_available_height\textheight
+   \orelse\ifdim\pagegoal<\maxdimen
+     \d_split_available_height\dimexpr\pagegoal-\pagetotal\relax
+   \else
+     \d_split_available_height\textheight
+   \fi
+   \d_split_available_height\dimexpr
+      \d_split_available_height
+     -\d_split_minimum_free_space
+     -\extrasplitfloatlines\lineheight
+   \relax
+   \tsplitdirectsplitter\d_split_available_height % also sets state
+   \ifdim\ht\b_split_result>\zeropoint
+     \ifconditional\somenextsplitofffloat
+       \global\setfalse\onlyonesplitofffloat
+     \fi
+     \ifdim\pagegoal<\maxdimen
+       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+     \fi
+     \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
+     \global\settrue\usesamefloatnumber % new, prevent next increment
+     \endgraf
+     \ifconditional\somenextsplitofffloat
+       \ifinsidecolumns
+         \goodbreak
+       \else
+         \page
+       \fi
+     \fi
+     \global\settrue\splitfloatfirstdone
+   \orelse\ifconditional\somenextsplitofffloat
+     \ifinsidecolumns
+       \goodbreak
+     \else
+       \page % no room
+     \fi
+   \else
+      \exitloop
+   \fi}
+
+%D Maybe handy:
+%D
+%D \starttyping
+%D \splitfloat
+%D   {\placefigure{some caption}}
+%D   {\startsplittext
+%D    \typefile[option=TEX,before=,after=]{oeps.tex}
+%D    \stopsplittext}
+%D \stoptyping
+
+\permanent\def\handlesplittext#1%
+  {\setbox\b_split_result\vbox
+     {\vsplit\b_split_content to \dimexpr#1-\lineheight\relax}}
+
+\permanent\protected\def\startsplittext
+  {\begingroup
+   \resettsplit
+   \c_split_minimum_free_lines\zerocount
+   \d_split_minimum_free_space\zeropoint
+   \let\extrasplitfloatlines  \!!plusone
+   \let\tsplitdirectsplitter  \handlesplittext
+   \setbox\b_split_content\vbox\bgroup
+   \insidefloattrue}
+
+\permanent\protected\def\stopsplittext
+  {\egroup
+   \handledirecttsplit
+   \endgroup}
+
+\protect \endinput
+
+% test cases
+
+% \setupTABLE[split=repeat]
+%
+% \input tufte \endgraf
+% \splitfloat[lines=11]
+%   {\placetable{\dorecurse{10}{test\recurselevel\endgraf}}}
+%   {\bTABLE\dorecurse{100}{\bTR \bTD test \eTD \eTR}\eTABLE}
+% \input tufte \page
+%
+% \input tufte \endgraf
+% \splitfloat[lines=0]
+%   {}
+%   {\bTABLE\dorecurse{100}{\bTR \bTD test \eTD \eTR}\eTABLE}
+% \input tufte \endgraf \page
+%
+% \input tufte \endgraf
+% \bTABLE\dorecurse{100}{\bTR \bTD test \eTD \eTR}\eTABLE
+% \input tufte \page
+
+% \setuptabulate[split=yes]
+%
+% \input tufte \endgraf
+% \splitfloat[lines=11]
+%   {\placetable{\dorecurse{10}{test\recurselevel\endgraf}}}
+%   {\starttabulate\dorecurse{200}{\NC test \NC test \NC \NR}\stoptabulate}
+% \input tufte \page
+%
+% \input tufte \endgraf
+% \splitfloat[lines=0]
+%   {}
+%   {\starttabulate\dorecurse{200}{\NC test \NC test \NC \NR}\stoptabulate}
+% \input tufte \page
+%
+% \input tufte \endgraf
+% \starttabulate\dorecurse{200}{\NC test \NC test \NC \NR}\stoptabulate
+% \input tufte \page
+
+% \setuptables[split=yes]
+%
+% \newtoks\TestToks
+%
+% \TestToks\emptytoks
+% \appendtoks\starttablehead\to\TestToks
+% \dorecurse{3}{\appendtoks\VL head \VL head \VL \SR\to\TestToks}
+% \appendtoks\stoptablehead\to\TestToks
+% \appendtoks\starttabletail\to\TestToks
+% \dorecurse{3}{\appendtoks\VL tail \VL tail \VL \SR\to\TestToks}
+% \appendtoks\stoptabletail\to\TestToks
+% \appendtoks\starttables[|c|c|]\to\TestToks
+% \dorecurse{100}{\appendtoks\VL test \VL test \VL \SR\to\TestToks}
+% \appendtoks\stoptables\to\TestToks
+%
+% \input tufte \endgraf
+% \splitfloat[lines=auto] % [lines=11]
+%   {\placetable{\dorecurse{10}{test\recurselevel\endgraf}}}
+%   {\the\TestToks}
+% \input tufte \page
+%
+% \input tufte \endgraf
+% \splitfloat[lines=0]
+%   {}
+%   {\the\TestToks}
+% \input tufte \page
+%
+% \input tufte \endgraf
+% \the\TestToks
+% \input tufte \page
+%
+% multiple floats
+%
+% \starttext
+%   \dorecurse{3}{\input tufte } \endgraf
+%   \dorecurse{5}{\placefigure{}{\framed[height=.5\textheight]{}}}
+%   \splitfloat[lines=auto,inbetween=]
+%     {\placetable{\dorecurse{5}{test\recurselevel\endgraf}}}
+%     {\bTABLE[split=yes]
+%      \bTR \bTD 11 \eTD \bTD \input tufte \eTD \eTR
+%      \bTR \bTD 12 \eTD \bTD \input zapf \eTD \eTR
+%      \bTR \bTD 13 \eTD \bTD \input bryson \eTD \eTR
+%      \bTR \bTD 14 \eTD \bTD test  \eTD \eTR
+%      \bTR \bTD 21 \eTD \bTD \input tufte \eTD \eTR
+%      \bTR \bTD 22 \eTD \bTD \input zapf \eTD \eTR
+%      \bTR \bTD 23 \eTD \bTD \input bryson \eTD \eTR
+%      \bTR \bTD 24 \eTD \bTD test  \eTD \eTR
+%      \bTR \bTD 31 \eTD \bTD \input tufte \eTD \eTR
+%      \bTR \bTD 32 \eTD \bTD \input zapf \eTD \eTR
+%      \bTR \bTD 33 \eTD \bTD \input bryson \eTD \eTR
+%      \bTR \bTD 34 \eTD \bTD test  \eTD \eTR
+%      \eTABLE}
+%   \dorecurse{10}{\input tufte }
+% \stoptext

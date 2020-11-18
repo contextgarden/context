@@ -1,0 +1,294 @@
+%D \module
+%D   [       file=tabl-mis,
+%D        version=2012.06.28,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Miscellaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Miscellaneous}
+
+\unprotect
+
+%D \macros
+%D   {somekindoftab,kindoftabposition}
+%D
+%D This macro can be used to create tabs:
+%D
+%D \starttyping
+%D \setupheadertexts[{\somekindoftab[alternative=horizontal]{\framed{\kindoftabposition}}}]
+%D \setuptexttexts  [{\somekindoftab[alternative=vertical]  {\framed{\kindoftabposition}}}]
+%D
+%D \starttext
+%D     \showframe \dorecurse{10}{test\page}
+%D \stoptext
+%D \stoptyping
+%D
+%D (This rather old but updated code used to be in \type {core-mis.mkiv}.)
+
+\let\kindoftabposition\!!zerocount
+
+\permanent\tolerant\protected\def\somekindoftab[#1]%
+  {\bgroup
+   \getdummyparameters
+     [\c!alternative=\v!vertical,
+      \c!width=\textwidth,\c!height=\textheight,
+      \c!n=\lastpage,\c!m=\realpageno,
+      #1]%
+   \doifelse{\directdummyparameter\c!alternative}\v!vertical
+     {\typo_kindoftab_indeed\vbox\vskip\c!height}
+     {\typo_kindoftab_indeed\hbox\hskip\c!width }}
+
+\def\typo_kindoftab_indeed#1#2#3#4%
+  {#1 to \directdummyparameter#3 \bgroup
+     \forgetall
+     \scratchnx\directdummyparameter\c!n\relax
+     \scratchmx\directdummyparameter\c!m\relax
+     \edef\kindoftabposition{\the\scratchmx}%
+     \ifnum\scratchmx>\plusone
+       #2\zeropoint \s!plus \the\numexpr\scratchmx-\plusone  \relax\s!fill\relax
+     \fi
+     #4% can use \kindoftabposition
+     \ifnum\scratchmx<\scratchnx\relax
+       #2\zeropoint \s!plus \the\numexpr\scratchnx-\scratchmx\relax\s!fill\relax
+     \fi
+   \egroup
+   \egroup}
+
+%D The following paragraphs mechanism is probably one of the oldest of \CONTEXT\ and
+%D mostly served as a table mechanism capable of dealing with paragraphs. Nowadays
+%D one can also use tabulate or natural tables.
+%D
+%D \startbuffer
+%D \defineparagraphs[sample][n=2,rule=on]
+%D
+%D \startsample
+%D     first  \nextsample
+%D     second \nextsample
+%D     third
+%D \stopsample
+%D
+%D \startsample
+%D     \input tufte \nextsample
+%D     \input ward  \nextsample
+%D     \input davis \nextsample
+%D     \input zapf
+%D \stopsample
+%D
+%D \startparagraphs[sample]
+%D     first  \nextsample
+%D     second \nextsample
+%D     third
+%D \stopparagraphs
+%D
+%D \startparagraphs[sample]
+%D     \startparagraphscell
+%D         first
+%D     \stopparagraphscell
+%D     \startparagraphscell
+%D         second
+%D     \stopparagraphscell
+%D     \startparagraphscell
+%D         third
+%D     \stopparagraphscell
+%D \stopparagraphs
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\installcorenamespace{paragraphs}
+
+\installframedcommandhandler \??paragraphs {paragraphs} \??paragraphs
+
+\setupparagraphs
+  [\c!n=3,
+   \c!offset=\zeropoint,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=\emwidth,
+   \c!height=\v!fit,
+   \c!width=\availablehsize,
+   \c!rule=\v!off,
+   \c!command=,
+   \c!align=,
+   \c!tolerance=\v!tolerant, % obsolete
+   \c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!style=,
+   \c!color=,
+   \c!frame=\v!off,
+   \c!top=\vss,
+   \c!bottom=\vfill]
+
+\aliased\let\typo_paragraphs_setup_saved\setupparagraphs
+
+\overloaded\permanent\tolerant\protected\def\setupparagraphs[#1]#*[#2]#*[#3]% we are downward compatible with [each] and [1,3]
+  {\ifarguments\or
+      \typo_paragraphs_setup_saved[#1]%
+   \or
+      \typo_paragraphs_setup_saved[#1][#2]%
+   \or
+     \doifelse{#2}\v!each
+       {\dorecurse{\namedparagraphsparameter{#1}\c!n}%
+          {\normalexpanded{\typo_paragraphs_setup_saved[#1:\recurselevel]}[#3]}}%
+       {\def\typo_paragraphs_setup_step##1{\typo_paragraphs_setup_saved[#1:##1][#3]}%
+        \processcommalist[#2]\typo_paragraphs_setup_step}%
+   \fi}
+
+\appendtoks
+    \frozen\instance\letvalue{\e!next \currentparagraphs}\nextparagraphs
+    \frozen\instance\letvalue\currentparagraphs\nextparagraphs
+    \frozen\instance\setuevalue{\e!start\currentparagraphs}{\startparagraphs[\currentparagraphs]}%
+    \frozen\instance\letvalue{\e!stop \currentparagraphs}\stopparagraphs
+    %frozen\instance\setuevalue{\e!setup\currentparagraph\e!endsetup}{\typo_paragraphs_setup_saved[\currentparagraphs]}%
+    \dorecurse{\paragraphsparameter\c!n}
+      {\normalexpanded{\typo_paragraphs_setup_saved[\currentparagraphs:\recurselevel][\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%
+    \typo_paragraphs_setup_saved[\currentparagraphs:1][\c!distance=\zeropoint]%
+\to \everydefineparagraphs
+
+\newcount\c_typo_paragraphs_n
+\newcount\c_typo_paragraphs_max
+\newdimen\d_typo_paragraphs_width
+\newdimen\d_typo_paragraphs_auto
+
+\permanent\protected\def\startparagraphs[#1]% quite slow
+  {\bgroup % (1)
+   \edef\currentparagraphs{#1}%
+ % \paragraphsparameter\c!before
+   \edef\p_width{\paragraphsparameter\c!width}%
+   \ifempty\p_width
+     \d_typo_paragraphs_width\availablehsize
+   \else
+     \d_typo_paragraphs_width\p_width\relax
+   \fi
+   \advance\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
+   \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
+   \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
+   \scratchcounter\zerocount
+   \dorecurse\c_typo_paragraphs_max
+     {\edef\p_width{\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!width}%
+      \ifempty\p_width
+        \advance\scratchcounter\plusone
+      \else
+        \advance\d_typo_paragraphs_auto-\p_width\relax
+      \fi
+      \ifnum\recurselevel>\plusone
+        \advance\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!distance\relax
+      \fi}%
+   \ifnum\scratchcounter>\zerocount
+     \divide\d_typo_paragraphs_auto\scratchcounter
+   \else
+     \d_typo_paragraphs_auto\zeropoint
+   \fi
+   \parindent\zeropoint
+   \c_typo_paragraphs_n\zerocount
+   \enforced\let\\\typo_paragraphs_next % downward compatible
+   \edef\p_offset{\paragraphsparameter\c!offset}%
+   \doifelsedimension\p_offset
+     {\scratchoffset\p_offset}%
+     {\scratchoffset\zeropoint}%
+   \setbox\scratchbox\hpack
+   \bgroup % (2)
+   \forgetall
+   \advance\hsize-2\scratchoffset
+   \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
+   \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
+   \typo_paragraphs_start_cell_indeed}
+
+\permanent\protected\def\stopparagraphs
+  {\stopparagraphscell
+   \egroup  % (2)
+   \letparagraphsparameter\c!align\v!flushleft % normal
+   \paragraphsparameter\c!before
+   \dontleavehmode\inheritedparagraphsframed{\box\scratchbox}%
+   \paragraphsparameter\c!after
+   \egroup} % (1)
+
+\permanent\protected\def\nextparagraphs
+  {\stopparagraphscell
+   \startparagraphscell}
+
+\permanent\protected\def\startparagraphscell
+  {\typo_paragraphs_start_cell}
+
+\def\typo_paragraphs_start_cell_indeed
+  {\removeunwantedspaces
+   \advance\c_typo_paragraphs_n\plusone
+   \ifnum\c_typo_paragraphs_n>\c_typo_paragraphs_max
+     \expandafter\typo_paragraphs_start_cell_nop
+   \else
+     \expandafter\typo_paragraphs_start_cell_yes
+   \fi}
+
+\def\typo_paragraphs_start_cell_nop
+  {\begingroup
+   % message: too many cells in paragraphs
+   \let\typo_paragraphs_start_cell\relax
+   \let\typo_paragraphs_stop_cell\typo_paragraphs_stop_cell_indeed
+   \setbox\scratchbox\vbox\bgroup}
+
+\def\typo_paragraphs_start_cell_yes
+  {\begingroup
+   \let\typo_paragraphs_start_cell\relax
+   \let\typo_paragraphs_stop_cell\typo_paragraphs_stop_cell_indeed
+   \edef\currentparagraphs{\currentparagraphs:\the\c_typo_paragraphs_n}%
+   \ifnum\c_typo_paragraphs_n>\plusone
+     \typo_paragraphs_separator
+   \fi
+   \edef\p_height{\paragraphsparameter\c!height}%
+   \edef\p_width {\paragraphsparameter\c!width }%
+   \useparagraphsstyleandcolor\c!style\c!color
+   \setbox\scratchbox\vtop \ifempty\p_height \orelse\ifx\p_height\v!fit \else to \p_height \fi
+   \bgroup % (2)
+   \blank[\v!disable]%
+   \paragraphsparameter\c!top
+   \hsize\ifempty\p_width \d_typo_paragraphs_auto \else \p_width \fi \relax
+   \usealignparameter\paragraphsparameter
+   \paragraphsparameter\c!inner
+   \everypar{\begstrut\everypar\emptytoks}%
+   \ignorespaces
+   \paragraphsparameter\c!command}
+
+\permanent\protected\def\stopparagraphscell
+  {\typo_paragraphs_stop_cell
+   \let\typo_paragraphs_stop_cell\relax}
+
+\def\typo_paragraphs_stop_cell_indeed
+  {\ifnum\c_typo_paragraphs_n>\c_typo_paragraphs_max
+     \expandafter\typo_paragraphs_stop_cell_nop
+   \else
+     \expandafter\typo_paragraphs_stop_cell_yes
+   \fi}
+
+\def\typo_paragraphs_stop_cell_nop
+  {\egroup
+   \endgroup}
+
+\def\typo_paragraphs_stop_cell_yes
+  {\ifvmode
+     \removelastskip
+   \else
+     \removeunwantedspaces
+     \endstrut
+     \endgraf
+   \fi
+   \paragraphsparameter\c!bottom
+   \egroup % (2)
+   \dontleavehmode\hpack{\raise\strutheight\box\scratchbox}%
+   \endgroup}
+
+\def\typo_paragraphs_separator
+  {\scratchdistance\paragraphsparameter\c!distance
+   \doif{\paragraphsparameter\c!rule}\v!on
+     {\scratchwidth\paragraphsparameter\c!rulethickness
+      \scratchdistance\dimexpr(\scratchdistance-\scratchwidth)/2\relax
+      \hskip\scratchdistance
+      \color[\paragraphsparameter\c!rulecolor]{\vrule\s!width\scratchwidth}}%
+   \hskip\scratchdistance}
+
+\protect \endinput

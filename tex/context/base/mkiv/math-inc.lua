@@ -20,6 +20,8 @@ local undent = buffers.undent
 local f_entity = string.formatters["&x%X;"]
 local f_blob   = string.formatters['<?xml version="2.0"?>\n\n<!-- formula %i -->\n\n%s']
 
+local report_tags = logs.reporter("structure","tags")
+
 local all  = nil
 local back = nil
 
@@ -62,7 +64,12 @@ local function getblob(n)
             local root  = xml.load(full)
             for c in xml.collected(root,"formulacontent") do
                 local index = tonumber(c.at.n)
-                all[index] = f_blob(index,beautify(xmltext(c,"math") or ""))
+                local data  = beautify(xmltext(c,"math") or "")
+                if index and data then
+                    all[index] = f_blob(index,data)
+                else
+                    report_tags("no formula content id")
+                end
             end
             local it = mathematics.alphabets.regular.it
             for k, v in next, it.digits    do back[v] = k end

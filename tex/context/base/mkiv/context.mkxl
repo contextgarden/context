@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.17 12:39}
+\edef\contextversion{2020.11.18 19:13}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -223,7 +223,7 @@
 \loadmkxlfile{colo-grp} % optional
 \loadmkxlfile{colo-ext}
 
-\loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
+\loadmkxlfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
 \loadmarkfile{pack-cut}
 
@@ -245,22 +245,22 @@
 \loadmarkfile{pack-fen}
 
 \loadmkxlfile{lxml-ini}
-\loadmarkfile{lxml-sor}
+\loadmkxlfile{lxml-sor}
 
 \loadmkvifile{typo-prc}
 \loadmkivfile{typo-plc}
 
 \loadmklxfile{strc-ini}
-\loadmarkfile{strc-tag}
+\loadmkxlfile{strc-tag}
 \loadmkxlfile{strc-doc}
 \loadmkxlfile{strc-num}
 \loadmkxlfile{strc-mar}
 \loadmkxlfile{strc-sbe}
-\loadmkvifile{strc-lst}
+\loadmklxfile{strc-lst}
 \loadmkxlfile{strc-sec}
 \loadmkxlfile{strc-pag} % hm, depends on core-num
-\loadmarkfile{strc-ren}
-\loadmarkfile{strc-xml}
+\loadmkxlfile{strc-ren}
+%loadmarkfile{strc-xml}
 \loadmarkfile{strc-def} % might happen later
 \loadmklxfile{strc-ref}
 %loadmarkfile{strc-reg}
@@ -288,7 +288,7 @@
 \loadmklxfile{strc-des}
 \loadmklxfile{strc-enu}
 
-\loadmarkfile{strc-ind}
+\loadmkxlfile{strc-ind}
 \loadmkxlfile{strc-lab}
 \loadmkxlfile{strc-syn}
 
@@ -359,9 +359,9 @@
 
 \loadmarkfile{page-com} % optional (after scrn-pag)
 
-\loadmarkfile{strc-bkm} % bookmarks
+\loadmkxlfile{strc-bkm} % bookmarks
 
-\loadmarkfile{java-ini}
+\loadmkxlfile{java-ini}
 
 \loadmkvifile{scrn-fld}
 \loadmkvifile{scrn-hlp}
@@ -378,7 +378,7 @@
 \loadmklxfile{font-sty}
 \loadmkvifile{font-set}
 \loadmklxfile{font-emp}
-\loadmarkfile{font-pre}
+\loadmkxlfile{font-pre}
 \loadmarkfile{font-unk}
 \loadmkxlfile{font-tra}
 \loadmkxlfile{font-chk}
@@ -392,7 +392,7 @@
 \loadmarkfile{typo-par} % par builders (uses fonts)
 
 \loadmkxlfile{tabl-com}
-\loadmarkfile{tabl-pln}
+%loadmarkfile{tabl-pln}
 
 \loadmkxlfile{tabl-tab} % thrd-tab stripped and merged
 
@@ -401,13 +401,13 @@
 \loadmkxlfile{tabl-nte}
 \loadmkxlfile{tabl-ltb}
 \loadmkxlfile{tabl-frm}
-\loadmarkfile{tabl-tsp}
+\loadmkxlfile{tabl-tsp}
 \loadmklxfile{tabl-xtb}
-\loadmarkfile{tabl-mis}
+\loadmkxlfile{tabl-mis}
 
 \loadmkxlfile{typo-lan}
 
-\loadmarkfile{lxml-css}
+\loadmkxlfile{lxml-css}
 
 \loadmkxlfile{spac-chr} % depends on fonts
 
@@ -479,7 +479,6 @@
 \loadmarkfile{math-for}
 \loadmarkfile{math-def} % also saves some meanings
 \loadmkxlfile{math-ali}
-%loadmarkfile{math-arr}
 \loadmklxfile{math-stc}
 \loadmkxlfile{math-frc}
 \loadmarkfile{math-mis}
@@ -494,7 +493,7 @@
 %loadmarkfile{math-lan}
 \loadmkxlfile{math-toy}
 
-\loadmarkfile{strc-mat}
+\loadmkxlfile{strc-mat}
 
 \loadmkxlfile{chem-ini}
 \loadmkxlfile{chem-str}
@@ -502,13 +501,13 @@
 \loadmkxlfile{typo-scr}
 \loadmkxlfile{phys-dim}
 
-\loadmarkfile{node-rul} % beware, defined \underbar so after math
+\loadmkxlfile{node-rul} % beware, defined \underbar so after math
 \loadmklxfile{font-sol} % font solutions
 
 \loadmklxfile{strc-not}
-\loadmkvifile{strc-lnt}
-\loadmkivfile{strc-tnt}
-\loadmkivfile{strc-usr}
+\loadmklxfile{strc-lnt}
+\loadmkxlfile{strc-tnt}
+\loadmkxlfile{strc-usr}
 
 \loadmkxlfile{pack-com}
 \loadmkxlfile{typo-del}
@@ -549,8 +548,6 @@
 
 \loadmarkfile{cont-log}
 
-% \loadmarkfile{task-ini}
-
 \loadmkxlfile{cldf-ver} % verbatim, this can come late
 \loadmkxlfile{cldf-com} % commands, this can come late
 
@@ -580,7 +577,7 @@
 \loadmarkfile{math-inc} % an experiment
 \loadmkxlfile{publ-inc} % an experiment
 
-\loadmarkfile{task-ini}
+\loadmkxlfile{task-ini}
 
 \loadmarkfile{syst-cmp} % compatibility stuff moved here
 

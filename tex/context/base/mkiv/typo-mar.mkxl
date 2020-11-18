@@ -313,11 +313,8 @@
 
 %D Downward compatible hack:
 
-\permanent\protected\def\typo_margins_space_or_par
-  {\endgraf\ifhmode\space\fi}
-
 \appendtoks
-    \enforced\let\\\typo_margins_space_or_par
+    \enforced\let\\\spaceorpar
 \to \everymargindatacontent
 
 %D Another one:

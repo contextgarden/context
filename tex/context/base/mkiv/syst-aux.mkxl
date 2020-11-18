@@ -93,48 +93,20 @@
 
 \def\normalspace{ }
 
-%D \macros
-%D   {!!count, !!toks, !!dimen, !!box,
-%D    !!width, !!height, !!depth, !!string, !!done}
-%D
-%D We define some more \COUNTERS\ and \DIMENSIONS. We also define some shortcuts to
-%D the local scatchregisters~0, 2, 4, 6 and~8. These are kind of obsolete and
-%D eventually they might get dropped!
+\newif\if!!donea   \newif\if!!doneb    \newif\if!!donec  % soon obsolete in lmtx
+\newif\if!!doned   \newif\if!!donee    \newif\if!!donef  % soon obsolete in lmtx
 
-\newcount\!!counta \newtoks\!!toksa \newdimen\!!dimena \newbox\!!boxa
-\newcount\!!countb \newtoks\!!toksb \newdimen\!!dimenb \newbox\!!boxb
-\newcount\!!countc \newtoks\!!toksc \newdimen\!!dimenc \newbox\!!boxc
-\newcount\!!countd \newtoks\!!toksd \newdimen\!!dimend \newbox\!!boxd
-\newcount\!!counte \newtoks\!!tokse \newdimen\!!dimene \newbox\!!boxe
-\newcount\!!countf \newtoks\!!toksf \newdimen\!!dimenf \newbox\!!boxf
-                                    \newdimen\!!dimeng
-                                    \newdimen\!!dimenh
-                                    \newdimen\!!dimeni
-                                    \newdimen\!!dimenj
-                                    \newdimen\!!dimenk
-
-\let\!!stringa\empty \let\!!stringb\empty \let\!!stringc\empty
-\let\!!stringd\empty \let\!!stringe\empty \let\!!stringf\empty
-
-\newdimen\!!widtha \newdimen\!!heighta \newdimen\!!deptha
-\newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb
-\newdimen\!!widthc \newdimen\!!heightc \newdimen\!!depthc
-\newdimen\!!widthd \newdimen\!!heightd \newdimen\!!depthd
-
-\newif\if!!donea   \newif\if!!doneb    \newif\if!!donec
-\newif\if!!doned   \newif\if!!donee    \newif\if!!donef
-
-\def\!!zerocount {0} % alongside \zerocount
-\def\!!minusone {-1} % ...
-\def\!!plusone   {1} % ...
-\def\!!plustwo   {2} % ...
-\def\!!plusthree {3} % ...
-\def\!!plusfour  {4} % ...
-\def\!!plusfive  {5} % ...
-\def\!!plussix   {6} % ...
-\def\!!plusseven {7} % ...
-\def\!!pluseight {8} % ...
-\def\!!plusnine  {9} % alongside \plusnine
+\immutable\def\!!zerocount {0} % alongside \zerocount
+\immutable\def\!!minusone {-1} % ...
+\immutable\def\!!plusone   {1} % ...
+\immutable\def\!!plustwo   {2} % ...
+\immutable\def\!!plusthree {3} % ...
+\immutable\def\!!plusfour  {4} % ...
+\immutable\def\!!plusfive  {5} % ...
+\immutable\def\!!plussix   {6} % ...
+\immutable\def\!!plusseven {7} % ...
+\immutable\def\!!pluseight {8} % ...
+\immutable\def\!!plusnine  {9} % alongside \plusnine
 
 \setnewconstant   \uprotationangle    0
 \setnewconstant\rightrotationangle   90
@@ -819,8 +791,8 @@
      \expandafter\syst_helpers_process_comma_item_gobble
    \fi}
 
-\def\syst_helpers_process_comma_item_next
-  {\expandafterspaces\syst_helpers_process_comma_item}
+% \def\syst_helpers_process_comma_item_next
+%   {\expandafterspaces\syst_helpers_process_comma_item}
 
 % \protected\def\processcommalist[#1]#2%
 %   {\pushmacro\commalistcommand
@@ -834,16 +806,37 @@
 %    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
 %    \popmacro\commalistcommand}
 
-\permanent\protected\def\processcommalist[#*#+]#2%
+% \permanent\protected\def\processcommalist[#*#+]#2%
+%   {\pushmacro\commalistcommand
+%    \def\commalistcommand{#2}%
+%    \expandafterspaces\syst_helpers_process_comma_item#1,\ignorearguments\ignorearguments\ignorearguments
+%    \popmacro\commalistcommand}
+%
+% \permanent\protected\def\processcommacommand[#*#+]#2%
+%   {\pushmacro\commalistcommand
+%    \def\commalistcommand{#2}%
+%    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
+%    \popmacro\commalistcommand}
+
+\tolerant\protected\def\syst_helpers_process_comma_item#*#1,%
+  {\ifarguments\or
+     \commalistcommand{#1}%
+     \expandafter\syst_helpers_process_comma_item_next
+   \fi}
+
+\def\syst_helpers_process_comma_item_next
+  {\expandafterspaces\syst_helpers_process_comma_item}
+
+\permanent\protected\def\processcommalist[#1]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
-   \expandafterspaces\syst_helpers_process_comma_item#1,\ignorearguments\ignorearguments\ignorearguments
+   \syst_helpers_process_comma_item#1\ignorearguments\ignorearguments\ignorearguments
    \popmacro\commalistcommand}
 
-\permanent\protected\def\processcommacommand[#*#+]#2%
+\permanent\protected\def\processcommacommand[#1]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
-   \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
+   \normalexpanded{\syst_helpers_process_comma_item#1}\ignorearguments\ignorearguments\ignorearguments
    \popmacro\commalistcommand}
 
 % \let\syst_helpers_process_comma_item_next_a                                                            \syst_helpers_process_comma_item_next
@@ -5376,23 +5369,31 @@
 %        \syst_helpers_process_separated_list_step}%
 %     \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#2]#2}
 
-\def\syst_helpers_process_separated_list#1]#*[#2]#3%
-   {\def\syst_helpers_process_separated_list_step##1##2#2%
-      {\def\m_syst_string_one{##2}% suggested by VZ
-       \if]##1%
-       \orelse\ifx\blankspace\m_syst_string_one
+% \def\syst_helpers_process_separated_list#1]#*[#2]#3%
+%    {\def\syst_helpers_process_separated_list_step##1##2#2%
+%       {\def\m_syst_string_one{##2}% suggested by VZ
+%        \if]##1%
+%        \orelse\ifx\blankspace\m_syst_string_one
+%          #3{##1}%
+%          \expandafter\syst_helpers_process_separated_list_step
+%        \orelse\if]##2%
+%        \else
+%          #3{##1##2}%
+%          \expandafter\syst_helpers_process_separated_list_step
+%        \fi
+%        }%
+%     \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#2]#2}
+
+% \permanent\protected\def\processseparatedlist[%
+%   {\syst_helpers_process_separated_list\relax}
+
+\permanent\protected\def\processseparatedlist[#+]#*[#2]#3%
+   {\tolerant\def\syst_helpers_process_separated_list_step##1#2%
+      {\ifarguments\or
          #3{##1}%
          \expandafter\syst_helpers_process_separated_list_step
-       \orelse\if]##2%
-       \else
-         #3{##1##2}%
-         \expandafter\syst_helpers_process_separated_list_step
-       \fi
-       }%
-    \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#2]#2}
-
-\permanent\protected\def\processseparatedlist[%
-  {\syst_helpers_process_separated_list\relax}
+       \fi}%
+    \syst_helpers_process_separated_list_step#1\ignorearguments\ignorearguments}
 
 %D \macros
 %D   {processlist}
@@ -6658,5 +6659,20 @@
      \ifflags#1= \tolerantflagcode\etoksapp\scratchtoks{\ifdone \space\fi  tolerant}\donetrue\fi
      \ifflags#1=\protectedflagcode\etoksapp\scratchtoks{\ifdone \space\fi protected}\donetrue\fi
    \expandafter\endgroup\expandafter\endlocalcontrol\the\scratchtoks}
+
+%D \macros
+%D   {resetmacros}
+%D
+%D The next macro can be used to reset a macro:
+%D
+%D \starttyping
+%D \resetmacros[startfoo,\stopfoo]
+%D \stoptyping
+
+\permanent\protected\def\syst_reset_macro#1%
+  {\overloaded\letcsname\csstring#1\endcsname\undefined} % so only frozen (instances(
+
+\permanent\protected\def\resetmacros[#1]%
+  {\processcommalist[#1]\syst_reset_macro}
 
 \protect \endinput

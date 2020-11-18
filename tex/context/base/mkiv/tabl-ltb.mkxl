@@ -445,7 +445,7 @@
      \fi
    \else
      \donefalse
-     \!!doneafalse
+     \scratchconditiononefalse
      \ifcase\c_tabl_lines_repeat\else
        % calculate ahead
        \ifnum\c_tabl_lines_repeat=\numexpr\c_tabl_lines_column-\plustwo\relax
@@ -453,7 +453,7 @@
        \fi
      \fi
      \ifdone
-       \!!doneatrue
+       \scratchconditiononetrue
        % collecting repeater
      \orelse\ifdim\d_tabl_lines_width>\hsize
        \donetrue
@@ -478,7 +478,7 @@
        \fi
        \global\d_tabl_lines_width\wd\b_tabl_lines_cell
        \tabl_lines_start_part
-       \if!!doneb \else \ifcase\c_tabl_lines_repeat \else
+       \ifscratchconditionone \else \ifcase\c_tabl_lines_repeat \else
          % check for left/right page
          \ifcase\c_tabl_lines_page\donetrue\or\donetrue\or\donefalse\fi\ifdone
            % insert repeater

@@ -2310,8 +2310,8 @@
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
- % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+%  % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+%    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged
@@ -2370,14 +2370,14 @@
 
 \def\tabl_split_box_indeed#1%
   {\resettsplit
-   \def\tsplitminimumfreelines{2}%
-   \def\tsplitminimumfreespace{0pt}%
-   \setbox\tsplitcontent\box#1%
+   \c_split_minimum_free_lines\plustwo
+   \d_split_minimum_free_space\zeropoint
+   \setbox\b_split_content\box#1%
    \ifcase\c_tabl_tabulate_repeathead\or
-     \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
-     \setbox\tsplithead\vbox{\unvbox\tsplithead}%
+     \setbox\b_split_head\vsplit\b_split_content to \lineheight
+     \setbox\b_split_head\vbox{\unvbox\b_split_head}%
    \or
-     \setbox\tsplithead\vbox{\hbox{\strut\tabulationparameter\c!title}}%
+     \setbox\b_split_head\vbox{\hbox{\strut\tabulationparameter\c!title}}%
    \fi
    \handletsplit}
 
