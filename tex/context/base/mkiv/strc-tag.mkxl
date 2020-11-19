@@ -344,12 +344,12 @@
    \fi}
 
 \protected\def\strc_tags_enable_properties
-  {\let\getelementtag             \strc_tags_get_element_tag
-   \let\setupelementuserproperties\strc_tags_set_element_user_properties}
+  {\enforced\let\getelementtag             \strc_tags_get_element_tag
+   \enforced\let\setupelementuserproperties\strc_tags_set_element_user_properties}
 
 \protected\def\strc_tags_disable_properties
-  {\let\getelementtag             \donothing
-   \let\setupelementuserproperties\gobbletwooptionals}
+  {\enforced\let\getelementtag             \donothing
+   \enforced\let\setupelementuserproperties\gobbletwooptionals}
 
 %D The triggers:
 

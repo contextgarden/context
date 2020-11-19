@@ -1,0 +1,24 @@
+%D \module
+%D   [       file=trac-jus,
+%D        version=2012.11.27,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Justification,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Tracing Macros / Justification}
+
+\registerctxluafile{trac-jus}{}
+
+\unprotect
+
+\definesystemattribute [justification] [public]
+
+\protected\def\showjustification{\clf_showjustification} % currently no argument (default 1), todo: public implementor
+
+\protect \endinput

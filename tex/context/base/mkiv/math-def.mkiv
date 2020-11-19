@@ -15,12 +15,14 @@
 
 \unprotect
 
-%D Some day this will be done at the lua end.
+\pushoverloadmode % cap etc
 
 \startluacode
     mathematics.define(\number\defaultmathfamily)
  -- mathematics.xml.registerentities()
 \stopluacode
+
+\popoverloadmode
 
 \activatemathcharacters
 

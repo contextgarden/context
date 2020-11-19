@@ -83,7 +83,7 @@
 \permanent\protected\def\MPLIBfigure#1#2%
   {\setbox\scratchbox\hpack{\externalfigure[#1][\c!mask=#2]}%
    \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
-   \vpack to \zeropoint{\vss\hpack to \zeropoint{\fastsxsy{\sx}{\sy}{\box\scratchbox}\hss}}}
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\fastsxsy{\mlib_sx}{\mlib_sy}{\box\scratchbox}\hss}}}
 
 % horrible (we could inline scale and matrix code):
 

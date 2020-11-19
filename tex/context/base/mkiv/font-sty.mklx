@@ -55,18 +55,20 @@
 
 \newconstant\c_fonts_basics_alternative_style_method
 
+% maybe permanent
+
 \def\font_basics_define_alternative_style_indeed#variantone#varianttwo#command%
   {\setuvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
    \ifcsname#command\endcsname
      % no redefinition
    \orelse\ifnum\c_fonts_basics_alternative_style_method=\plusone
       \ifthirdargument
-        \setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
+        \permanent\setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
       \else
-            \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+        \permanent\setuvalue{#command}{\triggergroupedcommand{#variantone}}%
       \fi
    \else
-     \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+     \permanent\setuvalue{#command}{\triggergroupedcommand{#variantone}}%
    \fi}
 
 \def\font_helpers_apply_alternative_style

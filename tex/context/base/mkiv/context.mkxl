@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.11.18 19:13}
+\edef\contextversion{2020.11.19 11:23}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -147,7 +147,7 @@
 
 \loadmkxlfile{cldf-int} % interface
 
-\loadmarkfile{trac-ctx} % maybe move up
+\loadmkxlfile{trac-ctx} % maybe move up
 
 \loadmarkfile{toks-aux}
 
@@ -158,13 +158,13 @@
 
 \loadmkxlfile{layo-ini}
 
-\loadmarkfile{node-ini}
+\loadmkxlfile{node-ini}
 
 \loadmkxlfile{cldf-bas} % basics / depends on nodes
 
-\loadmkivfile{node-fin}
+\loadmkxlfile{node-fin}
 \loadmkxlfile{node-mig}
-%loadmarkfile{node-pag}
+%loadmkxlfile{node-pag}
 
 \loadmkxlfile{driv-ini}
 
@@ -179,8 +179,8 @@
 \loadmkxlfile{attr-eff}
 \loadmkxlfile{attr-mkr}
 
-\loadmarkfile{trac-tex}
-\loadmarkfile{trac-deb} % will move up
+\loadmkxlfile{trac-tex}
+\loadmkxlfile{trac-deb} % will move up
 
 \loadmkxlfile{supp-box}
 
@@ -414,7 +414,7 @@
 \loadmkxlfile{blob-ini}
 
 \loadmkxlfile{trac-vis}
-\loadmarkfile{trac-jus}
+\loadmkxlfile{trac-jus}
 
 \loadmkxlfile{typo-cln}
 \loadmarkfile{typo-wrp}

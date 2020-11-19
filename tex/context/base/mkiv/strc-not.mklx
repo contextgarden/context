@@ -1855,26 +1855,26 @@
 
 %D Compatibility macros:
 
-\permanent\protected\def\setupfootnotedefinition{\setupnotation                                 [\v!footnote]}
-\permanent\protected\def\setupfootnotes         {\setupnote                                     [\v!footnote]}
-\permanent          \def\footnotetext           {\setnotetext                                   [\v!footnote]}
-\permanent\protected\def\placefootnotes         {\dodoubleempty\strc_notes_place_footnotes      [\v!footnote]}
-\permanent\protected\def\placelocalfootnotes    {\dodoubleempty\strc_notes_place_local_footnotes[\v!footnote]}
-\permanent\protected\def\startlocalfootnotes    {\startlocalnotes                               [\v!footnote]} %  alleen footnote
+\permanent\protected\def\setupfootnotedefinition{\setupnotation                   [\v!footnote]}
+\permanent\protected\def\setupfootnotes         {\setupnote                       [\v!footnote]}
+\permanent          \def\footnotetext           {\setnotetext                     [\v!footnote]}
+\permanent\protected\def\placefootnotes         {\strc_notes_place_footnotes      [\v!footnote]}
+\permanent\protected\def\placelocalfootnotes    {\strc_notes_place_local_footnotes[\v!footnote]}
+\permanent\protected\def\startlocalfootnotes    {\startlocalnotes                 [\v!footnote]} %  alleen footnote
 \permanent\protected\def\stoplocalfootnotes     {\stoplocalnotes }
 
-\def\strc_notes_place_footnotes[#list][#settings]%
-  {\ifsecondargument
-     \placenotes[#list][#settings,\c!height=\textheight]%
-   \else
+\tolerant\def\strc_notes_place_footnotes[#list]#spacer[#settings]%
+  {\ifarguments\or
      \placenotes[#list][\c!height=\textheight]%
+   \or
+     \placenotes[#list][#settings,\c!height=\textheight]%
    \fi}
 
-\def\strc_notes_place_local_footnotes[#list][#settings]%
-  {\ifsecondargument
-     \placelocalnotes[#list][#settings,\c!height=\textheight]%
-   \else
+\tolerant\def\strc_notes_place_local_footnotes[#list]#spacer[#settings]%
+  {\ifarguments\or
      \placelocalnotes[#list][\c!height=\textheight]%
+   \or
+     \placelocalnotes[#list][#settings,\c!height=\textheight]%
    \fi}
 
 %D Goodies:

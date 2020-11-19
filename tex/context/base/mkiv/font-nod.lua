@@ -19,7 +19,6 @@ local match, rep = string.match, string.rep
 fonts = fonts or { }
 nodes = nodes or { }
 
-
 local fonts            = fonts
 local nodes            = nodes
 local context          = context
@@ -39,9 +38,6 @@ local tonode           = nuts.tonode
 
 local injections       = nodes.injections or { }
 nodes.injections       = injections
-
-local char_tracers     = tracers.characters or { }
-tracers.characters     = char_tracers
 
 local step_tracers     = tracers.steppers or { }
 tracers.steppers       = step_tracers
@@ -112,134 +108,8 @@ local function freeze(h,where)
     end
 end
 
-function char_tracers.collect(head,list,tag,n)
-    n = n or 0
-    local ok = false
-    local fn = nil
-    while head do
-        local char, id = isglyph(head)
-        if char then
-            local font = id
-            if font ~= fn then
-                ok, fn = false, font
-            end
-            if not ok then
-                ok = true
-                n = n + 1
-                list[n] = list[n] or { }
-                list[n][tag] = { }
-            end
-            local l = list[n][tag]
-         -- l[#l+1] = { char, font, i }
-            l[#l+1] = { char, font }
-        elseif id == disc_code then
-            -- skip
-         -- local pre, post, replace = getdisc(head)
-         -- if replace then
-         --     for n in nextglyph, replace do
-         --         l[#l+1] = { c, f }
-         --     end
-         -- end
-         -- if pre then
-         --     for n in nextglyph, pre do
-         --         l[#l+1] = { c, f }
-         --     end
-         -- end
-         -- if post then
-         --     for n in nextglyph, post do
-         --         l[#l+1] = { c, f }
-         --     end
-         -- end
-        else
-            ok = false
-        end
-        head = getnext(head)
-    end
-end
-
-function char_tracers.equal(ta, tb)
-    if #ta ~= #tb then
-        return false
-    else
-        for i=1,#ta do
-            local a = ta[i]
-            local b = tb[i]
-         -- if a[1] ~= b[1] or a[2] ~= b[2] or a[3] ~= b[3] then
-            if a[1] ~= b[1] or a[2] ~= b[2] then
-                return false
-            end
-        end
-    end
-    return true
-end
-
-function char_tracers.string(t)
-    local tt = { }
-    for i=1,#t do
-        tt[i] = utfchar(t[i][1])
-    end
-    return concat(tt,"")
-end
-
 local f_unicode = formatters["%U"]
 local f_badcode = formatters["{%i}"]
-
-function char_tracers.unicodes(t,decimal)
-    local tt = { }
-    for i=1,#t do
-        local n = t[i][1]
-        if n == 0 then
-            tt[i] = "-"
-        elseif decimal then
-            tt[i] = n
-        else
-            tt[i] = f_unicode(n)
-        end
-    end
-    return concat(tt," ")
-end
-
--- function char_tracers.indices(t,decimal)
---     local tt = { }
---     for i=1,#t do
---         local n = t[i][3]
---         if n == 0 then
---             tt[i] = "-"
---         elseif decimal then
---             tt[i] = n
---         else
---             tt[i] = f_unicode(n)
---         end
---     end
---     return concat(tt," ")
--- end
-
-function char_tracers.start()
-    local npc = handlers.characters -- should accept nuts too
-    local list = { }
-    function handlers.characters(head)
-        local n = #list
-        char_tracers.collect(head,list,'before',n)
-        head = npc(head) -- for the moment tonode
-        char_tracers.collect(head,list,'after',n)
-        if #list > n then
-            list[#list+1] = { }
-        end
-        return head
-    end
-    function char_tracers.stop()
-        tracers.list['characters'] = list
-        local variables = {
-            ['title']                = 'ConTeXt Character Processing Information',
-            ['color-background-one'] = lmx.get('color-background-yellow'),
-            ['color-background-two'] = lmx.get('color-background-purple'),
-        }
-        lmx.show('context-characters.lmx',variables)
-        handlers.characters = npc
-        tasks.restart("processors", "characters")
-    end
-    tasks.restart("processors", "characters")
-end
 
 local stack = { }
 

@@ -13,106 +13,13 @@ local status = status
 
 local tonumber, tostring, type = tonumber, tostring, type
 local format, concat, match, find, gsub = string.format, table.concat, string.match, string.find, string.gsub
-local lpegmatch = lpeg.match
 
--- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
+local report_nl     = logs.newline
+local report_str    = logs.writer
 
------ report_tex  = logs.reporter("tex error")
------ report_lua  = logs.reporter("lua error")
-local report_nl   = logs.newline
-local report_str  = logs.writer
-
-tracers           = tracers or { }
-local tracers     = tracers
-
--- this is old tracing stuff ... will go to its own module
-
-tracers.lists     = { }
-local lists       = tracers.lists
-
-tracers.strings   = { }
-local strings     = tracers.strings
-
-local texgetdimen = tex.getdimen
-local texgettoks  = tex.gettoks
-local texgetcount = tex.getcount
-local texgethelp  = tex.gethelptext or function() end
-local fatalerror  = tex.fatalerror
-
-local implement   = interfaces.implement
-
--- this is used in lmx files but needs to be redone
-
-strings.undefined = "undefined"
-
-function tracers.dimen(name)
-    local d = texgetdimen(name)
-    return d and number.topoints(d) or strings.undefined
-end
-
-function tracers.count(name)
-    return texgetcount(name) or strings.undefined
-end
-
-function tracers.toks(name,limit)
-    local t = texgettoks(name)
-    return t and string.limit(t,tonumber(limit) or 40) or strings.undefined
-end
-
-function tracers.primitive(name)
-    return tex[name] or strings.undefined
-end
-
-lists.scratch = {
-    0, 2, 4, 6, 8
-}
-
-lists.internals = {
-    'p:hsize', 'p:parindent', 'p:leftskip','p:rightskip',
-    'p:vsize', 'p:parskip', 'p:baselineskip', 'p:lineskip', 'p:topskip'
-}
-
-lists.context = {
-    'd:lineheight',
-    'c:realpageno', 'c:userpageno', 'c:pageno', 'c:subpageno'
-}
-
-local types = {
-    ['d'] = tracers.dimen,
-    ['c'] = tracers.count,
-    ['t'] = tracers.toks,
-    ['p'] = tracers.primitive
-}
-
-local splitboth = lpeg.splitat(":")
-
-function tracers.type(csname)
-    local tag, name = lpegmatch(splitboth,csname)
-    return tag or ""
-end
-
-function tracers.name(csname)
-    local tag, name = lpegmatch(splitboth,csname)
-    return name or csname
-end
-
-function tracers.cs(csname)
-    local tag, name = lpegmatch(splitboth,csname)
-    if name and types[tag] then
-        return types[tag](name)
-    else
-        return tracers.primitive(csname)
-    end
-end
-
-function tracers.knownlist(name)
-    local l = lists[name]
-    return l and #l > 0
-end
-
--- till here
-
--- for now here
+tracers             = tracers or { }
+local tracers       = tracers
+local implement     = interfaces.implement
 
 local savedluaerror = nil
 local usescitelexer = nil
@@ -349,15 +256,6 @@ local function reportback(lmxname,default,variables)
     end
 end
 
-function lmx.showdebuginfo(lmxname)
-    local variables = {
-        ['title']                = 'ConTeXt Debug Information',
-        ['color-background-one'] = lmx.get('color-background-green'),
-        ['color-background-two'] = lmx.get('color-background-blue'),
-    }
-    reportback(lmxname,"context-debug.lmx",variables)
-end
-
 local function showerror(lmxname)
     local filename, linenumber, errorcontext = status.filename, tonumber(status.linenumber) or 0, ""
     if not filename then
@@ -443,7 +341,6 @@ implement { name = "showexperiments",    actions = experiments.show }
 implement { name = "enableexperiments",  actions = experiments.enable,  arguments = "string" }
 implement { name = "disableexperiments", actions = experiments.disable, arguments = "string" }
 
-implement { name = "showdebuginfo",      actions = lmx.showdebuginfo }
 implement { name = "overloaderror",      actions = lmx.overloaderror }
 implement { name = "showlogcategories",  actions = logs.show }
 

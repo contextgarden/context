@@ -1,0 +1,78 @@
+%D \module
+%D   [       file=attr-ini,
+%D        version=2007.06.06, % probably a bit older
+%D          title=\CONTEXT\ Node Macros,
+%D       subtitle=Finalizing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Support / Finalizing}
+
+\unprotect
+
+\registerctxluafile{node-shp}{optimize}
+% \registerctxluafile{node-fin}{autosuffix,optimize} % we might generalize this one
+\registerctxluafile{node-fin}{optimize} % we might generalize this one
+
+\permanent\protected\def\finalizeobjectbox #1{\clf_finalizebox#1\relax}
+\permanent\protected\def\finalizeshipoutbox#1{\clf_finalizebox#1\relax}
+
+% Experimental (for Aditya):
+
+\permanent\protected\def\cleanupbox#1{\clf_cleanupbox#1\relax}
+
+% Tricky stuff: this might become obsolete. It is about time to check this out
+% now (after more than a decade)! The few times that we need this we can better
+% copy some of the sensitive attributes (mostly color).
+
+\definesystemattribute[trigger][public]
+
+\newcount\c_syst_attr_trigger
+
+\permanent\edef\startinheritattributes{\c_attr_trigger\plusone}
+\permanent\edef\stopinheritattributes {\c_attr_trigger\attributeunsetvalue}
+
+\permanent\def\syst_attr_trigger_copy_yes{\afterassignment\syst_attr_trigger_copy_indeed\c_syst_attr_trigger}
+\permanent\def\syst_attr_trigger_dump_yes{\afterassignment\syst_attr_trigger_dump_indeed\c_syst_attr_trigger}
+
+\def\syst_attr_trigger_copy_indeed
+  {\ifvbox\c_syst_attr_trigger
+     \vpack attr \triggerattribute \plusone {\unvcopy\c_syst_attr_trigger}%
+   \else
+     \hpack attr \triggerattribute \plusone {\unhcopy\c_syst_attr_trigger}%
+   \fi}
+
+\def\syst_attr_trigger_dump_indeed
+  {\ifvbox\c_syst_attr_trigger
+     \vpack attr \triggerattribute \plusone {\unvbox\c_syst_attr_trigger}%
+   \else
+     \hpack attr \triggerattribute \plusone {\unhbox\c_syst_attr_trigger}%
+   \fi}
+
+\permanent\protected\def\enableattributeinheritance
+  {\clf_enablestatetriggering
+   \enforced\let\attributedcopy\syst_attr_trigger_copy_yes
+   \enforced\let\attributedbox \syst_attr_trigger_dump_yes}
+
+\permanent\protected\def\disableattributeinheritance
+  {\clf_disablestatetriggering
+   \enforced\let\attributedcopy\copy
+   \enforced\let\attributedbox \box}
+
+\disableattributeinheritance
+
+\installtexdirective
+  {attributes.inheritance}
+  {\enableattributeinheritance}
+  {\disableattributeinheritance}
+
+% \appendtoks
+%     \enableattributeinheritance % might become default
+% \to\everyjob
+
+\protect \endinput

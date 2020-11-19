@@ -201,11 +201,11 @@
 \permanent\def\gobbleeightarguments  #-#-#-#-#-#-{}
 \permanent\def\gobbleninearguments #-#-#-#-#-#-#-{}
 
-\permanent\def\gobbleoneoptional   [#-]{}
-\permanent\def\gobbletwooptionals  [#-][#-]{}
-\permanent\def\gobblethreeoptionals[#-][#-][#-]{}
-\permanent\def\gobblefouroptionals [#-][#-][#-][#-]{}
-\permanent\def\gobblefiveoptionals [#-][#-][#-][#-][#-]{}
+\permanent\tolerant\def\gobbleoneoptional   [#-]{}
+\permanent\tolerant\def\gobbletwooptionals  [#-]#*[#-]{}
+\permanent\tolerant\def\gobblethreeoptionals[#-]#*[#-]#*[#-]{}
+\permanent\tolerant\def\gobblefouroptionals [#-]#*[#-]#*[#-]#*[#-]{}
+\permanent\tolerant\def\gobblefiveoptionals [#-]#*[#-]#*[#-]#*[#-]#*[#-]{}
 
 %D Reserved macros for tests:
 

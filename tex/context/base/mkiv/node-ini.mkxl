@@ -17,6 +17,7 @@
 
 \newcount\filterstate \filterstate\plusone % hm, public
 
+\registerctxluafile{node-cmp}{autosuffix}
 \registerctxluafile{node-ini}{autosuffix}
 \registerctxluafile{node-met}{}
 \registerctxluafile{node-nut}{autosuffix}
@@ -39,15 +40,17 @@
 \registerctxluafile{node-syn}{}
 \registerctxluafile{node-par}{autosuffix}
 
+%D This might go away (needs checking anyway, very old code):
+
 \newcount\c_node_tracers_show_box % box number
 
-\unexpanded\def\shownextnodes{\afterassignment\node_tracers_show_next\c_node_tracers_show_box}
-\unexpanded\def\showflatnodes{\afterassignment\node_tracers_show_flat\c_node_tracers_show_box}
+\permanent\protected\def\shownextnodes{\afterassignment\node_tracers_show_next\c_node_tracers_show_box}
+\permanent\protected\def\showflatnodes{\afterassignment\node_tracers_show_flat\c_node_tracers_show_box}
 
 \def\node_tracers_show_next{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,false,true))}}
 \def\node_tracers_show_flat{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,true, true))}}
 
-\unexpanded\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
-\unexpanded\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
+\permanent\protected\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
+\permanent\protected\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
 
 \protect \endinput

@@ -152,11 +152,16 @@ function install.identify()
                 local name  = files[i]
                 local size  = filesize(name)
                 local base  = gsub(name,pattern,"")
-                local stamp = hashdata(io.loaddata(name))
-                details[i]  = { base, size, stamp }
-                total       = total + size
+                local data  = io.loaddata(name)
+                if data and #data > 0 then
+                    local stamp = hashdata(data)
+                    details[i]  = { base, size, stamp }
+                    total       = total + size
+                else
+                    report("%-24s : bad file %a",tree,name)
+                end
             end
-            report("%-20s : %4i files, %3.0f MB",tree,#files,total/(1000*1000))
+            report("%-24s : %4i files, %3.0f MB",tree,#files,total/(1000*1000))
 
             savetable(path .. ".tma",details)
 

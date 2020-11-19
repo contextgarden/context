@@ -501,8 +501,8 @@ implement {
     arguments  = { "dimen", "dimen", "dimen" },
     actions    = function(wd,ht,dp)
         local hd = ht + dp
-        setmacro("sx",wd ~= 0 and factor/wd or 0)
-        setmacro("sy",hd ~= 0 and factor/hd or 0)
+        setmacro("mlib_sx",wd ~= 0 and factor/wd or 0)
+        setmacro("mlib_sy",hd ~= 0 and factor/hd or 0)
     end
 }
 

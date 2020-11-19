@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=trac-tex,
+%D        version=2009.07.20,
+%D          title=\CONTEXT\ Tracking Macros,
+%D       subtitle=\TEX,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Tracking Macros / TeX}
+
+\registerctxluafile{trac-tex}{}
+
+%D All tracing flags at the \TEX\ end will be redone this way so
+%D that we have a similar mechanism for \TEX\ and \LUA. Also, the
+%D currently used if's might become conditionals.
+
+\unprotect
+
+% \def\enabletextracerwhatever {...}
+% \def\disabletextracerwhatever{...}
+
+\mutable\let\alltextracers\empty % so that we can report available tracers
+
+\permanent\protected\def\installtextracer#1%
+  {\addtocommalist{#1}\alltextracers}
+
+\permanent\protected\def\enabletextracers [#1]{\processcommalist[#1]\syst_textracers_enable }
+\permanent\protected\def\disabletextracers[#1]{\processcommalist[#1]\syst_textracers_disable}
+
+\def\syst_textracers_enable #1{\begincsname  enabletracer#1\endcsname}
+\def\syst_textracers_disable#1{\begincsname disabletracer#1\endcsname}
+
+% The next one is for Taco, although we can use directives as well:
+
+\protected\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
+
+%D This is not really a tracker but for decades it lived in my \type {cont-loc}
+%D file. I moved it here because I wanted someone else to use it. This macro is not
+%D really useful for users. I kept the \LUA\ variant in \type {cont-loc.mkiv}.
+
+\installcorenamespace{profilemacrocount}
+\installcorenamespace{profilemacromacro}
+
+\newtoks\t_syst_profile
+
+\appendtoks
+    \the\t_syst_profile
+\to \everystoptext
+
+\permanent\protected\def\profilemacro#1% an oldie, but modernized a bit
+  {\edef\p_name{\csstring#1}%
+   \ifcsname\??profilemacrocount\p_name\endcsname \else
+     \expandafter\newcount\csname\??profilemacrocount\p_name\endcsname
+     \letcsname\??profilemacromacro\p_name\endcsname#1%
+     \xtoksapp\t_syst_profile
+       {\writestatus
+          {profile}%
+          {\string#1: \noexpand\the\csname\??profilemacrocount\p_name\endcsname}}%
+     \enforced\protected\xdef#1%
+       {\global\advance\csname\??profilemacrocount\p_name\endcsname\plusone
+        \expandafter\noexpand\csname\??profilemacromacro\p_name\endcsname}%
+   \fi}
+
+\protect \endinput

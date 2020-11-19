@@ -81,6 +81,8 @@
 \protected\def\typo_capitale_Words{\clf_setcharactercasing{\v!Words}\fontid\font}
 \protected\def\typo_capitale_camel{\clf_setcharactercasing{\v!camel}\fontid\font}
 
+\pushoverloadmode
+
 \permanent\protected\def\WORD {\triggergroupedcommandcs\typo_capitale_WORD }
 \permanent\protected\def\word {\triggergroupedcommandcs\typo_capitale_word }
 \permanent\protected\def\Word {\triggergroupedcommandcs\typo_capitale_Word }
@@ -89,6 +91,8 @@
 
 \aliased\let\WORDS\WORD
 \aliased\let\words\word
+
+\popoverloadmode
 
 %D \macros
 %D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}

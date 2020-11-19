@@ -40,10 +40,4 @@
 
 % \enabledirectives[system.showerror]
 
-\ifcase\contextlmtxmode \else
-    \newtoks \t_syst_terminal_data
-  % \t_syst_terminal_data {\beginlocalcontrol\clf_fetchterminaldata\endlocalcontrol}
-    \t_syst_terminal_data {\clf_fetchterminaldata}
-\fi
-
 \protect \endinput
