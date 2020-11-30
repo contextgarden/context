@@ -1,0 +1,96 @@
+%D \module
+%D   [       file=catc-sym,
+%D        version=1997.01.03, % moved code
+%D          title=\CONTEXT\ Catcode Macros,
+%D       subtitle=Some Handy Constants,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The following definitions can be used for mapping special characters onto
+%D letters, although we cheat a bit: they actually are of category other but
+%D for users that distinction doesn't matter here. The definitions in \MKII\
+%D and \MKIV\ look more impressive but here we use a \LUAMETATEX\ feature
+%D that permits a more direct definition (that also looks nice with the
+%D \CONTEXT\ syntax highlighting):
+
+\immutable\edef\letterleftbrace        {\expandtoken \othercatcode \leftbraceasciicode}
+\immutable\edef\letterrightbrace       {\expandtoken \othercatcode \rightbraceasciicode}
+\immutable\edef\letterampersand        {\expandtoken \othercatcode \ampersandasciicode}
+\immutable\edef\letterless             {\expandtoken \othercatcode \lessthanasciicode}
+\immutable\edef\lettermore             {\expandtoken \othercatcode \morethanasciicode}
+\immutable\edef\letterhash             {\expandtoken \othercatcode \hashasciicode}
+\immutable\edef\letterdoublequote      {\expandtoken \othercatcode \doublequoteasciicode}
+\immutable\edef\lettersinglequote      {\expandtoken \othercatcode \singlequoteasciicode}
+\immutable\edef\letterdollar           {\expandtoken \othercatcode \dollarasciicode}
+\immutable\edef\letterpercent          {\expandtoken \othercatcode \percentasciicode}
+\immutable\edef\letterhat              {\expandtoken \othercatcode \circumflexasciicode}
+\immutable\edef\letterunderscore       {\expandtoken \othercatcode \underscoreasciicode}
+\immutable\edef\letterbar              {\expandtoken \othercatcode \barasciicode}
+\immutable\edef\lettertilde            {\expandtoken \othercatcode \tildeasciicode}
+\immutable\edef\letterbackslash        {\expandtoken \othercatcode \backslashasciicode}
+\immutable\edef\letterslash            {\expandtoken \othercatcode \forwardslashasciicode}
+\immutable\edef\letterquestionmark     {\expandtoken \othercatcode \questionmarkasciicode}
+\immutable\edef\letterexclamationmark  {\expandtoken \othercatcode \exclamationmarkasciicode}
+\immutable\edef\letterat               {\expandtoken \othercatcode \atsignasciicode}
+\immutable\edef\lettercolon            {\expandtoken \othercatcode \colonasciicode}
+\immutable\edef\letterhyphen           {\expandtoken \othercatcode \hyphenasciicode}
+
+\immutable\edef\letterleftparenthesis  {\expandtoken \othercatcode \leftparentasciicode}
+\immutable\edef\letterrightparenthesis {\expandtoken \othercatcode \rightparentasciicode}
+\immutable\edef\letterleftbracket      {\expandtoken \othercatcode \leftbracketasciicode}
+\immutable\edef\letterrightbracket     {\expandtoken \othercatcode \rightbracketasciicode}
+
+\aliased\let\letterescape    \letterbackslash
+\aliased\let\letterbgroup    \letterleftbrace
+\aliased\let\letteregroup    \letterrightbrace
+\aliased\let\letteropenbrace \letterleftbrace
+\aliased\let\letterclosebrace\letterrightbrace
+
+\unprotect
+
+%immutable\edef\_n_u_l_{\expandtoken \othercatcode \zerocount} % nul(l)
+%immutable\edef\_s_o_h_{\expandtoken \othercatcode \plusone  } % start of header       ^^^^0001
+\immutable\edef\_s_t_x_{\expandtoken \othercatcode \plustwo  } % start of text         ^^^^0002
+\immutable\edef\_e_t_x_{\expandtoken \othercatcode \plusthree} % end of text           ^^^^0003
+\immutable\edef\_e_o_t_{\expandtoken \othercatcode \plusfour } % end of transmission   ^^^^0004
+%immutable\edef\_e_n_q_{\expandtoken \othercatcode \plusfive } % enquiry
+%immutable\edef\_a_c_k_{\expandtoken \othercatcode \plussix  } % aknowledgement
+
+\protect
+
+%D \macros
+%D   {uncatcodespecials,setnaturalcatcodes,setnormalcatcodes,
+%D    uncatcodecharacters,uncatcodeallcharacters,
+%D    uncatcodespacetokens}
+%D
+%D The following macros are more or less replaced by switching to a catcode table
+%D (which we simulate in \MKII) but we keep them for convenience and compatibility.
+%D Some old engine code has been removed. A few ar still used a few times so I need
+%D to clean that up.
+
+%permanent\protected\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
+%permanent\protected\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
+\permanent\protected\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
+%permanent\protected\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
+%permanent\protected\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
+
+\permanent\protected\def\uncatcodespacetokens
+  {\catcode\spaceasciicode    \spacecatcode
+   \catcode\tabasciicode      \spacecatcode
+   \catcode\formfeedasciicode \endoflinecatcode
+   \catcode\endoflineasciicode\endoflinecatcode
+   \catcode\delasciicode      \ignorecatcode}
+
+%D These two are probably no longer needed, but we keep them for a while. Some more
+%D explanation can be foun din the mkiv variant of this module, where we also
+%D discuss side effects. It's time to move on, so these might go away some day.
+
+\aliased  \let\rescan              \scantextokens
+\permanent\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
+
+\endinput

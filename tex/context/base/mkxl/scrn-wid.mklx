@@ -1,0 +1,755 @@
+%D \module
+%D   [       file=scrn-int,
+%D        version=2011.02.27, % moved from scrn-int
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Widgets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Interaction Macros / Widgets}
+
+\registerctxluafile{scrn-wid}{}
+
+% todo: expansion in comments (default is expanded)
+% todo: check renderings ... acrobat crashes too easily on missing one
+
+\unprotect
+
+%D Attachments (mkiv upgraded):
+%D
+%D As usual in \CONTEXT\ we separate the general definition (frontend)
+%D and the rendering (backend).
+
+% hack: x\footnote{x\inleftmargin[scope=local]{\attachment[location=high,file=i-context.pdf]}}x
+
+% old but stil valid method:
+%
+% \useattachment[test.tex]
+% \useattachment[whatever][test.tex]
+% \useattachment[whatever][newname][test.tex]
+% \useattachment[whatever][title][newname][test.tex]
+%
+% new method:
+%
+% \registerattachment[sometag][specification] % name file author title subtitle
+%
+% \attachment[sometag][extra specs]
+% \attachment[test.tex]
+% \attachment[file=test.tex]
+% \attachment[file=test.tex,method=hidden]
+% \attachment[name=newname,file=test.tex]
+% \attachment[title=mytitle,name=newname,file=test.tex]
+%
+% indirect
+%
+% \defineattachment[whatever5][file=test.tex] \attachment[whatever5][method=hidden]
+% \defineattachment[whatever5][file=test.tex,method=hidden] \attachment[whatever5]
+%
+% direct (no definitions)
+%
+% \attachment[test][file=oeps.tex,title=Oeps,author=Hans,subtitle=TeX File,method=hidden]
+% \attachment[label=test,file=oeps.tex,title=Oeps,author=Hans,subtitle=TeX File,method=hidden]
+%
+% autolabel:
+%
+% \attachment[file=oeps.tex,title=Oeps,author=Hans,subtitle=TeX File,method=hidden]
+%
+% % \setupattachments[\c!symbol={symbol-normal,symbol-down}]
+
+% startattachment -> temp file
+
+\newbox\b_scrn_attachment_collect
+\newbox\b_scrn_attachment_link
+\newbox\b_scrn_attachment_symbol
+
+\installcorenamespace{attachment}
+\installcorenamespace{attachmentlocation}
+\installcorenamespace{attachmentmethod}
+
+\installcommandhandler \??attachment {attachment} \??attachment
+
+\aliased\let\setupattachments\setupattachment % convenience and compatibility
+
+\setupattachment
+  [\c!state=\v!start,
+   \c!color=\interactionparameter\c!color,
+  %\c!textlayer=,
+  %\c!symbol=,
+  %\c!title=,
+  %\c!subtitle=,
+  %\c!file=, % input filename
+  %\c!name=, % new filename
+  %\c!author=,
+  %\c!method=, % \v!hidden = not in menu
+  %\c!buffer=
+   \c!symbol=,
+   \c!distance=\emwidth,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!depth=\v!fit,
+   \c!location=\v!high]
+
+\mutable\let\currentattachmentdepth     \empty
+\mutable\let\currentattachmentheight    \empty
+\mutable\let\currentattachmentregistered\empty
+\mutable\let\currentattachmentsymbol    \empty
+\mutable\let\currentattachmentwidth     \empty
+
+\permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#settings]% we save (globally) at the lua end
+  {\ifarguments\else
+     \begingroup
+     \def\currentattachment{_}%
+     \setupcurrentattachment[#settings,\s!parent=\??attachment]%
+     \clf_registerattachment
+        tag        {#tag}%
+        registered {#tag}%
+        title      {\attachmentparameter\c!title}%
+        subtitle   {\attachmentparameter\c!subtitle}%
+        author     {\attachmentparameter\c!author}%
+        file       {\attachmentparameter\c!file}%
+        name       {\attachmentparameter\c!name}%
+        buffer     {\attachmentparameter\c!buffer}%
+        mimetype   {\attachmentparameter\c!type}%
+     \relax
+     \endgroup
+   \fi}
+
+\appendtoks
+    \frozen\instance\setuevalue         \currentattachment {\scrn_attachment_direct[\currentattachment]}%
+    \frozen\instance\setuevalue{\e!start\currentattachment}{\scrn_attachment_start [\currentattachment]}%
+    \frozen\instance\setuevalue{\e!stop \currentattachment}{\scrn_attachment_stop                      }%
+\to \everydefineattachment
+
+\permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#settings]%
+  {\iflocation
+     \bgroup
+     \edef\currentattachment{#tag}%
+     \ifcstok{\attachmentparameter\c!state}\v!start
+       \iftok{#registered}\emptytoks
+         \scrn_attachment_inject[\v!auto][]%
+       \orelse\ifhastok={#registered}%
+          \scrn_attachment_inject[\v!auto][#registered]%
+       \else
+          \scrn_attachment_inject[#registered][#settings]%
+       \fi
+     \fi
+     \egroup
+   \fi}
+
+\tolerant\protected\def\scrn_attachment_start[#tag]#spacer[#registered]#spacer[#settings]%
+  {\edef\currentattachment{#tag}%
+   \unless\iflocation
+     \expandafter\scrn_attachment_start_ignore
+   \orelse\ifcstok{\attachmentparameter\c!state}\v!start
+     \expandafter\scrn_attachment_start_indeed
+   \else
+     \expandafter\scrn_attachment_start_ignore
+   \fi[#registered][#settings]}
+
+\protected\def\scrn_attachment_stop
+  {}
+
+\def\scrn_attachment_start_indeed[#registered][#settings]%
+  {\bgroup
+   \doifelsenothing{#registered}
+     {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment]\egroup}}%
+     {\doifelseassignment{#registered}
+        {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment,#registered]\egroup}}%
+        {\def\scrn_attachment_stop{\scrn_attachment_inject[#registered][\c!buffer=\v!attachment,#settings]\egroup}}}%
+   \grabbufferdatadirect\v!attachment{\e!start\currentattachment}{\e!stop\currentattachment}}
+
+\def\scrn_attachment_start_ignore
+  {\expandafter\gobbleuntil\csname\e!stop\currentattachment\endcsname}
+
+\def\scrn_attachment_inject[#registered][#settings]%
+  {\edef\currentattachmentregistered{#registered}%
+   \setupattachment[\currentattachment][#settings]%
+   \expandnamespaceparameter\??attachmentmethod\attachmentparameter\c!method\v!normal}
+
+\setvalue{\??attachmentmethod\v!normal}%
+  {\edef\currentattachmentsymbol{\attachmentparameter\c!symbol}%
+   \edef\currentattachmentwidth {\attachmentparameter\c!width }%
+   \edef\currentattachmentheight{\attachmentparameter\c!height}%
+   \edef\currentattachmentdepth {\attachmentparameter\c!depth }%
+   \ifempty\currentattachmentsymbol
+     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {.5\emwidth}\fi
+     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{.5\emwidth}\fi
+     \ifx\currentattachmentdepth \v!fit\let \currentattachmentdepth \zeropoint\fi
+   \else
+     \clf_presetsymbollist{\attachmentparameter\c!symbol}%
+     % we cannot yet ask for the wd/ht/dp of an xform else we could use those
+     \setbox\b_scrn_attachment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
+     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {\wd\b_scrn_attachment_symbol}\fi
+     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{\ht\b_scrn_attachment_symbol}\fi
+     \ifx\currentattachmentdepth \v!fit\edef\currentattachmentdepth {\dp\b_scrn_attachment_symbol}\fi
+   \fi
+   \clf_insertattachment
+     tag               {\currentattachment}%
+     registered        {\currentattachmentregistered}%
+     width             \dimexpr\currentattachmentwidth \relax
+     height            \dimexpr\currentattachmentheight\relax
+     depth             \dimexpr\currentattachmentdepth \relax
+     color             {\attachmentparameter\c!color}%
+     colormodel        \c_attr_colormodel
+     colorvalue        \rawcolorattribute{\attachmentparameter\c!color}%
+     transparencyvalue \rawtransparencyattribute{\attachmentparameter\c!color}%
+     symbol            {\currentattachmentsymbol}%
+     layer             {\attachmentparameter\c!textlayer}%
+     % these will be overloaded by registered when available
+     title             {\attachmentparameter\c!title}%
+     subtitle          {\attachmentparameter\c!subtitle}%
+     author            {\attachmentparameter\c!author}%
+     file              {\attachmentparameter\c!file}%
+     name              {\attachmentparameter\c!name}%
+     buffer            {\attachmentparameter\c!buffer}%
+     mimetype          {\attachmentparameter\c!type}%
+   \relax
+   \wd\b_scrn_attachment_link\currentattachmentwidth
+   \ht\b_scrn_attachment_link\currentattachmentheight
+   \dp\b_scrn_attachment_link\currentattachmentdepth
+   \expandnamespaceparameter\??attachmentlocation\attachmentparameter\c!location\s!unknown}
+
+\setvalue{\??attachmentmethod\v!hidden}%
+  {\clf_insertattachment
+     tag        {\currentattachment}%
+     registered {\currentattachmentregistered}%
+     method     {\v!hidden}%
+     title      {\attachmentparameter\c!title}%
+     subtitle   {\attachmentparameter\c!subtitle}%
+     author     {\attachmentparameter\c!author}%
+     file       {\attachmentparameter\c!file}%
+     name       {\attachmentparameter\c!name}%
+     buffer     {\attachmentparameter\c!buffer}%
+     mimetype   {\attachmentparameter\c!type}%
+   \relax}
+
+\protected\def\scrn_attachment_flush_traced
+  {\hpack\bgroup
+     \blackrule % can be a fast one
+       [ \c!color=trace:r,
+         \c!width=\wd\b_scrn_attachment_link,
+        \c!height=\ht\b_scrn_attachment_link,
+         \c!depth=\dp\b_scrn_attachment_link]%
+     \kern-\wd\b_scrn_attachment_link
+     \box\b_scrn_attachment_link
+   \egroup}
+
+\protected\def\scrn_attachment_flush_normal
+  {\box\b_scrn_attachment_link}
+
+\installtextracker
+  {attachments.anchors}
+  {\let\scrn_attachment_flush\scrn_attachment_flush_traced}
+  {\let\scrn_attachment_flush\scrn_attachment_flush_normal}
+
+\let\scrn_attachment_flush\scrn_attachment_flush_normal
+
+\setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!rightedge  }{\inrightedge  {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!leftmargin }{\inleftmargin {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!rightmargin}{\inrightmargin{\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!high       }{\high         {\scrn_attachment_flush}}
+
+\setvalue{\??attachmentlocation\v!none}%
+  {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
+     \ifvoid\b_scrn_attachment_collect\else
+       \box\b_scrn_attachment_collect
+       \hskip\attachmentparameter\c!distance\relax
+     \fi
+     \scrn_attachment_flush
+   \egroup}
+
+\setvalue{\??attachmentlocation\s!unknown}%
+  {\ifvoid\b_scrn_attachment_collect\else
+     \box\b_scrn_attachment_collect
+   \fi}
+
+\permanent\protected\def\placeattachments
+  {\ifvoid\b_scrn_attachment_collect\else
+     \box\b_scrn_attachment_collect
+   \fi}
+
+\defineattachment[attachment]
+
+% \ifx\currentinterface\defaultinterface \else
+%     \defineattachment[\v!attachment]
+% \fi
+
+% backward compatible:
+
+\permanent\tolerant\protected\def\useattachment[#tag]#spacer[#title]#spacer[#name]#spacer[#file]%
+  {\ifarguments\or
+     \registerattachment[#tag][title=#tag,name=#tag,file=#tag]%
+   \or
+     \registerattachment[#tag][title=#title,name=#title,file=#title]%
+   \or
+     \registerattachment[#tag][title=#title,name=#title,file=#name]%
+   \or
+     \registerattachment[#tag][title=#title,name=#name,file=#file]%
+   \fi}
+
+%D Comments:
+
+% test
+%
+% \startcomment
+%   hello beautiful\\world
+% \stopcomment
+%
+% test
+%
+% \startcomment[hello]
+%   hello << eerste >>
+%   beautiful
+%   world
+% \stopcomment
+%
+% test
+%
+% \startcomment[hello][color=green,width=10cm,height=3cm]
+%   hello
+%   beautiful
+%   world
+% \stopcomment
+%
+% test
+%
+% \startcomment[hello][color=red,width=4cm,height=3cm]
+%   hello
+%
+%   beautiful
+%
+%   world
+% \stopcomment
+%
+% test
+%
+% \startcomment[symbol=Help]
+%   Do we want this kind of rubish?
+% \stopcomment
+%
+% test
+%
+% \definesymbol [comment-normal][{\externalfigure[cow.pdf]}]
+% \definesymbol [comment-down]  [{\externalfigure[cow.pdf]}]
+%
+% \def\CowSymbol#1#2%
+%  {\scale
+%     [\c!height=#1]
+%     {\startMPcode
+%        loadfigure "koe.mp" number 1 ;
+%        refill currentpicture withcolor #2 ;
+%      \stopMPcode}}
+%
+% \definesymbol [comment-normal]
+%   [\CowSymbol{4ex}{red}]
+%
+% \definesymbol [comment-down]
+%   [\CowSymbol{4ex}{green}]
+%
+% \setupcomment
+%   [\c!symbol={comment-normal,comment-down},
+%    \c!option=\v!buffer]
+%
+% \startcomment[hello]
+%     oeps
+% \stopcomment
+%
+% test
+%
+% \setupcomment
+%   [\c!symbol=normal,
+%    \c!option=max,width=10cm]
+%
+% \startcomment[hello]
+%     oeps
+% \stopcomment
+%
+% test
+
+%D The implementation is mostly the same as for attachments but sharing code
+%D will not make it cleaner.
+
+\installcorenamespace{comment}
+\installcorenamespace{commentlocation}
+
+\installcommandhandler \??comment {comment} \??comment
+
+\newbox\b_scrn_comment_collect
+\newbox\b_scrn_comment_rendering
+\newbox\b_scrn_comment_link
+\newbox\b_scrn_comment_symbol
+
+\setupcomment
+  [\c!state=\v!start,
+   \c!distance=\emwidth,
+   \c!color=\interactionparameter\c!color,
+   \c!space=\v!no,
+   \c!symbol=,
+  %\c!title=,
+  %\c!option=,
+  %\c!textlayer=,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!depth=\v!fit,
+   \c!nx=40,
+   \c!ny=10,
+   \c!buffer=\v!comment,
+   \c!location=\v!high]
+
+\mutable\let\currentcommentdepth \empty
+\mutable\let\currentcommentheight\empty
+\mutable\let\currentcommentsymbol\empty
+\mutable\let\currentcommentwidth \empty
+
+\appendtoks
+    \frozen\instance\setuevalue         \currentcomment {\scrn_comment_argument[\currentcomment]}%
+    \frozen\instance\setuevalue{\e!start\currentcomment}{\scrn_comment_start   [\currentcomment]}%
+    \frozen\instance\setuevalue{\e!stop \currentcomment}{\scrn_comment_stop                     }%
+\to \everydefinecomment
+
+\tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#settings]#:#text%%
+  {\iflocation
+     \def\currentcomment{#category}%
+     \ifcstok{\commentparameter\c!state}\v!start
+       \ifhastok={#title}
+         \setupcurrentcomment[#title]%
+       \else
+         \setupcurrentcomment[\c!title=#title,#settings]%
+       \fi
+       \clf_assignbuffer{\v!comment}{#text}\catcodetable\relax% todo: expansion control, but expanded by default (xml)
+       \scrn_comment_inject
+     \fi
+   \fi
+   \ignorespaces}
+
+\tolerant\protected\def\scrn_comment_start[#category]#spacer[#title]#spacer[#settings]%
+  {\def\currentcomment{#category}%
+   \unless\iflocation
+     \expandafter\scrn_comment_start_ignore
+   \orelse\ifcstok{\commentparameter\c!state}\v!start
+     \expandafter\scrn_comment_start_indeed
+   \else
+     \expandafter\scrn_comment_start_ignore
+   \fi[#title][#settings]}
+
+\def\scrn_comment_start_indeed[#title][#settings]%
+  {\bgroup
+   \doifelseassignment{#title}
+     {\setupcurrentcomment[#title]}
+     {\setupcurrentcomment[\c!title=#title,#settings]}%
+   \protected\def\scrn_comment_stop{\scrn_comment_inject\egroup}%
+   \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
+
+\def\scrn_comment_start_ignore
+  {\expandafter\gobbleuntil\csname\e!stop\currentcomment\endcsname}
+
+\protected\def\scrn_comment_stop
+  {}
+
+\installcorenamespace{commentmethods}
+
+\protected\def\scrn_comment_inject
+  {\expandnamespaceparameter\??commentmethods\commentparameter\c!method\v!normal}
+
+%D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
+%D weird, esp because for instance attachment symbols do scale).
+
+\setvalue{\??commentmethods\v!normal}%
+  {\edef\currentcommentsymbol{\commentparameter\c!symbol}%
+   \edef\currentcommentwidth {\commentparameter\c!width }%
+   \edef\currentcommentheight{\commentparameter\c!height}%
+   \edef\currentcommentdepth {\commentparameter\c!depth }%
+   \ifempty\currentcommentsymbol
+     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {.5\emwidth}\fi
+     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{.5\emwidth}\fi
+     \ifx\currentcommentdepth \v!fit\let \currentcommentdepth \zeropoint\fi
+   \else
+     \clf_presetsymbollist{\commentparameter\c!symbol}%
+     % we cannot yet ask for the wd/ht/dp of an xform else we could use those
+     \setbox\b_scrn_comment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
+     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {\wd\b_scrn_comment_symbol}\fi
+     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{\ht\b_scrn_comment_symbol}\fi
+     \ifx\currentcommentdepth \v!fit\edef\currentcommentdepth {\dp\b_scrn_comment_symbol}\fi
+   \fi
+   \clf_insertcomment
+     tag               {\currentcomment}%
+     title             {\commentparameter\c!title}%
+     subtitle          {\commentparameter\c!subtitle}%
+     author            {\commentparameter\c!author}%
+     width             \dimexpr\currentcommentwidth\relax
+     height            \dimexpr\currentcommentheight\relax
+     depth             \dimexpr\currentcommentdepth\relax
+     nx                {\commentparameter\c!nx}%
+     ny                {\commentparameter\c!ny}%
+     colormodel        \c_attr_colormodel
+     colorvalue        \rawcolorattribute{\commentparameter\c!color}%
+     transparencyvalue \rawtransparencyattribute{\commentparameter\c!color}%
+     option            {\commentparameter\c!option}% % todo
+     symbol            {\commentparameter\c!symbol}%
+     buffer            {\commentparameter\c!buffer}% {\v!comment}%
+     layer             {\commentparameter\c!textlayer}%
+     space             {\commentparameter\c!space}%
+   \relax
+   \wd\b_scrn_comment_link\currentcommentwidth
+   \ht\b_scrn_comment_link\currentcommentheight
+   \dp\b_scrn_comment_link\currentcommentdepth
+   \expandnamespaceparameter\??commentlocation\commentparameter\c!location\s!unknown}
+
+\letvalue{\??commentmethods\v!hidden}\donothing
+
+\protected\def\scrn_comment_flush_traced
+  {\hpack\bgroup
+     \blackrule % can be a fast one
+       [ \c!color=trace:y,
+         \c!width=\wd\b_scrn_comment_link,
+        \c!height=\ht\b_scrn_comment_link,
+         \c!depth=\dp\b_scrn_comment_link]%
+     \kern-\wd\b_scrn_comment_link
+     \box\b_scrn_comment_link
+   \egroup}
+
+\protected\def\scrn_comment_flush_normal
+  {\box\b_scrn_comment_link}
+
+\installtextracker
+  {comments.anchors}
+  {\let\scrn_comment_flush\scrn_comment_flush_traced}
+  {\let\scrn_comment_flush\scrn_comment_flush_normal}
+
+\let\scrn_comment_flush\scrn_comment_flush_normal
+
+% todo: dedicated margin classes
+
+\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!high       }{\high         {\scrn_comment_flush}}
+
+\setvalue{\??commentlocation\v!none}%
+  {\global\setbox\b_scrn_comment_collect\hbox\bgroup
+     \ifvoid\b_scrn_comment_collect\else
+       \box\b_scrn_comment_collect
+       \hskip\commentparameter\c!distance\relax
+     \fi
+     \scrn_comment_flush
+   \egroup}
+
+\setvalue{\??commentlocation\s!unknown}%
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
+   \fi}
+
+\permanent\protected\def\placecomments
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
+   \fi}
+
+\definecomment[comment]
+
+% \ifx\currentinterface\defaultinterface \else
+%     \definecomment[\v!comment]
+% \fi
+
+%D Soundclips:
+%D
+%D Defining sound tracks:
+%D
+%D \starttyping
+%D \useexternalsoundtrack[label][file]
+%D \stoptyping
+%D
+%D associated actions: StartSound StopSound PauseSound ResumeSound
+%D
+%D Todo: like external figures, also search on path,
+%D although, they need to be present ar viewing time, so ...
+
+\installcorenamespace{externalsoundtracks}
+
+\installsetuponlycommandhandler \??externalsoundtracks {externalsoundtracks}
+
+\setupexternalsoundtracks
+  [\c!option=]
+
+\permanent\tolerant\protected\def\useexternalsoundtrack[#tag]#spacer[#filename]%
+  {\clf_registersoundclip
+     tag  {#tag}%
+     file {#filename}%
+   \relax}
+
+\permanent\def\checksoundtrack#tag% yet untested in mkiv (also move management to lua)
+  {\iflocation
+     \clf_insertsoundclip
+       tag    {#tag}%
+       repeat {\directexternalsoundtracksparameter\c!option}%
+     \relax
+   \fi}
+
+%D Renderings (not yet tested in mkvi):
+
+% Todo: multiple instances and inheritance .. will be done when needed i.e. when I
+% see usage. Probaly by that time this feature is dropped (as are other media
+% rel;ated ones).
+
+\let\currentrendering\empty
+
+\definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
+\definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]
+\definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
+\definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
+
+\permanent\tolerant\protected\def\useexternalrendering[#tag]#spacer[#mime]#spacer[#file]#spacer[#option]%
+  {\clf_registerrendering
+     type     {external}%
+     label    {#tag}%
+     mime     {#mime}%
+     filename {#file}%
+     option   {#option}%
+   \relax}
+
+\permanent\tolerant\protected\def\setinternalrendering[#tag]#spacer[#option]% {content} % crappy
+  {\bgroup
+   \dowithnextbox
+     {\clf_registerrendering
+         type     {internal}%
+         label    {#tag}%
+         mime     {IRO}% brrr
+         filename {#tag}%
+         option   {#option}%
+      \relax
+      \let\objectoffset\zeropoint
+      \setobject{IRO}{#tag}\hpack{\box\nextbox}%
+      \egroup}%
+     \hbox}
+
+\permanent\def\renderingtype  #tag{\clf_renderingvar{#tag}{type}}
+\permanent\def\renderingoption#tag{\clf_renderingvar{#tag}{option}}
+
+\newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
+\newdimen\d_scrn_rendering_height \d_scrn_rendering_height 6cm
+
+\let\m_scrn_rendering_page\!!zerocount
+
+\installcorenamespace{renderingwindow}
+
+\installframedcommandhandler \??renderingwindow {renderingwindow} \??renderingwindow
+
+\appendtoks
+    \letrenderingwindowparameter\c!openpageaction \empty
+    \letrenderingwindowparameter\c!closepageaction\empty
+    \setrenderingwindowparameter\c!width          {\d_scrn_rendering_width }%
+    \setrenderingwindowparameter\c!height         {\d_scrn_rendering_height}%
+\to \everypresetrenderingwindow
+
+\permanent\tolerant\protected\def\placerenderingwindow[#window]#spacer[#rendering]% do all in lua
+  {\bgroup
+   \edef\currentrendering{\ifparameter#rendering\or#rendering\else#window\fi}%
+   % create fall back if needed
+   \edef\currentrenderingwindow{\namedrenderingwindowparameter{#window}\c!width}% stupid test, we need a proper one here
+   \ifempty\currentrenderingwindow
+     \let\currentrenderingwindow\s!default
+     \definerenderingwindow[\currentrenderingwindow]% why not global
+   \else
+     \edef\currentrenderingwindow{#window}%
+   \fi
+   \edef\currentrenderingtype{\renderingtype\currentrendering}%
+   \ifx\currentrenderingtype\s!internal
+     \getobjectdimensions{IRO}\currentrendering
+     \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
+     \d_scrn_rendering_width\objectwidth\relax
+     \getobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page
+   \orelse\ifx\currentrenderingwindow\s!default
+     \d_scrn_rendering_height\vsize
+     \d_scrn_rendering_width \hsize
+     \let\m_scrn_rendering_page\realpageno
+   \else
+     \d_scrn_rendering_height\renderingwindowparameter\c!height
+     \d_scrn_rendering_width \renderingwindowparameter\c!width
+     \let\m_scrn_rendering_page\realpageno
+   \fi
+ % todo:
+ % \handlereferenceactions{\renderingwindowparameter\c!openpageaction }\dosetuprenderingopenpageaction
+ % \handlereferenceactions{\renderingwindowparameter\c!closepageaction}\dosetuprenderingclosepageaction
+   \letrenderingwindowparameter\c!offset\v!overlay
+   \inheritedrenderingwindowframed
+     {\vfilll
+      \dontleavehmode
+      \clf_insertrenderingwindow
+        label  {\currentrendering}%
+        width  \d_scrn_rendering_width
+        height \d_scrn_rendering_height
+        option {\renderingoption\currentrendering}%
+        page   \m_scrn_rendering_page
+      \relax
+      \hfill}%
+   \egroup}
+
+%D Linkedlists (not tested in mkvi):
+
+% %D The next mechanism, linked lists, is quite old and
+% %D is \MKIV'd for completeness. I will finish the
+% %D configuration part when I need it.
+% %D
+% %D \starttyping
+% %D \setupinteraction[state=start]
+% %D \definelinkedlist[demo]
+% %D \dorecurse{10}{\linkedlistelement[demo]{link \recurselevel} \page}
+% %D \stoptyping
+%
+% \definesystemvariable {lk}   % LinK
+%
+% \installcommandhandler\??lk{linkedlist}\??lk
+%
+% \let\setupbutton\setuplinkedlists\setuplinkedlist
+%
+% \appendtoks
+%     \clf_definelinkedlist{\currentlinkedlist}%
+% \to \everydefinelinkedlist
+%
+% \def\setlinkedlistproperties#1#2#3#4#5#6%
+%   {\def\currentlink {#1}%
+%    \def\noflinks    {#2}%
+%    \def\firstlink   {#3}%
+%    \def\previouslink{#4}%
+%    \def\nextlink    {#5}%
+%    \def\lastlink    {#6}}
+%
+% \def\linkedlistelement[#1]#2% currently no view support
+%   {\dontleavehmode\hbox\bgroup
+%    #2%
+%    \iflocation
+%      \edef\currentlinkedlist{#1}%
+%      \ifcsname\??lk\currentlinkedlist\s!parent\endcsname
+%        \hskip\linkedlistparameter\c!distance\relax
+%        \clf_addlinklistelement{\currentlinkedlist}%
+%        \expanded{\ctxlatecommand{enhancelinkedlist("\currentlinkedlist",\currentlink)}}% can also be done at the lua end
+%        \dogotosomepage  {\??lk\currentlinkedlist}\gotobegincharacter \firstlink
+%        \ifnum\noflinks>\plustwo
+%          \dogotosomepage{\??lk\currentlinkedlist}\gobackwardcharacter\previouslink
+%          \dogotosomepage{\??lk\currentlinkedlist}\goforwardcharacter \nextlink
+%        \fi
+%        \dogotosomepage  {\??lk\currentlinkedlist}\gotoendcharacter   \lastlink
+%      \else
+%        \writestatus\m!interactions{no such linked list: \currentlinkedlist}%
+%      \fi
+%    \fi
+%    \egroup}
+%
+% \setuplinkedlists
+%   [\c!distance=.25em,
+%    \c!width=\v!fit,
+%    \c!location=\v!low,
+%    \c!color=\interactionparameter\c!color,
+%    \c!frame=\v!off,
+%    \c!background=,
+%    \c!backgroundcolor=]
+
+\protect \endinput

@@ -1153,8 +1153,6 @@
 
     <cd:command name="mono" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="monobold" level="document" category="fonts" file="font-pre.mkiv"/>
-
     <cd:command name="slanted" level="document" category="fonts" file="font-pre.mkiv"/>
 
     <cd:command name="italic" level="document" category="fonts" file="font-pre.mkiv"/>

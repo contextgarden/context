@@ -1256,4 +1256,10 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="reversevboxcontent" level="system" category="boxes" file="supp-box.lmt">
+        <cd:arguments>
+            <cd:resolve name="string-box"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

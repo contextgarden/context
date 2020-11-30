@@ -1,0 +1,44 @@
+if not modules then modules = { } end modules ['catc-ini'] = {
+    version   = 1.001,
+    comment   = "companion to catc-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+catcodes         = catcodes         or { }
+catcodes.numbers = catcodes.numbers or { }
+catcodes.names   = catcodes.names   or { }
+
+storage.register("catcodes/numbers", catcodes.numbers, "catcodes.numbers")
+storage.register("catcodes/names",   catcodes.names,   "catcodes.names")
+
+local numbers = catcodes.numbers
+local names   = catcodes.names
+
+-- We register the catcode tables in the \type {tex} namespace as we have been doing
+-- right from the start (when there wasn't much in that namespace). Normally
+-- registration of a table only happens when we're in so called ini mode. Also, the
+-- number of tables is rather small.
+
+function catcodes.register(name,number)
+    numbers[name] = number
+    local cnn = names[number]
+    if cnn then
+        cnn[#cnn+1] = name
+    else
+        names[number] = { name }
+    end
+    tex[name] = number -- downward compatible
+end
+
+-- At runtime we need to populate the \type {tex} namespace again.
+
+for name, number in next, numbers do
+    tex[name] = number -- downward compatible
+end
+
+-- We catch wrong usage.
+
+table.setmetatableindex(numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
+table.setmetatableindex(names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)

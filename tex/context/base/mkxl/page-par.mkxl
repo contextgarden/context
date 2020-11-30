@@ -1,0 +1,73 @@
+%D \module
+%D   [       file=page-par, % copied from page-lin
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Line Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Paragraph Numbering}
+
+\unprotect
+
+\installcorenamespace {paragraphnumbering}
+\installcorenamespace {paragraphnumberingvariants}
+
+\installsimplecommandhandler \??paragraphnumbering {paragraphnumbering} \??paragraphnumbering
+
+\definecounter[\v!paragraph]
+
+\permanent\let\showparagraphnumber\relax
+
+\appendtoks
+    \page_par_check_state
+\to \everysetupparagraphnumbering
+
+\protected\def\page_par_check_state
+  {\rawprocesscommacommand[\paragraphnumberingparameter\c!state]\page_par_check_state_step}
+
+\def\page_par_check_state_step#1%
+  {\ifcsname\??paragraphnumberingvariants#1\endcsname
+     \lastnamedcs
+   \fi}
+
+\setvalue{\??paragraphnumberingvariants\v!start}%
+  {\enforced\let\showparagraphnumber\page_par_show_number_normal}
+
+\setvalue{\??paragraphnumberingvariants\v!stop}%
+  {\enforced\let\showparagraphnumber\relax}
+
+\setvalue{\??paragraphnumberingvariants\v!line}%
+  {\enforced\let\showparagraphnumber\page_par_show_number_lines}
+
+\setvalue{\??paragraphnumberingvariants\v!reset}%
+  {\strc_counters_reset\v!paragraph
+   \enforced\let\showparagraphnumber\page_par_show_number_normal}
+
+\permanent\protected\def\page_par_show_number_normal
+  {\strc_counters_increment\v!paragraph
+   \inleftmargin % todo: \c!location, only a few make sense
+     {\hfill % no complaints
+      \tf % \tf normalizes em
+      \useparagraphnumberingstyleandcolor\c!style\c!color
+      \convertedcounter[\v!paragraph]%
+      \kern\paragraphnumberingparameter\c!distance}}
+
+\permanent\protected\def\page_par_show_number_lines
+  {\ifnumberinglines
+     \page_par_show_number_normal
+   \fi}
+
+\setupparagraphnumbering
+  [\c!state=\v!stop,
+  %\c!location,
+  %\c!style=,
+  %\c!color=,
+   \c!distance=\ifcase\c_page_lines_location2\emwidth\else\zeropoint\fi] % will change
+
+\protect \endinput

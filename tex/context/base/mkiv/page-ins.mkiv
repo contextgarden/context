@@ -51,13 +51,8 @@
     \fi
 \to \everysetupinsertion
 
-\ifcase\contextlmtxmode
-    \setupinsertion
-      [\c!anchoring=\v!none]
-\else
-    \setupinsertion
-      [\c!anchoring=\v!auto]
-\fi
+\setupinsertion
+  [\c!anchoring=\v!none]
 
 \appendtoks
     \page_inserts_check_anchoring

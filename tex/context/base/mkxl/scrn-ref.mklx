@@ -1,0 +1,107 @@
+%D \module
+%D   [       file=scrn-ref,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Screen Macros,
+%D       subtitle=References, % moved code
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Screen Macros / References}
+
+\registerctxluafile{scrn-ref}{}
+
+\unprotect
+
+\appendtoks
+    \doifsomething{\interactionparameter\c!calculate}%
+        {\clf_setfieldcalculationset{\interactionparameter\c!calculate}}%
+    \doifelse{\interactionparameter\c!click  }\v!yes
+        \settrue\setfalse\highlighthyperlinks
+    \doifelse{\interactionparameter\c!display}\v!new
+        \settrue\setfalse\gotonewwindow
+    \doifnot {\interactionparameter\c!page}\v!no
+        \scrn_reference_enable_page_destinations
+\to \everysetupinteraction
+
+\def\scrn_reference_enable_page_destinations % no reset
+  {\clf_setreferencelinkmethod{\interactionparameter\c!page}}
+
+\setupinteraction % start fit page and reset form
+  [\c!page=\v!no,
+   \c!click=\v!yes,
+   \c!display=\v!normal,
+   \c!focus=\v!fit,
+  %\c!focusoffset=\zeropoint, % when tested with al views it will become 5\points
+   \c!focusoffset=5\points,
+   \c!calculate=,
+   % rendering:
+   \c!width=\emwidth,
+   \c!height=\zeropoint,
+   \c!depth=\zeropoint,
+   \c!symbolset=]
+
+% for now here, might become per link
+
+\appendtoks
+    \enabledirectives[destinations.offset=\the\dimexpr\interactionparameter\c!focusoffset\relax]%
+\to \everysetupinteraction
+
+\mutable\let\currentinteractioncloseaction    \empty
+\mutable\let\currentinteractionclosepageaction\empty
+\mutable\let\currentinteractionopenaction     \empty
+\mutable\let\currentinteractionopenpageaction \empty
+
+%D We have to make sure of some settings:
+
+\def\scrn_reference_set_text_actions
+  {\iflocation
+     \edef\currentinteractionopenaction {\interactionparameter\c!openaction }%
+     \edef\currentinteractioncloseaction{\interactionparameter\c!closeaction}%
+     \ifempty\currentinteractionopenaction \else
+       \clf_setopendocumentaction{\currentinteractionopenaction}%
+     \fi
+     \ifempty\currentinteractioncloseaction \else
+       \clf_setclosedocumentaction{\currentinteractioncloseaction}%
+     \fi
+     \glet\scrn_reference_set_text_actions\relax
+   \fi}
+
+\def\scrn_reference_set_page_actions
+  {\iflocation
+     \edef\currentinteractionopenpageaction {\interactionparameter\c!openpageaction }%
+     \edef\currentinteractionclosepageaction{\interactionparameter\c!closepageaction}%
+     \ifempty\currentinteractionopenpageaction \else
+       \clf_setopenpageaction{\currentinteractionopenpageaction}%
+     \fi
+     \ifempty\currentinteractionclosepageaction \else
+       \clf_setclosepageaction{\currentinteractionclosepageaction}%
+     \fi
+   \fi}
+
+\appendtoks \scrn_reference_set_text_actions \to \everyshipout
+\appendtoks \scrn_reference_set_page_actions \to \everyshipout
+
+%D delayed ...
+
+% \def\scrn_reference_enable_references
+%   {\ifproductionrun
+%      \clf_enableinteraction % only once anyway
+%      \glet\scrn_reference_enable_references\relax
+%    \fi}
+%
+% \appendtoks
+%     \scrn_reference_enable_references
+% \to \everysetupinteraction
+
+\setupinteraction % start fit page and reset form
+  [\c!openaction=,
+   \c!closeaction=,
+   \c!openpageaction=,
+   \c!closepageaction=]
+
+\protect \endinput

@@ -87,8 +87,6 @@
 
     <cd:command name="removeunwantedspaces" level="system" category="whitespace" file="spac-hor.mkiv"/>
 
-    <cd:command name="thinspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
-
     <cd:command name="negthinspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
 
     <cd:command name="enspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
@@ -111,11 +109,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv"/>
+    <cd:command name="leftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl"/>
 
-    <cd:command name="rightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv"/>
+    <cd:command name="rightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl"/>
 
-    <cd:command name="dosetleftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
+    <cd:command name="dosetleftskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-leftskip"/>
@@ -123,7 +121,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetrightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
+    <cd:command name="dosetrightskipadaption" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-rightskip"/>
@@ -131,7 +129,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doadaptleftskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
+    <cd:command name="doadaptleftskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-leftskip"/>
@@ -139,7 +137,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doadaptrightskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkiv">
+    <cd:command name="doadaptrightskip" level="system" category="whitespace" keywords="layout" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-rightskip"/>
@@ -147,7 +145,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="activatespacehandler" level="system" category="whitespace" file="spac-hor.mkiv">
+    <cd:command name="activatespacehandler" level="system" category="whitespace" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="on"/>
@@ -161,29 +159,29 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="quads" level="style" category="whitespace" file="spac-hor.mkiv">
+    <cd:command name="quads" level="style" category="whitespace" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interwordspacebefore" level="system" category="whitespace" file="spac/hor.mkiv"/>
+    <cd:command name="interwordspacebefore" level="system" category="whitespace" file="spac-hor.mkxl"/>
 
-    <cd:command name="interwordspaceafter" level="system" category="whitespace" file="spac/hor.mkiv"/>
+    <cd:command name="interwordspaceafter" level="system" category="whitespace" file="spac-hor.mkxl"/>
 
-    <cd:command name="interwordspacesbefore" level="system" category="whitespace" file="spac/hor.mkiv">
+    <cd:command name="interwordspacesbefore" level="system" category="whitespace" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
         
-    <cd:command name="interwordspacesafter" level="system" category="whitespace" file="spac/hor.mkiv">
+    <cd:command name="interwordspacesafter" level="system" category="whitespace" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interwordspaces" level="system" category="whitespace" file="spac/hor.mkiv">
+    <cd:command name="interwordspaces" level="system" category="whitespace" file="spac-hor.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>

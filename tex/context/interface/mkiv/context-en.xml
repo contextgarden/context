@@ -3089,6 +3089,14 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="boxes" file="supp-box.lmt" level="system" name="reversevboxcontent">
+   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:csname"/>
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-buffer.xml">
   <cd:command category="buffer" file="buff-ini.mkiv" keywords="conditional" level="system" name="doifelsebuffer">
@@ -3796,7 +3804,7 @@
   <cd:command category="fonts" file="typo-cap.mkiv" level="document" name="randomized" type="environment"/>
  </cd:interface>
  <cd:interface file="i-catcodes.xml">
-  <cd:command category="catcode" file="catc-ctx.mkiv" level="system" name="texcode" type="environment"/>
+  <cd:command category="catcode" file="catc-ctx.mkxl" level="system" name="texcode" type="environment"/>
   <cd:command category="catcode" file="catc-ctx.mkiv" level="system" name="contextcode" type="environment"/>
   <cd:command category="catcode" file="catc-ctx.mkiv" level="system" name="contextdefinitioncode" type="environment"/>
   <cd:command begin="un" category="catcode" end="​" file="catc-def.mkiv" level="system" name="protect" type="environment"/>
@@ -5384,6 +5392,60 @@
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-columns.xml">
+  <cd:command category="tables" file="page-mcl.mkxl" level="style" name="definemulticolumns">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmulticolumns"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="columns" file="page-mcl.mkxl" level="style" name="setupmulticolumns">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="direction">
+      <cd:constant default="yes" type="right"/>
+      <cd:constant type="reverse"/>
+     </cd:parameter>
+     <cd:parameter name="balance">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="blank">
+      <cd:inherit name="blank"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="ntop">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="tables" file="page-mcl.mkxl" level="document" name="multicolumns" type="environment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmulticolumns"/>
+    </cd:assignments>
    </cd:arguments>
   </cd:command>
  </cd:interface>
@@ -7109,6 +7171,9 @@
      <cd:parameter name="start">
       <cd:constant type="cd:number"/>
      </cd:parameter>
+     <cd:parameter name="number">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
      <cd:parameter name="counter">
       <cd:constant type="cd:name"/>
      </cd:parameter>
@@ -8438,6 +8503,32 @@
   <cd:command category="structure" file="file-job.mkvi" level="system" name="currentcomponent"/>
   <cd:command category="structure" file="file-job.mkvi" level="document" name="document" type="environment">
    <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupdocument"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="file-job.mkvi" generated="yes" level="document" name="document" type="environment" variant="example">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupdocument"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="file-job.mkvi" level="style" name="definedocument">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupdocument"/>
     </cd:assignments>
@@ -8445,6 +8536,9 @@
   </cd:command>
   <cd:command category="structure" file="file-job.mkvi" level="style" name="setupdocument">
    <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
     <cd:assignments list="yes">
      <cd:parameter name="before">
       <cd:constant type="cd:command"/>
@@ -8472,6 +8566,9 @@
   </cd:command>
   <cd:command category="structure" file="file-job.mkvi" level="style" name="presetdocument">
    <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
     <cd:assignments list="yes">
      <cd:inherit name="setupdocument"/>
     </cd:assignments>
@@ -10157,104 +10254,6 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="rules" file="spac-flr.mkiv" level="document" name="dotfill"/>
-  <cd:command category="rules" file="node-rul.mkiv" keywords="metapost" level="style" name="definelinefiller">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setuplinefiller"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="rules" file="node-rul.mkiv" keywords="metapost" level="style" name="setuplinefiller">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:parameter name="location">
-      <cd:constant type="left"/>
-      <cd:constant type="right"/>
-      <cd:constant default="yes" type="both"/>
-     </cd:parameter>
-     <cd:parameter name="scope">
-      <cd:constant type="left"/>
-      <cd:constant type="right"/>
-      <cd:constant default="yes" type="local"/>
-     </cd:parameter>
-     <cd:parameter name="mp">
-      <cd:constant type="cd:name"/>
-     </cd:parameter>
-     <cd:parameter name="height">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="depth">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="distance">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="threshold">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="rulethickness">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="before">
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
-     <cd:parameter name="after">
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
-     <cd:parameter name="color">
-      <cd:constant type="cd:color"/>
-     </cd:parameter>
-     <cd:parameter name="textstyle">
-      <cd:constant type="cd:style"/>
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
-     <cd:parameter name="textcolor">
-      <cd:constant type="cd:color"/>
-     </cd:parameter>
-     <cd:parameter name="align">
-      <cd:inherit name="setupalign"/>
-     </cd:parameter>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="rules" file="node-rul.mkiv" keywords="metapost" level="style" name="setuplinefillers">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:inherit name="setuplinefiller"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="rules" file="node-rul.mkiv" keywords="metapost" level="style" name="linefiller" type="environment">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="filler"/>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setuplinefiller"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="rules" file="node-rul.mkiv" keywords="metapost" level="style" name="setlinefiller">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="filler"/>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
  </cd:interface>
  <cd:interface file="i-fillinline.xml">
   <cd:command category="rules" file="pack-mrl.mkiv" level="style" name="setupfillinlines">
@@ -13166,7 +13165,6 @@
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="normal"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="bold"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="mono"/>
-  <cd:command category="fonts" file="font-pre.mkiv" level="document" name="monobold"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="slanted"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="italic"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="document" name="boldslanted"/>
@@ -14511,6 +14509,9 @@
       <cd:constant type="frame"/>
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="backgroundcolor">
+      <cd:resolve name="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="component">
       <cd:constant type="cd:name"/>
      </cd:parameter>
@@ -14635,6 +14636,10 @@
      </cd:parameter>
      <cd:parameter name="yanchor">
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="linedirection">
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="reverse"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -16229,7 +16234,6 @@
   <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="fixedspaces"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="keepunwantedspaces"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="removeunwantedspaces"/>
-  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="thinspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="negthinspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="enspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="negenspace"/>
@@ -16245,9 +16249,9 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="leftskipadaption"/>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="rightskipadaption"/>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="dosetleftskipadaption">
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="leftskipadaption"/>
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="rightskipadaption"/>
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="dosetleftskipadaption">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="yes"/>
@@ -16257,7 +16261,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="dosetrightskipadaption">
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="dosetrightskipadaption">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="yes"/>
@@ -16267,7 +16271,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="doadaptleftskip">
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="doadaptleftskip">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="yes"/>
@@ -16277,7 +16281,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" keywords="layout" level="system" name="doadaptrightskip">
+  <cd:command category="whitespace" file="spac-hor.mkxl" keywords="layout" level="system" name="doadaptrightskip">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="yes"/>
@@ -16287,7 +16291,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="activatespacehandler">
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="activatespacehandler">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="on"/>
@@ -16297,30 +16301,30 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="quads">
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="style" name="quads">
    <cd:arguments>
     <cd:keywords optional="yes">
      <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacebefore"/>
-  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspaceafter"/>
-  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacesbefore">
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="interwordspacebefore"/>
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="interwordspaceafter"/>
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="interwordspacesbefore">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacesafter">
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="interwordspacesafter">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspaces">
+  <cd:command category="whitespace" file="spac-hor.mkxl" level="system" name="interwordspaces">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
@@ -16603,6 +16607,14 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="language" file="lang-ini.mkxl" level="style" name="dohyphens"/>
+  <cd:command category="language" file="lang-ini.mkxl" level="style" name="nohyphens"/>
+  <cd:command category="language" file="lang-ini.mkxl" level="system" name="usehyphensparameter">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="language" file="lang-mis.mkxl" level="system" name="compounddiscretionary"/>
  </cd:interface>
  <cd:interface file="i-imposition.xml">
   <cd:command category="layout" file="page-imp.mkiv" level="system" name="installshipoutmethod">
@@ -17981,181 +17993,6 @@
    </cd:arguments>
   </cd:command>
  </cd:interface>
- <cd:interface file="i-interlinespace.xml">
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="defineinterlinespace">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setupinterlinespace"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setupinterlinespace">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:parameter name="line">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="height">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="depth">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="minheight">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="mindepth">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="distance">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="top">
-      <cd:constant type="cd:number"/>
-      <cd:constant type="height"/>
-     </cd:parameter>
-     <cd:parameter name="bottom">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="stretch">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="shrink">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setupinterlinespace" variant="argument">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="on"/>
-     <cd:constant type="off"/>
-     <cd:constant type="reset"/>
-     <cd:constant type="auto"/>
-     <cd:constant type="small"/>
-     <cd:constant type="medium"/>
-     <cd:constant type="big"/>
-     <cd:constant type="cd:number"/>
-     <cd:constant type="cd:dimension"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setupinterlinespace" variant="name">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setuplocalinterlinespace">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:inherit name="setupinterlinespace"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setuplocalinterlinespace" variant="argument">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="on"/>
-     <cd:constant type="off"/>
-     <cd:constant type="reset"/>
-     <cd:constant type="auto"/>
-     <cd:constant type="small"/>
-     <cd:constant type="medium"/>
-     <cd:constant type="big"/>
-     <cd:constant type="cd:number"/>
-     <cd:constant type="cd:dimension"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setuplocalinterlinespace" variant="name">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="switchtointerlinespace">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:inherit name="setupinterlinespace"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="switchtointerlinespace" variant="argument">
-   <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
-     <cd:constant type="on"/>
-     <cd:constant type="off"/>
-     <cd:constant type="reset"/>
-     <cd:constant type="auto"/>
-     <cd:constant type="small"/>
-     <cd:constant type="medium"/>
-     <cd:constant type="big"/>
-     <cd:constant type="cd:number"/>
-     <cd:constant type="cd:dimension"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="switchtointerlinespace" variant="name">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="system" name="dosetupcheckedinterlinespace">
-   <cd:arguments>
-    <cd:assignments delimiters="braces" list="yes">
-     <cd:inherit name="setupinterlinespace"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="system" name="dosetupcheckedinterlinespace" variant="argument">
-   <cd:arguments>
-    <cd:keywords delimiters="braces" list="yes">
-     <cd:constant type="on"/>
-     <cd:constant type="off"/>
-     <cd:constant type="reset"/>
-     <cd:constant type="auto"/>
-     <cd:constant type="small"/>
-     <cd:constant type="medium"/>
-     <cd:constant type="big"/>
-     <cd:constant type="cd:number"/>
-     <cd:constant type="cd:dimension"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="system" name="dosetupcheckedinterlinespace" variant="name">
-   <cd:arguments>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="whitespace" file="spac-ver.mkiv" level="system" name="useinterlinespaceparameter">
-   <cd:arguments>
-    <cd:csname/>
-   </cd:arguments>
-  </cd:command>
- </cd:interface>
  <cd:interface file="i-italiccorrection.xml">
   <cd:command category="fonts" file="typo-itc.mkvi" level="system" name="setitaliccorrection">
    <cd:arguments>
@@ -18380,6 +18217,8 @@
      <cd:parameter name="placestopper">
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
+      <cd:constant type="display"/>
+      <cd:constant type="inline"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -18602,6 +18441,8 @@
      <cd:parameter name="placestopper">
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
+      <cd:constant type="display"/>
+      <cd:constant type="inline"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -18824,6 +18665,8 @@
      <cd:parameter name="placestopper">
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
+      <cd:constant type="display"/>
+      <cd:constant type="inline"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -19051,6 +18894,8 @@
      <cd:parameter name="placestopper">
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
+      <cd:constant type="display"/>
+      <cd:constant type="inline"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -20955,8 +20800,8 @@
       <cd:constant default="yes" type="local"/>
       <cd:constant type="global"/>
      </cd:parameter>
-     <cd:parameter name="color">
-      <cd:constant type="cd:color"/>
+     <cd:parameter name="mp">
+      <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="height">
       <cd:constant type="cd:dimension"/>
@@ -20973,6 +20818,15 @@
      <cd:parameter name="rulethickness">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="textstyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
@@ -20982,15 +20836,6 @@
      </cd:parameter>
      <cd:parameter name="align">
       <cd:inherit name="setupalign"/>
-     </cd:parameter>
-     <cd:parameter name="mp">
-      <cd:constant type="cd:name"/>
-     </cd:parameter>
-     <cd:parameter name="before">
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
-     <cd:parameter name="after">
-      <cd:constant type="cd:command"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -22646,6 +22491,16 @@
     <cd:variable value="ctxfunctiondefinition"/>
    </cd:sequence>
   </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="setctxluafunction">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="lua" file="luat-ini.mkiv" level="system" name="ctxfunction" type="environment">
    <cd:arguments>
     <cd:keywords delimiters="none">
@@ -22660,10 +22515,44 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="installctxfunction">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="lua" file="luat-ini.mkiv" generated="yes" level="system" name="ctxfunction" variant="example">
    <cd:sequence>
     <cd:variable value="ctxfunction"/>
    </cd:sequence>
+  </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="installctxscanner">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" generated="yes" level="system" name="ctxscanner" variant="example">
+   <cd:sequence>
+    <cd:variable value="ctxscanner"/>
+   </cd:sequence>
+  </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="installprotectedctxfunction">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="installprotectedctxscanner">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="luat-ini.mkiv" level="system" name="resetctxscanner">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
   </cd:command>
  </cd:interface>
  <cd:interface file="i-luatable.xml">
@@ -23223,6 +23112,7 @@
   <cd:command category="structure" file="strc-mar.mkiv" level="system" name="resetmarking">
    <cd:arguments>
     <cd:keywords>
+     <cd:constant type="all"/>
      <cd:constant type="cd:mark"/>
     </cd:keywords>
    </cd:arguments>
@@ -24695,15 +24585,22 @@
    <cd:instances>
     <cd:constant value="matrix"/>
     <cd:constant value="mathmatrix"/>
+    <cd:constant value="thematrix"/>
    </cd:instances>
   </cd:command>
-  <cd:command category="mathematics" file="math-ali.mkiv" generated="yes" keywords="tables" level="document" name="mathmatrix">
+  <cd:command category="mathematics" file="math-ali.mkiv" generated="yes" keywords="tables" level="document" name="mathmatrix" variant="instance">
    <cd:sequence>
-    <cd:variable value="mathmatrix"/>
+    <cd:instance value="mathmatrix"/>
    </cd:sequence>
    <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmathmatrix"/>
+    </cd:assignments>
     <cd:content/>
    </cd:arguments>
+   <cd:instances>
+    <cd:constant value="thematrix"/>
+   </cd:instances>
   </cd:command>
   <cd:command category="mathematics" file="math-ali.mkiv" keywords="tables" level="document" name="matrices" type="environment">
    <cd:arguments>
@@ -27701,7 +27598,7 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="structure" file="strc-tnt.mkiv" generated="yes" keywords="notes" level="document" name="textnote">
+  <cd:command category="structure" file="strc-tnt.mkiv" generated="yes" keywords="notes" level="document" name="textnote" variant="example">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setuptextnote"/>
@@ -29117,6 +29014,7 @@
       <cd:constant type="inmargin"/>
       <cd:constant type="atmargin"/>
       <cd:constant type="marginedge"/>
+      <cd:constant type="none"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -30248,6 +30146,82 @@
      <cd:constant type="default"/>
      <cd:constant type="oneline"/>
      <cd:constant type="basic"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-parwrapper.xml">
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="freezeparagraphproperties"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="defrostparagraphproperties"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="updateparagraphproperties"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="updateparagraphpenalties"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="updateparagraphdemerits"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="updateparagraphshapes"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="setparagraphfreezing"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="forgetparagraphfreezing"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="registerparwrapper">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:content/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="registerparwrapperreverse">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:content/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="directparwrapper">
+   <cd:arguments>
+    <cd:content/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="forgetparwrapper"/>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="unregisterparwrapper">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="doifelseparwrapper">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.mkxl" level="system" name="showparwrapperstate">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.lmt" level="system" name="getparwrapper">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-par.lmt" level="system" name="lastparwrapper">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
@@ -37024,7 +36998,7 @@
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
-    <cd:keywords>
+    <cd:keywords optional="yes">
      <cd:constant type="cd:text"/>
     </cd:keywords>
     <cd:keywords>
@@ -37036,6 +37010,9 @@
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="reset"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
@@ -39842,6 +39819,10 @@
      <cd:parameter name="inbetween">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="hyphens">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -42230,7 +42211,6 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="catcode" file="syst-aux.mkiv" level="system" name="texcode" type="environment"/>
   <cd:command category="counter" file="syst-aux.mkiv" level="system" name="newcounter">
    <cd:arguments>
     <cd:csname/>
@@ -42461,6 +42441,20 @@
      <cd:constant type="cd:false"/>
     </cd:keywords>
     <cd:delimiter name="fi"/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="system" file="syst-aux.mkiv" keywords="conditional" level="system" name="validassignment">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="system" file="syst-aux.mkiv" keywords="conditional" level="system" name="nonvalidassignment">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
    </cd:arguments>
   </cd:command>
   <cd:command category="system" file="syst-aux.mkiv" keywords="conditional" level="system" name="doifelseassignmentcs">
@@ -48848,6 +48842,16 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="whitespace" file="spac-ver.mkxl" keywords="conditional" level="document" name="doifoutervmode">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac-ver.mkxl" level="document" name="dosomebreak">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="whitespace" file="spac-ver.mkiv" level="document" name="godown">
    <cd:arguments>
     <cd:keywords>
@@ -49996,16 +50000,6 @@
     </cd:keywords>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:url"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlregisterns">
-   <cd:arguments>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>

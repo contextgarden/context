@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="freezeparagraphproperties" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="defrostparagraphproperties" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="updateparagraphproperties" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="updateparagraphpenalties" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="updateparagraphdemerits" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="updateparagraphshapes" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="setparagraphfreezing" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="forgetparagraphfreezing" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="registerparwrapper" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="registerparwrapperreverse" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="directparwrapper" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="forgetparwrapper" level="system" category="whitespace" file="spac-par.mkxl"/>
+
+    <cd:command name="unregisterparwrapper" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelseparwrapper" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showparwrapperstate" level="system" category="whitespace" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getparwrapper" level="system" category="whitespace" file="spac-par.lmt">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lastparwrapper" level="system" category="whitespace" file="spac-par.lmt">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

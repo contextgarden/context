@@ -429,9 +429,14 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         else
             if id == glue_code then
                 local subtype = getsubtype(current)
+                -- todo in lmtx: lefthangskip and righthangskip
                 if subtype == leftskip_code or subtype == parfillleftskip_code then
                     goto NEXT
                 elseif subtype == rightskip_code or subtype == parfillskip_code then
+                    if reference and (done[reference] or 0) == 0 then
+                        head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+                        reference, first, last, firstdir = nil, nil, nil, nil
+                    end
                     goto NEXT
                 end
             end

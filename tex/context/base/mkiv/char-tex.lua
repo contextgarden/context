@@ -679,15 +679,15 @@ if not csletters then
                 if is_character[category] then
                     if chr.unicodeslot < 128 then
                         if isletter then
-                            texsetmacro(contextname,utfchar(u),"permanent")
+                            texsetmacro(contextname,utfchar(u),"immutable")
                         else
-                            texsetchar(contextname,u)
+                            texsetchar(contextname,u,"immutable")
                         end
                     else
-                        texsetmacro(contextname,utfchar(u),"permanent")
+                        texsetmacro(contextname,utfchar(u),"immutable")
                     end
                 elseif is_command[category] and not forbidden[u] then
-                    texsetmacro(contextname,utfchar(u),"permanent")
+                    texsetmacro(contextname,utfchar(u),"immutable")
                 end
             end
         end

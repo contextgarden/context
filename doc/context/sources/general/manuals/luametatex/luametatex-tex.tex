@@ -750,8 +750,8 @@ Here is an example using a threesome:
 
 \startfunctioncall
 local d = tex.getdimen("foo")
-if tex.isdimen("bar") then
-    tex.setdimen("bar",d)
+if tex.isdimen("oof") then
+    tex.setdimen("oof",d)
 end
 \stopfunctioncall
 
@@ -2111,8 +2111,8 @@ will scan characters with catcode \type {letter} or \type {other}. So, given the
 following definition:
 
 \startbuffer
-\def\bar{bar}
-\def\foo{foo-\bar}
+\def\oof{oof}
+\def\foo{foo-\oof}
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -2468,28 +2468,28 @@ When scanning for the next token you need to keep in mind that we're not scannin
 like \TEX\ does: expanding, changing modes and doing things as it goes. When we
 scan with \LUA\ we just pick up tokens. Say that we have:
 
-\pushmacro\bar \let\bar\undefined
+\pushmacro\oof \let\oof\undefined
 
 \starttyping
-\bar
+\oof
 \stoptyping
 
-but \type {\bar} is undefined. Normally \TEX\ will then issue an error message.
+but \type {\oof} is undefined. Normally \TEX\ will then issue an error message.
 However, when we have:
 
 \starttyping
-\def\foo{\bar}
+\def\foo{\oof}
 \stoptyping
 
-We get no error, unless we expand \type {\foo} while \type {\bar} is still
+We get no error, unless we expand \type {\foo} while \type {\oof} is still
 undefined. What happens is that as soon as \TEX\ sees an undefined macro it will
 create a hash entry and when later it gets defined that entry will be reused. So,
-\type {\bar} really exists but can be in an undefined state.
+\type {\oof} really exists but can be in an undefined state.
 
 \startbuffer[demo]
-bar        : \directlua{tex.print(token.scan_csname())}\bar
+oof        : \directlua{tex.print(token.scan_csname())}\oof
 foo        : \directlua{tex.print(token.scan_csname())}\foo
-myfirstbar : \directlua{tex.print(token.scan_csname())}\myfirstbar
+myfirstoof : \directlua{tex.print(token.scan_csname())}\myfirstoof
 \stopbuffer
 
 \startlines
@@ -2500,8 +2500,8 @@ This was entered as:
 
 \typebuffer[demo]
 
-The reason that you see \type {bar} reported and not \type {myfirstbar} is that
-\type {\bar} was already used in a previous paragraph.
+The reason that you see \type {oof} reported and not \type {myfirstoof} is that
+\type {\oof} was already used in a previous paragraph.
 
 If we now say:
 
@@ -2520,7 +2520,7 @@ we get:
 And if we say
 
 \startbuffer
-\def\foo{\bar}
+\def\foo{\oof}
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -2535,9 +2535,9 @@ When scanning from \LUA\ we are not in a mode that defines (undefined) macros at
 all. There we just get the real primitive undefined macro token.
 
 \startbuffer
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\myfirstbar
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mysecondbar
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mythirdbar
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\myfirstoof
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mysecondoof
+\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mythirdoof
 \stopbuffer
 
 \startlines
@@ -2552,7 +2552,7 @@ So, we do get a unique token because after all we need some kind of \LUA\ object
 that can be used and garbage collected, but it is basically the same one,
 representing an undefined control sequence.
 
-\popmacro\bar
+\popmacro\oof
 
 \stopsubsection
 

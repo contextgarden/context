@@ -780,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='commandeprofondenumero'/>
 		<cd:constant name='deeptextcommand' value='commandeprofondetexte'/>
 		<cd:constant name='default' value='defaut'/>
+		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='retard'/>
 		<cd:constant name='depth' value='profondeur'/>
 		<cd:constant name='depthcorrection' value='correctionprofondeur'/>
@@ -2085,7 +2086,7 @@
 		<cd:command name='startnarrower' value='débutplusetroit'/>
 		<cd:command name='startopposite' value='débutopposition'/>
 		<cd:command name='startoverlay' value='débutsuperposition'/>
-		<cd:command name='startoverzicht' value='débutvuedensemble'/>
+		<cd:command name='startoverview' value='débutvuedensemble'/>
 		<cd:command name='startpacked' value='débutemballage'/>
 		<cd:command name='startpositioning' value='débutpositionnement'/>
 		<cd:command name='startproduct' value='débutproduit'/>
@@ -2128,7 +2129,7 @@
 		<cd:command name='stopnarrower' value='finplusetroit'/>
 		<cd:command name='stopopposite' value='finopposition'/>
 		<cd:command name='stopoverlay' value='finsuperposition'/>
-		<cd:command name='stopoverzicht' value='finvuedensemble'/>
+		<cd:command name='stopoverview' value='finvuedensemble'/>
 		<cd:command name='stoppacked' value='finemballage'/>
 		<cd:command name='stoppositioning' value='finpositionnement'/>
 		<cd:command name='stopproduct' value='finproduit'/>

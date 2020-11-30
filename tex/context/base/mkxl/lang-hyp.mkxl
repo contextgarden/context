@@ -1,0 +1,262 @@
+%D \module
+%D   [       file=lang-ini,
+%D        version=2014.08.10,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Experimental Patterns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental module. We often have to deal with titles that have
+%D conflicting demands:
+%D
+%D \startitemize
+%D \startitem They go into a dedicated space (often a graphic). \stopitem
+%D \startitem The words cannot be hyphenated. \stopitem
+%D \startitem But as an escape they can get hyphenated. \stopitem
+%D \startitem In that case we want at least an extra word on the last line. \stopitem
+%D \stopitemize
+%D
+%D These and maybe more cases can be dealt with using dedicated hyphenation
+%D mechanisms. At he same time we want to experiment with more extensive patterns
+%D as discussed in {\em TUGboat, Volume 27 (2006), No. 2—Proceedings of EuroTEX2006}.
+
+% lua: 5.341 5.354
+% tex: 5.174 5.262
+
+\writestatus{loading}{ConTeXt Language Macros / Initialization}
+
+\registerctxluafile{lang-dis}{autosuffix}
+\registerctxluafile{lang-hyp}{autosuffix}
+
+\unprotect
+
+\definesystemattribute[hyphenation][public]
+
+%D After a decade of playing with these things in \LUATEX|/|\MKIV\ it's time to
+%D finish the way we deal with discretionaries. Apart from the fact that they play a
+%D role in hyphenation they also need to be dealt with in fonts. Flattening, cleanup
+%D and such are now more or less default in \CONTEXT\ so we can simplify some of the
+%D code. We also use the new penalty mechanism.
+
+\newcount\compoundhyphenpenalty
+
+% \ifcase\contextlmtxmode
+%     \hyphenpenaltymode\plusfour
+%     \automatichyphenmode\plusone
+% \fi
+
+\hyphenpenalty            50 % hyphenator
+\automatichyphenpenalty   50 % -
+\explicithyphenpenalty    50 % \-
+\compoundhyphenpenalty    50
+\exceptionpenalty       1000
+
+%D This command can change! At some point we will keep the setting with the
+%D paragraph and then the \type {\par} can go.
+
+\installcorenamespace{hyphenation}
+\installcorenamespace{hyphenationfeatures}
+
+\installparameterhandler \??hyphenation {hyphenation}
+\installsetuphandler     \??hyphenation {hyphenation}
+
+\setuphyphenation
+  [\c!method=\s!default,
+   \s!righthyphenchar=0, % number tzt g: etc
+   \s!lefthyphenchar=0]  % number
+
+\appendtoks
+    \clf_sethyphenationmethod{\hyphenationparameter\c!method}%
+\to \everysetuphyphenation
+
+%D These are mostly meant for manuals:
+
+\permanent\protected\def\starthyphenation[#1]%
+  {\begingroup
+   \clf_pushhyphenation{#1}}
+
+\permanent\protected\def\stophyphenation
+  {\ifhmode\par\fi
+   \clf_pophyphenation
+   \endgroup}
+
+% This is a global setting, so we need to disable it when needed. However, as
+% we are (hopefully) compatible and attribute driven one can also just keep it
+% enabled.
+%
+% \setuphyphenation
+%   [\c!method=\s!traditional] % no translations
+
+\permanent\tolerant\protected\def\definehyphenationfeatures[#1]#*[#2]%
+  {\begingroup
+   \letdummyparameter\c!characters     \empty     % maybe \s!characters
+   \letdummyparameter\c!hyphens        \empty     % maybe \s!hyphens
+   \letdummyparameter\c!joiners        \empty     % maybe \s!joiners
+   \letdummyparameter\c!rightwords     \zerocount % maybe \s!rightwords
+   \letdummyparameter\s!lefthyphenmin  \zerocount
+   \letdummyparameter\s!righthyphenmin \zerocount
+   \letdummyparameter\s!hyphenmin      \zerocount
+   \letdummyparameter\s!lefthyphenchar \zerocount
+   \letdummyparameter\s!righthyphenchar\zerocount
+   \letdummyparameter\c!alternative    \empty
+   \letdummyparameter\c!rightedge      \empty
+   \letdummyparameter\c!rightchars     \empty
+   \getdummyparameters[#2]%
+   \clf_definehyphenationfeatures
+      {#1}%
+      {
+        characters   {\dummyparameter\c!characters}%
+        hyphens      {\dummyparameter\c!hyphens}%
+        joiners      {\dummyparameter\c!joiners}%
+        rightwordmin \numexpr\dummyparameter\c!rightwords\relax
+        rightchars   {\dummyparameter\c!rightchars}%
+        charmin      \numexpr\dummyparameter\s!hyphenmin\relax
+        leftcharmin  \numexpr\dummyparameter\s!lefthyphenmin\relax
+        rightcharmin \numexpr\dummyparameter\s!righthyphenmin\relax
+        leftchar     \numexpr\dummyparameter\s!lefthyphenchar\relax
+        rightchar    \numexpr\dummyparameter\s!righthyphenchar\relax
+        alternative  {\dummyparameter\c!alternative}%
+        rightedge    {\dummyparameter\c!rightedge}%
+      % autohyphen   {\dummyparameter\c!autohyphen}
+      % hyphenonly   {\dummyparameter\c!hyphenonly}
+      }%
+   \relax
+   \endgroup}
+
+\permanent\protected\def\sethyphenationfeatures[#1]%
+  {\clf_sethyphenationfeatures{#1}}
+
+\permanent\protected\def\resethyphenationfeatures
+  {\attribute\hyphenationattribute\attributeunsetvalue}
+
+\resethyphenationfeatures
+
+% todo: \start ... \stop too
+
+\permanent\tolerant\protected\def\registerhyphenationpattern[#1]#*[#2]%
+  {\clf_registerhyphenationpattern\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\s!true\relax}
+
+\permanent\tolerant\protected\def\unregisterhyphenationpattern[#1]#*[#2]%
+  {\clf_registerhyphenationpattern\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\s!false\relax}
+
+\permanent\tolerant\protected\def\registerhyphenationexception[#1]#*[#2]%
+  {\clf_registerhyphenationexception\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\relax}
+
+\permanent\tolerant\protected\def\showhyphenationtrace[#1]#*[#2]%
+  {\begingroup
+   \tt
+   \clf_showhyphenationtrace\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\relax
+   \endgroup}
+
+% For old times sake:
+
+\permanent\protected\def\atleastoneword#1%
+  {\begingroup
+   \starthyphenation[traditional]% this might become default or a faster switch
+   \sethyphenationfeatures[words]%
+   #1\par
+   \stophyphenation
+   \endgroup}
+
+%D For me:
+
+\permanent\protected\def\showdiscretionaries
+  {\clf_showdiscretionaries}
+
+%D These are (at least now) not cummulative:
+
+\definehyphenationfeatures % just an example
+  [fences]
+  [\c!characters={[]()}]
+
+\definehyphenationfeatures
+  [words]
+  [\c!rightwords=1,
+   \s!lefthyphenmin=4,
+   \s!righthyphenmin=4]
+
+\definehyphenationfeatures
+  [default]
+  [%c!rightedge=\v!tex,
+   \c!hyphens=\v!yes,
+   \c!joiners=\v!yes]
+
+\definehyphenationfeatures
+  [strict]
+  [\c!rightedge=\s!tex]
+
+% \sethyphenationfeatures
+%   [fences]
+
+% \sethyphenationfeatures
+%   [default,fences]
+
+% \setuphyphenation % will be default
+%   [method=expanded]
+
+\protect \endinput
+
+% \starttext
+%
+% \enabledirectives[hyphenators.method=traditional]
+%
+% % \dorecurse{1000}{\input tufte \par}
+%
+% \setupalign[verytolerant,flushleft]
+% \setuplayout[width=140pt] \showframe
+%
+% longword longword long word longword longwordword \blank
+%
+% \enabledirectives[hyphenators.rightwordsmin=1]
+%
+% longword longword long word longword longwordword\blank
+%
+% \disabledirectives[hyphenators.rightwordsmin]
+%
+% longword longword long word longword longwordword\blank
+%
+% \atleastoneword{longword longword long word longword longwordword}
+%
+% \enabledirectives[hyphenators.method=traditional]
+%
+% \stoptext
+
+% \startluacode
+%     -- e1ë/e=e             reëel      re-eel
+%     -- a1atje./a=t,1,3     omaatje    oma-tje
+%     -- schif1f/ff=f,5,2    Schiffahrt Schiff-fahrt
+%
+%     languages.hyphenators.traditional.registerpattern("en","a1b",      { start = 1, length = 2, before = "CD", after = "EF"  } )
+%     languages.hyphenators.traditional.registerpattern("en","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
+%     languages.hyphenators.traditional.registerpattern("en","oo1ë",     { start = 2, length = 2, before = "o",  after = "e"  } )
+%     languages.hyphenators.traditional.registerpattern("en","qqxc9xkqq",{ start = 3, length = 4, before = "ab", after = "cd" } ) -- replacement start length
+%
+%     --  print("reëel",       injecthyphens(dictionaries.nl,"reëel",       2,2))
+%     --  print("reeëel",      injecthyphens(dictionaries.nl,"reeëel",      2,2))
+%     --  print("rooëel",      injecthyphens(dictionaries.nl,"rooëel",      2,2))
+%     --  print(   "QXcXkQ",   injecthyphens(dictionaries.de,   "QXcXkQ",   2,2))
+%     --  print(  "QQXcXkQQ",  injecthyphens(dictionaries.de,  "QQXcXkQQ",  2,2))
+%     --  print( "QQQXcXkQQQ", injecthyphens(dictionaries.de, "QQQXcXkQQQ", 2,2))
+%     --  print("QQQQXcXkQQQQ",injecthyphens(dictionaries.de,"QQQQXcXkQQQQ",2,2))
+%     --
+%     --  print(  "QQXcXkQQ QQXcXkQQ",  injecthyphens(dictionaries.de,  "QQXcXkQQ QQXcXkQQ",  2,2))
+% \stopluacode
+%
+% \starttext
+%
+% \blank
+%
+% xreëel rooëel \par xxabxx xxxabxxx \par
+%
+% \hsize1mm \lefthyphenmin2 \righthyphenmin2
+%
+% \blank Capacity \blank capacity \blank xyabxy \blank xreëel \blank rooëel \blank
+%
+% xy\discretionary{CD}{EF}{ab}xy % xxacceedxxx
+%
+% \stoptext

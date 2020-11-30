@@ -1,0 +1,143 @@
+%D \module
+%D   [       file=lang-frd,
+%D        version=2004.01.15,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Language Frequency Table Data,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\endinput
+
+%D This is experimental work! Old stuff, whenever I need it I might
+%D do it in \LUA.
+
+% http://www.onzetaal.nl/advies/letterfreq.html
+
+\startcharactertable[nl]
+  \charfreq a  7.47
+  \charfreq b  1.58
+  \charfreq c  1.24
+  \charfreq d  5.93
+  \charfreq e 18.91
+  \charfreq f   .81
+  \charfreq g  3.4
+  \charfreq h  2.38
+  \charfreq i  6.5
+  \charfreq j  1.46
+  \charfreq k  2.25
+  \charfreq l  3.57
+  \charfreq m  2.21
+  \charfreq n 10.03
+  \charfreq o  6.06
+  \charfreq p  1.57
+  \charfreq q   .009
+  \charfreq r  6.41
+  \charfreq s  3.73
+  \charfreq t  6.79
+  \charfreq u  1.99
+  \charfreq v  2.85
+  \charfreq w  1.52
+  \charfreq x   .04
+  \charfreq y   .035
+  \charfreq z  1.39
+\stopcharactertable
+
+% http://caislab.icu.ac.kr/course/2001/spring/ice605/down/010306.pdf
+
+% \startcharactertable[en]
+%   \charfreq a  8.2
+%   \charfreq b  1.5
+%   \charfreq c  2.8
+%   \charfreq d  4.3
+%   \charfreq e 12.7
+%   \charfreq f  2.2
+%   \charfreq g  2
+%   \charfreq h  6.1
+%   \charfreq i  7
+%   \charfreq j   .2
+%   \charfreq k   .8
+%   \charfreq l  4
+%   \charfreq m  2.4
+%   \charfreq n  6.7
+%   \charfreq o  7.5
+%   \charfreq p  1.9
+%   \charfreq q   .1
+%   \charfreq r  6
+%   \charfreq s  6.3
+%   \charfreq t  9.1
+%   \charfreq u  2.8
+%   \charfreq v  1
+%   \charfreq w  2.3
+%   \charfreq x   .1
+%   \charfreq y  2
+%   \charfreq z   .1
+% \stopcharactertable
+
+% http://www.blankenburg.de/gat/pages/fach/info/analyse2.htm
+
+\startcharactertable[en]
+  \charfreq a  8.04
+  \charfreq b  1.54
+  \charfreq c  3.06
+  \charfreq d  3.99
+  \charfreq e 12.51
+  \charfreq f  2.3
+  \charfreq g  1.96
+  \charfreq h  5.49
+  \charfreq i  7.26
+  \charfreq j   .16
+  \charfreq k   .67
+  \charfreq l  4.14
+  \charfreq m  2.53
+  \charfreq n  7.09
+  \charfreq o  7.6
+  \charfreq p  2
+  \charfreq q   .11
+  \charfreq r  6.12
+  \charfreq s  6.54
+  \charfreq t  9.25
+  \charfreq u  2.71
+  \charfreq v   .99
+  \charfreq w  1.92
+  \charfreq x   .19
+  \charfreq y  1.73
+  \charfreq z   .09
+\stopcharactertable
+
+% http://www.blankenburg.de/gat/pages/fach/info/analyse2.htm
+
+\startcharactertable[de]
+  \charfreq a  6.47
+  \charfreq b  1.93
+  \charfreq c  2.68
+  \charfreq d  4.83
+  \charfreq e 17.48
+  \charfreq f  1.65
+  \charfreq g  3.06
+  \charfreq h  4.23
+  \charfreq i  7.73
+  \charfreq j   .27
+  \charfreq k  1.46
+  \charfreq l  3.49
+  \charfreq m  2.58
+  \charfreq n  9.84
+  \charfreq o  2.98
+  \charfreq p   .96
+  \charfreq q   .02
+  \charfreq r  7.54
+  \charfreq s  6.83
+  \charfreq t  6.13
+  \charfreq u  4.17
+  \charfreq v   .94
+  \charfreq w  1.48
+  \charfreq x   .04
+  \charfreq y   .08
+  \charfreq z  1.14
+\stopcharactertable
+
+\endinput

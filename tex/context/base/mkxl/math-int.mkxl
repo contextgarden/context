@@ -1,0 +1,141 @@
+%D \module
+%D   [       file=math-int,
+%D        version=2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Scripts,
+%D         author={Hans Hagen \& Taco Hoekwater \& Aditya Mahajan},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Integrals}
+
+% todo: int and sum etc can be stackers
+
+\unprotect
+
+%D \startbuffer
+%D   $\int    _a^b f(x)   dx  $ and also
+%D   $\iint   _a^b f(x,y) dxdy$,
+%D   $\iiint  _a^b f(x,y) dxdy$,
+%D   \startformula
+%D     \int    _a^b f(x) dx \quad
+%D     \iint   _a^b f(x) dx \quad
+%D     \iiint  _a^b f(x) dx \quad
+%D   \stopformula
+%D \stopbuffer
+%D
+%D Default: \getbuffer
+%D
+%D Displaylimits: \setupmathematics[integral=displaylimits] \getbuffer
+%D
+%D Limits: \setupmathematics[integral=limits] \getbuffer
+
+%D Adapted to mkiv by HH from code by AM.
+
+\installcorenamespace{mathintegral}
+
+\newconstant\mathintlimitmode
+
+\def\intlimits % also used elsewhere
+  {\ifcase\mathintlimitmode
+     \nolimits
+   \or
+     \displaylimits
+   \or
+     \limits
+   \or
+     \ifnum\attribute\mathmodeattribute=\plusone
+       \limits
+     \else
+       \nolimits
+     \fi
+   \else
+     % none
+   \fi}
+
+\letvalue{\??mathintegral      nolimits}\zerocount
+\letvalue{\??mathintegral displaylimits}\plusone
+\letvalue{\??mathintegral        limits}\plustwo
+\letvalue{\??mathintegral    autolimits}\plusthree
+\letvalue{\??mathintegral          none}\plusfour
+
+\appendtoks
+    \mathintlimitmode\executeifdefined{\??mathintegral\mathematicsparameter\s!integral}\zerocount
+\to \everyswitchmathematics
+
+\setupmathematics
+% [\v!integral=nolimits]
+  [\v!integral=autolimits]
+
+%D The following code is used for fallbacks and might become obsolete once
+%D we have enough \OPENTYPE\ math fonts.
+
+% \def\math_repeated_integal_i
+%   {\int}
+
+% \def\math_repeated_integal_ii
+%   {\math_repeated_integal_i
+%    \math_repeated_integral_kern
+%    \math_repeated_integal_i
+%    \math_repeat_integral_finish
+%    \intlimits}
+
+% \def\math_repeated_integal_iii
+%   {\math_repeated_integal_i
+%    \math_repeated_integral_kern
+%    \math_repeated_integal_ii}
+%
+% \def\math_repeated_integal_iiii
+%   {\math_repeated_integal_i
+%    \math_repeated_integral_kern
+%    \math_repeated_integal_iii}
+%
+% \protected\def\math_repeat_integral#1%
+%   {\let\math_repeat_integral_finish\donothing
+%    \iffontchar\textfont\zerocount#1\relax
+%      \expandafter\math_repeat_integral_real
+%    \else
+%      \expandafter\math_repeat_integral_fake
+%    \fi}
+%
+% \def\math_repeat_integral_fake#1#2%
+%   {\let\math_repeat_integral_fake_symbol#2%
+%    \futurelet\next\math_repeat_integral_fake_indeed}
+%
+% \def\math_repeat_integral_real#1#2%
+%   {#1}
+%
+% \definemathcommand [iint]   {\math_repeat_integral{"0222C}\normalint  \math_repeated_integal_ii  } % double
+% \definemathcommand [iiint]  {\math_repeat_integral{"0222D}\normaliint \math_repeated_integal_iii } % tripple
+% \definemathcommand [iiiint] {\math_repeat_integral{"FFFFF}\normaliiint\math_repeated_integal_iiii} % quadruple
+%
+% \def\math_repeated_integral_kern
+%   {\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
+%
+% \def\math_repeat_integral_fake_indeed
+%    {\ifx\next\limits
+%       \math_repeated_integral_correction
+%     \orelse\ifx\next\displaylimits
+%       \math_repeated_integral_correction
+%     \orelse\ifx\next\nolimits
+%       % nothing
+%     \orelse\ifcase\mathintlimitmode
+%       % nothing
+%     \else
+%       \math_repeated_integral_correction
+%     \fi
+%     \math_repeat_integral_fake_symbol}
+%
+% \def\math_repeated_integral_correction
+%   {\mkern-7mu\mathchoice{\mkern-2mu}{}{}{}%
+%    \mathop\bgroup\mkern7mu\mathchoice{\mkern2mu}{}{}{}\let\math_repeat_integral_finish\egroup}
+%
+% %D If the \type{\limits} option is used after \type {\iint}, use \type
+% %D {\mathop} and fudge the left hand space a bit to make the subscript
+% %D visually centered.
+
+\protect \endinput

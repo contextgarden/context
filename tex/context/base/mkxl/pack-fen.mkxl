@@ -1,0 +1,97 @@
+%D \module
+%D   [       file=pack-fen,
+%D        version=2011.07.21,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle= Fences for Ruled Content,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Fences for Ruled Content}
+
+%D \startbuffer
+%D \useMPlibrary[meta-imp-hooks.mkiv]
+%D
+%D \framed[frame=off,bottomframe=righthook]{Bottom right hook}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+
+\unprotect
+
+\permanent\protected\def\installleftframerenderer#1#2%
+  {\setvalue{\??framedleft\v!on#1}{\whateverleftframe{#2}}%
+   \letcsname\??framedleft\v!off#1\expandafter\endcsname\csname\??framedleft\v!on#1\endcsname}
+
+\permanent\protected\def\installrightframerenderer#1#2%
+  {\setvalue{\??framedright\v!on#1}{\whateverrightframe{#2}}%
+   \letcsname\??framedright\v!off#1\expandafter\endcsname\csname\??framedright\v!on#1\endcsname}
+
+\permanent\protected\def\installtopframerenderer#1#2%
+  {\setvalue{\??framedtop\v!on#1}{\whatevertopframe{#2}}%
+   \letcsname\??framedtop\v!off#1\expandafter\endcsname\csname\??framedtop\v!on#1\endcsname}
+
+\permanent\protected\def\installbottomframerenderer#1#2%
+  {\setvalue{\??framedbottom\v!on#1}{\whateverbottomframe{#2}}%
+   \letcsname\??framedbottom\v!off#1\expandafter\endcsname\csname\??framedbottom\v!on#1\endcsname}
+
+\ifdefined \pack_framed_overlay_initialize_indeed
+
+    \aliased\let\setinstalledframedimensions\pack_framed_overlay_initialize_indeed
+
+\else
+
+    \permanent\protected\def\setinstalledframedimensions
+      {\d_overlay_width       \frameddimenwd
+       \d_overlay_height      \dimexpr\frameddimenht+\frameddimendp\relax
+       \d_overlay_depth       \frameddimendp
+       \d_overlay_linewidth   \ruledlinewidth
+       \edef\overlaycolor    {\framedparameter\c!backgroundcolor}%
+       \edef\overlaylinecolor{\framedparameter\c!framecolor}}
+
+\fi
+
+\newbox\b_framed_rendered
+
+\permanent\def\whateverleftframe#1%
+  {\setinstalledframedimensions
+   \setbox\b_framed_rendered\vpack to \d_overlay_height{\vss#1\vss}%
+   \setbox\b_framed_rendered\hpack to \zeropoint{\box\b_framed_rendered\hss}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
+
+\permanent\def\whateverrightframe#1%
+  {\setinstalledframedimensions
+   \setbox\b_framed_rendered\vpack to \d_overlay_height{\vss#1\vss}%
+   \setbox\b_framed_rendered\hpack to \zeropoint{\hss\box\b_framed_rendered}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
+
+\permanent\def\whatevertopframe#1%
+  {\setinstalledframedimensions
+   \setbox\b_framed_rendered\hpack to \d_overlay_width{\hss#1\hss}%
+   \setbox\b_framed_rendered\vpack to \zeropoint{\box\b_framed_rendered\vss}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered
+   \nointerlineskip}
+
+\permanent\def\whateverbottomframe#1%
+  {\setinstalledframedimensions
+   \setbox\b_framed_rendered\hpack to \d_overlay_width{\hss#1\hss}%
+   \setbox\b_framed_rendered\vpack to \zeropoint{\vss\box\b_framed_rendered}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
+
+\protect \endinput

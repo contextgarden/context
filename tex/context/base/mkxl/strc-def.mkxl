@@ -1,0 +1,338 @@
+%D   [       file=strc-def,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Definitions}
+
+%registerctxluafile{strc-def}{}
+
+\unprotect
+
+% \setupsectionblock[appendix][sectionconversionset=appendix]
+% \setuphead[chapter][sectionconversionset=\sectionblockparameter\c!sectionconversionset] % \sectionblockparameter]
+
+% \defineresetset[default][0,1,1,0][1] % this will not reset parts and subsections
+% \setuphead[part][sectionresetset=default]
+% \starttext
+%     \placelist[chapter,section,subsection][criterium=all,width=3cm]
+%     \part{first}  \chapter{alpha} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{beta}
+%     \part{second} \chapter{gamma} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{delta}
+% \stoptext
+
+\defineseparatorset  [\s!default] [] [.]
+\defineconversionset [\s!default] [] [numbers]
+\defineresetset      [\s!default] [] [1] % each level
+\defineprefixset     [\s!default] [section-1,section-2,section-3] []
+
+\defineconversionset [\v!number]     [] [numbers]
+\defineconversionset [\v!pagenumber] [] [numbers]
+
+\defineprefixset     [\v!all]  [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
+\defineprefixset     [\v!none] [] []
+
+\defineprefixset     [\v!part]    [section-1] []
+\defineprefixset     [\v!chapter] [section-2] []
+
+\defineseparatorset  [\v!appendix:\s!default] [] [.]
+\defineconversionset [\v!appendix:\s!default] [Romannumerals,Characters] [numbers]
+\defineresetset      [\v!appendix:\s!default] [] [1] % why was this 0
+
+\setupuserpagenumber
+  [\c!numberconversionset=\v!pagenumber]
+
+\setupcounters
+  [\c!numberconversionset=\v!number]
+
+% \startsetups defaults:frontpart:pagenumbers:roman
+%     \defineconversionset[\c!frontpart:\c!pagenumber][][romannumerals]
+%     \setupuserpagenumber[\c!way=\v!by\v!block]
+% \stopsetups
+
+% \definesectionblock
+
+\definesectionblock [\v!frontpart] [\v!frontmatter] [\c!number=\v!no]
+\definesectionblock [\v!bodypart]  [\v!bodymatter]  [\c!number=\v!yes]
+\definesectionblock [\v!appendix]  [\v!appendices]  [\c!number=\v!yes]
+\definesectionblock [\v!backpart]  [\v!backmatter]  [\c!number=\v!no]
+
+\setsectionblock [\v!bodypart] % default
+
+% \setuphead[sectionsegments=\currentheadlevel]
+% \setuphead[sectionsegments=current]
+%
+% \startchapter[title=One,ownnumber={A}]
+%     \startsection[title=OneOne,ownnumber={A.B}]
+%         \startsubsection[title=OneOneOne,ownnumber={A.B.C}]
+%             test
+%         \stopsubsection
+%     \stopsection
+% \stopchapter
+
+% \appendtoks
+%     \setsectionblock[\v!bodypart]% default
+% \to \everyjob
+%
+% \appendtoks
+%     \clf_setinitialsectionblock{\v!bodypart}%
+% \to \everystarttext
+
+\appendtoks
+    \clf_setinitialsectionblock{\v!bodypart}%
+\to \everyjob
+
+% \definesection (could become \definehead with one parameter)
+
+\definesection[\s!section-1]  % part
+\definesection[\s!section-2]  % chapter
+\definesection[\s!section-3]  % section
+\definesection[\s!section-4]  % subsection
+\definesection[\s!section-5]  % subsubsection
+\definesection[\s!section-6]  % subsubsubsection
+\definesection[\s!section-7]  % subsubsubsubsection
+\definesection[\s!section-8]  % subsubsubsubsubsection
+\definesection[\s!section-9]  % subsubsubsubsubsubsection
+\definesection[\s!section-10] % subsubsubsubsubsubsubsection
+\definesection[\s!section-11] % subsubsubsubsubsubsubsubsection
+\definesection[\s!section-12] % subsubsubsubsubsubsubsubsubsection
+
+% \definehead
+
+\definehead
+  [\v!part]
+  [\c!section=\s!section-1]
+
+\definehead
+  [\v!chapter]
+  [\c!section=\s!section-2]
+
+\definehead
+  [\v!section]
+  [\c!section=\s!section-3]
+
+\definehead
+  [\v!subsection]
+  [\c!section=\s!section-4,
+   \c!default=\v!section]
+
+\definehead
+  [\v!subsubsection]
+  [\c!section=\s!section-5,
+   \c!default=\v!subsection]
+
+\definehead
+  [\v!subsubsubsection]
+  [\c!section=\s!section-6,
+   \c!default=\v!subsubsection]
+
+\definehead
+  [\v!subsubsubsubsection]
+  [\c!section=\s!section-7,
+   \c!default=\v!subsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsection]
+  [\c!section=\s!section-8,
+   \c!default=\v!subsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsection]
+  [\c!section=\s!section-9,
+   \c!default=\v!subsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsection]
+  [\c!section=\s!section-10,
+   \c!default=\v!subsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-11,
+   \c!default=\v!subsubsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-12,
+   \c!default=\v!subsubsubsubsubsubsubsubsection]
+
+\definehead
+  [\v!title]
+  [\c!coupling=\v!chapter,
+   \c!default=\v!chapter,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subject]
+  [\c!coupling=\v!section,
+   \c!default=\v!section,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubject]
+  [\c!coupling=\v!subsection,
+   \c!default=\v!subsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubject]
+  [\c!coupling=\v!subsubsection,
+   \c!default=\v!subsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubject]
+  [\c!coupling=\v!subsubsubsection,
+   \c!default=\v!subsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsection,
+   \c!default=\v!subsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+% setups
+
+\setuphead
+  [\v!part]
+  [\c!placehead=\v!no]
+
+\setuphead
+  [\v!chapter]
+  [\v!appendix\c!label=\v!appendix,
+   \v!bodypart\c!label=\v!chapter]       %   bijlageconversie=\Character
+
+\setuphead
+  [\v!section]
+  [\v!appendix\c!label=\v!section,
+   \v!bodypart\c!label=\v!section]       %   bijlageconversie=\Character
+
+\setuphead
+  [\v!subsection]
+  [\v!appendix\c!label=\v!subsection,
+   \v!bodypart\c!label=\v!subsection]    %   bijlageconversie=\Character
+
+\setuphead
+  [\v!subsubsection]
+  [\v!appendix\c!label=\v!subsubsection,
+   \v!bodypart\c!label=\v!subsubsection] %   bijlageconversie=\Character
+
+% prefixes
+
+\defineprefixset
+  [\v!all]
+  [section-1,section-2,section-3,section-4,section-5,section-6,section-7,%
+   section-8,section-9,section-10,section-11,section-12]
+  []
+
+% \setuphead
+
+\setuphead
+  [\v!part,\v!chapter]
+  [%\c!align=,
+   %\c!indentnext=\v!no,
+   \c!continue=\v!no,
+   \c!page=\v!right,
+   \c!marking=\v!page,
+   \c!header=,
+   \c!style=\tfc,
+   \c!distance=.75\emwidth,
+   \c!textdistance=\emwidth plus \emwidth minus .25\emwidth,
+   \c!before={\blank[2*\v!big]},
+   \c!after={\blank[2*\v!big]}]
+
+\setuphead
+  [\v!section]
+  [%\c!align=,
+   %\c!indentnext=\v!no,
+   \c!style=\tfa,
+   \c!distance=.75\emwidth,
+   \c!textdistance=\emwidth plus \emwidth minus .25\emwidth,
+   \c!before={\blank[2*\v!big]},
+   \c!after=\blank]
+
+\setuphead % nieuw
+  [\v!subsection]
+  [\c!page=]
+
+% brrr
+
+% \definecounter[\v!page][\c!start=1] % todo: setup
+
+% lists
+
+\definecombinedlist
+  [\v!content]
+  [\v!part,
+   \v!chapter,
+   \v!section,
+   \v!subsection,
+   \v!subsubsection,
+   \v!subsubsubsection,
+   \v!subsubsubsubsection]
+  [\c!level=\v!subsubsubsubsection,
+   \c!criterium=\v!local]
+
+\setuplist
+  [\v!part]
+  [\c!before={\blank[\v!preference,\v!big]}, % sort of mkii compatible, watch columns
+   \c!after=\blank,
+   \c!label=\v!yes,
+   \c!distance=\emwidth]
+
+\setuplist
+  [\v!chapter]
+  [\c!before={\blank[\v!preference,\v!big]}, % sort of mkii compatible, watch columns
+   \c!after=]
+
+\setuplist [\v!part] [\c!width=0\emwidth]
+\setuplist [\v!chapter] [\c!width=2\emwidth]
+\setuplist [\v!section] [\c!width=3\emwidth]
+\setuplist [\v!subsection] [\c!width=4\emwidth]
+\setuplist [\v!subsubsection] [\c!width=5\emwidth]
+\setuplist [\v!subsubsubsection] [\c!width=6\emwidth]
+\setuplist [\v!subsubsubsubsection] [\c!width=7\emwidth]
+\setuplist [\v!subsubsubsubsubsection] [\c!width=8\emwidth]
+\setuplist [\v!subsubsubsubsubsubsection] [\c!width=9\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsection] [\c!width=10\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsubsection] [\c!width=11\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsubsubsection] [\c!width=12\emwidth]
+
+\protect \endinput

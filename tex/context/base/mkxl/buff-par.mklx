@@ -1,0 +1,186 @@
+%D \module
+%D   [       file=buff-par,
+%D        version=2010.12.05,
+%D          title=\CONTEXT\ Buffer Macros,
+%D       subtitle=Parallel,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Buffer Macros / Parallel}
+
+\registerctxluafile{buff-par}{}
+
+%D This module is made for Thomas Schmitz as part of a project. There is
+%D no documentation yet. Also, this code is unfinished and not tested well.
+%D
+%D \starttyping
+%D \defineparallel[main][one,two]
+%D
+%D \startmain
+%D \startone
+%D     first 0
+%D     [reference] first 1
+%D     first 2
+%D     first 3
+%D \stopone
+%D \starttwo
+%D     second 1
+%D     second 2
+%D \stoptwo
+%D \stopmain
+%D
+%D \startmain
+%D \startone
+%D     first 4
+%D     first 4
+%D \stopone
+%D \starttwo
+%D     second 3
+%D     second 4
+%D \stoptwo
+%D \stopmain
+%D
+%D \placeparallel[main][one][criterium=all]
+%D
+%D \placeparallel[main][two][criterium=all]
+%D \stoptyping
+
+%D criterium=all start=<number> n=<number>
+
+\unprotect
+
+\installcorenamespace{parallel}
+\installcorenamespace{parallelhandler}
+
+\installcommandhandler \??parallel {parallel} \??parallel
+
+\setupparallel
+  [\c!setups=parallel:place:default]
+
+\pushoverloadmode
+
+\let\buff_parallel_define_saved    \defineparallel
+\let\buff_process_parallel_instance\relax
+
+\permanent\tolerant\protected\overloaded\def\defineparallel[#name]#spacer[#instances]%
+  {\buff_parallel_define_saved[#name][\c!list={#instances}]% list is internal
+   \clf_defineparallel{#name}{#instances}%
+   \expandafter\newtoks\csname\??parallelhandler#name\endcsname
+   \processcommacommand[#instances]{\buff_parallel_define_instance{#name}}%
+   \frozen\instance\setuevalue{\e!start#name}{\buff_parallel_start{#name}}%
+   \frozen\instance\setuevalue{\e!stop #name}{\buff_parallel_stop}}
+
+\popoverloadmode
+
+\def\buff_process_parallel_instances
+  {\the\csname\??parallelhandler\currentparallel\endcsname}
+
+\def\buff_parallel_define_instance#name#instance%
+  {\normalexpanded{\buff_parallel_define_saved[#instance][#name]}%
+   \definebuffer[#instance]%
+  %\edef\t_buff_parallel{\csname\??parallelhandler#name\endcsname}%
+   \expandafter\let\expandafter\t_buff_parallel\csname\??parallelhandler#name\endcsname
+   \toksapp\t_buff_parallel{\edef\currentparallelinstance{#instance}\buff_process_parallel_instance\relax}%
+   \setuevalue{\e!stop#instance}{\buff_parallel_save{#instance}}}
+
+\pushoverloadmode
+
+\let\buff_parallel_setup_saved \setupparallel
+
+\permanent\tolerant\protected\def\setupparallel[#name]#spacer[#instances]#spacer[#setups]%
+  {\processcommalist[#instances]{\buff_parallel_setup_instance{#name}{#setups}}}
+
+\popoverloadmode
+
+\def\buff_parallel_setup_instance#name#setups#instance%
+  {\buff_parallel_setup_saved[#name:#instance][#setups]}
+
+\protected\def\buff_parallel_start#name%
+  {\pushmacro\currentparallel
+   \edef\currentparallel{#name}%
+   \clf_nextparallel{\currentparallel}}
+
+\protected\def\buff_parallel_stop
+  {\popmacro\currentparallel}
+
+\protected\def\buff_parallel_save#instance% defined moet ook aan de lua kant kunnen
+  {\clf_saveparallel
+     {\currentparallel}%
+     {#instance}%
+     {\thedefinedbuffer{#instance}}%
+   \relax}
+
+\permanent\tolerant\protected\def\placeparallel[#name]#spacer[#instance]#spacer[#settings]%
+  {\begingroup
+   \edef\currentparallel{#name}%
+   \setupcurrentparallel[#settings]%
+   \clf_placeparallel
+     {\currentparallel}%
+     {#instance}%
+     {%
+      % setups    {\parallelparameter\c!setups}%
+        start     {\parallelparameter\c!start}%
+        n         {\parallelparameter\c!n}%
+        criterium {\parallelparameter\c!criterium}%
+     }%
+   \relax
+   \endgroup}
+
+\mutable\let\currentparallelinstance\empty
+\mutable\let\currentparallelnumber  \empty
+\mutable\let\currentparallelline    \empty
+\mutable\let\currentparallellabel   \empty
+\mutable\let\currentparallelcontent \empty
+
+\def\doflushparallel#instance#status#line#label#content% called at lua end
+  {\begingroup
+   \def\currentparallelinstance{#instance}%
+   \def\currentparallelnumber  {#status}%
+   \def\currentparallelline    {#line}%
+   \def\currentparallellabel   {#label}%
+   \def\currentparallelcontent {#content}% can be kep at the lua end .. no need to use a virtual file
+   \ifcase#status\relax
+     \expandafter\buff_parallel_flush_nop
+   \or
+     \expandafter\buff_parallel_flush_yes
+   \fi
+   \endgroup}
+
+\def\buff_parallel_flush_nop
+  {}
+
+\def\buff_parallel_flush_yes
+ %{\directsetup{\namedparallelparameter{\currentparallel:\currentparallelinstance}\c!setups}}
+  {\directsetup{\namedparallelparameter{\currentparallelinstance}\c!setups}}
+
+\permanent\protected\def\doifelseparallel#name#instance%
+  {\clf_doifelseparallel{#name}{#instance}}
+
+\aliased\let\doifparallelelse\doifelseparallel
+
+\permanent\tolerant\protected\def\resetparallel[#name]#spacer[#instance]%
+  {\clf_resetparallel{#name}{#instance}}
+
+\startsetups parallel:place:default
+    \hangafter\plusone
+    \hangindent4\emwidth
+    \dontleavehmode
+    \hbox to 3\emwidth \bgroup
+        \hss
+        \bf
+        \doifsomething \currentparallellabel {
+            \textreference[\currentparallellabel]{\currentparallelline}
+        }
+    \currentparallelline
+    \quad
+    \egroup
+    \currentparallelcontent
+    \par
+\stopsetups
+
+\protect \endinput

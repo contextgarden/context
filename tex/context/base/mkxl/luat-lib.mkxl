@@ -1,0 +1,104 @@
+%D \module
+%D   [       file=luat-lib,
+%D        version=2006.09.11,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Libraries,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Macros / Libraries}
+
+\registerctxluafile{util-str}{}
+\registerctxluafile{util-tab}{}
+\registerctxluafile{util-fil}{optimize}
+\registerctxluafile{util-sac}{optimize}
+\registerctxluafile{util-sto}{} % could also be done in trac-deb.mkiv
+\registerctxluafile{util-pck}{}
+\registerctxluafile{util-prs}{}
+\registerctxluafile{util-fmt}{}
+\registerctxluafile{util-dim}{}
+
+\registerctxluafile{trac-set}{}
+\registerctxluafile{luat-log}{autosuffix}
+\registerctxluafile{trac-inf}{autosuffix}
+\registerctxluafile{util-lua}{}
+\registerctxluafile{util-deb}{} % could also be done in trac-deb.mkiv
+
+\registerctxluafile{util-tpl}{} % needs tracker
+\registerctxluafile{util-seq}{}
+
+\registerctxluafile{util-sta}{}
+
+\registerctxluafile{util-sbx}{} % needs tracker and templates
+
+\registerctxluafile{util-soc-imp-reset}  {}
+\registerctxluafile{util-soc-imp-socket} {}
+\registerctxluafile{util-soc-imp-ltn12}  {}
+\registerctxluafile{util-soc-imp-mime}   {}
+\registerctxluafile{util-soc-imp-url}    {}
+\registerctxluafile{util-soc-imp-headers}{}
+\registerctxluafile{util-soc-imp-http}   {}
+\registerctxluafile{util-soc-imp-tp}     {}
+
+\registerctxluafile{util-zip}{}
+
+\registerctxluafile{data-ini}{}
+\registerctxluafile{data-exp}{}
+\registerctxluafile{data-env}{}
+\registerctxluafile{data-tmp}{}
+\registerctxluafile{data-met}{}
+\registerctxluafile{data-res}{}
+\registerctxluafile{data-inp}{}
+\registerctxluafile{data-out}{}
+\registerctxluafile{data-fil}{} % opener gets overloaded in data-tex
+
+\registerctxluafile{data-pre}{} % after data-res
+\registerctxluafile{data-bin}{} % before data-tex
+\registerctxluafile{data-tex}{} % after data-pre
+\registerctxluafile{data-vir}{}
+\registerctxluafile{data-zip}{}
+%registerctxluafile{data-crl}{}
+\registerctxluafile{data-sch}{}
+\registerctxluafile{data-tre}{}
+\registerctxluafile{data-lua}{}
+\registerctxluafile{data-ctx}{}
+\registerctxluafile{data-con}{}
+\registerctxluafile{data-use}{}
+\registerctxluafile{data-aux}{}
+
+\registerctxluafile{luat-cbk}{}
+\registerctxluafile{luat-run}{}
+\registerctxluafile{luat-fio}{autosuffix}
+\registerctxluafile{luat-cnf}{}
+\registerctxluafile{luat-lua}{}
+\registerctxluafile{luat-sto}{}
+\registerctxluafile{luat-ini}{}
+\registerctxluafile{util-env}{}
+\registerctxluafile{luat-env}{}
+\registerctxluafile{luat-exe}{} % simplified
+\registerctxluafile{luat-iop}{} % simplified
+%registerctxluafile{luat-bwc}{}
+\registerctxluafile{trac-lmx}{} % might become l-lmx or luat-lmx
+\registerctxluafile{luat-mac}{}
+%registerctxluafile{luat-prp}{} % for the moment of not much use
+
+\registerctxluafile{lxml-tab}{}
+\registerctxluafile{lxml-lpt}{}
+\registerctxluafile{lxml-xml}{}
+\registerctxluafile{lxml-aux}{}
+\registerctxluafile{lxml-mis}{}
+
+\pushoverloadmode
+
+\permanent\protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}
+\permanent\protected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}}
+\permanent\protected\def\writeline      {\ctxlua{logs.newline()}}
+
+\popoverloadmode
+
+\endinput

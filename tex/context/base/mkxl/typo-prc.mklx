@@ -1,0 +1,99 @@
+%D \module
+%D   [       file=typo-prc,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Processors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Processors}
+
+%D For the moment manipulators are loaded here too, as they're in the same category
+%D as processors. This might change. (They are used in publications.)
+
+\registerctxluafile{typo-prc}{}
+\registerctxluafile{typo-man}{}
+
+\unprotect
+
+%D Processors are used when we cannot easily associate typesetting directives with
+%D (for instance) structural elements. Instead of ending up with numerous additional
+%D definitions we can group treatments in so called processors.
+%D
+%D An example of where processors can be used is in separator sets (these are
+%D related to typesetting numbers using structure).
+%D
+%D \starttyping
+%D \defineprocessor[demo][style=\bfb,color=red]
+%D \stoptyping
+%D
+%D This defines a processor named \type {demo}. Such a name ends up as prefix in for
+%D instance:
+%D
+%D \starttyping
+%D \defineseparatorset [demosep] [demo->!,demo->?,demo->!,demo->?] [demo->@]
+%D \stoptyping
+%D
+%D Here the \type {!} and \type {?} are just the seperator characters that end up
+%D between part, chapter, section, etc.\ numbers. The third argument defines the
+%D default. When a separator is inserted, the \type{demo} processor will be applied.
+%D Here the number will be separated by red slightly bigger than normal bold
+%D exclamation marks and questionmarks.
+%D
+%D Valid keys for defining a processor are \type {style}, \type {color}, \type
+%D {left}, \type {right}, and \type {command} (the given command takes one
+%D argument).
+
+\installcorenamespace{processor}
+\installcorenamespace{processorcheck}
+
+\installcommandhandler \??processor {processor} \??processor
+
+\appendtoks
+    \letcsname\??processorcheck\currentprocessor\endcsname\relax
+    \clf_registerstructureprocessor{\currentprocessor}% global, but it permits using processor that are yet undefined
+\to \everydefineprocessor
+
+%D The following command can be used by users but normally it will be invoked behind
+%D the screens. After all, processor prefixes need to be split off first. At the
+%D \LUA\ end we do check for a processor being registered anyway.
+
+\permanent\protected\def\applyprocessor#tag%
+  {\def\currentprocessor{#tag}%
+   \ifcsname\??processorcheck\currentprocessor\endcsname
+     \expandafter\typo_processor_apply
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\typo_processor_apply
+  {\edef\p_state{\processorparameter\c!state}%
+   \ifx\p_state\v!stop
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\typo_processor_apply_indeed
+   \fi}
+
+\def\typo_processor_apply_indeed#content%
+  {\begingroup
+   \useprocessorstyleandcolor\c!style\c!color
+   \processorparameter\c!left
+   \processorparameter\c!command{#content}%
+   \processorparameter\c!right
+   \endgroup}
+
+%D \startbuffer
+%D \defineprocessor[first]        [style=bold]
+%D \defineprocessor[last] [first] [color=red]
+%D
+%D \applyprocessor{first}{hans} \applyprocessor{last}{hagen}
+%D \stopbuffer
+%D
+%D \typebuffer \start \blank \getbuffer \blank \stop
+
+\protect \endinput

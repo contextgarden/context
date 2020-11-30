@@ -164,6 +164,26 @@
 
     <cd:command name="document" type="environment" level="document" category="structure" file="file-job.mkvi">
         <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupdocument"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="document" type="environment" generated="yes" variant="example" level="document" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupdocument"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definedocument" level="style" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupdocument"/>
             </cd:assignments>
@@ -172,6 +192,7 @@
 
     <cd:command name="setupdocument" level="style" category="structure" file="file-job.mkvi">
         <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="before">
                     <cd:constant type="cd:command"/>
@@ -200,6 +221,7 @@
 
     <cd:command name="presetdocument" level="style" category="structure" file="file-job.mkvi">
         <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
                 <cd:inherit name="setupdocument"/>
             </cd:assignments>

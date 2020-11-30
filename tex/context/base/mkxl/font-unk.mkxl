@@ -1,0 +1,150 @@
+%D \module
+%D   [       file=font-unk,
+%D        version=1998.09.10,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Unknown Defaults,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is rather important, because it enables us to define and call for not
+%D yet defined fonts in a way completely independant of real font names. First we
+%D map some meaningful names onto unknown filenames.
+
+\unprotect
+
+\definefontsynonym [Serif]              [unknown]
+\definefontsynonym [SerifBold]          [unknown]
+\definefontsynonym [SerifItalic]        [unknown]
+\definefontsynonym [SerifSlanted]       [unknown]
+\definefontsynonym [SerifBoldItalic]    [unknown]
+\definefontsynonym [SerifBoldSlanted]   [unknown]
+\definefontsynonym [SerifCaps]          [unknown]
+
+\definefontsynonym [Sans]               [unknown]
+\definefontsynonym [SansBold]           [unknown]
+\definefontsynonym [SansItalic]         [unknown]
+\definefontsynonym [SansSlanted]        [unknown]
+\definefontsynonym [SansBoldItalic]     [unknown]
+\definefontsynonym [SansBoldSlanted]    [unknown]
+\definefontsynonym [SansCaps]           [unknown]
+
+\definefontsynonym [Mono]               [unknown]
+\definefontsynonym [MonoBold]           [unknown]
+\definefontsynonym [MonoItalic]         [unknown]
+\definefontsynonym [MonoSlanted]        [unknown]
+\definefontsynonym [MonoBoldItalic]     [unknown]
+\definefontsynonym [MonoBoldSlanted]    [unknown]
+\definefontsynonym [MonoCaps]           [unknown]
+
+\definefontsynonym [MathRoman]          [unknown]
+\definefontsynonym [MathRomanL2R]       [MathRoman]
+\definefontsynonym [MathRomanR2L]       [MathRoman]
+\definefontsynonym [MathRomanBold]      [MathRoman]
+\definefontsynonym [MathRomanBoldL2R]   [MathRomanBold]
+\definefontsynonym [MathRomanBoldR2L]   [MathRomanBold]
+
+\definefontsynonym [Handwriting]        [unknown]
+\definefontsynonym [Calligraphic]       [unknown]
+
+%D This permit us to define (use) fonts that refer to the default style (so, Bold
+%D may expand to SansBold or SerifBold, depending on the default style in the
+%D typeface). The \LUA\ call is used to set the current alternative in a
+%D non|-|interfering way. This make sure that the CurrentFont synonym (in font-sym)
+%D is working as expected (e.g.\ in MixedCaps). Yes, this is complicates stuff.
+
+\definefontsynonym[\s!Normal]     [\noexpand\clf_tf\noexpand\v_font_string_d]
+\definefontsynonym[\s!Bold]       [\noexpand\clf_bf\noexpand\v_font_string_d\noexpand\s!Bold]
+\definefontsynonym[\s!Italic]     [\noexpand\clf_it\noexpand\v_font_string_d\noexpand\s!Italic]
+\definefontsynonym[\s!Slanted]    [\noexpand\clf_sl\noexpand\v_font_string_d\noexpand\s!Slanted]
+\definefontsynonym[\s!BoldItalic] [\noexpand\clf_bi\noexpand\v_font_string_d\noexpand\s!BoldItalic]
+\definefontsynonym[\s!BoldSlanted][\noexpand\clf_bs\noexpand\v_font_string_d\noexpand\s!BoldSlanted]
+\definefontsynonym[\s!Caps]       [\noexpand\clf_tf\noexpand\v_font_string_d\noexpand\s!Caps]
+
+%D Also handy:
+
+\definefontsynonym [Regular]            [Serif]
+\definefontsynonym [RegularBold]        [SerifBold]
+\definefontsynonym [RegularItalic]      [SerifItalic]
+\definefontsynonym [RegularSlanted]     [SerifSlanted]
+\definefontsynonym [RegularBoldItalic]  [SerifBoldItalic]
+\definefontsynonym [RegularBoldSlanted] [SerifBoldSlanted]
+\definefontsynonym [RegularCaps]        [SerifCaps]
+
+\definefontsynonym [Support]            [Sans]
+\definefontsynonym [SupportBold]        [SansBold]
+\definefontsynonym [SupportItalic]      [SansItalic]
+\definefontsynonym [SupportSlanted]     [SansSlanted]
+\definefontsynonym [SupportBoldItalic]  [SansBoldItalic]
+\definefontsynonym [SupportBoldSlanted] [SansBoldSlanted]
+\definefontsynonym [SupportCaps]        [SansCaps]
+
+%D Well, not that good an idea:
+
+\definefontsynonym [Roman]              [Serif]
+\definefontsynonym [RomanBold]          [SerifBold]
+\definefontsynonym [RomanItalic]        [SerifItalic]
+\definefontsynonym [RomanSlanted]       [SerifSlanted]
+\definefontsynonym [RomanBoldItalic]    [SerifBoldItalic]
+\definefontsynonym [RomanBoldSlanted]   [SerifBoldSlanted]
+\definefontsynonym [RomanCaps]          [SerifCaps]
+
+\definefontsynonym [Type]               [Mono]
+\definefontsynonym [TypeBold]           [MonoBold]
+\definefontsynonym [TypeItalic]         [MonoItalic]
+\definefontsynonym [TypeSlanted]        [MonoSlanted]
+\definefontsynonym [TypeBoldItalic]     [MonoBoldItalic]
+\definefontsynonym [TypeBoldSlanted]    [MonoBoldSlanted]
+\definefontsynonym [TypeCaps]           [MonoCaps]
+
+%D Next we define roman, sans and monospaced font sets.
+
+\definebodyfont [default] [rm]
+  [\s!tf=Serif            sa 1,
+   \s!bf=SerifBold        sa 1,
+   \s!it=SerifItalic      sa 1,
+   \s!sl=SerifSlanted     sa 1,
+   \s!bi=SerifBoldItalic  sa 1,
+   \s!bs=SerifBoldSlanted sa 1,
+   \s!sc=SerifCaps        sa 1]
+
+\definebodyfont [default] [ss]
+  [\s!tf=Sans            sa 1,
+   \s!bf=SansBold        sa 1,
+   \s!it=SansItalic      sa 1,
+   \s!sl=SansSlanted     sa 1,
+   \s!bi=SansBoldItalic  sa 1,
+   \s!bs=SansBoldSlanted sa 1,
+   \s!sc=SansCaps        sa 1]
+
+\definebodyfont [default] [tt]
+  [\s!tf=Mono            sa 1,
+   \s!bf=MonoBold        sa 1,
+   \s!it=MonoItalic      sa 1,
+   \s!sl=MonoSlanted     sa 1,
+   \s!bi=MonoBoldItalic  sa 1,
+   \s!bs=MonoBoldSlanted sa 1,
+   \s!sc=MonoCaps        sa 1]
+
+\definebodyfont [default] [mm]
+  [\s!mr  =MathRoman        mo 1,
+   \s!mrlr=MathRomanL2R     mo 1,
+   \s!mrrl=MathRomanR2L     mo 1,
+   \s!mb  =MathRomanBold    mo 1,
+   \s!mblr=MathRomanBoldL2R mo 1,
+   \s!mbrl=MathRomanBoldR2L mo 1]
+
+\definebodyfont [default] [hw]
+  [\s!tf=Handwriting sa 1]
+
+\definebodyfont [default] [cg]
+  [\s!tf=Calligraphy sa 1]
+
+%D These definitions come into action as soon as names are mapped onto real file
+%D names (or names that themselves are mapped).
+
+\protect \endinput

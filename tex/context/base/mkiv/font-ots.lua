@@ -218,6 +218,7 @@ local copy_only_glyphs   = nuts.copy_only_glyphs
 local count_components   = nuts.count_components
 local set_components     = nuts.set_components
 local get_components     = nuts.get_components
+local flush_components   = nuts.flush_components
 
 ---------------------------------------------------------------------------------------
 
@@ -488,6 +489,7 @@ local function markstoligature(head,start,stop,char)
         setsubtype(base,ligatureglyph_code)
         set_components(base,start)
         setlink(prev,base,next)
+        flush_components(start)
         return head, base
     end
 end
@@ -514,6 +516,8 @@ local has_glyph_option = node.direct.has_glyph_option or function(n,c)
         return false
     end
 end
+
+-- in lmtx we need to check the components and can be slightly more clever
 
 local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound,hasmarks) -- brr head
     if has_glyph_option(start,no_right_ligature_code) then
@@ -586,6 +590,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 break
             end
         end
+        flush_components(components)
     else
         -- discfound ... forget about marks .. probably no scripts that hyphenate and have marks
         local discprev, discnext = getboth(discfound)

@@ -167,4 +167,10 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="loadsetups" level="style" category="xml" file="x-setups-basics.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file-optional"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

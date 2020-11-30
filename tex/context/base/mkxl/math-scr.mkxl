@@ -1,0 +1,58 @@
+%D \module
+%D   [       file=math-scr,
+%D        version=2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Scripts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Scripts}
+
+\unprotect
+
+%D These macros were first needed by Frits (Gajes) Spijkers (of the Math4All project
+%D that we participate in), and used for typesetting the minus sign that is keyed
+%D into scientific calculators. We use the monospaced signs, that we also define as
+%D symbol, so that they can be overloaded. We can probably do it nicer now (in lmtx).
+
+\def\math_scripts_raised_symbol#1%
+  {\mathchoice
+     {\math_scripts_raised_symbol_indeed5\tf {#1}}%
+     {\math_scripts_raised_symbol_indeed5\tf {#1}}%
+     {\math_scripts_raised_symbol_indeed4\tx {#1}}%
+     {\math_scripts_raised_symbol_indeed3\txx{#1}}}
+
+\def\math_scripts_raised_symbol_indeed#1#2#3%
+  {\mathord{{#2\raise.#1ex\hbox{#2\symbol[#3]}}}}
+
+\def\math_scripts_raised_number#1%
+  {\mathchoice
+     {\math_scripts_raised_number_indeed\tf {#1}}%
+     {\math_scripts_raised_number_indeed\tf {#1}}%
+     {\math_scripts_raised_number_indeed\tx {#1}}%
+     {\math_scripts_raised_number_indeed\txx{#1}}}
+
+\def\math_scripts_raised_number_indeed#1#2%
+  {\setbox\scratchbox\hbox{0}%
+   \mathord{\hbox to \wd\scratchbox{\hss#1\symbol[#2]\hss}}}
+
+\definesymbol[positive]  [\getglyph{Mono}{+}]
+\definesymbol[negative]  [\getglyph{Mono}{-}]
+\definesymbol[zeroamount][\getglyph{Mono}{-}]
+
+\permanent\protected\def\negative  {\math_scripts_raised_symbol{negative}}
+\permanent\protected\def\positive  {\math_scripts_raised_symbol{positive}}
+\permanent\protected\def\zeroamount{\math_scripts_raised_number{zeroamount}}
+
+%D How negative such a symbol looks is demonstrated in: $\negative 10^{\negative
+%D 10^{\negative 10}}$.
+
+% \setuptextformulas % why here
+%   [\c!size=\v!normal]
+
+\protect \endinput

@@ -124,11 +124,10 @@ local noadoptions = allocate {
     right    = 0x14 + 0x08,
 }
 
-local dirvalues = CONTEXTLMTXMODE > 0 and mark(getvalues("dir"))
-
-if not dirvalues then
-    dirvalues = allocate { [0] = "lefttoright", [1] = "righttoleft" }
-end
+local dirvalues = allocate {
+    [0] = "lefttoright",
+    [1] = "righttoleft",
+}
 
 local literalvalues = allocate {
     [0] = "origin",
@@ -243,11 +242,8 @@ nodes.subtypes = allocate {
  -- [nodecodes.user]       = usercodes,
     [nodecodes.vlist]      = listcodes,
     [nodecodes.whatsit]    = whatcodes,
+    [nodecodes.marginkern] = margincodes
 }
-
-if CONTEXTLMTXMODE == 0 then
-    nodes.subtypes[nodecodes.marginkern] = margincodes
-end
 
 table.setmetatableindex(nodes.subtypes,function(t,k)
     local v = { }
@@ -337,22 +333,4 @@ trackers.register("system.showcodes", nodes.showcodes)
 
 if node.fix_node_lists then
     node.fix_node_lists(false)
-end
-
--- We use the real node code numbers.
-
-if environment.initex and CONTEXTLMTXMODE > 0 then
-
-    local texchardef = tex.chardef
-
-    if texchardef then
-        for i=0,nodecodes.glyph do
-            texchardef(nodecodes[i] .. "nodecode",i)
-        end
-        for i=0,#gluecodes do
-            texchardef(gluecodes[i] .. "subtypecode",i)
-        end
-     -- tex.set("internalcodesmode",1) -- obsolete
-    end
-
 end

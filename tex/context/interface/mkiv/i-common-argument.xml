@@ -594,4 +594,15 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * URL      -->
+
+    <cd:define name="argument-url">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:url"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

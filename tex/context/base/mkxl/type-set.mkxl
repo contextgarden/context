@@ -1,0 +1,139 @@
+%D \module
+%D   [       file=type-set,
+%D        version=2005.02.04, % moved from ini/def
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Default Settings,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\ifnum\typescriptstate=\plustwo
+
+    % we store some typescripts in the format
+
+    % \loadmarkfile{type-def}
+    % \loadmarkfile{type-lua}
+    % \loadmarkfile{type-siz}
+    % \loadmarkfile{type-fbk}
+    % \loadmarkfile{type-imp-latinmodern}
+
+    % but ... let's make sure that newlines are gone
+
+    % beware: these are low level calls, so not user commands !
+
+    \loadfoundtypescriptfile\empty{type-def.mkxl}
+    \loadfoundtypescriptfile\empty{type-lua.mkxl}
+    \loadfoundtypescriptfile\empty{type-siz.mkxl}
+    \loadfoundtypescriptfile\empty{type-fbk.mkxl}
+    \loadfoundtypescriptfile\empty{type-imp-latinmodern.mkiv}
+
+    % and not:
+
+    % \loadtypescriptfile[def] % meant for local usage only
+    % \loadtypescriptfile[fbk] % meant for local usage only
+    % \loadtypescriptfile[lua] % meant for local usage only
+    % \loadtypescriptfile[siz] % meant for local usage only
+    % \usetypescriptfile[latinmodern]
+
+    \usetypescriptfile[loc]
+
+    % We want these names preset but they conflict with later loads so from now on
+    % one has to define a proper typeface if they are needed.
+    %
+    % \usetypescript[serif,sans,mono,math] [latin-modern]
+
+\else
+
+    \usetypescriptfile[def]
+    \usetypescriptfile[fbk]
+    \usetypescriptfile[lua]
+    \usetypescriptfile[siz]
+    \usetypescriptfile[latinmodern]
+    \usetypescriptfile[loc]
+
+\fi
+
+\definefilesynonym [type-imp-latin-modern.mkiv]         [type-imp-latinmodern.mkiv]
+\definefilesynonym [type-imp-modern-latin.mkiv]         [type-imp-modernlatin.mkiv]
+
+\definefilesynonym [type-imp-lucida.mkiv]               [type-imp-lucida-typeone.mkiv]
+\definefilesynonym [type-imp-lucidaot.mkiv]             [type-imp-lucida-opentype.mkiv]
+\definefilesynonym [type-imp-lucidadk.mkiv]             [type-imp-lucida-opentype.mkiv]
+
+\definefilesynonym [type-imp-dejavu-condensed.mkiv]     [type-imp-dejavu.mkiv]
+
+\definefilesynonym [type-imp-palatino.mkiv]             [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-courier.mkiv]              [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-avantgarde.mkiv]           [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-helvetica.mkiv]            [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-chancery.mkiv]             [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-bookman.mkiv]              [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-schoolbook.mkiv]           [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-times.mkiv]                [type-imp-texgyre.mkiv]
+
+\definefilesynonym [type-imp-cursor.mkiv]               [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-adventor.mkiv]             [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-heros.mkiv]                [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-chorus.mkiv]               [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-bonum.mkiv]                [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-schola.mkiv]               [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-pagella.mkiv]              [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-termes.mkiv]               [type-imp-texgyre.mkiv]
+
+\definefilesynonym [type-imp-mscoretimes.mkiv]          [type-imp-mscore.mkiv]
+\definefilesynonym [type-imp-mscorearial.mkiv]          [type-imp-mscore.mkiv]
+\definefilesynonym [type-imp-mscorecourier.mkiv]        [type-imp-mscore.mkiv]
+\definefilesynonym [type-imp-mscoreverdana.mkiv]        [type-imp-mscore.mkiv]
+
+\definefilesynonym [type-imp-candara.mkiv]              [type-imp-cleartype.mkiv]
+\definefilesynonym [type-imp-consolas.mkiv]             [type-imp-cleartype.mkiv]
+\definefilesynonym [type-imp-constantia.mkiv]           [type-imp-cleartype.mkiv]
+\definefilesynonym [type-imp-corbel.mkiv]               [type-imp-cleartype.mkiv]
+\definefilesynonym [type-imp-calibri.mkiv]              [type-imp-cleartype.mkiv]
+
+\definefilesynonym [type-imp-antykwa-poltawskiego.mkiv] [type-imp-antykwapoltawskiego.mkiv]
+
+%definefilesynonym [type-imp-mac.mkiv]                  [type-imp-osx.mkiv]
+%definefilesynonym [type-imp-win.mkiv]                  [type-imp-mscore.mkiv]
+
+\definefilesynonym [type-imp-eulernovum.mkiv]           [type-imp-euler.mkiv]
+\definefilesynonym [type-imp-eulernova.mkiv]            [type-imp-euler.mkiv]
+
+\definefilesynonym [type-imp-euler-with-pagella.mkiv]   [type-imp-euler.mkiv]
+\definefilesynonym [type-imp-pagella-with-euler.mkiv]   [type-imp-euler.mkiv]
+
+\definefilesynonym [type-imp-mdbch.mkiv]                [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mdugm.mkiv]                [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mdput.mkiv]                [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mdici.mkiv]                [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mdpgd.mkiv]                [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mdpus.mkiv]                [type-imp-mathdesign.mkiv]
+
+\definefilesynonym [type-imp-mathdesignch.mkiv]         [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesigngm.mkiv]         [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesignut.mkiv]         [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesignci.mkiv]         [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesigngd.mkiv]         [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesignus.mkiv]         [type-imp-mathdesign.mkiv]
+
+\definefilesynonym [type-imp-mathdesigncharter.mkiv]    [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesigngaramond.mkiv]   [type-imp-mathdesign.mkiv]
+\definefilesynonym [type-imp-mathdesignutopia.mkiv]     [type-imp-mathdesign.mkiv]
+
+\definefilesynonym [type-imp-cows.mkiv]                 [type-imp-koeielettersot.mkiv]
+\definefilesynonym [type-imp-sheep.mkiv]                [type-imp-koeielettersot.mkiv]
+\definefilesynonym [type-imp-coloredcows.mkiv]          [type-imp-koeielettersot.mkiv]
+\definefilesynonym [type-imp-coloredsheep.mkiv]         [type-imp-koeielettersot.mkiv]
+\definefilesynonym [type-imp-koeieletters.mkiv]         [type-imp-koeielettersot.mkiv]
+
+\definefilesynonym [type-imp-stixtwo.mkiv]              [type-imp-stix.mkiv]
+
+\definefilesynonym [type-imp-ibmplex.mkiv]              [type-imp-plex.mkiv]
+
+\protect \endinput

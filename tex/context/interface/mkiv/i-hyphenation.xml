@@ -261,4 +261,16 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="dohyphens" level="style" category="language" file="lang-ini.mkxl"/>
+
+    <cd:command name="nohyphens" level="style" category="language" file="lang-ini.mkxl"/>
+
+    <cd:command name="usehyphensparameter" level="system" category="language" file="lang-ini.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="compounddiscretionary" level="system" category="language" file="lang-mis.mkxl"/>
+
 </cd:interface>

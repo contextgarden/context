@@ -1,0 +1,151 @@
+%D \module
+%D   [       file=math-acc,
+%D        version=2013.07.31,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Accents,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Accents}
+
+% There are probably errors ... too distracted by amazing (piano) music videos running
+% on top of scite ... so: experimental code.
+
+\unprotect
+
+% This module permits overloading of accents so that we can do fancy things. The
+% implementation is similar to stackers. By default accenst are defined in a simple
+% way. Contrary to extensibles accents cannot grow indefinitely. Alas the
+% implementation of accents is different too, in the sense that they are
+% prepositioned i.e. are already raised. (In my opinion for no real reason as they
+% need to adapt anyway).
+%
+% $ \ruledhbox{$H$}  \hat{H}  \ruledhbox{$\widehat{H}$}  \widehat{H} $
+%
+% One alternative is:
+%
+% \definemathoverextensible [top] [hoed]  ["FE302]
+% \definemathoverextensible [top] [slang] ["FE303]
+%
+% $ \hoed{H} \ruledhbox{$\hoed{H}$}  \ruledhbox{$\hoed{\tf H}$}  \slang{H} $
+%
+% But that nills the italic correction (and I'm in nood to mess with that again).
+%
+% \definemathaccents   [myaccents] [color=darkred]
+% \definemathtopaccent [myaccents] [mywidehat] ["0302]
+%
+% $ \hat{H}  \widehat{H}  \mywidehat{H} $
+
+%D Older implementations are kept in the \MKII\ and \MKIV\ modules for educational
+%D purposes.
+
+\installcorenamespace{mathaccents}
+
+\installcommandhandler \??mathaccents {mathaccents} \??mathaccents
+
+\setupmathaccents
+  [\c!top=,
+   \c!bottom=,
+   \c!mathstyle=,
+   \c!color=,
+   \c!define=\v!yes] % not used
+
+\definemathaccents
+  [\v!both]
+
+\definemathaccents
+  [\v!top]
+  [\v!both]
+
+\definemathaccents
+  [\v!bottom]
+  [\v!both]
+
+\permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
+  {\ifparameter#3\or
+     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plusone{\number#3}\zerocount}%
+   \else
+     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusone{\number#2}\zerocount}%
+   \fi}
+
+\permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
+  {\ifparameter#3\or
+     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plustwo\zerocount{\number#3}}%
+   \else
+     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plustwo\zerocount{\number#2}}%
+   \fi}
+
+\permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
+  {\ifparameter#4\or
+     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
+   \else
+     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
+   \fi}
+
+\def\math_accents_color_push_yes
+  {\pushcolor[\p_math_accent_color]%
+   \let\math_accents_color_pop\popcolor}
+
+\def\math_accents_color_push_nop
+  {\let\math_accents_color_pop\donothing}
+
+\protected\def\math_accents_make_double#class#kind#top#bottom#content%
+  {\begingroup
+   \edef\currentmathaccents {#class}%
+   \edef\p_math_accent_color{\mathaccentsparameter\c!color}%
+   \startusemathstyleparameter\mathaccentsparameter
+   \ifempty\p_math_accent_color
+     \math_accents_color_push_nop
+   \else
+     \math_accents_color_push_yes
+   \fi
+   \ifcase#kind\or
+     \Umathaccent        \fam\zerocount#top
+   \or
+     \Umathaccent bottom \fam\zerocount#bottom
+   \or
+     \Umathaccent both   \fam\zerocount#top
+                         \fam\zerocount#bottom
+   \fi
+   {\math_accents_color_pop#content}%
+   \stopusemathstyleparameter
+   \endgroup}
+
+%D Relative new:
+
+\newconditional\c_math_accents_auto_dotless \settrue\c_math_accents_auto_dotless % cf opentype math
+
+\aliased\let\normalgrave\grave \permanent\protected\def\dotlessgrave#1{\normalgrave{\mathdotless#1}}
+\aliased\let\normalddot \ddot  \permanent\protected\def\dotlessddot #1{\normalddot {\mathdotless#1}}
+\aliased\let\normalbar  \bar   \permanent\protected\def\dotlessbar  #1{\normalbar  {\mathdotless#1}}
+\aliased\let\normalacute\acute \permanent\protected\def\dotlessacute#1{\normalacute{\mathdotless#1}}
+\aliased\let\normalhat  \hat   \permanent\protected\def\dotlesshat  #1{\normalhat  {\mathdotless#1}}
+\aliased\let\normalcheck\check \permanent\protected\def\dotlesscheck#1{\normalcheck{\mathdotless#1}}
+\aliased\let\normalbreve\breve \permanent\protected\def\dotlessbreve#1{\normalbreve{\mathdotless#1}}
+\aliased\let\normaldot  \dot   \permanent\protected\def\dotlessdot  #1{\normaldot  {\mathdotless#1}}
+\aliased\let\normalring \ring  \permanent\protected\def\dotlessring #1{\normalring {\mathdotless#1}}
+\aliased\let\normaltilde\tilde \permanent\protected\def\dotlesstilde#1{\normaltilde{\mathdotless#1}}
+\aliased\let\normaldddot\dddot \permanent\protected\def\dotlessdddot#1{\normaldddot{\mathdotless#1}}
+
+\def\math_accents_auto_dotless#1#2{\ifconditional\c_math_accents_auto_dotless\expandafter#2\else\expandafter#1\fi}
+
+\permanent\protected\def\grave   {\math_accents_auto_dotless\normalgrave   \dotlessgrave   }
+\permanent\protected\def\ddot    {\math_accents_auto_dotless\normalddot    \dotlessddot    }
+\permanent\protected\def\bar     {\math_accents_auto_dotless\normalbar     \dotlessbar     }
+\permanent\protected\def\acute   {\math_accents_auto_dotless\normalacute   \dotlessacute   }
+\permanent\protected\def\hat     {\math_accents_auto_dotless\normalhat     \dotlesshat     }
+\permanent\protected\def\check   {\math_accents_auto_dotless\normalcheck   \dotlesscheck   }
+\permanent\protected\def\breve   {\math_accents_auto_dotless\normalbreve   \dotlessbreve   }
+\permanent\protected\def\dot     {\math_accents_auto_dotless\normaldot     \dotlessdot     }
+\permanent\protected\def\ring    {\math_accents_auto_dotless\normalring    \dotlessring    }
+\permanent\protected\def\tilde   {\math_accents_auto_dotless\normaltilde   \dotlesstilde   }
+\permanent\protected\def\dddot   {\math_accents_auto_dotless\normaldddot   \dotlessdddot   }
+
+\aliased\let\mathring\ring % for a while
+
+\protect \endinput

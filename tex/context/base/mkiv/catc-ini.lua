@@ -31,15 +31,11 @@ end
 
 -- this only happens at runtime
 
-for k, v in next, numbers do
-    tex[k] = v -- downward compatible
+for name, number in next, numbers do
+    tex[name] = number -- downward compatible
 end
 
 -- nasty
 
 table.setmetatableindex(numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
 table.setmetatableindex(names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)
-
-commands.registercatcodetable = catcodes.register
---------.definecatcodetable   = characters.define   -- not yet defined
---------.setcharactercodes    = characters.setcodes -- not yet defined

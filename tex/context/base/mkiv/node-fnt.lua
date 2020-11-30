@@ -138,8 +138,8 @@ fonts.hashes.processes   = fontprocesses
 -- inside a run which means that we need to keep track of this which in turn complicates matters
 -- in a way i don't like
 
--- we need to deal with the basemode fonts here and can only run over ranges as we
--- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
+-- we need to deal with the basemode fonts here and can only run over ranges as we otherwise get
+-- luatex craches due to all kind of asserts in the disc/lig builder
 
 -- there is no gain in merging used (dynamic 0) and dynamics apart from a bit less code
 

@@ -1,0 +1,270 @@
+%D \module
+%D   [       file=typo-itm, % comes from core-mis
+%D        version=2012.06.28,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Item Lists,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Macros / Item Lists}
+
+\unprotect
+
+%D This is a real old mechanism that we once used for questionaries. As it is documented
+%D we keep it around. A more modern implementation would probably use another approach
+%D but I don't want to spend too much time on it now. There are a couple of changes:
+%D
+%D \startitemize
+%D \startitem textwidth sets the combined width \stopitem
+%D \startitem width sets the symbolwidth \stopitem
+%D \startitem alternative is used instead of location \stopitem
+%D \stopitemize
+%D
+%D \startbuffer
+%D \items[alternative=left]{a,b,c}
+%D \items[alternative=left,align=middle,textalign=flushright,distance=1em]{a,b,c}
+%D \items[alternative=right]{a,b,c}
+%D \items[alternative=inmargin]{a,b,c}
+%D \items[alternative=top]{a,b,c}
+%D \items[alternative=bottom]{a,b,c}
+%D \items[alternative=bottom,align=flushleft,textstyle=bold,color=red,textcolor=green]{a,b,c}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This renders as:
+%D
+%D \getbuffer
+
+\installcorenamespace{items}
+\installcorenamespace{itemsalternatives}
+\installcorenamespace{itemshorizontal}
+\installcorenamespace{itemsvertical}
+
+\installcommandhandler \??items {items} \??items
+
+\setupitems
+  [\c!alternative=\v!left,
+   \c!symbol=5,
+   \c!textwidth=\availablehsize,
+   \c!align=\v!middle,
+   \c!textalign=\v!flushleft,
+   \c!distance=\zeropoint,
+  %\c!n=,
+   \c!before=\blank,
+   \c!inbetween={\blank[\v!medium]},
+   \c!after=\blank]
+
+\newcount\c_typo_items_n
+\newcount\c_typo_items_m
+\newdimen\d_typo_items_text_width
+\newdimen\d_typo_items_symbol_width
+\newdimen\d_typo_items_distance
+\newbox  \b_typo_items_symbols
+\newbox  \b_typo_items_texts
+
+\permanent\tolerant\protected\def\items[#1]#:#2%
+  {\bgroup
+   \setupitems[#1]%
+   \edef\p_typo_items_alternative{\itemsparameter\c!alternative}%
+   \ifcsname\??itemsalternatives\p_typo_items_alternative\endcsname \else
+     \let\p_typo_items_alternative\v!left
+   \fi
+   \let\currentitems\p_typo_items_alternative
+   \setupcurrentitems[#1]%
+   %
+   \edef\p_typo_items_textwidth{\itemsparameter\c!textwidth}%
+   \ifempty\p_typo_items_textwidth
+     \d_typo_items_text_width\availablehsize
+   \else
+     \d_typo_items_text_width\p_typo_items_textwidth\relax
+   \fi
+   %
+   \edef\p_typo_items_width{\itemsparameter\c!width}%
+   \ifempty\p_typo_items_width
+     \d_typo_items_symbol_width1.5\emwidth
+   \else
+     \d_typo_items_symbol_width\p_typo_items_width\relax
+   \fi
+   %
+   \edef\p_typo_items_distance{\itemsparameter\c!distance}%
+   \ifempty\p_typo_items_distance
+     \d_typo_items_distance\zeropoint
+   \else
+     \d_typo_items_distance\p_typo_items_distance\relax
+   \fi
+   %
+   \edef\p_typo_items_symbol{\itemsparameter\c!symbol}%
+   \ifempty\p_typo_items_symbol
+     \let\m_typo_items_symbol\firstofoneargument
+   \orelse\ifx\p_typo_items_symbol\v!none
+     \let\p_typo_items_symbol\empty
+     \let\m_typo_items_symbol\firstofoneargument
+   \else
+     \doifelseconversiondefined\p_typo_items_symbol
+       {\def\m_typo_items_symbol{\convertnumber\p_typo_items_symbol}}
+       {\doifelsesymboldefined\p_typo_items_symbol
+          {\def\m_typo_items_symbol{\symbol[\p_typo_items_symbol]\gobbleoneargument}}
+          {\let\m_typo_items_symbol\firstofoneargument}}%
+   \fi
+   %
+   \edef\p_typo_items_align{\itemsparameter\c!align}%
+   \edef\p_typo_items_textalign{\itemsparameter\c!textalign}%
+   %
+   \edef\p_typo_items_n{\itemsparameter\c!n}%
+   \ifempty\p_typo_items_n
+     \getcommalistsize[#2]%
+     \c_typo_items_n\commalistsize\relax % \commalistcounter
+   \else
+     \c_typo_items_n\p_typo_items_n\relax
+   \fi
+   %
+   \parindent\zeropoint
+   \dontcomplain
+   %
+   \itemsparameter\c!before
+   \csname\??itemsalternatives\p_typo_items_alternative\endcsname{#2}%
+   \itemsparameter\c!after
+   \egroup}
+
+% rendering
+
+\setvalue{\??itemshorizontal\v!margin}#1%
+  {\ifnum\c_typo_items_m=\plusone\hss\else\hfill\fi
+   \strut#1%
+   \ifnum\c_typo_items_m=\c_typo_items_n\hss\else\hfill\fi}
+
+\setvalue{\??itemshorizontal\s!unknown}%
+  {\simplealignedbox\scratchwidth\m_typo_items_align}
+
+\def\typo_items_item_horizontal
+  {\advance\c_typo_items_m\plusone
+   \csname\??itemshorizontal
+     \ifcsname\??itemshorizontal\p_typo_items_align\endcsname
+       \p_typo_items_align
+     \else
+       \s!unknown
+     \fi
+   \endcsname}
+
+\setvalue{\??itemsvertical\s!unknown}%
+  {\simplealignedbox\scratchwidth\m_typo_items_align}
+
+\def\typo_items_item_vertical
+  {\advance\c_typo_items_m\plusone
+   \csname\??itemsvertical
+     \ifcsname\??itemsvertical\p_typo_items_align\endcsname
+       \p_typo_items_align
+     \else
+       \s!unknown
+     \fi
+   \endcsname}
+
+\def\typo_items_make_horizontal#1%
+  {\divide\scratchwidth\c_typo_items_n
+   \hbox{#1}}
+
+\def\typo_items_make_vertical#1%
+  {\vbox{#1}}
+
+\def\typo_items_construct_items_boxes#1%
+  {\setbox\b_typo_items_texts\hbox
+     {\c_typo_items_m\zerocount
+      \let\m_typo_items_align\p_typo_items_textalign
+      \scratchwidth\d_typo_items_text_width
+      \useitemsstyleandcolor\c!textstyle\c!textcolor
+      \typo_items_make{\processcommalist[#1]\typo_items_item}}%
+   \ifempty\p_typo_items_symbol
+     \setbox\b_typo_items_symbols\emptyhbox
+   \else
+     \setbox\b_typo_items_symbols\hbox
+       {\c_typo_items_m\zerocount
+        \let\m_typo_items_align\p_typo_items_align
+        \scratchwidth\d_typo_items_symbol_width
+        \useitemsstyleandcolor\c!style\c!color
+        \typo_items_make{\dorecurse\c_typo_items_n{\typo_items_item{\strut\m_typo_items_symbol\recurselevel}}}}%
+   \fi}
+
+% alternatives:
+
+\defineitems[\v!top][\c!width=\d_typo_items_text_width,\c!textalign=\itemsparameter\c!align]
+
+\setvalue{\??itemsalternatives\v!top}#1%
+  {\let\typo_items_make\typo_items_make_horizontal
+   \let\typo_items_item\typo_items_item_horizontal
+   \typo_items_construct_items_boxes{#1}%
+   \noindent\vbox\bgroup
+     \forgetall
+     \ifvoid\b_typo_items_symbols \else
+       \box\b_typo_items_symbols
+       \itemsparameter\c!inbetween
+       \nointerlineskip
+     \fi
+     \box\b_typo_items_texts\
+   \egroup}
+
+\defineitems[\v!bottom][\c!width=\d_typo_items_text_width,\c!textalign=\itemsparameter\c!align]
+
+\setvalue{\??itemsalternatives\v!bottom}#1%
+  {\let\typo_items_make\typo_items_make_horizontal
+   \let\typo_items_item\typo_items_item_horizontal
+   \typo_items_construct_items_boxes{#1}%
+   \noindent\vbox\bgroup
+     \forgetall
+     \box\b_typo_items_texts
+     \ifvoid\b_typo_items_symbols \else
+       \itemsparameter\c!inbetween
+       \nointerlineskip
+       \box\b_typo_items_symbols
+     \fi
+   \egroup}
+
+\defineitems[\v!inmargin][\c!width=1.5\emwidth,\c!align=\v!flushright,\c!distance=\leftmargindistance]
+
+\setvalue{\??itemsalternatives\v!inmargin}#1%
+  {\let\typo_items_make\typo_items_make_vertical
+   \let\typo_items_item\typo_items_item_vertical
+   \typo_items_construct_items_boxes{#1}%
+   \noindent\hbox\bgroup
+     \ifvoid\b_typo_items_symbols \else
+       \llap{\box\b_typo_items_symbols\hskip\d_typo_items_distance}%
+     \fi
+     \box\b_typo_items_texts
+   \egroup}
+
+\defineitems[\v!left][\c!width=1.5\emwidth,\c!align=\v!flushleft]
+
+\setvalue{\??itemsalternatives\v!left}#1%
+  {\let\typo_items_make\typo_items_make_vertical
+   \let\typo_items_item\typo_items_item_vertical
+   \advance\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
+   \typo_items_construct_items_boxes{#1}%
+   \noindent\hbox\bgroup
+     \ifvoid\b_typo_items_symbols \else
+       \box\b_typo_items_symbols
+       \kern\d_typo_items_distance
+     \fi
+     \box\b_typo_items_texts
+   \egroup}
+
+\defineitems[\v!right][\c!width=1.5\emwidth,\c!align=\v!flushright]
+
+\setvalue{\??itemsalternatives\v!right}#1%
+  {\let\typo_items_make\typo_items_make_vertical
+   \let\typo_items_item\typo_items_item_vertical
+   \advance\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
+   \typo_items_construct_items_boxes{#1}%
+   \noindent\hbox\bgroup
+     \box\b_typo_items_texts
+     \ifvoid\b_typo_items_symbols \else
+       \kern\d_typo_items_distance
+       \box\b_typo_items_symbols
+     \fi
+   \egroup}
+
+\protect \endinput

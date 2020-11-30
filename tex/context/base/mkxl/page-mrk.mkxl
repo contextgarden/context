@@ -1,0 +1,238 @@
+%D \module
+%D   [       file=page-mrk,
+%D        version=2011.05.23, % moved from page-lay
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Cutmarks and Colorbars,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Cutmarks and Colorbars}
+
+\unprotect
+
+%D This module implements curmarks and depends on \METAPOST.
+%D
+%D \starttyping
+%D \setuplayout[marking=on,location=middle]
+%D \setuplayout[marking=page,location=middle]
+%D \setuplayout[marking=empty,location=middle]
+%D \setuplayout[marking={color,page},location=middle]
+%D \setuplayout[marking={one,page},location=middle]
+%D \setuplayout[marking={two,page},location=middle]
+%D \setuplayout[marking={four,page},location=middle]
+%D \stoptyping
+
+\mutable\def\pagecutmarklength {5mm}
+\mutable\def\pagecutmarkoffset {3mm} % slightly larger than before, and now a fixed size
+\mutable\def\pagecutmarkmargin{10cm}
+
+% maybe all these should be global
+
+\newconditional\c_page_marks_add_more_color
+\newconditional\c_page_marks_add_more_marking
+\newconditional\c_page_marks_add_more_lines
+\newconditional\c_page_marks_add_page_lines
+\newconditional\c_page_marks_add_more_number
+
+\newcount\c_page_marks_max
+\newcount\c_page_marks_nx
+\newcount\c_page_marks_ny
+
+\startuniqueMPgraphic{print:color}{w,h,l,o}
+    loadmodule "crop" ;
+    page_marks_add_color(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{print:marking}{w,h,l,o}
+    loadmodule "crop" ;
+    page_marks_add_marking(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{print:lines}{w,h,l,o,x,y}
+    loadmodule "crop" ;
+    page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar x,\MPvar y,
+        \ifconditional\c_page_marks_add_page_lines tru\else fals\fi e) ;
+\stopuniqueMPgraphic
+
+\startuseMPgraphic{print:number}{w,h,l,o,n}
+    loadmodule "crop" ;
+    page_marks_add_number(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar n) ;
+\stopuseMPgraphic
+
+\def\page_marks_add_color
+  {\setlayoutcomponentattribute{\v!print:\v!color}%
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
+     \uniqueMPgraphic
+       {print:color}%
+       {w=\the\scratchwidth,h=\the\scratchheight,%
+        l=\pagecutmarklength,o=\pagecutmarkoffset}%
+   \egroup
+   \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
+   \hskip-\scratchwidth\box\scratchbox}
+
+\def\page_marks_add_marking
+  {\setlayoutcomponentattribute{\v!print:\v!marking}%
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
+     \uniqueMPgraphic
+       {print:marking}%
+       {w=\the\scratchwidth,h=\the\scratchheight,%
+        l=\pagecutmarklength,o=\pagecutmarkoffset}%
+   \egroup
+   \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
+   \hskip-\scratchwidth\box\scratchbox}
+
+\def\page_marks_add_lines
+  {\setlayoutcomponentattribute{\v!print:\v!lines}%
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
+     \uniqueMPgraphic
+       {print:lines}%
+       {w=\the\scratchwidth,h=\the\scratchheight,%
+        l=\pagecutmarklength,o=\pagecutmarkoffset,%
+        x=\the\c_page_marks_nx,y=\the\c_page_marks_ny}%
+   \egroup
+   \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
+   \hskip-\scratchwidth\box\scratchbox}
+
+\def\page_marks_add_number
+  {\setlayoutcomponentattribute{\v!print:\v!number}%
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
+     \useMPgraphic
+       {print:number}%
+       {w=\the\scratchwidth ,h=\the\scratchheight,%
+        l=\pagecutmarklength,o=\pagecutmarkoffset,%
+        n=\number\ifcase\arrangeno\realpageno\else\arrangeno\fi}%
+   \egroup
+   \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
+   \hskip-\scratchwidth\box\scratchbox}
+
+\def\page_marks_add_page_indeed#1%
+  {\setbox#1\hpack\bgroup
+     \resetvisualizers
+     \let\objectoffset\pagecutmarkmargin
+    %\infofont
+     \scratchwidth \wd#1%
+     \scratchheight\ht#1%
+     \scratchdepth \dp#1%
+     \box#1\relax
+     \page_marks_add_lines
+   \egroup}
+
+\def\page_marks_add_more_indeed#1%
+  {\setbox#1\hbox\bgroup
+     \resetvisualizers
+     \let\objectoffset\pagecutmarkmargin
+     \infofont
+     \scratchwidth \wd#1% these can move out
+     \scratchheight\ht#1%
+     \scratchdepth \dp#1%
+     \box#1\relax
+     \ifconditional\c_page_marks_add_more_color
+       \page_marks_add_color
+     \fi
+     \ifconditional\c_page_marks_add_more_marking
+       \page_marks_add_marking
+     \fi
+     \ifconditional\c_page_marks_add_more_lines
+       \page_marks_add_lines
+     \fi
+     \ifconditional\c_page_marks_add_more_number
+       \page_marks_add_number
+     \fi
+     \global\advance\c_page_marks_max\minusone
+     \ifnum\c_page_marks_max>\zerocount\else
+       \glet\page_marks_add_more\gobbleoneargument
+       \glet\page_marks_add_page\gobbleoneargument
+     \fi
+   \egroup}
+
+\let\page_marks_add_page\gobbleoneargument
+\let\page_marks_add_more\gobbleoneargument
+
+\installcorenamespace{layoutmarking}
+
+\permanent\protected\def\installpagecutmark#1#2%
+  {\setvalue{\??layoutmarking#1}{#2}}
+
+% \installpagecutmark\v!off
+%   {}
+
+% \installpagecutmark\v!text
+%   {\settrue\c_page_marks_add_more_lines
+%    \settrue\c_page_marks_add_more_number
+%    \let\pagecutmarksymbol\empty
+%    \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext}
+
+\installpagecutmark\v!on
+  {%settrue\c_page_marks_add_page_lines
+   \settrue\c_page_marks_add_more_lines
+   \settrue\c_page_marks_add_more_number}
+
+\installpagecutmark\v!page
+  {\settrue\c_page_marks_add_page_lines
+   \settrue\c_page_marks_add_more_lines
+   \settrue\c_page_marks_add_more_number}
+
+\installpagecutmark\v!empty
+  {%settrue\c_page_marks_add_page_lines
+   \settrue\c_page_marks_add_more_lines}
+
+\installpagecutmark\v!color
+  {%settrue\c_page_marks_add_page_lines
+   \settrue\c_page_marks_add_more_lines
+   \settrue\c_page_marks_add_more_color
+   \settrue\c_page_marks_add_more_marking
+   \settrue\c_page_marks_add_more_number}
+
+\installpagecutmark\v!one {\global\c_page_marks_max\plusone}  % first page
+\installpagecutmark\v!two {\global\c_page_marks_max\plustwo}  % first two pages
+\installpagecutmark\v!four{\global\c_page_marks_max\plusfour} % first four pages
+
+\permanent\protected\def\page_marks_set#1%
+  {\begincsname\??layoutmarking#1\endcsname}
+
+\appendtoks
+    \setfalse\c_page_marks_add_page_lines
+    \setfalse\c_page_marks_add_more_color
+    \setfalse\c_page_marks_add_more_marking
+    \setfalse\c_page_marks_add_more_lines
+    \setfalse\c_page_marks_add_more_number
+    \global\c_page_marks_max\maxcount
+    \rawprocesscommacommand[\layoutparameter\c!marking]\page_marks_set
+    \ifnum\c_page_marks_max<\maxcount
+      \ifconditional\c_page_marks_add_page_lines  \orelse
+      \ifconditional\c_page_marks_add_more_color  \orelse
+      \ifconditional\c_page_marks_add_more_marking\orelse
+      \ifconditional\c_page_marks_add_more_lines  \orelse
+      \ifconditional\c_page_marks_add_more_number \else
+        \settrue\c_page_marks_add_page_lines
+        \settrue\c_page_marks_add_more_number
+      \fi
+    \fi
+    \ifconditional\c_page_marks_add_page_lines
+      \let\page_marks_add_page\page_marks_add_page_indeed
+    \else
+      \let\page_marks_add_page\gobbleoneargument
+    \fi
+    % we can get a double set of (overlayed) lines .. needs to be redone (too many objects anyway)
+    \ifconditional\c_page_marks_add_more_lines
+      \let\page_marks_add_more\page_marks_add_more_indeed
+    \orelse\ifconditional\c_page_marks_add_more_color
+      \let\page_marks_add_more\page_marks_add_more_indeed
+    \orelse\ifconditional\c_page_marks_add_more_marking
+      \let\page_marks_add_more\page_marks_add_more_indeed
+    \orelse\ifconditional\c_page_marks_add_more_number
+      \let\page_marks_add_more\page_marks_add_more_indeed
+    \else
+      \let\page_marks_add_more\gobbleoneargument
+    \fi
+\to \everysetuplayout
+
+\setuplayout
+  [\c!marking=\v!off]
+
+\protect \endinput

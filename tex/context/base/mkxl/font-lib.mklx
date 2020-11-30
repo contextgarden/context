@@ -1,0 +1,172 @@
+%D \module
+%D   [       file=font-lib,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Libraries,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Libraries}
+
+\unprotect
+
+\registerctxluafile{font-ini}{}
+\registerctxluafile{font-log}{}
+\registerctxluafile{font-con}{}
+\registerctxluafile{font-cft}{}
+\registerctxluafile{font-enc}{}
+\registerctxluafile{font-agl}{}         % if needed we can comment this and delay loading
+\registerctxluafile{font-cid}{}         % cid maps
+\registerctxluafile{font-map}{optimize}
+
+% helpers
+
+\registerctxluafile{font-otr}{optimize} % opentype fontloader
+\registerctxluafile{font-web}{}         % opentype fontloader
+\registerctxluafile{font-cff}{optimize} % quadratic outlines
+\registerctxluafile{font-ttf}{optimize} % cubic outlines
+\registerctxluafile{font-dsp}{optimize} % ... for this one
+\registerctxluafile{font-hsh}{}         % hashes used by context
+\registerctxluafile{font-vfc}{}
+\registerctxluafile{font-prv}{}         % needs hashes
+\registerctxluafile{font-nod}{optimize}
+\registerctxluafile{font-oti}{}         % otf initialization
+\registerctxluafile{font-ott}{}         % otf tables (first)
+\registerctxluafile{font-otl}{}
+\registerctxluafile{font-oto}{}
+\registerctxluafile{font-otj}{optimize}
+\registerctxluafile{font-oup}{}
+\registerctxluafile{font-ota}{autosuffix}
+\registerctxluafile{font-ots}{optimize}
+\registerctxluafile{font-otd}{optimize}
+\registerctxluafile{font-otc}{}
+\registerctxluafile{font-oth}{}
+\registerctxluafile{font-osd}{}
+%registerctxluafile{font-osm}{}
+\registerctxluafile{font-ogr}{autosuffix}
+
+% we use otf code for type one
+
+\registerctxluafile{font-onr}{optimize}
+\registerctxluafile{font-one}{optimize}
+\registerctxluafile{font-afk}{}
+
+% tfm
+
+\registerctxluafile{font-tpk}{optimize}
+\registerctxluafile{font-tfm}{}
+
+% name database
+
+\registerctxluafile{font-syn}{}
+\registerctxluafile{font-trt}{}
+
+% shapes
+
+\registerctxluafile{font-shp}{}
+
+% so far
+
+\registerctxluafile{font-pat}{} % patchers
+
+\registerctxluafile{node-fnt}{} % here
+
+\registerctxluafile{font-mps}{} % outline fun
+
+\registerctxluafile{font-lua}{}
+
+\registerctxluafile{font-vir}{}
+\registerctxluafile{font-enh}{}
+
+\registerctxluafile{good-ini}{}
+\registerctxluafile{good-gen}{}
+\registerctxluafile{good-ctx}{}
+\registerctxluafile{good-mth}{}
+
+\registerctxluafile{font-def}{}
+\registerctxluafile{font-ctx}{} % after def as it overloads
+
+% extensions, order matters
+
+\registerctxluafile{font-imp-ligatures}{}
+\registerctxluafile{font-imp-tex}{}
+\registerctxluafile{font-imp-reorder}{}
+\registerctxluafile{font-imp-properties}{}
+\registerctxluafile{font-imp-unicode}{}
+\registerctxluafile{font-imp-math}{}
+\registerctxluafile{font-imp-notused}{}
+\registerctxluafile{font-imp-effects}{}
+\registerctxluafile{font-imp-quality}{}
+\registerctxluafile{font-imp-italics}{}
+\registerctxluafile{font-imp-dimensions}{}
+\registerctxluafile{font-imp-spacekerns}{}
+\registerctxluafile{font-imp-tweaks}{}
+\registerctxluafile{font-imp-combining}{}
+
+\doifelsefileexists{font-imp-scripts.lua} {
+    \registerctxluafile{font-imp-scripts}{}
+} {
+    % not yet, lmtx feature
+}
+
+\registerctxluafile{font-imp-tracing}{} % comes last!
+
+\registerctxluafile{font-fbk}{}
+
+\registerctxluafile{font-aux}{}
+
+\registerctxluafile{font-lig}{} % only for experiments so try to avoid it
+
+%D Some low level helpers
+%D
+%D \starttyping
+%D \def\TestLookup#specification%
+%D   {\dolookupfontbyspec{#specification}
+%D     pattern: #specification, found: \dolookupnoffound
+%D    \blank
+%D    \dorecurse {\dolookupnoffound} {%
+%D      \recurselevel:~\dolookupgetkeyofindex{fontname}{\recurselevel}\quad
+%D    }%
+%D    \blank}
+%D
+%D \TestLookup{familyname=helveticaneue}
+%D \TestLookup{familyname=helveticaneue,weight=bold}
+%D \TestLookup{familyname=helveticaneue,weight=bold,style=italic}
+%D \stoptyping
+
+%D We can also move the lookups to the fonts.namespace (of commands) one can also
+%D directly use the clf calls when speed is needed.
+
+% todo: public implementors:
+
+\permanent          \def\dolookupfontbyspec     #1{\clf_fontlookupinitialize{#1}}
+\permanent          \def\dolookupnoffound         {\clf_fontlookupnoffound}
+\permanent          \def\dolookupgetkeyofindex#1#2{\clf_fontlookupgetkeyofindex{#1}\numexpr#2\relax}
+\permanent          \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
+\permanent          \def\cleanfontname          #1{\clf_cleanfontname{#1}}
+\permanent\protected\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
+
+% this is an ugly hack needed for postponed inclusion stuff ... don't try
+% to understand this ... these are kind of old mkiv solutions
+
+\permanent\protected\def\typethreefont#1{\setfontid#1\relax}
+\permanent\protected\def\typethreechar#1{\char#1\hskip-\fontcharwd\font#1\relax}
+\permanent\protected\def\typethreelast#1{\char#1\relax}
+\permanent\protected\def\typethreecode#1{\pdfliteral direct {#1}}
+
+% This might change ...
+
+\newtoks    \typethreetoks         % used at the lua end
+\mutable\let\typethreemacro\empty  % used at the lua end
+
+\typethreetoks {%
+    \setbox\zerocount\hpack{\typethreemacro}%
+    \setbox\zerocount\hpack{\raise\dp\zerocount\box\zerocount}%
+}
+
+\protect \endinput

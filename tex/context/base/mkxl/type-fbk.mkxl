@@ -1,0 +1,70 @@
+%D \module
+%D   [       file=type-sfbk,
+%D        version=2005.02.04, % moved from ini/def/set
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Fallbacks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\definetypescriptprefix [\s!serif] [\s!Serif]
+\definetypescriptprefix [\s!sans]  [\s!Sans]
+\definetypescriptprefix [\s!mono]  [\s!Mono]
+
+\definefontsynonym [\s!DefaultFont] [\s!file:lmmonoproplt10-regular]
+
+\startsetups [\s!font:\s!fallback:\s!serif]
+    \definefontsynonym[\s!Serif]           [\s!DefaultFont]
+    \definefontsynonym[\s!SerifBold]       [\s!Serif]
+    \definefontsynonym[\s!SerifItalic]     [\s!Serif]
+    \definefontsynonym[\s!SerifSlanted]    [\s!SerifItalic]
+    \definefontsynonym[\s!SerifBoldItalic] [\s!Serif]
+    \definefontsynonym[\s!SerifBoldSlanted][\s!SerifBoldItalic]
+    \definefontsynonym[\s!SerifCaps]       [\s!Serif] [\s!features=\s!smallcaps]
+\stopsetups
+
+\startsetups [\s!font:\s!fallback:\s!sans]
+    \definefontsynonym[\s!Sans]           [\s!DefaultFont]
+    \definefontsynonym[\s!SansBold]       [\s!Sans]
+    \definefontsynonym[\s!SansItalic]     [\s!Sans]
+    \definefontsynonym[\s!SansSlanted]    [\s!SansItalic]
+    \definefontsynonym[\s!SansBoldItalic] [\s!Sans]
+    \definefontsynonym[\s!SansBoldSlanted][\s!SansBoldItalic]
+    \definefontsynonym[\s!SansCaps]       [\s!Sans] [\s!features=\s!smallcaps]
+\stopsetups
+
+\startsetups [\s!font:\s!fallback:\s!mono]
+    \definefontsynonym[\s!Mono]           [\s!DefaultFont]
+    \definefontsynonym[\s!MonoBold]       [\s!Mono]
+    \definefontsynonym[\s!MonoItalic]     [\s!Mono]
+    \definefontsynonym[\s!MonoSlanted]    [\s!MonoItalic]
+    \definefontsynonym[\s!MonoBoldItalic] [\s!Mono]
+    \definefontsynonym[\s!MonoBoldSlanted][\s!MonoBoldItalic]
+    \definefontsynonym[\s!MonoCaps]       [\s!Mono] [\s!features=\s!smallcaps]
+\stopsetups
+
+\starttypescript [\s!serif,\s!sans,\s!mono] [\s!fallback]
+    \setups[\s!font:\s!fallback:\typescriptone]
+\stoptypescript
+
+\startsetups [\s!font:allbold:\s!serif]
+    \definefontsynonym[\s!Serif]       [\s!SerifBold]
+    \definefontsynonym[\s!SerifItalic] [\s!SerifBoldItalic]
+    \definefontsynonym[\s!SerifSlanted][\s!SerifBoldSlanted]
+    %definefontsynonym[\s!SerifCaps]   [\s!SerifBold]
+\stopsetups
+
+\startsetups [\s!font:allbold:\s!sans]
+    \definefontsynonym[\s!Sans]       [\s!SansBold]
+    \definefontsynonym[\s!SansItalic] [\s!SansBoldItalic]
+    \definefontsynonym[\s!SansSlanted][\s!SansBoldSlanted]
+    %definefontsynonym[\s!SansCaps]   [\s!SansBold]
+\stopsetups
+
+\protect \endinput

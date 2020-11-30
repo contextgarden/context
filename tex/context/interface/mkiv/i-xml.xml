@@ -726,16 +726,7 @@
     <cd:command name="xmlregisterns" level="style" category="xml" file="lxml-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
-            <cd:keywords delimiters="braces">
-                <cd:constant type="cd:url"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xmlregisterns" level="style" category="xml" file="lxml-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-url"/>
         </cd:arguments>
     </cd:command>
 

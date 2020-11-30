@@ -1,0 +1,298 @@
+%D \module
+%D   [       file=cont-log,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=\TEX\ Logos,
+%D         author=J. Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt TeX Logos}
+
+%D The system that is used to typeset this text is called \TEX, typeset with an
+%D lowered~E. From te beginning of \TEX, authors of macro packages adapted this
+%D raising and lowering style. In this module we define some of those logos.
+
+%D We define the uppercase logo commands as (unfrozen) instances because they can be
+%D redefined in the synonyms modules.
+
+\unprotect
+
+\frozen\instance\protected\def\TeX
+  {\dontleavehmode
+   \begingroup
+   T%
+   \setbox\scratchbox\hbox{M}%
+   \kern-.1667\wd\scratchbox
+   \lower.5\exheight\hbox{E}%
+   \kern-.125\wd\scratchbox
+   X%
+   \endgroup}
+
+\frozen\instance\protected\def\TeXsuffix{\wordboundary\TeX}
+\frozen\instance\protected\def\TeXprefix{\TeX\wordboundary}
+
+\frozen\instance\protected\def\ConTeXt
+  {\dontleavehmode
+   \begingroup
+   Con%
+   \wordboundary
+   \setbox\scratchboxone\hbox{T\kern\zeropoint e}%
+   \setbox\scratchboxtwo\hbox{Te}%
+   \discretionary{-}{}{\kern\dimexpr\wd\scratchboxtwo-\wd\scratchboxone\relax}%
+   \TeX t%
+   \endgroup}
+
+\frozen\instance\protected\def\PPCHTeX{ppch\TeX}
+
+\frozen\instance\protected\def\LaTeX % requested by erik frambach
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{L}%
+   \scratchdimen\ht\scratchbox
+   \setbox\scratchbox\hbox{\doresetattribute{case}\txx A}%
+   L\kern-.55\wd\scratchbox
+   \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
+   \kern-.2\wd\scratchbox\TeX
+   \endgroup}
+
+\frozen\instance\protected\def\TaBlE
+  {T%
+   \kern-.27\emwidth\lower.5\exheight\hbox{A}%
+   \kern-.18\emwidth B%
+   \kern-.1\emwidth\lower.5\exheight\hbox{L}%
+   \kern-.075\emwidth E}
+
+\frozen\instance\protected\def\PiCTeX
+  {P%
+   \kern-.12\emwidth\lower.5\exheight\hbox{I}%
+   \kern-.075\emwidth C%
+   \kern-.11\emwidth\TeX}
+
+\def\syst_logos_ams_script#1%
+  {\normalstartimath
+   \cal\ifdim\bodyfontsize>1.1\emwidth\scriptstyle\fi#1%
+   \normalstopimath}
+
+\frozen\instance\protected\def\AmSTeX
+  {\dontleavehmode
+   \syst_logos_ams_script A%
+   \kern-.1667\emwidth\lower.5\exheight\hbox{\syst_logos_ams_script M}%
+   \kern-.125\emwidth\syst_logos_ams_script S%
+   -\TeX}
+
+\frozen\instance\protected\def\LamSTeX
+  {L%
+   \kern-.4\emwidth\raise.3\exheight\hbox{\syst_logos_ams_script A}%
+   \kern-.25\emwidth\lower.4\exheight\hbox{\syst_logos_ams_script M}%
+   \kern-.1\emwidth{\syst_logos_ams_script S}%
+   -\TeX}
+
+%D Alternative \CONTEXT\ logo, first Idris S.~Hamid's version:
+%D
+%D \def\Context
+%D   {{\sc C\kern -.0667emo\kern -.0667emn\kern -.0549emt\kern
+%D    -.1667em\lower.5ex\hbox {e}\kern -.125emx\kern -.0549emt}}
+%D
+%D I changed this into one that adapts itself:
+
+\frozen\instance\protected\def\Context % wrong usage of \getscaledglyph
+  {\dontleavehmode
+   \begingroup
+   C%
+   \kern -.0667\emwidth
+   \getscaledglyph{.8}\empty{%
+     O\kern-.0667\emwidth
+     N%
+     \discretionary{-}{}{\kern-.0549\emwidth}%
+     T%
+     \doifelseitalic{\kern-.1\emwidth}{\kern-.1667\emwidth}%
+     \lower.5\exheight\hbox{E}%
+     \doifelseitalic\empty{\kern-.11em}%
+     X%
+     \kern-.055\emwidth
+     T%
+   }%
+   \endgroup}
+
+%D The \METAFONT\ and \METAPOST\ logos adapt themselves to the current fontsize, an
+%D ugly but usefull hack.
+
+\let\logofont\nullfont
+
+% \loadmapfile[original-base.map] % stil needed? not if we assume afm
+
+\protected\def\setMFPfont% more sensitive for low level changes
+  {\font\logofont=logo%
+     \ifx\fontalternative\s!bf\s!bf\orelse
+     \ifx\fontalternative\s!it\s!sl\orelse
+     \ifx\fontalternative\s!sl\s!sl\orelse
+     \ifx\fontalternative\s!bi\s!bf\orelse
+     \ifx\fontalternative\s!bs\s!bf\fi
+     10 at \currentfontscale\bodyfontsize % there is no afm in the minimals yet
+   \logofont}
+
+\def\syst_logos_meta_hyphen % there is no hyphenchar in this font
+  {\discretionary{\vrule\s!height.33\emwidth\s!depth-.27\emwidth\s!width.33\emwidth}{}{}}
+
+\frozen\instance\protected\def\MetaFont
+  {\dontleavehmode
+   \begingroup
+   \setMFPfont META\syst_logos_meta_hyphen FONT%
+   \endgroup}
+
+% \protected\def\MetaPost
+%   {\dontleavehmode
+%    \begingroup
+%    \setMFPfont META\syst_logos_meta_hyphen POST%
+%    \endgroup}
+%
+% As decided on the ConText Meeting 2013 the logo has been simplified:
+
+\instance\protected\def\MetaPost{MetaPost}
+\instance\protected\def\MetaFun {MetaFun}
+
+%D \macros
+%D  {TEX, METAFONT, METAPOST, METAFUN,
+%D   PICTEX, TABLE,
+%D   CONTEXT, PPCHTEX,
+%D   AMSTEX, LATEX, LAMSTEX}
+%D
+%D We define the funny written ones as well as the less error prone upper case names
+%D (in \CONTEXT\ we tend to write all user defined commands, like abbreviations, in
+%D uppercase.)
+
+\instance\protected\def\METAFONT{\MetaFont}
+\instance\protected\def\METAPOST{\MetaPost}
+\instance\protected\def\PPCHTEX {\PPCHTeX}
+\instance\protected\def\CONTEXT {\ConTeXt}
+\instance\protected\def\METAFUN {\MetaFun}
+
+\instance\protected\def\TEX     {\TeX}
+\instance\protected\def\LATEX   {\LaTeX}
+\instance\protected\def\PICTEX  {\PiCTeX}
+\instance\protected\def\TABLE   {\TaBlE}
+\instance\protected\def\AMSTEX  {\AmSTeX}
+\instance\protected\def\LAMSTEX {\LamSTeX}
+\instance\protected\def\INRSTEX {inrs\TeX}
+
+\instance\protected\def\PRAGMA  {Pragma ADE}
+
+%D And this is how they show up: \TeX, \MetaFont, \MetaPost, \PiCTeX, \TaBlE, \ConTeXt,
+%D \PPCHTeX, \AmSTeX, \LaTeX, \LamSTeX.
+
+%D Some placeholders:
+
+\frozen\instance\protected\def\eTeX      {\mathematics{\varepsilon}-\TeX}
+\frozen\instance\protected\def\pdfTeX    {pdf\wordboundary\TeX}
+\frozen\instance\protected\def\pdfeTeX   {pdfe-\wordboundary\TeX}
+\frozen\instance\protected\def\luaTeX    {lua\wordboundary\TeX}
+\frozen\instance\protected\def\Lua       {Lua}
+\frozen\instance\protected\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
+\frozen\instance\protected\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
+%frozen\instance\protected\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+
+% Adapted from a patch by Mojca:
+
+\def\syst_logos_xetex_e
+  {\setbox\scratchbox\hbox{E}%
+   \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
+
+\frozen\instance\protected\def\XeTeX
+  {X\lower.5\exheight
+   \hbox
+     {\kern-.15\emwidth
+      \iffontchar\font"018E\relax
+        \char"018E%
+      \else
+        \ifx\fontalternative\s!bf         \mirror{E}\orelse
+        \ifx\fontalternative\s!it\syst_logos_xetex_e\orelse
+        \ifx\fontalternative\s!sl\syst_logos_xetex_e\orelse
+        \ifx\fontalternative\s!bi\syst_logos_xetex_e\orelse
+        \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
+                                          \mirror{E}\fi
+      \fi}%
+   \kern-.1667\emwidth\TeX}
+
+\instance\protected\def\ETEX      {\eTeX}
+\instance\protected\def\PDFTEX    {\pdfTeX}
+\instance\protected\def\PDFETEX   {\pdfeTeX}
+\instance\protected\def\LUATEX    {\luaTeX}
+\instance\protected\def\LUAJITTEX {\luajitTeX}
+\instance\protected\def\LuaTeX    {\luaTeX}
+\instance\protected\def\LuaMetaTeX{\luametaTeX}
+\instance\protected\def\LUAMETATEX{\luametaTeX}
+\instance\protected\def\XETEX     {\XeTeX}
+
+\frozen\instance\protected\def\LuaTeX
+  {\dontleavehmode
+   \begingroup
+     Lua%
+     % hope for kerning, try aT
+     \setbox0\hbox{aT}%
+     \setbox2\hbox{a\kern\zeropoint T}%
+     \ifdim\wd0=\wd2 % kerns can go two ways
+       % no aT kerning, try oT as a is not symmetrical
+       \setbox0\hbox{oT}%
+       \setbox2\hbox{o\kern\zeropoint T}%
+       \ifdim\wd0=\wd2 % kerns can go two ways
+         % no aT and oT kerning, try To
+         \setbox0\hbox{To}%
+         \setbox2\hbox{T\kern\zeropoint o}%
+         % maybe we need to compensate for the angle (sl/it/bs/bi)
+       \fi
+       \ifdim\wd0=\wd2\else
+         \kern\dimexpr\wd0-\wd2\relax
+       \fi
+     \fi
+     \TeX
+   \endgroup}
+
+\frozen\instance\protected\def\LuajitTeX
+  {\dontleavehmode
+   \begingroup
+     % at this moment there is no real need for kerning tT
+     Luajit\kern\zeropoint\TeX
+   \endgroup}
+
+\frozen\instance\let\luaTeX   \LuaTeX
+\frozen\instance\let\luajitTeX\LuajitTeX
+
+\instance\protected\def\LUATEX   {\LuaTeX}
+\instance\protected\def\LUAJITTEX{\LuajitTeX}
+
+\instance\protected\def\MKII{MkII} % MarkTwo
+\instance\protected\def\MKIV{MkIV} % MarkFour   : MKIV
+\instance\protected\def\MKVI{MkVI} % MarkSix    : MKIV
+\instance\protected\def\MKXL{MkXL} % MarkFourty : LMTX
+\instance\protected\def\MKLX{MkLX} % MarkSixty  : LMTX
+\instance\protected\def\MKIX{MkIX} %            : MKIV / LMTX
+\instance\protected\def\MKXI{MkXI} %            : MKIV / LMTX
+
+\instance\protected\def\MPII{MpII} % MarkTwo
+\instance\protected\def\MPIV{MpIV} % MarkFour   : MetaFun
+\instance\protected\def\MPVI{MpVI} % MarkSix    : MetaFun
+\instance\protected\def\MPXL{MpXL} % MarkFourty : LuaMetaFun
+\instance\protected\def\MPLX{MpLX} % MarkSixty  : LuaMetaFun
+
+\instance\protected\def\LMTX{LMTX} % for LuaMetaTeX
+
+\appendtoks
+    \enforced\instance\def\ConTeXt   {ConTeXt}%
+    \enforced\instance\def\MetaPost  {MetaPost}%
+    \enforced\instance\def\MetaFont  {MetaFont}%
+    \enforced\instance\def\MetaFun   {MetaFun}%
+    \enforced\instance\def\TeX       {TeX}%
+    \enforced\instance\let\TeXsuffix \TeX
+    \enforced\instance\let\TeXprefix \TeX
+    \enforced\instance\def\LuaTeX    {LuaTeX}%
+    \enforced\instance\def\LuajitTeX {LuajitTeX}%
+    \enforced\instance\def\LuaMetaTeX{LuaMetaTeX}%
+   %\let\wordboundary\empty % primitive so we need to promote it to frozen (orjust preroll)
+\to \everysimplifycommands
+
+\protect \endinput

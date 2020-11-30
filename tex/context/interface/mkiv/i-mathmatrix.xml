@@ -70,13 +70,19 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="mathmatrix" generated="yes" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
         <cd:sequence>
-            <cd:variable value="mathmatrix"/>
+            <cd:instance value="mathmatrix"/>
         </cd:sequence>
         <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathmatrix"/>
+            </cd:assignments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-simplematrix"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="matrices" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">

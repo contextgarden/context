@@ -1,0 +1,91 @@
+%D \module
+%D   [       file=spac-def,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Definitions}
+
+%D Ideally these definitions should be moved to where they first appear and this
+%D will happen at some point.
+
+\unprotect
+
+% maybe \everysynchronizeglobalspacing
+% maybe \everysynchronizelocalspacing
+
+\appendtoks
+    \forgetverticalstretch
+    \presetnormallineheight
+    \setnormalbaselines         % check if redundant (\forgetverticalstretch does it too)
+    \setstrut                   % check if redundant (\forgetverticalstretch does it too)
+    \settopskip                 % factors set in \forgetverticalstretch
+    \setmaxdepth                % factors set in \forgetverticalstretch
+    \synchronizeindenting
+    \synchronizeskipamounts
+    \synchronizeblank
+    \synchronizewhitespace
+    \synchronizespacecodes      % not needed, frozen factors
+    \setrelativeinterlinespace
+\to \everybodyfont
+
+% why exception
+
+\appendtoks
+    \updateraggedskips          % under test
+\to \everyfontswitch
+
+% maybe more
+
+\prependtoks
+    \let\par\normalpar
+\to \everybeforepagebody % see \fillinline (was endgraf)
+
+% needs checking:
+
+\appendtoks
+    \synchronizespacecodes
+\to \everydefinedfont    % not needed, frozen factors
+
+\setupinterlinespace
+  [\c!minheight=\zeropoint, % only special purpose
+   \c!mindepth=\zeropoint, % only special purpose
+   \c!height=.72,
+   \c!depth=.28,
+   \c!top=1.0,
+   \c!bottom=0.4,
+   \c!distance=\onepoint, % \dimexpr\openlineheight/10\relax
+   \c!line=2.8\exheight,
+   \c!stretch=\zerocount,
+   \c!shrink=\zerocount]
+
+\setupblank
+  [\v!big]
+
+\setuptolerance
+  [\v!horizontal,\v!verystrict]
+
+\setuptolerance
+  [\v!vertical,\v!strict]
+
+\setupalign
+  [\v!bottom,
+   \v!width]
+
+\setupspacing
+  [\v!packed]
+
+\indenting
+  [\v!never]
+
+\setupindenting
+  [\v!none]
+
+\protect \endinput

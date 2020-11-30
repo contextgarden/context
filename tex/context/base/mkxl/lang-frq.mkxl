@@ -1,0 +1,234 @@
+%D \module
+%D   [       file=lang-frq,
+%D        version=2004.01.15,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Frequency Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\endinput
+
+\writestatus{loading}{ConTeXt Language Macros / Frequency Tables}
+
+%D Some day I might redo this \LUA. But anyway, who uses it. It's rather old code.
+
+\unprotect
+
+%M \usemodule[layout]
+
+%D \macros
+%D   {charwidthmethod}
+%D
+%D This module implements a method for determining the width of an
+%D average character in a language. It uses the dimensions of the
+%D current fonts.
+%D
+%D \def\ShwChrWd#1#2#3%
+%D   {\chardef\charwidthmethod#1\relax
+%D    \mainlanguage[#2#3]\the\dimexpr(\averagecharwidth)}
+%D
+%D \starttabulate[|c|c|c|c|c|c|]
+%D \HL
+%D \NC      \NC\bf0=amount\NC\bf1=.5em\NC2=ex\NC\bf3=frequency\NC\bf4=list\NC\NR
+%D \HL
+%D \NC\bf en\NC\ShwChrWd0en\NC\ShwChrWd1en\NC\ShwChrWd2en\NC\ShwChrWd3en\NC\ShwChrWd4en\NC\NR
+%D \NC\bf nl\NC\ShwChrWd0nl\NC\ShwChrWd1nl\NC\ShwChrWd2nl\NC\ShwChrWd3nl\NC\ShwChrWd4nl\NC\NR
+%D \NC\bf de\NC\ShwChrWd0de\NC\ShwChrWd1de\NC\ShwChrWd2de\NC\ShwChrWd3de\NC\ShwChrWd4de\NC\NR
+%D \HL
+%D \stoptabulate
+%D
+%D Method~1 ignores the widths and assumes that each character has a
+%D width of .5em, which is true for most monospaced fonts. Method~2
+%D takes the x as starting point, and assumes that it's height kind of
+%D matches its width. Method~3 is the best one, and determines the
+%D average width based on the language specific character table.
+%D Method~4 is a mixture between the first two methods: character
+%D specific widths applied to an equal distribution. Method~0 reports
+%D the total count, which normally is~100.
+
+\setnewconstant\charwidthmethod=3 % 0=amount 1=em 2=ex 3=frequency 4=flattened >4=ex
+
+%D \macros
+%D  {charwidthlanguage}
+%D
+%D The language used for the calculations is defined as:
+
+\def\charwidthlanguage{\currentmainlanguage}
+
+%D \macros
+%D   {charfreq}
+%D
+%D This method comes into action in the following macro:
+
+\def\charfreq#1 #2 % character fraction
+  {+(\ifcase\charwidthmethod
+     #2\dimexpr100\onepoint\relax
+   \or
+     #2\dimexpr\emwidth/2\relax
+   \or
+     #2\dimexpr\exheight\relax
+   \or
+     #2\fontcharwd\font`#1%
+   \or
+     \dimexpr100\fontcharwd\font`#1/\charactertsize\charwidthlanguage\relax % ugly hack
+   \else
+     #2\dimexpr\exheight\relax
+   \fi)}
+
+%D \macros
+%D   {startcharactertable}
+%D
+%D A frequency table is defined with the following macro. The \type
+%D {charfreq} macro is used in this table.
+
+\installcorenamespace{frequencywidths}
+\installcorenamespace{frequencycounts}
+
+\aliased\let\stopcharactertable\relax
+
+\permanent\protected\def\startcharactertable[#1]#2\stopcharactertable % \dimexpr has fuzzy lookahead
+  {\startnointerference
+     \gdefcsname\??frequencywidths#1\endcsname{#2}% the width vector
+     \scratchcounter\zerocount \def\charfreq##1 ##2 {\advance\scratchcounter\plusone} #2%
+     \xdefcsname\??frequencycounts#1\endcsname{\the\scratchcounter}% the character count
+   \stopnointerference}
+
+%D \macros
+%D   {charactertable,charactertsize}
+%D
+%D The table content as well as the number of entries can be fetched with
+%D the following two macros. The architecture of the table and calling
+%D macro permits a fully expandable application.
+
+\permanent\def\charactertable#1%
+  {\csname\??frequencywidths\ifcsname\??frequencywidths#1\endcsname#1\else\s!en\fi\endcsname}
+
+\permanent\def\charactertsize#1%
+  {\csname\??frequencycounts\ifcsname\??frequencycounts#1\endcsname#1\else\s!en\fi\endcsname}
+
+%D Although it is of hardly any use, you can inherit a character table:
+%D
+%D \starttyping
+%D \startcharactertable[cz] \charactertable{en} \stopcharactertable
+%D \stoptyping
+
+\startcharactertable[en]
+    % empty
+\stopcharactertable % kind of default
+
+%D \macros
+%D   {averagecharwidth}
+%D
+%D This macro reports the average width for the current main
+%D language (\the \dimexpr (\averagecharwidth)).
+
+\permanent\def\averagecharwidth{\dimexpr(\zeropoint\charactertable\charwidthlanguage)/100\relax}
+
+\permanent\protected\def\showcharfreq
+  {\hbox\bgroup
+     \charwidthlanguage:%
+     \dostepwiserecurse\zerocount\plusfour\plusone
+       {\setconstant\charwidthmethod\recurselevel\relax
+        \enspace\recurselevel/\the\dimexpr(\averagecharwidth)}%
+   \egroup}
+
+%D Just for fun, we show a few frequency tables as graphic (\in {figure}
+%D [fig:charfreq]).
+%D
+%D \startbuffer
+%D \definepalet [charfreq] [en=darkred, nl=darkgreen, de=darkblue]
+%D
+%D \def\charfreq#1 #2 %
+%D   {\startMPdrawing
+%D      interim linejoin := butt ;
+%D      a := ASCII "#1" ;
+%D      if (a >= (ASCII "a")) and (a <= (ASCII "z")) :
+%D         draw ((0,#2*.25cm)--origin--(0,#2*.5cm))
+%D           shifted (a*4mm+o,0)
+%D           withpen pencircle scaled .5mm
+%D           withcolor c;
+%D      fi ;
+%D    \stopMPdrawing}
+%D
+%D \resetMPdrawing
+%D \startMPdrawing
+%D   numeric a, o ; a := o := 0 ;
+%D   color c ; c := .5white ;
+%D   string s ; s := "" ;
+%D \stopMPdrawing
+%D
+%D \startMPdrawing o := 0mm ; c := \MPcolor{charfreq:en} ; \stopMPdrawing
+%D \charactertable{en}
+%D
+%D \startMPdrawing o := 1mm ; c := \MPcolor{charfreq:nl} ; \stopMPdrawing
+%D \charactertable{nl}
+%D
+%D \startMPdrawing o := 2mm ; c := \MPcolor{charfreq:de} ; \stopMPdrawing
+%D \charactertable{de}
+%D
+%D \startMPdrawing
+%D   for a := ASCII "a" upto ASCII "z" :
+%D     draw textext.bot("\strut\tttf " & char a) shifted (a*4mm+1mm,-1mm) ;
+%D   endfor ;
+%D \stopMPdrawing
+%D
+%D \MPdrawingdonetrue \getMPdrawing \resetMPdrawing
+%D \stopbuffer
+%D
+%D \placefigure
+%D   [here]
+%D   [fig:charfreq]
+%D   {The character distributions for English, Dutch and German.}
+%D   {\getbuffer}
+%D
+%D A few samples of usage of this mechanism are shown below:
+%D
+%D \startbuffer
+%D {\mainlanguage[en]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
+%D {\mainlanguage[nl]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
+%D {\mainlanguage[de]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Although the widthts differ, the consequenes for breaking the paragraph
+%D into lines are minimal.
+
+%D \macros
+%D   {freezeaveragecharacterwidth}
+%D
+%D This macro can be used to make sure that the width does not change during a
+%D page break when another font is used.
+
+\aliased\let\normalaveragecharacterwidth\averagecharacterwidth
+
+\permanent\def\freezeaveragecharacterwidth % global
+  {\enforced\xdef\averagecharacterwidth{\dimexpr\the\normalaveragecharacterwidth\relax}}
+
+%D Example:
+%D
+%D \starttyping
+%D \input lang-frq.mkiv
+%D \input lang-frd.mkiv
+%D
+%D \setupbodyfont
+%D   [dejavu]
+%D
+%D \setemeasure{textwidth}{\the\dimexpr70\averagecharwidth}
+%D
+%D \setuplayout
+%D   [width=\measure{textwidth}]
+%D
+%D \showframe
+%D
+%D \starttext
+%D     \input ward
+%D \stoptext
+%D \stoptyping
+
+\protect \endinput

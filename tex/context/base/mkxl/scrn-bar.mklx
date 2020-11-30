@@ -1,0 +1,402 @@
+%D \module
+%D   [       file=scrn-bar, % was part of scrn-int
+%D        version=1995.01.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Progress Bars,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Screen Macros / Progress Bars}
+
+\unprotect
+
+%D The code is a bit upgraded to \MKIV\ but the output is mostly the same. In
+%D retrospect this should have been a module. We can move some definitions to
+%D scrn-run-bar.mkiv if needed. We can also make the code a bit more efficient.
+
+% todo: replace blackrule by stupid rules
+
+%D \starttyping
+%D \setupinteraction
+%D   [state=start]
+%D
+%D \setupsubpagenumber
+%D   [state=start]
+%D
+%D \setuplayout
+%D   [middle]
+%D
+%D \setuppapersize
+%D   [S4][S4]
+%D
+%D \startsetups bars
+%D     \ruledvbox to \textheight \bgroup
+%D         a \ruledhbox{\interactionbar[a]}\vss
+%D         b \ruledhbox{\interactionbar[b]}\vss
+%D         c \ruledhbox{\interactionbar[c]}\vss
+%D         d \ruledhbox{\interactionbar[d]}\vss
+%D         e \ruledhbox{\interactionbar[e]}\vss
+%D         f \ruledhbox{\interactionbar[f]}\vss
+%D         g \ruledhbox{\interactionbar[g]}\vss
+%D     \egroup
+%D \stopsetups
+%D
+%D \setuptexttexts[\setups{bars}]
+%D
+%D \starttext
+%D     \dorecurse {12} {
+%D         \startstandardmakeup
+%D         \stopstandardmakeup
+%D     }
+%D \stoptext
+%D \stoptyping
+
+\installcorenamespace{interactionbar}
+
+\installframedcommandhandler \??interactionbar {interactionbar} \??interactionbar
+
+\permanent\tolerant\protected\def\interactionbar[#tag]#spacer[#settings]% somewhat messy
+  {\iflocation
+     \begingroup
+     \ifhastok={#tag}%
+       \let\currentinteractionbar\empty
+       \setupcurrentinteractionbar[#tag]%
+       \edef\currentinteractionbar{\interactionbarparameter\c!alternative}%
+     \else
+       \edef\currentinteractionbar{#tag}%
+       \setupcurrentinteractionbar[#settings]%
+     \fi
+     \doif{\interactionbarparameter\c!state}\v!start
+       {\interactionbarparameter\c!command}%
+     \endgroup
+   \fi}
+
+\newdimen\d_scrn_bar_width
+\newdimen\d_scrn_bar_height
+\newdimen\d_scrn_bar_depth
+\newdimen\d_scrn_bar_distance
+
+%D Interaction buttons, in fact a row of tiny buttons, are typically only used for
+%D navigational purposed. The next macro builds such a row based on a specification
+%D list.
+%D
+%D \startbuffer
+%D \interactionbuttons[width=\hsize][page,PreviousJump,ExitViewer]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \getbuffer
+%D
+%D Apart from individual entries, one can use \type{page} and \type {subpage} as
+%D shortcuts to their four associated buttons. The symbols are derived from the
+%D symbols linked to the entries.
+
+\permanent\tolerant\protected\def\interactionbuttons[#settings]#spacer[#list]%
+  {\iflocation
+      \ifcstok{\interactionbarparameter\c!state}\v!start
+        \ifparameter#list\or
+          \scrn_bar_buttons_indeed{#settings}{#list}%
+        \else
+          \scrn_bar_buttons_indeed{}{#settings}%
+        \fi
+      \fi
+   \fi}
+
+\def\scrn_bar_buttons_indeed#settings#list%
+  {\begingroup
+  %\let\currentinteractionbar\empty
+   \setupcurrentinteractionbar[#settings]%
+   \d_scrn_bar_width   \interactionbarparameter\c!width\relax
+   \d_scrn_bar_distance\interactionbarparameter\c!distance\relax
+   \ifzeropt\d_scrn_bar_width
+     \d_scrn_bar_width1.5\emwidth
+   \fi
+   \doifnothing{\interactionbarparameter\c!height}{\letinteractionbarparameter\c!height\v!broad}%
+   \doifnothing{\interactionbarparameter\c!depth }{\letinteractionbarparameter\c!depth\zeropoint}%%%
+   \letinteractionbarparameter\c!background\empty
+   \setbox2\hbox{\inheritedinteractionbarframed{\symbol[\interactionparameter\c!symbolset][\v!previouspage]}}%
+   \scratchheight\ht2 % needed because we default to nothing
+   \letinteractionbarparameter\c!strut\v!no
+ % \letinteractionparameter\c!width\zeropoint
+   \scratchcounterone\zerocount % new, was 1
+   \processallactionsinset
+     [#list]
+     [   \v!page=>\advance\scratchcounterone\plusfour,
+      \v!subpage=>\advance\scratchcounterone\plusfour,
+      \s!unknown=>\advance\scratchcounterone\plusone]%
+   \ifzeropt\d_scrn_bar_width
+     \scratchdimenone\dimexpr2\emwidth+\d_scrn_bar_distance\relax
+     \scratchdimentwo\dimexpr\scratchcounterone\scratchdimenone-\d_scrn_bar_distance\relax
+   \else
+     \scratchdimenone\d_scrn_bar_width
+     \scratchdimentwo\dimexpr\scratchcounterone\d_scrn_bar_distance-\d_scrn_bar_distance\relax
+     \advance\scratchdimenone -\scratchdimentwo
+     \divide\scratchdimenone \scratchcounterone
+     \scratchdimentwo\d_scrn_bar_width
+   \fi
+   \hbox to \scratchdimentwo
+     {\setnostrut
+      \startsymbolset[\interactionparameter\c!symbolset]%
+      \setupbuttons
+        [#settings,%
+         \c!height=\the\scratchheight,%
+         \c!width=\the\scratchdimenone]%
+      \processallactionsinset
+        [#list]
+        [   \v!page=>\scrn_bar_goto\v!firstpage
+                     \scrn_bar_goto\v!nextpage
+                     \scrn_bar_goto\v!previouspage
+                     \scrn_bar_goto\v!lastpage,
+         \v!subpage=>\scrn_bar_goto\v!firstsubpage
+                     \scrn_bar_goto\v!nextsubpage
+                     \scrn_bar_goto\v!previoussubpage
+                     \scrn_bar_goto\v!lastsubpage,
+         \s!unknown=>\scrn_bar_goto\commalistelement]%
+      \unskip
+      \stopsymbolset}%
+   \endgroup}
+
+\def\scrn_bar_goto#action%
+  {\button{\symbol[#action]}[#action]\hss}
+
+% todo: this will be \letblackruleparameter\c!width\scratchdimenone (faster)
+% todo: make these setups
+
+\def\scrn_bar_alternative_a
+  {\d_scrn_bar_width   \interactionbarparameter\c!width
+   \d_scrn_bar_distance\interactionbarparameter\c!distance
+   \d_scrn_bar_height  \interactionbarparameter\c!height
+   \d_scrn_bar_depth   \interactionbarparameter\c!depth
+   \noindent\hbox to \d_scrn_bar_width \bgroup
+     \dontcomplain
+     \setupblackrules[\c!height=\v!max,\c!depth=\v!max]%
+     \scratchdimentwo\dimexpr\d_scrn_bar_width-4\emwidth\relax
+     \processaction
+       [\interactionbarparameter\c!step]
+       [   \v!small=>\scratchcounter 20,
+          \v!medium=>\scratchcounter 10,
+             \v!big=>\scratchcounter  5,
+         \s!unknown=>\scratchcounter 10]%
+     \scratchdimenone\dimexpr\scratchdimentwo/\scratchcounter\relax
+     \setupblackrules[\c!width=\scratchdimenone]%
+     \setbox\scratchbox\hbox to \d_scrn_bar_width
+       {\hskip2\emwidth
+        \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
+        \dorecurse\scratchcounter
+          {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\the\numexpr\recurselevel*\lastpage/\scratchcounter\relax)]}}%
+        \hss
+        \hskip2\emwidth}%
+     \wd\scratchbox\zeropoint
+     \box \scratchbox
+     \setupblackrules[\c!width=\emwidth]%
+     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
+     \hskip\emwidth
+     \ifnum\realpageno>\plusone
+       \hskip\zeropoint\s!plus\numexpr\realpageno-\plustwo\relax \s!sp\relax % cm gives overflow
+       \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
+     \fi
+     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\number\realpageno)]}% todo: \v!currentpage
+     \ifnum\realpageno<\lastpage\relax
+       \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
+       \hskip\zeropoint\s!plus\numexpr\lastpage-\realpageno-\plusone\relax \s!sp\relax % cm gives overflow
+     \fi
+     \hskip\emwidth
+     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%
+   \egroup}
+
+\def\scrn_bar_alternative_b
+  {\ifnum\lastpage>\firstpage\relax
+     \interactionbuttons[\v!firstpage,\v!previouspage,\v!nextpage,\v!lastpage]%
+   \fi}
+
+\def\scrn_bar_alternative_c
+  {\ifnum\lastpage>\plusone
+     \d_scrn_bar_width\interactionbarparameter\c!width
+     \hbox to \d_scrn_bar_width
+       {\setupblackrules[\c!height=\interactionbarparameter\c!height,\c!depth=\interactionbarparameter\c!depth,\c!width=\emwidth]%
+        \scratchdimen\dimexpr(\d_scrn_bar_width-4\emwidth)/\numexpr\lastpage+\minusone\relax\relax
+        \scratchdimenone\numexpr\realpageno+\minusone\relax\scratchdimen
+        \scratchdimentwo\numexpr\lastpage-\realpageno\relax\scratchdimen
+        \directgotospecbox\interactionbarparameter{\blackrule}[\v!firstpage]%
+        \hss
+        \directgotospecbox\interactionbarparameter{\blackrule[\c!width=\scratchdimenone]}[\v!previouspage]%
+        \blackrule[\c!color=\interactionbarparameter\c!contrastcolor]%
+        \directgotospecbox\interactionbarparameter{\blackrule[\c!width=\scratchdimentwo]}[\v!nextpage]%
+        \hss
+        \directgotospecbox\interactionbarparameter{\blackrule}[\v!lastpage]}%
+   \fi}
+
+\protected\def\scrn_bar_goto_a#whereto%
+  {\symbol[\ifcase#whereto\v!previous\or\v!somewhere\or\v!next\fi]}
+
+\protected\def\scrn_bar_goto_b#whereto%
+  {\vrule\s!height\d_scrn_bar_height\s!depth\d_scrn_bar_depth\s!width\scratchdimenone\relax}
+
+\protected\def\scrn_bar_goto_c#whereto%
+  {\symbol[\ifcase#whereto\v!previous\or\v!somewhere\or\v!somewhere\or\v!somewhere\or\v!next\fi}
+
+\protected\def\scrn_bar_goto_d#whereto%
+  {\vrule \s!width\scratchdimenone \ifcase#whereto%
+     \s!height  \d_scrn_bar_height \s!depth  \d_scrn_bar_depth \or
+     \s!height.5\d_scrn_bar_height \s!depth.5\d_scrn_bar_depth \or
+     \s!height  \d_scrn_bar_height \s!depth  \d_scrn_bar_depth \or
+     \s!height.5\d_scrn_bar_height \s!depth.5\d_scrn_bar_depth \else
+     \s!height  \d_scrn_bar_height \s!depth  \d_scrn_bar_depth \fi}
+
+\newconstant\c_scrn_bar_mode
+
+\protected\def\scrn_bar_goto_x#command%
+  {\doifelse{\interactionbarparameter\c!symbol}\v!yes
+     {\setupsymbolset[\interactionparameter\c!symbolset]%
+      \let\scrn_bar_goto_indeed\scrn_bar_goto_a}
+     {\let\scrn_bar_goto_indeed\scrn_bar_goto_b}%
+   \dorecurse\nofsubpages
+    %{\scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+     {\scratchcounter\therealsubpageno\recurselevel
+      \c_scrn_bar_mode
+        \ifnum\scratchcounter<\realpageno \zerocount \else
+        \ifnum\scratchcounter=\realpageno \plusone   \else
+                                          \plustwo   \fi\fi
+      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[page(\the\scratchcounter)]}%
+      #command}%
+   \unskip}
+
+\def\scrn_bar_alternative_d
+  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
+     \d_scrn_bar_width   \interactionbarparameter\c!width
+     \d_scrn_bar_distance\interactionbarparameter\c!distance
+     \d_scrn_bar_height  \interactionbarparameter\c!height
+     \d_scrn_bar_depth   \interactionbarparameter\c!depth
+     \scratchdimenone\d_scrn_bar_width
+     \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}% \hpack ?
+   }\fi}
+
+\def\scrn_bar_alternative_e
+  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
+     \d_scrn_bar_width   \interactionbarparameter\c!width
+     \d_scrn_bar_distance\interactionbarparameter\c!distance
+     \d_scrn_bar_height  \interactionbarparameter\c!height
+     \d_scrn_bar_depth   \interactionbarparameter\c!depth
+     \scratchdimentwo\dimexpr\nofsubpages\d_scrn_bar_distance-\d_scrn_bar_distance\relax % (n-1)
+     \scratchdimenone\dimexpr(\d_scrn_bar_width-\scratchdimentwo)/\nofsubpages\relax
+     \ifdim\scratchdimenone<\d_scrn_bar_distance
+       \scrn_bar_alternative_f
+     \else
+       \noindent\hbox to \d_scrn_bar_width{\scrn_bar_goto_x{\hss}\unskip}% \hpack ?
+     \fi
+   }\fi}
+
+\def\scrn_bar_alternative_f
+  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
+     \d_scrn_bar_width   \interactionbarparameter\c!width
+     \d_scrn_bar_distance\interactionbarparameter\c!distance
+     \d_scrn_bar_height  \interactionbarparameter\c!height
+     \d_scrn_bar_depth   \interactionbarparameter\c!depth
+     \noindent \hbox to \d_scrn_bar_width \bgroup
+       \doloop
+         {\scratchcounterthree\numexpr(\nofsubpages/\recurselevel)+\plusone\relax % rounding
+          \scratchdimentwo\d_scrn_bar_distance
+          \multiply\scratchdimentwo \scratchcounterthree
+          \advance\scratchdimentwo -\d_scrn_bar_distance
+          \scratchdimenone\d_scrn_bar_width
+          \advance\scratchdimenone -\scratchdimentwo
+          \divide\scratchdimenone \scratchcounterthree
+          \ifdim\scratchdimenone<\d_scrn_bar_distance\else
+            \scratchcountertwo\recurselevel
+            \exitloop
+          \fi}%
+       \ifnum\scratchcounterthree>\plusone
+         % this is not that well tested
+         \advance\scratchcounterthree \minustwo
+         \scratchdimenone-\d_scrn_bar_distance
+         \scratchdimenone\scratchcounterthree\scratchdimenone
+         \advance\scratchdimenone \d_scrn_bar_width
+         \advance\scratchcounterthree \plusone
+         \divide\scratchdimenone \scratchcounterthree
+       \fi
+       \doifelse{\interactionbarparameter\c!symbol}\v!yes
+         {\setupsymbolset[\interactionparameter\c!symbolset]%
+          \let\scrn_bar_goto_indeed\scrn_bar_goto_c}%
+         {\let\scrn_bar_goto_indeed\scrn_bar_goto_d}%
+       \scratchcounterthree\numexpr\realpageno-\plustwo\relax
+       \scratchcounterfour\numexpr\realpageno+\plustwo\relax
+       \ifnum\scratchcounterthree<\plusone \scratchcounterthree\plusone \fi
+       \scratchcounterfive\zerocount
+       \dostepwiserecurse\firstsubpage\lastsubpage\plusone
+         {\donefalse
+          \advance\scratchcounterfive \plusone
+          \ifnum\recurselevel=\firstsubpage\relax \donetrue \fi
+          \ifnum\recurselevel=\lastsubpage \relax \donetrue \fi
+          \scratchcountersix\therealsubpageno\recurselevel\relax
+          \c_scrn_bar_mode
+            \ifdone
+              \ifnum\scratchcountersix<\realpageno
+                \zerocount
+              \orelse\ifnum\scratchcountersix>\realpageno
+                \plustwo
+              \else
+                \plusfour
+              \fi
+            \else
+              \ifnum\scratchcounterfive=\scratchcountertwo
+                \ifnum\scratchcountersix<\realpageno
+                  \plusone
+                \orelse\ifnum\scratchcountersix>\realpageno
+                  \plusthree
+                \else
+                  \plustwo
+                \fi
+              \else
+                \minusone
+              \fi
+            \fi
+          \ifnum\c_scrn_bar_mode<\zerocount\else
+            \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
+            \hss
+            \scratchcounterfive\zerocount
+          \fi}%
+       \unskip
+     \egroup
+   }\fi}
+
+\def\scrn_bar_alternative_g
+  {\ifnum\lastsubpage>\firstsubpage\relax % no test for state?
+     \interactionbuttons[\v!firstsubpage,\v!previoussubpage,\v!nextsubpage,\v!lastsubpage]%
+   \fi}
+
+\setupinteractionbar
+  [\c!state=\v!start,
+   \c!alternative=a,
+   \c!symbol=\v!no,
+   \c!width=10\emwidth,
+   \c!height=.5\emwidth,
+   \c!depth=\zeropoint,
+   \c!distance=.5\emwidth,
+   \c!step=\v!medium,
+   \c!foregroundcolor=\interactionbarparameter\c!color,
+   \c!foregroundstyle=\interactionbarparameter\c!style,
+   \c!color=\interactionparameter\c!color,
+   \c!contrastcolor=\interactionparameter\c!contrastcolor,
+   \c!style=,
+   \c!frame=\v!on,
+   \c!background=color,
+   \c!backgroundcolor=gray,
+   \c!samepage=\v!yes]
+
+\defineinteractionbar[a][\c!command=\scrn_bar_alternative_a]
+\defineinteractionbar[b][\c!command=\scrn_bar_alternative_b,\c!height=\v!broad]
+\defineinteractionbar[c][\c!command=\scrn_bar_alternative_c,\c!height=\v!max,\c!depth=\v!max]
+\defineinteractionbar[d][\c!command=\scrn_bar_alternative_d,\c!width=.5\emwidth]
+\defineinteractionbar[e][\c!command=\scrn_bar_alternative_e]
+\defineinteractionbar[f][\c!command=\scrn_bar_alternative_f]
+\defineinteractionbar[g][\c!command=\scrn_bar_alternative_g,\c!height=\v!broad]
+
+\protect \endinput

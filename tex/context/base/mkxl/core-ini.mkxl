@@ -1,0 +1,224 @@
+%D \module
+%D   [       file=core-ini,
+%D        version=2003.12.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Additional Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Additional Initialization}
+
+\unprotect
+
+%D We introduce a couple of variables that are used all over \CONTEXT. Alternatively
+%D we could define them in each module but as they are part of the bigger picture we
+%D prefer to do it here. Ideally we should hav ea proper dependency tree but it might
+%D be that we want to make versions with a smaller footprints in which case one would
+%D still need to define the token list registers (unless we could do that runtime).
+
+%D \macros
+%D   {every...}
+%D
+%D A few every's.
+
+%D Output routine:
+
+\newtoks \everybeforeoutput
+\newtoks \everyafteroutput
+
+%D Shipout:
+
+\newtoks \everyshipout
+\newtoks \everybeforeshipout
+\newtoks \everyaftershipout
+\newtoks \everyfirstshipout
+\newtoks \everylastshipout
+
+%D End of run:
+
+\newtoks \everybye
+\newtoks \everygoodbye
+\newtoks \everynotabene
+
+%D Document:
+
+\newtoks \everyendoftextbody
+
+\newtoks \everystarttext
+\newtoks \everystoptext
+
+\newtoks \everystartdocument
+\newtoks \everystopdocument
+
+%D Purity:
+
+\newtoks \everyforgetall
+\newtoks \everycleanupfeatures
+\newtoks \everysimplifycommands
+\newtoks \everypreroll
+
+\aliased\let\simplifiedcommands\everysimplifycommands % backward compatible, will stay as it's used in styles
+
+\newconditional\simplifyingcommands % public
+
+\permanent\protected\def\forgetall       {\the\everyforgetall}
+\permanent\protected\def\cleanupfeatures {\the\everycleanupfeatures}
+\permanent\protected\def\simplifycommands{\the\everysimplifycommands}
+
+\appendtoks
+    \settrue\simplifyingcommands
+\to \everysimplifycommands
+
+\appendtoks
+    \everypar\emptytoks % pretty important
+\to \everyforgetall
+
+%D Page building:
+
+\newtoks \everybeforepagebody
+\newtoks \everyafterpagebody
+
+\aliased\let\everypagebody\everybeforepagebody % backward compatible, will become obsolete
+
+%D Floats:
+
+\newtoks \everyinsidefloat
+
+%D Exporting:
+
+\newtoks \everyinitializeexport
+
+%D Sectioning:
+
+%newtoks \everyheadstart
+
+%D Par building (experimental, used in xml <p> .. </p>)
+
+\newtoks \everybeginofpar
+\newtoks \everyendofpar
+%newtoks \everyparflush
+
+\protected\def\bpar{\the\everybeginofpar\ignorespaces}                  % may interfere with \everypar
+\protected\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+
+%D Lists:
+
+\newtoks \everylistentry
+\newtoks \everysavesortkeys
+
+%D Marks:
+
+%newtoks \everymarking
+
+%D Fonts:
+
+\newtoks \everyfont
+\newtoks \everyglobalbodyfont
+\newtoks \everydefinedfont
+
+\newtoks \everybodyfont
+\newtoks \everyfontswitch
+
+\newtoks \everysetupbodyfont
+\newtoks \everyswitchtobodyfont
+
+%D Math:
+
+\newtoks \everybeforedisplayformula
+\newtoks \everymathematics
+
+\prependtoks \the\everymathematics \to \everymath
+\prependtoks \the\everymathematics \to \everydisplay
+
+%D Tables:
+
+%newtoks \everytable % we need to disstinguish kinds
+
+%D More generic (used to be pushcolor etc)
+
+\newtoks\everystarttextproperties
+\newtoks\everystoptextproperties
+
+\permanent\protected\def\starttextproperties{\the\everystarttextproperties}
+\permanent\protected\def\stoptextproperties {\the\everystoptextproperties}
+
+%D \macros
+%D   {trialtypesetting}
+%D
+%D We disable trial typesetting in the output routine,
+%D just to be sure.
+
+\prependtoks
+    \resettrialtypesetting
+\to \everybeforepagebody
+
+%D \macros
+%D   {ifinpagebody,ifinsidecolumns,ifdoublesided,ifsinglesided}
+%D
+%D These will become system modes and conditionals
+
+\newif \ifinpagebody
+\newif \ifinsidecolumns
+\newif \ifinsidemulticolumns  % simple mixed-in-text columns
+\newif \ifdoublesided         \doublesidedfalse
+\newif \ifsinglesided         \singlesidedtrue
+\newif \ifinsidefloat
+\newif \ifdoingblocks
+\newif \ifgridsnapping
+\newif \ifexporting
+
+\newconstant\pageduplexmode % 0 single 1 double 2 mix
+\newconstant\pagebodymode   % 0 not 1 normal pagebody 2 spread
+
+\newcount\nofcolumns      \nofcolumns     \plusone
+\newcount\nofmulticolumns \nofmulticolumns\plusone
+
+%D \macros
+%D   {ifproductionrun}
+%D
+%D This boolean can be used to bypass certain initializations.
+
+% \newif\ifproductionrun % already defined
+
+\appendtoks
+    \productionruntrue
+\to \everydump
+
+%D \macros
+%D   {everyboxedcontent, ifboxedcontent,
+%D    startboxedcontent, stopboxedcontent}
+%D
+%D This one is relatively new and will be used as a more robust test for inner
+%D situations.
+
+\newif  \ifboxedcontent
+\newtoks\everyboxedcontent
+
+\appendtoks
+    \boxedcontenttrue
+\to \everyboxedcontent
+
+\permanent\protected\def\startboxedcontent{\bgroup\the\everyboxedcontent}
+
+\aliased\let\stopboxedcontent\egroup
+
+%D We store some original meanings, maybe in \type {math-ini}.
+
+\let\normalat   \at
+\let\normalin   \in
+\let\normalfrom \from
+%let\normalover \over
+\let\normalabout\about
+
+%D This will be implemented way later:
+
+\let\setlayoutcomponentattribute  \gobbleoneargument
+\let\resetlayoutcomponentattribute\relax
+\let\layoutcomponentboxattribute  \empty
+
+\protect \endinput

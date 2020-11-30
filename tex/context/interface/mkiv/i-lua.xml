@@ -172,6 +172,13 @@
         </cd:sequence>
     </cd:command>
 
+    <cd:command name="setctxluafunction" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="ctxfunction" type="environment" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
@@ -184,10 +191,50 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="installctxfunction" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="ctxfunction" generated="yes" variant="example" level="system" category="lua" file="luat-ini.mkiv">
         <cd:sequence>
             <cd:variable value="ctxfunction"/>
         </cd:sequence>
+    </cd:command>
+
+    <cd:command name="installctxscanner" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ctxscanner" generated="yes" variant="example" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:sequence>
+            <cd:variable value="ctxscanner"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="installprotectedctxfunction" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installprotectedctxscanner" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetctxscanner" level="system" category="lua" file="luat-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
     </cd:command>
 
 </cd:interface>

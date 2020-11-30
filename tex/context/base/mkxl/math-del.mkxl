@@ -1,0 +1,164 @@
+%D \module
+%D   [       file=math-del,
+%D        version=2007.07.19,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Delimiters,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Delimiters}
+
+\unprotect
+
+%D Old code that will be redone:
+%D
+%D \macros
+%D   {checkdelimiters, fakeleftdelimiter, fakerightdelimiter}
+%D
+%D Handy for non matching situations (as with mathml):
+%D
+%D \starttyping
+%D \checkdelimiters{... bla bla ...}
+%D \fakeleftdelimiter
+%D  ... bla bla ...
+%D \fakerightdelimiter
+%D \stoptyping
+
+% Actually we can do better now with lua hacks.
+
+\newcount\c_math_delimiter_nesting
+
+\permanent\protected\def\leftfakedelimiter {\advance\c_math_delimiter_nesting\minusone\gobbleoneargument}
+\permanent\protected\def\rightfakedelimiter{\advance\c_math_delimiter_nesting\plusone \gobbleoneargument}
+
+\permanent\protected\def\checkdelimiters#1%
+  {\c_math_delimiter_nesting\zerocount
+   \setbox\scratchbox\hbox\bgroup
+     \let\left \leftfakedelimiter
+     \let\right\rightfakedelimiter
+     \normalstartimath#1\expandafter\normalstopimath\expandafter
+   \egroup
+   \expandafter\c_math_delimiter_nesting\the\c_math_delimiter_nesting\relax}
+
+\permanent\protected\def\fakeleftdelimiter {\ifnum\c_math_delimiter_nesting>\zerocount\left .\fi}
+\permanent\protected\def\fakerightdelimiter{\ifnum\c_math_delimiter_nesting<\zerocount\right.\fi}
+
+%D The following macros are used in the MathML interpreter, so there is a good
+%D change of them never being documented for other usage.
+
+\aliased\let\normalordelimiter\secondoftwoarguments
+\aliased\let\normalorfiller   \firstoftwoarguments
+
+\permanent\protected\def\enabledelimiter {\enforced\let\normalordelimiter\secondoftwoarguments}
+\permanent\protected\def\disabledelimiter{\enforced\let\normalordelimiter\firstoftwoarguments}
+
+\permanent\protected\def\enablefiller    {\enforced\let\normalorfiller\secondoftwoarguments}
+\permanent\protected\def\disablefiller   {\enforced\let\normalorfiller\firstoftwoarguments}
+
+\permanent\protected\def\mathopnolimits#1{\mathop{\mathrm#1}\nolimits} % was \rm, which follows text fonts (used in mml parser, check!)
+\permanent\protected\def\mathopdolimits#1{\mathop{\mathrm#1}}          % was \rm, which follows text fonts (used in mml parser, check!)
+
+% A new experiment:
+
+% Hm, we already have \definemathextensible so we need to preserve that one. We now
+% use \definemathdelimiter.
+
+\installcorenamespace {mathdelimiter}
+
+\installcommandhandler \??mathdelimiter {mathdelimiter} \??mathdelimiter
+
+\aliased\let\setupmathdelimiters\setupmathdelimiter
+
+\setupmathdelimiters
+  [\c!symbol=0,
+   \c!define=\v!yes,
+   \c!factor=1.5,
+   \c!axis=\v!yes,
+ % \c!exact=\v!yes
+   \c!height=\exheight,
+   \c!depth=\exheight]
+
+\appendtoks
+    \ifcstok{\mathdelimiterparameter\c!define}\v!yes
+        \frozen\instance\setuevalue\currentmathdelimiter{\mathdelimiter[\currentmathdelimiter]}%
+    \fi
+\to \everydefinemathdelimiter
+
+\permanent\tolerant\protected\def\mathdelimiter[#1]#*[#2]%
+  {\mathop
+     {\edef\currentmathdelimiter{#1}%
+      \iftok{#2}\emptytoks
+        \edef\p_factor{\mathdelimiterparameter\c!factor}%
+      \orelse\ifhastok={#2}%
+        \setupcurrentmathdelimiter[#2]%
+        \edef\p_factor{\mathdelimiterparameter\c!factor}%
+      \else
+        \edef\p_factor{#2}%
+      \fi
+      \edef\p_exact{\mathdelimiterparameter\c!exact}%
+      \edef\p_axis {\mathdelimiterparameter\c!axis}%
+      \edef\p_leftoffset{\mathdelimiterparameter\c!leftoffset}%
+      \edef\p_rightoffset{\mathdelimiterparameter\c!rightoffset}%
+      \ifempty\p_leftoffset\else
+        \mskip\p_leftoffset
+      \fi
+      \Uvextensible
+         \ifx\p_exact\v!yes exact \fi
+         \ifx\p_axis \v!yes axis  \fi
+         height \p_factor\dimexpr\mathdelimiterparameter\c!height\relax
+         depth  \p_factor\dimexpr\mathdelimiterparameter\c!depth \relax
+         \Udelimiter\zerocount\zerocount\mathdelimiterparameter\c!symbol
+      \relax
+      \ifempty\p_rightoffset\else
+        \mskip\p_rightoffset
+      \fi}}
+
+\definemathdelimiter[integral][\c!symbol="222B]
+
+% \setupmathdelimiter[integral][rightoffset=-3mu,exact=yes,factor=2]
+%
+% \let\inlineint \int
+% \let\displayint\integral
+%
+% \protected\def\int{\ifmmode\inlineordisplaymath\inlineint\displayint\else\normalint\fi}
+%
+% \startlines
+% \ruledhbox{$\integral           f\frac{1}{2}$}
+% \ruledhbox{$\integral[factor=1] f\frac{1}{2}$}
+% \ruledhbox{$\integral[factor=3] f\frac{1}{2}$}
+% \ruledhbox{$\int                f\frac{1}{2}$}
+% \stoplines
+
+\permanent\protected\def\autointegral#1#2#3%
+  {\ifmmode
+     \setbox\nextbox\mathstylehbox{#3}%
+     \scratchdimen\ifdim\nextboxht>\nextboxdp\nextboxht\else\nextboxdp\fi
+     \mathlimop{%
+       \Uvextensible
+         height \scratchdimen
+         depth \scratchdimen
+         exact%
+         axis%
+         \Udelimiter \plusfour \zerocount "222B%
+     }%
+     \limits % nolimits needs more work: kerning and so
+     \normalsuperscript{#1}%
+     \normalsubscript{#2}%
+     \box\nextbox
+   \else
+     \char"222B\relax
+   \fi}
+
+% \startformula
+%     a =
+%     \autointegral{t}{b}1 +
+%     \autointegral{t}{b}{\frac{\frac{3}{4}}{\frac{1}{2}}} +
+%     \autointegral{t}{b}{\frac{\frac{\frac{\frac{1}{2}}{2}}{2}}{2}}
+% \stopformula
+
+\protect \endinput

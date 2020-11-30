@@ -1,0 +1,1010 @@
+%D \module
+%D   [       file=core-con,
+%D        version=1997.26.08,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Conversion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Conversion}
+
+\registerctxluafile{core-con}{}
+
+% todo: iso date ranges (from/to)
+
+\unprotect
+
+\ifdefined\currentlanguage \else \let\currentlanguage\empty              \fi
+\ifdefined\labeltext       \else \let\labeltext      \firstofoneargument \fi
+
+%D This module deals with all kind of conversions from numbers and dates. I
+%D considered splitting this module in a support one and a core one, but to keep
+%D things simple as well as preserve the overview, I decided against splitting.
+
+\let\spr\firstofoneargument % separator
+\let\stp\firstofoneargument % stopper
+
+% needed for arab:
+
+\permanent\protected\def\isolateseparators % even works with list separator overloading
+  {\def\spr##1{{##1}}%            % we can probably best mess around with zwj
+   \def\stp##1{{##1}}}            % and friends
+
+%D \macros
+%D   {numbers}
+%D
+%D First we deal with the dummy conversion of numbers using the \TEX\ primitive
+%D \type{\number}. The uppercase alternative is only there for compatibility with
+%D the other conversion macros. We could do without \type{#1} but this way we get
+%D rid of unwanted braces. For the savety we also define a non||sence uppercase
+%D alternative.
+%D
+%D \showsetup{numbers}
+%D
+%D \starttyping
+%D \def\numbers#1{\number#1}
+%D \def\Numbers#1{\number#1}
+%D \stoptyping
+%D
+%D Due to read ahead, as in \type{[\pagenumber\space]} the space will disappear,
+%D unless we use:
+
+\permanent\def\numbers#1{\purenumber{#1}}
+\permanent\def\Numbers#1{\purenumber{#1}}
+
+%D \macros
+%D   {romannumerals,Romannumerals}
+%D
+%D \TEX\ the program uses a rather tricky conversion from numbers to their roman
+%D counterparts. This conversion could of course be programmed in \TEX\ itself, but
+%D I guess Knuth found the programming trick worth presenting.
+%D
+%D \showsetup{romannumerals}
+%D \showsetup{Romannumerals}
+
+\permanent\def\romannumerals#1{\clf_romannumerals\numexpr#1\relax}
+\permanent\def\Romannumerals#1{\clf_Romannumerals\numexpr#1\relax}
+
+%D Arabic  etc:
+
+\permanent\def\abjadnumerals     #1{\clf_abjadnumerals     \numexpr#1\relax}
+\permanent\def\abjadnodotnumerals#1{\clf_abjadnodotnumerals\numexpr#1\relax}
+\permanent\def\abjadnaivenumerals#1{\clf_alphabetic        \numexpr#1\relax{arabic}} % okay?
+
+\permanent\def\hebrewnumerals    #1{\clf_hebrewnumerals\numexpr#1\relax}
+\aliased  \let\yiddishnumerals      \hebrewnumerals
+
+\permanent\def\languagecharacters#1{\clf_alphabetic\numexpr#1\relax{\currentlanguage}} % new
+\permanent\def\languageCharacters#1{\clf_Alphabetic\numexpr#1\relax{\currentlanguage}} % new
+
+\permanent\def\alphabeticnumerals#1{\clf_alphabetic\numexpr#1\relax{}}
+\permanent\def\Alphabeticnumerals#1{\clf_Alphabetic\numexpr#1\relax{}}
+
+\permanent\def\thainumerals      #1{\clf_alphabetic\numexpr#1\relax{thai}}
+\permanent\def\devanagarinumerals#1{\clf_alphabetic\numexpr#1\relax{devanagari}}
+\permanent\def\gurmurkhinumerals #1{\clf_alphabetic\numexpr#1\relax{gurmurkhi}}
+\permanent\def\gujaratinumerals  #1{\clf_alphabetic\numexpr#1\relax{gujarati}}
+\permanent\def\tibetannumerals   #1{\clf_alphabetic\numexpr#1\relax{tibetan}}
+\permanent\def\greeknumerals     #1{\clf_alphabetic\numexpr#1\relax{greek}}
+\permanent\def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
+\permanent\def\arabicnumerals    #1{\clf_alphabetic\numexpr#1\relax{arabic}}
+\permanent\def\persiannumerals   #1{\clf_alphabetic\numexpr#1\relax{persian}}
+\permanent\def\arabicdecimals    #1{\clf_decimals  \numexpr#1\relax{arabic}}
+\permanent\def\persiandecimals   #1{\clf_decimals  \numexpr#1\relax{persian}}
+
+\aliased  \let\arabicexnumerals     \persiannumerals
+
+\permanent\def\koreannumerals    #1{\clf_alphabetic\numexpr#1\relax{korean}}
+\permanent\def\koreannumeralsp   #1{\clf_alphabetic\numexpr#1\relax{korean-parenthesis}}
+\permanent\def\koreannumeralsc   #1{\clf_alphabetic\numexpr#1\relax{korean-circle}}
+
+\aliased  \let\koreanparentnumerals     \koreannumeralsp
+\aliased  \let\koreanparenthesisnumerals\koreannumeralsp
+\aliased  \let\koreancirclenumerals     \koreannumeralsc
+
+\permanent\def\chinesenumerals   #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
+\permanent\def\chinesecapnumerals#1{\clf_chinesenumerals\numexpr#1\relax{cap}}
+\permanent\def\chineseallnumerals#1{\clf_chinesenumerals\numexpr#1\relax{all}}
+
+%D \macros
+%D   {character,Character}
+%D
+%D Converting a number into a character can of course only be done with numbers
+%D less or equal to~26. At the cost of much more macros a faster conversion is
+%D possible, using:
+%D
+%D \starttyping
+%D \setvalue{char1}{a} \def\character#1{\getvalue{char#1}}
+%D \stoptyping
+%D
+%D But we prefer a simpel \type{\case}.
+%D
+%D \showsetup{character}
+%D \showsetup{Character}
+
+\def\unknowncharacter{-} % else in lists \relax
+
+\permanent\def\character#1{\clf_character\numexpr#1\relax}
+\permanent\def\Character#1{\clf_Character\numexpr#1\relax}
+
+%D \macros
+%D   {characters,Characters}
+%D
+%D Converting large numbers is supported by the next two macros. This time we
+%D just count on: $\cdots$~x, y, z, aa, ab, ac~$\cdots$.
+%D
+%D \showsetup{characters}
+%D \showsetup{Characters}
+
+\permanent\def\characters#1{\clf_characters\numexpr#1\relax}
+\permanent\def\Characters#1{\clf_Characters\numexpr#1\relax}
+
+%D \macros
+%D   {greeknumerals,Greeknumerals}
+%D
+%D Why should we only honour the romans, and not the greek?
+
+% \let\greeknumerals\gobbleoneargument
+% \let\Greeknumerals\gobbleoneargument
+
+%D \macros
+%D   {oldstylenumerals,oldstyleromannumerals}
+%D
+%D These conversions are dedicated to Frans Goddijn.
+
+\permanent\protected\def\oldstylenumerals#1%
+  {\begingroup
+   \os\number#1%
+   \endgroup}
+
+\permanent\protected\def\oldstyleromannumerals#1% will become obsolete
+  {\dontleavehmode
+   \hbox\bgroup
+   \ss\txx
+   \setbox\scratchbox\hbox \s!spread .15\emwidth{\hss\uppercased{\romannumerals{#1}}\hss}%
+   \scratchwidth \wd\scratchbox
+   \scratchheight\ht\scratchbox
+   \scratchdimen .1\exheight
+   \vrule\s!width\scratchwidth\s!height\dimexpr\scratchheight+\scratchdimen\relax\s!depth-\dimexpr\scratchheight-+\scratchdimen\relax
+   \hskip-\scratchwidth
+   \vrule\s!width\scratchwidth\s!height\scratchdimen\s!depth\scratchdimen
+   \hskip-\scratchwidth
+   \box\scratchbox
+   \egroup}
+
+%D \macros
+%D   {protectconversion}
+%D
+%D The previous two commands are not robust enough to be passed to \type
+%D {\write} en \type{\message}. That's why we introduce:
+
+\permanent\protected\def\protectconversion
+  {\let\doconvertcharacters\firstofoneargument}
+
+%D \macros
+%D   {normaltime,normalyear,normalmonth,normalday}
+%D
+%D The last part of this module is dedicated to converting dates. Because we want to
+%D use as meaningful commands as possible, and because \TEX\ already uses up some of
+%D those, we save the original meanings.
+
+% \savenormalmeaning\time
+% \savenormalmeaning\year
+% \savenormalmeaning\month
+% \savenormalmeaning\day
+
+%D \macros
+%D   {month,MONTH}
+%D
+%D Converting the month number into a month name is done using a case statement,
+%D abstact values and the label mechanism. This way users can easily redefine a
+%D label from for instance german into austrian.
+%D
+%D \starttyping
+%D \setuplabeltext [de] [january=J\"anner]
+%D \stoptyping
+%D
+%D Anyhow, the conversion looks like:
+
+\permanent\protected\def\monthlong #1{\clf_monthname\numexpr#1\relax}
+\permanent\protected\def\monthshort#1{\clf_monthmnem\numexpr#1\relax}
+\permanent\protected\def\daylong   #1{\clf_dayname\numexpr#1\relax}
+\permanent\protected\def\dayshort  #1{\clf_daymnem\numexpr#1\relax}
+\aliased            \let\convertmonth\monthlong % for old times sake
+
+%D We redefine the \TEX\ primitive \type{\month} as:
+%D
+%D \showsetup{month}
+%D \showsetup{MONTH}
+
+\pushoverloadmode
+
+\aliased\let\month\monthlong
+
+\popoverloadmode
+
+\permanent\protected\def\MONTH     #1{\WORD{\clf_monthname\numexpr#1\relax}}
+\permanent\protected\def\MONTHLONG #1{\WORD{\clf_monthname\numexpr#1\relax}}
+\permanent\protected\def\MONTHSHORT#1{\WORD{\clf_monthmnem\numexpr#1\relax}}
+
+%D We never explicitly needed this, but Tobias Burnus pointed out that it would be
+%D handy to convert to the day of the week. In doing so, we have to calculate the
+%D total number of days, taking leapyears into account. For those who are curious:
+%D
+%D \startitemize[packed]
+%D \item  years that can be divided by 4 are leapyears
+%D \item  exept years that can be divided by 100
+%D \item  unless years can be divided by 400
+%D \stopitemize
+
+%D \macros
+%D   {weekday,WEEKDAY}
+%D
+%D The first one is sort of redundant. It takes the day number argument.
+%D
+%D \showsetup{weekday}
+%D \showsetup{WEEKDAY}
+
+\permanent\protected\def\weekday #1{\clf_dayname\numexpr#1\relax}
+\permanent\protected\def\WEEKDAY #1{\WORD{\clf_dayname\numexpr#1\relax}}
+\permanent\protected\def\DAYLONG #1{\WORD{\clf_dayname\numexpr#1\relax}}
+\permanent\protected\def\DAYSHORT#1{\WORD{\clf_daymnem\numexpr#1\relax}}
+
+%D \macros
+%D   {getdayoftheweek, dayoftheweek}
+
+\newcount\normalweekday
+
+\permanent          \def\dayoftheweek   #1#2#3{\clf_weekdayname\numexpr#1\relax\numexpr#2\relax\numexpr#3\relax}                 % name
+\permanent\protected\def\getdayoftheweek#1#2#3{\normalweekday\clf_weekday\numexpr#1\relax\numexpr#2\relax\numexpr#3\relax\relax} % number
+
+%D Using this macro in
+%D
+%D \startbuffer
+%D monday:   \dayoftheweek  {4} {5} {1992}
+%D friday:   \dayoftheweek {16} {6} {1995}
+%D monday:   \dayoftheweek {25} {8} {1997}
+%D saturday: \dayoftheweek {30} {8} {1997}
+%D tuesday:  \dayoftheweek  {2} {1} {1996}
+%D tuesday:  \dayoftheweek  {7} {1} {1997}
+%D tuesday:  \dayoftheweek {13} {1} {1998}
+%D friday:   \dayoftheweek  {1} {1} {2000}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D The macro \type {\getdayoftheweek} can be used to calculate the number \type
+%D {\normalweekday}.
+
+%D \macros
+%D   {doifleapyearelse,
+%D    getdayspermonth}
+%D
+%D Sometimes we need to know if we're dealing with a leapyear, so here is a
+%D testmacro:
+%D
+%D \starttyping
+%D \doifleapyearelse{year}{yes}{no}
+%D \stoptyping
+%D
+%D An example of its use can be seen in the macro
+%D
+%D \starttyping
+%D \getdayspermonth{year}{month}
+%D \stoptyping
+%D
+%D The number of days is available in the macro \type {\numberofdays}.
+
+\permanent\def\doifelseleapyear#1% expandable check
+  {\clf_doifelseleapyear\numexpr#1\relax}
+
+\aliased\let\doifleapyearelse\doifelseleapyear
+
+\permanent\protected\def\getdayspermonth#1#2%
+  {\edef\numberofdays{\clf_nofdays\numexpr#1\relax\numexpr#2\relax}}
+
+\permanent\def\dayspermonth#1#2%
+  {\clf_nofdays\numexpr#1\relax\numexpr#2\relax}
+
+% \dayoftheweek{2006}{9}{15}
+% \doifleapyearelse{2000}{OK}{NOT OK}
+% \doifleapyearelse{2100}{NOT OK}{OK}
+% \doifleapyearelse{2004}{OK}{NOT OK}
+% \doifleapyearelse{2003}{NOT OK}{OK}
+% \dayspermonth{2000}{2}
+% [\the\normaltime=\the\time]
+
+%D \macros
+%D   {currentdate, rawdate, date}
+%D
+%D We use these conversion macros in the date formatting macro:
+%D
+%D \showsetup{currentdate}
+%D
+%D This macro takes care of proper spacing and delivers for instance:
+%D
+%D \startbuffer
+%D \currentdate[weekday,day,month,year]
+%D \currentdate[WEEKDAY,day,MONTH,year]
+%D \stopbuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D depending of course on the keywords. Here we gave:
+%D
+%D \typebuffer
+%D
+%D If needed one can also add non||keywords, like in
+%D
+%D \startbuffer
+%D \currentdate[dd,--,mm,--,yy]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D or typeset: \getbuffer.
+%D
+%D When no argument is passed, the current date is given as specified per
+%D language (using \type{\installlanguage}).
+%D
+%D \showsetup{currentdate}
+%D
+%D \startbuffer
+%D \date
+%D \date[d=12,m=12,y=1998][weekday]
+%D \date[d=12,m=12,y=1998]
+%D \stopbuffer
+%D
+%D We can also typeset arbitrary dates, using the previous
+%D command.
+%D
+%D \typebuffer
+%D
+%D The date is specified by one character keys. When no date is given, we get the
+%D current date.
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+%D \starttabulate[|l|l|]
+%D \HL
+%D \NC year     \NC (\currentdate[year])     \NC\NR
+%D \NC yy       \NC (\currentdate[yy])       \NC\NR
+%D \NC y        \NC (\currentdate[y])        \NC\NR
+%D \NC Y        \NC (\currentdate[Y])        \NC\NR
+%D \HL
+%D \NC month    \NC (\currentdate[month])    \NC\NR
+%D \NC mm       \NC (\currentdate[mm])       \NC\NR
+%D \NC m        \NC (\currentdate[m])        \NC\NR
+%D \NC M        \NC (\currentdate[M])        \NC\NR
+%D \HL
+%D \NC day      \NC (\currentdate[day])      \NC\NR
+%D \NC dd       \NC (\currentdate[dd])       \NC\NR
+%D \NC d        \NC (\currentdate[d])        \NC\NR
+%D \NC D        \NC (\currentdate[D])        \NC\NR
+%D \HL
+%D \NC weekday  \NC (\currentdate[weekday])  \NC\NR
+%D \NC w        \NC (\currentdate[w])        \NC\NR
+%D \NC W        \NC (\currentdate[W])        \NC\NR
+%D \HL
+%D \NC referral \NC (\currentdate[referral]) \NC\NR
+%D \HL
+%D \NC day:mnem \NC (\currentdate[day:mnem]) \NC\NR
+%D \NC dd:mnem  \NC (\currentdate[dd:mnem])  \NC\NR
+%D \NC d:mnem   \NC (\currentdate[d:mnem])   \NC\NR
+%D \NC D:mnem   \NC (\currentdate[D:mnem])   \NC\NR
+%D \HL
+%D \stoptabulate
+%D
+%D \startbuffer
+%D (\currentdate[D,.,M,.,Y])
+%D (\currentdate[day,month,year])
+%D (\currentdate[day,+,month,+,year])
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Some indirectness and abstraction:
+%D
+%D \starttyping
+%D \definedate[crap][year]
+%D \currentdate[crap]
+%D \stoptyping
+
+\installcorenamespace{date}
+
+\permanent\tolerant\protected\def\definedate[#1]#*[#2]%
+  {\ifarguments\else\setvalue{\??date#1}{#2}\fi}
+
+\def\syst_converters_check_date_specification#1%
+  {\ifcsname\??date#1\endcsname
+     \edef#1{\lastnamedcs}%
+   \fi}
+
+\newtoks\everycurrentdate
+
+\permanent\tolerant\protected\def\currentdate[#1]%
+  {\dontleavehmode
+   \begingroup
+   \the\everycurrentdate
+   \edef\forceddatespecification{#1}%
+   \syst_converters_check_date_specification\forceddatespecification
+   \syst_converters_check_date_specification\currentdatespecification
+   \clf_currentdate
+     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
+     \normalyear\normalmonth\normalday
+   \endgroup}
+
+\permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
+  {\dontleavehmode
+   \ifparameter#1\or
+     \begingroup
+     \letdummyparameter\c!d\normalday
+     \letdummyparameter\c!m\normalmonth
+     \letdummyparameter\c!y\normalyear
+     \getdummyparameters[#1]%
+     \normalexpanded
+       {\endgroup
+        \normalday  \number\directdummyparameter\c!d\relax
+        \normalmonth\number\directdummyparameter\c!m\relax
+        \normalyear \number\directdummyparameter\c!y\relax}%
+   \fi
+   \begingroup
+   \the\everycurrentdate
+   \edef\forceddatespecification{#2}%
+   \syst_converters_check_date_specification\forceddatespecification
+   \syst_converters_check_date_specification\currentdatespecification
+   \clf_currentdate
+     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
+     \normalyear\normalmonth\normalday
+   \endgroup}
+
+\permanent\def\rawdate[#1]% expandable and no labels
+  {\clf_currentdate
+     {#1}{\currentdatespecification}{}%
+     \normalyear\normalmonth\normalday}
+
+%D \macros
+%D   {currenttime}
+%D
+%D The currenttime is actually the jobtime. You can specify a pattern similar
+%D to the previous date macro using the keys \type {h}, \type {m} and a separator.
+
+\permanent\protected\def\calculatecurrenttime
+  {\edef\currenthour  {\clf_hour  }%
+   \edef\currentminute{\clf_minute}%
+   \edef\currentsecond{\clf_second}}
+
+\let\currenthour  \!!plusone
+\let\currentminute\!!plusone
+\let\currentsecond\!!plusone
+
+% \def\currenttimespecification{h,:,m}
+
+\permanent\protected\def\currenttime
+  {\doifelsenextoptional\syst_converters_current_time_yes\syst_converters_current_time_nop}
+
+\protected\def\syst_converters_current_time_yes[#1]%
+  {\calculatecurrenttime
+   \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
+
+\protected\def\syst_converters_current_time_nop
+  {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
+
+%D Because we're dealing with dates, we also introduce a few day loops:
+%D
+%D \starttyping
+%D \processmonth{year}{month}{command}
+%D \processyear{year}{command}{before}{after}
+%D \stoptyping
+%D
+%D The counters \type {\normalyear}, \type {\normalmonth} and \type {\normalday}
+%D can be used for for date manipulations.
+
+\permanent\protected\def\processmonth#1#2#3% year month command
+  {\begingroup
+   \getdayspermonth{#1}{#2}%
+   \dostepwiserecurse\plusone\numberofdays\plusone
+     {\normalyear #1\relax
+      \normalmonth#2\relax
+      \normalday  \recurselevel\relax
+      #3}%
+   \endgroup}
+
+\def\lastmonth{12} % can be set to e.g. 1 when testing
+
+\permanent\protected\def\processyear#1#2#3#4% year command before after
+  {\begingroup
+   \dorecurse\lastmonth
+     {\normalyear #1\relax
+      \normalmonth\recurselevel\relax
+      #3\processmonth\normalyear\normalmonth{#2}#4}%
+   \endgroup}
+
+%D \macros
+%D   {defineconversion, convertnumber}
+%D
+%D Conversion involves the macros that we implemented earlier in this module.
+%D
+%D \showsetup{defineconversion}
+%D \showsetup{convertnumber}
+%D
+%D We can feed this command with conversion macros as well as a set of conversion
+%D symbols. Both need a bit different treatment.
+%D
+%D \starttyping
+%D \defineconversion [roman] [\romannumerals]
+%D \defineconversion [set 1] [$\star$,$\bullet$,$\ast$]
+%D \stoptyping
+%D
+%D You can define a language dependent conversion with:
+%D
+%D \starttyping
+%D \defineconversion [en] [whatever] [\something]
+%D \stoptyping
+
+\installcorenamespace {conversion}
+\installcorenamespace {conversionarguments}
+\installcorenamespace {conversionwords}
+
+%D It might be better to move more to \LUA\ as we also need conversion there and
+%D doublicating logic doesn't make things cleaner. It means that all conversions
+%D will get a language argument too. However, we permit definitions at the \TEX\ end
+%D so we have to provide some hybrid method.
+
+% checkedconversion(method,n,language)
+
+\permanent\tolerant\protected\def\defineconversion[#1]#*[#2]#*[#3]% from now on global (maybe local again some day)
+  {\ifparameter#3\or
+     \syst_converters_define_conversion_indeed{#1#2}{#1:#2}{#3}%
+   \else
+     \syst_converters_define_conversion_indeed{#1}{#1}{#2}%
+   \fi}
+
+\def\syst_converters_define_conversion_indeed#1#2#3%
+  {\doifelseinstring{,}{\detokenize{#3}}
+     {\clf_defineconversion{#2}{\detokenize{#3}}% a set e.g. of symbols
+      \setgvalue{\??conversion#1}{\syst_converters_checked_conversion{#2}}}
+     {\setgvalue{\??conversion#1}{#3}}}
+
+\def\syst_converters_checked_conversion#1#2%
+  {\clf_checkedconversion{#1}\numexpr#2\relax}
+
+%D If a conversion is just a font switch then we need to make sure that the number
+%D is indeed ends up as number in the input, so we need to handle the second
+%D argument.
+
+\permanent\def\convertnumber#1#2% expandable
+  {\csname\??conversionarguments
+     \ifcsname\??conversion\currentlanguage#1\endcsname1\else
+     \ifcsname\??conversion                #1\endcsname2\else
+                                                       3\fi\fi
+   \endcsname{#1}{\number#2}}
+
+\permanent\protected\def\uconvertnumber % unexpandable
+  {\convertnumber}
+
+\setvalue{\??conversionarguments1}#1{\csname\??conversion\currentlanguage#1\endcsname}
+\setvalue{\??conversionarguments2}#1{\csname\??conversion                #1\endcsname}
+\letvalue{\??conversionarguments3}\syst_converters_checked_conversion
+
+% we can also add a \ctxcommand{doifelseconversion("#1","\currentlanguage")} to check
+% if we have definitions that are not matched at the lua end .. eventually we might do
+% that when more shows up
+
+\permanent\def\doifelseconversiondefined#1% expandable
+  {\ifcsname\??conversion\currentlanguage#1\endcsname
+     \expandafter\firstoftwoarguments
+   \orelse\ifcsname\??conversion#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\permanent\def\doifelseconversionnumber#1#2% expandable
+  {\ifnum#2>\numexpr\clf_nofconversions{#1}\relax
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\aliased\let\doifconversiondefinedelse\doifelseconversiondefined
+\aliased\let\doifconversionnumberelse \doifelseconversionnumber
+
+%D Handy.
+
+\setvalue{\??conversionwords\v!one  }{1}
+\setvalue{\??conversionwords\v!two  }{2}
+\setvalue{\??conversionwords\v!three}{3}
+\setvalue{\??conversionwords\v!four }{4}
+\setvalue{\??conversionwords\v!five }{5}
+
+%permanent\def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\csname\??conversionwords#1\endcsname\else#2\fi}
+\permanent\def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\lastnamedcs\else#2\fi}
+
+% \defineconversion[ctx][c,o,n,t,e,x,t]
+%
+% \doloop{\doifelseconversionnumber{ctx}{\recurselevel}{[\recurselevel]}{\exitloop}}
+
+%D \macros
+%D   {ordinalnumber, highordinalstr, ordinalstr}
+%D
+%D Efficient general ordinal number converters are sometimes difficult to
+%D implement. Fortunately dates never exceed the number~31.
+
+\permanent\def\highordinalstr#1{\high{\notsmallcapped{#1}}}
+\permanent\def\ordinalstr    #1{\notsmallcapped{#1}}
+\permanent\def\ordinalnumber #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
+\permanent\def\Ordinalnumber #1{\Words{\clf_ordinal\numexpr#1\relax{\currentlanguage}}}
+
+\permanent\def\verbosenumber#1{\clf_verbose\numexpr#1\relax{\currentlanguage}}
+\permanent\def\VerboseNumber#1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}}}
+
+%D As longs as symbols are linked to levels or numbers, we can also use the
+%D conversion mechanism, but in for instance the itemization macros, we prefer
+%D symbols because they can more easier be (partially) redefined. Symbols are
+%D implemented in another module.
+
+\permanent\def\smallcappedromannumerals#1{\smallcapped{\romannumerals{#1}}}
+\permanent\def\smallcappedcharacters   #1{\smallcapped{\characters   {#1}}}
+
+\defineconversion []                     [\numbers] % the default conversion
+\defineconversion [\v!empty]             [\gobbleoneargument]
+\defineconversion [\v!none]              [\numbers]
+\defineconversion [\s!default]           [\numbers]
+
+\defineconversion [month]                [\monthlong]
+\defineconversion [month:mnem]           [\monthshort]
+
+\defineconversion [\v!character]         [\character]
+\defineconversion [\v!Character]         [\Character]
+
+\defineconversion [\v!characters]        [\characters]
+\defineconversion [\v!Characters]        [\Characters]
+
+\defineconversion [a]                    [\alphabeticnumerals]
+\defineconversion [A]                    [\Alphabeticnumerals]
+\defineconversion [AK]                   [\smallcappedcharacters]
+\defineconversion [KA]                   [\smallcappedcharacters]
+
+\defineconversion [\v!alphabetic]        [\alphabeticnumerals]
+\defineconversion [\v!Alphabetic]        [\Alphabeticnumerals]
+
+\defineconversion [\v!number]            [\numbers]
+\defineconversion [\v!numbers]           [\numbers]
+\defineconversion [\v!Numbers]           [\Numbers]
+\defineconversion [\v!mediaeval]         [\mediaeval]
+
+\defineconversion [\v!word]              [\verbosenumber]
+\defineconversion [\v!words]             [\verbosenumber]
+
+\defineconversion [\v!Word]              [\VerboseNumber]
+\defineconversion [\v!Words]             [\VerboseNumber]
+
+\defineconversion[\v!ordinal]            [\ordinalnumber]
+\defineconversion[\v!Ordinal]            [\Ordinalnumber]
+
+\defineconversion [n]                    [\numbers]
+\defineconversion [N]                    [\Numbers]
+\defineconversion [m]                    [\mediaeval]
+\defineconversion [o]                    [\oldstylenumerals]
+\defineconversion [O]                    [\oldstylenumerals]
+\defineconversion [or]                   [\oldstyleromannumerals]
+
+\defineconversion [\v!romannumerals]     [\romannumerals]
+\defineconversion [\v!Romannumerals]     [\Romannumerals]
+
+\defineconversion [i]                    [\romannumerals]
+\defineconversion [I]                    [\Romannumerals]
+\defineconversion [r]                    [\romannumerals]
+\defineconversion [R]                    [\Romannumerals]
+
+\defineconversion [KR]                   [\smallcappedromannumerals]
+\defineconversion [RK]                   [\smallcappedromannumerals]
+
+\defineconversion [\v!greek]             [\greeknumerals]
+\defineconversion [\v!Greek]             [\Greeknumerals]
+
+\defineconversion [g]                    [\greeknumerals]
+\defineconversion [G]                    [\Greeknumerals]
+
+%defineconversion [ñ]                    [\spanishnumerals]
+%defineconversion [Ñ]                    [\Spanishnumerals]
+
+\defineconversion [abjadnumerals]        [\abjadnumerals]
+\defineconversion [abjadnodotnumerals]   [\abjadnodotnumerals]
+\defineconversion [abjadnaivenumerals]   [\abjadnaivenumerals]
+
+\defineconversion [hebrewnumerals]       [\hebrewnumerals]
+\defineconversion [yiddishnumerals]      [\yiddishnumerals]
+
+% users can do: \defineconversion [he] [\hebrewnumerals]
+% users can do: \defineconversion [yi] [\hebrewnumerals]
+
+\defineconversion [thainumerals]         [\thainumerals]
+\defineconversion [devanagarinumerals]   [\devanagarinumerals]
+\defineconversion [gurmurkhinumerals]    [\gurmurkhinumerals]
+\defineconversion [gujaratinumerals]     [\gujaratinumerals]
+\defineconversion [tibetannumerals]      [\tibetannumerals]
+\defineconversion [greeknumerals]        [\greeknumerals]
+\defineconversion [Greeknumerals]        [\Greeknumerals]
+\defineconversion [arabicnumerals]       [\arabicnumerals]
+\defineconversion [persiannumerals]      [\persiannumerals]
+\defineconversion [arabicexnumerals]     [\arabicexnumerals]
+\defineconversion [arabicdecimals]       [\arabicdecimals]
+\defineconversion [persiandecimals]      [\persiandecimals]
+
+\defineconversion [koreannumerals]       [\koreannumerals]
+\defineconversion [koreanparennumerals]  [\koreanparenthesisnumerals] % for old times sake (for a while)
+\defineconversion [koreanparenthesisnumerals]
+                                         [\koreanparenthesisnumerals]
+\defineconversion [koreancirclenumerals] [\koreancirclenumerals]
+
+\defineconversion [kr]                   [\koreannumerals]
+\defineconversion [kr-p]                 [\koreanparentnumerals]
+\defineconversion [kr-c]                 [\koreancirclenumerals]
+
+\defineconversion [chinesenumerals]      [\chinesenumerals]
+\defineconversion [chinesecapnumerals]   [\chinesecapnumerals]
+\defineconversion [chineseallnumerals]   [\chineseallnumerals]
+
+\defineconversion [cn]                   [\chinesenumerals]
+\defineconversion [cn-c]                 [\chinesecapnumerals]
+\defineconversion [cn-a]                 [\chineseallnumerals]
+
+%D Moved from lang-def.mkiv:
+%D
+%D Define these as the general character enumeration when language is Slovenian. If
+%D you feel uncomfortable with this, mail Mojca, since she promised to to take the
+%D heat. Pablo was next to request this. We changed characters to numerals for this
+%D feature. We do need these definitions for mechanisms like itemize that check
+%D for converters.
+
+\permanent\def\sloveniannumerals#1{\clf_alphabetic\numexpr#1\relax{sl}}
+\permanent\def\slovenianNumerals#1{\clf_Alphabetic\numexpr#1\relax{sl}}
+
+\permanent\def\spanishnumerals  #1{\clf_alphabetic\numexpr#1\relax{es}}
+\permanent\def\spanishNumerals  #1{\clf_Alphabetic\numexpr#1\relax{es}}
+
+\permanent\def\russiannumerals  #1{\clf_alphabetic\numexpr#1\relax{ru}}
+\permanent\def\russianNumerals  #1{\clf_Alphabetic\numexpr#1\relax{ru}}
+
+%defineconversion [\s!sl] [character]  [\sloveniannumerals]
+%defineconversion [\s!sl] [Character]  [\slovenianNumerals]
+%defineconversion [\s!sl] [characters] [\sloveniannumerals]
+%defineconversion [\s!sl] [Characters] [\slovenianNumerals]
+
+\defineconversion [\s!sl] [alphabetic] [\sloveniannumerals]
+\defineconversion [\s!sl] [Alphabetic] [\slovenianNumerals]
+
+\defineconversion [\s!sl] [a]          [\sloveniannumerals]
+\defineconversion [\s!sl] [A]          [\slovenianNumerals]
+\defineconversion [\s!sl] [AK]         [\smallcapped\sloveniannumerals]
+\defineconversion [\s!sl] [KA]         [\smallcapped\sloveniannumerals]
+
+%defineconversion [\s!es] [character]  [\spanishnumerals]
+%defineconversion [\s!es] [Character]  [\spanishNumerals]
+%defineconversion [\s!es] [characters] [\spanishnumerals]
+%defineconversion [\s!es] [Characters] [\spanishNumerals]
+
+\defineconversion [\s!es] [alphabetic] [\spanishnumerals]
+\defineconversion [\s!es] [Alphabetic] [\spanishNumerals]
+
+\defineconversion [\s!es] [a]          [\spanishnumerals]
+\defineconversion [\s!es] [A]          [\spanishNumerals]
+\defineconversion [\s!es] [AK]         [\smallcapped\spanishnumerals]
+\defineconversion [\s!es] [KA]         [\smallcapped\spanishnumerals]
+
+%defineconversion [\s!ru] [character]  [\russiannumerals]
+%defineconversion [\s!ru] [Character]  [\russianNumerals]
+%defineconversion [\s!ru] [characters] [\russiannumerals]
+%defineconversion [\s!ru] [Characters] [\russianNumerals]
+
+\defineconversion [\s!ru] [alphabetic] [\russiannumerals]
+\defineconversion [\s!ru] [Alphabetic] [\russianNumerals]
+
+\defineconversion [\s!ru] [a]          [\russiannumerals]
+\defineconversion [\s!ru] [A]          [\russianNumerals]
+\defineconversion [\s!ru] [AK]         [\smallcapped\russiannumerals]
+\defineconversion [\s!ru] [KA]         [\smallcapped\russiannumerals]
+
+\defineconversion [sloveniannumerals]  [\sloveniannumerals]
+\defineconversion [slovenianNumerals]  [\slovenianNumerals]
+
+\defineconversion [spanishnumerals]    [\spanishnumerals]
+\defineconversion [spanishNumerals]    [\spanishNumerals]
+
+\defineconversion [russiannumerals]    [\russiannumerals]
+\defineconversion [russianNumerals]    [\russianNumerals]
+
+%D In case a font has no greek (WS):
+
+\defineconversion [mathgreek]
+  [\m{α},\m{β},\m{γ},\m{δ},\m{ε},\m{ζ},
+   \m{η},\m{θ},\m{ι},\m{κ},\m{λ},\m{μ},
+   \m{ν},\m{ξ},\m{ο},\m{π},\m{ρ},\m{σ},
+   \m{τ},\m{υ},\m{φ},\m{χ},\m{ψ},\m{ω}]
+
+%D Handy too (expanded!):
+
+\permanent\def\unihex#1{\clf_unihex\numexpr#1\relax}
+
+%D Symbol sets:
+
+\ifdefined\symbol \else \def\symbol[#1]{#1} \fi % todo
+
+% \defineconversion
+%   [set 0]
+%   [{\symbol[bullet]},
+%    {\symbol[dash]},
+%    {\symbol[star]},
+%    {\symbol[triangle]},
+%    {\symbol[circle]},
+%    {\symbol[medcircle]},
+%    {\symbol[bigcircle]},
+%    {\symbol[square]},
+%    {\symbol[checkmark]}]
+
+% \defineconversion
+%   [set 1]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+%
+% \defineconversion
+%   [set 2]
+%   [\mathematics{\ast},
+%    \mathematics{\dag},
+%    \mathematics{\ddag},
+%    \mathematics{\ast\ast},
+%    \mathematics{\dag\dag},
+%    \mathematics{\ddag\ddag},
+%    \mathematics{\ast\ast\ast},
+%    \mathematics{\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag},
+%    \mathematics{\ast\ast\ast\ast},
+%    \mathematics{\dag\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag\ddag}]
+%
+% \defineconversion
+%   [set 3]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\P},
+%    \mathematics{\P\P},
+%    \mathematics{\P\P\P},
+%    \mathematics{\S},
+%    \mathematics{\S\S},
+%    \mathematics{\S\S\S},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+
+\defineconversion
+  [set 0]
+  [\symbol{bullet},
+   \symbol{dash},
+   \symbol{star},
+   \symbol{triangle},
+   \symbol{circle},
+   \symbol{medcircle},
+   \symbol{bigcircle},
+   \symbol{square},
+   \symbol{checkmark}]
+
+\defineconversion
+  [set 1]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
+
+\defineconversion
+  [set 2]
+  [\textormathchars{∗},
+   \textormathchars{†},
+   \textormathchars{‡},
+   \textormathchars{∗∗},
+   \textormathchars{††},
+   \textormathchars{‡‡},
+   \textormathchars{∗∗∗},
+   \textormathchars{†††},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗∗∗∗},
+   \textormathchars{††††},
+   \textormathchars{‡‡‡‡}]
+
+\defineconversion
+  [set 3]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{¶},
+   \textormathchars{¶¶},
+   \textormathchars{¶¶¶},
+   \textormathchars{§},
+   \textormathchars{§§},
+   \textormathchars{§§§},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
+
+%D Iteration of suggestion by WS on mailinglist 2010.12.22:
+%D
+%D \starttyping
+%D \setupfloatsplitting[conversion=continued]
+%D \stoptyping
+
+\permanent\protected\def\continuednumber#1%
+  {\labeltext{\ifcase#1\or\else\v!continued\fi}}
+
+\defineconversion
+  [\v!continued]
+  [\continuednumber]
+
+%D Taken from x-asciimath (see digits-001.tex for an example):
+
+\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
+\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
+\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
+
+\permanent\protected\def\spaceddigits#1%
+  {\clf_spaceddigits
+      method    {\spaceddigitsmethod}%
+      symbol    {\spaceddigitssymbol}%
+      separator {\spaceddigitsseparator}%
+      data      {#1}%
+   \relax}
+
+%D For those who sart counting at zero:
+%D
+%D \starttyping
+%D \defineconversionset [zero] [n,zero] [n]
+%D
+%D \setuphead [sectionconversionset=zero]
+%D
+%D \starttext
+%D     \startchapter [title=Introduction]
+%D         \startsection [title=First topic]  \stopsection
+%D         \startsection [title=Second topic] \stopsection
+%D     \stopchapter
+%D \stoptext
+%D \stoptyping
+
+\permanent\def\zeronumberconversion#1{\number\numexpr#1-\plusone\relax}
+
+\defineconversion [zero] [\zeronumberconversion]
+
+\protect \endinput

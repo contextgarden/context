@@ -780,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='diepnummercommando'/>
 		<cd:constant name='deeptextcommand' value='dieptekstcommando'/>
 		<cd:constant name='default' value='default'/>
+		<cd:constant name='define' value='definieer'/>
 		<cd:constant name='delay' value='wachttijd'/>
 		<cd:constant name='depth' value='diepte'/>
 		<cd:constant name='depthcorrection' value='dieptecorrectie'/>
@@ -1380,7 +1381,6 @@
 	<!-- definitions for interface commands for language nl -->
 
 	<cd:commands>
-		<cd:command name='CAPPED' value='KAP'/>
 		<cd:command name='Character' value='Letter'/>
 		<cd:command name='Characters' value='Letters'/>
 		<cd:command name='MONTH' value='MAAND'/>
@@ -2086,7 +2086,7 @@
 		<cd:command name='startnarrower' value='startsmaller'/>
 		<cd:command name='startopposite' value='startnaast'/>
 		<cd:command name='startoverlay' value='startoverlay'/>
-		<cd:command name='startoverzicht' value='startoverzicht'/>
+		<cd:command name='startoverview' value='startoverzicht'/>
 		<cd:command name='startpacked' value='startopelkaar'/>
 		<cd:command name='startpositioning' value='startpositioneren'/>
 		<cd:command name='startproduct' value='startprodukt'/>
@@ -2129,7 +2129,7 @@
 		<cd:command name='stopnarrower' value='stopsmaller'/>
 		<cd:command name='stopopposite' value='stopnaast'/>
 		<cd:command name='stopoverlay' value='stopoverlay'/>
-		<cd:command name='stopoverzicht' value='stopoverzicht'/>
+		<cd:command name='stopoverview' value='stopoverzicht'/>
 		<cd:command name='stoppacked' value='stopopelkaar'/>
 		<cd:command name='stoppositioning' value='stoppositioneren'/>
 		<cd:command name='stopproduct' value='stopprodukt'/>

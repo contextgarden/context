@@ -453,6 +453,25 @@ And maybe also here:
 % \aftergroups
 % \aftergrouped
 
+And:
+
+\starttyping
+          \def\foo{foo}
+\protected\def\oof{oof}
+
+\csname foo\endcsname
+\csname oof\endcsname
+\csname \foo\endcsname
+% \csname \oof\endcsname % error in luametatex
+
+\ifcsname  foo\endcsname yes\else nop\fi
+\ifcsname  oof\endcsname yes\else nop\fi
+\ifcsname \foo\endcsname yes\else nop\fi
+\ifcsname \oof\endcsname yes\else nop\fi % nop in luametatex
+\stoptyping
+
+\stoptext
+
 \stopsection
 
 \stopdocument

@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=typo-chr,
+%D        version=2015.01.01, % or about that time
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Cleaning Up Mess,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Characters}
+
+\unprotect
+
+%D This is a very experimental feature, mostly for Alan and me to play with in
+%D publication hell.
+%D
+%D \startbuffer
+%D before, after\par
+%D before,\removepunctuation after\par
+%D before\markcontent[gone]{\darkred   gone}\removemarkedcontent[gone]after\par
+%D before\markcontent[kept]{\darkgreen kept}\removemarkedcontent[gone]after\par
+%D \markcontent[gone]{\darkred   gone}\removemarkedcontent[gone]after\par
+%D \markcontent[kept]{\darkgreen kept}\removemarkedcontent[gone]after\par
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer\blank
+%D
+%D This feature is paragraph based and is only to be used for small snippets of text,
+%D for instance when combining bit and pieces where keeping a state is complex compared
+%D to cleaning up unwanted stuff.
+
+\registerctxluafile{typo-chr}{}
+
+\definesystemattribute[marked][public]
+
+\permanent\protected\def\removepunctuation{\clf_pickuppunctuation action{remove}\relax}
+\permanent\protected\def\pushpunctuation  {\clf_pickuppunctuation action{push}\relax}
+\permanent\protected\def\poppunctuation   {\clf_pickuppunctuation action{pop}\relax}
+
+\permanent\tolerant\protected\def\markcontent[#1]#:#2%
+  {\dontleavehmode
+   \bgroup
+   \clf_markcontent{#1}%
+   \bgroup
+   #2% double grouping makes aftergroups work ok
+   \egroup
+   \egroup}
+
+\permanent\tolerant\protected\def\startmarkedcontent[#1]%
+  {\dontleavehmode
+   \bgroup
+   \clf_markcontent{#1}%
+   % double grouping makes aftergroups work ok
+   \bgroup}
+
+\permanent\protected\def\stopmarkedcontent
+  {\egroup
+   \egroup}
+
+\permanent\tolerant\protected\def\removemarkedcontent[#1]%
+  {\clf_pickupmarkedcontent action{remove}mark{#1}\relax}
+
+\permanent\protected\def\doifelsemarkedcontent#1%
+  {\clf_doifelsemarkedcontent{#1}}
+
+%D A few helpers (put here for convenience):
+%D
+%D \starttyping
+%D test test\doifelselastnode{boundary}{word}{YES}{NOP}test
+%D test test\wordboundary \doifelselastnode{boundary}{word}{YES}{NOP}test
+%D test test\wordboundary \doifelseatwordboundary{YES}{NOP}test
+%D test test \lastnodeidstring test
+%D test test\lastnodeidstring test
+%D test test\number\lastnodeid test
+%D \stoptyping
+
+\newcount\c_syst_last_node_id
+
+\permanent\protected\def\doifelselastnode      {\clf_lastnodeequals}                 % can be public implementors
+\permanent\protected\def\doifelseatwordboundary{\clf_atwordboundary}                 % can be public implementors
+\permanent\protected\def\lastnodeid            {\clf_lastnodeid\c_syst_last_node_id} % can be public implementors
+
+\protect \endinput

@@ -15,8 +15,7 @@
 
 \registerctxluafile{s-system-tokens}{}
 
-\unexpanded\def\showsystemtokens
-  {\ctxlua{moduledata.system.tokens.showlist()}}
+\permanent\protected\def\showsystemtokens{\ctxlua{moduledata.system.tokens.showlist()}} % can be public implementor
 
 \stopmodule
 

@@ -1,0 +1,180 @@
+%D \module
+%D   [       file=page-com, % moved from page-imp
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Page Comments,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This will become runtime loaded code.
+
+\writestatus{loading}{ConTeXt Page Macros / Page Comments}
+
+\unprotect
+
+%D \macros
+%D   {setuppagecomment,startpagecomment}
+%D
+%D This command is not yet documented. Usage:
+%D
+%D \starttyping
+%D \setuppagecomment[state=start,location=right]
+%D
+%D \startpagecomment
+%D \input knuth
+%D \stoppagecomment
+%D \stoptyping
+
+\installcorenamespace{pagecomment}
+\installcorenamespace{pagecommentlocations}
+\installcorenamespace{pagecommentstates}
+
+\newdimen\d_page_comments_offset
+\newdimen\d_page_comments_page_width
+\newdimen\d_page_comments_page_height
+\newdimen\d_page_comments_width
+\newdimen\d_page_comments_height
+\newdimen\d_page_comments_distance
+
+\newconditional\c_page_comment_enabled
+
+\let\p_page_commands_location\v!none
+\let\p_page_commands_state   \v!stop
+
+\installsetuponlycommandhandler \??pagecomment {pagecomment}
+
+\appendtoks
+    \edef\p_page_commands_location{\directpagecommentparameter\c!location}%
+    \edef\p_page_commands_state   {\directpagecommentparameter\c!state}%
+    \expandnamespacemacro\??pagecommentstates\p_page_commands_state\v!none
+\to \everysetuppagecomment
+
+% \ifdefined\scrn_canvas_synchronize_simple
+
+    \appendtoks
+        \ifx\p_page_commands_state\v!start
+            \scrn_canvas_synchronize_simple
+        \else
+            \scrn_canvas_synchronize_complex
+        \fi
+    \to \everyshipout
+
+% \fi
+
+\setvalue{\??pagecommentstates\v!start}%
+  {\d_page_comments_offset  \directpagecommentparameter\c!offset  \relax
+   \d_page_comments_distance\directpagecommentparameter\c!distance\relax
+   \d_page_comments_width   \directpagecommentparameter\c!width   \relax
+   \d_page_comments_height  \directpagecommentparameter\c!height  \relax
+   \expandnamespacemacro\??pagecommentlocations\p_page_commands_location\v!none
+   \definepapersize[\v!pagecomment][\c!height=\d_page_comments_page_height,\c!width=\d_page_comments_page_width]%
+   \setuppapersize[\papersize][\v!pagecomment]%
+   \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]} % maybe append if already set
+
+\setvalue{\??pagecommentstates\v!stop}%
+  {\setupbackgrounds[\v!paper][\c!background=]}
+
+\setvalue{\??pagecommentstates\v!none}%
+  {}
+
+\setvalue{\??pagecommentlocations\v!bottom}%
+  {\setuplayout[\c!location=]%
+   \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=\vss,\c!left=\hskip\d_page_comments_offset,\c!right=]%
+   \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_height\relax
+   \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset\relax
+   \defineoverlay[\v!pagecomment][\page_comments_top_bottom]}
+
+\setvalue{\??pagecommentlocations\v!top}%
+  {\setuplayout[\c!location=]%
+   \setuppapersize[\c!top=\vss,\c!bottom=\vskip\d_page_comments_offset,\c!left=\hskip\d_page_comments_offset,\c!right=]%
+   \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_height\relax
+   \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset\relax
+   \defineoverlay[\v!pagecomment][\page_comments_top_bottom]}
+
+\setvalue{\??pagecommentlocations\v!left}%
+  {\setuplayout[\c!location=]%
+   \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=,\c!left=\hss,\c!right=\hskip\d_page_comments_offset]%
+   \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset\relax
+   \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_width\relax
+   \defineoverlay[\v!pagecomment][\page_comments_left_right]}
+
+\setvalue{\??pagecommentlocations\v!right}%
+  {\setuplayout[\c!location=]%
+   \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=,\c!left=\hskip\d_page_comments_offset,\c!right =\hss]%
+   \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset\relax
+   \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_width\relax
+   \defineoverlay[\v!pagecomment][\page_comments_left_right]}
+
+\setvalue{\??pagecommentlocations\v!none}%
+  {}% \setuppapersize[\c!bottom=,\c!top=,\c!left=,\c!right=]}
+
+\protected\def\page_comments_top_bottom
+  {\vpack to \printpaperheight
+     {%\forgetall
+      \hsize\printpaperwidth\relax
+      \ifx\p_page_commands_location\v!bottom
+        \vskip\dimexpr\paperheight+\d_page_comments_distance+\d_page_comments_offset\relax
+      \else
+        \vskip\d_page_comments_offset
+        \vss
+      \fi
+      \hskip\d_page_comments_offset
+      \vbox to \d_page_comments_height
+        {%\forgetall
+         \hsize\paperwidth
+         \ifconditional\c_page_comment_enabled
+           \getbuffer[\v!pagecomment]%
+           \global\setfalse\c_page_comment_enabled
+         \fi}%
+      \hfill
+      \ifx\p_page_commands_location\v!bottom
+        \vss
+        \vskip\d_page_comments_offset
+      \else
+        \vskip\dimexpr\paperheight+\d_page_comments_distance+\d_page_comments_offset\relax
+      \fi}}
+
+\protected\def\page_comments_left_right
+  {\hpack to \printpaperwidth
+     {\ifx\p_page_commands_location\v!right
+        \hskip\dimexpr\paperwidth+\d_page_comments_distance+\d_page_comments_offset\relax
+      \else
+        \hskip\d_page_comments_offset
+        \hss
+      \fi
+      \vbox to \printpaperheight
+        {%\forgetall
+         \vskip\d_page_comments_offset
+         \hsize\d_page_comments_width
+         \ifconditional\c_page_comment_enabled
+           \getbuffer[\v!pagecomment]%
+           \global\setfalse\c_page_comment_enabled
+         \fi
+         \vss}%
+      \ifx\p_page_commands_location\v!right
+        \hss
+        \hskip\d_page_comments_offset
+      \else
+        \hskip\dimexpr\paperwidth+\d_page_comments_distance+\d_page_comments_offset\relax
+      \fi}}
+
+\permanent\protected\setvalue{\e!start\v!pagecomment}%
+  {\global\settrue\c_page_comment_enabled
+   \grabbufferdatadirect\v!pagecomment{\e!start\v!pagecomment}{\e!stop\v!pagecomment}}
+
+\aliased\letcsname\e!stop\v!pagecomment\endcsname\relax
+
+\setuppagecomment
+  [\c!state=, % \v!stop would invoke background calculation
+   \c!location=\v!bottom,
+   \c!offset=.5cm,
+   \c!distance=.5cm,
+   \c!height=5cm,
+   \c!width=10cm]
+
+\protect \endinput

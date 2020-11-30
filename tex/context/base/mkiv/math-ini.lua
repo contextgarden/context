@@ -97,9 +97,17 @@ local classes = allocate {
     root        = 16, -- a private one
 }
 
-local open_class   = 4
-local middle_class = 4
-local close_class  = 5
+local open_class      =  4
+local middle_class    =  4
+local close_class     =  5
+local accent_class    =  8
+local radical_class   =  9
+local topaccent_class = 11
+local botaccent_class = 12
+local under_class     = 13
+local over_class      = 14
+local delimiter_class = 15
+local root_class      = 16
 
 local accents = allocate {
     accent    = true, -- some can be both
@@ -231,40 +239,70 @@ local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     return mset, dset
 end
 
-local f_accent    = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
-local f_topaccent = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
-local f_botaccent = formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ]
-local f_over      = formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ]
-local f_under     = formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ]
-local f_fence     = formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ]
-local f_delimiter = formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ]
-local f_radical   = formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ]
-local f_root      = formatters[ [[\ugdef\%s{\Uroot "%X "%X }]] ]
------ f_char      = formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]]
-local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
+-- todo: make nice setters for this in lua
+
+local f_accent    = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+local f_topaccent = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+local f_botaccent = formatters[ [[\defUmathbotaccent \%s{%X}{%X}{%X}]] ]
+local f_over      = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
+local f_under     = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
+local f_fence     = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+local f_delimiter = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+local f_radical   = formatters[ [[\defUradical       \%s{%X}{%X}]]     ]
+local f_root      = formatters[ [[\defUroot          \%s{%X}{%X}]]     ]
+local f_char      = formatters[ [[\defUmathchar      \%s{%X}{%X}{%X}]] ]
 
 local texmathchardef = tex.mathchardef
 
+-- local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
+--     if class == classes.accent then
+--         ctx_sprint(f_topaccent(name,0,family,slot))
+--     elseif class == classes.topaccent then
+--         ctx_sprint(f_topaccent(name,0,family,slot))
+--     elseif class == classes.botaccent then
+--         ctx_sprint(f_botaccent(name,0,family,slot))
+--     elseif class == classes.over then
+--         ctx_sprint(f_over(name,0,family,slot))
+--     elseif class == classes.under then
+--         ctx_sprint(f_under(name,0,family,slot))
+--     elseif class == open_class or class == close_class or class == middle_class then
+--         setdelcode("global",slot,{family,slot,0,0})
+--         ctx_sprint(f_fence(name,class,family,slot))
+--     elseif class == classes.delimiter then
+--         setdelcode("global",slot,{family,slot,0,0})
+--         ctx_sprint(f_delimiter(name,0,family,slot))
+--     elseif class == classes.radical then
+--         ctx_sprint(f_radical(name,family,slot))
+--     elseif class == classes.root then
+--         ctx_sprint(f_root(name,family,slot))
+--     elseif texmathchardef then
+--         texmathchardef(name,class,family,slot,"permanent")
+--     else
+--         -- beware, open/close and other specials should not end up here
+--         ctx_sprint(f_char(name,class,family,slot))
+--     end
+-- end
+
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
-    if class == classes.accent then
-        ctx_sprint(f_accent(name,family,slot))
-    elseif class == classes.topaccent then
-        ctx_sprint(f_topaccent(name,family,slot))
-    elseif class == classes.botaccent then
-        ctx_sprint(f_botaccent(name,family,slot))
-    elseif class == classes.over then
-        ctx_sprint(f_over(name,family,slot))
-    elseif class == classes.under then
-        ctx_sprint(f_under(name,family,slot))
+    if class == accent_class then
+        ctx_sprint(f_topaccent(name,0,family,slot))
+    elseif class == topaccent_class then
+        ctx_sprint(f_topaccent(name,0,family,slot))
+    elseif class == botaccent_class then
+        ctx_sprint(f_botaccent(name,0,family,slot))
+    elseif class == over_class then
+        ctx_sprint(f_over(name,0,family,slot))
+    elseif class == under_class then
+        ctx_sprint(f_under(name,0,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
         ctx_sprint(f_fence(name,class,family,slot))
-    elseif class == classes.delimiter then
+    elseif class == delimiter_class then
         setdelcode("global",slot,{family,slot,0,0})
-        ctx_sprint(f_delimiter(name,family,slot))
-    elseif class == classes.radical then
+        ctx_sprint(f_delimiter(name,0,family,slot))
+    elseif class == radical_class then
         ctx_sprint(f_radical(name,family,slot))
-    elseif class == classes.root then
+    elseif class == root_class then
         ctx_sprint(f_root(name,family,slot))
     elseif texmathchardef then
         texmathchardef(name,class,family,slot,"permanent")

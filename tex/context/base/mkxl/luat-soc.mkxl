@@ -1,0 +1,52 @@
+%D \module
+%D   [       file=luat-soc,
+%D        version=2018.08.05,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Socket Libraries,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Macros / Socket Libraries}
+
+%D In \LUATEX\ we provide the socket library that is more or less the standard one
+%D for \LUA. It has been around for a while and seems to be pretty stable. The
+%D binary module is copmpiled into \LUATEX\ and the accompanying .lua files are
+%D preloaded. These files are mostly written by Diego Nehab, Andre Carregal, Javier
+%D Guerra, and Fabio Mascarenhas with contributions from Diego Nehab, Mike Pall,
+%D David Burgess, Leonardo Godinho, Thomas Harning Jr., and Gary NG. The originals
+%D are part of and copyrighted by the Kepler project.
+%D
+%D Here we reload a slightly reworked version of these \type {.lua} files. We keep
+%D the same (documented) interface but streamlined some fo the code. No more
+%D modules, no more pre 5.2 \LUA, etc. Also, as it loads into the \CONTEXT
+%D ecosystem, we plug in some logging. (and maybe tracing in the future). As we
+%D don't support serial ports in \LUATEX, related code has been dropped.
+%D
+%D The files are reformatted so that we can more easilly add additional features
+%D and|/|or tracing options. Any error introduced there is our fault! The url module
+%D might be replaced by the one in \CONTEXT. When we need mbox a suitable variant
+%D will be provided.
+
+%D Currently we preload the related \LUA\ code in \LUATEX, but that might change at
+%D some point. We're prepared for that.
+
+% \registerctxluafile{util-soc-imp-reset}  {}
+%
+% \registerctxluafile{util-soc-imp-socket} {}
+% % registerctxluafile{util-soc-imp-copas}  {}
+% \registerctxluafile{util-soc-imp-ltn12}  {}
+% % registerctxluafile{util-soc-imp-mbox}   {}
+% \registerctxluafile{util-soc-imp-mime}   {}
+% \registerctxluafile{util-soc-imp-url}    {}
+% \registerctxluafile{util-soc-imp-headers}{}
+% \registerctxluafile{util-soc-imp-http}   {}
+% \registerctxluafile{util-soc-imp-tp}     {}
+% % registerctxluafile{util-soc-imp-ftp}    {}
+% % registerctxluafile{util-soc-imp-smtp}   {}
+
+\endinput

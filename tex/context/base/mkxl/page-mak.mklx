@@ -1,0 +1,280 @@
+%D \module
+%D   [       file=page-mak, % copied from main-001,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Simple MakeUp,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / MakeUp}
+
+\unprotect
+
+%D \macros
+%D   {definemakeup, setupmakeup, startmakeup}
+%D
+%D A makeup is a separate page, like a title page or colofon. There is one standard
+%D makeup page, but you can define more if needed.
+%D
+%D \starttyping
+%D \startstandardmakeup
+%D   My Fancy Title
+%D \stopstandardmakeup
+%D \stoptyping
+%D
+%D The associated commands are:
+%D
+%D \showsetup{definemakeup}
+%D \showsetup{setupmakeup}
+%D \showsetup{startmakeup}
+%D
+%D New is that we have a layout with the same name so one can set up a special
+%D layout that then gets used.
+
+\installcorenamespace{makeup}
+\installcorenamespace{makeupdoublesided}
+
+\installcommandhandler \??makeup {makeup} \??makeup
+
+\appendtoks
+   \frozen\instance\setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
+   \frozen\instance\setuevalue{\e!stop \currentmakeup\e!makeup}{\stopmakeup}%
+   \doifelselayoutdefined\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
+\to \everydefinemakeup
+
+%D The \type {\start}||\type {\stop} macros are used for both the direct and
+%D indirect way. The parameterless call will build a simple box.
+
+\permanent\tolerant\protected\def\startmakeup[#1]#*[#2]%
+  {\ifparameters
+      \expandafter\page_makeup_start_nop
+   \else
+      \expandafter\page_makeup_start_yes
+   \fi[#1][#2]}
+
+\aliased\let\stopmakeup\relax
+
+%D The simple case: just a box with text dimensions.
+
+\protected\def\page_makeup_start_nop[#name][#settings]% dummies
+  {\page
+   \setupheader[\c!state=\v!empty]%
+   \setupfooter[\c!state=\v!empty]%
+   \bgroup
+   \forgetall % else indented flush
+   \dontcomplain
+   \vbox to \textheight \bgroup
+     \setsystemmode\v!makeup
+     \hsize\textwidth
+     \enforced\let\stopmakeup\page_makeup_stop_nop}
+
+\permanent\protected\def\page_makeup_stop_nop
+  {\egroup
+   \egroup
+   \page}
+
+%D The normal variant.
+
+\newbox \b_page_makeup
+\newtoks\t_page_makeup_every_setup
+
+\def\page_makeup_start_yes[#name]% [#settings]%
+  {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
+
+% case 1:
+%
+% \setuplayout[height=5cm]
+%
+% case 2:
+%
+% \definelayout[crap][height=10cm]
+% \definelayout[standard][crap]
+%
+% case 3:
+%
+% \setuplayout[standard][height=15cm]
+%
+% case 4:
+%
+% \definelayout[whatever][height=2cm]
+% \setuplayout[whatever]
+
+\def\page_makeup_start_indeed[#name][#settings]%
+  {% the next grouping hack is somewhat messy:
+   \begingroup
+   % we need to figure out the current layout
+   \xdef\m_page_makeup_name{#name}%
+   \let\currentmakeup\m_page_makeup_name
+   \let\currentlayout\m_page_makeup_name
+   \xdef\m_page_makeup_layout_parent{\layoutparameter\s!parent}%
+   \setupcurrentmakeup[#settings]%
+   \edef\p_page{\makeupparameter\c!page}%
+   \ifempty\p_page
+     \endgroup
+     \page % new, so best not have dangling mess here like references (we could capture then and flush embedded)
+   \orelse\ifx\p_page\v!no
+     % nothing
+     \endgroup
+   \else
+     \normalexpanded{\endgroup\page[\p_page]}%
+   \fi
+   % some dirty trickery (sorry) for determining if we have
+   %  - a layout definition at all
+   %  - inherit from the parent of that definition
+   %  - inherit from the current layout otherwise
+   \ifx\m_page_makeup_name\currentlayout
+      % we already use the layout
+   \orelse\ifx\m_page_makeup_layout_parent\??layout
+     % we inherit from the current layout
+     \normalexpanded{\setuplayout[#name][\s!parent=\??layout\currentlayout]}% is remembered but checked later anyway
+ % \else
+      % we have an inherited layout
+   \fi
+   \startlayout[#name]% includes \page
+   \bgroup
+  %\edef\currentmakeup{#name}%
+   \let\currentmakeup\m_page_makeup_name
+   \setupcurrentmakeup[#settings]%
+   \setsystemmode\v!makeup
+   \the\t_page_makeup_every_setup
+   \makeupparameter\c!commands % hm, what is this one doing here ?
+   \forgetall % else indented flush
+   \dontcomplain
+   \global\setbox\b_page_makeup\vbox to \makeupparameter\c!height \bgroup
+     \usemakeupstyleandcolor\c!style\c!color
+     \hsize\makeupparameter\c!width
+     \usealignparameter\makeupparameter
+     \usesetupsparameter\makeupparameter % lua(..),xml(...,..),tex(..)
+     \makeupparameter\c!top
+     \enforced\let\stopmakeup\page_makeup_stop_yes}
+
+\permanent\protected\def\page_makeup_stop_yes
+  {\endgraf
+   \makeupparameter\c!bottom
+   \egroup
+   \strc_pagenumbers_page_state_push % new
+   \makeupparameter\c!before\relax
+   \begingroup
+     \ifdim\ht\b_page_makeup>\vsize
+       \ht\b_page_makeup\vsize % is already set to \textheight (maybe set dp to 0)
+     \fi
+     \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
+     \doif{\makeupparameter\c!location}\v!top{\topskip\zeropoint}%
+     \edef\p_reference{\makeupparameter\c!reference}%
+     \dontleavehmode
+     \usereferenceparameter\makeupparameter
+     \box\b_page_makeup % could be whole box being destination
+     \the\t_page_makeup_every_setup
+     \page
+   \endgroup
+   \makeupparameter\c!after\relax
+   \ifdoublesided \ifodd\realpageno \else
+     \csname\??makeupdoublesided\makeupparameter\c!doublesided\endcsname
+   \fi \fi
+   \strc_pagenumbers_page_state_pop % new
+   \egroup
+   \stoplayout % includes \page
+   \ifx\m_page_makeup_name\currentlayout
+   \orelse\ifx\m_page_makeup_layout_parent\??layout
+     \normalexpanded{\setuplayout[\m_page_makeup_name][\s!parent=\??layout]}% is remembered but checked later anyway
+   \fi}
+
+\setvalue{\??makeupdoublesided\v!yes}%
+  {\emptyhbox
+   \page}
+
+\setvalue{\??makeupdoublesided\v!empty}%
+  {\the\t_page_makeup_every_setup
+  % == \page[\v!dummy]
+   \page[\v!blank]%
+   \emptyhbox
+   \page}
+
+%D Probably obsolete (but used in one manual by Taco):
+
+\permanent\protected\def\startcolumnmakeup % don't change
+  {\bgroup
+   \getrawnoflines\textheight % raw as we can have topskip
+   \setbox\scratchbox\vbox to \dimexpr\noflines\lineheight-\lineheight+\topskip\relax
+     \bgroup
+     \forgetall}
+
+\permanent\protected\def\stopcolumnmakeup
+  {\egroup
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\textwidth
+   \box\scratchbox
+   \egroup
+   \page_otr_command_synchronize_hsize}
+
+%D The text surrounding the main body text can be influenced by setting their
+%D associated status variables. The connection between them is made by the following
+%D macro:
+
+\appendtoks % this might need a revision
+    \setupfooter[\c!state=\makeupparameter\c!footerstate]%
+    \setupheader[\c!state=\makeupparameter\c!headerstate]%
+    \setuptext  [\c!state=\makeupparameter\c!textstate]%
+    \setupbottom[\c!state=\makeupparameter\c!bottomstate]%
+    \setuptop   [\c!state=\makeupparameter\c!topstate]%
+\to \t_page_makeup_every_setup
+
+%D The standard page template is defined as follows:
+
+\setupmakeup
+  [\c!width=\innermakeupwidth,  % example in manual / was \makeupwidth
+   \c!height=\textheight,       % example in manual
+  %\c!commands=,
+  %\c!setups=,
+  %\c!color=,
+  %\c!align=,
+  %\c!before=,
+  %\c!after=,
+  %\c!location=,
+   \c!page=\v!right,
+   \c!doublesided=\v!empty,
+   \c!top=\vss,
+   \c!bottom=\vss,
+   \c!bottomstate=\v!normal,
+   \c!topstate=\v!normal,
+   \c!textstate=\v!normal,
+   \c!headerstate=\v!stop,
+   \c!footerstate=\v!stop,
+   \c!pagestate=\v!stop] % in manual ! ! !
+%  \c!pagestate=\v!start]
+
+\definemakeup
+  [\v!standard]
+  [\c!width=\innermakeupwidth,
+   \c!height=\textheight,
+   \c!page=\v!right,
+   \c!doublesided=\v!empty]
+
+\definemakeup
+  [\v!text]
+  [\c!topstate=\v!start,
+   \c!headerstate=\v!start,
+   \c!textstate=\v!start,
+   \c!footerstate=\v!start,
+   \c!bottomstate=\v!start,
+   \c!doublesided=\v!no,
+   \c!page=\v!yes,
+   \c!top=\pseudostrut\ignorespaces,
+   \c!bottom=\obeydepth\vss]
+
+\definemakeup
+  [\v!page]
+
+\definemakeup
+  [\v!middle]
+  [\v!standard]
+
+% \definelayout[standard]
+% \definelayout[text]
+
+\protect

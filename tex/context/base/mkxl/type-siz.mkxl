@@ -1,0 +1,169 @@
+%D \module
+%D   [       file=type-siz,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Sizing scripts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% beware: no \s! before keys as these are interpreted
+
+\starttypescriptcollection[\s!size]
+
+\starttypescript [\s!serif] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!rm] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!sans] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!ss] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!mono] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!tt] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!mm] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!handwriting] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!hw] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!calligraphy] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!cg] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!casual] [\s!default] [\s!size]
+  \definebodyfont
+    [4pt,5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,14.4pt,17.3pt]
+    [\s!rm] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!all] [\s!dtp] [\s!size]
+
+  \definebodyfontenvironment
+    [4pt]
+    [\s!text=4pt,\s!script=4pt,\s!scriptscript=4pt,
+     \s!x=4pt,\s!xx=4pt,\v!big=6pt,\v!small=4pt]
+
+  \definebodyfontenvironment
+    [5pt]
+    [\s!text=5pt,\s!script=5pt,\s!scriptscript=5pt,
+     \s!x=5pt,\s!xx=5pt,\v!big=7pt,\v!small=5pt]
+
+  \definebodyfontenvironment
+    [6pt]
+    [\s!text=6pt,\s!script=5pt,\s!scriptscript=5pt,
+     \s!x=5pt,\s!xx=5pt,\v!big=8pt,\v!small=5pt]
+
+  \definebodyfontenvironment
+    [7pt]
+    [\s!text=7pt,\s!script=6pt,\s!scriptscript=5pt,
+     \s!x=6pt,\s!xx=5pt,\v!big=9pt,\v!small=5pt]
+
+  \definebodyfontenvironment
+    [8pt]
+    [\s!text=8pt,\s!script=6pt,\s!scriptscript=5pt,
+     \s!x=6pt,\s!xx=5pt,\v!big=10pt,\v!small=6pt]
+
+  \definebodyfontenvironment
+    [9pt]
+    [\s!text=9pt,\s!script=7pt,\s!scriptscript=5pt,
+     \s!x=7pt,\s!xx=5pt,\v!big=11pt,\v!small=7pt]
+
+  \definebodyfontenvironment
+    [10pt]
+    [\s!text=10pt,\s!script=7pt,\s!scriptscript=5pt,
+     \s!x=8pt,\s!xx=6pt,\v!big=12pt,\v!small=8pt]
+
+  \definebodyfontenvironment
+    [11pt]
+    [\s!text=11pt,\s!script=8pt,\s!scriptscript=6pt,
+     \s!x=9pt,\s!xx=7pt,\v!big=13pt,\v!small=9pt]
+
+  \definebodyfontenvironment
+    [12pt]
+    [\s!text=12pt,\s!script=9pt,\s!scriptscript=7pt,
+     \s!x=10pt,\s!xx=8pt,\v!big=14pt,\v!small=10pt]
+
+  \definebodyfontenvironment
+    [13pt]
+    [\s!text=13pt,\s!script=10pt,\s!scriptscript=8pt,
+     \s!x=11pt,\s!xx=9pt,\v!big=16pt,\v!small=11pt]
+
+  \definebodyfontenvironment
+    [14pt]
+    [\s!text=14pt,\s!script=10pt,\s!scriptscript=7pt,
+     \s!x=12pt,\s!xx=10pt,\v!big=16pt,\v!small=12pt]
+
+  \definebodyfontenvironment
+    [16pt]
+    [\s!text=16pt,\s!script=12pt,\s!scriptscript=9pt,
+     \s!x=13pt,\s!xx=11pt,\v!big=18pt,\v!small=14pt]
+
+  % suboptimal math sizes
+
+  \definebodyfontenvironment
+    [18pt]
+    [\s!text=18pt,\s!script=16pt,\s!scriptscript=14pt,
+     \s!x=16pt,\s!xx=14pt,\v!big=22pt,\v!small=16pt]
+
+  \definebodyfontenvironment
+    [22pt]
+    [\s!text=22pt,\s!script=22pt,\s!scriptscript=18pt,
+     \s!x=18pt,\s!xx=16pt,\v!big=28pt,\v!small=18pt]
+
+  \definebodyfontenvironment
+    [28pt]
+    [\s!text=28pt,\s!script=22pt,\s!scriptscript=18pt,
+     \s!x=22pt,\s!xx=18pt,\v!big=28pt,\v!small=22pt]
+
+\stoptypescript
+
+\starttypescript [\s!serif] [\s!dtp] [\s!size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [\s!rm] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!sans] [\s!dtp] [\s!size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [\s!ss] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!mono] [\s!dtp] [\s!size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [\s!tt] [\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [\s!dtp] [\s!size]
+  \definebodyfont
+    [5pt,6pt,7pt,8pt,9pt,10pt,11pt,12pt,13pt,14pt,16pt,18pt,22pt,28pt]
+    [\s!mm] [\s!default]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\protect \endinput

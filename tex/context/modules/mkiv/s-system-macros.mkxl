@@ -22,7 +22,10 @@
 
 \continueifinputfile{s-system-macros.mkxl}
 
-\usemodule[article-basic] \setuplayout[tight] \setupbodyfont[7pt,tt]
+% \usemodule[article-basic] \setuplayout[tight] \setupbodyfont[7pt,tt]
+\usemodule[article-basic] \setuplayout[tight] \setupbodyfont[5pt,tt]
+
+\setupbackgrounds[page][background=color,backgroundcolor=darkgray] \setupcolors[textcolor=white]
 
 \setuppapersize
   [A4,landscape]
@@ -97,22 +100,27 @@
             local k = list[i]
             if check(k) then
                 local v = create(k)
+                local mutable    = v.mutable    and "mutable"
+                local immutable  = v.immutable  and "immutable"
                 local frozen     = v.frozen     and "frozen"
                 local permanent  = v.permanent  and "permanent"
-                local immutable  = v.immutable  and "immutable"
                 local primitive  = v.primitive  and "primitive"
-                local mutable    = v.mutable    and "mutable"
-                local noaligned  = v.noaligned  and "noaligned"
                 local instance   = v.instance   and "instance"
+                local dealtwith  = mutable or immutable or frozen or permanent or primitive -- beware: we can have combinations
+                local whatever   = find(k,"^[a-z][a-z][a-z]+_")
+                local cscommand  = gsub(v.cmdname or "","_"," ")
+                local undefined  = cscommand == "undefined cs"
+                local marked     = (dealtwith and "+") or (whatever and "-") or (instance and "!")
+--if not marked then
+if not marked and not find(k,"^[pvm]_") and not find(k,"^![tT]") then
                 local parameters = v.parameters
-                local dealtwith = mutable or immutable or frozen or permanent or primitive -- beware: we can have combinations
-                local cscommand = gsub(v.cmdname or "","_"," ")
-                local whatever  = find(k,"^[a-z][a-z][a-z]+_")
-                local filename  = files[k]
-                local csname    = context.escape(k)
-                ctx_NC() if dealtwith  then context("+")
-                     elseif whatever   then context("-")
-                     elseif instance   then context("!")        end
+                local noaligned  = v.noaligned  and "noaligned"
+                local filename   = files[k]
+                local csname     = context.escape(k)
+                if undefined then
+                    marked = "?"
+                end
+                ctx_NC() if marked     then context(marked)     end
                 ctx_NC() if primitive  then ctx_bold(csname)    else
                                             context(csname)     end
                 ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
@@ -126,6 +134,7 @@
                 ctx_NC() if noaligned  then context(noaligned)  end
                 ctx_NC() if filename   then context(hashnames[filename]) end
                 ctx_NC() ctx_NR()
+end
                 if visible then
                     total = total + 1
                     if dealtwith then

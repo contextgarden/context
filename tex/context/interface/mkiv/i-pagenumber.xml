@@ -102,6 +102,7 @@
                     <cd:constant type="inmargin"/>
                     <cd:constant type="atmargin"/>
                     <cd:constant type="marginedge"/>
+                    <cd:constant type="none"/>
                 </cd:parameter>
                 <cd:parameter name="style">
                     <cd:resolve name="value-style"/>

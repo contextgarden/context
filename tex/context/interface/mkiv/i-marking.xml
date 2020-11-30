@@ -52,7 +52,10 @@
 
     <cd:command name="resetmarking" level="system" category="structure" file="strc-mar.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-mark"/>
+            <cd:keywords>
+                <cd:constant type="all"/>
+                <cd:constant type="cd:mark"/>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 

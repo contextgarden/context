@@ -1,0 +1,95 @@
+%D \module
+%D   [       file=meta-pdf,
+%D        version=2006.06.07,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Conversion to \PDF,
+%D         author=Hans Hagen \& others (see text),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{meta-pdf}{}
+
+\writestatus{loading}{MetaPost Graphics / MPS to PDF}
+
+\unprotect
+
+%D \macros
+%D   {convertMPtoPDF}
+%D
+%D The next set of macros implements \METAPOST\ to \PDF\ conversion. The traditional
+%D method is in the MkII files and the older \MKIV\ method is kept in meta-pdh
+%D files. The main conversion command is still the same but the scale parameters are
+%D ignored in \MKIV:
+%D
+%D \starttyping
+%D \convertMPtoPDF {filename} {x scale} {y scale}
+%D \stoptyping
+%D
+%D Much code has gone due to the fact that we now use pre and post scripts and no
+%D specials. This also means that you should use a modern \METAPOST\ or reprocess
+%D graphics. The color control flags are also gone as we now integrate into the
+%D regular colorspace handling (i.e.\ no longer independent configurations.)
+
+\permanent\def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi} % obsolete, will go
+
+\mutable\let\MPfilename\empty
+
+\permanent\protected\def\convertMPtoPDF#1#2#3% scaling no longer supported at this level (so #2 & #3 are ignored)
+  {\dostarttagged\t!mpgraphic\empty
+   \naturalvpack attr \imageattribute 1 \bgroup
+     \message{[MP to PDF]}%
+     \xdef\MPfilename{#1}%
+     \resetMPboundingbox
+     \forgetall
+     \offinterlineskip
+     \setbox\MPbox\vpack\bgroup
+       \clf_convertmpstopdf{\MPfilename}%
+       \removeunwantedspaces % not that needed
+     \egroup
+     \finalizeMPbox
+     \box\MPbox
+   \egroup
+   \dostoptagged}
+
+\protect \endinput
+
+%D Test code:
+%D
+%D \startbuffer
+%D \startMPcode
+%D     fill fullcircle scaled 3cm withcolor red ;
+%D     fill fullcircle scaled 2cm withcolor green ;
+%D     fill fullcircle scaled 1cm withcolor blue ;
+%D     currentpicture := currentpicture shifted (-4cm,0) ;
+%D     fill fullcircle scaled 3cm withcolor cmyk(0,0,1,0) ;
+%D     fill fullcircle scaled 2cm withcolor cmyk(0,1,0,0) ;
+%D     fill fullcircle scaled 1cm withcolor cmyk(0,0,1,0) ;
+%D     currentpicture := currentpicture shifted (-4cm,0) ;
+%D     draw fullcircle scaled 3cm dashed evenly ;
+%D     draw fullcircle scaled 2cm dashed withdots  ;
+%D     draw origin withpen pencircle scaled 3mm;
+%D     currentpicture := currentpicture shifted (-4cm,0) ;
+%D     fill fullcircle scaled 2cm shifted (-.5cm,+.5cm) withcolor transparent(1,.5,red);
+%D     fill fullcircle scaled 2cm shifted (-.5cm,-.5cm) withcolor transparent(1,.5,red);
+%D     fill fullcircle scaled 2cm shifted (+.5cm,+.5cm) withcolor transparent(1,.5,green);
+%D     fill fullcircle scaled 2cm shifted (+.5cm,-.5cm) withcolor transparent(1,.5,cmyk(1,0,1,.5));
+%D     currentpicture := currentpicture shifted (12cm,-4cm) ;
+%D     draw "o e p s" infont defaultfont scaled 2 shifted (-1cm,0) ;
+%D     currentpicture := currentpicture shifted (-4cm,0) ;
+%D     % bug: shift
+%D     draw fullcircle scaled 3cm withpen pencircle yscaled 3mm xscaled 2mm rotated 30  ;
+%D     draw fullcircle scaled 2cm withpen pencircle yscaled 3mm xscaled 2mm rotated 20 withcolor red ;
+%D     filldraw fullcircle scaled 1cm withpen pencircle yscaled 3mm xscaled 2mm rotated 10 withcolor green ;
+%D     currentpicture := currentpicture shifted (-4cm,0) ;
+%D     % shade cannot handle shift
+%D     circular_shade(fullcircle scaled 3cm,0,.2red,.9green) ;
+%D     circular_shade(fullcircle scaled 3cm shifted(+4cm,0),0,cmyk(1,0,0,0),cmyk(0,1,0,0)) ;
+%D     filldraw boundingbox currentpicture enlarged -3cm withpen pencircle scaled 1pt withcolor .5white ;
+%D \stopMPcode
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection

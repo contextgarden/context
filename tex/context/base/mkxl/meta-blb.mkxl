@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=meta-blb,
+%D        version=2018.04.12,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Blobs,
+%D         author=Hans Hagen,
+%D           date=\ currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{MetaPost Graphics / Blobs}
+
+\registerctxluafile{meta-blb}{}
+
+\unprotect
+
+\permanent\protected\def\MPLIBgetblobscaledcm#1#2#3#4#5#6#7#8#9%
+  {\clf_mpgetblob\MPtextbox#1\relax
+   \setbox\MPbox\hpack\bgroup
+     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}%
+       \vpack to \zeropoint\bgroup
+          \vss
+          \hpack to \zeropoint \bgroup
+           % \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
+             \fastsxsy{#8}{#9}{\box\MPtextbox}%
+             \hss
+         \egroup
+       \egroup
+   \egroup
+   \smashbox\MPbox
+   \box\MPbox}
+
+%D An example of usage:
+
+\definefontfeature[followtext][liga=no]
+
+\permanent\protected\def\MPLIBfollowtext#1#2%
+  {\begingroup
+   \scratchcounter#1\relax
+   \setbox\scratchbox\hbox{\addff{followtext}#2}%
+   \clf_MPLIBconvertfollowtext\scratchcounter\scratchbox
+   \endgroup}
+
+%D New:
+
+\newtoks\mpblobtext
+
+\permanent\protected\mpblobtext{\global\setbox\mptextbox\vbox{\clf_mpblobtext}}
+
+\protect \endinput

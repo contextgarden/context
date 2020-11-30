@@ -780,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
 		<cd:constant name='default' value='default'/>
+		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='wartezeit'/>
 		<cd:constant name='depth' value='tiefe'/>
 		<cd:constant name='depthcorrection' value='tiefekorrektur'/>
@@ -2085,7 +2086,7 @@
 		<cd:command name='startnarrower' value='startenger'/>
 		<cd:command name='startopposite' value='startgegenueber'/>
 		<cd:command name='startoverlay' value='startoverlay'/>
-		<cd:command name='startoverzicht' value='startueberblick'/>
+		<cd:command name='startoverview' value='startueberblick'/>
 		<cd:command name='startpacked' value='startkleinerdurchschuss'/>
 		<cd:command name='startpositioning' value='startpositionieren'/>
 		<cd:command name='startproduct' value='startprodukt'/>
@@ -2128,7 +2129,7 @@
 		<cd:command name='stopnarrower' value='stopenger'/>
 		<cd:command name='stopopposite' value='stopgegenueber'/>
 		<cd:command name='stopoverlay' value='stopoverlay'/>
-		<cd:command name='stopoverzicht' value='stopueberblick'/>
+		<cd:command name='stopoverview' value='stopueberblick'/>
 		<cd:command name='stoppacked' value='stopkleinerdurchschuss'/>
 		<cd:command name='stoppositioning' value='stoppositionieren'/>
 		<cd:command name='stopproduct' value='stopprodukt'/>

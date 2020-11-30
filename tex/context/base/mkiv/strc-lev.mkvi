@@ -23,31 +23,33 @@
 
 \unprotect
 
-\permanent\tolerant\protected\def\definesectionlevels[#category]#spacer[#list]%
-  {\clf_definesectionlevels{#category}{#list}} % we could scan/use public at the lua end
+\unexpanded\def\definesectionlevels{\dodoubleargument\strc_levels_define}
+\unexpanded\def\startsectionlevel  {\dosingleempty   \strc_levels_start_section}
+\unexpanded\def\startsubjectlevel  {\dosingleempty   \strc_levels_start_subject}
 
-\permanent\tolerant\protected\def\startsectionlevel[#category]%
+\unexpanded\def\strc_levels_define[#category][#list]{\clf_definesectionlevels{#category}{#list}}
+\unexpanded\def\stopsectionlevel                    {\clf_stopsectionlevel}
+\unexpanded\def\stopsubjectlevel                    {\clf_stopsectionlevel}
+
+\unexpanded\def\nostarthead{\dotripleargument\strc_levels_start_nop} % used at the lua end
+\unexpanded\def\nostophead {\dosingleargument\strc_levels_stop_nop } % used at the lua end
+
+\unexpanded\def\strc_levels_start_section[#category]%
   {\doifelseassignment{#category}%
      {\clf_startsectionlevel\plusone{\v!default}{\currentnamedsection}[#category]}%
      {\clf_startsectionlevel\plusone {#category}{\currentnamedsection}}}
 
-\permanent\protected\def\stopsectionlevel
-  {\clf_stopsectionlevel} % we could use public at the lua end
-
-\permanent\tolerant\protected\def\startsubjectlevel[#category]%
+\unexpanded\def\strc_levels_start_subject[#category]%
   {\doifelseassignment{#category}%
      {\clf_startsectionlevel\plustwo{\v!default}{\currentnamedsection}[#category]}%
      {\clf_startsectionlevel\plustwo {#category}{\currentnamedsection}}}
 
-\permanent\protected\def\stopsubjectlevel
-  {\clf_stopsectionlevel} % we could use public at the lua end
-
-\permanent\tolerant\protected\def\nostarthead[#category]#spacer[#settings]#spacer[#userdata]%
+\unexpanded\def\strc_levels_start_nop[#category][#settings][#userdata]%
   {\blank
    \noindentation{\tttf[start missing section level #category]}
    \blank}
 
-\permanent\tolerant\protected\def\nostarthead[#category]%
+\unexpanded\def\strc_levels_stop_nop[#category]%
   {\blank
    \noindentation{\tttf[stop missing section level #category]}
    \blank}
@@ -61,9 +63,9 @@
    {\v!subsubsubsection,\v!subsubsubject},
    {\v!subsubsubsubsection,\v!subsubsubject}]
 
-\aliased\let\definestructurelevels\definesectionlevels
-\aliased\let\startstructurelevel  \startsectionlevel
-\aliased\let\stopstructurelevel   \stopsectionlevel
+\let\definestructurelevels\definesectionlevels
+\let\startstructurelevel  \startsectionlevel
+\let\stopstructurelevel   \stopsectionlevel
 
 \protect \endinput
 

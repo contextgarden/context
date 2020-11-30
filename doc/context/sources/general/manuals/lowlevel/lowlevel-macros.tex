@@ -521,9 +521,27 @@ quit.
 I have to admit that I don't really need it but it made some macros that I was
 redefining behave better, so there is some self|-|interest here. Anyway, I
 considered some other features, like picking up a detokenized argument but I
-don't expect that to be of much use. In the meantime we ran out of reasonable characters,
-but some day \type {#?} and \type {#!} might show up, or maybe I find a use for \type {#<}
-and \type {#>}.
+don't expect that to be of much use. In the meantime we ran out of reasonable
+characters, but some day \type {#?} and \type {#!} might show up, or maybe I find
+a use for \type {#<} and \type {#>}. A summary of all this is given here:
+
+\starttabulate[|T|i2l|]
+\FL
+\NC +   \NC keep the braces \NC \NR
+\NC -   \NC discard and don't count the argument \NC \NR
+\NC /   \NC remove leading an trailing spaces and pars \NC \NR
+\NC =   \NC braces are mandate \NC \NR
+\NC _   \NC braces are mandate and kept \NC \NR
+\NC ^   \NC keep leading spaces \NC \NR
+\ML
+\NC 1-9 \NC an argument \NC \NR
+\NC 0   \NC discard but count the argument \NC \NR
+\ML
+\NC *   \NC ignore spaces \NC \NR
+\NC :   \NC pick up scanning here  \NC \NR
+\NC ;   \NC quit scanning \NC \NR
+\LL
+\stoptabulate
 
 \stopsection
 

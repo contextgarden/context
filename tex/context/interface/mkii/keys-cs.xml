@@ -780,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
 		<cd:constant name='default' value='implicitni'/>
+		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='prodleva'/>
 		<cd:constant name='depth' value='hloubka'/>
 		<cd:constant name='depthcorrection' value='korekcehloubky'/>
@@ -2085,7 +2086,7 @@
 		<cd:command name='startnarrower' value='startzuzeni'/>
 		<cd:command name='startopposite' value='startprotejsek'/>
 		<cd:command name='startoverlay' value='startprekryv'/>
-		<cd:command name='startoverzicht' value='startprehled'/>
+		<cd:command name='startoverview' value='startprehled'/>
 		<cd:command name='startpacked' value='startzhustene'/>
 		<cd:command name='startpositioning' value='startumistovani'/>
 		<cd:command name='startproduct' value='startprodukt'/>
@@ -2128,7 +2129,7 @@
 		<cd:command name='stopnarrower' value='stopzuzeni'/>
 		<cd:command name='stopopposite' value='stopprotejsek'/>
 		<cd:command name='stopoverlay' value='stopprekryv'/>
-		<cd:command name='stopoverzicht' value='stopprehled'/>
+		<cd:command name='stopoverview' value='stopprehled'/>
 		<cd:command name='stoppacked' value='stopzhustene'/>
 		<cd:command name='stoppositioning' value='stopumistovani'/>
 		<cd:command name='stopproduct' value='stopprodukt'/>

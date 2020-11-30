@@ -1,0 +1,303 @@
+%D \module
+%D   [       file=typo-tal, % spac-cha (2012.06.08) supp-ali (2000.04.17)
+%D        version=2013.10.04,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Character Alignment,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Character Alignment}
+
+%D This module replaces the \MKII\ character alignment code which hooked into
+%D table mechanisms but used parsing. In fact, this might be one of these cases
+%D where a \TEX\ based solution is faster, but a \LUA\ one a bit more robust.
+%D Anyway, as I had to fix something (to fit the newer table mechanisms) I
+%D decided to go the mixed route, a rather easy going effort in the aftermath of
+%D the 2013 \CONTEXT\ meeting.
+
+\unprotect
+
+\registerctxluafile{typo-tal}{}
+
+\definesystemattribute[characteralign][public]
+
+%D This mechanism is mostly meant for tables:
+%D
+%D \startbuffer
+%D \starttabulate[|l|g{,}|r|]
+%D     \NC test \NC 1.234.456,99 \NC \NC test \NR
+%D     \NC test \NC   234.456,9  \NC \NC test \NR
+%D     \NC test \NC   234.456    \NC \NC test \NR
+%D     \NC test \NC       456    \NC \NC test \NR
+%D     \NC test \NC \bf whatever \NC \NC test \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+
+% D \startbuffer
+% D \bTABLE
+% D     \bTR \bTD[aligncharacter=yes] €                      1,1     \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                     11,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] € 12\punctuationspace111,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                 12 111,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €              1.234.451,22222 \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                234.451,2     \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                234.451       \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                    451       \eTD \eTR
+% D     \bTR \bTD                     \bf some text                  \eTD \eTR
+% D \eTABLE
+% D \stopbuffer
+% D
+% D \typebuffer \blank \getbuffer \blank
+
+\permanent\protected\def\signalcharacteralign       #1#2{\c_attr_characteralign\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
+\permanent\protected\def\setcharacteralign          #1#2{\clf_setcharacteralign#1{#2}}
+\permanent\protected\def\resetcharacteralign            {\clf_resetcharacteralign}
+\permanent\protected\def\nocharacteralign               {\c_attr_characteralign\attributeunsetvalue}
+\permanent\protected\def\setcharacteraligndetail#1#2#3#4{\clf_setcharacteraligndetail#1{#2}#3#4\relax}
+
+%D Mostly downward compatible:
+%D
+%D \startbuffer
+%D \startcharacteralign
+%D     \checkcharacteralign{123.456,78}
+%D     \checkcharacteralign{456}
+%D     \checkcharacteralign{23.456}
+%D     \checkcharacteralign{78,9}
+%D \stopcharacteralign
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
+%D \startbuffer
+%D \startcharacteralign[leftsample=123.456,rightsample=00,character={,}]
+%D     \checkcharacteralign{123.456,78}\par
+%D     \checkcharacteralign    {456}\par
+%D     \checkcharacteralign {23.456}\par
+%D     \checkcharacteralign     {78,9}\par
+%D     \checkcharacteralign     {78}\par
+%D \stopcharacteralign
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
+%D \startbuffer
+%D \startcharacteralign[leftwidth=123.456,rightwidth=00,character={,}]
+%D     \checkcharacteralign{123.456,78}\par
+%D     \checkcharacteralign    {456}\par
+%D     \checkcharacteralign {23.456}\par
+%D     \checkcharacteralign     {78,9}\par
+%D     \checkcharacteralign     {78}\par
+%D \stopcharacteralign
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
+%D We have (currently) two modes: \type {text} and \type {number}. The handler tries
+%D to determine the mode automatically. When using periods and commas as separators
+%D the \type {number} mode is chosen. If you use for instance a \type {-} as
+%D separator, \type {text} is chosen, but you can enforce \type {number} with \type
+%D {number->-} (as with other mechanisms, the arrow indicates a method to apply).
+%D
+%D One can use \type {\nocharacteralign} to disable this mechanism, for instance in
+%D a table cell.
+
+\mutable\def\alignmentcharacter{,}
+
+\installcorenamespace{characteralign}
+
+\installparameterhandler\??characteralign {characteralign}
+\installsetuphandler    \??characteralign {characteralign}
+
+\setupcharacteralign
+  [\c!leftwidth  =\zeropoint,
+   \c!rightwidth =\zeropoint,
+   \c!leftsample =,
+   \c!rightsample=,
+   \c!character  =\alignmentcharacter]
+
+\permanent\protected\def\typo_charalign_pass_one
+  {\advance\scratchcounter\plusone
+   \setbox\scratchbox\typo_charalign_pass}
+
+\permanent\protected\def\typo_charalign_pass_two
+  {\advance\scratchcounter\plusone
+   \typo_charalign_pass}
+
+\def\typo_charalign_pass
+  {\hbox\bgroup\signalcharacteralign\plusone\scratchcounter\let\next}
+
+\permanent\tolerant\protected\def\startcharacteralign[#1]%
+  {\doifelseassignment{#1}\typo_charalign_start_one\typo_charalign_start_two{#1}}
+
+\def\typo_charalign_start_one#1#2\stopcharacteralign
+  {\bgroup
+   % for now no instances
+   \setupcurrentcharacteralign[#1]%
+   \edef\p_left {\characteralignparameter\c!leftsample}%
+   \edef\p_right{\characteralignparameter\c!rightsample}%
+   \ifempty\p_left
+     \scratchdimenone\dimexpr\characteralignparameter\c!leftwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_left}%
+     \scratchdimenone\wd\scratchbox
+   \fi
+   \ifempty\p_right
+     \scratchdimentwo\dimexpr\characteralignparameter\c!rightwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_right}%
+     \scratchdimentwo\wd\scratchbox
+   \fi
+   \ifzeropt\scratchdimenone
+      \ifzeropt\scratchdimentwo
+         \donefalse
+      \else
+         \donetrue
+      \fi
+   \else
+     \donetrue
+   \fi
+   \edef\alignmentcharacter{\characteralignparameter\c!character}%
+   \ifdone
+     \clf_setcharacteraligndetail
+       \plusone
+       \alignmentcharacter
+       \scratchdimenone
+       \scratchdimentwo
+   \else
+     \clf_setcharacteralign
+       \plusone
+       \alignmentcharacter
+     \begingroup
+       \scratchcounter\zerocount
+       \enforced\let\checkcharacteralign\typo_charalign_pass_one
+       \settrialtypesetting
+       #2\relax
+     \endgroup
+   \fi
+   \begingroup
+     \scratchcounter\zerocount
+     \enforced\let\checkcharacteralign\typo_charalign_pass_two
+     #2\relax
+   \endgroup
+   \resetcharacteralign
+   \egroup}
+
+\def\typo_charalign_start_two#1#2\stopcharacteralign
+  {\bgroup
+   \edef\m_temp{#1}%
+   \ifempty\m_temp \else
+     \let\alignmentcharacter\m_temp
+   \fi
+   \clf_setcharacteralign
+     \plusone
+     \alignmentcharacter
+   \begingroup
+     \scratchcounter\zerocount
+     \enforced\let\checkcharacteralign\typo_charalign_pass_one
+     \settrialtypesetting
+     #2\relax
+   \endgroup
+   \begingroup
+     \scratchcounter\zerocount
+     \enforced\let\checkcharacteralign\typo_charalign_pass_two
+     #2\relax
+   \endgroup
+   \resetcharacteralign
+   \egroup}
+
+\aliased\let\stopcharacteralign \relax
+\aliased\let\checkcharacteralign\gobbleoneargument
+
+\permanent\protected\def\setfirstpasscharacteralign {\enforced\let\checkcharacteralign\gobbleoneargument}
+\permanent\protected\def\setsecondpasscharacteralign{\enforced\let\checkcharacteralign\firstofoneargument}
+
+%D We need fonts to provide tabular digits that is, the digits need to have the same
+%D width.
+%D
+%D \startbuffer
+%D \startbuffer[demo]
+%D     \switchtobodyfont[pagella]
+%D     \setupTABLE[column][1][alignmentcharacter=.,aligncharacter=yes]
+%D     \bTABLE
+%D         \bTR \bTD  11.111 \eTD \bTD  11.111 \eTD \eTR
+%D         \bTR \bTD   2.2   \eTD \bTD   2.2   \eTD \eTR
+%D         \bTR \bTD 444.444 \eTD \bTD 444.444 \eTD \eTR
+%D     \eTABLE
+%D \stopbuffer
+%D
+%D \start inlinenumbers:  \crlf \addfeature[inlinenumbers]   \getbuffer \stop
+%D \start tabularnumbers: \crlf \addfeature[tabularnumbers]  \getbuffer \stop
+%D \start oldstylenumbers:\crlf \addfeature[oldstylenumbers] \getbuffer \stop
+%D \stopbuffer
+%D
+%D \enabledirectives[typesetters.characteralign.autofont]
+%D \typebuffer \blank \getbuffer \blank
+%D \disabledirectives[typesetters.characteralign.autofont]
+%D \typebuffer \blank \getbuffer \blank
+%D \enabledirectives[typesetters.characteralign.autofont]
+
+\definefontfeature
+  [system:tabnum]
+  [tnum=yes,
+   lnum=no]
+
+\newconditional\c_tabl_ntb_char_align_auto_font \settrue\c_tabl_ntb_char_align_auto_font
+
+\installtexdirective % yes or no ?
+  {typesetters.characteralign.autofont}
+  {\settrue \c_tabl_ntb_char_align_auto_font}
+  {\setfalse\c_tabl_ntb_char_align_auto_font}
+
+\def\m_font_feature_auto_tabnum{system:tabnum}
+
+\protected\def\typo_charalign_adapt_font_indeed
+  {\let\m_font_feature_asked\m_font_feature_auto_tabnum
+   \font_feature_reset_add_indeed}
+
+\def\typo_charalign_adapt_font % slow but seldom used (expanded in preamble)
+  {\ifconditional\c_tabl_ntb_char_align_auto_font
+     \typo_charalign_adapt_font_indeed
+   \fi}
+
+%D Another example:
+%D
+%D \starttyping
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={flushleft}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125     cm                       \eTD \eTR
+%D \bTR \bTD 2 \eTD \bTD 1 125,80  cm                       \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80  $\pi^2$                  \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3   \unit{square centimeter} \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={flushleft}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125     cm                       \eTD \eTR
+%D \bTR \bTD 2 \eTD \bTD 1 125,80  cm                       \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80  $\pi^2$                  \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3   \unit{square centimeter} \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={middle}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125    \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80 \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3  \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={text->,},aligncharacter=yes,align={middle}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125    \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80 \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3  \eTD \eTR
+%D \eTABLE
+%D \stoptyping
+
+\protect \endinput

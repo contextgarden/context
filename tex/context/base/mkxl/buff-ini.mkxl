@@ -1,0 +1,232 @@
+%D \module
+%D   [       file=buff-ini,
+%D        version=2011.11.22, % previous big effort 2000.01.05,
+%D          title=\CONTEXT\ Buffer Macros,
+%D       subtitle=Buffers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Buffer Macros / Buffers}
+
+\registerctxluafile{buff-ini}{}
+
+\unprotect
+
+%D There have been several iterations in \MKIV\ but here we only show the currently
+%D used one. One can always look back (and maybe learn some). It will never look
+%D pretty and never be efficient but it has served us for ages (conceptually it's
+%D as in \MKII).
+
+\mutable\let\currentbuffer\empty
+
+\permanent\def\doifelsebuffer#1{\clf_doifelsebuffer{#1}} % expandable, todo: use public implementor
+
+\aliased\let\doifbufferelse\doifelsebuffer
+
+\permanent\tolerant\protected\def\resetbuffer[#1]{\clf_erasebuffer{#1}} % todo: use public implementor
+
+\permanent\setuvalue{\e!start\v!buffer}%
+  {\begingroup % (3)
+   \obeylines
+   \buff_start}
+
+\tolerant\def\buff_start[#1]#*[#2]%
+  {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
+
+\def\buff_start_indeed#1#2#3#4%
+  {\edef\p_strip{\namedbufferparameter{#1}\c!strip}% for aditya
+   \normalexpanded{\buff_pickup
+     {#2}%
+     {#3}%
+     {#4}%
+     {}%
+     {\buff_stop{#4}}%
+     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
+
+\permanent\protected\def\grabbufferdatadirect % name start stop
+  {\begingroup % (6)
+   \buff_start_indeed\empty}
+
+\permanent\protected\def\grabbufferdata % was: \dostartbuffer
+  {\begingroup % (4)
+   \obeylines
+   \buff_grab_direct}
+
+\tolerant\def\buff_grab_direct[#1]#*[#2]#*[#3]#*[#4]% [category] [name] [start] [stop]
+  {\ifnum\lastarguments=\plusfour
+     \expandafter\buff_start_indeed
+   \else
+     \expandafter\buff_start_indeed_default
+   \fi{#1}{#2}{#3}{#4}}
+
+\def\buff_start_indeed_default#1#2#3#4{\buff_start_indeed\empty{#1}{#2}{#3}}
+
+% \let\buff_finish\relax
+% \let\buff_gobble\relax
+
+\protected\def\buff_pickup#1#2#3#4#5#6% name, startsequence, stopsequence, before, after, undent
+  {\begingroup % (1)
+   #4%
+   \begingroup % (2)
+   \scratchcounter\catcodetable
+   \clf_erasebuffer{#1}%
+   \setcatcodetable\vrbcatcodes
+   \protected\def\dofinishpickupbuffer
+     {\endgroup % (1)
+      \endgroup % (2)
+      #5}%
+   % todo: we need to skip the first lineending which is an active character
+   % but sometimes we have something different ... this is a side effect of
+   % checking for optional arguments i.e. the next token is already tokenized
+   % and for that reason we have the \relax as well as the \string
+   \clf_pickupbuffer
+     {#1}%
+     {#2}%
+     {#3}%
+     {\string\dofinishpickupbuffer}%
+     \scratchcounter
+     \ifnum#6=\plusone\s!true\else\s!false\fi
+ % \relax}
+   \expandafter\relax\string} % maybe \normalexpanded{\relax\utfchar{7}}} signal
+
+\protected\def\buff_stop#1%
+  {\endgroup % (3 & 4 & 5 & 6)
+   \begincsname#1\endcsname}
+
+\aliased\let\endbuffer\relax
+
+\permanent\tolerant\protected\def\setbuffer[#1]#:#2\endbuffer % seldom used so we just pass #2
+  {\clf_assignbuffer{#1}{\detokenize{#2}}\catcodetable\relax}
+
+% beware, never adapt the global buffer settings, actually we might introduce
+% a broken parent chain for this purpose but on the other hand it's not that
+% different from framed cum suis
+
+\installcorenamespace{buffer}
+
+\installcommandhandler \??buffer {buffer} \??buffer
+
+\setupbuffer
+  [\c!before=,
+   \c!after=]
+
+\newcount\c_buff_n_of_defined
+
+\mutable\let\currentdefinedbuffer\s!dummy
+
+\appendtoks
+    \global\advance\c_buff_n_of_defined\plusone
+    \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
+    \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
+    \frozen\instance\setuevalue{\e!start\currentbuffer}{\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
+    \frozen\instance\setuevalue{\e!get  \currentbuffer}{\buff_get_stored   {\currentbuffer}{\currentdefinedbuffer}}%
+\to \everydefinebuffer
+
+\protected\def\buff_start_defined
+  {\begingroup % (5)
+   \buff_start_indeed}
+
+\permanent\def\thebuffernumber #1{\namedbufferparameter{#1}\c!number}
+\permanent\def\thedefinedbuffer#1{def-\namedbufferparameter{#1}\c!number}
+
+\permanent\tolerant\protected\def\getbuffer[#1]% [name]
+  {\namedbufferparameter\empty\c!before\relax
+   \doifelsenothing{#1}
+     {\buff_get_stored_indeed\empty}
+     {\processcommalist[#1]\buff_get_stored_indeed}%
+   \namedbufferparameter\empty\c!after\relax}
+
+\protected\def\buff_get_stored#1#2%
+  {\namedbufferparameter{#1}\c!before\relax
+   \buff_get_stored_indeed{#2}%
+   \namedbufferparameter{#1}\c!after\relax}
+
+\protected\def\buff_get_stored_indeed#1%
+  {\clf_getbuffer{#1}}
+
+\permanent\protected\def\getdefinedbuffer[#1]%
+  {\buff_get_stored{#1}{\thedefinedbuffer{#1}}}%
+
+\permanent\tolerant\protected\def\inlinebuffer[#1]% [name]
+  {\doifelsenothing{#1}
+     {\buff_get_stored_inline_indeed\empty}
+     {\processcommalist[#1]\buff_get_stored_inline_indeed}}
+
+\protected\def\buff_get_stored_inline_indeed#1%
+  {\ignorespaces\clf_getbuffer{#1}\removeunwantedspaces}
+
+\permanent\def\rawbuffer#1% expandable
+  {\clf_getbuffer{#1}}
+
+\definebuffer
+  [\v!hiding]
+
+\setupbuffer
+  [\v!hiding]
+  [\c!before=,
+   \c!after=]
+
+\permanent\protected\protected\def\processTEXbuffer[#1]% keep case, maybe also lower
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes % \setcatcodetable
+   \buff_get_stored_indeed{#1}%
+   \popcatcodetable}
+
+% only mkiv:
+%
+% \startbuffer[x]
+% x
+% \stopbuffer
+%
+% \savebuffer[x]      [temp]     % gets name: jobname-temp.tmp
+% \savebufferinfile[x][temp.log] % gets name: temp.log
+
+\installcorenamespace{savebuffer}
+
+\installsetuponlycommandhandler \??savebuffer {savebuffer}
+
+\setupsavebuffer
+  [\c!list=,
+   \c!file=,
+   \c!prefix=\v!yes]
+
+\permanent\tolerant\protected\def\savebuffer[#1]#*[#2]%
+  {\begingroup
+   \ifhastok={#1}%
+     \setupcurrentsavebuffer[#1]%
+   \else
+     \setupcurrentsavebuffer[\c!list={#1},\c!file=#2]%
+   \fi
+   \clf_savebuffer{\directsavebufferparameter\c!list}{\directsavebufferparameter\c!file}{\directsavebufferparameter\c!prefix}%
+   \endgroup}
+
+%D Experimental: no expansion of commands in buffer!
+
+% \startbuffer[what]
+%     context("WHAT")
+% \stopbuffer
+% \startbuffer
+%     context("JOBNAME")
+% \stopbuffer
+%
+% \ctxluabuffer[what] \ctxluabuffer
+
+\permanent\tolerant\protected\def\ctxluabuffer[#1]{\clf_getbufferctxlua{#1}} % todo: use public implementor
+\permanent\tolerant\protected\def\mkvibuffer  [#1]{\clf_getbuffermkvi  {#1}} % todo: use public implementor
+
+% maybe still used elsewhere
+
+\permanent\protected\def\doprocesstexbuffer#1{\buff_process_tex[#1]} % still used? if not ... it will go away
+
+\aliased\let\dostartbuffer\grabbufferdata % for old times sake, this will go away
+
+% new (expandable):
+
+\permanent\def\getbufferdata[#1]{\buff_get_stored_indeed{#1}}
+
+\protect \endinput

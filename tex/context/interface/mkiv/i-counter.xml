@@ -26,6 +26,9 @@
                 <cd:parameter name="start">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="number">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="counter">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>

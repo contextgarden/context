@@ -1,0 +1,163 @@
+%D \module
+%D   [       file=page-col,   % moved from page-ini
+%D        version=2011.12.07, % 2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Column Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Column Helpers}
+
+%D Here we implement a couple of helpers for dealing with columns. For
+%D the moment we keep the names. When the mul and set modules are redone
+%D these can be adapted or disappear.
+
+%D DO WE STILL NEED THESE?
+
+\unprotect
+
+%D We reserve a counter for the number of columns as well as the current
+%D column. Both are not to be changed by users!
+
+%newcount\nofcolumns \nofcolumns\plusone % already in core-ini.mkiv
+\newcount\mofcolumns \mofcolumns\plusone
+
+\newconstant\columndirection % 0:lr 1:rl
+
+\setnewconstant\maxnofcolumns       50
+\setnewconstant\allocatednofcolumns  0
+
+\newdimen\columnwidth
+\newdimen\columndistance
+
+%D During initialization the temporary boxes are allocated. This enables us to
+%D use as much columns as we want, without exhausting the pool of boxes too
+%D fast. We could have packed them in one box, but we've got enough boxes.
+%D
+%D Two sets of boxes are declared, the txtboxes are used for the text, the
+%D topboxes are for moved column floats.
+
+\installcorenamespace{columntext}
+\installcorenamespace{columnfooter}
+\installcorenamespace{columntop}
+\installcorenamespace{columnbottom}
+
+\permanent\protected\def\initializecolumns#1%
+  {\ifnum#1>\maxnofcolumns
+     \showmessage\m!columns1\maxnofcolumns
+     \nofcolumns\maxnofcolumns
+   \else
+     \nofcolumns#1\relax
+   \fi
+   \ifnum\nofcolumns>\allocatednofcolumns
+     \page_columns_allocate
+   \fi}
+
+\def\page_columns_allocate
+  {\dorecurse\nofcolumns
+     {\ifnum\recurselevel>\allocatednofcolumns\relax
+        \ifcsname\??columntext\recurselevel\endcsname \else
+          \expandafter\newbox\csname\??columntext  \recurselevel\endcsname % text
+          \expandafter\newbox\csname\??columnfooter\recurselevel\endcsname % footer
+          \expandafter\newbox\csname\??columntop   \recurselevel\endcsname % top insert
+          \expandafter\newbox\csname\??columnbottom\recurselevel\endcsname % bottom insert
+        \fi
+      \fi}%
+   \global\allocatednofcolumns\nofcolumns}
+
+\mutable\def\currentcolumn{1}
+
+\immutable\def\firstcolumnbox  {\columntextbox\plusone}
+\immutable\def\currentcolumnbox{\columntextbox\mofcolumns}
+\immutable\def\lastcolumnbox   {\columntextbox\nofcolumns}
+
+\immutable\def\firsttopcolumnbox  {\columntopbox \plusone}
+\immutable\def\currenttopcolumnbox{\columntopbox \mofcolumns}
+\immutable\def\lasttopcolumnbox   {\columntopbox \nofcolumns}
+
+\permanent\def\columntextbox#1{\csname\??columntext  \number#1\endcsname}
+\permanent\def\columnfootbox#1{\csname\??columnfooter\number#1\endcsname}
+\permanent\def\columntopbox #1{\csname\??columntop   \number#1\endcsname}
+\permanent\def\columnbotbox #1{\csname\??columnbottom\number#1\endcsname}
+
+\permanent\protected\def\columnsettextbox{\global\setbox\columntextbox}
+\permanent\protected\def\columnsetfootbox{\global\setbox\columnfootbox}
+\permanent\protected\def\columnsettopbox {\global\setbox\columntopbox}
+\permanent\protected\def\columnsetbotbox {\global\setbox\columnbotbox}
+
+\permanent\protected\def\columngettextbox    {\copy\columntextbox}
+\permanent\protected\def\columngetfootbox    {\copy\columnfootbox}
+\permanent\protected\def\columngettopbox     {\copy\columntopbox}
+\permanent\protected\def\columngetbotbox     {\copy\columnbotbox}
+
+\permanent\protected\def\columnerasetextboxes{\dorecurse\allocatednofcolumns{\columnsettextbox\recurselevel\emptybox}}
+\permanent\protected\def\columnerasefootboxes{\dorecurse\allocatednofcolumns{\columnsetfootbox\recurselevel\emptybox}}
+\permanent\protected\def\columnerasetopboxes {\dorecurse\allocatednofcolumns{\columnsettopbox \recurselevel\emptybox}}
+\permanent\protected\def\columnerasebotboxes {\dorecurse\allocatednofcolumns{\columnsetbotbox \recurselevel\emptybox}}
+
+%D Without going in details we present two macro's which handle the columns. The
+%D action which is transfered by the the first and only parameter can do something
+%D with \type {\currentcolumnbox}. In case of the mid columns, \type
+%D {\firstcolumnbox} and \type {\lastcolumnbox} are handled outside these macro's.
+
+\permanent\protected\def\dohandleallcolumnscs#1{\let\page_columns_action  #1\page_columns_all_indeed}
+\permanent\protected\def\dohandleallcolumns  #1{\def\page_columns_action{#1}\page_columns_all_indeed}
+
+\permanent\protected\def\dohandlerevcolumnscs#1{\let\page_columns_action  #1\page_columns_rev_indeed}
+\permanent\protected\def\dohandlerevcolumns  #1{\def\page_columns_action{#1}\page_columns_rev_indeed}
+
+\permanent\protected\def\dohandlemidcolumnscs#1{\let\page_columns_action  #1\page_columns_mid_indeed}
+\permanent\protected\def\dohandlemidcolumns  #1{\def\page_columns_action{#1}\page_columns_mid_indeed}
+
+\protected\def\page_columns_all_indeed
+  {\mofcolumns\plusone
+   \edef\currentcolumn{\the\mofcolumns}%
+   \page_columns_action\relax
+   \ifnum\mofcolumns<\nofcolumns
+     \expandafter\page_columns_all_next
+   \fi}
+
+\protected\def\page_columns_all_next
+  {\advance\mofcolumns\plusone
+   \edef\currentcolumn{\the\mofcolumns}%
+   \page_columns_action\relax
+   \ifnum\mofcolumns<\nofcolumns
+     \expandafter\page_columns_all_next
+   \fi}
+
+\protected\def\page_columns_rev_indeed
+  {\mofcolumns\nofcolumns
+   \edef\currentcolumn{\the\mofcolumns}%
+   \page_columns_action\relax
+   \ifnum\mofcolumns>\plusone
+     \expandafter\page_columns_rev_prev
+   \fi}
+
+\protected\def\page_columns_rev_prev
+  {\advance\mofcolumns\minusone
+   \edef\currentcolumn{\the\mofcolumns}%
+   \page_columns_action\relax
+   \ifnum\mofcolumns>\plusone
+     \expandafter\page_columns_rev_prev
+   \fi}
+
+\protected\def\page_columns_mid_indeed
+  {\mofcolumns\plustwo
+   \ifnum\mofcolumns<\nofcolumns
+     \expandafter\page_columns_mid_next
+   \fi}
+
+\protected\def\page_columns_mid_next
+  {\edef\currentcolumn{\the\mofcolumns}%
+   \page_columns_action\relax
+   \advance\mofcolumns\plusone
+   \ifnum\mofcolumns<\nofcolumns
+     \expandafter\page_columns_mid_next
+   \fi}
+
+\protect \endinput

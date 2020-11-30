@@ -1,0 +1,78 @@
+%D \module
+%D   [       file=typo-spa,
+%D        version=2009.03.27, % code moved from cors-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Spacing}
+
+\unprotect
+
+\registerctxluafile{typo-spa}{}
+
+\definesystemattribute[spacing][public]
+
+% experimental spacing
+%
+% test: oeps {\setcharacterspacing[frenchpunctuation]x: xx \bfd x: xx} oeps: test
+%
+% todo: page | text => pagebody or text only
+
+\installcorenamespace{characterspacing}
+
+\installsetuponlycommandhandler \??characterspacing {_p_characterspacing} % private
+
+\setup_p_characterspacing
+  [\c!left=0,
+   \c!right=0,
+   \c!alternative=0]
+
+\permanent\protected\def\definecharacterspacing[#1]%
+  {\clf_definecharacterspacing{#1}}
+
+\permanent\tolerant\protected\def\setupcharacterspacing[#1]#*[#2]#*[#3]% todo: #2 list
+  {\begingroup
+   \setupcurrent_p_characterspacing[#3]%
+   \clf_setupcharacterspacing
+      {#1}%
+      \numexpr#2\relax
+      {%
+        left        \direct_p_characterspacingparameter\c!left\space
+        right       \direct_p_characterspacingparameter\c!right\space
+        alternative \direct_p_characterspacingparameter\c!alternative
+      }%
+   \relax
+   \endgroup}
+
+\permanent\protected\def\setcharacterspacing[#1]% we can store the attribute if we want speed
+  {\clf_setcharacterspacing{#1}}
+
+\permanent\protected\def\resetcharacterspacing % fast one
+  {\c_attr_spacing\attributeunsetvalue}
+
+\appendtoks
+    \resetcharacterspacing
+\to \everyresettypesetting
+
+% \setcharacterspacing[frenchpunctuation]
+% «\type{bla}»\crlf « \type{bla}»\crlf
+% «bla »\crlf « bla»\crlf « bla »\crlf
+% bla: bla\crlf bla : bla
+
+\definecharacterspacing [frenchpunctuation] % name may change / unit is em
+
+\setupcharacterspacing [frenchpunctuation] ["003A] [\c!left =.25,\c!alternative=1] % : % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["003B] [\c!left =.25,\c!alternative=1] % ; % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["003F] [\c!left =.25,\c!alternative=1] % ? % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["0021] [\c!left =.25,\c!alternative=1] % ! % strip preceding space(char)
+\setupcharacterspacing [frenchpunctuation] ["00AB] [\c!right=.25,\c!alternative=1] % guillemotleft/leftguillemot   % strip following space(char)
+\setupcharacterspacing [frenchpunctuation] ["00BB] [\c!left =.25,\c!alternative=1] % guillemotright/rightguillemot % strip preceding space(char)
+
+\protect \endinput

@@ -1,0 +1,62 @@
+%D \module
+%D   [       file=typo-bld, % was node-par,
+%D        version=2008.09.30,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Paragraph Building,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Paragraph Building}
+
+%D This is very experimental, undocumented, subjected to changes, etc. just as
+%D the underlying interfaces. But at least it's cleaned as part of the status-mkiv
+%D cleanup.
+
+% \enabletrackers[builders.hpack.overflow]
+% \enabletrackers[builders.hpack.quality]
+% \enabletrackers[builders.vpack.quality]
+
+% \startparbuilder[default]
+%     \input tufte \par
+%     \startparbuilder[oneline]
+%         \input tufte \par
+%     \stopparbuilder
+%     \input tufte \par
+% \stopparbuilder
+%
+% \startparbuilder[oneline]
+%     \dorecurse{100}{\input ward \par}
+% \stopparbuilder
+
+\unprotect
+
+\registerctxluafile{typo-bld}{}
+
+\definesystemattribute[parbuilder][public]
+
+\installcorenamespace {parbuilder}
+
+\permanent\protected\def\defineparbuilder [#1]{\clf_defineparbuilder{#1}}
+\permanent\protected\def\setmainparbuilder[#1]{\clf_setparbuilder{#1}}
+
+\permanent\protected\def\startparbuilder  [#1]{\ifhmode\par\fi\clf_startparbuilder{#1}}
+\permanent\protected\def\stopparbuilder       {\ifhmode\par\fi\clf_stopparbuilder}
+
+%D There is no high level interface because after all implementing a linebreaker
+%D is not something that the average user will do.
+
+\defineparbuilder[default] % just for testing
+\defineparbuilder[oneline] % just for testing
+\defineparbuilder[basic]   % just for testing
+
+%D This hooks in otr so we need to pickup.
+
+\permanent\protected\def\enableparbuilders {\clf_enableparbuilder } % can be public implementor
+\permanent\protected\def\disableparbuilders{\clf_disableparbuilder} % can be public implementor
+
+\protect \endinput

@@ -1,0 +1,158 @@
+%D \module
+%D   [       file=back-u3d,
+%D        version=2009.04.15,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=U3D Experiment,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is only a placeholder that demonstrates the usage of u3d resources. The
+%D user interface is rather messy an might be improved. The files and setup is
+%D derived from an example by Michael Vidiassov.
+
+\endinput
+
+\starttext
+
+\startluaparameterset [u3d:myset:controls:1]
+    view = {
+        name = 'default',
+        bg = {1,1,1},
+        mag = 100,
+        coo = {0,0,0},
+        c2c = {0,0,1},
+        rot = {40,0,60},
+        roo = 6,
+        lights = 'CAD'
+    },
+    js = 'cloudq.js'
+\stopluaparameterset
+
+\startluaparameterset [u3d:myset:controls:2]
+    views = {
+        {
+            name = 'AnglePositioning',
+            bg = {1,1,1},
+            azimuth = 45,
+            altitude = 45,
+            roo = 50,
+            aac = 2.5,
+            lights = 'Artwork'
+        },
+        {
+            name = 'RotationPositioning',
+            bg = {1,1,1},
+            rot = {0,45,45},
+            roo = 50,
+            aac = 2.5,
+            lights = 'Artwork'
+        },
+        {
+            name = 'VectorPositioning',
+            bg = {1,0,0},
+            c2c = {1,1,math.sqrt(2)},
+            roo = 50,
+            aac = 2.5,
+            lights = 'CAD'
+        },
+        {
+            name = 'PositionPositioning',
+            bg = {1,0,0},
+            pos = {1+25,1+25,1+50/math.sqrt(2)},
+            aac = 2.5,
+            lights = 'CAD'
+        },
+        {
+            name = 'ortho',
+            bg = {1,1,1},
+            mag = 300,
+            lights = 'CAD',
+            crossection = {}
+        }
+    },
+    view = {
+        name = 'default',
+        bg = {1,1,1},
+        c2c = {-1,-1,0},
+        roo = 50,
+        aac = 2.5,
+        roll = 45,
+        lights = 'CAD',
+        crossection = {
+            normal = {-1,-1,-1},
+            transparent = true
+        },
+        nodes = {
+            {
+                name = 'xlabel',
+                visible = false
+            },
+            {
+                name = 'ylabel',
+                opacity = 0.5
+            },
+            {
+                name = 'zlabel',
+                rendermode = 'Wireframe'
+            }
+        }
+    }
+\stopluaparameterset
+
+\useexternalfigure
+  [cloudq]
+  [cloudq.u3d]
+  [width=0.7\textwidth,
+   height=.7\textwidth,
+   display=u3d:myset:display:1,
+   controls=u3d:myset:controls:1]
+
+\useexternalfigure
+  [axes]
+  [axes.u3d]
+  [width=0.7\textwidth,
+   height=.7\textwidth,
+   controls=u3d:myset:controls:1]
+
+\startluaparameterset[u3d:myset:display:2]
+    toolbar = true,
+    preview = 'cloudq.png'
+\stopluaparameterset
+
+\startluaparameterset[u3d:myset:display:3]
+    toolbar = true,
+    tree    = false,
+    preview = 'axes.png'
+\stopluaparameterset
+
+\startluaparameterset[u3d:myset:display:4]
+    toolbar = true,
+    tree    = false,
+    view    = {
+        name   = 'view',
+        bg     = {0.1,0.1,0.1},
+        c2c    = {-1,-1,0},
+        roo    = 50,
+        aac    = 2.5,
+        roll   = 45,
+        lights = 'Red'
+    }
+\stopluaparameterset
+
+\startluaparameterset[u3d:myset:display:5]
+    toolbar = true,
+    tree    = false,
+    view    = 'ortho'
+\stopluaparameterset
+
+\placefigure[here]{none}{\externalfigure[cloudq][display=u3d:myset:display:2]}
+\placefigure[here]{none}{\externalfigure[axes]  [display=u3d:myset:display:3]}
+\placefigure[here]{none}{\externalfigure[axes]  [display=u3d:myset:display:4]}
+\placefigure[here]{none}{\externalfigure[axes]  [display=u3d:myset:display:5,width=0.5\textwidth,height=.5\textwidth]}
+
+\stoptext

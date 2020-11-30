@@ -15,23 +15,6 @@
 
 \unprotect
 
-% The older \type {\scantokens} overload has been replace by a more modern
-% one (in \LMTX):
-%
-% \protected\def\whatever#1[#2](#3)\relax{oeps #1 and #2 and #3 done ## error}
-% \scratchtoks{foo \framed{\red 123}456}
-%
-% \showluatokens{123\what}
-% \showluatokens\whatever
-% \showluatokens\framed
-%
-% \showluatokens\scratchtoks
-% \showluatokens\everypar
-
-\ifcase\contextlmtxmode \or
-    \registerctxluafile{toks-aux}{autosuffix}
-\fi
-
 \installcorenamespace {tokenlist}
 
 \unexpanded\def\definetokenlist[#1]%

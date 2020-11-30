@@ -1,0 +1,20 @@
+%D \module
+%D   [       file=typo-pag,
+%D        version=2011.11.02,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Pages,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Pages}
+
+\unprotect
+
+\registerctxluafile{typo-pag}{}
+
+\protect \endinput

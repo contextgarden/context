@@ -854,6 +854,11 @@ function scripts.context.run(ctxdata,filename)
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
                 --
+                local engine = analysis.engine or "luametatex"
+                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) then
+                    mainfile = "" -- we don't need that
+                end
+                --
                 for currentrun=1,maxnofruns do
                     --
                     c_flags.final      = false
@@ -865,6 +870,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.profile    = a_profile and (tonumber(a_profile) or 0) or nil
                     --
                     print("") -- cleaner, else continuation on same line
+                    --
                     local returncode = environment.run_format(
                         formatfile,
                         scriptfile,

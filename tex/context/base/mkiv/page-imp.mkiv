@@ -167,11 +167,7 @@
 
 % \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
 
-\ifcase\contextlmtxmode
-    \def\page_shipout_show_box{\scratchcounter}
-\else
-    \def\page_shipout_show_box{\showbox diagnose}
-\fi
+\def\page_shipout_show_box{\scratchcounter}
 
 \unexpanded\def\page_shipout_box#1%
   {\ifcase\tracingoutput\else

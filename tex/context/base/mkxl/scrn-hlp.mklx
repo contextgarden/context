@@ -1,0 +1,162 @@
+%D \module
+%D   [       file=scrn-hlp,
+%D        version=1998.10.10,
+%D          title=\CONTEXT\ Screen Macros,
+%D       subtitle=Help (Experimental),
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Screen Macros / Help popups}
+
+%D As this functionality was in the core and as I don't know how often it is used,
+%D we'll keep it around. However, it is upgraded and usage has changed a bit. We
+%D also use some \LUA\ magic in order to avoid multiple passes.
+
+\registerctxluafile{scrn-hlp}{}
+
+%D Using help boils down to plugging the placement macro someplace visible, like:
+%D
+%D \starttyping
+%D \setuptexttexts[\centerbox{\placehelp}]
+%D \stoptyping
+%D
+%D When this is done, the following should work out okay:
+%D
+%D \starttyping
+%D test \helptext{word}{tip top 1 is somewhat longer} test
+%D test \helptext{word}{tip top 2} test
+%D
+%D \starthelptext[oeps]
+%D \input tufte
+%D \stophelptext
+%D
+%D test test \showhelp{some help}[oeps] test
+%D test test \button[location=depth]{\helpsignal{oeps}OEPS}[oeps] test
+%D
+%D test test \button[location=depth]{next}[page(2)] test
+%D
+%D \page
+%D
+%D test \helptext{word}{tip top one} test
+%D test \helptext{word}{tip top two} test
+%D \stoptyping
+%D
+%D Currently you need to use the signal in custom macros but that might change at
+%D some point.
+
+\unprotect
+
+% also status
+
+\newbox  \b_scrn_help_box
+\newcount\c_scrn_help_n
+
+\definesystemattribute[help][public]
+
+\installcorenamespace{popuphelp}
+
+\installframedcommandhandler \??popuphelp {help} \??popuphelp
+
+\setuphelp
+  [\c!frame=\v!off,
+   \c!align=\v!normal,
+   \c!background=\v!color,
+   \c!backgroundcolor=gray]
+
+\appendtoks
+    \frozen\instance\setuevalue         \currenthelp {\scrn_help_argument{\currenthelp}}%
+    \frozen\instance\setuevalue{\e!start\currenthelp}{\scrn_help_start   {\currenthelp}}%
+    \frozen\instance\setuevalue{\e!stop \currenthelp}{\scrn_help_stop                  }%
+\to \everydefinehelp
+
+\protected\def\scrn_help_argument#category%
+  {\def\currenthelp{#category}%
+   \global\advance\c_scrn_help_n\plusone
+   \edef\currenthelpname{help:\number\c_scrn_help_n}%
+   \doifelselocation
+     {\dosingleempty\scrn_help_argument_indeed}
+     {\dosingleempty\scrn_help_argument_ignore}}
+
+\def\scrn_help_argument_indeed[#reference]#text#target%
+  {\edef\currenthelpreference{#reference}%
+   \dontleavehmode \hbox \bgroup
+     \dontcomplain
+     \setbox\b_scrn_help_box\hbox{\strut#text}%
+     \scrn_help_register{#target}%
+   \egroup % can be usernode instead
+   \goto
+     {\helpsignal{\number\c_scrn_help_n}#target}%
+     [\helpaction{\number\c_scrn_help_n}]}
+
+\def\scrn_help_argument_ignore[#reference]#text#target%
+  {#target}
+
+\protected\def\scrn_help_start#category%
+  {\def\currenthelp{#category}%
+   \global\advance\c_scrn_help_n\plusone
+   \edef\currenthelpname{help:\number\c_scrn_help_n}%
+   \dosingleempty\scrn_help_start_indeed}
+
+\def\scrn_help_start_indeed[#reference]%
+  {\edef\currenthelpreference{#reference}%
+   \grabbufferdatadirect\currenthelp{\e!start\currenthelp}{\e!stop\currenthelp}}
+
+\protected\def\scrn_help_stop
+  {\iflocation
+     \scrn_help_register{\getbuffer[\currenthelp]}%
+   \fi}
+
+\def\scrn_help_register#text%
+  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}% \hpack ?
+   \definesymbol
+     [\currenthelpname]
+     [\copy\b_scrn_help_box]%
+   \definefieldbody
+     [\currenthelpname]
+     [\c!type=push,
+      \c!width=\wd\b_scrn_help_box,
+      \c!height=\ht\b_scrn_help_box,
+      \c!depth=\dp\b_scrn_help_box,
+      \c!option=\v!hidden,
+      \c!clickin=action(hide{\currenthelpname}),
+      \c!closepage=action(hide{\currenthelpname}),
+      \c!values=\currenthelpname]%
+   \setbox\b_scrn_help_box\hbox
+     {\fieldbody[\currenthelpname]}%
+   \clf_registerhelp
+     number \c_scrn_help_n
+     name   {\currenthelpreference}%
+     box    \b_scrn_help_box
+   \relax}
+
+\permanent\protected\def\doifelsehelp
+  {\ifcase\c_scrn_help_n
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\aliased\let\doifhelpelse\doifelsehelp
+
+\permanent\protected\def\placehelp % was \helpdata
+  {\ifinpagebody\ifcase\c_scrn_help_n\else
+     \clf_collecthelp\normalpagebox
+   \fi\fi}
+
+\permanent\def\helpreference#category{\clf_helpreference{#category}} % could be public implementors
+\permanent\def\helpaction   #category{\clf_helpaction   {#category}} % could be public implementors
+
+\permanent\protected\def\helpsignal#category%
+  {\hbox attr \helpattribute \helpreference{#category}{}}
+
+\permanent\protected\def\showhelp#target[#category]%
+  {\goto{\helpsignal{#category}#target}[#category]}
+
+\definehelp[\v!helptext]
+
+\protect \endinput

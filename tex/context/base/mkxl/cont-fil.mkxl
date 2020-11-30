@@ -1,0 +1,152 @@
+%D \module
+%D   [       file=cont-fil,
+%D        version=1997.11.15,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=File Synonyms,
+%D         author=J. Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Todo: use full names and remove calls at the tex end (now integrated in \LUA\
+%D library code .. then we can load it at runtime when needed. We can also remove
+%D some of the names that no longer make sense for \LMTX.
+
+\writestatus{loading}{ConTeXt File Synonyms}
+
+\definefilesynonym [chemics]      [chemic]
+
+\definefilesynonym [unit]         [units]
+
+\definefilesynonym [pstric]       [pstricks]
+\definefilesynonym [pstrick]      [pstricks]
+
+\definefilesynonym [finance]      [financ]
+
+\definefilesynonym [dir-make]     [dir-01]
+\definefilesynonym [dir-identify] [dir-05]
+
+\definefilesynonym [int-load]     [set-11]
+\definefilesynonym [int-make]     [set-12]
+
+    \definefilesynonym [fig-base]      [fig-00]
+    \definefilesynonym [fig-make]      [fig-01]
+    \definefilesynonym [fig-fake]      [fig-02]
+    \definefilesynonym [fig-missing]   [fig-06]
+
+    \definefilesynonym [exi-interface] [exi-21]
+
+    \definefilesynonym [res-make]      [res-01]
+    \definefilesynonym [res-base]      [res-04]
+    \definefilesynonym [res-crop]      [res-07]
+    \definefilesynonym [res-trace]     [res-08]
+    \definefilesynonym [res-log]       [res-09]
+    \definefilesynonym [res-identify]  [res-12]
+
+    \definefilesynonym [med-show]      [res-50]
+
+\definefilesynonym [pre-general]  [pre-00]
+\definefilesynonym [pre-original] [present-original]
+\definefilesynonym [pre-green]    [present-green]
+\definefilesynonym [pre-funny]    [present-funny]
+\definefilesynonym [pre-colorful] [present-colorful]
+\definefilesynonym [pre-fuzzy]    [present-fuzzy]
+\definefilesynonym [pre-polish]   [pre-06]
+\definefilesynonym [pre-spider]   [pre-07]
+\definefilesynonym [pre-wonder]   [pre-08]
+\definefilesynonym [pre-windows]  [present-windows]
+\definefilesynonym [pre-grow]     [present-grow]
+\definefilesynonym [pre-stack]    [present-stack]
+\definefilesynonym [pre-split]    [present-split]
+\definefilesynonym [pre-balls]    [present-balls]
+\definefilesynonym [pre-weird]    [present-weird]
+\definefilesynonym [pre-stepwise] [present-stepwise]
+\definefilesynonym [pre-stepper]  [present-stepper]
+\definefilesynonym [pre-punk]     [present-punk]
+\definefilesynonym [pre-random]   [present-random]
+
+\definefilesynonym [pre-arrows]   [pre-12]
+\definefilesynonym [pre-writing]  [pre-13]
+\definefilesynonym [pre-knot]     [pre-16]
+\definefilesynonym [pre-shade]    [pre-18]
+\definefilesynonym [pre-organic]  [pre-19]
+\definefilesynonym [pre-speckle]  [pre-20]
+\definefilesynonym [pre-zoom]     [pre-21]
+\definefilesynonym [pre-cycle]    [pre-22]
+\definefilesynonym [pre-super]    [pre-23]
+\definefilesynonym [pre-more]     [pre-26]
+
+\definefilesynonym [pre-01]       [present-original]
+\definefilesynonym [pre-02]       [present-green]
+\definefilesynonym [pre-03]       [present-funny]
+\definefilesynonym [pre-04]       [present-colorful]
+\definefilesynonym [pre-05]       [present-fuzzy]
+\definefilesynonym [pre-09]       [present-windows]
+\definefilesynonym [pre-10]       [present-grow]
+\definefilesynonym [pre-11]       [present-stack]
+\definefilesynonym [pre-14]       [present-split]
+\definefilesynonym [pre-15]       [present-balls]
+\definefilesynonym [pre-17]       [present-weird]
+\definefilesynonym [pre-41]       [present-tiles]
+\definefilesynonym [pre-60]       [present-stepwise]
+\definefilesynonym [pre-61]       [present-stepper]
+\definefilesynonym [pre-62]       [present-overlap]
+\definefilesynonym [pre-69]       [present-wobbling]
+\definefilesynonym [pre-70]       [present-punk]
+\definefilesynonym [pre-71]       [present-random]
+
+\definefilesynonym [abr-01]       [abbreviations-pseudocaps]
+\definefilesynonym [abr-02]       [abbreviations-smallcaps]
+\definefilesynonym [abr-03]       [abbreviations-words]
+\definefilesynonym [abr-04]       [abbreviations-mixed]
+
+\definefilesynonym [art-01]       [article-basic]
+\definefilesynonym [article]      [article-basic]
+\definefilesynonym [mag-01]       [magazine-basic]
+\definefilesynonym [magazine]     [magazine-basic]
+\definefilesynonym [mod-01]       [module-basic]
+\definefilesynonym [module]       [module-basic]
+
+\definefilesynonym [map-10]       [maps] % for a while
+
+\definefilesynonym [mml]          [mathml]
+\definefilesynonym [cml]          [chemml]
+
+\definefilesynonym [letter]       [cor-01]
+\definefilesynonym [memo]         [cor-02]
+\definefilesynonym [resume]       [cor-03]
+
+\definefilesynonym [fnt-10]       [fonts-complete]
+\definefilesynonym [fnt-11]       [fonts-system]
+\definefilesynonym [fnt-20]       [fonts-steps]
+\definefilesynonym [fnt-21]       [fonts-steps]
+\definefilesynonym [fnt-22]       [fonts-engines]
+\definefilesynonym [fnt-23]       [fonts-shapes]
+\definefilesynonym [fnt-24]       [fonts-cjk]
+\definefilesynonym [fnt-25]       [math-characters]
+\definefilesynonym [fnt-28]       [fonts-goodies]
+\definefilesynonym [fnt-29]       [fonts-shapes]
+\definefilesynonym [fnt-31]       [fonts-coverage]
+\definefilesynonym [fnt-33]       [math-coverage]
+
+\definefilesynonym [mat-10]       [math-characters]
+\definefilesynonym [mat-11]       [math-characters]
+\definefilesynonym [mat-12]       [math-parameters]
+\definefilesynonym [mat-20]       [math-parameters]
+
+\definefilesynonym [syn-01]       [syntax]
+
+\definefilesynonym [reg-01]       [regimes-list]
+
+\definefilesynonym [set-11]       [setups-basics]
+\definefilesynonym [set-12]       [setups-overview]
+%definefilesynonym [set-13]       [setups-proofing]
+%definefilesynonym [set-15]       [setups-generate]
+
+\definefilesynonym [ecmascript] [libs-imp-mujs]
+\definefilesynonym [zint]       [libs-imp-zint]
+
+\endinput

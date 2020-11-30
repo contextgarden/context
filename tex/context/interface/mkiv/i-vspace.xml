@@ -106,6 +106,18 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="doifoutervmode" level="document" category="whitespace" keywords="conditional" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosomebreak" level="document" category="whitespace" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="godown" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dimension"/>

@@ -45,10 +45,6 @@
 \registerctxluafile{util-soc-imp-http}   {}
 \registerctxluafile{util-soc-imp-tp}     {}
 
-\ifcase\contextlmtxmode\else
-    \registerctxluafile{util-zip}{}
-\fi
-
 \registerctxluafile{data-ini}{}
 \registerctxluafile{data-exp}{}
 \registerctxluafile{data-env}{}
@@ -73,10 +69,6 @@
 \registerctxluafile{data-use}{}
 \registerctxluafile{data-aux}{}
 
-% \ifcase\contextlmtxmode
-%     \registerctxluafile{util-lib}{}
-% \fi
-
 \registerctxluafile{luat-cbk}{}
 \registerctxluafile{luat-run}{}
 \registerctxluafile{luat-fio}{autosuffix}
@@ -99,8 +91,8 @@
 \registerctxluafile{lxml-aux}{}
 \registerctxluafile{lxml-mis}{}
 
-\frozen\overloaded\protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}
-\frozen\overloaded\protected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}}
-\frozen\overloaded\protected\def\writeline      {\ctxlua{logs.newline()}}
+\protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}
+\protected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}}
+\protected\def\writeline      {\ctxlua{logs.newline()}}
 
 \endinput

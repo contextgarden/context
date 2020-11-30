@@ -5996,7 +5996,7 @@ return {
    ["pe"]="شروع‌پوشش",
    ["ro"]="startoverlay",
   },
-  ["startoverzicht"]={
+  ["startoverview"]={
    ["cs"]="startprehled",
    ["de"]="startueberblick",
    ["en"]="startoverview",
@@ -6410,7 +6410,7 @@ return {
    ["pe"]="پایان‌پوشش",
    ["ro"]="stopoverlay",
   },
-  ["stopoverzicht"]={
+  ["stopoverview"]={
    ["cs"]="stopprehled",
    ["de"]="stopueberblick",
    ["en"]="stopoverview",
@@ -8353,6 +8353,10 @@ return {
    ["nl"]="dieptekstcommando",
    ["pe"]="فرمان‌متن‌عمیق",
    ["ro"]="deeptextcommand",
+  },
+  ["define"]={
+   ["en"]="define",
+   ["nl"]="definieer",
   },
   ["default"]={
    ["cs"]="implicitni",

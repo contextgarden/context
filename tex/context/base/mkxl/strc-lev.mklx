@@ -1,0 +1,98 @@
+%D \module
+%D   [       file=strc-lev,
+%D        version=2010.09.23,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Automatic Levels,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Automatic Levels}
+
+%D This module is the result of a discussion between Alan Braslau and
+%D me. I used to have a private (\MKII) module for this but the new
+%D structure code in \MKIV\ is more suitable for this so now we have
+%D it as core functionality. For the moment this an experiment that
+%D Alan and I conduct so it might evolve.
+
+\registerctxluafile{strc-lev}{}
+
+\unprotect
+
+\permanent\tolerant\protected\def\definesectionlevels[#category]#spacer[#list]%
+  {\clf_definesectionlevels{#category}{#list}} % we could scan/use public at the lua end
+
+\permanent\tolerant\protected\def\startsectionlevel[#category]%
+  {\doifelseassignment{#category}%
+     {\clf_startsectionlevel\plusone{\v!default}{\currentnamedsection}[#category]}%
+     {\clf_startsectionlevel\plusone {#category}{\currentnamedsection}}}
+
+\permanent\protected\def\stopsectionlevel
+  {\clf_stopsectionlevel} % we could use public at the lua end
+
+\permanent\tolerant\protected\def\startsubjectlevel[#category]%
+  {\doifelseassignment{#category}%
+     {\clf_startsectionlevel\plustwo{\v!default}{\currentnamedsection}[#category]}%
+     {\clf_startsectionlevel\plustwo {#category}{\currentnamedsection}}}
+
+\permanent\protected\def\stopsubjectlevel
+  {\clf_stopsectionlevel} % we could use public at the lua end
+
+\permanent\tolerant\protected\def\nostarthead[#category]#spacer[#settings]#spacer[#userdata]%
+  {\blank
+   \noindentation{\tttf[start missing section level #category]}
+   \blank}
+
+\permanent\tolerant\protected\def\nostophead[#category]%
+  {\blank
+   \noindentation{\tttf[stop missing section level #category]}
+   \blank}
+
+\definesectionlevels
+  [\v!default]
+  [{\v!chapter,\v!title},
+   {\v!section,\v!subject},
+   {\v!subsection,\v!subsubject},
+   {\v!subsubsection,\v!subsubsubject},
+   {\v!subsubsubsection,\v!subsubsubject},
+   {\v!subsubsubsubsection,\v!subsubsubject}]
+
+\aliased\let\definestructurelevels\definesectionlevels
+\aliased\let\startstructurelevel  \startsectionlevel
+\aliased\let\stopstructurelevel   \stopsectionlevel
+
+\protect \endinput
+
+% \starttext
+%
+% \definehead[xxxxxxsection][subsubsection]
+% \setuphead [xxxxxxsection][color=red]
+%
+% \definesectionlevels[main][chapter,section,subsection,subsubsection]
+% \definesectionlevels[next][chapter,section,subsection,xxxxxxsection]
+%
+% \startsectionlevel [main] [title=first top level]
+%
+%     \startsectionlevel [main] [title=first lower level]
+%         \startsectionlevel [main] [title=second lower level]
+%             \startsectionlevel [main] [title=third lower level]
+%                 test
+%             \stopsectionlevel
+%         \stopsectionlevel
+%     \stopsectionlevel
+%
+%     \startsectionlevel [main] [title=first lower level]
+%         \startsectionlevel [main] [title=second lower level]
+%             \startsectionlevel [next] [title=third lower level]
+%                 test
+%             \stopsectionlevel
+%         \stopsectionlevel
+%     \stopsectionlevel
+%
+% \stopsectionlevel
+%
+% \stoptext

@@ -1,0 +1,85 @@
+%D \module
+%D   [       file=strc-doc,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Document Structure,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Document Structure}
+
+\registerctxluafile{strc-doc}{}
+
+\unprotect
+
+%D This will move:
+
+\mutable\let\currentstructureattribute               \empty
+\mutable\let\currentstructurebackreference           \empty
+\mutable\let\currentstructurebookmark                \empty
+\mutable\let\currentstructurecatcodes                \empty
+\mutable\let\currentstructurecoding                  \empty
+\mutable\let\currentstructurecoupling                \empty
+\mutable\let\currentstructureexpansion               \empty
+\mutable\let\currentstructureincrementnumber         \empty
+\mutable\let\currentstructurelabel                   \empty
+\mutable\let\currentstructurelevel                   \empty
+\mutable\let\currentstructurelist                    \empty
+\mutable\let\currentstructurelistattribute           \empty
+\mutable\let\currentstructuremarking                 \empty
+\mutable\let\currentstructurename                    \empty
+\mutable\let\currentstructureownnumber               \empty
+\mutable\let\currentstructureplaceholder             \empty
+\mutable\let\currentstructurereference               \empty
+\mutable\let\currentstructurereferenceattribute      \empty
+\mutable\let\currentstructurereferenceprefix         \empty
+\mutable\let\currentstructuresaveinlist              \empty
+\mutable\let\currentstructureshownumber              \empty
+\mutable\let\currentstructuretitle                   \empty
+\mutable\let\currentstructurexmlsetup                \empty
+
+\mutable\let\currentstructurecomponentattribute      \empty
+\mutable\let\currentstructurecomponentbookmark       \empty
+\mutable\let\currentstructurecomponentcatcodes       \empty
+\mutable\let\currentstructurecomponentcoding         \empty
+\mutable\let\currentstructurecomponentexpansion      \empty
+\mutable\let\currentstructurecomponentlabel          \empty
+\mutable\let\currentstructurecomponentlevel          \empty
+\mutable\let\currentstructurecomponentlist           \empty
+\mutable\let\currentstructurecomponentmarking        \empty
+\mutable\let\currentstructurecomponentname           \empty
+\mutable\let\currentstructurecomponentreference      \empty
+\mutable\let\currentstructurecomponentreferenceprefix\empty
+\mutable\let\currentstructurecomponentsynchronize    \empty
+\mutable\let\currentstructurecomponenttitle          \empty
+\mutable\let\currentstructurecomponentxmlsetup       \empty
+
+\permanent\protected\def\setstructuresynchronization#1% todo: use ctxcontext
+  {\clf_setinternalreference
+     prefix    {\currentstructurereferenceprefix}%
+     reference {\currentstructurereference}
+     internal  \locationcount
+     view      {\interactionparameter\c!focus}%
+   \relax
+   \enforced\xdef\currentstructureattribute
+     {\the\lastdestinationattribute}%
+   \enforced\xdef\currentstructuresynchronize
+     {\currentstructuresynchronize
+      \strc_lists_inject_enhance{#1}}}
+
+\permanent\protected\def\setstructurecomponentsynchronization#1% todo: use ctxcontext
+  {\clf_setinternalreference
+     prefix    {\currentstructurecomponentreferenceprefix}%
+     reference {\currentstructurecomponentreference}
+     internal  \locationcount
+     view      {\interactionparameter\c!focus}%
+   \relax
+   \enforced\xdef\currentstructurecomponentattribute  {\the\lastdestinationattribute}%
+   \enforced\xdef\currentstructurecomponentsynchronize{\strc_lists_inject_enhance{#1}}}
+
+\protect \endinput

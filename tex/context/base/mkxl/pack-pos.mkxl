@@ -1,0 +1,160 @@
+%D \module
+%D   [       file=pack-pos,
+%D        version=2010.11.17 % real old code, updated a bit
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Positioning,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Positioning}
+
+\unprotect
+
+% An old but still usefull mechanism:
+%
+% \ruledvbox{\startpositioning
+%     \position(1,1){test}
+%     \position[xstep=relative](1,1){test}
+%     \position[ystep=relative](3,-1){test}
+%     \position(10,10){test}
+% \stoppositioning}
+%
+% watch out: rather global
+
+\installcorenamespace {positioning}
+
+\installcommandhandler \??positioning {positioning} \??positioning
+
+\setuppositioning
+  [\c!state=\v!start,
+   \c!unit=\s!cm,
+   \c!factor=\plusone,
+   \c!scale =\plusone,
+   \c!xfactor=\positioningparameter\c!factor,
+   \c!yfactor=\positioningparameter\c!factor,
+   \c!xscale=\positioningparameter\c!scale,
+   \c!yscale=\positioningparameter\c!scale,
+   \c!xstep=\v!absolute,
+   \c!ystep=\v!absolute,
+   \c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint]
+
+\newdimen\d_pack_positioning_x_position
+\newdimen\d_pack_positioning_y_position
+\newdimen\d_pack_positioning_x_dimension
+\newdimen\d_pack_positioning_y_dimension
+\newdimen\d_pack_positioning_x_offset
+\newdimen\d_pack_positioning_y_offset
+
+\newbox\b_pack_positioning
+
+\permanent\tolerant\protected\def\startpositioning[#1]#*[#2]%
+  {\bgroup
+   \ifparameters
+     \let\currentpositioning\empty
+   \or
+     \ifhastok={#1}%
+       \let\currentpositioning\empty
+       \setupcurrentpositioning[#1]%
+     \else
+       \edef\currentpositioning{#1}%
+     \fi
+   \or
+     \edef\currentpositioning{#1}%
+     \setupcurrentpositioning[#2]%
+   \fi
+   \d_pack_positioning_x_position \zeropoint
+   \d_pack_positioning_y_position \zeropoint
+   \d_pack_positioning_x_dimension\zeropoint
+   \d_pack_positioning_y_dimension\zeropoint
+   \d_pack_positioning_x_offset   \zeropoint
+   \d_pack_positioning_y_offset   \zeropoint
+   \hfuzz\paperwidth
+   \vfuzz\paperheight
+   \setbox\b_pack_positioning\hbox\bgroup
+   \ignorespaces}
+
+\permanent\protected\def\stoppositioning
+  {\removeunwantedspaces
+   \doifnot{\positioningparameter\c!offset}\v!yes
+     {\global\d_pack_positioning_x_offset\zeropoint
+      \global\d_pack_positioning_y_offset\zeropoint}%
+   \global\advance\d_pack_positioning_x_dimension\d_pack_positioning_x_offset
+   \global\advance\d_pack_positioning_y_dimension\d_pack_positioning_y_offset
+   \egroup
+   \vbox to \d_pack_positioning_y_dimension
+     {\vskip\d_pack_positioning_y_offset
+      \hbox to \d_pack_positioning_x_dimension
+        {\hskip\d_pack_positioning_x_offset
+         \box\b_pack_positioning
+         \hfill}
+      \vfill}%
+   \egroup}
+
+\protected\def\pack_positioning_calculate#1#2#3#4#5#6#7#8#9%
+  {\setdimensionwithunit\scratchdimen{#1}{\positioningparameter\c!unit}%
+   \scratchdimen\positioningparameter#8\scratchdimen
+   \scratchdimen\positioningparameter#9\scratchdimen
+   \advance\scratchdimen\positioningparameter#4\relax
+   % == \scratchdimen\dimexpr#8\dimexpr#9\scratchdimen\relax+#4\relax
+   \doif{\positioningparameter#2}\v!relative
+     {\advance\scratchdimen#3%
+      \letpositioningparameter#4\zeropoint}%
+   #3\scratchdimen
+   \doifnot{\positioningparameter\c!state}\v!overlay
+     {\scratchdimen\dimexpr#5\nextbox+#3\relax
+      \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
+      \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
+
+\permanent\tolerant\protected\def\position[#1]#:(#2,#3)%
+  {\bgroup
+   \ifparameter#1\or
+     \setupcurrentpositioning[#1]%
+   \fi
+   \removeunwantedspaces
+   \dowithnextbox{\pack_positioning_position_indeed{#2}{#3}}\hbox}
+
+\def\pack_positioning_position_indeed#1#2%
+  {\dontcomplain
+   \pack_positioning_calculate
+     {#1}%
+     \c!xstep
+     \d_pack_positioning_x_position
+     \c!xoffset
+     \wd
+     \d_pack_positioning_x_dimension
+     \d_pack_positioning_x_offset
+     \c!xscale
+     \c!xfactor
+   \pack_positioning_calculate
+     {#2}%
+     \c!ystep
+     \d_pack_positioning_y_position
+     \c!yoffset
+     \htdp
+     \d_pack_positioning_y_dimension
+     \d_pack_positioning_y_offset
+     \c!yscale
+     \c!yfactor
+   \vbox to \zeropoint
+     {\offinterlineskip % else we get an empty line
+      \vskip\d_pack_positioning_y_position
+      \hbox to \zeropoint
+        {\hskip\d_pack_positioning_x_position
+         \box\nextbox
+         \hss}
+      \vss}%
+   \normalexpanded
+     {\egroup
+      \d_pack_positioning_x_position\the\d_pack_positioning_x_position
+      \d_pack_positioning_y_position\the\d_pack_positioning_y_position
+      \setexpandedpositioningparameter\c!xoffset{\the\dimexpr\positioningparameter\c!xoffset}%
+      \setexpandedpositioningparameter\c!yoffset{\the\dimexpr\positioningparameter\c!yoffset}}%
+   \ignorespaces}
+
+\protect \endinput

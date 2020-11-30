@@ -1,0 +1,269 @@
+%D \module
+%D   [       file=math-rad,
+%D        version=2013.07.13,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Radicals,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Radicals}
+
+\unprotect
+
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+%D
+%D This root command will be overloaded later:
+
+%D Old stuff:
+
+% \def\rootradical{\Uroot    \defaultmathfamily "221A } % can be done in char-def
+% \def\surdradical{\Uradical \defaultmathfamily "221A } % can be done in char-def
+
+\permanent\protected\def\root#1\of{\rootradical{#1}} % #2
+
+\protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
+
+\permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
+  {\normalexpanded{\rootradical
+     {\normalunexpanded{#1}}%
+     {\noexpand\triggermathstyle{\number\normalmathstyle}%
+      \normalunexpanded{#2}}}}
+
+% experimental new keyword: (maybe keywords should come after the symbol)
+%
+% \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
+%   {\Uroot style \normalmathstyle "0 "221A {#1}{#2}}
+
+\permanent\protected\def\rootwithdegree[#1]{\rootradical{#1}}
+\permanent\protected\def\rootwithoutdegree {\rootradical  {}}
+
+%D Even older stuff:
+
+% % is now a ordinary character
+%
+% \let\normalsurd\surd % \Uradical "0 "221A
+% \permanent\protected\def\surd{\normalsurd{}}
+
+%D The real thing. If needed one can control matters with one of the many
+%D \type {\Umath...} parameters.
+%D
+%D \starttyping
+%D \def\R {\Umathradicaldegreeafter\textstyle0pt}
+%D \def\RR{\Umathradicaldegreeafter\textstyle\dimexpr
+%D    \Umathradicaldegreeafter\textstyle+.1em\relax}
+%D \def\RRR{\frozen\Umathradicaldegreeafter\textstyle\dimexpr
+%D    \Umathradicaldegreeafter\textstyle+.2em\relax}
+%D
+%D $    \sqrt[3]{5}   \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $    \sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D $ \RR\sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D
+%D \def\R  {\Umathradicaldegreeafter\textstyle
+%D            0pt}
+%D \def\RR {\Umathradicaldegreeafter\textstyle
+%D            0.95\Umathradicaldegreeafter\textstyle}
+%D \def\RRR{\frozen\Umathradicaldegreeafter\textstyle
+%D            0.9\Umathradicaldegreeafter\textstyle}
+%D
+%D $    \sqrt[3]{5}   \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $    \sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D $ \RR\sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D
+%D \def\RR {\mathopenupparameter\Umathradicaldegreeafter{.1}}
+%D
+%D $ \sqrt[3]{5}  \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $ \sqrt[3]{5} {\RR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D \stoptyping
+
+\installcorenamespace{mathradical}
+\installcorenamespace{mathradicalalternative}
+
+\installcommandhandler \??mathradical {mathradical} \??mathradical
+
+\setupmathradical
+  [\c!alternative=\v!normal,
+   \c!mpoffset=.25\exheight]
+
+\appendtoks
+    \frozen\instance\setuevalue{\currentmathradical}{\math_radical_handle{\currentmathradical}}
+\to \everydefinemathradical
+
+\protected\def\math_radical_handle#tag%
+  {\begingroup
+   \edef\currentmathradical{#tag}%
+   \doifelsenextoptionalcs\math_radical_degree_yes\math_radical_degree_nop}
+
+\def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
+
+\def\m_math_no_degree{{}}
+
+\def\math_radical_degree_yes[#degree]{\edef\currentmathradicaldegree{#degree}\math_radical_indeed}
+\def\math_radical_degree_nop         {\let\currentmathradicaldegree\m_math_no_degree\math_radical_indeed}
+
+\def\math_radical_indeed#body%
+  {\math_radical_alternative{#body}\endgroup}
+
+\setvalue{\??mathradicalalternative\v!default}%  #body%
+  {\rootradical{\currentmathradicaldegree}}   % {#body}}
+
+\setvalue{\??mathradicalalternative\v!normal}#body%
+  {\edef\p_color{\mathradicalparameter\c!color}%
+   \ifempty\p_color
+     \styledrootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
+   \orelse\ifempty\currentmathradicaldegree
+     \pushcolor[\p_color]%
+     \styledrootradical{\currentmathradicaldegree}%
+     {\popcolor#body}%
+   \else
+     \pushcolor[\p_color]%
+     \styledrootradical{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
+     {\popcolor#body}%
+   \fi}
+
+\startMPextensions
+    vardef math_radical_simple(expr w,h,d,o) =
+        (-h/2-o,h/2-o) --
+        (-h/4-o,-d-o)  --
+        (-o,h+o)       --
+        (w+o,h+o)      --
+        (w+o,h-h/10+o)
+    enddef ;
+\stopMPextensions
+
+\startuniqueMPgraphic{minifun::math:radical:default}%{...}
+    draw
+        math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
+      % withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+        withpen pencircle scaled OverlayLineWidth
+      % dashed evenly
+        withcolor OverlayLineColor ;
+\stopuniqueMPgraphic
+
+% todo: spacing .. this is just an experiment (article driven)
+
+\setvalue{\??mathradicalalternative\v!mp}#body% we could use dowithnextbox
+  {\begingroup
+   \scratchoffset\mathradicalparameter\c!mpoffset
+   \setbox\nextbox\mathstylehbox{#body}%
+   % we use the \overlay variables as these are passes anyway and
+   % it's more efficient than using parameters
+   \d_overlay_width    \wd\nextbox
+   \d_overlay_height   \ht\nextbox
+   \d_overlay_depth    \dp\nextbox
+   \d_overlay_offset   \scratchoffset
+   \d_overlay_linewidth\the\dimexpr\triggeredmathstyleparameter\Umathfractionrule
+   %
+   \edef\overlaylinecolor{\mathradicalparameter\c!color}%
+   %
+   \edef\p_mp{\mathradicalparameter\c!mp}%
+   %
+   \setbox\scratchbox\hpack\bgroup % todo: tag this box as sqrt
+     \uniqueMPgraphic
+       {\p_mp}%
+      %{...}%
+   \egroup
+   \scratchdimen       \wd\scratchbox
+   \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
+   \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
+   \hpack to \scratchdimen{\hss\box\nextbox\hskip\scratchoffset}%
+   \hskip-\scratchdimen
+   \lower\dimexpr\scratchtopoffset\box\scratchbox%
+   \ifx\currentmathradicaldegree\empty \else
+     \setbox\scratchbox\mathstylehbox{\scriptscriptstyle\currentmathradicaldegree\hss}%
+     \wd\scratchbox\scratchdimen
+     \hskip-\scratchdimen
+     \raise\dimexpr\scratchbottomoffset\box\scratchbox
+   \fi
+   \endgroup}
+
+\definemathradical[sqrt][mp=minifun::math:radical:default]
+
+% \setupmathradical[sqrt][alternative=normal,color=darkblue]
+% \setupmathradical[sqrt][alternative=mp,color=darkgreen]
+
+%D Because I wanted to illustrate some more fun stuff another mechanism
+%D is provided as well ... let's put some dangerous tools in the hand of
+%D math jugglers like Aditya.
+
+\installcorenamespace{mathornament}
+\installcorenamespace{mathornamentalternative}
+
+\installcommandhandler \??mathornament {mathornament} \??mathornament
+
+\setupmathornament
+  [\c!alternative=\v!mp, % currently mp only .. maybe some day layer too
+   \c!mpoffset=.25\exheight]
+
+\appendtoks
+    \frozen\instance\setuevalue{\currentmathornament}{\math_ornament_handle{\currentmathornament}}%
+\to \everydefinemathornament
+
+\protected\def\math_ornament_handle#tag#body%
+  {\begingroup
+   \edef\currentmathornament{#tag}%
+   \csname\??mathornamentalternative\mathornamentparameter\c!alternative\endcsname{#body}%
+   \endgroup}
+
+\setvalue{\??mathornamentalternative\v!mp}#body% we could use dowithnextbox
+  {\begingroup
+   \scratchoffset\mathornamentparameter\c!mpoffset
+   \setbox\nextbox\mathstylehbox{#body}%
+   \d_overlay_width    \wd\nextbox
+   \d_overlay_height   \ht\nextbox
+   \d_overlay_depth    \dp\nextbox
+   \d_overlay_offset   \scratchoffset
+   \d_overlay_linewidth\linewidth
+   \edef\overlaylinecolor{\mathornamentparameter\c!color}%
+   \edef\p_mp{\mathornamentparameter\c!mp}%
+   % the width of the graphic determines the width of the final result
+   \setbox\scratchbox\hpack{\uniqueMPgraphic{\p_mp}}% todo: add code key + tag
+   \hpack to \wd\scratchbox{\hss\box\nextbox\hss}%
+   \hskip-\wd\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+% \startMPextensions
+%     vardef math_ornament_hat(expr w,h,d,o,l) =
+%         image ( path p ; p :=
+%             (w/2,h + 10l) --
+%             (o + w,h + o) --
+%             (w/2,h + 7l) --
+%             (-o,h + o) --
+%             cycle ;
+%             fill p ;
+%             setbounds currentpicture to (-o,0) -- (w+o,0) -- (w+o,h+2o) -- (-o,h+2o) -- cycle ;
+%         )
+%     enddef ;
+% \stopMPextensions
+%
+% \startuniqueMPgraphic{math:ornament:hat}
+%     draw
+%         math_ornament_hat(
+%             OverlayWidth,
+%             OverlayHeight,
+%             OverlayDepth,
+%             OverlayOffset,
+%             OverlayLineWidth
+%         )
+%     withpen
+%         pencircle
+%             xscaled (2OverlayLineWidth)
+%             yscaled (3OverlayLineWidth/4)
+%             rotated 30
+%     withcolor
+%         OverlayLineColor ;
+%         draw boundingbox currentpicture;
+% \stopuniqueMPgraphic
+%
+% \definemathornament [mathhat] [mp=math:ornament:hat]
+%
+% \dorecurse{8}{$\mathhat{\blackrule[width=#1ex,color=gray]}$ }
+
+\protect \endinput

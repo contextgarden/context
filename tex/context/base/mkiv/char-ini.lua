@@ -762,7 +762,7 @@ local is_spacing = allocate ( tohash {
 } )
 
 local is_mark = allocate ( tohash {
-    "mn", "ms",
+    "mn", "ms", -- "mn", "mc",
 } )
 
 local is_punctuation = allocate ( tohash {

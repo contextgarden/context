@@ -56,7 +56,7 @@ end
     \ctxlua{luatex.registerstopactions(function() moduledata.progress.save() end)}
 \stopnotmode
 
-\unexpanded\def\ShowNamedUsage#1#2#3%
+\permanent\protected\def\ShowNamedUsage#1#2#3%
   {\setbox\scratchbox\vbox\bgroup
     \startMPcode{doublefun}
       begingroup ; save p, q, b, h, w ;
@@ -103,11 +103,11 @@ end
      \stoplinecorrection
    \fi}
 
-\unexpanded\def\LoadUsage          #1{\ctxlua{moduledata.progress.convert("#1")}}
-\unexpanded\def\ShowUsage          #1{\ctxlua{moduledata.progress.show("#1",".*",       "variables: elapsed")}}
-\unexpanded\def\ShowMemoryUsage    #1{\ctxlua{moduledata.progress.show("#1","memory:.*","variables: elapsed")}}
-\unexpanded\def\ShowNodeUsage      #1{\ctxlua{moduledata.progress.show("#1","nodes:.*", "variables: elapsed")}}
-\unexpanded\def\ShowFilteredUsage#1#2{\ctxlua{moduledata.progress.show("#1","#2",       "variables: elapsed")}}
-\unexpanded\def\ShowSimpleUsage  #1#2{\ctxlua{moduledata.progress.show("#1","#2")}}
+\permanent\protected\def\LoadUsage          #1{\ctxlua{moduledata.progress.convert("#1")}}
+\permanent\protected\def\ShowUsage          #1{\ctxlua{moduledata.progress.show("#1",".*",       "variables: elapsed")}}
+\permanent\protected\def\ShowMemoryUsage    #1{\ctxlua{moduledata.progress.show("#1","memory:.*","variables: elapsed")}}
+\permanent\protected\def\ShowNodeUsage      #1{\ctxlua{moduledata.progress.show("#1","nodes:.*", "variables: elapsed")}}
+\permanent\protected\def\ShowFilteredUsage#1#2{\ctxlua{moduledata.progress.show("#1","#2",       "variables: elapsed")}}
+\permanent\protected\def\ShowSimpleUsage  #1#2{\ctxlua{moduledata.progress.show("#1","#2")}}
 
 \endinput

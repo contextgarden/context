@@ -163,6 +163,8 @@
             <cd:parameter name="placestopper">
                 <cd:constant type="yes" default="yes"/>
                 <cd:constant type="no"/>
+                <cd:constant type="display"/>
+                <cd:constant type="inline"/>
             </cd:parameter>
             <cd:parameter name="style">
                 <cd:resolve name="value-style"/>
@@ -353,6 +355,8 @@
             <cd:parameter name="placestopper">
                 <cd:constant type="yes" default="yes"/>
                 <cd:constant type="no"/>
+                <cd:constant type="display"/>
+                <cd:constant type="inline"/>
             </cd:parameter>
             <cd:parameter name="style">
                 <cd:resolve name="value-style"/>

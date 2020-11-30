@@ -156,6 +156,9 @@ function libraries.optionalloaded(name,libnames)
     end
 end
 
+-- For the moment the next blob is needed when we run \MTXRUN\ on top of \LUATEX\ and
+-- \LUAJITTEX\ but at some point we will {\em always} assume \LUAMETATEX\ as runner.
+
 if FFISUPPORTED and ffi and ffi.load then
 
     local ffiload = ffi.load

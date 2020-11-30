@@ -1,0 +1,112 @@
+%D \module
+%D   [       file=pack-mis, % moved from e.g. core-mis
+%D        version=1998.01.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packing Macros / Misc Commands}
+
+\unprotect
+
+% a quite old mechanism already (but inheritance added)
+%
+% \defineplacement[name][settings]
+% \setupplacement [name][settings]
+% \placement      [name][settings]
+% \place<name>          [settings]
+
+\installcorenamespace{placement}
+
+\installcommandhandler \??placement {placement} \??placement
+
+\appendtoks
+   \frozen\instance\setuevalue{\e!place\currentplacement}{\pack_placement{\currentplacement}}%
+\to \everydefineplacement
+
+\setupplacement
+  [\c!left=\hss,
+   \c!right=\hss,
+   \c!linecorrection=\v!off,
+   \c!depthcorrection=\v!off,
+   \c!grid=\v!middle,
+  %\c!before=,
+  %\c!after=,
+   \c!margin=\v!standard]
+
+\permanent\protected\def\placement[#tag]%
+  {\pack_placement{#tag}}
+
+\protected\def\pack_placement#tag%
+  {\bgroup
+   \edef\currentplacement{#tag}%
+   \doifelsenextoptionalcs\pack_placement_yes\pack_placement_nop}
+
+\def\pack_placement_yes[#settings]%
+  {\setupcurrentplacement[#settings]%
+   \pack_placement_nop}
+
+\def\pack_placement_nop
+  {\dowithnextboxcontentcs\forgetall\pack_placement_flush\vbox}
+
+\def\pack_placement_flush
+  {\setlocalhsize
+   \placementparameter\c!before
+   \begingroup
+   \disableparpositions
+   \setbox\nextbox\hbox to \localhsize
+     {\placementparameter\c!left
+      \flushnextbox
+      \placementparameter\c!right}%
+  %\ifinsidefloat \else
+  %  \page_backgrounds_add_local_to_box\nextbox
+  %\fi
+\flushnotes % new per 2014-05-29 : todo: move them up in the mvl
+   \ifgridsnapping
+     \pack_placement_flush_grid_yes
+   \else
+     \pack_placement_flush_grid_nop
+   \fi
+   \endgroup
+   \placementparameter\c!after
+   \egroup}
+
+\def\pack_placement_flush_grid_yes
+  {\edef\p_grid{\placementparameter\c!grid}%
+   \ifempty\p_grid
+     \let\p_grid\v!middle
+   \fi
+   \pack_placement_flush_grid_noindent
+   \snaptogrid[\p_grid]\hbox{\box\nextbox}}
+
+\def\pack_placement_flush_grid_nop
+  {\edef\p_linecorrection {\placementparameter\c!linecorrection}%
+   \edef\p_depthcorrection{\placementparameter\c!depthcorrection}%
+   \ifx\p_linecorrection\v!on
+     \startbaselinecorrection
+   \fi
+   \pack_placement_flush_grid_noindent
+   \box\nextbox
+   \ifx\p_depthcorrection\v!on
+     \baselinecorrection
+   \fi
+   \ifx\p_linecorrection\v!on
+     \stopbaselinecorrection
+   \fi}
+
+\def\pack_placement_flush_grid_noindent
+  {\edef\p_margin{\placementparameter\c!margin}%
+   \ifx\p_margin\v!standard
+     \noindent
+   \orelse\ifx\p_margin\v!yes
+     \noindent
+   \fi}
+
+\protect \endinput
+

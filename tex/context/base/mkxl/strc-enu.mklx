@@ -1,0 +1,371 @@
+%D \module
+%D   [       file=strc-enu, % moved from strc-des
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Enumerations,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Enumerations}
+
+\unprotect
+
+% command -> headcommand
+
+%D Enumerations are just super descriptions. Therefore we implement
+%D them as an extension. After all, the keys don't clash. In order
+%D to be able to differentiate between specific settings we use
+%D some flags. Unfortunately we have some historic differences
+%D in default values. Therefore we push an extra step in the
+%D parent chain (we might do the same for regular descriptions).
+
+%D In order to be more flexible with theorems Aditya Mahajan added
+%D support for titles and endsymbols. At the same time we added more
+%D flexible support for inheriting numbers.
+%D
+%D \startbuffer
+%D \defineenumeration[one]
+%D \defineenumeration[two]   [one] % clone one
+%D \defineenumeration[three] [counter=one,style=slanted] % only use counter of one
+%D \defineenumeration[four]  [three] % clone three
+%D \defineenumeration[five]  [three] [counter=five] % clone three and use own counter
+%D \defineenumeration[six]   [three] [counter=four] % clone tree and use counter four (undefined)
+%D
+%D \startone   test test  6 \stopone
+%D \starttwo   test test  7 \stoptwo
+%D \startthree test test  8 \stopthree
+%D \startfour  test test  9 \stopfour
+%D \startfive  test test  2 \stopfive
+%D \startsix   test test 10 \stopsix
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+%D
+%D \starttyping
+%D \setupenumerations[one]  [prefix=yes,prefixsegments=section]
+%D \setupenumerations[two]  [prefix=yes,prefixsegments=section]
+%D \setupenumerations[three][prefix=yes,prefixsegments=section]
+%D \setupenumerations[four] [prefix=yes,prefixsegments=chapter:section]
+%D \setupenumerations[five] [prefix=yes,prefixsegments=chapter:section]
+%D \setupenumerations[six]  [prefix=yes,prefixsegments=chapter:section]
+%D \stoptyping
+
+% list and titles are experimental
+%
+% \definedescription[test] [location=left,hang=4,headalign={right},distance=1em,list=test]
+% \defineenumeration[lemma][title=yes,right=:,textdistance=1em, location=top, titlestyle=\bs,list=lemma]
+% \defineenumeration[ammel][title=yes,right=:,textdistance=.5em,location=left,titlestyle=\it,width=9em]
+%
+% \placelist[enumeration:lemma]
+% \placelist[description:test][width=0pt]
+%
+% \starttest  {something something something}    \input zapf  \stoptest
+% \startlemma {with a title of a certain length} \input tufte \stoplemma
+% \startammel {with a title}                     \input zapf  \stopammel
+%
+% \defineenumeration[lemma][...]
+% \defineenumeration[titledlemma][lemma][title=yes,right=:,text=lemma,list=lemma]
+
+\installcorenamespace{enumeration}
+
+\installcommandhandler \??enumeration {enumeration} \??enumeration
+
+\installcounterassociation{enumeration}
+
+\let\setupenumerations\setupenumeration
+
+\setupenumeration % check with old
+  [\c!alternative=\v!top,
+   \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
+  %\c!style=,
+  %\c!color=,
+  %\c!headcolor=,
+  %\c!titlecolor=,
+   \c!width=8\emwidth,
+  %\c!distance=\zeropoint,
+   \c!distance=\emwidth,
+   \c!titledistance=.5\emwidth,
+  %\c!hang=,
+  %\c!sample=,
+  %\c!align=,
+  %\c!headalign=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+  %\c!closesymbol=,
+   \c!closecommand=\wordright,
+   \c!display=\v!yes,
+  %\c!command=,
+   \c!titlecommand=,
+   \c!expansion=\v!no,
+  %\c!xmlsetup=,
+  %\s!catcodes=,
+   \c!way=\v!by\v!text,
+   \c!prefix=\v!no,
+   \c!prefixconnector=.,
+  %\c!starter=,
+  %\c!stopper=,
+   \c!text=\currentenumeration,
+   \c!number=\v!yes, % else description
+   \c!start=0,
+   \c!state=\v!start,
+   \c!levels=4]
+
+% to be considered:
+%
+% \let\??construction\??enumeration
+%
+% with push/pop (also at definition time)
+
+\protected\def\strc_define_commands_enumeration#tag#level#parent%
+  {\doifelsenothing{#parent}
+     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
+      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration}}%
+     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
+      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration#parent}}%
+   \frozen\instance\setuevalue{\e!next #tag}{\strc_enumerations_next   {#tag}{\number#level}}% obsolete
+   \frozen\instance\setuevalue{\c!reset#tag}{\strc_enumerations_reset  {#tag}{\number#level}}% obsolete
+   %frozen\instance\setuevalue{\c!set  #tag}{\strc_enumerations_set    {#tag}{\number#level}}% obsolete
+   \frozen\instance\setuevalue        {#tag}{\strc_enumerations_command[#tag]}% we could pass level here as well (faster)
+   \frozen\instance\setuevalue{\e!start#tag}{\strc_enumerations_start  [#tag]}% we could pass level here as well (faster)
+   \frozen\instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
+
+\appendtoks
+    \ifempty\currentenumerationparent
+       % clone => parent | subclone => clone | subsubclone => subclone
+       \let\currentenumerationsub\empty
+       \strc_define_commands_enumeration
+         {\currentenumerationsub\currentenumeration}%
+         \plusone
+         \empty
+       \edef\p_levels{\enumerationparameter\c!levels}%
+       \dostepwiserecurse\plustwo\p_levels\plusone
+         {\strc_define_commands_enumeration
+            {\v!sub\currentenumerationsub\currentenumeration}%
+            \recurselevel
+            {\currentenumerationsub\currentenumeration}%
+          \edef\currentenumerationsub{\v!sub\currentenumerationsub}}%
+   \else
+       % clone => parent | subclone => subparent | subsubclone => subsubparent
+       \let\currentenumerationsub\empty
+       \edef\p_levels{\enumerationparameter\c!levels}%
+       \dorecurse\p_levels
+         {\strc_define_commands_enumeration
+            {\currentenumerationsub\currentenumeration}%
+            \recurselevel
+            {\currentenumerationsub\currentenumerationparent}%
+          \edef\currentenumerationsub{\v!sub\currentenumerationsub}}%
+   \fi
+   \edef\p_counter{\enumerationparameter\s!counter}% can inherit from parent
+   \ifempty\p_counter %
+       \let\p_counter\currentenumeration
+   \fi
+   \doifelsecounter\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+   \letenumerationparameter\s!counter\p_counter
+  %\strc_enumerations_setup_counter\currentenumeration
+\to \everydefineenumeration
+
+\let\p_strc_constructions_title \empty
+\let\p_strc_constructions_number\empty
+
+\protected\setvalue{\??constructioninitializer\v!enumeration}%
+  {\let         \currentenumeration              \currentconstruction
+   \enforced\let\constructionparameter           \enumerationparameter
+   \enforced\let\constructionnamespace           \??enumeration
+   \enforced\let\detokenizedconstructionparameter\detokenizedenumerationparameter
+   \enforced\let\letconstructionparameter        \letenumerationparameter
+   \enforced\let\useconstructionstyleandcolor    \useenumerationstyleandcolor
+   \enforced\let\setupcurrentconstruction        \setupcurrentenumeration
+   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
+   \ifx\p_strc_constructions_number\v!yes
+     \settrue\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_save\currentconstructionnumber
+     \fi
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \else
+     \setfalse\c_strc_constructions_number_state
+   \fi
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
+     \settrue\c_strc_constructions_title_state
+   \else
+     \setfalse\c_strc_constructions_title_state
+   \fi}
+
+\protected\setvalue{\??constructionfinalizer\v!enumeration}%
+  {\ifconditional\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_restore\currentconstructionnumber
+     \fi
+   \fi}
+
+%D Interfaces:
+
+\let\strc_enumerations_command\strc_descriptions_command
+\let\strc_enumerations_start  \strc_descriptions_start
+\let\strc_enumerations_stop   \strc_descriptions_stop
+
+\protected\def\strc_enumerations_next {\strc_constructions_next_indeed \namedenumerationparameter} % #1#2
+\protected\def\strc_enumerations_reset{\strc_constructions_reset_indeed\namedenumerationparameter} % #1#2
+%protected\def\strc_enumerations_set  {\strc_constructions_set_indeed  \namedenumerationparameter} % #1#2
+
+%D Counters (maybe we can share this code): (not ok yet, messy with notes)
+
+% Maybe we should move counters to the construction level as more derived mechanisms
+% use it \unknown\ so don't depend on names here!
+
+\def\strc_enumerations_define_counter#tag% todo: move inline
+  {\definecounter[#tag]%
+   \registerenumerationcounter{#tag}}
+
+\appendtoks
+    \synchronizeenumerationcounters
+\to \everysetupenumeration
+
+\appendtoks
+    \synchronizeenumerationcounters
+\to \everydefineenumeration
+
+%D Initializer:
+
+%D The handlers.
+
+\newtoks\everyenumeration
+
+\letcsname\??constructionmainhandler   \v!enumeration\expandafter\endcsname\csname\??constructionmainhandler   \v!description\endcsname
+\letcsname\??constructioncommandhandler\v!enumeration\expandafter\endcsname\csname\??constructioncommandhandler\v!description\endcsname
+\letcsname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
+\letcsname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
+
+\protected\setvalue{\??constructiontexthandler\v!enumeration}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor
+   \strc_enumerations_text
+   \endgroup}
+
+\protected\def\strc_enumerations_text
+  {\the\everyenumeration % will become obsolete
+   \ifconditional\c_strc_constructions_number_state
+     \ifx\currentconstructionreference\!!plustoken
+       \strc_enumerations_full_number_symbol
+     \orelse\ifx\currentconstructionreference\!!minustoken
+       \strc_enumerations_full_number_nop
+     \else
+       \strc_enumerations_full_number_coupling
+     \fi
+   \else
+     \strc_enumerations_full_number_nop
+   \fi}
+
+\protected\def\strc_enumerations_inject_text_with_space
+  {\edef\p_text{\constructionparameter\c!text}%
+   \ifempty\p_text \else
+      \p_text
+      \removeunwantedspaces
+      \nobreakspace
+   \fi}
+
+\protected\def\strc_enumerations_inject_extra_text
+  {\ifconditional\c_strc_constructions_title_state
+     \clf_doifelselisthastitle{\currentconstructionmain}\numexpr\currentconstructionlistentry\relax
+       \strc_enumerations_inject_extra_text_indeed
+       \donothing
+   \fi}
+
+\protected\def\strc_enumerations_inject_text
+  {\constructionparameter\c!numbercommand
+    {\constructionparameter\c!text}}
+
+% head ( number title )
+
+\protected\def\strc_enumerations_inject_extra_text_indeed
+  {\begingroup
+   \hskip\constructionparameter\c!titledistance % we listen to the headstyle
+   \useconstructionstyleandcolor\c!titlestyle\c!titlecolor
+   \constructionparameter\c!titlecommand
+     {\constructionparameter\c!titleleft
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax
+      \constructionparameter\c!titleright}%
+   \endgroup}
+
+\protected\def\strc_enumerations_inject_symbol % todo check
+  {\constructionparameter\c!left
+   \constructionparameter\c!symbol
+   \constructionparameter\c!right}
+
+\protected\def\strc_enumerations_inject_number
+  {\constructionparameter\c!left
+   \constructionparameter\c!starter
+   \clf_savedlistprefixednumber{\currentconstructionmain}\currentconstructionlistentry\relax
+   \constructionparameter\c!stopper
+   \constructionparameter\c!right}
+
+\protected\def\strc_enumerations_inject_text_and_number
+  {\constructionparameter\c!numbercommand
+     {\strc_enumerations_inject_text_with_space
+      \strc_enumerations_inject_number}}
+
+\protected\def\strc_enumerations_inject_text_and_symbol
+  {\constructionparameter\c!numbercommand
+     {\strc_enumerations_inject_text_with_space
+      \strc_enumerations_inject_symbol}}
+
+\protected\def\strc_enumerations_full_number_yes
+  {\constructionparameter\c!headcommand
+     {\begstrut
+      \strc_enumerations_inject_text_and_number
+      \strc_enumerations_inject_extra_text
+      \endstrut}}
+
+\protected\def\strc_enumerations_full_number_nop
+  {\constructionparameter\c!headcommand
+     {\begstrut
+      \strc_enumerations_inject_text
+      \strc_enumerations_inject_extra_text
+      \endstrut}}
+
+\protected\def\strc_enumerations_full_number_symbol
+  {\constructionparameter\c!headcommand
+     {\begstrut
+      \strc_enumerations_inject_text_and_symbol
+      \strc_enumerations_inject_extra_text
+      \endstrut}}
+
+% to be used in for instance:
+%
+% coupling=questions .... coupling=answers
+%
+% we will provide some more control, like skipping etc or reference relates
+
+% to do / to be checked
+
+\protected\def\strc_enumerations_full_number_coupling
+  {\iflocation
+     \strc_enumerations_full_number_yes
+   \else
+     \iftrialtypesetting \else
+       % \doenumerationregistercoupling
+     \fi
+     \strc_enumerations_full_number_yes
+     \edef\p_coupling{\constructionparameter\c!coupling}%
+     \ifempty\p_coupling \else
+       \symbolreference[order(construction:\p_coupling:\the\locationorder)]%
+     \fi
+   \fi}
+
+\protected\def\strc_enumerations_skip_number_coupling[#tag]% e.g. for questions with no answer
+  {\clf_setnextreferenceorder{construction}{#tag}}
+
+\protect \endinput

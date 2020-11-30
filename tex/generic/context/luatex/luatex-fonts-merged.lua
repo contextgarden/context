@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-11-19 11:23
+-- merge date  : 2020-11-30 10:20
 
 do -- begin closure to overcome local limits and interference
 
@@ -26627,6 +26627,7 @@ local copy_only_glyphs=nuts.copy_only_glyphs
 local count_components=nuts.count_components
 local set_components=nuts.set_components
 local get_components=nuts.get_components
+local flush_components=nuts.flush_components
 local ischar=nuts.ischar
 local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
@@ -26831,6 +26832,7 @@ local function markstoligature(head,start,stop,char)
   setsubtype(base,ligatureglyph_code)
   set_components(base,start)
   setlink(prev,base,next)
+  flush_components(start)
   return head,base
  end
 end
@@ -26910,6 +26912,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     break
    end
   end
+  flush_components(components)
  else
   local discprev,discnext=getboth(discfound)
   if discprev and discnext then

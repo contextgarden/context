@@ -1,0 +1,296 @@
+%D \module
+%D   [       file=luat-ini,
+%D        version=2005.08.11,
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Macros / Initialization}
+
+\unprotect
+
+%D Loading lua code can be done using \type {startup.lua}. The following method uses
+%D the \TEX\ input file locator of kpse. At least we need to use that way of loading
+%D when we haven't yet define our own code, which we keep outside the format. We
+%D will keep code outside \TEX\ files as much as possible. The solutions evolved
+%D with the engine but one can find some history in the \MKIV\ files and articles.
+
+\ifdefined\setnaturalcatcodes \else \let\setnaturalcatcodes\relax \fi
+\ifdefined\obeylualines       \else \let\obeylualines      \relax \fi
+\ifdefined\obeyluatokens      \else \let\obeyluatokens     \relax \fi
+
+%D A few more goodies:
+
+\aliased\let\stoplua    \relax % tex catcodes
+\aliased\let\stopluacode\relax % lua catcodes
+
+%D It might makes sense to have a \type {\directelua} so that we can avoid the \type
+%D {\normalexpanded} around \type {\directlua}. Something to discuss in the team.
+
+\permanent\protected\def\startlua % \stoplua
+  {\begingroup
+   \obeylualines
+   \luat_start_lua_indeed}
+
+\def\luat_start_lua_indeed#1\stoplua
+  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
+
+\permanent\protected\def\startluacode % \stopluacode
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \luat_start_lua_code_indeed}
+
+\def\luat_start_lua_code_indeed#1\stopluacode
+  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
+
+%D Some delayed definitions:
+
+\ifdefined\obeylines   \else \let\obeylines   \relax \fi
+\ifdefined\obeyedline  \else \let\obeyedline  \relax \fi
+\ifdefined\obeyspaces  \else \let\obeyspaces  \relax \fi
+\ifdefined\obeyedspace \else \let\obeyedspace \relax \fi
+
+\let\obeylualines\relax
+
+\newtoks\everyluacode
+
+%D It is nicer for checking with \type {s-system-macros} if we have some meaning:
+
+\ifdefined\n \else \def\n{n} \fi \ifdefined\r \else \def\r{r} \fi
+\ifdefined\f \else \def\f{f} \fi \ifdefined\t \else \def\t{t} \fi
+\ifdefined\a \else \def\a{a} \fi \ifdefined\b \else \def\b{b} \fi
+\ifdefined\v \else \def\v{v} \fi \ifdefined\s \else \def\s{s} \fi
+
+\ifdefined\+ \else \def\+{+} \fi \ifdefined\- \else \def\-{-} \fi
+
+\ifdefined\1 \else \def\1{1} \fi \ifdefined\2 \else \def\2{2} \fi
+\ifdefined\3 \else \def\3{3} \fi \ifdefined\4 \else \def\4{4} \fi
+\ifdefined\5 \else \def\5{5} \fi \ifdefined\6 \else \def\6{6} \fi
+\ifdefined\7 \else \def\7{7} \fi \ifdefined\8 \else \def\8{8} \fi
+\ifdefined\9 \else \def\9{9} \fi \ifdefined\0 \else \def\0{0} \fi
+
+\immutable\edef\lua_letter_backslash{\string\\}
+\immutable\edef\lua_letter_bar      {\string\|} \immutable\edef\lua_letter_dash     {\string\-}
+\immutable\edef\lua_letter_lparent  {\string\(} \immutable\edef\lua_letter_rparent  {\string\)}
+\immutable\edef\lua_letter_lbrace   {\string\{} \immutable\edef\lua_letter_rbrace   {\string\}}
+\immutable\edef\lua_letter_squote   {\string\'} \immutable\edef\lua_letter_dquote   {\string\"}
+\immutable\edef\lua_letter_n        {\string\n} \immutable\edef\lua_letter_r        {\string\r}
+\immutable\edef\lua_letter_f        {\string\f} \immutable\edef\lua_letter_t        {\string\t}
+\immutable\edef\lua_letter_a        {\string\a} \immutable\edef\lua_letter_b        {\string\b}
+\immutable\edef\lua_letter_v        {\string\v} \immutable\edef\lua_letter_s        {\string\s}
+\immutable\edef\lua_letter_one      {\string\1} \immutable\edef\lua_letter_two      {\string\2}
+\immutable\edef\lua_letter_three    {\string\3} \immutable\edef\lua_letter_four     {\string\4}
+\immutable\edef\lua_letter_five     {\string\5} \immutable\edef\lua_letter_six      {\string\6}
+\immutable\edef\lua_letter_seven    {\string\7} \immutable\edef\lua_letter_eight    {\string\8}
+\immutable\edef\lua_letter_nine     {\string\9} \immutable\edef\lua_letter_zero     {\string\0}
+
+\pushoverloadmode
+    \let\-\explicitdiscretionary
+\popoverloadmode
+
+\everyluacode {% \appendtoks
+   \enforced\let\\\lua_letter_backslash
+   \enforced\let\|\lua_letter_bar       \enforced\let\-\lua_letter_dash
+   \enforced\let\(\lua_letter_lparent   \enforced\let\)\lua_letter_rparent
+   \enforced\let\{\lua_letter_lbrace    \enforced\let\}\lua_letter_rbrace
+   \enforced\let\'\lua_letter_squote    \enforced\let\"\lua_letter_dquote
+   \enforced\let\n\lua_letter_n         \enforced\let\r\lua_letter_r
+   \enforced\let\f\lua_letter_f         \enforced\let\t\lua_letter_t
+   \enforced\let\a\lua_letter_a         \enforced\let\b\lua_letter_b
+   \enforced\let\v\lua_letter_v         \enforced\let\s\lua_letter_s
+   \enforced\let\1\lua_letter_one       \enforced\let\2\lua_letter_two
+   \enforced\let\3\lua_letter_three     \enforced\let\4\lua_letter_four
+   \enforced\let\5\lua_letter_five      \enforced\let\6\lua_letter_six
+   \enforced\let\7\lua_letter_seven     \enforced\let\8\lua_letter_eight
+   \enforced\let\9\lua_letter_nine      \enforced\let\0\lua_letter_zero
+} % \to \everyluacode
+
+\permanent\protected\def\obeyluatokens
+  {\setcatcodetable\luacatcodes
+   \the\everyluacode}
+
+\immutable\edef\luamajorversion{\ctxwrite{LUAMINORVERSION}}
+\immutable\edef\luaminorversion{\ctxwrite{LUAMAJORVERSION}}
+
+%D We need a way to pass strings safely to \LUA\ without the need for tricky
+%D escaping. Compare:
+%D
+%D \starttyping
+%D \ctxlua {something("anything tricky can go here")}
+%D \ctxlua {something([\luastringsep[anything tricky can go here]\luastringsep])}
+%D \stoptyping
+
+\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
+
+\edef\!!bs{[\luastringsep[}
+\edef\!!es{]\luastringsep]}
+
+%D We have a the following available as primitive so there is no need for it:
+%D
+%D \starttyping
+%D \edef\luaescapestring#1{\!!bs#1\!!es}
+%D \stoptyping
+
+\permanent\protected\def\setdocumentfilename       #1#2{\clf_setdocumentfilename\numexpr#1\relax{#2}}
+\permanent          \def\getdocumentfilename         #1{\clf_getdocumentfilename\numexpr#1\relax}
+\permanent\protected\def\setdocumentargument       #1#2{\clf_setdocumentargument{#1}{#2}}
+\permanent          \def\getdocumentargument         #1{\clf_getdocumentargument{#1}{}}
+\permanent\protected\def\setdocumentargumentdefault#1#2{\clf_setdocumentdefaultargument{#1}{#2}}
+\permanent          \def\getdocumentargumentdefault#1#2{\clf_getdocumentargument{#1}{#2}}
+
+% seldom used so no need for speedy variants:
+
+\permanent\def\doifelsedocumentargument    #1{\doifelsesomething{\clf_getdocumentargument{#1}}}
+\permanent\def\doifdocumentargument        #1{\doifsomething    {\clf_getdocumentargument{#1}}}
+\permanent\def\doifnotdocumentargument     #1{\doifnothing      {\clf_getdocumentargument{#1}}}
+\permanent\def\doifelsedocumentfilename    #1{\doifelsesomething{\clf_getdocumentfilename\numexpr#1\relax}}
+\permanent\def\doifdocumentfilename        #1{\doifsomething    {\clf_getdocumentfilename\numexpr#1\relax}}
+\permanent\def\doifnotdocumentfilename     #1{\doifnothing      {\clf_getdocumentfilename\numexpr#1\relax}}
+
+\aliased\let\doifdocumentargumentelse\doifelsedocumentargument
+\aliased\let\doifdocumentfilenameelse\doifelsedocumentfilename
+
+%D A handy helper:
+
+\permanent\def\luaexpanded#1{\luaescapestring\expandafter{\normalexpanded{#1}}}
+
+%D Experimental:
+
+\permanent\protected\def\startluaparameterset[#1]% \stopluaparameterset
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \luat_start_lua_parameter_set{#1}}
+
+\def\luat_start_lua_parameter_set#1#2\stopluaparameterset
+  {\ctxlua{parametersets["#1"]={#2}}%
+   \endgroup}
+
+\aliased\let\stopluaparameterset\relax
+
+\permanent\def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} context("#1")}}
+
+% todo: \mergeparameterset
+
+% usage:
+%
+% \startluaparameterset [u3d:myset:display:1]
+%     toolbar=false,
+%     tree=true
+% \stopluaparameterset
+%
+% option=u3d:myset:display:1
+%
+% or:
+%
+% option=\luaparameterset{u3d:myset:display:1}{toolbar=false,tree=true}
+
+%D A Handy helper:
+
+\permanent\def\luaconditional#1{\ifcase#1tru\else fals\fi e}
+
+%D Goodie:
+%D
+%D \starttyping
+%D \ctxluacode{context("%0.5f",1/3)}
+%D \stoptyping
+
+\permanent\protected\def\ctxluacode
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \catcode\leftbraceasciicode \plusone
+   \catcode\rightbraceasciicode\plustwo
+   \afterassignment\luat_lua_code
+   \scratchtoks=}
+
+% Hm, are we sure that the \* commands work out okay here? We could probably
+% use \setcatcodetable\luacatcodes instead of \obeyluatokens now.
+
+\def\luat_lua_code
+  {\normalexpanded{\endgroup\noexpand\directlua\expandafter{\the\scratchtoks}}} % \zerocount is default
+
+% \startctxfunction MyFunctionA
+%     context(" A1 ")
+% \stopctxfunction
+%
+% \startctxfunctiondefinition MyFunctionB
+%     context(" B2 ")
+% \stopctxfunctiondefinition
+%
+% \starttext
+%     \dorecurse{10000}{\ctxfunction{MyFunctionA}} \page
+%     \dorecurse{10000}{\MyFunctionB} \page
+%     \dorecurse{10000}{\ctxlua{context(" C3 ")}} \page
+% \stoptext
+
+\installsystemnamespace{ctxfunction}
+
+\permanent\protected\def\startctxfunctiondefinition #1 % \stopctxfunctiondefinition
+  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_definition_indeed{#1}}
+
+\installsystemnamespace{luafunction}
+
+\def\luat_start_lua_function_definition_indeed#1#2\stopctxfunctiondefinition
+  {\endgroup
+   \expandafter\chardef\csname\??luafunction#1\endcsname\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax
+   \edefcsname#1\endcsname{\noexpand\luafunction\csname\??luafunction#1\endcsname}}
+
+\permanent\protected\def\setctxluafunction#1#2% experiment
+  {\expandafter\chardef\csname\??luafunction#1\endcsname#2\relax
+   \edefcsname#1\endcsname{\noexpand\luafunction\csname\??luafunction#1\endcsname}}
+
+\aliased\let\stopctxfunctiondefinition\relax
+
+\permanent\protected\def\startctxfunction #1 % \stopctxfunction
+  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_indeed{#1}}
+
+\def\luat_start_lua_function_indeed#1#2\stopctxfunction
+  {\endgroup\edefcsname\??ctxfunction#1\endcsname{\noexpand\luafunction\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax}}
+
+\aliased\let\stopctxfunction\relax
+
+\permanent\def\ctxfunction#1%
+  {\begincsname\??ctxfunction#1\endcsname}
+
+%D In theory this is faster due to the call not being wrapped in a function but in
+%D practice the speedup can't be noticed. The actions called for often have lots of
+%D lookups so an extra one doesn't matter much. The kind of calls differs a lot per
+%D document and often there are other ways to optimize a style. For instance we can
+%D gain a lot when defining a font, but when a frozen definition is used that gain
+%D gets completely lost. For some calls (take list writers) it can get worse if only
+%D because readability gets worse and passing is already efficient due to selective
+%D flushing, while with the token scanners one has to scan all of them.
+
+% \startctxfunctiondefinition foo commands.foo() \stopctxfunctiondefinition
+%
+% \installctxfunction\foo{commands.foo}
+
+\permanent\protected\def\installctxfunction#1#2% expandable
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\normalluadef\csname\m_syst_name\endcsname\ctxcommand{ctxfunction(\!!bs#2\!!es,true)}\relax}
+
+\permanent\protected\def\installctxscanner#1#2% expandable
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\normalluadef\csname\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name",\!!bs#2\!!es,true)}\relax}
+
+\permanent\protected\def\installprotectedctxfunction#1#2% protected
+  {\edef\m_syst_name{\csstring#1}%
+   \global\protected\expandafter\normalluadef\csname\m_syst_name\endcsname\ctxcommand{ctxfunction(\!!bs#2\!!es,true)}\relax}
+
+\permanent\protected\def\installprotectedctxscanner#1#2% protected
+  {\edef\m_syst_name{\csstring#1}%
+   \global\protected\expandafter\normalluadef\csname\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name",\!!bs#2\!!es,true)}\relax}
+
+\permanent\protected\def\resetctxscanner#1%
+  {\edef\m_syst_name{\csstring#1}%
+   \gletcsname\m_syst_name\endcsname\relax}
+
+\protect \endinput

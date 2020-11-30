@@ -1,0 +1,95 @@
+%D \module
+%D   [       file=meta-lua,
+%D        version=2012.07.23,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Templates,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Don't use this code yet. I use it in some experimental rendering of graphics
+%D based on output from database queries. It's not that pretty but will be
+%D considered when the (similar) lmx code is redone. Also, dropping the print
+%D variant makes it nicer. This experiment is part of playing with several template
+%D mechanisms. (Also see trac-lmx.)
+%D
+%D Note for myself: see if the (bar)chart code use in q2p can use this kind of
+%D magic. Basically we then need a channel to data.
+
+\writestatus{loading}{MetaPost Library Graphics / Templates}
+
+\registerctxluafile{meta-lua}{}
+
+\continueifinputfile{meta-lua.mkiv}
+
+\starttext
+
+% conforming btex ... etex
+
+\startbuffer[test-a]
+    blua for i=1,100,5 do elua
+        draw fullcircle scaled (blua p(i) elua * cm) withcolor green withpen pencircle scaled 4 ;
+    blua end elua
+
+    blua for i=1,100,10 do elua
+        draw fullcircle scaled (blua p(i) elua * cm) withcolor red withpen pencircle scaled 2 ;
+    blua end elua
+\stopbuffer
+
+\startMPpage[offset=10pt]
+    input "mpstemplate://buffer?name=test-a" ;
+\stopMPpage
+
+% conforming lmx
+
+\startbuffer[test-b]
+    <?lua for i=1,100,5 do ?>
+        draw fullcircle scaled (<?lua p(i) ?> * cm) withcolor green withpen pencircle scaled 4 ;
+    <?lua end ?>
+
+    <?lua for i=1,100,10 do ?>
+        draw fullcircle scaled (<?lua p(i) ?> * cm) withcolor red withpen pencircle scaled 2 ;
+    <?lua end ?>
+\stopbuffer
+
+\startMPpage[offset=10pt]
+    input "mpstemplate://buffer?name=test-b" ;
+\stopMPpage
+
+\startMPpage[offset=10pt]
+    picture p[] ; % we can't input nested
+    input "mpstemplate://buffer?name=test-a&method=metapost" ;
+    p[1] := currentpicture ; currentpicture := nullpicture ;
+    input "mpstemplate://buffer?name=test-b&method=xml" ;
+    p[2] := currentpicture ; currentpicture := nullpicture ;
+    draw p[1] ysized 3cm ;
+    draw p[2] ysized 4cm shifted (4cm,0) ;
+\stopMPpage
+
+% a mixture (using a wrapped input)
+
+\startMPpage[offset=10pt]
+    draw image (loadfile("mpstemplate://buffer?name=test-a&method=metapost")) ysized 3cm shifted (4cm,0cm) ;
+    draw image (loadfile("mpstemplate://buffer?name=test-b&method=xml"))      ysized 3cm shifted (0cm,4cm) ;
+    draw loadimage      ("mpstemplate://buffer?name=test-a&method=metapost")  ysized 4cm shifted (4cm,4cm) ;
+    draw loadimage      ("mpstemplate://buffer?name=test-b&method=xml")       ysized 4cm shifted (0cm,0cm) ;
+\stopMPpage
+
+% conforming myself
+
+\startluacode
+    context.startMPpage { offset = "10pt" }
+        for i=1,100,5 do
+            context("draw fullcircle scaled (%s * cm) withcolor green withpen pencircle scaled 4 ;",i)
+        end
+        for i=1,100,10 do
+            context("draw fullcircle scaled (%s * cm) withcolor red withpen pencircle scaled 2 ;",i)
+        end
+    context.stopMPpage()
+\stopluacode
+
+\stoptext

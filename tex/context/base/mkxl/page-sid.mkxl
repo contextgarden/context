@@ -1,0 +1,1019 @@
+%D \module
+%D   [       file=page-sid,
+%D        version=2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Side Floats,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Side Floats}
+
+\unprotect
+
+%D These macro deal with side floats. We started with Daniel Comenetz macros as
+%D published in TUGBoat Volume 14 (1993), No.\ 1: Anchored Figures at Either Margin.
+%D I extended and patched the macros to suite our needs which results in a messy
+%D module.
+%D
+%D A complication is that we need to deal with spacing differently before and after
+%D the float. Also, whitespace can interfere as does the prevdepth. There is no real
+%D universal solution. So, by now not much is left of that code, if only because we
+%D need to match \CONTEXT\ spacing module, because we have more placement options
+%D and control and because the math hackery is not suitable for \CONTEXT\ anyway.
+%D
+%D This code had been redone many times because we kept running into spacing issues
+%D and it's not that much fun (or rewarding). It's probably the module that made
+%D me go into distraciton mode most often (like watching amusing Walk of The
+%D Earth, sophisticated Massive Attack video clips, impressive Davie504 movies
+%D and so on).
+
+\newdimen       \d_page_sides_margin
+\newdimen       \d_page_sides_height       % includes the topskip
+\newdimen       \d_page_sides_width
+\newdimen       \d_page_sides_hsize
+\newdimen       \d_page_sides_vsize
+\newdimen       \d_page_sides_vsize_reset
+\newdimen       \d_page_sides_progress
+\newdimen       \d_page_sides_page_total
+
+\newdimen       \d_page_sides_leftoffset
+\newdimen       \d_page_sides_rightoffset
+
+%newbox         \b_page_sides_bottom
+
+\newcount       \c_page_sides_lines_done
+\newcount       \c_page_sides_checks_done
+\newcount       \c_page_sides_n_of_lines
+\newcount       \c_page_sides_n_of_hang
+\newconstant    \c_page_sides_float_type
+\newcount       \c_page_sides_hangafter
+
+\newconditional \c_page_sides_short
+\newconditional \c_page_sides_flag
+
+\newdimen       \d_page_sides_shift
+\newdimen       \d_page_sides_extrashift
+\newdimen       \d_page_sides_leftshift
+\newdimen       \d_page_sides_rightshift
+\newdimen       \d_page_sides_leftskip
+\newdimen       \d_page_sides_rightskip
+\newdimen       \d_page_sides_maximum
+\newdimen       \d_page_sides_topskip
+\newdimen       \d_page_sides_bottomskip
+\newdimen       \d_page_sides_midskip
+\newdimen       \d_page_sides_downshift
+\newdimen       \d_page_sides_pagetotal
+\newdimen       \d_page_sides_topoffset
+\newdimen       \d_page_sides_bottomoffset
+\newdimen       \d_page_sides_toptotal
+\newdimen       \d_page_sides_bottomtotal
+
+\newconstant    \c_page_sides_align
+\newconstant    \c_page_sides_skipmode
+\newconstant    \c_page_sides_tolerance
+
+\newconstant    \c_page_sides_method % sort of obsolete
+
+\newdimen       \d_page_sides_progression
+
+\newcount       \c_page_sides_m_of_lines
+\newconditional \c_page_sides_delayed
+
+\newconditional \c_page_sides_check_same_page
+
+\newif          \iftracesidefloats % public (might change)
+
+%D Defaults:
+
+\d_page_sides_vsize_reset -\onepoint
+%d_page_sides_vsize_reset  \zeropoint % could be an option, needs testing
+
+%D We have some basic (and colorful) tracing:
+
+\def\page_sides_floats_legend
+  {\showmessage\m!floatblocks{16}\empty
+   \glet\page_sides_floats_legend\relax}
+
+\installtextracker{floats.anchoring}
+  {\page_sides_floats_legend
+   \tracesidefloatstrue}
+  {\tracesidefloatsfalse}
+
+%D The horizontal shifts depend on the location: left or right in the text, margin
+%D or edge. These shifts are rather stable and don't interfere with the page flow
+%D as much as the vertical ones do.
+
+\def\page_sides_process_float_backspace  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
+\def\page_sides_process_float_leftedge   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
+\def\page_sides_process_float_leftmargin {\global\c_page_sides_float_type\plusthree\page_sides_handle_float}
+\def\page_sides_process_float_left       {\global\c_page_sides_float_type\plusfour \page_sides_handle_float}
+\def\page_sides_process_float_right      {\global\c_page_sides_float_type\plusfive \page_sides_handle_float}
+\def\page_sides_process_float_rightmargin{\global\c_page_sides_float_type\plussix  \page_sides_handle_float}
+\def\page_sides_process_float_rightedge  {\global\c_page_sides_float_type\plusseven\page_sides_handle_float}
+\def\page_sides_process_float_cutspace   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
+\def\page_sides_process_float_margin     {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
+
+\def\page_sides_check_horizontal_skips
+  {\ifcase\c_page_sides_skipmode
+   \or % high
+   \or % low
+   \or % fit
+     \global\d_page_sides_margin\zeropoint
+   \fi}
+
+\def\page_sides_apply_horizontal_shift
+  {\ifdim\d_page_sides_maximum>\zeropoint
+     \ifcase\c_page_sides_float_type
+       % invalid
+     \or
+       % backspace
+     \or
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
+         -\rightorleftpageaction \leftedgedistance   \rightedgedistance
+         -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
+         -\rightorleftpageaction \leftmargindistance \rightmargindistance
+         -\compensatedinnermakeupmargin
+       \relax
+     \or
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
+         -\rightorleftpageaction \leftmargindistance \rightmargindistance
+         -\compensatedinnermakeupmargin
+       \relax
+     \or
+       % left
+     \or
+       % right
+     \or
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
+         -\rightorleftpageaction \leftmargindistance \rightmargindistance
+         -\compensatedinnermakeupmargin
+       \relax
+     \or
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
+         -\rightorleftpageaction \leftedgedistance   \rightedgedistance
+         -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
+         -\rightorleftpageaction \leftmargindistance \rightmargindistance
+         -\compensatedinnermakeupmargin
+       \relax
+     \or
+       % cutspace
+     \fi
+   \fi
+   \ifdim\d_page_sides_shift=\zeropoint \relax
+     \ifnum\c_page_sides_float_type=\plusfour
+       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\d_page_sides_extrashift\zeropoint
+     \orelse\ifnum\c_page_sides_float_type=\plusfive
+       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\d_page_sides_extrashift\zeropoint
+     \fi
+   \else
+     \ifnum\c_page_sides_float_type<\plusfour
+       \global\c_page_sides_float_type\plusfour
+     \orelse\ifnum\c_page_sides_float_type>\plusfive
+       \global\c_page_sides_float_type\plusfive
+     \fi
+   \fi}
+
+\def\page_sides_set_skips
+  {\global\d_page_sides_rightskip\zeropoint
+   \global\d_page_sides_leftskip \zeropoint
+   \ifcase\c_page_sides_float_type
+   \or % backspace
+     \global\d_page_sides_leftskip\dimexpr
+       +\rightorleftpageaction \backspace           \cutspace
+       +\compensatedinnermakeupmargin
+     \relax
+   \or % leftedge
+     \global\d_page_sides_leftskip\dimexpr
+       +\rightorleftpageaction \leftmargindistance  \rightmargindistance
+       +\rightorleftpageaction \leftmarginwidth     \rightmarginwidth
+       +\rightorleftpageaction \leftedgedistance    \rightedgedistance
+       +\compensatedinnermakeupmargin
+     \relax
+   \or % leftmargin
+     \global\d_page_sides_leftskip\dimexpr
+       +\rightorleftpageaction \leftmargindistance  \rightmargindistance
+       +\compensatedinnermakeupmargin
+     \relax
+   \or % leftside
+   \or % rightside
+   \or % rightmargin
+     \global\d_page_sides_rightskip\dimexpr
+       +\rightorleftpageaction \rightmargindistance \leftmargindistance
+       +\compensatedinnermakeupmargin
+     \relax
+   \or % rightedge
+     \global\d_page_sides_rightskip\dimexpr
+       +\rightorleftpageaction \rightmargindistance \leftmargindistance
+       +\rightorleftpageaction \rightmarginwidth    \leftmarginwidth
+       +\rightorleftpageaction \rightedgedistance   \leftedgedistance
+       +\compensatedinnermakeupmargin
+     \relax
+   \or % cutspace
+     \global\d_page_sides_rightskip\dimexpr
+       +\rightorleftpageaction \cutspace            \backspace
+       +\compensatedinnermakeupmargin
+     \relax
+   \fi
+   \global\d_page_sides_leftoffset \d_page_sides_rightskip
+   \global\d_page_sides_rightoffset\d_page_sides_leftskip
+   \ifdim\d_page_sides_rightskip>\zeropoint
+     \global\advance\d_page_sides_rightskip\rightskip
+   \fi
+   \ifdim\d_page_sides_leftskip >\zeropoint
+     \global\advance\d_page_sides_leftskip \leftskip
+   \fi}
+
+%D Shifts get applied to the float box:
+
+\def\page_sides_relocate_float#1%
+  {\global\setbox\floatbox\hpack
+     {\ifnum\c_page_sides_float_type=\plusfour
+        \kern\d_page_sides_leftshift
+      \orelse\ifnum\c_page_sides_float_type=\plusone
+        \kern\d_page_sides_leftshift
+      \fi
+      \ifnum\c_page_sides_float_type>\plusfour
+        \kern-\d_page_sides_extrashift
+      \else
+        \kern\d_page_sides_shift
+      \fi
+      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth \fi}%
+      \ifnum\c_page_sides_float_type>\plusfour
+        \kern\d_page_sides_shift
+      \else
+        \kern-\d_page_sides_extrashift
+      \fi
+      \ifnum\c_page_sides_float_type=\pluseight
+        \kern\d_page_sides_rightshift
+      \orelse\ifnum\c_page_sides_float_type=\plusfive
+        \kern\d_page_sides_rightshift
+      \fi}}
+
+%D The vertical skips are a nightmare and this mechanism is about as complex
+%D as one can get it.
+
+\def\page_sides_check_vertical_skips
+  {\ifdim\d_page_sides_topskip   <\zeropoint\d_page_sides_topskip   \zeropoint\fi
+   \ifdim\d_page_sides_bottomskip<\zeropoint\d_page_sides_bottomskip\zeropoint\fi
+   \ifdim\d_page_sides_midskip   <\zeropoint\d_page_sides_midskip   \zeropoint\fi
+   %
+   \global\d_page_sides_toptotal   \dimexpr\d_page_sides_topskip   +\d_page_sides_topoffset   \relax
+   \global\d_page_sides_bottomtotal\dimexpr\d_page_sides_bottomskip+\d_page_sides_bottomoffset\relax
+   \ifcase\c_page_sides_skipmode
+   \or % high
+     \global\d_page_sides_toptotal   \d_page_sides_topoffset
+   \or % low
+     \global\d_page_sides_bottomtotal\d_page_sides_bottomoffset
+   \or % fit
+     \global\d_page_sides_toptotal   \d_page_sides_topoffset
+     \global\d_page_sides_bottomtotal\d_page_sides_bottomoffset
+   \fi}
+
+%D These shifts get (selectively) applied with a bit of optional tracing.
+
+\def\page_sides_apply_vertical_shift_normal
+  {\global\setbox\floatbox\hpack % why extra box
+     {\vpack
+        {\forgetall
+         \hsize\wd\floatbox
+         \vskip\privatescratchdimen
+         \offinterlineskip
+         \box\floatbox
+         % somehow we need this \scratchbox magic, but at least it's the same as the
+         % tracer now
+         \setbox\scratchbox\emptybox
+         \wd\scratchbox\hsize
+         \ht\scratchbox\d_page_sides_bottomtotal
+         \box\scratchbox
+         \vskip-\d_page_sides_bottomtotal
+         \ifnum\c_page_sides_align=\plusfive
+           \vskip-\lineheight
+         \fi}}}
+
+\def\page_sides_apply_vertical_shift_traced
+  {\global\setbox\floatbox\hpack % why extra box
+     {\backgroundline[trace:r]{\ruledhpack{\vpack
+        {\forgetall
+         \hsize\wd\floatbox
+         \vskip\privatescratchdimen
+         \offinterlineskip
+         \backgroundline
+           [trace:g]%
+           {\ruledhpack{\box\floatbox}}%
+         \par
+         \blackrule
+           [\c!color=trace:s,%
+            \c!height=\d_page_sides_bottomtotal,%
+            \c!depth=\zeropoint,%
+            \c!width=\hsize]%
+         \vskip-\d_page_sides_bottomtotal
+         \ifnum\c_page_sides_align=\plusfive
+           \vskip-\lineheight
+         \fi}}}}}
+
+\def\page_sides_apply_vertical_shift
+  {\ifnum\c_page_sides_align=\plusfour
+     \getnoflines{\ht\floatbox}%
+     \privatescratchdimen\dimexpr\noflines\lineheight-\strutdp\relax
+     \getrawnoflines\d_page_sides_toptotal
+     \advance\privatescratchdimen\noflines\lineheight
+     \page_sides_force_depth
+     \ht\floatbox\privatescratchdimen
+     \dp\floatbox\zeropoint
+   \fi
+   \ifcase\c_page_sides_align \else
+     \global\d_page_sides_toptotal\zeropoint
+   \fi
+   \privatescratchdimen
+     \ifnum\c_page_sides_float_type<\plusfour
+       \d_page_sides_toptotal
+     \orelse\ifnum\c_page_sides_float_type>\plusfive
+       \d_page_sides_toptotal
+     \else
+       \zeropoint
+     \fi
+   % the top of the box is at the previous baseline
+   \ifcase\c_page_sides_align
+       % 0 normal
+     \advance\privatescratchdimen\strutdp % or \openstrutdepth
+   \or % 1 height
+     \advance\privatescratchdimen\strutdp % or \openstrutdepth
+   \or % 2 line
+   \or % 3 depth
+     \advance\privatescratchdimen\lineheight % or \openlineheight
+     \advance\privatescratchdimen\strutdp    % or \openstrutdepth
+   \or % 4 grid
+     \privatescratchdimen\zeropoint
+   \or
+     \advance\privatescratchdimen\strutht % or \openstrutheight
+   \fi
+   % new
+   \global\c_page_sides_lines_done\zerocount
+   \ifnum\c_page_sides_n_of_lines>\zerocount
+     \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
+   \fi
+   \iftracesidefloats
+     \page_sides_apply_vertical_shift_traced % uses \privatescratchdimen
+   \else
+     \page_sides_apply_vertical_shift_normal % uses \privatescratchdimen
+   \fi
+   \ifnum\c_page_sides_float_type<\plusfour
+     \global\d_page_sides_toptotal\zeropoint
+   \orelse\ifnum\c_page_sides_float_type>\plusfive
+     \global\d_page_sides_toptotal\zeropoint
+   \fi
+   \global\d_page_sides_downshift\zeropoint}
+
+%D We have a few virtual dimensions. I'm not sure what to do with \type
+%D {\pagedepth} and \type {\pageshrink} in the next two. If we ever need
+%D that it will become options.
+
+\def\e_page_sides_flush_criterium
+  {\dimexpr
+      \d_page_sides_vsize
+     -\d_page_sides_bottomtotal
+     -\pagetotal
+   \relax}
+
+\def\e_page_sides_room_criterium
+  {\dimexpr
+      \d_page_sides_vsize
+     -\d_page_sides_bottomtotal % added here too
+     -\pagetotal
+   \relax}
+
+%D In order to get a consistent spacing we force a strutdepth unless the
+%D preceding material has more depth than that already. This way anchoring
+%D becomes predictable.
+
+\protected\def\page_sides_force_depth
+  {\iftracesidefloats
+     \begingroup
+     \c_page_force_strut_depth_trace_mode\plusone
+     \ifconditional\c_page_sides_check_same_page
+       \forcestrutdepthplus
+     \else
+       \forcestrutdepth
+     \fi
+     \endgroup
+   \else
+     \ifconditional\c_page_sides_check_same_page
+       \forcestrutdepthplus
+     \else
+       \forcestrutdepth
+     \fi
+   \fi
+   \page_otr_command_set_vsize} % new
+
+\def\page_sides_flush_floats
+  {\par
+   \ifdim\e_page_sides_flush_criterium>\zeropoint
+     \page_sides_flush_floats_progress
+     \page_sides_flush_floats_after_next
+   \fi
+   \page_sides_flush_floats_reset}
+
+\def\page_sides_flush_floats_text
+  {\par
+   % what with \c_anch_backgrounds_text_level>\plusone
+   \ifdim\e_page_sides_flush_criterium>\zeropoint
+     \page_sides_flush_floats_progress
+     \page_sides_flush_floats_after_none
+   \fi
+   \page_sides_flush_floats_reset}
+
+\def\page_sides_flush_floats_reset
+  {\global\d_page_sides_vsize\d_page_sides_vsize_reset
+   % also here if used at all \global\holdinginserts\zerocount
+   \global\setfalse\c_page_sides_short
+   \global\setfalse\c_page_sides_flag
+   \global\c_page_sides_checks_done\zerocount}
+
+\def\page_sides_flush_floats_after_none % we force a flush
+  {\ifdim\d_page_sides_midskip>\zeropoint
+      \blank[\the\d_page_sides_midskip]
+   \fi
+   \ignoreparskip
+   \blank[\v!disable]}
+
+\def\page_sides_flush_floats_after_next % we have two successive ones
+  {\ifdim\d_page_sides_bottomskip>\zeropoint
+      \blank[\the\d_page_sides_bottomskip]
+   \fi
+   \ignoreparskip
+   \blank[\v!disable]}
+
+%D A rudimentary checker:
+
+\permanent\protected\def\doifelsesidefloat
+  {\par
+   \ifdim\e_page_sides_room_criterium>\zeropoint % -\pagedepth
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\aliased\let\doifsidefloatelse\doifelsesidefloat
+
+%D Sometimes we need to fill up the space alongside a side float and this
+%D is where we define the helpers. A user can enforce a smaller step. We use
+%D large steps when possible.
+
+\installcorenamespace{sidefloatsteps}
+
+\setvalue{\??sidefloatsteps\v!line  }{\strut}
+\setvalue{\??sidefloatsteps\v!big   }{\strut}
+\setvalue{\??sidefloatsteps\v!medium}{\halflinestrut} % was \halfstrut
+\setvalue{\??sidefloatsteps\v!small }{\noheightstrut} % was \quarterstrut
+
+\def\page_sides_flush_floats_tracer
+  {\dontleavehmode
+   \ruledhpack\bgroup\backgroundline[trace:b]{%
+     \llap{\smash{\vrule\s!width4\points\s!height.4\points\s!depth.4\points}}%
+     \ifnum\recurselevel=\plusone
+       \llap{\smash{\smallinfofont\the\scratchdimen}\hskip.5\leftmargindistance}%
+     \orelse\ifodd\recurselevel
+       \llap{\smash{\smallinfofont\recurselevel}\hskip.5\leftmargindistance}%
+     \fi
+     \page_sides_flush_floats_normal
+     \kern\hsize
+   \egroup}}
+
+\def\page_sides_flush_floats_normal
+  {\ifdim\scratchdimen>\htdp\strutbox
+     \strut
+   \else
+     \m_pages_strut
+   \fi}
+
+\def\page_sides_flush_floats_progress
+  {\begingroup
+   \page_sides_force_depth
+   \parskip\zeropoint
+   \let\page_sides_flush_floats\relax
+   \edef\m_pages_strut
+     {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
+        \lastnamedcs
+      \else
+        \noheightstrut
+      \fi}%
+   \forgetall
+   \offinterlineskip
+   \doloop
+     {\scratchdimen\e_page_sides_flush_criterium
+      \ifdim\scratchdimen>\onepoint      % good enough, can become configurable
+        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+          \exitloop
+        \orelse\iftracesidefloats
+          \page_sides_flush_floats_tracer\par
+        \else
+          \page_sides_flush_floats_normal\par
+        \fi
+      \else
+        \page_sides_force_depth
+        \exitloop
+      \fi}%
+   \endgroup}
+
+%D We force a parskip and ignore it afterwards. We can nil it by setting the
+%D \type {spacebeforeside} parameter. We can have a leading blank so we need
+%D to make sure that we use blank to inject the parskip and then ignore
+%D the one injected by the engine.
+
+\def\page_sides_inject_before
+  {\page_sides_force_depth
+   \ifdim\parskip>\zeropoint
+     \ifdim\parskip>\d_strc_floats_top
+       \ifdim\d_strc_floats_top>\zeropoint
+         \ignoreparskip
+         \blank[\v!white]%
+       \else
+         \checkedblank[\rootfloatparameter\c!spacebeforeside]%
+       \fi
+     \else
+       \checkedblank[\rootfloatparameter\c!spacebeforeside]%
+     \fi
+   \else
+     \checkedblank[\rootfloatparameter\c!spacebeforeside]%
+   \fi}
+
+%D We are now done with \type {spacebefore} and the parskip is already
+%D injected. The dummy line makes sure that we anchor properly and it
+%D also can serve as tracer.
+
+\def\page_sides_inject_dummy_line_normal
+  {\hpack to \availablehsize{\strut\hss}}
+
+\def\page_sides_inject_dummy_line_traced
+  {\ruledhpack to \availablehsize{\backgroundline[trace:c]{\page_sides_inject_dummy_line_normal}}}
+
+\def\page_sides_inject_dummy_lines
+  {\par
+   \nointerlineskip
+ % \ifnum\lastpenalty>\zerocount
+ %   \penalty\plustenthousand
+ % \fi
+   \dontleavehmode
+   \iftracesidefloats
+     \page_sides_inject_dummy_line_traced
+   \else
+     \page_sides_inject_dummy_line_normal
+   \fi
+   \par
+   % on an empty page we have topskip, say 12pt
+   \ignoreparskip
+   % this can be 18.5pt
+   \kern-\dimexpr\lineheight+\strutdp\relax
+   % so we can actually have a -2.5pt skip on top
+   \ignoreparskip
+   \blank[\v!samepage]
+   \blank[\v!disable]
+   % now say we are negative now
+   \ifdim\pagetotal<\zeropoint
+      % then we're at the top of the page ... quite messy .. i really need to
+      % make the page builder a bit more flexible .. should we do something now?
+   \fi}
+
+%D Checkers:
+
+\def\page_sides_check_floats_after_par
+  {\page_sides_check_floats_indeed
+   \ifdim\d_page_sides_pagetotal=\pagetotal \else
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
+     \page_sides_flush_floats
+     \global\c_page_sides_n_of_lines\zerocount % here !
+   \fi}
+
+\protected\def\page_sides_flush_floats_after_par
+  {\global\d_page_sides_pagetotal\pagetotal
+   \glet\page_sides_check_floats\page_sides_check_floats_after_par}
+
+\protected\def\page_sides_forget_floats
+  {\global\d_page_sides_vsize\d_page_sides_vsize_reset
+   \global\c_page_sides_n_of_lines\zerocount
+   % also here if used at all \global\holdinginserts\zerocount
+   \global\setfalse\c_page_sides_short
+   \global\setfalse\c_page_sides_flag}
+
+%D Here comes the output routine. We either go the fast route or we use the
+%D normal one (stored in \type {\page_otr_command_side_float_output}. We no
+%D longer have this fuzzy code around with penalties and indentation and
+%D such.
+
+\def\page_sides_output_routine
+  {\page_otr_command_side_float_output
+   \ifconditional\c_page_sides_short
+     \global\setfalse\c_page_sides_short
+   \else
+     \global\d_page_sides_vsize\d_page_sides_vsize_reset
+     \global\c_page_sides_n_of_lines\zerocount
+   \fi}
+
+\def\page_sides_place_float
+  {\ifnum\c_page_sides_float_type=\plusfour \kern\d_page_sides_toptotal \fi
+   \ifnum\c_page_sides_float_type=\plusfive \kern\d_page_sides_toptotal \fi
+   \ifgridsnapping
+     \page_sides_place_float_grid
+   \else
+     \page_sides_place_float_normal
+   \fi
+   \par
+   \kern-\d_page_sides_height
+   \penalty10001 % oeps, this will change
+   \normalbaselines}
+
+\def\page_sides_place_float_normal
+  {\page_sides_push_float_inline\firstofoneargument}
+
+%D The following needs some more work .. consider this a quick hack. We probably
+%D need an mkiv hanging grid option.
+
+\def\page_sides_place_snap_to_grid#1%
+  {\edef\p_grid{\floatparameter\c!grid}%
+   \ifempty\p_grid\else
+     \snaptogrid[\p_grid]%
+   \fi
+   \hpack{#1}}
+
+\def\page_sides_place_float_grid
+  {\getrawnoflines\d_page_sides_height % raw ?
+   \d_page_sides_height\noflines\lineheight
+   \page_sides_push_float_inline\page_sides_place_snap_to_grid}
+
+\let\strc_floats_mark_par_as_free\relax
+
+\def\page_sides_push_float_inline#1%
+  {\begingroup
+   \reseteverypar % needed !
+   \parskip\zeropoint  % needed !
+   \nointerlineskip
+   \page_sides_set_skips
+   \page_floats_report_total
+   \relax
+   \lefttoright
+   \strc_floats_mark_par_as_free
+   \ifcase\c_page_sides_float_type
+     % invalid
+   \or % backspace
+     \noindent#1{\llap{\rlap{\box\floatbox}\kern\d_page_sides_leftskip}}\hfill
+   \or % leftedge
+     \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
+   \or % leftmargin
+     \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
+   \or % leftside
+     \noindent#1{\box\floatbox}\hfill
+   \or % rightside
+     \hfill#1{\box\floatbox}%
+   \or % rightmargin
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
+   \or % rightedge
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
+   \or % cutspace
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\llap{\box\floatbox}}}%
+   \fi
+   \endgroup}
+
+% \def\page_sides_analyse_progress
+%   {\d_page_sides_progress\d_page_sides_vsize
+%    \ifconditional\c_page_sides_flag
+%      \advance\d_page_sides_progress-\d_page_sides_page_total
+%      \global\setfalse\c_page_sides_flag
+%    \else
+%      \advance\d_page_sides_progress-\pagetotal
+%    \fi}
+
+% test case
+%
+% \usemodule[art-01]
+% \starttext
+%     \dorecurse{40}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+% \stoptext
+
+\def\page_sides_analyse_progress
+  {%\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
+   \d_page_sides_progress\d_page_sides_vsize
+   \ifconditional\c_page_sides_flag
+     \advance\d_page_sides_progress-\d_page_sides_page_total
+     \global\setfalse\c_page_sides_flag
+   \else
+     \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
+       % we adapt pagegoal because we can already have placed something with
+       % everypar and we hope that it triggers a flush, see test above
+       \pagegoal\dimexpr\pagegoal-\d_page_sides_bottomtotal\relax
+     \fi
+     \advance\d_page_sides_progress-\pagetotal
+   \fi}
+
+\def\page_sides_analyse_space_stage_one
+  {\global\settrue\c_page_sides_flag
+% \ifdim\pagegoal=\maxdimen
+%     \pagegoal\textheight % maybe
+% \fi
+   \global\d_page_sides_page_total \pagetotal % global
+   \ifnum\c_page_sides_float_type<\plusfour
+     \global\d_page_sides_width \zeropoint
+   \orelse\ifnum\c_page_sides_float_type>\plusfive
+     \global\d_page_sides_width\zeropoint
+   \else
+     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_page_sides_margin\relax
+   \fi
+   \ifdim\d_page_sides_width<\zeropoint
+     \global\d_page_sides_width\zeropoint
+   \fi
+   \global\d_page_sides_hsize \dimexpr\hsize-\d_page_sides_width\relax
+   \global\d_page_sides_height\dimexpr\ht\floatbox+\dp\floatbox+\d_page_sides_toptotal\relax
+   \global\d_page_sides_vsize \dimexpr\d_page_sides_height+\d_page_sides_page_total\relax
+   \scratchdimenone\d_page_sides_vsize
+   \scratchdimentwo\pagegoal
+   \ifcase\c_page_sides_tolerance
+     \ifcase\c_page_sides_method
+       % method 0 : raw
+     \or
+       % method 1 : safe (default)
+       \advance\scratchdimentwo -\strutdp
+     \or
+       % method 2 : tight (grid default)
+       \advance\scratchdimenone -\onepoint
+     \fi
+   \or
+     % tolerant
+     \advance\scratchdimentwo -.5\strutdp
+   \or
+     % verytolerant
+   % \advance\scratchdimenone -\onepoint (maybe)
+   \else
+     \advance\scratchdimentwo -\strutdp
+   \fi}
+
+\def\page_sides_analyse_space_stage_two
+  {% how about \pagedepth
+   \ifdim\scratchdimenone>\scratchdimentwo
+     \global\setfalse\c_page_floats_room
+   \else
+     \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomtotal
+      % just weird: \global\advance\d_page_sides_vsize \scratchdimenone
+       \global\settrue\c_page_sides_short
+       % why was this \global\holdinginserts\plusone
+     \else
+       \global\advance\d_page_sides_vsize \d_page_sides_bottomtotal % wins over inbetween
+       \global\setfalse\c_page_sides_short
+     \fi
+     \global\settrue\c_page_floats_room
+   \fi}
+
+\def\page_sides_analyse_space
+  {\page_sides_analyse_space_stage_one
+   \ifconditional\c_page_sides_check_same_page
+     \ifdim\d_spac_prevcontent>\zeropoint
+       \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
+         \clf_pushatsame
+         \setbox\scratchbox\vpack{\clf_popatsame}%
+         \page
+         \box\scratchbox
+         \vskip-\lineskip
+         \page_sides_analyse_space_stage_one
+       \fi
+     \fi
+   \fi
+   \page_sides_analyse_space_stage_two}
+
+%D As we have no clear end of one or more paragraphs we only have pre float
+%D skips.
+
+\newconstant\c_page_sides_page_method % will be: \c_page_sides_page_method\plusone
+
+\def\page_otr_force_new_page_one
+  {\vskip\d_page_sides_height
+   \penalty\outputpenalty
+   \vskip-\dimexpr\d_page_sides_height-\strutdp\relax
+   \prevdepth\strutdp}
+  %\ignoreparskip}
+
+\def\page_sides_handle_float#1%
+  {\page_sides_initialize_checker
+   \page_sides_check_horizontal_skips
+   \page_sides_check_vertical_skips
+   \page_sides_apply_horizontal_shift
+   \page_sides_check_previous_float
+   \page_sides_inject_before
+   \page_sides_inject_dummy_lines
+   \page_sides_relocate_float{#1}%
+   \page_sides_apply_vertical_shift
+   \page_sides_analyse_space
+   \ifconditional\c_page_floats_room
+     \global\setfalse\c_page_sides_delayed
+     % we're ok
+   \else
+     \global\settrue\c_page_sides_delayed
+     \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
+     \ifcase\c_page_sides_page_method
+       \page_otr_fill_and_eject_page
+     \or
+       \page_otr_force_new_page_one
+     \else
+       \page_otr_fill_and_eject_page
+     \fi
+     \global\c_page_sides_n_of_lines\c_page_sides_m_of_lines
+     \page_sides_analyse_space
+    %\page_sides_inject_before
+     \page_sides_inject_dummy_lines
+   \fi
+   \page_sides_place_float
+   \global\setfalse\c_page_sides_delayed
+   \page_sides_check_floats_reset
+   \page_sides_wrapup}
+
+\def\page_sides_wrapup
+  {% we need to do this aftergroup
+   \aftergroup\par
+   \aftergroup\ignoreparskip
+   \aftergroup\ignorespaces}
+
+\def\page_sides_check_floats_indeed
+  {\page_sides_analyse_progress
+   \ifdim\d_page_sides_progress>\zeropoint
+     \page_sides_check_floats_set
+   \else
+     \page_sides_check_floats_reset
+   \fi
+   \parskip\s_spac_whitespace_parskip} % not needed
+
+% \let\page_sides_check_floats\page_sides_check_floats_indeed
+
+\let\page_sides_check_floats\relax
+
+\def\page_sides_initialize_checker
+  {\ifrelax\page_sides_check_floats
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
+     \clf_enablesidefloatchecker
+     \glet\page_sides_initialize_checker\relax
+   \fi}
+
+\protected\def\page_sides_check_floats_tracer
+  {\begingroup
+   \dontleavehmode
+   \ifnum\c_page_sides_float_type>\plusfour
+     \rlap
+       {\hskip\availablehsize % d_page_sides_width % kern
+        \color[trace:o]%
+          {\rlap{\kern.25\bodyfontsize\showstruts\strut}%
+           \vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width}}%
+   \else
+     \hskip-\d_page_sides_width % kern
+     \color[trace:o]%
+       {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
+        \llap{\showstruts\strut\kern.25\bodyfontsize}}%
+   \fi
+   \endgroup}
+
+% tricky test:
+
+% \starttext
+%     \dorecurse{33}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+%     \placefigure[left]{}{}
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \input ward
+% \stoptext
+
+\protected\def\page_sides_check_floats_set
+  {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
+   \ifconditional\c_page_sides_delayed
+     % For Alan's hanging right float that moved to the next page.
+     \d_page_sides_progress\zeropoint
+   \fi
+   \ifx\p_sidethreshold\v!old
+     \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
+     \c_page_sides_n_of_hang\d_page_sides_progression
+     \divide\c_page_sides_n_of_hang \baselineskip\relax
+   \else
+     \d_page_sides_progression
+       \ifempty\p_sidethreshold
+         \d_page_sides_progress
+       \else
+         \dimexpr\d_page_sides_progress-\p_sidethreshold\relax
+       \fi
+     \getnoflines\d_page_sides_progression
+     % this can be an option
+     \ifdim\dimexpr\noflines\lineheight>\dimexpr\pagegoal-\pagetotal\relax
+       \getrawnoflines\d_page_sides_progression
+     \fi
+     %
+     \c_page_sides_n_of_hang\noflines
+   \fi
+   \global\c_page_sides_hangafter\zerocount
+   \ifnum\c_page_sides_n_of_hang>\zerocount
+     \ifcase\c_page_sides_n_of_lines
+     \else
+       \ifcase\c_page_sides_lines_done
+         \global\c_page_sides_lines_done\c_page_sides_n_of_hang
+       \else
+         \privatescratchcounter\c_page_sides_lines_done
+         \advance\privatescratchcounter-\c_page_sides_n_of_hang
+         \global\advance\c_page_sides_n_of_lines-\privatescratchcounter
+       \fi
+     \fi
+     \ifnum\c_page_sides_n_of_lines>\zerocount
+       \privatescratchtoks\emptytoks
+       \privatescratchcounter\c_page_sides_n_of_lines
+       \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
+       \dorecurse\c_page_sides_n_of_lines
+         {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
+       \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
+         \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
+         \advance\privatescratchcounter\c_page_sides_n_of_hang
+         \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
+           {\ifnum\c_page_sides_float_type>\plusfour
+              \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
+            \else
+              \toksapp\privatescratchtoks{\d_page_sides_width\privatescratchdimen}%
+            \fi}%
+       \fi
+       \parshape
+         \numexpr\privatescratchcounter+\plusone\relax
+         \the\privatescratchtoks
+         \zeropoint \hsize
+       \relax
+     \else
+       \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
+       \hangafter-\c_page_sides_n_of_hang
+       \global\c_page_sides_hangafter\hangafter
+     \fi
+   \fi
+   \global\advance\c_page_sides_checks_done \plusone
+   \iftracesidefloats
+     \page_sides_check_floats_tracer
+   \fi}
+
+\protected\def\page_sides_check_floats_reset
+  {\ifcase\c_page_sides_checks_done\else
+     \ifcase\c_page_sides_hangafter\else
+       % we need to deal with par's ending in a group which would restore
+       % hang parameters
+       \global\c_page_sides_hangafter\zerocount
+       \hangindent\zeropoint
+     \fi
+   % \global % no, otherwise a next hangindent won't work
+     \c_page_sides_checks_done\zerocount
+   \fi}
+
+\protected\def\page_sides_synchronize_floats
+  {\ifinner \else
+     \page_sides_check_floats
+   \fi}
+
+\protected\def\page_sides_check_previous_float
+  {\page_sides_analyse_progress
+   \ifdim\d_page_sides_progress>\zeropoint \relax
+     \ifconditional\c_page_sides_short
+       \global\setfalse\c_page_sides_short
+       \page_otr_fill_and_eject_page
+     \else
+       \kern\d_page_sides_progress
+     \fi
+   \fi}
+
+% \def\adjustsidefloatdisplaylines % public, will change
+%   {\aftergroup\page_sides_adjust_display_lines}
+%
+% \def\page_sides_adjust_display_lines
+%   {\par
+%    \noindent
+%    \ignorespaces}
+
+%D We need to hook it into the other otr's. This code will be adapted once we rename
+%D the callers. We use \type {\def} as they can be redefined! Some will become obsolete
+
+\permanent\protected\def\checksidefloat         {\page_sides_check_floats}
+\permanent\protected\def\flushsidefloats        {\page_sides_flush_floats_text}
+\permanent\protected\def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
+\permanent\protected\def\forgetsidefloats       {\page_sides_forget_floats}
+%permanent\protected\def\synchronizesidefloats  {\page_sides_synchronize_floats}
+
+\protect \endinput

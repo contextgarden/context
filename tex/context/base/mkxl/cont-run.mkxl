@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=cont-run,
+%D        version=2014.12.26,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Runner,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Runner}
+
+\registerctxluafile{cont-run}{}
+
+% \enabletrackers[system.synctex.visualize]
+% \enabletrackers[system.synctex.xml]
+% \enabledirectives[system.synctex.details]
+% \setupsynctex[state=start]
+
+\unprotect
+
+\permanent\let\synctexsetfilename  \clf_synctexsetfilename   % can be public implementors
+\permanent\let\synctexresetfilename\clf_synctexresetfilename % idem
+\permanent\let\synctexblockfilename\clf_synctexblockfilename % idem
+
+\aliased\let\synctexpause   \donothing
+\aliased\let\synctexresume  \donothing
+\aliased\let\synctexpushline\donothing
+\aliased\let\synctexpopline \donothing
+
+\appendtoks\synctexpause \to\everybeforeoutput
+\appendtoks\synctexresume\to\everyafteroutput
+
+\permanent\protected\def\setupsynctex[#1]%
+  {\begingroup
+   \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,#1]%
+   \edef\p_state{\dummyparameter\c!state}%
+   \clf_setupsynctex
+      state  {\p_state}%
+      method {\dummyparameter\c!method}%
+   \relax
+   \ifx\p_state\v!start
+     % when public implementor, use conditional
+     \enforced\glet\synctexpause   \clf_synctexpause
+     \enforced\glet\synctexresume  \clf_synctexresume
+     \enforced\glet\synctexpushline\clf_synctexpushline
+     \enforced\glet\synctexpopline \clf_synctexpopline
+   \fi
+   \endgroup}
+
+\permanent\protected\def\blocksynctexfile[#1]%
+  {\processcommacommand{#1}\synctexblockfilename}
+
+\aliased\let\continuewhenlmtxmode\relax
+
+\protect \endinput

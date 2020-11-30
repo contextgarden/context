@@ -14,7 +14,7 @@
 %D This is a variant on the \GNUPLOT\ terminal code. At some point (when there is a
 %D reason) I will make a proper environment that can be used for embedded code.
 
-\unexpanded\def\includegnuplotsvgfile[#1]%
+\permanent\protected\def\includegnuplotsvgfile[#1]%
   {\hbox\bgroup
      \ctxlua{metapost.startsvghashing()}%
      \includesvgfile[#1]%

@@ -103,6 +103,9 @@
                     <cd:constant type="frame"/>
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:resolve name="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="component">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
@@ -233,6 +236,10 @@
                 </cd:parameter>
                 <cd:parameter name="yanchor">
                     <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="linedirection">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="reverse"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

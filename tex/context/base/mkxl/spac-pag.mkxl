@@ -1,0 +1,182 @@
+%D \module
+%D   [       file=spac-pag,
+%D        version=2009.10.16, % 1997.03.31, was core-spa.tex
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Pages,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Pages}
+
+\unprotect
+
+%D The code here has evolved over time and might not be the best
+%D around. Maybe much will be gone a some point.
+
+\installcorenamespace {alignswitch}
+
+\letvalue{\??alignswitch\v!left  }\zerocount
+\letvalue{\??alignswitch\v!middle}\plusone
+\letvalue{\??alignswitch\v!right }\plustwo
+
+\permanent\protected\def\setalignmentswitch#1%
+  {\chardef\alignmentswitch\csname\??alignswitch\ifcsname\??alignswitch#1\endcsname#1\else\v!left\fi\endcsname}
+
+\newif      \ifpagestatemismatch
+\newcount   \realpagestateno
+\newconstant\frozenpagestate
+
+\permanent\protected\def\dotrackpagestate#1#2%
+  {\ifdoublesided \ifinpagebody \else
+     \doforcedtrackpagestate{#1}{#2}%
+   \fi \fi}
+
+\permanent\protected\def\doforcedtrackpagestate#1#2%
+  {\ifcase\frozenpagestate
+     \global\advance#2\plusone
+     \setpagestate[#1][\number#2]%
+   \fi}
+
+\let\m_spac_pagestates_realpage\empty
+
+\newconditional\c_spac_pagestates_found
+
+\permanent\protected\def\docheckpagestate#1#2%
+  {\ifcase\frozenpagestate
+     \setpagestaterealpageno{#1}{\number#2}%
+   \fi}
+
+\permanent\protected\def\doifelserightpagestate#1#2% not expandable !
+  {\ifcase\frozenpagestate
+     \pagestatemismatchfalse
+     \realpagestateno\realfolio
+     \ifinpagebody
+       \ifdoublesided
+         \ifodd\realpageno\relax
+           \settrue\c_spac_pagestates_found
+         \else
+           \setfalse\c_spac_pagestates_found
+         \fi
+       \else
+         \settrue\c_spac_pagestates_found
+       \fi
+     \orelse\ifdoublesided
+       \edef\m_spac_pagestates_realpage{\pagestaterealpage{#1}{\number#2}}%
+       \ifempty\m_spac_pagestates_realpage
+         \ifodd\realpageno\relax
+           \settrue\c_spac_pagestates_found
+         \else
+           \setfalse\c_spac_pagestates_found
+         \fi
+       \else
+         \realpagestateno\m_spac_pagestates_realpage\relax
+         \ifnum\realpagestateno=\realpageno \else
+           \pagestatemismatchtrue
+         \fi
+         \ifodd\realpagestateno\relax
+           \settrue\c_spac_pagestates_found
+         \else
+           \setfalse\c_spac_pagestates_found
+         \fi
+       \fi
+     \else
+       \settrue\c_spac_pagestates_found
+     \fi
+   \else
+     \ifodd\realpagestateno\relax
+       \settrue\c_spac_pagestates_found
+     \else
+       \setfalse\c_spac_pagestates_found
+     \fi
+   \fi
+   \ifconditional\c_spac_pagestates_found
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\permanent\protected\def\doifelseforcedrightpagestate#1#2%
+  {\ifcase\frozenpagestate
+     \pagestatemismatchfalse
+     \realpagestateno\realfolio
+     \edef\m_spac_pagestates_realpage{\pagestaterealpage{#1}{\number#2}}%
+     \ifempty\m_spac_pagestates_realpage
+       \ifodd\realpageno\relax
+         \settrue\c_spac_pagestates_found
+       \else
+         \setfalse\c_spac_pagestates_found
+       \fi
+     \else
+       \realpagestateno\m_spac_pagestates_realpage\relax
+       \ifnum\realpagestateno=\realpageno \else
+         \pagestatemismatchtrue
+       \fi
+       \ifodd\realpagestateno\relax
+         \settrue\c_spac_pagestates_found
+       \else
+         \setfalse\c_spac_pagestates_found
+       \fi
+     \fi
+   \else
+     \ifodd\realpagestateno\relax
+       \settrue\c_spac_pagestates_found
+     \else
+       \setfalse\c_spac_pagestates_found
+     \fi
+   \fi
+   \ifconditional\c_spac_pagestates_found
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\aliased\let\doifrightpagestateelse      \doifelserightpagestate
+\aliased\let\doifforcedrightpagestateelse\doifelseforcedrightpagestate
+
+\permanent\protected\def\freezepagestate {\frozenpagestate\plusone  }
+\permanent\protected\def\defrostpagestate{\frozenpagestate\zerocount}
+
+% we can make more of these on top, but how to deal with mixed frozen states
+
+% \dorecurse{500}{\dontleavehmode\signalrightpage\doifrightpageelse{right}{left}\par} % given doublesided
+
+\newcount\nofraggedparagraphs
+
+\definepagestate[\s!paragraph]
+
+\permanent\protected\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs} % use \dontleavehmode if needed
+\permanent\protected\def\doifelserightpage{\doifelserightpagestate\s!paragraph\nofraggedparagraphs}
+\permanent\protected\def\rightpageorder   {\pagestaterealpageorder\s!paragraph\nofraggedparagraphs}
+
+\aliased\let\doifrightpageelse\doifelserightpage
+
+\installcorenamespace{pagechanges}
+
+\newif\ifpagechanged \mutable\let\lastchangedpage\empty
+
+\def\spac_pagechanges_check#1#2#3%
+  {\pagechangedfalse
+   \doforcedtrackpagestate{#2}{#3}%
+   \edef\m_spac_pagestates_realpage{\pagestaterealpage{#2}{\number#3}}%
+   \ifempty\m_spac_pagestates_realpage \orelse\ifnum\m_spac_pagestates_realpage>0\csname\??pagechanges#2:#1\endcsname\relax
+     \pagechangedtrue
+   \fi
+   \ifpagechanged
+     \letgvalue{\??pagechanges#2:#1}\m_spac_pagestates_realpage
+     \glet\lastchangedpage\m_spac_pagestates_realpage
+   \else
+     \glet\lastchangedpage\realfolio
+   \fi}
+
+\permanent\protected\def\changedpagestate#1#2%
+  {\executeifdefined{\??pagechanges#2:#1}0}
+
+\permanent\protected\def\checkpagechange#1{\spac_pagechanges_check{#1}\s!paragraph\nofraggedparagraphs}
+\permanent\protected\def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
+
+\protect \endinput

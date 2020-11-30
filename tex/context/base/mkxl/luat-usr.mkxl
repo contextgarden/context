@@ -1,0 +1,119 @@
+%D \module
+%D   [       file=luat-usr,
+%D        version=2005.08.11,% moved from luat-ini
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Macros / Userspace}
+
+\unprotect
+
+\registerctxluafile{luat-usr}{}
+
+%D A few goodies:
+%D
+%D \startbuffer
+%D \luascript        {        context("foo 1:") context(i) }
+%D \luathread {test} { i = 10 context("bar 1:") context(i) }
+%D \luathread {test} {        context("bar 2:") context(i) }
+%D \luathread {test} {}
+%D \luathread {test} {        context("bar 3:") context(i) }
+%D \luascript        {        context("foo 2:") context(i) }
+%D \stopbuffer
+%D
+%D \typebuffer \startlines \getbuffer \stoplines
+
+\let\luascript\clf_luascript  % todo: public implementors
+\let\luathread\clf_luathread  % todo: public implementors
+
+%D \macros
+%D   {definenamedlua}
+%D
+%D We provide an interface for defining instances. We don't have the definers yet
+%D so we do it low level:
+
+\def\s!lua  {lua}
+\def\s!code {code}
+\def\s!data {data}
+\def\s!start{start}
+\def\s!stop {stop}
+
+%D Beware: because \type {\expanded} is een convert command, the error message will
+%D show \type{<inserted text>} as part of the message.
+
+\installsystemnamespace{luacode}
+
+\permanent\tolerant\protected\def\definenamedlua[#1]#*[#2]%
+  {\ifarguments \orelse \ifcsname\??luacode#1\endcsname \else
+     \bgroup
+     %
+     \edef\fullname{lua_code_#1}%
+     %
+     \clf_registernamedlua{#1}{#2}{\fullname}%
+     %
+     \frozen\instance\protected\xdefcsname\s!start#1\s!code\endcsname
+       {\begingroup
+        \obeylualines
+        \obeyluatokens
+        \csname\??luacode#1\endcsname}%
+     %
+     \aliased\gletcsname\s!stop#1\s!code\endcsname\relax
+     %
+     \normalexpanded{\xdefcsname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
+       {\noexpand\expandafter\endgroup
+          \noexpand\expandafter
+          \expandafter\noexpand\csname clf_\fullname\endcsname
+          \noexpand\expandafter{\noexpand\normalexpanded{##1}}}%
+     \frozen\instance\gletcsname#1\s!code\expandafter\endcsname\csname clf_\fullname\endcsname
+     \egroup
+   \fi}
+
+%D We predefine a few.
+
+% \definenamedlua[module][module instance] % not needed
+
+\definenamedlua[user]    [private user]
+\definenamedlua[third]   [third party module]
+\definenamedlua[isolated][isolated]
+
+%D In practice this works out as follows:
+%D
+%D \startbuffer
+%D \startluacode
+%D context("LUA")
+%D \stopluacode
+%D
+%D \startusercode
+%D global.context("USER 1")
+%D context.par()
+%D context("USER 2")
+%D context.par()
+%D if characters then
+%D     context("ACCESS directly")
+%D elseif global.characters then
+%D     context("ACCESS via global")
+%D else
+%D     context("NO ACCESS at all")
+%D end
+%D context.par()
+%D if bogus then
+%D     context("ACCESS directly")
+%D elseif global.bogus then
+%D     context("ACCESS via global")
+%D else
+%D     context("NO ACCESS at all")
+%D end
+%D context.par()
+%D \stopusercode
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\protect \endinput

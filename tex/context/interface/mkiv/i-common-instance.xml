@@ -182,6 +182,11 @@
     <cd:define name="instance-mathmatrix">
         <cd:constant value="matrix"/>
         <cd:constant value="mathmatrix"/>
+        <cd:constant value="thematrix"/>
+    </cd:define>
+
+    <cd:define name="instance-simplematrix">
+        <cd:constant value="thematrix"/>
     </cd:define>
 
     <cd:define name="instance-mixedcolumns">

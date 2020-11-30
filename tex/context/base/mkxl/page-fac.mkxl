@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=page-fac,   % moved from page-ini
+%D        version=2011.12.07, % 2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Facing Pages,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Facing Pages}
+
+\unprotect
+
+%D \macros
+%D   {setupoppositeplacing,startopposite}
+%D
+%D \starttyping
+%D \starttext
+%D test \startopposite \blackrule[width=3cm,height=4cm] \stopopposite test
+%D test \startopposite \blackrule[width=3cm,height=4cm] \stopopposite test
+%D \stoptext
+%D \stoptyping
+
+\newbox        \b_page_facings_content
+\newconditional\c_page_facings_busy
+
+\installcorenamespace{oppositeplacing}
+
+\installsetuponlycommandhandler \??oppositeplacing {oppositeplacing}
+
+\permanent\protected\def\startopposite
+  {\dowithnextboxcontent
+     {\hsize\makeupwidth}%
+     {\global\setbox\b_page_facings_content\vbox
+        {\ifvoid\b_page_facings_content
+           \directoppositeplacingparameter\c!before
+         \else
+           \directoppositeplacingparameter\c!inbetween
+           \unvbox\b_page_facings_content
+         \fi
+         \box\nextbox}}%
+     \vbox\bgroup}
+
+\permanent\protected\def\stopopposite
+  {\egroup}
+
+\def\page_facings_finish
+  {\ifvoid\b_page_facings_content \else
+     \global\setbox\b_page_facings_content\vbox to \makeupheight
+       {\unvbox\b_page_facings_content
+        \directoppositeplacingparameter\c!after
+        \vss}%
+   \fi}
+
+\def\page_facings_flush
+  {\ifconditional\c_page_facings_busy
+     \ifvoid\b_page_facings_content \else
+        \page_facings_flush_indeed
+     \fi
+   \fi}
+
+\def\page_facings_flush_indeed
+  {\ifnum\realpageno>\plusone
+     \begingroup
+     \pageornamentstate\plusone % tricky
+     \page_facings_finish
+     \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_facings_content}%
+     \endgroup
+   \else
+     \global\setbox\b_page_facings_content\emptybox
+   \fi}
+
+\appendtoks
+    \doifelse{\directoppositeplacingparameter\c!state}\v!start\settrue\setfalse\c_page_facings_busy
+\to \everysetupoppositeplacing
+
+\setupoppositeplacing
+  [\c!state=\v!start,
+   \c!before=,
+   \c!inbetween=\blank,
+   \c!after=]
+
+\protect \endinput

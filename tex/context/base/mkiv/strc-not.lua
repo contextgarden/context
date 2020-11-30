@@ -32,7 +32,8 @@ notes.states           = notes.states or { }
 lists.enhancers        = lists.enhancers or { }
 notes.numbers          = notes.numbers or { }
 
-storage.register("structures/notes/states", notes.states, "structures.notes.states")
+storage.register("structures/notes/states",  notes.states, "structures.notes.states")
+storage.register("structures/notes/numbers", notes.numbers, "structures.notes.numbers")
 
 local notestates = notes.states
 local notedata   = table.setmetatableindex("table")
@@ -492,6 +493,7 @@ local texgetglue = tex.getglue
 local texsetglue = tex.setglue
 
 local function check_spacing(n,i)
+    -- we can also check for tex.insertheights > 0 (instead of i > 1)
     local gn, pn, mn = texgetglue(n)
     local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
     local gt, pt, mt = gn + gi, pn + pi, mn + mi
@@ -508,7 +510,7 @@ notes.check_spacing = check_spacing
 callback.register("build_page_insert", function(n,i)
     local state = notes.numbers[n]
     if state then
-        -- only notes, kind of hardcoded .. bah
+     -- only notes, kind of hardcoded .. bah
         local gt, pt, mt = check_spacing(n,i)
         texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
         return 0

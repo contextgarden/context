@@ -1,0 +1,168 @@
+%D \module
+%D   [       file=pack-obj,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Objects,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Objects}
+
+\unprotect
+
+\registerctxluafile{pack-obj}{autosuffix}
+
+%D \macros
+%D   {setobject,getobject,ifinobject}
+%D
+%D Boxes can be considered reuable objects. Traditionally once passed to the \DVI\
+%D file, such objects cannot be reused. In \PDF\ however, reusing is possible and
+%D sometimes even a necessity. Therefore, \CONTEXT\ supports reusable objects and
+%D \LUATEX\ has native support for so called box resources.
+%D
+%D The first application of objects in \CONTEXT\ concerned \METAPOST\ graphics and
+%D fill||in form fields. Reusing resources can save lots of bytes and sometimes also
+%D runtime.
+%D
+%D \starttyping
+%D \setobject{class}{name}\somebox{}
+%D \getobject{class}{name}
+%D \stoptyping
+%D
+%D Here \type {\somebox} can be whatever box specification suits \TEX. Although the
+%D implementation in \MKIV\ is somewhat different the principles have not changed.
+
+\installcorenamespace {objects}
+
+\newif   \ifinobject
+\newbox  \objectbox
+
+\def\objectoffset{1cm}
+
+\newdimen\objectoff  \permanent\def\objectmargin{\the\objectoff}
+\newdimen\objectwd   \permanent\def\objectwidth {\the\objectwd}
+\newdimen\objectht   \permanent\def\objectheight{\the\objectht}
+\newdimen\objectdp   \permanent\def\objectdepth {\the\objectdp}
+
+%D If I have time I will use the unreferenced variant for e.g. mp reuse. This can be
+%D rewritten in \LUA\ anyway.
+
+\permanent\protected\def\setreferencedobject       #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\permanent\protected\def\settightreferencedobject  #1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\permanent\protected\def\setunreferencedobject     #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+\permanent\protected\def\settightunreferencedobject#1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+
+\aliased\let\setobject     \setreferencedobject
+\aliased\let\settightobject\settightreferencedobject
+
+%D We can get subtle differences in boundingboxes but both methods work ok.
+
+\newconstant\c_pack_objects_offset_mode % 0=tex 1=box
+
+\protected\def\pack_objects_set_yes#1#2%
+  {\ifcase\c_pack_objects_offset_mode
+     \ifzeropt\objectoff
+       \pack_objects_package_nop\nextbox
+     \else
+       \pack_objects_package_yes\nextbox
+     \fi
+   \else
+     \pack_objects_package_nop\nextbox
+   \fi
+   \clf_registerreferencedobject{#1}{#2}\objectbox\objectoff\c_pack_objects_offset_mode
+   \synctexresume
+   \endgroup}
+
+\protected\def\pack_objects_set_nop#1#2%
+  {\ifcase\c_pack_objects_offset_mode
+     \ifzeropt\objectoff
+       \pack_objects_package_nop\nextbox
+     \else
+       \pack_objects_package_yes\nextbox
+     \fi
+   \else
+     \pack_objects_package_nop\nextbox
+   \fi
+   \clf_registerobject{#1}{#2}\objectbox\objectoff\c_pack_objects_offset_mode
+   \synctexresume
+   \endgroup}
+
+\def\pack_objects_package_nop#1% we pack because otherwise \ruledhbox is still tight
+  {\setbox\objectbox\hpack{\box#1}}
+
+\def\pack_objects_package_yes#1%
+  {\objectwd\dimexpr\wd#1+2\objectoff\relax
+   \objectht\dimexpr\ht#1+ \objectoff\relax
+   \objectdp\dimexpr\dp#1+ \objectoff\relax
+   \setbox\objectbox\hpack
+     {\hskip\objectoff
+      \box#1}%
+   \wd\objectbox\objectwd
+   \ht\objectbox\objectht
+   \dp\objectbox\objectdp}
+
+\permanent\protected\def\getobject#1#2%
+  {\begingroup
+   \synctexpause
+   \clf_restoreobject{#1}{#2}%
+   \ifzeropt\objectoff\else
+     \objectoff-\objectoff
+     \pack_objects_package_yes\objectbox
+   \fi
+   \box\objectbox
+   \synctexresume
+   \endgroup}
+
+%D If needed one can ask for the dimensions of an object with:
+%D
+%D \starttyping
+%D \getobjectdimensions{class}{name}
+%D \stoptyping
+%D
+%D The results are reported in \type {\objectwidth}, \type {\objectheight} and \type
+%D {\objectdepth} as well as \type {\objectoffset}.
+
+% \getobjectdimensions #1#2 % defined at the lua end
+
+%D \macros
+%D   {doifobjectfoundelse,doifobjectreferencefoundelse}
+%D
+%D To prevent redundant definition of objects, one can use the next tests:
+%D
+%D \starttyping
+%D \doifobjectfoundelse{class}{object}{do then}{do else}
+%D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
+%D \stoptyping
+
+\immutable\def\defaultobjectreference{0}
+\immutable\def\defaultobjectpage     {\realfolio}
+
+% \getobjectreference           {#1}{#2\csname % define at the lua end
+% \getobjectreferencepage       {#1}{#2\csname % define at the lua end
+% \doifelseobjectfound          {#1}{#2}       % defined atthe lua end
+% \doifelseobjectreferencefound {#1}{#2}       % defined atthe lua end
+
+\aliased\let\dogetobjectreference    \getobjectreference     % for now, will go away
+\aliased\let\dogetobjectreferencepage\getobjectreferencepage % for now, will go away
+
+\aliased\let\doifobjectfoundelse         \doifelseobjectfound
+\aliased\let\doifobjectreferencefoundelse\doifelseobjectreferencefound
+
+%D For the moment here:
+
+\mutable\let\lastpredefinedsymbol\empty % some day we can do more at the lua end
+
+\permanent\protected\def\predefinesymbol[#1]%
+  {\begingroup
+   \xdef\lastpredefinedsymbol{#1}%
+   \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
+   \getobjectreference{SYM}{#1}\m_back_object_reference
+   \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
+   \endgroup}
+
+\protect \endinput

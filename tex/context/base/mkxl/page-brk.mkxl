@@ -1,0 +1,483 @@
+%D \module
+%D   [       file=page-brk,   % moved from page-ini
+%D        version=2011.12.07, % 2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Breaks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Breaks}
+
+\unprotect
+
+\ifdefined\resetcurrentstructuremarkswithpage \else \let\resetcurrentstructuremarkswithpage\relax \fi
+\ifdefined\noheaderandfooterlines             \else \let\noheaderandfooterlines            \relax \fi
+
+%D Page breaks.
+
+% \definepagebreak
+%   [chapter]
+%   [yes,header,right]
+%
+% \setuphead
+%   [chapter]
+%   [page=chapter,
+%    header=empty,
+%    footer=chapter]
+%
+% \definepagebreak % untested
+%   [lastpage]
+%   [left,{empty,right},{empty,left}]
+
+% public page handler, beware: definepage already in use (core-ref)
+%
+% \definepagebreak[instance][forsure]
+% \definepagebreak[forsure][yes,+4]
+
+\newconditional\c_page_breaks_enabled   \settrue\c_page_breaks_enabled
+\newcount      \c_page_breaks_prevpage
+
+\newtoks\everybeforepagebreak
+\newtoks\everyafterpagebreak
+
+\let\page_breaks_current_option \empty
+\let\page_breaks_current_options\empty
+
+\installcorenamespace{pagebreakmethod}
+\installcorenamespace{pagebreaks}
+
+\def\page_breaks_handle#1%
+  {\edef\page_breaks_current_options{#1}% handy for tracing
+   \processcommacommand[\page_breaks_current_options]\page_breaks_handle_step}
+
+\def\page_breaks_handle_step#1%
+  {\edef\page_breaks_current_option{#1}% can be used in handler
+   \ifcsname\??pagebreakmethod\page_breaks_current_option\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??pagebreaks\page_breaks_current_option\endcsname
+     \expandafter\page_breaks_handle\lastnamedcs
+   \else
+     \page_breaks_unknown
+   \fi}
+
+\def\page_breaks_handle_direct#1%
+  {\begincsname\??pagebreakmethod#1\endcsname}
+
+\permanent\protected\def\installpagebreakmethod#1#2% low level definer
+  {\setvalue{\??pagebreakmethod#1}{#2}}
+
+\aliased\let\installpagebreakhandler\installpagebreakmethod % will go
+
+\permanent\tolerant\protected\def\definepagebreak[#1]#*[#2]%
+  {\setvalue{\??pagebreaks#1}{#2}}
+
+\appendtoks
+    \flushnotes
+\to \everybeforepagebreak
+
+\permanent\tolerant\protected\def\pagebreak[#1]
+  {\par % else no vertical penalties, always before group so that we clear hangs etc (as in side floats)
+   \ifvmode % extra check
+     \begingroup
+     \the\everybeforepagebreak
+     \c_page_breaks_prevpage\realpageno
+     \ifcase\pageornamentstate \or
+       % disable reset after shipout
+       \global\pageornamentstate\plustwo
+     \fi
+     \ifparameter#1\or
+       \page_breaks_handle{#1}%
+     \else % so, no pagebreak when \pagebreak[] ! ! !
+       \page_breaks_handle_direct\v!yes
+     \fi
+     \relax
+     \ifnum\c_page_breaks_prevpage<\realpageno
+       \global\pageornamentstate\zerocount
+     \fi
+     \the\everyafterpagebreak
+     \endgroup
+   \fi}
+
+\aliased\let\page\pagebreak
+
+\permanent\protected\def\usepageparameter#1%
+  {\edef\m_page_breaks_asked{#1\c!page}%
+   \ifempty\m_page_breaks_asked\else
+     \pagebreak[\m_page_breaks_asked]%
+   \fi}
+
+\permanent\protected\def\dousepageparameter#1%
+  {\edef\m_page_breaks_asked{#1}%
+   \ifempty\m_spac_align_asked\else
+     \pagebreak[\m_page_breaks_asked]%
+   \fi}
+
+\permanent\protected\def\resetpagebreak % used elsewhere too
+  {\global\settrue\c_page_breaks_enabled}
+
+\permanent\protected\def\simplifypagebreak % to be used grouped !
+  {\enforced\permanent\protected\def\pagebreak[##1]{\goodbreak}}
+
+\protected\def\disablepagebreaks % to be used grouped !
+  {\enforced\let\page_breaks_process\gobbleoneoptional}
+
+\installpagebreakmethod \s!dummy
+  {\page_otr_command_flush_all_floats
+   \page_otr_command_next_page
+   \page_otr_insert_dummy_page}
+
+\installpagebreakmethod \v!frame
+  {\page
+   \begingroup
+   \showframe
+   \page[\v!empty]
+   \endgroup}
+
+\protected\def\page_breaks_unknown % how often called ?
+  {\doifelseinstring{+}\page_breaks_current_option
+     {\page_otr_command_flush_all_floats
+      \page_otr_command_next_page
+      \dorecurse\page_breaks_current_option\page_otr_insert_dummy_page}
+     {\doifelsenumber\page_breaks_current_option
+        {\page_otr_command_flush_all_floats
+         \page_otr_command_next_page
+         \doloop
+           {\ifnum\userpageno<\page_breaks_current_option\relax
+              \page_otr_insert_dummy_page
+            \else
+              \exitloop
+            \fi}}
+        {}}}
+
+\installpagebreakmethod \s!unknown
+  {\page_breaks_unknown}
+
+\installpagebreakmethod \s!default
+  {} % do nothing if empty
+
+\installpagebreakmethod \v!reset
+  {% better not: \global\pageornamentstate\zerocount
+   \resetpagebreak}
+
+\installpagebreakmethod \v!disable
+  {\global\setfalse\c_page_breaks_enabled}
+
+\installpagebreakmethod \v!yes
+  {\ifconditional\c_page_breaks_enabled
+     \page_otr_command_flush_all_floats
+     \page_otr_command_next_page
+     \ifinsidecolumns       % this will move to MUL
+       \page_otr_eject_page % otherwise sometimes no change
+     \fi
+   \fi}
+
+\installpagebreakmethod \v!makeup
+  {\ifconditional\c_page_breaks_enabled
+     \page_otr_fill_and_eject_page
+   \fi}
+
+\installpagebreakmethod \v!blank
+  {\ifcase\pageornamentstate
+     \global\pageornamentstate\plusone
+   \fi}
+
+% also needed: \page \doifoddpageelse\relax{\page[\v!blank,\v!right]
+
+\installpagebreakmethod \v!no
+  {\ifconditional\c_page_breaks_enabled
+     \dosomebreak\nobreak
+   \fi}
+
+\installpagebreakmethod \v!preference
+  {\ifconditional\c_page_breaks_enabled
+     \ifinsidecolumns % this will move to MUL
+       \dosomebreak\goodbreak
+     \else
+       \testpage[3][\zeropoint]%
+     \fi
+   \fi}
+
+\installpagebreakmethod \v!bigpreference
+  {\ifconditional\c_page_breaks_enabled
+     \ifinsidecolumns % this will move to MUL
+       \dosomebreak\goodbreak
+     \else
+       \testpage[5][\zeropoint]%
+     \fi
+   \fi}
+
+% \installpagebreakmethod \v!empty {} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!header{} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!footer{} % defined in page-txt.mkiv
+
+\def\page_reset_marks_and_insert_dummy
+  {\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}
+
+\installpagebreakmethod \v!left
+  {\page_otr_command_flush_all_floats
+   \page_otr_command_next_page_and_inserts
+   \doifbothsidesoverruled\donothing\page_reset_marks_and_insert_dummy\donothing}
+
+\installpagebreakmethod \v!right
+  {\page_otr_command_flush_all_floats
+   \page_otr_command_next_page_and_inserts
+   \doifbothsidesoverruled\donothing\donothing\page_reset_marks_and_insert_dummy}
+
+\installpagebreakmethod \v!even
+  {\page
+   \doifelseoddpage\page_reset_marks_and_insert_dummy\donothing}
+
+\installpagebreakmethod \v!odd
+  {\page
+   \doifelseoddpage\donothing\page_reset_marks_and_insert_dummy}
+
+\installpagebreakmethod \v!quadruple % not yet ok inside columnsets
+  {\ifdoublesided
+     \ifcase\modulonumber\plusfour\realpageno\else
+       \page_breaks_handle_direct\v!yes
+       \doloop
+         {\ifcase\modulonumber\plusfour\realpageno\relax
+            \exitloop
+          \else
+            \page_breaks_handle_direct\v!empty
+          \fi}%
+     \fi
+   \fi}
+
+\installpagebreakmethod \v!last
+  {\page_otr_command_flush_all_floats
+   \page_otr_command_next_page_and_inserts
+   \relax
+   \doifbothsidesoverruled
+     \page_facings_flush % hm
+     \donothing
+     {\noheaderandfooterlines
+      \page_otr_insert_dummy_page}%
+   \filluparrangedpages}
+
+\installpagebreakmethod \v!lastpage % handy for backpage preceded by empty pages
+  {\page_breaks_handle_direct\v!yes
+   \ifdoublesided
+     \page_breaks_handle_direct\v!left
+     \page_breaks_handle_direct\v!empty
+     \page_breaks_handle_direct\v!empty
+   \fi}
+
+\installpagebreakmethod \v!start {\global\settrue \c_otr_shipout_enabled}
+\installpagebreakmethod \v!stop  {\global\setfalse\c_otr_shipout_enabled}
+
+\installpagebreakmethod{xy}% for Mojca
+  {\page_breaks_handle_direct\v!yes
+   \scratchcounterone  \numexpr\rootlayouttargetparameter\c!nx*\rootlayouttargetparameter\c!ny\relax
+   \scratchcountertwo  \luaexpr{math.mod(\the\realpageno-1,\the\scratchcounterone)}\relax
+   \scratchcounterthree\numexpr\scratchcounterone-\scratchcountertwo\relax
+   \dorecurse\scratchcounterthree{\page_breaks_handle_direct\v!empty}}
+
+% Column breaks.
+
+\installcorenamespace{columnbreakmethod}
+\installcorenamespace{columnbreaks}
+
+\newtoks\everybeforecolumnbreak
+\newtoks\everyaftercolumnbreak
+\newtoks\everysynchronizecolumn
+
+\let\page_breaks_columns_current_option \empty
+\let\page_breaks_columns_current_options\empty
+
+\def\page_breaks_columns_handle#1%
+  {\edef\page_breaks_columns_current_options{#1}%
+   \processcommacommand[#1]\page_breaks_columns_handle_step}
+
+\def\page_breaks_columns_handle_step#1%
+  {\edef\page_breaks_columns_current_option{#1}%
+   \ifcsname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??columnbreaks\page_breaks_columns_current_option\endcsname
+    %\expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??columnbreakmethod\currentoutputroutine:\s!unknown\endcsname
+     \lastnamedcs
+   \fi}
+
+\def\page_breaks_columns_handle_direct#1%
+  {\begincsname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
+
+\permanent\protected\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
+  {\setvalue{\??columnbreakmethod#1:#2}{#3}}
+
+\aliased\let\installcolumnbreakhandler\installcolumnbreakmethod % will go
+
+\permanent\tolerant\protected\def\definecolumnbreak[#1]#*[#2]%
+  {\setvalue{\??columnbreaks#1}{#2}}
+
+%D So, page ornaments are reset after a pagebreak command, unless set!
+
+\permanent\tolerant\protected\def\columnbreak[#1]%
+  {\par % else no vertical penalties
+   \begingroup
+   \the\everybeforecolumnbreak
+   \ifparameter#1\or
+     \page_breaks_columns_handle{#1}%
+   \else
+     \page_breaks_columns_handle_direct\v!yes
+   \fi
+   \relax
+   \the\everyaftercolumnbreak
+   \endgroup
+   % outside group e.g. setting hsize
+   \the\everysynchronizecolumn}
+
+\aliased\let\column\columnbreak
+
+\appendtoks
+    \page_otr_command_set_hsize
+\to \everysynchronizecolumn
+
+%D Test page breaks.
+
+% \newdimen   \d_page_tests_test
+% \newconstant\c_page_tests_mode
+
+\newconstant\testpagemethod  % old
+\newconstant\testpagetrigger % old
+
+\installcorenamespace {pagechecker}
+\installcorenamespace {pagecheckermethod}
+
+\installcommandhandler \??pagechecker {pagechecker} \??pagechecker
+
+\setuppagechecker
+  [\c!method=1,
+   \c!before=,
+   \c!after=,
+   \c!inbetween=,
+   \c!lines=\plusthree,
+   \c!offset=\zeropoint]
+
+\def\page_check_amount
+  {\dimexpr
+      \pagecheckerparameter\c!lines\lineheight
+     +\pagetotal
+     \ifdim\lastskip<\parskip+\parskip\fi
+     +\pagecheckerparameter\c!offset
+   \relax}
+
+\permanent\tolerant\protected\def\checkpage[#1]#*[#2]%
+  {\relax % needed before \if
+   \endgraf
+   \triggerpagebuilder
+   \relax
+   \ifconditional\c_page_breaks_enabled
+     \begingroup
+     \edef\currentpagechecker{#1}%
+     \setupcurrentpagechecker[#2]%
+     \csname\??pagecheckermethod\pagecheckerparameter\c!method\endcsname
+     \endgroup
+   \fi}
+
+\setvalue{\??pagecheckermethod 0}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\page_check_amount>.99\pagegoal
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\setvalue{\??pagecheckermethod 1}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\dimexpr\page_check_amount-\pagegoal\relax>-\lineheight
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \goodbreak
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\setvalue{\??pagecheckermethod 2}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \getnoflines\pagegoal
+       \ifdim\dimexpr\page_check_amount-\noflines\lineheight\relax>-\lineheight
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\setvalue{\??pagecheckermethod 3}%
+  {\ifdim\pagegoal<\maxdimen \relax
+     \ifdim\pagetotal<\pagegoal \relax
+       \ifdim\dimexpr\page_check_amount-10\scaledpoint\relax>\pagegoal
+         \pagecheckerparameter\c!before
+         \penalty-\plustenthousand
+         \pagecheckerparameter\c!after
+       \else
+         \pagecheckerparameter\c!inbetween
+       \fi
+     \orelse\ifdim\pagetotal>\pagegoal
+       \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
+         \goodbreak
+         \pagecheckerparameter\c!inbetween
+       \else
+         \pagecheckerparameter\c!before
+         \page
+         \pagecheckerparameter\c!after
+       \fi
+     \else
+       \pagecheckerparameter\c!inbetween
+     \fi
+   \else
+     \pagecheckerparameter\c!inbetween
+   \fi}
+
+\definepagechecker[\s!unknown:0]              [\c!method=0,\c!before=,\c!after=,\c!inbetween=]
+\definepagechecker[\s!unknown:1][\s!unknown:0][\c!method=1]
+\definepagechecker[\s!unknown:2][\s!unknown:0][\c!method=2]
+\definepagechecker[\s!unknown:3][\s!unknown:0][\c!method=3]
+
+\permanent\tolerant\protected\def\testpage    [#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} %
+\permanent\tolerant\protected\def\testpageonly[#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % no penalties added to the mvl
+\permanent\tolerant\protected\def\testpagesync[#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % force sync
+
+%D Test column breaks.
+
+\permanent\tolerant\protected\def\testcolumn[#1]#*[#2]%
+  {\ifdefined\page_otr_command_test_column
+     \ifparameter#2\or
+        \page_otr_command_test_column[#1][#2]%
+     \else
+        \page_otr_command_test_column[#1][\zeropoint]%
+     \fi
+   \fi}
+
+\protect \endinput

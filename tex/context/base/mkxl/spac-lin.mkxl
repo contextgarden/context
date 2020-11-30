@@ -1,0 +1,211 @@
+%D \module
+%D   [       file=spac-lin,
+%D        version=2012.01.08, % 2009.10.16 (core-ver) 1997.03.31 (core-spa)
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Vertical,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Lines}
+
+\unprotect
+
+%D When spacing is active we need to handle commands in a special way:
+%D
+%D \starttyping
+%D \setuplines[space=on]
+%D
+%D \startlines
+%D Let's talk about this{\ttsl\gobbleoneargument or}that.
+%D \stoplines
+%D
+%D \startlines
+%D Let's talk about this{\getvalue{ttsl}or}that.
+%D \stoplines
+%D \stoptyping
+%D
+%D One can indent in several ways:
+%D
+%D \starttyping
+%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
+%D
+%D \startlines
+%D first
+%D second
+%D third
+%D fourth
+%D \stoplines
+%D \stoptyping
+
+%D Contrary to \MKII\ we can now define classes of lines (generalized by
+%D Wolfgang). I will probably rewrite bits in \LUA.
+
+\installcorenamespace{lines}
+
+\installcommandhandler \??lines {lines} \??lines
+
+\setuplines
+  [\c!option=,
+   \c!command=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no,
+   \c!space=\v!default]
+
+\appendtoks
+   \frozen\instance\setuevalue{\e!start\currentlines}{\spac_lines_start[\currentlines]}%
+   \frozen\instance\letvalue  {\e!stop \currentlines }\spac_lines_stop
+\to \everydefinelines
+
+\let\p_lines_option\empty
+
+\let\spac_lines_break            \relax
+\let\spac_after_first_obeyed_line\relax
+\let\spac_lines_indent           \relax
+
+%D See \type {indentation-005.tex}:
+%D
+%D \starttyping
+%D \setuplines[indentlist={0pt,10pt,15pt,20pt}]
+%D
+%D \setupindenting[yes,1em]
+%D \setuplines[indentlist={0pt,*,*}]
+%D
+%D \setuplines[indentlist={0pt,1em,*}]
+%D \starttyping
+
+\newcount\c_spac_lines_indent_cnt
+\newcount\c_spac_lines_indent_max
+\newdimen\d_spac_lines_indent
+
+\def\spac_lines_indent_indeed
+  {\ifnum\c_spac_lines_indent_cnt=\c_spac_lines_indent_max
+     \c_spac_lines_indent_cnt\plusone
+   \else
+     \advance\c_spac_lines_indent_cnt\plusone
+   \fi
+   \getfromcommacommand[\m_spac_lines_indentlist][\c_spac_lines_indent_cnt]%
+   \ifx\commalistelement\wildcardsymbol
+     \hskip\d_spac_lines_indent
+   \else
+     \scratchdimen\dimexpr\commalistelement\relax
+     \hskip
+       \ifdim\scratchdimen=\zeropoint
+         \zeropoint
+       \else
+         \scratchdimen
+         \d_spac_lines_indent\scratchdimen
+       \fi
+   \fi
+   \relax}
+
+\permanent\tolerant\protected\def\spac_lines_start[#1]%
+  {\bgroup
+   \edef\currentlines{#1}%
+   \obeylines
+   \spac_lines_start_indeed}
+
+\tolerant\def\spac_lines_start_indeed[#1]% new: optional second argument (WS)
+  {\ifarguments\or
+     \setupcurrentlines[#1]%
+   \fi
+   \edef\p_lines_option{\linesparameter\c!option}%
+   \ifx\p_lines_option\v!packed
+     \let\spac_lines_break\nobreak
+   \else
+     \let\spac_lines_break\relax
+   \fi
+   \linesparameter\c!before
+   \push_macro_checkindentation
+   \whitespace
+   \dostarttaggedchained\t!lines\currentlines\??lines
+   \begingroup
+   \uselinesstyleandcolor\c!style\c!color
+   \useindentingparameter\linesparameter
+   \usealignparameter\linesparameter
+   \typesettinglinestrue
+   \setupwhitespace[\v!none]% todo use fast variant
+   %\obeylines % move upwards to keep spaces in the first line due to optional argument
+   %
+   \edef\m_spac_lines_indentlist{\linesparameter\c!indentlist}%
+   \getcommacommandsize[\m_spac_lines_indentlist]%
+   \c_spac_lines_indent_max\commalistsize
+   \c_spac_lines_indent_cnt\zerocount
+   \ifnum\c_spac_lines_indent_max>\plusone
+     \let\spac_lines_indent\spac_lines_indent_indeed
+     \d_spac_lines_indent\d_spac_indentation_par
+   \else
+     \let\spac_lines_indent\relax
+   \fi
+   %
+   \ignorespaces
+   \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_a
+   \enforced\let\obeyedline\spac_lines_obeyed_line
+   \activatespacehandler{\linesparameter\c!space}%
+   \dostarttagged\t!line\empty
+   \ignorepars}
+
+
+% we could have states instead and handle option in there
+
+\def\spac_lines_after_first_obeyed_line_a % tzt two pass, like itemize
+  {\linesparameter\c!command
+   \spac_lines_indent
+   \linesparameter\c!left
+   \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_b}
+
+\def\spac_lines_after_first_obeyed_line_b
+  {\spac_lines_break
+   \linesparameter\c!command
+   \spac_lines_indent
+   \linesparameter\c!left}
+
+\def\spac_lines_obeyed_line
+  {\ifdone\linesparameter\c!right\fi
+   \dostoptagged % can be a dummy one as we don't look ahead
+   \par
+   \dostarttagged\t!line\empty
+   \futurelet\nexttoken\spac_lines_between}
+
+\protected\def\spac_lines_stop
+  {\dostoptagged
+   \endgroup
+   \dostoptagged
+   \pop_macro_checkindentation
+   \linesparameter\c!after
+   \egroup}
+
+\def\spac_lines_between
+  {\ifx\nexttoken\spac_lines_stop
+     \donefalse
+   \else
+     \doifelsemeaning\nexttoken\obeyedline % brrr
+       {\donefalse\linesparameter\c!inbetween}
+       {\donetrue\spac_after_first_obeyed_line}%
+   \fi}
+
+\definelines[\v!lines]
+
+\permanent\tolerant\protected\def\emptylines[#1]%
+  {\endgraf
+   \begingroup
+  %\forgetall % debatable
+   \ifhmode
+      \crlf % finish the current line
+   \fi
+   \scratchcounter\ifparameter#1\or#1\else3\fi\relax
+   \dorecurse\scratchcounter{\strut\crlf}%
+   \endgroup}
+
+\ifdefined\startlines \else
+    \aliased\expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname
+    \aliased\expandafter\let\expandafter\stoplines \csname\e!stop \v!lines\endcsname
+\fi
+
+\protect \endinput

@@ -1,0 +1,119 @@
+%D \module
+%D   [       file=syst-pln,
+%D        version=2001.11.16, % 1999.03.17,  % an oldie: 1995.10.10
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Efficient \PLAIN\ \TEX\ loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This module set a couple of variables to the plain \TEX\ values. Later they might
+%D be overloaded. There is not much difference between \MKII\ and \MKIV\ but at some
+%D point they might diverge.
+
+%D Build||in numeric variables.
+
+\adjdemerits           = 10000
+\binoppenalty          =   700
+\brokenpenalty         =   100
+\clubpenalty           =   150
+%day                   =     0
+\defaulthyphenchar     =   `\-
+\defaultskewchar       =    -1
+\delimiterfactor       =   901
+\displaywidowpenalty   =    50
+\doublehyphendemerits  = 10000
+%endlinechar           = `\^^M
+\errorcontextlines     =     5
+%escapechar            =   `\\
+\exhyphenpenalty       =    50
+%fam                   =     0
+\finalhyphendemerits   =  5000
+%floatingpenalty       =     0
+%globaldefs            =     0
+\hangafter             =     1 % automatically set to 1 (no zero assignment)
+\hbadness              =  1000
+%holdinginserts        =     0
+\hyphenpenalty         =    50
+%interlinepenalty      =     0
+%language              =     0
+\lefthyphenmin         =     2
+\linepenalty           =    10
+%looseness             =     0
+%mag                   =  1000
+%maxdeadcycles         =    25
+%month                 =     0
+%newlinechar           =    -1 % commented i.e. no plain value
+%outputpenalty         =     0
+%pausing               =     0
+%postdisplaypenalty    =     0
+\predisplaypenalty     = 10000
+\pretolerance          =   100
+\relpenalty            =   500
+\righthyphenmin        =     3
+\showboxbreadth        =     5
+\showboxdepth          =     3
+%time                  =     0
+\tolerance             =   200
+%tracingcommands       =     0
+\tracinglostchars      =     1
+%tracingmacros         =     0
+%tracingonline         =     0
+%tracingoutput         =     0
+%tracingpages          =     0
+%tracingparagraphs     =     0
+%tracingrestores       =     0
+%tracingstats          =     0
+\uchyph                =     1
+\vbadness              =  1000
+\widowpenalty          =   150
+%year                  =     0
+
+%D Build in dimension variables.
+
+\abovedisplayshortskip =   0pt plus 3pt
+\abovedisplayskip      =  12pt plus 3pt minus 9pt
+%baselineskip          =   0pt
+\belowdisplayshortskip =   7pt plus 3pt minus 4pt
+\belowdisplayskip      =  12pt plus 3pt minus 9pt
+\boxmaxdepth           = \maxdimen
+\delimitershortfall    =   5pt
+%displayindent         =   0pt
+%displaywidth          =   0pt
+%hangindent            =   0pt
+\hfuzz                 = 0.1pt
+%hoffset               =   0pt
+\hsize                 = 6.5in
+%leftskip              =   0pt
+%lineskip              =   0pt
+%lineskiplimit         =   0pt
+%mathsurround          =   0pt
+\maxdepth              =   4pt
+\medmuskip             =   4mu plus 2mu minus 4mu
+\nulldelimiterspace    = 1.2pt
+\overfullrule          =   5pt
+\parfillskip           =   0pt plus 1fil
+\parindent             =  20pt
+\parskip               =   0pt plus 1pt
+%predisplaysize        =   0pt
+%rightskip             =   0pt
+\scriptspace           = 0.5pt
+%spaceskip             =   0pt
+\splitmaxdepth         = \maxdimen
+\splittopskip          =  10pt
+%tabskip               =   0pt
+\thickmuskip           =   5mu plus 5mu
+\thinmuskip            =   3mu
+\topskip               =  10pt
+\vfuzz                 = 0.1pt
+%voffset               =   0pt
+\vsize                 = 8.9in
+%xspaceskip            =   0pt
+
+\protect \endinput

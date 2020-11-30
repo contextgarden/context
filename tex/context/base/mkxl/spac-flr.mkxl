@@ -1,0 +1,194 @@
+%D \module
+%D   [       file=spac-fil,
+%D        version=2013.01.13,
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Fillers,
+%D         author={Hans Hagen and Wolfgang Schuster},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Fillers}
+
+\unprotect
+
+%D A bit more extensive variant of a prototype posted by Wolfgang to the development
+%D list. Instead of dealing with a few leader types it makes sense to support them
+%D all as well as simple rule fillers. Eventually we can also use in for the
+%D mathfillers. We distinguish between alternatives and with them methods, and a
+%D checker is provided for use in applying e.g.\ fillers in lists.
+
+\installcorenamespace{filler}
+\installcorenamespace{filleralternative}
+\installcorenamespace{fillerleadermethod}
+
+\installcommandhandler \??filler {filler} \??filler
+
+\aliased\let\setupfillers\setupfiller
+
+\permanent\protected\def\checkedfiller#1%
+  {\ifcsname\namedfillerhash{#1}\s!parent\endcsname
+     \filler[#1]%
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi{#1}}
+
+\permanent\tolerant\protected\def\filler[#1]%
+  {\removeunwantedspaces
+   \begingroup
+   \edef\currentfiller{#1}%
+   \usefillerstyleandcolor\c!style\c!color
+   \scratchdimen\fillerparameter\c!leftmargin\relax
+   \ifzeropt\scratchdimen\else
+     \hskip\scratchdimen
+   \fi
+   \fillerparameter\c!left\relax
+   \expandnamespaceparameter\??filleralternative\fillerparameter\c!alternative\s!unknown\relax
+   \fillerparameter\c!right\relax
+   \scratchdimen\fillerparameter\c!rightmargin\relax
+   \ifzeropt\scratchdimen\else
+     \hskip\scratchdimen
+   \fi
+   \endgroup
+   \ignorespaces}
+
+% \definefiller
+%   [MyFiller]
+%   [offset=.25\emwidth,
+%    rightmargindistance=-\rightskip,
+%    method=middle]
+%
+% \startitemize[packed,joinedup][rightmargin=5em]
+%     \startitem
+%         \input sapolsky \fillupto[MyFiller]{RS}
+%     \stopitem
+% \stopitemize
+
+\permanent\tolerant\protected\def\fillupto[#1]#:#2%
+  {\removeunwantedspaces
+   \begingroup
+   \edef\currentfiller{#1}%
+   \scratchdimen\dimexpr\fillerparameter\c!rightmargindistance\relax
+   \ifzeropt\scratchdimen\else
+     \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
+   \fi
+   \filler[#1]%
+   \doifsomething{#2}{\hbox{#2}}%
+   \par
+   \endgroup
+   \ignorespaces}
+
+\setvalue{\??filleralternative\s!unknown}%
+  {}
+
+\setvalue{\??filleralternative\v!symbol}%
+  {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
+     \ifdim\fillerparameter\c!offset>\zeropoint
+        \simplealignedspreadbox
+          {2\dimexpr\fillerparameter\c!offset\relax}%
+          {\fillerparameter\c!align}%
+          {\fillerparameter\c!symbol}%
+     \else
+        \simplealignedbox
+          {\fillerparameter\c!width}%
+          {\fillerparameter\c!align}%
+          {\fillerparameter\c!symbol}%
+     \fi
+   \hfill}
+
+\setvalue{\??filleralternative\v!stretch}%
+  {\hfill}
+
+\setvalue{\??filleralternative\v!space}%
+  {\hskip\fillerparameter\c!distance\relax}
+
+\setvalue{\??filleralternative\v!rule}%
+  {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
+     \hrule
+       \s!height\fillerparameter\c!height
+       \s!depth \fillerparameter\c!depth
+   \hfill}
+
+\letvalue{\??fillerleadermethod\s!local }\normalleaders  % overflow ends up inbetween (current box)
+\letvalue{\??fillerleadermethod\v!global}\normalgleaders % overflow ends up inbetween (outermost box)
+\letvalue{\??fillerleadermethod\v!middle}\normalcleaders % overflow ends up before, after (current box)
+\letvalue{\??fillerleadermethod\v!broad }\normalxleaders % overflow ends up before, inbetween, after (current box)
+
+\setupfillers
+  [\c!width=\emwidth,
+   \c!symbol=.,
+   \c!distance=\emwidth,
+   \c!offset=\zeropoint,
+   \c!align=\v!middle,
+   \c!height=.1\exheight,
+   \c!depth=\zeropoint,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!rightmargindistance=\zeropoint,
+   \c!alternative=\v!symbol,
+   \c!method=\s!local]
+
+\definefiller
+  [\v!sym]
+  [\c!method=\v!global,
+   \c!width=.5\emwidth,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!symbol]
+  [\c!method=\v!global,
+   \c!offset=.125\emwidth,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!rule]
+  [\c!alternative=\v!rule,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!width]
+  [\c!alternative=\v!stretch]
+
+\definefiller
+  [\v!space]
+  [\c!alternative=\v!space,
+   \c!distance=3\emwidth]
+
+% bonus:
+
+\definefiller
+  [dotfill]
+  [\c!symbol=\textperiod,
+   \c!style=\v!normal,
+   \c!method=\v!middle,
+   \c!width=.5\emwidth,
+   \c!leftmargin=.2\emwidth,
+   \c!rightmargin=.2\emwidth]
+
+\aliased\let\mathdotfill\dotfill
+
+\permanent\protected\def\textdotfill{\filler[dotfill]}
+
+\permanent\protected\def\dotfill{\mathortext\mathdotfill\textdotfill}
+
+% maybe box -> symbol
+
+\protect \endinput
+
+% \definefiller[test-a][alternative=stretch]
+% \definefiller[test-b][alternative=symbol,symbol=!]
+% \definefiller[test-c][alternative=rule,height=.1ex,leftmargin=.5em,rightmargin=.25em]
+
+% \starttext
+%     text\filler[test-a]text \par
+%     text\filler[test-b]text \par
+%     text\filler[test-c]text \par
+%     text\checkedfiller{<nothing>}text \par
+% \stoptext

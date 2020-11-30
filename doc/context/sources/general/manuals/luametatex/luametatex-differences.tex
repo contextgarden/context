@@ -1,4 +1,4 @@
-% language=uk
+    % language=uk
 
 \environment luametatex-style
 
@@ -102,7 +102,8 @@ been removed. There are some new variants that will be discussed later. The \typ
 {\outer} and \type {\long} prefixes are gone as they don't make much sense
 nowadays and them becoming dummies opened the way to something new, again to be
 discussed elsewhere. I don't think that (\CONTEXT) users will notice it. The
-\type {\suppress..} features are now default.
+\type {\suppress..} features are now default and can't be changed so related
+primitives are gone.
 
 The \type {\shipout} primitive does no ship out but just erases the content of
 the box, if that hasn't happened already in another way.
@@ -208,10 +209,17 @@ might be noticed that it is not possible to backtrack or inject something. Of
 course it is no big deal to implement all that in \LUA\ if needed. It removes a
 system dependency and makes for a bit cleaner code.
 
-There are new primitives too as well as some extensions to existing primitive
+There are new primitives as well as some extensions to existing primitive
 functionality. These are described in following chapters but there might be
 hidden treasures in the binary. If you locate them, don't automatically assume
-them to stay, some might be part of experiments!
+them to stay, some might be part of experiments! There are for instance a few
+csname related definers, we have integer and dimension constants, the macro
+argument parser can be brought in tolerant mode, the repertoire of conditionals
+has been extended, some internals can be controlled (think of normalization of
+lines, hyphenation etc.), and macros can be protected against user overload. Not
+all is discussed in detail in this manual but there are introductions in the
+\CONTEXT\ distribution that explain them. But the \TEX\ kernel is of course
+omnipresent.
 
 \startluacode
 

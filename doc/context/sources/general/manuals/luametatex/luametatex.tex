@@ -1,13 +1,21 @@
-% ------------------------   ------------------------
-% 2019-12-17  32bit  64bit   2020-01-10  32bit  64bit
-% ------------------------   ------------------------
-% freebsd     2270k  2662k   freebsd     2186k  2558k
-% openbsd6.6  2569k  2824k   openbsd6.6  2472k  2722k
-% linux-armhf 2134k          linux-armhf 2063k
-% linux       2927k  2728k   linux       2804k  2613k
-% osx                2821k   osx                2732k
-% mswin       2562k  2555k   mswin       2481k  2471k
-% ------------------------   ------------------------
+% ------------------------   ------------------------   ------------------------
+% 2019-12-17  32bit  64bit   2020-01-10  32bit  64bit   2020-11-30  32bit  64bit
+% ------------------------   ------------------------   ------------------------
+% freebsd     2270k  2662k   freebsd     2186k  2558k   freebsd     2108k  2436k
+% openbsd6.6  2569k  2824k   openbsd6.6  2472k  2722k   openbsd6.8  2411k  2782k
+% linux-armhf 2134k          linux-armhf 2063k          linux-armhf 2138k  2860k
+% linux       2927k  2728k   linux       2804k  2613k   linux   (?) 3314k  2762k
+%                                                       linux-musl  2532k  2686k
+% osx                2821k   osx                2732k   osx                2711k
+% ms mingw    2562k  2555k   ms mingw    2481k  2471k   ms mingw    2754k  2760k
+%                                                       ms intel           2448k
+%                                                       ms arm             3894k
+%                                                       ms clang           2159k
+% ------------------------   ------------------------   ------------------------
+%
+% performance of mingw and native are getting close (small win for mingw) but
+% clang bins are still slower .. quite inconsistent differences between 32 and
+% 64 bit (not all compilers are the same version)
 
 % \loggingall
 % \tracingonline    \zerocount

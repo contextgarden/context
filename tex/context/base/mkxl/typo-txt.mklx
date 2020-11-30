@@ -1,0 +1,240 @@
+%D \module
+%D   [       file=typo-txt,
+%D        version=2011.10.27,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Text Hacks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module replaces the by now rather old supp-fun module.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Text Hacks}
+
+\unprotect
+
+% registerctxluafile{typo-txt}{}
+
+%D \macros
+%D   {normalizefontheight,normalizefontwidth,normalizedfontsize}
+%D
+%D Next we introduce some font manipulation macros. When we want to typeset some
+%D text spread in a well defined area, it can be considered bad practice to
+%D manipulate character and word spacing. In such situations the next few macros can
+%D be of help:
+%D
+%D \starttyping
+%D \normalizefontheight \name {sample text} {height} {font}
+%D \normalizefontwidth  \name {sample text} {width}  {font}
+%D \stoptyping
+%D
+%D Consider for instance:
+%D
+%D \startbuffer[a]
+%D \normalizefontheight \TempFont {X} {2\baselineskip} {Serif}
+%D \stopbuffer
+%D
+%D \startbuffer[b]
+%D \ruledhbox{\TempFont To Be Or Not To Be}
+%D \stopbuffer
+%D
+%D \typebuffer[a,b] \getbuffer[a]
+%D
+%D This shows up as:
+%D
+%D \startlinecorrection
+%D \ruledhbox{\getbuffer[b]}
+%D \stoplinecorrection
+%D
+%D The horizontal counterpart is:
+%D
+%D \startbuffer[a]
+%D \normalizefontwidth \TempFont {This Line Fits} {\hsize} {Serif}
+%D \stopbuffer
+%D
+%D \startbuffer[b]
+%D \ruledhbox{\TempFont This Line Fits}
+%D \stopbuffer
+%D
+%D \typebuffer[a,b] \getbuffer[a]
+%D
+%D This gives:
+%D
+%D \startlinecorrection
+%D \ruledhbox{\getbuffer[b]}
+%D \stoplinecorrection
+%D
+%D The calculated font scale is avaliable in \type {\normalizedfontsize}.
+
+\newbox\b_typo_normalizers
+
+\def\typo_normalizers_size#axis#size%
+  {\dimexpr\ifdim#1\b_typo_normalizers=\zeropoint
+     \bodyfontsize
+   \else
+     \luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
+   \fi\relax}
+
+\def\typo_normalizers_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
+  {\begingroup
+   \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \normalexpanded{\endgroup\enforced\edef\noexpand\normalizedfontsize{\the\typo_normalizers_size{#axis}{#size}}}%
+   \definefont[\strippedcsname#cs][#font at \normalizedfontsize]}
+
+\protected\def\typo_normalizers_text_at_size#axis#font#size#text%
+  {\dontleavehmode
+   \begingroup
+   \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \definedfont[#font at \the\typo_normalizers_size{#axis}{#size}]#text%
+   \endgroup}
+
+\mutable\def\normalizedfontsize{\bodyfontsize}
+
+\permanent\protected\def\normalizetextwidth {\typo_normalizers_text_at_size\wd}
+\permanent\protected\def\normalizetextheight{\typo_normalizers_text_at_size\ht}
+\permanent\protected\def\normalizetextdepth {\typo_normalizers_text_at_size\dp}
+\permanent\protected\def\normalizetextline  {\typo_normalizers_text_at_size\htdp}
+
+\permanent\protected\def\normalizefontwidth {\typo_normalizers_font_at_size\wd}
+\permanent\protected\def\normalizefontheight{\typo_normalizers_font_at_size\ht}
+\permanent\protected\def\normalizefontdepth {\typo_normalizers_font_at_size\dp}
+\permanent\protected\def\normalizefontline  {\typo_normalizers_font_at_size\htdp}
+
+\permanent\protected\def\widthspanningtext #text#size#specification{\hbox{\normalizefontwidth \temp{#text}{#size}{#specification}\temp#text}}
+\permanent\protected\def\heightspanningtext#text#size#specification{\hbox{\normalizefontheight\temp{#text}{#size}{#specification}\temp#text}}
+\permanent\protected\def\depthspanningtext #text#size#specification{\hbox{\normalizefontdepth \temp{#text}{#size}{#specification}\temp#text}}
+\permanent\protected\def\linespanningtext  #text#size#specification{\hbox{\normalizefontline  \temp{#text}{#size}{#specification}\temp#text}}
+
+%D Traditionally we use UpperCasedNames for this kind of functionality.
+
+\aliased\let\NormalizeFontHeight   \normalizefontheight
+\aliased\let\NormalizeFontWidth    \normalizefontwidth
+\aliased\let\NormalizeTextHeight   \normalizetextheight
+\aliased\let\NormalizeTextWidth    \normalizetextwidth
+
+\aliased\let\WidthSpanningText     \widthspanningtext
+
+\permanent\def\TheNormalizedFontSize{\normalizedfontsize}
+
+%D \macros
+%D   {vulgarfraction}
+%D
+%D This code is moved from \type {cor-mis.mkiv}. We show three versions. First
+%D the simple one using \type {\low} and \type {high}:
+%D
+%D \startbuffer
+%D \def\vfrac#1#2%
+%D   {\hbox{\high{\tx#1\kern-.25em}/\low{\kern-.25em\tx#2}}}
+%D
+%D test \vfrac{1}{2} test \vfrac{123}{456} test
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D A better way to handle the kerning is the following, here we kind of assume
+%D that tye slash is symmetrical and has nearly zero width.
+%D
+%D \startbuffer
+%D \def\vfract#1#2%
+%D   {\hbox{\high{\tx#1}\hbox to \zeropoint{\hss/\hss}\low{\tx#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D The third and best alternative is the following:
+%D
+%D {\showmakeup\getbuffer}\crlf\getbuffer
+%D
+%D This time we measure the height of the \type {/} and shift over the maximum
+%D height and depths of this character and the fractional digits (we use 57 as
+%D sample). Here we combine all methods in one macros.
+
+\setnewconstant\vulgarfractionmethod\plusthree
+
+\definehspace[\v!vulgarfraction][.25em] % [.15em]
+\definesymbol[\v!vulgarfraction][/]     % [\raise.2ex\hbox{/}]
+
+\permanent\protected\def\vulgarfraction#1#2%
+  {\dontleavehmode
+   \hbox
+     {\def\vulgarfraction{vulgarfraction}%
+      \ifcase\vulgarfractionmethod
+        #1\symbol[\v!vulgarfraction]#2%
+      \or
+        \high{\tx#1\kern-\hspaceamount\empty\v!vulgarfraction}%
+        \symbol[\vulgarfraction]%
+        \low {\kern-\hspaceamount\empty\v!vulgarfraction\tx#2}%
+      \or
+        \high{\tx#1}%
+        \hbox to \zeropoint{\hss\symbol[\v!vulgarfraction]\hss}%
+        \low{\tx#2}%
+      \or
+        \setbox0\hbox{\symbol[\vulgarfraction]}%
+        \setbox2\hbox{\txx57}%
+        \raise\ht0\hbox{\lower\ht2\hbox{\txx#1}}%
+        \hbox to \zeropoint{\hss\symbol[\v!vulgarfraction]\hss}%
+        \lower\dp0\hbox{\raise\dp2\hbox{\txx#2}}%
+      \fi}}
+
+\ifdefined\vfrac \else \let\vfrac\vulgarfraction \fi % \aliased ?
+
+%D \starttabulate[|l|l|]
+%D \HL
+%D \NC \bf method \NC \bf visualization \NC\NR
+%D \HL
+%D \NC 0 \NC \vulgarfractionmethod0 \vulgarfraction{1}{2} \NC\NR
+%D \NC 1 \NC \vulgarfractionmethod1 \vulgarfraction{1}{2} \NC\NR
+%D \NC 2 \NC \vulgarfractionmethod2 \vulgarfraction{1}{2} \NC\NR
+%D \NC 3 \NC \vulgarfractionmethod3 \vulgarfraction{1}{2} \NC\NR
+%D \HL
+%D \stoptabulate
+
+%D This is used in the beginners manual. One needs to set the font size to an
+%D acceptable value for this to work.
+
+\permanent\tolerant\protected\def\startnicelyfilledbox[#1]%
+  {\vbox\bgroup
+   \forgetall
+   \letdummyparameter\c!width \hsize
+   \letdummyparameter\c!height\vsize
+   \letdummyparameter\c!offset\exheight % we obey to the outer exheight
+   \letdummyparameter\c!strut \v!yes    % we obey to the inner strut !
+   \getdummyparameters[#1]%
+   \scratchoffset\dummyparameter\c!offset\relax
+   \setbox\scratchbox\vbox to \dummyparameter\c!height \bgroup
+   \hsize\dummyparameter\c!width\relax
+   \emergencystretch10\scratchoffset
+   \parfillskip\zeropoint
+   \baselineskip\zeropoint plus \onepoint minus \onepoint
+   \beginofshapebox
+   \leftskip \scratchoffset
+   \rightskip\scratchoffset}
+
+\permanent\protected\def\stopnicelyfilledbox
+  {\doifelse{\dummyparameter\c!strut}\v!yes
+     {\xdef\doflushnicelyfilledbox
+        {\ht\shapebox\the\strutht
+         \dp\shapebox\the\strutdp
+         \box\shapebox}}%
+     {\gdef\doflushnicelyfilledbox
+        {\box\shapebox}}%
+   \endofshapebox
+   \doreshapebox
+     {\doflushnicelyfilledbox}
+     {\penalty\shapepenalty}
+     {\kern\shapekern}
+     {\vfil}%
+   \kern\scratchoffset
+   \vfilneg
+   \flushshapebox
+   \vfilneg
+   \kern\scratchoffset
+   \egroup
+   \box\scratchbox
+   \egroup}
+
+\protect \endinput

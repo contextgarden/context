@@ -286,6 +286,7 @@
 		<cd:variable name='intermezzo' value='میان‌پرده'/>
 		<cd:variable name='intext' value='درون‌متن'/>
 		<cd:variable name='intro' value='پیشگفتار'/>
+		<cd:variable name='invertedshort' value='invertedshort'/>
 		<cd:variable name='italic' value='ایتالیک'/>
 		<cd:variable name='italicbold' value='مشکی‌ایتالیک'/>
 		<cd:variable name='item' value='آیتم'/>
@@ -389,6 +390,7 @@
 		<cd:variable name='nonumber' value='بدون‌شماره'/>
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='نرمال'/>
+		<cd:variable name='normalshort' value='normalshort'/>
 		<cd:variable name='nospacing' value='بدون‌فضاگذاری'/>
 		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='بدون'/>
@@ -456,6 +458,7 @@
 		<cd:variable name='rectangular' value='چهارگوشه'/>
 		<cd:variable name='reference' value='مرجع'/>
 		<cd:variable name='referral' value='مراجعه'/>
+		<cd:variable name='region' value='region'/>
 		<cd:variable name='register' value='ثبت'/>
 		<cd:variable name='regular' value='منظم'/>
 		<cd:variable name='relative' value='نسبی'/>
@@ -777,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='فرمان‌شماره‌عمیق'/>
 		<cd:constant name='deeptextcommand' value='فرمان‌متن‌عمیق'/>
 		<cd:constant name='default' value='پیش‌فرض'/>
+		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='تاخیر'/>
 		<cd:constant name='depth' value='عمق'/>
 		<cd:constant name='depthcorrection' value='تصحیح‌عمق'/>
@@ -1377,7 +1381,6 @@
 	<!-- definitions for interface commands for language pe -->
 
 	<cd:commands>
-		<cd:command name='CAPPED' value='CAP'/>
 		<cd:command name='Character' value='Character'/>
 		<cd:command name='Characters' value='Characters'/>
 		<cd:command name='MONTH' value='MONTH'/>
@@ -1817,7 +1820,7 @@
 		<cd:command name='resetpath' value='resetpath'/>
 		<cd:command name='resetperiodkerning' value='resetperiodkerning'/>
 		<cd:command name='resetsystemmode' value='resetsystemmode'/>
-		<cd:command name='resettext' value='بازنشانی‌متن'/>
+		<cd:command name='resettextcontent' value='بازنشانی‌متن'/>
 		<cd:command name='resetvisualizers' value='resetvisualizers'/>
 		<cd:command name='restoreglobalbodyfont' value='restoreglobalbodyfont'/>
 		<cd:command name='retestfeature' value='retestfeature'/>
@@ -2083,7 +2086,7 @@
 		<cd:command name='startnarrower' value='شروع‌باریکتر'/>
 		<cd:command name='startopposite' value='شروع‌مخالف'/>
 		<cd:command name='startoverlay' value='شروع‌پوشش'/>
-		<cd:command name='startoverzicht' value='شروع‌بازبینی'/>
+		<cd:command name='startoverview' value='شروع‌بازبینی'/>
 		<cd:command name='startpacked' value='شروع‌فشرده'/>
 		<cd:command name='startpositioning' value='شروع‌مکان‌گذاری'/>
 		<cd:command name='startproduct' value='شروع‌تولید'/>
@@ -2126,7 +2129,7 @@
 		<cd:command name='stopnarrower' value='پایان‌نازکتر'/>
 		<cd:command name='stopopposite' value='پایان‌مخالف'/>
 		<cd:command name='stopoverlay' value='پایان‌پوشش'/>
-		<cd:command name='stopoverzicht' value='پایان‌بازبینی'/>
+		<cd:command name='stopoverview' value='پایان‌بازبینی'/>
 		<cd:command name='stoppacked' value='پایان‌فشرده'/>
 		<cd:command name='stoppositioning' value='پایان‌مکان‌گذاری'/>
 		<cd:command name='stopproduct' value='پایان‌تولید'/>

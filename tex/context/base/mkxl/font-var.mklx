@@ -1,0 +1,57 @@
+%D \module
+%D   [       file=font-var,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Common Variables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Common Variables}
+
+\unprotect
+
+% some more will move here
+
+%D \macros
+%D   {fontstyle,fontalternative,fontsize,fontbody}
+%D
+%D Within a bodyfont, fonts can come in different sizes. For instance \type {\tf} is
+%D accompanied by \type {\tfa}, \type {\tfb} etc. The first two characters denote
+%D the alternative, while the third character in these sequences represents the
+%D size. The actual size is saved in a macro. The styles, being roman (\type {\rm}),
+%D sans serif (\type {\ss}) etc. are also available.
+
+% fontclass       % modern dejavu
+% fontbody        % ... 10pt 11pt 12pt ...
+% fontstyle       % rm ss tt mm hw cg ...
+% fontalternative % tf bf sl it bs bi sc ...
+% fontsize        % a b c d ...
+% fontface        % 0=normal 1=text 2=script 3=scriptscript 4=x 5=xx (math are temporary)
+
+\mutable\def\normalizedbodyfontsize{12pt}
+
+\immutable\def\defaultfontbody      {\normalizedbodyfontsize}
+\immutable\let\defaultfontstyle      \s!rm
+\immutable\let\defaultfontalternative\s!tf
+\immutable\let\defaultfontsize       \empty
+\immutable\let\defaultfontface       \!!zerocount
+
+\mutable\let\globalfontclass\empty
+\mutable\let\fontclass      \empty
+\mutable\let\fontbody       \defaultfontbody
+\mutable\let\fontstyle      \defaultfontstyle
+\mutable\let\fontalternative\defaultfontalternative
+\mutable\let\fontsize       \defaultfontsize
+\mutable\let\fontface       \!!zerocount
+
+\installmacrostack\fontstyle
+
+% we can use an indirect mapping for fontclasses (map string onto numbers) and indeed this
+% is somewhat more efficient but also makes the code messy ... maybe some day ...
+
+\protect \endinput

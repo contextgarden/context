@@ -29,9 +29,14 @@
                     <cd:constant type="local" default="yes"/>
                     <cd:constant type="global"/>
                 </cd:parameter>
-                <cd:parameter name="color">
-                    <cd:constant type="cd:color"/>
+                <cd:parameter name="mp">
+                    <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <!--
+                    cd:parameter name="method">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter
+                -->
                 <cd:parameter name="height">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
@@ -47,9 +52,15 @@
                 <cd:parameter name="rulethickness">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
-                <!-- cd:parameter name="method">
-                    <cd:constant type="cd:number"/>
-                </cd:parameter -->
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="textstyle">
                     <cd:resolve name="value-style"/>
                 </cd:parameter>
@@ -58,15 +69,6 @@
                 </cd:parameter>
                 <cd:parameter name="align">
                     <cd:inherit name="setupalign"/>
-                </cd:parameter>
-                <cd:parameter name="mp">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="before">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="after">
-                    <cd:constant type="cd:command"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

@@ -1,0 +1,178 @@
+%D \module
+%D   [       file=page-flw,
+%D        version=2003.04.19, % from test-002 (1997) profile experiment
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Text Flows,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Text Flows}
+
+%D This is high experimental and especially flushing may change (proper spacing is
+%D the driving force here). It's an old mechanism used for playing with stepping
+%D through document threads. As it's a simple and effective mechanism we keep it
+%D around. It's not to be confused with upcoming stream support.
+%D
+%D \starttyping
+%D \setuppapersize [S6]
+%D \setuptolerance [verytolerant,stretch]
+%D \setupfooter    [strut=no]
+%D \setupwhitespace[big]
+%D
+%D \setuplayout
+%D   [rightedge=5cm,width=fit,margin=0pt,edgedistance=1cm,
+%D    footer=4cm,footerdistance=1cm,header=0cm]
+%D
+%D \setuptexttexts  [edge][][\vbox{\flushtextflow{alpha}}]
+%D \setupfootertexts[edge][][\vbox{\flushtextflow{beta}}]
+%D \setupfootertexts        [\vbox{\flushtextflow{gamma}}][]
+%D
+%D \definetextflow [alfa]  [width=\rightedgewidth]
+%D \definetextflow [beta]  [width=\rightedgewidth]
+%D \definetextflow [gamma] [width=\footerheight]
+%D
+%D \starttext
+%D
+%D \dorecurse{50}
+%D   {\getrandomnumber{\funny}{0}{8}
+%D    \ifcase\funny \starttextflow[alfa]  \input tufte.tex   \stoptextflow
+%D    \or           \starttextflow[beta]  \input knuth.tex   \stoptextflow
+%D    \or           \starttextflow[gamma] \input materie.tex \stoptextflow
+%D    \or          {\bf   TUFTE}\quad \input tufte   \par
+%D    \or          {\bf   TUFTE}\quad \input tufte   \par
+%D    \or          {\bf   KNUTH}\quad \input knuth   \par
+%D    \or          {\bf   KNUTH}\quad \input knuth   \par
+%D    \or          {\bf MATERIE}\quad \input materie \par
+%D    \else        {\bf MATERIE}\quad \input materie \par
+%D    \fi}
+%D
+%D \stoptext
+%D \stoptyping
+
+\unprotect
+
+\installcorenamespace{textflow}
+\installcorenamespace{textflowbox}
+
+\installcommandhandler \??textflow {textflow} \??textflow
+
+\setuptextflow
+  [%c!style=,
+   %c!color=,
+   \c!width=\availablehsize]
+
+\appendtoks
+    \ifcsname\??textflowbox\currenttextflow\endcsname
+       \setbox\csname\??textflowbox\currenttextflow\endcsname\emptybox
+    \else
+       \expandafter\newbox\csname\??textflowbox\currenttextflow\endcsname
+    \fi
+\to \everydefinetextflow
+
+\newcount\b_page_textflow_box
+
+\permanent\def\textflowcollector#1%
+  {\begincsname\??textflowbox#1\endcsname}
+
+\permanent\protected\def\doifelsetextflowcollector#1%
+  {\ifcsname\??textflowbox#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\permanent\protected\def\doifelsetextflow#1%
+  {\unless\ifcsname\??textflowbox#1\endcsname
+     \expandafter\secondoftwoarguments
+   \orelse\ifvoid\csname\??textflowbox#1\endcsname
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\aliased\let\doiftextflowcollectorelse\doifelsetextflowcollector
+\aliased\let\doiftextflowelse         \doifelsetextflow
+
+\permanent\protected\def\starttextflow[#1]%
+  {\begingroup
+   \edef\currenttextflow{#1}%
+   \ifcsname\??textflowbox\currenttextflow\endcsname
+     \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
+     \global\setbox\b_page_textflow_box\vbox
+       \bgroup
+       \dontcomplain
+       \ifvoid\b_page_textflow_box\else
+         \unvbox\b_page_textflow_box
+       \fi
+       \hsize\textflowparameter\c!width\relax
+       \usetextflowstyleandcolor\c!style\c!color
+       \enforced\permanent\protected\def\stoptextflow{\endgraf\egroup\endgroup}%
+   \else
+     \enforced\aliased\let\stoptextflow\endgroup
+   \fi}
+
+\aliased\let\stoptextflow\relax
+
+\permanent\protected\def\flushtextflow#1%
+  {\begingroup
+   \edef\currenttextflow{#1}%
+   \ifcsname\??textflowbox\currenttextflow\endcsname
+     \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
+     \ifvoid\b_page_textflow_box
+       % sorry
+     \orelse\ifdim\ht\b_page_textflow_box>\vsize
+       \setbox\scratchbox\vsplit\b_page_textflow_box to \vsize
+       \ifvoid\scratchbox\else
+         \unvbox\scratchbox
+       \fi
+     \else
+       \unvbox\b_page_textflow_box
+     \fi
+   \fi
+   \endgroup}
+
+\protect \endinput
+
+% \setuppapersize [A6]
+% \setupbodyfont [pagella, 12pt]
+%
+% \definetextflow [even]  [width=\textwidth]
+% \definetextflow [odd]   [width=\textwidth]
+%
+% \starttextflow [even] \dorecurse{15}{\input bryson} \stoptextflow
+% \starttextflow [odd]  \dorecurse {5}{\input knuth } \stoptextflow
+%
+% \starttext
+%
+% \doloop {
+%     \ifodd\realpageno
+%         \doiftextflowelse{odd} {
+%             \bgroup
+%             \vsize\dimexpr\textheight-\strutdp\relax
+%             \flushtextflow{odd}
+%             \egroup
+%         } {
+%             \null
+%         }
+%         \page
+%     \else
+%         \doiftextflowelse{even} {
+%             \bgroup
+%             \vsize\dimexpr\textheight-\strutdp\relax
+%             \flushtextflow{even}
+%             \egroup
+%         } {
+%           \null
+%         }
+%         \page
+%     \fi
+%     \doiftextflowelse{even}\donothing{\doiftextflowelse{odd}\donothing\exitloop}
+% }
+%
+% \stoptext
+

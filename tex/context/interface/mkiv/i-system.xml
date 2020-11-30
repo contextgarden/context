@@ -1619,8 +1619,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texcode" type="environment" level="system" category="catcode" file="syst-aux.mkiv"/>
-
     <cd:command name="newcounter" level="system" category="counter" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
@@ -1831,6 +1829,18 @@
             <cd:delimiter name="else"/>
             <cd:resolve name="string-false"/>
             <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="validassignment" level="system" category="system" keywords="conditional" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nonvalidassignment" level="system" category="system" keywords="conditional" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 

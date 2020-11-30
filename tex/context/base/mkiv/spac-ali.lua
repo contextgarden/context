@@ -112,7 +112,7 @@ local function handler(head,leftpage,realpageno) -- traverse_list
                             local head = setlink(new_stretch(3),list) -- prepend
                             setlist(current,hpack_nodes(head,getwidth(current),"exactly",direction))
                             if trace_realign then
-                                report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
+                                report_realign("flushing right, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif trace_realign then
                             report_realign("invalid flushing, align %a, page %a, realpage %a",align,pageno,realpageno)

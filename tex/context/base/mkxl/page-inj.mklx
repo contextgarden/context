@@ -1,0 +1,228 @@
+%D \module
+%D   [     file=page-inj,
+%D      version=2013.02.10,
+%D        title=\CONTEXT\ Page Module,
+%D     subtitle=Injections,
+%D       author=Wolfgang Schuster \& Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Wolfgang Schuster \& Hans Hagen,
+%D      license=see context related readme files (gpl)]
+
+%D This module is based on an idea and prototype by Wolfgang but instead of
+%D injectioning into a page constructor we injection it into the regular shipout
+%D handler because that way we get page numbering. It's a sort of variation on
+%D postponing but the content does not end up in the regular page flow, so it's
+%D closer to page figures but without the usual page builder.
+%D
+%D This module is following the mkvi way of rendering setups and configuration and
+%D is somewhat experimental. Probably more alternatives will be added. This could
+%D become a delayed loaded module at some point (no real consequences).
+
+\unprotect
+
+\registerctxluafile{page-inj}{}
+
+\installcorenamespace {pageinjection}
+\installcorenamespace {pageinjectionalternative}
+\installcorenamespace {pageinjectionrenderings}
+
+\installframedcommandhandler \??pageinjection            {pageinjection}            \??pageinjection
+\installcommandhandler       \??pageinjectionalternative {pageinjectionalternative} \??pageinjectionalternative
+
+\let\page_boxes_flush_before\clf_flushpageinjectionsbefore
+\let\page_boxes_flush_after \clf_flushpageinjectionsafter
+
+\def\page_injections_flush_indeed
+  {\scrn_canvas_synchronize_set{\pageinjectionparameter\c!width}{\pageinjectionparameter\c!height}%
+   \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+   \scrn_canvas_synchronize_reset}
+
+\def\page_injections_flush_saved#name#parameters%
+  {\begingroup
+   \edef\currentpageinjection{#name}%
+   \getdummyparameters[#parameters]%
+   \edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
+   \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
+   \page_injections_nextpage
+   \page_injections_flush_indeed
+   \endgroup}
+
+\permanent\tolerant\protected\def\pageinjection[#1]#*[#2]% name parameters | settings parameters | name | parameters
+  {\begingroup
+   \ifhastok={#1}%
+     \ifhastok={#2}%
+        \page_injections_direct_settings_parameters{#1}{#2}%
+     \else
+        \page_injections_direct_parameters{#1}%
+     \fi
+   \else
+     \ifhastok={#2}%
+        \page_injections_direct_name_parameters{#1}{#2}%
+     \else
+        \page_injections_direct_name{#1}%
+     \fi
+   \fi}
+
+\def\page_injections_direct_settings_parameters#settings% #parameters%
+  {\let\currentpageinjection\empty
+   \checkpageinjectionparent
+   \setupcurrentpageinjection[#settings]%
+   \page_injections_direct_indeed}
+
+\def\page_injections_direct_parameters% #parameters%
+  {\let\currentpageinjection\empty
+   \checkpageinjectionparent
+   \page_injections_direct_indeed}
+
+\def\page_injections_direct_name_parameters#name% #parameters%
+  {\edef\currentpageinjection{#name}%
+   \checkpageinjectionparent
+   \page_injections_direct_indeed}
+
+\def\page_injections_direct_name#name%
+  {\edef\currentpageinjection{#name}%
+   \checkpageinjectionparent
+   \page_injections_direct_indeed{}}
+
+\def\page_injections_direct_indeed% #parameters%
+  {\edef\p_page_injections_state{\pageinjectionparameter\c!state}%
+   \edef\p_page_injections_delay{\pageinjectionparameter\c!delay}%
+   \edef\p_page_injections_page {\pageinjectionparameter\c!page }%
+   \ifx\p_page_injections_delay\v!yes
+     \expandafter\page_injections_direct_indeed_yes
+   \else
+     \expandafter\page_injections_direct_indeed_nop
+   \fi}
+
+\def\page_injections_direct_indeed_yes#parameters%
+  {\clf_savepageinjections
+         name {\currentpageinjection}%
+        state {\p_page_injections_state}%
+     userdata {\normalunexpanded{#parameters}}%
+   \relax
+   \endgroup}
+
+\def\page_injections_direct_indeed_nop#parameters%
+  {\ifempty\p_page_injections_page
+     \page
+   \else
+     \page[\p_page_injections_page]%
+   \fi
+   \getdummyparameters[#parameters]%
+   \page_injections_place
+   \endgroup}
+
+\def\page_injections_place
+  {\edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
+   \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
+   \page_injections_nextpage
+   \ifx\currentpageinjectionalternative\v!none \else % increment counter but don’t generate output
+     \forgetparindent
+     \dontcomplain
+     \setconstant\shipoutfinalizemethod\zerocount % this is messy
+     \page_injections_flush_indeed
+   \fi}
+
+\def\page_injections_nextpage
+  {\edef\p_page_injections_pagestate{\pageinjectionparameter\c!pagestate}%
+   \ifx\p_page_injections_pagestate\v!stop \else
+     \edef\p_page_injections_n{\pageinjectionparameter\c!n}%
+     \ifempty\p_page_injections_n
+        \let\p_page_injections_n\plusone
+     \fi
+     \dorecurse\p_page_injections_n
+       {\incrementcounter[\s!realpage]%
+        \incrementcounter[\s!userpage]}%
+   \fi}
+
+\definepageinjectionalternative[\v!figure][\c!renderingsetup=\??pageinjectionrenderings:\v!figure]
+\definepageinjectionalternative[\v!buffer][\c!renderingsetup=\??pageinjectionrenderings:\v!buffer]
+\definepageinjectionalternative[\v!setups][\c!renderingsetup=\??pageinjectionrenderings:\s!setup ]
+
+\startsetups[\??pageinjectionrenderings:\v!figure]
+    \dontleavehmode\externalfigure[\dummyparameter\c!name][\c!factor=\v!max]
+\stopsetups
+
+\startsetups[\??pageinjectionrenderings:\s!setup]
+    \setups[\dummyparameter\c!setups]% kind of redundant but fits in
+\stopsetups
+
+\startsetups[\??pageinjectionrenderings:\v!buffer]
+    \getbuffer[\dummyparameter\c!name]%
+\stopsetups
+
+% \setuppaper
+%   [\c!method=\v!pageinjection]
+
+\setuppageinjection
+  [      \c!width=\paperwidth,
+        \c!height=\paperheight,
+         \c!frame=\v!off,
+        \c!offset=\v!overlay,
+         \c!delay=\v!no,
+         \c!state=\v!next,
+   \c!alternative=\v!figure]
+
+\definepageinjection[\v!previouspage][\c!delay=\v!yes,\c!state=\v!previous]
+\definepageinjection[\v!nextpage]    [\c!delay=\v!yes,\c!state=\v!next]
+\definepageinjection[\v!here]        % direct
+\definepageinjection[\v!empty]       [\c!alternative=\v!none]
+
+%definepageinjection[\v!chapter]     [\v!previouspage][\c!pagestate=\v!stop]
+
+\protect \endinput
+
+% \enabletrackers[pagebuilder.injections]
+%
+% \setuppageinjection[offset=2em]
+%
+% \definepageinjection[chapter][previouspage][pagestate=stop]
+% \definepageinjection[later]  [delay=yes,state=+2]
+%
+% \useMPlibrary[dum]
+%
+% \starttext
+%
+% \startchapter[title={Insert pages before/after the current page}]
+%
+% 	\dorecurse{10}{one: \input ward\par}
+%
+% 	\pageinjection[previouspage][name=dummy-1]
+%
+% 	\dorecurse{20}{two: \input ward\par} \page
+%
+% 	\pageinjection[nextpage][name=dummy-2]
+%  	\pageinjection[later]   [name=dummy-4]
+%  	\pageinjection[delay=yes,state=+2][name=dummy-5]
+%
+% 	\dorecurse{100}{three: \input ward\par}
+%
+% \stopchapter
+%
+% \startbuffer[whatever]
+%     \dorecurse{10}{whatever #1 }
+% \stopbuffer
+%
+% \startchapter[title={Insert pages at the current location}]
+%
+% 	\dorecurse{10}{\input ward\par}
+%
+% 	\pageinjection[direct][name=dummy-3]
+% 	\pageinjection[direct][alternative=buffer,name=whatever]
+%
+% 	\dorecurse{10}{\input ward\par}
+%
+% \stopchapter
+%
+% \setuphead
+%   [chapter]
+%   [beforesection={\pageinjection[empty]},
+%    insidesection={\pageinjection[chapter][name=\structureuservariable{image}]}]
+%
+% \startchapter[title={Combine both mechanism}][name=dummy-4]
+%
+% 	\dorecurse{10}{\input ward\par}
+%
+% \stopchapter
+%
+% \stoptext

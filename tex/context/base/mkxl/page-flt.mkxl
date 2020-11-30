@@ -1,0 +1,331 @@
+%D \module
+%D   [       file=page-flt,
+%D        version=2010.04.08,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Float Management,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Float Management}
+
+%D This module has code that previously was in other modules. There is also float
+%D related code in \type {strc-flt.mkiv}.
+
+\registerctxluafile{page-flt}{}
+
+\unprotect
+
+\defineinsertion[\s!topfloat]
+\defineinsertion[\s!bottomfloat]
+\defineinsertion[\s!pagefloat]
+
+\newdimen   \d_page_floats_inserted_bottom
+\newdimen   \d_page_floats_inserted_top
+\newdimen   \d_page_floats_inserted_page
+\newcount   \c_page_floats_n_of_top         \c_page_floats_n_of_top   \plustwo
+\newcount   \c_page_floats_n_of_bottom      \c_page_floats_n_of_bottom\zerocount
+\newcount   \c_page_floats_n_of_page        \c_page_floats_n_of_page  \plustwo
+
+\newconstant\c_page_floats_insertions_topskip_mode  % 1 = no topskip
+
+\def\page_floats_report_total
+  {\showmessage\m!floatblocks4%
+     {\the\totalnoffloats
+      \ifempty\floatlocationmethod
+        \ifempty\floatlocation\else,\floatlocation\fi
+      \else
+        ,\floatlocationmethod
+      \fi}}
+
+\def\page_floats_report_flushed
+  {\showmessage\m!floatblocks3%
+     {\the\numexpr\totalnoffloats-\savednoffloats\relax}}
+
+%D Extra float registers.
+
+\newconditional\c_page_floats_room
+\newconditional\c_page_floats_some_waiting
+\newconditional\c_page_floats_not_permitted
+\newconditional\c_page_floats_flushing
+\newconditional\c_page_floats_center_box          \settrue\c_page_floats_center_box
+\newconditional\c_page_floats_center_box_local
+\newconditional\c_page_floats_center_box_global
+\newconditional\c_page_floats_compress_flushed       \settrue\c_page_floats_compress_flushed
+
+\newdimen      \d_page_floats_compress_distance
+
+%D For the moment we keep this but they will become private too.
+
+\newcount\totalnoffloats           % these will be redone ... handled at the lua end anyway
+\newcount\savednoffloats           % these will be redone ... handled at the lua end anyway
+\newcount\nofcollectedfloats       % communication channel
+\newdimen\maxcollectedfloatstotal  % communication channel
+
+\newcount\noffloatinserts          % these will be redone ... handled at the lua end anyway
+
+\newbox  \floattext
+
+\newdimen\floatwidth
+\newdimen\floatheight
+\newdimen\floatdepth
+\newdimen\floattextwidth
+\newdimen\floattextheight
+
+\newbox  \floatbox
+\newbox  \savedfloatbox
+
+%D From now on we manage the float stack at the \LUA\ end instead of packing
+%D them in a box and splitting off stacked floats. It's not so much less code
+%D but it's cleaner this way. It also opens op some posibilities as we can now
+%D more conveniently cary additional information around.
+
+\newtoks \everyfloatscheck
+
+\appendtoks
+   \ifcase\savednoffloats
+     \global\setfalse\c_page_floats_some_waiting
+   \else
+     \global\settrue\c_page_floats_some_waiting
+   \fi
+\to \everyfloatscheck
+
+\protected\def\page_floats_flush#1#2%
+  {\clf_flushfloat{#1}#2\relax
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_flush_by_label#1#2%
+  {\clf_flushlabeledfloat{#1}{#2}\relax
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_save#1%
+  {\clf_savefloat{#1}\relax
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_resave#1%
+  {\clf_resavefloat{#1}\relax
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_push_saved
+  {\clf_pushfloat
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_pop_saved
+  {\clf_popfloat
+   \the\everyfloatscheck}
+
+\protected\def\page_floats_get_info#1%
+  {\clf_consultfloat{#1}}
+
+\protected\def\page_floats_if_else#1%
+  {\clf_doifelsestackedfloats{#1}}
+
+\protected\def\page_floats_collect#1#2#3%
+  {\clf_collectfloat{#1}\dimexpr#2\relax\dimexpr#3\relax}
+
+\def\nofstackedfloatincategory#1%
+  {\clf_nofstackedfloats{#1}}
+
+\let\page_floats_column_push_saved\page_floats_push_saved % overloaded in page-mul
+\let\page_floats_column_pop_saved \page_floats_pop_saved  % overloaded in page-mul
+
+\protected\def\page_floats_save_page_float#1#2%
+  {\clf_savespecificfloat{#1}{specification{#2}}\relax}
+
+\protected\def\page_floats_save_somewhere_float#1#2% #1=method
+  {\clf_savespecificfloat{#1}{specification{#2}label{\floatlabel}}\relax}
+
+%D This is an experimental new feature (for Alan Braslau), a prelude to more:
+%D
+%D \starttyping
+%D test \placefigure{}{}
+%D test \placefigure[somewhere:alpha][whatever]{}{}
+%D test \placefigure[somewhere:beta] [whatever]{}{}
+%D test \placefigure[somewhere:gamma][whatever]{}{}
+%D test \placefigure[somewhere:delta][whatever]{}{}
+%D test \placefigure{}{}
+%D
+%D in \in{figure}[whatever] bla bla
+%D
+%D \placenamedfloat[figure][*l*]
+%D \placenamedfloat[figure][gamma]
+%D \placenamedfloat[figure][beta]
+%D \stoptyping
+
+\permanent\tolerant\protected\def\placenamedfloat[#1]#*[#2]%
+  {\doloop
+     {\page_floats_flush_by_label\s!somewhere{#2}%
+      \ifvoid\floatbox
+        \exitloop
+      \else
+        \def\currentfloat{#1}%
+        \blank[\rootfloatparameter\c!spacebefore]%
+        \box\floatbox
+        \blank[\rootfloatparameter\c!spaceafter]%
+      \fi}}
+
+% \setupcaption [figure]   [align=flushleft]
+% \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
+% \setupcaption [figure-2] [align=flushleft,leftmargin=10mm,rightmargin=-10mm,width=\textwidth]
+%
+% \startsetups somefigure
+%     \ifdim\floatsetupwidth>\textwidth
+%         \placesetupfloat[figure-2]
+%     \else
+%         \placesetupfloat[figure-1]
+%     \fi
+% \stopsetups
+%
+% \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
+
+\mutable\let\floatsetupcaption\empty
+\mutable\let\floatsetupcontent\empty
+\mutable\let\floatsetupwidth  \empty
+\mutable\let\floatsetupheight \empty
+
+\permanent\tolerant\protected\def\placefloatwithsetups[#1]#*[#2]#*[#3]#:#4%
+  {\def\floatsetupcaption{#4}%
+   \def\floatsetupcontent{\copy\nextbox}%
+   \def\floatsetupwidth  {\wd\nextbox}%
+   \def\floatsetupheight {\ht\nextbox}%
+   \enforced\permanent\protected\def\placesetupfloat[##1]%
+     {\placefloat[##1][#2][#3]{#4}{\floatsetupcontent}}% #4 and not \floatsetupcaption (protected)
+   \dowithnextbox{\setups[#1]}\vbox}
+
+%D The following code is in transition as we don't want to break the current single
+%D column, multi column, and columnset mechanism.
+%D
+%D First we reimplement some helpers.
+
+\def\page_floats_get_used_hsize{\hsize}
+
+\protected\def\page_floats_get
+  {\ifconditional\c_page_floats_some_waiting
+     \page_floats_flush\s!text\plusone
+     \ifconditional\c_page_floats_center_box
+       \ifdim\wd\globalscratchbox<\page_floats_get_used_hsize
+         \global\setbox\floatbox\hpack to \page_floats_get_used_hsize{\hss\box\floatbox\hss}%
+       \orelse\ifinsidecolumns
+         % retain special alignments
+         \ifdim\wd\floatbox>\makeupwidth
+           \wd\floatbox\makeupwidth
+         \fi
+       \fi
+     \fi
+   \else
+     \global\savednoffloats\zerocount
+     \global\setbox\floatbox\emptybox
+   \fi}
+
+\protected\def\page_floats_flush_saved
+  {\doloop
+     {\ifconditional\c_page_floats_some_waiting
+        \page_otr_command_check_if_float_fits
+        \ifconditional\c_page_floats_room
+          \page_floats_get
+          \doplacefloatbox
+        \else
+          \exitloop
+        \fi
+      \else
+      % \ifconditional\c_page_margin_blocks_present % not here, here just as many floats as fit
+      %   \page_otr_command_flush_margin_blocks
+      % \else
+          \exitloop
+      % \fi
+      \fi}}
+
+%D This is a future mechamism that will be integrated once we're sure about it:
+%D
+%D \starttyping
+%D \dorecurse{10}
+%D   {\input thuan
+%D    \placefigure{}{\framed[height=1.5cm]{test}}
+%D    \placefloatplaceholder}
+%D \stoptyping
+
+\permanent\protected\def\placefloatplaceholder
+  {\ifconditional\c_page_floats_room \else
+     \ifdim\dimexpr\pagegoal-\pagetotal-3\lineheight\relax>\zeropoint
+       \startlinecorrection[blank]
+       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \stoplinecorrection
+     \else
+       \allowbreak
+     \fi
+   \fi}
+
+\setuplabeltext
+  [placeholder={\Word{\lastplacedfloat}~, moved}]
+
+%D Page floats use different stacks.
+
+\newtoks\everybeforeflushedpagefloat
+
+\def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
+  {\page_floats_flush{#1}\plusone
+   \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
+   \the\everybeforeflushedpagefloat
+   \vpack to \textheight
+     {\doifnotinset\v!high\floatspecification\vfill
+      \box\floatbox
+      \doifnotinset\v!low\floatspecification\vfill}%
+   \page_otr_fill_and_eject_page}
+
+\let\m_page_otr_checked_page_float\relax
+
+\protected\def\page_floats_flush_page_floats % used in postpone
+  {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
+   \ifempty\m_page_otr_checked_page_float
+     % nothing
+   \orelse\ifx\m_page_otr_checked_page_float\v!empty
+      \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
+   \else
+      \page_floats_flush_page_floats_indeed\m_page_otr_checked_page_float
+   \fi}
+
+% temp hack, needed to prevent floatbox being forgotten during
+% output, this will change to using another box for flushing
+%
+% \dorecurse{700}{text } \placefigure[top][]{First} {\framed{bla 1}}
+%                        \placefigure[top][]{Second}{\framed{bla 2}}
+% \dorecurse {40}{text } \placefigure[top][]{Third} {\framed{bla 3}}
+
+\appendtoks
+    \global\setbox\savedfloatbox\box\floatbox
+\to \everybeforeoutput
+
+\appendtoks
+    \global\setbox\floatbox\box\savedfloatbox
+\to \everyafteroutput
+
+\protect \endinput
+
+% hm, where is this one used (was in save/restore, see old implementation)
+%
+% \permanent\protected\def\uncenteredfloatbox
+%   {\ifconditional\c_page_floats_center_box
+%      \ifhbox\floatbox\relax % remove centering
+%        \ifdim\wd\floatbox=\hsize
+%          \ifhbox\floatbox
+%            \setbox\scratchbox\hbox
+%              {\unhbox\floatbox
+%               \unskip\unskip
+%               \global\setbox\globalscratchbox\lastbox}%
+%            \box\globalscratchbox
+%          \else
+%            \box\floatbox
+%          \fi
+%        \else
+%          \box\floatbox
+%        \fi
+%      \else
+%        \box\floatbox
+%      \fi
+%    \else
+%      \box\floatbox
+%    \fi}

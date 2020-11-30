@@ -7,7 +7,7 @@
     <cd:command name="replaceword" level="style" category="language" file="lang-rep.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
-            <cd:resolve name="keyword-text"/>
+            <cd:resolve name="keyword-text-optional"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
@@ -18,6 +18,8 @@
                 <cd:constant type="reset"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
+            <!-- command is overloaded in typo-ovl.mkiv with second argument -->
+            <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 

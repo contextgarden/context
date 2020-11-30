@@ -1,0 +1,38 @@
+if not modules then modules = { } end modules ['spac-hor'] = {
+    version   = 1.001,
+    comment   = "companion to spac-hor.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local chardata  = characters.data
+local peekchar  = tokens.scanners.peekchar
+local ctx_space = context.space
+
+local can_have_space = table.tohash {
+    "lu", "ll", "lt", "lm", "lo", -- letters
+ -- "mn", "mc", "me",             -- marks
+    "nd", "nl", "no",             -- numbers
+    "ps", "pi",                   -- initial
+ -- "pe", "pf",                   -- final
+ -- "pc", "pd", "po",             -- punctuation
+    "sm", "sc", "sk", "so",       -- symbols
+ -- "zs", "zl", "zp",             -- separators
+ -- "cc", "cf", "cs", "co", "cn", -- others
+}
+
+interfaces.implement {
+    name      = "autoinsertnextspace",
+    protected = true,
+    public    = true,
+    actions   = function()
+        local char = peekchar()
+        if char then
+            local d = chardata[char]
+            if d and can_have_space[d.category] then
+                ctx_space()
+            end
+        end
+    end,
+}

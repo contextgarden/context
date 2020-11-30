@@ -294,11 +294,6 @@ local f_elseif   = formatters["  elseif scankeywordcs('%s') then data['%s'] = sc
 ----- f_if_x     = formatters[    "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
 ----- f_elseif_x = formatters["  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
 
--- if CONTEXTLMTXMODE > 0 then
---     f_if       = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
---     f_elseif   = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
--- end
-
 local f_local    = formatters["local scan%s = scanners.%s"]
 local f_scan     = formatters["scan%s()"]
 local f_shortcut = formatters["local %s = scanners.converters.%s"]
@@ -308,11 +303,6 @@ local f_elseif_c = formatters["  elseif scankeywordcs('%s') then data['%s'] = %s
 local f_scan_c   = formatters["%s(scan%s())"]
 
 -- see above
-
--- if CONTEXTLMTXMODE > 0 then
---     f_if_c     = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
---     f_elseif_c = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
--- end
 
 local f_any      = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
 local f_any_c    = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]

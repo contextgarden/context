@@ -1,0 +1,617 @@
+%D \module
+%D   [       file=page-lin,
+%D        version=2007.11.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Line Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% generic or not ... maybe not bother too much and simplify to mkiv only get rid of
+% \mk* (left over from experimental times)
+%
+% to be redone (was experiment) .. can be hooked into margin code reshuffle
+% arguments
+%
+% this is early luatex code, 2007 or even before that, and it shows ... we have
+% better tricks now
+
+\writestatus{loading}{ConTeXt Core Macros / Line Numbering}
+
+\unprotect
+
+% todo: save settings
+%
+% low level interface
+%
+% we should use normal counters but then we need to sync settings
+
+% some line
+%
+% \startlocallinenumbering
+% some source code 1\par
+% some source code 2\par
+% some source code 3\par
+% \stoplocallinenumbering
+%
+% some line
+
+\registerctxluafile{page-lin}{}
+
+\definesystemattribute[linenumber]   [public]
+\definesystemattribute[linereference][public]
+
+\appendtoksonce
+    \c_attr_linenumber\attributeunsetvalue
+\to \everyforgetall
+
+\appendtoks
+    \c_attr_linenumber\attributeunsetvalue
+\to \everyinsidefloat
+
+\mutable\let\linenumber\!!zerocount
+
+\newbox     \b_page_lines_scratch
+\newcount   \c_page_lines_reference
+\newconstant\c_page_lines_nesting
+
+\newconditional\tracelinenumbering % we keep this for old times sake
+
+\installtextracker
+  {lines.numbers.show}
+  {\settrue \tracelinenumbering}
+  {\setfalse\tracelinenumbering}
+
+% id nr shift width leftskip dir
+
+\installcorenamespace{linenumberinginstance}
+
+% tag skipflag s getfield(n,"shift") getfield(n,"width") leftmarginwidth(getlist(n)) getfield(n,"dir"))
+
+\let\makelinenumber\gobblefivearguments % used at lua end
+
+\newconditional\page_postprocessors_needed_box
+
+\protected\def\page_postprocessors_linenumbers_page_indeed   #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
+\protected\def\page_postprocessors_linenumbers_box_indeed    #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
+\protected\def\page_postprocessors_linenumbers_deepbox_indeed#tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \plusone  }
+\protected\def\page_postprocessors_linenumbers_column_indeed #tag{\page_lines_add_numbers_to_box{#tag}\currentcolumn\nofcolumns\zerocount}
+
+\let\page_postprocessors_linenumbers_page   \gobbleoneargument
+\let\page_postprocessors_linenumbers_box    \gobbleoneargument
+\let\page_postprocessors_linenumbers_deepbox\gobbleoneargument
+\let\page_postprocessors_linenumbers_column \gobbleoneargument
+
+\protected\def\page_postprocessors_linenumbers_check
+  {\glet\page_postprocessors_linenumbers_check  \relax
+   \glet\page_postprocessors_linenumbers_page   \page_postprocessors_linenumbers_page_indeed
+   \glet\page_postprocessors_linenumbers_box    \page_postprocessors_linenumbers_box_indeed
+   \glet\page_postprocessors_linenumbers_deepbox\page_postprocessors_linenumbers_deepbox_indeed
+   \glet\page_postprocessors_linenumbers_column \page_postprocessors_linenumbers_column_indeed}
+
+\def\page_lines_start_define
+  {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
+     {\clf_registerlinenumbering
+        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+        start    \linenumberingparameter\c!start
+        step     \linenumberingparameter\c!step
+        method   {\linenumberingparameter\c!method}%
+        tag      {\currentlinenumbering}%
+     }}
+
+\def\page_lines_start_update
+  {\clf_setuplinenumbering
+     \csname\??linenumberinginstance\currentlinenumbering\endcsname
+     {%
+        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+     }%
+   \relax}
+
+\def\page_lines_setup
+  {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
+     \clf_setuplinenumbering
+       \lastnamedcs
+       {%
+            continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+            start    \linenumberingparameter\c!start
+            step     \linenumberingparameter\c!step
+            method   {\linenumberingparameter\c!method}%
+            tag      {\currentlinenumbering}%
+       }%
+     \relax
+   \fi}
+
+% we could make this a bit more efficient by putting the end reference
+% in the same table as the start one but why make things complex ...
+
+\protected\def\page_lines_some_reference#1#2#3%
+  {\dontleavehmode\begingroup
+   \global\advance\c_page_lines_reference\plusone
+   \c_attr_linereference\c_page_lines_reference
+   #3% todo: #3{#1} as there is no need to pass #1 as part of #3
+   % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
+   \c_strc_references_bind_state\zerocount % we don't want the prewordbreak and manage it here
+   \normalexpanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberingparameter\c!conversion}{\the\c_page_lines_reference}}% kind labels userdata text
+   \endgroup}
+
+% \def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{}} % reimplemented later
+% \def\page_lines_reference_stop #1{\page_lines_some_reference{#1}{lr:e:#1}{}} % reimplemented later
+
+% \def\mklinestartreference#1[#2]{\in{#1}[lr:b:#2]} % not interfaced/ not used
+% \def\mklinestopreference #1[#2]{\in{#1}[lr:e:#2]} % not interfaced/ not used
+
+\newif\ifnumberinglines   % will change
+\newif\iftypesettinglines % will change
+
+\installcorenamespace{linenumbering}
+
+\installcommandhandler \??linenumbering {linenumbering} \??linenumbering
+
+\setnewconstant\c_page_lines_mode     \plusone  % 0=continue, 1=restart
+\setnewconstant\c_page_lines_location \plusone  % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
+\setnewconstant\c_page_lines_alignment\plusfive % 0=middle, 1=left, 2=right, 5=auto
+
+\newdimen\d_page_lines_width
+\newdimen\d_page_lines_distance
+
+\newevery \beforeeverylinenumbering \relax
+\newevery \aftereverylinenumbering  \relax
+\newevery \everylinenumber          \relax
+
+\appendtoks
+   \page_lines_setup
+\to \everysetuplinenumbering
+
+\appendtoks
+   \page_lines_start_define
+\to \everydefinelinenumbering
+
+\setuplinenumbering
+  [\c!conversion=\v!numbers,
+   \c!start=1,
+   \c!step=1,
+   \c!method=\v!first,
+   \c!continue=\v!no,
+   \c!style=,
+   \c!color=,
+   \c!width=2\emwidth,
+   \c!left=,
+   \c!right=,
+   \c!command=,
+   \c!margin=2.5\emwidth,
+   \c!distance=\zeropoint,
+   \c!location=\v!default, % depends on direction, columns etc
+   \c!align=\v!auto]
+
+\definelinenumbering
+  []
+
+% \startlinenumbering[<startvalue>|continue|settings|name]
+% \startlinenumbering[name][<startvalue>|continue|settings]
+
+\newcount\c_pages_lines_nesting
+
+\permanent\tolerant\protected\def\startlinenumbering[#1]#*[#2]%
+  {\begingroup
+   \page_postprocessors_linenumbers_check
+   \advance\c_pages_lines_nesting\plusone
+   \ifnum\c_pages_lines_nesting>\plusone
+     \expandafter\gobbletwooptionals
+   \orelse\ifparameter#2\or
+     \expandafter\page_lines_start_two
+   \orelse\ifparameter#1\or
+     \expandafter\page_lines_start_one
+   \else
+     \expandafter\page_lines_start_zero
+   \fi[#1][#2]}
+
+\def\page_lines_start_zero[#1][#2]%
+  {\edef\m_argument{\linenumberingparameter\c!continue}%
+   \ifx\m_argument\v!yes
+     \c_page_lines_mode\zerocount
+   \else
+     \c_page_lines_mode\plusone
+   \fi
+   \page_lines_start_followup}
+
+\def\page_lines_start_one[#1][#2]% [continue|<number>|settings] % historic
+  {\edef\m_argument{#1}%
+   \ifx\m_argument\v!continue
+     \c_page_lines_mode\zerocount
+     \let\currentlinenumbering\empty
+   \else
+     \c_page_lines_mode\plusone
+     \ifx\m_argument\v!empty
+       \let\currentlinenumbering\empty
+     \orelse\ifhastok={#1}%
+       \let\currentlinenumbering\empty
+       \setupcurrentlinenumbering[#1]%
+     \else
+       \doifelsenumber\m_argument
+         {\let\currentlinenumbering\empty
+          \letlinenumberingparameter\c!start\m_argument}
+         {\let\currentlinenumbering\m_argument}%
+     \fi
+     \edef\p_continue{\linenumberingparameter\c!continue}%
+     \ifx\p_continue\v!yes
+       \c_page_lines_mode\zerocount
+     \fi
+   \fi
+   \page_lines_start_followup}
+
+\def\page_lines_start_two[#1][#2]% [tag][continue|<number>|settings]
+  {\edef\currentlinenumbering{#1}%
+   \edef\m_argument{#2}%
+   \ifx\m_argument\v!continue
+     \c_page_lines_mode\zerocount
+   \else
+     \c_page_lines_mode\plusone
+     \ifx\m_argument\v!empty \else
+       \doifelseassignment{#2}
+         {\setupcurrentlinenumbering[#2]}
+         {\doifnumber\m_argument
+            {\letlinenumberingparameter\c!start\m_argument}}%
+     \fi
+     \edef\p_continue{\linenumberingparameter\c!continue}%
+     \ifx\p_continue\v!yes
+       \c_page_lines_mode\zerocount
+     \fi
+   \fi
+   \page_lines_start_followup}
+
+\newconditional\c_page_lines_auto_narrow
+%\newconditional\c_page_lines_enabled
+
+\appendtoks
+    \ifconditional\page_postprocessors_needed_box
+        \page_postprocessors_linenumbers_page\b_page_postprocessor
+    \fi
+\to \t_page_postprocessors_page
+
+\appendtoks
+    \ifconditional\page_postprocessors_needed_box
+        \page_postprocessors_linenumbers_column\b_page_postprocessor
+    \fi
+\to \t_page_postprocessors_column
+
+\def\page_lines_start_followup
+  {\numberinglinestrue
+   \edef\p_location{\linenumberingparameter\c!location}%
+   \setfalse\c_page_lines_auto_narrow
+   \ifhmode \else
+     \ifx\p_location\v!text
+       \ifdim\leftskip>\zeropoint \else
+         \advance\leftskip\linenumberingparameter\c!margin
+         \settrue\c_page_lines_auto_narrow
+       \fi
+     \orelse\ifx\p_location\v!begin
+       \ifdim\leftskip>\zeropoint \else
+         \advance\leftskip\linenumberingparameter\c!margin
+         \settrue\c_page_lines_auto_narrow
+       \fi
+     \orelse\ifx\p_location\v!end
+       \ifdim\leftskip>\zeropoint \else
+         \advance\rightskip\linenumberingparameter\c!margin
+         \settrue\c_page_lines_auto_narrow
+       \fi
+     \fi
+   \fi
+   \the\beforeeverylinenumbering
+   %\global\settrue\c_page_lines_enabled           %
+   \global\settrue\page_postprocessors_needed_box % see core-rul.mkiv
+   \ifcase\c_page_lines_mode\relax
+     \page_lines_start_update % continue
+   \or
+     \page_lines_start_define % only when assignment
+   \fi
+   \c_attr_linenumber\csname\??linenumberinginstance\currentlinenumbering\endcsname\relax}
+
+\permanent\protected\def\stoplinenumbering
+  {\ifconditional\c_pages_lines_nesting=\plusone
+     \c_attr_linenumber\attributeunsetvalue
+     \the\aftereverylinenumbering
+     \ifconditional\c_page_lines_auto_narrow\par\fi
+   \fi
+   \endgroup}
+
+% number placement .. will change into (the new) margin code
+
+\newconditional\c_page_lines_fake_number
+\newconstant   \b_page_lines_number
+\newconstant   \c_page_lines_column
+\newconstant   \c_page_lines_last_column
+\newdimen      \d_page_lines_line_width
+\settrue       \c_page_lines_dir_left_to_right
+
+\installcorenamespace{linenumberinghandler}
+
+\def\page_line_swap_align % can become a helper
+  {\ifx\p_align\v!inner     \let\p_align\v!outer     \orelse
+   \ifx\p_align\v!outer     \let\p_align\v!inner     \orelse
+   \ifx\p_align\v!flushleft \let\p_align\v!flushright\orelse
+   \ifx\p_align\v!flushright\let\p_align\v!flushleft \orelse
+   \ifx\p_align\v!left      \let\p_align\v!right     \orelse
+   \ifx\p_align\v!right     \let\p_align\v!left      \fi}
+
+\let\page_lines_make_number_indeed\relax
+
+% \def\page_lines_rlap{\ifconditional\c_page_lines_dir_left_to_right\expandafter\rlap\else\expandafter\llap\fi}
+% \def\page_lines_llap{\ifconditional\c_page_lines_dir_left_to_right\expandafter\llap\else\expandafter\rlap\fi}
+
+\def\page_lines_add_numbers_to_box#box#column#max#nesting%
+  {\bgroup
+   \strc_tags_enable_indeed
+   \b_page_lines_number     #box\relax
+   \c_page_lines_column     #column\relax
+   \c_page_lines_last_column#max\relax
+   \fullrestoreglobalbodyfont
+   \let\makelinenumber\page_lines_make_number % used at lua end
+   \setbox\b_page_lines_scratch\vbox
+     {\forgetall
+      \offinterlineskip
+      \clf_linenumbersstageone
+        \b_page_lines_number
+        #nesting%
+      \relax}%
+   \clf_linenumbersstagetwo
+     \b_page_lines_number
+     \b_page_lines_scratch
+   \relax
+   \egroup}
+
+\def\page_lines_make_number#tag#mode#linenumber#width#dir% with hang and parindent and skips we have to compensate for \hsize
+  {\naturalhbox to \zeropoint \bgroup
+   \ifcase#mode\relax
+   % \settrue \c_page_lines_fake_number
+   \else
+   % \setfalse\c_page_lines_fake_number
+     \edef\currentlinenumbering{#tag}%
+     \def\linenumber{#linenumber}% unsafe
+     \d_page_lines_line_width#width\scaledpoint\relax
+     \d_page_lines_distance\linenumberingparameter\c!distance\relax
+     \edef\p_align{\linenumberingparameter\c!align}%
+     \edef\p_location{\linenumberingparameter\c!location}%
+     \ifcase#dir\relax
+       \settrue \c_page_lines_dir_left_to_right
+     \else
+       \setfalse\c_page_lines_dir_left_to_right
+     \fi
+     %
+     % maybe we also need an option to ignore columns, so that we renumber
+     % once but on the other hand this assumes aligned lines
+     %
+     \ifcase\c_page_lines_last_column\relax
+       \settrue \c_page_lines_fake_number % why
+     \or
+       % one column
+     \or
+       % two columns
+       \ifx\p_location\v!default % or just margin
+         \ifcase\c_page_lines_column\relax
+           \settrue \c_page_lines_fake_number % why
+         \or
+           \let\p_location\v!left % one
+         \else
+           \let\p_location\v!right % two
+           \page_line_swap_align % can become a helper
+         \fi
+       \fi
+   % \else
+       % too fuzzy
+     \fi
+     \ifx\p_location\v!default
+        \ifconditional\c_page_lines_dir_left_to_right
+          \let\p_location\v!left
+        \else
+          \let\p_location\v!right
+          \page_line_swap_align % yes or no
+        \fi
+     \fi
+     %
+     \begincsname\??linenumberinghandler\p_location\endcsname
+   \fi
+   \egroup}
+
+\def\page_lines_number_inject#align#width%
+  {\edef\p_width{\linenumberingparameter\c!width}%
+   \ifx\p_width\v!margin
+     \d_page_lines_width#width%
+   \else
+     \d_page_lines_width\p_width
+   \fi
+   \relax
+   \ifdim\d_page_lines_width>\zeropoint
+     \ifconditional\tracelinenumbering
+       \ruledhbox{\simplealignedbox\d_page_lines_width#align{\page_lines_number_inject_indeed}}%
+     \else
+       \simplealignedbox\d_page_lines_width#align{\page_lines_number_inject_indeed}%
+     \fi
+   \else
+     \ifconditional\tracelinenumbering
+       \ruledhbox
+   % \else
+     % \hbox
+     \fi
+     {\page_lines_number_inject_indeed}%
+   \fi}
+
+\def\page_lines_number_inject_indeed
+  {\uselinenumberingstyleandcolor\c!style\c!color
+   \linenumberingparameter\c!command
+     {\linenumberingparameter\c!left
+      \convertnumber{\linenumberingparameter\c!conversion}\linenumber
+      \linenumberingparameter\c!right}}
+
+% \def\dodorlap{\hbox to \zeropoint{\box\nextbox\normalhss}\endgroup}
+% \def\dodollap{\hbox to \zeropoint{\normalhss\box\nextbox}\endgroup}
+
+\def\page_line_handle_left#align#width#distance%
+  {\dostarttagged\t!linenumber\empty
+   \llap
+     {\page_lines_number_inject#align#width%
+      \dostarttagged\t!ignore\empty
+      \kern\dimexpr
+        #distance+\d_page_lines_distance
+        \ifconditional\c_page_lines_dir_left_to_right\else+\d_page_lines_line_width\fi
+      \relax
+      \the\everylinenumber
+      \hss
+      \dostoptagged}%
+   \dostoptagged}
+
+\def\page_line_handle_right#align#width#distance%
+  {\dostarttagged\t!linenumber\empty
+   \rlap
+     {\dostarttagged\t!ignore\empty
+      \kern\dimexpr
+        #distance+\d_page_lines_distance
+        \ifconditional\c_page_lines_dir_left_to_right+\d_page_lines_line_width\fi
+      \relax
+      \dostoptagged
+      \page_lines_number_inject#align#width%
+      \dostarttagged\t!ignore\empty
+      \the\everylinenumber
+      \hss
+      \dostoptagged}%
+   \dostoptagged}
+
+\setuvalue{\??linenumberinghandler\v!left}%
+  {\page_line_handle_left\p_align\leftmarginwidth\leftmargindistance}
+
+\setuvalue{\??linenumberinghandler\v!right}%
+  {\page_line_handle_right\p_align\rightmarginwidth\rightmargindistance}
+
+\setuvalue{\??linenumberinghandler\v!inner}%
+  {\ifodd\realpageno
+     \ifx\p_align\v!inner
+       \page_line_handle_left\v!flushleft\leftmarginwidth\leftmargindistance
+     \orelse\ifx\p_align\v!outer
+       \page_line_handle_left\v!flushright\leftmarginwidth\leftmargindistance
+     \else
+       \page_line_handle_left\p_align\leftmarginwidth\leftmargindistance
+     \fi
+   \else
+     \ifx\p_align\v!inner
+       \page_line_handle_right\v!flushright\rightmarginwidth\rightmargindistance
+     \orelse\ifx\p_align\v!outer
+       \page_line_handle_right\v!flushleft\rightmarginwidth\rightmargindistance
+     \else
+       \page_line_handle_right\p_align\rightmarginwidth\rightmargindistance
+     \fi
+   \fi}
+
+\setuvalue{\??linenumberinghandler\v!outer}%
+  {\ifodd\realpageno
+     \ifx\p_align\v!inner
+       \page_line_handle_right\v!flushleft\leftmarginwidth\leftmargindistance
+     \orelse\ifx\p_align\v!outer
+       \page_line_handle_right\v!flushright\leftmarginwidth\leftmargindistance
+     \else
+       \page_line_handle_right\p_align\leftmarginwidth\leftmargindistance
+     \fi
+   \else
+     \ifx\p_align\v!inner
+       \page_line_handle_left\v!flushright\rightmarginwidth\rightmargindistance
+     \orelse\ifx\p_align\v!outer
+       \page_line_handle_left\v!flushleft\rightmarginwidth\rightmargindistance
+     \else
+       \page_line_handle_left\p_align\rightmarginwidth\rightmargindistance
+     \fi
+   \fi}
+
+\def\page_line_handle_begin#align%
+  {\rlap
+     {\kern\d_page_lines_distance
+      \page_lines_number_inject#align\zeropoint
+      \the\everylinenumber}}
+
+\def\page_line_handle_end#align%
+  {\rlap
+     {\kern\d_page_lines_line_width\relax
+      \llap
+        {\page_lines_number_inject#align\zeropoint
+         \kern\d_page_lines_distance
+         \the\everylinenumber}}}
+
+\protected\defcsname\??linenumberinghandler\v!begin\endcsname{\page_line_handle_begin\p_align}
+\protected\defcsname\??linenumberinghandler\v!end  \endcsname{\page_line_handle_end  \p_align}
+\protected\defcsname\??linenumberinghandler\v!text \endcsname{\page_line_handle_begin\p_align}
+
+\letcsname\??linenumberinghandler\v!inleft  \expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\letcsname\??linenumberinghandler\v!inmargin\expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\letcsname\??linenumberinghandler\v!margin  \expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\letcsname\??linenumberinghandler\v!inright \expandafter\endcsname\csname\??linenumberinghandler\v!right\endcsname
+
+% referencing: \permithyphenation, also removes leading spaces (new per 29-11-2013)
+
+\permanent\protected\def\someline [#1]{\page_lines_reference_start{#1}\page_lines_reference_stop{#1}} % was just a def
+\permanent\protected\def\startline[#1]{\page_lines_reference_start{#1}\permithyphenation\ignorespaces} %okay?
+\permanent\protected\def\stopline [#1]{\removeunwantedspaces\permithyphenation\page_lines_reference_stop{#1}}
+
+\def\page_lines_reference_show_start
+  {\ifconditional\tracelinenumbering
+     \expandafter\page_lines_reference_show_start_indeed
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\page_lines_reference_show_stop
+  {\ifconditional\tracelinenumbering
+     \expandafter\page_lines_reference_show_stop_indeed
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\page_lines_reference_show_start_indeed#1%
+  {\setbox\scratchbox\hpack{\llap
+     {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hpack{\llap{\tt\txx#1}}}}%
+   \smashbox\scratchbox
+   \box\scratchbox}
+
+\def\page_lines_reference_show_stop_indeed#1%
+  {\setbox\scratchbox\hpack{\rlap
+     {\raise.85\strutht\hpack{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
+   \smashbox\scratchbox
+   \box\scratchbox}
+
+\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{\page_lines_reference_show_start{#1}}}
+\def\page_lines_reference_stop #1{\page_lines_some_reference{#1}{lr:e:#1}{\page_lines_reference_show_stop {#1}}}
+
+% eventually we will do this in lua
+
+\permanent\def\currentreferencelinenumber{\clf_filterreference{linenumber}}
+
+\let\m_page_lines_from\empty
+\let\m_page_lines_to  \empty
+
+\permanent\protected\def\doifelsesamelinereference#1#2#3%
+  {\doifelsereferencefound{lr:b:#1}
+     {\edef\m_page_lines_from{\currentreferencelinenumber}%
+      \doifelsereferencefound{lr:e:#1}
+        {\edef\m_page_lines_to{\currentreferencelinenumber}%
+         %[\m_page_lines_from,\m_page_lines_to]
+         \ifx\m_page_lines_from\m_page_lines_to#2\else#3\fi}%
+        {#2}}
+     {#2}}
+
+\aliased\let\doifsamelinereferenceelse\doifelsesamelinereference
+
+\permanent\protected\def\inline#1[#2]%
+  {\doifelsenothing{#1}%
+     {\doifelsesamelinereference{#2}%
+        {\in{\leftlabeltext\v!line}{\rightlabeltext\v!line}[lr:b:#2]}%
+        {\in{\leftlabeltext\v!lines}{}[lr:b:#2]--\in{}{\rightlabeltext\v!lines}[lr:e:#2]}}%
+     {\doifelsesamelinereference{#2}%
+        {\in{#1}[lr:b:#2]}%
+        {\in{#1}[lr:b:#2]--\in[lr:e:#2]}}}
+
+\permanent\protected\def\inlinerange[#1]%
+  {\doifelsesamelinereference{#1}%
+     {\in[lr:b:#1]}%
+     {\in[lr:b:#1]\endash\in[lr:e:#1]}}
+
+\protect \endinput
