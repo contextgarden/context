@@ -17,31 +17,31 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
-\registerctxluafile{lpdf-ini}{optimize}
+\registerctxluafile{lpdf-ini}{autosuffix,optimize}
 \registerctxluafile{lpdf-lmt}{autosuffix,optimize}
-\registerctxluafile{lpdf-col}{}
+\registerctxluafile{lpdf-col}{autosuffix}
 \registerctxluafile{lpdf-vfc}{autosuffix}
-\registerctxluafile{lpdf-xmp}{}
-\registerctxluafile{lpdf-ano}{}
-\registerctxluafile{lpdf-res}{}
-\registerctxluafile{lpdf-mis}{}
-\registerctxluafile{lpdf-ren}{}
-\registerctxluafile{lpdf-grp}{}
-\registerctxluafile{lpdf-wid}{}
-\registerctxluafile{lpdf-fld}{}
-\registerctxluafile{lpdf-mov}{}
-\registerctxluafile{lpdf-u3d}{} % this will become a module
+\registerctxluafile{lpdf-xmp}{autosuffix}
+\registerctxluafile{lpdf-ano}{autosuffix}
+\registerctxluafile{lpdf-res}{autosuffix}
+\registerctxluafile{lpdf-mis}{autosuffix}
+\registerctxluafile{lpdf-ren}{autosuffix}
+\registerctxluafile{lpdf-grp}{autosuffix}
+\registerctxluafile{lpdf-wid}{autosuffix}
+\registerctxluafile{lpdf-fld}{autosuffix}
+\registerctxluafile{lpdf-mov}{autosuffix}
+\registerctxluafile{lpdf-u3d}{autosuffix} % this will become a module
 %registerctxluafile{lpdf-swf}{} % this will become a module
-\registerctxluafile{lpdf-tag}{}
-\registerctxluafile{lpdf-fmt}{}
-\registerctxluafile{lpdf-pde}{}
+\registerctxluafile{lpdf-tag}{autosuffix}
+\registerctxluafile{lpdf-fmt}{autosuffix}
+\registerctxluafile{lpdf-pde}{autosuffix}
 \registerctxluafile{lpdf-img}{autosuffix,optimize}
-\registerctxluafile{lpdf-epa}{}
+\registerctxluafile{lpdf-epa}{autosuffix}
 \registerctxluafile{lpdf-emb}{autosuffix,optimize}
-\registerctxluafile{lpdf-fnt}{}
+\registerctxluafile{lpdf-fnt}{autosuffix}
 
-\registerctxluafile{back-pdp}{}
-\registerctxluafile{back-pdf}{} % some code will move to lpdf-*
+\registerctxluafile{back-pdp}{autosuffix}
+\registerctxluafile{back-pdf}{autosuffix} % some code will move to lpdf-*
 
 \loadmkxlfile{back-u3d} % this will become a module
 %loadmkxlfile{back-swf} % this will become a module

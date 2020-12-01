@@ -281,7 +281,7 @@ end
 -- local show_effect = { "lua", "print('!')" }
 
 ----- shiftmode = false -- test in mkiv and lmtx
-local shiftmode = CONTEXTLMTXMODE > 0
+local shiftmode = CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0
 
 local function manipulateeffect(tfmdata)
     local effect = tfmdata.properties.effect

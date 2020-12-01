@@ -833,7 +833,7 @@ function scripts.context.run(ctxdata,filename)
                 local directives = { }
                 --
                 if a_nodates then
-                    directives[#directives+1] = format("backend.date=%s",type(a_nodates) == "string" and a_nodates or " no")
+                    directives[#directives+1] = format("backend.date=%s",type(a_nodates) == "string" and a_nodates or "no")
                 end
                 --
                 if type(a_trailerid) == "string" then

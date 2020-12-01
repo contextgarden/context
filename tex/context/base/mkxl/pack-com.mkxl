@@ -240,6 +240,7 @@
    \pack_combinations_push
    \edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
+   %
    \ifempty\currentcombinationspec
      \ifcondition\validassignment{#1}%
        \let\currentcombination\empty
@@ -262,6 +263,29 @@
        \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
      \fi
    \fi
+   %
+% test first:
+%
+%    \ifempty\currentcombinationspec
+%      \ifhastok={#1}%
+%        \let\currentcombination\empty
+%        \setupcurrentcombination[#1]%
+%        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%      \orelse\ifhastok*{\currentcombination}%
+%        \edef\currentcombinationspec{\currentcombination*\plusone*}%
+%        \let\currentcombination\empty
+%      \orelse\ifchknum\currentcombination\or
+%        \edef\currentcombinationspec{\currentcombination*\plusone*}%
+%        \let\currentcombination\empty
+%      \else
+%        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%      \fi
+%    \orelse\ifhastok={#2}%
+%      \setupcurrentcombination[#2]%
+%      \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%    \else
+%      \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
+%    \fi
    %
    \forgetall
    %
@@ -320,7 +344,7 @@
 \def\pack_combinations_pickup
   {\dostarttagged\t!combinationpair\empty     % better make this text
    \dostarttagged\t!combinationcontent\empty
-   \assumelongusagecs\pack_combinations_pickup_content_indeed}
+   \expandafterpars\pack_combinations_pickup_content_indeed}
 
 \def\pack_combinations_pickup_content_indeed
   {\dowithnextboxcs\pack_combinations_pickup_content\hbox}
@@ -332,10 +356,10 @@
    \expandnamespacemacro\??combinationalternative\p_pack_combinations_alternative\v!text}
 
 \setvalue{\??combinationalternative\v!text}%
-  {\assumelongusagecs\pack_combinations_alternative_text_indeed}
+  {\expandafterpars\pack_combinations_alternative_text_indeed}
 
 \setvalue{\??combinationalternative\v!label}%
-  {\assumelongusagecs\pack_combinations_alternative_label_indeed}
+  {\expandafterpars\pack_combinations_alternative_label_indeed}
 
 \def\pack_combinations_alternative_text_indeed
   {\dowithnextboxcs\pack_combinations_pickup_caption\vtop\bgroup
@@ -393,7 +417,7 @@
       \m_pack_combinations_valigner{\box\b_pack_combinations_content}%
       % we need to save the caption for a next alignment line
       \pack_combinations_save_caption}%
-   \unless\ifnum\c_pack_combinations_y>\plusone
+   \ifnum\c_pack_combinations_y>\plusone
      \global\advance\c_pack_combinations_y\minusone
      \global\advance\c_pack_combinations_x\minusone
      \ifcase\c_pack_combinations_x
@@ -705,7 +729,7 @@
    %
    \globalsetsystemmode{pairedbox}%
    \pack_pairedboxes_before
-   \assumelongusagecs\pack_pairedboxes_first_pickup}
+   \expandafterpars\pack_pairedboxes_first_pickup}
 
 \permanent\protected\def\stopplacepairedbox{} % we just pick up two boxes
 
@@ -718,7 +742,7 @@
 
 \def\pack_pairedboxes_first
   {\pack_pairedboxes_between
-   \assumelongusagecs\pack_pairedboxes_second_pickup}
+   \expandafterpars\pack_pairedboxes_second_pickup}
 
 \def\pack_pairedboxes_second_pickup
   {\dowithnextboxcs\pack_pairedboxes_second\vbox

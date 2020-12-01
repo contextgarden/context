@@ -1164,7 +1164,7 @@ primarydef p randomized s = (
     elseif pair p :
         p randomshifted s
     elseif cmykcolor p :
-        if color s :
+        if cmykcolor s :
            ((uniformdeviate cyanpart    s) * cyanpart    p,
             (uniformdeviate magentapart s) * magentapart p,
             (uniformdeviate yellowpart  s) * yellowpart  p,
@@ -1175,7 +1175,7 @@ primarydef p randomized s = (
             ((uniformdeviate s) * p)
         fi
     elseif rgbcolor p :
-        if color s :
+        if rgbcolor s :
            ((uniformdeviate redpart   s) * redpart   p,
             (uniformdeviate greenpart s) * greenpart p,
             (uniformdeviate bluepart  s) * bluepart  p)

@@ -8,9 +8,6 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 }
 
 -- beware of "too many locals" here
---
--- The lua files are still hybrid ones but we keep that as a reference for the
--- lmt variants that started out as copies.
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
@@ -58,157 +55,42 @@ lpdf       = lpdf or { }
 local lpdf = lpdf
 lpdf.flags = lpdf.flags or { } -- will be filled later
 
+table.setmetatableindex(lpdf, function(t,k)
+    report_blocked("function %a is not accessible",k)
+    os.exit()
+end)
+
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
-local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
-local trace_details    = false  trackers.register("backend.details",    function(v) trace_details    = v end)
+
+local pdfreserveobject
+local pdfimmediateobject
+
+updaters.register("backend.update.lpdf",function()
+    pdfreserveobject    = lpdf.reserveobject
+    pdfimmediateobject  = lpdf.immediateobject
+end)
 
 do
 
-    local pdfsetmajorversion, pdfsetminorversion, pdfgetmajorversion, pdfgetminorversion
-    local pdfsetcompresslevel, pdfsetobjectcompresslevel, pdfgetcompresslevel, pdfgetobjectcompresslevel
-    local pdfsetsuppressoptionalinfo, pdfsetomitcidset, pdfsetomitcharset
-
     updaters.register("backend.update.lpdf",function()
-        pdfsetmajorversion         = pdf.setmajorversion
-        pdfsetminorversion         = pdf.setminorversion
-        pdfgetmajorversion         = pdf.getmajorversion
-        pdfgetminorversion         = pdf.getminorversion
-
-        pdfsetcompresslevel        = pdf.setcompresslevel
-        pdfsetobjectcompresslevel  = pdf.setobjcompresslevel
-        pdfgetcompresslevel        = pdf.getcompresslevel
-        pdfgetobjectcompresslevel  = pdf.getobjcompresslevel
-
-        pdfsetsuppressoptionalinfo = pdf.setsuppressoptionalinfo
-        pdfsetomitcidset           = pdf.setomitcidset
-        pdfsetomitcharset          = pdf.setomitcharset
+        job.positions.registerhandlers {
+            getpos  = drivers.getpos,
+            getrpos = drivers.getrpos,
+            gethpos = drivers.gethpos,
+            getvpos = drivers.getvpos,
+        }
+        lpdf.getpos = drivers.getpos
     end)
 
-    function lpdf.setversion(major,minor)
-        pdfsetmajorversion(major or 1)
-        pdfsetminorversion(minor or 7)
-    end
-
-    function lpdf.getversion(major,minor)
-        return pdfgetmajorversion(), pdfgetminorversion()
-    end
-
-    function lpdf.majorversion() return pdfgetmajorversion() end
-    function lpdf.minorversion() return pdfgetminorversion() end
-
-    local frozen = false
-    local clevel = 3
-    local olevel = 1
-
-    function lpdf.setcompression(level,objectlevel,freeze)
-        if not frozen then
-            if pdfsetcompresslevel then
-                pdfsetcompresslevel(level or 3)
-                pdfsetobjectcompresslevel(objectlevel or level or 3)
-            else
-                clevel = level
-                olevel = objectlevel
-            end
-            frozen = freeze
-        end
-    end
-
-    function lpdf.getcompression()
-        if pdfgetcompresslevel then
-            return pdfgetcompresslevel(), pdfgetobjectcompresslevel()
-        else
-            return clevel, olevel
-        end
-    end
-
-    function lpdf.compresslevel()
-        if pdfgetcompresslevel then
-            return pdfgetcompresslevel()
-        else
-            return clevel
-        end
-    end
-
-    function lpdf.objectcompresslevel()
-        if pdfgetobjectcompresslevel then
-            return pdfgetobjectcompresslevel()
-        else
-            return olevel
-        end
-    end
-
-    function lpdf.setsuppressoptionalinfo(n)
-        if pdfsetsuppressoptionalinfo then
-            pdfsetsuppressoptionalinfo(n) -- todo
-        end
-    end
-
-    function lpdf.setomitcidset(v)
-        return pdfsetomitcidset(v)
-    end
-
-    function lpdf.setomitcharset(v)
-        return pdfsetomitcharset(v)
-    end
-
-end
-
-do
-
-    local pdfgetxformname, pdfincludeimage
+    local pdfgetmatrix, pdfhasmatrix, pdfprint, pdfgetpos
 
     updaters.register("backend.update.lpdf",function()
-        pdfgetxformname = pdf.getxformname
-        pdfincludeimage = pdf.includeimage
+        pdfgetmatrix = lpdf.getmatrix
+        pdfhasmatrix = lpdf.hasmatrix
+        pdfprint     = lpdf.print
+        pdfgetpos    = lpdf.getpos
     end)
-
-    function lpdf.getxformname(id) return pdfgetxformname(id) end
-    function lpdf.includeimage(id) return pdfincludeimage(id) end
-
-end
-
-    local pdfsetpageresources, pdfsetpageattributes, pdfsetpagesattributes
-    local pdfreserveobject, pdfimmediateobject, pdfdeferredobject, pdfreferenceobject
-    local pdfgetpagereference
-
-    updaters.register("backend.update.lpdf",function()
-        pdfreserveobject      = pdf.reserveobj
-        pdfimmediateobject    = pdf.immediateobj
-        pdfdeferredobject     = pdf.obj
-        pdfreferenceobject    = pdf.refobj
-
-        pdfgetpagereference   = pdf.getpageref
-
-        pdfsetpageresources   = pdf.setpageresources
-        pdfsetpageattributes  = pdf.setpageattributes
-        pdfsetpagesattributes = pdf.setpagesattributes
-    end)
-
-local jobpositions = job.positions
-local getpos       = jobpositions.getpos
-local getrpos      = jobpositions.getrpos
-
-jobpositions.registerhandlers {
-    getpos  = pdf.getpos,
- -- getrpos = pdf.getrpos,
-    gethpos = pdf.gethpos,
-    getvpos = pdf.getvpos,
-}
-
-do
-
-    local pdfgetmatrix, pdfhasmatrix, pdfprint
-
-    updaters.register("backend.update.lpdf",function()
-        pdfgetmatrix = pdf.getmatrix
-        pdfhasmatrix = pdf.hasmatrix
-        pdfprint     = pdf.print
-    end)
-
-    function lpdf.print(...)
-        return pdfprint(...)
-    end
 
     -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
     --     local x1 = llx * rx + lly * sy
@@ -240,7 +122,7 @@ do
     -- funny values for tx and ty
 
     function lpdf.rectangle(width,height,depth,offset)
-        local tx, ty = getpos() -- pdfgetpos, maybe some day use dir here
+        local tx, ty = pdfgetpos()
         if offset then
             tx     = tx     -   offset
             ty     = ty     +   offset
@@ -859,163 +741,6 @@ lpdf.reference   = pdfreference
 lpdf.verbose     = pdfverbose
 lpdf.literal     = pdfliteral
 
-local names, cache = { }, { }
-
-function lpdf.reserveobject(name)
-    local r = pdfreserveobject() -- we don't support "annot"
-    if name then
-        names[name] = r
-        if trace_objects then
-            report_objects("reserving number %a under name %a",r,name)
-        end
-    elseif trace_objects then
-        report_objects("reserving number %a",r)
-    end
-    return r
-end
-
-local nofpages = 0
-
-local texgetcount = tex.getcount
-
-function lpdf.pagereference(n,complete) -- true | false | nil | n [true,false]
-    if nofpages == 0 then
-        nofpages = structures.pages.nofpages
-        if nofpages == 0 then
-            nofpages = 1
-        end
-    end
-    if n == true or not n then
-        complete = n
-        n = texgetcount("realpageno")
-    end
-    local r = n > nofpages and pdfgetpagereference(nofpages) or pdfgetpagereference(n)
-    return complete and pdfreference(r) or r
-end
-
-function lpdf.nofpages()
-    return structures.pages.nofpages
-end
-
-function lpdf.obj(...)
-    pdfdeferredobject(...)
-end
-
-function lpdf.immediateobj(...)
-    pdfimmediateobject(...)
-end
-
-function lpdf.delayedobject(data,n)
-    if n then
-        pdfdeferredobject(n,data)
-    else
-        n = pdfdeferredobject(data)
-    end
-    pdfreferenceobject(n)
-    return n
-end
-
-function lpdf.flushobject(name,data)
-    if data then
-        local named = names[name]
-        if named then
-            if not trace_objects then
-            elseif trace_details then
-                report_objects("flushing data to reserved object with name %a, data: %S",name,data)
-            else
-                report_objects("flushing data to reserved object with name %a",name)
-            end
-            return pdfimmediateobject(named,tostring(data))
-        else
-            if not trace_objects then
-            elseif trace_details then
-                report_objects("flushing data to reserved object with number %s, data: %S",name,data)
-            else
-                report_objects("flushing data to reserved object with number %s",name)
-            end
-            return pdfimmediateobject(name,tostring(data))
-        end
-    else
-        if trace_objects and trace_details then
-            report_objects("flushing data: %S",name)
-        end
-        return pdfimmediateobject(tostring(name))
-    end
-end
-
-function lpdf.flushstreamobject(data,dict,compressed,objnum) -- default compressed
-    if trace_objects then
-        report_objects("flushing stream object of %s bytes",#data)
-    end
-    local dtype    = type(dict)
-    local kind     = compressed == "raw" and "raw" or "stream"
-    local nolength = nil
-    if compressed == "raw" then
-        compressed = nil
-        nolength   = true
-     -- data       = string.formatters["<< %s >>stream\n%s\nendstream"](attr,data)
-    end
-    return pdfdeferredobject {
-        objnum        = objnum,
-        immediate     = true,
-        nolength      = nolength,
-        compresslevel = compressed == false and 0 or nil,
-        type          = "stream",
-        string        = data,
-        attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
-    }
-end
-
-function lpdf.flushstreamfileobject(filename,dict,compressed,objnum) -- default compressed
-    if trace_objects then
-        report_objects("flushing stream file object %a",filename)
-    end
-    local dtype = type(dict)
-    return pdfdeferredobject {
-        objnum        = objnum,
-        immediate     = true,
-        compresslevel = compressed == false and 0 or nil,
-        type          = "stream",
-        file          = filename,
-        attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
-    }
-end
-
-local shareobjectcache, shareobjectreferencecache = { }, { }
-
-function lpdf.shareobject(content)
-    if content == nil then
-        -- invalid object not created
-    else
-        content = tostring(content)
-        local o = shareobjectcache[content]
-        if not o then
-            o = pdfimmediateobject(content)
-            shareobjectcache[content] = o
-        end
-        return o
-    end
-end
-
-function lpdf.shareobjectreference(content)
-    if content == nil then
-        -- invalid object not created
-    else
-        content = tostring(content)
-        local r = shareobjectreferencecache[content]
-        if not r then
-            local o = shareobjectcache[content]
-            if not o then
-                o = pdfimmediateobject(content)
-                shareobjectcache[content] = o
-            end
-            r = pdfreference(o)
-            shareobjectreferencecache[content] = r
-        end
-        return r
-    end
-end
-
 -- three priority levels, default=2
 
 local pagefinalizers     = { { }, { }, { } }
@@ -1038,12 +763,6 @@ function lpdf.getpageproperties()
 end
 
 resetpageproperties()
-
-local function setpageproperties()
-    pdfsetpageresources  (pageresources  ())
-    pdfsetpageattributes (pageattributes ())
-    pdfsetpagesattributes(pagesattributes())
-end
 
 local function addtopageresources  (k,v) pageresources  [k] = v end
 local function addtopageattributes (k,v) pageattributes [k] = v end
@@ -1100,7 +819,6 @@ function lpdf.finalizepage(shipout)
     if shipout and not environment.initex then
      -- resetpageproperties() -- maybe better before
         run(pagefinalizers,"page")
-        setpageproperties()
         resetpageproperties() -- maybe better before
     end
 end
@@ -1119,18 +837,6 @@ callbacks.register("finish_pdfpage", lpdf.finalizepage)
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 do
-
-    local pdfsetinfo, pdfsetcatalog, pdfsettrailerid -- pdfsetnames pdfsettrailer
-
-    updaters.register("backend.update.lpdf",function()
-        pdfsetinfo                 = pdf.setinfo
-        pdfsetcatalog              = pdf.setcatalog
-        pdfsettrailerid            = pdf.settrailerid
-    end)
-
-    function lpdf.settrailerid(id)
-        pdfsettrailerid(id)
-    end
 
     -- some minimal tracing, handy for checking the order
 
@@ -1178,14 +884,13 @@ do
     local function flushcatalog()
         if checkcatalog() then
             catalog.Type = nil
-            pdfsetcatalog(catalog())
+--             pdfsetcatalog(catalog())
         end
     end
 
     local function flushinfo()
         if checkinfo() then
             info.Type = nil
-            pdfsetinfo(info())
         end
     end
 
@@ -1215,13 +920,6 @@ do
             info[k] = v
         end
     end
-
-    -- local function lpdf.addtonames(k,v)
-    --     if not (lpdf.protectresources and names[k]) then
-    --         trace_set("names",k)
-    --         names[k] = v
-    --     end
-    -- end
 
     local names = pdfdictionary {
      -- Type = pdfconstant("Names")
@@ -1262,6 +960,12 @@ do
     -- todo: share them
     -- todo: force when not yet set
 
+    local pdfgetfontobjectnumber
+
+    updaters.register("backend.update.lpdf",function()
+        pdfgetfontobjectnumber = lpdf.getfontobjectnumber
+    end)
+
     local f_font = formatters["%s%d"]
 
     function lpdf.collectedresources(options)
@@ -1275,13 +979,10 @@ do
         end
         local fonts = options and options.fonts
         if fonts and next(fonts) then
-            local pdfgetfontobjnumber = lpdf.getfontobjnumber
-            if pdfgetfontobjnumber then
-                local prefix = options.fontprefix or "F"
-                Font = pdfdictionary { }
-                for k, v in sortedhash(fonts) do
-                    Font[f_font(prefix,v)] = pdfreference(pdfgetfontobjnumber(k))
-                end
+            local prefix = options.fontprefix or "F"
+            Font = pdfdictionary { }
+            for k, v in sortedhash(fonts) do
+                Font[f_font(prefix,v)] = pdfreference(pdfgetfontobjectnumber(k))
             end
         end
         if ExtGState or ColorSpace or Pattern or Shading or Font then
@@ -1633,35 +1334,6 @@ end
 
 do
 
-    local pdfincludechar, pdfincludecharlist, pdfincludefont
-    local pdfgetfontname, pdfgetfontobjnum
-    local pdfsetmapfile, pdfsetmapline
-
-    updaters.register("backend.update.lpdf",function()
-        pdfincludechar     = pdf.includechar
-        pdfincludefont     = pdf.includefont
-        pdfincludecharlist = pdf.includecharlist
-        pdfgetfontname     = pdf.getfontname
-        pdfgetfontobjnum   = pdf.getfontobjnum
-        pdfsetmapfile      = pdf.mapfile
-        pdfsetmapline      = pdf.mapline
-    end)
-
-    function lpdf.includechar(f,c) pdfincludechar(f,c) end
-    function lpdf.includefont(...) pdfincludefont(...) end
-
-    function lpdf.includecharlist(f,c) pdfincludecharlist(f,c) end -- can be disabled
-
-    function lpdf.getfontname     (id) return pdfgetfontname  (id) end
-    function lpdf.getfontobjnumber(id) return pdfgetfontobjnum(id) end
-
-    function lpdf.setmapfile(...) pdfsetmapfile(...) end
-    function lpdf.setmapline(...) pdfsetmapline(...) end
-
-end
-
-do
-
     -- This is obsolete but old viewers might still use it as directive
     -- for what to send to a postscript printer.
 
@@ -1691,10 +1363,4 @@ do
         end
     end
 
-end
-
--- a left-over
-
-if environment.arguments.nocompression then
-    lpdf.setcompression(0,0,true)
 end

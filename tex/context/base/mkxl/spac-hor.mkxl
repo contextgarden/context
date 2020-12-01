@@ -1000,8 +1000,6 @@
 \permanent\protected\def\textormathspacecommand  #1#2#3{\ifmmode\mskip#1#2\else#3\fi\relax}
 \permanent\protected\def\breakabletextormathspace#1#2#3{\ifmmode\mskip#1#2\else\hskip#1\hspaceamount\empty{#3}\fi\relax}
 
-\newmuskip\hairmuskip \hairmuskip=.15mu
-
 \overloaded\permanent\protected \def\hairspace    {\textormathspace+\hairmuskip{.5}}
 \overloaded\permanent\protected \def\thinspace    {\textormathspace+\thinmuskip 1}
 %overloaded\permanent\protected \def\medspace     {\textormathspace+\medmuskip  2}      % 4/18 em

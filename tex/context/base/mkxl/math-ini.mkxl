@@ -315,18 +315,20 @@
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
-\newmuskip\defaultthickmuskip     \defaultthickmuskip  5mu plus 5mu
-\newmuskip\defaultmedmuskip       \defaultmedmuskip    4mu plus 2mu minus 4mu
-\newmuskip\defaultthinmuskip      \defaultthinmuskip   3mu
+\immutable\mugluespecdef\defaultthickmuskip      5mu plus 5mu
+\immutable\mugluespecdef\defaultmedmuskip        4mu plus 2mu minus 4mu
+\immutable\mugluespecdef\defaultthinmuskip       3mu
 
-\newmuskip\halfthickmuskip        \halfthickmuskip     2.5mu plus 2.5mu
-\newmuskip\halfmedmuskip          \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
-\newmuskip\halfthinmuskip         \halfthinmuskip      1.5mu
+\immutable\mugluespecdef\halfthickmuskip         2.5mu plus 2.5mu
+\immutable\mugluespecdef\halfmedmuskip           2.0mu plus 1.0mu minus 2.0mu
+\immutable\mugluespecdef\halfthinmuskip          1.5mu
 
-\newcount \defaultrelpenalty      \defaultrelpenalty       500
-\newcount \defaultbinoppenalty    \defaultbinoppenalty     700
-\newcount \defaultprerelpenalty   \defaultprerelpenalty   -100
-\newcount \defaultprebinoppenalty \defaultprebinoppenalty -100
+\immutable\mugluespecdef\hairmuskip              .15mu
+
+\immutable\integerdef   \defaultrelpenalty       500
+\immutable\integerdef   \defaultbinoppenalty     700
+\immutable\integerdef   \defaultprerelpenalty   -100
+\immutable\integerdef   \defaultprebinoppenalty -100
 
 % we need to control these otherwise:
 %

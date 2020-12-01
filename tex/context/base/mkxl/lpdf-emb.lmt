@@ -48,9 +48,16 @@ local pdfarray             = lpdf.array
 local pdfconstant          = lpdf.constant
 local pdfstring            = lpdf.string
 local pdfreference         = lpdf.reference
-local pdfreserveobject     = lpdf.reserveobject
-local pdfflushobject       = lpdf.flushobject
-local pdfflushstreamobject = lpdf.flushstreamobject
+
+local pdfreserveobject
+local pdfflushobject
+local pdfflushstreamobject
+
+updaters.register("backend.update.lpdf",function()
+    pdfreserveobject     = lpdf.reserveobject
+    pdfflushobject       = lpdf.flushobject
+    pdfflushstreamobject = lpdf.flushstreamobject
+end)
 
 local report_fonts         = logs.reporter("backend","fonts")
 
@@ -302,7 +309,7 @@ end
 
 -- Map file mess.
 
-local loadmapfile, loadmapline, getmapentry  do
+local getmapentry  do
 
     -- We only need to pick up the filename and optionally the enc file
     -- as we only use them for old school virtual math fonts. We might as
@@ -313,7 +320,7 @@ local loadmapfile, loadmapline, getmapentry  do
 
     local mappings = { }
 
-    loadmapline = function(n)
+    lpdf.loadmapline = function(n)
         if trace_fonts then
             report_fonts("mapline: %s",n)
         end
@@ -323,7 +330,7 @@ local loadmapfile, loadmapline, getmapentry  do
         end
     end
 
-    loadmapfile = function(n)
+    lpdf.loadmapfile = function(n)
         local okay, data = resolvers.loadbinfile(n,"map")
         if okay and data then
             data = splitlines(data)
@@ -2215,22 +2222,28 @@ end)
 
 -- this is temporary
 
-local done = false
+function lpdf.setomitcidset(v)
+    -- dummy: no longer needed
+    includecidset = not toboolean(v)
+end
 
-updaters.register("backend.update.pdf",function()
-    if not done then
-        function pdf.getfontobjnum          (k) return objects[k] end
-        function pdf.getfontname            (k) return names  [k] end
-        function pdf.includechar            ()  end -- maybe, when we need it
-        function pdf.includefont            ()  end -- maybe, when we need it
-        function pdf.includecharlist        ()  end -- maybe, when we need it
-        function pdf.setomitcidset          (v) includecidset = not toboolean(v) end
-        function pdf.setomitcharset         ()  end -- we don't need that in lmtx
-        function pdf.setsuppressoptionalinfo()  end -- we don't need that in lmtx
-        function pdf.mapfile                (n) loadmapfile(n) end
-        function pdf.mapline                (n) loadmapline(n) end
-        -- this will change
+function lpdf.setomitcharset(v)
+    -- dummy
+end
+
+function lpdf.getfontobjectnumber(k)
+    return objects[k]
+end
+
+function lpdf.getfontname(k)
+    return names[k]
+end
+
+-- local done = false -- todo:
+
+-- updaters.register("backend.update.pdf",function()
+--     if not done then
         lpdf.registerdocumentfinalizer(lpdf.flushfonts,1,"wrapping up fonts")
-        done = true
-    end
-end)
+--         done = true
+--     end
+-- end)

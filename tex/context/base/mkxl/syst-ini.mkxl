@@ -461,21 +461,21 @@
 % \newdimen \scaledpoint   \immutable\scaledpoint   1sp
 % \newdimen \thousandpoint \immutable\thousandpoint 1000pt
 
-\immutable\integerdef   \maxcount 2147483647
+\immutable\integerdef    \maxcount 2147483647
 
-\immutable\dimensiondef \zeropoint     0pt
-\immutable\dimensiondef \onepoint      1pt
-\immutable\dimensiondef \halfapoint    0.5pt
-\immutable\dimensiondef \maxdimen      16383.99999pt % 1073741823sp
-\immutable\dimensiondef \onebasepoint  1bp
-\immutable\dimensiondef \scaledpoint   1sp
-\immutable\dimensiondef \thousandpoint 1000pt
+\immutable\dimensiondef  \zeropoint     0pt
+\immutable\dimensiondef  \onepoint      1pt
+\immutable\dimensiondef  \halfapoint    0.5pt
+\immutable\dimensiondef  \maxdimen      16383.99999pt % 1073741823sp
+\immutable\dimensiondef  \onebasepoint  1bp
+\immutable\dimensiondef  \scaledpoint   1sp
+\immutable\dimensiondef  \thousandpoint 1000pt
 
-\newskip  \zeroskip      \immutable\zeroskip      0pt plus 0pt minus 0pt
+\immutable\gluespecdef   \zeroskip      0pt plus 0pt minus 0pt
 
-\newmuskip\zeromuskip    \immutable\zeromuskip    0mu
-\newmuskip\onemuskip     \immutable\onemuskip     1mu
-\newmuskip\muquad        \immutable\muquad        18mu
+\immutable\mugluespecdef \zeromuskip    0mu
+\immutable\mugluespecdef \onemuskip     1mu
+\immutable\mugluespecdef \muquad        18mu
 
 \aliased\let\points   \onepoint
 \aliased\let\halfpoint\halfapoint

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-11-30 10:20
+-- merge date  : 2020-12-01 17:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -37169,7 +37169,7 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
   end
  end
 end
-local shiftmode=CONTEXTLMTXMODE>0
+local shiftmode=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0
 local function manipulateeffect(tfmdata)
  local effect=tfmdata.properties.effect
  if effect then

@@ -383,7 +383,7 @@
 \permanent\protected\def\normalunderscore{\ifmmode\mathunderscore\else\textunderscore\fi}
 
 \pushoverloadmode
-    \let\_\normalunderscore
+    \enforced\let\_\normalunderscore
 \popoverloadmode
 
 %D To be sorted out:

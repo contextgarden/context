@@ -713,7 +713,7 @@
    \dostoptagged
    \endgroup}
 
-\permanent\protected\def\btxshowentryinline[#1]#*[#2]%
+\permanent\tolerant\protected\def\btxshowentryinline[#1]#*[#2]%
   {\ifarguments
      \ctxcommand{showbtxentry("\currentbtxdataset","\currentbtxtag")}
    \or
