@@ -196,13 +196,7 @@
        \finalizeshipoutbox\shipoutscratchbox
      \fi
      \setbox\shipoutscratchbox\vpack
-       {\scratchdimen\clf_shipoutoffset\relax
-        \ifdim\scratchdimen=\zeropoint\else
-          \offinterlineskip
-          \vkern\scratchdimen
-          \hkern\scratchdimen
-        \fi
-        \hpack
+       {\hpack
           {\page_otr_flush_every_stuff
            \page_otr_flush_special_content
            \box\shipoutscratchbox}}%

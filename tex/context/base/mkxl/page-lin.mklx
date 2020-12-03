@@ -40,7 +40,7 @@
 %
 % some line
 
-\registerctxluafile{page-lin}{}
+\registerctxluafile{page-lin}{autosuffix}
 
 \definesystemattribute[linenumber]   [public]
 \definesystemattribute[linereference][public]
@@ -72,7 +72,7 @@
 
 % tag skipflag s getfield(n,"shift") getfield(n,"width") leftmarginwidth(getlist(n)) getfield(n,"dir"))
 
-\let\makelinenumber\gobblefivearguments % used at lua end
+\permanent\let\makelinenumber\gobblefivearguments % used at lua end
 
 \newconditional\page_postprocessors_needed_box
 
@@ -349,26 +349,16 @@
    \c_page_lines_column     #column\relax
    \c_page_lines_last_column#max\relax
    \fullrestoreglobalbodyfont
-   \let\makelinenumber\page_lines_make_number % used at lua end
-   \setbox\b_page_lines_scratch\vbox
-     {\forgetall
-      \offinterlineskip
-      \clf_linenumbersstageone
-        \b_page_lines_number
-        #nesting%
-      \relax}%
-   \clf_linenumbersstagetwo
+   \enforced\let\makelinenumber\page_lines_make_number % used at lua end
+   \clf_addlinenumbers
      \b_page_lines_number
-     \b_page_lines_scratch
+     \scratchbox
+     #nesting%
    \relax
    \egroup}
 
-\def\page_lines_make_number#tag#mode#linenumber#width#dir% with hang and parindent and skips we have to compensate for \hsize
-  {\naturalhbox to \zeropoint \bgroup
-   \ifcase#mode\relax
-   % \settrue \c_page_lines_fake_number
-   \else
-   % \setfalse\c_page_lines_fake_number
+\def\page_lines_make_number#tag#linenumber#width#dir% with hang and parindent and skips we have to compensate for \hsize
+  {\setbox\scratchbox\naturalhbox to \zeropoint \bgroup
      \edef\currentlinenumbering{#tag}%
      \def\linenumber{#linenumber}% unsafe
      \d_page_lines_line_width#width\scaledpoint\relax
@@ -400,8 +390,6 @@
            \page_line_swap_align % can become a helper
          \fi
        \fi
-   % \else
-       % too fuzzy
      \fi
      \ifx\p_location\v!default
         \ifconditional\c_page_lines_dir_left_to_right
@@ -413,7 +401,6 @@
      \fi
      %
      \begincsname\??linenumberinghandler\p_location\endcsname
-   \fi
    \egroup}
 
 \def\page_lines_number_inject#align#width%

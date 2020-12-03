@@ -779,10 +779,6 @@ local flushsave, flushrestore, flushsetmatrix  do
     local nofpositions = 0
     local nofmatrices  = 0
 
-    local f_matrix = formatters["%s 0 0 cm"]
-
-    local getdata      = nuts.getdata
-
     flushsave = function(current,pos_h,pos_v)
         nofpositions = nofpositions + 1
         positions[nofpositions] = { pos_h, pos_v, nofmatrices }
@@ -807,62 +803,79 @@ local flushsave, flushrestore, flushsetmatrix  do
         nofpositions = nofpositions - 1
     end
 
-    local function pdf_set_matrix(str,pos_h,pos_v)
-        if shippingmode == "page" then
-            local rx, sx, sy, ry = splitupstring(str," ")
-            if rx and ry and sx and ry then
-                rx, sx, sy, ry = tonumber(rx), tonumber(sx), tonumber(sy), tonumber(ry)
-                local tx = pos_h * (1 - rx) - pos_v * sy
-                local ty = pos_v * (1 - ry) - pos_h * sx
-                if nofmatrices > 0 then
-                    local t = matrices[nofmatrices]
-                    local r_x, s_x, s_y, r_y, te, tf = t[1], t[2], t[3], t[4], t[5], t[6]
-                    rx, sx = rx * r_x + sx * s_y, rx * s_x + sx * r_y
-                    sy, ry = sy * r_x + ry * s_y, sy * s_x + ry * r_y
-                    tx, ty = tx * r_x + ty * s_y, tx * s_x + ty * r_y
-                end
-                nofmatrices = nofmatrices + 1
-                matrices[nofmatrices] = { rx, sx, sy, ry, tx, ty }
-            end
-        end
-    end
-
     local nodeproperties = nodes.properties.data
 
+    local s_matrix_0 = "1 0 0 1 0 0 cm"
+    local f_matrix_2 = formatters["%.6N 0 0 %.6N 0 0 cm"]
+    local f_matrix_4 = formatters["%.6N %.6N %.6N %.6N 0 0 cm"]
+
     flushsetmatrix = function(current,pos_h,pos_v)
-        local str
-        if type(current) == "string" then
-            str = current
-        else
-            local p = nodeproperties[current]
-            if p then
-                str = p.matrix
-            else
-                str = getdata(current) -- for the moment
+        local p = nodeproperties[current]
+        if p then
+            local m = matrix
+            if m then
+                local rx = m.rx
+                local sx = m.sx
+                local sy = m.sy
+                local ry = m.ry
+                if not rx then
+                    rx = 1
+                elseif rx == 0 then
+                    rx = 0.0001
+                end
+                if not ry then
+                    ry = 1
+                elseif ry == 0 then
+                    ry = 0.0001
+                end
+                if not sx then
+                    sx = 0
+                end
+                if not sy then
+                    sy = 0
+                end
+                --
+                if shippingmode == "page" then
+                    local tx = pos_h * (1 - rx) - pos_v * sy
+                    local ty = pos_v * (1 - ry) - pos_h * sx
+                    if nofmatrices > 0 then
+                        local t = matrices[nofmatrices]
+                        local r_x, s_x, s_y, r_y, te, tf = t[1], t[2], t[3], t[4], t[5], t[6]
+                        rx, sx = rx * r_x + sx * s_y, rx * s_x + sx * r_y
+                        sy, ry = sy * r_x + ry * s_y, sy * s_x + ry * r_y
+                        tx, ty = tx * r_x + ty * s_y, tx * s_x + ty * r_y
+                    end
+                    nofmatrices = nofmatrices + 1
+                    matrices[nofmatrices] = { rx, sx, sy, ry, tx, ty }
+                end
+                --
+                pdf_goto_pagemode()
+                pdf_set_pos(pos_h,pos_v)
+                --
+                b = b + 1
+                if sx == 0 and sy == 0 then
+                    if rx == 1 and ry == 1 then
+                        buffer[b] = s_matrix_0
+                    else
+                        buffer[b] = f_matrix_2(rx,ry)
+                    end
+                else
+                    buffer[b] = f_matrix_4(rx,sx,sy,ry)
+                end
             end
-        end
-        if str and str ~= "" then
-            pdf_set_matrix(str,pos_h,pos_v)
-            pdf_goto_pagemode()
-            pdf_set_pos(pos_h,pos_v)
-            b = b + 1 ; buffer[b] = f_matrix(str)
         end
     end
 
-    do
+    function lpdf.hasmatrix()
+        return nofmatrices > 0
+    end
 
-        function lpdf.hasmatrix()
-            return nofmatrices > 0
+    function lpdf.getmatrix()
+        if nofmatrices > 0 then
+            return unpack(matrices[nofmatrices])
+        else
+            return 1, 0, 0, 1, 0, 0
         end
-
-        function lpdf.getmatrix()
-            if nofmatrices > 0 then
-                return unpack(matrices[nofmatrices])
-            else
-                return 1, 0, 0, 1, 0, 0
-            end
-        end
-
     end
 
     pushorientation = function(orientation,pos_h,pos_v,pos_r)
@@ -883,21 +896,6 @@ local flushsave, flushrestore, flushsetmatrix  do
         pdf_set_pos(pos_h,pos_v)
         b = b + 1 ; buffer[b] = "Q"
     end
-
- -- pushorientation = function(orientation,pos_h,pos_v,pos_r)
- --     flushsave(false,pos_h,pos_v)
- --     if orientation == 1 then
- --         flushsetmatrix("0 -1 1 0",pos_h,pos_v)
- --     elseif orientation == 2 then
- --         flushsetmatrix("-1 0 0 -1",pos_h,pos_v)
- --     elseif orientation == 3 then
- --         flushsetmatrix("0 1 -1 0",pos_h,pos_v)
- --     end
- -- end
-
- -- poporientation = function(orientation,pos_h,pos_v,pos_r)
- --     flushrestore(false,pos_h,pos_v)
- -- end
 
 end
 
@@ -1682,18 +1680,12 @@ local finalize  do
             pageresources.XObject = xforms
             pageresources.ProcSet = lpdf.procset()
 
-            local xorigin, yorigin, relocated = backends.codeinjections.getpageorigin() -- for now here
-
             local bbox = pdfarray {
-                (boundingbox[1] + xorigin) * bpfactor,
-                (boundingbox[2] + yorigin) * bpfactor,
-                (boundingbox[3] + xorigin) * bpfactor,
-                (boundingbox[4] + yorigin) * bpfactor,
+                boundingbox[1] * bpfactor,
+                boundingbox[2] * bpfactor,
+                boundingbox[3] * bpfactor,
+                boundingbox[4] * bpfactor,
             }
-
-            if relocated then
-                content = formatters["1 0 0 1 %.6N %.6N cm\n%s"](bbox[1],bbox[2],content)
-            end
 
             local contentsobj = pdfflushstreamobject(content,false,false)
 
@@ -1715,12 +1707,6 @@ local finalize  do
             local TrimBox  = pageattributes.TrimBox
             local CropBox  = pageattributes.CropBox
             local BleedBox = pageattributes.BleedBox
-
-            if relocated then
-                if TrimBox  then TrimBox  = box end
-                if CropBox  then CropBox  = box end
-                if BleedBox then BleedBox = box end
-            end
 
             -- Indirect objects don't work in all viewers.
 
@@ -2916,9 +2902,6 @@ do
             lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
             --
         end
-        --
-        environment.lmtxmode = true -- CONTEXTLMTXMODE
-        --
         converter  = drivers.converters.lmtx
         useddriver = driver
     end

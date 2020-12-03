@@ -484,7 +484,7 @@ function paragraphs.calculatedelta(n,width,delta,atleft,islocal,followshape,area
                 addanchortoline(line,setanchor(number))
                 line.hanchor = true
             end
-            local blob = getposition(s_anchor,number)
+            local blob = getposition("md:h",number)
             if blob then
                 local reference = getreserved(area,blob.c)
                 if reference then

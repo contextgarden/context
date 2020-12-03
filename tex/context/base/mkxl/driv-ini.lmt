@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['driv-ini'] = {
     license   = "see context related readme files"
 }
 
--- This file is a bit overkill because it was meant for both luatex and luametatex
--- but after the splti I decided not to simplify this one. It can only introduce
--- issues.
-
 local type = type
 local addsuffix = file.addsuffix
 
@@ -38,11 +34,11 @@ function converters.engine(driver,boxnumber,mode,number,specification)
     return shipout(boxnumber)
 end
 
-local prepare           = nil
-local convert           = nil
-local wrapup            = nil
-local cleanup           = nil
-local outputfilename    = nil
+local prepare        = nil
+local convert        = nil
+local wrapup         = nil
+local cleanup        = nil
+local outputfilename = nil
 
 drivers = drivers or {
     instances   = instances,
@@ -232,41 +228,3 @@ setmetatableindex(instances,function() return instances.default end)
 -- for now:
 
 drivers.enable("default")
-
--- helpers
-
-local s_matrix_0 = "1 0 0 1"
-local f_matrix_2 = formatters["%.6N 0 0 %.6N"]
-local f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
-
-function helpers.tomatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
-    if type(rx) == "string" then
-        return rx
-    else
-        if not rx then
-            rx = 1
-        elseif rx == 0 then
-            rx = 0.0001
-        end
-        if not ry then
-            ry = 1
-        elseif ry == 0 then
-            ry = 0.0001
-        end
-        if not sx then
-            sx = 0
-        end
-        if not sy then
-            sy = 0
-        end
-        if sx == 0 and sy == 0 then
-            if rx == 1 and ry == 1 then
-                return s_matrix_0
-            else
-                return f_matrix_2(rx,ry)
-            end
-        else
-            return f_matrix_4(rx,sx,sy,ry)
-        end
-    end
-end

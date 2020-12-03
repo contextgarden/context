@@ -890,6 +890,7 @@ implement {
     actions   = function()
         local n = texgetnest()
         local b = false
+        -- can be a helper !
         if n.mode == hmode_code then
             n = tonut(n.head)
             while n do

@@ -71,7 +71,7 @@
 %definesystemattribute[ruled]
 %definesystemattribute[shifted]
 
-\registerctxluafile{node-rul}{optimize}
+\registerctxluafile{node-rul}{autosuffix,optimize}
 
 \installcorenamespace{bar}
 \installcorenamespace{barindex}

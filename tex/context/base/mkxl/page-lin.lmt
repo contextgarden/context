@@ -1,0 +1,418 @@
+if not modules then modules = { } end modules ['page-lin'] = {
+    version   = 1.001,
+    comment   = "companion to page-lin.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local next, tonumber = next, tonumber
+
+local trace_numbers      = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
+
+local report_lines       = logs.reporter("lines")
+
+local attributes         = attributes
+local nodes              = nodes
+local context            = context
+
+local implement          = interfaces.implement
+
+nodes.lines              = nodes.lines or { }
+local lines              = nodes.lines
+
+lines.data               = lines.data or { } -- start step tag
+local data               = lines.data
+local last               = #data
+
+storage.register("lines/data", data, "nodes.lines.data")
+
+local variables          = interfaces.variables
+
+local v_next             = variables.next
+local v_page             = variables.page
+local v_no               = variables.no
+
+local properties         = nodes.properties.data
+
+local nodecodes          = nodes.nodecodes
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local whatsit_code       = nodecodes.whatsit
+local glyph_code         = nodecodes.glyph
+
+local linelist_code      = nodes.listcodes.line
+
+local latelua_code       = nodes.whatsitcodes.latelua
+
+local localtexrun        = tex.runlocal
+
+----- a_displaymath      = attributes.private('displaymath')
+local a_linenumber       = attributes.private('linenumber')
+local a_linereference    = attributes.private('linereference')
+
+local cross_references   = { }
+
+local nuts               = nodes.nuts
+
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local getlist            = nuts.getlist
+local getbox             = nuts.getbox
+local gettotal           = nuts.gettotal
+
+local takebox            = nuts.takebox
+
+local nexthlist          = nuts.traversers.hlist
+local nextvlist          = nuts.traversers.vlist
+local nextcontent        = nuts.traversers.content
+local nextlist           = nuts.traversers.list
+local nextnode           = nuts.traversers.node
+local nextwhatsit        = nuts.traversers.whatsit
+
+local is_display_math    = nuts.is_display_math
+
+local ctx_convertnumber  = context.convertnumber
+local ctx_makelinenumber = context.makelinenumber
+
+local paragraphs         = typesetters.paragraphs
+local addtoline          = paragraphs.addtoline
+local checkline          = paragraphs.checkline
+
+-- cross referencing
+
+function lines.number(n)
+    n = tonumber(n)
+    local cr = cross_references[n] or 0
+    cross_references[n] = nil
+    return cr
+end
+
+function lines.finalize(t)
+    local getnumber = lines.number
+    for _,p in next, t do
+        for _,r in next, p do
+            local m = r.metadata
+            if m and m.kind == "line" then
+                local e = r.entries
+                local u = r.userdata
+                e.linenumber = getnumber(e.text or 0) -- we can nil e.text
+                e.conversion = u and u.conversion
+                r.userdata = nil -- hack
+            end
+        end
+    end
+end
+
+local filters = structures.references.filters
+local helpers = structures.helpers
+
+structures.references.registerfinalizer(lines.finalize)
+
+filters.line = filters.line or { }
+
+function filters.line.default(data)
+    ctx_convertnumber(data.entries.conversion or "numbers",data.entries.linenumber or "0")
+end
+
+function filters.line.page(data,prefixspec,pagespec) -- redundant
+    helpers.prefixpage(data,prefixspec,pagespec)
+end
+
+function filters.line.linenumber(data) -- raw
+    context(data.entries.linenumber or "0")
+end
+
+-- boxed variant, todo: use number mechanism
+
+local boxed = lines.boxed or { }
+lines.boxed = boxed
+
+-- todo: cache setups, and free id no longer used
+-- use interfaces.cachesetup(t)
+
+function boxed.register(configuration)
+    last = last + 1
+    data[last] = configuration
+    if trace_numbers then
+        report_lines("registering setup %a",last)
+    end
+    return last
+end
+
+implement {
+    name      = "registerlinenumbering",
+    actions   = { boxed.register, context },
+    arguments = {
+        {
+            { "continue" },
+            { "start", "integer" },
+            { "step", "integer" },
+            { "method" },
+            { "tag" },
+        }
+    }
+}
+
+function boxed.setup(n,configuration)
+    local d = data[n]
+    if d then
+        if trace_numbers then
+            report_lines("updating setup %a",n)
+        end
+        for k,v in next, configuration do
+            d[k] = v
+        end
+    else
+        if trace_numbers then
+            report_lines("registering setup %a (br)",n)
+        end
+        data[n] = configuration
+    end
+    return n
+end
+
+implement {
+    name      = "setuplinenumbering",
+    actions   = boxed.setup,
+    arguments = {
+        "integer",
+        {
+            { "continue" },
+            { "start", "integer" },
+            { "step", "integer" },
+            { "method" },
+            { "tag" },
+        }
+    }
+}
+
+local function resolve(n,m) -- we can now check the 'line' flag (todo)
+    for current, id, subtype, content in nextlist, n do
+        if content then
+            if id == hlist_code then
+                for current, subtype in nextwhatsit, content do
+                    if subtype == latelua_code then
+                        local a = getattr(current,a_linereference)
+                        if a then
+                            cross_references[a] = m
+                        end
+                    end
+                end
+            end
+            resolve(content,m)
+        end
+    end
+end
+
+local function check_number(n,b,a,skip)
+    local d = data[a]
+    if d then
+        local tag  = d.tag or ""
+        local s    = d.start or 1
+        local okay = not skip and s % d.step == 0
+        if trace_numbers then
+            report_lines("%s number for setup %a, tag %a, line %s, continued %a",okay and "making" or "skipping",a,tag,s,d.continue or v_no)
+        end
+        if okay then
+            local p = checkline(n)
+            if p then
+                localtexrun(function() ctx_makelinenumber(tag,s,p.hsize,p.reverse and 1 or 0) end)
+                local l = takebox(b)
+                if l then
+                    addtoline(n,l)
+                else
+                    -- very unlikely
+                end
+            end
+        end
+        resolve(n,s)
+        d.start  = s + 1
+    end
+end
+
+-- print(nodes.idstostring(list))
+
+-- hlists of type line will only have an attribute when the line number attribute
+-- still set at par building time which is not always the case unless we explicitly
+-- do a par before we end the line
+
+local function lineisnumbered(n) -- content node
+    for n, id, subtype, content in nextcontent, getlist(n) do
+        local a = getattr(n,a_linenumber)
+        if a and a > 0 then
+            return a
+        end
+    end
+end
+
+local function listisnumbered(list)
+    if list then
+        for n, subtype in nexthlist, list do
+            if subtype == linelist_code then
+                local a = getattr(n,a_linenumber)
+                if a then
+                    -- a quick test for lines (only valid when \par before \stoplinenumbering)
+                    return a > 0 and list or false
+                else
+                    -- a bit slower one, assuming that we have normalized and anchored
+                    if lineisnumbered(n) then
+                        return list
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function findnumberedlist(list)
+    -- we assume wrapped boxes, only one with numbers
+    for n, id, subtype, content in nextcontent, list do
+        if id == hlist_code then
+            if subtype == linelist_code then
+                local a = getattr(n,a_linenumber)
+                if a then
+                    return a > 0 and list
+                end
+                return
+            else
+                if lineisnumbered(content) then
+                    return n
+                end
+                local okay = findnumberedlist(content)
+                if okay then
+                    return okay
+                end
+            end
+        elseif id == vlist_code then
+            if listisnumbered(content) then
+                return content
+            end
+            local okay = findnumberedlist(content)
+            if okay then
+                return okay
+            end
+        elseif id == glyph_code then
+            return
+        end
+    end
+end
+
+-- reset ranges per page
+-- store first and last per page
+-- maybe just set marks directly
+
+local function findcolumngap(list)
+    -- we assume wrapped boxes, only one with numbers
+    for n, id, subtype, content in nextlist, list do
+        if id == hlist_code or id == vlist_code then
+            local p = properties[n]
+            if p and p.columngap then
+                if trace_numbers then
+                    report_lines("first column gap %a",p.columngap)
+                end
+                return n
+            elseif content then
+                local okay = findcolumngap(content)
+                if okay then
+                    return okay
+                end
+            end
+        end
+    end
+end
+
+function boxed.addlinenumbers(n,b,nested)
+    local box = getbox(n)
+    if not box then
+        return
+    end
+    local list = getlist(box)
+    if not list then
+        return
+    end
+    local last_a = nil
+    local last_v = -1
+    local skip   = false
+
+    local function check()
+        for n, subtype in nexthlist, list do
+            if subtype ~= linelist_code then
+                -- go on
+            elseif gettotal(n) == 0 then
+                -- skip funny hlists -- todo: check line subtype
+            else
+                local a = lineisnumbered(n)
+                if a then
+                    if last_a ~= a then
+                        local da = data[a]
+                        local ma = da.method
+                        if ma == v_next then
+                            skip = true
+                        elseif ma == v_page then
+                            da.start = 1 -- eventually we will have a normal counter
+                        end
+                        last_a = a
+                        if trace_numbers then
+                            report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
+                        end
+                    end
+                 -- if getattr(n,a_displaymath) then
+                 --     check_number(n,b,a,skip)
+                 -- else
+                       check_number(n,b,a,skip)
+                 -- end
+                    skip = false
+                end
+            end
+        end
+    end
+
+    if nested == 0 then
+        if list then
+            check()
+        end
+    elseif nested == 1 then
+        local id = getid(box)
+        if id == vlist_code then
+            if listisnumbered(list) then
+                -- ok
+            else
+                list = findnumberedlist(list)
+            end
+        else -- hlist
+            list = findnumberedlist(list)
+        end
+        if list then
+            check()
+        end
+    elseif nested == 2 then
+        list = findcolumngap(list)
+        -- we assume we have a vlist
+        if not list then
+            return
+        end
+        for n in nextvlist, list do
+            local p = properties[n]
+            if p and p.columngap then
+                if trace_numbers then
+                    report_lines("found column gap %a",p.columngap)
+                end
+                list = getlist(n)
+                if list then
+                    check()
+                end
+            end
+        end
+    else
+        -- bad call
+    end
+end
+
+-- column attribute
+
+implement {
+    name      = "addlinenumbers",
+    actions   = boxed.addlinenumbers,
+    arguments = { "integer", "integer", "integer" }
+}

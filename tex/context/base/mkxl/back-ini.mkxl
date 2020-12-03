@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / Initialization}
 
-\registerctxluafile{back-ini}{}
+\registerctxluafile{back-ini}{autosuffix}
 
 \unprotect
 

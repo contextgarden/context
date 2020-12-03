@@ -61,8 +61,6 @@ local savenode            = register(newnut(whatsit_code,whatsitcodes.save))
 local restorenode         = register(newnut(whatsit_code,whatsitcodes.restore))
 local setmatrixnode       = register(newnut(whatsit_code,whatsitcodes.setmatrix))
 
-local tomatrix            = drivers.helpers.tomatrix
-
 local open_command, write_command, close_command
 
 backends = backends or { }
@@ -240,7 +238,7 @@ end
 
 function nodepool.setmatrix(rx,sx,sy,ry,tx,ty)
     local t = copynode(setmatrixnode)
-    nodeproperties[t] = { matrix = tomatrix(rx,sx,sy,ry,tx,ty) }
+    nodeproperties[t] = { rx, sx, sy, ry, tx, ty }
     return t
 end
 

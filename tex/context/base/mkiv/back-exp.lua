@@ -552,7 +552,7 @@ do
         if not less_state then
             setattribute(di,"file",tex.jobname)
             if included.date then
-                setattribute(di,"date",backends.timestamp())
+                setattribute(di,"date",os.fulltime())
             end
             setattribute(di,"context",environment.version)
             setattribute(di,"version",exportversion)
@@ -3472,7 +3472,7 @@ local xmlpreamble = [[
         return replacetemplate(xmlpreamble, {
             standalone     = standalone and "yes" or "no",
             filename       = tex.jobname,
-            date           = included.date and backends.timestamp(),
+            date           = included.date and os.fulltime(),
             contextversion = environment.version,
             exportversion  = exportversion,
         })

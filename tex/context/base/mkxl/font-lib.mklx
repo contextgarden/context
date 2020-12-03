@@ -74,7 +74,7 @@
 
 \registerctxluafile{font-pat}{} % patchers
 
-\registerctxluafile{node-fnt}{} % here
+\registerctxluafile{node-fnt}{autosuffix} % here
 
 \registerctxluafile{font-mps}{} % outline fun
 

@@ -123,7 +123,12 @@ appendaction("math",         "builders",    "typesetters.directions.processmath"
 appendaction("math",         "builders",    "noads.handlers.makeup",                            nil, "nonut",  "disabled"  )
 appendaction("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 
+if CONTEXTLMTXMODE == 0 then
+
 appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize",                 nil, "nut",    "enabled"   ) -- "disabled"
+
+end
+
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether",                 nil, "nut",    "disabled"  )
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize", nil, "nonut",  "disabled"  )

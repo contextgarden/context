@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 -- For instance, in the real beginning we had runtime loading because we had no
 -- bytecode registers yet. We also had multiple files as stubs and the context.lus
 -- file specified these. More than a decade only the third method was used, just
--- loading luat-cod, so in the end we cpould get rid of the lus file. In due time
+-- loading luat-cod, so in the end we could get rid of the lus file. In due time
 -- I'll strip the code here because something generic will never take of and we
 -- moved on to luametatex anyway.
 

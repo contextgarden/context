@@ -251,12 +251,6 @@ local function setupidentity()
         addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
         --
         addtoinfo("ConTeXt.Version",version)
-        --
-        local lmtx = codeinjections.lmtxmode()
-        if lmtx then
-            addtoinfo("ConTeXt.LMTX",formatters["%0.2f"](lmtx))
-        end
-        --
         addtoinfo("ConTeXt.Time",os.date("%Y-%m-%d %H:%M"))
         addtoinfo("ConTeXt.Jobname",jobname)
         addtoinfo("ConTeXt.Url","www.pragma-ade.com")

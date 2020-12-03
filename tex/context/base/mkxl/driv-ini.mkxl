@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Driver Macros / Initialization}
 
-\registerctxluafile{driv-ini}{}
+\registerctxluafile{driv-ini}{autosuffix}
 
 \unprotect
 

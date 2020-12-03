@@ -17,9 +17,6 @@ local implement  = interfaces.implement
 
 local uselibrary = resolvers.uselibrary
 
-local name_one   = nil
-local name_two   = nil
-
 local p_strip    = Cs((P("type-") * (P("imp-")^0))^0/"" * P(1)^0)
 
 local report     = logs.reporter("fonts","typescripts")
@@ -29,6 +26,7 @@ local function action(name,foundname)
 end
 
 local patterns = {
+    "type-imp-%s.mkxl",
     "type-imp-%s.mkiv",
     "type-imp-%s.tex"
 }
@@ -56,6 +54,7 @@ implement {
 }
 
 local patterns = {
+    "type-imp-%s.mkxl",
     "type-imp-%s.mkiv",
     "type-imp-%s.tex",
     -- obsolete
@@ -63,6 +62,9 @@ local patterns = {
     "type-%s.tex"
 }
 
+-- local name_one   = nil
+-- local name_two   = nil
+--
 -- local function failure_two(name)
 --     report("unknown library %a or %a",name_one,name_two)
 -- end

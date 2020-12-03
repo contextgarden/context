@@ -19,7 +19,6 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 local isboolean = string.is_boolean
 local rshift = bit32.rshift
-local osdate, ostime = os.date, os.time
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -1073,8 +1072,10 @@ do
 
     -- It's a bit of a historical mess here.
 
+    local osdate, ostime, ostimezone = os.date, os.time, os.timezone
+
     local metadata  = nil
-    local timestamp = backends.timestamp()
+    local timestamp = osdate("%Y-%m-%dT%X") .. ostimezone(true)
 
     function lpdf.getmetadata()
         if not metadata then
@@ -1100,7 +1101,7 @@ do
             n = converters.totime(n)
             if n then
                 converters.settime(n)
-                timestamp = backends.timestamp()
+                timestamp = osdate("%Y-%m-%dT%X") .. ostimezone(true) -- probably not ok
             end
         end
         if metadata then

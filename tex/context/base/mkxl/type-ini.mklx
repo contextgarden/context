@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Typescript Macros / Initialization}
 
-\registerctxluafile{type-ini}{}
+\registerctxluafile{type-ini}{autosuffix}
 
 %D The default fontclass is empty. We could demand always using fontclasses, and
 %D then make the calling macros simplier (always assume fontclass) but apart from
@@ -240,7 +240,7 @@
    \letcsname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
 
 \def\font_typescript_process_typescript_file
-  {\clf_doprocesstypescriptfile{\currenttypefile}}
+  {\clf_loadtypescriptfile{\currenttypefile}}
 
 \permanent\tolerant\protected\def\usetypescriptonce[#one]#spacer[#two]#spacer[#three]%
   {\ifcsname\??typescriptonce#one:#two:#three\endcsname

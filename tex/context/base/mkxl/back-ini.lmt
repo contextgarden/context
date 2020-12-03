@@ -131,10 +131,6 @@ end)
 
 backends.included = included
 
-function backends.timestamp()
-    return os.date("%Y-%m-%dT%X") .. os.timezone(true)
-end
-
 -- Also here:
 
 local paper_width  = 0
@@ -147,43 +143,12 @@ function codeinjections.setpagedimensions(paperwidth,paperheight)
     if paperheight then
         paper_height = paperheight
     end
-    texset("global","pageheight",paper_height)
-    texset("global","pagewidth", paper_width)
     return paper_width, paper_height
 end
 
 function codeinjections.getpagedimensions()
     return paper_width, paper_height
 end
-
-implement {
-    name    = "shipoutoffset",
-    actions = function()
-        context("-1in") -- the old tex offset
-    end
-}
-
-local page_x_origin = 0
-local page_y_origin = 0
-
-function codeinjections.setpageorigin(x,y)
-    page_x_origin = x
-    page_y_origin = y
-end
-
-function codeinjections.getpageorigin()
-    local x = page_x_origin
-    local y = page_y_origin
-    page_x_origin = 0
-    page_y_origin = 0
-    return x, y, (x ~= 0 or y ~= 0)
-end
-
-implement {
-    name      = "setpageorigin",
-    arguments = { "dimension", "dimension" },
-    actions   = codeinjections.setpageorigin,
-}
 
 -- could also be codeinjections
 

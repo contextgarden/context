@@ -34,7 +34,7 @@
 %D twice as fast on simple entries. Also, we no longer need an extra pass to get
 %D inner and outer alignments in sync with the pagebuilder.
 
-\registerctxluafile{typo-mar}{}
+\registerctxluafile{typo-mar}{autosuffix}
 
 %definesystemattribute[margindata] % only at the lua end
 

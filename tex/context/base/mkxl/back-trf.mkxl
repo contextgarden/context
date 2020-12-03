@@ -13,7 +13,7 @@
 
 \unprotect
 
-\registerctxluafile{back-trf}{}
+\registerctxluafile{back-trf}{autosuffix}
 
 % rotation
 

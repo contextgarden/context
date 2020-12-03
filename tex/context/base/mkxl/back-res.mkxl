@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / Resources}
 
-\registerctxluafile{back-res}{}
+\registerctxluafile{back-res}{autosuffix}
 
 \unprotect
 
