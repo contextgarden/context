@@ -712,7 +712,7 @@
 %      \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
 %    \fi
 %    \tabl_tabulate_set_preamble}
-%
+
 \def\tabl_tabulate_set_raggedright {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedright \fi}
 \def\tabl_tabulate_set_raggedcenter{\ifnum\c_tabl_tabulate_type=\plusone \else\raggedcenter\fi}
 \def\tabl_tabulate_set_raggedleft  {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedleft  \fi}
@@ -1071,7 +1071,8 @@
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
     %\expandafter\ifempty\csname\??tabulatehead\currenttabulation\endcsname
-     \expandafter\ifempty\lastnamedcs
+    %\expandafter\ifempty\lastnamedcs
+     \ifempty\lastnamedcs
        \let\tabl_tabulate_insert_head\empty
      \else
        \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
@@ -1080,8 +1081,9 @@
      \let\tabl_tabulate_insert_head\empty
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
-     \expandafter\ifempty\csname\??tabulatefoot\currenttabulation\endcsname
+    %\expandafter\ifempty\csname\??tabulatefoot\currenttabulation\endcsname
     %\expandafter\ifempty\lastnamedcs
+     \ifempty\lastnamedcs
        \let\tabl_tabulate_insert_foot\empty
      \else
        \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content

@@ -194,7 +194,7 @@
 \frozen\instance\protected\def\Lua       {Lua}
 \frozen\instance\protected\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
 \frozen\instance\protected\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
-%frozen\instance\protected\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+\frozen\instance\protected\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
 

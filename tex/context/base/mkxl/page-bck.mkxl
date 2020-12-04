@@ -518,7 +518,7 @@
    \processcommacommand[#1]\page_backgrounds_setup_step
    \the\everybackgroundssetup}
 
-\protected\def\page_backgrounds_setup_single[#1][#2][#3]%
+\protected\def\page_backgrounds_setup_single[#1][#2][#-]%
   {\global\settrue\c_page_backgrounds_some
    \doifelsecommon{#1}\v_page_backgrounds_single_set
      {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
@@ -526,7 +526,7 @@
       \the\everybackgroundssetup}%
      {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
 
-\protected\def\page_backgrounds_setup_basics[#1][#2][#3]%
+\protected\def\page_backgrounds_setup_basics[#1][#-][#-]%
   {\setupframed[\??layoutbackgrounds][#1]%
    \the\everybackgroundssetup}
 

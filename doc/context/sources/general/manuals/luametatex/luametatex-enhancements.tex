@@ -19,7 +19,7 @@ and there will be no \type {luametatex} variants. This is because we consider
 \LUAMETATEX\ to be \LUATEX 2\high{+}.
 
 Contrary to the \LUATEX\ engine \LUAMETATEX\ enables all its primitives. You can
-clone (a selection of) primitives with a different prefix, like:
+clone (a selection of) primitives with a different prefix, like this:
 
 \starttyping
 \directlua { tex.enableprimitives('normal',tex.extraprimitives()) }
@@ -27,8 +27,11 @@ clone (a selection of) primitives with a different prefix, like:
 
 The \type {extraprimitives} function returns the whole list or a subset,
 specified by one or more keywords \type {core}, \type {tex}, \type {etex} or
-\type {luatex}. \footnote {At some point this function might be changed to return
-the whole list always}.
+\type {luatex}. When you clone all primitives you can also do this:
+
+\starttyping
+\directlua { tex.enableprimitives('normal',true) }
+\stoptyping
 
 But be aware that the curly braces may not have the proper \prm {catcode}
 assigned to them at this early time (giving a \quote {Missing number} error), so
@@ -42,23 +45,8 @@ it may be needed to put these assignments before the above line:
 More fine|-|grained primitives control is possible and you can look up the
 details in \in {section} [luaprimitives]. There are only three kinds of
 primitives: \type {tex}, \type {etex} and \type {luatex} but a future version
-might drop this and no longer make that distinction as it no longer serves
-a purpose.
-
-\stopsubsection
-
-\startsubsection[title={Experiments}]
-
-There are a few extensions to the engine regarding the macro machinery. Some are
-already well tested but others are (still) experimental. Although they are likely
-to stay, their exact behaviour might evolve. Because \LUAMETATEX\ is also used
-for experiments, this is not a problem. We can always decide to also add some of
-what is discussed here to \LUATEX, but it will happen with a delay.
-
-There are all kinds of small improvements that might find their way into stock
-\LUATEX: a few more helpers, some cleanup of code, etc. We'll see. In any case,
-if you play with these before they are declared stable, unexpected side effects
-are what you have to accept.
+might drop this and no longer make that distinction as it no longer serves a
+purpose apart from the fact that it reveals some history.
 
 \stopsubsection
 
@@ -231,6 +219,34 @@ Fonts are loaded via \LUA\ and a minimal amount of information is kept at the
 about what a character (or glyph) number represents (a \UNICODE\ or index) as it
 only is interested in dimensions.
 
+In \TEX\ the number of registers is 256 and \ETEX\ bumped that to 32K. One reason
+for a fixed number is that these registers are fast ways to store data and
+therefore are part of the main lookup table (used for data and pointers to data
+as well as save and restore housekeeping). In \LUATEX\ the number was bumped to
+64K but one can argue that less would also do. In order to keep the default
+memory footprint reasonable, in \LUAMETATEX\ the number of languages, fonts and
+marks is limited. The size of some tables can be limited by configuration
+settings, so they can start out small and grow till configured maximum which is
+smaller than the absolute maximum. The following table shows all kind of defaults
+as reported by \typ {status.getconstants()}.
+
+\startluacode
+    context.starttabulate { "|T|r|" }
+    for k, v in table.sortedhash(status.getconstants()) do
+        context.NC() context(k) context.NC() context(v) context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+Because we have additional ways to store integers, dimensions and glue, we might
+actually decide to decrease the maximum of the registers: if 64K is not enough,
+and you work around it, then likely 32K might do as well. Also, we have \LUA\ to
+store massive amounts of data. One can argue that saving some 1.5MB memory (when
+we go halfway) is not worth the effort in a time when you have to close a browser
+in order to free the gigabytes it consumes, but there is no reason not to be lean
+and mean: a more conservative approach to start with creates headroom for going
+wild later.
+
 \stopsubsection
 
 \stopsection
@@ -275,6 +291,12 @@ character node only held the font and slot number, in \LUATEX\ we also store som
 language related information, the expansion factor, etc. Now that we have access
 to these nodes from \LUA\ it makes sense to be able to carry more information
 with a node and this is where attributes kick in.
+
+It is important to keep in mind that there are situations where nodes get created
+in the current context. For instance, when \TEX\ builds a paragraph or page or
+constructs math formulas, it does add nodes and giving these the current
+attributes makes no sense and can even give weird side effects. In these cases,
+the attributes are inherited from neighbouring nodes.
 
 \stopsubsection
 

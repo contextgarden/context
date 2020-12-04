@@ -21,7 +21,7 @@
 %
 % -- we might eventually stick to only method 5
 
-\registerctxluafile{typo-brk}{}
+\registerctxluafile{typo-brk}{autosuffix}
 
 \definesystemattribute[breakpoint][public,global]
 

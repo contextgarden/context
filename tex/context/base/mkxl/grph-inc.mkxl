@@ -178,12 +178,6 @@
 
 \installcorenamespace{externalfiguredefinition}
 
-% \protected\def\defineexternalfigure
-%   {\dodoubleargument\grph_include_define}
-%
-% \def\grph_include_define[#1][#2]%
-%   {\setvalue{\??externalfiguredefinition#1}{\setupcurrentexternalfigure[#2]}}
-
 \aliased\let\defineexternalfigures\defineexternalfigure
 
 % label file parent settings

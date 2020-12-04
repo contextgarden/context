@@ -32,10 +32,10 @@ local stack             = { }
 local restore           = true -- false
 
 updaters.register("backend.update",function()
-    savenode      = nodepool.save
-    restorenode   = nodepool.restore
-    setmatrixnode = nodepool.setmatrix
-    literalnode   = nodepool.literal -- has to become some nodeinjection
+    savenode      = nodepool.save      -- not needed
+    restorenode   = nodepool.restore   -- not needed
+    setmatrixnode = nodepool.setmatrix -- not needed
+    literalnode   = nodepool.literal   -- has to become some nodeinjection
 end)
 
 local function stopsomething()

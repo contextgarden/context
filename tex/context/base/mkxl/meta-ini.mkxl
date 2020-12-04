@@ -739,7 +739,7 @@
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
    \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
-   \gdefcsname\??mpgraphic#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+   \xdefcsname\??mpgraphic#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \csname\??mpgraphic#1\endcsname\empty
    \endgroup}
 

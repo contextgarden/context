@@ -138,14 +138,9 @@
 %D available; it cannot limit itself to being \TEX\ or \ETEX. It could not do that
 %D anyway because there are differences (no backend, to mention one).
 
-%D Temp hack ... build bot down:
-
-%D We create (for now) aliases:
-
 \directlua {
-    local primitives = tex.extraprimitives()  % "tex","etex","luatex"
-    tex.enableprimitives("normal",primitives) % could default to everything
-    function tex.enableprimitives() end       % so we kind of protect what's there
+    tex.enableprimitives("normal",true) % we default to everything
+    function tex.enableprimitives() end % so we kind of protect what's there
 }
 
 \immutable\def\space{ }

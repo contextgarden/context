@@ -19,83 +19,85 @@ local report_casing = logs.reporter("typesetting","casing")
 
 local nodes, node = nodes, node
 
-local nuts            = nodes.nuts
+local nuts             = nodes.nuts
 
-local getnext         = nuts.getnext
-local getid           = nuts.getid
-local takeattr        = nuts.takeattr
-local getfont         = nuts.getfont
-local getsubtype      = nuts.getsubtype
-local getchar         = nuts.getchar
-local isglyph         = nuts.isglyph
-local getdisc         = nuts.getdisc
+local getnext          = nuts.getnext
+local getid            = nuts.getid
+local getattr          = nuts.getattr
+local getfont          = nuts.getfont
+local getsubtype       = nuts.getsubtype
+local getchar          = nuts.getchar
+local isglyph          = nuts.isglyph
+local getdisc          = nuts.getdisc
 
-local setchar         = nuts.setchar
-local setfont         = nuts.setfont
+local setchar          = nuts.setchar
+local setfont          = nuts.setfont
 
-local copy_node       = nuts.copy
-local end_of_math     = nuts.end_of_math
-local insert_after    = nuts.insert_after
-local find_attribute  = nuts.find_attribute
+local copy_node        = nuts.copy
+local end_of_math      = nuts.end_of_math
+local insert_after     = nuts.insert_after
+local find_attribute   = nuts.find_attribute
+local unset_attributes = nuts.unset_attributes
 
-local nextglyph       = nuts.traversers.glyph
+local nextglyph        = nuts.traversers.glyph
 
-local nodecodes       = nodes.nodecodes
-local kerncodes       = nodes.kerncodes
+local nodecodes        = nodes.nodecodes
+local kerncodes        = nodes.kerncodes
 
-local glyph_code      = nodecodes.glyph
-local kern_code       = nodecodes.kern
-local disc_code       = nodecodes.disc
-local math_code       = nodecodes.math
+local glyph_code       = nodecodes.glyph
+local kern_code        = nodecodes.kern
+local disc_code        = nodecodes.disc
+local math_code        = nodecodes.math
 
-local fontkern_code   = kerncodes.fontkern
+local fontkern_code    = kerncodes.fontkern
 
-local enableaction    = nodes.tasks.enableaction
+local enableaction     = nodes.tasks.enableaction
 
-local newkern         = nuts.pool.kern
+local newkern          = nuts.pool.kern
 
-local fonthashes      = fonts.hashes
-local fontdata        = fonthashes.identifiers
-local fontchar        = fonthashes.characters
+local fonthashes       = fonts.hashes
+local fontdata         = fonthashes.identifiers
+local fontchar         = fonthashes.characters
 
-local currentfont     = font.current
+local currentfont      = font.current
 
-local variables       = interfaces.variables
-local v_reset         = variables.reset
+local variables        = interfaces.variables
+local v_reset          = variables.reset
 
-local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
+local texsetattribute  = tex.setattribute
+local unsetvalue       = attributes.unsetvalue
 
-typesetters           = typesetters or { }
-local typesetters     = typesetters
+typesetters            = typesetters or { }
+local typesetters      = typesetters
 
-typesetters.cases     = typesetters.cases or { }
-local cases           = typesetters.cases
+typesetters.cases      = typesetters.cases or { }
+local cases            = typesetters.cases
 
-cases.actions         = { }
-local actions         = cases.actions
-local a_cases         = attributes.private("case")
+cases.actions          = { }
+local actions          = cases.actions
+local a_cases          = attributes.private("case")
 
-local extract         = bit32.extract
-local run             = 0 -- a trick to make neighbouring ranges work
-local blocked         = { }
+local run              = 0 -- a trick to make neighbouring ranges work
+local blocked          = { }
 
 local function set(tag,font)
-    if run == 0x40 then -- 2^6
-        run = 1
-    else
+    if run < 0x7F then
         run = run + 1
+    else
+        run = 1
     end
-    local a = font * 0x10000 + tag * 0x100 + run
+    local a = (font << 16)
+            + (tag  <<  8)
+            + (run  <<  0)
     blocked[a] = false
     return a
 end
 
 local function get(a)
     return
-        extract(a, 8, 8), -- tag
-        extract(a,16,12), -- font
-        extract(a, 0, 8)  -- run
+        (a >>  8) & 0x00FF, -- tag
+        (a >> 16) & 0xFFFF, -- font
+        (a >>  0) & 0x00FF  -- run
 end
 
 -- a previous implementation used char(0) as placeholder for the larger font, so we needed
@@ -279,106 +281,103 @@ register(variables.camel,  camel)             --  10
 register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
--- This can be more clever: when we unset we can actually use the same attr ref if
--- needed. Using properties to block further usage is not faster.
-
-function cases.handler(head) -- not real fast but also not used on much data
-    local start    = head
-    local lastfont = { }
-    local lastattr = nil
-    local count    = 0
-    local previd   = nil
-    local prev     = nil
-    while start do -- while because start can jump ahead
-        local id = getid(start)
-        if id == glyph_code then
-            local attr = takeattr(start,a_cases)
-            if attr and attr > 0 and not blocked[attr] then
-                if attr ~= lastattr then
-                    lastattr = attr
-                    count    = 1
-                else
-                    count    = count + 1
-                end
-                local n, id, m = get(attr)
-                if lastfont[n] == nil then
-                    lastfont[n] = id
-                end
-                local action = actions[n] -- map back to low number
-                if action then
-                    local quit
-                    start, quit = action(start,attr,lastfont,n,count)
-                    if trace_casing then
-                        report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,quit and "-" or "+")
+function cases.handler(head)
+    local _, start = find_attribute(head, a_cases)
+    if start then
+        local lastfont = { }
+        local lastattr = nil
+        local count    = 0
+        local done     = false
+        while start do -- while because start can jump ahead
+            local id = getid(start)
+            if id == glyph_code then
+                local attr = getattr(start,a_cases)
+                if attr and attr > 0 and not blocked[attr] then
+                    if attr ~= lastattr then
+                        lastattr = attr
+                        count    = 1
+                    else
+                        count    = count + 1
                     end
-                elseif trace_casing then
-                    report_casing("unknown case trigger %a",n)
+                    local n, id, m = get(attr)
+                    if lastfont[n] == nil then
+                        lastfont[n] = id
+                    end
+                    local action = actions[n] -- map back to low number
+                    if action then
+                        local quit
+                        start, quit = action(start,attr,lastfont,n,count)
+                        if trace_casing then
+                            report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,quit and "-" or "+")
+                        end
+                    elseif trace_casing then
+                        report_casing("unknown case trigger %a",n)
+                    end
+                    done = true
                 end
-            end
-        elseif id == disc_code then
-            local attr = takeattr(start,a_cases)
-            if attr and attr > 0 and not blocked[attr] then
-                if attr ~= lastattr then
-                    lastattr = attr
-                    count    = 0
-                end
-                local n, id, m = get(attr)
-                if lastfont[n] == nil then
-                    lastfont[n] = id
-                end
-                local action = actions[n] -- map back to low number
-                if action then
-                    local pre, post, replace = getdisc(start)
-                    if replace then
-                        local cnt = count
-                        for g in nextglyph, replace do
-                            cnt = cnt + 1
-                            takeattr(g,a_cases)
-                            local h, quit = action(start,attr,lastfont,n,cnt,"replace",g)
-                            if quit then
-                                break
+            elseif id == disc_code then
+                local attr = getattr(start,a_cases)
+                if attr and attr > 0 and not blocked[attr] then
+                    if attr ~= lastattr then
+                        lastattr = attr
+                        count    = 0
+                    end
+                    local n, id, m = get(attr)
+                    if lastfont[n] == nil then
+                        lastfont[n] = id
+                    end
+                    local action = actions[n] -- map back to low number
+                    if action then
+                        local pre, post, replace = getdisc(start)
+                        if replace then
+                            local cnt = count
+                            for g in nextglyph, replace do
+                                cnt = cnt + 1
+                                getattr(g,a_cases)
+                                local h, quit = action(start,attr,lastfont,n,cnt,"replace",g)
+                                if quit then
+                                    break
+                                end
+                            end
+                        end
+                        if pre then
+                            local cnt = count
+                            for g in nextglyph, pre do
+                                cnt = cnt + 1
+                                getattr(g,a_cases)
+                                local h, quit = action(start,attr,lastfont,n,cnt,"pre",g)
+                                if quit then
+                                    break
+                                end
+                            end
+                        end
+                        if post then
+                            local cnt = count
+                            for g in nextglyph, post do
+                                cnt = cnt + 1
+                                getattr(g,a_cases)
+                                local h, quit = action(start,attr,lastfont,n,cnt,"post",g)
+                                if quit then
+                                    break
+                                end
                             end
                         end
                     end
-                    if pre then
-                        local cnt = count
-                        for g in nextglyph, pre do
-                            cnt = cnt + 1
-                            takeattr(g,a_cases)
-                            local h, quit = action(start,attr,lastfont,n,cnt,"pre",g)
-                            if quit then
-                                break
-                            end
-                        end
-                    end
-                    if post then
-                        local cnt = count
-                        for g in nextglyph, post do
-                            cnt = cnt + 1
-                            takeattr(g,a_cases)
-                            local h, quit = action(start,attr,lastfont,n,cnt,"post",g)
-                            if quit then
-                                break
-                            end
-                        end
-                    end
+                    count = count + 1
+                    done = true
                 end
-                count = count + 1
-            end
-        elseif id == math_code then
-            start = end_of_math(start)
-            count = 0
-        elseif count > 0 then
-            if prev_id == kern_code and getsubtype(prev) == fontkern_code then
-                -- still inside a word ...normally kerns are added later
             else
+                if id == math_code then
+                    start = end_of_math(start)
+                end
                 count = 0
             end
+            if start then
+                start = getnext(start)
+            end
         end
-        if start then
-            prev   = start
-            previd = id
-            start  = getnext(start)
+        if done then
+    --         unset_attributes(a_cases,head)
         end
     end
     return head
@@ -415,6 +414,5 @@ interfaces.implement {
  -- public    = true,
  -- protected = true,
     actions   = cases.set,
---     arguments = { "string" }
     arguments = { "argument" }
 }

@@ -70,6 +70,20 @@ There are less options than with \LUATEX, because one has to deal with them in
 \LUA\ anyway. There are no options to enter a safer mode or control executing
 programs. This can easily be achieved with a startup \LUA\ script.
 
+Next the initialization script is loaded and executed. From within the script,
+the entire command line is available in the \LUA\ table \type {arg}, beginning
+with \type {arg[0]}, containing the name of the executable. As consequence
+warnings about unrecognized options are suppressed.
+
+Command line processing happens very early on. So early, in fact, that none of
+\TEX's initializations have taken place yet. The \LUA\ libraries that don't deal
+with \TEX\ are initialized early.
+
+\LUAMETATEX\ allows some of the command line options to be overridden by reading
+values from the \type {texconfig} table at the end of script execution (see the
+description of the \type {texconfig} table later on in this document for more
+details on which ones exactly).
+
 The value to use for \prm {jobname} is decided as follows:
 
 \startitemize
@@ -91,20 +105,6 @@ The value to use for \prm {jobname} is decided as follows:
     {texput} as a last resort.
 \stopitem
 \stopitemize
-
-Next the initialization script is loaded and executed. From within the script,
-the entire command line is available in the \LUA\ table \type {arg}, beginning
-with \type {arg[0]}, containing the name of the executable. As consequence
-warnings about unrecognized options are suppressed.
-
-Command line processing happens very early on. So early, in fact, that none of
-\TEX's initializations have taken place yet. The \LUA\ libraries that don't deal
-with \TEX\ are initialized early.
-
-\LUAMETATEX\ allows some of the command line options to be overridden by reading
-values from the \type {texconfig} table at the end of script execution (see the
-description of the \type {texconfig} table later on in this document for more
-details on which ones exactly).
 
 So let's summarize this. The handling of what is called jobname is a bit complex.
 There can be explicit names set on the command line but when not set they can be

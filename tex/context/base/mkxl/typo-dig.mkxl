@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-dig}{}
+\registerctxluafile{typo-dig}{autosuffix}
 
 \definesystemattribute[digits][public]
 

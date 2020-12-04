@@ -39,9 +39,18 @@ not|-|so|-|expected changes. These are sometimes a side|-|effect of a new
 (conflicting) feature, or, more often than not, a change necessary to clean up
 the internal interfaces. These will also be mentioned.
 
+Again we stress that {\em this is not a \TEX\ manual, nor a tutorial}. If you are
+unfamiliar with \TEX\ first play a little with a macro package, take a look at
+the \TEX\ book, make yourself familiar with the concepts and macro language. That
+will likely take days and not hours. Also, many of the new concepts introduced in
+\LUATEX\ and \LUAMETATEX\ are explained in documents that come with the \CONTEXT\
+distribution, articles and presentations. It doesn't pay of to repeat that here,
+especially not in a time when users often search instead of read from cover to
+cover.
+
 \stopsubsection
 
-\startsubsection[title=Changes from \TEX\ 3.1415926]
+\startsubsection[title=Changes from \TEX\ 3.1415926...]
 
 \topicindex {\TEX}
 
@@ -58,12 +67,14 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     {languages}, \type {fonts}, \type {libraries}, etc. There are some artifacts
     of the conversion to \CCODE, but these got (and get) removed stepwise. The
     documentation, which actually comes from the mix of engines (via so called
-    change files), is kept as much as possible. Of course we want to stay as
-    close as possible to the original so that the documentation of the
+    change files), is a mix of what authors of the engines wove into the source,
+    and most is of course from Don Knuths original. In \LUAMETATEX\ we try to
+    stay as close as possible to the original so that the documentation of the
     fundamentals behind \TEX\ by Don Knuth still applies. However, because we use
     \CCODE, some documentation is a bit off. Also, most global variables are now
     collected in structures, but the original names and level of abstraction were
-    mostly kept. On the other hand, opening up had its impact on the code.
+    mostly kept. On the other hand, opening up had its impact on the code, so
+    that makes some documentation a bit off too. Adapting that all will take time.
 \stopitem
 
 \startitem
@@ -88,7 +99,8 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     stack, input levels, the hash table and table of equivalents, etc. now all
     start out small and are enlarged when needed, where maxima are controlled in
     the usual way. In principle the initial memory footprint is smaller while at
-    the same time we can go real large.
+    the same time we can go real large. Because we have wide memory words some
+    data (arrays) used for housekeeping could be reorganized a bit.
 \stopitem
 
 \startitem
@@ -136,14 +148,6 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     The math style related primitives can use numbers as well as symbolic names.
     There is some more (control over) math anyway, which is a side effect of
     supporting \OPENTYPE\ math.
-\stopitem
-
-\startitem
-    When detailed logging is enabled more detail is output with respect to what
-    nodes are involved. This is a side effect of the core nodes having more
-    detailed subtype information. The benefit of more detail wins from any wish
-    to be byte compatible in the logging. One can always write additional logging
-    in \LUA.
 \stopitem
 
 \stopitemize
@@ -445,6 +449,11 @@ more details anyway.
 
 \startsubsection[title=Logging]
 
+When detailed logging is enabled more detail is output with respect to what nodes
+are involved. This is a side effect of the core nodes having more detailed
+subtype information. The benefit of more detail wins from any wish to be byte
+compatible in the logging. One can always write additional logging in \LUA.
+
 The information that goes into the log file can be different from \LUATEX, and
 might even differ a bit more in the future. The main reason is that inside the
 engine we have more granularity, which for instance means that we output subtype
@@ -462,6 +471,34 @@ itself (one needs to enable classes of primitives for instance). Keep in mind
 that over time system dependencies have been handles with \TEX\ change files, the
 \WEBC\ infrastructure, \KPSE\ features, compilation variables and flags, etc. In
 \LUAMETATEX\ we try to minimize all that.
+
+\stopsubsection
+
+\startsubsection[title=Parsing]
+
+Token parsers have been upgraded for the sake of \LUA, \type {\csname} handling
+has been extended, macro definitions can be more flexible so there code was
+adapted, more conditionals also brought some changes. But we build upon the
+(reorganized) \TEX\ foundation so the basics can definitely be recognized.
+
+Because of interfacing in \LUA\ the internal token and node organization has
+been normalized (read: we cannot cheat because all is kind of visible). On
+the one hand this can come with a performance penalty but that is more than
+compensated by extensions, optimized parsers and such. Still the fact that we
+are \UTF\ based (32 bit) makes the machinery slower than the 8~bit original.
+The reworked \LUAMETATEX\ engine is substantially faster than the \LUATEX\
+predecessor.
+
+The handling of conditionals has been adapted so that we can have flatter
+branches (\type {\orelse} cum suis). This again has some consequences for
+parsing. Because parsing alignments is rather interwoven in general parsing and
+expansion the handling of related primitives has been slightly adapted (also for
+the sake of \LUA\ interfacing) and dealing with \type {\noalign} situations is a
+bit more convenient.
+
+This are just a few of the adaptations and most of this happened stepwise with
+testing in the \CONTEXT\ code base. It will be clear that \LUAMETATEX\ is a quite
+different extension to the original. You're warned.
 
 \stopsubsection
 

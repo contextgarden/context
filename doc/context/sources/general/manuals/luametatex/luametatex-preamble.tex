@@ -81,6 +81,17 @@ see:
 [par] <=> [hlist] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
 \stoptyping
 
+Actually, the above representation is one view, because in \LUAMETATEX\ we can
+choose for this:
+
+\starttyping
+[par] <=> [glue] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+\stoptyping
+
+where glue (currently fixed) is used instead of an empty hlist (think of a \type
+{\hbox}). Options like this are available because want a certain view on these
+lists from the \LUA\ end and the result being predicable is part of that.
+
 It's also good to know beforehand that \TEX\ is basically centered around
 creating paragraphs and pages. The par builder takes a list and breaks it into
 lines. At some point horizontal blobs are wrapped into vertical ones. Lines are
@@ -99,7 +110,9 @@ kick in much \LUA\ code, you will notices that performance drops. Don't blame an
 bother the authors with performance issues. In \CONTEXT\ over 50\% of the time
 can be spent in \LUA, but so far we didn't get many complaints about efficiency.
 Adding more callbacks makes no sense, also because at some point the performance
-hit gets too large. There are plenty ways to achieve one goals.
+hit gets too large. There are plenty ways to achieve one goals. For that reason:
+take remarks about \LUATEX, features, potential, performance etc.\ with a natural
+grain of salt.
 
 Where plain \TEX\ is basically a basic framework for writing a specific style,
 macro packages like \CONTEXT\ and \LATEX\ provide the user a whole lot of

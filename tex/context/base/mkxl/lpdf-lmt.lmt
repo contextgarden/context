@@ -812,12 +812,9 @@ local flushsave, flushrestore, flushsetmatrix  do
     flushsetmatrix = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
         if p then
-            local m = matrix
+            local m = p.matrix
             if m then
-                local rx = m.rx
-                local sx = m.sx
-                local sy = m.sy
-                local ry = m.ry
+                local rx, sx, sy, ry = unpack(m)
                 if not rx then
                     rx = 1
                 elseif rx == 0 then

@@ -217,6 +217,7 @@ local nuts = {
     unprotect_glyph         = direct.unprotect_glyph,
     unprotect_glyphs        = direct.unprotect_glyphs,
     unset_attribute         = direct.unset_attribute,
+    unset_attributes        = direct.unset_attributes,
     usedlist                = direct.usedlist,
     uses_font               = direct.uses_font,
     vpack                   = direct.vpack,

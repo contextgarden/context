@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-krn}{}
+\registerctxluafile{typo-krn}{autosuffix}
 
 \definesystemattribute[kern][public]
 

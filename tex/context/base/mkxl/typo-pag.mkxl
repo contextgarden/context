@@ -15,6 +15,6 @@
 
 \unprotect
 
-\registerctxluafile{typo-pag}{}
+\registerctxluafile{typo-pag}{autosuffix}
 
 \protect \endinput

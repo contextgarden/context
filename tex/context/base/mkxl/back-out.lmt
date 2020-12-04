@@ -228,6 +228,8 @@ function nodepool.literal(mode,str)
     return t
 end
 
+--- these 3 will move to node-res as they are generic
+
 function nodepool.save()
     return copynode(savenode)
 end
@@ -238,7 +240,7 @@ end
 
 function nodepool.setmatrix(rx,sx,sy,ry,tx,ty)
     local t = copynode(setmatrixnode)
-    nodeproperties[t] = { rx, sx, sy, ry, tx, ty }
+    nodeproperties[t] = { matrix = { rx, sx, sy, ry, tx, ty } }
     return t
 end
 

@@ -425,6 +425,9 @@ end
 
     collectranges(head)
 
+-- inspect(taglist)
+-- inspect(ranges)
+
     if trace_tags then
         for i=1,#ranges do
             local range = ranges[i]

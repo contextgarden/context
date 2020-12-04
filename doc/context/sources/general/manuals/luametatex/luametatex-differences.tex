@@ -1,4 +1,4 @@
-    % language=uk
+% language=uk
 
 \environment luametatex-style
 
@@ -10,7 +10,7 @@ As \LUAMETATEX\ is a leaner and meaner \LUATEX, this chapter will discuss
 what is gone. We start with the primitives that were dropped.
 
 \starttabulate[|l|pl|]
-\NC fonts       \NC \type {\letterspacefont}
+\BC fonts       \NC \type {\letterspacefont}
                     \type {\copyfont}
                     \type {\expandglyphsinfont}
                     \type {\ignoreligaturesinfont}
@@ -18,7 +18,7 @@ what is gone. We start with the primitives that were dropped.
                     \type {\leftghost}
                     \type {\rightghost}
                 \NC \NR
-\NC backend     \NC \type {\dviextension}
+\BC backend     \NC \type {\dviextension}
                     \type {\dvivariable }
                     \type {\dvifeedback}
                     \type {\pdfextension}
@@ -28,14 +28,14 @@ what is gone. We start with the primitives that were dropped.
                     \type {\draftmode}
                     \type {\outputmode}
                 \NC \NR
-\NC dimensions  \NC \type {\pageleftoffset}
+\BC dimensions  \NC \type {\pageleftoffset}
                     \type {\pagerightoffset}
                     \type {\pagetopoffset}
                     \type {\pagebottomoffset}
                     \type {\pageheight}
                     \type {\pagewidth}
                 \NC \NR
-\NC resources   \NC \type {\saveboxresource}
+\BC resources   \NC \type {\saveboxresource}
                     \type {\useboxresource}
                     \type {\lastsavedboxresourceindex}
                     \type {\saveimageresource}
@@ -43,11 +43,11 @@ what is gone. We start with the primitives that were dropped.
                     \type {\lastsavedimageresourceindex}
                     \type {\lastsavedimageresourcepages}
                 \NC \NR
-\NC positioning \NC \type {\savepos}
+\BC positioning \NC \type {\savepos}
                     \type {\lastxpos}
                     \type {\lastypos}
                 \NC \NR
-\NC directions  \NC \type {\textdir}
+\BC directions  \NC \type {\textdir}
                     \type {\linedir}
                     \type {\mathdir}
                     \type {\pardir}
@@ -56,14 +56,14 @@ what is gone. We start with the primitives that were dropped.
                     \type {\pagedirection}
                     \type {\bodydirection}
                 \NC \NR
-\NC randomizer  \NC \type {\randomseed}
+\BC randomizer  \NC \type {\randomseed}
                     \type {\setrandomseed}
                     \type {\normaldeviate}
                     \type {\uniformdeviate}
                 \NC \NR
-\NC utilities   \NC \type {\synctex}
+\BC utilities   \NC \type {\synctex}
                 \NC \NR
-\NC extensions  \NC \type {\latelua}
+\BC extensions  \NC \type {\latelua}
                     \type {\lateluafunction}
                     \type {\openout}
                     \type {\write}
@@ -74,7 +74,7 @@ what is gone. We start with the primitives that were dropped.
                     \type {\closein}
                     \type {\ifeof}
                 \NC \NR
-\NC control     \NC \type {\suppressfontnotfounderror}
+\BC control     \NC \type {\suppressfontnotfounderror}
                     \type {\suppresslongerror}
                     \type {\suppressprimitiveerror}
                     \type {\suppressmathparerror}
@@ -82,10 +82,10 @@ what is gone. We start with the primitives that were dropped.
                     \type {\suppressoutererror}
                     \type {\mathoption}
                 \NC \NR
-\NC whatever    \NC \type {\primitive}
+\BC whatever    \NC \type {\primitive}
                     \type {\ifprimitive}
                 \NC \NR
-\NC ignored     \NC \type {\long}
+\BC ignored     \NC \type {\long}
                     \type {\outer}
                     \type {\mag}
                 \NC \NR
@@ -100,38 +100,41 @@ and they don't work well in \LUATEX\ anyway. We only have two directions left.
 The primitive related extensions were not that useful and reliable so they have
 been removed. There are some new variants that will be discussed later. The \type
 {\outer} and \type {\long} prefixes are gone as they don't make much sense
-nowadays and them becoming dummies opened the way to something new, again to be
-discussed elsewhere. I don't think that (\CONTEXT) users will notice it. The
-\type {\suppress..} features are now default and can't be changed so related
-primitives are gone.
+nowadays and them becoming dummies opened the way to something new: control
+sequence properties that permit protection against as well as controlled
+overloading of definitions. I don't think that (\CONTEXT) users will notice these
+prefixed being gone. The definition and parsing related \type {\suppress..}
+features are now default and can't be changed so related primitives are gone.
 
 The \type {\shipout} primitive does no ship out but just erases the content of
-the box, if that hasn't happened already in another way.
-
-The extension primitives relate to the backend (when not immediate) and can be
-implemented as part of a backend design using generic whatsits. There is only one
-type of whatsit now. In fact we're now closer to original \TEX\ with respect to
-the extensions.
+the box, if that hasn't happened already in another way. A macropackage should
+implement its own backend and related shipout. Talking of backend, the extension
+primitives that relate to backends can be implemented as part of a backend design
+using generic whatsits. There is only one type of whatsit now. In fact we're now
+closer to original \TEX\ with respect to the extensions.
 
 The \type {img} library has been removed as it's rather bound to the backend. The
 \type {slunicode} library is also gone. There are some helpers in the string
 library that can be used instead and one can write additional \LUA\ code if
-needed. There is no longer a \type {pdf} backend library.
+needed. There is no longer a \type {pdf} backend library but we have an up to
+date \PDF\ parsing library on board.
 
 In the \type {node}, \type {tex} and \type {status} library we no longer have
 helpers and variables that relate to the backend. The \LUAMETATEX\ engine is in
-principle \DVI\ and \PDF\ unaware. There are only generic whatsit nodes that can
-be used for some management related tasks. For instance you can use them to
-implement user nodes. More extensive status information is provided in the
-overhauled status library.
+principle \DVI\ and \PDF\ unaware. There are, as mentioned, only generic whatsit
+nodes that can be used for some management related tasks. For instance you can
+use them to implement user nodes. More extensive status information is provided
+in the overhauled status library.
 
 The margin kern nodes are gone and we now use regular kern nodes for them. As a
 consequence there are two extra subtypes indicating the injected left or right
 kern. The glyph field served no real purpose so there was no reason for a special
 kind of node.
 
-The \KPSE\ library is no longer built|-|in. Because there is no backend, quite
-some file related callbacks could go away. The following file related callbacks
+The \KPSE\ library is no longer built|-|in, but one can use an external \KPSE\
+library, assuming that it is present on the system, because the engine has a so
+called optional library interface to it. Because there is no backend, quite some
+file related callbacks could go away. The following file related callbacks
 remained (till now):
 
 \starttyping
@@ -150,6 +153,13 @@ gets reallocated.
 
 \starttyping
 trace_memory
+\stoptyping
+
+When you use the overload protect mechanisms, a callback can be plugged in to handle
+exceptions:
+
+\starttyping
+handle_overload
 \stoptyping
 
 The (job) management hooks are kept:
@@ -187,7 +197,7 @@ ago in \TEX\ engines by command line options. Talking of options, only a few are
 left. All input goes via \LUA, even the console.
 
 We took our time for reaching a stable state in \LUATEX. Among the reasons is the
-fact that most was experimented with in \CONTEXT. It took many man|-|years to
+fact that most was experimented with in \CONTEXT. It took many years of work to
 decide what to keep and how to do things. Of course there are places when things
 can be improved and it might happen in \LUAMETATEX. Contrary to what is sometimes
 suggested, the \LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions)

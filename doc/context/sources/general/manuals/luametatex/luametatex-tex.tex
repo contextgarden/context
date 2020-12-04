@@ -102,30 +102,6 @@ mind when preloading files into a bytecode register in \INITEX.
 
 \stopsubsection
 
-\startsubsection[title={Chunk name registers}]
-
-\libindex{name}
-\libindex{setluaname}
-\libindex{getluaname}
-
-There is an array of 65536 (0--65535) potential chunk names for use with the
-\prm {directlua} and \lpr {latelua} primitives.
-
-\startfunctioncall
-lua.name[<number> n] = <string> s
-<string> s = lua.name[<number> n]
-\stopfunctioncall
-
-If you want to unset a \LUA\ name, you can assign \type {nil} to it. The function
-accessors are:
-
-\startfunctioncall
-lua.setluaname(<string> s,<number> n)
-<string> s = lua.getluaname(<number> n)
-\stopfunctioncall
-
-\stopsubsection
-
 \startsubsection[title={Introspection}]
 
 \libindex{getstacktop}
