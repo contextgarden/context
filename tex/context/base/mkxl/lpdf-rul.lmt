@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['grph-rul'] = {
+if not modules then modules = { } end modules ['lpdf-rul'] = {
     version   = 1.001,
     comment   = "companion to grph-rul.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -11,29 +11,15 @@ local concat = table.concat
 
 local attributes       = attributes
 local nodes            = nodes
-local context          = context
 
 local bpfactor         = number.dimenfactors.bp
 
 local nuts             = nodes.nuts
-local nodepool         = nuts.pool
-local userrule         = nuts.rules.userrule
-local outlinerule      = nuts.pool.outlinerule
 local ruleactions      = nuts.rules.ruleactions
 
-local setattrlist      = nuts.setattrlist
-local setattr          = nuts.setattr
-local tonode           = nuts.tonode
-
-local getattribute     = tex.getattribute
 local getwhd           = nuts.getwhd
-local setwhd           = nuts.setwhd
 
 local lefttoright_code = nodes.dirvalues.lefttoright
-
-local a_color          = attributes.private('color')
-local a_transparency   = attributes.private('transparency')
-local a_colormodel     = attributes.private('colormodel')
 
 local mpcolor          = attributes.colors.mpcolor
 
@@ -51,9 +37,9 @@ local pdfprint
 
 pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
 
-updaters.register("backend.update",function()
-    pdfprint = lpdf.print
-end)
+-- updaters.register("backend.update",function()
+--     pdfprint = lpdf.print
+-- end)
 
 do
 
@@ -115,7 +101,7 @@ def RuleColor = %color% enddef ;
 
     local initialized = false ;
 
-    ruleactions.mp = function(p,h,v,i,n)
+    rule_mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
             data      = p.data or "",
@@ -146,6 +132,10 @@ def RuleColor = %color% enddef ;
             pdfprint("direct",pdf)
         end
     end
+
+    updaters.register("backend.update.lpdf",function()
+        ruleactions.mp     = rule_mp
+    end)
 
 end
 
@@ -341,7 +331,7 @@ do
 h %s]]
         ]
 
-    ruleactions.fill = function(p,h,v,i,n)
+    local rule_any = function(p,h,v,i,n)
         if p.corner then
             return round(p,i)
         else
@@ -365,10 +355,7 @@ h %s]]
         end
     end
 
-    ruleactions.draw   = ruleactions.fill
-    ruleactions.stroke = ruleactions.fill
-
-    ruleactions.box = function(p,h,v,i,n)
+    local function rule_box(p,h,v,i,n)
         local w, h, d = getwhd(n)
         local line = p.line or 65536
         local l = line *bpfactor
@@ -390,86 +377,16 @@ h %s]]
         end
     end
 
+    updaters.register("backend.update.lpdf",function()
+        ruleactions.fill   = rule_any
+        ruleactions.draw   = rule_any
+        ruleactions.stroke = rule_any
+        ruleactions.box    = rule_box
+    end)
+
 end
 
-interfaces.implement {
-    name      = "frule",
-    arguments = { {
-        { "width",  "dimension" },
-        { "height", "dimension" },
-        { "depth",  "dimension" },
-        { "radius", "dimension" },
-        { "line",   "dimension" },
-        { "type",   "string" },
-        { "data",   "string" },
-        { "name",   "string" },
-        { "radius", "dimension" },
-        { "corner", "string" },
-    } } ,
-    actions = function(t)
-        local rule = userrule(t)
-        if t.type == "mp" then
-            t.ma = getattribute(a_colormodel) or 1
-            t.ca = getattribute(a_color)
-            t.ta = getattribute(a_transparency)
-        else
-            setattrlist(rule,true)
-        end
-        context(tonode(rule)) -- will become context.nodes.flush
-    end
-}
 
-interfaces.implement {
-    name      = "outlinerule",
-    public    = true,
-    protected = true,
-    arguments = { {
-        { "width",  "dimension" },
-        { "height", "dimension" },
-        { "depth",  "dimension" },
-        { "line",   "dimension" },
-    } } ,
-    actions = function(t)
-        local rule = outlinerule(t.width,t.height,t.depth,t.line)
-        setattrlist(rule,true)
-        context(tonode(rule)) -- will become context.nodes.flush
-    end
-}
+    ruleactions.mp     = unsupported
 
-interfaces.implement {
-    name      = "framedoutline",
-    arguments = { "dimension", "dimension", "dimension", "dimension" },
-    actions   = function(w,h,d,l)
-        local rule = outlinerule(w,h,d,l)
-        setattrlist(rule,true)
-        context(tonode(rule)) -- will become context.nodes.flush
-    end
-}
 
-interfaces.implement {
-    name      = "fakeword",
-    arguments = { {
-        { "factor", "dimension" },
-        { "name",   "string" }, -- can be type
-        { "min",    "dimension" },
-        { "max",    "dimension" },
-        { "n",      "integer" },
-    } } ,
-    actions = function(t)
-        local factor = t.factor or 0
-        local amount = getrandom("fakeword",t.min,t.max)
-        local rule   = userrule {
-            height = 1.25*factor,
-            depth  = 0.25*factor,
-            width  = floor(amount/10000) * 10000,
-            line   = 0.10*factor,
-            ma     = getattribute(a_colormodel) or 1,
-            ca     = getattribute(a_color),
-            ta     = getattribute(a_transparency),
-            type   = "mp",
-            name   = t.name,
-        }
-        setattrlist(rule,true)
-        context(tonode(rule))
-    end
-}

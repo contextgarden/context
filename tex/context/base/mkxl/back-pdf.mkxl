@@ -39,6 +39,7 @@
 \registerctxluafile{lpdf-epa}{autosuffix}
 \registerctxluafile{lpdf-emb}{autosuffix,optimize}
 \registerctxluafile{lpdf-fnt}{autosuffix}
+\registerctxluafile{lpdf-rul}{autosuffix}
 
 \registerctxluafile{back-pdp}{autosuffix}
 \registerctxluafile{back-pdf}{autosuffix} % some code will move to lpdf-*

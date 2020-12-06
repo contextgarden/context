@@ -849,11 +849,12 @@ implement {
     actions = synctex.resume,
 }
 
-interfaces.implement {
+implement {
     name    = "synctexpushline",
     actions = synctex.pushline,
 }
-interfaces.implement {
+
+implement {
     name    = "synctexpopline",
     actions = synctex.popline,
 }

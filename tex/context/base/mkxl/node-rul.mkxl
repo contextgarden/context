@@ -419,9 +419,6 @@
   {\removeunwantedspaces
    \endgroup}
 
-% \protected\def\node_shifts_direct#1%
-%   {\doisolatedgroupedalign{\node_shifts_set{#1}}\donothing}
-
 \protected\def\node_shifts_direct#1%
   {\groupedcommand
      {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}\ignorespaces}
@@ -533,7 +530,7 @@
   {\begingroup
    \par
    \def\currentlinefiller{#1}%
-   \ifargument#2\or
+   \ifparameter#2\or
      % we need to update settings
      \setuplinefiller[#1][#2]% no \setupcurrentlinefiller as we need to update settings
    \fi

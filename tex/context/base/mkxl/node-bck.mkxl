@@ -19,7 +19,7 @@
 
 \unprotect
 
-\registerctxluafile{node-bck}{optimize}
+\registerctxluafile{node-bck}{autosuffix,optimize}
 
 % \backgroundvbox[green] {\input tufte } \par
 % \backgroundvbox[blue]  {\input ward } \par

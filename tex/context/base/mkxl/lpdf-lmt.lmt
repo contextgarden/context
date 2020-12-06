@@ -815,6 +815,7 @@ local flushsave, flushrestore, flushsetmatrix  do
             local m = p.matrix
             if m then
                 local rx, sx, sy, ry = unpack(m)
+                local s
                 if not rx then
                     rx = 1
                 elseif rx == 0 then
@@ -830,6 +831,16 @@ local flushsave, flushrestore, flushsetmatrix  do
                 end
                 if not sy then
                     sy = 0
+                end
+                --
+                if sx == 0 and sy == 0 then
+                    if rx == 1 and ry == 1 then
+                        s = s_matrix_0
+                    else
+                        s = f_matrix_2(rx,ry)
+                    end
+                else
+                    s = f_matrix_4(rx,sx,sy,ry)
                 end
                 --
                 if shippingmode == "page" then
@@ -850,15 +861,7 @@ local flushsave, flushrestore, flushsetmatrix  do
                 pdf_set_pos(pos_h,pos_v)
                 --
                 b = b + 1
-                if sx == 0 and sy == 0 then
-                    if rx == 1 and ry == 1 then
-                        buffer[b] = s_matrix_0
-                    else
-                        buffer[b] = f_matrix_2(rx,ry)
-                    end
-                else
-                    buffer[b] = f_matrix_4(rx,sx,sy,ry)
-                end
+                buffer[b] = s
             end
         end
     end
@@ -903,15 +906,15 @@ local localconverter = nil -- will be set
 
 local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
-    local rulecodes = nodes.rulecodes
-    local newrule   = nodes.pool.rule
+    local rulecodes         = nodes.rulecodes
+    local newrule           = nodes.pool.rule
 
-    local setprop   = nuts.setprop
-    local getprop   = nuts.getprop
+    local setprop           = nuts.setprop
+    local getprop           = nuts.getprop
 
-    local getwhd    = nuts.getwhd
-    local flushlist = nuts.flush_list
-    local getdata   = nuts.getdata
+    local getwhd            = nuts.getwhd
+    local flushlist         = nuts.flush_list
+    local getdata           = nuts.getdata
 
     local normalrule_code   = rulecodes.normal
     local boxrule_code      = rulecodes.box
@@ -924,24 +927,24 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
     local radicalrule_code  = rulecodes.radical
     local outlinerule_code  = rulecodes.outline
 
-    local rule_callback = callbacks.functions.process_rule
+    local processrule       = nodes.rules.process
 
     local f_fm = formatters["/Fm%d Do"]
     local f_im = formatters["/Im%d Do"]
     local f_gr = formatters["/Gp%d Do"]
 
-    local s_b = "q"
-    local s_e = "Q"
+    local s_b  = "q"
+    local s_e  = "Q"
 
-    local f_v = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
-    local f_h = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
+    local f_v  = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
+    local f_h  = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
-    local f_f = formatters["0 0 %.6N %.6N re f"]
-    local f_o = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
-    local f_w = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
+    local f_f  = formatters["0 0 %.6N %.6N re f"]
+    local f_o  = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
+    local f_w  = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
 
-    local f_b = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
-    local f_x = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
+    local f_b  = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
+    local f_x  = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1291,7 +1294,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
             pdf_goto_pagemode()
             b = b + 1 ; buffer[b] = s_b
             pdf_set_pos_temp(pos_h,pos_v)
-            rule_callback(current,size_h,size_v,pos_r) -- so we pass direction
+            processrule(current,size_h,size_v,pos_r) -- so we pass direction
             b = b + 1 ; buffer[b] = s_e
             return
         end

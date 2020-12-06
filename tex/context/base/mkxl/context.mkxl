@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2020.12.04 20:19}
+\immutable\edef\contextversion{2020.12.06 18:12}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -220,6 +220,7 @@
 \loadmkxlfile{core-dat}
 
 \loadmkxlfile{colo-ini}
+\loadmkxlfile{colo-nod}
 \loadmkxlfile{colo-grp} % optional
 \loadmkxlfile{colo-ext}
 

@@ -17,7 +17,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-drp}{}
+\registerctxluafile{typo-drp}{autosuffix}
 
 \definesystemattribute[initial][public]
 

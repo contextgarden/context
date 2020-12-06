@@ -425,14 +425,13 @@ end
 
 local colorize, justadd do
 
-    local a_color        = attributes.private('color')
-    local a_colormodel   = attributes.private('colormodel')
-    local a_transparency = attributes.private('transparency')
     local u_transparency = nil
     local u_colors       = { }
     local force_gray     = true
 
     local register_color = colors.register
+
+    local setcoloring    = nuts.colors.set
 
     local function addstring(what,str,shift) --todo make a pluggable helper (in font-ctx)
         if str then
@@ -486,10 +485,7 @@ local colorize, justadd do
             height = 65536/2
             depth  = height
         end
-        local rule = new_rule(width,height,depth) -- todo: use tracer rule
-        setattr(rule,a_colormodel,1) -- gray color model
-        setattr(rule,a_color,u_color)
-        setattr(rule,a_transparency,u_transparency)
+        local rule = setcoloring(new_rule(width,height,depth),1,u_color,u_transparency) -- gray color model
         if width < 0 then
             local kern = new_kern(width)
             setwidth(rule,-width)

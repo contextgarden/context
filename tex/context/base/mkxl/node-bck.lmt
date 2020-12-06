@@ -100,8 +100,8 @@ local function colored_a(current,list,template,id)
         --
         if not rule then
             rule = new_rule(width,height,depth)
+            setattributelist(rule,template)
         end
-        setattributelist(rule,template)
         local back = new_kern(-((id == vlist_code and total) or width))
         return setlink(rule,back,list)
     end
@@ -190,7 +190,7 @@ local function add_backgrounds(head,id,list)
         if background then
             list = colored_a(head,list,head,id)
             -- not needed
-            setattr(head,a_background,unsetvalue) -- or property
+            setattr(head,a_background,unsetvalue) -- or property -- todo
             return list
         end
     end

@@ -1,0 +1,124 @@
+if not modules then modules = { } end modules ['grph-rul'] = {
+    version   = 1.001,
+    comment   = "companion to grph-rul.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local attributes       = attributes
+local nodes            = nodes
+local context          = context
+
+local nuts             = nodes.nuts
+local nodepool         = nuts.pool
+local userrule         = nuts.rules.userrule
+local outlinerule      = nuts.pool.outlinerule
+local ruleactions      = nuts.rules.ruleactions
+
+local setattrlist      = nuts.setattrlist
+local setattr          = nuts.setattr
+local tonode           = nuts.tonode
+
+local getattribute     = tex.getattribute
+
+local a_color          = attributes.private('color')
+local a_transparency   = attributes.private('transparency')
+local a_colormodel     = attributes.private('colormodel')
+
+local floor            = math.floor
+local getrandom        = utilities.randomizer.get
+
+do
+
+    local function unsupported() end
+
+    ruleactions.mp     = unsupported
+    ruleactions.fill   = unsupported
+    ruleactions.draw   = unsupported
+    ruleactions.stroke = unsupported
+    ruleactions.box    = unsupported
+
+end
+
+interfaces.implement {
+    name      = "frule",
+    arguments = { {
+        { "width",  "dimension" },
+        { "height", "dimension" },
+        { "depth",  "dimension" },
+        { "radius", "dimension" },
+        { "line",   "dimension" },
+        { "type",   "string" },
+        { "data",   "string" },
+        { "name",   "string" },
+        { "radius", "dimension" },
+        { "corner", "string" },
+    } } ,
+    actions = function(t)
+        local rule = userrule(t)
+        if t.type == "mp" then
+            t.ma = getattribute(a_colormodel) or 1
+            t.ca = getattribute(a_color)
+            t.ta = getattribute(a_transparency)
+        else
+            setattrlist(rule,true)
+        end
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "outlinerule",
+    public    = true,
+    protected = true,
+    arguments = { {
+        { "width",  "dimension" },
+        { "height", "dimension" },
+        { "depth",  "dimension" },
+        { "line",   "dimension" },
+    } } ,
+    actions = function(t)
+        local rule = outlinerule(t.width,t.height,t.depth,t.line)
+        setattrlist(rule,true)
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "framedoutline",
+    arguments = { "dimension", "dimension", "dimension", "dimension" },
+    actions   = function(w,h,d,l)
+        local rule = outlinerule(w,h,d,l)
+        setattrlist(rule,true)
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "fakeword",
+    arguments = { {
+        { "factor", "dimension" },
+        { "name",   "string" }, -- can be type
+        { "min",    "dimension" },
+        { "max",    "dimension" },
+        { "n",      "integer" },
+    } } ,
+    actions = function(t)
+        local factor = t.factor or 0
+        local amount = getrandom("fakeword",t.min,t.max)
+        local rule   = userrule {
+            height = 1.25*factor,
+            depth  = 0.25*factor,
+            width  = floor(amount/10000) * 10000,
+            line   = 0.10*factor,
+            ma     = getattribute(a_colormodel) or 1,
+            ca     = getattribute(a_color),
+            ta     = getattribute(a_transparency),
+            type   = "mp",
+            name   = t.name,
+        }
+        setattrlist(rule,true)
+        context(tonode(rule))
+    end
+}

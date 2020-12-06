@@ -50,7 +50,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-fln}{}
+\registerctxluafile{typo-fln}{autosuffix}
 
 \definesystemattribute[firstline][public]
 

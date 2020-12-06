@@ -26,7 +26,7 @@
 \registerctxluafile{node-aux}{autosuffix}
 \registerctxluafile{node-gcm}{autosuffix}
 \registerctxluafile{node-tst}{}
-\registerctxluafile{node-tra}{} % we might split it off (module)
+\registerctxluafile{node-tra}{autosuffix}
 \registerctxluafile{node-snp}{autosuffix}
 \registerctxluafile{node-tsk}{}
 \registerctxluafile{node-tex}{autosuffix}
