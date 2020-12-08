@@ -19,7 +19,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-rub}{}
+\registerctxluafile{typo-rub}{autosuffix}
 
 \definesystemattribute[ruby][public]
 

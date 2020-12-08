@@ -20,7 +20,7 @@
 
 \writestatus{loading}{ConTeXt Typographic Macros / Initialization}
 
-\registerctxluafile{typo-ini}{}
+\registerctxluafile{typo-ini}{autosuffix}
 
 \unprotect
 

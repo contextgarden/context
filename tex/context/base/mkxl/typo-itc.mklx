@@ -22,7 +22,7 @@
 %D \setupitaliccorrection[global,always]
 %D \stoptyping
 
-\registerctxluafile{typo-itc}{}
+\registerctxluafile{typo-itc}{autosuffix}
 
 \definesystemattribute[italics]    [public]
 \definesystemattribute[mathitalics][public]

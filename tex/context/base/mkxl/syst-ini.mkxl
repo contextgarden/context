@@ -1117,4 +1117,8 @@
 \mutable\let\par\par
 \popoverloadmode
 
+%D Also here:
+
+\listcallbackmode\plusone
+
 \protect \endinput

@@ -350,6 +350,7 @@ return {
   "letprotected",
   "linedirection",
   "linepar",
+  "listcallbackmode",
   "localbrokenpenalty",
   "localcontrol",
   "localcontrolled",

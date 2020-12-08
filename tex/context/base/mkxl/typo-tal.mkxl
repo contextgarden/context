@@ -22,7 +22,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-tal}{}
+\registerctxluafile{typo-tal}{autosuffix}
 
 \definesystemattribute[characteralign][public]
 

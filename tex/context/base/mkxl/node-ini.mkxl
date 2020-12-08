@@ -31,9 +31,9 @@
 \registerctxluafile{node-tsk}{}
 \registerctxluafile{node-tex}{autosuffix}
 \registerctxluafile{node-dir}{} % experimental, not yet (and maybe never) used
-\registerctxluafile{node-pro}{}
+\registerctxluafile{node-pro}{autosuffix}
 \registerctxluafile{node-ser}{autosuffix}
-\registerctxluafile{node-ext}{}
+%registerctxluafile{node-ext}{}
 \registerctxluafile{node-acc}{autosuffix} % experimental
 %registerctxluafile{node-prp}{} % makes no sense (yet)
 \registerctxluafile{node-scn}{autosuffix}

@@ -251,7 +251,7 @@ into a stack of \prm {hbox}es, after the addition of \prm {parfillskip}.
 
 \startfunctioncall
 function(<node> head, <string> groupcode)
-    return true | false | <node> newhead
+    return <node> newhead
 end
 \stopfunctioncall
 
@@ -353,7 +353,7 @@ stack of \prm {hbox}es.
 
 \startfunctioncall
 function(<node> head, <string> groupcode)
-    return true | false | <node> newhead
+    return <node> newhead
 end
 \stopfunctioncall
 
@@ -369,7 +369,7 @@ material. Math items and line boxes are ignored at the moment.
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size,
          <string> packtype [, <string> direction] [, <node> attributelist])
-    return true | false | <node> newhead
+    return <node> newhead
 end
 \stopfunctioncall
 
@@ -397,7 +397,7 @@ that it is called at different moments, there is an extra variable that matches
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size, <string> packtype,
         <number> maxdepth [, <string> direction] [, <node> attributelist]))
-    return true | false | <node> newhead
+    return <node> newhead
 end
 \stopfunctioncall
 
@@ -462,7 +462,7 @@ This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size, <string> packtype,
         <number> maxdepth [, <string> direction])
-    return true | false | <node> newhead
+    return <node> newhead
 end
 \stopfunctioncall
 

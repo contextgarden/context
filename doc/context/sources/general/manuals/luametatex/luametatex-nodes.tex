@@ -1383,15 +1383,17 @@ The \type{traverse_char} iterator loops over the \nod {glyph} nodes in a list.
 Only nodes with a subtype less than 256 are seen.
 
 \startfunctioncall
-<node> n, font, char = node.traverse_char(<node> n)
+<direct> n, font, char = node.direct.traverse_char(<direct> n)
 \stopfunctioncall
 
 The \type{traverse_glyph} iterator loops over a list and returns the list and
 filters all glyphs:
 
 \startfunctioncall
-<node> n, font, char = node.traverse_glyph(<node> n)
+<direct> n, font, char = node.traverse_glyph(<direct> n)
 \stopfunctioncall
+
+These functions are only available for direct nodes.
 
 \stopsubsubsection
 
@@ -1402,14 +1404,99 @@ filters all glyphs:
 This iterator loops over the \nod {hlist} and \nod {vlist} nodes in a list.
 
 \startfunctioncall
-<node> n, id, subtype, list = node.traverse_list(<node> n)
+<direct> n, id, subtype, list = node.traverse_list(<direct> n)
 \stopfunctioncall
 
 The four return values can save some time compared to fetching these fields but
-in practice you seldom need them all. So consider it a (side effect of
-experimental) convenience.
+in practice you seldom need them all. This function is only available for direct
+nodes.
 
 \stopsubsubsection
+
+\startsubsubsection[title={\type {traverse_content}}]
+
+\libindex {traverse_content}
+
+This iterator loops over nodes that have content: \nod {hlist}, \nod {vlist}, \nod {glue}
+with leaders, \nod {glyphs}, \nod {disc} and \nod {rules} nodes.
+
+\startfunctioncall
+<direct> n, id, subtype[, list|leader] = node.traverse_list(<direct> n)
+\stopfunctioncall
+
+The four return values can save some time compared to fetching these fields but
+in practice you seldom need them all. This function is only available for direct
+nodes.
+
+\stopsubsubsection
+
+\startsubsubsection[title={Reverse traversing}]
+
+The traversers also support backward traversal. An optional extra boolean triggers
+this. Yet another optional boolean will automatically start at the end of the
+given list.
+
+\starttyping
+\setbox0\hbox{1 2 3 4 5}
+
+local l = tex.box[0].list
+for n in node.traverse(l) do
+    print("1>",n)
+end
+for n in node.traverse(l,true) do
+    print("2>",n)
+end
+for n in node.traverse(l,true,true) do
+    print("3>",n)
+end
+for n in node.traverse_id(nodes.nodecodes.glyph,l) do
+    print("4>",n)
+end
+for n in node.traverse_id(nodes.nodecodes.glyph,l,true) do
+    print("5>",n)
+end
+for n in node.traverse_id(nodes.nodecodes.glyph,l,true,true) do
+    print("6>",n)
+end
+\stoptyping
+
+This produces something similar to this (the glyph subtype indicates that it has
+been processed by the font handlers):
+
+\starttyping
+1>	<node :    nil <=   1112 =>    590 : glyph 32768>
+1>	<node :   1112 <=    590 =>   1120 : glue spaceskip>
+1>	<node :    590 <=   1120 =>    849 : glyph 32768>
+1>	<node :   1120 <=    849 =>   1128 : glue spaceskip>
+1>	<node :    849 <=   1128 =>    880 : glyph 32768>
+1>	<node :   1128 <=    880 =>   1136 : glue spaceskip>
+1>	<node :    880 <=   1136 =>   1020 : glyph 32768>
+1>	<node :   1136 <=   1020 =>   1144 : glue spaceskip>
+1>	<node :   1020 <=   1144 =>    nil : glyph 32768>
+2>	<node :    nil <=   1112 =>    590 : glyph 32768>
+3>	<node :   1020 <=   1144 =>    nil : glyph 32768>
+3>	<node :   1136 <=   1020 =>   1144 : glue spaceskip>
+3>	<node :    880 <=   1136 =>   1020 : glyph 32768>
+3>	<node :   1128 <=    880 =>   1136 : glue spaceskip>
+3>	<node :    849 <=   1128 =>    880 : glyph 32768>
+3>	<node :   1120 <=    849 =>   1128 : glue spaceskip>
+3>	<node :    590 <=   1120 =>    849 : glyph 32768>
+3>	<node :   1112 <=    590 =>   1120 : glue spaceskip>
+3>	<node :    nil <=   1112 =>    590 : glyph 32768>
+4>	<node :    nil <=   1112 =>    590 : glyph 32768>
+4>	<node :    590 <=   1120 =>    849 : glyph 32768>
+4>	<node :    849 <=   1128 =>    880 : glyph 32768>
+4>	<node :    880 <=   1136 =>   1020 : glyph 32768>
+4>	<node :   1020 <=   1144 =>    nil : glyph 32768>
+5>	<node :    nil <=   1112 =>    590 : glyph 32768>
+6>	<node :   1020 <=   1144 =>    nil : glyph 32768>
+6>	<node :    880 <=   1136 =>   1020 : glyph 32768>
+6>	<node :    849 <=   1128 =>    880 : glyph 32768>
+6>	<node :    590 <=   1120 =>    849 : glyph 32768>
+6>	<node :    nil <=   1112 =>    590 : glyph 32768>
+\stoptyping
+
+\stopsubsection
 
 \startsubsubsection[title={\type {find_node}}]
 

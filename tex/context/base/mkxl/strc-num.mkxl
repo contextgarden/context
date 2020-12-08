@@ -103,42 +103,42 @@
 
 \permanent\tolerant\protected\def\setcounter[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
-     \clf_setcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
+     \clf_setcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \else
      \clf_setsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax
    \fi}
 
 \permanent\tolerant\protected\def\setcounterown[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
-     \clf_setowncounter   {\namedcounterparameter{#1}\s!name}{#2}\or
+     \clf_setowncounter   {\namedcounterparameter{#1}\s!name}{#2}%
    \else
      \clf_setownsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax{#3}%
    \fi}
 
 \permanent\tolerant\protected\def\restartcounter[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
-     \clf_restartcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
+     \clf_restartcounter   {\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \else
      \clf_restartsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax
    \fi}
 
 \permanent\tolerant\protected\def\resetcounter[#1]#*[#2]%
   {\ifarguments\or
-     \clf_resetcounter   {\namedcounterparameter{#1}\s!name}\or
+     \clf_resetcounter   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_resetsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \fi}
 
 \permanent\tolerant\protected\def\incrementcounter[#1]#*[#2]%
   {\ifarguments\or
-     \strc_counters_increment_sub{#1}\plusone\or
+     \strc_counters_increment_sub{#1}\plusone
    \else
      \strc_counters_increment_sub{#1}{#2}%
    \fi}
 
 \permanent\tolerant\protected\def\decrementcounter[#1]#*[#2]%
   {\ifarguments\or
-     \clf_decrementcounter   {\namedcounterparameter{#1}\s!name}\or
+     \clf_decrementcounter   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_decrementsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax
    \fi}
@@ -166,7 +166,7 @@
 
 \permanent\tolerant\protected\def\prevcounter[#1]#*[#2]%
   {\ifarguments\or
-     \clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}%}
+     \clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}%
    \else
      \clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#2\relax\or
    \fi}
