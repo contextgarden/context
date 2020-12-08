@@ -176,7 +176,6 @@ local usedcharacters = setmetatableindex("table")
 local pdfcharacters
 
 local horizontalmode = true
------ widefontmode   = true
 local scalefactor    = 1
 local threshold      = 655360
 local thresfactor    = 100
@@ -193,7 +192,6 @@ local function updatefontstate(font)
     local designsize = fontparameters.designsize or size
     pdfcharacters    = usedcharacters[font]
     horizontalmode   = fontparameters.writingmode ~= "vertical"
- -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
     local fthreshold = fontproperties.threshold
     threshold        = (fthreshold and (size * fthreshold / 100)) or 655360
@@ -945,6 +943,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
     local f_b  = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
     local f_x  = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
+    local f_y  = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S"]
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1361,7 +1360,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         b = b + 1 ; buffer[b] = s_e
     end
 
-    flushspecialrule = function(pos_h,pos_v,pos_r,width,height,depth,line,outline)
+    flushspecialrule = function(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
         pdf_goto_pagemode()
 
         b = b + 1 ; buffer[b] = s_b
@@ -1375,7 +1374,14 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         local rule
 
         if outline then
-            rule = f_x(line,half,-depth+half,width-line,total-line)
+            local d = -depth + half
+            local w =  width - line
+            local t =  total - line
+            if baseline then
+                rule = f_y(line,half,d,w,t,half,w)
+            else
+                rule = f_x(line,half,d,w,t)
+            end
         else
             rule = f_b(line,-depth,width,total)
         end
@@ -2900,6 +2906,11 @@ do
             end)
             --            --
             lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
+            --
+            statistics.register("result saved in file", function()
+                local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
+                return string.format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",lpdf.getcompression())
+            end)
             --
         end
         converter  = drivers.converters.lmtx

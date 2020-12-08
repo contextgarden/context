@@ -5216,8 +5216,8 @@
 %D \stripspaces\from\one\to\two
 %D \stoptyping
 %D
-%D Both the old string \type{\one} and the new one \type{\two}
-%D are expanded. This command is a special case of:
+%D Both the old string \type {\one} and the new one \type {\two} are expanded. This
+%D command is a special case of:
 %D
 %D \starttyping
 %D \stripcharacter\char\from\one\to\two
@@ -5745,9 +5745,8 @@
 %D \macros
 %D   {twodigitrounding}
 %D
-%D When using \type {\special}s or \type {\pdfliteral}s, it sometimes makes sense to
-%D limit the precission. The next macro rounds a real number to two digits. It takes
-%D one argument and only works in \ETEX.
+%D The next macro rounds a real number to two digits. They are probably no longer needed
+%D but we keep them around for a while.
 
 \permanent\def\integerrounding   #1{\clf_rounded\zerocount\numexpr#1\relax}
 \permanent\def\onedigitrounding  #1{\clf_rounded\plusone  \numexpr#1\relax}

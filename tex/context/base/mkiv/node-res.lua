@@ -626,10 +626,10 @@ do
         return v
     end)
 
-                                  traversers.node    = nodes.traverse        (glyph)
-                                  traversers.char    = nodes.traverse_char   (glyph)
-    if nuts.traverse_glyph   then traversers.glyph   = nodes.traverse_glyph  (glyph) end
-    if nuts.traverse_list    then traversers.list    = nodes.traverse_list   (glyph) end
+                                 traversers.node  = nodes.traverse      (glyph)
+                                 traversers.char  = nodes.traverse_char (glyph)
+    if nodes.traverse_glyph then traversers.glyph = nodes.traverse_glyph(glyph) end
+    if nodes.traverse_list  then traversers.list  = nodes.traverse_list (glyph) end
 
     nodes.traversers = traversers
 

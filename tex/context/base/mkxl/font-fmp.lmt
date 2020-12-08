@@ -1,0 +1,123 @@
+if not modules then modules = { } end modules ['font-fmp'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We only need to pick up the filename and optionally the enc file as we only use
+-- them for old school virtual math fonts. We might as well drop this completely.
+-- This used to be a backend module but the code is rather generic so we just put it
+-- here now.
+
+local find, match, splitlines = string.find, string.match, string.splitlines
+
+local implement = interfaces.implement
+
+local mappings  = { }
+
+local function setline(n)
+    if trace_fonts then
+        report_fonts("mapline: %s",n)
+    end
+    local name, fullname, encfile, pfbfile = match(n,"(%S+)%s+(%S+).-<(.-%.enc).-<(.-%.pfb)")
+    if name then
+        mappings[name] = { fullname, encfile, pfbfile }
+    end
+end
+
+local function setfile(n)
+    local okay, data = resolvers.loadbinfile(n,"map")
+    if okay and data then
+        data = splitlines(data)
+        for i=1,#data do
+            local d = data[i]
+            if d ~= "" and not find(d,"^[#%%]") then
+                setline(d)
+            end
+        end
+    end
+end
+
+local function getentry(n)
+    local n = file.nameonly(n)
+    local m = mappings[n]
+    if m then
+        local encfile  = m[2]
+        local encoding = fonts.encodings.load(encfile)
+        if not encoding then
+            return
+        end
+        local pfbfile = resolvers.findfile(m[3],"pfb")
+        if not pfbfile or pfbfile == "" then
+            return
+        end
+        return encoding, pfbfile, encfile
+    end
+end
+
+-- soon to be obsolete:
+
+local mappings = fonts.mappings or { }
+fonts.mappings = mappings
+
+local loaded = { -- prevent loading (happens in cont-sys files)
+ -- ["original-base.map"     ] = true,
+ -- ["original-ams-base.map" ] = true,
+ -- ["original-ams-euler.map"] = true,
+ -- ["original-public-lm.map"] = true,
+}
+
+function mappings.loadfile(name)
+    name = file.addsuffix(name,"map")
+    if not loaded[name] then
+        if trace_mapfiles then
+            report_mapfiles("loading map file %a",name)
+        end
+        setfile(name)
+        loaded[name] = true
+    end
+end
+
+local loaded = { -- prevent double loading
+}
+
+function mappings.loadline(how,line)
+    if line then
+        how = how .. " " .. line
+    elseif how == "" then
+        how = "= " .. line
+    end
+    if not loaded[how] then
+        if trace_mapfiles then
+            report_mapfiles("processing map line %a",line)
+        end
+        setline(how)
+        loaded[how] = true
+    end
+end
+
+function mappings.reset()
+    lpdf.setmapfile("") -- tricky ... backend related
+end
+
+mappings.getentry = getentry
+
+implement {
+    name      = "loadmapfile",
+    actions   = mappings.loadfile,
+    arguments = "string"
+}
+
+implement {
+    name      = "loadmapline",
+    actions   = mappings.loadline,
+    arguments = "string"
+}
+
+implement {
+    name      = "resetmapfiles",
+    actions   = mappings.reset,
+    arguments = "string"
+}

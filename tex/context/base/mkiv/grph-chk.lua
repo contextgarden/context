@@ -35,7 +35,7 @@ function checkers.pdf(data)
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
-        local image    = lpdf.epdf.image
+        local image    = lpdf.epdf.image -- ok, this is a pdf specific main function
         local openpdf  = image.open
         local closepdf = image.close
         local querypdf = image.query
@@ -163,7 +163,6 @@ function checkers.jpg(data)
     local used    = data.used
     if request and used and not request.scanimage then
         local identify = graphics.identify
-        local inject   = lpdf.injectors.jpg
         local found    = false
         request.scanimage = function(t)
             local result = wrappedidentify(identify,t.filename,"jpg")
@@ -187,7 +186,7 @@ function checkers.jpg(data)
         request.copyimage = function(t)
             if found then
                 found = false
-                return inject(t)
+                return backends.codeinjections.jpg(t)
             end
         end
     end
@@ -199,7 +198,6 @@ function checkers.jp2(data) -- idem as jpg
     local used    = data.used
     if request and used and not request.scanimage then
         local identify = graphics.identify
-        local inject   = lpdf.injectors.jp2
         local found    = false
         request.scanimage = function(t)
             local result = wrappedidentify(identify,t.filename,"jp2")
@@ -223,7 +221,7 @@ function checkers.jp2(data) -- idem as jpg
         request.copyimage = function(t)
             if found then
                 found = false
-                return inject(t)
+                return backends.codeinjections.jp2(t)
             end
         end
     end
@@ -235,7 +233,6 @@ function checkers.png(data) -- same as jpg (for now)
     local used    = data.used
     if request and used and not request.scanimage then
         local identify = graphics.identify
-        local inject   = lpdf.injectors.png -- currently pdf specific
         local found    = false
         request.scanimage = function(t)
             local result = wrappedidentify(identify,t.filename,"png")
@@ -263,7 +260,7 @@ function checkers.png(data) -- same as jpg (for now)
             t.colorref = used.colorref -- this is a bit of a hack
             if found then
                 found = false
-                local ok, result = pcall(inject,t)
+                local ok, result = pcall(backends.codeinjections.png,t)
                 if ok then
                     return result
                 else

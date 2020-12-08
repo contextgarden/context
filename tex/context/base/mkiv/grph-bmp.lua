@@ -39,10 +39,6 @@ function bitmaps.new(xsize,ysize,colorspace,colordepth,mask,index)
     }
 end
 
--- function backends.codeinjections.bitmap(bitmap)
---     return lpdf.injectors.bitmap(bitmap)
--- end
-
 local function flush(bitmap)
     local specification = backends.codeinjections.bitmap(bitmap)
     if specification then
@@ -89,7 +85,7 @@ local function placeholder(nx,ny)
         end
     end
 
-    return lpdf.injectors.bitmap(bitmap)
+    return backends.codeinjections.bitmap(bitmap)
 
 end
 

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-cft'] = {
     license   = "see context related readme files"
 }
 
--- context font tables
+-- context font tables (needs updating)
 --
 -- todo: extra:
 --
@@ -229,7 +229,7 @@ do
 
     data.scaled = {
         properties = {
-            encodingbytes    = t_cardinal,
+            encodingbytes    = t_cardinal, -- not in lmtx
             embedding        = t_cardinal, -- ?
             cidinfo          = t_hash,
             format           = t_string,
@@ -238,7 +238,7 @@ do
             filename         = t_string,
             psname           = t_string,
             name             = t_string,
-            virtualized      = t_boolean,
+            virtualized      = t_boolean, -- not in lmtx
             hasitalics       = t_boolean,
             autoitalicamount = t_float,
             nostackmath      = t_boolean,

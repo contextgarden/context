@@ -9,12 +9,6 @@ if not modules then modules = { } end modules ['font-ogr'] = {
 -- Here we deal with graphic variants and for now also color support ends up here
 -- but that might change. It's lmtx only code.
 
-if not context then
-    return
-elseif CONTEXTLMTXMODE == 0 then
-    return
-end
-
 local tostring, tonumber, next, type = tostring, tonumber, next, type
 local round, max, mod, div = math.round, math.max, math.mod, math.div
 local find = string.find
@@ -72,7 +66,6 @@ do
         d_tfmdata.descriptions   = d_descriptions
         d_tfmdata.parentdata     = t_tfmdata -- so we can access it if needed
         d_properties.instance    = - droppedin -- will become an extra element in the hash
-        t_properties.virtualized = true
         identifiers[droppedin]   = d_tfmdata
         local fonts              = t_tfmdata.fonts or { }
         t_tfmdata.fonts          = fonts
@@ -358,18 +351,23 @@ end
 
 -- This is also somewhat specific.
 
-local sharedpalettes do
+local color_direct   = function() return false end
+local color_indirect = color_direct
 
-    sharedpalettes = { }
+updaters.register("backend.update",function()
+    color_direct   = lpdf.fonts.color_direct
+    color_indirect = lpdf.fonts.color_indirect
+end)
 
-    local colors          = attributes.list[attributes.private('color')] or { }
-    local transparencies  = attributes.list[attributes.private('transparency')] or { }
+local sharedpalettes = { }  do
+
+    local register       = attributes.colors.register
+
+    local colors         = attributes.list[attributes.private('color')] or { }
+    local transparencies = attributes.list[attributes.private('transparency')] or { }
 
     function otf.registerpalette(name,values)
         sharedpalettes[name] = values
-        local color          = lpdf.color
-        local transparency   = lpdf.transparency
-        local register       = colors.register
         for i=1,#values do
             local v = values[i]
             if v == "textcolor" then
@@ -387,13 +385,7 @@ local sharedpalettes do
                     c = colors[v]
                     t = transparencies[v]
                 end
-                if c and t then
-                    values[i] = color(1,c) .. " " .. transparency(t)
-                elseif c then
-                    values[i] = color(1,c)
-                elseif t then
-                    values[i] = color(1,t)
-                end
+                values[i] = color_indirect(c,t)
             end
         end
     end
@@ -402,29 +394,11 @@ end
 
 local initializeoverlay  do
 
-    -- we should use the proper interface instead but for now:
-
-    local colors    = attributes.colors
-    local rgbtocmyk = colors.rgbtocmyk
-
-    local f_cmyk = formatters["%.3N %.3f %.3N %.3N k"]
-    local f_rgb  = formatters["%.3N %.3f %.3N rg"]
-    local f_gray = formatters["%.3N g"]
-
-    local function convert(t,k)
+    local function autoconvert(t,k)
         local v = { }
-        local m = colors.model
         for i=1,#k do
             local p = k[i]
-            local r, g, b = p[1]/255, p[2]/255, p[3]/255
-            if r == g and g == b then
-                p = f_gray(r)
-            elseif m == "cmyk" then
-                p = f_cmyk(rgbtocmyk(r,g,b))
-            else
-                p = f_rgb(r,g,b)
-            end
-            v[i] = p
+            v[i] = color_direct(p[1]/255, p[2]/255, p[3]/255)
         end
         t[k] = v
         return v
@@ -438,7 +412,7 @@ local initializeoverlay  do
                 --
                 local converted = resources.converted
                 if not converted then
-                    converted = setmetatableindex(convert)
+                    converted = setmetatableindex(autoconvert)
                     resources.converted = converted
                 end
                 local colorvalues = sharedpalettes[value]

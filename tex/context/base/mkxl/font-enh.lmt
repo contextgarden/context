@@ -1,0 +1,90 @@
+if not modules then modules = { } end modules ['font-enh'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This module is already stripped from old stuff but more might go away
+-- in lmtx. Stay tuned.
+
+local next = next
+
+local trace_unicoding    = false
+
+trackers.register("fonts.defining",  function(v) trace_unicoding = v end)
+trackers.register("fonts.unicoding", function(v) trace_unicoding = v end)
+
+local report_unicoding   = logs.reporter("fonts","unicoding")
+
+local fonts              = fonts
+local constructors       = fonts.constructors
+
+local afmfeatures        = constructors.features.afm
+local otffeatures        = constructors.features.otf
+
+local registerafmfeature = afmfeatures.register
+local registerotffeature = otffeatures.register
+
+local function initialize(tfmdata)
+    local goodies   = tfmdata.goodies
+    local newcoding = nil
+    for i=1,#goodies do
+        local remapping = goodies[i].remapping
+        if remapping and remapping.unicodes then
+            newcoding = remapping.unicodes  -- names to unicodes
+        end
+    end
+    if newcoding then
+        local characters   = tfmdata.characters
+        local descriptions = tfmdata.descriptions
+        local oldcoding    = tfmdata.resources.unicodes
+        local originals    = { }
+        for name, newcode in next, newcoding do
+            local oldcode = oldcoding[name]
+            if characters[newcode] and not originals[newcode] then
+                originals[newcode] = {
+                    character   = characters  [newcode],
+                    description = descriptions[newcode],
+                }
+            end
+            if oldcode then
+                local original = originals[oldcode]
+                local character, description
+                if original then
+                    character   = original.character
+                    description = original.description
+                else
+                    character   = characters  [oldcode]
+                    description = descriptions[oldcode]
+                end
+                characters  [newcode] = character
+                descriptions[newcode] = description
+                character  .unicode = newcode
+                description.unicode = newcode
+            else
+                oldcoding[name] = newcode
+            end
+            if trace_unicoding then
+                if oldcode then
+                    report_unicoding("aliasing glyph %a from %U to %U",name,oldcode,newcode)
+                else
+                    report_unicoding("aliasing glyph %a to %U",name,newcode)
+                end
+            end
+        end
+    end
+end
+
+local specification = {
+    name        = "unicoding",
+    description = "adapt unicode table",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)

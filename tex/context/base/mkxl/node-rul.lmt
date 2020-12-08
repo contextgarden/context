@@ -51,9 +51,6 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
-
------ getfield           = nuts.getfield
------ getdata            = nuts.getdata
 local getruledata        = nuts.getruledata
 
 local isglyph            = nuts.isglyph

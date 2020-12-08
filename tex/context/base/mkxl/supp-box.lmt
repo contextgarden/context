@@ -39,7 +39,6 @@ local nuts          = nodes.nuts
 local tonut         = nuts.tonut
 local tonode        = nuts.tonode
 
------ getfield      = nuts.getfield
 local getnext       = nuts.getnext
 local getprev       = nuts.getprev
 local getboth       = nuts.getboth
@@ -56,7 +55,6 @@ local getdepth      = nuts.getdepth
 local getwhd        = nuts.getwhd
 local takebox       = nuts.takebox
 
------ setfield      = nuts.setfield
 local setlink       = nuts.setlink
 local setboth       = nuts.setboth
 local setnext       = nuts.setnext
@@ -152,19 +150,6 @@ implement {
         end
     end
 }
-
--- local function hyphenatedhack(head,pre)
---     pre = tonut(pre)
---     for n in nextdisc, tonut(head) do
---         local hyphen = getfield(n,"pre")
---         if hyphen then
---             flush_list(hyphen)
---         end
---         setfield(n,"pre",copy_list(pre))
---     end
--- end
---
--- commands.hyphenatedhack = hyphenatedhack
 
 local function checkedlist(list)
     if type(list) == "number" then

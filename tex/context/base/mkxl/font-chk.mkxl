@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Font Macros / Checking}
 
-\registerctxluafile{font-chk}{}
+\registerctxluafile{font-chk}{autosuffix}
 
 \tracinglostchars\zerocount
 

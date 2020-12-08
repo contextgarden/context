@@ -17,9 +17,10 @@
 
 \registerctxluafile{font-ini}{}
 \registerctxluafile{font-log}{}
-\registerctxluafile{font-con}{}
-\registerctxluafile{font-cft}{}
+\registerctxluafile{font-con}{autosuffix}
+%registerctxluafile{font-cft}{}
 \registerctxluafile{font-enc}{}
+\registerctxluafile{font-fmp}{autosuffix}
 \registerctxluafile{font-agl}{}         % if needed we can comment this and delay loading
 \registerctxluafile{font-cid}{}         % cid maps
 \registerctxluafile{font-map}{optimize}
@@ -81,15 +82,15 @@
 \registerctxluafile{font-lua}{}
 
 \registerctxluafile{font-vir}{}
-\registerctxluafile{font-enh}{}
+\registerctxluafile{font-enh}{autosuffix}
 
 \registerctxluafile{good-ini}{}
 \registerctxluafile{good-gen}{}
 \registerctxluafile{good-ctx}{}
 \registerctxluafile{good-mth}{}
 
-\registerctxluafile{font-def}{}
-\registerctxluafile{font-ctx}{} % after def as it overloads
+\registerctxluafile{font-def}{autosuffix}
+\registerctxluafile{font-ctx}{autosuffix} % after def as it overloads
 
 % extensions, order matters
 
@@ -116,7 +117,7 @@
 
 \registerctxluafile{font-imp-tracing}{} % comes last!
 
-\registerctxluafile{font-fbk}{}
+\registerctxluafile{font-fbk}{autosuffix}
 
 \registerctxluafile{font-aux}{}
 
@@ -150,23 +151,5 @@
 \permanent          \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
 \permanent          \def\cleanfontname          #1{\clf_cleanfontname{#1}}
 \permanent\protected\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
-
-% this is an ugly hack needed for postponed inclusion stuff ... don't try
-% to understand this ... these are kind of old mkiv solutions
-
-\permanent\protected\def\typethreefont#1{\setfontid#1\relax}
-\permanent\protected\def\typethreechar#1{\char#1\hskip-\fontcharwd\font#1\relax}
-\permanent\protected\def\typethreelast#1{\char#1\relax}
-\permanent\protected\def\typethreecode#1{\pdfliteral direct {#1}}
-
-% This might change ...
-
-\newtoks    \typethreetoks         % used at the lua end
-\mutable\let\typethreemacro\empty  % used at the lua end
-
-\typethreetoks {%
-    \setbox\zerocount\hpack{\typethreemacro}%
-    \setbox\zerocount\hpack{\raise\dp\zerocount\box\zerocount}%
-}
 
 \protect \endinput

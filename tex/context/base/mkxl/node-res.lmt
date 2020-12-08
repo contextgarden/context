@@ -578,28 +578,6 @@ end)
 
 lua.registerfinalizer(cleanup, "cleanup reserved nodes")
 
--- experiment
-
-do
-
-    local glyph       = tonode(glyph)
-    local traverse_id = nodes.traverse_id
-
-    local traversers  = table.setmetatableindex(function(t,k)
-        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
-        t[k] = v
-        return v
-    end)
-
-                                  traversers.node    = nodes.traverse        (glyph)
-                                  traversers.char    = nodes.traverse_char   (glyph)
-    if nuts.traverse_glyph   then traversers.glyph   = nodes.traverse_glyph  (glyph) end
-    if nuts.traverse_list    then traversers.list    = nodes.traverse_list   (glyph) end
-
-    nodes.traversers = traversers
-
-end
-
 do
 
     local glyph       = glyph
@@ -611,11 +589,13 @@ do
         return v
     end)
 
-                                  traversers.node    = nuts.traverse        (glyph)
-                                  traversers.char    = nuts.traverse_char   (glyph)
-    if nuts.traverse_glyph   then traversers.glyph   = nuts.traverse_glyph  (glyph) end
-    if nuts.traverse_list    then traversers.list    = nuts.traverse_list   (glyph) end
-    if nuts.traverse_content then traversers.content = nuts.traverse_content(glyph) end
+    -- these are special:
+
+    traversers.node    = nuts.traverse        (glyph)
+    traversers.char    = nuts.traverse_char   (glyph)
+    traversers.glyph   = nuts.traverse_glyph  (glyph)
+    traversers.list    = nuts.traverse_list   (glyph)
+    traversers.content = nuts.traverse_content(glyph)
 
     nuts.traversers = traversers
 

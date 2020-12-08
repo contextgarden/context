@@ -68,7 +68,7 @@ function lua.registercode(filename,options)
             end
         end
         if barename == filename then
-            filename = filename .. (opts.autosuffix and CONTEXTLMTXMODE > 0 and ".lmt" or ".lua")
+            filename = filename .. ".lua"
         end
         local code = environment.luafilechunk(filename,false,opts.optimize)
         if code then

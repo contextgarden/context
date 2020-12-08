@@ -19,7 +19,7 @@
 
 \registerctxluafile{node-cmp}{autosuffix}
 \registerctxluafile{node-ini}{autosuffix}
-\registerctxluafile{node-met}{}
+\registerctxluafile{node-met}{autosuffix}
 \registerctxluafile{node-nut}{autosuffix}
 \registerctxluafile{node-res}{autosuffix}
 %registerctxluafile{node-ppt}{} % experimental, not used so probably useless
@@ -34,7 +34,7 @@
 \registerctxluafile{node-pro}{}
 \registerctxluafile{node-ser}{autosuffix}
 \registerctxluafile{node-ext}{}
-\registerctxluafile{node-acc}{} % experimental
+\registerctxluafile{node-acc}{autosuffix} % experimental
 %registerctxluafile{node-prp}{} % makes no sense (yet)
 \registerctxluafile{node-scn}{autosuffix}
 \registerctxluafile{node-syn}{}

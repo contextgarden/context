@@ -22,7 +22,7 @@
 %D replaced as otherwise normal attributes make more sense. Using this otherwise
 %D is weird but one never knows what users come up with.
 
-\registerctxluafile{typo-ovl}{}
+\registerctxluafile{typo-ovl}{autosuffix}
 
 \definesystemattribute[overloads][public,global]
 

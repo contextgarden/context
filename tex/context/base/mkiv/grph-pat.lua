@@ -38,7 +38,7 @@ interfaces.implement {
             return
         end
         nodes.handlers.finalizebox(number)
-        names[name] = lpdf.registerpattern {
+        names[name] = backends.codeinjections.registerpattern {
             number  = number,
             width   = specification.width  or  box.width,
             height  = specification.height or (box.height + box.depth) ,

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-acc'] = {
     license   = "see context related readme files"
 }
 
+-- see mkiv lua module for some experimental unused code
+
 local nodes, node = nodes, node
 
 local tasks              = nodes.tasks
@@ -31,15 +33,13 @@ local setwidth           = nuts.setwidth
 local nextglyph          = nuts.traversers.glyph
 local nextnode           = nuts.traversers.node
 
------ copy_node          = nuts.copy
+local copy_node          = nuts.copy
 local insert_after       = nuts.insert_after
-local copy_no_components = nuts.copy_no_components
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 
 local glue_code          = nodecodes.glue
------ kern_code          = nodecodes.kern
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
@@ -61,6 +61,9 @@ local trace = false   trackers.register("backend.spaces", function(v) trace = v 
 local slot  = nil
 
 local function injectspaces(head)
+    -- This can become two fast loops or we just move this to the backend where we can
+    -- also check for spaces (it actually is rather old code that relates to tagging
+    -- and so, which was implemented rather early in the mkiv saga).
     local p, p_id
     local n = head
     while n do
@@ -69,14 +72,11 @@ local function injectspaces(head)
             if p and getid(p) == glyph_code then
                 local s = getsubtype(n)
                 if s == spaceskip_code or s == xspaceskip_code then
-                    -- unless we don't care about the little bit of overhead
-                    -- we can just: local g = copy_node(g)
-                    local g = copy_no_components(p)
+                    local g = copy_node(p)
                     local a = getattr(n,a_characters)
                     setchar(g,slot)
                     setlink(p,g,n)
                     setwidth(n,getwidth(n) - getwidth(g))
-                 -- setsubtype(n,userskip_code)
                     if a then
                         setattr(g,a_characters,a)
                     end
@@ -110,66 +110,3 @@ statistics.register("inserted spaces in output",function()
         return nofreplaced
     end
 end)
-
--- todo:
-
--- local a_hyphenated = attributes.private('hyphenated')
---
--- local hyphenated, codes = { }, { }
---
--- local function compact(n)
---     local t = { }
---     for n in nextglyph, n do
---         t[#t+1] = utfchar(getchar(n)) -- check for unicode
---     end
---     return concat(t,"")
--- end
---
--- local function injectspans(head)
---     local done = false
---     for n, id in nextnode, tonuts(head) do
---         if id == disc then
---             local pre, post, replace = getdisc(n)
---             if replace and pre then
---                 local str = compact(replace)
---                 local hsh = hyphenated[str]
---                 if not hsh then
---                     hsh = #codes + 1
---                     hyphenated[str] = hsh
---                     codes[hsh] = str
---                 end
---                 setattr(n,a_hyphenated,hsh)
---                 done = true
---             end
---         elseif id == hlist_code or id == vlist_code then
---             injectspans(getlist(n))
---         end
---     end
---     return tonodes(head), done
--- end
---
--- nodes.injectspans = injectspans
---
--- tasks.appendaction("processors", "words", "nodes.injectspans")
---
--- local pageliteral = nuts.pool.pageliteral
---
--- local function injectspans(head)
---     local done = false
---     for n, id in nextnode, tonut(head) do
---         if id == disc then
---             local a = getattr(n,a_hyphenated)
---             if a then
---                 local str = codes[a]
---                 local b = pageliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
---                 local e = pageliteral("EMC")
---                 insert_before(head,n,b)
---                 insert_after(head,n,e)
---                 done = true
---             end
---         elseif id == hlist_code or id == vlist_code then
---             injectspans(getlist(n))
---         end
---     end
---     return tonodes(head), done
--- end

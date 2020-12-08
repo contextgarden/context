@@ -55,7 +55,6 @@ local nodepool             = nuts.pool
 local tonode               = nuts.tonode
 local tonut                = nuts.tonut
 
-local getfield             = nuts.getfield
 local setlink              = nuts.setlink
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev

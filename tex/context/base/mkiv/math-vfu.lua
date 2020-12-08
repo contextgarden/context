@@ -837,7 +837,6 @@ function vfmath.define(specification,set,goodies)
         setmetatableindex(goodies,parent.goodies)
     end
     --
-    properties.virtualized = true
     properties.hasitalics  = true
     properties.hasmath     = true
     --
@@ -850,8 +849,12 @@ function vfmath.define(specification,set,goodies)
     -- we need to set some values in main as well (still?)
     --
     main.fullname      = properties.fullname
-    main.type          = "virtual"
     main.nomath        = false
+    --
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+    properties.virtualized = true
+    main.type              = "virtual"
+end
     --
     parameters.x_height = parameters.x_height or 0
     --

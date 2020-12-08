@@ -6,10 +6,11 @@ if not modules then modules = { } end modules ['font-chk'] = {
     license   = "see context related readme files"
 }
 
--- possible optimization: delayed initialization of vectors
--- move to the nodes namespace
-
--- This is old code and I'll make a nicer one for lmtx some day.
+-- This is kind of old but it makes no real sense to upgrade it to for instance
+-- using delayed type 3 fonts in order to be lean and mean and cut'n'paste
+-- compliant. When this kicks one needs to fix the choice of fonts anyway! So,
+-- instead we just keep the method we use but slightly adapted to the backend
+-- of lmtx.
 
 local next = next
 local floor = math.floor
@@ -77,9 +78,6 @@ local nextglyph            = nuts.traversers.glyph
 local remove_node          = nuts.remove
 local insert_node_after    = nuts.insert_after
 
--- maybe in fonts namespace
--- deletion can be option
-
 local action = false
 
 -- to tfmdata.properties ?
@@ -115,148 +113,104 @@ end
 
 fonts.loggers.onetimemessage = onetimemessage
 
-local mapping = allocate { -- this is just an experiment to illustrate some principles elsewhere
-    lu = "placeholder uppercase red",
-    ll = "placeholder lowercase red",
-    lt = "placeholder uppercase red",
-    lm = "placeholder lowercase red",
-    lo = "placeholder lowercase red",
-    mn = "placeholder mark green",
-    mc = "placeholder mark green",
-    me = "placeholder mark green",
-    nd = "placeholder lowercase blue",
-    nl = "placeholder lowercase blue",
-    no = "placeholder lowercase blue",
-    pc = "placeholder punctuation cyan",
-    pd = "placeholder punctuation cyan",
-    ps = "placeholder punctuation cyan",
-    pe = "placeholder punctuation cyan",
-    pi = "placeholder punctuation cyan",
-    pf = "placeholder punctuation cyan",
-    po = "placeholder punctuation cyan",
-    sm = "placeholder lowercase magenta",
-    sc = "placeholder lowercase yellow",
-    sk = "placeholder lowercase yellow",
-    so = "placeholder lowercase yellow",
+local fakes = {
+    lowercase   = { width  = .45, height = .55, depth  =  .20 },
+    uppercase   = { width  = .65, height = .70, depth  =  .25 },
+    mark        = { width  = .15, height = .70, depth  = -.50 },
+    punctuation = { width  = .15, height = .55, depth  =  .20 },
+    unknown     = { width  = .45, height = .20, depth  = 0    },
 }
 
-table.setmetatableindex(mapping,
-    function(t,k)
-        local v = "placeholder unknown gray"
-        t[k] = v
-        return v
+local mapping = allocate {
+    lu = { "uppercase",    "darkred"     },
+    ll = { "lowercase",    "darkred"     },
+    lt = { "uppercase",    "darkred"     },
+    lm = { "lowercase",    "darkred"     },
+    lo = { "lowercase",    "darkred"     },
+    mn = { "mark",         "darkgreen"   },
+    mc = { "mark",         "darkgreen"   },
+    me = { "mark",         "darkgreen"   },
+    nd = { "lowercase",    "darkblue"    },
+    nl = { "lowercase",    "darkblue"    },
+    no = { "lowercase",    "darkblue"    },
+    pc = { "punctuation",  "darkcyan"    },
+    pd = { "punctuation",  "darkcyan"    },
+    ps = { "punctuation",  "darkcyan"    },
+    pe = { "punctuation",  "darkcyan"    },
+    pi = { "punctuation",  "darkcyan"    },
+    pf = { "punctuation",  "darkcyan"    },
+    po = { "punctuation",  "darkcyan"    },
+    sm = { "lowercase",    "darkmagenta" },
+    sc = { "lowercase",    "darkyellow"  },
+    sk = { "lowercase",    "darkyellow"  },
+    so = { "lowercase",    "darkyellow"  },
+}
+
+table.setmetatableindex(mapping, { "unknown", "darkgray" })
+
+-- We provide access by (private) name for tracing purposes. We also need
+-- to make sure the dimensions are known at the lua and tex end.
+
+local cache = { }
+
+local function add(tfmdata,name,color,size,collected)
+    local hash     = formatters["%s_%s_%i"](name,color,floor(size))
+    local chardata = cache[hash]
+    if not chardata then
+        local fake   = fakes[name]
+        local width  = size * fake.width
+        local height = size * fake.height
+        local depth  = size * fake.depth
+        chardata = {
+            width    = width,
+            height   = height,
+            depth    = depth,
+            commands = {
+                { "frame", width, height, depth, 65536/5, false, true, true, color },
+            }
+        }
+        cache[hash] = chardata
     end
-)
-
-local fakes = allocate {
-    {
-        name   = "lowercase",
-        code   = ".025 -.175 m .425 -.175 l .425 .525 l .025 .525 l .025 -.175 l .025 0 l .425 0 l .025 -.175 m h S",
-        width  = .45,
-        height = .55,
-        depth  = .20,
-    },
-    {
-        name   = "uppercase",
-        code   = ".025 -.225 m .625 -.225 l .625 .675 l .025 .675 l .025 -.225 l .025 0 l .625 0 l .025 -.225 m h S",
-        width  = .65,
-        height = .70,
-        depth  = .25,
-    },
-    {
-        name   = "mark",
-        code   = ".025  .475 m .125  .475 l .125 .675 l .025 .675 l .025  .475 l h B",
-        width  = .15,
-        height = .70,
-        depth  = -.50,
-    },
-    {
-        name   = "punctuation",
-        code   = ".025 -.175 m .125 -.175 l .125 .525 l .025 .525 l .025 -.175 l h B",
-        width  = .15,
-        height = .55,
-        depth  = .20,
-    },
-    {
-        name   = "unknown",
-        code   = ".025 0 m .425 0 l .425 .175 l .025 .175 l .025 0 l h B",
-        width  = .45,
-        height = .20,
-        depth  = 0,
-    },
-}
-
-local variants = allocate {
-    { tag = "gray",    r = .6, g = .6, b = .6 },
-    { tag = "red",     r = .6, g =  0, b =  0 },
-    { tag = "green",   r =  0, g = .6, b =  0 },
-    { tag = "blue",    r =  0, g =  0, b = .6 },
-    { tag = "cyan",    r =  0, g = .6, b = .6 },
-    { tag = "magenta", r = .6, g =  0, b = .6 },
-    { tag = "yellow",  r = .6, g = .6, b =  0 },
-}
-
--- bah .. low level pdf ... should be a rule or plugged in
-
------ pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
-local pdf_blob = "q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
-
-local cache = { } -- saves some tables but not that impressive
-
-local function missingtonode(tfmdata,character)
-    local commands = character.commands
-    local fake  = hpack_node(new_special(commands[1][2])) -- todo: literal
-    fake.width  = character.width
-    fake.height = character.height
-    fake.depth  = character.depth
-    return fake
+    if not hasprivate(tfmdata,privatename) then
+        local privatename = formatters["placeholder %s %s"](name,color)
+        local privatecode = addprivate(tfmdata, privatename, chardata)
+        collected[privatecode] = chardata
+    end
+    return chardata
 end
 
-local function addmissingsymbols(tfmdata) -- we can have an alternative with rules
+local function addplaceholder(font,char)
+    local tfmdata    = fontdata[font or true]
     local characters = tfmdata.characters
+    local size       = tfmdata.parameters.size
+    local scale      = size * bpfactor
+    local collected  = { }
+    local category   = chardata[char].category or "unknown"
+    local fakedata   = mapping[category]
+    local chardata   = add(tfmdata,fakedata[1],fakedata[2],size,collected)
+    collected [char] = chardata
+    characters[char] = chardata
+    addcharacters(font, { characters = collected })
+    return "char", char -- needed for math-noa
+end
+
+-- For old times sake we keep this: a whole bunch of fake symbols
+
+local function addplaceholders(tfmdata)
     local properties = tfmdata.properties
     local size       = tfmdata.parameters.size
     local scale      = size * bpfactor
-    local tonode     = nil
     local collected  = { }
-    if properties.finalized and not addcharacters then
-        tonode = missingtonode
-    end
-    for i=1,#variants do
-        local v = variants[i]
-        local tag, r, g, b = v.tag, v.r, v.g, v.b
-        for i =1, #fakes do
-            local fake = fakes[i]
-            local name = fake.name
-            local privatename = formatters["placeholder %s %s"](name,tag)
-            if not hasprivate(tfmdata,privatename) then
-                local hash = formatters["%s_%s_%1.3f_%1.3f_%1.3f_%i"](name,tag,r,g,b,floor(size))
-                local char = cache[hash]
-                if not char then
-                    char = {
-                        tonode   = tonode,
-                        width    = size*fake.width,
-                        height   = size*fake.height,
-                        depth    = size*fake.depth,
-                     -- commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
-                        commands = { { "pdf", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
-                    }
-                    cache[hash] = char
-                end
-                local u = addprivate(tfmdata, privatename, char)
-                if not tonode then
-                    collected[u] = char
-                end
-            end
+    local colors     = { "darkred", "darkgreen", "darkblue", "darkcyan", "darkmagenta", "darkyellow", "darkgray" }
+    for name, v in sortedhash(fakes) do
+        for i=1,#colors do
+            add(tfmdata,name,colors[i],size,collected)
         end
     end
     if next(collected) then
         local id = properties.id
         if id then
-            addcharacters(properties.id, {
-                type       = "real",
-                characters = collected,
-            })
+            addcharacters(id, { characters = collected })
         end
     end
 end
@@ -265,75 +219,62 @@ registerotffeature {
     name        = "missing",
     description = "missing symbols",
     manipulators = {
-        base = addmissingsymbols,
-        node = addmissingsymbols,
+        base = addplaceholders,
+        node = addplaceholders,
     }
 }
 
-fonts.loggers.add_placeholders        = function(id) addmissingsymbols(fontdata[id or true]) end
-fonts.loggers.category_to_placeholder = mapping
+-- fonts.loggers.add_placeholders        = function(id) addplaceholders(fontdata[id or true]) end
+-- fonts.loggers.category_to_placeholder = mapping
 
--- todo in luatex: option to add characters (just slots, no kerns etc)
--- we can do that now so ...
-
-local function placeholder(font,char)
-    local tfmdata  = fontdata[font]
-    local category = chardata[char].category or "unknown"
-    local fakechar = mapping[category]
-    local slot     = getprivateslot(font,fakechar)
-    if not slot then
-        addmissingsymbols(tfmdata)
-        slot = getprivateslot(font,fakechar)
-    end
-    return getprivatecharornode(tfmdata,fakechar)
-end
-
-checkers.placeholder = placeholder
+checkers.placeholder = addplaceholder
 
 function checkers.missing(head)
-    local lastfont, characters, found = nil, nil, nil
-    for n, char, font in nextglyph, head do -- faster than while loop so we delay removal
-        if font ~= lastfont then
-            characters = fontcharacters[font]
-            lastfont   = font
-        end
-        if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
-            if action == "remove" then
-                onetimemessage(font,char,"missing (will be deleted)")
-            elseif action == "replace" then
+    local lastfont   = nil
+    local characters = nil
+    if action == "replace" then
+        for n, char, font in nextglyph, head do
+            if font ~= lastfont then
+                lastfont   = font
+                characters = fontcharacters[font]
+            end
+            if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
                 onetimemessage(font,char,"missing (will be flagged)")
-            else
-                onetimemessage(font,char,"missing")
-            end
-            if not found then
-                found = { n }
-            else
-                found[#found+1] = n
+                addplaceholder(font,char)
             end
         end
-    end
-    if not found then
-        -- all well
     elseif action == "remove" then
-        for i=1,#found do
-            head = remove_node(head,found[i],true)
+        -- faster than while loop so we delay removal
+        local found = nil
+        for n, char, font in nextglyph, head do
+            if font ~= lastfont then
+                lastfont   = font
+                characters = fontcharacters[font]
+            end
+            if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
+                onetimemessage(font,char,"missing (will be deleted)")
+                if not found then
+                    found = { n }
+                else
+                    found[#found+1] = n
+                end
+            end
         end
-    elseif action == "replace" then
-        for i=1,#found do
-            local node = found[i]
-            local char, font = isglyph(node)
-            local kind, char = placeholder(font,char)
-            if kind == "node" then
-                insert_node_after(head,node,tonut(char))
-                head = remove_node(head,node,true)
-            elseif kind == "char" then
-                setchar(node,char)
-            else
-                -- error
+        if found then
+            for i=1,#found do
+                head = remove_node(head,found[i],true)
             end
         end
     else
-        -- maye write a report to the log
+        for n, char, font in nextglyph, head do
+            if font ~= lastfont then
+                lastfont   = font
+                characters = fontcharacters[font]
+            end
+            if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
+                onetimemessage(font,char,"missing")
+            end
+        end
     end
     return head
 end

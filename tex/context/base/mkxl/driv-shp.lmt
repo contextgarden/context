@@ -184,6 +184,14 @@ local tospace = false  directives.register("backends.spaces", function(v) tospac
 
 local default = 16384 * number.dimenfactors.bp -- 65536 // 4
 
+local startcolor = function() end
+local stopcolor  = function() end
+
+updaters.register("backend.update",function()
+    startcolor = fonts.vfcommands.startcolor
+    stopcolor  = fonts.vfcommands.stopcolor
+end)
+
 local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommands)
 
     if nesting > 100 then
@@ -293,6 +301,7 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 level = level - 1
             end
         elseif command == "pdf" then
+            -- this will disappear and become a plug
             flushliteral(false,pos_h,pos_v,packet[2],packet[3])
         elseif command == "rule" then
             local size_v = packet[2]
@@ -307,6 +316,7 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 end
             end
         elseif command == "frame" then
+            -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
             local width = packet[2]
             if width > 0 then
                 local height = packet[3] or 0
@@ -317,10 +327,18 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                         width = width + width * factor / 1000
                     end
                     if width > 0 then
-                        local line    = packet[5] or default
-                        local outline = not packet[6]
-                        local advance = not packet[7]
-                        flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline)
+                        local line     = packet[5] or default
+                        local outline  = not packet[6]
+                        local advance  = not packet[7]
+                        local baseline = outline and packet[8]
+                        local color    = packet[9]
+                        if color then
+                            startcolor(color)
+                        end
+                        flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
+                        if color then
+                            stopcolor()
+                        end
                         if advance then
                             pos_h = pos_h + width
                         end
@@ -335,22 +353,24 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
             end
         elseif command == "lua" then
             local code = packet[2]
-            if type(code) ~= "function" then
+            local kind = type(code)
+            if kind ~= "function" then
                 code = loadstring(code)
+                kind = type(code)
             end
-            if type(code) == "function" then
+            if kind == "function" then
                 code(font,char,pos_h,pos_v)
             end
         elseif command == "node" then
             local h = packet[2]
             hlist_out(h,getlist(h))
-        elseif command == "image" then
-            -- doesn't work because intercepted by engine so we use a different
-            -- mechanism (for now)
-            local image = packet[2]
-            -- to do
-        elseif command == "pdfmode" then
-            -- doesn't happen
+     -- elseif command == "image" then
+     --     -- doesn't work because intercepted by engine so we use a different
+     --     -- mechanism (for now)
+     --     local image = packet[2]
+     --     -- to do
+     -- elseif command == "pdfmode" then
+     --     -- doesn't happen
      -- elseif command == "special" then
      --     -- not supported
      -- elseif command == "nop" then

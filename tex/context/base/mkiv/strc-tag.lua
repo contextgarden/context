@@ -266,8 +266,8 @@ end
 function structures.atlocation(str)
     local specification = taglist[texgetattribute(a_tagged)]
     if specification then
+        local list = specification.taglist
         if list then
-            local taglist = specification.taglist
             local pattern = patterns[str]
             for i=#list,1,-1 do
                 if find(list[i],pattern) then

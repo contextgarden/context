@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 --
 -- Todo: make a proper 'next id' mechanism (register etc) or wait till 'true'
 -- in virtual fonts indices is implemented.
+--
+-- Olders code can be found in the mkiv lua variant.
 
 local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 
@@ -137,19 +139,19 @@ storage.register("fonts/synonyms", synonyms, "fonts.specifiers.synonyms")
 
 -- inspect(setups)
 
-if environment.initex then
-    setmetatableindex(setups,function(t,k)
+setmetatableindex(setups, environment.initex and
+    function(t,k)
         return type(k) == "number" and rawget(t,numbers[k]) or nil
-    end)
-else
-    setmetatableindex(setups,function(t,k)
+    end
+or
+    function(t,k)
         local v = type(k) == "number" and rawget(t,numbers[k])
         if v then
             t[k] = v
             return v
         end
-    end)
-end
+    end
+)
 
 -- this will move elsewhere ...
 
@@ -172,7 +174,6 @@ constructors.nofsharedfonts    = 0
 constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
-constructors.autocleanup       = true
 
 -- we can get rid of the tfm instance when we have fast access to the
 -- scaled character dimensions at the tex end, e.g. a fontobject.width
@@ -184,21 +185,12 @@ constructors.autocleanup       = true
 
 -- font.getcopy = font.getfont -- we always want the table that context uses
 
-function constructors.cleanuptable(tfmdata)
-    if constructors.autocleanup and tfmdata.properties.virtualized then
-        for k, v in next, tfmdata.characters do
-            if v.commands then v.commands = nil end
-        --  if v.kerns    then v.kerns    = nil end
-        end
-    end
-end
-
 do
 
-    local shares = { }
-    local hashes = { }
+    -- Does this still make sense?
 
-
+    local shares       = { }
+    local hashes       = { }
     local nofinstances = 0
     local instances    = setmetatableindex(function(t,k)
         nofinstances = nofinstances + 1
@@ -284,7 +276,7 @@ do
                             report_defining("font %a uses backend resources of font %a (%s)",fullname,sharedname,"common vector")
                         end
                         fullname = sharedname
-                        properties.sharedwith= sharedname
+                        properties.sharedwith = sharedname
                         constructors.nofsharedfonts = constructors.nofsharedfonts + 1
                         constructors.nofsharedvectors = constructors.nofsharedvectors + 1
                     else
@@ -334,7 +326,7 @@ implement {
     permanent = false,
     actions   = function()
         for i=1,7 do
-            context([[\fontdimen%s\nullfont\zeropoint]],i)
+            font.setfontdimen(0,i,0)
         end
         definers.resetnullfont()
     end
@@ -447,6 +439,9 @@ end
 definers.checkedscript = checkedscript
 definers.checkedmode   = checkedmode
 
+-- We only set the checker and leave other settings of the mode feature as
+-- they are.
+
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if trace_features then
         report_features("fontname %!font:name!, features %!font:features!",tfmdata,features)
@@ -468,31 +463,13 @@ local function modechecker(tfmdata,features,mode) -- we cannot adapt features as
 end
 
 registerotffeature {
-    -- we only set the checker and leave other settings of the mode
-    -- feature as they are
     name        = "mode",
     modechecker = modechecker,
 }
 
--- -- default = true anyway
---
--- local normalinitializer = constructors.getfeatureaction("otf","initializers","node","analyze")
---
--- local function analyzeinitializer(tfmdata,value,features) -- attr
---     if value == "auto" and features then
---         value = features.init or features.medi or features.fina or features.isol or false
---     end
---     return normalinitializer(tfmdata,value,features)
--- end
---
--- registerotffeature {
---     name         = "analyze",
---     initializers = {
---         node = analyzeinitializer,
---     },
--- }
-
 do
+
+    -- copying will end up here too
 
     local beforecopyingcharacters = sequencers.new {
         name      = "beforecopyingcharacters",
@@ -541,13 +518,12 @@ name*context specification
 </code>
 --ldx]]--
 
--- currently fonts are scaled while constructing the font, so we
--- have to do scaling of commands in the vf at that point using e.g.
--- "local scale = g.parameters.factor or 1" after all, we need to
--- work with copies anyway and scaling needs to be done at some point;
--- however, when virtual tricks are used as feature (makes more
--- sense) we scale the commands in fonts.constructors.scale (and set the
--- factor there)
+-- Currently fonts are scaled while constructing the font, so we have to do scaling
+-- of commands in the vf at that point using e.g. "local scale = g.parameters.factor
+-- or 1" after all, we need to work with copies anyway and scaling needs to be done
+-- at some point; however, when virtual tricks are used as feature (makes more
+-- sense) we scale the commands in fonts.constructors.scale (and set the factor
+-- there).
 
 local loadfont = definers.loadfont
 
@@ -560,9 +536,7 @@ function definers.loadfont(specification,size,id) -- overloads the one in font-d
             return variant(specification,size,id)
         end
     else
-        local tfmdata = loadfont(specification,size,id)
-     -- constructors.checkvirtualid(tfmdata,id)
-        return tfmdata
+        return loadfont(specification,size,id)
     end
 end
 
@@ -706,38 +680,9 @@ local function adaptcontext(pattern,features)
     end
 end
 
--- local function contextnumber(name) -- will be replaced
---     local t = setups[name]
---     if not t then
---         return 0
---     elseif t.auto then -- check where used, autolanguage / autoscript?
---         local lng = tonumber(tex.language)
---         local tag = name .. ":" .. lng
---         local s = setups[tag]
---         if s then
---             return s.number or 0
---         else
---             local script, language = languages.association(lng)
---             if t.script ~= script or t.language ~= language then
---                 local s = fastcopy(t)
---                 local n = #numbers + 1
---                 setups[tag] = s
---                 numbers[n] = tag
---                 s.number = n
---                 s.script = script
---                 s.language = language
---                 return n
---             else
---                 setups[tag] = t
---                 return t.number or 0
---             end
---         end
---     else
---         return t.number or 0
---     end
--- end
+-- See for old code in the lua file. We now share code.
 
-local function contextnumber(name) -- will be replaced
+local function contextnumber(name)
     local t = setups[name]
     return t and t.number or 0
 end
@@ -773,7 +718,7 @@ local function mergecontext(currentnumber,extraname,option) -- number string num
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
-        return number -- contextnumber(mergedname)
+        return number
     else
         return currentnumber
     end
@@ -856,7 +801,7 @@ local function registercontext(fontnumber,extraname,option)
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
-        return number -- contextnumber(mergedname)
+        return number
     else
         return 0
     end
@@ -874,7 +819,7 @@ local function registercontextfeature(mergedname,extraname,how)
         numbers[number] = mergedname
         merged[number] = how == "=" and 1 or 2 -- 1=replace, 2=combine
         setups[mergedname] = mergedfeatures
-        return number -- contextnumber(mergedname)
+        return number
     else
         report_features("unknown feature %a cannot be merged into %a using method %a",extraname,mergedname,how)
         return 0
@@ -887,21 +832,30 @@ specifiers.mergecontext    = mergecontext
 specifiers.registercontext = registercontext
 specifiers.definecontext   = definecontext
 
--- we extend the hasher:
-
-constructors.hashmethods.virtual = function(list)
+constructors.hashmethods.normal = function(list)
     local s = { }
     local n = 0
     for k, v in next, list do
-        n = n + 1
-     -- if v == true then
-     --     s[n] = k .. '=true'
-     -- elseif v == false then
-     --     s[n] = k .. '=false'
-     -- else
-     --     s[n] = k .. "=" .. v
-     -- end
-        s[n] = k .. "=" .. tostring(v)
+        if not k then
+            -- no need to add to hash
+        elseif k == "number" or k == "features" then
+            -- no need to add to hash (maybe we need a skip list)
+        else
+            n = n + 1
+            if type(v) == "table" then
+                -- table.sequenced
+                local t = { }
+                local m = 0
+                for k, v in next, v do
+                    m = m + 1
+                    t[m] = format("%q=%q",k,v)
+                end
+                sort(t)
+                s[n] = format("%q={%s}",k,concat(t,","))
+            else
+                s[n] = format("%q=%q",k,v)
+            end
+        end
     end
     if n > 0 then
         sort(s)
@@ -909,52 +863,17 @@ constructors.hashmethods.virtual = function(list)
     end
 end
 
-if not JITSUPPORTED then
-
-    constructors.hashmethods.normal = function(list)
-        local s = { }
-        local n = 0
-        for k, v in next, list do
-            if not k then
-                -- no need to add to hash
-            elseif k == "number" or k == "features" then
-                -- no need to add to hash (maybe we need a skip list)
-            else
-                n = n + 1
-                if type(v) == "table" then
-                    -- table.sequenced
-                    local t = { }
-                    local m = 0
-                    for k, v in next, v do
-                        m = m + 1
-                        t[m] = format("%q=%q",k,v)
-                    end
-                    sort(t)
-                    s[n] = format("%q={%s}",k,concat(t,","))
-                else
-                    s[n] = format("%q=%q",k,v)
-                end
-            end
-        end
-        if n > 0 then
-            sort(s)
-            return concat(s,"+")
-        end
+constructors.hashmethods.virtual = function(list)
+    local s = { }
+    local n = 0
+    for k, v in next, list do
+        n = n + 1
+        s[n] = format("%q=%q",k,v)
     end
-
-    constructors.hashmethods.virtual = function(list)
-        local s = { }
-        local n = 0
-        for k, v in next, list do
-            n = n + 1
-            s[n] = format("%q=%q",k,v)
-        end
-        if n > 0 then
-            sort(s)
-            return concat(s,"+")
-        end
+    if n > 0 then
+        sort(s)
+        return concat(s,"+")
     end
-
 end
 
 -- end of redefine
@@ -1417,7 +1336,6 @@ tfmdata.original = specification.specification
                         properties.id = id
                         definers.register(tfmdata,id) -- to be sure, normally already done
                         texdefinefont(global,cs,id)
-                        constructors.cleanuptable(tfmdata)
                         constructors.finalize(tfmdata)
                         if trace_defining then
                             report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
@@ -1455,7 +1373,6 @@ tfmdata.original = specification.specification
                     properties.id = id
                     definers.register(tfmdata,id) -- to be sure, normally already done
                     texdefinefont(global,cs,id)
-                    constructors.cleanuptable(tfmdata)
                     constructors.finalize(tfmdata)
                     if trace_defining then
                         report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
@@ -1599,7 +1516,6 @@ tfmdata.original = specification.specification
                     texdefinefont(specification.global,cs,id)
                     csnames[id] = cs
                 end
-                constructors.cleanuptable(tfmdata)
                 constructors.finalize(tfmdata)
                 stoptiming(fonts)
                 return id, tfmdata
@@ -1647,7 +1563,11 @@ tfmdata.original = specification.specification
         return id, csnames[id]
     end
 
-    callbacks.register('define_font', definers.read, "definition of fonts (tfmdata preparation)")
+    local function read(name,size)
+        return (define { name = name, size = size } or 0)
+    end
+
+    callbacks.register('define_font', read, "definition of fonts (tfmdata preparation)")
 
     -- here
 
@@ -1671,49 +1591,29 @@ tfmdata.original = specification.specification
 
 end
 
-local enable_auto_r_scale = false
-
-experiments.register("fonts.autorscale", function(v)
-    enable_auto_r_scale = v
-end)
-
 -- Not ok, we can best use a database for this. The problem is that we
 -- have delayed definitions and so we never know what style is taken
 -- as start.
 
-local calculatescale  = constructors.calculatescale
-
 function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specification)
+    local parameters = tfmdata.parameters
+    local units      = parameters.units or 1000
     if specification then
         local scalemode = specification.scalemode
         local special   = scalemode and specialscale[scalemode]
-        if special then
-            -- we also have available specification.textsize
-            local parameters = tfmdata.parameters
-         -- local designsize = parameters.designsize
-            if     special == "ht" then
-                local height = parameters.ascender / parameters.units
-                scaledpoints = scaledpoints / height
-            elseif special == "cp" then
-                local glyph  = tfmdata.descriptions[utfbyte("X")]
-                local height = (glyph and glyph.height or parameters.ascender) / parameters.units
-                scaledpoints = scaledpoints / height
-            end
+        if special == "ht" then
+            local height = parameters.ascender / units
+            scaledpoints = scaledpoints / height
+        elseif special == "cp" then
+            local glyph  = tfmdata.descriptions[utfbyte("X")]
+            local height = (glyph and glyph.height or parameters.ascender) / units
+            scaledpoints = scaledpoints / height
         end
     end
-    local scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
- -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific (we need to hash rscale then)
- --     local relativedata = fontdata[relativeid]
- --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled -- just use metadata instead
- --     local id_x_height = rfmdata and rfmdata.parameters and rfmdata.parameters.x_height
- --     local tf_x_height = tfmdata and tfmdata.parameters and tfmdata.parameters.x_height
- --     if id_x_height and tf_x_height then
- --         local rscale = id_x_height/tf_x_height
- --         delta = rscale * delta
- --         scaledpoints = rscale * scaledpoints
- --     end
- -- end
-    return round(scaledpoints), round(delta)
+    if scaledpoints < 0 then
+        scaledpoints = (- scaledpoints/1000) * (tfmdata.designsize or parameters.designsize) -- already in sp
+    end
+    return round(scaledpoints), round(scaledpoints/units) -- delta
 end
 
 local designsizes = constructors.designsizes
@@ -1795,72 +1695,6 @@ function definers.resolve(specification) -- overload function in font-con.lua
     --
     return specification
 end
-
--- soon to be obsolete:
-
-local mappings = fonts.mappings
-
-local loaded = { -- prevent loading (happens in cont-sys files)
- -- ["original-base.map"     ] = true,
- -- ["original-ams-base.map" ] = true,
- -- ["original-ams-euler.map"] = true,
- -- ["original-public-lm.map"] = true,
-}
-
-function mappings.loadfile(name)
-    name = file.addsuffix(name,"map")
-    if not loaded[name] then
-        if trace_mapfiles then
-            report_mapfiles("loading map file %a",name)
-        end
-        lpdf.setmapfile(name) -- bah. will go in lmtx
-        loaded[name] = true
-    end
-end
-
-local loaded = { -- prevent double loading
-}
-
-function mappings.loadline(how,line)
-    if line then
-        how = how .. " " .. line
-    elseif how == "" then
-        how = "= " .. line
-    end
-    if not loaded[how] then
-        if trace_mapfiles then
-            report_mapfiles("processing map line %a",line)
-        end
-        lpdf.setmapline(how) -- bah. will go in lmtx
-        loaded[how] = true
-    end
-end
-
-function mappings.reset()
-    lpdf.setmapfile("") -- tricky ... backend related
-end
-
-function mappings.getentry(...)
-    return lpdf.getmapentry(...) -- tricky ... backend related
-end
-
-implement {
-    name      = "loadmapfile",
-    actions   = mappings.loadfile,
-    arguments = "string"
-}
-
-implement {
-    name      = "loadmapline",
-    actions   = mappings.loadline,
-    arguments = "string"
-}
-
-implement {
-    name      = "resetmapfiles",
-    actions   = mappings.reset,
-    arguments = "string"
-}
 
 -- we need an 'do after the banner hook'
 
@@ -2129,7 +1963,6 @@ function loggers.reportdefinedfonts()
             t[tn] = {
   formatters["%03i"](id                    or 0),
   formatters["%p"  ](parameters.size       or 0),
-                     properties.type       or "real",
                      properties.format     or "unknown",
                      properties.name       or "",
                      properties.psname     or "",
@@ -2987,28 +2820,7 @@ end)
 
 do
 
-    local settings_to_array    = utilities.parsers.settings_to_array
- -- local namedcolorattributes = attributes.colors.namedcolorattributes
- -- local colorvalues          = attributes.colors.values
-
- -- implement {
- --     name      = "definefontcolorpalette",
- --     arguments = "2 strings",
- --     actions   = function(name,set)
- --         set = settings_to_array(set)
- --         for i=1,#set do
- --             local name = set[i]
- --             local space, color = namedcolorattributes(name)
- --             local values = colorvalues[color]
- --             if values then
- --                 set[i] = { r = values[3], g = values[4],  b = values[5] }
- --             else
- --                 set[i] = { r = 0, g = 0, b = 0 }
- --             end
- --         end
- --         otf.registerpalette(name,set)
- --     end
- -- }
+    local settings_to_array = utilities.parsers.settings_to_array
 
     implement {
         name      = "definefontcolorpalette",
@@ -3108,58 +2920,50 @@ do
 
     trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
 
-    if addcharacters then
-
-        function fonts.constructors.addcharacters(id,list)
-            local newchar = list.characters
-            if newchar then
-                local data    = fontdata[id]
-                local newfont = list.fonts
-                local oldchar = data.characters
-                local oldfont = data.fonts
-                addcharacters(id, {
-                    characters = newchar,
-                    fonts      = newfont,
-                    nomath     = not data.properties.hasmath,
-                })
-                -- this is just for tracing, as the assignment only uses the fonts list
-                -- and doesn't store it otherwise
-                if newfont then
-                    if oldfont then
-                        local oldn = #oldfont
-                        local newn = #newfont
-                        for n=1,newn do
-                            local ok = false
-                            local nf = newfont[n]
-                            for o=1,oldn do
-                                if identical(nf,oldfont[o]) then
-                                    ok = true
-                                    break
-                                end
-                            end
-                            if not ok then
-                                oldn = oldn + 1
-                                oldfont[oldn] = newfont[i]
+    function constructors.addcharacters(id,list)
+        local newchar = list.characters
+        if newchar then
+            local data    = fontdata[id]
+            local newfont = list.fonts
+            local oldchar = data.characters
+            local oldfont = data.fonts
+            addcharacters(id, {
+                characters = newchar,
+                fonts      = newfont,
+                nomath     = not data.properties.hasmath,
+            })
+            -- this is just for tracing, as the assignment only uses the fonts list
+            -- and doesn't store it otherwise
+            if newfont then
+                if oldfont then
+                    local oldn = #oldfont
+                    local newn = #newfont
+                    for n=1,newn do
+                        local ok = false
+                        local nf = newfont[n]
+                        for o=1,oldn do
+                            if identical(nf,oldfont[o]) then
+                                ok = true
+                                break
                             end
                         end
-                    else
-                        data.fonts = newfont
+                        if not ok then
+                            oldn = oldn + 1
+                            oldfont[oldn] = newfont[i]
+                        end
                     end
-                end
-                -- this is because we need to know what goes on and also might
-                -- want to access character data
-                for u, c in next, newchar do
-                    if trace_adding then
-                        report_adding("adding character %U to font %!font:name!",u,id)
-                    end
-                    oldchar[u] = c
+                else
+                    data.fonts = newfont
                 end
             end
-        end
-
-    else
-        function fonts.constructors.addcharacters(id,list)
-            report_adding("adding characters to %!font:name! is not yet supported",id)
+            -- this is because we need to know what goes on and also might
+            -- want to access character data
+            for u, c in next, newchar do
+                if trace_adding then
+                    report_adding("adding character %U to font %!font:name!",u,id)
+                end
+                oldchar[u] = c
+            end
         end
     end
 

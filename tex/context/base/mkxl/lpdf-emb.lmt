@@ -78,6 +78,7 @@ local readstring  = utilities.files.readstring
 local openfile    = utilities.files.open
 local closefile   = utilities.files.close
 
+local getmapentry = fonts.mappings.getentry
 
 -- needs checking: signed vs unsigned
 
@@ -304,63 +305,6 @@ end
         end
         return prefix .. "+" .. name
     end
-
-end
-
--- Map file mess.
-
-local getmapentry  do
-
-    -- We only need to pick up the filename and optionally the enc file
-    -- as we only use them for old school virtual math fonts. We might as
-    -- we drop this completely.
-
-    local find, match, splitlines = string.find, string.match, string.splitlines
-
-
-    local mappings = { }
-
-    lpdf.loadmapline = function(n)
-        if trace_fonts then
-            report_fonts("mapline: %s",n)
-        end
-        local name, fullname, encfile, pfbfile = match(n,"(%S+)%s+(%S+).-<(.-%.enc).-<(.-%.pfb)")
-        if name then
-            mappings[name] = { fullname, encfile, pfbfile }
-        end
-    end
-
-    lpdf.loadmapfile = function(n)
-        local okay, data = resolvers.loadbinfile(n,"map")
-        if okay and data then
-            data = splitlines(data)
-            for i=1,#data do
-                local d = data[i]
-                if d ~= "" and not find(d,"^[#%%]") then
-                    loadmapline(d)
-                end
-            end
-        end
-    end
-
-    getmapentry = function(n)
-        local n = file.nameonly(n)
-        local m = mappings[n]
-        if m then
-            local encfile  = m[2]
-            local encoding = fonts.encodings.load(encfile)
-            if not encoding then
-                return
-            end
-            local pfbfile = resolvers.findfile(m[3],"pfb")
-            if not pfbfile or pfbfile == "" then
-                return
-            end
-            return encoding, pfbfile, encfile
-        end
-    end
-
-    lpdf.getmapentry = getmapentry
 
 end
 
@@ -2241,7 +2185,7 @@ end
 
 -- local done = false -- todo:
 
--- updaters.register("backend.update.pdf",function()
+-- updaters.register("backend.update",function()
 --     if not done then
         lpdf.registerdocumentfinalizer(lpdf.flushfonts,1,"wrapping up fonts")
 --         done = true

@@ -848,7 +848,6 @@ do
             direction      = direction,
          -- checksum       = checksum,
          -- embedding      = "unknown",
-         -- encodingbytes  = 0,
          -- extend         = 1000,
          -- slant          = 0,
          -- squeeze        = 0,

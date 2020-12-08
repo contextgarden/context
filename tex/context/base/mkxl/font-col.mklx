@@ -27,7 +27,7 @@
 
 \writestatus{loading}{ConTeXt Font Macros / Collections}
 
-\registerctxluafile{font-col}{}
+\registerctxluafile{font-col}{autosuffix}
 
 \unprotect
 

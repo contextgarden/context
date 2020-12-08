@@ -486,23 +486,26 @@ local function copytotfm(data,cache_id)
             end
         end
         --
-        parameters.designsize    = (designsize/10)*65536
-        parameters.minsize       = (minsize   /10)*65536
-        parameters.maxsize       = (maxsize   /10)*65536
-        parameters.ascender      = abs(metadata.ascender  or 0)
-        parameters.descender     = abs(metadata.descender or 0)
-        parameters.units         = units
-        parameters.vheight       = metadata.defaultvheight
+        parameters.designsize = (designsize/10)*65536
+        parameters.minsize    = (minsize   /10)*65536
+        parameters.maxsize    = (maxsize   /10)*65536
+        parameters.ascender   = abs(metadata.ascender  or 0)
+        parameters.descender  = abs(metadata.descender or 0)
+        parameters.units      = units
+        parameters.vheight    = metadata.defaultvheight
         --
-        properties.space         = spacer
+        properties.space      = spacer
+        properties.format     = data.format or formats.otf
+        properties.filename   = filename
+        properties.fontname   = fontname
+        properties.fullname   = fullname
+        properties.psname     = psname
+        properties.name       = filename or fullname
+        properties.subfont    = subfont
+        --
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
         properties.encodingbytes = 2
-        properties.format        = data.format or formats.otf
-        properties.filename      = filename
-        properties.fontname      = fontname
-        properties.fullname      = fullname
-        properties.psname        = psname
-        properties.name          = filename or fullname
-        properties.subfont       = subfont
+end
         --
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub

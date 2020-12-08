@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['lpdf-vfc'] = {
 local setmetatableindex = table.setmetatableindex
 
 local defaultline = 16384
-local vfspecials  = backends.pdf.tables.vfspecials
+
+local vfspecials = backends.pdf.tables.vfspecials or utilities.storage.allocate { }
+backends.pdf.tables.vfspecials = vfspecials
 
 vfspecials.backgrounds = setmetatableindex(function(t,h)
     local v = setmetatableindex(function(t,d)

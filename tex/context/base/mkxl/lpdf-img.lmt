@@ -1345,3 +1345,7 @@ end
 --     end
 --     return true
 -- end
+
+backends.pdf.codeinjections.jpg = lpdf.injectors.jpg
+backends.pdf.codeinjections.jp2 = lpdf.injectors.jp2
+backends.pdf.codeinjections.png = lpdf.injectors.png

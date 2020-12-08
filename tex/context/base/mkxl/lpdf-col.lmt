@@ -737,47 +737,6 @@ do
 
     local f_slant = formatters["q 1 0 %N 1 0 0 cm"]
 
- -- local fillcolors = {
- --     red        = { "pdf", "page", "1 0 0 rg" },
- --     green      = { "pdf", "page", "0 1 0 rg" },
- --     blue       = { "pdf", "page", "0 0 1 rg" },
- --     gray       = { "pdf", "page", ".5 g" },
- --     black      = { "pdf", "page", "0 g" },
- --     palered    = { "pdf", "page", "1 .75 .75 rg" },
- --     palegreen  = { "pdf", "page", ".75 1 .75 rg" },
- --     paleblue   = { "pdf", "page", ".75 .75 1 rg" },
- --     palegray   = { "pdf", "page", ".75 g" },
- -- }
- --
- -- local strokecolors = {
- --     red        = { "pdf", "page", "1 0 0 RG" },
- --     green      = { "pdf", "page", "0 1 0 RG" },
- --     blue       = { "pdf", "page", "0 0 1 RG" },
- --     gray       = { "pdf", "page", ".5 G" },
- --     black      = { "pdf", "page", "0 G" },
- --     palered    = { "pdf", "page", "1 .75 .75 RG" },
- --     palegreen  = { "pdf", "page", ".75 1 .75 RG" },
- --     paleblue   = { "pdf", "page", ".75 .75 1 RG" },
- --     palegray   = { "pdf", "page", ".75 G" },
- -- }
- --
- -- backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
- --
- --     red          = { "pdf", "page", "1 0 0 rg 1 0 0 RG" },
- --     green        = { "pdf", "page", "0 1 0 rg 0 1 0 RG" },
- --     blue         = { "pdf", "page", "0 0 1 rg 0 0 1 RG" },
- --     gray         = { "pdf", "page", ".75 g .75 G" },
- --     black        = { "pdf", "page", "0 g 0 G" },
- --
- --  -- rulecolors   = fillcolors,
- --  -- fillcolors   = fillcolors,
- --  -- strokecolors = strokecolors,
- --
- --     startslant   = function(a) return { "pdf", "origin", f_slant(a) } end,
- --     stopslant    = { "pdf", "origin", "Q" },
- --
- -- }
-
     local slants = setmetatableindex(function(t,k)
         local v = { "pdf", "origin", f_slant(a) }
         t[k] = v
@@ -830,16 +789,147 @@ do
     -- will experiment first (both engines). Virtual fonts will change
     -- anyway.
 
-    backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+    local vfspecials = backends.pdf.tables.vfspecials or allocate { }
+    backends.pdf.tables.vfspecials = vfspecials
 
-        startcolor = startcolor,
-     -- stopcolor  = { "pdf", "page", "0 g 0 G Q" },
-        stopcolor  = { "pdf", "text", "Q" },
+    vfspecials.startcolor = startcolor
+    vfspecials.stopcolor  = { "pdf", "text", "Q" }
 
-        startslant = startslant,
-     -- stopslant  = { "pdf", "origin", "Q" },
-        stopslant  = { "pdf", "text", "Q" },
-
-    }
+    vfspecials.startslant = startslant
+    vfspecials.stopslant  = { "pdf", "text", "Q" }
 
 end
+
+-- new method:
+
+do
+
+    updaters.register("backend.update.lpdf",function()
+        pdfprint = lpdf.print
+    end)
+
+    -- Is this still used? It's a font property now.
+
+    local f_slant = formatters["q 1 0 %N 1 0 0 cm"]
+
+    local slants = setmetatableindex(function(t,k)
+        local v = f_slant(a)
+        t[k] = v
+        return k
+    end)
+
+    local function startslant(a)
+        return pdfprint("origin", slants[a])
+    end
+
+    local function stopslant()
+        pdfprint("text", "Q")
+    end
+
+    -- We inherit the outer transparency.
+
+    local pdfcolor        = lpdf.color
+    local pdftransparency = lpdf.transparency
+
+ -- local c_cache = setmetatableindex(function(t,m)
+ --     local v = setmetatableindex(function(t,c)
+ --         local p = "q " .. pdfcolor(m,c)
+ --         t[c] = p
+ --         return p
+ --     end)
+ --     t[m] = v
+ --     return v
+ -- end)
+ --
+ -- local t_cache = setmetatableindex(function(t,transparency)
+ --     local p = pdftransparency(transparency)
+ --     local v = setmetatableindex(function(t,colormodel)
+ --         local v = setmetatableindex(function(t,color)
+ --             local v = "q " .. pdfcolor(colormodel,color) .. " " .. p
+ --             t[color] = v
+ --             return v
+ --         end)
+ --         t[colormodel] = v
+ --         return v
+ --     end)
+ --     t[transparency] = v
+ --     return v
+ -- end)
+
+ -- local function startcolor(color)
+ --     local m, c = colortoattributes(color)
+ --     local t = transparencytoattribute(color)
+ --     if t then
+ --         pdfprint("page", t_cache[t][m][c])
+ --     else
+ --         pdfprint("page", c_cache[m][c])
+ --     end
+ -- end
+
+    local function startcolor(color)
+        local m, c = colortoattributes(color)
+        local t = transparencytoattribute(color)
+        if t and t ~= unsetvalue then
+            pdfprint("page", "q " .. pdfcolor(m,c) .. " " .. pdftransparency(t))
+        else
+            pdfprint("page", "q " .. pdfcolor(m,c))
+        end
+    end
+
+    local function stopcolor()
+        pdfprint("text", "Q")
+    end
+
+    updaters.register("backend.update.lpdf",function()
+        fonts.vfcommands = {
+            startslant = startslant,
+            stopslant  = stopslant,
+            startcolor = startcolor,
+            stopcolor  = stopcolor,
+        }
+    end)
+
+end
+
+-- These generate the in-stream color commands:
+
+do
+
+    local color        = lpdf.color
+    local transparency = lpdf.transparency
+
+    local fonts = { }
+    lpdf.fonts  = fonts
+
+    fonts.color_indirect = function(c,t)
+        if c and t then
+            return color(1,c) .. " " .. transparency(t)
+        elseif c then
+            return color(1,c)
+        elseif t then
+            return transparency(t)
+        else
+            return false
+        end
+    end
+
+    local colors    = attributes.colors
+    local rgbtocmyk = colors.rgbtocmyk
+
+    local f_cmyk = formatters["%.3N %.3f %.3N %.3N k"]
+    local f_rgb  = formatters["%.3N %.3f %.3N rg"]
+    local f_gray = formatters["%.3N g"]
+
+    fonts.color_direct = function(r,g,b)
+        local m = colors.model
+        if r == g and g == b then
+            return f_gray(r)
+        elseif m == "cmyk" then
+            return f_cmyk(rgbtocmyk(r,g,b))
+        else
+            return f_rgb(r,g,b)
+        end
+    end
+
+end
+

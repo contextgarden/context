@@ -139,10 +139,12 @@ local function read_from_tfm(specification)
         -- If reencode returns a new table, we assume that we're doing something
         -- special. An 'auto' reencode picks up its vector from the pfb file.
 
-        if lpdf and lpdf.getmapentry and not features.reencode then
+        local getmapentry = fonts.mappings.getentry
+
+        if getmapentry and not features.reencode then
             -- This can happen multiple times but not that often so we don't
             -- optimize this.
-            local encoding, pfbfile, encfile = lpdf.getmapentry(filename)
+            local encoding, pfbfile, encfile = getmapentry(filename)
             if encoding and pfbfile then
                 features.reencode = encfile
                 features.pfbfile  = pfbfile
@@ -170,9 +172,9 @@ local function read_from_tfm(specification)
         properties.format     = tfmdata.format or fonts.formats.tfm -- better than nothing
         properties.usedbitmap = tfmdata.usedbitmap
         --
-if lpdf and lpdf.getmapentry and newtfmdata then
-    properties.filename = features.pfbfile
-end
+        if getmapentry and newtfmdata then
+            properties.filename = features.pfbfile
+        end
         --
         tfmdata.properties = properties
         tfmdata.resources  = resources
@@ -234,8 +236,10 @@ end
             --
             -- The tounicode data is passed to the backend that constructs the vectors for us.
             --
-            tfmdata.tounicode = 1
-            local tounicode   = fonts.mappings.tounicode
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+           tfmdata.tounicode = 1
+end
+            local tounicode = fonts.mappings.tounicode
             for unicode, v in next, tfmdata.characters do
                 local u = v.unicode
                 if u then
@@ -514,11 +518,13 @@ do
         tfmdata.fullname      = tfmdata.fullname or tfmdata.name
         tfmdata.psname        = file.nameonly(pfbfile or tfmdata.name)
         tfmdata.filename      = pfbfile
-        tfmdata.encodingbytes = 2
      -- tfmdata.format        = bitmap and "type3" or "type1"
         tfmdata.format        = "type1"
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+        tfmdata.encodingbytes = 2
         tfmdata.tounicode     = 1
         tfmdata.embedding     = "subset"
+end
         tfmdata.usedbitmap    = bitmap and virtualid
         tfmdata.private       = private
 

@@ -247,10 +247,10 @@ function mathematics.overloaddimensions(target,original,set)
                 local factor       = parameters.factor
                 local hfactor      = parameters.hfactor
                 local vfactor      = parameters.vfactor
-                -- to be sure
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
                 target.type = "virtual"
                 target.properties.virtualized = true
-                --
+end
                 local function overload(dimensions)
                     for unicode, data in next, dimensions do
                         local character = characters[unicode]
@@ -603,8 +603,10 @@ interfaces.implement {
 --                     if not fonts then
 --                         fonts = { }
 --                         target.fonts = fonts
+-- if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
 --                         target.type = "virtual"
 --                         target.properties.virtualized = true
+-- end
 --                     end
 --                     if #fonts == 0 then
 --                         fonts[1] = { id = 0, size = size } -- sel, will be resolved later
@@ -709,8 +711,10 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                 fonts = { }
                 target.fonts = fonts
             end
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
             target.type = "virtual"
             target.properties.virtualized = true
+end
             if #fonts == 0 then
                 fonts[1] = { id = 0, size = size } -- self, will be resolved later
             end

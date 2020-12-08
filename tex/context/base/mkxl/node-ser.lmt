@@ -18,7 +18,6 @@ local node        = node
 
 local getfields   = node.fields
 
-local traverse    = nodes.traverse
 local is_node     = nodes.is_node
 
 local nodecodes   = nodes.nodecodes

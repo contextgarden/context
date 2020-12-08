@@ -293,3 +293,5 @@ end
 function lpdf.patternstream(n,width,height)
     return f_pattern("Pt" .. n,width*basepoints,height*basepoints)
 end
+
+backends.pdf.codeinjections.registerpattern = lpdf.registerpattern

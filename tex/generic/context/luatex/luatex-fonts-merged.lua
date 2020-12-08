@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-06 18:12
+-- merge date  : 2020-12-08 11:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -21141,7 +21141,6 @@ local function copytotfm(data,cache_id)
   parameters.units=units
   parameters.vheight=metadata.defaultvheight
   properties.space=spacer
-  properties.encodingbytes=2
   properties.format=data.format or formats.otf
   properties.filename=filename
   properties.fontname=fontname
@@ -21149,6 +21148,9 @@ local function copytotfm(data,cache_id)
   properties.psname=psname
   properties.name=filename or fullname
   properties.subfont=subfont
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
+  properties.encodingbytes=2
+end
   properties.private=properties.private or data.private or privateoffset
   return {
    characters=characters,
@@ -34711,7 +34713,6 @@ local function copytotfm(data)
   parameters.descender=abs(metadata.descender or 0)
   parameters.units=1000
   properties.spacer=spacer
-  properties.encodingbytes=2
   properties.format=fonts.formats[filename] or "type1"
   properties.filename=filename
   properties.fontname=fontname
@@ -34719,6 +34720,9 @@ local function copytotfm(data)
   properties.psname=fullname
   properties.name=filename or fullname or fontname
   properties.private=properties.private or data.private or privateoffset
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
+  properties.encodingbytes=2
+end
   if next(characters) then
    return {
     characters=characters,
