@@ -1,0 +1,1775 @@
+%D \module
+%D   [       file=mp-mlib.mpiv,
+%D        version=2008.03.21,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=plugins,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if unknown mplib        : endinput ; fi ;
+if known   context_mlib : endinput ; fi ;
+
+boolean context_mlib ; context_mlib := true ;
+
+% numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY or (status and status.development_id) or 6346)") ;
+
+%D Objects:
+
+vardef isobject expr p =
+    if picture p :
+      % lua.mp.isobject(prescriptpart p)
+        runscript("mp.isobject(" & prescriptpart p & ")")
+    else :
+        false
+    fi
+enddef ;
+
+%D Color and transparency
+%D
+%D Separable:
+
+newinternal normaltransparent     ; normaltransparent     :=  1 ;
+newinternal multiplytransparent   ; multiplytransparent   :=  2 ;
+newinternal screentransparent     ; screentransparent     :=  3 ;
+newinternal overlaytransparent    ; overlaytransparent    :=  4 ;
+newinternal softlighttransparent  ; softlighttransparent  :=  5 ;
+newinternal hardlighttransparent  ; hardlighttransparent  :=  6 ;
+newinternal colordodgetransparent ; colordodgetransparent :=  7 ;
+newinternal colorburntransparent  ; colorburntransparent  :=  8 ;
+newinternal darkentransparent     ; darkentransparent     :=  9 ;
+newinternal lightentransparent    ; lightentransparent    := 10 ;
+newinternal differencetransparent ; differencetransparent := 11 ;
+newinternal exclusiontransparent  ; exclusiontransparent  := 12 ;
+
+%D Nonseparable:
+
+newinternal huetransparent        ; huetransparent        := 13 ;
+newinternal saturationtransparent ; saturationtransparent := 14 ;
+newinternal colortransparent      ; colortransparent      := 15 ;
+newinternal luminositytransparent ; luminositytransparent := 16 ;
+
+vardef transparency_alternative_to_number(expr name) =
+    if string name :
+        if expandafter known scantokens(name & "transparent") :
+            scantokens(name & "transparent")
+        else :
+            0
+        fi
+    elseif name < 17 :
+        name
+    else :
+        0
+    fi
+enddef ;
+
+def namedcolor expr n =
+    (1)
+    withprescript "sp_type=named"
+    withprescript "sp_name=" & n
+enddef ;
+
+% def mfun_spotcolor(expr n, v) =
+%     1
+%     withprescript "sp_type=xspot"
+%     withprescript "sp_name="  & n
+%     withprescript "sp_value=" & (if numeric v : decimal v else : v fi)
+% enddef ;
+
+% def mfun_multispotcolor(expr name, fractions, components, value) =
+%     1
+%     withprescript "sp_type=multispot"
+%     withprescript "sp_name="       & name
+%     withprescript "sp_fractions="  & decimal fractions
+%     withprescript "sp_components=" & components
+%     withprescript "sp_value="      & value
+% enddef ;
+
+def spotcolor(expr name, v) =
+    (1)
+    withprescript "sp_type=spot"
+    withprescript "sp_name=" & name
+    withprescript "sp_value=" & colordecimals v
+enddef ;
+
+% In this case a mixed color will be calculated:
+
+def multitonecolor(expr name)(text t) =
+    (1)
+    withprescript "sp_type=multitone"
+    withprescript "sp_name=" & name
+    withprescript "sp_value=" & colordecimalslist(t)
+enddef ;
+
+def transparent(expr a, t)(text c) = % use withtransparency instead
+    (1) % this permits withcolor x intoshade y
+    withprescript "tr_alternative=" & decimal transparency_alternative_to_number(a)
+    withprescript "tr_transparency=" & decimal t
+    withcolor c
+enddef ;
+
+def withtransparency(expr a, t) =
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
+    withprescript "tr_transparency=" & decimal t
+enddef ;
+
+% no, not compatible ... maybe only mpiv .. maybe withopacity
+
+% let opacity = pair ;
+
+% def withtransparency expr t =
+%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+%     withprescript "tr_transparency=" & decimal ypart t
+% enddef ;
+%
+% withtransparency (1,.5)
+% withtransparency ("normal",.5)
+%
+% withopacity      (1,.5)
+% withopacity      (normaltransparency,.5)
+% withopacity      .5
+
+def withopacity expr t =
+    if pair t :
+        withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+        withprescript "tr_transparency=" & decimal ypart t
+    else :
+        mfun_with_opacity (transparency_alternative_to_number(t))
+    fi
+enddef ;
+
+def mfun_with_opacity (expr a) expr t =
+    withprescript "tr_alternative="  & decimal a
+    withprescript "tr_transparency=" & decimal t
+enddef ;
+
+% Provided for downward compability:
+
+def cmyk(expr c, m, y, k) =
+    (c,m,y,k)
+enddef ;
+
+% Texts (todo: better strut ratio, now .7 hardcoded, should be passed)
+
+newinternal textextoffset ; textextoffset := 0 ;
+
+%%%%%%% mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
+color   mfun_tt_b ;
+numeric mfun_tt_n ; mfun_tt_n := 0 ;
+picture mfun_tt_p ; mfun_tt_p := nullpicture ;
+picture mfun_tt_o ; mfun_tt_o := nullpicture ;
+picture mfun_tt_c ; mfun_tt_c := nullpicture ;
+
+if unknown mfun_trial_run :
+    boolean mfun_trial_run ;
+    mfun_trial_run := false ;
+else :
+    % already defined before the format is loaded
+fi ;
+
+def mfun_reset_tex_texts =
+    mfun_tt_n := 0 ;
+    mfun_tt_p := nullpicture ;
+    mfun_tt_o := nullpicture ; % redundant
+    mfun_tt_c := nullpicture ; % redundant
+enddef ;
+
+def mfun_flush_tex_texts =
+    addto currentpicture also mfun_tt_p
+enddef ;
+
+extra_endfig   := "mfun_flush_tex_texts ;" & extra_endfig ;
+extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
+
+% We collect and flush them all, as we can also have temporary textexts
+% that gets never really flushed but are used for calculations. So, we
+% flush twice: once in location in order to pick up e.g. color properties,
+% and once at the end because we need to flush missing ones.
+
+boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
+numeric mfun_global_textext ; mfun_global_textext := 0 ;
+
+def keepcached =
+    hide(mfun_global_textext := mfun_global_textext + 1;)
+    withprescript ("tx_cache=" & decimal mfun_global_textext)
+enddef ;
+
+def notcached =
+    withprescript "tx_cache=no"
+enddef ;
+
+% todo: onetime
+
+rgbcolor mfun_tt_r ;
+
+newinternal inicatcoderegime ; inicatcoderegime := runscript("return catcodes.numbers.ctxcatcodes") ;
+newinternal texcatcoderegime ; texcatcoderegime := runscript("return catcodes.numbers.texcatcodes") ;
+newinternal luacatcoderegime ; luacatcoderegime := runscript("return catcodes.numbers.luacatcodes") ;
+newinternal notcatcoderegime ; notcatcoderegime := runscript("return catcodes.numbers.notcatcodes") ;
+newinternal vrbcatcoderegime ; vrbcatcoderegime := runscript("return catcodes.numbers.vrbcatcodes") ;
+newinternal prtcatcoderegime ; prtcatcoderegime := runscript("return catcodes.numbers.prtcatcodes") ;
+newinternal ctxcatcoderegime ; ctxcatcoderegime := runscript("return catcodes.numbers.ctxcatcodes") ;
+newinternal txtcatcoderegime ; txtcatcoderegime := runscript("return catcodes.numbers.txtcatcodes") ;
+
+newinternal catcoderegime    ; catcoderegime    := ctxcatcoderegime ;
+
+newinternal mfid_sometextext ; mfid_sometextext := scriptindex "sometextext" ;
+newinternal mfid_madetextext ; mfid_madetextext := scriptindex "madetextext" ;
+
+
+vardef rawtextext(expr s) =
+    if s = "" :
+        nullpicture
+    else :
+        mfun_tt_n := mfun_tt_n + 1 ;
+        mfun_tt_c := nullpicture ;
+        mfun_tt_o := nullpicture ;
+        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        mfun_tt_r := runscript mfid_sometextext mfun_tt_n s catcoderegime ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled wdpart mfun_tt_r
+            yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+            shifted (0,-dppart mfun_tt_r)
+            withprescript "mf_object=text"
+            withprescript "tx_index=" & decimal mfun_tt_n
+            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+        ;
+        mfun_tt_c
+    fi
+enddef ;
+
+vardef rawmadetext =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := runscript mfid_madetextext mfun_tt_n ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+        shifted (0,-dppart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    mfun_tt_c
+enddef ;
+
+vardef validtexbox(expr category, name) =
+    if category == "" :
+        false
+    elseif string name :
+        name <> ""
+    elseif numeric name :
+        name > 0
+    else :
+        true
+    fi
+enddef ;
+
+vardef rawtexbox(expr category, name) =
+    mfun_tt_c := nullpicture ;
+    if validtexbox(category,name) :
+        mfun_tt_b := lua.mp.mf_tb_dimensions(category, name) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled wdpart mfun_tt_b
+            yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
+            shifted (0,- dppart mfun_tt_b)
+            withprescript "mf_object=box"
+            withprescript "bx_category=" & if numeric category : decimal fi category
+            withprescript "bx_name=" & if numeric name : decimal fi name ;
+    fi
+    mfun_tt_c
+enddef ;
+
+% More text
+
+defaultfont  := "Mono" ;
+defaultscale := 1 ;
+
+extra_beginfig := extra_beginfig & "defaultscale:=1;" ;
+
+vardef fontsize expr name =
+    save size ; numeric size ;
+    size := bbwidth(textext("\MPfontsizehskip{" & name & "}")) ;
+    if size = 0 :
+        12pt
+    else :
+        size
+    fi
+enddef ;
+
+pair mfun_laboff        ; mfun_laboff        := origin   ;
+pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)   ;
+pair mfun_laboff.rt     ; mfun_laboff.rt     := (1,0)    ;
+pair mfun_laboff.bot    ; mfun_laboff.bot    := (0,-1)   ;
+pair mfun_laboff.top    ; mfun_laboff.top    := (0,1)    ;
+pair mfun_laboff.ulft   ; mfun_laboff.ulft   := (-.7,.7) ;
+pair mfun_laboff.urt    ; mfun_laboff.urt    := (.7,.7)  ;
+pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7) ;
+pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7) ;
+
+pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff     ;
+pair mfun_laboff.dflt   ; mfun_laboff.dflt   := mfun_laboff.lft ;
+pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt  ;
+pair mfun_laboff.origin ; mfun_laboff.origin := mfun_laboff     ;
+pair mfun_laboff.raw    ; mfun_laboff.raw    := mfun_laboff     ;
+
+pair mfun_laboff.l      ; mfun_laboff.l      := mfun_laboff.lft  ;
+pair mfun_laboff.r      ; mfun_laboff.r      := mfun_laboff.rt   ;
+pair mfun_laboff.b      ; mfun_laboff.b      := mfun_laboff.bot  ;
+pair mfun_laboff.t      ; mfun_laboff.t      := mfun_laboff.top  ;
+pair mfun_laboff.l_t    ; mfun_laboff.l_t    := mfun_laboff.ulft ;
+pair mfun_laboff.r_t    ; mfun_laboff.r_t    := mfun_laboff.urt  ;
+pair mfun_laboff.l_b    ; mfun_laboff.l_b    := mfun_laboff.llft ;
+pair mfun_laboff.r_b    ; mfun_laboff.r_b    := mfun_laboff.lrt  ;
+pair mfun_laboff.t_l    ; mfun_laboff.t_l    := mfun_laboff.ulft ;
+pair mfun_laboff.t_r    ; mfun_laboff.t_r    := mfun_laboff.urt  ;
+pair mfun_laboff.b_l    ; mfun_laboff.b_l    := mfun_laboff.llft ;
+pair mfun_laboff.b_r    ; mfun_laboff.b_r    := mfun_laboff.lrt  ;
+
+mfun_labxf                                              := 0.5 ;
+mfun_labxf.lft      := mfun_labxf.l                     := 1   ;
+mfun_labxf.rt       := mfun_labxf.r                     := 0   ;
+mfun_labxf.bot      := mfun_labxf.b                     := 0.5 ;
+mfun_labxf.top      := mfun_labxf.t                     := 0.5 ;
+mfun_labxf.ulft     := mfun_labxf.l_t := mfun_labxf.t_l := 1   ;
+mfun_labxf.urt      := mfun_labxf.r_t := mfun_labxf.t_r := 0   ;
+mfun_labxf.llft     := mfun_labxf.l_b := mfun_labxf.b_l := 1   ;
+mfun_labxf.lrt      := mfun_labxf.r_b := mfun_labxf.b_r := 0   ;
+
+mfun_labxf.d        := mfun_labxf     ;
+mfun_labxf.dflt     := mfun_labxf.lft ;
+mfun_labxf.drt      := mfun_labxf.rt  ;
+mfun_labxf.origin   := 0              ;
+mfun_labxf.raw      := 0              ;
+
+mfun_labyf                                              := 0.5 ;
+mfun_labyf.lft      := mfun_labyf.l                     := 0.5 ;
+mfun_labyf.rt       := mfun_labyf.r                     := 0.5 ;
+mfun_labyf.bot      := mfun_labyf.b                     := 1   ;
+mfun_labyf.top      := mfun_labyf.t                     := 0   ;
+mfun_labyf.ulft     := mfun_labyf.l_t := mfun_labyf.t_l := 0   ;
+mfun_labyf.urt      := mfun_labyf.r_t := mfun_labyf.t_r := 0   ;
+mfun_labyf.llft     := mfun_labyf.l_b := mfun_labyf.b_l := 1   ;
+mfun_labyf.lrt      := mfun_labyf.r_b := mfun_labyf.b_r := 1   ;
+
+mfun_labyf.d        := mfun_labyf     ;
+mfun_labyf.dflt     := mfun_labyf.lft ;
+mfun_labyf.drt      := mfun_labyf.rt  ;
+mfun_labyf.origin   := 0              ;
+mfun_labyf.raw      := 0              ;
+
+mfun_labtype                                                 :=  0 ;
+mfun_labtype.lft    := mfun_labtype.l                        :=  1 ;
+mfun_labtype.rt     := mfun_labtype.r                        :=  2 ;
+mfun_labtype.bot    := mfun_labtype.b                        :=  3 ;
+mfun_labtype.top    := mfun_labtype.t                        :=  4 ;
+mfun_labtype.ulft   := mfun_labtype.l_t :=  mfun_labtype.t_l :=  5 ;
+mfun_labtype.urt    := mfun_labtype.r_t :=  mfun_labtype.t_r :=  6 ;
+mfun_labtype.llft   := mfun_labtype.l_b :=  mfun_labtype.b_l :=  7 ;
+mfun_labtype.lrt    := mfun_labtype.r_b :=  mfun_labtype.b_r :=  8 ;
+mfun_labtype.d                                               := 10 ;
+mfun_labtype.dflt                                            := 11 ;
+mfun_labtype.drt                                             := 12 ;
+mfun_labtype.origin                                          :=  0 ;
+mfun_labtype.raw                                             :=  0 ;
+
+vardef installlabel@# (expr type, x, y, offset) =
+    numeric mfun_labtype@# ; mfun_labtype@# := type ;
+    pair    mfun_laboff @# ; mfun_laboff @# := offset ;
+    numeric mfun_labxf  @# ; mfun_labxf  @# := x ;
+    numeric mfun_labyf  @# ; mfun_labyf  @# := y ;
+enddef ;
+
+installlabel.center (0, 0.5, 0.5, (0,0)) ;
+installlabel.c      (0, 0.5, 0.5, (0,0)) ;
+
+installlabel.hcenter(0, 0.5, 0.5, (1,0)) ;
+installlabel.h      (0, 0.5, 0.5, (1,0)) ;
+
+installlabel.vcenter(0, 0.5, 0.5, (0,1)) ;
+installlabel.v      (0, 0.5, 0.5, (0,1)) ;
+
+vardef mfun_labshift@#(expr p) =
+    (mfun_labxf@#*lrcorner p +
+     mfun_labyf@#*ulcorner p +
+     (1-mfun_labxf@#-mfun_labyf@#)*llcorner p)
+enddef ;
+
+vardef mfun_picshift@#(expr p) =
+    (mfun_labxf@#*ulcorner p +
+     mfun_labyf@#*lrcorner p +
+     (1-mfun_labxf@#-mfun_labyf@#)*urcorner p)
+enddef ;
+
+% we save the plain variant
+
+vardef plain_thelabel@#(expr p,z) =
+    if string p :
+        plain_thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+    else :
+        p shifted (z + labeloffset*laboff@# - mfun_labshift@#(p))
+    fi
+enddef;
+
+def plain_label = % takes two arguments, contrary to textext that takes one
+    normaldraw plain_thelabel
+enddef ;
+
+let mfun_label    = label ;
+let mfun_thelabel = thelabel ;
+
+def useplainlabels = % somehow let doesn't work for all code
+    def label    = plain_label    enddef ;
+    def thelabel = plain_thelabel enddef ;
+enddef ;
+
+def usemetafunlabels =
+    let label    = mfun_label ;
+    let thelabel = mfun_thelabel ;
+enddef ;
+
+vardef dotlabel@#(expr s,z) text t_ =
+    label@#(s,z) t_ ;
+    interim linecap := rounded ;
+    normaldraw z withpen pencircle scaled dotlabeldiam t_ ;
+enddef ;
+
+plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
+
+% vardef thetextext@#(expr p,z) =
+%   % interim labeloffset := textextoffset ;
+%     if string p :
+%         thetextext@#(rawtextext(p),z)
+%     elseif numeric p :
+%         thetextext@#(rawtextext(decimal p),z)
+%     else :
+%         p
+%             if (mfun_labtype@# >= 10) :
+%                 shifted (0,ypart center p)
+%             fi
+%             shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+%     fi
+% enddef ;
+
+newinternal anchortextexts ; anchortextexts := 0 ; % disabled by default
+
+vardef thetextext@#(expr p,z) =
+  % interim labeloffset := textextoffset ;
+    if string p :
+        thetextext@#(rawtextext(p),z)
+    elseif numeric p :
+        thetextext@#(rawtextext(decimal p),z)
+    elseif pair p :
+        thetextext@#(rawtextext(ddecimal p),z)
+    else :
+        if anchortextexts > 0 :
+            image(draw p withprescript "tx_anchor=" & ddecimal z)
+        else :
+            p
+        fi
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+    fi
+enddef ;
+
+vardef textext@#(expr p) = % no draw here
+    thetextext@#(p,origin)
+enddef ;
+
+vardef onetimetextext@#(expr p) = % no draw here
+    mfun_onetime_textext := true ;
+    thetextext@#(p,origin)
+enddef ;
+
+% formatted text
+
+pair mfun_tt_z ;
+
+vardef rawfmttext(text t) =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+        shifted (0,-dppart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    for s = t :
+        if pair s : mfun_tt_z := s ; fi
+    endfor ;
+    mfun_tt_c
+enddef ;
+
+vardef thefmttext@#(text t) =
+    mfun_tt_z := origin ; % initialization
+    save p ; picture p ; p := rawfmttext(t) ;
+    if anchortextexts > 0 :
+        image(draw p withprescript "tx_anchor=" & ddecimal mfun_tt_z)
+    else :
+        p
+    fi
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (mfun_tt_z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+enddef ;
+
+vardef fmttext@#(text t) = % no draw here
+    thefmttext@#(t,origin)
+enddef ;
+
+% or just: def fmttext = thefmttext enddef ;
+
+vardef onetimefmttext@#(text t) = % no draw here
+    mfun_onetime_textext := true ;
+    thefmttext@#(t,origin)
+enddef ;
+
+% so much for formatted text
+
+vardef thetexbox@#(expr category, name, z) =
+    save p ; picture p ; p := rawtexbox(category,name) ;
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+enddef ;
+
+vardef texbox@#(expr category, name) = % no draw here
+    thetexbox@#(category,name,origin)
+enddef ;
+
+% vardef thelabel@#(expr p,z) =
+%     if string p :
+%         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+%     else :
+%         p shifted (z + labeloffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+%     fi
+% enddef;
+
+vardef theoffset@#(expr z) =
+    if pair z :
+        z
+    elseif path z :
+        if mfun_laboff@# = origin :
+            center z
+        else :
+            ((center z)-- mfun_picshift@#(z)) intersectionpoint (z if not cycle z: --cycle fi)
+        fi
+    else : % picture
+        mfun_picshift@#(z)
+    fi
+enddef;
+
+vardef thelabel@#(expr p,z) =
+    if string p :
+        thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+    elseif numeric p :
+        thelabel@#(decimal p,z)
+    elseif pair p :
+        thelabel@#("(" & decimal(xpart p) & "," & decimal(ypart p) & ")",z)
+    else :
+        p shifted (theoffset@#(z) + labeloffset*mfun_laboff@# - mfun_labshift@#(p))
+    fi
+enddef;
+
+def label = % takes two arguments, contrary to textext that takes one
+    normaldraw thelabel
+enddef ;
+
+vardef anchored@#(expr p, z) = % beware: no "+ mfun_laboff@#" here (never!)
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + mfun_labshift@#(p))
+enddef ;
+
+let normalinfont = infont ;
+
+primarydef s infont name = % nasty hack
+    if name = "" :
+        textext(s)
+    else :
+        textext("\definedfont[" & name & "]" & s)
+    fi
+enddef ;
+
+% Helper
+
+string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
+
+% Shades
+
+% for while we had this:
+
+newinternal shadefactor  ; shadefactor  := 1 ;      % currently obsolete
+pair        shadeoffset  ; shadeoffset  := origin ; % currently obsolete
+boolean     trace_shades ; trace_shades := false ;  % still there
+
+% def withlinearshading (expr a, b) =
+%     withprescript "sh_type=linear"
+%     withprescript "sh_domain=0 1"
+%     withprescript "sh_factor="   & decimal shadefactor
+%     withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+%     withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+% enddef ;
+%
+% def withcircularshading (expr a, b, ra, rb) =
+%     withprescript "sh_type=circular"
+%     withprescript "sh_domain=0 1"
+%     withprescript "sh_factor="   & decimal shadefactor
+%     withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+%     withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+%     withprescript "sh_radius_a=" & decimal ra
+%     withprescript "sh_radius_b=" & decimal rb
+% enddef ;
+%
+% def withshading (expr how)(text rest) =
+%     if how = "linear" :
+%         withlinearshading(rest)
+%     elseif how = "circular" :
+%         withcircularshading(rest)
+%     else :
+%         % nothing
+%     fi
+% enddef ;
+%
+% def withfromshadecolor expr t =
+%     withprescript "sh_color=into"
+%     withprescript "sh_color_a=" & colordecimals t
+% enddef ;
+
+% def withtoshadecolor expr t =
+%     withprescript "sh_color=into"
+%     withprescript "sh_color_b=" & colordecimals t
+% enddef ;
+
+% but this is nicer
+
+% fill fullcircle scaled 10cm
+%     withshademethod "circular"
+%     withshadevector (5cm,1cm)
+%     withshadecenter (.1,.5)
+%     withshadedomain (.2,.6)
+%     withshadefactor 1.2
+%     withshadecolors (red,green)
+% ;
+
+path    mfun_shade_path ;
+numeric mfun_shade_step ; mfun_shade_step := 0 ;
+
+def withshadestep =
+    hide(mfun_shade_step := mfun_shade_step + 1 ;)
+    mfun_withshadestep
+enddef ;
+
+def mfun_withshadestep (text t) =
+    withprescript "sh_step=" & decimal mfun_shade_step
+    t
+enddef ;
+
+numeric mfun_shade_fx, mfun_shade_fy ;
+numeric mfun_shade_lx, mfun_shade_ly ;
+numeric mfun_shade_nx, mfun_shade_ny ;
+numeric mfun_shade_dx, mfun_shade_dy ;
+numeric mfun_shade_tx, mfun_shade_ty ;
+
+% first
+
+def mfun_with_shade_method_analyze(expr p) =
+    mfun_shade_path := p ;
+    mfun_shade_step := 1 ;
+    mfun_shade_fx   := xpart point 0 of p ;
+    mfun_shade_fy   := ypart point 0 of p ;
+    mfun_shade_lx   := mfun_shade_fx ;
+    mfun_shade_ly   := mfun_shade_fy ;
+    mfun_shade_nx   := 0 ;
+    mfun_shade_ny   := 0 ;
+    mfun_shade_dx   := abs(mfun_shade_fx - mfun_shade_lx) ;
+    mfun_shade_dy   := abs(mfun_shade_fy - mfun_shade_ly) ;
+    for i=1 upto length(p) :
+        mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
+        mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
+        if mfun_shade_tx > mfun_shade_dx :
+            mfun_shade_nx := i + 1 ;
+            mfun_shade_lx := xpart point i of p ;
+            mfun_shade_dx := mfun_shade_tx ;
+        fi ;
+        if mfun_shade_ty > mfun_shade_dy :
+            mfun_shade_ny := i + 1 ;
+            mfun_shade_ly := ypart point i of p ;
+            mfun_shade_dy := mfun_shade_ty ;
+        fi ;
+    endfor ;
+enddef ;
+
+vardef mfun_max_radius(expr p) =
+    max (
+        (xpart center   p - xpart llcorner p) ++ (ypart center   p - ypart llcorner p),
+        (xpart center   p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center   p),
+        (xpart lrcorner p - xpart center   p) ++ (ypart center   p - ypart lrcorner p),
+        (xpart urcorner p - xpart center   p) ++ (ypart urcorner p - ypart center   p)
+    )
+enddef ;
+
+vardef mfun_min_radius(expr p) =
+    min (
+        (xpart center   p - xpart llcorner p) ++ (ypart center   p - ypart llcorner p),
+        (xpart center   p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center   p),
+        (xpart lrcorner p - xpart center   p) ++ (ypart center   p - ypart lrcorner p),
+        (xpart urcorner p - xpart center   p) ++ (ypart urcorner p - ypart center   p)
+    )
+enddef ;
+
+primarydef p withshademethod m =
+    hide(mfun_with_shade_method_analyze(p))
+    p
+    withprescript "sh_domain=0 1"
+    withprescript "sh_transform=yes"
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals white
+    withprescript "sh_color_b=" & colordecimals black
+    withprescript "sh_first=" & ddecimal point 0 of p % used for support scaling
+    withprescript "sh_set_x=" & ddecimal (mfun_shade_nx,mfun_shade_lx) %
+    withprescript "sh_set_y=" & ddecimal (mfun_shade_ny,mfun_shade_ly) %
+    if m = "linear" :
+        withprescript "sh_type=linear"
+        withprescript "sh_factor=1"
+        withprescript "sh_center_a=" & ddecimal llcorner p
+        withprescript "sh_center_b=" & ddecimal urcorner p
+    else :
+        withprescript "sh_type=circular"
+        withprescript "sh_factor=1.2"
+        withprescript "sh_center_a=" & ddecimal center p
+        withprescript "sh_center_b=" & ddecimal center p
+        withprescript "sh_radius_a=" & decimal 0
+        withprescript "sh_radius_b=" & decimal mfun_max_radius(p)
+    fi
+enddef ;
+
+def withshaderadius expr a =
+    withprescript "sh_radius_a=" & decimal (xpart a)
+    withprescript "sh_radius_b=" & decimal (ypart a)
+enddef ;
+
+def withshadeorigin expr a =
+    withprescript "sh_center_a=" & ddecimal a
+    withprescript "sh_center_b=" & ddecimal a
+enddef ;
+
+def withshadevector expr a =
+    withprescript "sh_center_a=" & ddecimal (point xpart a of mfun_shade_path)
+    withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
+enddef ;
+
+def withshadedirection expr a =
+    withprescript "sh_center_a=" & ddecimal (point xpart a of boundingbox(mfun_shade_path))
+    withprescript "sh_center_b=" & ddecimal (point ypart a of boundingbox(mfun_shade_path))
+enddef ;
+
+def withshadetransform expr a = % yes | no
+    withprescript "sh_transform=" & a
+enddef ;
+
+pair shadedup    ; shadedup    := (0.5,2.5) ;
+pair shadeddown  ; shadeddown  := (2.5,0.5) ;
+pair shadedleft  ; shadedleft  := (1.5,3.5) ;
+pair shadedright ; shadedright := (3.5,1.5) ;
+
+def withshadecenter expr a =
+    withprescript "sh_center_a=" & ddecimal (
+        center mfun_shade_path shifted (
+            xpart a * bbwidth (mfun_shade_path)/2,
+            ypart a * bbheight(mfun_shade_path)/2
+        )
+    )
+enddef ;
+
+def withshadedomain expr d =
+    withprescript "sh_domain=" & ddecimal d
+enddef ;
+
+def withshadefactor expr f =
+    withprescript "sh_factor=" & decimal f
+enddef ;
+
+% def withshadebound (expr a) =
+%     if mfun_shade_step > 0 :
+%         withprescript "sh_bound_" & decimal mfun_shade_step & "=" & decimal a
+%     fi
+% enddef ;
+
+def withshadefraction expr a =
+    if mfun_shade_step > 0 :
+        withprescript "sh_fraction_" & decimal mfun_shade_step & "=" & decimal a
+    fi
+enddef ;
+
+def withshadecolors (expr a, b) =
+    if mfun_shade_step > 0 :
+        withprescript "sh_color=into"
+        withprescript "sh_color_a_" & decimal mfun_shade_step & "=" & colordecimals a
+        withprescript "sh_color_b_" & decimal mfun_shade_step & "=" & colordecimals b
+    else :
+        withprescript "sh_color=into"
+        withprescript "sh_color_a=" & colordecimals a
+        withprescript "sh_color_b=" & colordecimals b
+    fi
+enddef ;
+
+primarydef a shadedinto b = % withcolor red shadedinto green
+    1 % does not work with transparency
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals a
+    withprescript "sh_color_b=" & colordecimals b
+enddef ;
+
+primarydef p withshade sc =
+    p withprescript mfun_defined_cs_pre[sc]
+enddef ;
+
+def defineshade suffix s =
+    mfun_defineshade(str s)
+enddef ;
+
+def mfun_defineshade (expr s) text t =
+    expandafter def scantokens s = t enddef ;
+enddef ;
+
+def shaded text s =
+    s
+enddef ;
+
+% For me.
+
+primarydef p shownshadevector v =
+    image (
+        drawarrow (point xpart v of p) -- (point ypart v of p) ;
+        fill fullcircle scaled 2 shifted point xpart v of p ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadedirection v =
+    image (
+        drawarrow (point xpart v of boundingbox p) -- (point ypart v of boundingbox p) ;
+        fill fullcircle scaled 2 shifted (point xpart v of boundingbox p) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadecenter v =
+    image (
+        fill fullcircle scaled 2
+            shifted center p shifted (
+            xpart v * bbwidth (p)/2,
+            ypart v * bbheight(p)/2
+        ) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadeorigin v =
+    image (
+        fill fullcircle scaled 2 shifted v ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+% Old macros:
+
+def withcircularshade (expr a, b, ra, rb, ca, cb) =
+    withprescript "sh_type=circular"
+    withprescript "sh_transform=yes"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor=1"
+    withprescript "sh_color_a="  & colordecimals ca
+    withprescript "sh_color_b="  & colordecimals cb
+    withprescript "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
+    withprescript "sh_radius_a=" & decimal ra
+    withprescript "sh_radius_b=" & decimal rb
+enddef ;
+
+def withlinearshade (expr a, b, ca, cb) =
+    withprescript "sh_type=linear"
+    withprescript "sh_transform=yes"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor=1"
+    withprescript "sh_color_a="  & colordecimals ca
+    withprescript "sh_color_b="  & colordecimals cb
+    withprescript "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
+enddef ;
+
+% replaced (obsolete):
+
+def set_linear_vector (suffix a,b)(expr p,n) =
+    if     (n=1) : a := llcorner p ; b := urcorner p ;
+    elseif (n=2) : a := lrcorner p ; b := ulcorner p ;
+    elseif (n=3) : a := urcorner p ; b := llcorner p ;
+    elseif (n=4) : a := ulcorner p ; b := lrcorner p ;
+    elseif (n=5) : a := .5[ulcorner p,llcorner p] ; b := .5[urcorner p,lrcorner p] ;
+    elseif (n=6) : a := .5[llcorner p,lrcorner p] ; b := .5[ulcorner p,urcorner p] ;
+    elseif (n=7) : a := .5[lrcorner p,urcorner p] ; b := .5[llcorner p,ulcorner p] ;
+    elseif (n=8) : a := .5[urcorner p,ulcorner p] ; b := .5[lrcorner p,llcorner p] ;
+    else         : a := .5[ulcorner p,llcorner p] ; b := .5[urcorner p,lrcorner p] ;
+    fi ;
+enddef ;
+
+def set_circular_vector (suffix ab,r)(expr p,n) =
+    if     (n=1) : ab := llcorner p ;
+    elseif (n=2) : ab := lrcorner p ;
+    elseif (n=3) : ab := urcorner p ;
+    elseif (n=4) : ab := ulcorner p ;
+    else         : ab := center   p ; r := .5r ;
+    fi ;
+enddef ;
+
+def circular_shade (expr p, n, ca, cb) =
+    begingroup ;
+        save ab, r ; pair ab ; numeric r ;
+        r := (xpart lrcorner p - xpart llcorner p) ++ (ypart urcorner p - ypart lrcorner p) ;
+        set_circular_vector(ab,r)(p,n) ;
+        fill p withcircularshade(ab,ab,0,r,ca,cb) ;
+        if trace_shades :
+            drawarrow ab -- ab shifted (0,r) withpen pencircle scaled 1pt withcolor .5white ;
+        fi ;
+    endgroup ;
+enddef ;
+
+def linear_shade (expr p, n, ca, cb) =
+    begingroup ;
+        save a, b ; pair a, b ;
+        set_linear_vector(a,b)(p,n) ;
+        fill p withlinearshade(a,b,ca,cb) ;
+        if trace_shades :
+            drawarrow a -- b withpen pencircle scaled 1pt withcolor .5white ;
+        fi ;
+    endgroup ;
+enddef ;
+
+string mfun_defined_cs_pre[] ; numeric mfun_defined_cs ; mfun_defined_cs := 0 ;
+
+vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=circular"
+    & mfun_prescript_separator & "sh_domain=0 1"
+    & mfun_prescript_separator & "sh_factor=1"
+    & mfun_prescript_separator & "sh_color_a="  & colordecimals ca
+    & mfun_prescript_separator & "sh_color_b="  & colordecimals cb
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
+    & mfun_prescript_separator & "sh_radius_a=" & decimal ra
+    & mfun_prescript_separator & "sh_radius_b=" & decimal rb
+    ;
+    mfun_defined_cs
+enddef ;
+
+vardef define_linear_shade (expr a, b, ca, cb) =
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=linear"
+    & mfun_prescript_separator & "sh_domain=0 1"
+    & mfun_prescript_separator & "sh_factor=1"
+    & mfun_prescript_separator & "sh_color_a=" & colordecimals ca
+    & mfun_prescript_separator & "sh_color_b=" & colordecimals cb
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
+    ;
+    mfun_defined_cs
+enddef ;
+
+% I lost the example code that uses this:
+%
+% vardef define_sampled_linear_shade(expr a,b,n)(text t) =
+%     mfun_defined_cs := mfun_defined_cs + 1 ;
+%     mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=linear"
+%     & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+%     & mfun_prescript_separator & "ssh_domain=" & domstr
+%     & mfun_prescript_separator & "ssh_extend=" & extstr
+%     & mfun_prescript_separator & "ssh_colors=" & colstr
+%     & mfun_prescript_separator & "ssh_bounds=" & bndstr
+%     & mfun_prescript_separator & "ssh_ranges=" & ranstr
+%     ;
+%     mfun_defined_cs
+% enddef ;
+%
+% vardef define_sampled_circular_shade(expr a,b,ra,rb,n)(text t) =
+%     mfun_defined_cs := mfun_defined_cs + 1 ;
+%     mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=circular"
+%     & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_radius_a=" & decimal ra
+%     & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_radius_b=" & decimal rb
+%     & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+%     & mfun_prescript_separator & "ssh_domain=" & domstr
+%     & mfun_prescript_separator & "ssh_extend=" & extstr
+%     & mfun_prescript_separator & "ssh_colors=" & colstr
+%     & mfun_prescript_separator & "ssh_bounds=" & bndstr
+%     & mfun_prescript_separator & "ssh_ranges=" & ranstr
+%     ;
+%     mfun_defined_cs
+% enddef ;
+
+% vardef predefined_linear_shade (expr p, n, ca, cb) =
+%     save a, b, sh ; pair a, b ;
+%     set_linear_vector(a,b)(p,n) ;
+%     define_linear_shade (a,b,ca,cb)
+% enddef ;
+%
+% vardef predefined_circular_shade (expr p, n, ca, cb) =
+%     save ab, r ; pair ab ; numeric r ;
+%     r := (xpart lrcorner p - xpart llcorner p) ++ (ypart urcorner p - ypart lrcorner p) ;
+%     set_circular_vector(ab,r)(p,n) ;
+%     define_circular_shade(ab,ab,0,r,ca,cb)
+% enddef ;
+
+% Layers
+
+def onlayer primary name =
+    withprescript "la_name=" & name
+enddef ;
+
+% Figures
+
+% def externalfigure primary filename =
+%     doexternalfigure (filename)
+% enddef ;
+%
+% def doexternalfigure (expr filename) text transformation =
+%     if true : % a bit incompatible esp scaled 1cm now scaled the natural size
+%         draw rawtextext("\externalfigure[" & filename & "]") transformation ;
+%     else :
+%         draw unitsquare transformation withprescript "fg_name=" & filename ;
+%     fi ;
+% enddef ;
+
+def withmask primary filename =
+    withprescript "fg_mask=" & filename
+enddef ;
+
+vardef externalfigure primary filename =
+    mfun_tt_c := nullpicture ;
+    mfun_tt_r := lua.mp.mf_external_figure(filename) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled htpart mfun_tt_r
+        withprescript "mf_object=figure"
+        withprescript "fg_name=" & filename ;
+    ;
+    mfun_tt_c
+enddef ;
+
+def figure primary filename =
+    rawtextext("\externalfigure[" & filename & "]")
+enddef ;
+
+% Positions
+
+def register (expr tag, width, height, offset) =
+%     draw image (
+        addto currentpicture doublepath unitsquare xscaled width yscaled height shifted offset
+            withprescript "ps_label=" & tag ;
+%     ) ; % no transformations
+enddef ;
+
+% outlines (todo: pass around less arguments)
+
+numeric currentoutlinetext ; currentoutlinetext := 0 ;
+
+vardef mfun_do_outline_text_flush (expr kind, n, x, y, c) (text t) =
+    if kind = "f" :
+        mfun_do_outline_text_f (n, x, y, c) (t)
+    elseif kind = "d" :
+        mfun_do_outline_text_d (n, x, y, c) (t)
+    elseif kind = "b" :
+        mfun_do_outline_text_b (n, x, y, c) (t)
+    elseif kind = "r" :
+        mfun_do_outline_text_r (n, x, y, c) (t)
+    elseif kind = "p" :
+        mfun_do_outline_text_p (n, x, y, c) (t)
+    elseif kind = "u" :
+        mfun_do_outline_text_u (n, x, y, c) (t)
+    else :
+        mfun_do_outline_text_n (n, x, y, c) (t)
+    fi ;
+enddef ;
+
+vardef mfun_do_outline_rule_flush (expr kind, x, y, w, h) =
+    mfun_do_outline_text_flush (kind, 1, x, y, "") (fullsquare xyscaled(w,h))
+enddef ;
+
+numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;
+
+vardef mfun_do_outline_text_f (expr n, x, y, c) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withpen pencircle scaled 0 withprescript c ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_u (expr n, x, y, c) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fillup else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withprescript c ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_d (expr n, x, y, c) (text t) =
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_p (expr n, x, y, c) (text t) =
+    for i=t :
+        draw i shifted(x,y) withprescript c ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_b (expr n, x, y, c) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
+    endfor ;
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_r (expr n, x, y, c) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_n (expr n, x, y, c) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_set_f (text f) text r =
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_u (text f) text r =
+    def mfun_do_outline_options_f = f enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_d (text d) text r =
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_b (text f) (text d) text r =
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_r (text d) (text f) text r =
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_n text r =
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_p =
+enddef ;
+
+def mfun_do_outline_options_d = enddef ;
+def mfun_do_outline_options_f = enddef ;
+def mfun_do_outline_options_r = enddef ;
+
+def outlinetexttopath(text o, p, n) =
+    scantokens("numeric " & str n &   ";") ;
+    scantokens("path "    & str p & "[];") ;
+    n := 0 ;
+    for i within o : p[incr(n)] := pathpart i ; endfor ;
+enddef ;
+
+def filloutlinetext(expr o) =
+    draw image (
+        save n, m ; numeric n, m ; n := m := 0 ;
+        for i within o :
+            n := n + 1 ;
+        endfor ;
+        for i within o :
+            m := m + 1 ;
+            if n = m :
+                eofill
+            else :
+                nofill
+            fi pathpart i ;
+        endfor ;
+    )
+enddef ;
+
+def drawoutlinetext(expr o) =
+    draw image (
+        % nicer for properties
+        for i within o :
+            draw pathpart i ;
+        endfor ;
+    )
+enddef ;
+
+vardef outlinetext@# (expr t) text rest =
+    save kind ; string kind ; kind := str @# ;
+    currentoutlinetext := currentoutlinetext + 1 ;
+    def mfun_do_outline_options_d = enddef ;
+    def mfun_do_outline_options_f = enddef ;
+    def mfun_do_outline_options_r = enddef ;
+    image ( normaldraw image (
+      % lua.mp.report("set outline text",currentoutlinetext);
+        lua.mp.mf_outline_text(currentoutlinetext,t,kind) ;
+      % lua.mp.report("get outline text",currentoutlinetext);
+        if kind = "f" :
+            mfun_do_outline_text_set_f rest ;
+        elseif kind = "d" :
+            mfun_do_outline_text_set_d rest ;
+        elseif kind = "b" :
+            mfun_do_outline_text_set_b rest ;
+        elseif kind = "u" :
+            mfun_do_outline_text_set_f rest ;
+        elseif kind = "r" :
+            mfun_do_outline_text_set_r rest ;
+        elseif kind = "p" :
+            mfun_do_outline_text_set_p ;
+        else :
+            mfun_do_outline_text_set_n rest ;
+        fi ;
+        lua.mp.mf_get_outline_text(currentoutlinetext) ;
+    ) mfun_do_outline_options_r ; )
+enddef ;
+
+% A few helpers:
+
+numeric mfun_c_b_llx, mfun_c_b_h, mfun_c_b_w, mfun_c_b_l ;
+
+vardef checkedbounds(expr llx,lly,urx,ury) =
+    mfun_c_b_llx := min(xpart llcorner currentpicture,llx) ;
+    mfun_c_b_urx := max(xpart urcorner currentpicture,urx) ;
+    mfun_c_b_lly := min(ypart llcorner currentpicture,lly) ;
+    mfun_c_b_ury := max(ypart urcorner currentpicture,ury) ;
+    (mfun_c_b_llx,mfun_c_b_lly) --
+    (mfun_c_b_urx,mfun_c_b_lly) --
+    (mfun_c_b_urx,mfun_c_b_ury) --
+    (mfun_c_b_llx,mfun_c_b_ury) -- cycle
+enddef ;
+
+vardef checkbounds(expr llx,lly,urx,ury) =
+    setbounds currentpicture to checkedbounds(llx,lly,urx,ury) ;
+enddef ;
+
+vardef strut(expr ht,dp) =
+    setbounds currentpicture to checkedbounds(0,0,ht,dp) ;
+enddef ;
+
+vardef rule(expr wd,ht,dp) =
+    image (fill (0,-dp)--(wd,-dp)--(wd,ht)--(0,ht)--cycle)
+enddef ;
+
+% Housekeeping
+
+extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
+extra_beginfig := extra_beginfig & "currentoutlinetext := 0 ; " ;
+extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
+extra_endfig   := extra_endfig   & "mfun_reset_tex_texts ; " ;
+
+% Bonus
+
+vardef verbatim(expr s) =
+    ditto & "\detokenize{" & s & "}" & ditto
+enddef ;
+
+% New
+
+def bitmapimage(expr xresolution, yresolution, data) =
+    image (
+        addto currentpicture doublepath unitsquare
+            withprescript  "bm_xresolution=" & decimal xresolution
+            withprescript  "bm_yresolution=" & decimal yresolution
+            withpostscript data ;
+    )
+enddef ;
+
+% Experimental:
+%
+% property p ; p = properties(withcolor (1,1,0,0)) ;
+% fill fullcircle scaled 20cm withproperties p ;
+
+let property = picture ;
+
+vardef properties(text t) =
+    image(draw unitcircle t)
+enddef ;
+
+def withproperties expr p =
+    if colormodel p = 3 :
+        withcolor greypart p
+    elseif colormodel p = 5 :
+        withcolor (redpart p,greenpart p,bluepart p)
+    elseif colormodel p = 7 :
+        withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
+    fi
+    withpen penpart p
+    if length (dashpart p) > 0 :
+        dashed dashpart p
+    fi
+    withprescript prescriptpart p
+    withpostscript postscriptpart p
+enddef ;
+
+% Experimental:
+
+primarydef t asgroup s = % s = isolated|knockout
+    begingroup
+    save grouppicture, wrappedpicture, groupbounds ;
+    picture grouppicture, wrappedpicture ; path groupbounds ;
+    grouppicture := if picture t : t else : image(draw t) fi ;
+    groupbounds := boundingbox grouppicture ;
+    wrappedpicture:= nullpicture ;
+    addto wrappedpicture contour groupbounds
+        withprescript "gr_state=start"
+        withprescript "gr_type=" & s ;
+    addto wrappedpicture also grouppicture ;
+    addto wrappedpicture contour groupbounds
+        withprescript "gr_state=stop" ;
+    wrappedpicture
+    endgroup
+enddef ;
+
+% Also experimental ... needs to be made better ... so it can change!
+
+string mfun_auto_align[] ;
+
+mfun_auto_align[0] := "rt" ;
+mfun_auto_align[1] := "urt" ;
+mfun_auto_align[2] := "top" ;
+mfun_auto_align[3] := "ulft" ;
+mfun_auto_align[4] := "lft" ;
+mfun_auto_align[5] := "llft" ;
+mfun_auto_align[6] := "bot" ;
+mfun_auto_align[7] := "lrt" ;
+mfun_auto_align[8] := "rt" ;
+
+def autoalign(expr n) =
+    scantokens mfun_auto_align[round((n mod 360)/45)]
+enddef ;
+
+% draw textext.autoalign(60) ("\strut oeps 1") ;
+% draw textext.autoalign(160)("\strut oeps 2") ;
+% draw textext.autoalign(260)("\strut oeps 3") ;
+% draw textext.autoalign(360)("\strut oeps 4") ;
+
+% new
+%
+% passvariable("version","1.0") ;
+% passvariable("number",123) ;
+% passvariable("string","whatever") ;
+% passvariable("point",(1,2)) ;
+% passvariable("triplet",(1,2,3)) ;
+% passvariable("quad",(1,2,3,4)) ;
+% passvariable("boolean",false) ;
+% passvariable("path",fullcircle scaled 1cm) ;
+
+% we could use the new lua interface but there is not that much gain i.e.
+% we still need to serialize
+
+vardef mfun_point_to_string(expr p,i) =
+    decimal xpart (point       i of p) & " " &
+    decimal ypart (point       i of p) & " " &
+    decimal xpart (precontrol  i of p) & " " &
+    decimal ypart (precontrol  i of p) & " " &
+    decimal xpart (postcontrol i of p) & " " &
+    decimal ypart (postcontrol i of p)
+enddef ;
+
+vardef mfun_transform_to_string(expr t) =
+    decimal xxpart t & " " &   % rx
+    decimal xypart t & " " &   % sx
+    decimal yxpart t & " " &   % sy
+    decimal yypart t & " " &   % ry
+    decimal xpart  t & " " &   % tx
+    decimal ypart  t           % ty
+enddef ;
+
+vardef mfun_numeric_to_string(expr n) =
+    decimal n
+enddef ;
+
+vardef mfun_pair_to_string(expr p) =
+    decimal xpart p & " " &
+    decimal ypart p
+enddef ;
+
+vardef mfun_rgbcolor_to_string(expr c) =
+    decimal redpart   c & " " &
+    decimal greenpart c & " " &
+    decimal bluepart  c
+enddef ;
+
+vardef mfun_cmykcolor_to_string(expr c) =
+    decimal cyanpart    c & " " &
+    decimal magentapart c & " " &
+    decimal yellowpart  c & " " &
+    decimal blackpart   c
+enddef ;
+
+vardef mfun_pair_to_table(expr p) =
+    "{" & decimal xpart p &
+    "," & decimal ypart p &
+    "}"
+enddef ;
+
+vardef mfun_point_to_table(expr p,i) =
+    "{" & decimal xpart (point       i of p) &
+    "," & decimal ypart (point       i of p) &
+    "," & decimal xpart (precontrol  i of p) &
+    "," & decimal ypart (precontrol  i of p) &
+    "," & decimal xpart (postcontrol i of p) &
+    "," & decimal ypart (postcontrol i of p) &
+    "}"
+enddef ;
+
+vardef mfun_path_to_table(expr p) =
+    "{" & mfun_point_to_table(p,0) for i=1 upto length(p) : & "," & mfun_point_to_table(p,i) endfor & "}"
+enddef ;
+
+vardef mfun_rgb_to_table(expr c) =
+    "{" & decimal redpart   c &
+    "," & decimal greenpart c &
+    "," & decimal bluepart  c &
+    "}"
+enddef ;
+
+vardef mfun_cmyk_to_table(expr c) =
+    "{" & decimal cyanpart    c &
+    "," & decimal magentapart c &
+    "," & decimal yellowpart  c &
+    "," & decimal blackpart   c &
+    "}"
+enddef ;
+
+vardef mfun_grey_to_string(expr n) =
+    decimal n
+enddef ;
+
+vardef mfun_path_to_string(expr p) =
+    mfun_point_to_string(p,0) for i=1 upto length(p) : & " " & mfun_point_to_string(p,i) endfor
+enddef ;
+
+vardef mfun_boolean_to_string(expr b) =
+    if b : "true" else : "false" fi
+enddef ;
+
+vardef tostring primary v =
+    if     numeric   v : mfun_numeric_to_string(v)
+    elseif pair      v : mfun_pair_to_string(v)
+    elseif rgbcolor  v : mfun_rgbcolor_to_string(v)
+    elseif cmykcolor v : mfun_cmykcolor_to_string(v)
+    elseif greycolor v : mfun_greycolor_to_string(v)
+    elseif boolean   v : mfun_boolean_to_string(v)
+    elseif path      v : mfun_path_to_string(v)
+    elseif transform v : mfun_transform_to_string(v)
+    else               : v
+    fi
+enddef ;
+
+vardef topair primary p =
+    if     pair    p : "(" & decimal xpart p & "," & decimal ypart p & ")"
+    elseif numeric p : "(" & decimal       p & "," & decimal       p & ")"
+    else             : "" fi
+enddef ;
+
+string dq ; dq := char 92 & char 34 ;
+string sq ; sq := char 92 & char 39 ;
+
+vardef quote     primary s = sq & tostring(s) & sq enddef;
+vardef quotation primary s = dq & tostring(s) & dq enddef;
+
+vardef mfun_tagged_string(expr value) =
+    if     numeric   value : "1:" & mfun_numeric_to_string(value)
+    elseif pair      value : "4:" & mfun_pair_to_string(value)
+    elseif rgbcolor  value : "5:" & mfun_rgbcolor_to_string(value)
+    elseif cmykcolor value : "6:" & mfun_cmykcolor_to_string(value)
+    elseif boolean   value : "3:" & mfun_boolean_to_string(value)
+    elseif path      value : "7:" & mfun_path_to_string(value)
+    elseif transform value : "8:" & mfun_transform_to_string(value)
+    else                   : "2:" & value
+    fi
+enddef ;
+
+% A more flexible variant for passing data to context. We used to construct strings
+% but running lua is fast enough so we can gain on string construction in metapost
+% which is also not that efficient.
+
+vardef mfun_key_to_lua(expr k) =
+    if numeric k : decimal k else : "'" & k & "'" fi
+enddef ;
+
+vardef mfun_point_to_lua(expr k,p,i) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xpart (point       i of p) & "," &
+        decimal ypart (point       i of p) & "," &
+        decimal xpart (precontrol  i of p) & "," &
+        decimal ypart (precontrol  i of p) & "," &
+        decimal xpart (postcontrol i of p) & "," &
+        decimal ypart (postcontrol i of p)
+    & "})" ) ;
+enddef ;
+
+vardef mfun_transform_to_lua(expr k,t) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xxpart t & "," &   % rx
+        decimal xypart t & "," &   % sx
+        decimal yxpart t & "," &   % sy
+        decimal yypart t & "," &   % ry
+        decimal xpart  t & "," &   % tx
+        decimal ypart  t           % ty
+    & "})" ) ;
+enddef ;
+
+vardef mfun_numeric_to_lua(expr k,n) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & "," & decimal n & ")" ) ;
+enddef ;
+
+vardef mfun_pair_to_lua(expr k,p) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal xpart p & "," &
+        decimal ypart p
+    & "})" ) ;
+enddef ;
+
+vardef mfun_rgbcolor_to_lua(expr k,c) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal redpart   c & "," &
+        decimal greenpart c & "," &
+        decimal bluepart  c
+    & "})" ) ;
+enddef ;
+
+vardef mfun_cmykcolor_to_lua(expr k,c) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
+        decimal cyanpart    c & "," &
+        decimal magentapart c & "," &
+        decimal yellowpart  c & "," &
+        decimal blackpart   c
+    & "})" ) ;
+enddef ;
+
+vardef mfun_path_to_lua(expr k,p) =
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
+    for i=0 upto length(p) :
+        mfun_point_to_lua(i+1,p,i) ;
+    endfor ;
+    runscript("metapost.popvariable()") ;
+enddef ;
+
+vardef mfun_boolean_to_lua(expr k,b) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & if b : ",true)" else : ",false)" fi ) ;
+enddef ;
+
+vardef mfun_string_to_lua(expr k,s) =
+    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",[==[" & s & "]==])" ) ;
+enddef ;
+
+def passvariable(expr key, value) =
+    if     numeric   value : mfun_numeric_to_lua  (key,value) ;
+    elseif pair      value : mfun_pair_to_lua     (key,value) ;
+    elseif string    value : mfun_string_to_lua   (key,value) ;
+    elseif boolean   value : mfun_boolean_to_lua  (key,value) ;
+    elseif path      value : mfun_path_to_lua     (key,value) ;
+    elseif rgbcolor  value : mfun_rgbcolor_to_lua (key,value) ;
+    elseif cmykcolor value : mfun_cmykcolor_to_lua(key,value) ;
+    elseif transform value : mfun_transform_to_lua(key,value) ;
+    fi ;
+enddef ;
+
+def passarrayvariable(expr key)(suffix values)(expr first, last, stp) =
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(key) & ")") ;
+    for i=first step stp until last :
+        passvariable(i, values[i]) ;
+    endfor
+    runscript("metapost.popvariable()") ;
+enddef ;
+
+def startpassingvariable(expr k) =
+    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
+enddef ;
+
+def stoppassingvariable =
+    runscript("metapost.popvariable()") ;
+enddef ;
+
+% moved here from mp-grap.mpiv
+
+% vardef escaped_format(expr s) =
+%     "" for n=0 upto length(s) : &
+%         if ASCII substring (n,n+1) of s = 37 :
+%             "@"
+%         else :
+%             substring (n,n+1) of s
+%         fi
+%     endfor
+% enddef ;
+
+numeric mfun_esc_b ; % begin
+numeric mfun_esc_l ; % length
+string  mfun_esc_s ; % character
+
+mfun_esc_s := "%" ; % or: char(37)
+
+% this one is the fastest when we have a match
+
+% vardef escaped_format(expr s) =
+%     "" for n=0 upto length(s)-1 : &
+%       % if ASCII substring (n,n+1) of s = 37 :
+%         if substring (n,n+1) of s = mfun_esc_s :
+%             "@"
+%         else :
+%             substring (n,n+1) of s
+%         fi
+%     endfor
+% enddef ;
+
+% this one wins when we have no match
+
+vardef escaped_format(expr s) =
+    mfun_esc_b := 0 ;
+    mfun_esc_l := length(s) ;
+    for n=0 upto mfun_esc_l-1 :
+      % if ASCII substring (n,n+1) of s = 37 :
+        if substring (n,n+1) of s = mfun_esc_s :
+            if mfun_esc_b = 0 :
+                ""
+            fi
+            if n >= mfun_esc_b :
+                & (substring (mfun_esc_b,n) of s)
+                exitif numeric begingroup mfun_esc_b := n+1 endgroup ; % hide
+            fi
+            & "@"
+        fi
+    endfor
+    if mfun_esc_b = 0 :
+        s
+  % elseif mfun_esc_b > 0 :
+    elseif mfun_esc_b < mfun_esc_l :
+        & (substring (mfun_esc_b,mfun_esc_l) of s)
+    fi
+enddef ;
+
+vardef strfmt(expr f, x) = "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
+vardef varfmt(expr f, x) = "\MPformatted{"   & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
+
+vardef format@#   (expr f, x) = textext@#(strfmt(f, x)) enddef ;
+vardef formatted@#(expr f, x) = textext@#(varfmt(f, x)) enddef ;
+
+% could be this (something to discuss with alan as it involves graph):
+%
+% vardef format   (expr f,x) = lua.mp.graphformat(f,mfun_tagged_string(x) enddef ;
+% vardef formatted(expr f,x) = lua.mp.format     (f,                   x) enddef ;
+%
+% def strfmt = format    enddef ; % old
+% def varfmt = formatted enddef ; % old
+
+
+% def fmttext = lua.mp.formatted enddef ;
+
+% new
+
+def fillup   text t = draw t withpostscript "both"    enddef ; % we use draw because we need the proper boundingbox
+def eofillup text t = draw t withpostscript "eoboth"  enddef ; % we use draw because we need the proper boundingbox
+def eofill   text t = fill t withpostscript "evenodd" enddef ;
+def nofill   text t = fill t withpostscript "collect" enddef ;
+def nodraw   text t = draw t withpostscript "collect" enddef ;
+def dodraw   text t = draw t withpostscript "flush"   enddef ;
+def dofill   text t = fill t withpostscript "flush"   enddef ;
+
+% maybe (saves a bogus path but the problem is that it can influence the dimensions):
+
+% def dodraw text t = draw center currentpicture         withpostscript "flush" enddef ;
+% def dofill text t = fill center currentpicture --cycle withpostscript "flush" enddef ;
+
+if contextlmtxmode :
+    def eoclip text t = clip t withpostscript "evenodd" enddef ;
+else :
+    def eoclip text t = clip t enddef ; % no postscripts yet
+fi ;
+
+% def withrule expr r =
+%     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi
+% enddef ;
+
+% A comment will end up on top of the graphic in the output. This can be handy for
+% locating a graphic: comment("test graphic").
+
+def comment expr str =
+    special "metapost.comment[[" & str & "]]" ;
+enddef ;
+
+vardef report(text t) =
+    lua.mp.report(t)
+enddef ;
+
+% This overloads a dummy:
+
+vardef uniquelist(suffix list) =
+    % this can be optimized by passing all values at once and returning
+    % a result but for now this is ok .. we need an undef foo
+    save i, j, h ;
+    if known lis[0] :
+        i := 0 ;
+        j := -1 ;
+    else :
+        i := 1 ;
+        j := 0 ;
+    fi ;
+    h := lua.mp.newhash() ;
+    forever :
+        exitif unknown list[i] ;
+        if not lua.mp.inhash(h,list[i]) :
+            j := j + 1 ;
+            list[j] := list[i] ;
+            lua.mp.tohash(h,list[i]) ;
+        fi ;
+        i := i + 1 ;
+    endfor ;
+    for n = j+1 step 1 until i-1 :
+        dispose(list[n])
+    endfor ;
+    lua.mp.disposehash(h) ;
+enddef ;

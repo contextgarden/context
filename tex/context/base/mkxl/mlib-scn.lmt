@@ -33,14 +33,8 @@ local insert, remove = table.insert, table.remove
 local mplib    = mplib
 local metapost = metapost
 
-local codes = mplib.getcodes()
-local types = mplib.gettypes()
-
-table.hashed(codes)
-table.hashed(types)
-
-metapost.codes = codes
-metapost.types = types
+local codes = metapost.codes
+local types = metapost.types
 
 local setmetatableindex   = table.setmetatableindex
 
@@ -676,21 +670,23 @@ function metapost.scanparameters()
     return get_parameters()
 end
 
-metapost.registerscript("getparameters",       getparameters)
-metapost.registerscript("applyparameters",     applyparameters)
-metapost.registerscript("presetparameters",    presetparameters)
-metapost.registerscript("hasparameter",        hasparameter)
-metapost.registerscript("hasoption",           hasoption)
-metapost.registerscript("getparameter",        getparameter)
-metapost.registerscript("getparameterdefault", getparameterdefault)
-metapost.registerscript("getparametercount",   getparametercount)
-metapost.registerscript("getmaxparametercount",getmaxparametercount)
-metapost.registerscript("getparameterpath",    getparameterpath)
-metapost.registerscript("getparameterpen",     getparameterpen)
-metapost.registerscript("getparametertext",    getparametertext)
---------.registerscript("getparameteroption",  getparameteroption)
-metapost.registerscript("pushparameters",      pushparameters)
-metapost.registerscript("popparameters",       popparameters)
+local registerscript = metapost.registerscript
+
+registerscript("getparameters",       getparameters)
+registerscript("applyparameters",     applyparameters)
+registerscript("presetparameters",    presetparameters)
+registerscript("hasparameter",        hasparameter)
+registerscript("hasoption",           hasoption)
+registerscript("getparameter",        getparameter)
+registerscript("getparameterdefault", getparameterdefault)
+registerscript("getparametercount",   getparametercount)
+registerscript("getmaxparametercount",getmaxparametercount)
+registerscript("getparameterpath",    getparameterpath)
+registerscript("getparameterpen",     getparameterpen)
+registerscript("getparametertext",    getparametertext)
+--------------("getparameteroption",  getparameteroption)
+registerscript("pushparameters",      pushparameters)
+registerscript("popparameters",       popparameters)
 
 function metapost.getparameter(list)
     local n = #list
@@ -716,7 +712,7 @@ end
 
 -- goodies
 
-metapost.registerscript("definecolor", function()
+registerscript("definecolor", function()
     scantoken() -- we scan the semicolon
     local s = get_parameters()
     attributes.colors.defineprocesscolordirect(s)

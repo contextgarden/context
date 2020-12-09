@@ -19,8 +19,8 @@ boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: t
 
 input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;
-input "mp-mlib.mpiv" ;
 input "mp-luas.mpxl" ;
+input "mp-mlib.mpxl" ;
 input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
 input "mp-page.mpxl" ;

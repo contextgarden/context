@@ -30,6 +30,7 @@ local set    = mp.set
 local get    = mp.get
 local aux    = mp.aux
 local scan   = mp.scan
+local skip   = mp.skip
 local inject = mp.inject
 
 do
@@ -85,10 +86,12 @@ do
         else
             runscripts[nofscripts] = name
         end
+-- print("set",name,nofscripts,f)
         return nofscripts
     end
 
     function metapost.scriptindex(name)
+-- print("get",name,runnames[name] or 0)
         return runnames[name] or 0
     end
 
@@ -185,11 +188,14 @@ do
             result = f()
             if result then
                 local t = type(result)
-                if t == "number" then
-                    result = f_numeric(result)
-                elseif t == "table" then
-                    result = concat(result) -- no spaces here
+                -- we can consider to use the injector for tables but then we need to
+                -- check if concatination is expected so best keep this!
+                if t == "number" or t == "boolean" then
+                    -- native types
+                elseif t == "string" or t == "table" then
+                    -- (concatenated) passed to scantokens
                 else
+                    -- scantokens
                     result = tostring(result)
                 end
                 if trace_luarun then
@@ -242,7 +248,11 @@ do
     end
 
     function metapost.nofscriptruns()
-        return runs
+        local c = mplib.getcallbackstate()
+        return c.count, string.format(
+            "%s (file: %s, text: %s, script: %s, log: %s)",
+            c.count, c.file, c.text, c.script, c.log
+        )
     end
 
     -- writers
@@ -900,44 +910,51 @@ end
 
 do
 
-    local getmacro = tokens.getters.macro
-    local setmacro = tokens.setters.macro
+    local scanstring     = scan.string
+    local scannumeric    = scan.numeric
+    local skiptoken      = skip.token
 
-    local getdimen = tex.getdimen
-    local getcount = tex.getcount
-    local gettoks  = tex.gettoks
-    local setdimen = tex.setdimen
-    local setcount = tex.setcount
-    local settoks  = tex.settoks
+    local injectstring   = inject.string
+    local injectnumeric  = inject.numeric
 
-    local mpprint  = mp.print
-    local mpquoted = mp.quoted
+    local registerscript = metapost.registerscript
 
-    local bpfactor = number.dimenfactors.bp
+    local comma_code     = metapost.codes.comma
+
+    local getmacro       = tokens.getters.macro
+    local setmacro       = tokens.setters.macro
+
+    local getdimen       = tex.getdimen
+    local getcount       = tex.getcount
+    local gettoks        = tex.gettoks
+    local setdimen       = tex.setdimen
+    local setcount       = tex.setcount
+    local settoks        = tex.settoks
+
+    local bpfactor       = number.dimenfactors.bp
 
     -- more helpers
 
-    function mp.getmacro(k)   mpquoted(getmacro(k)) end
-    function mp.getdimen(k)   mpprint (getdimen(k)*bpfactor) end
-    function mp.getcount(k)   mpprint (getcount(k)) end
-    function mp.gettoks (k)   mpquoted(gettoks (k)) end
+    registerscript("getmacro", function() injectstring (getmacro(scanstring())) end)
+    registerscript("getdimen", function() injectnumeric(getdimen(scanstring())*bpfactor) end)
+    registerscript("getcount", function() injectnumeric(getcount(scanstring())) end)
+    registerscript("gettoks",  function() injectstring (gettoks (scanstring())) end)
 
-    function mp.setmacro(k,v) setmacro(k,v) end
-    function mp.setdimen(k,v) setdimen(k,v/bpfactor) end
-    function mp.setcount(k,v) setcount(k,v) end
-    function mp.settoks (k,v) settoks (k,v) end
+    registerscript("setmacro", function() setmacro(scanstring(),scanstring()) end)
+    registerscript("setdimen", function() setdimen(scanstring(),scannumeric()/bpfactor) end)
+    registerscript("setcount", function() setcount(scanstring(),scannumeric()) end)
+    registerscript("settoks",  function() settoks (scanstring(),scanstring()) end)
 
-    -- def foo = lua.mp.foo ... enddef ; % loops due to foo in suffix
+    local utflen = utf.len
+    local utfsub = utf.sub
 
-    mp._get_macro_ = mp.getmacro
-    mp._get_dimen_ = mp.getdimen
-    mp._get_count_ = mp.getcount
-    mp._get_toks_  = mp.gettoks
+    registerscript("utflen", function()
+        injectnumeric(utflen(scanstring()))
+    end)
 
-    mp._set_macro_ = mp.setmacro
-    mp._set_dimen_ = mp.setdimen
-    mp._set_count_ = mp.setcount
-    mp._set_toks_  = mp.settoks
+    registerscript("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
+        injectstring(utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric()))
+    end)
 
 end
 
@@ -1208,26 +1225,6 @@ function mp.flatten(t)
     if m == 2 then
         t[3] = t[1]
         t[4] = t[2]
-    end
-
-end
-
-do
-
-    -- if needed we can optimize the sub (cache last split)
-
-    local mpnumeric = mp.numeric
-    local mpquoted  = mp.quoted
-
-    local utflen = utf.len
-    local utfsub = utf.sub
-
-    function mp.utflen(s)
-        mpnumeric(utflen(s))
-    end
-
-    function mp.utfsub(s,f,t)
-        mpquoted(utfsub(s,f,t))
     end
 
 end

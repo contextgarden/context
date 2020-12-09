@@ -19,7 +19,7 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="platform" value="string"><short>platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)</short></flag>
+    <flag name="platform" value="string"><short>platform</short></flag>
     <flag name="server" value="string"><short>repository url (rsync://contextgarden.net)</short></flag>
     <flag name="modules" value="string"><short>extra modules (can be list or 'all')</short></flag>
     <flag name="fonts" value="string"><short>additional fonts (can be list or 'all')</short></flag>
@@ -120,7 +120,8 @@ local platforms = {
     ["macosx"]         = "osx-64",
     ["osx"]            = "osx-64",
     ["osx-64"]         = "osx-64",
-    ["osx-arm64"]      = "osx-64",
+    ["osx-arm"]        = "osx-arm64",
+    ["osx-arm64"]      = "osx-arm64",
     --
  -- ["solaris-intel"]  = "solaris-intel",
     --

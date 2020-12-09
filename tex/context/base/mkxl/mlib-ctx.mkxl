@@ -14,10 +14,10 @@
 \writestatus{loading}{MetaPost Library Graphics / Initializations}
 
 \registerctxluafile{mlib-fio}{autosuffix}
-\registerctxluafile{mlib-run}{}
-\registerctxluafile{mlib-ctx}{}
+\registerctxluafile{mlib-run}{autosuffix}
+\registerctxluafile{mlib-ctx}{autosuffix}
 \registerctxluafile{mlib-lua}{autosuffix}
-\registerctxluafile{mlib-mpf}{}
+\registerctxluafile{mlib-mpf}{autosuffix}
 \registerctxluafile{mlib-scn}{autosuffix}
 \registerctxluafile{mlib-mat}{autosuffix}
 \registerctxluafile{mlib-ran}{autosuffix}

@@ -9,7 +9,17 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 local type = type
 local insert, remove = table.insert, table.remove
 
+local codes = mplib.getcodes()
+local types = mplib.gettypes()
+
+table.hashed(codes)
+table.hashed(types)
+
+metapost.codes = codes
+metapost.types = types
+
 local scan   = mp.scan
+local skip   = mp.skip
 local inject = mp.inject
 
 local currentmpx = nil
@@ -30,6 +40,8 @@ local scan_transform  = mplib.scan_transform
 local scan_path       = mplib.scan_path
 local scan_pen        = mplib.scan_pen
 
+local skip_token      = mplib.skip_token
+
 scan.next       = function(k)   return scan_next      (currentmpx,k)   end
 scan.expression = function(k)   return scan_expression(currentmpx,k)   end
 scan.token      = function(k)   return scan_token     (currentmpx,k)   end
@@ -44,6 +56,8 @@ scan.cmykcolor  = function(t)   return scan_cmykcolor (currentmpx,t)   end
 scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
 scan.path       = function(t)   return scan_path      (currentmpx,t)   end
 scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
+
+skip.token      = function(t)   return skip_token     (currentmpx,t)   end
 
 local solvepath = mplib.solvepath
 local getstatus = mplib.getstatus
@@ -73,6 +87,9 @@ inject.color     = function(r,g,b)           return inject_color    (currentmpx,
 inject.cmykcolor = function(c,m,y,k)         return inject_cmykcolor(currentmpx,c,m,y,k)         end
 inject.transform = function(x,y,xx,xy,yx,yy) return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
 inject.whatever  = function(...)             return inject_whatever (currentmpx,...)             end
+
+inject.triplet    = inject.color
+inject.quadruplet = inject.cmykcolor
 
 local function same(p,n)
     local f = p[1]

@@ -140,15 +140,15 @@ vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
 
 % More access
 
-vardef getmacro(expr k)   = lua.mp._get_macro_(k)   enddef ;
-vardef getdimen(expr k)   = lua.mp._get_dimen_(k)   enddef ;
-vardef getcount(expr k)   = lua.mp._get_count_(k)   enddef ;
-vardef gettoks (expr k)   = lua.mp._get_toks_ (k)   enddef ;
+newinternal mfid_getmacro ; mfid_getmacro := scriptindex "getmacro" ; def getmacro = runscript mfid_getmacro enddef ;
+newinternal mfid_getdimen ; mfid_getdimen := scriptindex "getdimen" ; def getdimen = runscript mfid_getdimen enddef ;
+newinternal mfid_getcount ; mfid_getcount := scriptindex "getcount" ; def getcount = runscript mfid_getcount enddef ;
+newinternal mfid_gettoks  ; mfid_gettoks  := scriptindex "gettoks"  ; def gettoks  = runscript mfid_gettoks  enddef ;
 
-def setmacro(expr k,v) = lua.mp._set_macro_(k,v) enddef ;
-def setdimen(expr k,v) = lua.mp._set_dimen_(k,v) enddef ;
-def setcount(expr k,v) = lua.mp._set_count_(k,v) enddef ;
-def settoks (expr k,v) = lua.mp._set_toks_ (k,v) enddef ;
+newinternal mfid_setmacro ; mfid_setmacro := scriptindex "setmacro" ; def setmacro = runscript mfid_setmacro enddef ;
+newinternal mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def setdimen = runscript mfid_setdimen enddef ;
+newinternal mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount = runscript mfid_setcount enddef ;
+newinternal mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks  = runscript mfid_settoks  enddef ;
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
@@ -197,8 +197,14 @@ vardef rightof primary i =                  runscript mfid_path_rightof  i endde
 
 extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
 
-vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
-vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;
+newinternal mfid_utflen ; mfid_utflen := scriptindex "utflen" ;
+newinternal mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
+
+% def utflen = runscript mfid_utflen enddef ;
+% def utfsub = runscript mfid_utfsub enddef ;
+
+vardef utflen(expr s) = runscript mfid_utflen s enddef ; % str
+vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional) last
 
 newinternal mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
 newinternal mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;

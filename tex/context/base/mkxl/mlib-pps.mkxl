@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{mlib-pps}{}
+\registerctxluafile{mlib-pps}{autosuffix}
 
 %D Todo: catch nested graphics like external figures with dummies.
 
