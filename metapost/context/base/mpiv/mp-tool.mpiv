@@ -2205,7 +2205,9 @@ enddef ;
 
 primarydef p enlonged len =
     begingroup
-    if pair p :
+    if len == 0 :
+        p
+    elseif pair p :
         save q ; path q ; q := origin -- p ;
         save al ; al := arclength(q) ;
         if al > 0 :
@@ -2228,8 +2230,12 @@ enddef ;
 % drawarrow p withcolor red ;
 % drawarrow p shortened 1cm withcolor green ;
 
+% primarydef p shortened d =
+%     reverse ( ( reverse (p enlonged -d) ) enlonged -d )
+% enddef ;
+
 primarydef p shortened d =
-    reverse ( ( reverse (p enlonged -d) ) enlonged -d )
+    reverse ( ( reverse (p enlonged -xpart paired(d)) ) enlonged -ypart paired(d) )
 enddef ;
 
 % yes or no, untested -)

@@ -21,6 +21,7 @@ local report_symbols = logs.reporter ("fonts","symbols")
 local status_symbols = logs.messenger("fonts","symbols")
 
 local patterns = {
+    "symb-imp-%s.mkxl",
     "symb-imp-%s.mkiv",
     "symb-imp-%s.tex",
     -- obsolete:

@@ -131,6 +131,8 @@ local nuts = {
     is_nut                  = direct.is_direct,
     is_zero_glue            = direct.is_zero_glue,
     ischar                  = direct.is_char,
+    isprevchar              = direct.is_prev_char,
+    isnextchar              = direct.is_next_char,
     isglyph                 = direct.is_glyph,
     kerning                 = direct.kerning,
     last_node               = direct.last_node,
@@ -224,6 +226,7 @@ local nuts = {
     writable_spec           = direct.writable_spec,
     write                   = direct.write,
     append                  = direct.append,
+    has_glyph_option        = direct.has_glyph_option,
 }
 
 nodes.nuts      = nuts

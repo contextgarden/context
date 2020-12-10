@@ -286,7 +286,6 @@ local par_code                = nodecodes.par
 local protrusionboundary_code = nodes.boundarycodes.protrusion
 local leaders_code            = nodes.gluecodes.leaders
 local indentlist_code         = nodes.listcodes.indent
-local ligatureglyph_code      = nodes.glyphcodes.ligature
 local cancel_code             = nodes.dircodes.cancel
 
 local userkern_code           = kerncodes.userkern

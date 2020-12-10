@@ -16,7 +16,7 @@
 
 \writestatus{loading}{ConTeXt Symbol Libraries / Initialization}
 
-\registerctxluafile{symb-ini}{}
+\registerctxluafile{symb-ini}{autosuffix}
 
 \unprotect
 

@@ -40,10 +40,10 @@
 \registerctxluafile{font-ott}{}         % otf tables (first)
 \registerctxluafile{font-otl}{}
 \registerctxluafile{font-oto}{}
-\registerctxluafile{font-otj}{optimize}
+\registerctxluafile{font-otj}{autosuffix,optimize}
 \registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{autosuffix}
-\registerctxluafile{font-ots}{optimize}
+\registerctxluafile{font-ots}{autosuffix,optimize}
 \registerctxluafile{font-otd}{optimize}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}

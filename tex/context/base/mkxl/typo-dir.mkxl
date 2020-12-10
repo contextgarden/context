@@ -22,7 +22,7 @@
 \registerctxluafile{typo-dha}{}
 %registerctxluafile{typo-dua}{}
 %registerctxluafile{typo-dub}{}
-\registerctxluafile{typo-duc}{}
+\registerctxluafile{typo-duc}{autosuffix}
 
 \definesystemattribute[directions][public,pickup]
 

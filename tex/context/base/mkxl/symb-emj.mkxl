@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Symbol Libraries / Emoji}
 
-\registerctxluafile{symb-emj}{}
+\registerctxluafile{symb-emj}{autosuffix}
 
 \unprotect
 

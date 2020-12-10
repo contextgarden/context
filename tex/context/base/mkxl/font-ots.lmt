@@ -203,7 +203,6 @@ local setdisc            = nuts.setdisc
 local getreplace         = nuts.getreplace
 local setlink            = nuts.setlink
 local getwidth           = nuts.getwidth
-local getattr            = nuts.getattr
 
 local getglyphdata       = nuts.getglyphdata
 
@@ -223,6 +222,8 @@ local flush_components   = nuts.flush_components
 ---------------------------------------------------------------------------------------
 
 local ischar             = nuts.ischar
+local isnextchar         = nuts.isnextchar -- only makes sense when we know we need next
+local isprevchar         = nuts.isprevchar -- only makes sense when we know we need prev
 local usesfont           = nuts.uses_font
 
 local insert_node_after  = nuts.insert_after
@@ -259,8 +260,6 @@ local righttoleft_code   = nodes.dirvalues.righttoleft
 
 local discretionarydisc_code = disccodes.discretionary
 local ligatureglyph_code     = glyphcodes.ligature
-
-local a_noligature       = attributes.private("noligature")
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -509,13 +508,7 @@ local no_right_ligature_code = 2
 local no_left_kern_code      = 4
 local no_right_kern_code     = 8
 
-local has_glyph_option = node.direct.has_glyph_option or function(n,c)
-    if c == no_left_ligature_code or c == no_right_ligature_code then
-        return getattr(n,a_noligature) == 1
-    else
-        return false
-    end
-end
+local has_glyph_option       = nuts.has_glyph_option
 
 -- in lmtx we need to check the components and can be slightly more clever
 
@@ -766,13 +759,15 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local startchar = getchar(start)
     if skiphash and skiphash[startchar] then
         while current do
-            local char = ischar(current,currentfont)
+         -- local char = ischar(current,currentfont)
+            local nxt, char = isnextchar(current,currentfont)
             if char then
                 local lg = ligature[char]
                 if lg then
                     stop     = current
                     ligature = lg
-                    current  = getnext(current)
+                 -- current  = getnext(current)
+                    current  = nxt
                 else
                     break
                 end
@@ -2497,17 +2492,20 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     sweeptype = nil
                 end
                 if last then
-                    local char, id = ischar(last,currentfont)
+                 -- local char, id = ischar(last,currentfont)
+                    local nxt, char, id = isnextchar(last,currentfont)
                     if char then
                         if skiphash and skiphash[char] then
                             skipped = true
                             if trace_skips then
                                 show_skip(dataset,sequence,char,ck,classes[char])
                             end
-                            last = getnext(last)
+                         -- last = getnext(last)
+                            last = nxt
                         elseif seq[n][char] then
                             if n < l then
-                                last = getnext(last)
+                             -- last = getnext(last)
+                                last = nxt
                             end
                             n = n + 1
                         elseif discfound then
@@ -2583,7 +2581,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             end
                         end
                         -- maybe only if match
-                        last = getnext(last)
+                     -- last = getnext(last)
+                        last = nxt
                     else
                         goto next
                     end
@@ -2606,17 +2605,20 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     local n = f - 1
                     while n >= 1 do
                         if prev then
-                            local char, id = ischar(prev,currentfont)
+                         -- local char, id = ischar(prev,currentfont)
+                            local prv, char, id = isprevchar(prev,currentfont)
                             if char then
                                 if skiphash and skiphash[char] then
                                     skipped = true
                                     if trace_skips then
                                         show_skip(dataset,sequence,char,ck,classes[char])
                                     end
-                                    prev = getprev(prev)
+                                 -- prev = getprev(prev)
+                                    prev = prv
                                 elseif seq[n][char] then
                                     if n > 1 then
-                                        prev = getprev(prev)
+                                     -- prev = getprev(prev)
+                                        prev = prv
                                     end
                                     n = n - 1
                                 elseif discfound then
@@ -2694,22 +2696,26 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                      -- notmatchreplace[prev] = true -- not according to Kai
                                     end
                                 end
-                                prev = getprev(prev)
+                             -- prev = getprev(prev)
+                                prev = prv
                          -- elseif id == glue_code and seq[n][32] and isspace(prev,threshold,id) then
                          -- elseif seq[n][32] and spaces[prev] then
                          --     n = n - 1
-                         --     prev = getprev(prev)
+                         --  -- prev = getprev(prev)
+                         --     prev = prv
                             elseif id == glue_code then
                                 local sn = seq[n]
                                 if (sn[32] and spaces[prev]) or sn[0xFFFC] then
                                     n = n - 1
-                                    prev = getprev(prev)
+                                 -- prev = getprev(prev)
+                                    prev = prv
                                 else
                                     goto next
                                 end
                             elseif seq[n][0xFFFC] then
                                 n = n - 1
-                                prev = getprev(prev)
+                             -- prev = getprev(prev)
+                                prev = prv
                             else
                                 goto next
                             end
@@ -2737,14 +2743,16 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                 local n = l + 1
                 while n <= s do
                     if current then
-                        local char, id = ischar(current,currentfont)
+                     -- local char, id = ischar(current,currentfont)
+                        local nxt, char, id = isnextchar(current,currentfont)
                         if char then
                             if skiphash and skiphash[char] then
                                 skipped = true
                                 if trace_skips then
                                     show_skip(dataset,sequence,char,ck,classes[char])
                                 end
-                                current = getnext(current) -- was absent
+                             -- current = getnext(current) -- was absent
+                                current = nxt -- was absent
                             elseif seq[n][char] then
                                 if n < s then -- new test
                                     current = getnext(current) -- was absent
@@ -2827,13 +2835,15 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             local sn = seq[n]
                             if (sn[32] and spaces[current]) or sn[0xFFFC] then
                                 n = n + 1
-                                current = getnext(current)
+                             -- current = getnext(current)
+                                current = nxt
                             else
                                 goto next
                             end
                         elseif seq[n][0xFFFC] then
                             n = n + 1
-                            current = getnext(current)
+                         -- current = getnext(current)
+                            current = nxt
                         else
                             goto next
                         end
@@ -3887,10 +3897,12 @@ do
                     local step = steps[1]
                     local lookupcache = step.coverage
                     while start do
-                        local char, id = ischar(start,font)
+                     -- local char, id = ischar(start,font)
+                        local nxt, char, id = isnextchar(start,font)
                         if char then
                             if skiphash and skiphash[char] then -- we never needed it here but let's try
-                                start = getnext(start)
+                             -- start = getnext(start)
+                                start = nxt
                             else
                                 local lookupmatch = lookupcache[char]
                                 if lookupmatch then
@@ -3909,20 +3921,23 @@ do
                                      --     done = true
                                      -- end
                                         if df then
--- print("restart 1",typ)
+                                         -- print("restart 1",typ)
                                         elseif start then
-                                            start = getnext(start)
+                                            start = getnext(start) -- can be a new start
                                         end
                                     else
-                                        start = getnext(start)
+                                     -- start = getnext(start)
+                                        start = nxt
                                     end
                                 else
-                                   start = getnext(start)
+                                 -- start = getnext(start)
+                                    start = nxt
                                 end
                             end
                         elseif char == false or id == glue_code then
                             -- a different font|state or glue (happens often)
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
                                 local ok
@@ -3937,27 +3952,33 @@ do
                              --     done = true
                              -- end
                             else
-                                start = getnext(start)
+                             -- start = getnext(start)
+                                start = nxt
                             end
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                      -- elseif id == par_code and start_of_par(start) then
                      --     rlparmode, rlmode = pardirstate(start)
-                     --     start = getnext(start)
+                     --  -- start = getnext(start)
+                         -- start = nxt
                         else
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                         end
                     end
                 else
                     local merged = steps.merged
                     while start do
-                        local char, id = ischar(start,font)
+                     -- local char, id = ischar(start,font)
+                        local nxt, char, id = isnextchar(start,font)
                         if char then
                             if skiphash and skiphash[char] then -- we never needed it here but let's try
-                                start = getnext(start)
+                             -- start = getnext(start)
+                                start = nxt
                             else
                                 local m = merged[char]
                                 if m then
@@ -3993,20 +4014,23 @@ do
                                             end
                                         end
                                         if df then
--- print("restart 2",typ)
+                                         -- print("restart 2",typ)
                                         elseif start then
-                                            start = getnext(start)
+                                            start = getnext(start) -- can be a new next
                                         end
                                     else
-                                        start = getnext(start)
+                                     -- start = getnext(start)
+                                        start = nxt
                                     end
                                 else
-                                    start = getnext(start)
+                                 -- start = getnext(start)
+                                    start = nxt
                                 end
                             end
                         elseif char == false or id == glue_code then
                             -- a different font|state or glue (happens often)
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
                                 local ok
@@ -4021,18 +4045,21 @@ do
                              --     done = true
                              -- end
                             else
-                                start = getnext(start)
+                             -- start = getnext(start)
+                                start = nxt
                             end
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                      -- elseif id == par_code and start_of_par(start) then
                      --     rlparmode, rlmode = pardirstate(start)
                      --     start = getnext(start)
                         else
-                            start = getnext(start)
+                         -- start = getnext(start)
+                            start = nxt
                         end
                     end
                 end
@@ -4097,13 +4124,15 @@ do
         local position  = 0
 
         while start do
-            local char, id = ischar(start,font)
+         -- local char, id = ischar(start,font)
+            local nxt, char, id = isnextchar(start,font)
             if char then
                 position = position + 1
                 local m = merged[char]
                 if m then
                     if skiphash and skiphash[char] then -- we never needed it here but let's try
-                        start = getnext(start)
+                     -- start = getnext(start)
+                        start = nxt
                     else
                         for i=m[1],m[2] do
                             local step = steps[i]
@@ -4125,25 +4154,30 @@ do
                             end
                         end
                         if start then
-                            start = getnext(start)
+                            start = getnext(start) -- start can be new
                         end
                     end
                 else
-                    start = getnext(start)
+                 -- start = getnext(start)
+                    start = nxt
                 end
             elseif char == false or id == glue_code then
                 -- a different font|state or glue (happens often)
-                start = getnext(start)
+             -- start = getnext(start)
+                start = nxt
             elseif id == math_code then
                 start = getnext(end_of_math(start))
             elseif id == dir_code then
                 topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                start = getnext(start)
+             -- start = getnext(start)
+                start = nxt
          -- elseif id == par_code and start_of_par(start) then
          --     rlparmode, rlmode = pardirstate(start)
-         --     start = getnext(start)
+         --  -- start = getnext(start)
+             -- start = nxt
             else
-                start = getnext(start)
+             -- start = getnext(start)
+                start = nxt
             end
         end
 

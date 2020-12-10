@@ -115,11 +115,11 @@
 
 \stopluacode
 
-\unexpanded\def\showfields  #1{\ctxlua{document.functions.showfields("#1")}}
-\unexpanded\def\showid      #1{\ctxlua{document.functions.showid("#1")}}
-\unexpanded\def\showsubtypes#1{\ctxlua{document.functions.showsubtypes("#1")}}
-\unexpanded\def\showvalues  #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
-\unexpanded\def\showtypes     {\ctxlua{document.functions.showvalues(node.types())}}
+\protected\def\showfields  #1{\ctxlua{document.functions.showfields("#1")}}
+\protected\def\showid      #1{\ctxlua{document.functions.showid("#1")}}
+\protected\def\showsubtypes#1{\ctxlua{document.functions.showsubtypes("#1")}}
+\protected\def\showvalues  #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
+\protected\def\showtypes     {\ctxlua{document.functions.showvalues(node.types())}}
 
 
 \definecolor[blue]      [b=.5]
@@ -320,13 +320,13 @@
     {\strut\useMPgraphic{luanumber}}
 \stopsetups
 
-\unexpanded\def\nonterminal#1>{\mathematics{\langle\hbox{\rm #1}\rangle}}
+\protected\def\nonterminal#1>{\mathematics{\langle\hbox{\rm #1}\rangle}}
 
 % taco's brainwave -) .. todo: create a typing variant so that we can avoid the !crlf
 
 \newcatcodetable\syntaxcodetable
 
-\unexpanded\def\makesyntaxcodetable
+\protected\def\makesyntaxcodetable
   {\begingroup
    \catcode`\<=13 \catcode`\|=12
    \catcode`\!= 0 \catcode`\\=12
@@ -335,11 +335,11 @@
 
 \makesyntaxcodetable
 
-\unexpanded\def\startsyntax {\begingroup\catcodetable\syntaxcodetable  \dostartsyntax}
-\unexpanded\def\syntax      {\begingroup\catcodetable\syntaxcodetable  \dosyntax}
+\protected\def\startsyntax {\begingroup\catcodetable\syntaxcodetable  \dostartsyntax}
+\protected\def\syntax      {\begingroup\catcodetable\syntaxcodetable  \dosyntax}
            \let\stopsyntax   \relax
 
-\unexpanded\def\syntaxenvbody#1%
+\protected\def\syntaxenvbody#1%
   {\par
    \tt
    \startnarrower
@@ -348,7 +348,7 @@
    \stopnarrower
    \par}
 
-\unexpanded\def\syntaxbody#1%
+\protected\def\syntaxbody#1%
   {\begingroup
  % \maincolor
    \tt #1%
@@ -433,13 +433,13 @@
 \defineregister[nodeindex]
 \defineregister[libraryindex]
 
-\unexpanded\def\lpr#1{\doifmode{*bodypart}{\primitiveindex[#1]{\bf\tex {#1}}}\tex {#1}}
-\unexpanded\def\prm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
-\unexpanded\def\orm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
-\unexpanded\def\cbk#1{\doifmode{*bodypart}{\callbackindex [#1]{\type   {#1}}}\type{#1}}
-\unexpanded\def\nod#1{\doifmode{*bodypart}{\nodeindex     [#1]{\bf\type{#1}}}\type{#1}}
-\unexpanded\def\whs#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
-\unexpanded\def\noa#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
+\protected\def\lpr#1{\doifmode{*bodypart}{\primitiveindex[#1]{\bf\tex {#1}}}\tex {#1}}
+\protected\def\prm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
+\protected\def\orm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
+\protected\def\cbk#1{\doifmode{*bodypart}{\callbackindex [#1]{\type   {#1}}}\type{#1}}
+\protected\def\nod#1{\doifmode{*bodypart}{\nodeindex     [#1]{\bf\type{#1}}}\type{#1}}
+\protected\def\whs#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
+\protected\def\noa#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
 
 \hyphenation{sub-nodes}
 
@@ -463,14 +463,14 @@
   [2]
   [textstyle=\tttf]
 
-\unexpanded\def\lib     #1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}}\type{\currentlibraryindex.#1}}
-\unexpanded\def\libindex#1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}}}
-\unexpanded\def\libidx#1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}\type{#1.#2}}}
-\unexpanded\def\lix   #1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}}}
+\protected\def\lib     #1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}}\type{\currentlibraryindex.#1}}
+\protected\def\libindex#1{\doifmode{*bodypart}{\expanded{\libraryindex{\currentlibraryindex+#1}}}}
+\protected\def\libidx#1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}\type{#1.#2}}}
+\protected\def\lix   #1#2{\doifmode{*bodypart}{\expanded{\libraryindex{#1+#2}}}}
 
 % \setstructurepageregister[][keys:1=,entries:1=]
 
-\unexpanded\def\inlineluavalue#1%
+\protected\def\inlineluavalue#1%
   {{\maincolor \ctxlua {
        local t = #1
        if type(t) == "table" then
@@ -480,5 +480,75 @@
        end
        context.typ(t)
   }}}
+
+% Common:
+
+% Added December 9 2020 after being energized by Becca Stevens's Slow Burn music
+% video: interesting what comes out of top musicians working remote.
+
+\startluacode
+local list = token.getprimitives()
+
+-- redo this:
+
+function document.showprimitives(tag)
+    local t = tex.extraprimitives(tag)
+    table.sort(t)
+    for i=1,#t do
+        local v = t[i]
+        if v ~= ' ' and v ~= "/" and v ~= "-" then
+            context.type(v)
+            context.space()
+        end
+    end
+end
+
+-- inspect(tokens.commands)
+
+function document.filteredprimitives(cmd)
+    local t = { }
+    local c = tokens.commands[cmd]
+    for i=1,#list do
+        local l = list[i]
+        if l[1] == c then
+            t[#t+1] = l[3]
+        end
+    end
+    table.sort(t)
+    for i=1,#t do
+        if i > 1 then
+            context(", ")
+        elseif i == #t then
+            context(" and ")
+        end
+        context.typ(t[i])
+    end
+end
+
+function document.allprimitives()
+    local c = tokens.commands
+    local o = tex.getprimitiveorigins()
+    table.sort(list, function(a,b)
+        return a[3] < b[3]
+    end)
+    context.starttabulate { "|T|T|Tc|T|" }
+    context.DB() context("primitive")
+    context.BC() context("command code")
+    context.BC() context("char code")
+    context.BC() context("origin")
+    context.NC() context.NR()
+    context.TB()
+    for i=1,#list do
+        local l = list[i]
+        context.NC() context.tex(l[3])
+        context.NC() context(c[l[1]])
+        context.NC() context(l[2])
+        context.NC() context(o[l[4]])
+        context.NC() context.NR()
+    end
+    context.LL()
+    context.stoptabulate()
+end
+\stopluacode
 
 \stopenvironment

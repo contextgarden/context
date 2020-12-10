@@ -368,7 +368,7 @@ do
                  -- if mv and mv.__lpdftype then
                     if v.__lpdftype__ then
                      -- if v == t then
-                     --     report_objects("ignoring circular reference in dirctionary")
+                     --     report_objects("ignoring circular reference in dictionary")
                      --     r[i] = f_key_null(k)
                      -- else
                             r[i] = f_key_value(k,tostring(v))

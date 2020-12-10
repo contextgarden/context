@@ -4,6 +4,16 @@
 
 \startcomponent luametatex-tex
 
+%     { "getbytecode",         lualib_get_bytecode        },
+%     { "setbytecode",         lualib_set_bytecode        },
+%     { "callbytecode",        lualib_call_bytecode       },
+%     { "getfunctionstable",   lualib_get_functions_table },
+%     { "getstartupfile",      lualib_get_startupfile     },
+%     { "getversion",          lualib_get_version         },
+%     { "setexitcode",         lualib_set_exitcode        },
+%     { NULL,                  NULL                       },
+
+
 \startchapter[reference=tex,title={The \TEX\ related libraries}]
 
 \startsection[title={The \type {lua} library}][library=lua]
@@ -11,21 +21,28 @@
 \startsubsection[title={Version information}]
 
 \topicindex{libraries+\type{lua}}
-\topicindex{version}
-\topicindex{startupfile}
+\topicindex{getversion}
+\topicindex{getstartupfile}
 
-\libindex{version}
-\libindex{startupfile}
+\libindex{getversion}
+\libindex{getstartupfile}
 
-This library contains two read|-|only items:
+This version of the used \LUA\ interpreter (currently {\tttf \cldcontext
+{lua.getversion()}}) can be queried with:
 
 \starttyping
-<string> v = lua.version
-<string> s = lua.startupfile
+<string> v = lua.getversion()
 \stoptyping
 
-This returns the \LUA\ version identifier string. The value currently is
-\directlua {tex.print(lua.version)}.
+The name of used startup file, if at all, is returned by:
+
+\starttyping
+<string> s = lua.getstartupfile()
+\stoptyping
+
+For this document the reported value is:
+
+\blank {\ttx \cldcontext {lua.getstartupfile()}} \blank
 
 \stopsubsection
 
@@ -60,6 +77,7 @@ This preallocates 100 hash entries and 5000 index entries. The \type
 \libindex{bytecode}
 \libindex{setbytecode}
 \libindex{getbytecode}
+\libindex{callbytecode}
 
 \LUA\ registers can be used to store \LUA\ code chunks. The accepted values for
 assignments are functions and \type {nil}. Likewise, the retrieved value is
@@ -67,7 +85,7 @@ either a function or \type {nil}.
 
 \starttyping
 lua.bytecode[<number> n] = <function> f
-lua.bytecode[<number> n]()
+<function> f = lua.bytecode[<number> n] % -- f()
 \stoptyping
 
 The contents of the \type {lua.bytecode} array is stored inside the format file
@@ -75,8 +93,8 @@ as actual \LUA\ bytecode, so it can also be used to preload \LUA\ code. The
 function must not contain any upvalues. The associated function calls are:
 
 \startfunctioncall
-<function> f = lua.getbytecode(<number> n)
 lua.setbytecode(<number> n, <function> f)
+<function> f = lua.getbytecode(<number> n)
 \stopfunctioncall
 
 Note: Since a \LUA\ file loaded using \type {loadfile(filename)} is essentially
@@ -84,14 +102,14 @@ an anonymous function, a complete file can be stored in a bytecode register like
 this:
 
 \startfunctioncall
-lua.bytecode[n] = loadfile(filename)
+lua.setbytecode(n,loadfile(filename))
 \stopfunctioncall
 
 Now all definitions (functions, variables) contained in the file can be
 created by executing this bytecode register:
 
 \startfunctioncall
-lua.bytecode[n]()
+lua.callbytecode(n)
 \stopfunctioncall
 
 Note that the path of the file is stored in the \LUA\ bytecode to be used in
@@ -142,96 +160,87 @@ and values as a table.
 <table> info = status.list()
 \stopfunctioncall
 
-The keys in the table are the known items, the value is the current value. Almost
-all of the values in \type {status} are fetched through a metatable at run|-|time
-whenever they are accessed, so you cannot use \type {pairs} on \type {status},
-but you {\it can\/} use \type {pairs} on \type {info}, of course. If you do not
-need the full list, you can also ask for a single item by using its name as an
-index into \type {status}. The current list is:
+The keys in the table are the known items, the value is the current value. There are
+toplevel items and items that are tables with subentries. The current list is:
 
-{\em This table is under reconstrction!}
+\startluacode
+    local list = status.list()
 
-\starttabulate[|l|p|]
-\DB key                       \BC explanation \NC \NR
-\TB
-\NC \type{banner}             \NC terminal display banner \NC \NR
-\NC \type{buf_size}           \NC current allocated size of the line buffer \NC \NR
-\NC \type{callbacks}          \NC total number of executed callbacks so far \NC \NR
-\NC \type{cs_count}           \NC number of control sequences \NC \NR
-\NC \type{dest_names_size}    \NC \PDF\ destination table size \NC \NR
-\NC \type{dvi_gone}           \NC written \DVI\ bytes \NC \NR
-\NC \type{dvi_ptr}            \NC not yet written \DVI\ bytes \NC \NR
-\NC \type{dyn_used}           \NC token (multi|-|word) memory in use  \NC \NR
-\NC \type{filename}           \NC name of the current input file \NC \NR
-\NC \type{fix_mem_end}        \NC maximum number of used tokens \NC \NR
-\NC \type{fix_mem_min}        \NC minimum number of allocated words for tokens \NC \NR
-\NC \type{fix_mem_max}        \NC maximum number of allocated words for tokens \NC \NR
-\NC \type{font_ptr}           \NC number of active fonts \NC \NR
-\NC \type{hash_extra}         \NC extra allowed hash \NC \NR
-\NC \type{hash_size}          \NC size of hash \NC \NR
-\NC \type{indirect_callbacks} \NC number of those that were themselves a result of other callbacks (e.g. file readers) \NC \NR
-\NC \type{ini_version}        \NC \type {true} if this is an \INITEX\ run \NC \NR
-\NC \type{init_pool_ptr}      \NC \INITEX\ string pool index \NC \NR
-\NC \type{init_str_ptr}       \NC number of \INITEX\ strings \NC \NR
-\NC \type{input_ptr}          \NC the level of input we're at \NC \NR
-\NC \type{inputid}            \NC numeric id of the current input \NC \NR
-\NC \type{largest_used_mark}  \NC max referenced marks class \NC \NR
-\NC \type{lasterrorcontext}   \NC last error context string (with newlines) \NC \NR
-\NC \type{lasterrorstring}    \NC last \TEX\ error string \NC \NR
-\NC \type{lastluaerrorstring} \NC last \LUA\ error string \NC \NR
-\NC \type{lastwarningstring}  \NC last warning tag, normally an indication of in what part\NC \NR
-\NC \type{lastwarningtag}     \NC last warning string\NC \NR
-\NC \type{linenumber}         \NC location in the current input file \NC \NR
-\NC \type{log_name}           \NC name of the log file \NC \NR
-\NC \type{luabytecode_bytes}  \NC number of bytes in \LUA\ bytecode registers \NC \NR
-\NC \type{luabytecodes}       \NC number of active \LUA\ bytecode registers \NC \NR
-\NC \type{luastate_bytes}     \NC number of bytes in use by \LUA\ interpreters \NC \NR
-\NC \type{luatex_engine}      \NC the \LUATEX\ engine identifier \NC \NR
-\NC \type{luatex_hashchars}   \NC length to which \LUA\ hashes strings ($2^n$) \NC \NR
-\NC \type{luatex_hashtype}    \NC the hash method used (in \LUAJITTEX) \NC \NR
-\NC \type{luatex_version}     \NC the \LUATEX\ version number \NC \NR
-\NC \type{luatex_revision}    \NC the \LUATEX\ revision string \NC \NR
-\NC \type{max_buf_stack}      \NC max used buffer position \NC \NR
-\NC \type{max_in_stack}       \NC max used input stack entries \NC \NR
-\NC \type{max_nest_stack}     \NC max used nesting stack entries \NC \NR
-\NC \type{max_param_stack}    \NC max used parameter stack entries \NC \NR
-\NC \type{max_save_stack}     \NC max used save stack entries \NC \NR
-\NC \type{max_strings}        \NC maximum allowed strings \NC \NR
-\NC \type{nest_size}          \NC nesting stack size \NC \NR
-\NC \type{node_mem_usage}     \NC a string giving insight into currently used nodes \NC \NR
-\NC \type{obj_ptr}            \NC max \PDF\ object pointer \NC \NR
-\NC \type{obj_tab_size}       \NC \PDF\ object table size \NC \NR
-\NC \type{output_active}      \NC \type {true} if the \prm {output} routine is active \NC \NR
-\NC \type{output_file_name}   \NC name of the \PDF\ or \DVI\ file \NC \NR
-\NC \type{param_size}         \NC parameter stack size \NC \NR
-\NC \type{pdf_dest_names_ptr} \NC max \PDF\ destination pointer \NC \NR
-\NC \type{pdf_gone}           \NC written \PDF\ bytes \NC \NR
-\NC \type{pdf_mem_ptr}        \NC max \PDF\ memory used \NC \NR
-\NC \type{pdf_mem_size}       \NC \PDF\ memory size \NC \NR
-\NC \type{pdf_os_cntr}        \NC max \PDF\ object stream pointer \NC \NR
-\NC \type{pdf_os_objidx}      \NC \PDF\ object stream index \NC \NR
-\NC \type{pdf_ptr}            \NC not yet written \PDF\ bytes \NC \NR
-\NC \type{pool_ptr}           \NC string pool index \NC \NR
-\NC \type{pool_size}          \NC current size allocated for string characters \NC \NR
-\NC \type{save_size}          \NC save stack size \NC \NR
-\NC \type{shell_escape}       \NC \type {0} means disabled, \type {1} means anything is permitted, and \type {2} is restricted \NC \NR
-\NC \type{safer_option}       \NC \type {1} means safer is enforced \NC \NR
-\NC \type{kpse_used}          \NC \type {1} means that kpse is used \NC \NR
-\NC \type{stack_size}         \NC input stack size \NC \NR
-\NC \type{str_ptr}            \NC number of strings \NC \NR
-\NC \type{total_pages}        \NC number of written pages \NC \NR
-\NC \type{var_mem_max}        \NC number of allocated words for nodes \NC \NR
-\NC \type{var_used}           \NC variable (one|-|word) memory in use \NC \NR
-\NC \type{lc_collate}         \NC the value of \type {LC_COLLATE}  at startup time (becomes \type {C} at startup) \NC \NR
-\NC \type{lc_ctype}           \NC the value of \type {LC_CTYPE}    at startup time (becomes \type {C} at startup) \NC \NR
-%NC \type{lc_monetary}        \NC the value of \type {LC_MONETARY} at startup time \NC \NR
-\NC \type{lc_numeric}         \NC the value of \type {LC_NUMERIC}  at startup time \NC \NR
-%NC \type{lc_time}            \NC the value of \type {LC_TIME}     at startup time (becomes \type {C} at startup) \NC \NR
-\LL
-\stoptabulate
+    context.starttabulate { "|Tw(10em)|Tp|" }
+    context.DB()
+    context("toplevel statistics")
+    context.BC()
+    context.NC()
+    context.NR()
+    context.TB()
+    for k, v in table.sortedhash(list) do
+        if type(v) ~= "table" then
+            context.NC()
+            context(k)
+            context.NC()
+            context(tostring(v))
+            context.NC()
+            context.NR()
+        end
+    end
+    context.LL()
+    context.stoptabulate()
 
-The error and warning messages can be wiped with the \type {resetmessages}
-function. A return value can be set with \type {setexitcode}.
+    for k, v in table.sortedhash(list) do
+        if type(v) == "table" then
+            context.starttabulate { "|Tw(10em)|Tp|" }
+            context.DB()
+            context(k ..".*")
+            context.BC()
+            context.NC()
+            context.NR()
+            context.TB()
+            for k, v in table.sortedhash(v) do
+                context.NC()
+                context(k)
+                context.NC()
+                context(v == "" and "unset" or tostring(v))
+                context.NC()
+                context.NR()
+            end
+            context.LL()
+            context.stoptabulate()
+        end
+    end
+\stopluacode
+
+There are also getters for the subtables. The whole repertoire of functions in
+the \type {status} table is: {\tttf \cldcontext {table . concat ( table .
+sortedkeys (status), ", ")}}. The error and warning messages can be wiped with
+the \type {resetmessages} function. The states in subtables relate to memory
+management and are mostly there for development purposes.
+
+The \type {getconstants} query gives back a table with all kind of internal
+quantities and again these are only relevant for diagnostic and development
+purposes. Many are good old \TEX\ constants that are describes in the original
+documentation of the source but some are definitely \LUAMETATEX\ specific.
+
+\startluacode
+    context.starttabulate { "|Tw(15em)|Tp|" }
+    context.DB()
+    context("constants.*")
+    context.BC()
+    context.NC()
+    context.NR()
+    context.TB()
+    for k, v in table.sortedhash(status.getconstants()) do
+        if type(v) ~= "table" then
+            context.NC()
+            context(k)
+            context.NC()
+            context(tostring(v))
+            context.NC()
+            context.NR()
+        end
+    end
+    context.LL()
+    context.stoptabulate()
+\stopluacode
 
 \stopsection
 
@@ -261,7 +270,8 @@ readable (like \prm {tracingcommands} and \prm {parindent}).
 
 \topicindex{parameters+internal}
 
-\libindex{set}           \libindex{get}
+\libindex{set}
+\libindex{get}
 
 For all the parameters in this section, it is possible to access them directly
 using their names as index in the \type {tex} table, or by using one of the
@@ -284,156 +294,8 @@ get all five values. Otherwise you get a node which is a copy of the internal
 value so you are responsible for its freeing at the \LUA\ end. When you set a
 glue quantity you can either pass a \nod {glue_spec} or upto five numbers.
 
-\subsubsection{Integer parameters}
-
-The integer parameters accept and return \LUA\ numbers. These are read|-|write:
-
-\starttwocolumns
-\starttyping
-tex.adjdemerits
-tex.binoppenalty
-tex.brokenpenalty
-tex.catcodetable
-tex.clubpenalty
-tex.day
-tex.defaulthyphenchar
-tex.defaultskewchar
-tex.delimiterfactor
-tex.displaywidowpenalty
-tex.doublehyphendemerits
-tex.endlinechar
-tex.errorcontextlines
-tex.escapechar
-tex.exhyphenpenalty
-tex.fam
-tex.finalhyphendemerits
-tex.floatingpenalty
-tex.globaldefs
-tex.hangafter
-tex.hbadness
-tex.holdinginserts
-tex.hyphenpenalty
-tex.interlinepenalty
-tex.language
-tex.lastlinefit
-tex.lefthyphenmin
-tex.linepenalty
-tex.localbrokenpenalty
-tex.localinterlinepenalty
-tex.looseness
-tex.mag
-tex.maxdeadcycles
-tex.month
-tex.newlinechar
-tex.outputpenalty
-tex.pausing
-tex.postdisplaypenalty
-tex.predisplaydirection
-tex.predisplaypenalty
-tex.pretolerance
-tex.relpenalty
-tex.righthyphenmin
-tex.savinghyphcodes
-tex.savingvdiscards
-tex.showboxbreadth
-tex.showboxdepth
-tex.time
-tex.tolerance
-tex.tracingassigns
-tex.tracingcommands
-tex.tracinggroups
-tex.tracingifs
-tex.tracinglostchars
-tex.tracingmacros
-tex.tracingnesting
-tex.tracingonline
-tex.tracingoutput
-tex.tracingpages
-tex.tracingparagraphs
-tex.tracingrestores
-tex.tracingscantokens
-tex.tracingstats
-tex.uchyph
-tex.vbadness
-tex.widowpenalty
-tex.year
-\stoptyping
-\stoptwocolumns
-
-These are read|-|only:
-
-\startthreecolumns
-\starttyping
-tex.deadcycles
-tex.insertpenalties
-tex.parshape
-tex.interlinepenalties
-tex.clubpenalties
-tex.widowpenalties
-tex.displaywidowpenalties
-tex.prevgraf
-tex.spacefactor
-\stoptyping
-\stopthreecolumns
-
-\subsubsection{Dimension parameters}
-
-The dimension parameters accept \LUA\ numbers (signifying scaled points) or
-strings (with included dimension). The result is always a number in scaled
-points. These are read|-|write:
-
-\startthreecolumns
-\starttyping
-tex.boxmaxdepth
-tex.delimitershortfall
-tex.displayindent
-tex.displaywidth
-tex.emergencystretch
-tex.hangindent
-tex.hfuzz
-tex.hoffset
-tex.hsize
-tex.lineskiplimit
-tex.mathsurround
-tex.maxdepth
-tex.nulldelimiterspace
-tex.overfullrule
-tex.pagebottomoffset
-tex.pageheight
-tex.pageleftoffset
-tex.pagerightoffset
-tex.pagetopoffset
-tex.pagewidth
-tex.parindent
-tex.predisplaysize
-tex.scriptspace
-tex.splitmaxdepth
-tex.vfuzz
-tex.voffset
-tex.vsize
-tex.prevdepth
-tex.prevgraf
-tex.spacefactor
-\stoptyping
-\stopthreecolumns
-
-These are read|-|only:
-
-\startthreecolumns
-\starttyping
-tex.pagedepth
-tex.pagefilllstretch
-tex.pagefillstretch
-tex.pagefilstretch
-tex.pagegoal
-tex.pageshrink
-tex.pagestretch
-tex.pagetotal
-\stoptyping
-\stopthreecolumns
-
-Beware: as with all \LUA\ tables you can add values to them. So, the following is
-valid:
+Beware: as with regular \LUA\ tables you can add values to the \type {tex} table.
+So, the following is valid:
 
 \starttyping
 tex.foo = 123
@@ -465,70 +327,52 @@ as there is no way \LUATEX\ can guess your intentions. By using the accessor in
 the \type {tex} tables, you get and set the values at the top of the nesting
 stack.
 
+\subsubsection{Integer parameters}
+
+The integer parameters accept and return \LUA\ integers. In some cases the values
+are checked, trigger other settings or result in some immediate change of
+behaviour: \ctxlua {document.filteredprimitives ("internal_int")}.
+
+Some integer parameters are read only, because they are actually referring not to
+some internal integer register but to an engine property: \typ {deadcycles},
+\typ {insertpenalties}, \typ {parshape}, \typ {interlinepenalties}, \typ
+{clubpenalties}, \typ {widowpenalties}, \typ {displaywidowpenalties}, \typ
+{prevgraf} and \typ {spacefactor}.
+
+\subsubsection{Dimension parameters}
+
+The dimension parameters accept \LUA\ numbers (signifying scaled points) or
+strings (with included dimension). The result is always a number in scaled
+points. These are read|-|write: \ctxlua {document.filteredprimitives
+("internal_dimen")}.
+
+These are read|-|only: \typ {pagedepth}, \typ {pagefilllstretch}, \typ
+{pagefillstretch}, \typ {pagefilstretch}, \typ {pagegoal}, \typ {pageshrink},
+\typ {pagestretch} and \typ {pagetotal}.
+
 \subsubsection{Direction parameters}
 
-The direction states can be queried and set with:
+The direction states can be queried with: \typ {gettextdir}, \typ {getlinedir},
+\typ {getmathdir} and \typ {getpardir}. You can set them with \typ
+{settextdir}, \typ {setlinedir}, \typ {setmathdir} and \typ {setpardir},
+commands that accept a number. You can also set these parameters as table
+key|/|values: \typ {textdirection}, \typ {linedirection}, \typ {mathdirection}
+and \typ {pardirection}, so the next code sets the text direction to \typ
+{r2l}:
 
-\startthreecolumns
 \starttyping
-tex.gettextdir()
-tex.getlinedir()
-tex.getmathdir()
-tex.getpardir()
-tex.settextdir(<number>)
-tex.setlinedir(<number>)
-tex.setmathdir(<number>)
-tex.setpardir(<number>)
+tex.textdirection = 1
 \stoptyping
-\stopthreecolumns
-
-and also with:
-
-\startthreecolumns
-\starttyping
-tex.textdirection
-tex.linedirection
-tex.mathdirection
-tex.pardirection
-\stoptyping
-\stopthreecolumns
-
 
 \subsubsection{Glue parameters}
 
-The glue parameters accept and return a userdata object that represents a \nod {glue_spec} node.
-
-\startthreecolumns
-\starttyping
-tex.abovedisplayshortskip
-tex.abovedisplayskip
-tex.baselineskip
-tex.belowdisplayshortskip
-tex.belowdisplayskip
-tex.leftskip
-tex.lineskip
-tex.parfillskip
-tex.parskip
-tex.rightskip
-tex.spaceskip
-tex.splittopskip
-tex.tabskip
-tex.topskip
-tex.xspaceskip
-\stoptyping
-\stopthreecolumns
+The internal glue parameters accept and return a userdata object that represents
+a \nod {glue_spec} node: \ctxlua {document.filteredprimitives ("internal_glue")}.
 
 \subsubsection{Muglue parameters}
 
-All muglue parameters are to be used read|-|only and return a \LUA\ string.
-
-\startthreecolumns
-\starttyping
-tex.medmuskip
-tex.thickmuskip
-tex.thinmuskip
-\stoptyping
-\stopthreecolumns
+All muglue parameters are to be used read|-|only and return a \LUA\ string
+\ctxlua {document.filteredprimitives ("internal_mu_glue")}.
 
 \subsubsection{Tokenlist parameters}
 
@@ -537,22 +381,8 @@ converted to and from token lists using \prm {the} \prm {toks} style expansion:
 all category codes are either space (10) or other (12). It follows that assigning
 to some of these, like \quote {tex.output}, is actually useless, but it feels bad
 to make exceptions in view of a coming extension that will accept full|-|blown
-token strings.
-
-\startthreecolumns
-\starttyping
-tex.errhelp
-tex.everycr
-tex.everydisplay
-tex.everyeof
-tex.everyhbox
-tex.everyjob
-tex.everymath
-tex.everypar
-tex.everyvbox
-tex.output
-\stoptyping
-\stopthreecolumns
+token strings. Here is the lot: \ctxlua {document.filteredprimitives
+("internal_toks")}.
 
 \stopsubsection
 
@@ -561,55 +391,23 @@ tex.output
 \topicindex{convert commands}
 
 All \quote {convert} commands are read|-|only and return a \LUA\ string. The
-supported commands at this moment are:
-
-\starttwocolumns
-\starttyping
-tex.formatname
-tex.jobname
-tex.luatexbanner
-tex.luatexrevision
-tex.fontname(number)
-tex.uniformdeviate(number)
-tex.number(number)
-tex.romannumeral(number)
-tex.fontidentifier(number)
-\stoptyping
-\stoptwocolumns
-
-If you are wondering why this list looks haphazard; these are all the cases of
-the \quote {convert} internal command that do not require an argument, as well as
-the ones that require only a simple numeric value. The special (\LUA|-|only) case
-of \type {tex.fontidentifier} returns the \type {csname} string that matches a
-font id number (if there is one).
+supported commands at this moment are: \ctxlua {document.filteredprimitives
+("convert")}. You will get an error message if an operation is not (yet)
+permitted. Some take an string or number argument, just like at the \TEX\ end
+some extra input is expected.
 
 \stopsubsection
 
-\startsubsection[title={Last item commands}]
+\startsubsection[title={Item commands}]
 
 \topicindex{last items}
 
-All \quote {last item} commands are read|-|only and return a number. The
-supported commands at this moment are:
-
-\startthreecolumns
-\starttyping
-tex.lastpenalty
-tex.lastkern
-tex.lastskip
-tex.lastnodetype
-tex.inputlineno
-tex.lastxpos
-tex.lastypos
-tex.randomseed
-tex.luatexversion
-tex.currentgrouplevel
-tex.currentgrouptype
-tex.currentiflevel
-tex.currentiftype
-tex.currentifbranch
-\stoptyping
-\stopthreecolumns
+All so called \quote {item} commands are read|-|only and return a number. The
+complete list of these commands is: \ctxlua {document.filteredprimitives
+("some_item")}. No all are currently supported but eventually that might be the
+case. Like the lists in previous sections, there are differences between \LUATEX\
+and \LUAMETATEX, where some commands are organized differently in order to
+provide a consistent \LUA\ interface.
 
 \stopsubsection
 
@@ -1649,20 +1447,6 @@ This function returns a list of the primitives that originate from the engine(s)
 given by the requested string value(s). The possible values and their (current)
 return values are given in the following table. In addition the somewhat special
 primitives \quote{\tex{ }}, \quote{\tex {/}} and \quote{\type {-}} are defined.
-
-\startluacode
-function document.showprimitives(tag)
-    local t = tex.extraprimitives(tag)
-    table.sort(t)
-    for i=1,#t do
-        local v = t[i]
-        if v ~= ' ' and v ~= "/" and v ~= "-" then
-            context.type(v)
-            context.space()
-        end
-    end
-end
-\stopluacode
 
 \starttabulate[|l|pl|]
 \DB name   \BC values \NC \NR

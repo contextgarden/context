@@ -1,0 +1,22 @@
+\environment luametatex-style
+
+\startcomponent luametatex-codes
+
+\startchapter[title=Primitive codes]
+
+here follows a list with all primitives and their category is shown. When the
+engine starts up in ini mode all primitives get defined along with some
+properties that makes it possible to do a reverse lookup of a combination of
+command code and char code. But, a primitive, being also a regular command can be
+redefined later on. The table below shows the original pairs but in \CONTEXT\
+some of these primitives are redefined. However, any macro that fits a command
+and char pair is (reported as) a primitive in logs and error messages. In the end
+all tokens are such a combination, The first 16 command codes are reserved for
+characters (the whole \UNICODE\ range can be used as char code) with specific
+catcodes and not mentioned in the list.
+
+\ctxlua{document.allprimitives()}
+
+\stopchapter
+
+\stopcomponent

@@ -39,6 +39,8 @@ local setprop             = nuts.setprop
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
 local ischar              = nuts.ischar
+local isnextchar          = nuts.isnextchar
+----- isprevchar          = nuts.isprevchar
 
 local end_of_math         = nuts.end_of_math
 
@@ -178,7 +180,8 @@ function analyzers.setstate(head,font) -- latin
     local done            = false
     -- only letters
     while current do
-        local char, id = ischar(current,font)
+     -- local char, id = ischar(current,font)
+        local nxt, char, id = isnextchar(current,font)
         if char then
             if not getstate(current) then
              -- local d = descriptions[char]
@@ -213,7 +216,8 @@ function analyzers.setstate(head,font) -- latin
             end
             first = false
             if id == math_code then
-                current = end_of_math(current)
+             -- current = end_of_math(current)
+                nxt = getnext(end_of_math(current))
             end
         elseif id == disc_code then
             -- always in the middle .. it doesn't make much sense to assign a property
@@ -231,7 +235,8 @@ function analyzers.setstate(head,font) -- latin
             end
         end
       ::NEXT::
-        current = getnext(current)
+     -- current = getnext(current)
+        current = nxt
     end
     if first then
         setstate(last,first == last and s_isol or s_fina)
@@ -311,7 +316,8 @@ function methods.arab(head,font,attr)
     local done    = false
     current = tonut(current)
     while current do
-        local char, id = ischar(current,font)
+     -- local char, id = ischar(current,font)
+        local nxt, char, id = isnextchar(current,font)
         if char and not getstate(current) then
             done = true
             local classifier = classifiers[char]
@@ -424,10 +430,12 @@ function methods.arab(head,font,attr)
                 first = nil
             end
             if id == math_code then -- a bit duplicate as we test for glyphs twice
-                current = end_of_math(current)
+             -- current = end_of_math(current)
+                nxt = getnext(end_of_math(current))
             end
         end
-        current = getnext(current)
+     -- current = getnext(current)
+        current = nxt
     end
     if last then
         if c_last == s_medi or c_last == s_fina then
@@ -498,7 +506,8 @@ do
         end
 
         while current do
-            local char, id = ischar(current,font)
+         -- local char, id = ischar(current,font)
+            local nxt, char, id = isnextchar(current,font)
             if char and not getstate(current) then
                 local currjoin = joining[char]
                 done = true
@@ -551,10 +560,12 @@ do
                     wrapup()
                 end
                 if id == math_code then -- a bit duplicate as we test for glyphs twice
-                    current = end_of_math(current)
+                 -- current = end_of_math(current)
+                    nxt = getnext(end_of_math(current))
                 end
             end
-            current = getnext(current)
+         -- current = getnext(current)
+            current = nxt
         end
         if last then
             wrapup()

@@ -1778,7 +1778,7 @@
             \hsize\scratchdimen
           \fi
           \strc_floats_make_complete_caption}%
-     \orelse\if\empty\p_strc_floats_caption_align
+     \orelse\ifempty\p_strc_floats_caption_align
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
           \hsize\captionhsize
@@ -1935,7 +1935,7 @@
               {\doifelseinset\v!right\floatcaptiondirectives
                  {\strc_floats_flush_right_caption_hang}
                  {\strc_floats_flush_left_caption_hang}}}
-        {\box\b_strc_floats_caption}}}}
+        {\box\b_strc_floats_caption}}}} % is this ok
 
 \def\strc_floats_build_box_high
   {\strc_floats_build_box_next{\strc_floats_between_stack\strc_floats_flush_caption_hang\vfill}}
