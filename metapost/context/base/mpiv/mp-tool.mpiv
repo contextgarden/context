@@ -3159,6 +3159,15 @@ def endglyph =
     endfig ;
 enddef ;
 
+def beginfont(expr name) =
+    begingroup;
+    passvariable("fontname",name) ;
+enddef ;
+
+def endfont =
+    endgroup;
+enddef ;
+
 %D Dimensions have never been an issue as traditional MP can't make that large
 %D pictures, but with double mode we need a catch:
 

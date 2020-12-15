@@ -15,8 +15,17 @@
 %D to the more robust \LMTX.
 
 % todo:  \permanent\protected\let\select\directselect : same value (add ref)
-
-% todo: when mutable, remove immutable
+%
+% todo: when mutable, remove immutable, decide on how immutable it really is
+%
+% todo: just for the fun of it we can compare the table generated here to mkiv but it
+% needs the same hash exposure as we use in luametatex so i'll do that after all lmtx
+% macros are checked (maybe i need to backport some more but it has a low priority)
+%
+% todo: do we need something similar for lua functions etc (problem: performance hit)
+%
+% todo: and how about metapost ... i need a mp.hashtokens in order to do that and I also
+% need to think about protection there (tricky as we use an avl hash there)
 
 \startmodule[system-macros]
 
@@ -106,7 +115,7 @@
                 local permanent  = v.permanent  and "permanent"
                 local primitive  = v.primitive  and "primitive"
                 local instance   = v.instance   and "instance"
-                local dealtwith  = mutable or immutable or frozen or permanent or primitive -- beware: we can have combinations
+                local dealtwith  = mutable or immutable or mutable or frozen or permanent or primitive -- beware: we can have combinations
                 local whatever   = find(k,"^[a-z][a-z][a-z]+_")
                 local cscommand  = gsub(v.cmdname or "","_"," ")
                 local undefined  = cscommand == "undefined cs"
@@ -146,14 +155,17 @@ end
         context.stoptabulate()
     end
 
-    show(true, function(k) return find(k,"^[a-zA-Z]+$") end)
+    context.starttitle { title = "Public \\TEX\\ commands" }
+            show(true, function(k) return find(k,"^[a-zA-Z]+$") end)
+    context.stoptitle()
 
-    context.page()
+    context.starttitle { title = "Private \\TEX\\ commands" }
+        show(false, function(k) return not find(k,"^[a-zA-Z]+$") and not find(k,crap) end)
+    context.stoptitle()
 
-    show(false, function(k) return not find(k,"^[a-zA-Z]+$") and not find(k,crap) end)
-
-    tokens.setters.macro("NumberOfVisible",  total)
+    tokens.setters.macro("NumberOfVisible", total)
     tokens.setters.macro("NumberOfFlagged", flagged)
+
 \stopluacode
 
 \page
@@ -175,9 +187,97 @@ the core of \CONTEXT. Noaligned macros are special and dealt deep down when
 scanning for alignment specific primitives.
 \par \stop
 
-\starttabulate
-\BC number of visible macros \NC \NumberOfVisible \NC \NR
-\BC number of flagged macros \NC \NumberOfFlagged \NC \NR
+\starttabulate[||r|]
+\BC number of visible macros  \NC \NumberOfVisible \NC \NR
+\BC number of flagged macros  \NC \NumberOfFlagged \NC \NR
+\stoptabulate
+
+\page
+
+% \startMPcalculation
+%     % force a format
+% \stopMPcalculation
+
+\startluacode
+
+    local context  = context
+ -- local ctx_NC   = context.NC
+ -- local ctx_NR   = context.NR
+ -- local ctx_bold = context.bold
+
+    local find     = string.find
+    local gsub     = string.gsub
+    local create   = token.create
+
+    context.starttitle { title = "\\METAFUN\\ commands" }
+
+        metapost.simple("prestine")
+
+        local mptotal  = 0
+        local codes    = metapost.codes
+        local types    = metapost.types
+        local procodes = mplib.propertycodes
+
+        context.startcolumns { n = 5, distance = "1em" }
+            context.nohyphens(false)
+            context.obeyspaces(false)
+            local t = metapost.gethashentries("prestine",true) -- prestine:1
+            if t then
+                table.sort(t,function(a,b) return a[3] < b[3] end)
+                mptotal = #t
+                for i=1,mptotal do
+                    local ti       = t[i]
+                    local code     = codes[ti[1]]
+                    local property = procodes[ti[2]]
+                    local name     = ti[3]
+                    local vtype    = ti[4]
+                    local vardef   = vtype and types[vtype] == "unsuffixedmacro"
+                    context.bgroup()
+                    context("%-15s\\quad",vardef and "(vardef) tag" or code)
+                    if property == "primitive" then
+                        context.bf(false)
+                        context.blue(false)
+                    elseif property == "permanent"  then
+                        context.bf(false)
+                        context.lightgreen(false)
+                    elseif property == "immutable"  then
+                        context.bf(false)
+                        context.lightcyan(false)
+                    elseif property == "mutable"  then
+                        context.bf(false)
+                        context.lightmagenta(false)
+                    elseif not find(name,"^%a+_") then
+                        -- todo:
+                        if vardef then
+                            context.bf(false)
+                            context.lightred(false)
+                        end
+                    end
+                    context.verbatim(name)
+                    context.egroup()
+                    context.par()
+                end
+            end
+        context.stopcolumns()
+
+    context.stoptitle()
+
+    tokens.setters.macro("NumberOfMetafun", mptotal)
+\stopluacode
+
+\page
+
+\starttabulate[|c|l|]
+\HL
+\NC \type {-3} \NC \bf \lightmagenta mutable   \NC \NR
+\NC \type  {1} \NC \bf \blue         primitive \NC \NR
+\NC \type  {2} \NC \bf \lightgreen   permanent \NC \NR
+\NC \type  {3} \NC \bf \lightcyan    immutable \NC \NR
+\HL
+\stoptabulate
+
+\starttabulate[||r|]
+\BC number of metafun entries \NC \NumberOfMetafun \NC \NR
 \stoptabulate
 
 \stoptext

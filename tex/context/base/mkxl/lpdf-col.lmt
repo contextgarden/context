@@ -777,7 +777,7 @@ do
     local function startcolor(k)
         local m, c = colortoattributes(k)
         local t = transparencytoattribute(k)
-        if t then
+        if t and t ~= unsetvalue then
             return t_cache[t][m][c]
         else
             return c_cache[m][c]
@@ -793,10 +793,11 @@ do
     backends.pdf.tables.vfspecials = vfspecials
 
     vfspecials.startcolor = startcolor
-    vfspecials.stopcolor  = { "pdf", "text", "Q" }
+ -- vfspecials.stopcolor  = { "pdf", "text", "Q" } -- fails
+    vfspecials.stopcolor  = { "pdf", "page", "Q" }
 
     vfspecials.startslant = startslant
-    vfspecials.stopslant  = { "pdf", "text", "Q" }
+    vfspecials.stopslant  = { "pdf", "page", "Q" } -- fails
 
 end
 

@@ -18,10 +18,11 @@ local exheights      = fonts.hashes.exheights
 
 local registerscript = metapost.registerscript
 
-local on_right_page  = structures.pages.on_right
-local is_odd_page    = structures.pages.is_odd
-local in_body_page   = structures.pages.in_body
-local page_fraction  = structures.pages.fraction
+local on_right_page      = structures.pages.on_right
+local is_odd_page        = structures.pages.is_odd
+local in_body_page       = structures.pages.in_body
+local page_fraction      = structures.pages.fraction
+local layout_has_changed = structures.pages.has_changed
 
 local function defaultcolormodel() -- can be helper
     local colormethod = getcount("MPcolormethod")
@@ -127,9 +128,10 @@ registerscript("OverlayRegion",        function() mpstring(getmacro("m_overlay_r
 --
 -- registerscript("PageFraction",       page_fraction)
 
-registerscript("PageFraction",         function() return mpboolean(page_fraction()) end)
-registerscript("OnRightPage",          function() return mpboolean(on_right_page()) end)
-registerscript("OnOddPage",            function() return mpboolean(is_odd_page  ()) end)
-registerscript("InPageBody",           function() return mpboolean(in_body_page ()) end)
+registerscript("PageFraction",         function() return mpboolean(page_fraction     ()) end)
+registerscript("OnRightPage",          function() return mpboolean(on_right_page     ()) end)
+registerscript("OnOddPage",            function() return mpboolean(is_odd_page       ()) end)
+registerscript("InPageBody",           function() return mpboolean(in_body_page      ()) end)
+registerscript("LayoutHasChanged",     function() return mpboolean(layout_has_changed()) end)
 
 registerscript("defaultcolormodel",    defaultcolormodel)

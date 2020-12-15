@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mlib-run'] = {
+if not modules then modules = { } end modules ['mlib-fio'] = {
     version   = 1.001,
     comment   = "companion to mlib-ctx.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -80,7 +80,9 @@ local function writetoterminal(terminaldata,maxterm,d)
     elseif t == "table" then
         for i=1,#d do
             local l = d[i]
-            if find(l,"[\n\r]") then
+            if not l then
+                -- just ignore
+            elseif find(l,"[\n\r]") then
                 local s = splitlines(l)
                 local m = #s
                 for i=1,m do
@@ -177,10 +179,45 @@ local function finder(name,mode,kind)
     return findtexfile(name,kind)
 end
 
+local overloadmode = "warning"
+
+directives.register("metapost.overloadmode",function(v)
+    if v == "warning" or v == "error" then
+        overloadmode = v
+    else
+        overloadmode= false
+    end
+end)
+
+local propertycodes = {
+    [-3] = "mutable",
+    [ 1] = "primitive",
+    [ 2] = "permanent",
+    [ 3] = "immutable",
+}
+
+mplib.propertycodes = propertycodes
+
+local function overload(property,name)
+    if overloadmode then
+        -- turn of warning after format is loaded
+        report_metapost("overloading %s %a",propertycodes[property] or "unknown", name)
+        -- no overload permitted
+        if overloadmode == "error" then
+            luatex.abort()
+        end
+        return false
+    else
+        -- overload permitted
+        return true
+    end
+end
+
 function mplib.new(specification)
     local openfile = fileopener()
     specification.find_file     = finder
     specification.run_logger    = logger
+    specification.run_overload  = overload
     specification.open_file     = openfile
     specification.interaction   = "silent"
     specification.halt_on_error = true

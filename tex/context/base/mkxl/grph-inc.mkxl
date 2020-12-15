@@ -21,12 +21,12 @@
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
 \registerctxluafile{grph-img}{}
-\registerctxluafile{grph-inc}{}
+\registerctxluafile{grph-inc}{autosuffix}
 \registerctxluafile{grph-bmp}{}
 \registerctxluafile{grph-chk}{}
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}
-\registerctxluafile{grph-mem}{}
+%registerctxluafile{grph-mem}{} % obsolete
 \registerctxluafile{grph-u3d}{} % this will become a module
 %registerctxluafile{grph-swf}{} % this will become a module
 

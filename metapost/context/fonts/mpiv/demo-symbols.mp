@@ -14,8 +14,11 @@
 passvariable("fontname","demo-symbols") ;
 passvariable("fontversion","1.005") ;
 
+beginfont("demo-symbols") ;
+
 beginglyph(9754,2,4,0) ; % high voltage
     interim ahlength := 1 ;
     drawarrow (1,4) -- (0,2) -- (2,3) -- (1,0) withcolor darkred ;
 endglyph ;
 
+endfont ;

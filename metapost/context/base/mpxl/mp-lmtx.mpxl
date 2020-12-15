@@ -16,7 +16,7 @@
 
 if known context_lmtx : endinput ; fi ;
 
-boolean context_lmtx ; context_lmtx := true ;
+boolean context_lmtx ; context_lmtx := true ; immutable context_lmtx ;
 
 presetparameters "text" [
     offset     = 0,
@@ -354,12 +354,12 @@ def lmt_followtext = applyparameters "followtext" "lmt_do_followtext" enddef ;
 vardef lmt_do_followtext =
     image (
         pushparameters "followtext" ;
-        save s_u ; string s_u ; s_u := getparameter "autoscaleup" ;
-        save s_d ; string s_d ; s_d := getparameter "autoscaledown" ;
+        save scale_up   ; string scale_up   ; scale_up   := getparameter "autoscaleup" ;
+        save scale_down ; string scale_down ; scale_down := getparameter "autoscaledown" ;
         save followtextalternative   ; followtextalternative   := if getparameter "spread" : 1 else : 0 fi ;
-        save tracingfollowtext       ; tracingfollowtext       := if getparameter "trace"  : 1 else : 0 fi ;
-        save autoscaleupfollowtext   ; autoscaleupfollowtext   := if s_u = "yes" : 1 elseif s_u = "max" : 2 else : 0 fi ;
-        save autoscaledownfollowtext ; autoscaledownfollowtext := if s_d = "yes" : 1 elseif s_d = "max" : 2 else : 0 fi ;
+        save tracingfollowtext       ; tracingfollowtext          := if getparameter "trace"  : 1 else : 0 fi ;
+        save autoscaleupfollowtext   ; autoscaleupfollowtext   := if scale_up   = "yes" : 1 elseif scale_up   = "max" : 2 else : 0 fi ;
+        save autoscaledownfollowtext ; autoscaledownfollowtext := if scale_down = "yes" : 1 elseif scale_down = "max" : 2 else : 0 fi ;
         draw followtext (
             if (getparameter "reverse") : reverse fi (getparameter "path"),
                 getparameter "text"
@@ -992,6 +992,8 @@ vardef OverlayMesh(expr p, s) =
     lmt_mesh [ paths = { meshed(p,OverlayBox,s) } ]
 enddef ;
 
+permanent meshed, OverlayMesh ;
+
 % charts
 
 presetparameters "chart" [
@@ -1391,33 +1393,34 @@ vardef lmt_do_shade =
             color_b := getparameter "colors" 2 ;
         fi
         if hasparameter "direction" :
-            save a, b, bb ; path bb ;
+            save a, b, bb, temp_x, temp_y ; path bb ;
+            temp_x := temp_y := 0 ;
             bb := boundingbox(mfun_shade_path) ;
             a := b := -1 ;
             if string getparameter "direction" :
                 s := getparameter "direction" ;
                 if     s = "up"    :
-                    p_a := xpart shadedup ;
-                    p_b := ypart shadedup ;
+                    temp_x := xpart shadedup ;
+                    temp_y := ypart shadedup ;
                 elseif s = "down"  :
-                    p_a := xpart shadeddown ;
-                    p_b := ypart shadeddown ;
+                    temp_x := xpart shadeddown ;
+                    temp_y := ypart shadeddown ;
                 elseif s = "left"  :
-                    p_a := xpart shadedleft ;
-                    p_b := ypart shadedleft ;
+                    temp_x := xpart shadedleft ;
+                    temp_y := ypart shadedleft ;
                 elseif s = "right" :
-                    p_a := xpart shadedright ;
-                    p_b := ypart shadedright ;
+                    temp_x := xpart shadedright ;
+                    temp_y := ypart shadedright ;
                 fi
             else :
-                p_a := getparameter "direction" 1 ;
-                p_a := getparameter "direction" 2 ;
+                temp_x := getparameter "direction" 1 ;
+                temp_y := getparameter "direction" 2 ;
             fi
-            if p_a >= 0 :
-                center_a := point p_a of bb ;
+            if temp_x >= 0 :
+                center_a := point temp_x of bb ;
             fi
-            if p_b >= 0 :
-                center_b := point p_b of bb ;
+            if temp_y >= 0 :
+                center_b := point temp_y of bb ;
             fi
         fi ;
         if hasparameter "center" :
@@ -2082,6 +2085,8 @@ vardef svggray(expr s) =
     s
 enddef ;
 
+permanent svgforcecmyk, svgcolor, svgcmyk, svggray ;
+
 presetparameters "svg" [
     filename = "",
     fontname = "",
@@ -2212,12 +2217,15 @@ presetparameters "mpsglyph" [
 def lmt_registerglyphs = applyparameters "mpsglyphs" "lmt_do_registerglyphs" enddef ;
 def lmt_registerglyph  = applyparameters "mpsglyph"  "lmt_do_registerglyph"  enddef ;
 
-vardef lmt_do_registerglyphs = lua.mp.lmt_register_glyphs() ; enddef ;
-vardef lmt_do_registerglyph  = lua.mp.lmt_register_glyph () ; enddef ;
+newscriptindex mfid_registerglyphs ; mfid_registerglyphs := scriptindex "registerglyphs" ; def lmt_do_registerglyphs = runscript mfid_registerglyphs enddef ;
+newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registerglyph " ; def lmt_do_registerglyph  = runscript mfid_registerglyph  enddef ;
+
+% vardef lmt_do_registerglyphs = lua.mp.lmt_register_glyphs() ; enddef ;
+% vardef lmt_do_registerglyph  = lua.mp.lmt_register_glyph () ; enddef ;
 
 % Again an experiment (todo: the faster method):
 
-def lmt_remaptext = runscript("mp.lmt_do_remaptext()") enddef ;
+newscriptindex mfid_remaptext ; mfid_remaptext := scriptindex "remaptext" ; def lmt_remaptext = runscript mfid_remaptext enddef ;
 
 triplet mfun_tt_s ;
 
@@ -2225,9 +2233,9 @@ vardef rawmaptext(expr s) =
     mfun_tt_n := mfun_tt_n + 1 ;
     mfun_tt_c := nullpicture ;
     mfun_tt_o := nullpicture ;
-    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-    mfun_tt_r := lua.mp.mf_map_text(mfun_tt_n,s,catcoderegime) ;
-    mfun_tt_s := lua.mp.mf_map_move(mfun_tt_n) ;
+    addto mfun_tt_o doublepath origin base_draw_options ;
+    mfun_tt_r := lua.mp.mf_map_text(mfun_tt_n,s,catcoderegime) ; % can become mfid_maptext
+    mfun_tt_s := lua.mp.mf_map_move(mfun_tt_n) ;                 % can become mfid_mapmove
     addto mfun_tt_c doublepath unitsquare
         xscaled wdpart mfun_tt_r
         yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
@@ -2279,3 +2287,13 @@ vardef lmt_do_poisson =
         popparameters ;
     )
 enddef ;
+
+permanent
+    lmt_text, lmt_grid, lmt_axis, lmt_outline, lmt_followtext,
+    lmt_arrow, lmt_placeholder, % lmt_path,
+    lmt_function, lmt_poisson, lmt_mesh,
+    lmt_chart_circle, lmt_chart_histogram, lmt_chart_bar,
+    lmt_shade, lmt_contour, lmt_svg, lmt_surface,
+    lmt_registerglyphs, lmt_registerglyph,
+    lmt_remaptext, rawmaptext, svgtext, svg,
+    OverlayMesh ;

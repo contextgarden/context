@@ -11,35 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We've split the functionality of syst-cat.* over more files now so that we can
-%D load more selectively.
-
 \registerctxluafile{catc-ini}{}
 
 \unprotect
 
 %D A long standing wish has been the availability of catcode arrays. Because
-%D traditional \TEX\ does not provide this we implement a fake method in the
-%D \MKII\ file. There is some overlap in code with \MKII\ but we take that
-%D for granted. Also, in \MKIV\ less active characters are used.
-
-% \begingroup
-%
-%     \catcode\tabasciicode      \activecatcode
-%     \catcode\formfeedasciicode \activecatcode
-%     \catcode\endoflineasciicode\activecatcode
-%
-%     \letcharcode\tabasciicode      \relax
-%     \letcharcode\newlineasciicode  \relax
-%     \letcharcode\formfeedasciicode \relax
-%     \letcharcode\endoflineasciicode\relax
-%
-%     \xdef\activetabtoken      {\Uchar\tabasciicode      } % \gdef\activetabtoken      {^^I}
-%     \xdef\outputnewlinechar   {\Uchar\newlineasciicode  } % \gdef\outputnewlinechar   {^^J}
-%     \xdef\activeformfeedtoken {\Uchar\formfeedasciicode } % \gdef\activeformfeedtoken {^^L}
-%     \xdef\activeendoflinetoken{\Uchar\endoflineasciicode} % \gdef\activeendoflinetoken{^^M}
-%
-% \endgroup
+%D traditional \TEX\ does not provide this we implement a fake method in the \MKII\
+%D file. There is some overlap in code with \MKII\ but we take that for granted.
+%D Also, in \MKIV\ less active characters are used.
 
 \begingroup
     \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\Uchar\newlineasciicode}
@@ -58,7 +37,7 @@
    \endgroup}
 
 %D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots for
-%D catcodes.
+%D catcodes. (This active mess probably needs an update some day.)
 
 \installsystemnamespace {catcodelet} % let : \let
 \installsystemnamespace {catcodedef} % def : \def
@@ -225,13 +204,13 @@
 \permanent\protected\def\pushcatcodetable
   {\advance\c_syst_catcodes_level\plusone
    \syst_catcodes_trace_push
-   \expandafter\chardef\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname\currentcatcodetable}
+   \expandafter\integerdef\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname\currentcatcodetable}
 
 \permanent\protected\def\popcatcodetable
   {\ifcase\c_syst_catcodes_level
      \syst_catcodes_trace_nesting_error
    \else
-     \expandafter\catcodetable\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname
+     \catcodetable\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname
      \syst_catcodes_trace_pop
      \advance\c_syst_catcodes_level\minusone
    \fi}
@@ -243,14 +222,14 @@
 
 \permanent\protected\def\restorecatcodes % takes previous level
   {\ifnum\c_syst_catcodes_level>\plusone
-     \expandafter\catcodetable\csname\??catcodetablet\number\numexpr\c_syst_catcodes_level-1\relax\endcsname
+     \catcodetable\csname\??catcodetablet\number\numexpr\c_syst_catcodes_level-1\relax\endcsname
    \fi}
 
 \permanent\protected\def\setcatcodetable#1%
   {\catcodetable#1%
    \syst_catcodes_trace_set}
 
-%D Handy for debugging:
+%D Handy for debugging (not that we ever use(d) it):
 %D
 %D \starttyping
 %D \tracecatcodetables

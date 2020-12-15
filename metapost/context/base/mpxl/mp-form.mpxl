@@ -1,0 +1,28 @@
+%D \module
+%D   [       file=mp-form.mpiv,
+%D        version=2011.10.14,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=form support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+% The graph package will be replaced by our own variant using
+% MetaPost 2 features and textext.
+
+if known context_form : endinput ; fi ;
+
+boolean context_form ; context_form := true ; immutable context_form ;
+
+% The following function accept a number or string that can be
+% converted to a number by \LUA. The first argument is a format
+% where @ can be used instead of %. The number is typeset in math
+% mode and @3e is converted into @.3e.
+
+vardef mfun_format_number(expr fmt, i) =
+    "\ctxlua{metapost.formatnumber('" & fmt & "'," & if string i : i else : decimal i fi & ")}"
+enddef ;

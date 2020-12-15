@@ -35,6 +35,8 @@ local stopapplyprocessor  = processors.stopapply
 local texsetcount         = tex.setcount
 local texgetcount         = tex.getcount
 
+local texconditionals     = tex.conditionals
+
 local ctx_convertnumber   = context.convertnumber
 
 -- storage
@@ -317,6 +319,10 @@ function pages.on_right(n)
     else
         return true
     end
+end
+
+function pages.has_changed()
+    return texconditionals.layouthaschanged
 end
 
 function pages.in_body(n)

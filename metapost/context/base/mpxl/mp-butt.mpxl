@@ -1,0 +1,77 @@
+%D \module
+%D   [       file=mp-butt.mpiv,
+%D        version=2000.05.31,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=buttons,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if known context_butt : endinput ; fi ;
+
+boolean context_butt ; context_butt := true ; immutable context_butt ;
+
+def predefinedbutton (expr button_type, button_size, button_linecolor, button_fillcolor) =
+
+    begingroup ;
+
+    save button_linewidth, p, d, l ;
+
+    numeric button_linewidth ; button_linewidth := button_size/10 ;
+
+    drawoptions (withpen pencircle scaled button_linewidth withcolor button_linecolor) ;
+
+    path    p ; p := unitsquare scaled button_size ;
+    numeric d ; d := button_size ;
+    numeric l ; l := button_linewidth ;
+
+    fill p withcolor button_fillcolor ;
+    draw p ;
+
+    if     button_type = 101 :
+        draw (d-2l,2l)--(2l,.5d)--(d-2l,d-2l)--cycle ;
+    elseif button_type = 102 :
+        draw (2l,2l)--(d-2l,.5d)--(2l,d-2l)--cycle ;
+    elseif button_type = 103 :
+        for i=2l step 2l until d-2l :
+            draw (2l,i)--(2l  ,i) ;
+            draw (4l,i)--(d-2l,i) ;
+        endfor ;
+    elseif button_type = 104 :
+        for i=2l step 2l until d-2l :
+            draw (2l   ,i)--(d/2-l,i) ;
+            draw (d/2+l,i)--(d-2l ,i) ;
+        endfor ;
+    elseif button_type = 105 :
+        fill fullcircle scaled (.2d) shifted (.5d,.7d) ;
+        fill fullcircle xscaled (.6d) yscaled d shifted (.5d,0) ;
+        clip currentpicture to p ;
+        draw p ;
+    elseif button_type = 106 :
+        draw (2l,2l)--(d-2l,d-2l) ;
+        draw (d-2l,2l)--(2l,d-2l) ;
+    elseif button_type = 107 :
+        p := (3l,d-2l)--(d-3l,d-2l)--(.5d,4l)--cycle ;
+        fill p ; draw p ;
+        draw (.5d,2l) ;
+    elseif button_type = 108 :
+        draw (.5d,2l)--(d-2l,d-2l)--(2l,d-2l)--cycle ;
+    elseif button_type = 109 :
+        draw (.5d,d-2l)--(d-2l,2l)--(2l,2l)--cycle ;
+    elseif button_type = 110 :
+        button_linewidth := button_linewidth/2 ;
+        draw p enlarged (-2l,-l) ;
+        for i=2l step l until d-2l :
+            draw (3l,i)--(d-3l,i) ;
+        endfor ;
+    fi ;
+
+    endgroup ;
+
+enddef ;
+
+let some_button = predefinedbutton

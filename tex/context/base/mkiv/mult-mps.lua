@@ -27,7 +27,6 @@ return {
         "shipout", "show", "showdependencies", "showtoken", "showvariable",
         "special",
         "begingroup", "endgroup", "of", "curl", "tension", "and", "controls",
-        "interpath", "on", "off",
         "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
         "tertiary", "primarydef", "secondarydef", "tertiarydef",
         "randomseed", "also", "contour", "doublepath",
@@ -68,11 +67,14 @@ return {
         "fontpart", "fontsize", "glyph", "restoreclipcolor", "troffmode",
         --
         "runscript", "maketext", "numbersystem",
+        "overloadmode", "setproperty",
     },
     commands = {
+        "on", "off",
+        "interpath",
         "upto", "downto",
         "beginfig", "endfig",
-        "beginglyph", "endglyph", -- actually a mult-fun one
+        "beginglyph", "endglyph", "beginfont", "endfont", -- actually a mult-fun one
         "rotatedaround", "reflectedabout",
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",
@@ -119,6 +121,7 @@ return {
         --
         "triplet", "quadruplet", "totransform", "bymatrix",
         --
+        "primitive", "permanent", "immutable", "mutable", "frozen",
     },
     internals = { -- we need to remove duplicates above
         --

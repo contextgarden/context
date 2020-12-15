@@ -123,6 +123,8 @@
     \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
+\newconditional \layouthaschanged \settrue\layouthaschanged % used in mp
+
 \appendtoks
     \ifcase\layoutsetupmode
         % can't happen
@@ -153,7 +155,12 @@
       \page_layouts_synchronize
       \page_layouts_check_next
     \fi
+    \global\settrue\layouthaschanged
 \to \everysetuplayout
+
+\appendtoks
+    \global\setfalse\layouthaschanged
+\to \everyaftershipout
 
 \permanent\def\doifelselayoutdefined#1%
   {\ifcsname\namedlayouthash{#1}\c!state\endcsname % maybe a helper

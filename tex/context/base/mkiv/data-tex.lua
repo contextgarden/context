@@ -149,6 +149,9 @@ local function textopener(tag,filename,filehandle,coding)
         filename    = filename,
         noflines    = noflines,
      -- currentline = 0,
+        endoffile   = function()
+            return not lines or currentline >= noflines
+        end,
         close       = function()
             local usedname = popinputname() -- should match filename
             if trace_locating then

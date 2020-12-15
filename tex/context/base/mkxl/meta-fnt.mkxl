@@ -17,17 +17,27 @@
 
 \unprotect
 
+%D Contrary to the \MKIV\ variant we dont' use the \LUA\ call but the \LUA\ call
+%D uses this here:
+
 \permanent\tolerant\protected\def\definemetafont[#1]#*[#2]#*[#3]%
-  {\clf_definemetafont
-      fontname {#1}%
-      filename {#2}%
-      % no #3 settings yet (compose, instances)
-   \relax}
+  {\doonlyonce{#2}{%
+     \definefontfeature[metafont-#2][metapost=#2]
+     \startMPcalculation{simplefun} input "#2" ; \stopMPcalculation
+   }%
+   \definefont[#1][Mono*metafont-#2 #3]}
 
-% \startluacode
-%     metapost.fonts.define { fontname = "bidi-symbols", filename = "bidi-symbols.mp" }
-% \stopluacode
-
-% \definemetafont[bidi-symbols][bidi-symbols.mp]
+%D Demo:
+%D
+%D \starttyping
+%D \setupbodyfont[dejavu]
+%D \starttext
+%D \showglyphs
+%D \startTEXpage[offset=10pt]
+%D     \definemetafont[MyDemoA][demo-symbols][at 10pt]\MyDemoA\char9754
+%D     \definemetafont[MyDemoB][demo-symbols][at 30pt]\MyDemoB\char9754
+%D \stopTEXpage
+%D \stoptext
+%D \stoptyping
 
 \protect \endinput

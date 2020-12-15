@@ -11,10 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if unknown mplib        : endinput ; fi ;
-if known   context_mlib : endinput ; fi ;
+if known context_mlib : endinput ; fi ;
 
-boolean context_mlib ; context_mlib := true ;
+boolean context_mlib ; context_mlib := true ; immutable context_mlib ;
 
 % numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY or (status and status.development_id) or 6346)") ;
 
@@ -28,6 +27,8 @@ vardef isobject expr p =
         false
     fi
 enddef ;
+
+permanent isobject ;
 
 %D Color and transparency
 %D
@@ -52,6 +53,11 @@ newinternal huetransparent        ; huetransparent        := 13 ;
 newinternal saturationtransparent ; saturationtransparent := 14 ;
 newinternal colortransparent      ; colortransparent      := 15 ;
 newinternal luminositytransparent ; luminositytransparent := 16 ;
+
+permanent normaltransparent, multiplytransparent, screentransparent, overlaytransparent,
+    softlighttransparent, hardlighttransparent, colordodgetransparent, colorburntransparent,
+    darkentransparent, lightentransparent, differencetransparent, exclusiontransparent,
+    huetransparent, saturationtransparent, colortransparent, luminositytransparent ;
 
 vardef transparency_alternative_to_number(expr name) =
     if string name :
@@ -153,9 +159,13 @@ def cmyk(expr c, m, y, k) =
     (c,m,y,k)
 enddef ;
 
+permanent spotcolor, multitonecolor, transparent, withtransparency, namedcolor, withopacity, cmyk ;
+
 % Texts (todo: better strut ratio, now .7 hardcoded, should be passed)
 
 newinternal textextoffset ; textextoffset := 0 ;
+
+permanent textextoffset ;
 
 %%%%%%% mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
 color   mfun_tt_b ;
@@ -217,9 +227,13 @@ newinternal txtcatcoderegime ; txtcatcoderegime := runscript("return catcodes.nu
 
 newinternal catcoderegime    ; catcoderegime    := ctxcatcoderegime ;
 
-newinternal mfid_sometextext ; mfid_sometextext := scriptindex "sometextext" ;
-newinternal mfid_madetextext ; mfid_madetextext := scriptindex "madetextext" ;
+immutable inicatcoderegime, texcatcoderegime, luacatcoderegime, notcatcoderegime,
+    vrbcatcoderegime, prtcatcoderegime, ctxcatcoderegime, txtcatcoderegime ;
 
+permanent catcoderegime ;
+
+newscriptindex mfid_sometextext ; mfid_sometextext := scriptindex "sometextext" ;
+newscriptindex mfid_madetextext ; mfid_madetextext := scriptindex "madetextext" ;
 
 vardef rawtextext(expr s) =
     if s = "" :
@@ -228,7 +242,7 @@ vardef rawtextext(expr s) =
         mfun_tt_n := mfun_tt_n + 1 ;
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
-        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        addto mfun_tt_o doublepath origin base_draw_options ;
         mfun_tt_r := runscript mfid_sometextext mfun_tt_n s catcoderegime ;
         addto mfun_tt_c doublepath unitsquare
             xscaled wdpart mfun_tt_r
@@ -246,7 +260,7 @@ vardef rawmadetext =
     mfun_tt_n := mfun_tt_n + 1 ;
     mfun_tt_c := nullpicture ;
     mfun_tt_o := nullpicture ;
-    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    addto mfun_tt_o doublepath origin base_draw_options ;
     mfun_tt_r := runscript mfid_madetextext mfun_tt_n ;
     addto mfun_tt_c doublepath unitsquare
         xscaled wdpart mfun_tt_r
@@ -302,6 +316,8 @@ vardef fontsize expr name =
         size
     fi
 enddef ;
+
+permanent fontsize ;
 
 pair mfun_laboff        ; mfun_laboff        := origin   ;
 pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)   ;
@@ -409,53 +425,32 @@ enddef ;
 
 % we save the plain variant
 
-vardef plain_thelabel@#(expr p,z) =
-    if string p :
-        plain_thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
-    else :
-        p shifted (z + labeloffset*laboff@# - mfun_labshift@#(p))
-    fi
-enddef;
-
-def plain_label = % takes two arguments, contrary to textext that takes one
-    normaldraw plain_thelabel
-enddef ;
-
-let mfun_label    = label ;
-let mfun_thelabel = thelabel ;
-
-def useplainlabels = % somehow let doesn't work for all code
-    def label    = plain_label    enddef ;
-    def thelabel = plain_thelabel enddef ;
-enddef ;
-
-def usemetafunlabels =
-    let label    = mfun_label ;
-    let thelabel = mfun_thelabel ;
-enddef ;
-
-vardef dotlabel@#(expr s,z) text t_ =
-    label@#(s,z) t_ ;
-    interim linecap := rounded ;
-    normaldraw z withpen pencircle scaled dotlabeldiam t_ ;
-enddef ;
-
-plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
-
-% vardef thetextext@#(expr p,z) =
-%   % interim labeloffset := textextoffset ;
+% vardef plain_thelabel@#(expr p,z) =
 %     if string p :
-%         thetextext@#(rawtextext(p),z)
-%     elseif numeric p :
-%         thetextext@#(rawtextext(decimal p),z)
+%         plain_thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
 %     else :
-%         p
-%             if (mfun_labtype@# >= 10) :
-%                 shifted (0,ypart center p)
-%             fi
-%             shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+%         p shifted (z + labeloffset*laboff@# - mfun_labshift@#(p))
 %     fi
+% enddef;
+%
+% def plain_label = % takes two arguments, contrary to textext that takes one
+%     normaldraw plain_thelabel
 % enddef ;
+%
+% let mfun_label    = label ;
+% let mfun_thelabel = thelabel ;
+%
+% def useplainlabels = % somehow let doesn't work for all code
+%     def label    = plain_label    enddef ;
+%     def thelabel = plain_thelabel enddef ;
+% enddef ;
+%
+% def usemetafunlabels =
+%     let label    = mfun_label ;
+%     let thelabel = mfun_thelabel ;
+% enddef ;
+%
+% plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
 
 newinternal anchortextexts ; anchortextexts := 0 ; % disabled by default
 
@@ -489,6 +484,8 @@ vardef onetimetextext@#(expr p) = % no draw here
     thetextext@#(p,origin)
 enddef ;
 
+permanent rawtextext, rawmadetext, validtexbox, rawtexbox, thetextext, textext, onetimetextext ;
+
 % formatted text
 
 pair mfun_tt_z ;
@@ -497,7 +494,7 @@ vardef rawfmttext(text t) =
     mfun_tt_n := mfun_tt_n + 1 ;
     mfun_tt_c := nullpicture ;
     mfun_tt_o := nullpicture ;
-    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    addto mfun_tt_o doublepath origin base_draw_options ;
     mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
     addto mfun_tt_c doublepath unitsquare
         xscaled wdpart mfun_tt_r
@@ -552,6 +549,8 @@ enddef ;
 vardef texbox@#(expr category, name) = % no draw here
     thetexbox@#(category,name,origin)
 enddef ;
+
+permanent rawfmttext, thefmttext, fmttext, onetimefmttext, thetexbox, texbox ;
 
 % vardef thelabel@#(expr p,z) =
 %     if string p :
@@ -609,6 +608,8 @@ primarydef s infont name = % nasty hack
     fi
 enddef ;
 
+permanent theoffset, thelabel, anchored ;
+
 % Helper
 
 string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
@@ -620,6 +621,8 @@ string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
 newinternal shadefactor  ; shadefactor  := 1 ;      % currently obsolete
 pair        shadeoffset  ; shadeoffset  := origin ; % currently obsolete
 boolean     trace_shades ; trace_shades := false ;  % still there
+
+permanent shadefactor, shadeoffset ;
 
 % def withlinearshading (expr a, b) =
 %     withprescript "sh_type=linear"
@@ -855,6 +858,7 @@ def shaded text s =
     s
 enddef ;
 
+
 % For me.
 
 primarydef p shownshadevector v =
@@ -891,6 +895,11 @@ primarydef p shownshadeorigin v =
     )
 enddef ;
 
+permanent withshademethod, withshaderadius, withshadeorigin, withshadevector, withshadedirection,
+    withshadetransform, withshadedomain, withshadefactor, withshadecenter, withshadefraction, withshadestep,
+    withshadecolors, shadedinto, withshade, shaded, shadedup, shadeddown, shadedleft, shadedright,
+    shownshadevector, shownshadedirection, shownshadecenter, shownshadeorigin ;
+
 % Old macros:
 
 def withcircularshade (expr a, b, ra, rb, ca, cb) =
@@ -916,6 +925,8 @@ def withlinearshade (expr a, b, ca, cb) =
     withprescript "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
     withprescript "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
 enddef ;
+
+permanent withcircularshade, withlinearshade ;
 
 % replaced (obsolete):
 
@@ -1047,6 +1058,8 @@ def onlayer primary name =
     withprescript "la_name=" & name
 enddef ;
 
+permanent onlayer ;
+
 % Figures
 
 % def externalfigure primary filename =
@@ -1081,6 +1094,8 @@ def figure primary filename =
     rawtextext("\externalfigure[" & filename & "]")
 enddef ;
 
+permanent withmask, externalfigure, figure ;
+
 % Positions
 
 def register (expr tag, width, height, offset) =
@@ -1089,6 +1104,8 @@ def register (expr tag, width, height, offset) =
             withprescript "ps_label=" & tag ;
 %     ) ; % no transformations
 enddef ;
+
+permanent register ;
 
 % outlines (todo: pass around less arguments)
 
@@ -1213,14 +1230,14 @@ def mfun_do_outline_options_d = enddef ;
 def mfun_do_outline_options_f = enddef ;
 def mfun_do_outline_options_r = enddef ;
 
-def outlinetexttopath(text o, p, n) =
+def outlinetexttopath (text o, p, n) =
     scantokens("numeric " & str n &   ";") ;
     scantokens("path "    & str p & "[];") ;
     n := 0 ;
     for i within o : p[incr(n)] := pathpart i ; endfor ;
 enddef ;
 
-def filloutlinetext(expr o) =
+def filloutlinetext (expr o) =
     draw image (
         save n, m ; numeric n, m ; n := m := 0 ;
         for i within o :
@@ -1237,7 +1254,7 @@ def filloutlinetext(expr o) =
     )
 enddef ;
 
-def drawoutlinetext(expr o) =
+def drawoutlinetext (expr o) =
     draw image (
         % nicer for properties
         for i within o :
@@ -1275,6 +1292,9 @@ vardef outlinetext@# (expr t) text rest =
     ) mfun_do_outline_options_r ; )
 enddef ;
 
+
+permanent outlinetexttopath, filloutlinetext, drawoutlinetext, outlinetext ;
+
 % A few helpers:
 
 numeric mfun_c_b_llx, mfun_c_b_h, mfun_c_b_w, mfun_c_b_l ;
@@ -1302,6 +1322,8 @@ vardef rule(expr wd,ht,dp) =
     image (fill (0,-dp)--(wd,-dp)--(wd,ht)--(0,ht)--cycle)
 enddef ;
 
+permanent checkedbounds, checkbounds, strut, rule ;
+
 % Housekeeping
 
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
@@ -1315,6 +1337,8 @@ vardef verbatim(expr s) =
     ditto & "\detokenize{" & s & "}" & ditto
 enddef ;
 
+permanent verbatim ;
+
 % New
 
 def bitmapimage(expr xresolution, yresolution, data) =
@@ -1326,12 +1350,14 @@ def bitmapimage(expr xresolution, yresolution, data) =
     )
 enddef ;
 
+permanent bitmapimage ;
+
 % Experimental:
 %
 % property p ; p = properties(withcolor (1,1,0,0)) ;
 % fill fullcircle scaled 20cm withproperties p ;
 
-let property = picture ;
+let property = picture ; permanent property ;
 
 vardef properties(text t) =
     image(draw unitcircle t)
@@ -1353,24 +1379,28 @@ def withproperties expr p =
     withpostscript postscriptpart p
 enddef ;
 
+permanent properties, withproperties ;
+
 % Experimental:
 
 primarydef t asgroup s = % s = isolated|knockout
     begingroup
-    save grouppicture, wrappedpicture, groupbounds ;
-    picture grouppicture, wrappedpicture ; path groupbounds ;
-    grouppicture := if picture t : t else : image(draw t) fi ;
-    groupbounds := boundingbox grouppicture ;
-    wrappedpicture:= nullpicture ;
-    addto wrappedpicture contour groupbounds
+    save temp_p, temp_q, temp_r ;
+    picture temp_p, temp_q ; path temp_r ;
+    temp_p := if picture t : t else : image(draw t) fi ;
+    temp_r := boundingbox temp_p ;
+    temp_q:= nullpicture ;
+    addto temp_q contour temp_r
         withprescript "gr_state=start"
         withprescript "gr_type=" & s ;
-    addto wrappedpicture also grouppicture ;
-    addto wrappedpicture contour groupbounds
+    addto temp_q also temp_p ;
+    addto temp_q contour temp_r
         withprescript "gr_state=stop" ;
-    wrappedpicture
+    temp_q
     endgroup
 enddef ;
+
+permanent asgroup ;
 
 % Also experimental ... needs to be made better ... so it can change!
 
@@ -1518,6 +1548,8 @@ enddef ;
 string dq ; dq := char 92 & char 34 ;
 string sq ; sq := char 92 & char 39 ;
 
+permanent dq, sq ;
+
 vardef quote     primary s = sq & tostring(s) & sq enddef;
 vardef quotation primary s = dq & tostring(s) & dq enddef;
 
@@ -1532,6 +1564,8 @@ vardef mfun_tagged_string(expr value) =
     else                   : "2:" & value
     fi
 enddef ;
+
+permanent tostring, topair, quote, quotation ;
 
 % A more flexible variant for passing data to context. We used to construct strings
 % but running lua is fast enough so we can gain on string construction in metapost
@@ -1635,6 +1669,8 @@ def stoppassingvariable =
     runscript("metapost.popvariable()") ;
 enddef ;
 
+permanent passvariable, passarrayvariable, startpassingvariable, stoppassingvariable ;
+
 % moved here from mp-grap.mpiv
 
 % vardef escaped_format(expr s) =
@@ -1698,6 +1734,8 @@ vardef varfmt(expr f, x) = "\MPformatted{"   & escaped_format(f) & "}{" & mfun_t
 vardef format@#   (expr f, x) = textext@#(strfmt(f, x)) enddef ;
 vardef formatted@#(expr f, x) = textext@#(varfmt(f, x)) enddef ;
 
+permanent format, formatted ;
+
 % could be this (something to discuss with alan as it involves graph):
 %
 % vardef format   (expr f,x) = lua.mp.graphformat(f,mfun_tagged_string(x) enddef ;
@@ -1718,17 +1756,14 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 def nodraw   text t = draw t withpostscript "collect" enddef ;
 def dodraw   text t = draw t withpostscript "flush"   enddef ;
 def dofill   text t = fill t withpostscript "flush"   enddef ;
+def eoclip   text t = clip t withpostscript "evenodd" enddef ;
+
+permanent fillup, eofillup, eofill, nofill, nodraw, dodraw, dofill, eoclip ;
 
 % maybe (saves a bogus path but the problem is that it can influence the dimensions):
 
 % def dodraw text t = draw center currentpicture         withpostscript "flush" enddef ;
 % def dofill text t = fill center currentpicture --cycle withpostscript "flush" enddef ;
-
-if contextlmtxmode :
-    def eoclip text t = clip t withpostscript "evenodd" enddef ;
-else :
-    def eoclip text t = clip t enddef ; % no postscripts yet
-fi ;
 
 % def withrule expr r =
 %     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi
@@ -1736,6 +1771,13 @@ fi ;
 
 % A comment will end up on top of the graphic in the output. This can be handy for
 % locating a graphic: comment("test graphic").
+
+% This can be a prescript to currentpicture ... we can actually make
+%
+% setprescript  str to picture/path ;
+% setpostscript str to picture/path ;
+
+def special text t = enddef ;
 
 def comment expr str =
     special "metapost.comment[[" & str & "]]" ;
@@ -1745,7 +1787,11 @@ vardef report(text t) =
     lua.mp.report(t)
 enddef ;
 
+permanent comment, report ;
+
 % This overloads a dummy:
+
+% todo: use mfid_* cum suis
 
 vardef uniquelist(suffix list) =
     % this can be optimized by passing all values at once and returning
@@ -1773,3 +1819,5 @@ vardef uniquelist(suffix list) =
     endfor ;
     lua.mp.disposehash(h) ;
 enddef ;
+
+permanent uniquelist ;

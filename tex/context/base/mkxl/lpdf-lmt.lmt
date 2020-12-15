@@ -1074,11 +1074,10 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
     -- place image also used in vf but we can use a different one if we need it
 
-    local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream memstream
+    local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream
     local img_none       = imagetypes.none
     local img_pdf        = imagetypes.pdf
     local img_stream     = imagetypes.stream
-    local img_memstream  = imagetypes.memstream
 
     local one_bp = 65536 * bpfactor
 
@@ -1158,7 +1157,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
         -- tricky: xsize and ysize swapped
 
-        if kind == img_pdf or kind == img_stream or kind == img_memstream then
+        if kind == img_pdf or kind == img_stream then
             rx, ry, tx, ty = 1/xsize, 1/ysize, xorigin/xsize, yorigin/ysize
         else
          -- if kind == img_png then
@@ -2621,7 +2620,7 @@ do -- updaters.register("backend.update.pdf",function()
 
     local codeinjections = backends.pdf.codeinjections
 
-    local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream memstream
+    local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream
     local img_none       = imagetypes.none
 
     local rulecodes      = nodes.rulecodes

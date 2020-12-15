@@ -313,10 +313,11 @@ end
 do
 
     -- This is some 20% slower than native but we only provide this for compatibility
-    -- reasons so we don't care that much about it. Eventually we can drop the
-    -- built-in method.
+    -- reasons so we don't care that much about it. Eventually we can drop the built-in
+    -- method.
 
     local channels = { }
+    local lastdone = { }
 
     local findbinfile = resolvers.findbinfile
     local loadbinfile = resolvers.loadbinfile
@@ -328,7 +329,20 @@ do
     local scancsname  = tokens.scanners.csname
 
     local setmacro    = tokens.setters.macro
-    local vrbcatcodes = tex.vrbcatcodes
+    local rlncatcodes = tex.rlncatcodes
+    local texgetcount = tex.getcount
+
+    local bytes       = string.bytes
+    local getcatcode  = tex.getcatcode
+
+    local char, concat = string.char, table.concat
+
+    -- This uses the normal bin lookup method that we also use for other files,
+    -- and in principle there is no limit on the amount of files other than the
+    -- operating system imposes.
+
+    local t = { }
+    local l = 0
 
     implement {
         name      = "openin",
@@ -345,8 +359,10 @@ do
             local f = findbinfile(s,"tex")
             if f then
                 channels[n] = opentexfile(f)
+                lastdone[n] = false
             else
                 channels[n] = false
+                lastdone[n] = true
             end
         end,
     }
@@ -362,10 +378,19 @@ do
                 c:close()
             end
             channels[n] = false
+            t = { }
         end,
     }
 
-    implement {
+    -- This is not the fastest routine but hardly used, occasionally for line by line
+    -- input in e.g. tikz which is not that fast anyway so I'll deal with it when it
+    -- really is a bottleneck.
+
+    local readerror = function(what,n)
+        tex.error(string.formatters["too many %s brace tokens in read from channel %i"](what,n))
+    end
+
+    interfaces.implement {
         name      = "read",
         public    = true,
         usage     = "value",
@@ -374,17 +399,66 @@ do
                       scankeyword("to")
             local m = scancsname(true)
             local c = channels[n]
-            local s = c and c:reader()
-            if s then
-                s = gsub(s," *$"," ") -- or just "", no need to fake tex here
+            local g = 0
+            local s
+            l = 0
+            if c then
+                while true do
+                    local s = c and c:reader()
+                    if s then
+                        l = l + 1
+                        s = gsub(s," *$","")
+                        t[l] = s
+                        for c in bytes(s) do
+                            local cc = getcatcode(c)
+                            if cc == 1 then
+                                g = g + 1
+                            elseif cc == 2 then
+                                g = g - 1
+                            end
+                        end
+                        if g <= 0 then
+                            break
+                        end
+                    else
+                        break
+                    end
+                end
+                if g > 0 then
+                    readerror("left",n)
+                    s = ""
+                elseif g < 0 then
+                    readerror("right",n)
+                    s = ""
+                elseif l == 0 then
+                    if c:endoffile() then
+                        lastdone[n] = true
+                        s = "\\par"
+                    else
+                        s = ""
+                    end
+                    channels[n] = false
+                else
+                    local e = texgetcount("endlinechar") -- we can have tex.endline if needed
+                    if e < 0 or e > 127 then
+                        e = ""
+                    else
+                        e = " "
+                        l = l + 1
+                        t[l] = ""
+                    end
+                    s = concat(t, e, 1, l)
+                end
             else
-                channels[n] = false
-             -- s = "\\par"
-                s = "" -- no need to fake tex here
+                s = ""
             end
             setmacro(m, s, prefix) -- checks for frozen
         end,
     }
+
+    -- This is an etex extension. All characters become catcode 12 but a space gets code
+    -- 10. The etex manual specifies a lineending of catcode 12 too. Should we strip spaces
+    -- at the end? A bit weird command that we never use anyway.
 
     implement {
         name      = "readline",
@@ -397,14 +471,20 @@ do
             local c = channels[n]
             local s = c and c:reader()
             if s then
-                -- should we strip spaces at the end?
+                local e = texgetcount("endlinechar") -- we can have tex.endline if needed
+                if e > 0 then -- forget about 0
+                    s = s .. char(e)
+                end
             else
                 channels[n] = false
                 s = ""
             end
-            setmacro(vrbcatcodes, m, s, prefix) -- checks for frozen
+            setmacro(rlncatcodes, m, s, prefix) -- checks for frozen
         end,
     }
+
+    -- This one uses the special lua condition option which is kind of experimental
+    -- but seems to work fine.
 
     local boolean_value = tokens.values.boolean
 
@@ -418,7 +498,8 @@ do
         end,
     }
 
-    -- for the moment here:
+    -- This one doesn't belong here and it might become a real primitive if we need it
+    -- frequently. So, for the moment we keep it in this file.
 
     local getnest = tex.getnest
 

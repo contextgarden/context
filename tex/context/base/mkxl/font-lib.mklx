@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{font-ini}{}
+\registerctxluafile{font-ini}{autosuffix}
 \registerctxluafile{font-log}{}
 \registerctxluafile{font-con}{autosuffix}
 %registerctxluafile{font-cft}{}
@@ -33,7 +33,8 @@
 \registerctxluafile{font-ttf}{optimize} % cubic outlines
 \registerctxluafile{font-dsp}{optimize} % ... for this one
 \registerctxluafile{font-hsh}{}         % hashes used by context
-\registerctxluafile{font-vfc}{}
+\registerctxluafile{font-vir}{}
+\registerctxluafile{font-vfc}{autosuffix}
 \registerctxluafile{font-prv}{}         % needs hashes
 \registerctxluafile{font-nod}{optimize}
 \registerctxluafile{font-oti}{}         % otf initialization
@@ -81,7 +82,6 @@
 
 \registerctxluafile{font-lua}{}
 
-\registerctxluafile{font-vir}{}
 \registerctxluafile{font-enh}{autosuffix}
 
 \registerctxluafile{good-ini}{}

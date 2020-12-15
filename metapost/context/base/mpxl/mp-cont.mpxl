@@ -15,7 +15,7 @@
 
 if known context_cont : endinput ; fi ;
 
-boolean context_cont ; context_cont := true ;
+boolean context_cont ; context_cont := true ; immutable context_cont ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
@@ -25,99 +25,133 @@ def SwapPageState =
     mfun_swapped := true ; % eventually this will go !
 enddef ;
 
+permanent CurrentLayout, SwapPageState ;
+
 extra_beginfig := extra_beginfig & "mfun_swapped := false ;" ;
 
-newinternal mfid_PaperHeight          ; mfid_PaperHeight          := scriptindex "PaperHeight"          ; vardef PaperHeight          = runscript mfid_PaperHeight          enddef ;
-newinternal mfid_PaperWidth           ; mfid_PaperWidth           := scriptindex "PaperWidth"           ; vardef PaperWidth           = runscript mfid_PaperWidth           enddef ;
-newinternal mfid_PrintPaperHeight     ; mfid_PrintPaperHeight     := scriptindex "PrintPaperHeight"     ; vardef PrintPaperHeight     = runscript mfid_PrintPaperHeight     enddef ;
-newinternal mfid_PrintPaperWidth      ; mfid_PrintPaperWidth      := scriptindex "PrintPaperWidth"      ; vardef PrintPaperWidth      = runscript mfid_PrintPaperWidth      enddef ;
-newinternal mfid_TopSpace             ; mfid_TopSpace             := scriptindex "TopSpace"             ; vardef TopSpace             = runscript mfid_TopSpace             enddef ;
-newinternal mfid_BottomSpace          ; mfid_BottomSpace          := scriptindex "BottomSpace"          ; vardef BottomSpace          = runscript mfid_BottomSpace          enddef ;
-newinternal mfid_BackSpace            ; mfid_BackSpace            := scriptindex "BackSpace"            ; vardef BackSpace            = runscript mfid_BackSpace            enddef ;
-newinternal mfid_CutSpace             ; mfid_CutSpace             := scriptindex "CutSpace"             ; vardef CutSpace             = runscript mfid_CutSpace             enddef ;
-newinternal mfid_MakeupHeight         ; mfid_MakeupHeight         := scriptindex "MakeupHeight"         ; vardef MakeupHeight         = runscript mfid_MakeupHeight         enddef ;
-newinternal mfid_MakeupWidth          ; mfid_MakeupWidth          := scriptindex "MakeupWidth"          ; vardef MakeupWidth          = runscript mfid_MakeupWidth          enddef ;
-newinternal mfid_TopHeight            ; mfid_TopHeight            := scriptindex "TopHeight"            ; vardef TopHeight            = runscript mfid_TopHeight            enddef ;
-newinternal mfid_TopDistance          ; mfid_TopDistance          := scriptindex "TopDistance"          ; vardef TopDistance          = runscript mfid_TopDistance          enddef ;
-newinternal mfid_HeaderHeight         ; mfid_HeaderHeight         := scriptindex "HeaderHeight"         ; vardef HeaderHeight         = runscript mfid_HeaderHeight         enddef ;
-newinternal mfid_HeaderDistance       ; mfid_HeaderDistance       := scriptindex "HeaderDistance"       ; vardef HeaderDistance       = runscript mfid_HeaderDistance       enddef ;
-newinternal mfid_TextHeight           ; mfid_TextHeight           := scriptindex "TextHeight"           ; vardef TextHeight           = runscript mfid_TextHeight           enddef ;
-newinternal mfid_FooterDistance       ; mfid_FooterDistance       := scriptindex "FooterDistance"       ; vardef FooterDistance       = runscript mfid_FooterDistance       enddef ;
-newinternal mfid_FooterHeight         ; mfid_FooterHeight         := scriptindex "FooterHeight"         ; vardef FooterHeight         = runscript mfid_FooterHeight         enddef ;
-newinternal mfid_BottomDistance       ; mfid_BottomDistance       := scriptindex "BottomDistance"       ; vardef BottomDistance       = runscript mfid_BottomDistance       enddef ;
-newinternal mfid_BottomHeight         ; mfid_BottomHeight         := scriptindex "BottomHeight"         ; vardef BottomHeight         = runscript mfid_BottomHeight         enddef ;
-newinternal mfid_LeftEdgeWidth        ; mfid_LeftEdgeWidth        := scriptindex "LeftEdgeWidth"        ; vardef LeftEdgeWidth        = runscript mfid_LeftEdgeWidth        enddef ;
-newinternal mfid_LeftEdgeDistance     ; mfid_LeftEdgeDistance     := scriptindex "LeftEdgeDistance"     ; vardef LeftEdgeDistance     = runscript mfid_LeftEdgeDistance     enddef ;
-newinternal mfid_LeftMarginWidth      ; mfid_LeftMarginWidth      := scriptindex "LeftMarginWidth"      ; vardef LeftMarginWidth      = runscript mfid_LeftMarginWidth      enddef ;
-newinternal mfid_LeftMarginDistance   ; mfid_LeftMarginDistance   := scriptindex "LeftMarginDistance"   ; vardef LeftMarginDistance   = runscript mfid_LeftMarginDistance   enddef ;
-newinternal mfid_TextWidth            ; mfid_TextWidth            := scriptindex "TextWidth"            ; vardef TextWidth            = runscript mfid_TextWidth            enddef ;
-newinternal mfid_RightMarginDistance  ; mfid_RightMarginDistance  := scriptindex "RightMarginDistance"  ; vardef RightMarginDistance  = runscript mfid_RightMarginDistance  enddef ;
-newinternal mfid_RightMarginWidth     ; mfid_RightMarginWidth     := scriptindex "RightMarginWidth"     ; vardef RightMarginWidth     = runscript mfid_RightMarginWidth     enddef ;
-newinternal mfid_RightEdgeDistance    ; mfid_RightEdgeDistance    := scriptindex "RightEdgeDistance"    ; vardef RightEdgeDistance    = runscript mfid_RightEdgeDistance    enddef ;
-newinternal mfid_RightEdgeWidth       ; mfid_RightEdgeWidth       := scriptindex "RightEdgeWidth"       ; vardef RightEdgeWidth       = runscript mfid_RightEdgeWidth       enddef ;
-newinternal mfid_InnerMarginDistance  ; mfid_InnerMarginDistance  := scriptindex "InnerMarginDistance"  ; vardef InnerMarginDistance  = runscript mfid_InnerMarginDistance  enddef ;
-newinternal mfid_InnerMarginWidth     ; mfid_InnerMarginWidth     := scriptindex "InnerMarginWidth"     ; vardef InnerMarginWidth     = runscript mfid_InnerMarginWidth     enddef ;
-newinternal mfid_OuterMarginDistance  ; mfid_OuterMarginDistance  := scriptindex "OuterMarginDistance"  ; vardef OuterMarginDistance  = runscript mfid_OuterMarginDistance  enddef ;
-newinternal mfid_OuterMarginWidth     ; mfid_OuterMarginWidth     := scriptindex "OuterMarginWidth"     ; vardef OuterMarginWidth     = runscript mfid_OuterMarginWidth     enddef ;
-newinternal mfid_InnerEdgeDistance    ; mfid_InnerEdgeDistance    := scriptindex "InnerEdgeDistance"    ; vardef InnerEdgeDistance    = runscript mfid_InnerEdgeDistance    enddef ;
-newinternal mfid_InnerEdgeWidth       ; mfid_InnerEdgeWidth       := scriptindex "InnerEdgeWidth"       ; vardef InnerEdgeWidth       = runscript mfid_InnerEdgeWidth       enddef ;
-newinternal mfid_OuterEdgeDistance    ; mfid_OuterEdgeDistance    := scriptindex "OuterEdgeDistance"    ; vardef OuterEdgeDistance    = runscript mfid_OuterEdgeDistance    enddef ;
-newinternal mfid_OuterEdgeWidth       ; mfid_OuterEdgeWidth       := scriptindex "OuterEdgeWidth"       ; vardef OuterEdgeWidth       = runscript mfid_OuterEdgeWidth       enddef ;
-newinternal mfid_PageOffset           ; mfid_PageOffset           := scriptindex "PageOffset"           ; vardef PageOffset           = runscript mfid_PageOffset           enddef ;
-newinternal mfid_PageDepth            ; mfid_PageDepth            := scriptindex "PageDepth"            ; vardef PageDepth            = runscript mfid_PageDepth            enddef ;
-newinternal mfid_LayoutColumns        ; mfid_LayoutColumns        := scriptindex "LayoutColumns"        ; vardef LayoutColumns        = runscript mfid_LayoutColumns        enddef ;
-newinternal mfid_LayoutColumnDistance ; mfid_LayoutColumnDistance := scriptindex "LayoutColumnDistance" ; vardef LayoutColumnDistance = runscript mfid_LayoutColumnDistance enddef ;
-newinternal mfid_LayoutColumnWidth    ; mfid_LayoutColumnWidth    := scriptindex "LayoutColumnWidth"    ; vardef LayoutColumnWidth    = runscript mfid_LayoutColumnWidth    enddef ;
+newscriptindex mfid_PaperHeight          ; mfid_PaperHeight          := scriptindex "PaperHeight"          ; vardef PaperHeight          = runscript mfid_PaperHeight          enddef ;
+newscriptindex mfid_PaperWidth           ; mfid_PaperWidth           := scriptindex "PaperWidth"           ; vardef PaperWidth           = runscript mfid_PaperWidth           enddef ;
+newscriptindex mfid_PrintPaperHeight     ; mfid_PrintPaperHeight     := scriptindex "PrintPaperHeight"     ; vardef PrintPaperHeight     = runscript mfid_PrintPaperHeight     enddef ;
+newscriptindex mfid_PrintPaperWidth      ; mfid_PrintPaperWidth      := scriptindex "PrintPaperWidth"      ; vardef PrintPaperWidth      = runscript mfid_PrintPaperWidth      enddef ;
+newscriptindex mfid_TopSpace             ; mfid_TopSpace             := scriptindex "TopSpace"             ; vardef TopSpace             = runscript mfid_TopSpace             enddef ;
+newscriptindex mfid_BottomSpace          ; mfid_BottomSpace          := scriptindex "BottomSpace"          ; vardef BottomSpace          = runscript mfid_BottomSpace          enddef ;
+newscriptindex mfid_BackSpace            ; mfid_BackSpace            := scriptindex "BackSpace"            ; vardef BackSpace            = runscript mfid_BackSpace            enddef ;
+newscriptindex mfid_CutSpace             ; mfid_CutSpace             := scriptindex "CutSpace"             ; vardef CutSpace             = runscript mfid_CutSpace             enddef ;
+newscriptindex mfid_MakeupHeight         ; mfid_MakeupHeight         := scriptindex "MakeupHeight"         ; vardef MakeupHeight         = runscript mfid_MakeupHeight         enddef ;
+newscriptindex mfid_MakeupWidth          ; mfid_MakeupWidth          := scriptindex "MakeupWidth"          ; vardef MakeupWidth          = runscript mfid_MakeupWidth          enddef ;
+newscriptindex mfid_TopHeight            ; mfid_TopHeight            := scriptindex "TopHeight"            ; vardef TopHeight            = runscript mfid_TopHeight            enddef ;
+newscriptindex mfid_TopDistance          ; mfid_TopDistance          := scriptindex "TopDistance"          ; vardef TopDistance          = runscript mfid_TopDistance          enddef ;
+newscriptindex mfid_HeaderHeight         ; mfid_HeaderHeight         := scriptindex "HeaderHeight"         ; vardef HeaderHeight         = runscript mfid_HeaderHeight         enddef ;
+newscriptindex mfid_HeaderDistance       ; mfid_HeaderDistance       := scriptindex "HeaderDistance"       ; vardef HeaderDistance       = runscript mfid_HeaderDistance       enddef ;
+newscriptindex mfid_TextHeight           ; mfid_TextHeight           := scriptindex "TextHeight"           ; vardef TextHeight           = runscript mfid_TextHeight           enddef ;
+newscriptindex mfid_FooterDistance       ; mfid_FooterDistance       := scriptindex "FooterDistance"       ; vardef FooterDistance       = runscript mfid_FooterDistance       enddef ;
+newscriptindex mfid_FooterHeight         ; mfid_FooterHeight         := scriptindex "FooterHeight"         ; vardef FooterHeight         = runscript mfid_FooterHeight         enddef ;
+newscriptindex mfid_BottomDistance       ; mfid_BottomDistance       := scriptindex "BottomDistance"       ; vardef BottomDistance       = runscript mfid_BottomDistance       enddef ;
+newscriptindex mfid_BottomHeight         ; mfid_BottomHeight         := scriptindex "BottomHeight"         ; vardef BottomHeight         = runscript mfid_BottomHeight         enddef ;
+newscriptindex mfid_LeftEdgeWidth        ; mfid_LeftEdgeWidth        := scriptindex "LeftEdgeWidth"        ; vardef LeftEdgeWidth        = runscript mfid_LeftEdgeWidth        enddef ;
+newscriptindex mfid_LeftEdgeDistance     ; mfid_LeftEdgeDistance     := scriptindex "LeftEdgeDistance"     ; vardef LeftEdgeDistance     = runscript mfid_LeftEdgeDistance     enddef ;
+newscriptindex mfid_LeftMarginWidth      ; mfid_LeftMarginWidth      := scriptindex "LeftMarginWidth"      ; vardef LeftMarginWidth      = runscript mfid_LeftMarginWidth      enddef ;
+newscriptindex mfid_LeftMarginDistance   ; mfid_LeftMarginDistance   := scriptindex "LeftMarginDistance"   ; vardef LeftMarginDistance   = runscript mfid_LeftMarginDistance   enddef ;
+newscriptindex mfid_TextWidth            ; mfid_TextWidth            := scriptindex "TextWidth"            ; vardef TextWidth            = runscript mfid_TextWidth            enddef ;
+newscriptindex mfid_RightMarginDistance  ; mfid_RightMarginDistance  := scriptindex "RightMarginDistance"  ; vardef RightMarginDistance  = runscript mfid_RightMarginDistance  enddef ;
+newscriptindex mfid_RightMarginWidth     ; mfid_RightMarginWidth     := scriptindex "RightMarginWidth"     ; vardef RightMarginWidth     = runscript mfid_RightMarginWidth     enddef ;
+newscriptindex mfid_RightEdgeDistance    ; mfid_RightEdgeDistance    := scriptindex "RightEdgeDistance"    ; vardef RightEdgeDistance    = runscript mfid_RightEdgeDistance    enddef ;
+newscriptindex mfid_RightEdgeWidth       ; mfid_RightEdgeWidth       := scriptindex "RightEdgeWidth"       ; vardef RightEdgeWidth       = runscript mfid_RightEdgeWidth       enddef ;
+newscriptindex mfid_InnerMarginDistance  ; mfid_InnerMarginDistance  := scriptindex "InnerMarginDistance"  ; vardef InnerMarginDistance  = runscript mfid_InnerMarginDistance  enddef ;
+newscriptindex mfid_InnerMarginWidth     ; mfid_InnerMarginWidth     := scriptindex "InnerMarginWidth"     ; vardef InnerMarginWidth     = runscript mfid_InnerMarginWidth     enddef ;
+newscriptindex mfid_OuterMarginDistance  ; mfid_OuterMarginDistance  := scriptindex "OuterMarginDistance"  ; vardef OuterMarginDistance  = runscript mfid_OuterMarginDistance  enddef ;
+newscriptindex mfid_OuterMarginWidth     ; mfid_OuterMarginWidth     := scriptindex "OuterMarginWidth"     ; vardef OuterMarginWidth     = runscript mfid_OuterMarginWidth     enddef ;
+newscriptindex mfid_InnerEdgeDistance    ; mfid_InnerEdgeDistance    := scriptindex "InnerEdgeDistance"    ; vardef InnerEdgeDistance    = runscript mfid_InnerEdgeDistance    enddef ;
+newscriptindex mfid_InnerEdgeWidth       ; mfid_InnerEdgeWidth       := scriptindex "InnerEdgeWidth"       ; vardef InnerEdgeWidth       = runscript mfid_InnerEdgeWidth       enddef ;
+newscriptindex mfid_OuterEdgeDistance    ; mfid_OuterEdgeDistance    := scriptindex "OuterEdgeDistance"    ; vardef OuterEdgeDistance    = runscript mfid_OuterEdgeDistance    enddef ;
+newscriptindex mfid_OuterEdgeWidth       ; mfid_OuterEdgeWidth       := scriptindex "OuterEdgeWidth"       ; vardef OuterEdgeWidth       = runscript mfid_OuterEdgeWidth       enddef ;
+newscriptindex mfid_PageOffset           ; mfid_PageOffset           := scriptindex "PageOffset"           ; vardef PageOffset           = runscript mfid_PageOffset           enddef ;
+newscriptindex mfid_PageDepth            ; mfid_PageDepth            := scriptindex "PageDepth"            ; vardef PageDepth            = runscript mfid_PageDepth            enddef ;
+newscriptindex mfid_LayoutColumns        ; mfid_LayoutColumns        := scriptindex "LayoutColumns"        ; vardef LayoutColumns        = runscript mfid_LayoutColumns        enddef ;
+newscriptindex mfid_LayoutColumnDistance ; mfid_LayoutColumnDistance := scriptindex "LayoutColumnDistance" ; vardef LayoutColumnDistance = runscript mfid_LayoutColumnDistance enddef ;
+newscriptindex mfid_LayoutColumnWidth    ; mfid_LayoutColumnWidth    := scriptindex "LayoutColumnWidth"    ; vardef LayoutColumnWidth    = runscript mfid_LayoutColumnWidth    enddef ;
 
-newinternal mfid_OnRightPage          ; mfid_OnRightPage          := scriptindex "OnRightPage"          ; vardef OnRightPage          = runscript mfid_OnRightPage          enddef ;
-newinternal mfid_OnOddPage            ; mfid_OnOddPage            := scriptindex "OnOddPage"            ; vardef OnOddPage            = runscript mfid_OnOddPage            enddef ;
-newinternal mfid_InPageBody           ; mfid_InPageBody           := scriptindex "InPageBody"           ; vardef InPageBody           = runscript mfid_InPageBody           enddef ;
+immutable % permanent
+    PaperHeight, PaperWidth, PrintPaperHeight, PrintPaperWidth, TopSpace,
+    BottomSpace, BackSpace, CutSpace, MakeupHeight, MakeupWidth, TopHeight,
+    TopDistance, HeaderHeight, HeaderDistance, TextHeight, FooterDistance,
+    FooterHeight, BottomDistance, BottomHeight, LeftEdgeWidth, LeftEdgeDistance,
+    LeftMarginWidth, LeftMarginDistance, TextWidth, RightMarginDistance,
+    RightMarginWidth, RightEdgeDistance, RightEdgeWidth, InnerMarginDistance,
+    InnerMarginWidth, OuterMarginDistance, OuterMarginWidth, InnerEdgeDistance,
+    InnerEdgeWidth, OuterEdgeDistance, OuterEdgeWidth, PageOffset, PageDepth,
+    LayoutColumns, LayoutColumnDistance, LayoutColumnWidth ;
 
-newinternal mfid_RealPageNumber       ; mfid_RealPageNumber       := scriptindex "RealPageNumber"       ; vardef RealPageNumber       = runscript mfid_RealPageNumber       enddef ;
-newinternal mfid_LastPageNumber       ; mfid_LastPageNumber       := scriptindex "LastPageNumber"       ; vardef LastPageNumber       = runscript mfid_LastPageNumber       enddef ;
+newscriptindex mfid_OnRightPage      ; mfid_OnRightPage      := scriptindex "OnRightPage"      ; vardef OnRightPage      = runscript mfid_OnRightPage      enddef ;
+newscriptindex mfid_OnOddPage        ; mfid_OnOddPage        := scriptindex "OnOddPage"        ; vardef OnOddPage        = runscript mfid_OnOddPage        enddef ;
+newscriptindex mfid_InPageBody       ; mfid_InPageBody       := scriptindex "InPageBody"       ; vardef InPageBody       = runscript mfid_InPageBody       enddef ;
+newscriptindex mfid_LayoutHasChanged ; mfid_LayoutHasChanged := scriptindex "LayoutHasChanged" ; vardef LayoutHasChanged = runscript mfid_LayoutHasChanged enddef ;
 
-newinternal mfid_PageNumber           ; mfid_PageNumber           := scriptindex "PageNumber"           ; vardef PageNumber           = runscript mfid_PageNumber           enddef ;
-newinternal mfid_NOfPages             ; mfid_NOfPages             := scriptindex "NOfPages"             ; vardef NOfPages             = runscript mfid_NOfPages             enddef ;
+immutable % permanent
+    OnRightPage, OnOddPage, InPageBody, LayoutHasChanged ;
 
-newinternal mfid_SubPageNumber        ; mfid_SubPageNumber        := scriptindex "SubPageNumber"        ; vardef SubPageNumber        = runscript mfid_SubPageNumber        enddef ;
-newinternal mfid_NOfSubPages          ; mfid_NOfSubPages          := scriptindex "NOfSubPages"          ; vardef NOfSubPages          = runscript mfid_NOfSubPages          enddef ;
+newscriptindex mfid_RealPageNumber ; mfid_RealPageNumber := scriptindex "RealPageNumber" ; vardef RealPageNumber= runscript mfid_RealPageNumber enddef ;
+newscriptindex mfid_LastPageNumber ; mfid_LastPageNumber := scriptindex "LastPageNumber" ; vardef LastPageNumber= runscript mfid_LastPageNumber enddef ;
 
-newinternal mfid_CurrentColumn        ; mfid_CurrentColumn        := scriptindex "CurrentColumn"        ; vardef CurrentColumn        = runscript mfid_CurrentColumn        enddef ;
-newinternal mfid_NOfColumns           ; mfid_NOfColumns           := scriptindex "NOfColumns"           ; vardef NOfColumns           = runscript mfid_NOfColumns           enddef ;
+newscriptindex mfid_PageNumber     ; mfid_PageNumber     := scriptindex "PageNumber"     ; vardef PageNumber    = runscript mfid_PageNumber     enddef ;
+newscriptindex mfid_NOfPages       ; mfid_NOfPages       := scriptindex "NOfPages"       ; vardef NOfPages      = runscript mfid_NOfPages       enddef ;
 
-newinternal mfid_BaseLineSkip         ; mfid_BaseLineSkip         := scriptindex "BaseLineSkip"         ; vardef BaseLineSkip         = runscript mfid_BaseLineSkip         enddef ;
-newinternal mfid_LineHeight           ; mfid_LineHeight           := scriptindex "LineHeight"           ; vardef LineHeight           = runscript mfid_LineHeight           enddef ;
-newinternal mfid_BodyFontSize         ; mfid_BodyFontSize         := scriptindex "BodyFontSize"         ; vardef BodyFontSize         = runscript mfid_BodyFontSize         enddef ;
+newscriptindex mfid_SubPageNumber  ; mfid_SubPageNumber  := scriptindex "SubPageNumber"  ; vardef SubPageNumber = runscript mfid_SubPageNumber  enddef ;
+newscriptindex mfid_NOfSubPages    ; mfid_NOfSubPages    := scriptindex "NOfSubPages"    ; vardef NOfSubPages   = runscript mfid_NOfSubPages    enddef ;
 
-newinternal mfid_TopSkip              ; mfid_TopSkip              := scriptindex "TopSkip"              ; vardef TopSkip              = runscript mfid_TopSkip              enddef ;
-newinternal mfid_StrutHeight          ; mfid_StrutHeight          := scriptindex "StrutHeight"          ; vardef StrutHeight          = runscript mfid_StrutHeight          enddef ;
-newinternal mfid_StrutDepth           ; mfid_StrutDepth           := scriptindex "StrutDepth"           ; vardef StrutDepth           = runscript mfid_StrutDepth           enddef ;
+newscriptindex mfid_CurrentColumn  ; mfid_CurrentColumn  := scriptindex "CurrentColumn"  ; vardef CurrentColumn = runscript mfid_CurrentColumn  enddef ;
+newscriptindex mfid_NOfColumns     ; mfid_NOfColumns     := scriptindex "NOfColumns"     ; vardef NOfColumns    = runscript mfid_NOfColumns     enddef ;
 
-newinternal mfid_CurrentWidth         ; mfid_CurrentWidth         := scriptindex "CurrentWidth"         ; vardef CurrentWidth         = runscript mfid_CurrentWidth         enddef ;
-newinternal mfid_CurrentHeight        ; mfid_CurrentHeight        := scriptindex "CurrentHeight"        ; vardef CurrentHeight        = runscript mfid_CurrentHeight        enddef ;
+immutable % permanent
+    RealPageNumber, LastPageNumber, PageNumber,
+    NOfPages, SubPageNumber, NOfSubPages, CurrentColumn, NOfColumns ;
 
-newinternal mfid_HSize                ; mfid_HSize                := scriptindex "HSize"                ; vardef HSize                = runscript mfid_HSize                enddef ;
-newinternal mfid_VSize                ; mfid_VSize                := scriptindex "VSize"                ; vardef VSize                = runscript mfid_VSize                enddef ;
+newscriptindex mfid_BaseLineSkip  ; mfid_BaseLineSkip  := scriptindex "BaseLineSkip"  ; vardef BaseLineSkip  = runscript mfid_BaseLineSkip         enddef ;
+newscriptindex mfid_LineHeight    ; mfid_LineHeight    := scriptindex "LineHeight"    ; vardef LineHeight    = runscript mfid_LineHeight           enddef ;
+newscriptindex mfid_BodyFontSize  ; mfid_BodyFontSize  := scriptindex "BodyFontSize"  ; vardef BodyFontSize  = runscript mfid_BodyFontSize         enddef ;
 
-newinternal mfid_EmWidth              ; mfid_EmWidth              := scriptindex "EmWidth"              ; vardef EmWidth              = runscript mfid_EmWidth              enddef ;
-newinternal mfid_ExHeight             ; mfid_ExHeight             := scriptindex "ExHeight"             ; vardef ExHeight             = runscript mfid_ExHeight             enddef ;
+newscriptindex mfid_TopSkip       ; mfid_TopSkip       := scriptindex "TopSkip"       ; vardef TopSkip       = runscript mfid_TopSkip              enddef ;
+newscriptindex mfid_StrutHeight   ; mfid_StrutHeight   := scriptindex "StrutHeight"   ; vardef StrutHeight   = runscript mfid_StrutHeight          enddef ;
+newscriptindex mfid_StrutDepth    ; mfid_StrutDepth    := scriptindex "StrutDepth"    ; vardef StrutDepth    = runscript mfid_StrutDepth           enddef ;
 
-newinternal mfid_PageFraction         ; mfid_PageFraction         := scriptindex "PageFraction"         ; vardef PageFraction         = runscript mfid_PageFraction         enddef ;
+newscriptindex mfid_CurrentWidth  ; mfid_CurrentWidth  := scriptindex "CurrentWidth"  ; vardef CurrentWidth  = runscript mfid_CurrentWidth         enddef ;
+newscriptindex mfid_CurrentHeight ; mfid_CurrentHeight := scriptindex "CurrentHeight" ; vardef CurrentHeight = runscript mfid_CurrentHeight        enddef ;
 
-newinternal mfid_SpineWidth           ; mfid_SpineWidth           := scriptindex "SpineWidth"           ; vardef SpineWidth           = runscript mfid_SpineWidth           enddef ;
-newinternal mfid_PaperBleed           ; mfid_PaperBleed           := scriptindex "PaperBleed"           ; vardef PaperBleed           = runscript mfid_PaperBleed           enddef ;
+newscriptindex mfid_HSize         ; mfid_HSize         := scriptindex "HSize"         ; vardef HSize         = runscript mfid_HSize                enddef ;
+newscriptindex mfid_VSize         ; mfid_VSize         := scriptindex "VSize"         ; vardef VSize         = runscript mfid_VSize                enddef ;
 
-%           mfid_CurrentLayout        ; mfid_CurrentLayout        := scriptindex "CurrentLayout"        ; vardef CurrentLayout        = runscript mfid_CurrentLayout        enddef ;
-newinternal mfid_OverlayWidth         ; mfid_OverlayWidth         := scriptindex "OverlayWidth"         ; vardef OverlayWidth         = runscript mfid_OverlayWidth         enddef ;
-newinternal mfid_OverlayHeight        ; mfid_OverlayHeight        := scriptindex "OverlayHeight"        ; vardef OverlayHeight        = runscript mfid_OverlayHeight        enddef ;
-newinternal mfid_OverlayDepth         ; mfid_OverlayDepth         := scriptindex "OverlayDepth"         ; vardef OverlayDepth         = runscript mfid_OverlayDepth         enddef ;
-newinternal mfid_OverlayLineWidth     ; mfid_OverlayLineWidth     := scriptindex "OverlayLineWidth"     ; vardef OverlayLineWidth     = runscript mfid_OverlayLineWidth     enddef ;
-newinternal mfid_OverlayOffset        ; mfid_OverlayOffset        := scriptindex "OverlayOffset"        ; vardef OverlayOffset        = runscript mfid_OverlayOffset        enddef ;
-newinternal mfid_OverlayRegion        ; mfid_OverlayRegion        := scriptindex "OverlayRegion"        ; vardef OverlayRegion        = runscript mfid_OverlayRegion        enddef ;
-%           mfid_OverlayLineColor     ; mfid_OverlayLineColor     := scriptindex "OverlayLineColor      ; vardef OverlayLineColor     = runscript mfid_OverlayLineColor     enddef ;
-%           mfid_OverlayColor         ; mfid_OverlayColor         := scriptindex "OverlayColor          ; vardef OverlayColor         = runscript mfid_OverlayColor         enddef ;
+newscriptindex mfid_EmWidth       ; mfid_EmWidth       := scriptindex "EmWidth"       ; vardef EmWidth       = runscript mfid_EmWidth              enddef ;
+newscriptindex mfid_ExHeight      ; mfid_ExHeight      := scriptindex "ExHeight"      ; vardef ExHeight      = runscript mfid_ExHeight             enddef ;
 
-newinternal mfid_defaultcolormodel    ; mfid_defaultcolormodel    := scriptindex "defaultcolormodel"    ; vardef defaultcolormodel = runscript mfid_defaultcolormodel enddef ;
+immutable % permanent
+    BaseLineSkip, LineHeight, BodyFontSize, TopSkip, StrutHeight, StrutDepth,
+    CurrentWidth, CurrentHeight, HSize, VSize, EmWidth, ExHeight ;
+
+newscriptindex mfid_PageFraction ; mfid_PageFraction := scriptindex "PageFraction" ; vardef PageFraction = runscript mfid_PageFraction         enddef ;
+newscriptindex mfid_SpineWidth   ; mfid_SpineWidth   := scriptindex "SpineWidth"   ; vardef SpineWidth   = runscript mfid_SpineWidth           enddef ;
+newscriptindex mfid_PaperBleed   ; mfid_PaperBleed   := scriptindex "PaperBleed"   ; vardef PaperBleed   = runscript mfid_PaperBleed           enddef ;
+
+immutable % permanent
+    PageFraction, SpineWidth, PaperBleed ;
+
+%              mfid_CurrentLayout    ; mfid_CurrentLayout    := scriptindex "CurrentLayout"    ; vardef CurrentLayout    = runscript mfid_CurrentLayout        enddef ;
+%              mfid_OverlayLineColor ; mfid_OverlayLineColor := scriptindex "OverlayLineColor  ; vardef OverlayLineColor = runscript mfid_OverlayLineColor     enddef ;
+%              mfid_OverlayColor     ; mfid_OverlayColor     := scriptindex "OverlayColor      ; vardef OverlayColor     = runscript mfid_OverlayColor         enddef ;
+newscriptindex mfid_OverlayWidth     ; mfid_OverlayWidth     := scriptindex "OverlayWidth"     ; vardef OverlayWidth     = runscript mfid_OverlayWidth         enddef ;
+newscriptindex mfid_OverlayHeight    ; mfid_OverlayHeight    := scriptindex "OverlayHeight"    ; vardef OverlayHeight    = runscript mfid_OverlayHeight        enddef ;
+newscriptindex mfid_OverlayDepth     ; mfid_OverlayDepth     := scriptindex "OverlayDepth"     ; vardef OverlayDepth     = runscript mfid_OverlayDepth         enddef ;
+newscriptindex mfid_OverlayLineWidth ; mfid_OverlayLineWidth := scriptindex "OverlayLineWidth" ; vardef OverlayLineWidth = runscript mfid_OverlayLineWidth     enddef ;
+newscriptindex mfid_OverlayOffset    ; mfid_OverlayOffset    := scriptindex "OverlayOffset"    ; vardef OverlayOffset    = runscript mfid_OverlayOffset        enddef ;
+newscriptindex mfid_OverlayRegion    ; mfid_OverlayRegion    := scriptindex "OverlayRegion"    ; vardef OverlayRegion    = runscript mfid_OverlayRegion        enddef ;
+
+immutable % permanent
+  %  CurrentLayout, OverlayLineColor, OverlayColor,
+    OverlayWidth, OverlayHeight, OverlayDepth, OverlayLineWidth, OverlayOffset, OverlayRegion ;
+
+newscriptindex mfid_defaultcolormodel    ; mfid_defaultcolormodel    := scriptindex "defaultcolormodel"    ; vardef defaultcolormodel = runscript mfid_defaultcolormodel enddef ;
+
+immutable % permanent
+    defaultcolormodel ;
 
 vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : runscript mfid_RightMarginWidth    else : runscript mfid_LeftMarginWidth     fi enddef ;
 vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : runscript mfid_LeftMarginWidth     else : runscript mfid_RightMarginWidth    fi enddef ;
@@ -153,6 +187,12 @@ vardef OuterMargin = if not OnRightPage : LeftMargin  else : RightMargin fi endd
 vardef InnerMargin = if not OnRightPage : RightMargin else : LeftMargin  fi enddef ;
 
 vardef OuterEdge   = if not OnRightPage : LeftEdge    else : RightEdge   fi enddef ;
-vardef InnerEdge   = if not OnRightPage : Rightedge   else : LeftEdge    fi enddef ;
+vardef InnerEdge   = if not OnRightPage : RightEdge   else : LeftEdge    fi enddef ;
 
-
+immutable % permanent
+    LeftMarginWidth, RightMarginWidth, LeftMarginDistance, RightMarginDistance,
+    LeftEdgeWidth, RightEdgeWidth, LeftEdgeDistance, RightEdgeDistance, BackSpace,
+    CutSpace, OuterMarginWidth, InnerMarginWidth, OuterMarginDistance,
+    InnerMarginDistance, OuterEdgeWidth, InnerEdgeWidth, OuterEdgeDistance,
+    InnerEdgeDistance, OuterSpaceWidth, InnerSpaceWidth, OuterMargin, InnerMargin,
+    OuterEdge, InnerEdge ;

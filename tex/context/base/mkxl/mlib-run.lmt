@@ -31,7 +31,7 @@ nears zero.</p>
 
 local type, tostring, tonumber, next = type, tostring, tonumber, next
 local find, striplines = string.find, utilities.strings.striplines
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
 
 local emptystring = string.is_empty
 
@@ -641,6 +641,9 @@ do
             format   = "metafun", -- or: minifun
             method   = "double",
         }
+--         if not code then
+--             code = ""
+--         end
         metapost.process {
             mpx        = mpx,
             flusher    = flusher,
@@ -661,7 +664,7 @@ do
 
 end
 
-local getstatistics = mplib.getstatistics or mplib.statistics
+local getstatistics = mplib.getstatistics
 
 function metapost.getstatistics(memonly)
     if memonly then
@@ -678,4 +681,27 @@ function metapost.getstatistics(memonly)
         end
         return t
     end
+end
+
+local gethashentries = mplib.gethashentries
+
+function metapost.gethashentries(name,full)
+    if name then
+        local mpx = mpxformats[name] or mpxformats[name .. ":1"]
+        if mpx then
+            return gethashentries(mpx,full)
+        end
+    else
+        local t = { }
+        for name, mpx in next, mpxformats do
+            t[name] = gethashtokens(mpx,full)
+        end
+        return t
+    end
+end
+
+local gethashtokens = mplib.gethashtokens
+
+function metapost.getinstancenames()
+    return sortedkeys(mpxformats)
 end

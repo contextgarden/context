@@ -1,0 +1,1047 @@
+% This is a reformatted copy of the plain.mp file. We use a copy
+% because (1) we want to make sure that there are no unresolved
+% dependencies, and (2) we may patch this file eventually.
+
+% This file gives the macros for plain MetaPost It contains all the
+% features of plain METAFONT except those specific to font-making.
+% There are also a number of macros for labeling figures, etc.
+
+% For practical reasons I have moved some new code here (and might
+% remove some code as well). After all, there is no development in
+% this format.
+
+string base_name, base_version ;
+
+base_name    := "plain" ;
+base_version := "1.004 for metafun iv and xl"  ;
+
+message "loading metafun, including plain.mp version " & base_version ;
+
+delimiters () ; % this makes parentheses behave like parentheses
+
+def upto   = step  1 until enddef ;
+def downto = step -1 until enddef ;
+
+def exitunless expr c =
+    exitif not c
+enddef ;
+
+let relax = \ ; % ignore the word relax, as in TeX
+let \\    = \ ; % double relaxation is like single
+
+def [[ = [ [ enddef ;
+def ]] = ] ] enddef ;
+
+def --  = {curl 1} .. {curl 1}    enddef ;
+def --- = .. tension infinity ..  enddef ;
+def ... = .. tension atleast 1 .. enddef ;
+
+def          gobble primary g = enddef ;
+primarydef g gobbled gg       = enddef ;
+
+def hide(text t) =
+    exitif numeric begingroup t ; endgroup ;
+enddef ;
+
+def ??? =
+    hide (
+        interim showstopping := 1 ;
+        showdependencies
+    )
+enddef ;
+
+def stop expr s =
+    message s ;
+    gobble readstring
+enddef ;
+
+% \\ and ??? can go
+
+permanent $, $$, (, ), upto, downto, exitunless, relax, \\, [[, ]], --, ---, ..., gobble, gobbled, stop, ?, ??? ;
+
+% These need to be adapted to a library approach:
+
+warningcheck     := 1 ;
+
+def interact = % sets up to make "show" commands stop
+    hide (
+        showstopping  := 1 ;
+        tracingonline := 1 ;
+    )
+enddef ;
+
+def loggingall = % puts tracing info into the log
+    tracingcommands  := 3 ;
+    tracingtitles    := 1 ;
+    tracingequations := 1 ;
+    tracingcapsules  := 1 ;
+    tracingspecs     := 2 ;
+    tracingchoices   := 1 ;
+    tracingstats     := 1 ;
+    tracingoutput    := 1 ;
+    tracingmacros    := 1 ;
+    tracingrestores  := 1 ;
+enddef ;
+
+def tracingall = % turns on every form of tracing
+    tracingonline := 1 ;
+    showstopping  := 1 ;
+    loggingall ;
+enddef ;
+
+def tracingnone = % turns off every form of tracing
+    tracingcommands  := 0 ;
+    tracingtitles    := 0 ;
+    tracingequations := 0 ;
+    tracingcapsules  := 0 ;
+    tracingspecs     := 0 ;
+    tracingchoices   := 0 ;
+    tracingstats     := 0 ;
+    tracingoutput    := 0 ;
+    tracingmacros    := 0 ;
+    tracingrestores  := 0 ;
+enddef ;
+
+permanent interact, loggingall, tracingall, tracingnone ;
+
+%% dash patterns
+
+vardef dashpattern(text t) =
+    save on, off, w ;
+    let on = _on_ ;
+    let off = _off_ ;
+    w = 0 ;
+    nullpicture t
+enddef ;
+
+tertiarydef p _on_ d =
+    begingroup save pic ;
+        picture pic;
+        pic = p ;
+        addto pic doublepath (w,w) .. (w+d,w) ;
+        w := w + d ;
+        pic shifted (0,d)
+    endgroup
+enddef ;
+
+tertiarydef p _off_ d =
+    begingroup w := w + d ;
+        p shifted (0,d)
+    endgroup
+enddef ;
+
+permanent dashpattern, _on_, _off_, on, off ; % on and off are not primitives
+
+%% basic constants and mathematical macros
+
+% numeric constants
+
+newinternal eps, epsilon, infinity, _ ;
+
+eps      := .00049 ;      % this is a pretty small positive number
+epsilon  := 1/256/256 ;   % but this is the smallest
+infinity := 4095.99998 ;  % and this is the largest
+_        := -1 ;          % internal constant to make macros unreadable but shorter
+
+immutable eps, epsilon, infinity, _ ;
+
+% linejoin and linecap types
+
+newinternal mitered, rounded, beveled, butt, squared ;
+
+mitered := 0 ; rounded := 1 ; beveled := 2 ;
+butt    := 0 ; rounded := 1 ; squared := 2 ;
+
+immutable mitered, rounded, beveled, butt, squared ;
+
+% pair constants
+
+pair right, left, up, down, origin;
+
+origin = (0,0) ;
+up     = -down = (0,1) ;
+right  = -left = (1,0) ;
+
+immutable right, left, up, down, origin ;
+
+% path constants
+
+path quartercircle, halfcircle, fullcircle, unitsquare ;
+
+fullcircle    = makepath pencircle ;
+halfcircle    = subpath (0,4) of fullcircle ;
+quartercircle = subpath (0,2) of fullcircle ;
+unitsquare    = (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle ;
+
+immutable quartercircle, halfcircle, fullcircle, unitsquare ;
+
+% transform constants
+
+transform identity ;
+
+for z=origin,right,up :
+    z transformed identity = z ;
+endfor ;
+
+immutable identity ;
+
+% color constants (all in rgb color space)
+
+color black, white, red, green, blue, cyan, magenta, yellow, background;
+
+black      := (0,0,0) ;
+white      := (1,1,1) ;
+red        := (1,0,0) ;
+green      := (0,1,0) ;
+blue       := (0,0,1) ;
+cyan       := (0,1,1) ;
+magenta    := (1,0,1) ;
+yellow     := (1,1,0) ;
+
+background := white ; % obsolete
+
+% should these be tagged with a property ?
+
+let graypart  = greypart  ;
+let greycolor = numeric ;
+let graycolor = numeric ;
+
+% color part (will be overloaded)
+
+def colorpart primary t =
+    if colormodel t = 7:
+        (cyanpart t, magentapart t, yellowpart t, blackpart t)
+    elseif colormodel t = 5 :
+        (redpart t, greenpart t, bluepart t)
+    elseif colormodel t = 3 :
+        (greypart t)
+    elseif colormodel t = 1 :
+        false
+    elseif defaultcolormodel = 7 :
+        (0,0,0,1)
+    elseif defaultcolormodel = 5 :
+        black
+    elseif defaultcolormodel = 3 :
+        0
+    else :
+        false
+    fi
+enddef ;
+
+permanent graypart, greycolor, graycolor ; % colorpart
+
+% picture constants
+
+picture blankpicture, evenly, withdots ;
+
+blankpicture = nullpicture ;                       % display blankpicture...
+evenly       = dashpattern(on 3 off 3) ;           % dashed evenly
+withdots     = dashpattern(off 2.5 on 0 off 2.5) ; % dashed withdots
+
+immutable blankpicture;
+permanent evenly, withdots ;
+
+% string constants
+
+string ditto, EOF ;
+
+ditto = char 34 ; % ASCII double-quote mark
+EOF   = char  0 ; % end-of-file for readfrom and write..to
+
+immutable ditto, EOF ;
+
+% pen constants
+
+pen pensquare, penrazor, penspec ;
+
+pensquare = makepen(unitsquare shifted -(.5,.5)) ;
+penrazor  = makepen((-.5,0) -- (.5,0) -- cycle) ;
+penspec   = pensquare scaled eps ;
+
+immutable pensquare, penrazor, penspec ;
+
+% nullary operators
+
+vardef whatever =
+    save ? ;
+    ?
+enddef ;
+
+permanent whatever ;
+
+% unary operators (with patched round)
+
+let abs = length ;
+
+vardef round primary u =
+    if numeric u :
+        floor(u+.5)
+    elseif pair u :
+        (floor(xpart u+.5), floor(ypart u+.5))
+    elseif path u :
+        % added by HH
+        for i=0 upto length u-1 :
+            round(point i of u) ..
+            controls round(postcontrol i of u) and round(precontrol i+1 of u) ..
+        endfor
+        if cycle u : cycle else : point infinity of u fi
+    else :
+        u
+    fi
+enddef ;
+
+vardef ceiling primary x =
+    -floor(-x)
+enddef ;
+
+vardef byte primary s =
+    if string s :
+        ASCII
+    fi s
+enddef ;
+
+vardef dir primary d =
+    right rotated d
+enddef ;
+
+vardef unitvector primary z =
+    z/abs z
+enddef ;
+
+vardef inverse primary t =
+    transform temp_transform ;
+    temp_transform transformed t = identity ;
+    temp_transform
+enddef ;
+
+vardef counterclockwise primary c =
+    if turningnumber c <= 0 :
+        reverse
+    fi c
+enddef ;
+
+vardef tensepath expr r =
+    for k=0 upto length r - 1 :
+        point k of r ---
+    endfor
+    if cycle r :
+        cycle
+    else :
+        point infinity of r
+    fi
+enddef ;
+
+vardef center primary p =
+    .5[llcorner p, urcorner p]
+enddef ;
+
+permanent abs, round, ceiling, byte, dir, unitvector, inverse, counterclockwise, tensepath, center ;
+
+% binary operators
+
+primarydef x mod y =
+    (x-y*floor(x/y))
+enddef ;
+
+primarydef x div y =
+    floor(x/y)
+enddef ;
+
+primarydef w dotprod z =
+    (xpart w * xpart z + ypart w * ypart z)
+enddef ;
+
+permanent mod, div, dotprod ;
+
+% primarydef x**y =
+%     if y = 2 :
+%         x*x
+%     else :
+%         takepower y of x
+%     fi
+% enddef ;
+%
+% def takepower expr y of x =
+%     if x>0 :
+%         mexp(y*mlog x)
+%     elseif (x=0) and (y>0) :
+%         0
+%     else :
+%         1
+%         if y = floor y :
+%             if y >= 0 :
+%                 for n=1 upto y :
+%                     *x
+%                 endfor
+%             else :
+%                 for n=-1 downto y :
+%                     /x
+%                 endfor
+%             fi
+%         else :
+%             hide(errmessage "Undefined power: " & decimal x & "**" & decimal y)
+%         fi
+%     fi
+% enddef ;
+
+% for big number systems:
+
+primarydef x**y =
+    if     y = 0 : 1
+    elseif x = 0 : 0
+    elseif y < 0 : 1/(x**-y)
+    elseif y = 1 : x
+    elseif y = 2 : x*x
+    elseif y = 3 : x*x*x
+    else         : takepower y of x
+    fi
+enddef ;
+
+def takepower expr y of x =
+    if y=0 : % isn't x**0 = 1 even if x=0 ?
+        1
+    elseif x=0 :
+        0
+    else :
+        if y = floor y :
+            1
+            if y >= 0 :
+                for n=1 upto y :
+                    *x
+                endfor
+            else :
+                for n=-1 downto y :
+                    /x
+                endfor
+            fi
+        elseif x > 0 :
+            mexp(y*mlog x)
+        else :
+            -mexp(y*mlog -x)
+        fi
+    fi
+enddef ;
+
+permanent **, takepower ;
+
+newinternal temp_internal_a, temp_internal_b ;
+newinternal temp_numeric_x, temp_numeric_y ;
+newinternal temp_internal_tx, temp_internal_ty, temp_internal_fx, temp_internal_fy ;
+newinternal temp_internal_n ;
+path        temp_path_a, temp_path_b ;
+pair        temp_pair_dz, temp_pair_z[] ;
+
+vardef direction expr t of p =
+    postcontrol t of p - precontrol t of p
+enddef ;
+
+vardef directionpoint expr z of p =
+    temp_internal_a := directiontime z of p ;
+    if temp_internal_a < 0 :
+        errmessage("The direction doesn't occur") ;
+    fi
+    point temp_internal_a of p
+enddef ;
+
+secondarydef p intersectionpoint q =
+    begingroup
+    save temp_numeric_x, temp_numeric_y ;
+    (temp_numeric_x,temp_numeric_y) = p intersectiontimes q ;
+    if temp_numeric_x < 0 :
+        errmessage("The paths don't intersect") ;
+        origin
+    else :
+        .5[point temp_numeric_x of p, point temp_numeric_y of q]
+    fi
+    endgroup
+enddef ;
+
+tertiarydef p softjoin q =
+    begingroup
+    temp_path_a := fullcircle scaled 2join_radius shifted point 0 of q ;
+    temp_internal_a := ypart(temp_path_a intersectiontimes p) ;
+    temp_internal_b := ypart(temp_path_a intersectiontimes q) ;
+    if temp_internal_a < 0 :
+        point 0 of p {direction 0 of p}
+    else :
+        subpath(0,temp_internal_a) of p
+    fi
+    ...
+    if temp_internal_b < 0 :
+        {direction infinity of q} point infinity of q
+    else :
+        subpath(temp_internal_b,infinity) of q
+    fi
+    endgroup
+enddef ;
+
+permanent direction, directionpoint, softjoin ;
+
+newinternal join_radius ;
+path cuttings ; % what got cut off
+
+tertiarydef a cutbefore b =  % tries to cut as little as possible
+    begingroup
+    save t ;
+    (t, whatever) = a intersectiontimes b ;
+    if t < 0 :
+        cuttings := point 0 of a ;
+        a
+    else :
+        cuttings := subpath (0,t) of a ;
+        subpath (t,length a) of a
+    fi
+    endgroup
+enddef ;
+
+tertiarydef a cutafter b =
+    reverse (reverse a  cutbefore  b)
+    hide(cuttings := reverse cuttings)
+enddef ;
+
+permanent join_radius, cuttings, cutbefore, cutafter ;
+
+% special operators
+
+vardef incr suffix $ = $ := $ + 1 ; $ enddef ;
+vardef decr suffix $ = $ := $ - 1 ; $ enddef ;
+
+permanent incr, decr ;
+
+def reflectedabout(expr w,z) = % reflects about the line w..z
+    transformed
+        begingroup
+        transform temp_transform ;
+        w transformed temp_transform = w ;
+        z transformed temp_transform = z ;
+        xxpart temp_transform = -yypart temp_transform ;
+        xypart temp_transform =  yxpart temp_transform ; % temp_transform is a reflection
+        temp_transform
+        endgroup
+enddef ;
+
+def rotatedaround(expr z, d) = % rotates d degrees around z
+    shifted -z rotated d shifted z
+enddef ;
+
+let rotatedabout = rotatedaround ; % for roundabout people
+
+permanent reflectedabout, rotatedaround, rotatedabout ;
+
+vardef min(expr u)(text t) = % t is a list of numerics, pairs, or strings
+    save temp_any_u ;
+    if pair u :
+        pair temp_any_u
+    elseif string u :
+        string temp_any_u
+    fi ;
+    temp_any_u = u
+    for i = t :
+        if i < temp_any_u :
+            temp_any_u := i ;
+        fi
+    endfor
+    temp_any_u
+enddef ;
+
+vardef max(expr u)(text t) = % t is a list of numerics, pairs, or strings
+    save temp_any_u ;
+    if pair u :
+        pair temp_any_u
+    elseif string u :
+        string temp_any_u
+    fi ;
+    temp_any_u = u
+    for i = t :
+        if i > temp_any_u :
+            temp_any_u := i ;
+        fi
+    endfor
+    temp_any_u
+enddef ;
+
+def flex(text t) = % t is a list of pairs
+    hide (
+        temp_internal_n := 0 ;
+        for z=t :
+            temp_pair_z[incr temp_internal_n] := z ;
+        endfor
+        temp_pair_dz := temp_pair_z[temp_internal_n]-temp_pair_z[1]
+    )
+    temp_pair_z[1] for k=2 upto temp_internal_n - 1 : ... temp_pair_z[k]{temp_pair_dz} endfor ... temp_pair_z[temp_internal_n]
+enddef ;
+
+permanent min, max, flex ;
+
+def superellipse(expr r, t, l, b, s) =
+    r { up    } ... (s[xpart t,xpart r],s[ypart r,ypart t]) { t-r } ...
+    t { left  } ... (s[xpart t,xpart l],s[ypart l,ypart t]) { l-t } ...
+    l { down  } ... (s[xpart b,xpart l],s[ypart l,ypart b]) { b-l } ...
+    b { right } ... (s[xpart b,xpart r],s[ypart r,ypart b]) { r-b } ... cycle enddef ;
+
+vardef interpath(expr a,p,q) =
+    for t=0 upto length p-1 :
+        a[point t of p, point t of q] .. controls a[postcontrol t of p, postcontrol t of q] and a[precontrol t+1 of p, precontrol t+1 of q] ..
+    endfor
+    if cycle p :
+        cycle
+    else :
+        a[point infinity of p, point infinity of q]
+    fi
+enddef ;
+
+permanent superellipse, interpath ;
+
+newinternal tolerance ; tolerance := .01 ;
+
+vardef solve@#(expr t, f)= % @#(t)=true, @#(f)=false
+    temp_internal_tx := t;
+    temp_internal_fx := f;
+    forever :
+        temp_numeric_x := .5[temp_internal_tx,temp_internal_fx] ;
+        exitif abs(temp_internal_tx - temp_internal_fx) <= tolerance ;
+        if @#(temp_numeric_x) :
+            temp_internal_tx
+        else :
+            temp_internal_fx
+        fi := temp_numeric_x ;
+    endfor
+    temp_numeric_x  % now temp_numeric_x is near where @# changes from true to false
+enddef ;
+
+vardef buildcycle(text ll) =
+    save temp_a, temp_b, temp_k, temp_i, temp_p ; path temp_p[] ;
+    temp_k = 0 ;
+    for q=ll :
+        temp_p[incr temp_k] = q ;
+    endfor
+    temp_i = temp_k ;
+    for i=1 upto temp_k :
+        (temp_a[i], length temp_p[temp_i]-temp_b[temp_i]) = temp_p[i] intersectiontimes reverse temp_p[temp_i] ;
+        if temp_a[i]<0 :
+            errmessage("Paths "& decimal i &" and "& decimal temp_i &" don't intersect") ;
+        fi
+        temp_i := i;
+    endfor
+    for i=1 upto temp_k :
+        subpath (temp_a[i],temp_b[i]) of temp_p[i] ..
+    endfor
+    cycle
+enddef ;
+
+permanent interpath, solve, buildcycle, tolerance ;
+
+%% units of measure
+
+mm :=  2.83464 ;
+pt :=  0.99626 ;
+dd :=  1.06601 ;
+bp :=  1 ;
+cm := 28.34645 ;
+pc := 11.95517 ;
+cc := 12.79213 ;
+in := 72 ;
+
+immutable mm, pt, dd, bp, cm, pc, cc, in ;
+
+% vardef magstep primary m = % obsolete
+%     mexp(46.67432m)
+% enddef ;
+
+%% macros for drawing and filling
+
+def drawoptions(text t) =
+    def base_draw_options = t enddef
+enddef ;
+
+% parameters that effect drawing
+
+linejoin   := rounded ;
+linecap    := rounded ;
+miterlimit := 10 ;
+
+drawoptions() ;
+
+pen currentpen ;
+picture currentpicture ;
+
+def fill expr c =
+    addto currentpicture contour c base_draw_options
+enddef ;
+
+def draw expr p =
+    addto currentpicture
+    if picture p :
+        also p
+    else :
+        doublepath p withpen currentpen
+    fi
+    base_draw_options
+enddef ;
+
+def filldraw expr c =
+    addto currentpicture contour c withpen currentpen base_draw_options
+enddef ;
+
+% def drawdot expr z =
+%     addto currentpicture contour makepath currentpen shifted z base_draw_options
+% enddef ;
+%
+% testcase DEK:
+%
+% for j=1 upto 9 :
+%     pickup pencircle xscaled .4 yscaled .2 ;
+%     drawdot (10j,0) withpen pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     pickup pencircle xscaled .5j yscaled .25j rotated 45 ;
+%     drawdot (10j,10);
+% endfor ;
+%
+% or:
+%
+%\startMPpage
+%
+% def drawdot expr z =
+%     addto currentpicture contour (makepath currentpen shifted z) base_draw_options
+% enddef;
+%
+% drawdot origin shifted (0,-3cm) withpen pencircle scaled 2cm ;
+% pickup pencircle scaled 2cm ; drawdot origin withcolor red ;
+
+def drawdot expr p =
+    if pair p :
+        addto currentpicture doublepath p withpen currentpen base_draw_options
+    else :
+        errmessage("drawdot only accepts a pair expression")
+    fi
+enddef ;
+
+permanent drawoptions, currentpen, currentpicture, filldraw, drawdot ; % redefined later: fill, draw
+
+% Kind of obsolete:
+
+def unfill     expr c = fill     c withcolor background enddef ;
+def undraw     expr p = draw     p withcolor background enddef ;
+def unfilldraw expr c = filldraw c withcolor background enddef ;
+def undrawdot  expr z = drawdot  z withcolor background enddef ;
+
+def plain_erase = enddef ;
+
+def erase text t =
+    def plain_erase =
+        withcolor background hide(def plain_erase = enddef ;)
+    enddef ;
+    t plain_erase
+enddef ;
+
+def cutdraw text t =
+    begingroup
+        interim linecap := butt ;
+        draw t plain_erase ;
+    endgroup
+enddef ;
+
+permanent unfill, undraw, unfilldraw, undrawdot, erase, cutdraw ;
+
+% Popular:
+
+vardef image(text t) =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    t ;
+    currentpicture
+enddef ;
+
+permanent image ;
+
+def pickup secondary q =
+    if numeric q :
+        plain_pickup_numeric
+    else :
+        plain_pickup_path
+    fi q
+enddef ;
+
+% pens
+
+newinternal pen_lft, pen_rt, pen_top, pen_bot ;
+
+newinternal temp_pen_count ;
+path        temp_pen_result ;
+path        temp_pen_path.l, temp_pen_path.r ;
+numeric     temp_pen_l[], temp_pen_r[], temp_pen_t[], temp_pen_b[] ;
+pen         temp_pen_stack[] ;
+path        temp_pen_p[] ;
+
+pen         currentpen ;
+
+temp_pen_count := 0 ;
+
+def plain_pickup_numeric primary q =
+    if unknown temp_pen_stack[q] :
+        errmessage "Unknown pen" ;
+        clearpen
+    else :
+        currentpen := temp_pen_stack[q] ;
+        pen_lft := temp_pen_l[q] ;
+        pen_rt  := temp_pen_r[q] ;
+        pen_top := temp_pen_t[q] ;
+        pen_bot := temp_pen_b[q] ;
+        temp_pen_result := temp_pen_p[q]
+    fi ;
+enddef ;
+
+def plain_pickup_path primary q =
+    currentpen := q ;
+    pen_lft := xpart penoffset down  of currentpen ;
+    pen_rt  := xpart penoffset up    of currentpen ;
+    pen_top := ypart penoffset left  of currentpen ;
+    pen_bot := ypart penoffset right of currentpen ;
+    path temp_pen_result ;
+enddef ;
+
+vardef savepen =
+    temp_pen_stack[incr temp_pen_count] = currentpen ;
+    temp_pen_l[temp_pen_count] = pen_lft ;
+    temp_pen_r[temp_pen_count] = pen_rt ;
+    temp_pen_t[temp_pen_count] = pen_top ;
+    temp_pen_b[temp_pen_count] = pen_bot ;
+    temp_pen_p[temp_pen_count] = temp_pen_result ;
+    temp_pen_count
+enddef ;
+
+def clearpen =
+    currentpen := nullpen;
+    pen_lft := pen_rt := pen_top := pen_bot := 0 ;
+    path temp_pen_result ;
+enddef ;
+
+vardef lft primary x = x + if pair x: (pen_lft,0) else: pen_lft fi enddef ;
+vardef rt  primary x = x + if pair x: (pen_rt, 0) else: pen_rt  fi enddef ;
+vardef top primary y = y + if pair y: (0,pen_top) else: pen_top fi enddef ;
+vardef bot primary y = y + if pair y: (0,pen_bot) else: pen_bot fi enddef ;
+
+vardef penpos@#(expr b,d) =
+    (x@#r-x@#l,y@#r-y@#l) = (b,0) rotated d ;
+    x@# = .5(x@#l+x@#r) ;
+    y@# = .5(y@#l+y@#r) ; % ; added HH
+enddef ;
+
+def penstroke text t =
+    forsuffixes e = l, r :
+        temp_pen_path.e := t ;
+    endfor
+    fill temp_pen_path.l -- reverse temp_pen_path.r -- cycle
+enddef ;
+
+permanent
+    pen_lft, pen_rt, pen_top, pen_bot,
+    lft, rt, top, bot,
+    pickup, penpos, clearpen, penstroke, savepen ;
+
+%% High level drawing commands
+
+newinternal ahlength, ahangle ;
+
+ahlength :=  4 ; % default arrowhead length 4bp
+ahangle  := 45 ; % default head angle 45 degrees
+
+path temp_arrow_path ;
+
+vardef arrowhead expr p =
+    save q, e ; path q ; pair e ;
+    e = point length p of p ;
+    q = gobble(p shifted -e cutafter makepath(pencircle scaled 2ahlength)) cuttings ;
+    (q rotated .5ahangle & reverse q rotated -.5ahangle -- cycle) shifted e
+enddef ;
+
+def drawarrow    expr p = temp_arrow_path := p ; plain_arrow_finish enddef ;
+def drawdblarrow expr p = temp_arrow_path := p ; plain_arrow_find   enddef ;
+
+def plain_arrow_finish text t =
+    draw temp_arrow_path t ;
+    filldraw arrowhead temp_arrow_path t
+enddef ;
+
+def plain_arrow_find text t = % this had fill in 0.63 (potential incompatibility)
+    draw temp_arrow_path t ;
+    filldraw arrowhead         temp_arrow_path withpen currentpen t ;
+    filldraw arrowhead reverse temp_arrow_path withpen currentpen t ; % ; added HH
+enddef ;
+
+permanent ahlength, ahangle, arrowhead, drawarrow, drawdblarrow ;
+
+%% macros for labels
+
+newinternal bboxmargin ;
+
+bboxmargin := 2bp ; % this can bite you, just don't use it in \METAFUN
+
+vardef bbox primary p =
+    llcorner p - ( bboxmargin, bboxmargin) --
+    lrcorner p + ( bboxmargin,-bboxmargin) --
+    urcorner p + ( bboxmargin, bboxmargin) --
+    ulcorner p + (-bboxmargin, bboxmargin) -- cycle
+enddef ;
+
+permanent bboxmargin, bbox ;
+
+string defaultfont ; newinternal defaultscale, labeloffset, dotlabeldiam ;
+
+defaultfont  := "cmr10" ;
+defaultscale := 1 ;
+labeloffset  := 3bp ;
+dotlabeldiam := 3bp ;
+
+permanent defaultfont, defaultscale, labeloffset, dotlabeldiam ;
+
+vardef thelabel@#(expr s,z) = % Position s near z
+    save p ; picture p ;
+    if picture s :
+        p = s
+    else :
+        p = s infont defaultfont scaled defaultscale
+    fi ;
+    p shifted (z + labeloffset*laboff@# - ( labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p) )
+enddef ;
+
+def label =
+    draw thelabel
+enddef ;
+
+vardef dotlabel@#(expr s,z) text t =
+    label@#(s,z) t ;
+    interim linecap := rounded ;
+    draw z withpen pencircle scaled dotlabeldiam t ;
+enddef ;
+
+% def makelabel =
+%     dotlabel
+% enddef ;
+
+permanent label, dotlabel ;
+
+% this will be overloaded
+
+pair laboff, laboff.lft, laboff.rt, laboff.top, laboff.bot ;
+pair laboff.ulft, laboff.llft, laboff.urt, laboff.lrt ;
+
+laboff      = (0,0)    ; labxf      = .5 ; labyf      = .5 ;
+laboff.lft  = (-1,0)   ; labxf.lft  = 1  ; labyf.lft  = .5 ;
+laboff.rt   = (1,0)    ; labxf.rt   = 0  ; labyf.rt   = .5 ;
+laboff.bot  = (0,-1)   ; labxf.bot  = .5 ; labyf.bot  = 1  ;
+laboff.top  = (0,1)    ; labxf.top  = .5 ; labyf.top  = 0  ;
+laboff.ulft = (-.7,.7) ; labxf.ulft = 1  ; labyf.ulft = 0  ;
+laboff.urt  = (.7,.7)  ; labxf.urt  = 0  ; labyf.urt  = 0  ;
+laboff.llft = -(.7,.7) ; labxf.llft = 1  ; labyf.llft = 1  ;
+laboff.lrt  = (.7,-.7) ; labxf.lrt  = 0  ; labyf.lrt  = 1  ;
+
+vardef labels@#(text t) =
+    forsuffixes $=t :
+        label@#(str$,z$) ;
+    endfor
+enddef ;
+
+% till lhere
+
+vardef dotlabels@#(text t) =
+    forsuffixes $=t:
+        dotlabel@#(str$,z$) ;
+    endfor
+enddef ;
+
+vardef penlabels@#(text t) =
+    forsuffixes $$=l,,r :
+        forsuffixes $=t :
+            dotlabel@#(str$.$$,z$.$$) ;
+        endfor
+    endfor
+enddef ;
+
+permanent dotlabels, penlabels ;
+
+% range 4 thru 10
+
+def plain_numtok suffix x =
+    x
+enddef ;
+
+def range expr x =
+    plain_numtok[x]
+enddef ;
+
+tertiarydef m thru n =
+    m for x=m+1 step 1 until n :
+        , plain_numtok[x]
+    endfor
+enddef ;
+
+permanent range, thru ;
+
+%% Overall administration
+
+% Todo: make an add to this helper thet temporarily disables warning
+
+string extra_beginfig, extra_endfig ;
+
+extra_beginfig := "" ;
+extra_endfig   := "" ;
+
+def beginfig(expr c) =
+    begingroup
+    charcode := c ;
+    clearxy ;
+    clearit ;
+    clearpen ;
+    pickup defaultpen ;
+    drawoptions() ;
+    scantokens extra_beginfig ;
+enddef ;
+
+def endfig =
+    ; % added by HH
+    scantokens extra_endfig ;
+    shipit ;
+    endgroup
+enddef ;
+
+permanent
+  % extra_beginfig, extra_endfig,
+    beginfig, endfig ;
+
+%% last-minute items
+
+vardef z@# =
+    (x@#,y@#)
+enddef ;
+
+def clearxy =
+    save x, y
+enddef ;
+
+def clearit =
+    currentpicture := nullpicture
+enddef ;
+
+clearit ;
+
+permanent z, clearit ; % redefined: clearxy
+
+def shipit =
+    shipout currentpicture
+enddef ;
+
+let bye = end ;
+outer end, bye ;
+
+permanent shipit, bye ;
+
+% set default line width
+
+newinternal defaultpen ;
+
+pickup pencircle scaled .5bp ;
+
+defaultpen := savepen ;
+
+permanent defaultpen ;

@@ -47,86 +47,22 @@
 
 \aliased\let\xmlload\xmlloadfile
 
-% aliased
+%D These are defined at the \LUA\ end:
 
-%let\xmlall                    \clf_xmlall
-%let\xmlatt                    \clf_xmlatt
-%let\xmlattdef                 \clf_xmlattdef
-%let\xmlattribute              \clf_xmlattribute
-%let\xmlattributedef           \clf_xmlattributedef
-%let\xmlbadinclusions          \clf_xmlbadinclusions
-%let\xmlchainatt               \clf_xmlchainatt
-%let\xmlchainattdef            \clf_xmlchainattdef
-%let\xmlchecknamespace         \clf_xmlchecknamespace
-%let\xmlcommand                \clf_xmlcommand
-%let\xmlcontext                \clf_xmlcontext
-%let\xmlcount                  \clf_xmlcount
-%let\xmldelete                 \clf_xmldelete
-%let\xmldirect                 \clf_xmldirect             % in loops, not dt but root
-%let\xmldirectives             \clf_xmldirectives
-%let\xmldirectivesafter        \clf_xmldirectivesafter
-%let\xmldirectivesbefore       \clf_xmldirectivesbefore
-%let\xmldisplayverbatim        \clf_xmldisplayverbatim
-%let\xmlelement                \clf_xmlelement
-%let\xmlfilter                 \clf_xmlfilter
-%let\xmlfilterlist             \clf_xmlfilterlist
-%let\xmlfirst                  \clf_xmlfirst
-%let\xmlflush                  \clf_xmlflush
-%let\xmlflushcontext           \clf_xmlflushcontext
-%let\xmlflushlinewise          \clf_xmlflushlinewise
-%let\xmlflushpure              \clf_xmlflushpure
-%let\xmlflushspacewise         \clf_xmlflushspacewise
-%let\xmlflushtext              \clf_xmlflushtext
-%let\xmlfunction               \clf_xmlfunction
-%let\xmlinclude                \clf_xmlinclude
-%let\xmlincludeoptions         \clf_xmlincludeoptions
-%let\xmlinclusion              \clf_xmlinclusion
-%let\xmlinclusionbase          \clf_xmlinclusionbase
-%let\xmlinclusions             \clf_xmlinclusions
-%let\xmlindex                  \clf_xmlindex
-%let\xmlinlineverbatim         \clf_xmlinlineverbatim
-%let\xmllast                   \clf_xmllast
-%let\xmllastatt                \clf_xmllastatt
-%let\xmllastmatch              \clf_xmllastmatch
-%let\xmllastpar                \clf_xmllastpar
-%let\xmlloaddirectives         \clf_xmlloaddirectives
-%let\xmlmain                   \clf_xmlmain
-%let\xmlmatch                  \clf_xmlmatch
-%let\xmlname                   \clf_xmlname
-%let\xmlnamespace              \clf_xmlnamespace
-%let\xmlnonspace               \clf_xmlnonspace
-%let\xmlpar                    \clf_xmlpar
-%let\xmlparam                  \clf_xmlparam
-%let\xmlpath                   \clf_xmlpath
-%let\xmlpopmatch               \clf_xmlpopmatch
-%let\xmlpos                    \clf_xmlpos
-%let\xmlpure                   \clf_xmlpure
-%let\xmlpushmatch              \clf_xmlpushmatch
-%let\xmlraw                    \clf_xmlraw
-%let\xmlrefatt                 \clf_xmlrefatt
-%let\xmlregisterns             \clf_xmlregisterns         % document
-%let\xmlremapname              \clf_xmlremapname          % element
-%let\xmlremapnamespace         \clf_xmlremapnamespace     % document
-%let\xmlsave                   \clf_xmlsave
-%let\xmlsetatt                 \clf_xmlsetatt
-%let\xmlsetattribute           \clf_xmlsetattribute
-%let\xmlsetpar                 \clf_xmlsetpar
-%let\xmlsetparam               \clf_xmlsetparam
-%let\xmlsetsetup               \clf_xmlsetsetup
-%let\xmlsnippet                \clf_xmlsnippet
-%let\xmlstrip                  \clf_xmlstrip
-%let\xmlstripanywhere          \clf_xmlstripanywhere
-%let\xmlstripnolines           \clf_xmlstripnolines
-%let\xmlstripped               \clf_xmlstripped
-%let\xmlstrippednolines        \clf_xmlstrippednolines
-%let\xmltag                    \clf_xmltag
-%let\xmltext                   \clf_xmltext
-%let\xmltobuffer               \clf_xmltobuffer           % id pattern name
-%let\xmltobuffertextonly       \clf_xmltobuffertextonly   % id pattern name
-%let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
-%let\xmltofile                 \clf_xmltofile             % id pattern filename
-%let\xmltoparameters           \clf_xmltoparameters
-%let\xmlverbatim               \clf_xmlverbatim
+% \xmlall \xmlatt \xmlattdef \xmlattribute \xmlattributedef \xmlbadinclusions
+% \xmlchainatt \xmlchainattdef \xmlchecknamespace \xmlcommand \xmlcontext \xmlcount
+% \xmldelete \xmldirect \xmldirectives \xmldirectivesafter \xmldirectivesbefore
+% \xmldisplayverbatim \xmlelement \xmlfilter \xmlfilterlist \xmlfirst \xmlflush
+% \xmlflushcontext \xmlflushlinewise \xmlflushpure \xmlflushspacewise \xmlflushtext
+% \xmlfunction \xmlinclude \xmlincludeoptions \xmlinclusion \xmlinclusionbase
+% \xmlinclusions \xmlindex \xmlinlineverbatim \xmllast \xmllastatt \xmllastmatch
+% \xmllastpar \xmlloaddirectives \xmlmain \xmlmatch \xmlname \xmlnamespace
+% \xmlnonspace \xmlpar \xmlparam \xmlpath \xmlpopmatch \xmlpos \xmlpure
+% \xmlpushmatch \xmlraw \xmlrefatt \xmlregisterns \xmlremapname \xmlremapnamespace
+% \xmlsave \xmlsetatt \xmlsetattribute \xmlsetpar \xmlsetparam \xmlsetsetup
+% \xmlsnippet \xmlstrip \xmlstripanywhere \xmlstripnolines \xmlstripped
+% \xmlstrippednolines \xmltag \xmltext \xmltobuffer \xmltobuffertextonly
+% \xmltobufferverbose \xmltofile \xmltoparameters \xmlverbatim
 
 \aliased\let\xmlposition\xmlindex
 
@@ -184,25 +120,11 @@
 \aliased\let\startxmlraw\clf_xmlstartraw
 \aliased\let\stopxmlraw \clf_xmlstopraw
 
-% these are expandable! todo: \xmldoifelseattribute
+% These are expandable and defined at the \LUA\ end:
 
-%let\xmldoif              \clf_xmldoif
-%let\xmldoifnot           \clf_xmldoifnot
-%let\xmldoifelse          \clf_xmldoifelse
-%let\xmldoiftext          \clf_xmldoiftext
-%let\xmldoifnottext       \clf_xmldoifnottext
-%let\xmldoifelsetext      \clf_xmldoifelsetext
-
-%let\xmldoifatt           \clf_xmldoifatt
-%let\xmldoifnotatt        \clf_xmldoifnotatt
-%let\xmldoifelseatt       \clf_xmldoifelseatt
-
-%let\xmldoifempty         \clf_xmldoifempty
-%let\xmldoifnotempty      \clf_xmldoifnotempty
-%let\xmldoifelseempty     \clf_xmldoifelseempty
-%let\xmldoifselfempty     \clf_xmldoifselfempty
-%let\xmldoifnotselfempty  \clf_xmldoifnotselfempty
-%let\xmldoifelseselfempty \clf_xmldoifelseselfempty
+% \xmldoif \xmldoifnot \xmldoifelse \xmldoiftext \xmldoifnottext \xmldoifelsetext
+% \xmldoifatt \xmldoifnotatt \xmldoifelseatt \xmldoifempty \xmldoifnotempty
+% \xmldoifelseempty \xmldoifselfempty \xmldoifnotselfempty \xmldoifelseselfempty
 
 \aliased\let\xmldoiftextelse      \xmldoifelsetext
 \aliased\let\xmldoifemptyelse     \xmldoifelseempty
@@ -519,26 +441,8 @@
 
 \aliased\let\xmlapplyselectors\clf_xmlapplyselectors
 
-% \let\xmlcatcodes\notcatcodes
+% In the\MKIV\ file there is some commented code wrt handing entities with active
+% characters ... very old and obsolete.
 
 \protect \endinput
 
-% \newcount\charactersactiveoffset \charactersactiveoffset="10000
-%
-% \startextendcatcodetable\ctxcatcodes
-%     \catcode\numexpr\charactersactiveoffset+`<\relax=13
-%     \catcode\numexpr\charactersactiveoffset+`&\relax=13
-%     \catcode\numexpr\charactersactiveoffset+`>\relax=13
-% \stopextendcatcodetable
-%
-% \startextendcatcodetable\xmlcatcodes % not needed
-%     \catcode\numexpr\charactersactiveoffset+`<\relax=13
-%     \catcode\numexpr\charactersactiveoffset+`&\relax=13
-%     \catcode\numexpr\charactersactiveoffset+`>\relax=13
-% \stopextendcatcodetable
-%
-% \ctxlua { % entities are remembered in the format
-%     commands.remapentity("<",characters.activeoffset + utf.byte("<"))
-%     commands.remapentity("&",characters.activeoffset + utf.byte("&"))
-%     commands.remapentity(">",characters.activeoffset + utf.byte(">"))
-% }

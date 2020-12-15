@@ -155,4 +155,4 @@ vardef OuterMargin = if not OnRightPage : LeftMargin  else : RightMargin fi endd
 vardef InnerMargin = if not OnRightPage : RightMargin else : LeftMargin  fi enddef ;
 
 vardef OuterEdge   = if not OnRightPage : LeftEdge    else : RightEdge   fi enddef ;
-vardef InnerEdge   = if not OnRightPage : Rightedge   else : LeftEdge    fi enddef ;
+vardef InnerEdge   = if not OnRightPage : RightEdge   else : LeftEdge    fi enddef ;

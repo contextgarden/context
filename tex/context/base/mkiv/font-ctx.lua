@@ -1840,10 +1840,6 @@ function mappings.reset()
     lpdf.setmapfile("") -- tricky ... backend related
 end
 
-function mappings.getentry(...)
-    return lpdf.getmapentry(...) -- tricky ... backend related
-end
-
 implement {
     name      = "loadmapfile",
     actions   = mappings.loadfile,

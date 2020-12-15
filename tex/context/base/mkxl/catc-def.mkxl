@@ -11,14 +11,24 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D The following catcode tables are rather \CONTEXT\ independent.
+%D Contrary to \MKIV\ we define the catcode tables in one file. The original split
+%D was a prelude to a split approach where context would run on top of a basic layer
+%D (so that we could make smaller alternative formats) but that idea (from the early
+%D days of \LUATEX) was dropped when I realized that there is not common ground to
+%D cover between formats. It is simply not worth the trouble.
 
-\ifdefined\nilcatcodes \else \newcatcodetable \nilcatcodes  \fi
-\ifdefined\texcatcodes \else \newcatcodetable \texcatcodes  \fi
-\ifdefined\luacatcodes \else \newcatcodetable \luacatcodes  \fi
-\ifdefined\notcatcodes \else \newcatcodetable \notcatcodes  \fi
-\ifdefined\vrbcatcodes \else \newcatcodetable \vrbcatcodes  \fi
-\ifdefined\prtcatcodes \else \newcatcodetable \prtcatcodes  \fi
+\ifdefined\nilcatcodes \else \newcatcodetable \nilcatcodes \fi
+\ifdefined\texcatcodes \else \newcatcodetable \texcatcodes \fi
+\ifdefined\luacatcodes \else \newcatcodetable \luacatcodes \fi
+\ifdefined\notcatcodes \else \newcatcodetable \notcatcodes \fi
+\ifdefined\rlncatcodes \else \newcatcodetable \rlncatcodes \fi
+\ifdefined\vrbcatcodes \else \newcatcodetable \vrbcatcodes \fi
+\ifdefined\prtcatcodes \else \newcatcodetable \prtcatcodes \fi
+\ifdefined\ctxcatcodes \else \newcatcodetable \ctxcatcodes \fi
+\ifdefined\txtcatcodes \else \newcatcodetable \txtcatcodes \fi
+\ifdefined\tpacatcodes \else \newcatcodetable \tpacatcodes \fi % { }
+\ifdefined\tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % < >
+\ifdefined\ctdcatcodes \else \newcatcodetable \ctdcatcodes \fi % context definitions
 
 \startcatcodetable \nilcatcodes
     \catcode\tabasciicode       \spacecatcode
@@ -88,6 +98,30 @@
     \catcode\barasciicode         \othercatcode
 \stopcatcodetable
 
+\startcatcodetable \rlncatcodes
+    \catcode\tabasciicode         \othercatcode
+    \catcode\endoflineasciicode   \othercatcode
+    \catcode\formfeedasciicode    \othercatcode
+    \catcode\spaceasciicode       \spacecatcode % maybe we also need a vector with space being other
+    \catcode\endoffileasciicode   \othercatcode
+    \catcode\circumflexasciicode  \othercatcode
+    \catcode\underscoreasciicode  \othercatcode
+    \catcode\ampersandasciicode   \othercatcode
+    \catcode\tildeasciicode       \othercatcode
+    \catcode\hashasciicode        \othercatcode
+    \catcode\dollarasciicode      \othercatcode
+    \catcode\commentasciicode     \othercatcode
+    \catcode\lessthanasciicode    \othercatcode
+    \catcode\morethanasciicode    \othercatcode
+    \catcode\leftbraceasciicode   \othercatcode
+    \catcode\rightbraceasciicode  \othercatcode
+    \catcode\doublequoteasciicode \othercatcode
+    \catcode\singlequoteasciicode \othercatcode
+    \catcode\forwardslashasciicode\othercatcode
+    \catcode\backslashasciicode   \othercatcode
+    \catcode\barasciicode         \othercatcode
+\stopcatcodetable
+
 \startcatcodetable \vrbcatcodes % probably less needed
     \catcode\tabasciicode      \othercatcode
     \catcode\endoflineasciicode\othercatcode
@@ -119,6 +153,104 @@
     \catcode\barasciicode            \activecatcode
 \stopcatcodetable
 
+\startcatcodetable \ctxcatcodes
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+  % \catcode\circumflexasciicode\superscriptcatcode
+  % \catcode\underscoreasciicode\subscriptcatcode
+  % \catcode\ampersandasciicode \alignmentcatcode
+    \catcode\underscoreasciicode\othercatcode
+    \catcode\circumflexasciicode\othercatcode
+    \catcode\ampersandasciicode \othercatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\dollarasciicode    \mathshiftcatcode
+    \catcode\hashasciicode      \parametercatcode
+    \catcode\commentasciicode   \commentcatcode
+    \catcode\tildeasciicode     \activecatcode
+    \catcode\barasciicode       \activecatcode
+\stopcatcodetable
+
+\startcatcodetable \tpacatcodes
+    \catcode\tabasciicode       \othercatcode
+    \catcode\endoflineasciicode \othercatcode
+    \catcode\formfeedasciicode  \othercatcode
+    \catcode\spaceasciicode     \othercatcode
+    \catcode\endoffileasciicode \othercatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+\stopcatcodetable
+
+\startcatcodetable \tpbcatcodes
+    \catcode\tabasciicode       \othercatcode
+    \catcode\endoflineasciicode \othercatcode
+    \catcode\formfeedasciicode  \othercatcode
+    \catcode\spaceasciicode     \othercatcode
+    \catcode\endoffileasciicode \othercatcode
+    \catcode\lessthanasciicode  \begingroupcatcode
+    \catcode\morethanasciicode  \endgroupcatcode
+\stopcatcodetable
+
+\setnewconstant \doublecommentsignal "10FF25 %% < 110000 (last valid range)
+
+\startcatcodetable \txtcatcodes
+    \catcode\tabasciicode       \spacecatcode
+    \catcode\endoflineasciicode \endoflinecatcode
+    \catcode\formfeedasciicode  \endoflinecatcode
+    \catcode\spaceasciicode     \spacecatcode
+    \catcode\endoffileasciicode \ignorecatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\doublecommentsignal\commentcatcode
+\stopcatcodetable
+
+\startcatcodetable \ctdcatcodes
+    \catcode\tabasciicode            \ignorecatcode
+    \catcode\endoflineasciicode      \ignorecatcode
+    \catcode\formfeedasciicode       \ignorecatcode
+    \catcode\spaceasciicode          \ignorecatcode
+    \catcode\endoffileasciicode      \ignorecatcode
+    \catcode\circumflexasciicode     \superscriptcatcode % candidate
+    \catcode\underscoreasciicode     \lettercatcode
+    \catcode\ampersandasciicode      \alignmentcatcode
+  % \catcode\colonasciicode          \lettercatcode      % candidate
+    \catcode\backslashasciicode      \escapecatcode
+    \catcode\leftbraceasciicode      \begingroupcatcode
+    \catcode\rightbraceasciicode     \endgroupcatcode
+    \catcode\dollarasciicode         \mathshiftcatcode
+    \catcode\hashasciicode           \parametercatcode
+    \catcode\commentasciicode        \commentcatcode
+    \catcode\atsignasciicode         \lettercatcode
+    \catcode\exclamationmarkasciicode\lettercatcode
+    \catcode\questionmarkasciicode   \lettercatcode
+    \catcode\tildeasciicode          \activecatcode
+    \catcode\barasciicode            \activecatcode
+\stopcatcodetable
+
+%D From now on we can use the protection mechanisms.
+
+\permanent\protected\def\unprotect                  {\pushcatcodetable\catcodetable\prtcatcodes}
+\permanent\protected\def\protect                    {\popcatcodetable}
+
+\permanent\protected\def\starttexcode               {\pushcatcodetable\catcodetable\prtcatcodes}
+\permanent\protected\def\stoptexcode                {\popcatcodetable}
+
+\permanent\protected\def\startcontextcode           {\pushcatcodetable\catcodetable\ctxcatcodes}
+\permanent\protected\def\stopcontextcode            {\popcatcodetable}
+
+\permanent\protected\def\startcontextdefinitioncode {\pushcatcodetable\catcodetable\ctdcatcodes}
+\permanent\protected\def\stopcontextdefinitioncode  {\popcatcodetable}
+
+%D We have a few active characters (left):
+
+\letcatcodecommand \ctxcatcodes \barasciicode   \relax
+\letcatcodecommand \ctxcatcodes \tildeasciicode \relax
+
 %D Because some characters have a special meaning, we provide shortcuts to their
 %D character representation. Some will be overloaded (which might change).
 
@@ -133,15 +265,9 @@
 \chardef \\ = \backslashasciicode
 \chardef \| = \barasciicode
 
-% way too wide in lm, so one can also use:
-%
-% \def\_{\dontleavehmode \kern.06em \vbox{\hrule width.3em}} % this will become a \chardef
-
-%D From now on we can use the protection mechanisms.
-
-\permanent\protected\def\unprotect{\pushcatcodetable\setcatcodetable\prtcatcodes}
-\permanent\protected\def\protect  {\popcatcodetable}
-
-% \prependtoks \catcodetable\ctxcatcodes \to \everyjob
+\pushoverloadmode
+         \catcodetable        \ctxcatcodes
+    \let \defaultcatcodetable \ctxcatcodes
+\popoverloadmode
 
 \endinput

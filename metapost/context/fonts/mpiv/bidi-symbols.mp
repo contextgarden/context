@@ -52,6 +52,8 @@ numeric font_bidi_wd ; font_bidi_wd := -12 ;
 %     setbounds currentpicture to boundingbox nullpicture ;
 % endfig ;
 
+beginfont("bidi-symbols") ;
+
 beginglyph(8234,0,0,0) ; % lre
     drawarrow (0,0) -- (0,font_bidi_dp) -- (font_bidi_wd,font_bidi_dp) withcolor red ;
 endglyph ;
@@ -71,3 +73,5 @@ endglyph ;
 beginglyph(8238,0,0,0) ; % rlo
     drawarrow reverse ((0,0) -- (0,font_bidi_dp) -- (-font_bidi_wd,font_bidi_dp)) withcolor green ;
 endglyph ;
+
+endfont ;

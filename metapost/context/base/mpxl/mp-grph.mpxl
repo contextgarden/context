@@ -1,0 +1,207 @@
+%D \module
+%D   [       file=mp-grph.mpiv,
+%D        version=2000.12.14,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=graphic text support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D Under construction.
+
+if known context_grph : endinput ; fi ;
+
+boolean context_grph ; context_grph := true ; immutable context_grph ;
+
+numeric mfun_fig_nesting ; mfun_fig_nesting := 0 ;
+
+def beginfig (expr c) =
+    mfun_fig_nesting := mfun_fig_nesting + 1 ;
+    if mfun_fig_nesting = 1 :
+        begingroup
+        charcode := c ;
+        resetfig ;
+        scantokens extra_beginfig ;
+    fi ;
+enddef ;
+
+def endfig =
+    ; % safeguard
+    if mfun_fig_nesting = 1 :
+        scantokens extra_endfig ;
+        shipit ;
+        endgroup ;
+    fi ;
+    mfun_fig_nesting := mfun_fig_nesting - 1 ;
+enddef;
+
+def resetfig =
+    clearxy ;
+    clearit ;
+    clearpen ;
+    pickup defaultpen ;
+    interim linecap := linecap ;
+    interim linejoin := linejoin ;
+    interim miterlimit := miterlimit ;
+    % not really needed:
+    save temp_b ; color temp_b ; temp_b := background ;
+    save background ; color background ; background := temp_b ;
+    %
+    drawoptions () ;
+enddef ;
+
+permanent beginfig, endfig, resetfig ;
+
+def protectgraphicmacros =
+    save showtext ;
+    save beginfig ; let beginfig = begingraphictextfig ;
+    save endfig   ; let endfig   = endgraphictextfig ;
+    save end      ; let end      = relax ;
+    resetfig ; % resets currentpicture
+enddef ;
+
+numeric currentgraphictext ; currentgraphictext := 0 ;
+
+def begingraphictextfig (expr n) =
+    foundpicture := n ;
+    scratchpicture := nullpicture ;
+enddef ;
+
+def endgraphictextfig =
+    if foundpicture = currentgraphictext :
+        expandafter endinput
+    else :
+        scratchpicture := nullpicture ;
+    fi ;
+enddef ;
+
+def loadfigure primary filename =
+    mfun_load_figure(filename)
+enddef ;
+
+def mfun_load_figure (expr filename) text figureattributes =
+    begingroup ;
+    save figurenumber, figurepicture, number, fixedplace ;
+    numeric figurenumber  ; figurenumber := 0 ;
+    boolean figureshift ; figureshift := true ;
+    picture figurepicture ; figurepicture := currentpicture ;
+    def number primary n = hide(figurenumber := n) enddef ;
+    def fixedplace = hide(figureshift := false) enddef ;
+    protectgraphicmacros ;
+    % defaults
+    interim linecap    := rounded ;
+    interim linejoin   := rounded ;
+    interim miterlimit := 10 ;
+    %
+    currentpicture := nullpicture ;
+    draw fullcircle figureattributes ; % expand number
+    currentpicture := nullpicture ;
+    def beginfig (expr n) =
+        currentpicture := nullpicture ;
+        if (figurenumber=n) or (figurenumber=0) :
+            let endfig = endinput ;
+        fi ;
+    enddef ;
+    let endfig = relax ;
+    readfile(filename) ;
+    if figureshift :
+        currentpicture := currentpicture shifted -llcorner currentpicture ;
+    fi ;
+    addto figurepicture also currentpicture figureattributes ;
+    currentpicture := figurepicture  ;
+    endgroup ;
+enddef ;
+
+% We only use the new method now.
+
+boolean mfun_gt_color_fill ;
+boolean mfun_gt_color_draw ;
+boolean mfun_gt_shade_fill ;
+boolean mfun_gt_reverse_fill ;
+boolean mfun_gt_outline_fill ;
+picture mfun_gt_picture ;
+
+def mfun_gt_default = % somewhat compatible
+    scaled 11.5
+    withpen pencircle scaled .1
+enddef ;
+
+def graphictext primary t = % use outlinetext instead
+    begingroup ;
+    mfun_graphic_text_indeed(t)
+enddef ;
+
+def mfun_graphic_text_indeed(expr t) text rest =
+    interim linecap    := butt ;     % normally rounded
+    interim linejoin   := mitered ;  % normally rounded
+  % interim miterlimit := 10 ;       % todo
+    %
+    let normalwithshade = withshade ;
+    %
+    save reversefill, outlinefill, withshade, withfillcolor, withdrawcolor ;
+    %
+    def mfun_gt_fill  = enddef ;
+    def mfun_gt_draw  = enddef ;
+    def mfun_gt_shade = enddef ;
+    %
+    mfun_gt_color_fill   := false ;
+    mfun_gt_color_draw   := false ;
+    mfun_gt_shade_fill   := false ;
+    mfun_gt_reverse_fill := false ;
+    %
+    def reversefill = hide(mfun_gt_reverse_fill := true) enddef ;
+    def outlinefill = enddef ;
+    def withshade     primary c = hide(mfun_gt_shade_fill := true; def mfun_gt_shade = normalwithshade c enddef ;) enddef ;
+    def withfillcolor primary c = hide(mfun_gt_color_fill := true; def mfun_gt_fill  = withcolor c       enddef ;) enddef ;
+    def withdrawcolor primary c = hide(mfun_gt_color_draw := true; def mfun_gt_draw  = withcolor c       enddef ;) enddef ;
+    %
+    mfun_gt_picture := nullpicture ;
+    addto mfun_gt_picture doublepath origin rest ; % preroll
+    mfun_gt_picture := nullpicture ;
+    %
+    def reversefill = enddef ;
+    def outlinefill = enddef ;
+    def withshade     primary c = enddef ;
+    def withfillcolor primary c = enddef ;
+    def withdrawcolor primary c = enddef ;
+    %
+    if mfun_gt_shade_fill :
+        draw outlinetext.f(t)(mfun_gt_shade) rest;
+    elseif mfun_gt_color_fill and mfun_gt_color_draw :
+        if mfun_gt_reverse_fill :
+            draw outlinetext.r(t)(mfun_gt_default mfun_gt_fill)(mfun_gt_default mfun_gt_draw) rest;
+        else :
+            draw outlinetext.b(t)(mfun_gt_default mfun_gt_draw)(mfun_gt_default mfun_gt_fill) rest;
+        fi ;
+    elseif mfun_gt_color_fill :
+        draw outlinetext.f(t)(mfun_gt_default mfun_gt_fill) rest;
+    elseif mfun_gt_color_draw :
+        draw outlinetext.d(t)(mfun_gt_default mfun_gt_draw) rest ;
+    else :
+        draw outlinetext.d(t)(mfun_gt_default) rest ;
+    fi ;
+    %
+    endgroup ;
+enddef ;
+
+% example
+%
+% beginfig (1) ;
+%     graphictext
+%         "\vbox{\hsize10cm \input tufte }"
+%         scaled 8
+%         withdrawcolor blue
+%         withfillcolor red
+%         withpen pencircle scaled 2pt ;
+% endfig ;
+%
+% beginfig(1) ;
+%       loadfigure "gracht.mp" rotated 20 ;
+%       loadfigure "koe.mp" number 1 scaled 2 ;
+% endfig ;
+%
+% end

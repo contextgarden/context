@@ -15,7 +15,7 @@
 
 \registerctxluafile{char-fio}{}
 \registerctxluafile{char-map}{} % maybe we will load this someplace else
-\registerctxluafile{char-tex}{}
+\registerctxluafile{char-tex}{autosuffix}
 \registerctxluafile{char-ent}{}
 
 \unprotect
@@ -52,7 +52,6 @@
 
 \permanent          \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \permanent          \def\checkedmathchar#1#2{#2}
-%permanent          \def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
 \permanent\protected\def\checkedtextchar  #1{\clf_doifelsecharinfont\numexpr#1\relax{\char#1}} % {#2}
 
 \newconditional\prefermathovertextchar
@@ -87,28 +86,25 @@
      \normalstartimath#1#2\normalstopimath
    \fi}
 
-%D The codes are stored in the format, so we don't need to reinitialize
-%D them (unless of course we have adapted the table). It is on the agenda
-%D to do this with \type {tex.lccode} cum suis once they're available.
-
-% \def\setcclcuc#1#2#3{\global\catcode#1=\lettercatcode\global\lccode#1=#2\global\uccode#1=#3\relax}
-% \def\setcclcucself#1{\global\catcode#1=\lettercatcode\global\lccode#1=#1\global\uccode#1=#1\relax }
+%D The codes are stored in the format, so we don't need to reinitialize them (unless
+%D of course we have adapted the table). It is on the agenda to do this with \type
+%D {tex.lccode} cum suis once they're available.
 
 % Is setting up vrb tpa and tpb needed?
 
 % move to lua side
 
-%clf_setcharactercodes
-
 \clf_setlettercatcodes\texcatcodes
 \clf_setlettercatcodes\ctxcatcodes
 \clf_setlettercatcodes\notcatcodes
 %clf_setlettercatcodes\mthcatcodes
-\clf_setlettercatcodes\vrbcatcodes
+\clf_setlettercatcodes\vrbcatcodes % hm ... we need to  hyphemate
 \clf_setlettercatcodes\prtcatcodes
-\clf_setlettercatcodes\tpacatcodes
-\clf_setlettercatcodes\tpbcatcodes
+\clf_setlettercatcodes\tpacatcodes % hm
+\clf_setlettercatcodes\tpbcatcodes % hm
 \clf_setlettercatcodes\txtcatcodes
+
+\clf_setothercatcodes \rlncatcodes
 
 \clf_setactivecatcodes\ctxcatcodes
 \clf_setactivecatcodes\notcatcodes

@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=mp-func.mpiv,
+%D        version=2001.12.29,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=function hacks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D Under construction.
+
+if known context_func : endinput ; fi ;
+
+boolean context_func ; context_func := true ; immutable context_func ;
+
+string mfun_pathconnectors[] ;
+
+mfun_pathconnectors[0] := ","   ;
+mfun_pathconnectors[1] := "--"  ;
+mfun_pathconnectors[2] := ".."  ;
+mfun_pathconnectors[3] := "..." ;
+mfun_pathconnectors[4] := "---" ;
+
+def pathconnectors = mfun_pathconnectors enddef ;
+
+vardef mfun_function (expr f) (expr u, t, b, e, s) =
+    save x ; numeric x ;
+    save c ; string c ; c := if string f : f else : mfun_pathconnectors[f] fi ;
+    for xx := b step s until e :
+        hide (x := xx ;)
+        if xx > b :
+          scantokens(c)
+        fi
+        (scantokens(u),scantokens(t))
+    endfor
+enddef ;
+
+def function            = mfun_function     enddef ; % let doesn't work here
+def constructedfunction = mfun_function     enddef ;
+def straightfunction    = mfun_function (1) enddef ;
+def curvedfunction      = mfun_function (2) enddef ;
+
+% def punkedfunction   = mfun_function (1) enddef ; % same as straightfunction
+% def tightfunction    = mfun_function (3) enddef ; % same as curvedfunction
+
+vardef mfun_constructedpath (expr f) (text t) =
+    save ok ; boolean ok ; ok := false ;
+    save c ; string c ; c := if string f : f else : mfun_pathconnectors[f] fi ;
+    for i=t :
+        if ok :
+            scantokens(c)
+        else :
+            ok := true ;
+        fi
+        i
+    endfor
+enddef ;
+
+def constructedpath = mfun_constructedpath     enddef ; % let doesn't work here
+def straightpath    = mfun_constructedpath (1) enddef ;
+def curvedpath      = mfun_constructedpath (2) enddef ;
+
+% def punkedpath      = mfun_constructedpath (1) enddef ; % same as straightpath
+% def tightpath       = mfun_constructedpath (3) enddef ; % same as curvedpath
+
+vardef mfun_constructedpairs (expr f) (text p) =
+    save i ; i := -1 ;
+    save c ; string c ; c := if string f : f else : mfun_pathconnectors[f] fi ;
+    forever :
+        exitif unknown p[incr(i)] ;
+        if i>0 :
+            scantokens(c)
+        fi
+        p[i]
+    endfor
+enddef ;
+
+def constructedpairs = mfun_constructedpairs     enddef ; % let doesn't work here
+def straightpairs    = mfun_constructedpairs (1) enddef ;
+def curvedpairs      = mfun_constructedpairs (2) enddef ;
+
+% def punkedpairs      = mfun_constructedpairs (1) enddef ; % same as straightpairs
+% def tightpairs       = mfun_constructedpairs (3) enddef ; % same as curvedpairs

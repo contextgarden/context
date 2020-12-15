@@ -16,11 +16,13 @@
 
 if known context_page : endinput ; fi ;
 
-boolean context_page ; context_page := true ;
+boolean context_page ; context_page := true ; immutable context_page ;
 
 def LoadPageState = enddef ; % just in case some old style uses it
 
-% Next we implement the the page area model. First some constants.
+% Next we implement the the page area model. First some constants. We use a
+% matrix approach as we do at the TeX end but we could have gone for a period
+% separated variant. Too late.
 
 LeftEdge             :=  -4 ; Top             := -40 ;
 LeftEdgeSeparator    :=  -3 ; TopSeparator    := -30 ;
@@ -35,101 +37,132 @@ RightEdge            :=  +4 ; Bottom          := +40 ;
 numeric HorPos ; HorPos := 0 ;
 numeric VerPos ; VerPos := 0 ;
 
+immutable % permanent
+    Text, HorPos, VerPos,
+    LeftEdge, LeftEdgeSeparator, LeftMargin, LeftMarginSeparator,
+    RightMarginSeparator, RightMargin, RightEdgeSeparator, RightEdge,
+    Top, TopSeparator, Header, HeaderSeparator,
+    FooterSeparator, Footer, BottomSeparator, Bottom ;
+
 % Because metapost > 1.50 has dynamic memory management and is less efficient than
 % before we now delay calculations ... (on a document with 150 pages the time spent
 % in mp was close to 5 seconds which was only due to initialising the page related
 % areas, something that was hardly noticeable before. At least now we're back to
 % half a second for such a case.
 
-def SetPageVsize =
-    numeric Vsize[] ;
-    Vsize[Top]             = TopHeight ;
-    Vsize[TopSeparator]    = TopDistance ;
-    Vsize[Header]          = HeaderHeight ;
-    Vsize[HeaderSeparator] = HeaderDistance ;
-    Vsize[Text]            = TextHeight ;
-    Vsize[FooterSeparator] = FooterDistance ;
-    Vsize[Footer]          = FooterHeight ;
-    Vsize[BottomSeparator] = BottomDistance ;
-    Vsize[Bottom]          = BottomHeight ;
+% We could go for just setting them (:=):
+
+path    mfun_page_area[][] ;
+pair    mfun_page_location[][] ;
+path    mfun_page_field[][] ;
+numeric mfun_page_vsize[] ;
+numeric mfun_page_hsize[] ;
+numeric mfun_page_vstep[] ;
+numeric mfun_page_hstep[] ;
+
+newinternal mfun_page_done ; mfun_page_done := 0 ;
+
+def mfun_page_check_vsize =
+    mfun_page_vsize[Top]             := TopHeight ;
+    mfun_page_vsize[TopSeparator]    := TopDistance ;
+    mfun_page_vsize[Header]          := HeaderHeight ;
+    mfun_page_vsize[HeaderSeparator] := HeaderDistance ;
+    mfun_page_vsize[Text]            := TextHeight ;
+    mfun_page_vsize[FooterSeparator] := FooterDistance ;
+    mfun_page_vsize[Footer]          := FooterHeight ;
+    mfun_page_vsize[BottomSeparator] := BottomDistance ;
+    mfun_page_vsize[Bottom]          := BottomHeight ;
 enddef ;
 
-def SetPageHsize =
-    numeric Hsize[] ;
-    Hsize[LeftEdge]             = LeftEdgeWidth ;
-    Hsize[LeftEdgeSeparator]    = LeftEdgeDistance ;
-    Hsize[LeftMargin]           = LeftMarginWidth ;
-    Hsize[LeftMarginSeparator]  = LeftMarginDistance ;
-    Hsize[Text]                 = MakeupWidth ;
-    Hsize[RightMarginSeparator] = RightMarginDistance ;
-    Hsize[RightMargin]          = RightMarginWidth ;
-    Hsize[RightEdgeSeparator]   = RightEdgeDistance ;
-    Hsize[RightEdge]            = RightEdgeWidth ;
+def mfun_page_check_hsize =
+    mfun_page_hsize[LeftEdge]             := LeftEdgeWidth ;
+    mfun_page_hsize[LeftEdgeSeparator]    := LeftEdgeDistance ;
+    mfun_page_hsize[LeftMargin]           := LeftMarginWidth ;
+    mfun_page_hsize[LeftMarginSeparator]  := LeftMarginDistance ;
+    mfun_page_hsize[Text]                 := MakeupWidth ;
+    mfun_page_hsize[RightMarginSeparator] := RightMarginDistance ;
+    mfun_page_hsize[RightMargin]          := RightMarginWidth ;
+    mfun_page_hsize[RightEdgeSeparator]   := RightEdgeDistance ;
+    mfun_page_hsize[RightEdge]            := RightEdgeWidth ;
 enddef ;
 
-def SetPageVstep =
-    numeric Vstep[] ;
-    Vstep[Top]             = Vstep[TopSeparator]   +Vsize[TopSeparator] ;
-    Vstep[TopSeparator]    = PaperHeight-TopSpace ;
-    Vstep[Header]          = Vstep[TopSeparator]   -Vsize[Header] ;
-    Vstep[HeaderSeparator] = Vstep[Header]         -Vsize[HeaderSeparator] ;
-    Vstep[Text]            = Vstep[HeaderSeparator]-Vsize[Text] ;
-    Vstep[FooterSeparator] = Vstep[Text]           -Vsize[FooterSeparator] ;
-    Vstep[Footer]          = Vstep[FooterSeparator]-Vsize[Footer] ;
-    Vstep[BottomSeparator] = Vstep[Footer]         -Vsize[BottomSeparator] ;
-    Vstep[Bottom]          = Vstep[BottomSeparator]-Vsize[Bottom] ;
+def mfun_page_check_vstep =
+    mfun_page_vstep[TopSeparator]    := PaperHeight-TopSpace ;
+    mfun_page_vstep[Top]             := mfun_page_vstep[TopSeparator]   +mfun_page_vsize[TopSeparator] ;
+    mfun_page_vstep[Header]          := mfun_page_vstep[TopSeparator]   -mfun_page_vsize[Header] ;
+    mfun_page_vstep[HeaderSeparator] := mfun_page_vstep[Header]         -mfun_page_vsize[HeaderSeparator] ;
+    mfun_page_vstep[Text]            := mfun_page_vstep[HeaderSeparator]-mfun_page_vsize[Text] ;
+    mfun_page_vstep[FooterSeparator] := mfun_page_vstep[Text]           -mfun_page_vsize[FooterSeparator] ;
+    mfun_page_vstep[Footer]          := mfun_page_vstep[FooterSeparator]-mfun_page_vsize[Footer] ;
+    mfun_page_vstep[BottomSeparator] := mfun_page_vstep[Footer]         -mfun_page_vsize[BottomSeparator] ;
+    mfun_page_vstep[Bottom]          := mfun_page_vstep[BottomSeparator]-mfun_page_vsize[Bottom] ;
 enddef ;
 
-def SetPageHstep =
-    numeric Hstep[] ;
-    Hstep[LeftEdge]             = Hstep[LeftEdgeSeparator]   -Hsize[LeftEdge] ;
-    Hstep[LeftEdgeSeparator]    = Hstep[LeftMargin]          -Hsize[LeftEdgeSeparator] ;
-    Hstep[LeftMargin]           = Hstep[LeftMarginSeparator] -Hsize[LeftMargin] ;
-    Hstep[LeftMarginSeparator]  = Hstep[Text]                -Hsize[LeftMarginSeparator] ;
-    Hstep[Text]                 = BackSpace ;
-    Hstep[RightMarginSeparator] = Hstep[Text]                +Hsize[Text] ;
-    Hstep[RightMargin]          = Hstep[RightMarginSeparator]+Hsize[RightMarginSeparator] ;
-    Hstep[RightEdgeSeparator]   = Hstep[RightMargin]         +Hsize[RightMargin] ;
-    Hstep[RightEdge]            = Hstep[RightEdgeSeparator]  +Hsize[RightEdgeSeparator] ;
+def mfun_page_check_hstep =
+    mfun_page_hstep[Text]                 := BackSpace ;
+    mfun_page_hstep[LeftMarginSeparator]  := mfun_page_hstep[Text]                -mfun_page_hsize[LeftMarginSeparator] ;
+    mfun_page_hstep[RightMarginSeparator] := mfun_page_hstep[Text]                +mfun_page_hsize[Text] ;
+    mfun_page_hstep[LeftMargin]           := mfun_page_hstep[LeftMarginSeparator] -mfun_page_hsize[LeftMargin] ;
+    mfun_page_hstep[RightMargin]          := mfun_page_hstep[RightMarginSeparator]+mfun_page_hsize[RightMarginSeparator] ;
+    mfun_page_hstep[LeftEdgeSeparator]    := mfun_page_hstep[LeftMargin]          -mfun_page_hsize[LeftEdgeSeparator] ;
+    mfun_page_hstep[LeftEdge]             := mfun_page_hstep[LeftEdgeSeparator]   -mfun_page_hsize[LeftEdge] ;
+    mfun_page_hstep[RightEdgeSeparator]   := mfun_page_hstep[RightMargin]         +mfun_page_hsize[RightMargin] ;
+    mfun_page_hstep[RightEdge]            := mfun_page_hstep[RightEdgeSeparator]  +mfun_page_hsize[RightEdgeSeparator] ;
 enddef ;
 
-def SetPageArea =
-    path Area[][] ;
+def mfun_check_page_dimensions =
+    if mfun_page_done <> RealPageNumber :
+        if LayoutHasChanged :
+            mfun_page_check_vsize ;
+            mfun_page_check_hsize ;
+            mfun_page_check_vstep ;
+            mfun_page_check_hstep ;
+        fi ;
+        mfun_page_done := RealPageNumber ;
+    fi ;
+enddef;
+
+
+def mfun_check_page_area =
+    mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            Area[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] ;
-            Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
+            mfun_page_area[HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[HorPos] yscaled mfun_page_vsize[VerPos] ;
+            mfun_page_area[VerPos][HorPos] := mfun_page_area[HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
 
-def SetPageLocation =
-    pair Location[][] ;
+def mfun_check_page_location =
+    mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            Location[HorPos][VerPos] := (Hstep[HorPos],Vstep[VerPos]) ;
-            Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
+            mfun_page_location[HorPos][VerPos] := (mfun_page_hstep[HorPos],mfun_page_vstep[VerPos]) ;
+            mfun_page_location[VerPos][HorPos] := mfun_page_location[HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
 
-def SetPageField =
-    path Field[][] ;
+def mfun_check_page_field =
+    mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            Field[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] shifted (Hstep[HorPos],Vstep[VerPos]) ;
-            Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+            mfun_page_field[HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[HorPos] yscaled mfun_page_vsize[VerPos] shifted (mfun_page_hstep[HorPos],mfun_page_vstep[VerPos]) ;
+            mfun_page_field[VerPos][HorPos] := mfun_page_field[HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
 
-def Area     = hide(SetPageArea     ;) Area     enddef ;
-def Location = hide(SetPageLocation ;) Location enddef ;
-def Field    = hide(SetPageField    ;) Field    enddef ;
-def Vsize    = hide(SetPageVsize    ;) Vsize    enddef ;
-def Hsize    = hide(SetPageHsize    ;) Hsize    enddef ;
-def Vstep    = hide(SetPageVstep    ;) Vstep    enddef ;
-def Hstep    = hide(SetPageHstep    ;) Hstep    enddef ;
+def Area     = hide(mfun_check_page_area       ;) mfun_page_area     enddef ;
+def Location = hide(mfun_check_page_location   ;) mfun_page_location enddef ;
+def Field    = hide(mfun_check_page_field      ;) mfun_page_field    enddef ;
+def Vsize    = hide(mfun_check_page_dimensions ;) mfun_page_vsize    enddef ;
+def Hsize    = hide(mfun_check_page_dimensions ;) mfun_page_hsize    enddef ;
+def Vstep    = hide(mfun_check_page_dimensions ;) mfun_page_vstep    enddef ;
+def Hstep    = hide(mfun_check_page_dimensions ;) mfun_page_hstep    enddef ;
+
+immutable % permanent
+    Area, Location, Field, Vsize, Hsize, Vstep, Hstep ;
 
 vardef FrontPageWidth  = PaperWidth enddef ;
 vardef BackPageWidth   = PaperWidth enddef ;
@@ -140,17 +173,19 @@ vardef FrontPageHeight = PaperHeight enddef ;
 vardef BackPageHeight  = PaperHeight enddef ;
 vardef SpineHeight     = PaperHeight enddef ;
 
-def SetPagePage      = path Page      ; Page      := unitsquare xscaled PaperWidth      yscaled PaperHeight ; enddef ;
-def SetPageCoverPage = path CoverPage ; CoverPage := unitsquare xscaled CoverWidth      yscaled CoverHeight ; enddef ;
-def SetPageSpine     = path Spine     ; Spine     := unitsquare xscaled SpineWidth      yscaled CoverHeight shifted (BackPageWidth,0) ; enddef ;
-def SetPageBackPage  = path BackPage  ; BackPage  := unitsquare xscaled BackPageWidth   yscaled CoverHeight ; enddef ;
-def SetPageFrontPage = path FrontPage ; FrontPage := unitsquare xscaled FrontPageWidth  yscaled CoverHeight shifted (BackPageWidth+SpineWidth,0) ; enddef ;
+path mfun_page_page, mfun_page_cover, mfun_page_spine, mfun_page_back, mfun_page_front ;
 
-def Page      = hide(SetPagePage     ;) Page      enddef ;
-def CoverPage = hide(SetPageCoverPage;) CoverPage enddef ;
-def Spine     = hide(SetPageSpine    ;) Spine     enddef ;
-def BackPage  = hide(SetPageBackPage ;) BackPage  enddef ;
-def FrontPage = hide(SetPageFrontPage;) FrontPage enddef ;
+def mfun_check_page  = mfun_page_page  := unitsquare xscaled PaperWidth     yscaled PaperHeight ; enddef ;
+def mfun_check_cover = mfun_page_cover := unitsquare xscaled CoverWidth     yscaled CoverHeight ; enddef ;
+def mfun_check_spine = mfun_page_spine := unitsquare xscaled SpineWidth     yscaled CoverHeight shifted (BackPageWidth,0) ; enddef ;
+def mfun_check_back  = mfun_page_back  := unitsquare xscaled BackPageWidth  yscaled CoverHeight ; enddef ;
+def mfun_check_front = mfun_page_front := unitsquare xscaled FrontPageWidth yscaled CoverHeight shifted (BackPageWidth+SpineWidth,0) ; enddef ;
+
+def Page      = hide(mfun_check_page  ;) mfun_page_page  enddef ;
+def CoverPage = hide(mfun_check_cover ;) mfun_page_cover enddef ;
+def Spine     = hide(mfun_check_spine ;) mfun_page_spine enddef ;
+def BackPage  = hide(mfun_check_back  ;) mfun_page_back  enddef ;
+def FrontPage = hide(mfun_check_front ;) mfun_page_front enddef ;
 
 % pages
 
@@ -176,11 +211,19 @@ def StopCover =
     endgroup ;
 enddef ;
 
+immutable % permanent
+    FrontPageWidth, BackPageWidth, CoverWidth, FrontPageHeight, BackPageHeight, CoverHeight,
+    SpineHeight, Page, CoverPage, Spine, BackPage, FrontPage,
+    StartPage, StopPage, StartCover, StopCover ;
+
 % overlays:
 
 def OverlayBox =
     (unitsquare xyscaled (OverlayWidth,OverlayHeight))
 enddef ;
+
+immutable % permanent
+    OverlayBox ;
 
 % handy
 
@@ -191,6 +234,9 @@ enddef ;
 def outerenlarged =
     if OnRightPage : rightenlarged else : leftenlarged  fi
 enddef ;
+
+permanent
+    innerenlarged, outerenlarged ;
 
 % obsolete
 
@@ -221,7 +267,7 @@ numeric RuleV         ; RuleV         := 0 ;
 numeric RuleThickness ; RuleThickness := 0 ;
 numeric RuleFactor    ; RuleFactor    := 0 ;
 numeric RuleOffset    ; RuleOffset    := 0 ;
-                    def RuleColor      = (.5white) enddef ;
+                    def RuleColor      = (.5white) enddef ; % yet undecided, might become a string
 
 def FakeWord(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleColor) =
     fill unitsquare
@@ -241,3 +287,10 @@ def FakeRule(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleCol
         yscaled RuleHeight
         withcolor RuleColor ;
 enddef ;
+
+mutable
+    RuleDirection, RuleOption, RuleWidth, RuleHeight, RuleDepth, RuleH, RuleV, RuleThickness,
+    RuleFactor, RuleOffset, RuleColor;
+
+permanent
+    FakeWord, FakeRule ;

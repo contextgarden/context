@@ -2,7 +2,7 @@ return {
     internals = {
         --
         "nocolormodel", "greycolormodel", "graycolormodel", "rgbcolormodel", "cmykcolormodel",
-        "shadefactor",
+        "shadefactor", "shadeoffset",
         "textextoffset", "textextanchor",
         "normaltransparent", "multiplytransparent", "screentransparent", "overlaytransparent",
         "softlighttransparent", "hardlighttransparent", "colordodgetransparent", "colorburntransparent",
@@ -17,7 +17,7 @@ return {
         "drawoptionsfactor",
         "dq", "sq",
         "crossingscale", "crossingoption",
-        "contextlmtxmode",
+        "contextlmtxmode", "metafunversion",
         --
         -- for the moment we put these here as they need to stand out
         --
@@ -74,6 +74,7 @@ return {
         "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
         "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform",
         "withshadestep", "withshadefraction", "withshadeorigin", "shownshadevector", "shownshadeorigin",
+        "shownshadedirection", "shownshadecenter",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
@@ -85,6 +86,7 @@ return {
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
         "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext",
+        "rawmadetext", "validtexbox", "onetimetextext", "rawfmttext", "thefmttext", "fmttext", "onetimefmttext",
         "notcached", "keepcached",
         "verbatim",
         "thelabel", "label",
@@ -191,10 +193,10 @@ return {
         --
         "isarray", "prefix", "isobject",
         --
-        "comment", "report", "lua", "mp", "MP", "luacall",
+        "comment", "report", "lua", "lualist", "mp", "MP", "luacall",
         --
         "mirrored", "mirroredabout",
         --
-        "scriptindex",
+        "scriptindex", "newscriptindex",
     },
 }

@@ -179,9 +179,10 @@ function statistics.show()
         end)
         register("tex properties", function()
             local t = status.gethashstate()
+            local l = status.getlookupstate()
             local m = status.gettexstate()
-            return format("%s hash slots used of %s, approximate memory usage: %i MB",
-                t.top, t.max, m.approximate // (1024 * 1024))
+            return format("%s hash slots used of %s, %s control sequences, approximate memory usage: %i MB",
+                t.top, t.max, l.ptr, m.approximate // (1024 * 1024))
         end)
         register("callbacks", statistics.callbacks)
         -- so far

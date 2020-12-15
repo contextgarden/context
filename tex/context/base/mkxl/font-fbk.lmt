@@ -189,7 +189,7 @@ local function composecharacters(tfmdata)
                                                     chr_t,
                                                 }
                                             end
-t.depth = a_ury
+                                            t.depth = a_ury
                                         elseif c_ury > a_lly then -- messy test
                                             local dy
                                             if compose then
@@ -220,7 +220,7 @@ t.depth = a_ury
                                             else
                                                 dy = - deltaxheight + extraxheight
                                             end
-t.height = a_ury-dy
+                                            t.height = a_ury-dy
                                             local right = rightcommand[dx+dd]
                                             local down  = downcommand[dy]
                                             if trace_visualize then
@@ -247,7 +247,7 @@ t.height = a_ury-dy
                                                     chr_t,
                                                 }
                                             end
-t.height = a_ury
+                                            t.height = a_ury
                                         end
                                     end
                                 else
@@ -316,31 +316,25 @@ registerotffeature {
     description = 'unicode compat specials to ligatures',
 }
 
-do
+-- We now provide the composer in the helpers namespace (too):
 
-    -- This installs the builder into the regular virtual font builder,
-    -- which only makes sense as demo.
+fonts.helpers.composecharacters = composecharacters
+
+-- We keep this just because we have a few demos but there often are other ways to achieve
+-- the same. This code installs the builder into the regular virtual font builder, which
+-- only makes sense as demo. It also shows a bit what the evolution is.
+
+do
 
     local vf       = handlers.vf
     local commands = vf.combiner.commands
 
     vf.helpers.composecharacters = composecharacters
 
-    commands["compose.trace.enable"] = function()
-        trace_visualize = true
-    end
-
-    commands["compose.trace.disable"] = function()
-        trace_visualize = false
-    end
-
-    commands["compose.force.enable"] = function()
-        force_combining = true
-    end
-
-    commands["compose.force.disable"] = function()
-        force_combining = false
-    end
+    commands["compose.trace.enable"]  = function() trace_visualize = true  end
+    commands["compose.trace.disable"] = function() trace_visualize = false end
+    commands["compose.force.enable"]  = function() force_combining = true  end
+    commands["compose.force.disable"] = function() force_combining = false end
 
     commands["compose.trace.set"] = function(g,v)
         if v[2] == nil then

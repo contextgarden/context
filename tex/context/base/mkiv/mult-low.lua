@@ -50,7 +50,7 @@ return {
         "inicatcodes",
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
-        "xmlcatcodes", "ctdcatcodes",
+        "xmlcatcodes", "ctdcatcodes", "rlncatcodes",
         --
         "escapecatcode", "begingroupcatcode", "endgroupcatcode", "mathshiftcatcode", "alignmentcatcode",
         "endoflinecatcode", "parametercatcode", "superscriptcatcode", "subscriptcatcode", "ignorecatcode",
@@ -362,8 +362,8 @@ return {
         "getvalue", "getuvalue", "setvalue", "setevalue", "setgvalue", "setxvalue", "letvalue", "letgvalue",
         "resetvalue", "undefinevalue", "ignorevalue",
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
-        --
-        "globallet", "glet", "udef", "ugdef", "uedef", "uxdef", "checked", "unique",
+        -- glet
+        "globallet", "udef", "ugdef", "uedef", "uxdef", "checked", "unique",
         --
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --

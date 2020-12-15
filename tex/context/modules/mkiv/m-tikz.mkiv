@@ -25,14 +25,17 @@
 
 \popcatcodetable
 
+\protected\def\tikzerrormessage#1#2#3%
+  {\writestatus{#1}{#2}}
+
 \protected\def\starttikzpicture
   {\begingroup
+   \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
    \overloadmode\zerocount
    \tikzpicture}
 
 \protected\def\stoptikzpicture
   {\endtikzpicture
    \endgroup}
-
 
 \stopmodule

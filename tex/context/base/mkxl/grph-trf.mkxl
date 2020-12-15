@@ -24,7 +24,7 @@
 %D We could move the calculations to \LUA\ and clean up this lot anyway. On the
 %D other hand, there is some danger of messing up so it has a real low priority.
 
-\registerctxluafile{grph-trf}{}
+\registerctxluafile{grph-trf}{autosuffix}
 
 % local:
 
@@ -266,18 +266,18 @@
    \glet\finalscaleboxyscale \m_grph_scale_used_y_scale
    \grph_scale_calculations_report}
 
-\setvalue{\??scalegrid\v!yes     }{\getnoflines   \d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
-\setvalue{\??scalegrid\v!height  }{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
-\setvalue{\??scalegrid\v!depth   }{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
-\setvalue{\??scalegrid\v!halfline}{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
-\setvalue{\??scalegrid\v!fit     }{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
-\letvalue{\??scalegrid\empty     }\donothing
+\defcsname\??scalegrid\v!yes     \endcsname{\getnoflines   \d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\defcsname\??scalegrid\v!height  \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
+\defcsname\??scalegrid\v!depth   \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
+\defcsname\??scalegrid\v!halfline\endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
+\defcsname\??scalegrid\v!fit     \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\letcsname\??scalegrid\empty     \endcsname\donothing
 
 \def\grph_scale_check_parameters % resolve self referencing loops
   {\ifempty\p_maxwidth \else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
    \ifempty\p_maxheight\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
    \ifempty\p_lines    \else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
-   \csname\??scalegrid\scaleparameter\c!grid\endcsname}
+   \begincsname\??scalegrid\scaleparameter\c!grid\endcsname}
 
 \def\grph_scale_by_nature % where ! ! ! ! !
   {\ifempty\p_width \else \global\d_grph_scale_used_x_size\p_width \fi
@@ -373,16 +373,11 @@
      \global\d_grph_scale_used_y_size\zeropoint
      %
      \ifempty\p_maxwidth
-       \ifempty\p_maxheight
-       \else
-         \ifdim\d_grph_scale_y_size>\p_maxheight\relax
-           \global\d_grph_scale_used_y_size\p_maxheight
-         \fi
+       \ifempty\p_maxheight\orelse\ifdim\d_grph_scale_y_size>\p_maxheight\relax
+         \global\d_grph_scale_used_y_size\p_maxheight
        \fi
-     \else
-       \ifdim\d_grph_scale_x_size>\p_maxwidth\relax
-          \global\d_grph_scale_used_x_size\p_maxwidth
-       \fi
+     \orelse\ifdim\d_grph_scale_x_size>\p_maxwidth\relax
+       \global\d_grph_scale_used_x_size\p_maxwidth
      \fi
    \fi}
 
@@ -441,18 +436,16 @@
 
 \def\grph_scale_by_dimension_indeed#1#2#3%
   {#1\relax
-   \ifempty\p_maxwidth \else
-     \ifdim\d_grph_scale_used_x_size>\p_maxwidth\relax
-       \global\d_grph_scale_used_x_size\p_maxwidth
-       #2\relax
-     \fi
+   \ifempty\p_maxwidth\orelse\ifdim\d_grph_scale_used_x_size>\p_maxwidth\relax
+     \global\d_grph_scale_used_x_size\p_maxwidth
+     #2\relax
    \fi
-   \ifempty\p_maxheight \else
-     \ifdim\d_grph_scale_used_y_size>\p_maxheight\relax
-       \global\d_grph_scale_used_y_size\p_maxheight
-        #3\relax
-     \fi
+   \ifempty\p_maxheight\orelse\ifdim\d_grph_scale_used_y_size>\p_maxheight\relax
+     \global\d_grph_scale_used_y_size\p_maxheight
+      #3\relax
    \fi}
+
+% we can use \lastnamedcs if we want to squeeze out some more
 
 \def\grph_scale_calculate_norm#1#2% todo: swap 1 and 2 and pass one less
   {\csname\??scalenorm\ifcsname\??scalenorm#2\endcsname#2\else\s!unknown\fi\endcsname#1#2}
@@ -460,26 +453,18 @@
 \def\grph_scale_calculate_fact#1%
   {\csname\??scalefact\ifcsname\??scalefact#1\endcsname#1\else\s!unknown\fi\endcsname}
 
-%setvalue{\??scalenorm\v!min    }#1#2#3#4#5{\global#1#4}
-\setvalue{\??scalenorm\v!max    }#1#2#3#4#5{\global#1#4}
-\setvalue{\??scalenorm\v!fit    }#1#2#3#4#5{\global#1#5}
-\setvalue{\??scalenorm\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\externalfigureparameter\c!bodyfont\relax}
-\setvalue{\??scalenorm\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax\relax} % brr ex
-\setvalue{\??scalenorm\v!auto   }#1#2#3#4#5{\ifempty#3\else\global#1#3\fi}
-\setvalue{\??scalenorm\empty    }#1#2#3#4#5{\ifempty#3\else\global#1#3\fi}
-\setvalue{\??scalenorm\s!default}#1#2#3#4#5{\ifempty#3\else\global#1#3\fi}
+\defcsname\??scalenorm\v!max    \endcsname#1#-#-#2#-{\global#1#2}
+\defcsname\??scalenorm\v!fit    \endcsname#1#-#-#-#2{\global#1#2}
+\defcsname\??scalenorm\v!broad  \endcsname#1#-#-#-#2{\global#1\dimexpr#2-4\externalfigureparameter\c!bodyfont\relax}
+\defcsname\??scalenorm\s!unknown\endcsname#1#2#-#-#-{\global#1\dimexpr#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax\relax} % brr ex
+\defcsname\??scalenorm\v!auto   \endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
+\defcsname\??scalenorm\empty    \endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
+\defcsname\??scalenorm\s!default\endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
 
-\setvalue{\??scalefact\v!min    }{\global\settrue \c_grph_scale_swap_factor}
-\setvalue{\??scalefact\s!unknown}{\global\setfalse\c_grph_scale_swap_factor}
+\defcsname\??scalefact\v!min    \endcsname{\global\settrue \c_grph_scale_swap_factor}
+\defcsname\??scalefact\s!unknown\endcsname{\global\setfalse\c_grph_scale_swap_factor}
 
-% \setvalue{\??scalenorm\v!min    }#1#2#3#4#5% an ugly hack
-%   {\ifdim\d_grph_scale_used_x_size>\d_grph_scale_h_size
-%      \d_grph_scale_used_y_size\vsize
-%    \else
-%      \d_grph_scale_used_x_size\hsize
-%    \fi}
-
-\setvalue{\??scalenorm\v!min}#1#2#3#4#5% an ugly hack
+\defcsname\??scalenorm\v!min\endcsname#-#-#-#-#-% an ugly hack
   {\d_grph_scale_used_x_size\hsize
    \d_grph_scale_used_y_size\vsize}
 
@@ -769,14 +754,22 @@
 \installcorenamespace {rotatelocation}
 \installcorenamespace {rotatepreset}
 
-% todo: scratchcounters
+%D These are set at the \LUA\ end (it's a cheaper operation than setting a dimen
+%D register and these are actually kind of constants not used in further
+%D calculations):
 
-\newdimen\d_grph_rotate_x_size
-\newdimen\d_grph_rotate_y_size
-\newdimen\d_grph_rotate_x_offset
-\newdimen\d_grph_rotate_y_offset
-\newdimen\d_grph_rotate_x_position
-\newdimen\d_grph_rotate_y_position
+\mutable\dimendef\d_grph_rotate_x_size    \zeropoint
+\mutable\dimendef\d_grph_rotate_y_size    \zeropoint
+\mutable\dimendef\d_grph_rotate_x_offset  \zeropoint
+\mutable\dimendef\d_grph_rotate_y_offset  \zeropoint
+\mutable\dimendef\d_grph_rotate_x_position\zeropoint
+\mutable\dimendef\d_grph_rotate_y_position\zeropoint
+
+\mutable\dimendef\d_grph_rotate_new_width \zeropoint
+\mutable\dimendef\d_grph_rotate_new_height\zeropoint
+\mutable\dimendef\d_grph_rotate_new_depth \zeropoint
+
+%D These aren't:
 
 \newdimen\d_grph_rotate_used_height
 
@@ -787,10 +780,6 @@
 \newdimen\d_grph_rotate_saved_width
 \newdimen\d_grph_rotate_saved_height
 \newdimen\d_grph_rotate_saved_depth
-
-\newdimen\d_grph_rotate_new_width
-\newdimen\d_grph_rotate_new_height
-\newdimen\d_grph_rotate_new_depth
 
 \newconditional\c_grph_rotate_obey_depth
 \newconditional\c_grph_rotate_not_fit
@@ -816,9 +805,11 @@
    \fi
    \edef\p_rotation_location{\rotateparameter\c!location}%
    \edef\p_rotation_rotation{\rotateparameter\c!rotation}%
-   \csname\??rotatelocation
-     \ifcsname\??rotatelocation\p_rotation_location\endcsname\p_rotation_location\else\v!default\fi
-   \endcsname}
+   \ifcsname\??rotatelocation\p_rotation_location\endcsname
+      \expandafter\lastnamedcs
+   \else
+      \expandafter\grph_rotate_default
+   \fi}
 
 \def\grph_rotate_framed
   {\resetrotateparameter\c!location
@@ -832,41 +823,43 @@
   {\grph_rotate_finish_indeed
    \egroup}
 
-\setvalue{\??rotatelocation\v!depth}%
+\def\grph_rotate_default
+  {\setfalse\c_grph_rotate_not_fit
+   \setfalse\c_grph_rotate_center
+   \settrue \c_grph_rotate_obey_depth
+   \grph_rotate_framed}
+
+\letcsname\??rotatelocation\v!default\endcsname\grph_rotate_default
+
+\defcsname\??rotatelocation\v!depth\endcsname
   {\setfalse\c_grph_rotate_not_fit
    \setfalse\c_grph_rotate_center
    \settrue \c_grph_rotate_obey_depth
    \grph_rotate_normal}
 
-\setvalue{\??rotatelocation\v!fit}%
+\defcsname\??rotatelocation\v!fit\endcsname
   {\settrue \c_grph_rotate_not_fit
    \setfalse\c_grph_rotate_center
    \settrue \c_grph_rotate_obey_depth
    \grph_rotate_normal}
 
-\setvalue{\??rotatelocation\v!broad}%
+\defcsname\??rotatelocation\v!broad\endcsname
   {\setfalse\c_grph_rotate_not_fit
    \setfalse\c_grph_rotate_center
    \setfalse\c_grph_rotate_obey_depth
    \grph_rotate_normal}
 
-\setvalue{\??rotatelocation\v!high}%
+\defcsname\??rotatelocation\v!high\endcsname
   {\setfalse\c_grph_rotate_not_fit
    \setfalse\c_grph_rotate_center
    \setfalse\c_grph_rotate_obey_depth
    \grph_rotate_framed}
 
-\setvalue{\??rotatelocation\v!middle}%
+\defcsname\??rotatelocation\v!middle\endcsname
   {\setfalse\c_grph_rotate_not_fit
    \settrue \c_grph_rotate_center
    \setfalse\c_grph_rotate_obey_depth  % hm, depth ?
    \grph_rotate_normal}
-
-\setvalue{\??rotatelocation\v!default}%
-  {\setfalse\c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \settrue \c_grph_rotate_obey_depth
-   \grph_rotate_framed}
 
 \permanent\protected\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
   {\ifcase#1\relax
@@ -901,22 +894,21 @@
 \def\grph_rotate_finish_nop
   {\boxcursor\box\nextbox}
 
-\setvalue{\??rotatepreset\v!left}%
+\defcsname\??rotatepreset\v!left\endcsname
   {\edef\p_rotation_rotation{90}}
 
-\setvalue{\??rotatepreset\v!right}%
+\defcsname\??rotatepreset\v!right\endcsname
   {\edef\p_rotation_rotation{270}}
 
-\setvalue{\??rotatepreset\v!inner}%
+\defcsname\??rotatepreset\v!inner\endcsname
   {\signalrightpage
    \doifelserightpage{\def\p_rotation_rotation{270}}{\def\p_rotation_rotation{90}}}
 
-\setvalue{\??rotatepreset\v!outer}%
+\defcsname\??rotatepreset\v!outer\endcsname
   {\signalrightpage
    \doifelserightpage{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
 
-\setvalue{\??rotatepreset\v!default}%
-  {}
+\letcsname\??rotatepreset\v!default\endcsname\empty
 
 \def\grph_rotate_finish_yes
   {\begincsname\??rotatepreset\p_rotation_rotation\endcsname

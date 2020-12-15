@@ -1,0 +1,142 @@
+%D \module
+%D   [       file=mp-grid.mpiv,
+%D        version=2000.07.10,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=grid support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D Under construction.
+
+if known context_grid : endinput ; fi ;
+
+boolean context_grid ; context_grid := true ; immutable context_grid ;
+
+string  fmt_separator  ; fmt_separator  := "@" ;
+numeric fmt_precision  ; fmt_precision  := 3 ;
+boolean fmt_initialize ; fmt_initialize := false ;
+boolean fmt_zerocheck  ; fmt_zerocheck  := true ;
+
+if unknown fmt_loaded : input "mp-form.mpxl" ; fi ;
+
+boolean fmt_pictures ; fmt_pictures := true ;
+
+def  do_format = if fmt_pictures :  format else :  formatstr fi enddef ;
+def do_mformat = if fmt_pictures : Mformat else : Mformatstr fi enddef ;
+
+numeric grid_eps ; grid_eps = eps ;
+
+def hlingrid (expr asked_min, asked_max, asked_step, asked_length, asked_width) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw (origin--(asked_width,0)) shifted (0,i*(asked_length/asked_max)) t ;
+        endfor ;
+    ) ;
+enddef ;
+
+def vlingrid (expr asked_min, asked_max, asked_step, asked_length, asked_height) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw (origin--(0,asked_height)) shifted (i*(asked_length/asked_max),0) t ;
+        endfor ;
+    ) ;
+enddef ;
+
+def hloggrid (expr asked_min, asked_max, asked_step, asked_length, asked_width) text t =
+    image (
+        for i=max(asked_min,1) step asked_step until min(asked_max,10)+grid_eps :
+            draw (origin--(asked_width,0)) shifted (0,asked_length*log(i)) t ;
+        endfor ;
+    ) ;
+enddef ;
+
+def vloggrid (expr asked_min, asked_max, asked_step, asked_length, asked_height) text t =
+    image (
+        for i=max(asked_min,1) step asked_step until min(asked_max,10)+grid_eps :
+            draw (origin--(0,asked_height)) shifted (asked_length*log(i),0) t ;
+        endfor ;
+    ) ;
+enddef ;
+
+vardef hlintext@#(expr asked_min, asked_max, asked_step, asked_length, asked_format) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw textext@#(mfun_format_number(asked_format,i)) shifted (0,i*(asked_length/asked_max)) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef vlintext@#(expr asked_min, asked_max, asked_step, asked_length, asked_format) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw textext@#(mfun_format_number(asked_format,i)) shifted (i*(asked_length/asked_max),0) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef hlogtext@#(expr asked_min, asked_max, asked_step, asked_length, asked_format) text t =
+    image (
+        for i=max(asked_min,1) step asked_step until min(asked_max,10)+grid_eps :
+            draw textext@#(mfun_format_number(asked_format,i)) shifted (0,asked_length*log(i)) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef vlogtext@#(expr asked_min, asked_max, asked_step, asked_length, asked_format) text t =
+    image (
+        for i=max(asked_min,1) step asked_step until min(asked_max,10)+grid_eps :
+            draw textext@#(mfun_format_number(asked_format,i)) shifted (asked_length*log(i),0) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef hlinlabel@#(expr asked_min, asked_max, asked_step, asked_length) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw thelabel@#(decimal i,(0,i*(asked_length/asked_max))) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef vlinlabel@#(expr asked_min, asked_max, asked_step, asked_length) text t =
+    image (
+        for i=asked_min step asked_step until asked_max+grid_eps :
+            draw thelabel@#(decimal i,(i*(asked_length/asked_max),0)) t ;
+        endfor ;
+    )
+enddef ;
+
+vardef linlog(expr xy) = (    xpart xy,  log(ypart xy)) enddef ;
+vardef loglin(expr xy) = (log(xpart xy),     ypart xy)  enddef ;
+vardef loglog(expr xy) = (log(xpart xy), log(ypart xy)) enddef ;
+vardef linlin(expr xy) = (   (xpart xy),    (ypart xy)) enddef ;
+
+vardef loglinpath primary p = processpath (p) (loglin) enddef ;
+vardef linlogpath primary p = processpath (p) (linlog) enddef ;
+vardef loglogpath primary p = processpath (p) (loglog) enddef ;
+vardef linlinpath primary p = processpath (p) (linlin) enddef ;
+
+vardef processpath (expr p) (text pp) =
+    if path p :
+        for i=0 upto length(p)-1 :
+            pp(point       i    of p) .. controls
+            pp(postcontrol i    of p) and
+            pp(precontrol (i+1) of p) ..
+        endfor
+        if cycle p :
+            cycle
+        else :
+            pp(point length(p) of p)
+        fi
+    elseif pair p :
+        pp(p)
+    else :
+        p
+    fi
+enddef ;
+

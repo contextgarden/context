@@ -22,10 +22,11 @@ if known context_luas : endinput ; fi ;
 % other metafun modules too. Of course in retrospect I should have done this five
 % years earlier.
 
-boolean context_luas ; context_luas := true ;
+boolean context_luas ; context_luas := true ; immutable context_luas ;
 
-newinternal mfid_scriptindex ;
-mfid_scriptindex := runscript("mp.mf_script_index('scriptindex')") ;
+def newscriptindex suffix t = newinternal t ; immutable t ; enddef ;
+
+newscriptindex mfid_scriptindex ; mfid_scriptindex := runscript("mp.mf_script_index('scriptindex')") ;
 
 def scriptindex = runscript mfid_scriptindex enddef ;
 
@@ -115,6 +116,8 @@ def message expr t =
     lua.mp.report(tostring(t)) ;
 enddef ;
 
+permanent newscriptindex, scriptindex, luacall, lua, lualist, mp, MP  ;
+
 % Color:
 
 % We do a low level runscript:
@@ -123,14 +126,18 @@ enddef ;
 % lua.mp.mf_named_color(s)   % okay but, can also be
 % lua.mp("mf_named_color",s) % which gives expansion mess
 
-newinternal mfid_resolvedcolor ; mfid_resolvedcolor := scriptindex "namedcolor" ;
+newscriptindex mfid_resolvedcolor ; mfid_resolvedcolor := scriptindex "namedcolor" ;
 
 def resolvedcolor = runscript mfid_resolvedcolor enddef ;
+
+permanent resolvedcolor ;
 
 % Modes:
 
 vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
 vardef systemmode(expr s) = lua.mp("systemmode",s) enddef ;
+
+permanent texmode, systemmode ;
 
 % A few helpers
 
@@ -138,17 +145,21 @@ vardef isarray   suffix a = lua.mp.isarray  (str a) enddef ;
 vardef prefix    suffix a = lua.mp.prefix   (str a) enddef ;
 vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
 
+permanent isarray, prefix, dimension ;
+
 % More access
 
-newinternal mfid_getmacro ; mfid_getmacro := scriptindex "getmacro" ; def getmacro = runscript mfid_getmacro enddef ;
-newinternal mfid_getdimen ; mfid_getdimen := scriptindex "getdimen" ; def getdimen = runscript mfid_getdimen enddef ;
-newinternal mfid_getcount ; mfid_getcount := scriptindex "getcount" ; def getcount = runscript mfid_getcount enddef ;
-newinternal mfid_gettoks  ; mfid_gettoks  := scriptindex "gettoks"  ; def gettoks  = runscript mfid_gettoks  enddef ;
+newscriptindex mfid_getmacro ; mfid_getmacro := scriptindex "getmacro" ; def getmacro = runscript mfid_getmacro enddef ;
+newscriptindex mfid_getdimen ; mfid_getdimen := scriptindex "getdimen" ; def getdimen = runscript mfid_getdimen enddef ;
+newscriptindex mfid_getcount ; mfid_getcount := scriptindex "getcount" ; def getcount = runscript mfid_getcount enddef ;
+newscriptindex mfid_gettoks  ; mfid_gettoks  := scriptindex "gettoks"  ; def gettoks  = runscript mfid_gettoks  enddef ;
 
-newinternal mfid_setmacro ; mfid_setmacro := scriptindex "setmacro" ; def setmacro = runscript mfid_setmacro enddef ;
-newinternal mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def setdimen = runscript mfid_setdimen enddef ;
-newinternal mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount = runscript mfid_setcount enddef ;
-newinternal mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks  = runscript mfid_settoks  enddef ;
+newscriptindex mfid_setmacro ; mfid_setmacro := scriptindex "setmacro" ; def setmacro = runscript mfid_setmacro enddef ;
+newscriptindex mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def setdimen = runscript mfid_setdimen enddef ;
+newscriptindex mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount = runscript mfid_setcount enddef ;
+newscriptindex mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks  = runscript mfid_settoks  enddef ;
+
+permanent getmacro, getdimen, getcount, gettoks, setmacro, setdimen, setcount, settoks ;
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
@@ -160,10 +171,6 @@ vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
 vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
 vardef positionanchor            = lua.mp.positionanchor()     enddef ;
 
-let wdpart     = redpart ;
-let htpart     = greenpart ;
-let dppart     = bluepart ;
-
 vardef positioninregion =
     currentpicture := currentpicture shifted - positionxy(positionanchor) ;
 enddef ;
@@ -172,14 +179,23 @@ vardef positionatanchor(expr name) =
     currentpicture := currentpicture shifted - positionxy(name) ;
 enddef ;
 
+permanent positionpath, positioncurve, positionxy, positionpxy, positionwhd, positionpage,
+    positionregion, positionbox, positionanchor, positioninregion, positionatanchor ;
+
+let wdpart = redpart ;
+let htpart = greenpart ;
+let dppart = bluepart ;
+
+permanent wdpart, htpart, dppart;
+
 vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
 vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
 
-newinternal mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
-newinternal mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;
-newinternal mfid_path_leftof   ; mfid_path_leftof   := scriptindex "pathleftof" ;
-newinternal mfid_path_rightof  ; mfid_path_rightof  := scriptindex "pathrightof" ;
-newinternal mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
+newscriptindex mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
+newscriptindex mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;
+newscriptindex mfid_path_leftof   ; mfid_path_leftof   := scriptindex "pathleftof" ;
+newscriptindex mfid_path_rightof  ; mfid_path_rightof  := scriptindex "pathrightof" ;
+newscriptindex mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
 
 % 25 pct gain
 
@@ -187,6 +203,8 @@ newinternal mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
 vardef pointof primary i =                  runscript mfid_path_pointof  i enddef ;
 vardef leftof  primary i =                  runscript mfid_path_leftof   i enddef ;
 vardef rightof primary i =                  runscript mfid_path_rightof  i enddef ;
+
+permanent inpath, pointof, leftof, rightof ;
 
 % another 10 pct gain
 
@@ -197,8 +215,8 @@ vardef rightof primary i =                  runscript mfid_path_rightof  i endde
 
 extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
 
-newinternal mfid_utflen ; mfid_utflen := scriptindex "utflen" ;
-newinternal mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
+newscriptindex mfid_utflen ; mfid_utflen := scriptindex "utflen" ;
+newscriptindex mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
 
 % def utflen = runscript mfid_utflen enddef ;
 % def utfsub = runscript mfid_utfsub enddef ;
@@ -206,21 +224,23 @@ newinternal mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
 vardef utflen(expr s) = runscript mfid_utflen s enddef ; % str
 vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional) last
 
-newinternal mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
-newinternal mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
-newinternal mfid_hasparameter         ; mfid_hasparameter         := scriptindex "hasparameter" ;
-newinternal mfid_hasoption            ; mfid_hasoption            := scriptindex "hasoption" ;
-newinternal mfid_getparameter         ; mfid_getparameter         := scriptindex "getparameter" ;
-newinternal mfid_getparameterdefault  ; mfid_getparameterdefault  := scriptindex "getparameterdefault" ;
-newinternal mfid_getparametercount    ; mfid_getparametercount    := scriptindex "getparametercount" ;
-newinternal mfid_getmaxparametercount ; mfid_getmaxparametercount := scriptindex "getmaxparametercount" ;
-newinternal mfid_getparameterpath     ; mfid_getparameterpath     := scriptindex "getparameterpath" ;
-newinternal mfid_getparameterpen      ; mfid_getparameterpen      := scriptindex "getparameterpen" ;
-newinternal mfid_getparametertext     ; mfid_getparametertext     := scriptindex "getparametertext" ;
-%%%%%%%%%%% mfid_getparameteroption   ; mfid_getparameteroption   := scriptindex "getparameteroption" ;
-newinternal mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
-newinternal mfid_pushparameters       ; mfid_pushparameters       := scriptindex "pushparameters" ;
-newinternal mfid_popparameters        ; mfid_popparameters        := scriptindex "popparameters" ;
+permanent utflen, utfsub ;
+
+newscriptindex mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
+newscriptindex mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
+newscriptindex mfid_hasparameter         ; mfid_hasparameter         := scriptindex "hasparameter" ;
+newscriptindex mfid_hasoption            ; mfid_hasoption            := scriptindex "hasoption" ;
+newscriptindex mfid_getparameter         ; mfid_getparameter         := scriptindex "getparameter" ;
+newscriptindex mfid_getparameterdefault  ; mfid_getparameterdefault  := scriptindex "getparameterdefault" ;
+newscriptindex mfid_getparametercount    ; mfid_getparametercount    := scriptindex "getparametercount" ;
+newscriptindex mfid_getmaxparametercount ; mfid_getmaxparametercount := scriptindex "getmaxparametercount" ;
+newscriptindex mfid_getparameterpath     ; mfid_getparameterpath     := scriptindex "getparameterpath" ;
+newscriptindex mfid_getparameterpen      ; mfid_getparameterpen      := scriptindex "getparameterpen" ;
+newscriptindex mfid_getparametertext     ; mfid_getparametertext     := scriptindex "getparametertext" ;
+%              mfid_getparameteroption   ; mfid_getparameteroption   := scriptindex "getparameteroption" ;
+newscriptindex mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
+newscriptindex mfid_pushparameters       ; mfid_pushparameters       := scriptindex "pushparameters" ;
+newscriptindex mfid_popparameters        ; mfid_popparameters        := scriptindex "popparameters" ;
 
 def getparameters        = runscript mfid_getparameters        enddef ;
 def presetparameters     = runscript mfid_presetparameters     enddef ;
@@ -233,24 +253,32 @@ def getmaxparametercount = runscript mfid_getmaxparametercount enddef ;
 def getparameterpath     = runscript mfid_getparameterpath     enddef ;
 def getparameterpen      = runscript mfid_getparameterpen      enddef ;
 def getparametertext     = runscript mfid_getparametertext     enddef ;
-%%% getparameteroption   = runscript mfid_getparameteroption   enddef ;
+%   getparameteroption   = runscript mfid_getparameteroption   enddef ;
 def applyparameters      = runscript mfid_applyparameters      enddef ;
 def pushparameters       = runscript mfid_pushparameters       enddef ;
 def popparameters        = runscript mfid_popparameters        enddef ;
 
+permanent getparameters, presetparameters, hasparameter, hasoption, getparameter, getparameterdefault,
+    getparametercount, getmaxparametercount, getparameterpath, getparameterpen, getparametertext, % getparameteroption,
+    applyparameters, pushparameters, popparameters ;
+
 % This might also be done in stock mkiv:
 
-newinternal mfid_year   ; mfid_year   := scriptindex "year"   ; vardef year   = runscript mfid_year   enddef ;
-newinternal mfid_month  ; mfid_month  := scriptindex "month"  ; vardef month  = runscript mfid_month  enddef ;
-newinternal mfid_day    ; mfid_day    := scriptindex "day"    ; vardef day    = runscript mfid_day    enddef ;
-newinternal mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = runscript mfid_hour   enddef ;
-newinternal mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
-newinternal mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;
+newscriptindex mfid_year   ; mfid_year   := scriptindex "year"   ; vardef year   = runscript mfid_year   enddef ;
+newscriptindex mfid_month  ; mfid_month  := scriptindex "month"  ; vardef month  = runscript mfid_month  enddef ;
+newscriptindex mfid_day    ; mfid_day    := scriptindex "day"    ; vardef day    = runscript mfid_day    enddef ;
+newscriptindex mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = runscript mfid_hour   enddef ;
+newscriptindex mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
+newscriptindex mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;
+
+permanent year, month, day, hour, minute, second ; % overloaded
 
 % You cannot overload a local color bu using a prefix works ok:
 %
 % \definecolor [ name = "mp:myred", r = .9 ] ;
 
-newinternal mfid_definecolor ; mfid_definecolor := scriptindex "definecolor" ;
+newscriptindex mfid_definecolor ; mfid_definecolor := scriptindex "definecolor" ;
 
 def definecolor = runscript mfid_definecolor ; enddef ; % the semicolon prevents lookahead
+
+permanent definecolor ;

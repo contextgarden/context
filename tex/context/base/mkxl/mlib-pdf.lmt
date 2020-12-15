@@ -348,17 +348,17 @@ end
 --     lpegmatch(pattern_key,object.prescript,1,variables)
 -- end
 
-function metapost.processspecial(str)
-    local code = loadstring(str)
-    if code then
-        if trace_variables then
-            report_metapost("executing special code: %s",str)
-        end
-        code()
-    else
-        report_metapost("invalid special code: %s",str)
-    end
-end
+-- function metapost.processspecial(str)
+--     local code = loadstring(str)
+--     if code then
+--         if trace_variables then
+--             report_metapost("executing special code: %s",str)
+--         end
+--         code()
+--     else
+--         report_metapost("invalid special code: %s",str)
+--     end
+-- end
 
 local stack = { }
 
@@ -407,7 +407,7 @@ function metapost.flush(specification,result)
             local stopfigure         = flusher.stopfigure
             local flushfigure        = flusher.flushfigure
             local textfigure         = flusher.textfigure
-            local processspecial     = flusher.processspecial or metapost.processspecial
+         -- local processspecial     = flusher.processspecial or metapost.processspecial
             metapost.comment         = flusher.comment or nocomment
             for index=1,#figures do
                 local figure     = figures[index]
@@ -443,58 +443,7 @@ function metapost.flush(specification,result)
                                 for o=1,#objects do
                                     local object = objects[o]
                                     local objecttype = object.type
-                                    if objecttype == "text" then
-                                        result[#result+1] = "q"
-                                        local ot = object.transform -- 3,4,5,6,1,2
-                                        result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
-                                        flushfigure(result) -- flush accumulated literals
-                                        result = { }
-                                        textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
-                                        result[#result+1] = "Q"
-                                    elseif objecttype == "special" then
-                                        if processspecial then
-                                            processspecial(object.prescript)
-                                        end
-                                    elseif objecttype == "start_clip" then
-                                        local evenodd = not object.istext and object.postscript == "evenodd"
-                                        result[#result+1] = "q"
-                                        flushnormalpath(object.path,result,false)
-                                        result[#result+1] = evenodd and "W* n" or "W n"
-                                    elseif objecttype == "stop_clip" then
-                                        result[#result+1] = "Q"
-                                        miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                    elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
-                                        -- skip
-                                    elseif objecttype == "start_group" then
-                                        if lpdf.flushgroup then
-                                            local before, after = processplugins(object)
-                                            if before then
-                                                result[#result+1] = "q"
-                                                result = pluginactions(before,result,flushfigure)
-                                                insert(groupstack, {
-                                                    after  = after,
-                                                    result = result,
-                                                    bbox   = toboundingbox(object.path),
-                                                })
-                                                result = { }
-                                                miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                            else
-                                                insert(groupstack,false)
-                                            end
-                                        else
-                                            insert(groupstack,false)
-                                        end
-                                    elseif objecttype == "stop_group" then
-                                        local data = remove(groupstack)
-                                        if data then
-                                            local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
-                                            result = data.result
-                                            result[#result+1] = reference
-                                            result = pluginactions(data.after,result,flushfigure)
-                                            result[#result+1] = "Q"
-                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                        end
-                                    else
+                                    if objecttype == "fill" or objecttype == "outline" then
                                         -- we use an indirect table as we want to overload
                                         -- entries but this is not possible in userdata
                                         --
@@ -676,6 +625,60 @@ function metapost.flush(specification,result)
                                             -- can be qQ'd so changes can end up in groups
                                             miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         end
+                                    elseif objecttype == "start_clip" then
+                                        local evenodd = not object.istext and object.postscript == "evenodd"
+                                        result[#result+1] = "q"
+                                        flushnormalpath(object.path,result,false)
+                                        result[#result+1] = evenodd and "W* n" or "W n"
+                                    elseif objecttype == "stop_clip" then
+                                        result[#result+1] = "Q"
+                                        miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                    elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
+                                        -- skip
+                                    elseif objecttype == "start_group" then
+                                        if lpdf.flushgroup then
+                                            local before, after = processplugins(object)
+                                            if before then
+                                                result[#result+1] = "q"
+                                                result = pluginactions(before,result,flushfigure)
+                                                insert(groupstack, {
+                                                    after  = after,
+                                                    result = result,
+                                                    bbox   = toboundingbox(object.path),
+                                                })
+                                                result = { }
+                                                miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                            else
+                                                insert(groupstack,false)
+                                            end
+                                        else
+                                            insert(groupstack,false)
+                                        end
+                                    elseif objecttype == "stop_group" then
+                                        local data = remove(groupstack)
+                                        if data then
+                                            local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
+                                            result = data.result
+                                            result[#result+1] = reference
+                                            result = pluginactions(data.after,result,flushfigure)
+                                            result[#result+1] = "Q"
+                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                        end
+                                 -- if objecttype == "text" then
+                                 --     result[#result+1] = "q"
+                                 --     local ot = object.transform -- 3,4,5,6,1,2
+                                 --     result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
+                                 --     flushfigure(result) -- flush accumulated literals
+                                 --     result = { }
+                                 --     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                 --     result[#result+1] = "Q"
+                                 -- elseif objecttype == "special" then
+                                 --     if processspecial then
+                                 --         processspecial(object.prescript)
+                                 --     end
+                                 -- else
+                                    else
+                                        -- error
                                     end
                                 end
                             end

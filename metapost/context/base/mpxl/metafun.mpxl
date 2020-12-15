@@ -15,32 +15,47 @@
 %D prevent dependency problems and in the end even may use a patched version,
 %D we prefer to use a copy.
 
-boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: true fi;
+% We only get a callback when the property > 0
 
-input "mp-base.mpiv" ;
-input "mp-tool.mpiv" ;
+def primitive = setproperty  1 : enddef; % not to be used
+def permanent = setproperty  2 : enddef;
+def immutable = setproperty  3 : enddef;
+def frozen    = setproperty  4 : enddef; % not yet used
+def mutable   = setproperty -3 : enddef; % not yet used
+
+permanent permanent, immutable, mutable, primitive, frozen ; % we reserve frozen
+
+boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
+
+% But it will move here:
+
+input "mp-base.mpxl" ;
+input "mp-tool.mpxl" ;
 input "mp-luas.mpxl" ;
 input "mp-mlib.mpxl" ;
 input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
 input "mp-page.mpxl" ;
-input "mp-butt.mpiv" ;
-input "mp-shap.mpiv" ;
-input "mp-grph.mpiv" ;
-input "mp-grid.mpiv" ;
-input "mp-form.mpiv" ;
-input "mp-figs.mpiv" ;
-input "mp-func.mpiv" ;
-input "mp-node.mpiv" ;
-input "mp-apos.mpiv" ;
-input "mp-abck.mpiv" ;
-input "mp-blob.mpiv" ;
-
-input "mp-lmtx.mpxl" ; % playground, not official
+input "mp-butt.mpxl" ;
+input "mp-shap.mpxl" ;
+input "mp-grph.mpxl" ;
+input "mp-grid.mpxl" ;
+input "mp-form.mpxl" ;
+input "mp-figs.mpxl" ;
+input "mp-func.mpxl" ;
+input "mp-node.mpxl" ;
+input "mp-apos.mpxl" ;
+input "mp-abck.mpxl" ;
+input "mp-blob.mpxl" ;
+input "mp-lmtx.mpxl" ;
 
 string metafunversion ; metafunversion = "metafun xl " & mfun_timestamp;
+
+immutable metafunversion ;
 
 let normalend = end ;
 
 def end = ; message "" ; message metafunversion ; message "" ; endinput  ; enddef ;
 def bye = ; message "" ; message metafunversion ; message "" ; endinput  ; enddef ;
+
+overloadmode := 1 ;

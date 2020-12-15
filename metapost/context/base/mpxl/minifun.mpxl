@@ -14,18 +14,23 @@
 %D This is a minimal \METAFUN\ instance which can be handy for isolated
 %D subruns.
 
-boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: true fi;
+def primitive = setproperty  1 : enddef; % not to be used
+def permanent = setproperty  2 : enddef;
+def immutable = setproperty  3 : enddef;
+def frozen    = setproperty  4 : enddef; % not yet used
+def mutable   = setproperty -3 : enddef; % not yet used
 
-prologues := 0 ;
-mpprocset := 1 ;
+permanent permanent, immutable, mutable, primitive, frozen ; % we reserve frozen
+
+boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
 
 input "mp-base.mpiv" ;
-input "mp-tool.mpiv" ;
+input "mp-tool.mpxl" ;
 input "mp-mlib.mpxl" ;
 input "mp-luas.mpxl" ;
 input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
-input "mp-page.mpiv" ;
+input "mp-page.mpxl" ;
 
 string minifunversion ; minifunversion = "minifun xl " & mfun_timestamp;
 

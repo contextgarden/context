@@ -1,0 +1,118 @@
+%D \module
+%D   [       file=mp-blob.mpiv,
+%D        version=2018.04.08,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Blobs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a follow up on good old \type {meta-imp-txt}.
+
+if known context_blob : endinput ; fi ;
+
+boolean context_blob ; context_blob := true ; immutable context_blob ;
+
+numeric mfun_blob_n ; mfun_blob_n := 0 ;
+picture mfun_blob_c ;
+color   mfun_blob_b ;
+
+def mfun_reset_tex_blobs =
+    mfun_blob_n := 0 ;
+    mfun_blob_c := nullpicture ;
+enddef ;
+
+extra_endfig := extra_endfig & "mfun_reset_tex_blobs ; " ;
+
+vardef mfun_inject_blob(expr n) =
+    mfun_blob_c := nullpicture ;
+    mfun_blob_b := lua.mp.mf_blob_dimensions(mfun_blob_n,n) ;
+    addto mfun_blob_c doublepath unitsquare
+        xscaled redpart mfun_blob_b
+        yscaled (greenpart mfun_blob_b + bluepart mfun_blob_b)
+        shifted (0,- bluepart mfun_blob_b)
+        withprescript "mf_object=texblob"
+        withprescript "tb_blob=" & decimal lua.mp.mf_blob_index(mfun_blob_n,n) ;
+    mfun_blob_c
+enddef ;
+
+% An example of usage:
+
+newinternal followtextalternative   ; followtextalternative   := 1 ;
+newinternal tracingfollowtext       ; tracingfollowtext       := 0 ;
+newinternal autoscaleupfollowtext   ; autoscaleupfollowtext   := 2 ;
+newinternal autoscaledownfollowtext ; autoscaledownfollowtext := 0 ;
+
+permanent tracingfollowtext ;
+
+vardef followtext(expr pth, txt) =
+    image (
+        mfun_blob_n := mfun_blob_n + 1 ;
+        lua.mp.mf_inject_blob(mfun_blob_n,txt);
+        save pat, al, at, pl, pc, wid, pos, ap, ad, pic, len, n, b, sc ;
+        path pat, b ; pat := pth ;
+        numeric al, at, pl, pc, wid, pos, len[], n, sc ;
+        pair ap, ad ;
+        picture pic[] ;
+        len[0] := 0 ;
+        n := lua.mp.mf_blob_size(mfun_blob_n) ;
+        sc := 0 ;
+        for i=1 upto n :
+            pic[i] := mfun_inject_blob(i) ;
+            pic[i] := pic[i] shifted - llcorner pic[i] ;
+            len[i] := len[i-1] + lua.mp.mf_blob_width(mfun_blob_n,i) ;
+        endfor ;
+        al := arclength pth ;
+        if al = 0 :
+            al := len[n] ;
+            pat := origin -- (al,0) ;
+        fi ;
+        if ((al < len[n]) and (autoscaleupfollowtext   > 0)) or
+           ((al > len[n]) and (autoscaledownfollowtext > 0)) :
+            sc := len[n] /al ;
+            pat := pat scaled sc ;
+            al := arclength pat ;
+        fi ;
+        if followtextalternative = 1 :
+            pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+            pc := 0 ;
+        else : % centered / MP
+            pl := 0 ;
+            pc := arclength pat/2 - len[n]/2 ;
+        fi ;
+        if tracingfollowtext = 1 :
+            draw pat withpen pencircle scaled 1pt withcolor blue ;
+        fi ;
+        for i=1 upto n :
+            wid := lua.mp.mf_blob_width(mfun_blob_n,i) ;
+            pos := len[i]-wid/2 + (i-1)*pl + pc ;
+            at := arctime   pos of pat ;
+            ap := point     at  of pat ;
+            ad := direction at  of pat ;
+            pic[i] := pic[i]
+                shifted (-wid/2,0)
+                if ad <> origin : rotated(angle(ad)) fi
+                shifted ap ;
+            draw pic[i] ;
+            if tracingfollowtext = 1 :
+                draw boundingbox pic[i] withpen pencircle scaled .25pt withcolor red ;
+                draw ap withpen pencircle scaled .50pt withcolor green ;
+            fi ;
+        endfor ;
+        if ((autoscaleupfollowtext = 2) or (autoscaledownfollowtext = 2)) and (sc <> 0) and (sc <> 1):
+            currentpicture := currentpicture scaled (1/sc) ;
+        fi ;
+        b := boundingbox currentpicture ;
+        if tracingfollowtext = 1 :
+            draw b withpen pencircle scaled .25pt withcolor blue ;
+        fi ;
+        draw fullcircle scaled 100bp
+            withprescript "mf_object=followtext"
+            withprescript "ft_category=" & decimal mfun_blob_n ;
+        setbounds currentpicture to b ;
+    )
+enddef ;
