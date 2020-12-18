@@ -13,7 +13,7 @@ local tostring, next = tostring, next
 local lpegmatch = lpeg.match
 local suffixonly, removesuffix, basename = file.suffix, file.removesuffix, file.basename
 local formatters = string.formatters
-local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+local sortedhash, sortedkeys, setmetatableindex = table.sortedhash, table.sortedkeys, table.setmetatableindex
 
 local allocate = utilities.storage.allocate
 
@@ -355,18 +355,24 @@ local function checkfeatures(tfmdata)
     end
 end
 
+local reported = setmetatableindex(function(t,k)
+    t[k] = true
+    return false
+end)
+
 function definers.loadfont(specification)
     local hash = constructors.hashinstance(specification)
     -- todo: also hash by instance / factors
     local tfmdata = loadedfonts[hash] -- hashes by size !
+    local name    = specification.name
     if not tfmdata then
         -- normally context will not end up here often (if so there is an issue somewhere)
         local forced = specification.forced or ""
         if forced ~= "" then
             local reader = readers[lower(forced)] -- normally forced is already lowered
             tfmdata = reader and reader(specification)
-            if not tfmdata then
-                report_defining("forced type %a of %a not found",forced,specification.name)
+            if not tfmdata and not reported[name] then
+                report_defining("forced type %a of %a not found",forced,name)
             end
         else
             local sequence = readers.sequence -- can be overloaded so only a shortcut here
@@ -392,8 +398,8 @@ function definers.loadfont(specification)
             checkfeatures(tfmdata)
         end
     end
-    if not tfmdata then
-        report_defining("font with asked name %a is not found using lookup %a",specification.name,specification.lookup)
+    if not tfmdata and not reported[name] then
+        report_defining("font with asked name %a is not found using lookup %a",name,specification.lookup)
     end
     return tfmdata
 end
@@ -462,8 +468,9 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         specification = variants[method](specification)
     end
     specification = definers.resolve(specification)
-    local hash = constructors.hashinstance(specification)
+    local hash    = constructors.hashinstance(specification)
     local tfmdata = definers.registered(hash) -- id
+    local name    = specification.name
     if tfmdata then
         if trace_defining then
             report_defining("already hashed: %s",hash)
@@ -487,7 +494,9 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         end
     end
     if not tfmdata then -- or id?
-        report_defining( "unknown font %a, loading aborted",specification.name)
+        if not reported[name] then
+            report_defining( "unknown font %a, loading aborted",name)
+        end
     elseif trace_defining and type(tfmdata) == "table" then
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }

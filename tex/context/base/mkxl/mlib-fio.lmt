@@ -9,6 +9,10 @@ if not modules then modules = { } end modules ['mlib-fio'] = {
 local type = type
 local find = string.find
 local concat = table.concat
+local suffix, addsuffix = file.suffix, file.addsuffix
+
+local findfile     = resolvers.findfile
+local new_instance = mplib.new
 
 local trace_terminal = false  trackers.register("metapost.terminal", function(v) trace_terminal = v end)
 
@@ -49,7 +53,6 @@ end
 local finders = { }
 mplib.finders = finders -- also used in meta-lua.lua
 
-local new_instance = mplib.new
 
 local function validftype(ftype)
     if ftype == "mp" then
@@ -59,8 +62,32 @@ local function validftype(ftype)
     end
 end
 
+-- We can have a list!
+
+local suffixlist = { "mpxl", "mpiv", "mp" } -- no "mf"
+
+local function findmpfile(name,ftype)
+    local validtyp = validftype(ftype)
+    local fullname = findfile(name,validtyp)
+    if fullname and fulllname ~= "" then
+        return fullname
+    elseif suffix(name) == "" then
+        for i=1,#suffixlist do
+            fullname = findfile(addsuffix(name,suffixlist[i]),validtyp)
+            if fullname and fulllname ~= "" then
+                return fullname
+            end
+        end
+    end
+    return nil
+end
+
 finders.file = function(specification,name,mode,ftype)
-    return resolvers.findfile(name,validftype(ftype))
+    return findmpfile(name,ftype)
+end
+
+local function finder(name,mode,kind)
+    return findmpfile(name,kind)
 end
 
 local findtexfile = resolvers.findtexfile
@@ -175,10 +202,6 @@ local function fileopener()
 
 end
 
-local function finder(name,mode,kind)
-    return findtexfile(name,kind)
-end
-
 local overloadmode = "warning"
 
 directives.register("metapost.overloadmode",function(v)
@@ -198,10 +221,13 @@ local propertycodes = {
 
 mplib.propertycodes = propertycodes
 
+local report = logs.reporter("metafun", "log")
+
 local function overload(property,name)
     if overloadmode then
+        local iserror =
         -- turn of warning after format is loaded
-        report_metapost("overloading %s %a",propertycodes[property] or "unknown", name)
+        report("overloading %s %a",propertycodes[property] or "unknown", name)
         -- no overload permitted
         if overloadmode == "error" then
             luatex.abort()
@@ -213,15 +239,41 @@ local function overload(property,name)
     end
 end
 
+local showcontext = mplib.showcontext
+
+local function handleerror(instance, message, helpinfo, interaction)
+    report()
+    report("error: %s", message)
+    report()
+    showcontext(instance)
+    report()
+    report(helpinfo)
+    report()
+    if interaction == 5 then
+        -- todo
+--         luatex.abort()
+    end
+end
+
+local function handlewarning(instance, message)
+    report()
+    report("warning: %s", message)
+    report()
+end
+
 function mplib.new(specification)
+    local instance
     local openfile = fileopener()
     specification.find_file     = finder
     specification.run_logger    = logger
     specification.run_overload  = overload
+    specification.run_error     = function(...) handleerror  (instance,...) end
+    specification.run_warning   = function(...) handlewarning(instance,...) end
     specification.open_file     = openfile
     specification.interaction   = "silent"
+    specification.job_name      = tex.jobname -- mandate in order to get something back
     specification.halt_on_error = true
-    local instance = new_instance(specification)
+    instance = new_instance(specification)
     return instance, openfile("terminal")
 end
 

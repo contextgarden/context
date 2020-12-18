@@ -45,6 +45,7 @@ local scannext            = scanners.next
 local scanexpression      = scanners.expression
 local scantoken           = scanners.token
 local scansymbol          = scanners.symbol
+local scanproperty        = scanners.property
 local scannumeric         = scanners.numeric
 local scannumber          = scanners.number
 local scaninteger         = scanners.integer

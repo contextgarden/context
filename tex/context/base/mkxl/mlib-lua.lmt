@@ -20,6 +20,7 @@ metapost.types = types
 
 local scan   = mp.scan
 local skip   = mp.skip
+local get    = mp.get
 local inject = mp.inject
 
 local currentmpx = nil
@@ -29,6 +30,7 @@ local scan_next       = mplib.scan_next
 local scan_expression = mplib.scan_expression
 local scan_token      = mplib.scan_token
 local scan_symbol     = mplib.scan_symbol
+local scan_property   = mplib.scan_property
 local scan_numeric    = mplib.scan_numeric
 local scan_integer    = mplib.scan_integer
 local scan_boolean    = mplib.scan_boolean
@@ -42,10 +44,13 @@ local scan_pen        = mplib.scan_pen
 
 local skip_token      = mplib.skip_token
 
+local get_hashentry   = mplib.gethashentry
+
 scan.next       = function(k)   return scan_next      (currentmpx,k)   end
 scan.expression = function(k)   return scan_expression(currentmpx,k)   end
 scan.token      = function(k)   return scan_token     (currentmpx,k)   end
 scan.symbol     = function(k,e) return scan_symbol    (currentmpx,k,e) end
+scan.property   = function(k)   return scan_property  (currentmpx,k)   end
 scan.numeric    = function()    return scan_numeric   (currentmpx)     end
 scan.integer    = function()    return scan_integer   (currentmpx)     end
 scan.boolean    = function()    return scan_boolean   (currentmpx)     end
@@ -58,6 +63,8 @@ scan.path       = function(t)   return scan_path      (currentmpx,t)   end
 scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
 
 skip.token      = function(t)   return skip_token     (currentmpx,t)   end
+
+get.hashentry   = function(n)   return get_hashentry  (currentmpx,n)   end
 
 local solvepath = mplib.solvepath
 local getstatus = mplib.getstatus

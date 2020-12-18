@@ -83,7 +83,7 @@ local P, S, R, C, Ct, Cs, Cc, Cp, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C,
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local sqrt, abs = math.sqrt, math.abs
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
-local gmatch, gsub, find, match, rep = string.gmatch, string.gsub, string.find, string.match, string.rep
+local gmatch, gsub, find, match = string.gmatch, string.gsub, string.find, string.match
 local formatters, fullstrip = string.formatters, string.fullstrip
 local utfsplit, utfbyte = utf.split, utf.byte
 
@@ -124,14 +124,7 @@ local trace_text   = false  trackers.register("metapost.svg.text",   function(v)
 local trace_path   = false  trackers.register("metapost.svg.path",   function(v) trace_path   = v end)
 local trace_result = false  trackers.register("metapost.svg.result", function(v) trace_result = v end)
 local trace_colors = false  trackers.register("metapost.svg.colors", function(v) trace_colors = v end)
-
-local pathtracer = {
-    ["stroke"]         = "darkred",
-    ["stroke-opacity"] = ".5",
-    ["stroke-width"]   = ".5",
-    ["fill"]           = "darkgray",
-    ["fill-opacity"]   = ".75",
-}
+local trace_fonts  = false  trackers.register("metapost.svg.fonts",  function(v) trace_fonts  = v end)
 
 -- This is just an experiment. Todo: reset hash etc. Also implement
 -- an option handler.
@@ -301,7 +294,7 @@ local p_digit    = lpegpatterns.digit
 local p_hexdigit = lpegpatterns.hexdigit
 local p_space    = lpegpatterns.whitespace
 
-local factors  = {
+local factors = {
     ["pt"] =  1.25,
     ["mm"] =  3.543307,
     ["cm"] = 35.43307,
@@ -312,76 +305,88 @@ local factors  = {
     ["ex"] =  8 * 1.25,
 }
 
+metapost.svgfactors = factors
+
 local percentage_r = 1/100
 local percentage_x = percentage_r
 local percentage_y = percentage_r
 
--- incredible: we can find .123.456 => 0.123 0.456 ...
+local asnumber, asnumber_r, asnumber_x, asnumber_y, asnumber_vx, asnumber_vy
+local asnumber_vx_t, asnumber_vy_t
+local p_number, p_separator, p_optseparator, p_numbers, p_fournumbers, p_path
+local p_number_n, p_number_x, p_number_vx, p_number_y, p_number_vy, p_number_r
 
-local p_command_x  = C(S("Hh"))
-local p_command_y  = C(S("Vv"))
-local p_command_xy = C(S("CcLlMmQqSsTt"))
-local p_command_a  = C(S("Aa"))
-local p_command    = C(S("Zz"))
+do
 
-local p_optseparator = S("\t\n\r ,")^0
-local p_separator    = S("\t\n\r ,")^1
-local p_number       = (S("+-")^0 * (p_digit^0 * P(".") * p_digit^1 + p_digit^1 * P(".") + p_digit^1))
-                     * (P("e") * S("+-")^0 * p_digit^1)^-1
+    -- incredible: we can find .123.456 => 0.123 0.456 ...
 
-local function convert   (n)   n =   tonumber(n)                                                                           return n     end
-local function convert_r (n,u) n =   tonumber(n) if u == true then return percentage_r * n elseif u then return u * n else return n end end
-local function convert_x (n,u) n =   tonumber(n) if u == true then return percentage_x * n elseif u then return u * n else return n end end
-local function convert_y (n,u) n =   tonumber(n) if u == true then return percentage_y * n elseif u then return u * n else return n end end
-local function convert_vx(n,u) n =   tonumber(n) if u == true then return percentage_x * n elseif u then return u * n else return n end end
-local function convert_vy(n,u) n = - tonumber(n) if u == true then return percentage_y * n elseif u then return u * n else return n end end
+    local p_command_x  = C(S("Hh"))
+    local p_command_y  = C(S("Vv"))
+    local p_command_xy = C(S("CcLlMmQqSsTt"))
+    local p_command_a  = C(S("Aa"))
+    local p_command    = C(S("Zz"))
 
-local p_unit      = (P("p") * S("txc") + P("e") * S("xm") + S("mc") * P("m") + P("in")) / factors
-local p_percent   = P("%") * Cc(true)
+    p_optseparator = S("\t\n\r ,")^0
+    p_separator    = S("\t\n\r ,")^1
+    p_number       = (S("+-")^0 * (p_digit^0 * P(".") * p_digit^1 + p_digit^1 * P(".") + p_digit^1))
+                   * (P("e") * S("+-")^0 * p_digit^1)^-1
 
-local c_number_n  = C(p_number)
-local c_number_u  = C(p_number) * (p_unit + p_percent)^-1
+    local function convert   (n)   n =   tonumber(n)                                                                           return n     end
+    local function convert_r (n,u) n =   tonumber(n) if u == true then return percentage_r * n elseif u then return u * n else return n end end
+    local function convert_x (n,u) n =   tonumber(n) if u == true then return percentage_x * n elseif u then return u * n else return n end end
+    local function convert_y (n,u) n =   tonumber(n) if u == true then return percentage_y * n elseif u then return u * n else return n end end
+    local function convert_vx(n,u) n =   tonumber(n) if u == true then return percentage_x * n elseif u then return u * n else return n end end
+    local function convert_vy(n,u) n = - tonumber(n) if u == true then return percentage_y * n elseif u then return u * n else return n end end
 
-local p_number_n  = c_number_n / convert
-local p_number_x  = c_number_u / convert_x
-local p_number_vx = c_number_u / convert_vx
-local p_number_y  = c_number_u / convert_y
-local p_number_vy = c_number_u / convert_vy
-local p_number_r  = c_number_u / convert_r
+    local p_unit      = (P("p") * S("txc") + P("e") * S("xm") + S("mc") * P("m") + P("in")) / factors
+    local p_percent   = P("%") * Cc(true)
 
-local function asnumber   (s) return s and lpegmatch(p_number,   s) or 0 end
-local function asnumber_r (s) return s and lpegmatch(p_number_r, s) or 0 end
-local function asnumber_x (s) return s and lpegmatch(p_number_x, s) or 0 end
-local function asnumber_y (s) return s and lpegmatch(p_number_y, s) or 0 end
-local function asnumber_vx(s) return s and lpegmatch(p_number_vx,s) or 0 end
-local function asnumber_vy(s) return s and lpegmatch(p_number_vy,s) or 0 end
+    local c_number_n  = C(p_number)
+    local c_number_u  = C(p_number) * (p_unit + p_percent)^-1
 
-local p_number_vx_t = Ct { (p_number_vx + p_separator)^1 }
-local p_number_vy_t = Ct { (p_number_vy + p_separator)^1 }
+    p_number_n  = c_number_n / convert
+    p_number_x  = c_number_u / convert_x
+    p_number_vx = c_number_u / convert_vx
+    p_number_y  = c_number_u / convert_y
+    p_number_vy = c_number_u / convert_vy
+    p_number_r  = c_number_u / convert_r
 
-local zerotable = { 0 }
+    asnumber    = function(s) return s and lpegmatch(p_number,   s) or 0 end
+    asnumber_r  = function(s) return s and lpegmatch(p_number_r, s) or 0 end
+    asnumber_x  = function(s) return s and lpegmatch(p_number_x, s) or 0 end
+    asnumber_y  = function(s) return s and lpegmatch(p_number_y, s) or 0 end
+    asnumber_vx = function(s) return s and lpegmatch(p_number_vx,s) or 0 end
+    asnumber_vy = function(s) return s and lpegmatch(p_number_vy,s) or 0 end
 
-local function asnumber_vx_t(s) return s and lpegmatch(p_number_vx_t,s) or zerotable end
-local function asnumber_vy_t(s) return s and lpegmatch(p_number_vy_t,s) or zerotable end
+    local p_number_vx_t = Ct { (p_number_vx + p_separator)^1 }
+    local p_number_vy_t = Ct { (p_number_vy + p_separator)^1 }
 
-local p_numbersep   = p_number_n + p_separator
-local p_numbers     = p_optseparator * P("(") * p_numbersep^0 * p_optseparator * P(")")
-local p_fournumbers = p_numbersep^4
-local p_path        = Ct ( (
-      p_command_xy * (p_optseparator * p_number_vx *
-                      p_optseparator * p_number_vy )^1
-    + p_command_x  * (p_optseparator * p_number_vx )^1
-    + p_command_y  * (p_optseparator * p_number_vy )^1
-    + p_command_a  * (p_optseparator * p_number_vx *
-                      p_optseparator * p_number_vy *
-                      p_optseparator * p_number_r  *
-                      p_optseparator * p_number_n  * -- flags
-                      p_optseparator * p_number_n  * -- flags
-                      p_optseparator * p_number_vx *
-                      p_optseparator * p_number_vy )^1
-    + p_command
-    + p_separator
-)^1 )
+    local zerotable = { 0 }
+
+    asnumber_vx_t = function(s) return s and lpegmatch(p_number_vx_t,s) or zerotable end
+    asnumber_vy_t = function(s) return s and lpegmatch(p_number_vy_t,s) or zerotable end
+
+    local p_numbersep   = p_number_n + p_separator
+          p_numbers     = p_optseparator * P("(") * p_numbersep^0 * p_optseparator * P(")")
+          p_fournumbers = p_numbersep^4
+          p_path        = Ct ( (
+          p_command_xy * (p_optseparator * p_number_vx *
+                          p_optseparator * p_number_vy )^1
+        + p_command_x  * (p_optseparator * p_number_vx )^1
+        + p_command_y  * (p_optseparator * p_number_vy )^1
+        + p_command_a  * (p_optseparator * p_number_vx *
+                          p_optseparator * p_number_vy *
+                          p_optseparator * p_number_r  *
+                          p_optseparator * p_number_n  * -- flags
+                          p_optseparator * p_number_n  * -- flags
+                          p_optseparator * p_number_vx *
+                          p_optseparator * p_number_vy )^1
+        + p_command
+        + p_separator
+    )^1 )
+
+
+end
 
 -- We can actually use the svg color definitions from the tex end but maybe a user
 -- doesn't want those replace the normal definitions.
@@ -1365,6 +1370,14 @@ do
      -- ["vkern"]              = true,
     }
 
+    local pathtracer = {
+        ["stroke"]         = "darkred",
+        ["stroke-opacity"] = ".5",
+        ["stroke-width"]   = ".5",
+        ["fill"]           = "darkgray",
+        ["fill-opacity"]   = ".75",
+    }
+
     local function handlechains(c)
         if tags[c.tg] then
             local at = c.at
@@ -1769,7 +1782,8 @@ do
         end
     end
 
-    local uselevel = 0
+    local uselevel      = 0
+    local bodyfontscale = 1
 
     function handlers.use(c)
         local at  = c.at
@@ -1826,12 +1840,19 @@ do
     local f_do_fill       = f_do_fill_c
     local f_eo_fill       = f_eo_fill_c
     local f_no_fill       = f_no_fill_c
-    local s_clip_start    = 'draw image ('
-    local f_clip_stop_c   = formatters[') ; clip currentpicture to (%s..cycle) ;']
-    local f_clip_stop_l   = formatters[') ; clip currentpicture to (%s--cycle) ;']
+--     local s_clip_start    = 'draw image ('
+--     local f_clip_stop_c   = formatters[') ; clip currentpicture to (%s..cycle) ;']
+--     local f_clip_stop_l   = formatters[') ; clip currentpicture to (%s--cycle) ;']
+--     local f_clip_stop     = f_clip_stop_c
+--     local f_eoclip_stop_c = formatters[') ; eoclip currentpicture to (%s..cycle) ;']
+--     local f_eoclip_stop_l = formatters[') ; eoclip currentpicture to (%s--cycle) ;']
+--     local f_eoclip_stop   = f_eoclip_stop_c
+    local s_clip_start    = 'save p ; picture p ; p := image ('
+    local f_clip_stop_c   = formatters[') ; clip p to (%s..cycle) ; draw p ;']
+    local f_clip_stop_l   = formatters[') ; clip p to (%s--cycle) ; draw p ;']
     local f_clip_stop     = f_clip_stop_c
-    local f_eoclip_stop_c = formatters[') ; eoclip currentpicture to (%s..cycle) ;']
-    local f_eoclip_stop_l = formatters[') ; eoclip currentpicture to (%s--cycle) ;']
+    local f_eoclip_stop_c = formatters[') ; eoclip p to (%s..cycle) ; draw p ;']
+    local f_eoclip_stop_l = formatters[') ; eoclip p to (%s--cycle) ; draw p ;']
     local f_eoclip_stop   = f_eoclip_stop_c
 
     -- could be shared and then beginobject | endobject
@@ -2537,7 +2558,8 @@ do
 
             local f_styled  = formatters["\\svgstyled{%s}{%s}{%s}{%s}"]
             local f_colored = formatters["\\svgcolored{%.3N}{%.3N}{%.3N}{"]
-            local f_placed  = formatters["\\svgplaced{%.3N}{%.3N}{}{"]
+--             local f_placed  = formatters["\\svgplaced{%.3N}{%.3N}{}{"]
+local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
             local f_poschar = formatters["\\svgposchar{%.3N}{%.3N}{%s}"]
             local f_char    = formatters["\\svgchar{%s}"]
 
@@ -2606,20 +2628,32 @@ do
                 --
                 ax = ax and asnumber_vx(ax) or x
                 ay = ay and asnumber_vy(ay) or y
-                dx = dx and asnumber_vx(dx) or 0
-                dy = dy and asnumber_vy(dy) or 0
+                --
+local d_x = dx and asnumber_vx(dx) or 0
+local d_y = dy and asnumber_vy(dy) or 0
                 --
                 if v_family then v_family = cssfamily(v_family) end
                 if v_style  then v_style  = cssstyle (v_style)  end
                 if v_weight then v_weight = cssweight(v_weight) end
-                if v_size   then v_size   = csssize  (v_size,factors) end
+                if v_size   then v_size   = csssize  (v_size,factors) or tonumber(v_size) end
+                --
+                if not v_family then v_family = family   end
+                if not v_weight then v_weight = "normal" end
+                if not v_style  then v_style  = "normal" end
+                --
+                if v_family then
+                    v_family = fonts.names.cleanname(v_family)
+                    v_family = checkedfamily(v_family)
+                end
+                --
+                usedfonts[v_family][v_weight][v_style] = true
                 --
                 ax = ax - x
                 ay = ay - y
                 --
                 local elayered = ax ~= 0 or ay ~= 0 or false
-                local eplaced  = dx ~= 0 or dy ~= 0 or false
-
+--                 local eplaced  = dx ~= 0 or dy ~= 0 or false
+local eplaced  = d_x ~= 0 or d_y ~= 0 or false
                 local usedsize, usedscaled
 
                 if elayered then
@@ -2633,29 +2667,29 @@ do
                     usedsize  = v_size or size
                     usedscale = (usedsize / defaultsize) / scale
                 end
-                --
-                -- print("element       ",c.tg)
-                -- print("  layered     ",elayered)
-                -- print("  font   size ",v_size)
-                -- print("  parent size ",size)
-                -- print("  parent scale",scale)
-                -- print("  used size   ",usedsize)
-                -- print("  used scale  ",usedscale)
+usedscale = (10 / bodyfontscale) * usedscale
                 --
                 if eplaced then
+if dx then
+    if not find(dx,"%a") then
+        dx = dx .. "bp"
+    elseif find(dx,"e") then
+        dx = formatters["%s\\dimexpr %s\\relax"](usedscale,dx)
+    end
+else
+    dx = "0pt"
+end
+if dy then
+    if not find(dy,"%a") then
+        dy = dy .. "bp"
+    elseif find(dy,"e") then
+        dy = formatters["%s\\dimexpr %s\\relax"](usedscale,dy)
+    end
+else
+    dy = "0pt"
+end
                     t[#t+1] = f_placed(dx,dy)
                 end
-                --
-                if not v_family then v_family = family   end
-                if not v_weight then v_weight = "normal" end
-                if not v_style  then v_style  = "normal" end
-                --
-                if v_family then
-                    v_family = fonts.names.cleanname(v_family)
-                    v_family = checkedfamily(v_family)
-                end
-                --
-                usedfonts[v_family][v_weight][v_style] = true
                 --
 --                 if usedscale == 1 then
 --                     t[#t+1] = f_normal(          v_family,v_weight,v_style)
@@ -2663,6 +2697,18 @@ do
                     t[#t+1] = f_scaled(usedscale,v_family,v_weight,v_style)
 --                 end
                 t[#t+1] = "{"
+                --
+                if trace_fonts then
+                    report("element        : %s",c.tg)
+                    report("  font family  : %s",v_family)
+                    report("  font weight  : %s",v_weight)
+                    report("  font style   : %s",v_style)
+                    report("  parent size  : %s",size)
+                    report("  parent scale : %s",scale)
+                    report("  used size    : %s",usedsize)
+                    report("  used scale   : %s",usedscale)
+                    report("  layered      : %l",elayered)
+                end
                 --
                 local ecolored = v_fill and v_fill ~= "" or false
                 if ecolored then
@@ -2741,8 +2787,14 @@ do
                     local x  = rawget(at,"x")
                     local y  = rawget(at,"y")
 
+-- local dx       = rawget(at,"dx")
+-- local dy       = rawget(at,"dy")
+
                     local tx = asnumber_vx_t(x)
                     local ty = asnumber_vy_t(y)
+
+-- dx = dx and asnumber_vx(dx) or 0
+-- dy = dy and asnumber_vy(dy) or 0
 
                     x = tx[1] or 0 -- catch bad x/y spec
                     y = ty[1] or 0 -- catch bad x/y spec
@@ -2754,6 +2806,8 @@ do
                     local color, opacity, invisible = fillproperties(v_fill,at)
                     local anchor = anchors[at["text-anchor"] or "start"] or "drt"
                     local r = metapost.remappedtext(only)
+-- x = x + dx
+-- y = y + dy
                     if r then
                         if x == 0 and y == 0 then
                             only = f_mapped_simple_svg(r.index)
@@ -2827,7 +2881,7 @@ do
         end
 
         function handlers.svg(c,x,y,w,h,noclip,notransform,normalize)
-            local at      = c.at
+            local at = c.at
 
             local wrapupviewport
             local bhacked
@@ -2837,6 +2891,8 @@ do
             local xpct, ypct, rpct
 
             local btransform, etransform, transform = handletransform(at)
+
+bodyfontscale = tex.getdimen("bodyfontsize") / 65536
 
             if trace then
                 report("view: %s, xpct %N, ypct %N","before",percentage_x,percentage_y)

@@ -1092,6 +1092,15 @@ do  -- else too many locals
 
     local setmacro    = tokens.setters.macro
 
+    local reported    = setmetatableindex(function(t,k)
+        local v = setmetatableindex(function(t,k)
+            t[k] = true
+            return false
+        end)
+        t[k] = v
+        return v
+    end)
+
     implement {
         name      = "definefont_one",
         arguments = "string",
@@ -1399,7 +1408,10 @@ tfmdata.original = specification.specification
                 texsetcount("scaledfontsize",size)
                 lastfontid = tfmdata
             else
-                report_defining("unable to define %a as %a",name,nice_cs(cs))
+                local nice = nice_cs(cs)
+                if not reported[name][nice] then
+                    report_defining("unable to define %a as %a",name,nice)
+                end
                 lastfontid = -1
                 texsetcount("scaledfontsize",0)
              -- ctx_letvaluerelax(cs) -- otherwise the current definition takes the previous one

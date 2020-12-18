@@ -122,6 +122,8 @@ return {
         "triplet", "quadruplet", "totransform", "bymatrix",
         --
         "primitive", "permanent", "immutable", "mutable", "frozen",
+        --
+        "showproperty", "showhashentry",
     },
     internals = { -- we need to remove duplicates above
         --

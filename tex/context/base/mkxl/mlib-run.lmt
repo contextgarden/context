@@ -90,11 +90,23 @@ local function prepareddata(data)
     end
 end
 
+-- local function executempx(mpx,data)
+--     local terminal = mpxterminals[mpx]
+--     if terminal then
+--         terminal.writer(data)
+--         data = ""
+--     elseif type(data) == "table" then
+--         data = prepareddata(data,collapse)
+--     end
+--     metapost.nofruns = metapost.nofruns + 1
+--     return mpx:execute(data)
+-- end
+
 local function executempx(mpx,data)
     local terminal = mpxterminals[mpx]
     if terminal then
         terminal.writer(data)
-        data = ""
+        data = nil
     elseif type(data) == "table" then
         data = prepareddata(data,collapse)
     end
@@ -184,15 +196,16 @@ function metapost.load(name,method)
     end
     method = method and methods[method] or "scaled"
     local mpx, terminal = new_instance {
-        ini_version  = true,
-        math_mode    = method,
-        run_script   = metapost.runscript,
-        script_error = metapost.scripterror,
-        make_text    = metapost.maketext,
-        extensions   = 1,
-     -- random_seed  = seed,
-        utf8_mode    = true,
-        text_mode    = true,
+-- noninteractive = true;
+-- ini_version    = true,
+        math_mode      = method,
+        run_script     = metapost.runscript,
+        script_error   = metapost.scripterror,
+        make_text      = metapost.maketext,
+        extensions     = 1,
+     -- random_seed    = seed,
+        utf8_mode      = true,
+        text_mode      = true,
     }
     report_metapost("initializing number mode %a",method)
     local result
@@ -219,7 +232,7 @@ function metapost.checkformat(mpsinput,method)
  -- if foundfile == "" then
  --     foundfile  = find_file(file.replacesuffix(mpsinput,"mpvi")) or ""
  -- end
-    if CONTEXTLMTXMODE > 0 and foundfile == "" then
+    if foundfile == "" then
         foundfile  = find_file(file.replacesuffix(mpsinput,"mpxl")) or ""
     end
     if foundfile == "" then

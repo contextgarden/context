@@ -10,45 +10,51 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
 
 local type = type
 
-local aux       = mp.aux
-local mpnumeric = aux.numeric
-local mppair    = aux.pair
+local aux            = mp.aux
+local mpnumeric      = aux.numeric
+local mppair         = aux.pair
+
+local registerscript = metapost.registerscript
+
+local scan           = mp.scan
+local get            = mp.get
+local scannumber     = scan.number
+local scanstring     = scan.string
+local scanpath       = scan.path
+local scanproperty   = scan.property
+local gethashentry   = get.hashentry
 
 local p = nil
 local n = 0
 
-local function mf_path_reset()
+registerscript("pathreset", function()
     p = nil
     n = 0
-end
+end)
 
-local scan       = mp.scan
-local scannumber = scan.number
-local scanpath   = scan.path
-
-local function mf_path_length()
+registerscript("pathlengthof", function()
     p = scanpath()
     n = p and #p or 1
     mpnumeric(n)
-end
+end)
 
-local function mf_path_point()
+registerscript("pathpointof", function()
     local i = scannumber()
     if i > 0 and i <= n then
         local pi = p[i]
         mppair(pi[1],pi[2])
     end
-end
+end)
 
-local function mf_path_left()
+registerscript("pathleftof", function()
     local i = scannumber()
     if i > 0 and i <= n then
         local pi = p[i]
         mppair(pi[5],pi[6])
     end
-end
+end)
 
-local function mf_path_right()
+registerscript("pathrightof", function()
     local i = scannumber()
     if i > 0 and i <= n then
         local pn
@@ -59,12 +65,26 @@ local function mf_path_right()
         end
         mppair(pn[3],pn[4])
     end
-end
+end)
 
-local registerscript = metapost.registerscript
+local report   = logs.reporter("metapost", "log")
+local codes    = metapost.codes
+local types    = metapost.types
+local procodes = mplib.propertycodes
 
-registerscript("pathreset",    mf_path_reset)
-registerscript("pathlengthof", mf_path_length)
-registerscript("pathpointof",  mf_path_point)
-registerscript("pathleftof",   mf_path_left)
-registerscript("pathrightof",  mf_path_right)
+registerscript("showproperty", function()
+    local k, s, p, d = scanproperty()
+    if k then
+        report("name %a, property %a, command %a, detail %a",s,procodes[p] or "-",codes[k] or "-",types[d] or "-")
+    end
+end)
+
+registerscript("showhashentry", function()
+    local s = scanstring()
+    if s then
+        local k, p, d = gethashentry(s)
+        if k then
+            report("name %a, property %a, command %a, detail %a",s,procodes[p] or "-",codes[k] or "-",types[d] or "-")
+        end
+    end
+end)

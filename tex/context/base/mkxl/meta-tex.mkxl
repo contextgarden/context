@@ -199,11 +199,17 @@
 \permanent\protected\def\svgcolored#1#2#3#4% r g b text
   {\colored[r=#1,g=#2,b=#3]{#4}}
 
+% \permanent\protected\def\svgplaced#1#2#3#4% dx dy width text
+%   {\doifelsenothing{#3}%
+%      {\hpack}%
+%      {\hpack to #3}%
+%      {\raise#2\onebasepoint\hbox{\kern#1\onebasepoint\relax#4}}}
+
 \permanent\protected\def\svgplaced#1#2#3#4% dx dy width text
   {\doifelsenothing{#3}%
      {\hpack}%
      {\hpack to #3}%
-     {\raise#2\onebasepoint\hbox{\kern#1\onebasepoint\relax#4}}}
+     {\offsetbox[\c!y=#2]\hbox{\kern#1\relax#4}}}
 
 \newdimen\grph_svg_scratchwidth % maybe \startsvgpos etc
 

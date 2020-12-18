@@ -715,7 +715,9 @@ def drawdot expr p =
     fi
 enddef ;
 
-permanent drawoptions, currentpen, currentpicture, filldraw, drawdot ; % redefined later: fill, draw
+permanent drawoptions, currentpen, filldraw, drawdot ; % redefined later: fill, draw
+
+% permanent currentpicture; % not yet
 
 % Kind of obsolete:
 

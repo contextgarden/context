@@ -282,3 +282,14 @@ newscriptindex mfid_definecolor ; mfid_definecolor := scriptindex "definecolor" 
 def definecolor = runscript mfid_definecolor ; enddef ; % the semicolon prevents lookahead
 
 permanent definecolor ;
+
+% showproperty  fullcircle ;
+% showhashentry "fullcircle" ;
+
+newscriptindex mfid_showproperty  ; mfid_showproperty  := scriptindex("showproperty") ;
+newscriptindex mfid_showhashentry ; mfid_showhashentry := scriptindex("showhashentry") ;
+
+def showproperty  = runscript mfid_showproperty  enddef ;
+def showhashentry = runscript mfid_showhashentry enddef ;
+
+permanent showproperty, showhashentry ;
