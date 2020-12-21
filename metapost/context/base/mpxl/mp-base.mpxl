@@ -535,7 +535,7 @@ vardef min(expr u)(text t) = % t is a list of numerics, pairs, or strings
     elseif string u :
         string temp_any_u
     fi ;
-    temp_any_u = u
+    temp_any_u := u ;
     for i = t :
         if i < temp_any_u :
             temp_any_u := i ;
@@ -551,7 +551,7 @@ vardef max(expr u)(text t) = % t is a list of numerics, pairs, or strings
     elseif string u :
         string temp_any_u
     fi ;
-    temp_any_u = u
+    temp_any_u := u ;
     for i = t :
         if i > temp_any_u :
             temp_any_u := i ;
@@ -642,7 +642,7 @@ pc := 11.95517 ;
 cc := 12.79213 ;
 in := 72 ;
 
-immutable mm, pt, dd, bp, cm, pc, cc, in ;
+immutable mm, pt, bp, cm, in ; % we don't protect (yet): dd, pc cc (used as locals)
 
 % vardef magstep primary m = % obsolete
 %     mexp(46.67432m)

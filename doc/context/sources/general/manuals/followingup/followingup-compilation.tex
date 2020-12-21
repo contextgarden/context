@@ -4,6 +4,12 @@
 
 \environment followingup-style
 
+\logo[WLS]       {WLS}
+\logo[INTEL]     {Intel}
+\logo[APPLE]     {Apple}
+\logo[UBUNTU]    {Ubuntu}
+\logo[RASPBERRY] {RaspberryPi}
+
 \startchapter[title={Compilation}]
 
 Compiling \LUATEX\ is possible because after all it's what I do on my machine.
@@ -50,7 +56,7 @@ In retrospect I should have done that sooner because in a day I could get all
 relevant platforms working. Flattening the source tree was a next step and so
 there is no way back now. What baffled me (and Alan, who at some point joined in
 testing \OSX) is the speed of compilation. My pretty old laptop needed about half
-a minute to get the job done and even on a raspberry pi with only a flash card
+a minute to get the job done and even on a \RASPBERRY\ with only a flash card
 just a few minutes were needed. At that point, as we could remove more make
 related files, the compressed 11 MB archive (\type {tar.xz}) shrunk to just over
 2~MB. Interesting is that compiling \MPLIB\ takes most time, and when one compiles
@@ -78,6 +84,69 @@ suffixes to make them more unique and for instance the use of \type {normal} as
 equivalent for zero was made a bit more distinctive as we now have more subtypes.
 That is: all the subtypes were collected in enumerations instead of \CCODE\
 defines. Back to the basics.
+
+End of 2020 I noticed that the binary had grown a bit relative to the mid 2020
+versions. This surprised me because some improvements actually made them smaller,
+something you notice when you compile a couple of times when doing these things.
+I also noticed that the platforms on the compile farm had quite a bit of
+variation. In most cases we're still below my 3MB threshold, but when for
+instance cross compiled binaries become a few hundred MB larger one can get
+puzzled. In the \LUAMETAFUN\ manual I have this comment at the top:
+
+\starttyping[style=\ttx]
+------------------------   ------------------------   ------------------------
+2019-12-17  32bit  64bit   2020-01-10  32bit  64bit   2020-11-30  32bit  64bit
+------------------------   ------------------------   ------------------------
+freebsd     2270k  2662k   freebsd     2186k  2558k   freebsd     2108k  2436k
+openbsd6.6  2569k  2824k   openbsd6.6  2472k  2722k   openbsd6.8  2411k  2782k
+linux-armhf 2134k          linux-armhf 2063k          linux-armhf 2138k  2860k
+linux       2927k  2728k   linux       2804k  2613k   linux   (?) 3314k  2762k
+                                                      linux-musl  2532k  2686k
+osx                2821k   osx                2732k   osx                2711k
+ms mingw    2562k  2555k   ms mingw    2481k  2471k   ms mingw    2754k  2760k
+                                                      ms intel           2448k
+                                                      ms arm             3894k
+                                                      ms clang           2159k
+------------------------   ------------------------   ------------------------
+\stoptyping
+
+So why the differences? One possible answer is that the cross compiler now uses
+\GCC9 instead of \GCC8. It is quite likely that inlining code is done more
+aggressively (at least one can find remarks of that kind on the Internet). An
+interesting exception in this overview is the \LINUX\ 32 bit version. The native
+\WINDOWS\ binary is smaller than the \MINGW\ binary but the \CLANG\ variant is
+still smaller. For the native compilation we always enabled link time
+optimization, which makes compiling a bit slower but similar to regular
+compilation in \WLS\ but when for the other compilers we turn on link time
+optimization the linker takes quite some time. I just turn it off when testing
+code because it's no fun to wait these additional minutes with \GCC. Given that
+the native windows binary by now runs nearly as fast as the cross compiled ones,
+it is an indication that the native \WINDOWS\ compiler is quite okay. The numbers
+also show (for \WINDOWS) that using \CLANG\ is not yet an option: the binaries
+are smaller but also much slower and compilation (without link time optimization)
+also takes much longer. But we'll see how that evolves: the compile farm
+generates them all.
+
+So, what effects does link time optimization has? The (current) cross compiled
+binary is is some 60KB smaller and performs a little better. Some tests show
+some 3~percent gain but I'm pretty sure users won't notice that on a normal run.
+So, when we forget to enable it when we release new binaries, it's no big deal.
+
+Another end 2020 adventure was generating \ARM\ binaries for \OSX\ and \WINDOWS.
+This seems to work out well. The \OSX\ binaries were tested, but we don't have
+the proper hardware in the compile farm, so for now users have to use \INTEL\
+binaries on that hardware. Compiling the \LUAMETATEX\ manual on a 2020 M1 is a
+little more that twice as fast than on my 2013 i7 laptop running \WINDOWS. A
+native \ARM\ binary is about three times faster, which is what one expects from a
+more modern (also a bit performance hyped) chipset. On a \RASPBERRY\ with 4MB
+ram, an external \SSD\ on \USB3, running \UBUNTU\ 20, the manual compiles three
+times slower than on my laptop. So, when we limit conclusions to \LUAMETATEX\ it
+looks like \ARM\ is catching up: these modern chipsets (from \APPLE\ and
+\MICROSOFT, although the later was not yet tested) with plenty of cache, lots of
+fast memory, fast graphics and speedy disks are six times faster than a cheap
+media oriented \ARM\ chipset. Being a single core consumer, \LUAMETATEX\ benefits
+more from faster cores than from more cores. But, unless I have these machines
+on my desk these rough estimates have to do.
 
 \stopchapter
 

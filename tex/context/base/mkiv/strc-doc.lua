@@ -1160,6 +1160,7 @@ implement {
                     { "bookmark" },
                     { "marking" },
                     { "list" },
+                    { "reference" },
                 }
             },
             { "numberdata", {

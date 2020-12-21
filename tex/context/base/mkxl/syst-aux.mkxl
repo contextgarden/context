@@ -5169,36 +5169,17 @@
 %D \definesomething[alfa,beta,...][variable=...,...]
 %D \stoptyping
 
-%% \let\syst_helpers_with_set_step\relax
-%% \let\m_syst_helpers_with_set_command\empty
-%%
-%% \def\syst_helpers_with_set_double[#1][#2]%
-%%   {\doifsomething{#1}%
-%%      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2]}%
-%%       \processcommalist[#1]\syst_helpers_with_set_step}}
-%%
-%% \def\syst_helpers_with_set_triple[#1][#2][#3]%
-%%   {\doifsomething{#1}%
-%%      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2][#3]}%
-%%       \processcommalist[#1]\syst_helpers_with_set_step}}
-%%
-%% \def\dodoubleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dodoubleempty   \syst_helpers_with_set_double} % \command
-%% \def\dodoubleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dodoubleargument\syst_helpers_with_set_double} % \command
-%%
-%% \def\dotripleemptywithset   #1{\let\m_syst_helpers_with_set_command#1\dotripleempty   \syst_helpers_with_set_triple} % \command
-%% \def\dotripleargumentwithset#1{\let\m_syst_helpers_with_set_command#1\dotripleargument\syst_helpers_with_set_triple} % \command
-
 \let\syst_helpers_with_set_step\relax % maybe push pop
 
 \permanent\tolerant\protected\def\dodoubleemptywithset#1#*[#2]#*[#3]%
   {\doifsomething{#2}%
      {\def\syst_helpers_with_set_step##1{#1[##1][#3]}%
-      \processcommalist[#1]\syst_helpers_with_set_step}}
+      \processcommalist[#2]\syst_helpers_with_set_step}}
 
 \permanent\tolerant\protected\def\dotripleemptywithset#1#*[#2]#*[#3]#*[#4]%
   {\doifsomething{#2}%
      {\def\syst_helpers_with_set_step##1{#1[##1][#3][#4]}%
-      \processcommalist[#1]\syst_helpers_with_set_step}}
+      \processcommalist[#2]\syst_helpers_with_set_step}}
 
 \aliased\let\dodoubleargumentwithset\dodoubleemptywithset
 \aliased\let\dotripleargumentwithset\dotripleemptywithset
@@ -5918,7 +5899,7 @@
 \permanent\def\purenumber#1{\expandafter\firstofoneargument\expandafter{\number#1}}
 
 %D \macros
-%D   {filterfromvalue}
+%D   {filterfromvalue, filterfromnext}
 %D
 %D \starttyping
 %D \setvalue{xx}{{A}{B}{C}}
@@ -5927,59 +5908,40 @@
 %D \filterfromvalue{xx}{3}{2}
 %D \filterfromvalue{xx}{3}{1}
 %D \stoptyping
-%D
-%D An alternative is to store 'max' in the list, say:
-%D
-%D \starttyping
-%D \setvalue{xx}{3{A}{B}{C}}
-%D
-%D \filterfromvalues{3}{xx}{3}
-%D \filterfromvalues{3}{xx}{2}
-%D \filterfromvalues{3}{xx}{1}
-%D \stoptyping
-%D
-%D I'll implement this when I'm in \quotation {writing dirty macros mood}.
 
-\permanent\def\dofilterfromstr#1#2% max n % no need to be fast
-  {\expandafter \expandafter \expandafter \csstring
-   \ifcase#1\or \ifcase#2\or
-     \firstofoneargument     \else
-     \gobbleoneargument      \fi
-   \or \ifcase#2\or
-     \firstoftwoarguments    \or
-     \secondoftwoarguments   \else
-     \gobbletwoarguments     \fi
-   \or \ifcase#2\or
-     \firstofthreearguments  \or
-     \secondofthreearguments \or
-     \thirdofthreearguments  \else
-     \gobblethreearguments   \fi
-   \or \ifcase#2\or
-     \firstoffourarguments   \or
-     \secondoffourarguments  \or
-     \thirdoffourarguments   \or
-     \fourthoffourarguments  \else
-     \gobblefourarguments    \fi
-   \or \ifcase#2\or
-     \firstoffivearguments   \or
-     \secondoffivearguments  \or
-     \thirdoffivearguments   \or
-     \fourthoffivearguments  \or
-     \fifthoffivearguments   \else
-     \gobblefivearguments    \fi
+% can be sped up with ignored arguments
+
+\def\syst_filter_from_next_yes#1%
+  {\advance\scratchcounterone\plusone
+   \ifnum\scratchcounterone=\scratchcountertwo
+     \scratchtoks{#1}%
+   \fi
+   \ifnum\scratchcounterone=\scratchcounterthree
+     \expandafter\syst_filter_from_next_nop
+   \else
+     \expandafter\syst_filter_from_next_yes
    \fi}
 
-\permanent\def\filterfromvalue#1#2#3% value max n
-  {\expandafter\doubleexpandafter\csname         % we use the fact that an
-     \expandafter\ifrelax\csname#1\endcsname     % undefined cs has become \relax
-       \csstring\gobbleoneargument               % which we then gobble here
-     \else
-       \dofilterfromstr{#2}{#3}%
-     \fi
-     \endcsname\csname#1\endcsname}
+\def\syst_filter_from_next_nop
+  {\expandafter\endgroup
+   \expandafter\endlocalcontrol
+   \the\scratchtoks}
 
 \permanent\def\filterfromnext#1#2% max n {..}{..}{..}{..}
-  {\csname\dofilterfromstr{#1}{#2}\endcsname}
+  {\beginlocalcontrol
+   \begingroup
+   \scratchcounterone   \zerocount
+   \scratchcountertwo   #2%
+   \scratchcounterthree #1%
+   \syst_filter_from_next_yes}
+
+\permanent\def\filterfromvalue#1#2#3% max n {..}{..}{..}{..}
+  {\beginlocalcontrol
+   \begingroup
+   \scratchcounterone   \zerocount
+   \scratchcountertwo   #3%
+   \scratchcounterthree #2%
+   \expandafter\expandafter\expandafter\syst_filter_from_next_yes\csname#1\endcsname}
 
 %D \macros
 %D   {definemeasure}

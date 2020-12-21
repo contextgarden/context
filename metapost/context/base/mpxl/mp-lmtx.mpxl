@@ -357,9 +357,10 @@ vardef lmt_do_followtext =
         save scale_up   ; string scale_up   ; scale_up   := getparameter "autoscaleup" ;
         save scale_down ; string scale_down ; scale_down := getparameter "autoscaledown" ;
         save followtextalternative   ; followtextalternative   := if getparameter "spread" : 1 else : 0 fi ;
-        save tracingfollowtext       ; tracingfollowtext          := if getparameter "trace"  : 1 else : 0 fi ;
         save autoscaleupfollowtext   ; autoscaleupfollowtext   := if scale_up   = "yes" : 1 elseif scale_up   = "max" : 2 else : 0 fi ;
         save autoscaledownfollowtext ; autoscaledownfollowtext := if scale_down = "yes" : 1 elseif scale_down = "max" : 2 else : 0 fi ;
+      % save tracingfollowtext       ; tracingfollowtext          := if getparameter "trace"  : 1 else : 0 fi ;
+        interim tracingfollowtext := if getparameter "trace" : 1 else : 0 fi ;
         draw followtext (
             if (getparameter "reverse") : reverse fi (getparameter "path"),
                 getparameter "text"

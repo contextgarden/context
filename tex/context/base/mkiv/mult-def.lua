@@ -11027,6 +11027,9 @@ return {
    ["en"]="referencemethod",
    ["fr"]="methodereference",
   },
+  ["referencetext"]={
+   ["en"]="referencetext",
+  },
   ["referenceprefix"]={
    ["en"]="referenceprefix",
    ["fr"]="prefixereference",

@@ -1137,6 +1137,7 @@
 		<cd:constant name='reference' value='referinta'/>
 		<cd:constant name='referencemethod' value='referencemethod'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
+		<cd:constant name='referencetext' value='referencetext'/>
 		<cd:constant name='referencing' value='referinta'/>
 		<cd:constant name='region' value='region'/>
 		<cd:constant name='regionin' value='regiuneintrare'/>

@@ -660,8 +660,8 @@
    \c!right={\right.}]
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currentmathcases}{\math_cases_start[\currentmathcases]}%
-    \frozen\instance\setvalue  {\e!stop \currentmathcases}{\math_cases_stop}%
+    \frozen\instance\protected\edefcsname\e!start\currentmathcases\endcsname{\math_cases_start[\currentmathcases]}%
+    \frozen\instance          \defcsname \e!stop \currentmathcases\endcsname{\math_cases_stop}%
 \to \everydefinemathcases
 
 \permanent\protected\def\math_cases_NC_zero
@@ -812,8 +812,9 @@
    \c!rulethickness=\linewidth]
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currentmathmatrix}{\math_matrix_start[\currentmathmatrix]}%
-    \frozen\instance\setvalue  {\e!stop \currentmathmatrix}{\math_matrix_stop}% no u else lookahead problem
+    \frozen\instance\protected\edefcsname\e!start\currentmathmatrix\endcsname{\math_matrix_start[\currentmathmatrix]}%
+    % \noaligned\protected should work here:
+    \frozen\instance          \defcsname \e!stop \currentmathmatrix\endcsname{\math_matrix_stop}% no u else lookahead problem
 \to \everydefinemathmatrix
 
 \def\math_matrix_start_table
@@ -825,12 +826,23 @@
   {\dostoptagged
    \dostoptagged}
 
+% \def\math_matrix_start_row
+%   {\noalign{\global\c_math_eqalign_column\zerocount}%
+%    \dostarttagged\t!mtablerow\empty}
+%
+% \def\math_matrix_stop_row
+%   {\dostoptagged}
+
 \def\math_matrix_start_row
-  {\noalign{\global\c_math_eqalign_column\zerocount}%
-   \dostarttagged\t!mtablerow\empty}
+  {\beginlocalcontrol
+   \global\c_math_eqalign_column\zerocount
+   \dostarttagged\t!mtablerow\empty
+   \endlocalcontrol}
 
 \def\math_matrix_stop_row
-  {\dostoptagged}
+  {\beginlocalcontrol
+   \dostoptagged
+   \endlocalcontrol}
 
 \protected\def\math_matrix_start_cell
   {\dostarttagged\t!mtablecell\empty

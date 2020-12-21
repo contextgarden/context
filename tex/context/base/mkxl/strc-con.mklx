@@ -122,6 +122,7 @@
 \mutable\let\currentconstructionmarking        \empty
 \mutable\let\currentconstructionnumber         \empty
 \mutable\let\currentconstructionreference      \empty
+\mutable\let\currentconstructionreferencetext  \empty
 \mutable\let\currentconstructionreferenceprefix\empty
 \mutable\let\currentconstructionsynchronize    \empty
 \mutable\let\currentconstructiontitle          \empty
@@ -157,7 +158,7 @@
 \tolerant\protected\def\strc_constructions_start[#1]#*[#2]#*[#3]%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \strc_constructions_register[#3][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#2]%
+   \strc_constructions_register[#3][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\def\strc_constructions_stop
@@ -1030,6 +1031,7 @@
    \xdef\currentconstructioncatcodes       {\constructionparameter\s!catcodes}%
    \xdef\currentconstructionlabel          {\constructionparameter\c!label}%
    \xdef\currentconstructionreference      {\constructionparameter\c!reference}%
+   \xdef\currentconstructionreferencetext  {\constructionparameter\c!referencetext}%
    \xdef\currentconstructionreferenceprefix{\constructionparameter\c!referenceprefix}%
    %xdef\currentconstructionshownumber     {\constructionparameter\c!number}%
    \xdef\currentconstructionincrementnumber{\constructionparameter\c!incrementnumber}%
@@ -1043,10 +1045,11 @@
    \fi
    \ifx\currentconstructionexpansion\s!xml
      \xmlstartraw
-       \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
-       \xdef\currentconstructionbookmark{\constructionparameter\c!bookmark}%
-       \xdef\currentconstructionmarking {\constructionparameter\c!marking}%
-       \xdef\currentconstructionlist    {\constructionparameter\c!list}%
+       \xdef\currentconstructiontitle        {\constructionparameter\c!title}%
+       \xdef\currentconstructionbookmark     {\constructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking      {\constructionparameter\c!marking}%
+       \xdef\currentconstructionlist         {\constructionparameter\c!list}%
+       \xdef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
      \xmlstopraw
      \ifempty\currentconstructionlist
        \glet\currentconstructionlist\currentconstructiontitle
@@ -1054,15 +1057,17 @@
      \glet\currentconstructioncoding\s!xml
    \else
      \ifx\currentconstructionexpansion\v!yes
-       \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
-       \xdef\currentconstructionbookmark{\constructionparameter\c!bookmark}%
-       \xdef\currentconstructionmarking {\constructionparameter\c!marking}%
-       \xdef\currentconstructionlist    {\constructionparameter\c!list}%
+       \xdef\currentconstructiontitle        {\constructionparameter\c!title}%
+       \xdef\currentconstructionbookmark     {\constructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking      {\constructionparameter\c!marking}%
+       \xdef\currentconstructionlist         {\constructionparameter\c!list}%
+       \xdef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
      \else
-       \xdef\currentconstructiontitle   {\detokenizedconstructionparameter\c!title}%
-       \xdef\currentconstructionbookmark{\detokenizedconstructionparameter\c!bookmark}%
-       \xdef\currentconstructionmarking {\detokenizedconstructionparameter\c!marking}%
-       \xdef\currentconstructionlist    {\detokenizedconstructionparameter\c!list}%
+       \xdef\currentconstructiontitle        {\detokenizedconstructionparameter\c!title}%
+       \xdef\currentconstructionbookmark     {\detokenizedconstructionparameter\c!bookmark}%
+       \xdef\currentconstructionmarking      {\detokenizedconstructionparameter\c!marking}%
+       \xdef\currentconstructionlist         {\detokenizedconstructionparameter\c!list}%
+       \xdef\currentconstructionreferencetext{\detokenizedconstructionparameter\c!referencetext}%
        \iflocation \ifempty\currentconstructionbookmark
          \begingroup
          \simplifycommands
@@ -1104,13 +1109,16 @@
           % section   structures.sections.currentid(),
         }
         titledata  {
-            label    {\detokenize\expandafter{\currentconstructionlabel}}
-            title    {\detokenize\expandafter{\currentconstructiontitle}}
+            label     {\detokenize\expandafter{\currentconstructionlabel}}
+            title     {\detokenize\expandafter{\currentconstructiontitle}}
         \ifx\currentconstructionbookmark\currentconstructiontitle \else
-            bookmark {\detokenize\expandafter{\currentconstructionbookmark}}
+            bookmark  {\detokenize\expandafter{\currentconstructionbookmark}}
+        \fi
+        \ifx\currentconstructionreferencetext\currentconstructiontitle \else
+            reference {\detokenize\expandafter{\currentconstructionreferencetext}}
         \fi
         \ifx\currentconstructionlist\currentconstructiontitle \else
-            list     {\detokenize\expandafter{\currentconstructionlist}}
+            list      {\detokenize\expandafter{\currentconstructionlist}}
         \fi
         }
     \ifconditional\c_strc_constructions_number_state

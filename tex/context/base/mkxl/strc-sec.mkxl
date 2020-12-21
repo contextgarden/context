@@ -29,10 +29,11 @@
    \c!level=,
    \c!name=,
    \c!title=,
-   \c!bookmark=,
-   \c!marking=,
-   \c!list=,
-   \c!label=,
+   \c!bookmark=,      % no real need, default to empty anyway
+   \c!marking=,       % no real need, default to empty anyway
+   \c!list=,          % no real need, default to empty anyway
+   \c!referencetext=, % no real need, default to empty anyway
+   \c!label=,         % no real need, default to empty anyway
    \c!coupling=,
    \c!ownnumber=,
  % \c!interaction=\v!list,
@@ -158,10 +159,11 @@
    \xdef\currentstructureplaceholder    {\structureparameter\c!placeholder}%
    \ifx\currentstructureexpansion\s!xml
      \xmlstartraw
-       \xdef\currentstructuretitle   {\structureparameter\c!title}%
-       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
-       \xdef\currentstructuremarking {\structureparameter\c!marking}%
-       \xdef\currentstructurelist    {\structureparameter\c!list}%
+       \xdef\currentstructuretitle        {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark     {\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking      {\structureparameter\c!marking}%
+       \xdef\currentstructurelist         {\structureparameter\c!list}%
+       \xdef\currentstructurereferencetext{\structureparameter\c!referencetext}%
      \xmlstopraw
      \iflocation \ifempty\currentstructurebookmark \ifconditional\c_strc_bookmarks_preroll
        \strc_sectioning_autobookmark\currentstructuretitle
@@ -172,18 +174,20 @@
      \glet\currentstructurecoding\s!xml
    \else
      \ifx\currentstructureexpansion\v!yes
-       \xdef\currentstructuretitle   {\structureparameter\c!title}%
-       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
-       \xdef\currentstructuremarking {\structureparameter\c!marking}%
-       \xdef\currentstructurelist    {\structureparameter\c!list}%
+       \xdef\currentstructuretitle        {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark     {\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking      {\structureparameter\c!marking}%
+       \xdef\currentstructurelist         {\structureparameter\c!list}%
+       \xdef\currentstructurereferencetext{\structureparameter\c!referencetext}%
        \iflocation \ifempty\currentstructurebookmark \ifconditional\c_strc_bookmarks_preroll
          \strc_sectioning_autobookmark\currentstructuretitle
        \fi \fi \fi
      \else
-       \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
-       \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
-       \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
-       \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
+       \xdef\currentstructuretitle        {\detokenizedstructureparameter\c!title}%
+       \xdef\currentstructurebookmark     {\detokenizedstructureparameter\c!bookmark}%
+       \xdef\currentstructuremarking      {\detokenizedstructureparameter\c!marking}%
+       \xdef\currentstructurelist         {\detokenizedstructureparameter\c!list}%
+       \xdef\currentstructurereferencetext{\detokenizedstructureparameter\c!referencetext}%
        \iflocation \ifempty\currentstructurebookmark
          \ifconditional\c_strc_bookmarks_preroll
            \strc_sectioning_autobookmark{\structureparameter\c!title}%
@@ -233,18 +237,21 @@
         \fi
         }
         titledata {
-            label    {\detokenize\expandafter{\currentstructurelabel}}
-            title    {\detokenize\expandafter{\currentstructuretitle}}
+            label     {\detokenize\expandafter{\currentstructurelabel}}
+            title     {\detokenize\expandafter{\currentstructuretitle}}
         \ifx\currentstructurebookmark\currentstructuretitle \else
-            bookmark {\detokenize\expandafter{\currentstructurebookmark}}
+            bookmark  {\detokenize\expandafter{\currentstructurebookmark}}
         \fi
         \ifx\currentstructuremarking\currentstructuretitle \else
-            marking  {\detokenize\expandafter{\currentstructuremarking}}
+            marking   {\detokenize\expandafter{\currentstructuremarking}}
         \fi
         \ifx\currentstructuresaveinlist\v!no \else
           \ifx\currentstructurelist\currentstructuretitle \else
-            list     {\detokenize\expandafter{\currentstructurelist}}
+            list      {\detokenize\expandafter{\currentstructurelist}}
           \fi
+        \fi
+        \ifx\currentstructurereferencetext\currentstructuretitle \else
+            reference {\detokenize\expandafter{\currentstructurereferencetext}}
         \fi
         }
         numberdata {

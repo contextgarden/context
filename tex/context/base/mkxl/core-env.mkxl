@@ -750,8 +750,6 @@
 \permanent\tolerant\protected\def\defineselector[#1]#*[#2]{\getparameters[\??selector#1][\c!max=\plusone,\c!n=\plusone,#2]}
 \permanent\tolerant\protected\def\setupselector [#1]#*[#2]{\getparameters[\??selector#1][#2]}
 
-\permanent\protected\let\select\directselect % we promote to protected
-
 % \def\directselect#1% expandable
 %   {\filterfromnext % maybe add an \expanded
 %      {\csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\endcsname}%
@@ -764,7 +762,9 @@
      \csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\expandafter\endcsname
      \csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}
 
-\letvalue{\??selector\c!max}\plusone % \aliased ?
-\letvalue{\??selector\c!n  }\plusone % \aliased ?
+\permanent\protected\let\select\directselect % we promote to protected
+
+\letcsname\??selector\c!max\endcsname\plusone
+\letcsname\??selector\c!n  \endcsname\plusone
 
 \protect \endinput

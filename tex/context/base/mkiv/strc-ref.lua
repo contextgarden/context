@@ -2289,7 +2289,7 @@ function genericfilters.title(data)
     if data then
         local titledata = data.titledata or data.useddata
         if titledata then
-            helpers.title(titledata.title or "?",data.metadata)
+            helpers.title(titledata.reference or titledata.title or "?",data.metadata)
         end
     end
 end
