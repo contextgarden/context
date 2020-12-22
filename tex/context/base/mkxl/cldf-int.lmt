@@ -39,7 +39,7 @@ local close          = byte(']')
 local equal          = byte('=')
 local comma          = byte(',')
 
-function scanhash(scanners)
+local function scanhash(scanners)
     if peekchar() == open then
         local data = { }
         scanskip()
@@ -77,7 +77,7 @@ function scanhash(scanners)
     end
 end
 
-function scanarray()
+local function scanarray()
     if peekchar() == open then
         local data = { }
         local d = 0

@@ -15,21 +15,21 @@
 
 \unprotect
 
-\immutable\protected\def\fontslantperpoint   {\fontdimen\plusone  }
-\immutable\protected\def\fontinterwordspace  {\fontdimen\plustwo  }
-\immutable\protected\def\fontinterwordstretch{\fontdimen\plusthree}
-\immutable\protected\def\fontinterwordshrink {\fontdimen\plusfour }
-\immutable\protected\def\fontexheight        {\fontdimen\plusfive }
-\immutable\protected\def\fontemwidth         {\fontdimen\plussix  }
-\immutable\protected\def\fontextraspace      {\fontdimen\plusseven}
+\immutable\protected\def\fontslantperpoint   {\scaledfontdimen\plusone  }
+\immutable\protected\def\fontinterwordspace  {\scaledfontdimen\plustwo  }
+\immutable\protected\def\fontinterwordstretch{\scaledfontdimen\plusthree}
+\immutable\protected\def\fontinterwordshrink {\scaledfontdimen\plusfour }
+\immutable\protected\def\fontexheight        {\scaledfontdimen\plusfive }
+\immutable\protected\def\fontemwidth         {\scaledfontdimen\plussix  }
+\immutable\protected\def\fontextraspace      {\scaledfontdimen\plusseven}
 
-\immutable\protected\def\slantperpoint       {\fontdimen\plusone  \font}
-\immutable\protected\def\interwordspace      {\fontdimen\plustwo  \font}
-\immutable\protected\def\interwordstretch    {\fontdimen\plusthree\font}
-\immutable\protected\def\interwordshrink     {\fontdimen\plusfour \font}
-\immutable\protected\def\exheight            {\fontdimen\plusfive \font}
-\immutable\protected\def\emwidth             {\fontdimen\plussix  \font}
-\immutable\protected\def\extraspace          {\fontdimen\plusseven\font}
+\immutable\protected\def\slantperpoint       {\scaledfontdimen\plusone  \font}
+\immutable\protected\def\interwordspace      {\scaledfontdimen\plustwo  \font}
+\immutable\protected\def\interwordstretch    {\scaledfontdimen\plusthree\font}
+\immutable\protected\def\interwordshrink     {\scaledfontdimen\plusfour \font}
+\immutable\protected\def\exheight            {\scaledfontdimen\plusfive \font}
+\immutable\protected\def\emwidth             {\scaledfontdimen\plussix  \font}
+\immutable\protected\def\extraspace          {\scaledfontdimen\plusseven\font}
 
 \aliased\let\mathaxisheight\Umathaxis % takes style
 

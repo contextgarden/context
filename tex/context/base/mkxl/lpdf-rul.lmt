@@ -101,7 +101,7 @@ def RuleColor = %color% enddef ;
 
     local initialized = false ;
 
-    rule_mp = function(p,h,v,i,n)
+    local rule_mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
             data      = p.data or "",
@@ -134,7 +134,7 @@ def RuleColor = %color% enddef ;
     end
 
     updaters.register("backend.update.lpdf",function()
-        ruleactions.mp     = rule_mp
+        ruleactions.mp = rule_mp
     end)
 
 end

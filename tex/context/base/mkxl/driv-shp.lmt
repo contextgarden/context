@@ -192,7 +192,7 @@ updaters.register("backend.update",function()
     stopcolor  = fonts.vfcommands.stopcolor
 end)
 
-local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommands)
+local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands)
 
     if nesting > 100 then
         return
@@ -212,13 +212,16 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
     local fonts = data.fonts
     local siz   = (data.parameters.factor or 1)/65536
 
+-- siz = siz * data.parameters.size / 1000
+
     local function flushchar(font,char,fnt,chr,f,e)
         if fnt then
             local nest = char ~= chr or font ~= fnt
             if fnt == 0 then
                 fnt = main
             end
-            return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+--             return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+            return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
         else
             return 0
         end
@@ -433,7 +436,7 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
         pos_h = pos_h - width -- here ?
     end
     if vfcommands then
-        flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommands) -- also f ?
+        flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands) -- also f ?
     else
         -- kind of messy that we do orientation here and offsets elsewhere
         local orientation = data.orientation
@@ -717,7 +720,7 @@ local hlist_out, vlist_out  do
                     else
                         if tospace and subtype == spaceskip_code then
                             -- todo: flush_space
-                            flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r)
+                            flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r) -- we need tp pass current for scale?
                         end
                         cur_h = cur_h + gluewidth
                     end

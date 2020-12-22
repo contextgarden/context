@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-21 09:32
+-- merge date  : 2020-12-22 22:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -16850,7 +16850,7 @@ local function readfirst(f,offset)
  end
  return { readushort(f) }
 end
-function readarray(f,offset)
+local function readarray(f,offset)
  if offset then
   setposition(f,offset)
  end

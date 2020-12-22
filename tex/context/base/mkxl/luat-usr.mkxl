@@ -79,9 +79,11 @@
 
 % \definenamedlua[module][module instance] % not needed
 
-\definenamedlua[user]    [private user]
-\definenamedlua[third]   [third party module]
-\definenamedlua[isolated][isolated]
+\appendtoks
+    \definenamedlua[user]    [private user]
+    \definenamedlua[third]   [third party module]
+    \definenamedlua[isolated][isolated]
+\to \everyjob
 
 %D In practice this works out as follows:
 %D

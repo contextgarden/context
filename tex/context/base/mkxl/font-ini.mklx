@@ -2512,4 +2512,19 @@
 \permanent\protected\def\usefontpath[#1]%
   {\clf_addfontpath{#1}}
 
+%D Experiment:
+
+\installcorenamespace{scaledfont}
+
+\installcommandhandler \??scaledfont {scaledfont} \??scaledfont
+
+\appendtoks
+    \frozen\protected\edefcsname\currentscaledfont\endcsname
+      {\glyphscale\scaledfontparameter\c!scale\relax
+       \begincsname\scaledfontparameter\c!style\endcsname}
+\to \everydefinescaledfont
+
+\setupscaledfont
+  [\c!scale=1000]
+
 \protect \endinput

@@ -254,7 +254,7 @@ local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
 
-local getpos, gethpos, getvpos
+local getpos, gethpos, getvpos, getrpos
 
 function jobpositions.registerhandlers(t)
     getpos  = t and t.getpos  or function() return 0, 0 end

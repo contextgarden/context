@@ -106,7 +106,7 @@ local pdf_h, pdf_v
 local need_tm, need_tf, cur_tmrx, cur_factor, cur_f, cur_e
 local need_width, need_mode, done_width, done_mode
 local mode
-local f_pdf_cur, f_pdf, fs_cur, fs, f_cur
+local f_pdf_cur, f_pdf, fs_cur, fs, f_cur, f_scale
 local tj_delta, cw
 local usedfonts, usedxforms, usedximages, usedxgroups
 local getxformname, getximagename
@@ -145,6 +145,7 @@ local function reset_variables(specification)
     f_pdf         = 0 -- nullfont
     fs_cur        = 0
     fs            = 0
+    f_scale       = 1.0
     cur_factor    = 0
     cur_f         = false
     cur_e         = false
@@ -193,6 +194,7 @@ local function updatefontstate(font)
     pdfcharacters    = usedcharacters[font]
     horizontalmode   = fontparameters.writingmode ~= "vertical"
     scalefactor      = (designsize/size) * tjfactor
+    --
     local fthreshold = fontproperties.threshold
     threshold        = (fthreshold and (size * fthreshold / 100)) or 655360
     -- when we bolden the threshold should be smaller .. a hack .. i need to redo all this
@@ -468,7 +470,7 @@ local flushcharacter  do
         return v
     end)
 
-    local function setup_fontparameters(font,factor,f,e)
+    local function setup_fontparameters(font,factor,f,e,s)
         local slant   = fontparameters.slantfactor   or 0
         local extend  = fontparameters.extendfactor  or 1
         local squeeze = fontparameters.squeezefactor or 1
@@ -489,6 +491,7 @@ local flushcharacter  do
         cur_f      = f
         cur_e      = e
         tj_delta   = 0
+        f_scale    = 1.0
         fs         = fontparameters.size * bpfactor
         if f then
             fs = fs * f
@@ -497,6 +500,11 @@ local flushcharacter  do
         if format == "opentype" or format == "type1" then
             fs = fs * 1000 / fontparameters.units -- can we avoid this ?
         end
+        --
+f_scale = s
+if f_scale ~= 1.0 then
+    fs = fs * f_scale
+end
         --
         naturalwidth = naturalwidths[font]
         --
@@ -578,16 +586,34 @@ local flushcharacter  do
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
     -- time to move on I guess.
 
+    local getscale = nuts.getscale
+
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
-        if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
+
+local s
+if current then
+    s = getscale(current)
+    if s == 1000 or s == 0 then
+        s = 1.0
+    else
+        s = s / 1000
+    end
+else
+    s = f_scale
+end
+
+--         if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
+        if s ~= f_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
-            setup_fontparameters(font,factor,f,e)
+            setup_fontparameters(font,factor,f,e,s)
             set_font()
         elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
-            setup_fontparameters(font,factor,f,e)
+            setup_fontparameters(font,factor,f,e,s)
             need_tm = true
         end
+
         local move = calc_pdfpos(pos_h,pos_v)
+
 
      -- if trace_threshold then
      --        report(
@@ -624,6 +650,7 @@ local flushcharacter  do
             end
             if move then
                 local d = tj_delta * scalefactor
+ / f_scale
                 if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
@@ -638,7 +665,12 @@ local flushcharacter  do
             begin_charmode()
         end
 
-        cw = cw + naturalwidth[char] * tmef
+--         cw = cw + naturalwidth[char] * tmef
+cw = cw + naturalwidth[char] * tmef * f_scale
+
+-- if f_scale ~= 1.0 then
+--     cw = cw * f_scale
+-- end
 
         local index = data.index or char
 
@@ -2843,7 +2875,7 @@ do -- updaters.register("backend.update.lpdf",function()
         flushimage(index,wd,ht,dp,pos_h,pos_v)
     end
 
-    local function pdfvfimage(wd,ht,dp,data,name)
+    function lpdf.pdfvfimage(wd,ht,dp,data,name)
         if type(data) == "number" then
             return { "lua", function(font,char,pos_h,pos_v)
                 vfimage_n(name,data,wd,ht,dp,pos_h,pos_v)
@@ -2855,8 +2887,6 @@ do -- updaters.register("backend.update.lpdf",function()
             end }
         end
     end
-
-    lpdf.vfimage = pdfvfimage
 
 end -- )
 

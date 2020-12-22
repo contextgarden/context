@@ -128,7 +128,7 @@ local f_macros = {
     [4] = formatters["%s(%N,%N,%i,%i);"],
 }
 
-function grid_to_mp(t,f,n)
+local function grid_to_mp(t,f,n)
     local grid   = t.grid
     local count  = t.count
     local result = { }
