@@ -122,28 +122,28 @@ local report    = logs.reporter("drivers")
 
 ---------------------------------------------------------------------------------------
 
-local lastfont         = nil
-local fontcharacters   = nil
+local lastfont       = nil
+local fontcharacters = nil
 
-local magicconstants   = tex.magicconstants
-local trueinch         = magicconstants.trueinch
-local maxdimen         = magicconstants.maxdimen
-local running          = magicconstants.running
+local magicconstants = tex.magicconstants
+local trueinch       = magicconstants.trueinch
+local maxdimen       = magicconstants.maxdimen
+local running        = magicconstants.running
 
-local pos_h            = 0
-local pos_v            = 0
-local pos_r            = lefttoright_code
-local shippingmode     = "none"
+local pos_h          = 0
+local pos_v          = 0
+local pos_r          = lefttoright_code
+local shippingmode   = "none"
 
-local abs_max_v        = 0
-local abs_max_h        = 0
+local abs_max_v      = 0
+local abs_max_h      = 0
 
-local shipbox_h        = 0
-local shipbox_v        = 0
-local page_size_h      = 0
-local page_size_v      = 0
------ page_h_origin    = 0 -- trueinch
------ page_v_origin    = 0 -- trueinch
+local shipbox_h      = 0
+local shipbox_v      = 0
+local page_size_h    = 0
+local page_size_v    = 0
+----- page_h_origin  = 0 -- trueinch
+----- page_v_origin  = 0 -- trueinch
 
 local initialize
 local finalize
@@ -192,7 +192,7 @@ updaters.register("backend.update",function()
     stopcolor  = fonts.vfcommands.stopcolor
 end)
 
-local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands)
+local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
 
     if nesting > 100 then
         return
@@ -287,9 +287,11 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
             if factor ~= 0 and h ~= 0 then
                 h = h + h * factor / 1000 -- expansion
             end
+h = h * sx
             pos_h = pos_h + h
         elseif command == "down" then
             local v = packet[2] -- already scaled
+v = v * sy
             pos_v = pos_v - v
         elseif command == "push" then
             level = level + 1
@@ -314,6 +316,8 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
                     size_h = size_h + size_h * factor / 1000
                 end
                 if size_h > 0 then
+size_h = size_h * sx
+size_v = size_v * sy
                     flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
                     pos_h = pos_h + size_h
                 end
@@ -338,6 +342,9 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
                         if color then
                             startcolor(color)
                         end
+width  = width  * sx
+height = height * sy
+depth  = depth  * sy
                         flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
                         if color then
                             stopcolor()
@@ -362,7 +369,7 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
                 kind = type(code)
             end
             if kind == "function" then
-                code(font,char,pos_h,pos_v)
+                code(font,char,pos_h,pos_v,sx,sy)
             end
         elseif command == "node" then
             local h = packet[2]
@@ -392,6 +399,8 @@ end
 
 local onetimemessage -- could be defined later (todo: make plug for this)
 
+local getxyscales = nuts.getxyscales
+
 flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,f,e)
 
     if font ~= lastfont then
@@ -413,9 +422,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
     if vfcommands then
         vfcommands = data.commands
     end
-    local width, height, depth, naturalwidth
+    local width, height, depth, naturalwidth, sx, sy
     if current then
         naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
+        sx, sy = getxyscales(current) -- maybe: getwhdfs
         if factor == 0 then
             width = naturalwidth
         else
@@ -431,12 +441,14 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
         if not factor then
             factor = 0
         end
+        sx = 1
+        sy = 1
     end
     if pos_r == righttoleft_code then
         pos_h = pos_h - width -- here ?
     end
     if vfcommands then
-        flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands) -- also f ?
+        flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy) -- also f ?
     else
         -- kind of messy that we do orientation here and offsets elsewhere
         local orientation = data.orientation
@@ -450,10 +462,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
                 pos_v = pos_v + y
             end
             pushorientation(orientation,pos_h,pos_v)
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
             poporientation(orientation,pos_h,pos_v)
         else
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
         end
     end
     return width, height, depth

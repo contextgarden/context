@@ -110,17 +110,25 @@
      \expandafter\strc_descriptions_start_reference
    \fi[#2]}
 
+% we could use this:
+%
+% \def\strc_descriptions_preset
+%   {\setdescriptionparameter\c!label{\descriptionparameter\c!text}%
+%    \resetdescriptionparameter\c!bookmark
+%    \resetdescriptionparameter\c!list
+%    \resetdescriptionparameter\c!referencetext}
+
 \protected\def\strc_descriptions_start_setups[#1]%
   {\setfalse\c_strc_constructions_title_state
-   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\tolerant\def\strc_descriptions_start_title[#1]#*#=%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\def\strc_descriptions_start_reference[#1]%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\def\strc_descriptions_stop
@@ -142,15 +150,15 @@
 
 \protected\def\strc_descriptions_command_setups[#1]%
   {\setfalse\c_strc_constructions_title_state
-   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \protected\tolerant\def\strc_descriptions_command_title[#1]#:#*#=%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \protected\def\strc_descriptions_command_reference[#1]%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 %D Handlers:

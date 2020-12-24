@@ -378,7 +378,7 @@
    \fi}
 
 \permanent\tolerant\def\startMPdrawing[#1]% todo: use pickup #:
-  {\meta_start_drawing#1}
+  {\meta_start_drawing{#1}}
 
 \def\meta_start_drawing#1#2\stopMPdrawing
   {\relax

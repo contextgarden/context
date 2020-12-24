@@ -215,7 +215,9 @@ local rules = {
 --     end
 -- end
 
-local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+-- radicals are not yet ok
+
+local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
     if delta ~= 0 then
         for i=1,#rules do
             local name  = rules[i]
@@ -228,6 +230,8 @@ local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze
 end
 
 local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
+
+    -- still not the perfect rule
 
     local function wdpatch(char)
         if wsnap ~= 0 then
@@ -358,7 +362,7 @@ local function manipulateeffect(tfmdata)
             end
         end
         if mathparameters then
-            setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+            setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
             setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
         end
         parameters.factor  = factor

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-22 22:09
+-- merge date  : 2020-12-24 12:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -37124,7 +37124,7 @@ local rules={
  "FractionRuleThickness",
  "UnderbarRuleThickness",
 }
-local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
  if delta~=0 then
   for i=1,#rules do
    local name=rules[i]
@@ -37245,7 +37245,7 @@ local function manipulateeffect(tfmdata)
    end
   end
   if mathparameters then
-   setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+   setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
    setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
   end
   parameters.factor=factor
