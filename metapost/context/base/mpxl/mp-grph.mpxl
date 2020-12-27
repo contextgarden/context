@@ -13,9 +13,9 @@
 
 %D Under construction.
 
-if known context_grph : endinput ; fi ;
+if known metafun_loaded_grph : endinput ; fi ;
 
-boolean context_grph ; context_grph := true ; immutable context_grph ;
+newinternal boolean metafun_loaded_grph ; metafun_loaded_grph := true ; immutable metafun_loaded_grph ;
 
 numeric mfun_fig_nesting ; mfun_fig_nesting := 0 ;
 

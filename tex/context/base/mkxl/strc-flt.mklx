@@ -1,4 +1,5 @@
 %D \module
+%D \module
 %D   [       file=strc-flt,
 %D        version=2008.10.20,
 %D          title=\CONTEXT\ Structure Macros,
@@ -373,6 +374,7 @@
      \resetfloatcaptionparameter\c!marking
      \resetfloatcaptionparameter\c!list
      \resetfloatcaptionparameter\c!bookmark
+     \resetfloatcaptionparameter\c!referencetext
      \setupcurrentfloatcaption[#settings]%
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
      \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
@@ -643,7 +645,7 @@
    \fi
    \strc_floats_analyze_location
    % todo: use \lets
-   \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
+   \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=,\c!referencetext=]%
    \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal}
 
 \permanent\protected\def\placefloat
@@ -679,15 +681,16 @@
    \edef\m_bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \edef\m_freeregion  {\floatcaptionparameter\c!freeregion}%
    % preset
-   \letfloatcaptionparameter        \c!location     \empty
+   \resetfloatcaptionparameter      \c!location
    \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
    \setexpandedfloatcaptionparameter\c!bottomoffset{\floatparameter\c!bottomoffset}%
    \setexpandedfloatcaptionparameter\c!freeregion  {\floatparameter\c!freeregion}%
-   \letfloatcaptionparameter        \c!reference    \empty
-   \letfloatcaptionparameter        \c!title        \empty
-   \letfloatcaptionparameter        \c!marking      \empty
-   \letfloatcaptionparameter        \c!list         \empty
-   \letfloatcaptionparameter        \c!bookmark     \empty
+   \resetfloatcaptionparameter      \c!reference
+   \resetfloatcaptionparameter      \c!title
+   \resetfloatcaptionparameter      \c!marking
+   \resetfloatcaptionparameter      \c!list
+   \resetfloatcaptionparameter      \c!bookmark
+   \resetfloatcaptionparameter      \c!referencetext
    % pickup
    \ifparameter#settings\or
      \setupcurrentfloatcaption[#settings]%

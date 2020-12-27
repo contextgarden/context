@@ -270,11 +270,11 @@
    \fi[#2]}
 
 \def\strc_notations_command_setups[#1]%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
 \tolerant\def\strc_notations_command_reference[#1]#*#=%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
    \strc_notations_wrapup}
 
 \def\strc_notations_wrapup
@@ -301,7 +301,7 @@
    \strc_pickup_yes}
 
 \protected\def\strc_notations_start_setups_indeed[#1]#*#2%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#2},\c!bookmark=,\c!list=,#1]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
 \protected\def\strc_notations_start_reference[#1]%
@@ -309,7 +309,7 @@
    \strc_pickup_yes}
 
 \protected\def\strc_notations_start_reference_indeed[#1]#*#2%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
    \strc_notations_wrapup}
 
 \protected\def\strc_notations_stop

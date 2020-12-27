@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-if known context_tool : endinput ; fi ;
+if known metafun_loaded_tool : endinput ; fi ;
 
-boolean context_tool ; context_tool := true ; immutable context_tool ;
+newinternal boolean metafun_loaded_tool ; metafun_loaded_tool := true ; immutable metafun_loaded_tool ;
 
 let @## = @# ;
 
@@ -243,15 +243,8 @@ permanent decimal, ddecimal, dddecimal, ddddecimal, colordecimals, colordecimals
 %     endfor
 % enddef ;
 
-%D We have standardized data file names:
-
-def job_name =
-    jobname
-enddef ;
-
-%D Because \METAPOST\ has a hard coded limit of 4~datafiles,
-%D we need some trickery when we have multiple files. This will
-%D be redone (via \LUA).
+%D Because \METAPOST\ has a hard coded limit of 4~datafiles, we need some trickery
+%D when we have multiple files. This will be redone (via \LUA).
 
 boolean savingdata     ; savingdata     := false ;
 boolean savingdatadone ; savingdatadone := false ;
@@ -272,9 +265,8 @@ def finishsavingdata =
     lua.mp.mf_finish_saving_data() ;
 enddef ;
 
-%D Instead of a keystroke eating save and allocation
-%D sequence, you can use the \citeer {new} alternatives to
-%D save and allocate in one command.
+%D Instead of a keystroke eating save and allocation sequence, you can use the \quote
+%D {new} alternatives to save and allocate in one command.
 
 %D These might go away!
 
@@ -287,10 +279,9 @@ enddef ;
 % def newstring    text v = forsuffixes i=v : save i ; string    i ; endfor ; enddef ;
 % def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; enddef ;
 
-%D Sometimes we don't want parts of the graphics add to the
-%D bounding box. One way of doing this is to save the bounding
-%D box, draw the graphics that may not count, and restore the
-%D bounding box.
+%D Sometimes we don't want parts of the graphics add to the bounding box. One way of
+%D doing this is to save the bounding box, draw the graphics that may not count, and
+%D restore the bounding box.
 %D
 %D \starttyping
 %D push_boundingbox currentpicture;
@@ -305,9 +296,8 @@ enddef ;
 %D outer_boundingbox currentpicture
 %D \stoptyping
 %D
-%D Especially the latter one can be of use when we include
-%D the graphic in a document that is clipped to the bounding
-%D box. In such occasions one can use:
+%D Especially the latter one can be of use when we include the graphic in a document
+%D that is clipped to the bounding box. In such occasions one can use:
 %D
 %D \starttyping
 %D set_outer_boundingbox currentpicture;
@@ -427,8 +417,8 @@ enddef ;
 
 permanent mirrored, mirroredabout ;
 
-%D Some missing functions can be implemented rather straightforward (thanks to
-%D Taco and others):
+%D Some missing functions can be implemented rather straightforward (thanks to Taco
+%D and others):
 
 % oldpi := 3.14159265358979323846 ; % from <math.h>
 pi      := 3.14159265358979323846264338327950288419716939937510 ; % 50 digits
@@ -484,13 +474,11 @@ enddef ;
 
 permanent undashed ;
 
-%D We provide two macros for drawing stripes across a shape.
-%D The first method (with the n suffix) uses another method,
-%D slower in calculation, but more efficient when drawn. The
-%D first macro divides the sides into n equal parts. The
-%D first argument specifies the way the lines are drawn, while
-%D the second argument identifier the way the shape is to be
-%D drawn.
+%D We provide two macros for drawing stripes across a shape. The first method (with the
+%D n suffix) uses another method, slower in calculation, but more efficient when drawn.
+%D The first macro divides the sides into n equal parts. The first argument specifies the
+%D way the lines are drawn, while the second argument identifier the way the shape is to
+%D be drawn.
 %D
 %D \starttyping
 %D stripe_path_n
@@ -499,8 +487,7 @@ permanent undashed ;
 %D   fullcircle xscaled 100 yscaled 40 shifted (50,50) withpen pencircle scaled 4;
 %D \stoptyping
 %D
-%D The a (or angle) alternative supports arbitrary angles and
-%D is therefore more versatile.
+%D The a (or angle) alternative supports arbitrary angles and is therefore more versatile.
 %D
 %D \starttyping
 %D stripe_path_a
@@ -509,8 +496,7 @@ permanent undashed ;
 %D   fullcircle xscaled 100 yscaled 40 withcolor blue;
 %D \stoptyping
 %D
-%D We have two alternatives, controlled by arguments or defaults (when arguments
-%D are zero).
+%D We have two alternatives, controlled by arguments or defaults (when arguments are zero).
 %D
 %D The newer and nicer interface is used as follows (triggered by a question by Mari):
 %D
@@ -731,26 +717,25 @@ let sized = xysized ;
 
 permanent xsized, ysized, xysized, sized ;
 
-def xscale_currentpicture(expr w) = % obsolete
-    currentpicture := currentpicture xsized w ;
-enddef;
+% def xscale_currentpicture(expr w) = % obsolete
+%     currentpicture := currentpicture xsized w ;
+% enddef;
+%
+% def yscale_currentpicture(expr h) = % obsolete
+%     currentpicture := currentpicture ysized h ;
+% enddef;
+%
+% def xyscale_currentpicture(expr w, h) = % obsolete
+%     currentpicture := currentpicture xysized (w,h) ;
+% enddef;
+%
+% def scale_currentpicture(expr w, h) = % obsolete
+%     currentpicture := currentpicture xsized w ;
+%     currentpicture := currentpicture ysized h ;
+% enddef;
 
-def yscale_currentpicture(expr h) = % obsolete
-    currentpicture := currentpicture ysized h ;
-enddef;
-
-def xyscale_currentpicture(expr w, h) = % obsolete
-    currentpicture := currentpicture xysized (w,h) ;
-enddef;
-
-def scale_currentpicture(expr w, h) = % obsolete
-    currentpicture := currentpicture xsized w ;
-    currentpicture := currentpicture ysized h ;
-enddef;
-
-%D A full circle is centered at the origin, while a unitsquare
-%D is located in the first quadrant. Now guess what kind of
-%D path fullsquare and unitcircle do return.
+%D A full circle is centered at the origin, while a unitsquare is located in the first
+%D quadrant. Now guess what kind of path fullsquare and unitcircle do return.
 
 path fullsquare, unitcircle ;
 
@@ -894,7 +879,7 @@ secondarydef p peepholed q =
     endgroup
 enddef ;
 
-boolean intersection_found ;
+newinternal boolean intersection_found ;
 
 secondarydef p intersection_point q =
     begingroup
@@ -909,6 +894,8 @@ secondarydef p intersection_point q =
     fi
     endgroup
 enddef ;
+
+permanent intersection_found, intersection_point ;
 
 %D New, undocumented, experimental:
 
@@ -949,12 +936,11 @@ enddef ;
 
 permanent resolvedcolor, normalwithcolor, withcolor ;
 
-% I don't want a "withcolor black" in case of an empty string ... who knows
-% how that can interfere with outer colors. Somehow the next one doesn't
-% always work out ok, but why ... must be some parsing issue. Anyway, when
-% we cannot do that, we need to fix some chem macros instead as empty strings
-% now lead to black while everywhere else in context empty means: leave color
-% untouched.
+% I don't want a "withcolor black" in case of an empty string ... who knows how that can
+% interfere with outer colors. Somehow the next one doesn't always work out ok, but why
+% ... must be some parsing issue. Anyway, when we cannot do that, we need to fix some
+% chem macros instead as empty strings now lead to black while everywhere else in context
+% empty means: leave color untouched.
 
 % def withcolor expr c =
 %     if not string c :
@@ -1030,8 +1016,8 @@ permanent colortype, whitecolor, blackcolor, complementary, complemented ;
 %     draw t ;
 % enddef;
 
-%D This two step approach saves the path first, since it can
-%D be a function. Attributes must not be randomized.
+%D This two step approach saves the path first, since it can be a function. Attributes
+%D must not be randomized.
 
 def drawfill expr c =
     path temp_c ; temp_c := c ;
@@ -1297,9 +1283,9 @@ permanent interpolated ;
 % primarydef p paralleled d = (
 %     p shifted ((d*unitvector(direction 0 of p) - point 0 of p) rotated 90)
 % ) enddef ;
-%
-% Alan came up with an improved version and stepwise we ended up with (or
-% might up with a variant of):
+
+%D Alan came up with an improved version and stepwise we ended up with (or might up
+%D with a variant of):
 
 def istextext(expr p) =
     (picture p and ((substring(0,3) of prescriptpart p) = "tx_"))
@@ -1782,8 +1768,8 @@ def mfun_decoration_i expr i =
     withpostscript postscriptpart i
 enddef ;
 
-% We could collapse all in one helper but in context we nowaways don't want
-% the added obscurity. Tokens come cheap.
+%D We could collapse all in one helper but in context we nowaways don't want the added
+%D obscurity. Tokens come cheap.
 
 numeric mfun_arrow_snippets ;
 numeric mfun_arrow_count ;
@@ -1825,8 +1811,8 @@ enddef ;
 def mfun_draw_arrow_nothing text t =
 enddef ;
 
-% The path is shortened so that the arrow head extends it to the original
-% length. In case of a double arrow the path gets shortened twice.
+%D The path is shortened so that the arrow head extends it to the original length. In
+%D case of a double arrow the path gets shortened twice.
 
 def mfun_draw_arrow_path text t =
     if autoarrows :
@@ -1847,10 +1833,9 @@ def mfun_draw_arrow_path_double text t =
     endgroup ;
 enddef ;
 
-% The picture variant is not treating each path but only the first and
-% last path. This can be somewhat counterintuitive but is needed for Alan's
-% macros. So here the last and in case of a double path first paths in a
-% picture get the shortening.
+%D The picture variant is not treating each path but only the first and last path. This
+%D can be somewhat counterintuitive but is needed for Alan's macros. So here the last
+%D and in case of a double path first paths in a icture get the shortening.
 
 def mfun_with_arrow_picture (text t) =
     mfun_arrow_count := 0 ;
@@ -2040,7 +2025,7 @@ vardef freelabel (expr asked_text, asked_location, asked_origin) =
     draw thefreelabel(asked_text,asked_location,asked_origin) ;
 enddef ;
 
-vardef freedotlabel (expr asked_text, loc, asked_origin) =
+vardef freedotlabel (expr asked_text, asked_location, asked_origin) =
     interim linecap := rounded ;
     draw asked_location withpen pencircle scaled freedotlabelsize ;
     draw thefreelabel(asked_text,asked_location,asked_origin) ;
@@ -2526,9 +2511,8 @@ vardef mfun_repathed (expr mode, p) text t =
     endgroup
 enddef ;
 
-% After a question of Denis on how to erase a z variable, Jacko
-% suggested to assign whatever to x and y. So a clearz
-% variable can be defined as:
+%D After a question of Denis on how to erase a z variable, Jacko suggested to assign
+%D whatever to x and y. So a clearz variable can be defined as:
 %
 % vardef clearz@# =
 %   x@# := whatever ;
@@ -3232,10 +3216,10 @@ enddef ;
 
 permanent snapped ;
 
-% Take a look at mp-tool.mpiv for the old implementation if the next code. We only
-% provide this for old times sake. We assume that the lmt_ commands are defined by
-% the time this is used:
-%
+%D Take a look at mp-tool.mpiv for the old implementation if the next code. We only provide
+%D this for old times sake. We assume that the lmt_ commands are defined by the time this
+%D is used:
+
 % beginfont("demo-symbols");
 %     beginglyph(9754,2,4,0) ; % high voltage
 %         interim ahlength := 1 ;
@@ -3282,8 +3266,8 @@ enddef ;
 
 permanent beginfont, endfont, beginglyph, endglyph ;
 
-%D Dimensions have never been an issue as traditional MP can't make that large
-%D pictures, but with double mode we need a catch:
+%D Dimensions have never been an issue as traditional MP can't make that large pictures,
+%D but with double mode we need a catch:
 
 newinternal maxdimensions ; maxdimensions := 14000 ;
 
@@ -3312,9 +3296,8 @@ fulltriangle := point 0   along fullcircle
 
 immutable unittriangle, fulltriangle ;
 
-%D Kind of special and undocumented. On Wikipedia one can find examples
-%D of quick sort routines. Here we have a variant that permits a
-%D method.
+%D Kind of special and undocumented. On Wikipedia one can find examples of quick sort
+%D routines. Here we have a variant that permits a method.
 
 % vardef listsize(suffix list) =
 %     numeric len ; len := 0 ;
@@ -3519,8 +3502,7 @@ def do_drawpathwithpoints(expr p) text t =
     fi ;
 enddef ;
 
-%D These new helpers are by Alan and are used in for instance the mp-node
-%D module.
+%D These new helpers are by Alan and are used in for instance the mp-node module.
 
 newinternal crossingdebug     ; crossingdebug     := 0 ;
 newinternal crossingscale     ; crossingscale     := 10 ;
@@ -3823,3 +3805,24 @@ def yslanted primary s =
 enddef ;
 
 permanent xslanted, yslanted ;
+
+vardef processpath (expr p) (text pp) =
+    if path p :
+        for i=0 upto length(p)-1 :
+            pp(point       i    of p) .. controls
+            pp(postcontrol i    of p) and
+            pp(precontrol (i+1) of p) ..
+        endfor
+        if cycle p :
+            cycle
+        else :
+            pp(point length(p) of p)
+        fi
+    elseif pair p :
+        pp(p)
+    else :
+        p
+    fi
+enddef ;
+
+permanent processpath ;

@@ -10,12 +10,11 @@
 % remove some code as well). After all, there is no development in
 % this format.
 
-string base_name, base_version ;
+message "loading metafun for lmtx, including the plain 1.004 base definitions";
 
-base_name    := "plain" ;
-base_version := "1.004 for metafun iv and xl"  ;
+if known metafun_loaded_base : endinput ; fi ;
 
-message "loading metafun, including plain.mp version " & base_version ;
+newinternal boolean metafun_loaded_base ; metafun_loaded_base := true ; immutable metafun_loaded_base ;
 
 delimiters () ; % this makes parentheses behave like parentheses
 
@@ -57,7 +56,8 @@ enddef ;
 
 % \\ and ??? can go
 
-permanent $, $$, (, ), upto, downto, exitunless, relax, \\, [[, ]], --, ---, ..., gobble, gobbled, stop, ?, ??? ;
+permanent $, $$, (, ), upto, downto, exitunless, relax, \\, [[, ]], --, ---, ..., gobble, gobbled, stop, ??? ;
+mutable ? ;
 
 % These need to be adapted to a library approach:
 
@@ -475,7 +475,7 @@ tertiarydef p softjoin q =
     endgroup
 enddef ;
 
-permanent direction, directionpoint, softjoin ;
+permanent direction, directionpoint, intersectionpoint, softjoin ;
 
 newinternal join_radius ;
 path cuttings ; % what got cut off

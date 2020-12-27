@@ -1091,6 +1091,7 @@ do  -- else too many locals
     local stoptiming  = statistics.stoptiming
 
     local setmacro    = tokens.setters.macro
+    local ctxcatcodes = tex.ctxcatcodes
 
     local reported    = setmetatableindex(function(t,k)
         local v = setmetatableindex(function(t,k)
@@ -1127,7 +1128,9 @@ do  -- else too many locals
                 if size and mode then
                     texsetcount("scaledfontmode",mode)
                  -- ctx_setsomefontsize(size)
-                    setmacro("somefontsize",size)
+                    -- We use a catcodetable, just in case it's 1.2\exheight (a corner case that showed
+                    -- up in the lmtx manual: marking that changed size in the mids of some verbatim).
+                    setmacro(ctxcatcodes,"somefontsize",size)
                 else
                     texsetcount("scaledfontmode",0)
                  -- ctx_setemptyfontsize()

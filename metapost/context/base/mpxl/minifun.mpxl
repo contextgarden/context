@@ -22,7 +22,7 @@ def mutable   = setproperty -3 : enddef; % not yet used
 
 permanent permanent, immutable, mutable, primitive, frozen ; % we reserve frozen
 
-boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
+newinternal boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
 
 input "mp-base.mpiv" ;
 input "mp-tool.mpxl" ;
@@ -32,7 +32,7 @@ input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
 input "mp-page.mpxl" ;
 
-string minifunversion ; minifunversion = "minifun xl " & mfun_timestamp;
+newinternal string minifunversion ; minifunversion := "minifun xl " & mfun_timestamp;
 
 let normalend = end ;
 

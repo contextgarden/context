@@ -268,9 +268,25 @@ third one is a previously defined font that is known to \LUATEX\ as font id~38.
 The array index numbers are used by the character command definitions that are
 part of each character.
 
-The \type {commands} array is a hash where each item is another small array,
-with the first entry representing a command and the extra items being the
-parameters to that command. The allowed commands and their arguments are:
+The \type {commands} array is a hash where each item is another small array, with
+the first entry representing a command and the extra items being the parameters
+to that command. The frontend is only interested in the dimensions, ligatures and
+kerns of a font, which is the reason why the \TEX\ engine didn't have to be
+extended when virtual fonts showed up: dealing with it is up to the driver that
+comes after the backend. In \PDFTEX\ and \LUATEX\ that driver is integrated so
+there the backend also deals with virtual fonts. The first block in the next
+table is what the standard mentions. The \type {special} command is indeed
+special because it is an extension container. The mentioned engines only support
+pseudo standards where the content starts with \type {pdf:}. The last block is
+\LUATEX\ specific and will not be found in native fonts. These entries can be
+used in virtual fonts that are constructed in \LUA.
+
+But \unknown\ in \LUAMETATEX\ there is no backend built in but we might assume
+that the one provided deals with these entries. However, a provided backend can
+provide more and that is indeed what happens in \CONTEXT. There, because we no
+longer have compacting (of passed tables) and unpacking (when embedding) of these
+tables going on we stay in the \LUA\ domain. None of the virtual specification is
+ever seen in the engine.
 
 \starttabulate[|l|l|l|p|]
 \DB command        \BC arguments \BC type      \BC description \NC \NR
@@ -278,16 +294,18 @@ parameters to that command. The allowed commands and their arguments are:
 \NC \type{font}    \NC 1         \NC number    \NC select a new font from the local \type {fonts} table \NC \NR
 \NC \type{char}    \NC 1         \NC number    \NC typeset this character number from the current font,
                                                    and move right by the character's width \NC \NR
-\NC \type{node}    \NC 1         \NC node      \NC output this node (list), and move right
-                                                   by the width of this list\NC \NR
-\NC \type{slot}    \NC 2         \NC 2 numbers \NC a shortcut for the combination of a font and char command\NC \NR
 \NC \type{push}    \NC 0         \NC           \NC save current position\NC \NR
-\NC \type{nop}     \NC 0         \NC           \NC do nothing \NC \NR
 \NC \type{pop}     \NC 0         \NC           \NC pop position \NC \NR
 \NC \type{rule}    \NC 2         \NC 2 numbers \NC output a rule $ht*wd$, and move right. \NC \NR
 \NC \type{down}    \NC 1         \NC number    \NC move down on the page \NC \NR
 \NC \type{right}   \NC 1         \NC number    \NC move right on the page \NC \NR
+\HL
 \NC \type{special} \NC 1         \NC string    \NC output a \prm {special} command \NC \NR
+\HL
+\NC \type{nop}     \NC 0         \NC           \NC do nothing \NC \NR
+\NC \type{slot}    \NC 2         \NC 2 numbers \NC a shortcut for the combination of a font and char command\NC \NR
+\NC \type{node}    \NC 1         \NC node      \NC output this node (list), and move right
+                                                   by the width of this list\NC \NR
 \NC \type{pdf}     \NC 2         \NC 2 strings \NC output a \PDF\ literal, the first string is one of \type {origin},
                                                    \type {page}, \type {text}, \type {font}, \type {direct} or \type {raw}; if you
                                                    have one string only \type {origin} is assumed \NC \NR
@@ -362,10 +380,6 @@ The special can have a \type {pdf:}, \type {pdf:origin:},  \type {pdf:page:},
 \type {pdf:direct:} or  \type {pdf:raw:} prefix. When you have to concatenate
 strings using the \type {pdf} command might be more efficient.
 
-The fields mentioned above can be found in external fonts. It is good to keep in
-mind that we can extend this model, given that the backend knows what to do with
-it.
-
 \stopsection
 
 \startsection[title={Additional \TEX\ commands}]
@@ -418,25 +432,88 @@ which of course needs to be a valid one.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {noligs} and \lpr {nokerns}}]
+\startsubsection[title={\lpr {glyphoptions}}]
 
 \topicindex {ligatures+suppress}
 \topicindex {kerns+suppress}
+\topicindex {expansion+suppress}
+\topicindex {protrusion+suppress}
 
-These primitives prohibit ligature and kerning insertion at the time when the
-initial node list is built by \LUATEX's main control loop. You can enable these
-primitives when you want to do node list processing of \quote {characters}, where
-\TEX's normal processing would get in the way.
+In \LUATEX\ the \type {\noligs} and \type {\nokerns} primitives suppress these
+features but in \LUAMETATEX\ these primitives are gone. They are replace by a more
+generic control primitive \lpr {glyphoptions}. This numerical parameter is a
+bitset with the following fields:
 
-\startsyntax
-\noligs <integer>!crlf
-\nokerns <integer>
-\stopsyntax
+\starttabulate[|l|pl|]
+\DB value       \BC effect \NC\NR
+\TB
+\NC \type{0x01} \NC prevent left ligature             \NC \NR
+\NC \type{0x02} \NC prevent right ligature            \NC \NR
+\NC \type{0x04} \NC block left kern                   \NC \NR
+\NC \type{0x08} \NC block right kern                  \NC \NR
+\NC \type{0x10} \NC don't apply  expansion            \NC \NR
+\NC \type{0x20} \NC don't apply protrusion            \NC \NR
+\NC \type{0x40} \NC apply xoffset to width            \NC \NR
+\NC \type{0x80} \NC apply yoffset to height and depth \NC \NR
+\LL
+\stoptabulate
 
-These primitives can also be implemented by overloading the ligature building and
-kerning functions, i.e.\ by assigning dummy functions to their associated
-callbacks. Keep in mind that when you define a font (using \LUA) you can also
-omit the kern and ligature tables, which has the same effect as the above.
+The effects speak for themselves. They provide detailed control over individual
+glyph, this because the current value of this option is stored with glyphs.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {glyphxscale}, \lpr {glyphyscale} and \lpr {scaledfontdimen}}]
+
+The two scale parameters control the current scaling. They are traditional \TEX\
+integer parameters that operate independent of each other. The scaling is
+reflected in the dimensions of glyphs as well as in the related font dimensions,
+which means that units like \type {ex} and \type {em} work as expected. If you
+query a font dimensions with \prm {fontdimen} you get the raw value but with \lpr
+{scaledfontdimen} you get the useable value.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {glyphxoffset}, \lpr {glyphyoffset}}]
+
+These two parameters control the horizontal and vertical shift of glyphs with,
+when applied to a stretch of them, the horizontal offset probably being the least
+useful.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {glyph}}]
+
+This command is a variation in \prm {char} that takes keywords:
+
+\starttabulate[|l|p|]
+\DB keyword \BC effect \NC type \NC \NR
+\TB
+\NC \type {xoffset} \NC (virtual) horizontal shift \NC dimension  \NC \NR
+\NC \type {yoffset} \NC (virtual) vertical shift   \NC dimension  \NC \NR
+\NC \type {xscale}  \NC horizontal scaling         \NC integer    \NC \NR
+\NC \type {yscale}  \NC vertical scaling           \NC integer    \NC \NR
+\NC \type {options} \NC glyph options              \NC bitset     \NC \NR
+\NC \type {font}    \NC font                       \NC identifier \NC \NR
+\NC \type {id}      \NC font                       \NC integer    \NC \NR
+\LL
+\stoptabulate
+
+The values default to the currently set values. Here is a \CONTEXT\ example:
+
+\startbuffer
+\ruledhbox{
+    \ruledhbox{\glyph yoffset 1ex options 0 123}
+    \ruledhbox{\glyph xoffset .5em yoffset 1ex options "C0 125}
+    \ruledhbox{baseline\glyphyoffset 1ex \glyphxscale 800 \glyphyscale\glyphxscale raised}
+}
+\stopbuffer
+
+\typebuffer
+
+Visualized:
+
+\getbuffer
 
 \stopsubsection
 
@@ -496,29 +573,6 @@ instance content moved into the margin:
 \starttyping
 \protrusionboundary1\llap{!\quad}«Who needs protrusion?»
 \stoptyping
-
-\stopsubsection
-
-\startsubsection[title={\lpr{glyphdimensionsmode}}]
-
-Already in the early days of \LUATEX\ the decision was made to calculate the
-effective height and depth of glyphs in a way that reflected the applied vertical
-offset. The height got that offset added, the depth only when the offset was
-larger than zero. We can now control this in more detail with this mode
-parameter. An offset is added to the height and|/|or subtracted from the depth.
-The effective values are never negative. The zero mode is the default.
-
-\starttabulate[|l|pl|]
-\DB value     \BC effect \NC\NR
-\TB
-\NC \type {0} \NC the old behaviour: add the offset to the height and only subtract
-                  the offset only from the depth when it is positive \NC \NR
-\NC \type {1} \NC add the offset to the height and subtract it from the depth \NC \NR
-\NC \type {2} \NC add the offset to the height and subtract it from the depth but
-                  keep the maxima of the current and previous results \NC \NR
-\NC \type {3} \NC use the height and depth of the glyph, so no offset is applied \NC \NR
-\LL
-\stoptabulate
 
 \stopsubsection
 

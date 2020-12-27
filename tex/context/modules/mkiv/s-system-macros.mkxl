@@ -213,10 +213,11 @@ scanning for alignment specific primitives.
 
         metapost.simple("prestine")
 
-        local mptotal  = 0
-        local codes    = metapost.codes
-        local types    = metapost.types
-        local procodes = mplib.propertycodes
+        local mptotal    = 0
+        local codes      = metapost.codes
+        local types      = metapost.types
+        local parameters = metapost.knownparameters
+        local procodes   = mplib.propertycodes
 
         context.startcolumns { n = 5, distance = "1em" }
             context.nohyphens(false)
@@ -233,7 +234,8 @@ scanning for alignment specific primitives.
                     local vtype    = ti[4]
                     local vardef   = vtype and types[vtype] == "unsuffixedmacro"
                     context.bgroup()
-                    context("%-15s\\quad",vardef and "(vardef) tag" or code)
+                 -- context("%-15s\\quad",vardef and "(vardef) tag" or code)
+                    context("%s %-15s\\quad",parameters[name] and "+" or "\\nbsp",vardef and "(vardef) tag" or code)
                     if property == "primitive" then
                         context.bf(false)
                         context.blue(false)
@@ -273,6 +275,7 @@ scanning for alignment specific primitives.
 \NC \type  {1} \NC \bf \blue         primitive \NC \NR
 \NC \type  {2} \NC \bf \lightgreen   permanent \NC \NR
 \NC \type  {3} \NC \bf \lightcyan    immutable \NC \NR
+\NC \type  {+} \NC \bf (also) used as key      \NC \NR
 \HL
 \stoptabulate
 

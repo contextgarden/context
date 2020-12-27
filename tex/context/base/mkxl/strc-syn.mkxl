@@ -291,7 +291,7 @@
      \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsynonymexpansion\m_synonyms_text   \currentsynonymcoding{#1}%
      \preprocessexpansion\currentsynonymexpansion\m_synonyms_meaning\currentsynonymcoding{#2}%
-     %
+     % currently they all end up in the tuc file
      \clf_registersynonym
         {\currentsynonym}%
         {synonym}%

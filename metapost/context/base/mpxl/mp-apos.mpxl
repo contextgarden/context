@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-if known context_apos : endinput ; fi ;
+if known metafun_loaded_apos : endinput ; fi ;
 
-boolean context_apos ; context_apos := true ; immutable context_apos ;
+newinternal boolean metafun_loaded_apos ; metafun_loaded_apos := true ; immutable metafun_loaded_apos ;
 
 path    posboxes[],
         posregions[] ;

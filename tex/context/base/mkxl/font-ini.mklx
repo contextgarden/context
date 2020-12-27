@@ -2512,33 +2512,4 @@
 \permanent\protected\def\usefontpath[#1]%
   {\clf_addfontpath{#1}}
 
-%D Experiment:
-
-\installcorenamespace{scaledfont}
-\installcorenamespace{scaledfontxscale}
-\installcorenamespace{scaledfontyscale}
-
-\installcommandhandler \??scaledfont {scaledfont} \??scaledfont
-
-\appendtoks
-    \ifempty\currentscaledfont\else
-        \expandafter\integerdef\csname\??scaledfontxscale\currentscaledfont\endcsname\scaledfontparameter\c!xscale\relax
-        \expandafter\integerdef\csname\??scaledfontyscale\currentscaledfont\endcsname\scaledfontparameter\c!yscale\relax
-    \fi
-\to \everysetupscaledfont
-
-\appendtoks
-    \expandafter\integerdef\csname\??scaledfontxscale\currentscaledfont\endcsname\scaledfontparameter\c!xscale\relax
-    \expandafter\integerdef\csname\??scaledfontyscale\currentscaledfont\endcsname\scaledfontparameter\c!yscale\relax
-    \overloaded\frozen\protected\edefcsname\currentscaledfont\endcsname
-      {\glyphxscale\csname\??scaledfontxscale\currentscaledfont\endcsname
-       \glyphyscale\csname\??scaledfontyscale\currentscaledfont\endcsname
-       \begincsname\scaledfontparameter\c!style\endcsname}
-\to \everydefinescaledfont
-
-\setupscaledfont
-  [\c!scale=\plusthousand,
-   \c!xscale=\scaledfontparameter\c!scale,
-   \c!yscale=\scaledfontparameter\c!scale]
-
 \protect \endinput

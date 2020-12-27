@@ -37,6 +37,20 @@ end
 local function finalizer()
     for entry, data in next, tobesaved do
         data.hash = nil
+     -- being sparse can be an option but often we actually do want the
+     -- whole list so we don't do this ... only as possible option
+     --
+     -- local entries = data.entries
+     -- local t = { }
+     -- local n = 0
+     -- for i=1,#entries do
+     --     local e = entries[i]
+     --     if e.definition.shown then
+     --         n = n + 1
+     --         t[n] = e
+     --     end
+     -- end
+     -- data.entries = t
     end
 end
 

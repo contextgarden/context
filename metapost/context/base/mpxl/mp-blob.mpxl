@@ -13,9 +13,9 @@
 
 %D This is a follow up on good old \type {meta-imp-txt}.
 
-if known context_blob : endinput ; fi ;
+if known metafun_loaded_blob : endinput ; fi ;
 
-boolean context_blob ; context_blob := true ; immutable context_blob ;
+newinternal boolean metafun_loaded_blob ; metafun_loaded_blob := true ; immutable metafun_loaded_blob ;
 
 numeric mfun_blob_n ; mfun_blob_n := 0 ;
 picture mfun_blob_c ;

@@ -14,9 +14,9 @@
 % The graph package will be replaced by our own variant using
 % MetaPost 2 features and textext.
 
-if known context_form : endinput ; fi ;
+if known metafun_loaded_form : endinput ; fi ;
 
-boolean context_form ; context_form := true ; immutable context_form ;
+newinternal boolean metafun_loaded_form ; metafun_loaded_form := true ; immutable metafun_loaded_form ;
 
 % The following function accept a number or string that can be
 % converted to a number by \LUA. The first argument is a format

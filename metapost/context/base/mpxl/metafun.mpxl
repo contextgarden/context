@@ -25,7 +25,7 @@ def mutable   = setproperty -3 : enddef; % not yet used
 
 permanent permanent, immutable, mutable, primitive, frozen ; % we reserve frozen
 
-boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
+newinternal boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
 
 % But it will move here:
 
@@ -49,7 +49,7 @@ input "mp-abck.mpxl" ;
 input "mp-blob.mpxl" ;
 input "mp-lmtx.mpxl" ;
 
-string metafunversion ; metafunversion = "metafun xl " & mfun_timestamp;
+newinternal string metafunversion ; metafunversion := "metafun xl " & mfun_timestamp;
 
 immutable metafunversion ;
 

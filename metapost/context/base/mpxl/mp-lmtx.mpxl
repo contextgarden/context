@@ -14,9 +14,9 @@
 % This is an experimental module where I test some new interface methods;
 % for real advanced graphics use the luapost module.
 
-if known context_lmtx : endinput ; fi ;
+if known metafun_loaded_lmtx : endinput ; fi ;
 
-boolean context_lmtx ; context_lmtx := true ; immutable context_lmtx ;
+newinternal boolean metafun_loaded_lmtx ; metafun_loaded_lmtx := true ; immutable metafun_loaded_lmtx ;
 
 presetparameters "text" [
     offset     = 0,

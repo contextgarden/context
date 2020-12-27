@@ -111,17 +111,6 @@ The \LUAMETATEX\ version number starts at~2 in order to prevent a clash with
 \LUATEX, and the version commands are the same. This is a way to indicate that
 these projects are related.
 
-\startsubsubsection[title={\lpr {formatname}}]
-
-\topicindex{format}
-
-The \lpr {formatname} syntax is identical to \prm {jobname}. In \INITEX, the
-expansion is empty. Otherwise, the expansion is the value that \prm {jobname} had
-during the \INITEX\ run that dumped the currently loaded format. You can use this
-token list to provide your own version info.
-
-\stopsubsubsection
-
 \stopsubsection
 
 \stopsection
@@ -597,6 +586,8 @@ tokens and assume that the function is available when that token expands. On the
 other hand, as we have tested this functionality in relative complex situations
 normal usage should not give problems.
 
+{\em It makes sense to delegate the implementation of the primitives to \LUA.}
+
 \stopsubsection
 
 \startsubsection[title={\lpr {luabytecode} and \lpr {luabytecodecall}}]
@@ -625,6 +616,8 @@ This works with:
 The variable \type {s} in the code is the number of the byte code register that
 can be used for diagnostic purposes. The advantage of bytecode registers over
 function calls is that they are stored in the format (but without upvalues).
+
+{\em It makes sense to delegate the implementation of the primitives to \LUA.}
 
 \stopsubsection
 
@@ -838,6 +831,18 @@ This primitive is similar to:
 
 but faster (only measurable with millions of calls) and probably more convenient
 (after all we also have \type {\gdef}).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {defcsname}, \lpr {edefcsname}, \lpr {edefcsname} and \lpr {xdefcsname}}]
+
+Although we can implement these primitives easily using macros it makes sense,
+given the popularity of \prm {csname} to have these as primitives. It also saves
+some \prm {expandafter} usage and it looks a bit better in the source.
+
+\starttyping
+\def\gdefcsname foo\endcsname{oof}
+\stoptyping
 
 \stopsubsection
 
@@ -1367,13 +1372,18 @@ the acceptable range is from 0 to 65535.
 
 \stopsubsection
 
-\startsubsection[title={\prm {hrule} and \prm {vrule}}]
+\startsubsection[title={\prm {hrule}, \prm {vrule}, \lpr {nohrule} and \lpr {novrule}}]
 
 \topicindex {rules}
 
 Both rule drawing commands take an optional \type {xoffset} and \type {yoffset}
 parameter. The displacement is virtual and not taken into account when the
 dimensions are calculated.
+
+Two new primitives were introduced: \lpr {nohrule} and \lpr {novrule}. These can
+be used to reserve space. This is often more efficient than creating an empty box
+with fake dimensions. Of course this assumes that the backend implements them
+being invisible but still taking space.
 
 \stopsubsection
 
@@ -1470,17 +1480,6 @@ one never know if content needs a treatment so using them should be done with
 care. Apart from accepting more keywords (and therefore options) the normal
 box behave the same as before. The \prm {vcenter} builder also works in text
 mode.
-
-\stopsubsection
-
-\startsubsection[title={\lpr {nohrule} and \lpr {novrule}}]
-
-\topicindex {rules}
-
-Because introducing a new keyword can cause incompatibilities, two new primitives
-were introduced: \lpr {nohrule} and \lpr {novrule}. These can be used to
-reserve space. This is often more efficient than creating an empty box with fake
-dimensions.
 
 \stopsubsection
 
@@ -1585,7 +1584,10 @@ they will be stable.
 \stoptyping
 
 This allows for embedded spaces, without the need for double quotes. Macro
-expansion takes place inside the argument.
+expansion takes place inside the argument. Keep in mind that as side effect of
+delegating \IO\ to \LUA\ the \prm {openin} primitive is nor provided by the
+engine and has to be implemented by the macro package. This also means that the
+limit on the number of open files is not enforced by the engine.
 
 The \lpr {tracingfonts} primitive that has been inherited from \PDFTEX\ has
 been adapted to support variants in reporting the font. The reason for this
@@ -1610,10 +1612,12 @@ extension is that a csname not always makes sense. The zero case is the default.
 
 \topicindex {files+writing}
 
-You can now open upto 127 files with \prm {openout}. When no file is open writes
-will go to the console and log. The \type {write} related primitives have to be
-implemented as part of a backend! As a consequence a system command is no longer
-possible but one can use \type {os.execute} to do the same.
+Writing to a file in \TEX\ has two forms: delayed and immediate. Delayed writing
+means that the to be written text is anchored in the node list and flushed by the
+backend. As all \IO\ is delegated to \LUA, this also means that it has to deal
+with distinction. In \LUATEX\ the number of open files was already bumped to 127,
+but in \LUAMETATEX\ it depends on the macro package. The special meaning of
+channel 18 was already dropped in \LUATEX\ because we have \type {os.execute}.
 
 \stopsubsection
 
@@ -1787,7 +1791,41 @@ convenience extra which could also have been implemented using node list parsing
 
 \startsubsection[title={Normalizing lines}]
 
-{\em Experimental!}
+The original \TEX\ machinery was never meant to be opened up. As a consequence a
+constructed line can have different layouts. There can be left- and/or right
+skips and hanging indentation or parshape can result in a shift and adapted
+width. In \LUATEX\ glue got subtypes so we can recognize the left-, right and
+parfill skips, but still there is no hundred percent certainty about the shape.
+
+In \LUAMETATEX\ lines can be normalized. This is optional because we want to
+preserve the original (for comparison) and is controlled by \lpr
+{normalizelinemode}. That variable actually drives some more. An earlier version
+provided a few more granular options (for instance: does a leftskip comes before
+or after a left hanging indentation) but in the end that was dropped. Because
+this normalization only is seen at the \LUA\ end there is no need to go into much
+detail here.
+
+At this moment a line has this pattern: left parfill, left hang, left skip,
+indentation, content, right hang, right skip, right parfill. Of course the
+indentation and fill skips are not present in every line.
+
+Control over normalization happens via the mentioned mode variable and here is
+what the engine provides right now. We use a bitmap:
+
+\starttabulate[|l|l|]
+\DB value \BC reported \NC \NR
+\TB
+\NC \type{0x0001} \NC normalize line as described above         \NC \NR
+\NC \type{0x0002} \NC use a skip for parindent instead of a box \NC \NR
+\NC \type{0x0004} \NC swap hangindent in l2r mode               \NC \NR
+\NC \type{0x0008} \NC swap parshape in l2r mode                 \NC \NR
+\NC \type{0x0010} \NC put breaks after dir in l2r mode          \NC \NR
+\NC \type{0x0020} \NC remove margin kerns (\PDFTEX\ left-over)  \NC \NR
+\LL
+\stoptabulate
+
+Setting the bit enables the related normalization. More features might be added
+in future releases.
 
 % Swapping shapes
 %
@@ -1970,12 +2008,19 @@ had an issue that had to be fixed.
 
 \stopsection
 
-\startsection[title=Expressions]
+\startsection[title=Expressions and \lpr {numericscale}]
 
 The \type {*expr} parsers now accept \type {:} as operator for integer division
 (the \type {/} operators does rounding. This can be used for division compatible
 with \type {\divide}. I'm still wondering if adding a couple of bit operators
 makes sense (for integers).
+
+The \lpr{numericscale} parser is kind of special (and might evolve). For now it
+converts a following number in a scale value as often used in \TEX, where 1000
+means scaling by~1.0. The trick is in the presence of a digit (or comma): 1.234
+becomes 1234 but 1234 stays 1234 and from this you can deduce that 12.34 becomes
+123400. Internally \TEX\ calculates with integers, but this permits the macro
+package to provide an efficient mix.
 
 \stopsection
 

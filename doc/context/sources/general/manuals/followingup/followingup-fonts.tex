@@ -1,0 +1,259 @@
+% language=us
+
+\startcomponent followingup-fonts
+
+\environment followingup-style
+
+\startchapter[title={Scaled fonts}]
+
+Although \CONTEXT\ is quite efficient with fonts there is always room for
+improvement. However, after years of fine tuning the font mechanisms there was
+not that much room left. On the average, given that \TEX\ is mostly about fonts,
+what we have is quite okay, but for some scripts, like \CJK\ the demands on
+resources can be rather high. This made me think of a different approach to
+scaling. Nowadays fonts seldom come in design sizes. Also, in \CONTEXT\ \MKIV\
+and therefore \LMTX\ we always had so called dynamic features: apply additional
+features locally, although that comes with a small penalty in performance, it
+saves additional font instances. It is a good approach for the occasional small
+stretch of glyphs, like small capped logos and such.
+
+Using a font at a larger size means that we need to provide \TEX\ with the right
+dimensions: it needs them for instance for for braking paragraph into lines or
+wrapping text in boxes. The amount of information that \TEX\ needs is small: only
+dimensions. Of course there are ligatures and kerns but in so called base mode we
+seldom have many. The data needed for node mode (used for more complex \OPENTYPE\
+fonts) can be shared and lives at the \LUA\ end. But even then the character
+table is copied and scaled. Actually, we seldom need that information but it is
+good to have it and in the case of virtual fonts it is needed. But, when a font
+is used at a different size, and al the features are the same, we can think of
+a different approach.
+
+That approach is tagged as \quote {dynamic font scaling}, which means that we
+don't need to define a new font instance when the same feature set is used. Or
+course in addition to this features one can still use the dynamic features. This
+means that for instance chapter titling can use the bodyfont instance and just
+apply additional scaling. Although for a normal run the number of loaded fonts is
+normally small, and the number of instances also isn't that impressive it can
+happen in a large document that you end up with a few dozen. That number can now
+be reduced to half a dozen.
+
+Of course there can be side effects, which is why it's currently tagged as
+experimental. There is also a small performance hit because we now need to track
+it but that is gained back because we load less fonts and have less glyph runs.
+
+So how does it work? Here is an example:
+
+\startbuffer
+\definescaledfont[MyLargerFontA][scale=2000,style=bold]
+
+test {\MyLargerFontA test} test
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\getbuffer
+
+You can also say:
+
+\startbuffer
+\definescaledfont[MyLargerFontB][xscale=1200,yscale=2000,style=bold]
+
+test {\MyLargerFontB test} test
+\stopbuffer
+
+\typebuffer
+
+Which scaled the over two axis:
+
+\getbuffer
+
+The low level implementation uses the two variables \type {\glyphxscale} and
+\type {\glyphyscale} that take a number. As with other \TEX\ scaling related
+variables, a value of 1000 represents 1.0 so we have three digits precision.
+
+Because we just scale, the next also works:
+
+\startbuffer
+test {\MyLargerFontB test {\em test} test} test
+\stopbuffer
+
+\typebuffer
+
+The nested emphasis still works:
+
+\getbuffer
+
+For now we only have a simple user interface but it might eventually be more
+integrated. For instance, we can consider defining \type {\tfa} and friends this
+way.
+
+In order to make it useful, math is also supported:
+
+\startbuffer
+\definescaledfont[MyLargerFontC][xscale=1200,yscale=2000]
+
+test {\MyLargerFontC test $\sqrt{x}$ test} test
+\stopbuffer
+
+\typebuffer
+
+gives:
+
+\getbuffer
+
+You can actually use negative values, as is demonstrated in the following
+code:
+
+\startbuffer
+\bTABLE[align=middle]
+  \bTR
+    \bTD a{\glyphxscale  1000 \glyphyscale  1000 bc}d \eTD
+    \bTD a{\glyphxscale  1000 \glyphyscale -1000 bc}d \eTD
+    \bTD a{\glyphxscale -1000 \glyphyscale -1000 bc}d \eTD
+    \bTD a{\glyphxscale -1000 \glyphyscale  1000 bc}d \eTD
+  \eTR
+  \bTR
+    \bTD \tttf +1000 +1000 \eTD
+    \bTD \tttf +1000 -1000 \eTD
+    \bTD \tttf -1000 -1000 \eTD
+    \bTD \tttf -1000 +1000 \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+gives:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Because loading and switching fonts in \CONTEXT\ is rather efficient, the gain in
+performance is less than you expect. After all, not all time is spent on fonts. Of
+course for huge \CJK\ fonts it does make a difference. But, when we do a massive switch
+to a different body font, we can save a little more. Think of definitions like:
+
+\starttyping
+\definescaledfontbody[BigBodyFont]     [1.200]
+\definescaledfontbody[VeryBigBodyFont] [1.440]
+\definescaledfont    [MyLargerFont]    [xscale=1.200,yscale=2.000]
+\stoptyping
+
+And then:
+
+\starttyping
+\setuphead[title][style=\MyLargerFont\bf]
+\stoptyping
+
+The savings in runtime can be quite noticeable now, for instance this:
+
+\starttyping
+\dorecurse {100} {
+    \starttitle[title={Test #1]
+        \samplefile{ward}\par
+        \start \bf
+            \samplefile{ward}\par
+        \stop
+        \start \BigBodyFont \bf
+            \samplefile{ward}\par
+        \stop
+    \stoptitle
+}
+\stoptyping
+
+Speeds up a bit for Pagella and even more when we use Cambria. Keep in mind that
+that a body font switch also involves setting up some math. Anyway, as a proof of
+concept it worked out well.
+
+The scaled, as mentioned, works with pseudo scales but that is sometimes a bit
+cumbersome. This is why a special \type {\numericscale} primitive has been
+introduced.
+
+\startbuffer
+1200 : \the\numericscale1200
+1.20 : \the\numericscale1.200
+\stopbuffer
+
+\typebuffer
+
+Both these lines produce the same integer:
+
+\startlines\tttf
+\getbuffer
+\stoplines
+
+When there is a fraction, the value is multiplied by 1000.
+
+So how should this be further integrated? If we drop design sizes at the file
+definition level the whole font mechanism could be simplified a lot, but we cannot
+do that. Another approach is to let users use the previously mentioned more low
+level commands. A but of help can be provided with a command like
+
+\starttyping
+\enableautoglyphscaling
+\stoptyping
+
+which pays of when it is issues before \type {\starttext} and before a body fonts
+gets defined because it does some overloading of defining commands. At the brink
+of 2021 I'm not sure yet what is best. One reason is that a compatibility layer
+is not really compatible because glyph scaling gives slightly different scaled in
+practice (which relates to some old time accuracy hackery). This sounds worse
+that it is because in practice scaling is done for sections heads and so, which
+are less present and don't interfere with the running text.
+
+Let me stress once more: if you need this kind of scaling it pays off. If you
+load multiple instances of large (e.g.\ \CJK) fonts, it makes sense too. But, for
+instance on a document like the \LUAMETATEX\ manual it only saves 2 instances on
+158, and those are the few bold fonts used for titling.
+
+\stopchapter
+
+\stopcomponent
+
+% sample file
+
+\setuplayout[topspace=1cm,header=1cm] \setuplayout[middle]
+
+\setupbodyfont[pagella,10pt]
+
+\setupalign[verytolerant,stretch]
+
+\setupwhitespace[big]
+
+\starttext
+
+\startbuffer
+\definescaledfont[bfe][xscale=2000,yscale=6000,style=bf]
+
+\setuphead[chapter][style=\bfe]
+
+\dostepwiserecurse {10} {2020} {10} {
+    \title{Here we go #1!}
+    \start
+    \glyphxscale#1\relax
+    \glyphyscale#1\relax
+    \setupinterlinespace
+    \samplefile{ward}%
+    \start
+    \bf
+    \samplefile{ward}%
+    \glyphxscale\numexpr(#1*2)/3\relax
+    \glyphyscale#1\relax
+    \samplefile{ward}%
+    \par
+    \stop
+    \def\TEST{y = \sqrt{x^2 + 1}^3}%
+    \dontleavehmode
+    \ruledhbox{\glyphxscale #1                 \glyphyscale #1                 $\left{\TEST\right}$}
+    \ruledhbox{\glyphxscale #1                 \glyphyscale \numexpr#1*3\relax $\left{\TEST\right}$}
+    \ruledhbox{\glyphxscale \numexpr#1/2\relax \glyphyscale \numexpr#1*2\relax $\left{\TEST\right}$}
+    \par
+    \stop
+    \page
+}
+\stopbuffer
+
+\getbuffer

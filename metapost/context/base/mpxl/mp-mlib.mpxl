@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if known context_mlib : endinput ; fi ;
+if known metafun_loaded_mlib : endinput ; fi ;
 
-boolean context_mlib ; context_mlib := true ; immutable context_mlib ;
+newinternal boolean metafun_loaded_mlib ; metafun_loaded_mlib := true ; immutable metafun_loaded_mlib ;
 
 % numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY or (status and status.development_id) or 6346)") ;
 
@@ -212,6 +212,8 @@ def notcached =
     withprescript "tx_cache=no"
 enddef ;
 
+permanent keepcached, notcached ;
+
 % todo: onetime
 
 rgbcolor mfun_tt_r ;
@@ -401,6 +403,8 @@ vardef installlabel@# (expr type, x, y, offset) =
     numeric mfun_labxf  @# ; mfun_labxf  @# := x ;
     numeric mfun_labyf  @# ; mfun_labyf  @# := y ;
 enddef ;
+
+permanent installlabel ;
 
 installlabel.center (0, 0.5, 0.5, (0,0)) ;
 installlabel.c      (0, 0.5, 0.5, (0,0)) ;
@@ -609,6 +613,7 @@ primarydef s infont name = % nasty hack
 enddef ;
 
 permanent theoffset, thelabel, anchored ;
+primitive infont ; % fake primitive
 
 % Helper
 
@@ -1755,6 +1760,7 @@ def eofill   text t = fill t withpostscript "evenodd" enddef ;
 def nofill   text t = fill t withpostscript "collect" enddef ;
 def nodraw   text t = draw t withpostscript "collect" enddef ;
 def dodraw   text t = draw t withpostscript "flush"   enddef ;
+%   eodraw   text t = draw t withpostscript "evenodd" enddef ;
 def dofill   text t = fill t withpostscript "flush"   enddef ;
 def eoclip   text t = clip t withpostscript "evenodd" enddef ;
 

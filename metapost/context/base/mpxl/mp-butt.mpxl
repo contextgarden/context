@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if known context_butt : endinput ; fi ;
+if known metafun_loaded_butt : endinput ; fi ;
 
-boolean context_butt ; context_butt := true ; immutable context_butt ;
+newinternal boolean metafun_loaded_butt ; metafun_loaded_butt := true ; immutable metafun_loaded_butt ;
 
 def predefinedbutton (expr button_type, button_size, button_linecolor, button_fillcolor) =
 

@@ -13,9 +13,9 @@
 
 %D Under construction.
 
-if known context_grid : endinput ; fi ;
+if known metafun_loaded_grid : endinput ; fi ;
 
-boolean context_grid ; context_grid := true ; immutable context_grid ;
+newinternal boolean metafun_loaded_grid ; metafun_loaded_grid := true ; immutable metafun_loaded_grid ;
 
 string  fmt_separator  ; fmt_separator  := "@" ;
 numeric fmt_precision  ; fmt_precision  := 3 ;
@@ -111,6 +111,8 @@ vardef vlinlabel@#(expr asked_min, asked_max, asked_step, asked_length) text t =
     )
 enddef ;
 
+% these will be replace by lmt_* variants
+
 vardef linlog(expr xy) = (    xpart xy,  log(ypart xy)) enddef ;
 vardef loglin(expr xy) = (log(xpart xy),     ypart xy)  enddef ;
 vardef loglog(expr xy) = (log(xpart xy), log(ypart xy)) enddef ;
@@ -121,22 +123,5 @@ vardef linlogpath primary p = processpath (p) (linlog) enddef ;
 vardef loglogpath primary p = processpath (p) (loglog) enddef ;
 vardef linlinpath primary p = processpath (p) (linlin) enddef ;
 
-vardef processpath (expr p) (text pp) =
-    if path p :
-        for i=0 upto length(p)-1 :
-            pp(point       i    of p) .. controls
-            pp(postcontrol i    of p) and
-            pp(precontrol (i+1) of p) ..
-        endfor
-        if cycle p :
-            cycle
-        else :
-            pp(point length(p) of p)
-        fi
-    elseif pair p :
-        pp(p)
-    else :
-        p
-    fi
-enddef ;
-
+permanent hlingrid, vlingrid, hloggrid, vloggrid, hlintext, vlintext, hlogtext, vlogtext, hlinlabel, vlinlabel ;
+permanent linlog, loglin, loglog, linlin, loglinpath, linlogpath, loglogpath, linlinpath ;

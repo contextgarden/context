@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-24 12:12
+-- merge date  : 2020-12-27 16:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -37124,50 +37124,68 @@ local rules={
  "FractionRuleThickness",
  "UnderbarRuleThickness",
 }
-local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
- if delta~=0 then
-  for i=1,#rules do
-   local name=rules[i]
-   local value=mathparameters[name]
-   if value then
-      mathparameters[name]=(squeeze or 1)*(value+dx)
+local setmathparameters
+local setmathcharacters
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ setmathparameters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+  if delta~=0 then
+   for i=1,#rules do
+    local name=rules[i]
+    local value=mathparameters[name]
+    if value then
+       mathparameters[name]=(squeeze or 1)*(value+dy)
+    end
    end
   end
  end
-end
-local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
- local function wdpatch(char)
-  if wsnap~=0 then
-   char.width=char.width+wdelta/2
-  end
+ setmathcharacters=function()
  end
- local function htpatch(char)
-  if hsnap~=0 then
-   local height=char.height
-   if height then
-    char.height=char.height+2*dy
+else
+ setmathparameters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+  if delta~=0 then
+   for i=1,#rules do
+    local name=rules[i]
+    local value=mathparameters[name]
+    if value then
+       mathparameters[name]=(squeeze or 1)*(value+dy)
+    end
    end
   end
  end
- local character=characters[0x221A]
- if character and character.next then
-  local char=character
-  local next=character.next
-  wdpatch(char)
-  htpatch(char)
-  while next do
-   char=characters[next]
+ setmathcharacters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
+  local function wdpatch(char)
+   if wsnap~=0 then
+    char.width=char.width+wdelta/2
+   end
+  end
+  local function htpatch(char)
+   if hsnap~=0 then
+    local height=char.height
+    if height then
+     char.height=char.height+2*dy
+    end
+   end
+  end
+  local character=characters[0x221A]
+  if character and character.next then
+   local char=character
+   local next=character.next
    wdpatch(char)
    htpatch(char)
-   next=char.next
-  end
-  if char then
-   local v=char.vert_variants
-   if v then
-    local top=v[#v]
-    if top then
-     local char=characters[top.glyph]
-     htpatch(char)
+   while next do
+    char=characters[next]
+    wdpatch(char)
+    htpatch(char)
+    next=char.next
+   end
+   if char then
+    local v=char.vert_variants
+    if v then
+     local top=v[#v]
+     if top then
+      local char=characters[top.glyph]
+      htpatch(char)
+     end
     end
    end
   end

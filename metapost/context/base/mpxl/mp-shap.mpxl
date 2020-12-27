@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if known context_shap : endinput ; fi ;
+if known metafun_loaded_shap : endinput ; fi ;
 
-boolean context_shap ; context_shap := true ; immutable context_shap ;
+newinternal boolean metafun_loaded_shap ; metafun_loaded_shap := true ; immutable metafun_loaded_shap ;
 
 path predefined_shapes[] ;
 

@@ -780,6 +780,7 @@
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
 		<cd:constant name='default' value='implicito'/>
+		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='attesa'/>
 		<cd:constant name='depth' value='profondita'/>
 		<cd:constant name='depthcorrection' value='correzioneprofondita'/>
@@ -1136,6 +1137,7 @@
 		<cd:constant name='reference' value='riferimento'/>
 		<cd:constant name='referencemethod' value='referencemethod'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
+		<cd:constant name='referencetext' value='referencetext'/>
 		<cd:constant name='referencing' value='referencing'/>
 		<cd:constant name='region' value='region'/>
 		<cd:constant name='regionin' value='entraregione'/>
@@ -2085,7 +2087,7 @@
 		<cd:command name='startnarrower' value='iniziapiustretto'/>
 		<cd:command name='startopposite' value='iniziaopposto'/>
 		<cd:command name='startoverlay' value='iniziasovrapposizione'/>
-		<cd:command name='startoverzicht' value='iniziaoverview'/>
+		<cd:command name='startoverview' value='iniziaoverview'/>
 		<cd:command name='startpacked' value='iniziaimpaccato'/>
 		<cd:command name='startpositioning' value='iniziaposizionamento'/>
 		<cd:command name='startproduct' value='iniziaprodotto'/>
@@ -2128,7 +2130,7 @@
 		<cd:command name='stopnarrower' value='terminapiustretto'/>
 		<cd:command name='stopopposite' value='terminaopposto'/>
 		<cd:command name='stopoverlay' value='terminasovrapposizione'/>
-		<cd:command name='stopoverzicht' value='terminaoverview'/>
+		<cd:command name='stopoverview' value='terminaoverview'/>
 		<cd:command name='stoppacked' value='terminaimpaccato'/>
 		<cd:command name='stoppositioning' value='terminaposizionamento'/>
 		<cd:command name='stopproduct' value='terminaprodotto'/>

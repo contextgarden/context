@@ -1097,7 +1097,7 @@
 
 %D Experiment:
 
-\glyphdimensionsmode\plusone
+\glyphoptions"80 % replaces \glyphdimensionsmode=1
 
 %D Just in case users use this:
 

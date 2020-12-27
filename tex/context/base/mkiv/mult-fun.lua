@@ -17,7 +17,7 @@ return {
         "drawoptionsfactor",
         "dq", "sq",
         "crossingscale", "crossingoption",
-        "contextlmtxmode", "metafunversion",
+        "contextlmtxmode", "metafunversion", "minifunversion",
         --
         -- for the moment we put these here as they need to stand out
         --

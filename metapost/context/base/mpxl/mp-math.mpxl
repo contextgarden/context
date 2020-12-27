@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-if known context_math : endinput ; fi ;
+if known metafun_loaded_math : endinput ; fi ;
 
-boolean context_math ; context_math := true ; immutable context_math ;
+newinternal boolean metafun_loaded_math ; metafun_loaded_math := true ; immutable metafun_loaded_math ;
 
 % draw textext(decimal runscript("mp.numeric(xmath.gamma(.12))")) ;
 

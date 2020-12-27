@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-if known context_abck : endinput ; fi ;
+if known metafun_loaded_abck : endinput ; fi ;
 
-boolean context_abck ; context_abck := true ; immutable context_abck ;
+newinternal boolean metafun_loaded_abck ; metafun_loaded_abck := true ; immutable metafun_loaded_abck ;
 
 path    multiregs[],    % region used for multipar (tracing only)
         multipars[],    % effective area (shape)

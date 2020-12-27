@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2020.12.24 12:12}
+\immutable\edef\contextversion{2020.12.27 16:34}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -373,6 +373,7 @@
 \loadmklxfile{font-fea}
 \loadmklxfile{font-mat}
 \loadmklxfile{font-ini}
+\loadmklxfile{font-glf}
 \loadmklxfile{font-sym}
 \loadmklxfile{font-sty}
 \loadmklxfile{font-set}

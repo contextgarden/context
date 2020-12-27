@@ -305,9 +305,6 @@ v = v * sy
                 pos_v = s[2]
                 level = level - 1
             end
-        elseif command == "pdf" then
-            -- this will disappear and become a plug
-            flushliteral(false,pos_h,pos_v,packet[2],packet[3])
         elseif command == "rule" then
             local size_v = packet[2]
             local size_h = packet[3]
@@ -372,8 +369,12 @@ depth  = depth  * sy
                 code(font,char,pos_h,pos_v,sx,sy)
             end
         elseif command == "node" then
+            -- us this really useful?
             local h = packet[2]
             hlist_out(h,getlist(h))
+        elseif command == "pdf" then
+            -- this will disappear and become a plug
+            flushliteral(false,pos_h,pos_v,packet[2],packet[3])
      -- elseif command == "image" then
      --     -- doesn't work because intercepted by engine so we use a different
      --     -- mechanism (for now)

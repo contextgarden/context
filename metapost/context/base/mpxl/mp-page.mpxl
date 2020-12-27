@@ -14,9 +14,9 @@
 %D This module is rather preliminary and subjected to changes.In the process of
 %D moving to \METAFUN2\ this might change.
 
-if known context_page : endinput ; fi ;
+if known metafun_loaded_page : endinput ; fi ;
 
-boolean context_page ; context_page := true ; immutable context_page ;
+newinternal boolean metafun_loaded_page ; metafun_loaded_page := true ; immutable metafun_loaded_page ;
 
 def LoadPageState = enddef ; % just in case some old style uses it
 

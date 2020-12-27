@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if known context_figs : endinput ; fi ;
+if known metafun_loaded_figs : endinput ; fi ;
 
-boolean context_figs ; context_figs := true ; immutable context_figs ;
+newinternal boolean metafun_loaded_figs ; metafun_loaded_figs := true ; immutable metafun_loaded_figs ;
 
 % todo: check defined
 

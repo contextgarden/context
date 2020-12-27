@@ -269,7 +269,7 @@ local long_units = {
     Celsius                     = "celsius",
     Lumen                       = "lumen",
     Lux                         = "lux",
-    Bequerel                    = "bequerel",
+    Becquerel                   = "becquerel",
     Gray                        = "gray",
     Sievert                     = "sievert",
     Katal                       = "katal",
@@ -608,7 +608,7 @@ labels.units = allocate {
     celsius                     = { labels = { en = [[\checkedtextcelsius]]      } }, -- 0x2103
     lumen                       = { labels = { en = [[lm]]                       } },
     lux                         = { labels = { en = [[lx]]                       } },
-    bequerel                    = { labels = { en = [[Bq]]                       } },
+    becquerel                   = { labels = { en = [[Bq]]                       } },
     gray                        = { labels = { en = [[Gy]]                       } },
     sievert                     = { labels = { en = [[Sv]]                       } },
     katal                       = { labels = { en = [[kat]]                      } },
@@ -867,10 +867,12 @@ local function update_parsers() -- todo: don't remap utf sequences
 
     -- todo: avoid \ctx_unitsNstart\ctx_unitsNstop (weird that it can happen .. now catched at tex end)
 
+    local letter = R("az","AZ")
+    local bound  = #(1-letter)
  -- local number = lpeg.patterns.number
     local number = Cs( P("$")     * (1-P("$"))^1 * P("$")
                      + P([[\m{]]) * (1-P("}"))^1 * P("}")
-                     + (1-R("az","AZ")-P(" "))^1 -- todo: catch { } -- not ok
+                     + (1-letter-P(" "))^1 -- todo: catch { } -- not ok
                    ) / ctx_unitsN
 
     local start   = Cc(nil) / ctx_unitsNstart
@@ -880,11 +882,11 @@ local function update_parsers() -- todo: don't remap utf sequences
     local close   = P(")") * Cc(nil) / ctx_unitsPclose
 
     local range   = somespace
-                  * ( (P("±") + P("pm")) / "" / ctx_unitsRPM
-                    + (P("–") + P("to")) / "" / ctx_unitsRTO )
+                  * ( (P("±") + P("pm") * bound) / "" / ctx_unitsRPM
+                    + (P("–") + P("to") * bound) / "" / ctx_unitsRTO )
                   * somespace
 
-    local about   = (P("±") + P("pm")) / "" / ctx_unitsRabout
+    local about   = (P("±") + P("pm") * bound) / "" / ctx_unitsRabout
                   * somespace
 
     -- todo: start / stop

@@ -13,9 +13,9 @@
 
 %D Under construction.
 
-if known context_func : endinput ; fi ;
+if known metafun_loaded_func : endinput ; fi ;
 
-boolean context_func ; context_func := true ; immutable context_func ;
+newinternal boolean metafun_loaded_func ; metafun_loaded_func := true ; immutable metafun_loaded_func ;
 
 string mfun_pathconnectors[] ;
 

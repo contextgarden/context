@@ -14,9 +14,9 @@
 %D The crossing macros were written as part of this module but as they
 %D can be of use elsewhere they are defined in mp-tool.
 
-if known context_node : endinput ; fi ;
+if known metafun_loaded_node : endinput ; fi ;
 
-boolean context_node ; context_node := true ; immutable context_node ;
+newinternal boolean metafun_loaded_node ; metafun_loaded_node := true ; immutable metafun_loaded_node ;
 
 % Build a path from the node positions.
 % Must be integer and continuous in index starting at 0.

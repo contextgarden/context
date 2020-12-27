@@ -283,6 +283,9 @@ local function applyparameters()
     namespaces = saved
 end
 
+local knownparameters    = { }
+metapost.knownparameters = knownparameters
+
 local function presetparameters()
     local namespace = scanstring()
     local parent = nil
@@ -291,6 +294,9 @@ local function presetparameters()
         parent = presets[scanstring()]
     end
     local p = get_parameters()
+    for k in next, p do
+        knownparameters[k] = true
+    end
     if parent then
         setmetatableindex(p,parent)
     end

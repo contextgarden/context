@@ -13,9 +13,9 @@
 
 %D This module is rather preliminary and subjected to changes.
 
-if known context_cont : endinput ; fi ;
+if known metafun_loaded_cont : endinput ; fi ;
 
-boolean context_cont ; context_cont := true ; immutable context_cont ;
+newinternal boolean metafun_loaded_cont ; metafun_loaded_cont := true ; immutable metafun_loaded_cont ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
