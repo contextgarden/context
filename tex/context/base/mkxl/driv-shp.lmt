@@ -55,7 +55,7 @@ local findtail          = nuts.tail
 local nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
-local rangedimensions   = node.direct.rangedimensions -- nuts ?
+----- rangedimensions   = node.direct.rangedimensions -- nuts ?
 local effectiveglue     = nuts.effective_glue
 local start_of_par      = nuts.start_of_par
 local dirdimensions     = nuts.dirdimensions
@@ -220,7 +220,7 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
             if fnt == 0 then
                 fnt = main
             end
---             return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+--          return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
             return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
         else
             return 0
@@ -287,11 +287,11 @@ local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,v
             if factor ~= 0 and h ~= 0 then
                 h = h + h * factor / 1000 -- expansion
             end
-h = h * sx
+            h = h * sx
             pos_h = pos_h + h
         elseif command == "down" then
             local v = packet[2] -- already scaled
-v = v * sy
+            v = v * sy
             pos_v = pos_v - v
         elseif command == "push" then
             level = level + 1
@@ -313,8 +313,8 @@ v = v * sy
                     size_h = size_h + size_h * factor / 1000
                 end
                 if size_h > 0 then
-size_h = size_h * sx
-size_v = size_v * sy
+                    size_h = size_h * sx
+                    size_v = size_v * sy
                     flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
                     pos_h = pos_h + size_h
                 end
@@ -339,9 +339,9 @@ size_v = size_v * sy
                         if color then
                             startcolor(color)
                         end
-width  = width  * sx
-height = height * sy
-depth  = depth  * sy
+                        width  = width  * sx
+                        height = height * sy
+                        depth  = depth  * sy
                         flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
                         if color then
                             stopcolor()
@@ -627,7 +627,7 @@ local hlist_out, vlist_out  do
         for current, id, subtype in nextnode, current do
             if id == glyph_code then
                 local char, font = isglyph(current)
-                local x_offset, y_offset = getoffsets(current)
+                local x_offset, y_offset = getoffsets(current) -- todo: also get scales here
                 if x_offset ~= 0 or y_offset ~= 0 then
                     if pos_r == righttoleft_code then
                         pos_h = ref_h - (cur_h + x_offset)

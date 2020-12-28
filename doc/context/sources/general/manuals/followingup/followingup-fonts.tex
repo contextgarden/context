@@ -168,7 +168,44 @@ Speeds up a bit for Pagella and even more when we use Cambria. Keep in mind that
 that a body font switch also involves setting up some math. Anyway, as a proof of
 concept it worked out well.
 
-The scaled, as mentioned, works with pseudo scales but that is sometimes a bit
+Glyphs can have offsets and these are used for implementing \OPENTYPE\ features. However,
+they are also available at the \TEX\ end. Take this
+
+\startbuffer
+\ruledhbox{
+    \ruledhbox{\glyph yoffset 1ex options 0 123}
+    \ruledhbox{\glyph xoffset .5em yoffset 1ex options "C0 123}
+    \ruledhbox{oeps{\glyphyoffset 1ex \glyphxscale 800 \glyphyscale\glyphxscale oeps}oeps}
+}
+\stopbuffer
+
+This example demonstrates that the \type {\glyph} primitive takes keywords: \type
+{xoffset}, \type {yoffset}, \type {xscale}, \type {yscale}, \type {options},
+\type {font} and \type {id} where the last two take a font identifier or font id
+(an positive number).
+
+\startbuffer
+\samplefile{jojomayer}
+{\glyphyoffset .8ex
+ \glyphxscale 700 \glyphyscale\glyphxscale
+ \samplefile{jojomayer}}
+{\glyphyscale\numexpr3*\glyphxscale/2\relax
+ \samplefile{jojomayer}}
+{\glyphyoffset -.2ex
+ \glyphxscale 500 \glyphyscale\glyphxscale
+ \samplefile{jojomayer}}
+\samplefile{jojomayer}
+\stopbuffer
+
+\typebuffer
+
+To quote Jojo Mayer:
+
+\startnarrower
+\darkred \getbuffer
+\stopnarrower
+
+The scales, as mentioned, works with pseudo scales but that is sometimes a bit
 cumbersome. This is why a special \type {\numericscale} primitive has been
 introduced.
 

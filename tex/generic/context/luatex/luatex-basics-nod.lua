@@ -278,11 +278,16 @@ do
         return 0
     end
 
+    local function flush_components()
+        -- this is a no-op in mkiv / generic
+    end
+
     nuts.set_components     = set_components
     nuts.get_components     = get_components
     nuts.copy_only_glyphs   = copy_only_glyphs
     nuts.copy_no_components = copy_no_components
     nuts.count_components   = count_components
+    nuts.flush_components   = flush_components
 
 end
 

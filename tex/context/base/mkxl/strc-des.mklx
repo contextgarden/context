@@ -149,8 +149,7 @@
    \fi[#2]}
 
 \protected\def\strc_descriptions_command_setups[#1]%
-  {\setfalse\c_strc_constructions_title_state
-   \strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \protected\tolerant\def\strc_descriptions_command_title[#1]#:#*#=%

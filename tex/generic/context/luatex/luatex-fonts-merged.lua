@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-27 16:34
+-- merge date  : 2020-12-28 01:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -5084,11 +5084,14 @@ do
   end
   return 0
  end
+ local function flush_components()
+ end
  nuts.set_components=set_components
  nuts.get_components=get_components
  nuts.copy_only_glyphs=copy_only_glyphs
  nuts.copy_no_components=copy_no_components
  nuts.count_components=count_components
+ nuts.flush_components=flush_components
 end
 nuts.uses_font=direct.uses_font
 do

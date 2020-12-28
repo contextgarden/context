@@ -268,16 +268,20 @@ enddef ;
 %D Instead of a keystroke eating save and allocation sequence, you can use the \quote
 %D {new} alternatives to save and allocate in one command.
 
-%D These might go away!
+%D Are these used?
 
-% def newcolor     text v = forsuffixes i=v : save i ; color     i ; endfor ; enddef ;
-% def newnumeric   text v = forsuffixes i=v : save i ; numeric   i ; endfor ; enddef ;
-% def newboolean   text v = forsuffixes i=v : save i ; boolean   i ; endfor ; enddef ;
-% def newtransform text v = forsuffixes i=v : save i ; transform i ; endfor ; enddef ;
-% def newpath      text v = forsuffixes i=v : save i ; path      i ; endfor ; enddef ;
-% def newpicture   text v = forsuffixes i=v : save i ; picture   i ; endfor ; enddef ;
-% def newstring    text v = forsuffixes i=v : save i ; string    i ; endfor ; enddef ;
-% def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; enddef ;
+def newcolor     text v = forsuffixes i=v : save i ; color     i ; endfor ; enddef ;
+def newrgbcolor  text v = forsuffixes i=v : save i ; rgbcolor  i ; endfor ; enddef ;
+def newcmykcolor text v = forsuffixes i=v : save i ; cmykcolor i ; endfor ; enddef ;
+def newnumeric   text v = forsuffixes i=v : save i ; numeric   i ; endfor ; enddef ;
+def newboolean   text v = forsuffixes i=v : save i ; boolean   i ; endfor ; enddef ;
+def newtransform text v = forsuffixes i=v : save i ; transform i ; endfor ; enddef ;
+def newpath      text v = forsuffixes i=v : save i ; path      i ; endfor ; enddef ;
+def newpicture   text v = forsuffixes i=v : save i ; picture   i ; endfor ; enddef ;
+def newstring    text v = forsuffixes i=v : save i ; string    i ; endfor ; enddef ;
+def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; enddef ;
+
+permanent newcolor, newrgbcolor, newcmykcolor, newnumeric, newboolean, newtransform, newpath, newpicture, newstring, newpair ;
 
 %D Sometimes we don't want parts of the graphics add to the bounding box. One way of
 %D doing this is to save the bounding box, draw the graphics that may not count, and

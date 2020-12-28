@@ -198,5 +198,8 @@ return {
         "mirrored", "mirroredabout",
         --
         "scriptindex", "newscriptindex",
+        --
+        "newcolor", "newrgbcolor", "newcmykcolor",
+        "newnumeric", "newboolean", "newtransform", "newpath", "newpicture", "newstring", "newpair",
     },
 }

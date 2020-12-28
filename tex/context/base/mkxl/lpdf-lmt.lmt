@@ -503,15 +503,14 @@ local flushcharacter  do
             fs = fs * 1000 / fontparameters.units -- can we avoid this ?
         end
         --
-f_x_scale = sx
-if f_x_scale ~= 1.0 then
---     fs = fs * f_x_scale
-    tmrx = tmrx * f_x_scale
-end
-f_y_scale = sy
-if f_y_scale ~= 1.0 then
-    tmry = tmry * f_y_scale
-end
+        f_x_scale = sx
+        if f_x_scale ~= 1.0 then
+            tmrx = tmrx * f_x_scale
+        end
+        f_y_scale = sy
+        if f_y_scale ~= 1.0 then
+            tmry = tmry * f_y_scale
+        end
         --
         naturalwidth = naturalwidths[font]
         --
@@ -593,10 +592,9 @@ end
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
     -- time to move on I guess.
 
-    local getscales = nuts.getscales
+    local getscales = nuts.getscales -- move to caller (driv-shp)
 
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
-
         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
             setup_fontparameters(font,factor,f,e,sx,sy)
@@ -607,7 +605,6 @@ end
         end
 
         local move = calc_pdfpos(pos_h,pos_v)
-
 
      -- if trace_threshold then
      --        report(
@@ -659,7 +656,6 @@ end
             begin_charmode()
         end
 
---      cw = cw + naturalwidth[char] * tmef
         cw = cw + naturalwidth[char] * tmef
 * f_x_scale
 
