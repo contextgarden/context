@@ -157,6 +157,7 @@ local nuts = {
     remove                  = d_remove_node,
     reverse                 = direct.reverse,
     set_attribute           = direct.set_attribute,
+    setadvance              = direct.setadvance,
     setattr                 = direct.set_attribute,
     setattrs                = direct.set_attributes,
     setattributelist        = direct.setattributelist,

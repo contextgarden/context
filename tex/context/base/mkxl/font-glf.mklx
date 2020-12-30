@@ -56,11 +56,6 @@
       \glyphyscale\bodyglyphscale
       \the\everybodyfont}}
 
-\newtoks\everyenableautoglyphscaling
-
-\permanent\protected\def\enableautoglyphscaling
-  {\the\everyenableautoglyphscaling}
-
 \def\font_helpers_set_glyph_scale_by_size#fontsize%  gets character (x xx a etc)
   {\glyphxscale\numexpr\numericscale
           \ifcsname\??fontenvironments\fontclass\fontbody#fontsize\endcsname
@@ -162,12 +157,17 @@
      \fi
    \fi}
 
-\appendtoks
-    \let\font_helpers_set_current_font_alternative_size      \font_helpers_set_current_font_alternative_size_g
-    \let\font_helpers_set_current_font_size                  \font_helpers_set_current_font_size_g
-    \let\font_helpers_set_current_font_style_size            \font_helpers_set_current_font_style_size_g
-    \let\font_helpers_set_current_font_style_alternative_size\font_helpers_set_current_font_style_alternative_size_g
-    \let\font_helpers_set_current_font_xxx_alternative       \font_helpers_set_current_font_xxx_alternative_g
-\to \everyenableautoglyphscaling
+% \newtoks\everyenableautoglyphscaling
+%
+% \permanent\protected\def\enableautoglyphscaling
+%   {\the\everyenableautoglyphscaling}
+%
+% \appendtoks
+%     \let\font_helpers_set_current_font_alternative_size      \font_helpers_set_current_font_alternative_size_g
+%     \let\font_helpers_set_current_font_size                  \font_helpers_set_current_font_size_g
+%     \let\font_helpers_set_current_font_style_size            \font_helpers_set_current_font_style_size_g
+%     \let\font_helpers_set_current_font_style_alternative_size\font_helpers_set_current_font_style_alternative_size_g
+%     \let\font_helpers_set_current_font_xxx_alternative       \font_helpers_set_current_font_xxx_alternative_g
+% \to \everyenableautoglyphscaling
 
 \protect \endinput

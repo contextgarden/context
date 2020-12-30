@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-28 01:37
+-- merge date  : 2020-12-30 16:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -27713,7 +27713,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
  return head,start,false,0,false
 end
 function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
- if has_glyph_option(start,no_right_kern_code) then
+ if not has_glyph_option(start,no_right_kern_code) then
   local mapping=currentlookup.mapping
   if mapping==nil then
    mapping=getmapping(dataset,sequence,currentlookup)
@@ -27740,8 +27740,8 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
  end
  return head,start,false
 end
-function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex) 
- if has_glyph_option(start,no_right_kern_code) then
+function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+ if not has_glyph_option(start,no_right_kern_code) then
   local mapping=currentlookup.mapping
   if mapping==nil then
    mapping=getmapping(dataset,sequence,currentlookup)

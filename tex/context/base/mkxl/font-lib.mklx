@@ -100,7 +100,7 @@
 \registerctxluafile{font-imp-reorder}{}
 \registerctxluafile{font-imp-properties}{}
 \registerctxluafile{font-imp-unicode}{}
-\registerctxluafile{font-imp-math}{}
+\registerctxluafile{font-imp-math}{autosuffix}
 \registerctxluafile{font-imp-notused}{}
 \registerctxluafile{font-imp-effects}{}
 \registerctxluafile{font-imp-quality}{}

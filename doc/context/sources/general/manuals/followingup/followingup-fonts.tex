@@ -205,6 +205,9 @@ To quote Jojo Mayer:
 \darkred \getbuffer
 \stopnarrower
 
+Keep in mind that this can interfere badly with font feature processing which also
+used offsets. It might work out okay, or not.
+
 The scales, as mentioned, works with pseudo scales but that is sometimes a bit
 cumbersome. This is why a special \type {\numericscale} primitive has been
 introduced.
@@ -245,6 +248,34 @@ Let me stress once more: if you need this kind of scaling it pays off. If you
 load multiple instances of large (e.g.\ \CJK) fonts, it makes sense too. But, for
 instance on a document like the \LUAMETATEX\ manual it only saves 2 instances on
 158, and those are the few bold fonts used for titling.
+
+That said, here is another example:
+
+\startbuffer
+\def\UnKernedTeX
+  {T%
+   {\glyph xoffset -.2ex yoffset -.4ex `E}%
+   {\glyph xoffset -.4ex options "60 `X}}
+
+We use \UnKernedTeX\ and {\bf \UnKernedTeX} and {\bs \UnKernedTeX}:
+the slanted version could use some more left shifting of the E.
+\stopbuffer
+
+\typebuffer
+
+This gives is the \TEX\ logos (but of course we normally use the real ones
+instead).
+
+\getbuffer
+
+After doing this with text, I wondered if we can avoid multiple sizes of an
+otherwise same math font. Currently text, script and script script styles all use
+the same font, but scaled. And, indeed, experiments show that this can be done,
+although the math renderer had to be adapted to it. So, for now it's an
+experiment. Users have to check if things are okay. Also, we have slightly
+different rounding than with normal scaling. Of course the big advantage is that
+we have less instances (math can add up more than text as every size has in fact
+three instances).
 
 \stopchapter
 
@@ -294,3 +325,10 @@ instance on a document like the \LUAMETATEX\ manual it only saves 2 instances on
 \stopbuffer
 
 \getbuffer
+
+% As often there is a musical timestamp to this text: discovering Julia Hofer
+% (bass, came there via checking out (of course) Leland Sklar, and now i have to
+% watch a bunch of Victor Wooten videos too) and Neon Vine's (play and combine
+% anything) on YT. Both examples of where (imo extensive) practicing real
+% instruments can bring you with todays diverse equipment. These are interesting
+% times (it's now last days of 2020).

@@ -640,8 +640,7 @@ local flushcharacter  do
                 move = calc_pdfpos(pos_h,pos_v)
             end
             if move then
-                local d = tj_delta * scalefactor
- / f_x_scale
+                local d = tj_delta * scalefactor / f_x_scale
                 if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
@@ -656,8 +655,7 @@ local flushcharacter  do
             begin_charmode()
         end
 
-        cw = cw + naturalwidth[char] * tmef
-* f_x_scale
+        cw = cw + naturalwidth[char] * tmef * f_x_scale
 
         local index = data.index or char
 

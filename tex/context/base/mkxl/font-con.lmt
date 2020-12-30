@@ -480,6 +480,16 @@ function constructors.scale(tfmdata,specification)
         properties.hasmath      = true
         target.nomath           = false
         target.MathConstants    = target.mathparameters
+
+        target.compactmath                 = true
+        target.textscale                   = parameters.textscale
+        target.scriptscale                 = parameters.scriptscale
+        target.scriptscriptscale           = parameters.scriptscriptscale
+
+        targetparameters.textscale         = parameters.textscale
+        targetparameters.scriptscale       = parameters.scriptscale
+        targetparameters.scriptscriptscale = parameters.scriptscriptscale
+
     else
         properties.hasmath      = false
         target.nomath           = true

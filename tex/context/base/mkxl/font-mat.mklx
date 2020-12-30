@@ -122,14 +122,6 @@
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
-\def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
-  {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-     \lastnamedcs #font#mbfam\font \orelse
-   \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-     \lastnamedcs #font#mbfam\font \else
-     #font#mbfam#font#mrfam%
-   \fi}
-
 \def\font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
   {\let\savedfontclass\defaultfontclass
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
@@ -144,6 +136,43 @@
    \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \let\fontbody\savedfontbody
+   \let\defaultfontclass\savedfontclass
+   \setfalse\c_font_auto_size}
+
+\def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
+  {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+     \lastnamedcs #font#mbfam\font \orelse
+   \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+     \lastnamedcs #font#mbfam\font \else
+     #font#mbfam#font#mrfam%
+   \fi}
+
+\def\font_helpers_set_math_family_indeed_compact#mrtag#family% \fontface etc are also used later on
+  {\let\savedfontbody\fontbody
+   \let\fontfamily#family%
+   % the order is important as we depend on known id's when completing fonts
+   % enabling is needed when we have fallbacks which spoils the families
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % enables
+                                  \scriptfont      #mrtag\font % reuses
+                                  \scriptscriptfont#mrtag\font % reuses
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \let\fontbody\savedfontbody
+   \setfalse\c_font_auto_size}
+
+\def\font_helpers_set_math_family_bold_indeed_compact#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
+  {\let\savedfontclass\defaultfontclass
+   \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
+   \let\savedfontbody\fontbody
+   \let\fontfamily#familytag%
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
+                                       \scriptfont      #mbfam\scriptfont      #mrfam % reuses
+                                       \scriptscriptfont#mbfam\scriptscriptfont#mrfam % reuses
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
@@ -210,6 +239,11 @@
 \def\font_helpers_preset_math_family_indeed_changed#fam#familytag%
   {\scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
    \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+   \textfont        #fam\v_font_math_one}
+
+\def\font_helpers_preset_math_family_indeed_changed_compact#fam#familytag%
+  {\scriptscriptfont#fam\v_font_math_one
+   \scriptfont      #fam\v_font_math_one
    \textfont        #fam\v_font_math_one}
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument

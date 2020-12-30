@@ -935,6 +935,42 @@
 
 \popoverloadmode
 
+% experiment:
+
+\startsetups experiment:math:fonts:compact
+    \let\font_helpers_set_math_family_indeed           \font_helpers_set_math_family_indeed_compact
+    \let\font_helpers_set_math_family_bold_indeed      \font_helpers_set_math_family_bold_indeed_compact
+    \let\font_helpers_preset_math_family_indeed_changed\font_helpers_preset_math_family_indeed_changed_compact
+
+    \definefontfeature[math-text]            [mathematics]    [compactmath=yes]
+    \definefontfeature[math-script]          [mathematics]    [compactmath=yes]
+    \definefontfeature[math-scriptscript]    [mathematics]    [compactmath=yes]
+    \definefontfeature[math-text-l2r]        [mathematics-l2r][compactmath=yes]
+    \definefontfeature[math-script-l2r]      [mathematics-l2r][compactmath=yes]
+    \definefontfeature[math-scriptscript-l2r][mathematics-l2r][compactmath=yes]
+    \definefontfeature[math-text-r2l]        [mathematics-r2l][compactmath=yes]
+    \definefontfeature[math-script-r2l]      [mathematics-r2l][compactmath=yes]
+    \definefontfeature[math-scriptscript-r2l][mathematics-r2l][compactmath=yes]
+\stopsetups
+
+\installtexexperiment
+  {math.fonts.compact}
+  {\directsetup{experiment:math:fonts:compact}}
+  {}
+
+\startsetups experiment:text:fonts:compact
+    \let\font_helpers_set_current_font_alternative_size      \font_helpers_set_current_font_alternative_size_g
+    \let\font_helpers_set_current_font_size                  \font_helpers_set_current_font_size_g
+    \let\font_helpers_set_current_font_style_size            \font_helpers_set_current_font_style_size_g
+    \let\font_helpers_set_current_font_style_alternative_size\font_helpers_set_current_font_style_alternative_size_g
+    \let\font_helpers_set_current_font_xxx_alternative       \font_helpers_set_current_font_xxx_alternative_g
+\stopsetups
+
+\installtexexperiment
+  {text.fonts.compact}
+  {\directsetup{experiment:text:fonts:compact}}
+  {}
+
 \protect \endinput
 
 % LM math vs CM math (analysis by Taco):

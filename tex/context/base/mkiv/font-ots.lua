@@ -1532,7 +1532,8 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
 end
 
 function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
-    if has_glyph_option(start,no_right_kern_code) then
+    -- we actually should check no_left_kern_code with next
+    if not has_glyph_option(start,no_right_kern_code) then
         local mapping = currentlookup.mapping
         if mapping == nil then
             mapping = getmapping(dataset,sequence,currentlookup)
@@ -1561,7 +1562,8 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
 end
 
 function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex) -- todo: injections ?
-    if has_glyph_option(start,no_right_kern_code) then
+    -- we actually should check no_left_kern_code with next
+    if not has_glyph_option(start,no_right_kern_code) then
         local mapping = currentlookup.mapping
         if mapping == nil then
             mapping = getmapping(dataset,sequence,currentlookup)

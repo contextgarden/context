@@ -177,9 +177,9 @@ local preset_all    = preset_makeup
                     + modes.dir + modes.whatsit
 
 function visualizers.setfont(id)
-    usedfont  = id or current_font()
-    exheight  = exheights[usedfont]
-    emwidth   = emwidths[usedfont]
+    usedfont = id or current_font()
+    exheight = exheights[usedfont]
+    emwidth  = emwidths[usedfont]
 end
 
 -- we can preset a bunch of bits
