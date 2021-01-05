@@ -1628,7 +1628,12 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
     if scaledpoints < 0 then
         scaledpoints = (- scaledpoints/1000) * (tfmdata.designsize or parameters.designsize) -- already in sp
     end
-    return round(scaledpoints), round(scaledpoints/units) -- delta
+    -- a temp hack till we have upgraded all mechanisms
+    local delta = round(scaledpoints/units)
+    local size  = round(scaledpoints)
+    texsetcount("c_font_scaled_points",size)
+    --
+    return size, delta
 end
 
 local designsizes = constructors.designsizes

@@ -46,128 +46,14 @@
    \c!xscale=\scaledfontparameter\c!scale,
    \c!yscale=\scaledfontparameter\c!scale]
 
-\installcorenamespace{scaledfontbody}
-
-\permanent\protected\def\definescaledfontbody[#1]#*[#2]% only for testing
-  {%\expandafter\integerdef\csname\??scaledfontbody#1\endcsname\integerdef\bodyglyphscale\numericscale#2\relax
-   \frozen\protected\defcsname#1\endcsname%
-     {\integerdef\bodyglyphscale\numericscale#2\relax
-      \glyphxscale\bodyglyphscale
-      \glyphyscale\bodyglyphscale
-      \the\everybodyfont}}
-
-\def\font_helpers_set_glyph_scale_by_size#fontsize%  gets character (x xx a etc)
-  {\glyphxscale\numexpr\numericscale
-          \ifcsname\??fontenvironments\fontclass\fontbody#fontsize\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\??fontenvironments\fontclass\s!default#fontsize\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\??fontenvironments\fontbody#fontsize\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\??fontenvironments\s!default#fontsize\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\??fontenvironments\fontclass\s!default\s!text\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\??fontenvironments\s!default\s!text\endcsname
-     \lastnamedcs
-   \else
-     \plusthousand
-   \fi*\bodyglyphscale/\plusthousand\relax
-   \glyphyscale\glyphxscale}
-
-% \protected\def\font_helpers_set_current_font_alternative_size#alternative#size% \sla
-%   {\edef\fontalternative{#alternative}%
-%    \edef\fontsize       {#size}%
-%    \font_helpers_check_big_math_synchronization % double? better in everymath?
-%    \font_helpers_synchronize_font}
-
-\protected\def\font_helpers_set_current_font_alternative_size_g#alternative#size% \sla
-  {\edef\fontalternative{#alternative}%
-   \edef\fontsize{#size}%
-   \csname\fontalternative\endcsname
-   \font_helpers_set_glyph_scale_by_size\fontsize
-   \ifskipfontcharacteristics
-     \setfontcharacteristics
-     \the\everyfontswitch
-   \fi}
-
-% \protected\def\font_helpers_set_current_font_size#size%
-%   {\edef\fontsize{#size}%
-%    \font_helpers_check_big_math_synchronization % double? better in everymath?
-%    \font_helpers_synchronize_font}
-
-\protected\def\font_helpers_set_current_font_size_g#size%
-  {\edef\fontsize{#size}%
-   \font_helpers_set_glyph_scale_by_size\fontsize
-   \ifskipfontcharacteristics
-     \setfontcharacteristics
-     \the\everyfontswitch
-   \fi}
-
-% \protected\def\font_helpers_set_current_font_style_size#style#size% \rma
-%   {\edef\fontstyle{#style}%
-%    \edef\fontsize {#size}%
-%    \font_helpers_check_big_math_synchronization % double? better in everymath?
-%    \font_helpers_synchronize_font}
-
-\protected\def\font_helpers_set_current_font_style_size_g#style#size% \rma
-  {\edef\fontstyle{#style}%
-   \edef\fontsize{#size}%
-   \csname\fontstyle\endcsname
-   \font_helpers_set_glyph_scale_by_size\fontsize
-   \ifskipfontcharacteristics
-     \setfontcharacteristics
-     \the\everyfontswitch
-   \fi}
-
-% \protected\def\font_helpers_set_current_font_style_alternative_size#style#alternative#size% \rmsla
-%   {\edef\fontstyle      {#style}%
-%    \edef\fontalternative{#alternative}%
-%    \edef\fontsize       {#size}%
-%    \font_helpers_check_big_math_synchronization % double? better in everymath?
-%    \font_helpers_synchronize_font}
-
-\protected\def\font_helpers_set_current_font_style_alternative_size_g#style#alternative#size% \rmsla
-  {\edef\fontstyle{#style}%
-   \edef\fontalternative{#alternative}%
-   \edef\fontsize{#size}%
-   \csname\fontstyle\endcsname
-   \csname\fontalternative\endcsname
-   \font_helpers_set_glyph_scale_by_size\fontsize
-   \ifskipfontcharacteristics
-     \setfontcharacteristics
-     \the\everyfontswitch
-   \fi}
-
-% \def\font_helpers_set_current_font_xxx_alternative#alternative#xsize#scriptstyle%
-%   {\ifmmode
-%      #scriptstyle%
-%    \else
-%      \font_helpers_set_current_xsize_alternative{#xsize}{#alternative}%
-%    \fi}
-
-\def\font_helpers_set_current_font_xxx_alternative_g#alternative#xsize#scriptstyle%
-  {\ifmmode
-     #scriptstyle%
-   \else
-     \csname#alternative\endcsname
-     \font_helpers_set_glyph_scale_by_size{#alternative}%
-     \ifskipfontcharacteristics
-       \setfontcharacteristics
-     \fi
-   \fi}
-
-% \newtoks\everyenableautoglyphscaling
+% \installcorenamespace{scaledfontbody}
 %
-% \permanent\protected\def\enableautoglyphscaling
-%   {\the\everyenableautoglyphscaling}
-%
-% \appendtoks
-%     \let\font_helpers_set_current_font_alternative_size      \font_helpers_set_current_font_alternative_size_g
-%     \let\font_helpers_set_current_font_size                  \font_helpers_set_current_font_size_g
-%     \let\font_helpers_set_current_font_style_size            \font_helpers_set_current_font_style_size_g
-%     \let\font_helpers_set_current_font_style_alternative_size\font_helpers_set_current_font_style_alternative_size_g
-%     \let\font_helpers_set_current_font_xxx_alternative       \font_helpers_set_current_font_xxx_alternative_g
-% \to \everyenableautoglyphscaling
+% \permanent\protected\def\definescaledfontbody[#1]#*[#2]% only for testing
+%   {%\expandafter\integerdef\csname\??scaledfontbody#1\endcsname\integerdef\bodyglyphscale\numericscale#2\relax
+%    \frozen\protected\defcsname#1\endcsname%
+%      {\integerdef\bodyglyphscale\numericscale#2\relax
+%       \glyphxscale\bodyglyphscale
+%       \glyphyscale\bodyglyphscale
+%       \the\everybodyfont}}
 
 \protect \endinput

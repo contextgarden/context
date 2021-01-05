@@ -24,17 +24,17 @@
 \starttext
 
 \starttexdefinition unexpanded ShowBoth #1#2#3
-    \startTEXpage
+    \startTEXpage[width=21cm]
         \startoverlay
-            {\externalfigure[#1][page=#3]}
-            {\externalfigure[#2][page=#3]}
+            {\externalfigure[#1][page=#3,width=21cm]}
+            {\externalfigure[#2][page=#3,width=21cm]}
         \stopoverlay
     \stopTEXpage
 \stoptexdefinition
 
 \starttexdefinition unexpanded ShowPage #1#2
-    \startTEXpage
-        \externalfigure[#1][page=#2]
+    \startTEXpage[width=21cm]
+        \externalfigure[#1][page=#2,width=21cm]
     \stopTEXpage
 \stoptexdefinition
 

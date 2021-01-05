@@ -205,7 +205,6 @@ local setlink            = nuts.setlink
 local getwidth           = nuts.getwidth
 
 local getglyphdata       = nuts.getglyphdata
-local getscales          = nuts.getscales
 local getwhatever        = nuts.getwhatever
 
 ---------------------------------------------------------------------------------------
@@ -296,6 +295,7 @@ local marks              = false
 local classes            = false
 local currentfont        = false
 local currentattr        = false
+local currentscale       = false
 local currentxscale      = false
 local currentyscale      = false
 local factor             = 0
@@ -764,7 +764,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local startchar = getchar(start)
     if skiphash and skiphash[startchar] then
         while current do
-            local nxt, char = isnextchar(current,currentfont,currentxscale,currentyscale)
+            local nxt, char = isnextchar(current,currentfont,currentscale,currentxscale,currentyscale)
             if char then
                 local lg = ligature[char]
                 if lg then
@@ -798,7 +798,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
         local discfound = false
         local hasmarks  = marks[startchar]
         while current do
-            local nxt, char, id = isnextchar(current,currentfont,currentxscale,currentyscale)
+            local nxt, char, id = isnextchar(current,currentfont,currentscale,currentxscale,currentyscale)
             if char then
                 if skiphash and skiphash[char] then
                     current = nxt
@@ -833,20 +833,20 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             local pre, post, replace = getdisc(discfound)
             local match
             if replace then
-                local char = ischar(replace,currentfont,currentxscale,currentyscale)
+                local char = ischar(replace,currentfont,currentscale,currentxscale,currentyscale)
                 if char and ligature[char] then
                     match = true
                 end
             end
             if not match and pre then
-                local char = ischar(pre,currentfont,currentxscale,currentyscale)
+                local char = ischar(pre,currentfont,currentscale,currentxscale,currentyscale)
                 if char and ligature[char] then
                     match = true
                 end
             end
             if not match and not pre or not replace then
                 local n    = getnext(discfound)
-                local char = ischar(n,currentfont,currentxscale,currentyscale)
+                local char = ischar(n,currentfont,currentscale,currentxscale,currentyscale)
                 if char and ligature[char] then
                     match = true
                 end
@@ -950,7 +950,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
         else
             local prev = start
             while snext do
-                local nextchar = ischar(snext,currentfont,currentxscale,currentyscale)
+                local nextchar = ischar(snext,currentfont,currentscale,currentxscale,currentyscale)
                 if nextchar then
                     if skiphash and skiphash[nextchar] then -- includes marks too when flag
                         prev  = snext
@@ -1016,13 +1016,13 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode,
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [start=mark]
         if base then
-            local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+            local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
             if basechar then
                 if marks[basechar] then
                     while base do
                         base = getprev(base)
                         if base then
-                            basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                            basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                             if basechar then
                                 if not marks[basechar] then
                                     break
@@ -1071,13 +1071,13 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [optional marks] [start=mark]
         if base then
-            local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+            local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
             if basechar then
                 if marks[basechar] then
                     while base do
                         base = getprev(base)
                         if base then
-                            basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                            basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                             if basechar then
                                 if not marks[basechar] then
                                     break
@@ -1147,7 +1147,7 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode,
             end
         end
         if base then
-            local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+            local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
             if basechar then -- subtype test can go
                 local ba = markanchors[1][basechar] -- slot 1 has been made copy of the class hash
                 if ba then
@@ -1176,7 +1176,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,sk
     else
         local nxt = getnext(start)
         while nxt do
-            local nextchar = ischar(nxt,currentfont,currentxscale,currentyscale)
+            local nextchar = ischar(nxt,currentfont,currentscale,currentxscale,currentyscale)
             if not nextchar then
                 break
             elseif marks[nextchar] then -- always sequence.flags[1]
@@ -1504,7 +1504,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
 --                     end
 --                 end
                 --
-                local nxt, schar, id = isnextchar(current,currentfont,currentxscale,currentyscale)
+                local nxt, schar, id = isnextchar(current,currentfont,currentscale,currentxscale,currentyscale)
                 if schar then
                     if skiphash and skiphash[schar] then -- marks
                         -- if current == stop then -- maybe add this
@@ -1615,7 +1615,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                 if kerns then
                     local prev = start
                     while snext do
-                        local nextchar = ischar(snext,currentfont,currentxscale,currentyscale)
+                        local nextchar = ischar(snext,currentfont,currentscale,currentxscale,currentyscale)
                         if not nextchar then
                             break
                         end
@@ -1684,13 +1684,13 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
             if markanchors then
                 local base = getprev(start) -- [glyph] [start=mark]
                 if base then
-                    local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                    local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                     if basechar then
                         if marks[basechar] then
                             while base do
                                 base = getprev(base)
                                 if base then
-                                    local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                                    local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                                     if basechar then
                                         if not marks[basechar] then
                                             break
@@ -1749,13 +1749,13 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
             if markanchors then
                 local base = getprev(start) -- [glyph] [optional marks] [start=mark]
                 if base then
-                    local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                    local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                     if basechar then
                         if marks[basechar] then
                             while base do
                                 base = getprev(base)
                                 if base then
-                                    local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                                    local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                                     if basechar then
                                         if not marks[basechar] then
                                             break
@@ -1829,7 +1829,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
                     end
                 end
                 if base then -- subtype test can go
-                    local basechar = ischar(base,currentfont,currentxscale,currentyscale)
+                    local basechar = ischar(base,currentfont,currentscale,currentxscale,currentyscale)
                     if basechar then
                         local ba = markanchors[1][basechar]
                         if ba then
@@ -1875,7 +1875,7 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
             else
                 local nxt = getnext(start)
                 while nxt do
-                    local nextchar = ischar(nxt,currentfont,currentxscale,currentyscale)
+                    local nextchar = ischar(nxt,currentfont,currentscale,currentxscale,currentyscale)
                     if not nextchar then
                         break
                     elseif marks[nextchar] then
@@ -2050,7 +2050,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
             while start do
                 if skiphash then -- hm, so we know we skip some
                     while start do
-                        local char = ischar(start,currentfont,currentxscale,currentyscale)
+                        local char = ischar(start,currentfont,currentscale,currentxscale,currentyscale)
                         if char then
                             if skiphash and skiphash[char] then
                                 start = getnext(start)
@@ -2311,7 +2311,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         local insertedmarks = 0
 
         while cprev do
-            local char = ischar(cf,currentfont,currentxscale,currentyscale)
+            local char = ischar(cf,currentfont,currentscale,currentxscale,currentyscale)
             if char and marks[char] then
                 insertedmarks = insertedmarks + 1
                 cf            = cprev
@@ -2377,7 +2377,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         local insertedmarks = 0
 
         while cnext do
-            local char = ischar(cnext,currentfont,currentxscale,currentyscale)
+            local char = ischar(cnext,currentfont,currentscale,currentxscale,currentyscale)
             if char and marks[char] then
                 insertedmarks = insertedmarks + 1
                 cl            = cnext
@@ -2487,6 +2487,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         checkdisc = getprev(head)
     end
     local currentfont   = currentfont   -- really ?
+    local currentscale  = currentscale  -- really ?
     local currentxscale = currentxscale -- really ?
     local currentyscale = currentyscale -- really ?
 
@@ -2507,7 +2508,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
 
     local nofcontexts = contexts.n -- #contexts
 
-    local startchar = nofcontext == 1 or ischar(start,currentfont,currentxscale,currentyscale) -- only needed in a chain
+    local startchar = nofcontext == 1 or ischar(start,currentfont,currentscale,currentxscale,currentyscale) -- only needed in a chain
 
     for k=1,nofcontexts do -- does this disc mess work well with n > 1
 
@@ -2541,7 +2542,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                 end
                 if last then
                  -- local char, id = ischar(last,currentfont)
-                    local nxt, char, id = isnextchar(last,currentfont,currentxscale,currentyscale)
+                    local nxt, char, id = isnextchar(last,currentfont,currentscale,currentxscale,currentyscale)
                     if char then
                         if skiphash and skiphash[char] then
                             skipped = true
@@ -2654,7 +2655,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     while n >= 1 do
                         if prev then
                          -- local char, id = ischar(prev,currentfont)
-                            local prv, char, id = isprevchar(prev,currentfont,currentxscale,currentyscale)
+                            local prv, char, id = isprevchar(prev,currentfont,currentscale,currentxscale,currentyscale)
                             if char then
                                 if skiphash and skiphash[char] then
                                     skipped = true
@@ -2792,7 +2793,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                 while n <= s do
                     if current then
                      -- local char, id = ischar(current,currentfont)
-                        local nxt, char, id = isnextchar(current,currentfont,currentxscale,currentyscale)
+                        local nxt, char, id = isnextchar(current,currentfont,currentscale,currentxscale,currentyscale)
                         if char then
                             if skiphash and skiphash[char] then
                                 skipped = true
@@ -3826,6 +3827,7 @@ do
         if nesting == 1 then
             currentfont   = font
             currentattr   = attr
+            currentscale  = false
             currentxscale = false
             currentyscale = false
             tfmdata       = fontdata[font]
@@ -3852,14 +3854,6 @@ do
             return head, false
 
         end
-
-        -- some 10% faster when no dynamics but hardly measureable on real runs .. but: it only
-        -- works when we have no other dynamics as otherwise the zero run will be applied to the
-        -- whole stream for which we then need to pass another variable which we won't
-
-        -- if attr == 0 then
-        --     attr = false
-        -- end
 
         if trace_steps then
             checkstep(head)
@@ -3916,22 +3910,13 @@ do
                 local rlmode = 0 -- how important is this .. do we need to check for dir?
                 local merged = steps.merged
                 while start do
---                     local prv, char, id = isprevchar(start,font)
                     local prv, char, id = isprevchar(start,font)
                     if char then
                         local m = merged[char]
                         if m then
---                             local a -- happens often so no assignment is faster
---                             if attr then
---                                 a = getglyphdata(start)
---                             end
---                             if not a or (a == attr) then
---                                 currentxscale, currentyscale = getscales(start)
-
                             local a
-                            a, currentxscale, currentyscale = getwhatever(start,attr,attribute)
+                            a, currentscale, currentxscale, currentyscale = getwhatever(start,attr,attribute)
                             if a then
-
                                 for i=m[1],m[2] do
                                     local step = steps[i]
                                     local lookupcache = step.coverage
@@ -3965,28 +3950,16 @@ do
                     local step = steps[1]
                     local lookupcache = step.coverage
                     while start do
-                        local nxt, char, id = isnextchar(start,font)
+                        local nxt, char, id = isnextchar(start,font) -- we can move the data/state checks here
                         if char then
                             if skiphash and skiphash[char] then -- we never needed it here but let's try
                                 start = nxt
                             else
                                 local lookupmatch = lookupcache[char]
                                 if lookupmatch then
---                                     local a -- happens often so no assignment is faster
---                                     if attr then
---                                         if getglyphdata(start) == attr and (not attribute or getstate(start,attribute)) then
---                                             a = true
---                                         end
---                                     elseif not attribute or getstate(start,attribute) then
---                                         a = true
---                                     end
---                                     if a then
---                                          currentxscale, currentyscale = getscales(start)
-
                                     local a
-                                    a, currentxscale, currentyscale = getwhatever(start,attr,attribute)
+                                    a, currentscale, currentxscale, currentyscale = getwhatever(start,attr,attribute)
                                     if a then
-
                                         local ok, df
                                         head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                         if df then
@@ -4043,21 +4016,9 @@ do
                             else
                                 local m = merged[char]
                                 if m then
---                                     local a -- happens often so no assignment is faster
---                                     if attr then
---                                         if getglyphdata(start) == attr and (not attribute or getstate(start,attribute)) then
---                                             a = true
---                                         end
---                                     elseif not attribute or getstate(start,attribute) then
---                                         a = true
---                                     end
---                                     if a then
---                                         currentxscale, currentyscale = getscales(start)
-
                                     local a
-                                    a, currentxscale, currentyscale = getwhatever(start,attr,attribute)
+                                    a, currentscale, currentxscale, currentyscale = getwhatever(start,attr,attribute)
                                     if a then
-
                                         local ok, df
                                         for i=m[1],m[2] do
                                             local step = steps[i]
@@ -4137,6 +4098,7 @@ do
     function otf.datasetpositionprocessor(head,font,direction,dataset)
 
         currentfont     = font
+        currentscale    = false
         currentxscale   = false
         currentyscale   = false
         tfmdata         = fontdata[font]

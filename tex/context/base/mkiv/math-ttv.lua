@@ -62,7 +62,7 @@ mathencodings["large-to-small"] = {
 }
 
 -- Beware: these are (in cm/lm) below the baseline due to limitations
--- in the tfm format bu the engien (combined with the mathclass) takes
+-- in the tfm format but the engine (combined with the mathclass) takes
 -- care of it. If we need them in textmode, we should make them virtual
 -- and move them up but we're in no hurry with that.
 

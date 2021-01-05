@@ -1,4 +1,4 @@
-.TH "mtx-dvi" "1" "01-01-2020" "version 0.01" "ConTeXt DVI Helpers"
+.TH "mtx-dvi" "1" "01-01-2021" "version 0.01" "ConTeXt DVI Helpers"
 .SH NAME
  mtx-dvi - ConTeXt DVI Helpers
 .SH SYNOPSIS

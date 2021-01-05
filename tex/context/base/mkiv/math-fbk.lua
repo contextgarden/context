@@ -53,13 +53,15 @@ function fallbacks.apply(target,original)
     -- we also have forcedsize ... at this moment we already passed through
     -- constructors.scale so we have this set
     local parameters = target.parameters
+    local properties = target.properties
     local mathsize   = parameters.mathsize
     if mathsize < 1 or mathsize > 3 then
         return
     end
-    local characters = target.characters
-    local size       = parameters.size
-    local usedfonts  = target.fonts
+    local characters  = target.characters
+    local size        = parameters.size
+    local usedfonts   = target.fonts
+    local compactmath = properties.compactmath
     if not usedfonts then
         usedfonts    = { { id = 0 } } -- we need at least one entry (automatically done anyway)
         target.fonts = usedfonts
@@ -90,6 +92,10 @@ function fallbacks.apply(target,original)
         usedfonts[textindex] = { id = textid }
     else
         textdata = target
+    end
+    if compactmath then
+        scriptid       = textid
+        scriptscriptid = textid
     end
     if scriptid and scriptid ~= 0 then
         scriptindex = #usedfonts  + 1

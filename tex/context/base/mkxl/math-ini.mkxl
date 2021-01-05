@@ -68,7 +68,7 @@
 \registerctxluafile{math-dim}{}
 \registerctxluafile{math-act}{}
 \registerctxluafile{math-ext}{}
-\registerctxluafile{math-vfu}{}
+\registerctxluafile{math-vfu}{autosuffix}
 \registerctxluafile{math-ttv}{}
 \registerctxluafile{math-map}{optimize}
 \registerctxluafile{math-ren}{}

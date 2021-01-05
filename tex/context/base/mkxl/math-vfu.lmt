@@ -645,22 +645,26 @@ local function copy_glyph(main,target,original,unicode,slot)
         local nextglyph = olddata.next
         while nextglyph do
             local oldnextdata = original[nextglyph]
-            local newnextdata = {
-                width     = oldnextdata.width,
-                height    = oldnextdata.height,
-                depth     = oldnextdata.depth,
-                tounicode = olddata.tounicode,
-                commands  = { { "slot", slot, nextglyph } },
-            }
-            local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
-            newdata.next = newnextglyph
-            local nextnextglyph = oldnextdata.next
-            if nextnextglyph == nextglyph then
-                break
+            if oldnextdata then
+                local newnextdata = {
+                    width     = oldnextdata.width,
+                    height    = oldnextdata.height,
+                    depth     = oldnextdata.depth,
+                    tounicode = olddata.tounicode,
+                    commands  = { { "slot", slot, nextglyph } },
+                }
+                local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
+                newdata.next = newnextglyph
+                local nextnextglyph = oldnextdata.next
+                if nextnextglyph == nextglyph then
+                    break
+                else
+                    olddata   = oldnextdata
+                    newdata   = newnextdata
+                    nextglyph = nextnextglyph
+                end
             else
-                olddata   = oldnextdata
-                newdata   = newnextdata
-                nextglyph = nextnextglyph
+                break -- safeguard (when testing stuff)
             end
         end
         local hv = olddata.horiz_variants
@@ -704,6 +708,11 @@ local function copy_glyph(main,target,original,unicode,slot)
 end
 
 vfmath.copy_glyph = copy_glyph
+
+-- It's time to get rid of this type 1 mess ... take iwona: uppercase /A .. Z but
+-- lowercase /a.math ... /z.math ... anyway, we now follow a slightly different
+-- route: use the "order" field. I can probably make it a bit leaner but it's not
+-- worth spending much time on now.
 
 function vfmath.define(specification,set,goodies)
     local name     = specification.name -- symbolic name
@@ -753,29 +762,6 @@ function vfmath.define(specification,set,goodies)
                 if trace_virtual then
                     report_virtual("loading font %a subfont %s with name %a at %p as id %s using encoding %a",name,s,ssname,size,id,ss.vector)
                 end
-                if not ss.checked then
-                    ss.checked = true
-                    local vector = mathencodings[ss.vector]
-                    if vector then
-                        -- we resolve named glyphs only once as we can assume that vectors
-                        -- are unique to a font set (when we read an afm we get those names
-                        -- mapped onto the private area)
-                        for unicode, index in next, vector do
-                            if not tonumber(index) then
-                                local u = f.unicodes
-                                u = u and u[index]
-                                if u then
-                                    if trace_virtual then
-                                        report_virtual("resolving name %a to %s",index,u) -- maybe more detail for u
-                                    end
-                                else
-                                    report_virtual("unable to resolve name %a",index)
-                                end
-                                vector[unicode] = u
-                            end
-                        end
-                    end
-                end
             end
         end
     end
@@ -798,7 +784,6 @@ function vfmath.define(specification,set,goodies)
         fonts            = fontlist,
         goodies          = goodies,
     }
-    --
     --
     for key, value in next, parent do
         if type(value) ~= "table" then
@@ -844,11 +829,8 @@ function vfmath.define(specification,set,goodies)
     --
     -- we need to set some values in main as well (still?)
     --
-    main.fullname      = properties.fullname
-    main.nomath        = false
-    --
-    properties.virtualized = true
-    main.type              = "virtual"
+    main.fullname = properties.fullname
+    main.nomath   = false
     --
     parameters.x_height = parameters.x_height or 0
     --
@@ -915,7 +897,7 @@ function vfmath.define(specification,set,goodies)
             else
                 local vectorname = ss.vector
                 if vectorname then
-                    local offset      = 0xFF000
+                    local offset      = 0xFF000 -- todo: -- private
                     local vector      = mathencodings[vectorname]
                     local rotcev      = reverse[vectorname]
                     local isextension = ss.extension
@@ -924,7 +906,15 @@ function vfmath.define(specification,set,goodies)
                         local fd       = fs.descriptions
                         local si       = shared[s]
                         local skewchar = ss.skewchar
-                        for unicode, index in next, vector do
+                        local indices  = { }
+                        -- we need to know the original order because the loader has made a
+                        -- unicode font of it and weird glyphnames have spoiled that a bit
+                        for unicode, character in next, fc do
+                            indices[character.order or character.index or unicode] = unicode
+                        end
+                        for unicode, i in next, vector do
+                            -- so, here we have an extra remapping (compared to mkiv)
+                            local index = indices[i]
                             local fci = fc[index]
                             if not fci then
                                 local fontname = fs.properties.name or "unknown"
@@ -935,7 +925,12 @@ function vfmath.define(specification,set,goodies)
                                 local ru = rv[unicode]
                                 if not ru then
                                     if trace_virtual then
-                                        report_virtual("unicode slot %U has no index %H in vector %a for font %a (%S)",unicode,index,vectorname,fontname,chardata[unicode].description)
+                                        local d = chardata[unicode].description
+                                        if index then
+                                            report_virtual("unicode slot %U has no index %H in vector %a for font %a (%S)",unicode,index,vectorname,fontname,d)
+                                        else
+                                            report_virtual("unicode slot %U has no entry in vector %a for font %a (%S)",unicode,vectorname,fontname,d)
+                                        end
                                     elseif not already_reported then
                                         report_virtual("the mapping is incomplete for %a at %p",name,size)
                                         already_reported = true

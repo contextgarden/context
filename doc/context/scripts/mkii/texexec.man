@@ -1,4 +1,4 @@
-.TH "texexec" "1" "01-01-2020" "version 6.2.1" "TeXExec"
+.TH "texexec" "1" "01-01-2021" "version 6.2.1" "TeXExec"
 .SH NAME
  texexec - TeXExec
 .SH SYNOPSIS

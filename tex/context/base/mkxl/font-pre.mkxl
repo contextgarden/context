@@ -405,9 +405,14 @@
    mathalternates=yes,
    mathitalics=yes, % we pass them
    mathdimensions=all,
+compactmath=yes,
  % mathgaps=yes,
    language=dflt,
    script=math]
+
+\definefontfeature
+  [oldmath]
+  [oldmath=yes]
 
 \ifdefined\mathnolimitsmode
     \mathnolimitsmode\plusone % font driven (only opentype)
@@ -425,22 +430,15 @@
   [mathematics]
   []
 
-% \definefontfeature
-%   [mathematics-r2l]
-%   [mathematics]
-%   [language=ara,
-%    rtlm=yes,
-%    locl=yes]
-
 \definefontfeature
   [mathematics-r2l]
   [mathematics]
   [rtlm=yes,
    locl=yes]
 
-\definefontfeature[virtualmath]              [mathematics]      % downward compatibility
-\definefontfeature[virtualmath-l2r]          [mathematics-l2r]  % downward compatibility
-\definefontfeature[virtualmath-r2l]          [mathematics-r2l]  % downward compatibility
+\definefontfeature[virtualmath]              [mathematics]
+\definefontfeature[virtualmath-l2r]          [mathematics-l2r]
+\definefontfeature[virtualmath-r2l]          [mathematics-r2l]
 
 \definefontfeature[math-text]                [mathematics]      [ssty=no]
 \definefontfeature[math-script]              [mathematics]      [ssty=1,mathsize=yes]
@@ -453,6 +451,8 @@
 \definefontfeature[math-text-r2l]            [mathematics-r2l]  [ssty=no]
 \definefontfeature[math-script-r2l]          [mathematics-r2l]  [ssty=1,mathsize=yes]
 \definefontfeature[math-scriptscript-r2l]    [mathematics-r2l]  [ssty=2,mathsize=yes]
+
+% this will go away: could be a mode in the engine
 
 \definefontfeature[math-nostack-text]        [math-text]        [nostackmath=yes]
 \definefontfeature[math-nostack-script]      [math-script]      [nostackmath=yes]
@@ -937,38 +937,27 @@
 
 % experiment:
 
-\startsetups experiment:math:fonts:compact
-    \let\font_helpers_set_math_family_indeed           \font_helpers_set_math_family_indeed_compact
-    \let\font_helpers_set_math_family_bold_indeed      \font_helpers_set_math_family_bold_indeed_compact
-    \let\font_helpers_preset_math_family_indeed_changed\font_helpers_preset_math_family_indeed_changed_compact
+\startsetups experiment:fonts:compact
+    \settrue\c_font_compact
 
-    \definefontfeature[math-text]            [mathematics]    [compactmath=yes]
-    \definefontfeature[math-script]          [mathematics]    [compactmath=yes]
-    \definefontfeature[math-scriptscript]    [mathematics]    [compactmath=yes]
-    \definefontfeature[math-text-l2r]        [mathematics-l2r][compactmath=yes]
-    \definefontfeature[math-script-l2r]      [mathematics-l2r][compactmath=yes]
-    \definefontfeature[math-scriptscript-l2r][mathematics-l2r][compactmath=yes]
-    \definefontfeature[math-text-r2l]        [mathematics-r2l][compactmath=yes]
-    \definefontfeature[math-script-r2l]      [mathematics-r2l][compactmath=yes]
-    \definefontfeature[math-scriptscript-r2l][mathematics-r2l][compactmath=yes]
+%     \definefontfeature[virtualmath]          [mathematics]    [compactmath=yes]
+%     \definefontfeature[virtualmath-l2r]      [mathematics-l2r][compactmath=yes]
+%     \definefontfeature[virtualmath-r2l]      [mathematics-r2l][compactmath=yes]
+
+%     \definefontfeature[math-text]            [mathematics]    [compactmath=yes]
+%     \definefontfeature[math-script]          [mathematics]    [compactmath=yes]
+%     \definefontfeature[math-scriptscript]    [mathematics]    [compactmath=yes]
+%     \definefontfeature[math-text-l2r]        [mathematics-l2r][compactmath=yes]
+%     \definefontfeature[math-script-l2r]      [mathematics-l2r][compactmath=yes]
+%     \definefontfeature[math-scriptscript-l2r][mathematics-l2r][compactmath=yes]
+%     \definefontfeature[math-text-r2l]        [mathematics-r2l][compactmath=yes]
+%     \definefontfeature[math-script-r2l]      [mathematics-r2l][compactmath=yes]
+%     \definefontfeature[math-scriptscript-r2l][mathematics-r2l][compactmath=yes]
 \stopsetups
 
 \installtexexperiment
-  {math.fonts.compact}
-  {\directsetup{experiment:math:fonts:compact}}
-  {}
-
-\startsetups experiment:text:fonts:compact
-    \let\font_helpers_set_current_font_alternative_size      \font_helpers_set_current_font_alternative_size_g
-    \let\font_helpers_set_current_font_size                  \font_helpers_set_current_font_size_g
-    \let\font_helpers_set_current_font_style_size            \font_helpers_set_current_font_style_size_g
-    \let\font_helpers_set_current_font_style_alternative_size\font_helpers_set_current_font_style_alternative_size_g
-    \let\font_helpers_set_current_font_xxx_alternative       \font_helpers_set_current_font_xxx_alternative_g
-\stopsetups
-
-\installtexexperiment
-  {text.fonts.compact}
-  {\directsetup{experiment:text:fonts:compact}}
+  {fonts.compact}
+  {\directsetup{experiment:fonts:compact}}
   {}
 
 \protect \endinput

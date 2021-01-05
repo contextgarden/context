@@ -24,6 +24,10 @@ if numbersystem <> "double" :
     endinput ;
 fi
 
+if known contextlmtxmode :
+    def _op_ = base_draw_options enddef ;
+fi ;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % $Id : graph.mp,v 1.2 2004/09/19 21 :47 :10 karl Exp $
@@ -102,17 +106,23 @@ vardef logten primary x =
   else: mlog(abs x)/mlog(10) fi
 enddef ;
 
-vardef ln     primary x =
-  if unknown x: whatever
-  elseif x=0: Mzero
-  else: mlog(abs x)/256 fi
-enddef ;
+if known contextlmtxmode :
+    % already defined
+else :
 
-vardef exp    primary x =
-  if unknown x: whatever
-  elseif x<= Mzero: 0
-  else: (mexp 256)**x fi
-enddef ;
+    vardef ln primary x =
+      if unknown x: whatever
+      elseif x=0: Mzero
+      else: mlog(abs x)/256 fi
+    enddef ;
+
+    vardef exp primary x =
+      if unknown x: whatever
+      elseif x<= Mzero: 0
+      else: (mexp 256)**x fi
+    enddef ;
+
+fi
 
 vardef powten primary x =
   if unknown x: whatever
@@ -1151,7 +1161,9 @@ enddef ;
 % We format in luatex (using \mathematics{}) ...
 % we could pass via variables and save escaping as that is inefficient
 
-if unknown context_mlib :
+if known contextlmtxmode :
+% already defined
+elseif unknown context_mlib :
 
     vardef escaped_format(expr s) =
         "" for n=0 upto length(s) : &

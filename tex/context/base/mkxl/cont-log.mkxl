@@ -187,7 +187,8 @@
 
 %D Some placeholders:
 
-\frozen\instance\protected\def\eTeX      {\mathematics{\varepsilon}-\TeX}
+%frozen\instance\protected\def\eTeX      {\mathematics{\varepsilon}-\TeX}
+\frozen\instance\protected\def\eTeX      {{\tf \nocap $\varepsilon$}-\TeX} % compact mode hack for epsilon
 \frozen\instance\protected\def\pdfTeX    {pdf\wordboundary\TeX}
 \frozen\instance\protected\def\pdfeTeX   {pdfe-\wordboundary\TeX}
 \frozen\instance\protected\def\luaTeX    {lua\wordboundary\TeX}

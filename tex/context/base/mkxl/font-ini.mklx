@@ -685,7 +685,27 @@
 \newconditional\c_font_body_scale
 \newfraction   \f_font_body_scale
 
-\protected\def\font_helpers_low_level_define#specification#csname%
+\newconditional\c_font_compact
+\newcount      \c_font_scaled_glyph_scale
+
+\immutable\dimensiondef\d_font_scaled_default 10pt
+
+\newcount\c_font_future_glyph_scale
+
+% todo: move all to lua: use localcall for resolving filename
+
+\newcount\c_font_future_glyph_scale
+\newcount\c_font_scaled_font_mode_saved
+\newcount\c_font_scaled_points
+
+\protected\def\font_helpers_low_level_define
+  {\ifconditional\c_font_compact
+     \expandafter\font_helpers_low_level_define_compact
+   \else
+     \expandafter\font_helpers_low_level_define_normal
+   \fi}
+
+\protected\def\font_helpers_low_level_define_normal#specification#csname%
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
    \let\somefontsize\empty
@@ -728,6 +748,8 @@
    \fi
    \relax
    \d_font_scaled_font_size\v_font_size_relative\d_font_scaled_font_size
+   \relax
+   %
    \ifconditional\c_font_auto_size
      \font_helpers_check_body_scale\fontsize
      \ifconditional\c_font_body_scale
@@ -740,6 +762,7 @@
    \else
      \d_font_scaled_text_face\textface
    \fi
+   %
    \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
    \edef\somefontfile{\truefontname\somefontname}%
    \ifx\somefontfile\s!unknown
@@ -774,6 +797,127 @@
      \letcsname#csname\endcsname\relax
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
+     \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
+     \the\everydefinefont
+   \fi
+   \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
+
+\protected\def\font_helpers_low_level_define_compact#specification#csname%
+  {% we can now set more at the lua end
+   \glet\somefontname\defaultfontfile
+   \let\somefontsize\empty
+   \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
+   % sets \scaledfontmode and \somefontname and \somefontsize
+   \ifcase\fontface\relax
+   % \let\v_font_size_absolute\textface % fontbody
+   \or
+     \let\v_font_size_absolute\textface
+   \or
+     \let\v_font_size_absolute\scriptface
+   \or
+     \let\v_font_size_absolute\scriptscriptface
+   \or
+     \let\v_font_size_absolute\xtextface
+   \or
+     \let\v_font_size_absolute\xxtextface
+   \fi
+   %
+   \ifcase\scaledfontmode\relax
+     % none, avoid the designsize if possible
+     \d_font_scaled_font_size-\plusthousand\scaledpoint
+   \or
+     % at
+     \d_font_scaled_font_size\somefontsize
+   \or
+     % sa
+     \d_font_scaled_font_size\v_font_size_absolute\relax
+     \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size % uses \somefontsize set by lua
+   \or
+     % mo
+     \d_font_scaled_font_size\font_basics_set_mapped_fontsize\v_font_size_absolute
+     \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size
+   \or
+     % scaled, don't use this one as it's unpredictable
+     \d_font_scaled_font_size-\somefontsize\scaledpoint
+   \else % ht cp
+     % experiment, yet undocumented
+     \d_font_scaled_font_size\somefontsize
+   \fi
+   \relax
+   \d_font_scaled_font_size\v_font_size_relative\d_font_scaled_font_size
+   \relax
+   %
+   \ifconditional\c_font_auto_size
+     \font_helpers_check_body_scale\fontsize
+     \ifconditional\c_font_body_scale
+       \d_font_scaled_font_size\f_font_body_scale\d_font_scaled_font_size
+       \d_font_scaled_text_face\f_font_body_scale\dimexpr\textface\relax
+     \else
+       \d_font_scaled_font_size\f_font_body_scale
+       \d_font_scaled_text_face\textface
+     \fi
+   \else
+     \d_font_scaled_text_face\textface
+   \fi
+   %
+   \ifnum\c_font_scaled_font_mode_saved>\plusfour
+     \c_font_scaled_font_mode_saved\scaledfontmode
+     \scaledfontmode\zerocount
+   \fi
+   \c_font_future_glyph_scale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax
+   \glyphscale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax % needed ? for math i guess
+% \glyphscale\plusthousand
+   \d_font_scaled_font_size\d_font_scaled_default
+   \d_font_scaled_text_face\d_font_scaled_default
+   %
+   \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
+   % this has to happen at the tex end ...
+   \edef\somefontfile{\truefontname\somefontname}%
+   \ifx\somefontfile\s!unknown
+     \edef\somefontfile{\defaultfontfile}%
+   \fi
+   \font_helpers_update_font_parameters
+   \font_helpers_update_font_class_parameters
+   % ... till here
+  %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
+   \clf_definefont_two
+      \ifempty\fontclass\s!false\else\s!true\fi
+      {#csname}%
+      {\somefontfile}%
+      \d_font_scaled_font_size
+      \c_font_feature_inheritance_mode
+      {\m_font_class_features}%
+      {\m_font_features}%
+      {\m_font_class_fallbacks}%
+      {\m_font_fallbacks}%
+      \fontface
+      \d_font_scaled_text_face
+      \relativefontid
+      {\m_font_class_goodies}%
+      {\m_font_goodies}%
+      {\m_font_class_designsize}%
+      {\m_font_designsize}%
+      \scaledfontmode
+   \relax
+   \ifcase\scaledfontsize
+    %\scaledfontsize\plusone
+     \let\somefontspec\empty
+     \let\lastrawfontcall\relax
+     \letcsname#csname\endcsname\relax
+   \else
+     \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
+     %
+     \ifnum\c_font_scaled_font_mode_saved>\plusfour
+       \glyphscale\numexpr\plusthousand*\dimexpr\d_font_scaled_font_size\relax/\c_font_scaled_points\relax
+     \else
+       \glyphscale\c_font_future_glyph_scale
+     \fi
+     % actually this has to happen elsewhere .. temp hack (do we know here if we are global?)
+     \gletcsname\??frozenfont#csname\expandafter\endcsname\csname#csname\endcsname
+     \protected\xdefcsname#csname\endcsname
+       {\csname\??frozenfont#csname\endcsname
+        \glyphscale\the\glyphscale\relax}%
+     %
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
      \the\everydefinefont
    \fi
@@ -907,14 +1051,28 @@
 %D Beware, in the frozen variants no settings are supported yet, but that might happen
 %D some day.
 
+\installcorenamespace{frozenfont}
+%installcorenamespace{frozensize}
+
+\newcount\c_last_global_glyph_scale
+
 \permanent\tolerant\protected\def\definefrozenfont[#name]#spacer[#specification]#spacer[#settings]%
   {\ifparameter#name\or
      \begingroup
-     \definefont[#name][#specification][#settings]%
-     \csname#name\endcsname
-     \glet\lastglobalrawfontcall\lastrawfontcall
+       \definefont[#name][#specification][#settings]%
+       \csname#name\endcsname
+       \glet\lastglobalrawfontcall\lastrawfontcall
+       \global\c_last_global_glyph_scale\glyphscale
      \endgroup
-     \letcsname#name\endcsname\lastglobalrawfontcall
+     \ifconditional\c_font_compact
+       % temp hack
+       \letcsname\??frozenfont#name\endcsname\lastglobalrawfontcall
+       \protected\edefcsname#name\endcsname
+         {\csname\??frozenfont#name\endcsname
+          \glyphscale\the\c_last_global_glyph_scale\relax}%
+     \else
+       \letcsname#name\endcsname\lastglobalrawfontcall
+     \fi
    \fi}
 
 %D The instance namespace protection makes the switch local so that we can redefine a
@@ -1051,7 +1209,7 @@
 %D \item smaller and even more smaller alternatives (super- and subscripts)
 %D \stopitemize
 %D
-%D \TEX\ offers a powerfull family mechanism for super- and subscripts in math mode.
+%D \TEX\ offers a powerful family mechanism for super- and subscripts in math mode.
 %D In text mode however, we don't use families for the smaller alternatives, and
 %D therefore have to take care of it otherwise.
 %D
@@ -1602,7 +1760,19 @@
      \font_helpers_check_bodyfont_environment\normalizedbodyfontsize\normalizedbodyfontsize % !!
    \else
      \showmessage\m!fonts4{#body}%
+   \fi
+   \ifconditional\c_font_compact
+     \glyphscale\numexpr\plushundred*\dimexpr\normalizedbodyfontsize\relax/\maxcard\relax
    \fi}
+
+% \prependtoks
+%     \ifconditional\c_font_compact
+%         % better in lua ... accuracy
+%         \glyphtextscale         \numexpr\plusthousand*\dimexpr\textface        \relax/\d_font_scaled_default\relax
+%         \glyphscriptscale       \numexpr\plusthousand*\dimexpr\scriptface      \relax/\d_font_scaled_default\relax
+%         \glyphscriptscriptscale \numexpr\plusthousand*\dimexpr\scriptscriptface\relax/\d_font_scaled_default\relax
+%     \fi
+% \to \everymathematics
 
 \protected\def\font_basics_switch_style#style%
   {\ifcsname\??fontstyle#style\endcsname

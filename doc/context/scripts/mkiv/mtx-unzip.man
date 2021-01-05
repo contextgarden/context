@@ -1,4 +1,4 @@
-.TH "mtx-unzip" "1" "01-01-2020" "version 0.10" "Simple Unzipper"
+.TH "mtx-unzip" "1" "01-01-2021" "version 0.10" "Simple Unzipper"
 .SH NAME
  mtx-unzip - Simple Unzipper
 .SH SYNOPSIS

@@ -1,4 +1,4 @@
-.TH "mtx-grep" "1" "01-01-2020" "version 0.10" "Simple Grepper"
+.TH "mtx-grep" "1" "01-01-2021" "version 0.10" "Simple Grepper"
 .SH NAME
  mtx-grep - Simple Grepper
 .SH SYNOPSIS

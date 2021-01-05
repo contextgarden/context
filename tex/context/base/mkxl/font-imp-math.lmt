@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['font-imp-math'] = {
     license   = "see context related readme files"
 }
 
-
 local next, type, tonumber = next, type, tonumber
 
 local fonts              = fonts
@@ -14,20 +13,6 @@ local helpers            = fonts.helpers
 local registerotffeature = fonts.handlers.otf.features.register
 
 local setmetatableindex  = table.setmetatableindex
-
--- requested for latex but not supported unless really needed in context:
---
--- registerotffeature {
---     name         = "ignoremathconstants",
---     description  = "ignore math constants table",
---     initializers = {
---         base = function(tfmdata,value)
---             if value then
---                 tfmdata.mathparameters = nil
---             end
---         end
---     }
--- }
 
 -- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
 
@@ -66,6 +51,8 @@ registerotffeature {
     }
 }
 
+-- this will become a mode in the engine
+
 local function initialize(tfmdata,value)
     tfmdata.properties.nostackmath = value and true
 end
@@ -82,12 +69,13 @@ registerotffeature {
 -- A quick and dirty and low level implementation but okay for testing:
 
 local function manipulate(tfmdata,key,value)
-    if value then
+    if tex.conditionals["c_font_compact"] then
         local rawdata           = tfmdata.shared.rawdata
         local rawresources      = rawdata and rawdata.resources
         local rawfeatures       = rawresources and rawresources.features
         local basesubstitutions = rawfeatures and rawfeatures.gsub
         local sequences         = basesubstitutions and tfmdata.resources.sequences
+
         if sequences then
             local characters = tfmdata.characters
             for s=1,#sequences do
@@ -122,20 +110,18 @@ local function manipulate(tfmdata,key,value)
 end
 
 local function initialize(tfmdata,key,value)
-    if value then
+    if tex.conditionals["c_font_compact"] then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources
         local mathconstants = rawresources.mathconstants
         if mathconstants then
             local parameters = tfmdata.parameters
-            -- will become configurable: 1000 = 100%
-            parameters.textscale         = 1000 -- math_scale_identity
+            parameters.textscale         = 1000
             parameters.scriptscale       = mathconstants.ScriptPercentScaleDown * 10
             parameters.scriptscriptscale = mathconstants.ScriptScriptPercentScaleDown * 10
         end
     end
 end
-
 
 local specification = {
     name         = "compactmath",
@@ -144,6 +130,62 @@ local specification = {
         base = manipulate,
         node = manipulate,
     },
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)
+
+-- The problem is that the traditional code path doesn't add an italic to the subscript,
+-- simply because it assumes that the width has that already subtracted. So, we cannot
+-- compensate in the following way. We're stuck with the fact that the texgyre fonts
+-- assume a traditional tex engine.
+
+-- local function manipulate(tfmdata,key,value)
+--     if value == "correct" then
+--         local chardata = characters.data
+--         for unicode, data in next, tfmdata.characters do
+--             local italic = data.italic
+--             if italic then
+--                 -- todo: only letters
+--                 data.width = (data.width or 0) + italic
+--                 local cd = chardata[unicode]
+--                 if cd then
+--                     local visual = cd.visual
+--                     if visual == "it" or visual == "bi" then
+--                         italic = -italic
+--                     else
+--                         italic = 0
+--                     end
+--                 else
+--                     italic = 0
+--                 end
+--                 data.italic = italic
+--             end
+--         end
+--     end
+-- end
+
+local function initialize(tfmdata,key,value)
+    if value then
+        local rawdata       = tfmdata.shared.rawdata
+        local rawresources  = rawdata and rawdata.resources
+        local mathconstants = rawresources.mathconstants
+        if mathconstants then
+            tfmdata.properties.oldmath = true
+        end
+    end
+end
+
+local specification = {
+    name         = "oldmath",
+    description  = "deal with fake opentype fonts",
+ -- manipulators = {
+ --     base = manipulate,
+ --     node = manipulate,
+ -- },
     initializers = {
         base = initialize,
         node = initialize,

@@ -58,7 +58,7 @@ local function initialize(goodies)
         local maplines = mathgoodies.maplines
         if virtuals then
             for name, specification in next, virtuals do
-                -- beware, they are all constructed
+                -- beware, they are all constructed ... we should be more selective
                 mathematics.makefont(name,specification,goodies)
             end
         end

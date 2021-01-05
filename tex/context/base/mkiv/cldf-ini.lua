@@ -419,7 +419,6 @@ local registerscanner if CONTEXTLMTXMODE > 0 then
         end
     end
 
-
     registerscanner = function(name,action,specification)
         rawset(interfacescanners,name,action)
         local n = registerfunction("interfaces.scanners."..name,true,storedscanners[name])

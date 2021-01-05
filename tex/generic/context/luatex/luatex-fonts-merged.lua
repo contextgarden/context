@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-12-30 16:42
+-- merge date  : 2021-01-05 10:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -9268,6 +9268,9 @@ function constructors.scale(tfmdata,specification)
   properties.hasmath=true
   target.nomath=false
   target.MathConstants=target.mathparameters
+  local oldmath=properties.oldmath
+  targetproperties.oldmath=oldmath
+  target.oldmath=oldmath
  else
   properties.hasmath=false
   target.nomath=true

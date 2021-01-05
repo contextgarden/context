@@ -1,4 +1,4 @@
-.TH "mtx-unicode" "1" "01-01-2020" "version 1.02" "Checker for char-dat.lua"
+.TH "mtx-unicode" "1" "01-01-2021" "version 1.02" "Checker for char-dat.lua"
 .SH NAME
  mtx-unicode - Checker for char-dat.lua
 .SH SYNOPSIS

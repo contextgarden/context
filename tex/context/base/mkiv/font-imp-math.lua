@@ -79,3 +79,25 @@ registerotffeature {
         node = initialize,
     }
 }
+
+local function initialize(tfmdata,key,value)
+    if value then
+        local rawdata       = tfmdata.shared.rawdata
+        local rawresources  = rawdata and rawdata.resources
+        local mathconstants = rawresources.mathconstants
+        if mathconstants then
+            tfmdata.properties.oldmath = true
+        end
+    end
+end
+
+local specification = {
+    name         = "oldmath",
+    description  = "deal with fake opentype fonts",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)

@@ -477,23 +477,40 @@ function constructors.scale(tfmdata,specification)
     --
     if hasmath then
         constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
-        properties.hasmath      = true
-        target.nomath           = false
-        target.MathConstants    = target.mathparameters
 
-        target.compactmath                 = true
-        target.textscale                   = parameters.textscale
-        target.scriptscale                 = parameters.scriptscale
-        target.scriptscriptscale           = parameters.scriptscriptscale
+        properties.hasmath   = true
+        target.nomath        = false
+        target.MathConstants = target.mathparameters
 
-        targetparameters.textscale         = parameters.textscale
-        targetparameters.scriptscale       = parameters.scriptscale
-        targetparameters.scriptscriptscale = parameters.scriptscriptscale
+        properties.compactmath = true
+        target.compactmath     = true
+
+        local textscale         = parameters.textscale         -- or 1000
+        local scriptscale       = parameters.scriptscale       -- or  700
+        local scriptscriptscale = parameters.scriptscriptscale -- or  500
+
+        parameters.textscale         = textscale
+        parameters.scriptscale       = scriptscale
+        parameters.scriptscriptscale = scriptscriptscale
+
+        target.textscale         = textscale
+        target.scriptscale       = scriptscale
+        target.scriptscriptscale = scriptscriptscale
+
+        targetparameters.textscale         = textscale
+        targetparameters.scriptscale       = scriptscale
+        targetparameters.scriptscriptscale = scriptscriptscale
+
+        -- todo: maybe retrofit to font-con.lua
+
+        local oldmath = properties.oldmath
+        targetproperties.oldmath = oldmath
+        target.oldmath = oldmath
 
     else
-        properties.hasmath      = false
-        target.nomath           = true
-        target.mathparameters   = nil -- nop
+        properties.hasmath    = false
+        target.nomath         = true
+        target.mathparameters = nil -- nop
     end
     --
     -- During the transition to opentype the engine had troubles with italics so we had some

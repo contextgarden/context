@@ -62,6 +62,7 @@
      {\ifnum\scratchcounter=\scratchcountertwo
         \scratchcounter\plusone
         \etoksapp\scratchtoks{\math_eqalign_distance}%
+        \etoksapp\scratchtoks{\global\c_math_eqalign_column\zerocount}%
       \else
         \advance\scratchcounter\plusone
       \fi

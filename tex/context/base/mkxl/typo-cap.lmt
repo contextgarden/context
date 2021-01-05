@@ -32,6 +32,7 @@ local getdisc          = nuts.getdisc
 
 local setchar          = nuts.setchar
 local setfont          = nuts.setfont
+local setscales        = nuts.setscales
 
 local copy_node        = nuts.copy
 local end_of_math      = nuts.end_of_math
@@ -66,6 +67,7 @@ local v_reset          = variables.reset
 
 local texsetattribute  = tex.setattribute
 local unsetvalue       = attributes.unsetvalue
+local texgetcount      = tex.getcount
 
 typesetters            = typesetters or { }
 local typesetters      = typesetters
@@ -80,6 +82,8 @@ local a_cases          = attributes.private("case")
 local run              = 0 -- a trick to make neighbouring ranges work
 local blocked          = { }
 
+local fontstate        = { } -- this will become something generic
+
 local function set(tag,font)
     if run < 0x7F then
         run = run + 1
@@ -90,6 +94,13 @@ local function set(tag,font)
             + (tag  <<  8)
             + (run  <<  0)
     blocked[a] = false
+    -- it makes sense to fetch them all at once
+    fontstate[a] = {
+        texgetcount("glyphscale"),
+        texgetcount("glyphxscale"),
+        texgetcount("glyphyscale"),
+        texgetcount("glyphdatafield")
+    }
     return a
 end
 
@@ -206,7 +217,11 @@ local function mixed(start,attr,lastfont,n,count,where,first)
     elseif dc == char then
         local lfa = lastfont[n]
         if lfa then
+            local s = fontstate[attr]
             setfont(used,lfa)
+            if s then
+                setscales(used, s[1], s[2], s[3])
+            end
         end
     else
         replacer(used,uccodes)
@@ -221,7 +236,11 @@ local function Capital(start,attr,lastfont,n,count,where,first,once) -- 3
         if lfa then
             local dc = uccodes[getchar(used)]
             if dc then
+                local s = fontstate[attr]
                 setfont(used,lfa)
+                if s then
+                    setscales(used, s[1], s[2], s[3])
+                end
             end
         end
     end

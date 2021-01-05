@@ -150,7 +150,6 @@ local function read_from_tfm(specification)
                 features.pfbfile  = pfbfile
             end
         end
-
         local newtfmdata = (depth[filename] == 1) and tfm.reencode(tfmdata,specification)
         if newtfmdata then
              tfmdata = newtfmdata
@@ -443,13 +442,21 @@ do
         local characters = { }
         local originals  = tfmdata.characters
         local indices    = { }
-        local parentfont = { "font", 1 }
+        local parentfont = { "font", 1 } -- can be zero (self referencing)
         local private    = tfmdata.privateoffset or constructors.privateoffset
         local reported   = encdone[tfmfile][encfile] -- bah, encdone for tfm or pfb ?
         -- create characters table
 
         -- vector   : pfbindex -> name
         -- encoding : tfmindex -> name
+
+        -- we store the order also because some tex encodings (see math-vfu) needs
+        -- that for remapping with non standard glyphs names cq. lack of unicode
+        -- slot information
+
+        for k, v in next, originals do
+            v.order = k
+        end
 
         local backmap = vector and table.swapped(vector)
         local done    = { } -- prevent duplicate
@@ -462,7 +469,7 @@ do
                 else
                     unicode = private
                     private = private + 1
-                    if not reported then
+                    if trace_defining and not reported then
                         report_tfm("glyph %a in font %a with encoding %a gets unicode %U",name,tfmfile,encfile,unicode)
                     end
                 end

@@ -661,8 +661,14 @@ do
     local setnodecolor      = colortracers.set
 
     local function report_remap(tag,id,old,new,extra)
-        report_remapping("remapping %s in font (%s,%s) from %C to %C%s",
-            tag,id,fontdata[id].properties.fontname or "",old,new,extra)
+        if new then
+            report_remapping("remapping %s in font (%s,%s) from %C to %C%s",
+                tag,id,fontdata[id].properties.fontname or "",old,new,extra)
+        else
+            -- error !
+            report_remapping("remapping %s in font (%s,%s) from %C to ?",
+                tag,id,fontdata[id].properties.fontname or "",old)
+        end
     end
 
     local function checked(pointer)
