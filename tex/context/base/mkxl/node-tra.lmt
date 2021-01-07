@@ -59,6 +59,8 @@ local used_nodes      = nuts.usedlist
 local nextnode        = nuts.traversers.node
 local nextglyph       = nuts.traversers.glyph
 
+local shownodes       = nuts.show
+
 local d_tostring      = nuts.tostring
 
 local nutpool         = nuts.pool
@@ -722,3 +724,16 @@ tracers.rule = nodestracerpool.rule -- for a while
 --     end
 --     print("STOP", message or "")
 -- end
+
+function nodes.handlers.show(n)
+    if n then
+        shownodes(tonut(n))
+    else
+        -- maybe a message
+    end
+    return n
+end
+
+trackers.register("fonts.result.show", function(v)
+    nodes.tasks.setaction("processors","nodes.handlers.show",v)
+end)

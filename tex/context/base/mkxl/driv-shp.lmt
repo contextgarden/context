@@ -925,8 +925,9 @@ local hlist_out, vlist_out  do
                 end
             elseif id == disc_code then
                 local replace, tail = getreplace(current)
-                if replace and subtype ~= select_disc then
-                    -- we could flatten .. no gain
+                -- actually, we no longer have these select discs in the packaged list ... it's about
+                -- time to clean up the disc code a bit further
+                if replace then -- and subtype ~= select_disc_code then
                     setlink(tail,getnext(current))
                     setlink(current,replace)
                     setreplace(current)

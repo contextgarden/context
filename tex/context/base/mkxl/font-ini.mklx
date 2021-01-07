@@ -495,8 +495,6 @@
    \ifx\p_font_rscale\v!auto
      \let\p_font_rscale\plusone
      \font_helpers_check_relative_font_id
-   \else
-     \let\relativefontid\minusone
    \fi}
 
 \def\font_rscale_xx#style%
@@ -668,8 +666,6 @@
 \newcount\lastfontid      % also used at the lua end / tex end
 \newtoks \everydefinefont
 
-\mutable\let\relativefontid\minusone
-
 \aliased\let\c_font_feature_inheritance_fontnone  \zerocount  % none
 \aliased\let\c_font_feature_inheritance_fontonly  \plusone    % fontonly
 \aliased\let\c_font_feature_inheritance_classonly \plustwo    % classonly
@@ -771,23 +767,39 @@
    \font_helpers_update_font_parameters
    \font_helpers_update_font_class_parameters
   %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
+%    \clf_definefont_two
+%       \ifempty\fontclass\s!false\else\s!true\fi
+%       {#csname}%
+%       {\somefontfile}%
+%       \d_font_scaled_font_size
+%       \c_font_feature_inheritance_mode
+%       {\m_font_class_features}%
+%       {\m_font_features}%
+%       {\m_font_class_fallbacks}%
+%       {\m_font_fallbacks}%
+%       \fontface
+%       \d_font_scaled_text_face
+%       {\m_font_class_goodies}%
+%       {\m_font_goodies}%
+%       {\m_font_class_designsize}%
+%       {\m_font_designsize}%
+%       \scaledfontmode
    \clf_definefont_two
       \ifempty\fontclass\s!false\else\s!true\fi
       {#csname}%
-      {\somefontfile}%
+      \somefontfile
       \d_font_scaled_font_size
       \c_font_feature_inheritance_mode
-      {\m_font_class_features}%
-      {\m_font_features}%
-      {\m_font_class_fallbacks}%
-      {\m_font_fallbacks}%
+      \m_font_class_features
+      \m_font_features
+      \m_font_class_fallbacks
+      \m_font_fallbacks
       \fontface
       \d_font_scaled_text_face
-      \relativefontid
-      {\m_font_class_goodies}%
-      {\m_font_goodies}%
-      {\m_font_class_designsize}%
-      {\m_font_designsize}%
+      \m_font_class_goodies
+      \m_font_goodies
+      \m_font_class_designsize
+      \m_font_designsize
       \scaledfontmode
    \relax
    \ifcase\scaledfontsize
@@ -880,23 +892,39 @@
    \font_helpers_update_font_class_parameters
    % ... till here
   %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
+%    \clf_definefont_two
+%       \ifempty\fontclass\s!false\else\s!true\fi
+%       {#csname}%
+%       {\somefontfile}%
+%       \d_font_scaled_font_size
+%       \c_font_feature_inheritance_mode
+%       {\m_font_class_features}%
+%       {\m_font_features}%
+%       {\m_font_class_fallbacks}%
+%       {\m_font_fallbacks}%
+%       \fontface
+%       \d_font_scaled_text_face
+%       {\m_font_class_goodies}%
+%       {\m_font_goodies}%
+%       {\m_font_class_designsize}%
+%       {\m_font_designsize}%
+%       \scaledfontmode
    \clf_definefont_two
       \ifempty\fontclass\s!false\else\s!true\fi
       {#csname}%
-      {\somefontfile}%
+      \somefontfile
       \d_font_scaled_font_size
       \c_font_feature_inheritance_mode
-      {\m_font_class_features}%
-      {\m_font_features}%
-      {\m_font_class_fallbacks}%
-      {\m_font_fallbacks}%
+      \m_font_class_features
+      \m_font_features
+      \m_font_class_fallbacks
+      \m_font_fallbacks
       \fontface
       \d_font_scaled_text_face
-      \relativefontid
-      {\m_font_class_goodies}%
-      {\m_font_goodies}%
-      {\m_font_class_designsize}%
-      {\m_font_designsize}%
+      \m_font_class_goodies
+      \m_font_goodies
+      \m_font_class_designsize
+      \m_font_designsize
       \scaledfontmode
    \relax
    \ifcase\scaledfontsize
@@ -907,15 +935,15 @@
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
      %
-     \ifnum\c_font_scaled_font_mode_saved>\plusfour
-       \glyphscale\numexpr\plusthousand*\dimexpr\d_font_scaled_font_size\relax/\c_font_scaled_points\relax
-     \else
-       \glyphscale\c_font_future_glyph_scale
-     \fi
-     % actually this has to happen elsewhere .. temp hack (do we know here if we are global?)
-     \gletcsname\??frozenfont#csname\expandafter\endcsname\csname#csname\endcsname
-     \protected\xdefcsname#csname\endcsname
-       {\csname\??frozenfont#csname\endcsname
+     \glyphscale
+       \ifnum\c_font_scaled_font_mode_saved>\plusfour
+         \numexpr\plusthousand*\dimexpr\d_font_scaled_font_size\relax/\c_font_scaled_points\relax
+       \else
+         \c_font_future_glyph_scale
+       \fi
+     \ifempty\fontclass\else\global\fi
+     \protected\edefcsname#csname\endcsname
+       {\setfontid\the\fontid\csname#csname\endcsname\relax
         \glyphscale\the\glyphscale\relax}%
      %
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
@@ -1051,28 +1079,14 @@
 %D Beware, in the frozen variants no settings are supported yet, but that might happen
 %D some day.
 
-\installcorenamespace{frozenfont}
-%installcorenamespace{frozensize}
-
-\newcount\c_last_global_glyph_scale
-
 \permanent\tolerant\protected\def\definefrozenfont[#name]#spacer[#specification]#spacer[#settings]%
   {\ifparameter#name\or
      \begingroup
        \definefont[#name][#specification][#settings]%
        \csname#name\endcsname
        \glet\lastglobalrawfontcall\lastrawfontcall
-       \global\c_last_global_glyph_scale\glyphscale
      \endgroup
-     \ifconditional\c_font_compact
-       % temp hack
-       \letcsname\??frozenfont#name\endcsname\lastglobalrawfontcall
-       \protected\edefcsname#name\endcsname
-         {\csname\??frozenfont#name\endcsname
-          \glyphscale\the\c_last_global_glyph_scale\relax}%
-     \else
-       \letcsname#name\endcsname\lastglobalrawfontcall
-     \fi
+     \letcsname#name\endcsname\lastglobalrawfontcall
    \fi}
 
 %D The instance namespace protection makes the switch local so that we can redefine a

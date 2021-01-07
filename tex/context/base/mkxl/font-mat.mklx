@@ -253,34 +253,67 @@
 %D little in restoring global states and, what's more important, we get rid of large
 %D math parameter push/pop in tracingall when not needed.
 
-\def\font_helpers_preset_math_family_indeed#fam#familytag%
-  {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
-   \ifrelax\v_font_math_one
-     \font_helpers_preset_math_family_warning
-   \orelse\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
-     \font_helpers_preset_math_family_indeed_changed#fam#familytag%
-   \fi}
+% \def\font_helpers_preset_math_family_indeed#fam#familytag%
+%   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+%    \ifrelax\v_font_math_one
+%      \font_helpers_preset_math_family_warning
+%    \orelse\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
+%      \font_helpers_preset_math_family_indeed_changed#fam#familytag%
+%    \fi}
 
-\def\font_helpers_preset_math_family_warning
-  {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
+% \def\font_helpers_preset_math_family_warning
+%   {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
+
+% \def\font_helpers_preset_math_family_indeed_changed_normal#fam#familytag%
+%   {\font_helpers_set_math_family_set_scales_normal
+%    \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
+%    \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+%    \textfont        #fam\v_font_math_one}
+
+% \def\font_helpers_preset_math_family_indeed_changed_compact#fam#familytag%
+%   {\font_helpers_set_math_family_set_scales_compact
+%    \scriptscriptfont#fam\v_font_math_one
+%    \scriptfont      #fam\v_font_math_one
+%    \textfont        #fam\v_font_math_one}
+
+% \def\font_helpers_preset_math_family_indeed_changed
+%   {\ifconditional\c_font_compact
+%      \expandafter\font_helpers_preset_math_family_indeed_changed_compact
+%    \else
+%      \expandafter\font_helpers_preset_math_family_indeed_changed_normal
+%    \fi}
+
+\def\font_helpers_preset_math_family_indeed_normal#fam#familytag%
+  {\expandafter\let\expandafter\font_math_last_font\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+   \font_math_last_font
+   \ifnum\fontid\textfont#fam=\fontid\font\else
+     \font_helpers_preset_math_family_indeed_changed_normal#fam#familytag%
+   \fi}
 
 \def\font_helpers_preset_math_family_indeed_changed_normal#fam#familytag%
   {\font_helpers_set_math_family_set_scales_normal
-   \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
-   \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
-   \textfont        #fam\v_font_math_one}
+   \csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname\scriptscriptfont#fam\font
+   \csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname\scriptfont      #fam\font
+ % \csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname\textfont        #fam\font}
+   \font_math_last_font                                                                  \textfont        #fam\font}
 
-\def\font_helpers_preset_math_family_indeed_changed_compact#fam#familytag%
+\def\font_helpers_preset_math_family_indeed_compact#fam#familytag%
+  {\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+   \ifnum\fontid\textfont#fam=\fontid\font\else
+     \font_helpers_preset_math_family_indeed_changed_compact#fam%
+   \fi}
+
+\def\font_helpers_preset_math_family_indeed_changed_compact#fam%
   {\font_helpers_set_math_family_set_scales_compact
-   \scriptscriptfont#fam\v_font_math_one
-   \scriptfont      #fam\v_font_math_one
-   \textfont        #fam\v_font_math_one}
+   \scriptscriptfont#fam\font
+   \scriptfont      #fam\font
+   \textfont        #fam\font}
 
-\def\font_helpers_preset_math_family_indeed_changed
+\def\font_helpers_preset_math_family_indeed
   {\ifconditional\c_font_compact
-     \expandafter\font_helpers_preset_math_family_indeed_changed_compact
+     \expandafter\font_helpers_preset_math_family_indeed_compact
    \else
-     \expandafter\font_helpers_preset_math_family_indeed_changed_normal
+     \expandafter\font_helpers_preset_math_family_indeed_normal
    \fi}
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument

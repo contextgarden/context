@@ -1166,8 +1166,13 @@ do  -- else too many locals
     implement {
         name      = "definefont_two",
         arguments = {
-            "boolean", "string", "string", "integer", "integer", "string", "string", "string", "string",
-            "integer", "integer", "integer", "string", "string", "string", "string", "integer",
+         -- "boolean", "string", "string", "dimension", "integer", "string",
+         -- "string", "string", "string", "integer", "dimension", "string",
+         -- "string", "string", "string", "integer",
+            "boolean", "argument", "argument", "dimension", "integer",
+            "argument", "argument", "argument", "argument", "integer",
+            "dimension", "argument", "argument", "argument", "argument",
+            "integer",
         },
         actions   = function (
                         global,          -- \ifx\fontclass\empty\s!false\else\s!true\fi
@@ -1181,7 +1186,6 @@ do  -- else too many locals
                         fontfallbacks,   -- \m_font_fallbacks
                         mathsize,        -- \fontface
                         textsize,        -- \d_font_scaled_text_face
-                        relativeid,      -- \relativefontid
                         classgoodies,    -- \m_font_class_goodies
                         goodies,         -- \m_font_goodies
                         classdesignsize, -- \m_font_class_designsize

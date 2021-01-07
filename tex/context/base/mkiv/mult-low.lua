@@ -541,7 +541,8 @@ return {
         "prelistbox", "postlistbox", "prelistcopy", "postlistcopy", "setprelistbox", "setpostlistbox",
         --
         "noligaturing", "nokerning", "noexpansion", "noprotrusion",
-        --
+        "noleftkerning", "noleftligaturing", "norightkerning", "norightligaturing",
+         --
         "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
         --
         "pushoverloadmode", "popoverloadmode",

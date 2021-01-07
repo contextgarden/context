@@ -53,6 +53,7 @@ appendaction("processors",   "fonts",       "typesetters.fontkerns.handler",    
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs",                     nil, "nonut",  "enabled"   )
 appendaction("processors",   "fonts",       "builders.kernel.ligaturing",                       nil, "nut",    "disabled"  )
 appendaction("processors",   "fonts",       "builders.kernel.kerning",                          nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "nodes.handlers.show",                              nil, "nut",    "disabled"  )
 appendaction("processors",   "fonts",       "nodes.handlers.stripping",                         nil, "nut",    "disabled"  )
 appendaction("processors",   "fonts",       "nodes.handlers.flatten",                           nil, "nut",    "disabled"  )
 appendaction("processors",   "fonts",       "fonts.goodies.colorschemes.coloring",              nil, "nut",    "disabled"  )

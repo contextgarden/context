@@ -756,12 +756,28 @@
      {\clf_currentposthyphenchar post}%
      {replace}}
 
-%D Also new:
+%D A typical \LMTX\ feature:
+%D
+%D \starttyping
+%D whatever\par
+%D {\nokerning whatever}\par
+%D efficient ff fi\par
+%D {\noligaturing efficient ff fi}\par
+%D {\nokerning\noligaturing efficient ff fi}\par
+%D {e{\noligaturing ffi}cient}\par
+%D {ef{\noleftligaturing f}icient ff fi}\par
+%D {ef{\norightligaturing f}icient ff fi}\par
+%D \stoptyping
 
 \immutable\chardef\nokerningcode   \numexpr\noleftkerncode    +\norightkerncode    \relax
 \immutable\chardef\noligaturingcode\numexpr\noleftligaturecode+\norightligaturecode\relax
 
 \permanent\protected\def\nokerning   {\bitwiseflip\glyphoptions\nokerningcode}
 \permanent\protected\def\noligaturing{\bitwiseflip\glyphoptions\noligaturingcode}
+
+\permanent\protected\def\noleftkerning    {\bitwiseflip\glyphoptions\noleftkerncode}
+\permanent\protected\def\noleftligaturing {\bitwiseflip\glyphoptions\noleftligaturecode}
+\permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkerncode}
+\permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligaturecode}
 
 \protect \endinput

@@ -102,7 +102,6 @@ local nuts = {
     getyscale               = direct.getyscale,
     getxyscales             = direct.getxyscales,
     getorientation          = direct.getorientation,
-    getwhatever             = direct.getwhatever, -- experimental hook
     getoptions              = direct.getoptions,
     getpenalty              = direct.getpenalty,
     getpost                 = direct.getpost,
@@ -236,6 +235,7 @@ local nuts = {
     write                   = direct.write,
     append                  = direct.append,
     has_glyph_option        = direct.has_glyph_option,
+    show                    = direct.show,
 }
 
 nodes.nuts      = nuts
