@@ -17,43 +17,25 @@
 
 %D Experiment:
 
-\installcorenamespace{scaledfont}
-\installcorenamespace{scaledfontxscale}
-\installcorenamespace{scaledfontyscale}
+\installcorenamespace{tweakedfont}
 
-\installcommandhandler \??scaledfont {scaledfont} \??scaledfont
+\installcommandhandler \??tweakedfont {tweakedfont} \??tweakedfont
 
 \appendtoks
-    \ifempty\currentscaledfont\else
-        \expandafter\integerdef\csname\??scaledfontxscale\currentscaledfont\endcsname\numericscale\scaledfontparameter\c!xscale\relax
-        \expandafter\integerdef\csname\??scaledfontyscale\currentscaledfont\endcsname\numericscale\scaledfontparameter\c!yscale\relax
-    \fi
-\to \everysetupscaledfont
+    % we can optimize for zero and 1000 .. maybe also options?
+    \overloaded\frozen\protected\edefcsname\currenttweakedfont\endcsname
+      {\begincsname\tweakedfontparameter\c!style\endcsname
+       \glyphxscale \numexpr\glyphxscale *\numericscale\tweakedfontparameter\c!xscale /\plusthousand\relax
+       \glyphyscale \numexpr\glyphyscale *\numericscale\tweakedfontparameter\c!yscale /\plusthousand\relax
+       \glyphxoffset\dimexpr\glyphxoffset+\tweakedfontparameter\c!xoffset\relax
+       \glyphyoffset\dimexpr\glyphyoffset+\tweakedfontparameter\c!yoffset\relax}%
+\to \everydefinetweakedfont
 
-\integerdef\bodyglyphscale\plusthousand
-
-\appendtoks
-    \expandafter\integerdef\csname\??scaledfontxscale\currentscaledfont\endcsname\numericscale\scaledfontparameter\c!xscale\relax
-    \expandafter\integerdef\csname\??scaledfontyscale\currentscaledfont\endcsname\numericscale\scaledfontparameter\c!yscale\relax
-    \overloaded\frozen\protected\edefcsname\currentscaledfont\endcsname
-      {\glyphxscale\numexpr\csname\??scaledfontxscale\currentscaledfont\endcsname*\bodyglyphscale/\plusthousand\relax
-       \glyphyscale\numexpr\csname\??scaledfontyscale\currentscaledfont\endcsname*\bodyglyphscale/\plusthousand\relax
-       \begincsname\scaledfontparameter\c!style\endcsname}%
-\to \everydefinescaledfont
-
-\setupscaledfont
+\setuptweakedfont
   [\c!scale=\plusthousand,
-   \c!xscale=\scaledfontparameter\c!scale,
-   \c!yscale=\scaledfontparameter\c!scale]
-
-% \installcorenamespace{scaledfontbody}
-%
-% \permanent\protected\def\definescaledfontbody[#1]#*[#2]% only for testing
-%   {%\expandafter\integerdef\csname\??scaledfontbody#1\endcsname\integerdef\bodyglyphscale\numericscale#2\relax
-%    \frozen\protected\defcsname#1\endcsname%
-%      {\integerdef\bodyglyphscale\numericscale#2\relax
-%       \glyphxscale\bodyglyphscale
-%       \glyphyscale\bodyglyphscale
-%       \the\everybodyfont}}
+   \c!xscale=\tweakedfontparameter\c!scale,
+   \c!yscale=\tweakedfontparameter\c!scale,
+   \c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint]
 
 \protect \endinput

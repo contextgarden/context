@@ -792,7 +792,6 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 if lg then
                     stop     = current
                     ligature = lg
-                 -- current  = getnext(current)
                     current  = nxt
                 else
                     break
@@ -869,7 +868,8 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                     match = true
                 end
             end
-            if not match and (not pre or not replace) then
+            -- is this test ok:
+            if not match and not pre or not replace then
                 local nxt, char = isnextchar(getnext(discfound),currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                 if char and ligature[char] then
                     match = true
@@ -1540,7 +1540,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
                         -- else
                             current = nxt
                         -- end
-                    else
+                        else
                         local lg = ligatures[schar]
                         if lg then
                             ligatures       = lg
@@ -2515,10 +2515,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         end
         checkdisc = getprev(head)
     end
-    local currentfont   = currentfont   -- really ?
-    local currentscale  = currentscale  -- really ?
-    local currentxscale = currentxscale -- really ?
-    local currentyscale = currentyscale -- really ?
+ -- local currentfont   = currentfont   -- really ?
+ -- local currentscale  = currentscale  -- really ?
+ -- local currentxscale = currentxscale -- really ?
+ -- local currentyscale = currentyscale -- really ?
 
     local skipped   -- = false
 
@@ -2576,11 +2576,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             if trace_skips then
                                 show_skip(dataset,sequence,char,ck,classes[char])
                             end
-                         -- last = getnext(last)
                             last = nxt
                         elseif seq[n][char] then
                             if n < l then
-                             -- last = getnext(last)
                                 last = nxt
                             end
                             n = n + 1
@@ -2657,7 +2655,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             end
                         end
                         -- maybe only if match
-                     -- last = getnext(last)
                         last = nxt
                     else
                         goto next
@@ -2688,11 +2685,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                     if trace_skips then
                                         show_skip(dataset,sequence,char,ck,classes[char])
                                     end
-                                 -- prev = getprev(prev)
                                     prev = prv
                                 elseif seq[n][char] then
                                     if n > 1 then
-                                     -- prev = getprev(prev)
                                         prev = prv
                                     end
                                     n = n - 1
@@ -2776,20 +2771,17 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                          -- elseif id == glue_code and seq[n][32] and isspace(prev,threshold,id) then
                          -- elseif seq[n][32] and spaces[prev] then
                          --     n = n - 1
-                         --  -- prev = getprev(prev)
                          --     prev = prv
                             elseif id == glue_code then
                                 local sn = seq[n]
                                 if (sn[32] and spaces[prev]) or sn[0xFFFC] then
                                     n = n - 1
-                                 -- prev = getprev(prev)
                                     prev = prv
                                 else
                                     goto next
                                 end
                             elseif seq[n][0xFFFC] then
                                 n = n - 1
-                             -- prev = getprev(prev)
                                 prev = prv
                             else
                                 goto next
@@ -2825,11 +2817,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                 if trace_skips then
                                     show_skip(dataset,sequence,char,ck,classes[char])
                                 end
-                             -- current = getnext(current) -- was absent
                                 current = nxt -- was absent
                             elseif seq[n][char] then
                                 if n < s then -- new test
-                                    current = getnext(current) -- was absent
+                                    current = nxt -- was absent
                                 end
                                 n = n + 1
                             elseif discfound then
@@ -2861,6 +2852,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             notmatchpost[current]    = true
                             notmatchreplace[current] = nil
                             local pre, post, replace = getdisc(current)
+                            -- no detailed checking here, todo ?
                             if pre then
                                 local n = n
                                 while pre do
@@ -2909,14 +2901,12 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             local sn = seq[n]
                             if (sn[32] and spaces[current]) or sn[0xFFFC] then
                                 n = n + 1
-                             -- current = getnext(current)
                                 current = nxt
                             else
                                 goto next
                             end
                         elseif seq[n][0xFFFC] then
                             n = n + 1
-                         -- current = getnext(current)
                             current = nxt
                         else
                             goto next
@@ -3435,9 +3425,11 @@ local function c_run_single(head,lookupcache,step,dataset,sequence,rlmode,skipha
                 if ok then
                     done = true
                 end
-            end
-            if start then
-                start = getnext(start)
+                if start then
+                    start = getnext(start)
+                end
+            else
+                start = nxt
             end
         elseif char == false then
             return head, done
@@ -3445,7 +3437,7 @@ local function c_run_single(head,lookupcache,step,dataset,sequence,rlmode,skipha
             -- else we loose the rest
             return head, done
         else
-            -- in disc component
+            -- in disc component ... really?
             start = nxt
         end
     end
@@ -3460,7 +3452,7 @@ local function t_run_single(start,stop,lookupcache)
             local lookupmatch = lookupcache[char]
             if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
                 -- if we need more than ligatures we can outline the code and use functions
-                local s     = startnext
+                local s     = nxt
                 local ss    = nil
                 local sstop = s == stop
                 if not s then
@@ -3519,7 +3511,7 @@ local function t_run_single(start,stop,lookupcache)
             if lastd then
                 return lastd
             else
-                start = startnext
+                start = nxt
             end
         else
             break
@@ -4091,13 +4083,12 @@ do
         local position  = 0
 
         while start do
-            local nxt, char, id = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char, id = isnextchar(start,currentfont,currentdynamic)
             if char then
                 position = position + 1
                 local m = merged[char]
                 if m then
                     if skiphash and skiphash[char] then -- we never needed it here but let's try
-                     -- start = getnext(start)
                         start = nxt
                     else
                         for i=m[1],m[2] do
@@ -4105,6 +4096,7 @@ do
                             local lookupcache = step.coverage
                             local lookupmatch = lookupcache[char]
                             if lookupmatch then
+                                currentscale, currentxscale, currentyscale = getscales(start)
                                 local ok
                                 head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                 if ok then
@@ -4129,20 +4121,16 @@ do
                 end
             elseif char == false or id == glue_code then
                 -- a different font|state or glue (happens often)
-             -- start = getnext(start)
                 start = nxt
             elseif id == math_code then
                 start = getnext(end_of_math(start))
             elseif id == dir_code then
                 topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-             -- start = getnext(start)
                 start = nxt
          -- elseif id == par_code and start_of_par(start) then
          --     rlparmode, rlmode = pardirstate(start)
-         --  -- start = getnext(start)
              -- start = nxt
             else
-             -- start = getnext(start)
                 start = nxt
             end
         end

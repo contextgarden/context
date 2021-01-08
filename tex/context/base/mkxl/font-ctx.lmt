@@ -31,7 +31,7 @@ local round = math.round
 
 local context, commands = context, commands
 
-local P, S, C, Cc, Cf, Cg, Ct, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.match
+local P, R, S, C, Cc, Cf, Cg, Ct, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.match
 
 local trace_features      = false  trackers.register("fonts.features",   function(v) trace_features   = v end)
 local trace_defining      = false  trackers.register("fonts.defining",   function(v) trace_defining   = v end)
@@ -1038,8 +1038,12 @@ definers.registersplit(":",colonized,"direct")
 
 local sizepattern, splitpattern, specialscale  do
 
+    -- todo: use lpeg.patterns
+
     ----- space          = P(" ")
     ----- spaces         = space^0
+    local digit          = R('09')
+    local period         = P(".")
     local leftparent     = (P"(")
     local rightparent    = (P")")
     local leftbrace      = (P"{")
@@ -1047,27 +1051,31 @@ local sizepattern, splitpattern, specialscale  do
     local withinparents  = leftparent * (1-rightparent)^0 * rightparent
     local withinbraces   = leftbrace  * (1-rightbrace )^0 * rightbrace
     local value          = C((withinparents + withinbraces + (1-space))^1)
-    local dimension      = C((space/"" + P(1))^1)
+ -- local dimension      = C((space/"" + P(1))^1)
+    local dimension      = Cs((digit+period)^1 * (spaces/"") * (P(1)-digit)^0)
+--     local scaler         = C((digit+period)^1)
+    local scaler         = lpeg.patterns.unsigned/function(s) return round(tonumber(s)*1000) end
+                         + C(lpeg.patterns.cardinal)
     local rest           = C(P(1)^0)
-    local scale_none     =                     Cc(0)
-    local scale_at       = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
-    local scale_sa       = P("sa")           * Cc(2) * spaces * dimension -- number
-    local scale_mo       = P("mo")           * Cc(3) * spaces * dimension -- number
-    local scale_scaled   = P("scaled")       * Cc(4) * spaces * dimension -- number
-    local scale_ht       = P("ht")           * Cc(5) * spaces * dimension -- dimension
-    local scale_cp       = P("cp")           * Cc(6) * spaces * dimension -- dimension
+    local scale_none     =                      Cc(0)
+    local scale_at       = (P("at") + P("@")) * Cc(1) * spaces * dimension -- dimension
+    local scale_sa       = P("sa")            * Cc(2) * spaces * dimension -- number
+    local scale_mo       = P("mo")            * Cc(3) * spaces * dimension -- number
+    local scale_scaled   = P("scaled")        * Cc(4) * spaces * dimension -- number
+    local scale_ht       = P("ht")            * Cc(5) * spaces * dimension -- dimension
+    local scale_cp       = P("cp")            * Cc(6) * spaces * dimension -- dimension
 
     specialscale = { [5] = "ht", [6] = "cp" }
 
-    sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
+    sizepattern  = spaces * ((scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled) * (spaces * scaler)^0 + scale_none)
     splitpattern = spaces * value * spaces * rest
 
 end
 
 function helpers.splitfontpattern(str)
     local name, size = lpegmatch(splitpattern,str)
-    local kind, size = lpegmatch(sizepattern,size)
-    return name, kind, size
+    local kind, size = lpegmatch(sizepattern,size) -- sx, sy
+    return name, kind, size                        -- sx, sy
 end
 
 function helpers.fontpatternhassize(str)
@@ -1124,13 +1132,19 @@ do  -- else too many locals
             end
             -- we can also use a count for the size
             if size and size ~= "" then
-                local mode, size = lpegmatch(sizepattern,size)
-                if size and mode then
+                local mode, size, sx, sy = lpegmatch(sizepattern,size)
+                if mode and size and size ~= "" then
                     texsetcount("scaledfontmode",mode)
                  -- ctx_setsomefontsize(size)
                     -- We use a catcodetable, just in case it's 1.2\exheight (a corner case that showed
                     -- up in the lmtx manual: marking that changed size in the mids of some verbatim).
                     setmacro(ctxcatcodes,"somefontsize",size)
+                    if sx then
+                        setmacro("somefontsizex",sx)
+                    end
+                    if sy then
+                        setmacro("somefontsizey",sy)
+                    end
                 else
                     texsetcount("scaledfontmode",0)
                  -- ctx_setemptyfontsize()

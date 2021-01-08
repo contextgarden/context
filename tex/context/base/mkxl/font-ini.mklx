@@ -657,9 +657,11 @@
 \permanent\def\safontscale{\number\dimexpr\v_font_size_absolute\relax}
 \permanent\def\mofontscale{\number\dimexpr\font_basics_set_mapped_fontsize\v_font_size_absolute\relax}
 
-\mutable\let\somefontname\s!unknown
-\mutable\let\somefontspec\s!unknown
-\mutable\let\somefontsize\zerocount
+\mutable\let\somefontname \s!unknown
+\mutable\let\somefontspec \s!unknown
+\mutable\let\somefontsize \zerocount
+\mutable\let\somefontsizey\empty
+\mutable\let\somefontsizey\empty
 
 \newcount\scaledfontmode  % also used at the lua end
 \newcount\scaledfontsize  % also used at the lua end
@@ -705,6 +707,8 @@
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
    \let\somefontsize\empty
+   \let\somefontsizex\empty
+   \let\somefontsizey\empty
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
@@ -818,6 +822,8 @@
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
    \let\somefontsize\empty
+   \let\somefontsizex\empty
+   \let\somefontsizey\empty
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
@@ -941,10 +947,18 @@
        \else
          \c_font_future_glyph_scale
        \fi
+     \ifempty\somefontsizex\else
+        \edef\somefontsizex{\glyphxscale\somefontsizex\relax}% todo: inserts relax
+     \fi
+     \ifempty\somefontsizey\else
+        \edef\somefontsizey{\glyphyscale\somefontsizey\relax}%
+     \fi
      \ifempty\fontclass\else\global\fi
      \protected\edefcsname#csname\endcsname
        {\setfontid\the\fontid\csname#csname\endcsname\relax
-        \glyphscale\the\glyphscale\relax}%
+        \glyphscale\the\glyphscale\relax
+        \somefontsizex
+        \somefontsizey}%
      %
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
      \the\everydefinefont
