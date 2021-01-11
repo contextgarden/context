@@ -1095,13 +1095,14 @@ local specifiers = { }
 
 do  -- else too many locals
 
-    local starttiming = statistics.starttiming
-    local stoptiming  = statistics.stoptiming
+    local starttiming     = statistics.starttiming
+    local stoptiming      = statistics.stoptiming
 
-    local setmacro    = tokens.setters.macro
-    local ctxcatcodes = tex.ctxcatcodes
+    local setmacro        = tokens.setters.macro
+    local ctxcatcodes     = tex.ctxcatcodes
+    local texconditionals = tex.conditionals
 
-    local reported    = setmetatableindex(function(t,k)
+    local reported = setmetatableindex(function(t,k)
         local v = setmetatableindex(function(t,k)
             t[k] = true
             return false
@@ -1226,6 +1227,9 @@ do  -- else too many locals
                 name = o_name
                 sub = o_sub
             end
+if texconditionals["c_font_compact"] then
+    size = 655360
+end
             -- so far
             -- some settings can have been overloaded
             if lookup and lookup ~= "" then

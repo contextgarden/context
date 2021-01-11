@@ -884,9 +884,8 @@
    \fi
    \c_font_future_glyph_scale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax
    \glyphscale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax % needed ? for math i guess
-% \glyphscale\plusthousand
-   \d_font_scaled_font_size\d_font_scaled_default
-   \d_font_scaled_text_face\d_font_scaled_default
+ % \d_font_scaled_font_size\d_font_scaled_default
+ % \d_font_scaled_text_face\d_font_scaled_default
    %
    \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
    % this has to happen at the tex end ...
@@ -898,23 +897,6 @@
    \font_helpers_update_font_class_parameters
    % ... till here
   %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
-%    \clf_definefont_two
-%       \ifempty\fontclass\s!false\else\s!true\fi
-%       {#csname}%
-%       {\somefontfile}%
-%       \d_font_scaled_font_size
-%       \c_font_feature_inheritance_mode
-%       {\m_font_class_features}%
-%       {\m_font_features}%
-%       {\m_font_class_fallbacks}%
-%       {\m_font_fallbacks}%
-%       \fontface
-%       \d_font_scaled_text_face
-%       {\m_font_class_goodies}%
-%       {\m_font_goodies}%
-%       {\m_font_class_designsize}%
-%       {\m_font_designsize}%
-%       \scaledfontmode
    \clf_definefont_two
       \ifempty\fontclass\s!false\else\s!true\fi
       {#csname}%
@@ -926,7 +908,7 @@
       \m_font_class_fallbacks
       \m_font_fallbacks
       \fontface
-      \d_font_scaled_text_face
+      \d_font_scaled_default
       \m_font_class_goodies
       \m_font_goodies
       \m_font_class_designsize
@@ -943,7 +925,7 @@
      %
      \glyphscale
        \ifnum\c_font_scaled_font_mode_saved>\plusfour
-         \numexpr\plusthousand*\dimexpr\d_font_scaled_font_size\relax/\c_font_scaled_points\relax
+         \numexpr\plusthousand*\dimexpr\d_font_scaled_default\relax/\c_font_scaled_points\relax
        \else
          \c_font_future_glyph_scale
        \fi

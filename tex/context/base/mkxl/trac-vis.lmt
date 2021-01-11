@@ -57,6 +57,7 @@ local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getexpansion        = nuts.getexpansion
 local getstate            = nuts.getstate
+local getoffsets          = nuts.getoffsets
 
 local isglyph             = nuts.isglyph
 
@@ -878,18 +879,20 @@ local ruledglyph do
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
-            local info
-            --
-            info = setlink(
-                (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
-                    width  = wd,
-                    height = ht,
-                    depth  = dp,
-                    line   = linewidth,
-                    type   = "box",
-                },
-                new_kern(-wd)
-            )
+            local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
+            wd = wd - l_margin - r_margin
+            local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+                width  = wd,
+                height = ht,
+                depth  = dp,
+                line   = linewidth,
+                type   = "box",
+            }
+            if l_margin == 0 then
+                info = setlink(info,new_kern(-wd))
+            else
+                info = setlink(new_kern(-l_margin),info,new_kern(-wd+l_margin))
+            end
             --
             local c, f = isglyph(current)
             local char = chardata[f][c]

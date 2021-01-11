@@ -33,6 +33,8 @@ local trace_collecting   = false  trackers.register("fonts.collecting", function
 
 local report_fonts       = logs.reporter("fonts","collections")
 
+local texconditionals    = tex.conditionals
+
 local enableaction       = nodes.tasks.enableaction
 local disableaction      = nodes.tasks.disableaction
 
@@ -236,7 +238,7 @@ function collections.clonevector(name)
         if factor then
             vector.factor = factor
         end
-if tex.conditionals["c_font_compact"] then
+if texconditionals["c_font_compact"] then
         if rscale then
             vector.rscale = rscale
         end
@@ -342,7 +344,7 @@ function collections.prepare(name) -- we can do this in lua now .. todo
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
-if tex.conditionals["c_font_compact"] then
+if texconditionals["c_font_compact"] then
     scale = 1
 end
             if fontpatternhassize(name) then

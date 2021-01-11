@@ -14,6 +14,8 @@ local registerotffeature = fonts.handlers.otf.features.register
 
 local setmetatableindex  = table.setmetatableindex
 
+local texconditionals    = tex.conditionals
+
 -- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
 
 local splitter  = lpeg.splitat(",",tonumber)
@@ -69,7 +71,7 @@ registerotffeature {
 -- A quick and dirty and low level implementation but okay for testing:
 
 local function manipulate(tfmdata,key,value)
-    if tex.conditionals["c_font_compact"] then
+    if texconditionals["c_font_compact"] then
         local rawdata           = tfmdata.shared.rawdata
         local rawresources      = rawdata and rawdata.resources
         local rawfeatures       = rawresources and rawresources.features
@@ -110,7 +112,7 @@ local function manipulate(tfmdata,key,value)
 end
 
 local function initialize(tfmdata,key,value)
-    if tex.conditionals["c_font_compact"] then
+    if texconditionals["c_font_compact"] then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources
         local mathconstants = rawresources.mathconstants

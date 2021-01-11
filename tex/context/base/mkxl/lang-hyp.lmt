@@ -1438,8 +1438,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
                             rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
                             leftexchar  =                 (instance and preexhyphenchar (instance))
                             rightexchar =                 (instance and postexhyphenchar(instance))
-                            leftmin     = leftcharmin  or getfield(current,"left")
-                            rightmin    = rightcharmin or getfield(current,"right")
+                            leftmin     = leftcharmin  or getfield(current,"lhmin")
+                            rightmin    = rightcharmin or getfield(current,"rhmin")
                             if not leftchar or leftchar < 0 then
                                 leftchar = false
                             end
@@ -1516,8 +1516,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
                             rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
                             leftexchar  =                 (instance and preexhyphenchar (instance))
                             rightexchar =                 (instance and postexhyphenchar(instance))
-                            leftmin     = leftcharmin  or getfield(current,"left")
-                            rightmin    = rightcharmin or getfield(current,"right")
+                            leftmin     = leftcharmin  or getfield(current,"lhmin")
+                            rightmin    = rightcharmin or getfield(current,"rhmin")
                             if not leftchar or leftchar < 0 then
                                 leftchar = false
                             end

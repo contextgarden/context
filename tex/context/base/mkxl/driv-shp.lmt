@@ -627,7 +627,7 @@ local hlist_out, vlist_out  do
         for current, id, subtype in nextnode, current do
             if id == glyph_code then
                 local char, font = isglyph(current)
-                local x_offset, y_offset = getoffsets(current) -- todo: also get scales here
+                local x_offset, y_offset, left, right, raise = getoffsets(current)
                 if x_offset ~= 0 or y_offset ~= 0 then
                     if pos_r == righttoleft_code then
                         pos_h = ref_h - (cur_h + x_offset)
@@ -637,8 +637,10 @@ local hlist_out, vlist_out  do
                     pos_v = ref_v - (cur_v - y_offset)
                     -- synced
                 end
+                pos_v = pos_v + raise
+                pos_h = pos_h - left
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
-                cur_h = cur_h + wd
+                cur_h = cur_h + wd - right
             elseif id == glue_code then
                 local gluewidth = effectiveglue(current,this_box)
                 if gluewidth ~= 0 then
@@ -834,8 +836,8 @@ local hlist_out, vlist_out  do
                     if total > 0 then
                         local xoffset, yoffset, left, right = getoffsets(current) -- top bottom
                         if left ~= 0 then
-                            pos_v  = pos_v + left
-                            total  = total - left
+                            pos_v = pos_v + left
+                            total = total - left
                         end
                         if right ~= 0 then
                             depth = depth - right
@@ -995,8 +997,7 @@ local hlist_out, vlist_out  do
                             local total = height + depth
                             if getid(leader) == rule_code then
                                 depth = 0 -- hm
--- forgotten ... needs testing
-total = glueheight
+                                total = glueheight -- forgotten ... needs testing
                                 if total > 0 then
                                     if width == running then
                                         width = boxwidth
