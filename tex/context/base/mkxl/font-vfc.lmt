@@ -71,13 +71,111 @@ function helpers.appendcommandtable(commands,t)
 end
 
 helpers.commands = utilities.storage.allocate {
-    char  = setmetatableindex(function(t,k) local v = { "slot",   0, k } t[k] = v return v end),
-    right = setmetatableindex(function(t,k) local v = { "right",  k    } t[k] = v return v end),
-    left  = setmetatableindex(function(t,k) local v = { "right", -k    } t[k] = v return v end), -- todo: left
-    down  = setmetatableindex(function(t,k) local v = { "down",   k    } t[k] = v return v end),
-    up    = setmetatableindex(function(t,k) local v = { "down",  -k    } t[k] = v return v end), -- todo: up
+    char  = setmetatableindex(function(t,k) local v = { "slot",  0, k } t[k] = v return v end),
+    right = setmetatableindex(function(t,k) local v = { "right", k    } t[k] = v return v end),
+    left  = setmetatableindex(function(t,k) local v = { "left",  k    } t[k] = v return v end),
+    down  = setmetatableindex(function(t,k) local v = { "down",  k    } t[k] = v return v end),
+    up    = setmetatableindex(function(t,k) local v = { "up",    k    } t[k] = v return v end),
     push  = push,
     pop   = pop,
     dummy = dummy,
 }
 
+helpers.vfinjectors = {
+    -- backend specific: startcolor, stopcolor etc
+}
+
+-- maybe round()
+
+local defaultline = 16384
+
+helpers.vfspecials = {
+
+    backgrounds = setmetatableindex(function(t,h)
+        local v = setmetatableindex(function(t,d)
+            local v = setmetatableindex(function(t,w)
+                local v = { "frame", w, h, d, defaultline, true, true }
+                t[w] = v
+                return v
+            end)
+            t[d] = v
+            return v
+        end)
+        t[h] = v
+        return v
+    end),
+
+    outlines = setmetatableindex(function(t,h)
+        local v = setmetatableindex(function(t,d)
+            local v = setmetatableindex(function(t,w)
+                local v = { "frame", w, h, d, defaultline, false, true }
+                t[w] = v
+                return v
+            end)
+            t[d] = v
+            return v
+        end)
+        t[h] = v
+        return v
+    end),
+
+}
+
+-- In the past we only copied when we had something that got scaled but the problem
+-- is that we then run into issues when we extend a commands in the parent. This
+-- needs checking. When we go to glyph scaling, this can go away.
+--
+-- The alternative is to work with unscaled values and always do scaling at the
+-- TeX end. So, then we need accessors instead of tables and we also need to check
+-- all the context code: where do we access values?
+--
+-- On the other hand, in glyph scale mode we hardly do any scaling so we seldom
+-- call the next one.
+--
+-- What if we use named fields: then we can scale by field name.
+
+local scaled = {
+    right  = true,
+    down   = true,
+    left   = true,
+    right  = true,
+    offset = true,
+    rule   = true,
+    char   = false,
+    font   = false,
+    slot   = false,
+    use    = false,
+    push   = false,
+    pop    = false,
+    lua    = false,
+    -- obsolete
+    node   = false,
+    -- additional ones are never scaled (color etc)
+}
+
+function helpers.scalecommands(list,hdelta,vdelta)
+    local n = #list
+    for i=1,n do
+        local key = list[i][1]
+        if scaled[list[i][1]] then
+            local result = { }
+            for i=1,n do
+                local cmd = list[i]
+                local key = ivc[1]
+                if key == "right" or key == "left" then
+                    result[i] = { key, cmd[2]*hdelta }
+                elseif key == "down" or key == "up" then
+                    result[i] = { key, cmd[2]*vdelta }
+                elseif key == "offset" or key == "rule" then
+                    result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta }
+             -- elseif key == "frame" then
+             --     result[i] = cmd -- already scaled, for now
+                else
+                    result[i] = cmd -- shared since in cache and untouched
+                end
+            end
+            return result
+        end
+    end
+    return list
+end

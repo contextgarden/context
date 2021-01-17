@@ -80,6 +80,34 @@ registerotffeature {
     }
 }
 
+function fonts.helpers.mathscriptslots(tfmdata,textcode)
+    local rawdata           = tfmdata.shared.rawdata
+    local rawresources      = rawdata and rawdata.resources
+    local rawfeatures       = rawresources and rawresources.features
+    local basesubstitutions = rawfeatures and rawfeatures.gsub
+    local sequences         = basesubstitutions and tfmdata.resources.sequences
+    if sequences then
+        local characters = tfmdata.characters
+        if characters[textcode] then
+            for s=1,#sequences do
+                local sequence  = sequences[s]
+                local sfeatures = sequence.features
+                if sfeatures and sfeatures.ssty then
+                    local steps = sequence.steps
+                    for i=1,#steps do
+                        local coverage = steps[i].coverage
+                        if coverage then
+                            local okay = coverage[textcode]
+                            if okay then
+                                return okay
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
 local function initialize(tfmdata,key,value)
     if value then
         local rawdata       = tfmdata.shared.rawdata

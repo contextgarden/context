@@ -1,0 +1,55 @@
+%D \module
+%D   [       file=attr-alt,
+%D        version=2007.06.06,
+%D          title=\CONTEXT\ Attribute Macros,
+%D       subtitle=Alternates,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Attribute Macros / Alternates}
+
+\registerctxluafile{attr-alt}{autosuffix}
+
+%D The main reason for providing this is that we need to make sure we have no
+%D dangling end markers when we cross a page. Public viewers don't seem to support
+%D actual text at all and acrobat has some funny selection issues.
+%D
+%D \starttyping
+%D test
+%D     \startalternate[text={A}]
+%D         \dorecurse{10}{A }
+%D         \startalternate[text={B}]
+%D             \dorecurse{10}{B }
+%D         \stopalternate
+%D         \dorecurse{10}{A }
+%D     \stopalternate
+%D test \par
+%D \stoptyping
+%D
+%D \starttyping
+%D test \startalternate[text={e=mc^2}]!$e=mc^2$\stopalternate\par
+%D test \alternate{e=mc^2}{copy:}\nbsp$e=mc^2$\par
+%D \stoptyping
+
+\unprotect
+
+\permanent\protected\def\startalternate[#1]% maybe better/also: [text={...}]
+  {\begingroup
+   \getdummyparameters[\c!text=,#1]%
+   \clf_setalternate text {\dummyparameter\c!text}\relax}
+
+\permanent\protected\def\stopalternate
+  {\endgroup}
+
+\permanent\protected\def\alternate#1%
+  {\groupedcommand{\clf_setalternate text {#1}\relax}{}}
+
+\permanent\protected\def\setalternate  #1{\clf_setalternate text {#1}\relax}
+\permanent\protected\def\resetalternate  {\clf_resetalternate}
+
+\protect \endinput

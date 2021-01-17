@@ -242,6 +242,8 @@ do -- this will move to its own module
         return false
     end
 
+    -- list of tonumber keywords
+
     local function initializemps(tfmdata,kind,value)
         if value then
             local specification = settings_to_hash_strict(value)
@@ -256,9 +258,20 @@ do -- this will move to its own module
                 local categories = settings_to_array(category)
                 local usedshapes = nil
                 local index      = 0
-                local spread     = tonumber(specification.spread or 0)
+                local spread     = tonumber(specification.spread or 0) -- hm
                 local hascolor   = hascolorspec(specification)
-                specification.spread = spread -- now a number
+
+                specification.spread = spread -- now a number, maybe also for slant, weight etc
+
+                local preroll = specification.preroll
+                if preroll then
+                    metapost.simple(instance,"begingroup;",true,true)
+                    metapost.setparameterset("mpsfont",specification)
+                    metapost.simple("simplefun",preroll)
+                    metapost.setparameterset("mpsfont")
+                    metapost.simple(instance,"endgroup;",true,true)
+                end
+
                 for i=1,#categories do
                     local category  = categories[i]
                     local mpsshapes = shapes[category]
@@ -291,25 +304,39 @@ do -- this will move to its own module
                         }
                         -- todo: deal with extensibles and more properties
                         for unicode, shape in sortedhash(mpsshapes.glyphs) do
-                         -- local oldc = characters[unicode]
-                         -- if oldc then
-                                index = index + 1 -- todo: somehow we end up with 2 as first entry after 0
-                                local wd = shape.width  or defaultwidth
-                                local ht = shape.height or defaultheight
-                                local dp = shape.depth  or defaultdepth
-                                local newc = {
-                                    index   = index, -- into usedshapes
-                                    width   = scale * (wd + spread),
-                                    height  = scale * ht,
-                                    depth   = scale * dp,
-                                    unicode = unicode,
-                                }
-                                --
-                                characters  [unicode] = newc
-                                descriptions[unicode] = newc
-                                --
-                                usedshapes[unicode] = shape.code or defaultcode
-                         -- end
+                            index = index + 1 -- todo: somehow we end up with 2 as first entry after 0
+                            local wd = shape.width  or defaultwidth
+                            local ht = shape.height or defaultheight
+                            local dp = shape.depth  or defaultdepth
+                            local uc = shape.tounicode
+                            if uc then
+                                uc = round(uc) -- brrr can be 123.0
+                            end
+                            local newc = {
+                                index   = index, -- into usedshapes
+                                width   = scale * (wd + spread),
+                                height  = scale * ht,
+                                depth   = scale * dp,
+                                unicode = uc or unicode,
+                            }
+                            --
+                            characters  [unicode] = newc
+                            descriptions[unicode] = newc
+                            usedshapes  [unicode] = shape.code or defaultcode
+                            --
+                            -- This is a way to get/use randomized shapes (see punk example).
+                            --
+                            if uc and uc ~= unicode then
+                                local c = characters[uc]
+                                if c then
+                                    local v = c.variants
+                                    if v then
+                                        v[#v + 1] = unicode
+                                    else
+                                        c.variants = { unicode }
+                                    end
+                                end
+                            end
                         end
                     end
                 end

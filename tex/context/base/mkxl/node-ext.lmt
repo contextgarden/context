@@ -1,0 +1,650 @@
+if not modules then modules = { } end modules ['back-out'] = {
+    version   = 1.001,
+    comment   = "companion to back-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type, unpack, rawset = type, unpack, type
+local loadstring = loadstring
+local sind, cosd, abs = math.sind, math.cosd, math.abs
+local insert, remove = table.insert, table.remove
+
+local context             = context
+local implement           = interfaces.implement
+
+local allocate            = utilities.storage.allocate
+
+local formatters          = string.formatters
+
+local get                 = token.get_index -- getters
+local scanners            = tokens.scanners
+local scaninteger         = scanners.integer
+local scanstring          = scanners.string
+local scankeyword         = scanners.keyword
+local scantokenlist       = scanners.tokenlist
+local scannumber          = scanners.number
+
+local nuts                = nodes.nuts
+local tonode              = nuts.tonode
+local copynut             = nuts.copy
+local nutpool             = nuts.pool
+local nodepool            = nodes.pool
+
+local nodeproperties      = nodes.properties.data
+
+local register            = nutpool.register
+local newnut              = nuts.new
+local tonode              = nodes.tonode
+
+-- Whatsits are a generic node type with very few fields. We use them to implement
+-- whatever we like. Some are good old tex whatsits but many are specific to the
+-- macro package. They are part of the backend.
+
+backends                  = backends or { }
+local backends            = backends
+
+local whatsit_code        = nodes.nodecodes.whatsit
+local whatsitcodes        = allocate { }
+nodes.whatsitcodes        = whatsitcodes
+local lastwhatsit         = 0
+
+nodes.subtypes.whatsit    = whatsitcodes
+
+local function registerwhatsit(name)
+    lastwhatsit = lastwhatsit + 1
+    whatsitcodes[lastwhatsit] = name
+    whatsitcodes[name] = lastwhatsit
+    return lastwhatsit
+end
+
+local function registerwhatsitnode(name)
+    return register(newnut(whatsit_code,registerwhatsit(name)))
+end
+
+-- We only have a subset of literals. In fact, we try to avoid literals.
+
+do
+
+    local literalvalues = allocate { }
+    nodes.literalvalues = literalvalues
+    local lastliteral   = 0
+    local literalnode   = registerwhatsitnode("literal")
+
+    local function registerliteral(name,alias)
+        lastliteral = lastliteral + 1
+        literalvalues[lastliteral] = name
+        literalvalues[name] = lastliteral
+        if alias then
+            literalvalues[alias] = lastliteral
+        end
+        return lastliteral
+    end
+
+    local originliteral_code = registerliteral("origin")
+    local pageliteral_code   = registerliteral("page")
+    local directliteral_code = registerliteral("always","direct")
+    local rawliteral_code    = registerliteral("raw")
+    local textliteral_code   = registerliteral("text") -- not to be used
+    local fontliteral_code   = registerliteral("font") -- not to be used
+
+    function nutpool.originliteral(str) local t = copynut(literalnode) nodeproperties[t] = { data = str, mode = originliteral_code } return t end
+    function nutpool.pageliteral  (str) local t = copynut(literalnode) nodeproperties[t] = { data = str, mode = pageliteral_code   } return t end
+    function nutpool.directliteral(str) local t = copynut(literalnode) nodeproperties[t] = { data = str, mode = directliteral_code } return t end
+    function nutpool.rawliteral   (str) local t = copynut(literalnode) nodeproperties[t] = { data = str, mode = rawliteral_code    } return t end
+
+    local pdfliterals = {
+        [originliteral_code] = originliteral_code, [literalvalues[originliteral_code]] = originliteral_code,
+        [pageliteral_code]   = pageliteral_code,   [literalvalues[pageliteral_code]]   = pageliteral_code,
+        [directliteral_code] = directliteral_code, [literalvalues[directliteral_code]] = directliteral_code,
+        [rawliteral_code]    = rawliteral_code,    [literalvalues[rawliteral_code]]    = rawliteral_code,
+    }
+
+    function nutpool.literal(mode,str)
+        local t = copynut(literalnode)
+        if str then
+            nodeproperties[t] = { data = str, mode = pdfliterals[mode] or pageliteral_code }
+        else
+            nodeproperties[t] = { data = mode, mode = pageliteral_code }
+        end
+        return t
+    end
+
+end
+
+-- The latelua node is just another whatsit and we handle the \LUA\ code with
+-- other \LUA\ code, contrary to \LUATEX\ where it's a native node.
+
+do
+
+    local getdata     = nuts.getdata
+    local serialize   = token.serialize
+
+    local lateluanode = registerwhatsitnode("latelua")
+    local noflatelua  = 0
+
+    function nutpool.latelua(code)
+        local n = copynut(lateluanode)
+        nodeproperties[n] = { data = code }
+        return n
+    end
+
+    function backends.latelua(current,pos_h,pos_v) -- todo: pass pos_h and pos_v (more efficient in lmtx)
+        local p = nodeproperties[current]
+        if p then
+            data = p.data
+        else
+            data = getdata(current)
+        end
+        noflatelua = noflatelua + 1
+        local kind = type(data)
+        if kind == "table" then
+            data.action(data.specification or data)
+        elseif kind == "function" then
+            data()
+        else
+            if kind ~= "string" then
+                data = serialize(data)
+            end
+            if #data ~= "" then
+                local code = loadstring(data)
+                if code then
+                    code()
+                end
+            end
+        end
+    end
+
+    function backends.getcallbackstate()
+        return { count = noflatelua }
+    end
+
+    implement {
+        name      = "latelua",
+        public    = true,
+        protected = true,
+        actions   = function()
+            local node = copynut(lateluanode)
+            local name = "latelua"
+            if scankeyword("name") then
+                name = scanstring()
+            end
+            local data = scantokenlist()
+            nodeproperties[node] = { name = name, data = data }
+            return context(tonode(node))
+        end,
+    }
+
+end
+
+-- This can be anything. Dealing with these nodes is done via properties, as with
+-- the other whatsits.
+
+do
+
+    local usernode = registerwhatsitnode("userdefined")
+
+    local userids  = allocate()
+    local lastid   = 0
+
+    setmetatable(userids, {
+        __index = function(t,k)
+            if type(k) == "string" then
+                lastid = lastid + 1
+                rawset(userids,lastid,k)
+                rawset(userids,k,lastid)
+                return lastid
+            else
+                rawset(userids,k,k)
+                return k
+            end
+        end,
+        __call = function(t,k)
+            return t[k]
+        end
+    } )
+
+    function nutpool.userdefined(id,data)
+        local n = copynut(usernode)
+        nodeproperties[n] = { id = id, data = data }
+        return n
+    end
+
+    nutpool .usernode = nutpool.userdefined
+    nutpool .userids  = userids
+    nodepool.userids  = userids
+
+end
+
+-- This one is only used by generic packages.
+
+do
+
+    local saveposnode = registerwhatsitnode("savepos")
+
+    function nutpool.savepos()
+        return copynut(saveposnode)
+    end
+
+end
+
+do
+
+    local savenode      = registerwhatsitnode("save")
+    local restorenode   = registerwhatsitnode("restore")
+    local setmatrixnode = registerwhatsitnode("setmatrix")
+
+    local stack         = { }
+    local restore       = true -- false
+
+    -- these are old school nodes
+
+    function nutpool.save()
+        return copynut(savenode)
+    end
+
+    function nutpool.restore()
+        return copynut(restorenode)
+    end
+
+    function nutpool.setmatrix(rx,sx,sy,ry,tx,ty)
+        local t = copynut(setmatrixnode)
+        nodeproperties[t] = { matrix = { rx, sx, sy, ry, tx, ty } }
+        return t
+    end
+
+    -- common
+
+    local function stopcommon(n)
+        local top = remove(stack)
+        if top == false then
+            return -- not wrapped
+        elseif top == true then
+            return copynut(n)
+        elseif top then
+            local t = copynut(n)
+            nodeproperties[t] = { matrix = { unpack(top) } }
+            return t
+        else
+            return -- nesting error
+        end
+    end
+
+    -- matrix
+
+    local startmatrixnode = registerwhatsitnode("startmatrix")
+    local stopmatrixnode  = registerwhatsitnode("stopmatrix")
+
+    local function startmatrix(rx, sx, sy, ry)
+        if rx == 1 and sx == 0 and sy == 0 and ry == 1 then
+            insert(stack,false)
+        else
+            local t = copynut(startmatrixnode)
+            nodeproperties[t] = { matrix = { rx, sx, sy, ry } }
+            insert(stack,store and { -rx, -sx, -sy, -ry } or true)
+            return t
+        end
+    end
+
+    local function stopmatrix()
+        return stopcommon(stopmatrixnode)
+    end
+
+    implement {
+        name    = "startmatrix",
+        actions = function()
+            local rx, sx, sy, ry = 1, 0, 0, 1
+            while true do
+                    if scankeyword("rx") then rx = scannumber()
+                elseif scankeyword("ry") then ry = scannumber()
+                elseif scankeyword("sx") then sx = scannumber()
+                elseif scankeyword("sy") then sy = scannumber()
+                else   break end
+            end
+            local t = startmatrix(rx,sx,sy,ry)
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    implement {
+        name    = "stopmatrix",
+        actions = function()
+            local t = stopmatrix(n)
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    -- scale
+
+    local startscalingnode = registerwhatsitnode("startscaling")
+    local stopscalingnode  = registerwhatsitnode("stopscaling")
+
+    local function startscaling(rx, ry) -- at the tex end we use sx and sy instead of rx and ry
+        if rx == 1 and ry == 1 then
+            insert(stack,false)
+        else
+            if rx == 0 then
+                rx = 0.0001
+            end
+            if ry == 0 then
+                ry = 0.0001
+            end
+            local t = copynut(startscalingnode)
+            nodeproperties[t] = { matrix = { rx, 0, 0, ry } }
+            insert(stack,restore and { 1/rx, 0, 0, 1/ry } or true)
+            return t
+        end
+    end
+
+    local function stopscaling() -- at the tex end we use sx and sy instead of rx and ry
+        return stopcommon(stopscalingnode)
+    end
+
+    implement {
+        name    = "startscaling",
+        actions = function()
+            local rx, ry = 1, 1
+            while true do
+                if scankeyword("rx") then
+                    rx = scannumber()
+                elseif scankeyword("ry") then
+                    ry = scannumber()
+                else
+                    break
+                end
+            end
+            local t = startscaling(rx,ry)
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    implement {
+        name    = "stopscaling",
+        actions = function()
+            local t = stopscaling(n)
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    -- rotate
+
+    local startrotationnode = registerwhatsitnode("startrotation")
+    local stoprotationnode  = registerwhatsitnode("stoprotation")
+
+    local function startrotation(a)
+        if a == 0 then
+            insert(stack,false)
+        else
+            local s, c = sind(a), cosd(a)
+            if abs(s) < 0.000001 then
+                s = 0 -- otherwise funny -0.00000
+            end
+            if abs(c) < 0.000001 then
+                c = 0 -- otherwise funny -0.00000
+            end
+            local t = copynut(startrotationnode)
+            nodeproperties[t] = { matrix = { c, s, -s, c } }
+            insert(stack,restore and { c, -s, s, c } or true)
+            return t
+        end
+    end
+
+    local function stoprotation()
+        return stopcommon(stoprotationnode)
+    end
+
+    nutpool.startrotation = startrotation
+
+    implement {
+        name    = "startrotation",
+        actions = function()
+            local n = scannumber()
+            local t = startrotation(n)
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    implement {
+        name    = "stoprotation",
+        actions = function()
+            local t = stoprotation()
+            if t then
+                context(tonode(t))
+            end
+        end,
+    }
+
+    -- mirror
+
+    local startmirroringnode = registerwhatsitnode("startmirroring")
+    local stopmirroringnode  = registerwhatsitnode("stopmirroring")
+
+    local function startmirroring()
+        local t = copynut(startmirroringnode)
+        nodeproperties[t] = { matrix = { -1, 0, 0, 1 } }
+        return t
+    end
+
+    local function stopmirroring()
+        local t = copynut(stopmirroringnode)
+        nodeproperties[t] = { matrix = { -1, 0, 0, 1 } }
+        return t
+    end
+
+    implement {
+        name    = "startmirroring",
+        actions = function()
+            context(tonode(startmirroring()))
+        end,
+    }
+
+    implement {
+        name    = "stopmirroring",
+        actions = function()
+            context(tonode(stopmirroring()))
+        end,
+    }
+
+    -- clip
+
+    local startclippingnode = registerwhatsitnode("startclipping")
+    local stopclippingnode  = registerwhatsitnode("stopclipping")
+
+    local function startclipping(path)
+        local t = copynut(startclippingnode)
+        nodeproperties[t] = { path = path }
+        return t
+    end
+
+    local function stopclipping()
+        return copynut(stopclippingnode)
+    end
+
+    implement {
+        name    = "startclipping",
+        actions = function()
+            context(tonode(startclipping(scanstring())))
+        end
+    }
+
+    implement {
+        name    = "stopclipping",
+        actions = function()
+            context(tonode(stopclipping()))
+        end,
+    }
+
+end
+
+-- The (delayed and immediate) write operations are emulated in \LUA\ and presented
+-- as primitives at the \TEX\ end.
+
+do
+
+    local logwriter      = logs.writer
+    local openfile       = io.open
+    local flushio        = io.flush
+    local serialize      = token.serialize
+
+    local opennode       = registerwhatsitnode("open")
+    local writenode      = registerwhatsitnode("write")
+    local closenode      = registerwhatsitnode("close")
+    local channels       = { }
+    local immediate_code = tex.flagcodes.immediate
+
+    function backends.openout(n)
+        local p = nodeproperties[n]
+        if p then
+            local handle = openfile(p.filename,"wb") or false
+            if handle then
+                channels[p.channel] = handle
+            else
+                -- error
+            end
+        end
+    end
+
+    function backends.writeout(n)
+        local p = nodeproperties[n]
+        if p then
+            local handle  = channels[p.channel]
+            local content = serialize(p.data)
+            if handle then
+                handle:write(content,"\n")
+            else
+               logwriter(content,"\n")
+            end
+        end
+    end
+
+    function backends.closeout(n)
+        local p = nodeproperties[n]
+        if p then
+            local channel = p.channel
+            local handle  = channels[channel]
+            if handle then
+                handle:close()
+                channels[channel] = false
+                flushio()
+            else
+                -- error
+            end
+        end
+    end
+
+    local function immediately(prefix)
+        return prefix and (prefix & immediate_code) ~= 0
+    end
+
+    implement {
+        name    = "openout",
+        public  = true,
+        usage   = "value",
+        actions = function(prefix)
+            local channel = scaninteger()
+            scankeyword("=") -- hack
+            local filename = scanstring()
+            if not immediately(prefix) then
+                local n = copynut(opennode)
+                nodeproperties[n] = { channel = channel, filename = filename } -- action = "open"
+                return context(tonode(n))
+            elseif not channels[channel] then
+                local handle = openfile(filename,"wb") or false
+                if handle then
+                    channels[channel] = handle
+                else
+                    -- error
+                end
+            end
+        end,
+    }
+
+    implement {
+        name    = "write",
+        public  = true,
+        usage   = "value",
+        actions = function(prefix)
+            local channel = scaninteger()
+            if not immediately(prefix) then
+                local t = scantokenlist()
+                local n = copynut(writenode)
+                nodeproperties[n] = { channel = channel, data = t } -- action = "write"
+                return context(tonode(n))
+            else
+                local content = scanstring()
+                local handle  = channels[channel]
+                if handle then
+                    handle:write(content,"\n")
+                else
+                    logwriter(content,"\n")
+                end
+            end
+        end,
+    }
+
+    implement {
+        name    = "closeout",
+        public  = true,
+        usage   = "value",
+        actions = function(prefix)
+            local channel = scaninteger()
+            if not immediately(prefix) then
+                local n = copynut(closenode)
+                nodeproperties[n] = { channel = channel } -- action = "close"
+                return context(tonode(n))
+            else
+                local handle = channels[channel]
+                if handle then
+                    handle:close()
+                    channels[channel] = false
+                    flushio()
+                else
+                    -- error
+                end
+            end
+        end,
+    }
+
+    -- why ...
+
+    local open_command  = get(token.create("openout"))
+    local write_command = get(token.create("write"))
+    local close_command = get(token.create("closeout"))
+
+end
+
+-- states: these get injected independent of grouping
+
+do
+
+    local setstatenode = registerwhatsitnode("setstate")
+
+    function nutpool.setstate(data)
+        local n = copynut(setstatenode)
+        nodeproperties[n] = { data = data }
+        return n
+    end
+
+end
+
+-- We don't support specials so we make them dummies.
+
+do
+    implement {
+        name      = "special",
+        actions   = scanstring,
+        public    = true,
+        protected = true,
+    }
+end

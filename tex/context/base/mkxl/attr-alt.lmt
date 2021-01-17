@@ -1,0 +1,111 @@
+if not modules then modules = { } end modules ['attr-eff'] = {
+    version   = 1.001,
+    comment   = "companion to attr-eff.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local attributes, nodes, backends, utilities = attributes, nodes, backends, utilities
+local tex = tex
+
+local states            = attributes.states
+local enableaction      = nodes.tasks.enableaction
+local nodeinjections    = backends.nodeinjections
+local texsetattribute   = tex.setattribute
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+
+local interfaces        = interfaces
+local implement         = interfaces.implement
+
+attributes.alternates   = attributes.alternates or { }
+local alternates        = attributes.alternates
+
+local a_alternate       = attributes.private('alternate')
+
+alternates.data         = allocate()
+alternates.values       = alternates.values     or { }
+alternates.registered   = alternates.registered or { }
+alternates.attribute    = a_alternate
+
+local data              = alternates.data
+local registered        = alternates.registered
+local values            = alternates.values
+
+storage.register("attributes/alternates/registered", registered, "attributes.alternates.registered")
+storage.register("attributes/alternates/values",     values,     "attributes.alternates.values")
+
+local function extender(alternates,key)
+    if key == "none" then
+        local d = nodeinjections.stopalternate()
+        alternates.none = d
+        return d
+    end
+end
+
+local function reviver(data,n)
+    local d = values[n] and nodeinjections.startalternate(values[n]) or nodeinjections.stopalternate()
+    data[n] = d
+    return d
+end
+
+setmetatableindex(alternates,      extender)
+setmetatableindex(alternates.data, reviver)
+
+alternates.handler = nodes.installattributehandler {
+    name        = "alternate",
+    namespace   = alternates,
+    initializer = states.initialize,
+    finalizer   = states.finalize,
+    processor   = states.simple,
+}
+
+local function register(specification)
+    local text = specification.text or "unknown"
+    local n = registered[text]
+    if not n then
+        n = #values + 1
+        values[n] = text
+        registered[text] = n
+    end
+    return n
+end
+
+local enabled = false
+
+local function enable()
+    if not enabled then
+        enableaction("shipouts","attributes.alternates.handler")
+        enabled = true
+    end
+end
+
+alternates.register = register
+alternates.enable   = enable
+
+-- interface
+
+implement {
+    name      = "setalternate",
+    actions   = function(specification)
+        if not enabled then
+            enable()
+        end
+        texsetattribute(a_alternate,register(specification))
+    end,
+    arguments = {
+        {
+            { "text", "string" },
+        }
+    }
+}
+
+implement {
+    name      = "resetalternate",
+    actions   = function()
+        if enabled then
+            texsetattribute(a_alternate)
+        end
+    end
+}

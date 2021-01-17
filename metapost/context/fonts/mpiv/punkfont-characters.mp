@@ -592,9 +592,19 @@ pd z1; pd z2; pd z3; pd z4; draw z1--z2; draw flex(z3,z6,z4); % stems
 pd z5; draw z5--z6;  % crossbar
 endchar;
 
-beginpunkchar("i",5,1,2);
-z1=pp(.5w,0); z2=(.5w,1/3h); z3=(.5w,2/3h); z4=(.5w,h);
-pd z1; pd z4; draw flex(z1,z2,z3,z4);  % stem
+% beginpunkchar("i",5,1,2);
+% z1=pp(.5w,0); z2=(.5w,1/3h); z3=(.5w,2/3h); z4=(.5w,h);
+% pd z1; pd z4; draw flex(z1,z2,z3,z4);  % stem
+% endchar;
+
+% beginpunkchar("i",9,1,2);
+%     z1=pp(.5w,0); z2=(.5w,.1h); z3=(.5w,2/3h); z4=(.5w,h);
+%     pd z1; pd z4; draw flex(z1,z2,z3,z4) withcolor red;  % stem
+% endchar;
+
+beginpunkchar("i",9,1,2);
+z1=pp(.5w,0); z4=(.5w,h);
+pd z1; pd z4; draw z1--z4;  % stem
 endchar;
 
 beginpunkchar("j",9,1,2);
@@ -642,7 +652,8 @@ z5=pp(.4w,.2h); z6=pp(w-u,-.1h); z7=pp(.5[x5,x6],-.2h);
 pd z5; pd z6; draw z5--z7--z6;  % tail
 endchar;
 
-beginpunkchar("r",16,1,2);
+% beginpunkchar("r",16,1,2);
+beginpunkchar("r",13,1,2);
 z1=pp(2u,0); z2=pp(2u,h); z3=pp(w-u,.6[y2,y4]); z4=pp(2u,.5h); z5=pp(w-1.5u,0);
 pd z1; pd z2; pd z5; draw z1--flex(z2,z3,z4)--z5; % stem, bowl, and diagonal
 endchar;

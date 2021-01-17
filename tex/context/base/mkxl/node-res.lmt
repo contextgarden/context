@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['node-res'] = {
     license   = "see context related readme files"
 }
 
-local type, next = type, next
+local type, next, rawset = type, next, rawset
 local gmatch, format = string.gmatch, string.format
 
 --[[ldx--
@@ -21,7 +21,6 @@ local report_nodes   = logs.reporter("nodes","housekeeping")
 nodes.pool           = nodes.pool or { }
 local nodepool       = nodes.pool
 
-local whatsitcodes   = nodes.whatsitcodes
 local gluecodes      = nodes.gluecodes
 local kerncodes      = nodes.kerncodes
 local rulecodes      = nodes.rulecodes
@@ -36,7 +35,6 @@ local rule_code      = nodecodes.rule
 local kern_code      = nodecodes.kern
 local glue_code      = nodecodes.glue
 local gluespec_code  = nodecodes.gluespec
-local whatsit_code   = nodecodes.whatsit
 
 local currentfont    = font.current
 local texgetcount    = tex.getcount
@@ -45,25 +43,6 @@ local allocate       = utilities.storage.allocate
 
 local reserved       = { }
 local nofreserved    = 0
-local userids        = allocate()
-local lastid         = 0
-
-setmetatable(userids, {
-    __index = function(t,k)
-        if type(k) == "string" then
-            lastid = lastid + 1
-            rawset(userids,lastid,k)
-            rawset(userids,k,lastid)
-            return lastid
-        else
-            rawset(userids,k,k)
-            return k
-        end
-    end,
-    __call = function(t,k)
-        return t[k]
-    end
-} )
 
 -- nuts overload
 
@@ -149,10 +128,7 @@ local function register_node(n)
     return n
 end
 
-nodepool.userids  = userids
 nodepool.register = register_node
-
-nutpool.userids   = userids
 nutpool.register  = register_node -- could be register_nut
 
 -- so far
@@ -167,11 +143,6 @@ local gluespec          = register_nut(new_nut(gluespec_code))
 local glyph             = register_nut(new_nut(glyph_code,0))
 
 local textdir           = register_nut(new_nut(nodecodes.dir))
-
-local latelua           = register_nut(new_nut(whatsit_code,whatsitcodes.latelua))
-local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos))
-
-local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
 local left_margin_kern  = register_nut(new_nut(kern_code,kerncodes.leftmargincode))
 local right_margin_kern = register_nut(new_nut(kern_code,kerncodes.rightmargincode))
@@ -411,16 +382,6 @@ function nutpool.leader(width,list)
     if list then
         setleader(n,list)
     end
-    return n
-end
-
-function nutpool.savepos()
-    return copy_nut(savepos)
-end
-
-function nutpool.latelua(code)
-    local n = copy_nut(latelua)
-    nodeproperties[n] = { data = code }
     return n
 end
 

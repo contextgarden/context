@@ -285,7 +285,7 @@
    \math_number_right_of_eqalign
    \global\settrue\c_math_eqalign_first
    \crcr
-   \dostoptagged} % finish row
+   \noalign{\dostoptagged}} % finish row
 
 \permanent\protected\def\math_alignment_NC
   {\relax

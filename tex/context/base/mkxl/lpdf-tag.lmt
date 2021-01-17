@@ -63,7 +63,7 @@ local a_image             = attributes.private('image')
 local nuts                = nodes.nuts
 
 local nodepool            = nuts.pool
-local pageliteral         = nodepool.pageliteral
+local setstate            = nodepool.setstate
 local register            = nodepool.register
 
 local getid               = nuts.getid
@@ -369,7 +369,7 @@ local visualize  = nil
 function nodeinjections.addtags(head)
 
     if not EMCliteral then
-        EMCliteral = register(pageliteral("EMC"))
+        EMCliteral = register(setstate("EMC"))
     end
 
     local last   = nil
@@ -516,9 +516,9 @@ end
                 end
             end
             if prev then
-                literal = pageliteral(makecontent(prev,id,specification))
+                literal = setstate(makecontent(prev,id,specification))
             elseif ignore then
-                literal = pageliteral(makeignore(specification))
+                literal = setstate(makeignore(specification))
             else
                 -- maybe also ignore or maybe better: comment or so
             end
@@ -543,7 +543,7 @@ end
 
         else
 
-            local literal = pageliteral(makeignore(specification))
+            local literal = setstate(makeignore(specification))
 
             inject(start,stop,list,literal)
 
@@ -667,9 +667,9 @@ end
 --         end
 --
 --         if r > 0 then
---             local literal = pageliteral(concat(result,"\n"))
+--             local literal = setstate(concat(result,"\n"))
 --             -- use insert instead:
---             local literal = pageliteral(result)
+--             local literal = setstate(result)
 --             local prev = getprev(start)
 --             if prev then
 --                 setlink(prev,literal)
@@ -691,7 +691,7 @@ end
 --         for i=1,noftop do
 --             result[i] = "EMC"
 --         end
---         local literal = pageliteral(concat(result,"\n"))
+--         local literal = setstate(concat(result,"\n"))
 --         -- use insert instead:
 --         local next = getnext(last)
 --         if next then

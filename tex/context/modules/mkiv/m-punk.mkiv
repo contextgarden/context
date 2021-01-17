@@ -17,6 +17,11 @@
 %D https://www.youtube.com/watch?v=g5c2Htj8Vtw
 %D \stoptyping
 
+\ifcase\contextlmtxmode\else
+    \writestatus{punk}{use metapost library punk instead}
+    \endinput
+\fi
+
 \startluacode
 local concat   = table.concat
 local round    = math.round

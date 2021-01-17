@@ -86,12 +86,10 @@ do
         else
             runscripts[nofscripts] = name
         end
--- print("set",name,nofscripts,f)
         return nofscripts
     end
 
     function metapost.scriptindex(name)
--- print("get",name,runnames[name] or 0)
         return runnames[name] or 0
     end
 
@@ -945,8 +943,13 @@ do
     registerscript("setcount", function() setcount(scanstring(),scannumeric()) end)
     registerscript("settoks",  function() settoks (scanstring(),scanstring()) end)
 
+    local utfnum = utf.byte
     local utflen = utf.len
     local utfsub = utf.sub
+
+    registerscript("utfnum", function()
+        injectnumeric(utfnum(scanstring()))
+    end)
 
     registerscript("utflen", function()
         injectnumeric(utflen(scanstring()))

@@ -405,7 +405,9 @@
    mathalternates=yes,
    mathitalics=yes, % we pass them
    mathdimensions=all,
-compactmath=yes,
+ % mathkerns=yes,
+ % staircase=yes,
+   compactmath=yes,
  % mathgaps=yes,
    language=dflt,
    script=math]

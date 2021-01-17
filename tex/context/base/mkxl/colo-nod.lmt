@@ -12,9 +12,9 @@ local setattrs          = nuts.setattrs
 
 local privateattributes = attributes.private
 
+local a_colormodel      = privateattributes('colormodel')
 local a_color           = privateattributes('color')
 local a_transparency    = privateattributes('transparency')
-local a_colormodel      = privateattributes('colormodel')
 
 local colors            = { }
 nuts.colors             = colors
@@ -26,9 +26,9 @@ function colors.set(n,ma,ca,ta) -- we could also do layers here
                 ma = 1
             end
             if ta then
-                setattrs(n,a_colorspace,ma,a_color,ca,a_transparency,ta)
+                setattrs(n,a_colormodel,ma,a_color,ca,a_transparency,ta)
             else
-                setattrs(n,a_colorspace,ma,a_color,ca)
+                setattrs(n,a_colormodel,ma,a_color,ca)
             end
         end
     elseif ta then

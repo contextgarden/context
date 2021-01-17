@@ -64,7 +64,6 @@ local implement            = interfaces.implement
 
 local glyph_code           = nodes.nodecodes.glyph
 
-local new_special          = nodes.pool.special -- todo: literal
 local hpack_node           = node.hpack
 
 local nuts                 = nodes.nuts

@@ -100,6 +100,10 @@ local report_objects = logs.reporter("backend","objects")
 local trace_objects  = false  trackers.register("backend.objects", function(v) trace_objects = v end)
 local trace_details  = false  trackers.register("backend.details", function(v) trace_details = v end)
 
+-- we collect them:
+
+local flushers = { }
+
 -- used variables
 
 local pdf_h, pdf_v
@@ -185,7 +189,7 @@ local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
 
-local function updatefontstate(font)
+function flushers.updatefontstate(font)
     fontcharacters   = characters[font]
     fontdescriptions = descriptions[font]
     fontparameters   = parameters[font]
@@ -400,8 +404,7 @@ local function pdf_goto_fontmode()
 end
 
 -- characters
-
-local flushcharacter  do
+do
 
     local round = math.round
 
@@ -413,52 +416,23 @@ local flushcharacter  do
     local hshift       = false
     local vshift       = false
 
- -- local naturalwidths = setmetatableindex(function(t,font)
- --     local d = descriptions[font]
- --     local c = characters[font]
- --     local f = parameters[font].hfactor
- --     local v = setmetatableindex(function(t,char)
- --         local w
- --         local e = d and d[char]
- --         if e then
- --             w = e.width
- --             if w then
- --                 w =  w * f
- --             end
- --         end
- --         if not w then
- --             e = c[char]
- --             if e then
- --                 w = e.width or 0
- --             end
- --         end
- --         if not w then
- --             w = 0
- --         end
- --         t[char] = w
- --         return w
- --     end)
- --     t[font] = v
- --     return v
- -- end)
-
     local naturalwidths = setmetatableindex(function(t,font)
         local d = descriptions[font]
         local c = characters[font]
-        local f = parameters[font].hfactor
+        local f = parameters[font].hfactor or parameters[font].factor
         local v = setmetatableindex(function(t,char)
             local w
-            local e = c[char]
+            local e = d and d[char]
             if e then
-                w = e.width or 0
+                w = e.width
+                if w then
+                    w =  w * f
+                end
             end
             if not w then
-                e = d and d[char]
+                e = c[char]
                 if e then
-                    w = e.width
-                    if w then
-                        w =  w * f
-                    end
+                    w = e.width or 0
                 end
             end
             if not w then
@@ -592,7 +566,7 @@ local flushcharacter  do
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
     -- time to move on I guess.
 
-    flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+    flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
             setup_fontparameters(font,factor,f,e,sx,sy)
@@ -665,7 +639,7 @@ local flushcharacter  do
 
     end
 
-    flushfontchar = function(font,char,data)
+    flushers.fontchar = function(font,char,data)
         local dummy = usedfonts[font]
         local index = data.index or char
         if not pdfcharacters[index] then
@@ -690,14 +664,12 @@ local flushliteral  do
     local textliteral_code    = literalvalues.text
     local fontliteral_code    = literalvalues.font
 
-    local getdata             = nuts.getdata
-
-    flushliteral = function(current,pos_h,pos_v,mode,str)
-        if mode then
-            if not str then
-                mode, str = originliteral_code, mode
-            elseif mode == "mode" then
-                mode = literalvalues[str]
+    flushliteral = function(current,pos_h,pos_v)
+        local p = nodeproperties[current]
+        if p then
+            local str = p.data
+            if str and str ~= "" then
+                local mode = p.mode
                 if mode == originliteral_code then
                     pdf_goto_pagemode()
                     pdf_set_pos(pos_h,pos_v)
@@ -707,48 +679,21 @@ local flushliteral  do
                     pdf_goto_textmode()
                 elseif mode == fontliteral_code then
                     pdf_goto_fontmode()
-                elseif mode == alwaysliteral_code then
+                elseif mode == alwaysliteral_code then -- aka direct
                     pdf_end_string_nl()
                     need_tm = true
                 elseif mode == rawliteral_code then
                     pdf_end_string_nl()
+                else
+                    report("invalid literal mode %a when flushing %a",mode,str)
+                    return
                 end
-                return
-            else
-                mode = literalvalues[mode]
+                b = b + 1 ; buffer[b] = str
             end
-        else
-            local p = nodeproperties[current]
-            if p then
-                str  = p.data
-                mode = p.mode
-            else
-                str, mode = getdata(current)
-            end
-        end
-        if str and str ~= "" then
-            if mode == originliteral_code then
-                pdf_goto_pagemode()
-                pdf_set_pos(pos_h,pos_v)
-            elseif mode == pageliteral_code then
-                pdf_goto_pagemode()
-            elseif mode == textliteral_code then
-                pdf_goto_textmode()
-            elseif mode == fontliteral_code then
-                pdf_goto_fontmode()
-            elseif mode == alwaysliteral_code then
-                pdf_end_string_nl()
-                need_tm = true
-            elseif mode == rawliteral_code then
-                pdf_end_string_nl()
-            else
-                report("check literal")
-                pdf_goto_pagemode()
-                pdf_set_pos(pos_h,pos_v)
-            end
-            b = b + 1 ; buffer[b] = str
         end
     end
+
+    flushers.literal = flushliteral
 
     function lpdf.print(mode,str)
         -- This only works inside objects, don't change this to flush
@@ -774,8 +719,8 @@ local flushliteral  do
             elseif mode == rawliteral_code then
                 pdf_end_string_nl()
             else
-                pdf_goto_pagemode()
-             -- pdf_set_pos(pdf_h,pdf_v)
+                report("invalid literal mode %a when flushing %a",mode,str)
+                return
             end
             b = b + 1 ; buffer[b] = str
         end
@@ -785,14 +730,14 @@ end
 
 -- grouping & orientation
 
-local flushsave, flushrestore, flushsetmatrix  do
+do
 
     local matrices     = { }
     local positions    = { }
     local nofpositions = 0
     local nofmatrices  = 0
 
-    flushsave = function(current,pos_h,pos_v)
+    local flushsave = function(current,pos_h,pos_v)
         nofpositions = nofpositions + 1
         positions[nofpositions] = { pos_h, pos_v, nofmatrices }
         pdf_goto_pagemode()
@@ -800,7 +745,7 @@ local flushsave, flushrestore, flushsetmatrix  do
         b = b + 1 ; buffer[b] = "q"
     end
 
-    flushrestore = function(current,pos_h,pos_v)
+    local flushrestore = function(current,pos_h,pos_v)
         if nofpositions < 1 then
             return
         end
@@ -822,7 +767,7 @@ local flushsave, flushrestore, flushsetmatrix  do
     local f_matrix_2 = formatters["%.6N 0 0 %.6N 0 0 cm"]
     local f_matrix_4 = formatters["%.6N %.6N %.6N %.6N 0 0 cm"]
 
-    flushsetmatrix = function(current,pos_h,pos_v)
+    local flushsetmatrix = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
         if p then
             local m = p.matrix
@@ -879,6 +824,10 @@ local flushsave, flushrestore, flushsetmatrix  do
         end
     end
 
+    flushers.setmatrix = flushsetmatrix
+    flushers.save      = flushsave
+    flushers.restore   = flushrestore
+
     function lpdf.hasmatrix()
         return nofmatrices > 0
     end
@@ -891,7 +840,7 @@ local flushsave, flushrestore, flushsetmatrix  do
         end
     end
 
-    pushorientation = function(orientation,pos_h,pos_v,pos_r)
+    flushers.pushorientation = function(orientation,pos_h,pos_v,pos_r)
         pdf_goto_pagemode()
         pdf_set_pos(pos_h,pos_v)
         b = b + 1 ; buffer[b] = "q"
@@ -904,10 +853,74 @@ local flushsave, flushrestore, flushsetmatrix  do
         end
     end
 
-    poporientation = function(orientation,pos_h,pos_v,pos_r)
+    flushers.poporientation = function(orientation,pos_h,pos_v,pos_r)
         pdf_goto_pagemode()
         pdf_set_pos(pos_h,pos_v)
         b = b + 1 ; buffer[b] = "Q"
+    end
+
+    --
+
+    flushers.startmatrix = function(current,pos_h,pos_v)
+        flushsave(current,pos_h,pos_v)
+        flushsetmatrix(current,pos_h,pos_v)
+    end
+
+    flushers.stopmatrix = function(current,pos_h,pos_v)
+        flushrestore(current,pos_h,pos_v)
+    end
+
+    flushers.startscaling = function(current,pos_h,pos_v)
+        flushsave(current,pos_h,pos_v)
+        flushsetmatrix(current,pos_h,pos_v)
+    end
+
+    flushers.stopscaling = function(current,pos_h,pos_v)
+        flushrestore(current,pos_h,pos_v)
+    end
+
+    flushers.startrotation = function(current,pos_h,pos_v)
+        flushsave(current,pos_h,pos_v)
+        flushsetmatrix(current,pos_h,pos_v)
+    end
+
+    flushers.stoprotation = function(current,pos_h,pos_v)
+        flushrestore(current,pos_h,pos_v)
+    end
+
+    flushers.startmirroring = function(current,pos_h,pos_v)
+        flushsave(current,pos_h,pos_v)
+        flushsetmatrix(current,pos_h,pos_v)
+    end
+
+    flushers.stopmirroring = function(current,pos_h,pos_v)
+        flushrestore(current,pos_h,pos_v)
+    end
+
+    flushers.startclipping = function(current,pos_h,pos_v)
+        flushsave(current,pos_h,pos_v)
+        flushliteral("origin",formatters["0 w %s W n"](properties[current].path))
+    end
+
+    flushers.stopclipping = function(current,pos_h,pos_v)
+        flushrestore(current,pos_h,pos_v)
+    end
+
+end
+
+do
+
+    local nodeproperties = nodes.properties.data
+
+    flushers.setstate = function(current,pos_h,pos_v)
+        local p = nodeproperties[current]
+        if p then
+            local d = p.data
+            if d and d ~= "" then
+                pdf_goto_pagemode()
+                b = b + 1 ; buffer[b] = d
+            end
+        end
     end
 
 end
@@ -917,7 +930,7 @@ end
 local flushedxforms  = { } -- actually box resources but can also be direct
 local localconverter = nil -- will be set
 
-local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
+local flushimage  do
 
     local rulecodes         = nodes.rulecodes
     local newrule           = nodes.pool.rule
@@ -1041,7 +1054,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         end
     end
 
---     updaters.register("backend.update.tex",function()
+ -- updaters.register("backend.update.tex",function()
     updaters.register("backend.update.lpdf",function()
         tex.saveboxresource          = saveboxresource
         tex.useboxresource           = useboxresource
@@ -1115,7 +1128,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
     local groups      = 0
     local group       = nil
 
-    flushgroup = function(content,bbox)
+    local flushgroup = function(content,bbox)
         if not group then
             group = pdfdictionary {
                 Type = pdfconstant("Group"),
@@ -1136,6 +1149,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         return f_gr(groups)
     end
 
+    flushers.group  = flushgroup
     lpdf.flushgroup = flushgroup -- todo: access via driver in mlib-pps
 
     -- end of experiment
@@ -1287,6 +1301,8 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         b = b + 1 ; buffer[b] = s_e
     end
 
+    flushers.image = flushimage
+
     -- For the moment we need this hack because the engine checks the 'image'
     -- command in virtual fonts (so we use lua instead).
     --
@@ -1294,7 +1310,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
     -- never because the next are like the other engines and compensate for
     -- small sizes which is needed for inaccurate viewers.
 
-    flushrule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
+    flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
 
         if subtype == emptyrule_code then
             return
@@ -1350,7 +1366,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
 
     end
 
-    flushsimplerule = function(pos_h,pos_v,pos_r,size_h,size_v)
+    flushers.simplerule = function(pos_h,pos_v,pos_r,size_h,size_v)
         pdf_goto_pagemode()
 
         b = b + 1 ; buffer[b] = s_b
@@ -1374,7 +1390,7 @@ local flushrule, flushsimplerule, flushspecialrule, flushimage, flushgroup  do
         b = b + 1 ; buffer[b] = s_e
     end
 
-    flushspecialrule = function(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
+    flushers.specialrule = function(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
         pdf_goto_pagemode()
 
         b = b + 1 ; buffer[b] = s_b
@@ -2953,24 +2969,7 @@ do
 
     drivers.install {
         name     = "pdf",
-        flushers = {
-            character       = flushcharacter,
-            fontchar        = flushfontchar,
-            rule            = flushrule,
-            simplerule      = flushsimplerule,
-            specialrule     = flushspecialrule,
-            pushorientation = pushorientation,
-            poporientation  = poporientation,
-            --
-            literal         = flushliteral,
-            setmatrix       = flushsetmatrix,
-            save            = flushsave,
-            restore         = flushrestore,
-            image           = flushimage,
-            group           = flushgroup,
-            --
-            updatefontstate = updatefontstate,
-        },
+        flushers = flushers,
         actions  = {
             prepare         = prepare,
             wrapup          = wrapup,

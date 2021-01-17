@@ -15,7 +15,7 @@
 
 \writestatus{loading}{ConTeXt Screen Macros / Pages}
 
-\registerctxluafile{scrn-pag}{}
+\registerctxluafile{scrn-pag}{autosuffix}
 
 \unprotect
 

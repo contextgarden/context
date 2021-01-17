@@ -30,8 +30,8 @@
 \appendtoks
     \edef\p_method{\effectparameter\c!method}%
     \ifx\p_method\v!command
-        \setuxvalue{\e!start\currenteffect}{\starteffect[#1]}%
-        \setuxvalue{\e!stop \currenteffect}{\stopeffect}%
+        \frozen\protected\xdefcsname\e!start\currenteffect\endcsname{\starteffect[#1]}%
+        \frozen\protected\xdefcsname\e!stop \currenteffect\endcsname{\stopeffect}%
     \fi
 \to \everydefineeffect
 

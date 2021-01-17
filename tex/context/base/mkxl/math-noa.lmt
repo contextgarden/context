@@ -693,7 +693,8 @@ do
     end
 
     -- We can optimize this if we really think that math is a bottleneck which it never
-    -- really is.
+    -- really is. Beware: the font is the text font in the family, so we only check the
+    -- text font here.
 
     relocate[mathchar_code] = function(pointer)
         local g          = getattr(pointer,a_mathgreek) or 0
@@ -757,7 +758,13 @@ do
             end
         end
         if not characters[char] then
+            local fam = getfam(pointer)
+            local fnt = getfontoffamily(fam,1)
             setchar(pointer,errorchar(font,char))
+            if font ~= fnt then
+                errorchar(fnt,char)
+                errorchar(getfontoffamily(fam,2),char)
+            end
         end
         if trace_analyzing then
             setnodecolor(pointer,"font:medi")

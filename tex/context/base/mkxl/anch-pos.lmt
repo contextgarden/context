@@ -1628,6 +1628,9 @@ end)
 
 local newsavepos = nodes.pool.savepos
 
+jobpositions.lastx = 0
+jobpositions.lasty = 0
+
 implement { name = "savepos",  actions = function() context(newsavepos()) end }
-implement { name = "lastxpos", actions = function() context(gethpos()) end }
-implement { name = "lastypos", actions = function() context(getvpos()) end }
+implement { name = "lastxpos", actions = function() context(jobpositions.lastx) end }
+implement { name = "lastypos", actions = function() context(jobpositions.lasty) end }

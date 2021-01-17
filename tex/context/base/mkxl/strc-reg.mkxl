@@ -40,6 +40,20 @@
 %  \index[pageclass::]   {textclass::entry}
 %  \index[pageclass::key]{textclass::entry}
 
+% nice example:
+%
+% \setupregister[index]
+%     [n=1,
+%      pageleft=\hfilll,
+%      pageright=\frozen\parfillleftskip 0pt plus 1fill\frozen\parfillrightskip 0pt\par]
+%
+% \starttext
+%
+% {\showmakeup \placeindex \page}
+%
+% % \dorecurse{10}{\dontleavehmode \index{AAA}\page}
+% \dorecurse{100}{\dontleavehmode\index{AAA}\page}
+
 % tzt variant with n entries, parameters and userdata (altnum)
 
 \installcorenamespace{register}

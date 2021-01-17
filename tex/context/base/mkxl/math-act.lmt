@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['math-act'] = {
     license   = "see context related readme files"
 }
 
--- Here we tweak some font properties (if needed).
+-- Here we tweak some font properties (if needed). The commented sections
+-- have been removed (no longer viable) but can be found in the .lua variant.
 
 local type, next = type, next
 local fastcopy, insert, remove = table.fastcopy, table.insert, table.remove
@@ -239,100 +240,6 @@ local virtualized = mathematics.virtualized
 local tweaks       = { }
 mathematics.tweaks = tweaks
 
--- function tweaks.fixbadprime(target,original)
---     target.characters[0xFE325] = target.characters[0x2032]
--- end
-
--- these could go to math-fbk
-
--- local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
---     local characters = target.characters
---  -- if not characters[newchr] then -- xits needs an enforce
---     local addprivate = fonts.helpers.addprivate
---         local olddata = characters[oldchr]
---         if olddata then
---             if swap then
---                 swap = characters[swap]
---                 height = swap.depth
---                 depth  = 0
---             else
---                 height = height or 0
---                 depth  = depth  or 0
---             end
---             local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height }
---             local newdata = {
---                 commands = { correction, { "slot", 1, oldchr } },
---                 width    = olddata.width,
---                 height   = height,
---                 depth    = depth,
---             }
---             characters[newchr] = newdata
---             local nextglyph = olddata.next
---             while nextglyph do
---                 local oldnextdata = characters[nextglyph]
---                 local newnextdata = {
---                     commands = { correction, { "slot", 1, nextglyph } },
---                     width    = oldnextdata.width,
---                     height   = height,
---                     depth    = depth,
---                 }
---                 local newnextglyph = addprivate(target,formatters["original-%H"](nextglyph),newnextdata)
---                 newdata.next = newnextglyph
---                 local nextnextglyph = oldnextdata.next
---                 if nextnextglyph == nextglyph then
---                     break
---                 else
---                     olddata   = oldnextdata
---                     newdata   = newnextdata
---                     nextglyph = nextnextglyph
---                 end
---             end
---             local hv = olddata.horiz_variants
---             if hv then
---                 hv = fastcopy(hv)
---                 newdata.horiz_variants = hv
---                 for i=1,#hv do
---                     local hvi = hv[i]
---                     local oldglyph = hvi.glyph
---                     local olddata = characters[oldglyph]
---                     local newdata = {
---                         commands = { correction, { "slot", 1, oldglyph } },
---                         width    = olddata.width,
---                         height   = height,
---                         depth    = depth,
---                     }
---                     hvi.glyph = addprivate(target,formatters["original-%H"](oldglyph),newdata)
---                 end
---             end
---         end
---  -- end
--- end
-
--- function tweaks.fixoverline(target,original)
---     local height, depth = 0, 0
---     local mathparameters = target.mathparameters
---     if mathparameters then
---         height = mathparameters.OverbarVerticalGap
---         depth  = mathparameters.UnderbarVerticalGap
---     else
---         height = target.parameters.xheight/4
---         depth  = height
---     end
---     accent_to_extensible(target,0x203E,original,0x0305,height,depth)
---     -- also crappy spacing for our purpose: push to top of baseline
---     accent_to_extensible(target,0xFE3DE,original,0x23DE,height,depth,0x23DF)
---     accent_to_extensible(target,0xFE3DC,original,0x23DC,height,depth,0x23DD)
---     accent_to_extensible(target,0xFE3B4,original,0x23B4,height,depth,0x23B5)
---     -- for symmetry
---     target.characters[0xFE3DF] = original.characters[0x23DF]
---     target.characters[0xFE3DD] = original.characters[0x23DD]
---     target.characters[0xFE3B5] = original.characters[0x23B5]
---  -- inspect(fonts.helpers.expandglyph(target.characters,0x203E))
---  -- inspect(fonts.helpers.expandglyph(target.characters,0x23DE))
--- end
-
--- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweaks.fixoverline") -- for the moment always
-
 -- helpers
 
 local setmetatableindex  = table.setmetatableindex
@@ -467,86 +374,6 @@ interfaces.implement {
     end
 }
 
--- experiment
-
--- check: when true, only set when present in font
--- force: when false, then not set when already set
-
--- todo: tounicode
-
--- function mathematics.injectfallbacks(target,original)
---     local properties = original.properties
---     if properties and properties.hasmath then
---         local specification = target.specification
---         if specification then
---             local fallbacks = specification.fallbacks
---             if fallbacks then
---                 local definitions = fonts.collections.definitions[fallbacks]
---                 if definitions then
---                     if trace_collecting then
---                         report_math("adding fallback characters to font %a",specification.hash)
---                     end
---                     local definedfont = fonts.definers.internal
---                     local copiedglyph = fonts.handlers.vf.math.copy_glyph
---                     local fonts       = target.fonts
---                     local size        = specification.size -- target.size
---                     local characters  = target.characters
---                     if not fonts then
---                         fonts = { }
---                         target.fonts = fonts
--- if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
---                         target.type = "virtual"
---                         target.properties.virtualized = true
--- end
---                     end
---                     if #fonts == 0 then
---                         fonts[1] = { id = 0, size = size } -- sel, will be resolved later
---                     end
---                     local done = { }
---                     for i=1,#definitions do
---                         local definition = definitions[i]
---                         local name   = definition.font
---                         local start  = definition.start
---                         local stop   = definition.stop
---                         local gaps   = definition.gaps
---                         local check  = definition.check
---                         local force  = definition.force
---                         local rscale = definition.rscale or 1
---                         local offset = definition.offset or start
---                         local id     = definedfont { name = name, size = size * rscale }
---                         local index  = #fonts + 1
---                         fonts[index] = { id = id, size = size }
---                         local chars  = fontchars[id]
---                         local function remap(unic,unicode,gap)
---                          -- local unic = unicode + offset - start
---                             if check and not chars[unicode] then
---                                 -- not in font
---                             elseif force or (not done[unic] and not characters[unic]) then
---                                 if trace_collecting then
---                                     report_math("remapping math character, vector %a, font %a, character %C%s%s",
---                                         fallbacks,name,unic,check and ", checked",gap and ", gap plugged")
---                                 end
---                                 characters[unic] = copiedglyph(target,characters,chars,unicode,index)
---                                 done[unic] = true
---                             end
---                         end
---                         for unicode = start, stop do
---                             local unic = unicode + offset - start
---                             remap(unic,unicode,false)
---                         end
---                         if gaps then
---                             for unic, unicode in next, gaps do
---                                 remap(unic,unicode,true)
---                             end
---                         end
---                     end
---                 end
---             end
---         end
---     end
--- end
---
--- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.finishfallbacks")
 
 local stack = { }
 
@@ -602,10 +429,6 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                 fonts = { }
                 target.fonts = fonts
             end
-            -- 
-            target.type = "virtual"
-            target.properties.virtualized = true
-            -- 
             if #fonts == 0 then
                 fonts[1] = { id = 0, size = size } -- self, will be resolved later
             end

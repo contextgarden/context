@@ -192,7 +192,7 @@ local function resolve(n,m) -- we can now check the 'line' flag (todo)
         if content then
             if id == hlist_code then
                 for current, subtype in nextwhatsit, content do
-                    if subtype == latelua_code then
+                    if subtype == latelua_code then            -- this has to change!
                         local a = getattr(current,a_linereference)
                         if a then
                             cross_references[a] = m

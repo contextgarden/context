@@ -1,4 +1,7 @@
-local kern_250 = { bottomright = { { kern = -250 } } }
+local kern_V = { bottomright = { { kern = -250 } } }
+local kern_W = kern_W
+
+-- Beware of updates in ssty slots!
 
 return {
     name = "dejavu-math",
@@ -8,8 +11,14 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         kerns = {
-            [0x1D449] = kern_250, --
-            [0x1D44A] = kern_250, -- 𝑊
+         -- [0x1D449]     = kern_V, -- 𝑉
+         -- ["1:0x1D449"] = kern_V, -- needed for compact
+         -- ["2:0x1D449"] = kern_V, -- needed for compact
+         -- [0x1D44A]     = kern_W, -- 𝑊
+         -- ["1:0x1D44A"] = kern_W, -- needed for compact
+         -- ["2:0x1D44A"] = kern_W, -- needed for compact
+            ["*:0x1D449"] = kern_V, -- 𝑉
+            ["*:0x1D44A"] = kern_W, -- 𝑊
         },
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },

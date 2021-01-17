@@ -595,17 +595,28 @@ local whatsit do
     local w_cache      = caches["whatsit"]
 
     local tags         = {
-        open        = "OPN",
-        write       = "WRI",
-        close       = "CLS",
-        special     = "SPE",
-        latelua     = "LUA",
-        savepos     = "POS",
-        userdefined = "USR",
-        literal     = "LIT",
-        setmatrix   = "MAT",
-        save        = "SAV",
-        restore     = "RES",
+        [whatsitcodes.open]           = "OPN",
+        [whatsitcodes.write]          = "WRI",
+        [whatsitcodes.close]          = "CLS",
+     -- [whatsitcodes.special]        = "SPE",
+        [whatsitcodes.latelua]        = "LUA",
+        [whatsitcodes.savepos]        = "POS",
+        [whatsitcodes.userdefined]    = "USR",
+        [whatsitcodes.literal]        = "LIT",
+        [whatsitcodes.setmatrix]      = "MAT",
+        [whatsitcodes.save]           = "SAV",
+        [whatsitcodes.restore]        = "RES",
+        [whatsitcodes.startscaling]   = "+SCA",
+        [whatsitcodes.stopscaling]    = "-SCA",
+        [whatsitcodes.startrotation]  = "+ROT",
+        [whatsitcodes.stoprotation]   = "-ROT",
+        [whatsitcodes.startmirroring] = "+MIR",
+        [whatsitcodes.stopmirroring]  = "-MIR",
+        [whatsitcodes.startclipping]  = "+CLP",
+        [whatsitcodes.stopclipping]   = "-CLP",
+        [whatsitcodes.startmatrix]    = "+MAT",
+        [whatsitcodes.stopmatrix]     = "-MAT",
+        [whatsitcodes.setstate]       = "SET",   -- can't happen because these are added after visualizing
     }
 
     whatsit = function(head,current)
@@ -614,7 +625,7 @@ local whatsit do
         if info then
             -- print("hit whatsit")
         else
-            info = sometext(formatters["W:%s"](what),usedfont,nil,c_white)
+            info = sometext(formatters["W:%s"](tags[what] or what),usedfont,nil,c_white)
             setattr(info,a_layer,l_whatsit)
             w_cache[what] = info
         end
@@ -880,20 +891,13 @@ local ruledglyph do
             setboth(current)
             local linewidth = emwidth/(2*fraction)
             local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
-            wd = wd - l_margin - r_margin
-            local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+            local info = setlink((dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                 width  = wd,
                 height = ht,
                 depth  = dp,
                 line   = linewidth,
                 type   = "box",
-            }
-            if l_margin == 0 then
-                info = setlink(info,new_kern(-wd))
-            else
-                info = setlink(new_kern(-l_margin),info,new_kern(-wd+l_margin))
-            end
-            --
+            },new_kern(-wd))
             local c, f = isglyph(current)
             local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test
@@ -1409,7 +1413,7 @@ do
                     trace_marginkern    = band(a,0x100000) ~= 0
                     trace_mathlistkern  = band(a,0x200000) ~= 0
                     trace_dir           = band(a,0x400000) ~= 0
-                    trace_whatsit       = band(a,0x800000) ~= 0
+                    trace_par           = band(a,0x800000) ~= 0
                 end
             elseif a == unsetvalue then
                 goto list

@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=back-trf,
-%D        version=2019.02.08, % 2009.04.15,
+%D   [       file=back-ext,
+%D        version=2019.02.08, % and later, merged file
 %D          title=\CONTEXT\ Backend Macros,
-%D       subtitle=Transformations,
+%D       subtitle=Output,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,9 +11,15 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \registerctxluafile{back-ext}{autosuffix}
+
 \unprotect
 
-\registerctxluafile{back-trf}{autosuffix}
+% \let\normalopenout \openout
+% \let\normalwrite   \write
+% \let\normalcloseout\closeout
+% \let\normallatelua \latelua
+% \let\normalspecial \special
 
 % rotation
 

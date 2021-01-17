@@ -1,0 +1,286 @@
+if not modules then modules = { } end modules ['font-imp-tracing'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local abs = math.abs
+
+local next, type = next, type
+local concat = table.concat
+local formatters = string.formatters
+
+local fonts              = fonts
+
+local handlers           = fonts.handlers
+local registerotffeature = handlers.otf.features.register
+local registerafmfeature = handlers.afm.features.register
+
+local settings_to_array  = utilities.parsers.settings_to_array
+local setmetatableindex  = table.setmetatableindex
+
+local helpers            = fonts.helpers
+local appendcommandtable = helpers.appendcommandtable
+local prependcommands    = helpers.prependcommands
+local charcommand        = helpers.commands.char
+
+local variables          = interfaces.variables
+
+local v_background       = variables.background
+local v_frame            = variables.frame
+local v_empty            = variables.empty
+local v_none             = variables.none
+
+local function initialize(tfmdata,key,value)
+    if value then
+        local vfspecials  = fonts.helpers.vfspecials
+        local vfcommands  = fonts.helpers.commands
+        local backgrounds = vfspecials.backgrounds
+        local outlines    = vfspecials.outlines
+        local characters  = tfmdata.characters
+        local rulecache   = backgrounds
+        local showchar    = true
+        local color       = "palegray"
+        if type(value) == "string" then
+            value = settings_to_array(value)
+            for i=1,#value do
+                local v = value[i]
+                if v == v_frame then
+                    rulecache = outlines
+                elseif v == v_background then
+                    rulecache = backgrounds
+                elseif v == v_empty then
+                    showchar = false
+                elseif v == v_none then
+                    color = nil
+                else
+                    color = v
+                end
+            end
+        end
+        local gray  = color and { "startcolor", color } or nil
+        local black = gray  and { "stopcolor" }         or nil
+        for unicode, character in next, characters do
+            local width  = character.width  or 0
+            local height = character.height or 0
+            local depth  = character.depth  or 0
+            local rule   = rulecache[height][depth][width]
+            if showchar then
+                local commands = character.commands
+                if commands then
+                    if gray then
+                        character.commands = prependcommands (
+                            commands, gray, rule, black
+                        )
+                    else
+                        character.commands = prependcommands (
+                            commands, rule
+                        )
+                    end
+                else
+                    local char = charcommand[unicode]
+                    if gray then
+                        character.commands = {
+                            gray, rule, black, char
+                        }
+                     else
+                        character.commands = {
+                            rule, char
+                        }
+                    end
+                end
+            else
+                if gray then
+                    character.commands = {
+                        gray, rule, black
+                    }
+                else
+                    character.commands = {
+                        rule
+                    }
+                end
+            end
+        end
+    end
+end
+
+local specification = {
+    name        = "boundingbox",
+    description = "show boundingbox",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function initialize(tfmdata,key,value)
+    if value then
+        local rawdata       = tfmdata.shared.rawdata
+        local rawresources  = rawdata and rawdata.resources
+        local mathconstants = rawresources.mathconstants
+        if mathconstants then
+            local vfspecials  = fonts.helpers.vfspecials
+            local vfcommands  = fonts.helpers.commands
+            local backgrounds = vfspecials.backgrounds
+            local outlines    = vfspecials.outlines
+            local characters  = tfmdata.characters
+            local rulecache   = backgrounds
+            local push        = vfcommands.push
+            local pop         = vfcommands.pop
+            local black       = { "stopcolor" }
+            local itcolor     = { "startcolor", "trace:0" } -- s / dd (transparent)
+            local brcolor     = { "startcolor", "trace:1" } -- r / dr
+            local trcolor     = { "startcolor", "trace:2" } -- g / dg
+            local blcolor     = { "startcolor", "trace:3" } -- b / db
+            local tlcolor     = { "startcolor", "trace:4" } -- y / dy
+            for unicode, character in next, characters do
+                local mathkern = character.mathkern
+                local italic   = character.vert_italic or character.italic
+                if mathkern or (italic and italic ~= 0) then
+                    local width  = character.width  or 0
+                    local height = character.height or 0
+                    local depth  = character.depth  or 0
+                    local list   = { }
+                    local count  = 0
+                    if italic and italic ~= 0 then
+                        count = count + 1 list[count] = itcolor
+                        count = count + 1 list[count] = push
+                        count = count + 1 list[count] = { "offset", width + (italic < 0 and -italic or 0), 0 }
+                        count = count + 1 list[count] = rulecache[height][depth][abs(-italic)]
+                        count = count + 1 list[count] = pop
+                        count = count + 1 list[count] = black
+                    end
+                    if mathkern then
+                        local br = mathkern.bottom_right
+                        local tr = mathkern.top_right
+                        local bl = mathkern.bottom_left
+                        local tl = mathkern.top_left
+                        if br then
+                            local done = false
+                            for i=1,#br do
+                                local l = br[i]
+                                local h = l.height or 0
+                                local k = l.kern or 0
+                                if k ~= 0 then
+                                    if h == 0 then
+                                        h = height + depth -- todo max
+                                    end
+                                    if not done then
+                                        count = count + 1 list[count] = brcolor
+                                        done  = true
+                                    end
+                                    count = count + 1 list[count] = push
+                                    count = count + 1 list[count] = { "offset", width + (k < 0 and k or 0), - depth }
+                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = pop
+                                end
+                            end
+                            if done then
+                                count = count + 1 list[count] = black
+                            end
+                        end
+                        if tr then
+                            local done = false
+                            for i=1,#tr do
+                                local l = tr[i]
+                                local h = l.height or 0
+                                local k = l.kern or 0
+                                if k ~= 0 then
+                                    if h == 0 then
+                                        h = height + depth -- todo max
+                                    end
+                                    if not done then
+                                        count = count + 1 list[count] = trcolor
+                                        done  = true
+                                    end
+                                    count = count + 1 list[count] = push
+                                    count = count + 1 list[count] = { "offset", width + (k < 0 and k or 0), height - h }
+                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = pop
+                                end
+                            end
+                            if done then
+                                count = count + 1 list[count] = black
+                            end
+                        end
+                        if bl then
+                            local done = false
+                            for i=1,#bl do
+                                local l = bl[i]
+                                local h = l.height or 0
+                                local k = l.kern or 0
+                                if k ~= 0 then
+                                    if h == 0 then
+                                        h = height + depth -- todo max
+                                    end
+                                    if not done then
+                                        count = count + 1 list[count] = blcolor
+                                        done  = true
+                                    end
+                                    count = count + 1 list[count] = push
+                                    count = count + 1 list[count] = { "offset", (k < 0 and k or 0), -depth }
+                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = pop
+                                end
+                            end
+                            if done then
+                                count = count + 1 list[count] = black
+                            end
+                        end
+                        if tl then
+                            local done = false
+                            for i=1,#tl do
+                                local l = tl[i]
+                                local h = l.height or 0
+                                local k = l.kern or 0
+                                if k ~= 0 then
+                                    if h == 0 then
+                                        h = height + depth -- todo max
+                                    end
+                                    if not done then
+                                        count = count + 1 list[count] = tlcolor
+                                        done  = true
+                                    end
+                                    count = count + 1 list[count] = push
+                                    count = count + 1 list[count] = { "offset", (k < 0 and k or 0), height - h }
+                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = pop
+                                end
+                            end
+                            if done then
+                                count = count + 1 list[count] = black
+                            end
+                        end
+                    end
+                    if count > 0 then
+                        local commands = character.commands
+                        if commands then
+                            character.commands = appendcommandtable(commands,list)
+                        else
+                            list[#list+1] = charcommand[unicode]
+                            character.commands = list
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local specification = {
+    name         = "staircase",
+    description  = "show staircase kerns",
+--  position     = 1,
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)

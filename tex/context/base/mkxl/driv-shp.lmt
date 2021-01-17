@@ -99,21 +99,7 @@ local gleaders_code           = gluecodes.gleaders
 
 local spaceskip_code          = gluecodes.spaceskip
 
-local saveposwhatsit_code     = whatsitcodes.savepos
-local userdefinedwhatsit_code = whatsitcodes.userdefined
-local openwhatsit_code        = whatsitcodes.open
-local writewhatsit_code       = whatsitcodes.write
-local closewhatsit_code       = whatsitcodes.close
-local lateluawhatsit_code     = whatsitcodes.latelua
-local literalwhatsit_code     = whatsitcodes.literal
-local setmatrixwhatsit_code   = whatsitcodes.setmatrix
-local savewhatsit_code        = whatsitcodes.save
-local restorewhatsit_code     = whatsitcodes.restore
-
-local getpagedimensions  getpagedimensions = function()
-    getpagedimensions = backends.codeinjections.getpagedimensions
-    return getpagedimensions()
-end
+local getpagedimensions       = layouts.getpagedimensions
 
 local drivers   = drivers
 local instances = drivers.instances
@@ -154,11 +140,6 @@ local flushcharacter
 local flushfontchar
 local flushrule
 local flushliteral
-local flushsetmatrix
-local flushsave
-local flushrestore
-local flushspecial
------ flushimage
 
 -- make local
 
@@ -169,307 +150,323 @@ function drivers.getvpos() return round(pos_v) end
 
 -- characters
 
-local flush_character
+local flush_character do
 
-local stack   = setmetatableindex("table")
-local level   = 0
-local nesting = 0
-local main    = 0
+    local stack   = setmetatableindex("table")
+    local level   = 0
+    local nesting = 0
+    local main    = 0
 
--- experiment (smaller page stream but might be fragile)
+    -- experiment (smaller page stream but might be fragile)
 
-local tospace = false  directives.register("backends.spaces", function(v) tospace = v end)
+    local tospace = false  directives.register("backends.spaces", function(v) tospace = v end)
 
--- todo: cache streams
+    -- todo: cache streams
 
-local default = 16384 * number.dimenfactors.bp -- 65536 // 4
+    local default = 16384 * number.dimenfactors.bp -- 65536 // 4
 
-local startcolor = function() end
-local stopcolor  = function() end
+    local vfinjectors = fonts.helpers.vfinjectors
 
-updaters.register("backend.update",function()
-    startcolor = fonts.vfcommands.startcolor
-    stopcolor  = fonts.vfcommands.stopcolor
-end)
+    local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
 
-local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
-
-    if nesting > 100 then
-        return
-    elseif nesting == 0 then
-        main = font
-    end
-
-    nesting = nesting + 1
-
-    local saved_h = pos_h
-    local saved_v = pos_v
-    local saved_r = pos_r
-            pos_r = lefttoright_code
-
-    local data  = fontdata[font]
-    local fnt   = font
-    local fonts = data.fonts
-    local siz   = (data.parameters.factor or 1)/65536
-
--- siz = siz * data.parameters.size / 1000
-
-    local function flushchar(font,char,fnt,chr,f,e)
-        if fnt then
-            local nest = char ~= chr or font ~= fnt
-            if fnt == 0 then
-                fnt = main
-            end
---          return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
-            return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
-        else
-            return 0
+        if nesting > 100 then
+            return
+        elseif nesting == 0 then
+            main = font
         end
-    end
 
-    -- we assume resolved fonts: id mandate but maybe also size
+        nesting = nesting + 1
 
-    for i=1,#vfcommands do
-        local packet  = vfcommands[i]
-        local command = packet[1]
-        if command == "char" then
-            local chr = packet[2]
-            local f   = packet[3]
-            local e   = packet[4]
-            pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
-        elseif command == "slot" then
-            local index = packet[2]
-            local chr   = packet[3]
-            local f     = packet[4]
-            local e     = packet[5]
-            if index == 0 then
-                pos_h = pos_h + flushchar(font,char,font,chr,f,e)
-            else
-                local okay = fonts and fonts[index]
-                if okay then
-                    local fnt = okay.id
-                    if fnt then
-                        pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
-                    end
-                else
-                    -- safeguard, we assume the font itself (often index 1)
-                    pos_h = pos_h + flushchar(font,char,font,chr,f,e)
+        local saved_h = pos_h
+        local saved_v = pos_v
+        local saved_r = pos_r
+                pos_r = lefttoright_code
+
+        local data  = fontdata[font]
+        local fnt   = font
+        local fonts = data.fonts
+        local siz   = (data.parameters.factor or 1)/65536
+
+        local function flushchar(font,char,fnt,chr,f,e)
+            if fnt then
+                local nest = char ~= chr or font ~= fnt
+                if fnt == 0 then
+                    fnt = main
                 end
+                return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+            else
+                return 0
             end
-        elseif command == "use" then
-            local index = packet[2]
-            if index then
-                local fnt
+        end
+
+        -- we assume resolved fonts: id mandate but maybe also size
+
+        -- we could map left, right, up, down -> offset
+        -- we could map char, font, slot to -> slot
+
+        for i=1,#vfcommands do
+            local packet  = vfcommands[i]
+            local command = packet[1]
+            if command == "char" then
+                local chr = packet[2]
+                local f   = packet[3]
+                local e   = packet[4]
+                pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
+            elseif command == "slot" then
+                local index = packet[2]
+                local chr   = packet[3]
+                local f     = packet[4]
+                local e     = packet[5]
                 if index == 0 then
-                    fnt = font
+                    pos_h = pos_h + flushchar(font,char,font,chr,f,e)
                 else
                     local okay = fonts and fonts[index]
                     if okay then
-                        fnt = okay.id
+                        local fnt = okay.id
+                        if fnt then
+                            pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
+                        end
+                    else
+                        -- safeguard, we assume the font itself (often index 1)
+                        pos_h = pos_h + flushchar(font,char,font,chr,f,e)
                     end
                 end
-                if fnt then
-                    -- not efficient but ok for now as experiment
-                    local d = characters[fnt]
-                    if d then
-                        for i=3,#packet do
-                            local chr = packet[i]
-                            local dat = d[chr]
-                            if dat then
-                                flushfontchar(fnt,chr,dat)
+            elseif command == "use" then
+                local index = packet[2]
+                if index then
+                    local fnt
+                    if index == 0 then
+                        fnt = font
+                    else
+                        local okay = fonts and fonts[index]
+                        if okay then
+                            fnt = okay.id
+                        end
+                    end
+                    if fnt then
+                        -- not efficient but ok for now as experiment
+                        local d = characters[fnt]
+                        if d then
+                            for i=3,#packet do
+                                local chr = packet[i]
+                                local dat = d[chr]
+                                if dat then
+                                    flushfontchar(fnt,chr,dat)
+                                end
                             end
                         end
                     end
                 end
-            end
-        elseif command == "right" then
-            local h = packet[2] -- already scaled
-            if factor ~= 0 and h ~= 0 then
-                h = h + h * factor / 1000 -- expansion
-            end
-            h = h * sx
-            pos_h = pos_h + h
-        elseif command == "down" then
-            local v = packet[2] -- already scaled
-            v = v * sy
-            pos_v = pos_v - v
-        elseif command == "push" then
-            level = level + 1
-            local s = stack[level]
-            s[1] = pos_h
-            s[2] = pos_v
-        elseif command == "pop" then
-            if level > 0 then
-                local s = stack[level]
-                pos_h = s[1]
-                pos_v = s[2]
-                level = level - 1
-            end
-        elseif command == "rule" then
-            local size_v = packet[2]
-            local size_h = packet[3]
-            if size_h > 0 and size_v > 0 then
-                if factor ~= 0 then
-                    size_h = size_h + size_h * factor / 1000
-                end
-                if size_h > 0 then
-                    size_h = size_h * sx
-                    size_v = size_v * sy
-                    flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
-                    pos_h = pos_h + size_h
-                end
-            end
-        elseif command == "frame" then
-            -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
-            local width = packet[2]
-            if width > 0 then
-                local height = packet[3] or 0
-                local depth  = packet[4] or 0
-                local total  = height + depth
-                if total > 0 then
+            elseif command == "right" then
+                local h = packet[2] -- already scaled
+                if h ~= 0 then
                     if factor ~= 0 then
-                        width = width + width * factor / 1000
+                        h = h + h * factor / 1000 -- expansion
                     end
-                    if width > 0 then
-                        local line     = packet[5] or default
-                        local outline  = not packet[6]
-                        local advance  = not packet[7]
-                        local baseline = outline and packet[8]
-                        local color    = packet[9]
-                        if color then
-                            startcolor(color)
+                    pos_h = pos_h + h * sx
+                end
+            elseif command == "left" then
+                local h = packet[2] -- already scaled
+                if h ~= 0 then
+                    if factor ~= 0 then
+                        h = h + h * factor / 1000 -- expansion
+                    end
+                    pos_h = pos_h - h * sx
+                end
+            elseif command == "down" then
+                local v = packet[2] -- already scaled
+                if v and v ~= 0 then
+                    pos_v = pos_v - v * sy
+                end
+            elseif command == "up" then
+                local v = packet[2] -- already scaled
+                if v and v ~= 0 then
+                    pos_v = pos_v + v * sy
+                end
+            elseif command == "offset" then
+                local h = packet[2] or 0
+                local v = packet[3] or 0
+                if h ~= 0 then
+                    if factor ~= 0 then
+                        h = h + h * factor / 1000 -- expansion
+                    end
+                    pos_h = pos_h + h * sx
+                end
+                if v and v ~= 0 then
+                    pos_v = pos_v + v * sy
+                end
+            elseif command == "push" then
+                level = level + 1
+                local s = stack[level]
+                s[1] = pos_h
+                s[2] = pos_v
+            elseif command == "pop" then
+                if level > 0 then
+                    local s = stack[level]
+                    pos_h = s[1]
+                    pos_v = s[2]
+                    level = level - 1
+                end
+            elseif command == "rule" then
+                local size_v = packet[2]
+                local size_h = packet[3]
+                if size_h > 0 and size_v > 0 then
+                    if factor ~= 0 then
+                        size_h = size_h + size_h * factor / 1000
+                    end
+                    if size_h > 0 then
+                        size_h = size_h * sx
+                        size_v = size_v * sy
+                        flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
+                        pos_h = pos_h + size_h
+                    end
+                end
+            elseif command == "frame" then
+                -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
+                local width = packet[2]
+                if width > 0 then
+                    local height = packet[3] or 0
+                    local depth  = packet[4] or 0
+                    local total  = height + depth
+                    if total > 0 then
+                        if factor ~= 0 then
+                            width = width + width * factor / 1000
                         end
-                        width  = width  * sx
-                        height = height * sy
-                        depth  = depth  * sy
-                        flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
-                        if color then
-                            stopcolor()
-                        end
-                        if advance then
-                            pos_h = pos_h + width
+                        if width > 0 then
+                            local line     = packet[5] or default
+                            local outline  = not packet[6]
+                            local advance  = not packet[7]
+                            local baseline = outline and packet[8]
+                            local color    = packet[9] -- no longer needed probably
+                            if color then
+                                vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
+                            end
+                            width  = width  * sx
+                            height = height * sy
+                            depth  = depth  * sy
+                            flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
+                            if color then
+                                vfinjectors.stopcolor()
+                            end
+                            if advance then
+                                pos_h = pos_h + width
+                            end
                         end
                     end
                 end
+            elseif command == "font" then
+                local index = packet[2]
+                local okay  = fonts and fonts[index]
+                if okay then
+                    fnt = okay.id or fnt -- or maybe just return
+                end
+            elseif command == "lua" then
+                local code = packet[2]
+                local kind = type(code)
+                if kind ~= "function" then
+                    code = loadstring(code)
+                    kind = type(code)
+                end
+                if kind == "function" then
+                    code(font,char,pos_h,pos_v,sx,sy)
+                end
+            elseif command == "node" then -- obsolete
+                local h = packet[2]
+                hlist_out(h,getlist(h))
+            else
+                local injector = vfinjectors[command]
+                if injector then
+                    injector(pos_h,pos_v,packet)
+                end
             end
-        elseif command == "font" then
-            local index = packet[2]
-            local okay  = fonts and fonts[index]
-            if okay then
-                fnt = okay.id or fnt -- or maybe just return
-            end
-        elseif command == "lua" then
-            local code = packet[2]
-            local kind = type(code)
-            if kind ~= "function" then
-                code = loadstring(code)
-                kind = type(code)
-            end
-            if kind == "function" then
-                code(font,char,pos_h,pos_v,sx,sy)
-            end
-        elseif command == "node" then
-            -- us this really useful?
-            local h = packet[2]
-            hlist_out(h,getlist(h))
-        elseif command == "pdf" then
-            -- this will disappear and become a plug
-            flushliteral(false,pos_h,pos_v,packet[2],packet[3])
-     -- elseif command == "image" then
-     --     -- doesn't work because intercepted by engine so we use a different
-     --     -- mechanism (for now)
-     --     local image = packet[2]
-     --     -- to do
-     -- elseif command == "pdfmode" then
-     --     -- doesn't happen
-     -- elseif command == "special" then
-     --     -- not supported
-     -- elseif command == "nop" then
-     --     -- nothing to do|
-     -- elseif command == "scale" then
-     --     -- not supported
+         -- image   : not needed, maybe some day
+         -- pdfmode : not used
+         -- special : makes no sense
+         -- nop     : the official ignore
+         -- scale   : not supported
         end
+
+        pos_h = saved_h
+        pos_v = saved_v
+        pos_r = saved_r
+
+        nesting = nesting - 1
     end
 
-    pos_h = saved_h
-    pos_v = saved_v
-    pos_r = saved_r
+    local onetimemessage -- could be defined later (todo: make plug for this)
 
-    nesting = nesting - 1
-end
+    local getxyscales = nuts.getxyscales
 
-local onetimemessage -- could be defined later (todo: make plug for this)
+    flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,f,e)
 
-local getxyscales = nuts.getxyscales
-
-flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,f,e)
-
-    if font ~= lastfont then
-        lastfont       = font
-        fontcharacters = characters[font]
-        updatefontstate(font)
-    end
-
-    local data = fontcharacters[char]
-    if not data then
-        if char > 0 then
-            if not onetimemessage then
-                onetimemessage = fonts.loggers.onetimemessage
-            end
-            onetimemessage(font,char,"missing")
+        if font ~= lastfont then
+            lastfont       = font
+            fontcharacters = characters[font]
+            updatefontstate(font)
         end
-        return 0, 0, 0
-    end
-    if vfcommands then
-        vfcommands = data.commands
-    end
-    local width, height, depth, naturalwidth, sx, sy
-    if current then
-        naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
-        sx, sy = getxyscales(current) -- maybe: getwhdfs
-        if factor == 0 then
-            width = naturalwidth
+
+        local data = fontcharacters[char]
+        if not data then
+            if char > 0 then
+                if not onetimemessage then
+                    onetimemessage = fonts.loggers.onetimemessage
+                end
+                onetimemessage(font,char,"missing")
+            end
+            return 0, 0, 0
+        end
+        if vfcommands then
+            vfcommands = data.commands
+        end
+        local width, height, depth, naturalwidth, sx, sy
+        if current then
+            naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
+            sx, sy = getxyscales(current) -- maybe: getwhdfs
+            if factor == 0 then
+                width = naturalwidth
+            else
+             -- width = (1.0 + factor/1000000.0) * naturalwidth
+                width = naturalwidth + naturalwidth * factor/1000000.0
+             -- width = naturalwidth + naturalwidth * 0.000001 * factor
+            end
         else
-         -- width = (1.0 + factor/1000000.0) * naturalwidth
-            width = naturalwidth + naturalwidth * factor/1000000.0
-         -- width = naturalwidth + naturalwidth * 0.000001 * factor
-        end
-    else
-        width  = data.width or 0
-        height = data.height or 0
-        depth  = data.depth or 0
-        naturalwidth = width
-        if not factor then
-            factor = 0
-        end
-        sx = 1
-        sy = 1
-    end
-    if pos_r == righttoleft_code then
-        pos_h = pos_h - width -- here ?
-    end
-    if vfcommands then
-        flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy) -- also f ?
-    else
-        -- kind of messy that we do orientation here and offsets elsewhere
-        local orientation = data.orientation
-        if orientation and (orientation == 1 or orientation == 3) then
-            local x = data.xoffset
-            local y = data.yoffset
-            if x then
-                pos_h = pos_h + x
+            width  = data.width or 0
+            height = data.height or 0
+            depth  = data.depth or 0
+            naturalwidth = width
+            if not factor then
+                factor = 0
             end
-            if y then
-                pos_v = pos_v + y
-            end
-            pushorientation(orientation,pos_h,pos_v)
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
-            poporientation(orientation,pos_h,pos_v)
+            sx = 1
+            sy = 1
+        end
+        if pos_r == righttoleft_code then
+            pos_h = pos_h - width -- here ?
+        end
+        if vfcommands then
+            flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy) -- also f ?
         else
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+            -- kind of messy that we do orientation here and offsets elsewhere .. this might change
+            local orientation = data.orientation
+            if orientation and (orientation == 1 or orientation == 3) then
+                local x = data.xoffset
+                local y = data.yoffset
+                if x then
+                    pos_h = pos_h + x
+                end
+                if y then
+                    pos_v = pos_v + y
+                end
+                pushorientation(orientation,pos_h,pos_v)
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+                poporientation(orientation,pos_h,pos_v)
+            else
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+            end
         end
+        return width, height, depth
     end
-    return width, height, depth
+
 end
 
 -- end of characters
@@ -535,6 +532,13 @@ local function flushcloseout(current)
         backends.closeout(current)
     end
 end
+
+local function flushsavepos(current,pos_h,pos_v)
+    jobpositions.lastx = pos_h
+    jobpositions.lasty = pos_v
+end
+
+local flushwhatsit
 
 local hlist_out, vlist_out  do
 
@@ -905,26 +909,7 @@ local hlist_out, vlist_out  do
                     goto synced
                 end
             elseif id == whatsit_code then
-                if subtype == literalwhatsit_code then
-                    flushliteral(current,pos_h,pos_v)
-                elseif subtype == lateluawhatsit_code then
-                    flushlatelua(current,pos_h,pos_v)
-                elseif subtype == setmatrixwhatsit_code then
-                    flushsetmatrix(current,pos_h,pos_v)
-                elseif subtype == savewhatsit_code then
-                    flushsave(current,pos_h,pos_v)
-                elseif subtype == restorewhatsit_code then
-                    flushrestore(current,pos_h,pos_v)
-                elseif subtype == saveposwhatsit_code then
-                    last_position_x = pos_h
-                    last_position_y = pos_v
-                elseif subtype == writewhatsit_code then
-                    flushwriteout(current)
-                elseif subtype == closewhatsit_code then
-                    flushcloseout(current)
-                elseif subtype == openwhatsit_code then
-                    flushopenout(current)
-                end
+                flushwhatsit[subtype](current,pos_h,pos_v)
             elseif id == disc_code then
                 local replace, tail = getreplace(current)
                 -- actually, we no longer have these select discs in the packaged list ... it's about
@@ -1164,26 +1149,7 @@ local hlist_out, vlist_out  do
                 end
                 cur_v = cur_v + total
             elseif id == whatsit_code then
-                if subtype == literalwhatsit_code then
-                    flushliteral(current,pos_h,pos_v)
-                elseif subtype == lateluawhatsit_code then
-                    flushlatelua(current,pos_h,pos_v)
-                elseif subtype == setmatrixwhatsit_code then
-                    flushsetmatrix(current,pos_h,pos_v)
-                elseif subtype == savewhatsit_code then
-                    flushsave(current,pos_h,pos_v)
-                elseif subtype == restorewhatsit_code then
-                    flushrestore(current,pos_h,pos_v)
-                elseif subtype == saveposwhatsit_code then
-                    last_position_x = pos_h
-                    last_position_y = pos_v
-                elseif subtype == writewhatsit_code then
-                    flushwriteout(current)
-                elseif subtype == closewhatsit_code then
-                    flushcloseout(current)
-                elseif subtype == openwhatsit_code then
-                    flushopenout(current)
-                end
+                flushwhatsit[subtype](current,pos_h,pos_v)
             else
                 -- penalty
                 goto synced
@@ -1223,22 +1189,47 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     initialize        = actions.initialize
     finalize          = actions.finalize
 
-    updatefontstate   = flushers.updatefontstate
+    -- we need to do this once ...
 
-    pushorientation   = flushers.pushorientation
-    poporientation    = flushers.poporientation
+    if not updatefontstate then
 
-    flushcharacter    = flushers.character
-    flushfontchar     = flushers.fontchar
-    flushrule         = flushers.rule
-    flushsimplerule   = flushers.simplerule
-    flushspecialrule  = flushers.specialrule
-    flushspecial      = flushers.special
-    flushliteral      = flushers.literal
-    flushsetmatrix    = flushers.setmatrix
-    flushsave         = flushers.save
-    flushrestore      = flushers.restore
- -- flushimage        = flushers.image
+        updatefontstate   = flushers.updatefontstate
+
+        pushorientation   = flushers.pushorientation
+        poporientation    = flushers.poporientation
+
+        flushcharacter    = flushers.character
+        flushfontchar     = flushers.fontchar
+        flushrule         = flushers.rule
+        flushsimplerule   = flushers.simplerule
+        flushspecialrule  = flushers.specialrule
+        flushliteral      = flushers.literal
+
+        flushwhatsit      = setmetatableindex ( {
+            [whatsitcodes.literal]        = flushliteral,
+            [whatsitcodes.latelua]        = flushlatelua,
+            [whatsitcodes.userdefined]    = function() end,      -- special purpose, handled in callbacks
+            [whatsitcodes.savepos]        = flushsavepos,        -- only used by generic packages
+            [whatsitcodes.save]           = flushers.save,
+            [whatsitcodes.restore]        = flushers.restore,
+            [whatsitcodes.setmatrix]      = flushers.setmatrix,
+            [whatsitcodes.open]           = flushopenout,        -- generic
+            [whatsitcodes.close]          = flushcloseout,       -- generic
+            [whatsitcodes.write]          = flushwriteout,       -- generic
+            [whatsitcodes.startmatrix]    = flushers.startmatrix,
+            [whatsitcodes.stopmatrix]     = flushers.stopmatrix,
+            [whatsitcodes.startscaling]   = flushers.startscaling,
+            [whatsitcodes.stopscaling]    = flushers.stopscaling,
+            [whatsitcodes.startrotation]  = flushers.startrotation,
+            [whatsitcodes.stoprotation]   = flushers.stoprotation,
+            [whatsitcodes.startmirroring] = flushers.startmirroring,
+            [whatsitcodes.stopmirroring]  = flushers.stopmirroring,
+            [whatsitcodes.startclipping]  = flushers.startclipping,
+            [whatsitcodes.stopclipping]   = flushers.stopclipping,
+            [whatsitcodes.setstate]       = flushers.setstate,
+        }, function(t, k) report("weird whatsit %a",k) return function() end end)
+
+    end
 
     reset_dir_stack()
     reset_state()
@@ -1279,12 +1270,6 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
 
         local pagewidth, pageheight = getpagedimensions()
 
-     -- local h_offset_par = texget("hoffset")
-     -- local v_offset_par = texget("voffset")
-
-     -- page_h_origin = trueinch
-     -- page_v_origin = trueinch
-
         pos_r = lefttoright_code
 
         if pagewidth > 0 then
@@ -1307,17 +1292,14 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
             page_size_v = total
         end
 
-        local refpoint_h = 0           -- + page_h_origin + h_offset_par
-        local refpoint_v = page_size_v -- - page_v_origin - v_offset_par
+        local refpoint_h = 0
+        local refpoint_v = page_size_v
 
         pos_h = refpoint_h
         pos_v = refpoint_v - height
-        -- synced
 
     else
 
-     -- page_h_origin = 0
-     -- page_v_origin = 0
         page_size_h   = width
         page_size_v   = total
         pos_r         = getdirection(box)

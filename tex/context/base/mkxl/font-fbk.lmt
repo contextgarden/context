@@ -63,13 +63,12 @@ local function composecharacters(tfmdata)
         local deltaxheight = scale * (Xdesc.boundingbox[4] - xdesc.boundingbox[4])
         local extraxheight = fraction * deltaxheight -- maybe use compose value
         local italicfactor = parameters.italicfactor or 0
-        local vfspecials   = backends.tables.vfspecials --brr
         local red, green, blue, black
         if trace_visualize then
-            red   = vfspecials.startcolor("red")
-            green = vfspecials.startcolor("green")
-            blue  = vfspecials.startcolor("blue")
-            black = vfspecials.stopcolor
+            red   = { "startcolor", "red" }
+            green = { "startcolor", "green" }
+            blue  = { "startcolor", "blue" }
+            black = { "stopcolor" }
         end
         local compose = fonts.goodies.getcompositions(tfmdata)
         if compose and trace_visualize then

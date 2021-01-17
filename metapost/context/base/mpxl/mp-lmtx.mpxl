@@ -2219,10 +2219,7 @@ def lmt_registerglyphs = applyparameters "mpsglyphs" "lmt_do_registerglyphs" end
 def lmt_registerglyph  = applyparameters "mpsglyph"  "lmt_do_registerglyph"  enddef ;
 
 newscriptindex mfid_registerglyphs ; mfid_registerglyphs := scriptindex "registerglyphs" ; def lmt_do_registerglyphs = runscript mfid_registerglyphs enddef ;
-newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registerglyph " ; def lmt_do_registerglyph  = runscript mfid_registerglyph  enddef ;
-
-% vardef lmt_do_registerglyphs = lua.mp.lmt_register_glyphs() ; enddef ;
-% vardef lmt_do_registerglyph  = lua.mp.lmt_register_glyph () ; enddef ;
+newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registerglyph"  ; def lmt_do_registerglyph  = runscript mfid_registerglyph  enddef ;
 
 % Again an experiment (todo: the faster method):
 

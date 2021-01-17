@@ -51,6 +51,8 @@ constructors.designsizes    = designsizes
 local loadedfonts           = allocate()
 constructors.loadedfonts    = loadedfonts
 
+----- scalecommands         = fonts.helpers.scalecommands
+
 --[[ldx--
 <p>We need to normalize the scale factor (in scaled points). This has to
 do with the fact that <l n='tex'/> uses a negative multiple of 1000 as
@@ -259,6 +261,8 @@ function constructors.scale(tfmdata,specification)
         specification    = { size = specification }
     end
     target.specification = specification
+    --
+    local scalecommands  = fonts.helpers.scalecommands -- defined later
     --
     local scaledpoints   = specification.size
     local relativeid     = specification.relativeid
@@ -774,37 +778,7 @@ function constructors.scale(tfmdata,specification)
         end
         local vc = character.commands
         if vc then
-            -- we assume non scaled commands here
-            -- tricky .. we need to scale pseudo math glyphs too
-            -- which is why we deal with rules too
-            local ok = false
-            for i=1,#vc do
-                local key = vc[i][1]
-                if key == "right" or key == "down" or key == "rule" then
-                    ok = true
-                    break
-                end
-            end
-            if ok then
-                local tt = { }
-                for i=1,#vc do
-                    local ivc = vc[i]
-                    local key = ivc[1]
-                    if key == "right" then
-                        tt[i] = { key, ivc[2]*hdelta }
-                    elseif key == "down" then
-                        tt[i] = { key, ivc[2]*vdelta }
-                    elseif key == "rule" then
-                        tt[i] = { key, ivc[2]*vdelta, ivc[3]*hdelta }
-                    else -- not comment
-                        tt[i] = ivc -- shared since in cache and untouched
-                    end
-                end
-                chr.commands = tt
-            else
-                chr.commands = vc
-            end
-         -- chr.index = nil
+            chr.commands = scalecommands(vc,hdelta,vdelta)
         end
         targetcharacters[unicode] = chr
     end

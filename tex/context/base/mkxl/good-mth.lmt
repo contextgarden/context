@@ -93,6 +93,10 @@ local function finalize(tfmdata,feature,value)
                 local factor       = parameters.factor
                 local hfactor      = parameters.hfactor
                 local vfactor      = parameters.vfactor
+                --
+                tfmdata.type                   = "virtual"
+                tfmdata.properties.virtualized = true
+                --
                 local function overloadone(unicode,data)
                     local character = characters[unicode]
                     if not character then

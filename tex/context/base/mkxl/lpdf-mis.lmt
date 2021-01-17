@@ -26,11 +26,14 @@ local nodeinjections       = backends.pdf.nodeinjections
 local codeinjections       = backends.pdf.codeinjections
 local registrations        = backends.pdf.registrations
 
+local getpagedimensions    = layouts.getpagedimensions
+local getcanvas            = layouts.getcanvas
+
 local nuts                 = nodes.nuts
 local copy_node            = nuts.copy
 
 local nodepool             = nuts.pool
-local pageliteral          = nodepool.pageliteral
+local setstate             = nodepool.setstate
 local register             = nodepool.register
 
 local pdfdictionary        = lpdf.dictionary
@@ -86,10 +89,10 @@ local v_righttoleft        = variables.righttoleft
 local v_title              = variables.title
 local v_nomenubar          = variables.nomenubar
 
-local positive             = register(pageliteral("/GSpositive gs"))
-local negative             = register(pageliteral("/GSnegative gs"))
-local overprint            = register(pageliteral("/GSoverprint gs"))
-local knockout             = register(pageliteral("/GSknockout gs"))
+local positive             = register(setstate("/GSpositive gs"))
+local negative             = register(setstate("/GSnegative gs"))
+local overprint            = register(setstate("/GSoverprint gs"))
+local knockout             = register(setstate("/GSknockout gs"))
 
 local omitextraboxes       = false
 
@@ -410,46 +413,12 @@ local pagespecs = {
     },
 }
 
-local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
-local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
-local marked = false
-local copies = false
-
-local getpagedimensions  getpagedimensions = function()
-    getpagedimensions = backends.codeinjections.getpagedimensions
-    return getpagedimensions()
-end
-
-function codeinjections.setupcanvas(specification)
-    local paperheight = specification.paperheight
-    local paperwidth  = specification.paperwidth
-    local paperdouble = specification.doublesided
-    --
-    paperwidth, paperheight = codeinjections.setpagedimensions(paperwidth,paperheight)
-    --
-    pagespec    = specification.mode       or pagespec
-    topoffset   = specification.topoffset  or 0
-    leftoffset  = specification.leftoffset or 0
-    height      = specification.height     or paperheight
-    width       = specification.width      or paperwidth
-    marked      = specification.print
-    --
-    copies      = specification.copies
-    if copies and copies < 2 then
-        copies = false
-    end
-    --
-    cropoffset  = specification.cropoffset  or 0
-    trimoffset  = cropoffset  - (specification.trimoffset  or 0)
-    bleedoffset = trimoffset  - (specification.bleedoffset or 0)
-    artoffset   = bleedoffset - (specification.artoffset   or 0)
-    --
-    if paperdouble ~= nil then
-        doublesided = paperdouble
-    end
-end
-
 local function documentspecification()
+    local canvas   = getcanvas()
+
+    -- move this to layo-ini ?
+
+    local pagespec = canvas.pagespec
     if not pagespec or pagespec == "" then
         pagespec = v_default
     end
@@ -460,7 +429,7 @@ local function documentspecification()
     local spec     = defaults or pagespecs[v_default]
     -- successive keys can modify this
     if spec.layout == "auto" then
-        if doublesided then
+        if canvas.doublesided then
             local s = pagespecs[v_doublesided] -- to be checked voor interfaces
             for k, v in next, s do
                 spec[k] = v
@@ -478,6 +447,7 @@ local function documentspecification()
             end
         end
     end
+
     -- maybe interfaces.variables
     local layout    = spec.layout
     local mode      = spec.mode
@@ -495,6 +465,8 @@ local function documentspecification()
         addtocatalog("PageMode",pdfconstant(mode))
     end
     local prints = nil
+    local marked = canvas.marked
+    local copies = canvas.copies
     if marked then
         local pages     = structures.pages
         local marked    = pages.allmarked(marked)
@@ -534,10 +506,15 @@ local function boxvalue(n) -- we could share them
 end
 
 local function pagespecification()
-    local paperwidth, paperheight = codeinjections.getpagedimensions()
+    local canvas      = getcanvas()
+    local paperwidth  = canvas.paperwidth
+    local paperheight = canvas.paperheight
+    local leftoffset  = canvas.leftoffset
+    local topoffset   = canvas.topoffset
+    --
     local llx = leftoffset
-    local lly = paperheight + topoffset - height
-    local urx = width - leftoffset
+    local urx = canvas.width - leftoffset
+    local lly = paperheight + topoffset - canvas.height
     local ury = paperheight - topoffset
     -- boxes can be cached
     local function extrabox(WhatBox,offset,always)
@@ -553,10 +530,10 @@ local function pagespecification()
     if omitextraboxes then
         -- only useful for testing / comparing
     else
-        extrabox("CropBox",cropoffset,true) -- mandate for rendering
-        extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
-        extrabox("BleedBox",bleedoffset)    -- optional
-     -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
+        extrabox("CropBox",canvas.cropoffset,true) -- mandate for rendering
+        extrabox("TrimBox",canvas.trimoffset,true) -- mandate for pdf/x
+        extrabox("BleedBox",canvas.bleedoffset)    -- optional
+     -- extrabox("ArtBox",canvas.artoffset)        -- optional .. unclear what this is meant to do
     end
 end
 

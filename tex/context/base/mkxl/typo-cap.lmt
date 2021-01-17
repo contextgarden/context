@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
 
 local next, type, tonumber = next, type, tonumber
 local format, insert = string.format, table.insert
-local div, getrandom = math.div, utilities.randomizer.get
+local div, getrandom, random = math.div, utilities.randomizer.get, math.random
 
 local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)
 
@@ -435,3 +435,24 @@ interfaces.implement {
     actions   = cases.set,
     arguments = { "argument" }
 }
+
+-- An example of a special plug, see type-imp-punk for usage.
+
+cases.register("randomvariant", function(start)
+    local char, fnt = isglyph(start)
+    local data = fontchar[fnt][char]
+    if data then
+        local variants = data.variants
+        if variants then
+            local n = #variants
+            local i = getrandom("variant",1,n+1)
+            if i > n then
+                -- we keep the original
+            else
+                setchar(start,variants[i])
+            end
+            return start, true
+        end
+    end
+    return start, false
+end)

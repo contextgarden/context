@@ -65,31 +65,6 @@ local function simplified(t)
     return r
 end
 
-local nodecodes = simplified(node.types())
-
-local whatcodes = allocate {
-    literal     = 0x1, [0x1] = "literal",
-    latelua     = 0x2, [0x2] = "latelua",
-    userdefined = 0x3, [0x3] = "userdefined",
-    savepos     = 0x4, [0x4] = "savepos",
-    save        = 0x5, [0x5] = "save",
-    restore     = 0x6, [0x6] = "restore",
-    setmatrix   = 0x7, [0x7] = "setmatrix",
-    open        = 0x8, [0x8] = "open",
-    close       = 0x9, [0x9] = "close",
-    write       = 0xA, [0xA] = "write",
-}
-
-local usercodes = allocate {
-    [ 97] = "attribute", -- a
-    [100] = "number",    -- d
-    [102] = "float",     -- f
-    [108] = "lua",       -- l
-    [110] = "node",      -- n
-    [115] = "string",    -- s
-    [116] = "token"      -- t
-}
-
 local noadoptions = allocate {
     set      =        0x08,
     unused_1 = 0x00 + 0x08,
@@ -102,15 +77,7 @@ local noadoptions = allocate {
     right    = 0x14 + 0x08,
 }
 
-local literalvalues = allocate {
-    [0] = "origin",
-    [1] = "page",
-    [2] = "always",
-    [3] = "raw",
-    [4] = "text",
-    [5] = "font",
-    [6] = "special",
-}
+local nodecodes = simplified(node.types())
 
 gluecodes     = allocate(swapped(gluecodes,gluecodes))
 dircodes      = allocate(swapped(dircodes,dircodes))
@@ -118,7 +85,6 @@ boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
 noadcodes     = allocate(swapped(noadcodes,noadcodes))
 radicalcodes  = allocate(swapped(radicalcodes,radicalcodes))
 nodecodes     = allocate(swapped(nodecodes,nodecodes))
-whatcodes     = allocate(swapped(whatcodes,whatcodes))
 listcodes     = allocate(swapped(listcodes,listcodes))
 glyphcodes    = allocate(swapped(glyphcodes,glyphcodes))
 kerncodes     = allocate(swapped(kerncodes,kerncodes))
@@ -129,18 +95,15 @@ accentcodes   = allocate(swapped(accentcodes,accentcodes))
 fencecodes    = allocate(swapped(fencecodes,fencecodes))
 parcodes      = allocate(swapped(parcodes,parcodes))
 rulecodes     = allocate(swapped(rulecodes,rulecodes))
-usercodes     = allocate(swapped(usercodes,usercodes))
 noadoptions   = allocate(swapped(noadoptions,noadoptions))
 
 dirvalues     = allocate(swapped(dirvalues,dirvalues))
-literalvalues = allocate(swapped(literalvalues,literalvalues))
 fillvalues    = allocate(swapped(fillvalues,fillvalues))
 
 nodes.gluecodes     = gluecodes
 nodes.dircodes      = dircodes
 nodes.boundarycodes = boundarycodes
 nodes.noadcodes     = noadcodes
-nodes.whatcodes     = whatcodes
 nodes.listcodes     = listcodes
 nodes.glyphcodes    = glyphcodes
 nodes.kerncodes     = kerncodes
@@ -152,13 +115,11 @@ nodes.radicalcodes  = radicalcodes
 nodes.fencecodes    = fencecodes
 nodes.parcodes      = parcodes
 nodes.rulecodes     = rulecodes
-nodes.usercodes     = usercodes
 
 nodes.noadoptions   = noadoptions
 nodes.fillvalues    = fillvalues
 nodes.fillcodes     = fillvalues -- for now
 nodes.dirvalues     = dirvalues
-nodes.literalvalues = literalvalues
 
 nodes.nodecodes     = nodecodes
 
@@ -167,7 +128,6 @@ local subtypes = allocate {
     dir       = dircodes,
     boundary  = boundarycodes,
     noad      = noadcodes,
-    whatsit   = whatcodes,
     glyph     = glyphcodes,
     kern      = kerncodes,
     penalty   = penaltycodes,
@@ -201,11 +161,9 @@ nodes.subtypes = subtypes
 
 nodes.skipcodes            = gluecodes
 nodes.directioncodes       = dircodes
-nodes.whatsitcodes         = whatcodes
 nodes.discretionarycodes   = disccodes
 
 nodes.directionvalues      = dirvalues
-nodes.literalvalues        = literalvalues
 
 glyphcodes.glyph           = glyphcodes.character
 
@@ -217,8 +175,6 @@ listcodes.column           = listcodes.alignment
 
 kerncodes.kerning          = kerncodes.fontkern
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
-
-literalvalues.direct       = literalvalues.always
 
 nodes.noadoptions = {
     set      =        0x08,

@@ -14,6 +14,7 @@ local italics = {
      -- [0x1D44E] = 0.99,    -- a (fraction of quad)
      -- [0x1D44F] = 100,     -- b (font points)
         [0x1D453] = -0.0375, -- f
+        -- todo: ssty 1/2
     }
 }
 

@@ -36,6 +36,7 @@ local setlist            = nuts.setlist
 local setleader          = nuts.setleader
 
 local copy_node          = nuts.copy
+local find_tail          = nuts.tail
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
@@ -165,13 +166,15 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
         if id == hlist_code or id == vlist_code then
             local content = getlist(head)
             if content then
-                local list = insert_node_before(content,content,copy_node(nsnone)) -- two return values
+--                 local list = insert_node_before(content,content,copy_node(nsnone)) -- two return values
+                local list = insert_node_after(content,find_tail(content),copy_node(nsnone)) -- two return values
                 if list ~= content then
                     setlist(head,list)
                 end
             end
         else
-            head = insert_node_before(head,head,copy_node(nsnone))
+--             head = insert_node_before(head,head,copy_node(nsnone))
+            head = insert_node_after(find_tail(head),head,copy_node(nsnone))
         end
         return head, true
     end
@@ -293,6 +296,75 @@ end
 
 states.process = function(namespace,attribute,head,default)
     return process(attribute,head,default)
+end
+
+local function simple(attribute,head)
+    local check  = false
+    local leader = nil
+    for stack, id, subtype, content in nextcontent, head do
+        if id == glyph_code or id == disc_code then
+            check = true
+        elseif id == glue_code then
+            check  = true
+            leader = content
+        elseif id == hlist_code or id == vlist_code then
+            if getorientation(stack) then
+                local outer = getattr(stack,attribute)
+                if outer then
+                    if current ~= outer then
+                        if current > 0 then
+                            head = insert_node_before(head,stack,copy_node(nsnone))
+                        end
+                        head    = insert_node_before(head,stack,copy_node(nsdata[c]))
+                        current = outer
+                    end
+                elseif current > 0 then
+                    head    = insert_node_before(head,stack,copy_node(nsnone))
+                    current = 0
+                end
+            end
+            local list = simple(attribute,content)
+            if content ~= list then
+                setlist(stack,list)
+            end
+        elseif id == rule_code then
+            check = has_dimensions(stack)
+        end
+        if check then
+            local c = getattr(stack,attribute)
+            if c then
+                if current ~= c then
+                    if current > 0 then
+                        head = insert_node_before(head,stack,copy_node(nsnone))
+                    end
+                    head    = insert_node_before(head,stack,copy_node(nsdata[c]))
+                    current = c
+                end
+                if leader then
+                    local savedcurrent = current
+                    local ci = getid(leader)
+                    if ci == hlist_code or ci == vlist_code then
+                        current = 0
+                    end
+                    local list = simple(attribute,leader)
+                    if leader ~= list then
+                        setleader(stack,list)
+                    end
+                    current = savedcurrent
+                    leader = false
+                end
+            elseif current > 0 then
+                head    = insert_node_before(head,stack,copy_node(nsnone))
+                current = 0
+            end
+            check = false
+        end
+    end
+    return head
+end
+
+states.simple = function(namespace,attribute,head,default)
+    return simple(attribute,head,default)
 end
 
 -- we can force a selector, e.g. document wide color spaces, saves a little

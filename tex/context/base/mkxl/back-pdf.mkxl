@@ -20,7 +20,6 @@
 \registerctxluafile{lpdf-ini}{autosuffix,optimize}
 \registerctxluafile{lpdf-lmt}{autosuffix,optimize}
 \registerctxluafile{lpdf-col}{autosuffix}
-\registerctxluafile{lpdf-vfc}{autosuffix}
 \registerctxluafile{lpdf-xmp}{autosuffix}
 \registerctxluafile{lpdf-ano}{autosuffix}
 \registerctxluafile{lpdf-res}{autosuffix}

@@ -122,7 +122,7 @@ end
 local function sweep(head,first,last)
     for n, id, subtype in nextnode, head do
         -- we need to handle empty heads so we test for latelua
-        if id == glyph_code or (id == whatsit_code and subtype == lateluawhatsit_code) then
+        if id == glyph_code or (id == whatsit_code and subtype == lateluawhatsit_code) then -- brrr
             local a = getattr(n,a_marks)
             if not a then
                 -- next

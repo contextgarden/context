@@ -33,13 +33,9 @@ local formatters       = string.formatters
 
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 
-local pdfprint
+local pdfprint ; pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
 
-pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
-
--- updaters.register("backend.update",function()
---     pdfprint = lpdf.print
--- end)
+-- updaters.register("backend.update",function() pdfprint = lpdf.print end)
 
 do
 

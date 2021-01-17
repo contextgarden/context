@@ -704,7 +704,7 @@ table.setmetatableindex(nodestracerpool,function(t,k,v)
     return v
 end)
 
-function nutstracerpool.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
+function nutstracerpool.rule(w,h,d,c,s)
     return setproperties(new_rule(w,h,d),c,s)
 end
 

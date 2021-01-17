@@ -1,0 +1,272 @@
+%D \module
+%D   [       file=meta-imp-punk,
+%D        version=2020.01.16,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Punk,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This file is a merge of the original punk files by Donald Knuth, who
+% added this comment:
+%
+%   Font inspired by Gerard and Marjan Unger's lectures, Feb 1985
+%
+% The regular punk files are part of TeXLive and in metafont format. All
+% errors introduced are ours. We also changed the encoding to unicode. In
+% due time we might add a few more more characters. We still need to
+% improve some of the metrics which involves a bit of trial and error. The
+% font just covers basic latin shapes but in ConTeXt MkIV we add virtual
+% composed shapes. There is a module m-punk.tex that implements this. This
+% derivate is also used in mk.tex (mk.pdf) which is one of our tests for
+% LuaTeX. We published an article on it in the MAPS (NTG magazine).
+%
+% 2008, mkiv variant: Taco Hoekwater & Hans Hagen
+% 2020, lmtx variant: Hans Hagen (playground)
+
+\startMPcalculation{simplefun}
+
+    picture PunkShapes[][];
+
+    numeric PunkId       ; PunkId       := 0 ;
+    numeric PunkBase     ; PunkBase     := 0 ;
+    string  PunkName     ; PunkName     := "punk" ;
+    numeric PunkUsed     ; PunkUsed     := 0 ;
+    numeric PunkSlant    ; PunkSlant    := 0 ;
+    numeric PunkWeight   ; PunkWeight   := 1 ;
+    numeric PunkSqueeze  ; PunkSqueeze  := 1 ;
+    numeric PunkExtend   ; PunkExtend   := 1 ;
+    numeric PunkVariants ; PunkVariants := 0 ;
+
+    numeric PunkRatio ; PunkRatio := 2/3 ;
+    numeric PunkScale ; PunkScale := 20 ;  % when zero we use the knuth values
+    numeric PunkN     ; PunkN     := 0 ;
+
+    def beginpunkchar(expr c, n, hor, ver) =
+        begingroup ;
+        save uc, w, h, d, hdev, vdev ;
+        hdev := hor * dev ; % modify horizontal amounts of deviation
+        vdev := ver * dev ; % modify vertical   amounts of deviation
+        uc := if string c : utfnum(c) else : c fi ;
+        h := if PunkScale > 0 : PunkN else : n fi / PunkSqueeze ;
+        w := n * PunkExtend ;
+        d := 0 ;
+        clearxy ;
+        clearit ;
+    enddef ;
+
+    def endpunkchar =
+        if PunkSlant <> 0 :
+            currentpicture := currentpicture slanted PunkSlant ;
+        fi ;
+        save llx, lly, uly ;
+        llx := xpart llcorner currentpicture ;
+        lly := ypart llcorner currentpicture ;
+        uly := ypart ulcorner currentpicture ;
+
+        currentpicture := currentpicture shifted (- llx + 1, 0);
+        w := bbwidth(currentpicture) + 2 ;
+        h := uly ;
+        d := if lly < 0 : - lly else : 0 fi ;
+
+        PunkUsed := if PunkBase > 0 : PunkBase else : uc fi;
+        PunkShapes[PunkId][PunkUsed] := currentpicture ;
+        lmt_registerglyph [
+            category  = PunkName,
+            unicode   = PunkUsed,
+            tounicode = uc,
+            width     = w,
+            height    = h,
+            depth     = d,
+            code      = "draw PunkShapes[" & decimal PunkId & "][" & decimal PunkUsed & "]",
+        ] ;
+        if PunkBase > 0 :
+            PunkBase := PunkBase + 1 ;
+        fi ;
+        endgroup ;
+    enddef ;
+
+    def initialize_punk_upper =
+        PunkN := PunkScale ;
+        dev   := 1 ;
+    enddef ;
+
+    def initialize_punk_lower =
+        PunkN := PunkScale * PunkRatio ;
+        dev   := .5 ;
+    enddef ;
+
+    def revert_punk_lower =
+        PunkN := PunkScale ;
+        dev   := 1 ;
+    enddef ;
+
+    def beginpunkfont =
+
+        begingroup ;
+
+        save dev;
+
+        save u ; u := 1 ;
+
+        PunkBase  := 0 ;
+
+        pen linepen ; linepen := pencircle scaled (PunkWeight * u) ;
+        pen dotpen  ; dotpen  := linepen scaled 2 slanted -PunkSlant ;
+
+        pickup linepen ;
+
+        save pp ; vardef pp expr z =
+            z + (hdev * normaldeviate, vdev * normaldeviate)
+        enddef ;
+
+        save pd ; def pd expr z =
+            drawdot z withpen dotpen ;
+        enddef ;
+
+        PunkId := PunkId + 1 ;
+
+        lmt_registerglyphs [
+            name     = PunkName, % todo: when we do name = name we get ['"name"'] = name
+            units    = 25,
+            width    = 25,
+            height   = 25,
+            depth    = 0,
+            usecolor = true,
+        ] ;
+
+        def endchar = endpunkchar enddef ;
+
+    enddef ;
+
+    def endpunkfont =
+        endgroup;
+    enddef ;
+
+    % We started out with immediate:
+
+  % def MakePunkFont (expr name, filename, slant, weight, squeeze, extend) =
+  %     begingroup ;
+  %         save PunkName, PunkFileName, PunkSlant, PunkWeight, PunkSqueeze, PunkExend, PunkVariants ;
+  %         string PunkName, PunkFileName ;
+  %         PunkFileName := filename ;
+  %         PunkName     := name ;
+  %         PunkSlant    := slant ;
+  %         PunkWeight   := weight ;
+  %         PunkSqueeze  := squeeze ;
+  %         PunkExtend   := extend ;
+  %         PunkVariants := 0 ;
+  %         beginpunkfont ;
+  %             loadfile(PunkFileName) ;
+  %         endpunkfont ;
+  %     endgroup ;
+  % enddef ;
+  %
+  % MakePunkFont("punk",            "punkfont-characters.mp", 1, 0   ) ;
+  % MakePunkFont("punkbold",        "punkfont-characters.mp", 2, 0   ) ;
+  % MakePunkFont("punkslanted",     "punkfont-characters.mp", 1, 0.15) ;
+  % MakePunkFont("punkboldslanted", "punkfont-characters.mp", 2, 0.15) ;
+
+    % And ended up with delayed:
+
+    def punkpreroll =
+        begingroup ;
+            save PunkName, PunkFileName, PunkSlant, PunkWeight, PunkSqueeze, PunkExtend, PunkVariants ;
+            string PunkName, PunkFileName ;
+            PunkName     := getparameterdefault "mpsfont" "name" "punk" ;
+            PunkFileName := getparameterdefault "mpsfont" "filename" "punkfont-characters.mp" ;
+            PunkSlant    := scantokens(getparameterdefault "mpsfont" "slant" "0") ;
+            PunkWeight   := scantokens(getparameterdefault "mpsfont" "weight" "1") ;
+            PunkSqueeze  := scantokens(getparameterdefault "mpsfont" "squeeze" "1") ;
+            PunkExtend   := scantokens(getparameterdefault "mpsfont" "extend" "1") ;
+            PunkVariants := scantokens(getparameterdefault "mpsfont" "variants" "0");
+            beginpunkfont ;
+                loadfile(PunkFileName) ;
+                if PunkVariants > 0 :
+                    PunkBase := 57344 ; % 0xE000 ; 0xF0000 ;
+                    for i=1 upto PunkVariants :
+                        loadfile(PunkFileName) ;
+                    endfor ;
+                fi ;
+            endpunkfont ;
+        endgroup ;
+    enddef ;
+
+\stopMPcalculation
+
+% Are these names okay? If so it can go into the core.
+
+\permanent\protected\def\enablerandomvariants{\setcharactercasing[randomvariant]}
+\permanent\protected\def\randomvariants      {\groupedcommand\enablerandomvariants\donothing}
+\permanent\protected\def\startrandomvariants {\begingroup\enablerandomvariants}
+\permanent\protected\def\stoprandomvariants  {\endgroup}
+
+\definefontfeature [punk]            [metapost={category=punk,preroll=punkpreroll}]
+\definefontfeature [punkrandom]      [metapost={category=punk,preroll=punkpreroll,variants=10}]
+\definefontfeature [punkbold]        [metapost={category=punk,preroll=punkpreroll,weight=2}]
+\definefontfeature [punkslanted]     [metapost={category=punk,preroll=punkpreroll,slant=.15}]
+\definefontfeature [punkboldslanted] [metapost={category=punk,preroll=punkpreroll,slant=.15,weight=2}]
+\definefontfeature [punkveryslanted] [metapost={category=punk,preroll=punkpreroll,slant=-.15}]
+\definefontfeature [punksqueezed]    [metapost={category=punk,preroll=punkpreroll,squeeze=.5}]
+\definefontfeature [punkextended]    [metapost={category=punk,preroll=punkpreroll,extend=1.3}]
+
+\continueifinputfile{meta-imp-punk.mkxl}
+
+% immediate:
+%
+% \definefontfeature [punk]            [metapost=punk]
+% \definefontfeature [punkbold]        [metapost=punkbold]
+% \definefontfeature [punkslanted]     [metapost=punkslanted]
+% \definefontfeature [punkboldslanted] [metapost=punkboldslanted]
+
+% delayed:
+
+% name=punk
+% filename=punkfont-characters.mp
+
+\setupbodyfont[dejavu]
+
+\definefont[PunkA][Serif*punk]
+\definefont[PunkB][Serif*punkbold]
+\definefont[PunkC][Serif*punkslanted]
+\definefont[PunkD][Serif*punkboldslanted]
+\definefont[PunkE][Serif*punkveryslanted]
+\definefont[PunkF][Serif*punkrandom]
+\definefont[PunkG][Serif*punksqueezed]
+\definefont[PunkH][Serif*punkextended]
+
+\starttext
+
+\startTEXpage[offset=10pt,width=30cm]
+    % \showglyphs
+    {\darkcyan    \PunkA \samplefile{tufte} \par}
+    {\darkmagenta \PunkB \samplefile{tufte} \par}
+    {\darkred     \PunkC \samplefile{tufte} \par}
+    {\darkgreen   \PunkD \samplefile{tufte} \par}
+    {\darkblue    \PunkE \samplefile{tufte} \par}
+    {\darkyellow  \PunkF \enablerandomvariants \samplefile{tufte} \par}
+    {\darkgray    \PunkG \samplefile{tufte} \par}
+    {\darkorange  \PunkH \samplefile{tufte} \par}
+\stopTEXpage
+
+\startTEXpage[offset=10pt,width=2cm]
+    \PunkF \enablerandomvariants
+    \dostepwiserecurse{1}{2000}{1}{\glyphscale#1\relax f }
+\stopTEXpage
+
+% \setupbodyfont[dejavu]
+
+\setupbodyfont[punk] %one first needs to load a bodyfont !
+
+\startTEXpage[offset=10pt,width=20cm]
+    {\darkcyan    \tf \samplefile{zapf} \par}
+    {\darkmagenta \bf \samplefile{zapf} \par}
+    {\darkred     \sl \samplefile{zapf} \par}
+    {\darkgreen   \bs \samplefile{zapf} \par}
+\stopTEXpage
+
+\stoptext

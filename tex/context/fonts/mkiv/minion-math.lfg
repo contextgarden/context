@@ -1,6 +1,5 @@
-local kern_100 = { bottomright = { { kern = -100 } } }
-local kern_150 = { bottomright = { { kern = -150 } } }
-local kern_200 = { bottomright = { { kern = -200 } } }
+local kern_W = { bottomright = { { kern = -150 } } }
+local kern_V = { bottomright = { { kern = -200 } } }
 
 return {
     name = "minion-math",
@@ -23,8 +22,9 @@ return {
     },
     mathematics = {
         kerns = {
-            [0x1D449] = kern_200, -- 𝑉
-            [0x1D44A] = kern_150, -- 𝑊
+            [0x1D449] = kern_V, -- 𝑉
+            [0x1D44A] = kern_W, -- 𝑊
+            -- todo: ssty 1/2
         },
     },
 }

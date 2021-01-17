@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['lpdf-col'] = {
     license   = "see context related readme files"
 }
 
--- slants also page ?
-
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.format, string.gsub, string.rep, string.gmatch
 local settings_to_array, settings_to_numbers = utilities.parsers.settings_to_array, utilities.parsers.settings_to_numbers
@@ -25,7 +23,7 @@ local registrations           = backends.pdf.registrations
 
 local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
-local pageliteral             = nodepool.pageliteral
+local setstate                = nodepool.setstate
 
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
@@ -131,26 +129,26 @@ lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
 -- color injection
 
 function nodeinjections.rgbcolor(r,g,b)
-    return register(pageliteral(f_rgb(r,g,b,r,g,b)))
+    return register(setstate(f_rgb(r,g,b,r,g,b)))
 end
 
 function nodeinjections.cmykcolor(c,m,y,k)
-    return register(pageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
+    return register(setstate(f_cmyk(c,m,y,k,c,m,y,k)))
 end
 
 function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
-    return register(pageliteral(f_gray(s,s)))
+    return register(setstate(f_gray(s,s)))
 end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
         p = gsub(p,","," ") -- brr misuse of spot
     end
-    return register(pageliteral(f_spot(n,n,p,p)))
+    return register(setstate(f_spot(n,n,p,p)))
 end
 
 function nodeinjections.transparency(n)
-    return register(pageliteral(f_tr_gs(n)))
+    return register(setstate(f_tr_gs(n)))
 end
 
 -- a bit weird but let's keep it here for a while
@@ -169,7 +167,7 @@ function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = bp * rulethickness
     effect = effects[effect] or effects['normal']
-    return register(pageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
+    return register(setstate(f_effect(stretch,rulethickness,effect))) -- watch order
 end
 
 -- spot- and indexcolors
@@ -727,29 +725,20 @@ function lpdf.finishtransparencycode()
     end
 end
 
--- this will move to lpdf-spe.lua an dwe then can also add a metatable with
--- normal context colors
-
 do
 
-    local pdfcolor        = lpdf.color
-    local pdftransparency = lpdf.transparency
+    local pdfprint, pdfcolor, pdftransparency
 
-    local f_slant = formatters["q 1 0 %N 1 0 0 cm"]
-
-    local slants = setmetatableindex(function(t,k)
-        local v = { "pdf", "origin", f_slant(a) }
-        t[k] = v
-        return k
+    updaters.register("backend.update.lpdf",function()
+        pdfprint        = lpdf.print
+        pdfcolor        = lpdf.color
+        pdftransparency = lpdf.transparency
     end)
 
-    local function startslant(a)
-        return slants[a]
-    end
-
     local c_cache = setmetatableindex(function(t,m)
+        -- We inherit the outer transparency.
         local v = setmetatableindex(function(t,c)
-            local p = { "pdf", "page", "q " .. pdfcolor(m,c) }
+            local p = "q " .. pdfcolor(m,c)
             t[c] = p
             return p
         end)
@@ -757,13 +746,11 @@ do
         return v
     end)
 
-    -- we inherit the outer transparency
-
     local t_cache = setmetatableindex(function(t,transparency)
         local p = pdftransparency(transparency)
         local v = setmetatableindex(function(t,colormodel)
             local v = setmetatableindex(function(t,color)
-                local v = { "pdf", "page", "q " .. pdfcolor(colormodel,color) .. " " .. p }
+                local v = "q " .. pdfcolor(colormodel,color) .. " " .. p
                 t[color] = v
                 return v
             end)
@@ -774,120 +761,33 @@ do
         return v
     end)
 
-    local function startcolor(k)
-        local m, c = colortoattributes(k)
-        local t = transparencytoattribute(k)
-        if t and t ~= unsetvalue then
-            return t_cache[t][m][c]
-        else
-            return c_cache[m][c]
-        end
-    end
-
-    -- A problem is that we need to transfer back and this is kind of
-    -- messy so we force text mode .. i'll do a better job on that but
-    -- will experiment first (both engines). Virtual fonts will change
-    -- anyway.
-
-    local vfspecials = backends.pdf.tables.vfspecials or allocate { }
-    backends.pdf.tables.vfspecials = vfspecials
-
-    vfspecials.startcolor = startcolor
- -- vfspecials.stopcolor  = { "pdf", "text", "Q" } -- fails
-    vfspecials.stopcolor  = { "pdf", "page", "Q" }
-
-    vfspecials.startslant = startslant
-    vfspecials.stopslant  = { "pdf", "page", "Q" } -- fails
-
-end
-
--- new method:
-
-do
-
     updaters.register("backend.update.lpdf",function()
-        pdfprint = lpdf.print
-    end)
 
-    -- Is this still used? It's a font property now.
+        local vfinjectors = fonts.helpers.vfinjectors
 
-    local f_slant = formatters["q 1 0 %N 1 0 0 cm"]
-
-    local slants = setmetatableindex(function(t,k)
-        local v = f_slant(a)
-        t[k] = v
-        return k
-    end)
-
-    local function startslant(a)
-        return pdfprint("origin", slants[a])
-    end
-
-    local function stopslant()
-        pdfprint("text", "Q")
-    end
-
-    -- We inherit the outer transparency.
-
-    local pdfcolor        = lpdf.color
-    local pdftransparency = lpdf.transparency
-
- -- local c_cache = setmetatableindex(function(t,m)
- --     local v = setmetatableindex(function(t,c)
- --         local p = "q " .. pdfcolor(m,c)
- --         t[c] = p
- --         return p
- --     end)
- --     t[m] = v
- --     return v
- -- end)
- --
- -- local t_cache = setmetatableindex(function(t,transparency)
- --     local p = pdftransparency(transparency)
- --     local v = setmetatableindex(function(t,colormodel)
- --         local v = setmetatableindex(function(t,color)
- --             local v = "q " .. pdfcolor(colormodel,color) .. " " .. p
- --             t[color] = v
- --             return v
- --         end)
- --         t[colormodel] = v
- --         return v
- --     end)
- --     t[transparency] = v
- --     return v
- -- end)
-
- -- local function startcolor(color)
- --     local m, c = colortoattributes(color)
- --     local t = transparencytoattribute(color)
- --     if t then
- --         pdfprint("page", t_cache[t][m][c])
- --     else
- --         pdfprint("page", c_cache[m][c])
- --     end
- -- end
-
-    local function startcolor(color)
-        local m, c = colortoattributes(color)
-        local t = transparencytoattribute(color)
-        if t and t ~= unsetvalue then
-            pdfprint("page", "q " .. pdfcolor(m,c) .. " " .. pdftransparency(t))
-        else
-            pdfprint("page", "q " .. pdfcolor(m,c))
+        vfinjectors.pdf = function(pos_h,pos_v,packet)
+            pdfprint(packet[2],packet[3])
         end
-    end
 
-    local function stopcolor()
-        pdfprint("text", "Q")
-    end
+        vfinjectors.startcolor = function(pos_h,pos_v,packet)
+            local color = type(packet) == "table" and packet[2] or packet
+            if color then
+                local m, c = colortoattributes(color)
+                local t = transparencytoattribute(color)
+                if t and t ~= unsetvalue then
+                    pdfprint("page", t_cache[t][m][c]) -- "q " .. pdfcolor(m,c) .. " " .. pdftransparency(t)
+                else
+                    pdfprint("page", c_cache[m][c])    -- "q " .. pdfcolor(m,c))
+                end
+            else
+                pdfprint("page", "q")
+            end
+        end
 
-    updaters.register("backend.update.lpdf",function()
-        fonts.vfcommands = {
-            startslant = startslant,
-            stopslant  = stopslant,
-            startcolor = startcolor,
-            stopcolor  = stopcolor,
-        }
+        vfinjectors.stopcolor = function()
+            pdfprint("text", "Q")
+        end
+
     end)
 
 end

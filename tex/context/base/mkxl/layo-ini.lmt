@@ -1,0 +1,115 @@
+if not modules then modules = { } end modules ['layo-ini'] = {
+    version   = 1.001,
+    comment   = "companion to layo-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We need to share information between the TeX and Lua end about the typographical
+-- model. This happens here. This code might move.
+
+local texgetcount  = tex.getcount
+local conditionals = tex.conditionals
+
+layouts = {
+    status = { },
+}
+
+local status = layouts.status
+
+function status.leftorrightpageaction(left,right)
+    if left == nil then
+        left, right = false, true
+    end
+    if not conditionals.layoutisdoublesided then
+        return left, right
+    elseif conditionals.layoutissinglesided then
+        return left, right
+    elseif texgetcount("pagenoshift") % 2 == 0 then
+        if texgetcount("realpageno") % 2 == 0 then
+            return right, left
+        else
+            return left, right
+        end
+    else
+        if texgetcount("realpageno") % 2 == 0 then
+            return left, right
+        else
+            return right, left
+        end
+    end
+end
+
+function status.isleftpage(r)
+    if not conditionals.layoutisdoublesided then
+        return false
+    elseif conditionals.layoutissinglesided then
+        return false
+    elseif texgetcount("pagenoshift") % 2 == 0 then
+        return (r or texgetcount("realpageno")) % 2 == 0
+    else
+        return not (r or texgetcount("realpageno")) % 2 == 0
+    end
+end
+
+-- Instead of making these these driver specific we make them generic. We can even consider
+-- to make these registers at the tex end.
+
+local canvas = {
+    pagespec     = "default", -- v_default
+    paperwidth   = 0,
+    paperheight  = 0,
+    topoffset    = 0,
+    leftoffset   = 0,
+    height       = 0,
+    width        = 0,
+    cropoffset   = 0,
+    bleedoffset  = 0,
+    trimoffset   = 0,
+    artoffset    = 0,
+    doublesided  = false,
+    marked       = false,
+    copies       = false,
+}
+
+function layouts.setupcanvas(specification)
+    local paperheight = specification.paperheight or canvas.paperheight
+    local paperwidth  = specification.paperwidth  or canvas.paperwidth
+    local cropoffset  = specification.cropoffset  or 0
+    local trimoffset  = cropoffset  - (specification.trimoffset  or 0)
+    local bleedoffset = trimoffset  - (specification.bleedoffset or 0)
+    local artoffset   = bleedoffset - (specification.artoffset   or 0)
+    --
+    canvas.paperheight = paperheight
+    canvas.paperwidth  = paperwidth
+    canvas.cropoffset  = cropoffset
+    canvas.trimoffset  = trimoffset
+    canvas.bleedoffset = bleedoffset
+    canvas.artoffset   = artoffset
+    --
+    canvas.pagespec    = specification.mode       or pagespec
+    canvas.topoffset   = specification.topoffset  or 0
+    canvas.leftoffset  = specification.leftoffset or 0
+    canvas.height      = specification.height     or paperheight
+    canvas.width       = specification.width      or paperwidth
+    canvas.marked      = specification.print
+    --
+    local copies = specification.copies
+    if type(copies) == "number" and copies < 2 then
+        canvas.copies = false
+    end
+    --
+    local doublesided = specification.doublesided
+    if doublesided ~= nil then
+        canvas.doublesided = doublesided
+    end
+end
+
+function layouts.getpagedimensions()
+    return canvas.paperwidth, canvas.paperheight
+end
+
+function layouts.getcanvas()
+    return canvas
+end

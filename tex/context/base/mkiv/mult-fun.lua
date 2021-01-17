@@ -187,7 +187,7 @@ return {
         --
         "inpath", "pointof", "leftof", "rightof",
         --
-        "utflen", "utfsub",
+        "utfnum", "utflen", "utfsub",
         --
         "newhash", "disposehash", "inhash", "tohash",
         --

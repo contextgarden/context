@@ -95,6 +95,7 @@ appendaction("shipouts",     "finishers",   "attributes.transparencies.handler",
 appendaction("shipouts",     "finishers",   "attributes.colorintents.handler",                  nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.negatives.handler",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.effects.handler",                       nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.alternates.handler",                    nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler",                  nil, "nut",    "disabled"  )
 
 appendaction("shipouts",     "wrapup",      "nodes.handlers.export",                            nil, "nut",    "disabled"  )  -- always last

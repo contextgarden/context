@@ -17,7 +17,7 @@
 
 \registerctxluafile{font-ini}{autosuffix}
 \registerctxluafile{font-log}{}
-\registerctxluafile{font-con}{autosuffix}
+\registerctxluafile{font-con}{autosuffix} % kind of early
 %registerctxluafile{font-cft}{}
 \registerctxluafile{font-enc}{}
 \registerctxluafile{font-fmp}{autosuffix}
@@ -88,7 +88,7 @@
 \registerctxluafile{good-ini}{}
 \registerctxluafile{good-gen}{}
 \registerctxluafile{good-ctx}{}
-\registerctxluafile{good-mth}{}
+\registerctxluafile{good-mth}{autosuffix}
 
 \registerctxluafile{font-def}{autosuffix}
 \registerctxluafile{font-ctx}{autosuffix} % after def as it overloads
@@ -116,7 +116,7 @@
     % not yet, lmtx feature
 }
 
-\registerctxluafile{font-imp-tracing}{} % comes last!
+\registerctxluafile{font-imp-tracing}{autosuffix} % comes last!
 
 \registerctxluafile{font-fbk}{autosuffix}
 

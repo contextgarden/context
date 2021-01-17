@@ -677,6 +677,29 @@
 \newskip       \s_spac_narrower_right_last
 \newconditional\s_spac_narrower_last_swap
 
+% \def\spac_narrower_start_apply#1%
+%   {\narrowerparameter\c!before
+%    \global\s_spac_narrower_left  \zeropoint
+%    \global\s_spac_narrower_right \zeropoint
+%    \global\s_spac_narrower_middle\zeropoint
+%    \edef\askednarrower{#1}%
+%    \ifx\askednarrower\v!reverse
+%      \ifconditional\s_spac_narrower_last_swap
+%        \leftskip \s_spac_narrower_right_last
+%        \rightskip\s_spac_narrower_left_last
+%        \setfalse\s_spac_narrower_last_swap
+%      \else
+%        \leftskip \s_spac_narrower_left_last
+%        \rightskip\s_spac_narrower_right_last
+%        \settrue\s_spac_narrower_last_swap
+%      \fi
+%    \else
+%      \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
+%      \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
+%      \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+%    \fi
+%    \seteffectivehsize}
+
 \def\spac_narrower_start_apply#1%
   {\narrowerparameter\c!before
    \global\s_spac_narrower_left  \zeropoint
@@ -685,18 +708,18 @@
    \edef\askednarrower{#1}%
    \ifx\askednarrower\v!reverse
      \ifconditional\s_spac_narrower_last_swap
-       \leftskip \s_spac_narrower_right_last
-       \rightskip\s_spac_narrower_left_last
+       \frozen\leftskip \s_spac_narrower_right_last
+       \frozen\rightskip\s_spac_narrower_left_last
        \setfalse\s_spac_narrower_last_swap
      \else
-       \leftskip \s_spac_narrower_left_last
-       \rightskip\s_spac_narrower_right_last
+       \frozen\leftskip \s_spac_narrower_left_last
+       \frozen\rightskip\s_spac_narrower_right_last
        \settrue\s_spac_narrower_last_swap
      \fi
    \else
      \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
-     \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
-     \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+     \frozen\advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
+     \frozen\advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \fi
    \seteffectivehsize}
 
