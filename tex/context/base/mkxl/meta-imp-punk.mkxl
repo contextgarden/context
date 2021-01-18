@@ -253,14 +253,14 @@
     {\darkorange  \PunkH \samplefile{tufte} \par}
 \stopTEXpage
 
-\startTEXpage[offset=10pt,width=2cm]
+\startTEXpage[offset=10pt,width=20cm]
     \PunkF \enablerandomvariants
     \dostepwiserecurse{1}{2000}{1}{\glyphscale#1\relax f }
 \stopTEXpage
 
-% \setupbodyfont[dejavu]
+% \setupbodyfont[dejavu] % one first needs to load a bodyfont !
 
-\setupbodyfont[punk] %one first needs to load a bodyfont !
+\setupbodyfont[punk]
 
 \startTEXpage[offset=10pt,width=20cm]
     {\darkcyan    \tf \samplefile{zapf} \par}

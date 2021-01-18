@@ -798,9 +798,9 @@
 \aliased\let\btxdoifsameaspreviouselse       \btxdoifelsesameasprevious
 \aliased\let\btxdoifcombiinlistelse          \btxdoifelsecombiinlist
 
-\tolerant\def\publ_place_list_indeed#1#2[#3]#*[#4]%
+\tolerant\def\publ_place_list_indeed#1#2#*[#3]#*[#4]%
   {\begingroup
-   \ifparameters
+   \ifparameters\or\or
      \let\currentbtxrendering\currentbtxspecification
    \or
      \ifhastok={#3}%
