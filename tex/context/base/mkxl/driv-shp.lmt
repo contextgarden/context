@@ -284,8 +284,11 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
             elseif command == "offset" then
+                local ph = pos_h
+                local pv = pos_v
                 local h = packet[2] or 0
                 local v = packet[3] or 0
+                local c = packet[4]
                 if h ~= 0 then
                     if factor ~= 0 then
                         h = h + h * factor / 1000 -- expansion
@@ -294,6 +297,31 @@ local flush_character do
                 end
                 if v and v ~= 0 then
                     pos_v = pos_v + v * sy
+                end
+                if c then
+                    flushchar(font,char,fnt,c)
+                    pos_h = ph
+                    pos_v = pv
+                end
+            elseif command == "compose" then
+                local ph = pos_h
+                local pv = pos_v
+                local h = packet[2] or 0
+                local v = packet[3] or 0
+                local c = packet[4]
+                if h ~= 0 then
+                    if factor ~= 0 then
+                        h = h + h * factor / 1000 -- expansion
+                    end
+                    pos_h = pos_h + h * sx
+                end
+                if v and v ~= 0 then
+                    pos_v = pos_v + v * sy
+                end
+                if c then
+                    flushchar(font,char,fnt,c)
+                    pos_h = ph
+                    pos_v = pv
                 end
             elseif command == "push" then
                 level = level + 1

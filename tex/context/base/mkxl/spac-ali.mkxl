@@ -292,7 +292,7 @@
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_one_fil % new
    \setfalse         \raggedonelinerstate % now here
-   \let\updateraggedskips\relax}          % no need for adaption
+   \enforced\aliased\let\updateraggedskips\relax}          % no need for adaption
 
 \permanent\protected\def\spac_align_set_horizontal_left
   {\setraggedness    \spac_align_set_raggedness_left
@@ -537,8 +537,8 @@
 
 \newtoks\t_spac_align_collected
 
-\let\raggedcommand    \relax
-\let\updateraggedskips\relax
+\aliased\let\raggedcommand    \relax
+\aliased\let\updateraggedskips\relax
 
 \def\spac_align_add_to_cache
   {\enforced\let\raggedbox\relax % why
@@ -564,10 +564,10 @@
       \spac_align_flush_page
       \spac_align_flush_parfill
       }}% kept, nice for tracing
-   \edef\raggedcommand    {\the\t_spac_align_collected }%
-   \edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \gletcsname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
-   \gletcsname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
+   \enforced\permanent\protected\edef\raggedcommand    {\the\t_spac_align_collected }%
+   \enforced\permanent\protected\edef\updateraggedskips{\spac_align_flush_horizontal}%
+   \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
+   \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
 
 \def\spac_align_collect#1%
   {\csname\??aligncommand#1\endcsname}
@@ -576,11 +576,11 @@
 
 \permanent\protected\def\spac_align_prepare#1% deferred
   {\edef\m_spac_align_asked{#1}%
-   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+   \enforced\aliased\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
-     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
+     \enforced\aliased\expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi}
 
 \aliased\let\dosetraggedcommand\spac_align_prepare % sort of public
@@ -589,11 +589,11 @@
 
 \permanent\tolerant\protected\def\setupalign[#1]% immediate
   {\edef\m_spac_align_asked{#1}%
-   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+   \enforced\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
-     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
+     \enforced\aliased\expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi
    \raggedcommand}
 
@@ -610,11 +610,11 @@
    \fi}
 
 \def\spac_align_use_indeed
-  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+  {\enforced\aliased\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \else
-     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
+     \enforced\aliased\expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi
    \raggedcommand}
 
@@ -623,7 +623,7 @@
 \protected\def\spac_align_use_later#1%
   {\begingroup
    \edef\m_spac_align_asked{#1}%
-   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+   \enforced\aliased\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifrelax\raggedcommand
      \spac_align_add_to_cache
    \fi
@@ -848,7 +848,7 @@
 % be aware of possible interference.
 
 \permanent\protected\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
-  {\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
+  {\enforced\permanent\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
    \updateraggedskips}
 
 \permanent\protected\def\dosetraggedskips#1#2#3#4#5#6#7%

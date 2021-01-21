@@ -895,11 +895,11 @@
 
 \permanent\tolerant\protected\def\mathovertext[#category]%
   {\begingroup
-   \math_stackers_direct_double_text\plusone  {\ifargument#category\or#category\else\v!top\fi}}
+   \math_stackers_direct_double_text\plusone  {\ifarguments#category\or#category\else\v!top\fi}}
 
 \permanent\tolerant\protected\def\mathundertext[#category]%
   {\begingroup
-   \math_stackers_direct_double_text\zerocount{\ifargument#category\or#category\else\v!bottom\fi}}
+   \math_stackers_direct_double_text\zerocount{\ifarguments#category\or#category\else\v!bottom\fi}}
 
 \def\math_stackers_direct_double_text#where#category#codepoint#text#extra%%
   {\math_stackers_make_double_text#where{#category}{#codepoint}{#text}{#extra}%
@@ -910,7 +910,7 @@
 
 \permanent\tolerant\protected\def\mathtriplet[#category]#:#middletext#toptext#bottomtext%
   {\begingroup
-   \math_stackers_triplet\plusone{\ifargument#category\or#category\else\currentmathstackers\fi}{#middletext}{#toptext}{#bottomtext}%
+   \math_stackers_triplet\plusone{\ifarguments#category\or#category\else\currentmathstackers\fi}{#middletext}{#toptext}{#bottomtext}%
    \endgroup}
 
 \permanent\tolerant\protected\def\definemathtriplet[#1]#*[#2]#*[#3]% category name default

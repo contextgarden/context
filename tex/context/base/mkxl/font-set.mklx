@@ -75,7 +75,6 @@
    \glet\font_preloads_first_stage    \relax
    \glet\font_preloads_second_stage   \relax
   %\glet\font_preloads_third_stage    \relax
-   \glet\fourthstagepreloadfonts      \relax
    \global\everyhbox\emptytoks
    \global\everyvbox\emptytoks
    % old: \font_preloads_reset_nullfont, new:

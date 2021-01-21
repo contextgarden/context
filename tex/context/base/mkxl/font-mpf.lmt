@@ -1,0 +1,174 @@
+if not modules then modules = { } end modules ['font-ogr'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tonumber, unpack, type = tonumber, unpack, type
+
+local context  = context
+local metapost = metapost
+
+local metafonts    = { }
+metapost.metafonts = metafonts
+
+local fastserialize     = table.fastserialize
+local sortedhash        = table.sortedhash
+local settings_to_hash  = utilities.parsers.settings_to_hash
+local settings_to_array = utilities.parsers.settings_to_array
+
+local addcharacters     = fonts.constructors.addcharacters
+local fontdata          = fonts.hashes.identifiers
+
+local otf               = fonts.handlers.otf
+local otfregister       = otf.features.register
+
+local getshapes         = fonts.dropins.getshapes
+
+local setparameterset   = metapost.setparameterset
+local simplemetapost    = metapost.simple
+
+local register          = fonts.collections.register
+local checkenabled      = fonts.collections.checkenabled
+local newprivateslot    = fonts.helpers.newprivateslot
+
+local currentfont       = font.current
+
+local function setmetaglyphs(category,fontid,unicode,specification)
+    local tfmdata = fontdata[fontid]
+    if unicode then
+        local characters = tfmdata.characters
+        specification.unicode  = unicode
+        specification.category = category
+        -- Generate one shape, make a use we pass the unicode as that is
+        -- the index in a picture list (normally). We could actually already
+        -- fetch the stream but for now we do that later (i.e. we delay the
+        -- serialization to pdf).
+        local code = specification.code
+        if code then
+            setparameterset("mpsfont",specification)
+         -- simplemetapost(instance,"begingroup;",true,true)
+            simplemetapost("simplefun",code)
+         -- simplemetapost(instance,"endgroup;",true,true)
+        end
+        -- We now know (hopefully) the dimensions of the image which is what
+        -- we need to pass to the engine in order to let it do its work.
+        local shapes = getshapes(category)
+        local units  = shapes.parameters.units
+        local scale  = tfmdata.parameters.size / units
+        local shape  = shapes.glyphs[unicode]
+        --
+        local llx, lly, urx, ury = unpack(shape.boundingbox)
+        llx = llx * scale
+        urx = urx * scale
+        lly = lly * scale
+        ury = ury * scale
+        --
+        local newdata = { }
+        characters[unicode] = newdata -- so that we can register commands
+        fonts.dropins.swapone("mps",tfmdata,shape,unicode)
+        --
+        local olddata = characters[unicode]
+        newdata.width    = urx - llx
+        newdata.height   = ury
+        newdata.depth    = -lly
+        newdata.unicode  = unicode
+        -- commands = { { "offset", -llx, 0, newdata.commands[1][1], newdata.commands[1][2] } }
+        newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
+        -- pass dimensions to lua
+        characters[unicode] = newdata
+        -- pass dimensions to tex
+        addcharacters(fontid, { characters = { [unicode] = newdata } })
+        return fontid, unicode
+    end
+end
+
+local function setmetaglyph(specification)
+    if specification then
+        local category = specification.category
+        local name     = specification.name
+        if category and name then
+            local fontid  = currentfont()
+            local private = newprivateslot(name)
+            register(fontid,private,function(font,char)
+                return setmetaglyphs(category,font,char,specification) end
+            )
+            checkenabled()
+        end
+    end
+end
+
+local function initializempf(tfmdata,kind,value)
+    local metafont = metafonts[value]
+    if value then
+        local font = tfmdata.properties.id
+        for char, spec in sortedhash(metafont) do
+            if type(char) == "string" then
+                char = newprivateslot(char)
+            end
+            register(font,char,function(font,char)
+                return setmetaglyphs(value,font,char,spec)
+            end)
+        end
+        checkenabled()
+    end
+end
+
+fonts.helpers.setmetaglyphs = setmetaglyphs
+fonts.helpers.setmetaglyph  = setmetaglyph
+
+otfregister {
+    name         = "metafont",
+    description  = "metafont glyphs",
+    manipulators = {
+        base = initializempf,
+        node = initializempf,
+    }
+}
+
+do
+
+    local scanners   = tokens.scanners
+    local scanopen   = scanners.scanopen
+    local scanclose  = scanners.scanclose
+    local scanword   = scanners.word
+    local scanstring = scanners.string
+
+    interfaces.implement {
+        name      = "setmetaglyph",
+        public    = true,
+        protected = true,
+        actions   = function(t)
+            local t = { }
+            if scanopen() then
+                 while not scanclose() do
+                    local key = scanword()
+                    if key == "shapes" then
+                        if scanopen() then
+                            local tt = { }
+                            local nn = 0
+                            while not scanclose() do
+                                if scanopen() then
+                                    local ttt = { }
+                                    while not scanclose() do
+                                        local key = scanword()
+                                        ttt[key] = scanstring()
+                                    end
+                                    nn= nn + 1
+                                    tt[nn] = ttt
+                                end
+                            end
+                            t[key] = tt
+                        end
+                    else
+                        t[key] = scanstring()
+                    end
+                end
+            end
+            setmetaglyph(t)
+        end
+    }
+
+end

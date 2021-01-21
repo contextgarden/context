@@ -28,3 +28,123 @@ end
 --     fontname = "bidi",
 --     filename = "bidi-symbols.mp",
 -- }
+
+-- okay, let's for the moment put this here:
+
+local tonumber = tonumber
+local find = string.find
+
+local context = context
+
+local fastserialize     = table.fastserialize
+local settings_to_hash  = utilities.parsers.settings_to_hash
+local settings_to_array = utilities.parsers.settings_to_array
+
+local addcharacters     = fonts.constructors.addcharacters
+local fontdata          = fonts.hashes.identifiers
+
+-- This is a prelude to a more advance mechanism: when we are in mp we can construct the
+-- whole composed character there.
+
+function fonts.helpers.combineglyphs(fnt, specification)
+    local hash     = fastserialize(specification)
+    local fontid   = fnt or font.current()
+    local tfmdata  = fontdata[fontid]
+    local combhash = tfmdata.combhash or { }
+    local unicode  = combhash[hash]
+    if not unicode then
+        local t = { }
+        local h = 0
+        local d = 0
+        local w = 0
+        local o = 0
+        local characters = tfmdata.characters
+        for i=1,#specification do
+            local s = specification[i]
+            local l = find(s,"=") and settings_to_hash(s)
+            local n = tonumber(l and l.unicode or s) or tonumber(s)
+            if n then
+                local data = characters[n]
+                if data then
+                    local bb = data.boundingbox
+                    if bb then
+                        local llx = bb[1]
+                        local lly = bb[2]
+                        local urx = bb[3]
+                        local ury = bb[4]
+                        if ury > h then
+                            h = ury
+                        elseif - ury > d then
+                            d = - ury
+                        end
+                        if - lly > d then
+                            d = - lly
+                        elseif lly > h then
+                            h = lly
+                        end
+                        if llx < o then
+                            o = llx
+                        end
+                        -- could be an extension to the "offset" command
+                        local c = l and l.color
+                        if c then
+                            t[#t+1] = { "startcolor", c }
+                        end
+                        t[#t+1] = { "offset", 0, 0, n }
+                        if c then
+                            t[#t+1] = { "stopcolor" }
+                        end
+                     -- t[#t+1] = { "push" }
+                     -- if c then
+                     --     t[#t+1] = { "startcolor", c }
+                     -- end
+                     -- t[#t+1] = { "right", 0 }
+                     -- t[#t+1] = { "char", n }
+                     -- if c then
+                     --     t[#t+1] = { "stopcolor" }
+                     -- end
+                     -- t[#t+1] = { "pop" }
+                        if urx > w then
+                            w = urx
+                        end
+                    else
+                        local ht = data.height or 0 if ht > h then h = ht end
+                        local dp = data.depth  or 0 if dp > d then d = dp end
+                        local wd = data.width  or 0 if wd > w then w = wd end
+                        t[#t+1] = { "char", n }
+                    end
+                end
+            end
+        end
+        for i=1,#t do
+--             if t[i][1] == "right" then
+            if t[i][1] == "offset" then
+                t[i][2] = -o
+--                 t[i][2] = o
+            end
+        end
+        -- cheat one: we get a private slot
+        unicode = fonts.helpers.addprivate(tfmdata,nil,{
+            commands = t,
+            width    = w - o,
+            height   = h,
+            depth    = d,
+        })
+        -- cheat two: we overload it later
+        addcharacters(fontid,{ characters = { [unicode] = characters[unicode] } })
+        tfmdata.combhash = combhash
+        combhash[hash] = unicode
+    end
+    return unicode
+end
+
+interfaces.implement {
+    name      = "combineglyphs",
+    public    = true,
+    arguments = "string",
+    actions   = function(list)
+        local list = settings_to_array(list)
+        local unicode = fonts.helpers.combineglyphs(font.current(),list)
+        context(unicode)
+    end,
+}

@@ -2769,7 +2769,7 @@
 
 \permanent\protected\def\relaxvalueifundefined#1%
   {\ifcsname#1\endcsname \else
-     \letcsname#1\endcsname\relax
+     \aliased\letcsname#1\endcsname\relax
    \fi}
 
 %D \macros
@@ -2778,7 +2778,7 @@
 %D The next macro hardly needs explanation. Because no nesting is to be expected, we
 %D can reuse \type {\wait} within \type {\wait} itself.
 
-\protected\def\wait
+\permanent\protected\def\wait
   {\begingroup
    \read16 to \wait
    \endgroup}
@@ -3003,7 +3003,7 @@
 %D unexpected results, for instance execution of \type {\doif} even if both numbers
 %D are unequal.
 
-\def\zerocountervalue{0}
+\immutable\def\zerocountervalue{0}
 
 \permanent\protected\def\newcounter#1%
   {\dodoglobal\let#1\zerocountervalue}
@@ -6241,7 +6241,7 @@
 
 \permanent\protected\def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
-   \ifcase\interactionmode\let\wait\relax\fi
+   \ifcase\interactionmode\enforced\let\wait\relax\fi
    \clf_resettimer
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_nop
@@ -6263,7 +6263,7 @@
 
 \permanent\protected\def\testfeatureonce#1#2%
   {\begingroup
-   \let\wait\relax
+   \enforced\let\wait\relax
    \testfeature{#1}{#2}%
    \endgroup}
 

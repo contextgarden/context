@@ -124,11 +124,11 @@
    \readfile{#name}{#true}{#false}%
    \popcatcodetable}
 
-\permanent\protected\def\readxmlfile#name#true#false%
-  {\pushcatcodetable
-   \catcodetable\xmlcatcodes
-   \readfile{#name}{#true}{#false}%
-   \popcatcodetable}
+% \permanent\protected\def\readxmlfile#name#true#false%
+%   {\pushcatcodetable
+%    \catcodetable\xmlcatcodes
+%    \readfile{#name}{#true}{#false}%
+%    \popcatcodetable}
 
 %D \macros
 %D   {doiflocfileelse,locfilename}

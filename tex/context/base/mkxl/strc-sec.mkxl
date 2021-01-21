@@ -888,6 +888,10 @@
 \newtoks\everybeforesectionheadhandle
 \newtoks\everyaftersectionheadhandle
 
+\mutable\let\getheadnumber\empty
+\mutable\let\getheadtitle \empty
+\mutable\let\getheadsyncs \empty
+
 \def\strc_sectioning_handle#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
    \xdef\currentheadcoupling{\sectionheadcoupling\currenthead}%

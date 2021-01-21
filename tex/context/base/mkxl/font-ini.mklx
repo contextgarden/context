@@ -2267,11 +2267,11 @@
 %D math families and finally we activate the default typeface and also set the font
 %D specific parameters assigned to \type {\everybodyfont}.
 
-\permanent\def\textface        {\currentbodyfontdimension\s!text        }
-\permanent\def\scriptface      {\currentbodyfontdimension\s!script      }
-\permanent\def\scriptscriptface{\currentbodyfontdimension\s!scriptscript}
-\permanent\def\xtextface       {\currentbodyfontdimension\s!x           }
-\permanent\def\xxtextface      {\currentbodyfontdimension\s!xx          }
+\permanent\protected\def\textface        {\currentbodyfontdimension\s!text        }
+\permanent\protected\def\scriptface      {\currentbodyfontdimension\s!script      }
+\permanent\protected\def\scriptscriptface{\currentbodyfontdimension\s!scriptscript}
+\permanent\protected\def\xtextface       {\currentbodyfontdimension\s!x           }
+\permanent\protected\def\xxtextface      {\currentbodyfontdimension\s!xx          }
 
 \installcorenamespace{fontbodyfaces}
 
@@ -2286,11 +2286,11 @@
 
 \def\font_basics_set_faces_preset
   {\edef\font_basics_set_faces{% 0.2 sec on 10K \tfa
-     \enforced\noexpand\edef\noexpand\textface        {\currentbodyfontdimension\s!text        }%
-     \enforced\noexpand\edef\noexpand\scriptface      {\currentbodyfontdimension\s!script      }%
-     \enforced\noexpand\edef\noexpand\scriptscriptface{\currentbodyfontdimension\s!scriptscript}%
-     \enforced\noexpand\edef\noexpand\xtextface       {\currentbodyfontdimension\s!x           }%
-     \enforced\noexpand\edef\noexpand\xxtextface      {\currentbodyfontdimension\s!xx          }%
+     \enforced\permanent\protected\def\textface        {\currentbodyfontdimension\s!text        }%
+     \enforced\permanent\protected\def\scriptface      {\currentbodyfontdimension\s!script      }%
+     \enforced\permanent\protected\def\scriptscriptface{\currentbodyfontdimension\s!scriptscript}%
+     \enforced\permanent\protected\def\xtextface       {\currentbodyfontdimension\s!x           }%
+     \enforced\permanent\protected\def\xxtextface      {\currentbodyfontdimension\s!xx          }%
    }%
    \gletcsname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
 

@@ -352,7 +352,7 @@
 \def\page_backgrounds_set_box#1% #2%
   {\global\setbox#1\vpack
      {\dontcomplain
-      \swapmargins
+      \page_layouts_swap_margins
       \ifconditional\swapbackgroundmargins
         \doifelsemarginswap \donothing
           {\enforced\swapcsvalues\v!rightmargin\v!leftmargin
@@ -361,7 +361,7 @@
       \calculatereducedvsizes
       \offinterlineskip
     % \ifconditional#2\relax
-    %   \doswapmargins % hm, this one gets nilled in \swapmargins anyway
+    %   \page_layouts_swap_margins_indeed % hm, this one gets nilled in \page_layouts_swap_margin anyway
     % \fi
       \ifdim\topheight>\zeropoint
         \kern\dimexpr-\topheight-\topdistance\relax

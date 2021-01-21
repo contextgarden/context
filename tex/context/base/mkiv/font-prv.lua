@@ -80,3 +80,36 @@ end
 function helpers.newprivateslot(name)
     return sharedprivates[name]
 end
+
+do
+
+    local context = context
+    local utfchar = utf.char
+
+    interfaces.implement {
+        name      = "privatecharacter",
+        public    = true,
+     -- protected = true,
+        arguments = "string",
+        actions   = function(name)
+            local c = sharedprivates[name]
+            if c then
+                context(utfchar(c))
+            end
+        end
+    }
+
+    interfaces.implement {
+        name      = "privatecharactercode",
+        public    = true,
+     -- protected = true,
+        arguments = "string",
+        actions   = function(name)
+            local c = sharedprivates[name]
+            if c then
+                context(c) -- serialized, not a number
+            end
+        end
+    }
+
+end

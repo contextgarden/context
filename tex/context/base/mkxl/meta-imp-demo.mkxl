@@ -1,0 +1,187 @@
+%D \module
+%D   [       file=meta-imp-demo,
+%D        version=2021.01.21,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Demo Font,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is just a demo of defining a font in \METAPOST. The rendering as well as definitions
+%D are delayed till we actually need the glyph.
+
+\startMPcalculation{simplefun}
+
+    picture DemoSnippets[];
+
+    vardef DemoCircle = image(fill fullcircle scaled 10 ;) enddef ;
+    vardef DemoCenter = image(fill fullcircle scaled  3 ;) enddef ;
+
+    vardef DemoLeft       = image(fill fullcircle scaled 3 shifted (-5, 0) ;) enddef ;
+    vardef DemoRight      = image(fill fullcircle scaled 3 shifted ( 5, 0) ;) enddef ;
+    vardef DemoUp         = image(fill fullcircle scaled 3 shifted ( 0, 5) ;) enddef ;
+    vardef DemoDown       = image(fill fullcircle scaled 3 shifted ( 0,-5) ;) enddef ;
+    vardef DemoLowerLeft  = image(fill fullcircle scaled 3 shifted (-5,-5) ;) enddef ;
+    vardef DemoLowerRight = image(fill fullcircle scaled 3 shifted ( 5,-5) ;) enddef ;
+    vardef DemoUpperRight = image(fill fullcircle scaled 3 shifted ( 5, 5) ;) enddef ;
+    vardef DemoUpperLeft  = image(fill fullcircle scaled 3 shifted (-5, 5) ;) enddef ;
+
+    vardef DemoGlyph =
+        composeglyph(DemoSnippets) ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "demo",
+        units    = 10,
+        width    = 10,
+        height   = 10,
+        depth    = 0,
+    ] ;
+
+    % we need to set up some basics (signals to the backend and such) at definition
+    % time so we just force a bogus shape (zero)
+
+    lmt_registerglyph [
+        category = "demo",
+    ] ;
+
+\stopMPcalculation
+
+\startluacode
+
+metapost.metafonts.demo = {
+    [utf.byte("g")] = {
+        code   = "DemoGlyph",
+        shapes = {
+            { shape = "DemoCircle", color = "gray"    },
+            { shape = "DemoLeft",   color = "cyan"    },
+            { shape = "DemoUp",     color = "magenta" },
+            { shape = "DemoCenter", color = "yellow"  },
+        }
+    },
+    [utf.byte("h")] = {
+        code   = "DemoGlyph",
+        shapes = {
+            { shape = "DemoCircle", color = "gray"  },
+            { shape = "DemoRight",  color = "red"   },
+            { shape = "DemoDown",   color = "green" },
+            { shape = "DemoCenter", color = "blue"  },
+        }
+    },
+    [19] = {
+        code   = "DemoGlyph",
+        shapes = {
+            { shape = "DemoCircle", color = "gray"     },
+            { shape = "DemoUp",     color = "darkgray" },
+            { shape = "DemoDown",   color = "darkgray" },
+            { shape = "DemoLeft",   color = "darkgray" },
+            { shape = "DemoRight",  color = "darkgray" },
+            { shape = "DemoCenter", color = "darkgray" },
+        }
+    },
+    ["weirdsymbol"] = {
+        code   = "DemoGlyph",
+        shapes = {
+            { shape = "DemoCircle", color = "middlegray" },
+            { shape = "DemoUp",     color = "red"        },
+            { shape = "DemoDown",   color = "green"      },
+            { shape = "DemoLeft",   color = "blue"       },
+            { shape = "DemoRight",  color = "magenta"    },
+            { shape = "DemoCenter", color = "yellow"     },
+        }
+    },
+    ["weirdersymbol"] = {
+        code   = "DemoGlyph",
+        shapes = {
+         -- { shape = "DemoCircle",     color = "gray"        },
+            { shape = "DemoCenter",     color = "darkgray"    },
+            { shape = "DemoLowerLeft",  color = "red"         },
+            { shape = "DemoLowerRight", color = "green"       },
+            { shape = "DemoUpperRight", color = "blue"        },
+            { shape = "DemoUpperLeft",  color = "yellow"      },
+            { shape = "DemoUp",         color = "darkred"     },
+            { shape = "DemoDown",       color = "darkgreen"   },
+            { shape = "DemoLeft",       color = "darkblue"    },
+            { shape = "DemoRight",      color = "darkmagenta" },
+        }
+    }
+}
+
+\stopluacode
+
+\continueifinputfile{meta-imp-demo.mkxl}
+
+\setuplayout[tight]
+
+\setupbodyfont[dejavu]
+
+\definefontfeature[demo][metapost=demo,metafont=demo]
+
+\definefont[DemoA][Serif*demo]
+\definefont[DemoB][Serif*demo sa .5]
+\definefont[DemoC][Serif*demo sa .25]
+
+\starttext
+
+    \startbuffer
+        x\ruledhbox{gh}%
+        x\ruledhbox{\char19}%
+        x\privatecharacter{weirdsymbol}%
+        x\privatecharacter{weirdersymbol}%
+        x%
+    \stopbuffer
+
+    \startTEXpage[offset=2pt]
+        \DemoA\getbuffer\par
+        \DemoB\getbuffer\quad\DemoC\getbuffer\par
+    \stopTEXpage
+
+    {\DemoA\ctxlua{fonts.helpers.setmetaglyph {
+        category = "demo",
+        name     = "whatever",
+        code     = "DemoGlyph",
+        shapes   = {
+            { shape = "DemoCenter",     color = "darkgray"   },
+            { shape = "DemoLowerLeft",  color = "darkred"    },
+            { shape = "DemoLowerRight", color = "darkgreen"  },
+            { shape = "DemoUpperRight", color = "darkblue"   },
+            { shape = "DemoUpperLeft",  color = "darkyellow" },
+            { shape = "DemoUp",         color = "red"        },
+            { shape = "DemoDown",       color = "green"      },
+            { shape = "DemoLeft",       color = "blue"       },
+            { shape = "DemoRight",      color = "magenta"    },
+        }
+    }}}
+
+    {\DemoA\setmetaglyph {
+        category {demo}
+        name     {forever}
+        code     {DemoGlyph}
+        shapes   {
+            { shape {DemoCenter}     color {middlegray} }
+            { shape {DemoLowerLeft}  color {darkgray}   }
+            { shape {DemoLowerRight} color {darkgray}   }
+            { shape {DemoUpperRight} color {darkgray}   }
+            { shape {DemoUpperLeft}  color {darkgray}   }
+            { shape {DemoUp}         color {lightgray}  }
+            { shape {DemoDown}       color {lightgray}  }
+            { shape {DemoLeft}       color {lightgray}  }
+            { shape {DemoRight}      color {lightgray}  }
+        }
+    }}
+
+    \startTEXpage[offset=2pt]
+        \DemoA
+        \privatecharacter{whatever}
+        \privatecharacter{forever}
+    \stopTEXpage
+
+    \DemoA\setupinterlinespace \dorecurse{10}{\dorecurse{1000}{g h }\par}\page
+    \DemoB\setupinterlinespace \dorecurse{20}{\dorecurse{1000}{g h }\par}\page
+    \DemoC\setupinterlinespace \dorecurse{30}{\dorecurse{1000}{g h }\par}\page
+
+\stoptext

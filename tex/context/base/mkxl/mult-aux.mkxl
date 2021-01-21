@@ -746,7 +746,7 @@
 % yes:\twoparameter{beta}\par
 
 \permanent\protected\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
-  {\immutable\edefcsname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
+  {\immutable\edefcsname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
 \permanent\protected\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
   {\edefcsname#1#2:\s!parent\endcsname{#3#4}}

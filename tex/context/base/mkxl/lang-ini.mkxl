@@ -138,16 +138,16 @@
   {\setcurrentlanguage\currentmainlanguage{#1}}
 
 \permanent\protected\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
-  {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
-   \ifempty\xaskedlanguage \else
+  {\edef\p_askedlanguage{#1}% otherwise clash with \askedlanguage
+   \ifempty\p_askedlanguage \else
      \ifempty\currentmainlanguage\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
-     \let\currentmainlanguage\xaskedlanguage
+     \let\currentmainlanguage\p_askedlanguage
      \setsystemmode{\systemmodeprefix\currentmainlanguage}%
    \fi
-   \edef\xaskedlanguage{#2}%
-   \ifempty\xaskedlanguage \else
+   \edef\p_askedlanguage{#2}%
+   \ifempty\p_askedlanguage \else
      \ifempty\currentlanguage\else\resetsystemmode\currentlanguage\fi
-     \let\currentlanguage\xaskedlanguage
+     \let\currentlanguage\p_askedlanguage
      \setsystemmode\currentlanguage
    \fi}
 

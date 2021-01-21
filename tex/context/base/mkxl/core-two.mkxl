@@ -81,8 +81,9 @@
 % temp hack: needs a proper \starteverytimeluacode
 
 \setfalse\twopassdatafound
-\let     \twopassdata      \empty
-\let     \twopassdatalist  \empty
+
+\mutable\let\twopassdata    \empty
+\mutable\let\twopassdatalist\empty
 
 \def\syst_twopass_check % can be delegated to lua once obsolete is gone
   {\ifempty\twopassdata

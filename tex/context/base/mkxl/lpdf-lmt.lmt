@@ -899,7 +899,9 @@ do
 
     flushers.startclipping = function(current,pos_h,pos_v)
         flushsave(current,pos_h,pos_v)
-        flushliteral("origin",formatters["0 w %s W n"](properties[current].path))
+     -- lpdf.print("origin",formatters["0 w %s W n"](nodeproperties[current].path))
+        pdf_goto_pagemode()
+        b = b + 1 ; buffer[b] = formatters["0 w %s W n"](nodeproperties[current].path)
     end
 
     flushers.stopclipping = function(current,pos_h,pos_v)
@@ -2368,7 +2370,7 @@ local openfile, closefile  do
     local f_link       = formatters["%010i 00000 f\013\010"]
     local f_first      = formatters["%010i 65535 f\013\010"]
 
-    local f_pdf        = formatters["%%PDF-%i.%i\010"]
+    local f_pdf_tag    = formatters["%%PDF-%i.%i\010"]
     local f_xref       = formatters["xref\0100 %i\010"]
     local f_trailer_id = formatters["trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF"]
     local f_trailer_no = formatters["trailer\010<< %s >>\010startxref\010%i\010%%%%EOF"]
@@ -2422,7 +2424,7 @@ local openfile, closefile  do
                 f:write(s)
             end
         end
-        local v = f_pdf(majorversion,minorversion)
+        local v = f_pdf_tag(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
         flush(f,v)
@@ -2631,7 +2633,7 @@ local openfile, closefile  do
                     flush(f,f_trailer_no(trailer(),xrefoffset))
                 end
             end
-            update(f,f_pdf(majorversion,minorversion))
+            update(f,f_pdf_tag(majorversion,minorversion))
             close(f)
         end
         io.flush()

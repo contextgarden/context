@@ -29,6 +29,8 @@ local report_defining = logs.reporter("fonts","defining")
 default loader that only handles <l n='tfm'/>.</p>
 --ldx]]--
 
+local nextfont      = font.nextid
+
 local fonts         = fonts
 local fontdata      = fonts.hashes.identifiers
 local readers       = fonts.readers
@@ -368,6 +370,8 @@ function definers.loadfont(specification)
     if not tfmdata then
         -- normally context will not end up here often (if so there is an issue somewhere)
         local forced = specification.forced or ""
+local id = nextfont(true)
+specification.id = id
         if forced ~= "" then
             local reader = readers[lower(forced)] -- normally forced is already lowered
             tfmdata = reader and reader(specification)
@@ -477,7 +481,6 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         end
     else
         tfmdata = definers.loadfont(specification) -- can be overloaded
--- put in properties instead
         if tfmdata then
             tfmdata.original = specification.specification
             if trace_defining then

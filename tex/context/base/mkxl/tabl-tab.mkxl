@@ -40,13 +40,13 @@
 \newdimen      \d_tabl_table_column_width_unit
 \newdimen      \d_tabl_table_kern_unit
 
-\def\tablestrutheightfactor      {8}
-\def\tablestrutdepthfactor       {3}
-\def\tableintercolumnspacefactor {3}
-\def\tablecolumnwidthfactor     {10}
-\def\tablevspacefactor           {2}
-\def\tablekernfactor             {1}
-\def\tablelinethicknessfactor    {4}
+\mutable\def\tablestrutheightfactor      {8}
+\mutable\def\tablestrutdepthfactor       {3}
+\mutable\def\tableintercolumnspacefactor {3}
+\mutable\def\tablecolumnwidthfactor     {10}
+\mutable\def\tablevspacefactor           {2}
+\mutable\def\tablekernfactor             {1}
+\mutable\def\tablelinethicknessfactor    {4}
 
 \newtoks\everytable
 \newtoks\everytableparbox
@@ -283,6 +283,8 @@
    \tabl_table_use_bar
    \expanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \tabl_table_reformat cmd; this is here as a safeguard.
 
+\aliased\let\ReFormat\relax
+
 \appendtoks
     \enforced\let\ReFormat\tabl_table_reformat
 \to \everytable
@@ -290,7 +292,9 @@
 \def\!tfEndReFormat
   {\!tfReFormat}
 
-\appendtoks \tabl_table_paralignment \to \everytableparbox
+\appendtoks
+    \tabl_table_paralignment
+\to \everytableparbox
 
 \def\!tfReFormat#1%
   {\the \!taLeftGlue
@@ -423,6 +427,9 @@
 
 % Key "\LeftGlue": Specifies the glue (usually \hfil, or nothing) to be
 % added to extreme left of the template to position a column
+
+\aliased\let\LeftGlue \relax
+\aliased\let\RightGlue\relax
 
 \newtableformatkey \LeftGlue#1%
   {\!taLeftGlue{#1}%
@@ -774,6 +781,10 @@
 \def\tabl_table_enlarge#1#2%  3rd argument is picked up later
   {\tabl_table_Enlarge{#1\d_tabl_table_strut_unit}{#2\d_tabl_table_strut_unit}}
 
+
+\aliased\let\enlarge\relax
+\aliased\let\Enlarge\relax
+
 \appendtoks
     \enforced\let\enlarge\tabl_table_enlarge
     \enforced\let\Enlarge\tabl_table_Enlarge
@@ -955,6 +966,9 @@
   {\tabl_table_use{#1}%
    \tabl_table_reformat[}
 
+\aliased\let\use\relax
+\aliased\let\Use\relax
+
 \appendtoks
     \enforced\let\use\tabl_table_use
     \enforced\let\Use\tabl_table_Use
@@ -1117,6 +1131,19 @@
        \!tgValue      % user-specified skip
      \fi
    \egroup} % Ends the \noalign
+
+\aliased\let\JustLeft   \relax
+\aliased\let\JustCenter \relax
+\aliased\let\JustRight  \relax
+\aliased\let\Smash      \relax
+\aliased\let\Raise      \relax
+\aliased\let\Lower      \relax
+\aliased\let\BackSpace  \relax
+\aliased\let\Vspace     \relax
+\aliased\let\OpenUp     \relax
+\aliased\let\TableLeft  \relax
+\aliased\let\TableCenter\relax
+\aliased\let\TableRight \relax
 
 \appendtoks
     \enforced\let\JustLeft   \tabl_table_JustLeft
@@ -2086,6 +2113,14 @@
 \permanent\def\tabl_table_FOUR {\use\plusfour}
 \permanent\def\tabl_table_FIVE {\use\plusfive}
 \permanent\def\tabl_table_SIX  {\use\plussix}
+
+\aliased\let\TWO  \relax
+\aliased\let\THREE\relax
+\aliased\let\FOUR \relax
+\aliased\let\FIVE \relax
+\aliased\let\SIX  \relax
+\aliased\let\SPAN \relax
+\aliased\let\REF  \relax
 
 \appendtoks
   \enforced\let\TWO  \tabl_table_TWO

@@ -399,15 +399,27 @@ local function monoslot(font,char,parent,factor)
     end
 end
 
+function collections.register(font,char,handler)
+    if font and char and type(handler) == "function" then
+        local vector = vectors[font]
+        if not vector then
+            vector = { }
+            vectors[font] = vector
+        end
+        vector[char] = handler
+    end
+end
+
+-- todo: also general one for missing
+
 function collections.process(head) -- this way we keep feature processing
     for n, char, font in nextchar, head do
         local vector = validvectors[font]
         if vector then
             local vect = vector[char]
-            if not vect then
-                -- keep it
-            else
-                if type(vect) == "table" then
+            if vect then
+                local kind = type(vect)
+                if kind == "table" then
                     local newfont = vect[1]
                     local newchar = vect[2]
                     if trace_collecting then
@@ -416,6 +428,21 @@ function collections.process(head) -- this way we keep feature processing
                         )
                     end
                     setfont(n,newfont,newchar)
+                elseif kind == "function" then
+                    local newfont, newchar = vect(font,char,vector)
+                    if not newfont then
+                        newfont = font
+                    end
+                    if not newchar then
+                        newchar = char
+                    end
+                    if trace_collecting then
+                        report_fonts("remapping character %C in font %a to character %C in font %a%s",
+                            char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
+                        )
+                    end
+                    setfont(n,newfont,newchar)
+                    vector[char] = { newfont, newchar }
                 else
                     local fakemono = vector.factor
                     if trace_collecting then

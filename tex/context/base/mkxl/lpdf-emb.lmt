@@ -1642,7 +1642,7 @@ do
                     if decompress then
                         mp = decompress(mp)
                     end
-                    local pdf   = simplemprun(instance,mp,true) -- can be sped up, minifun
+                    local pdf   = simplemprun(instance,mp,true)
                     local width = width * factor
                     if usecolor then
                         return f_stream_c(width,pdf), width

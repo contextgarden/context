@@ -1156,6 +1156,7 @@ do
                 initializers = { base = { }, node = { }, plug = { } },
                 processors   = { base = { }, node = { }, plug = { } },
                 manipulators = { base = { }, node = { }, plug = { } },
+                finalizers   = { base = { }, node = { }, plug = { } },
             }
             features.register = function(specification) return register(features,specification) end
             handler.features = features -- will also become hidden
@@ -1454,23 +1455,23 @@ end
 
 -- after scaling
 
-function constructors.applymanipulators(what,tfmdata,features,trace,report)
+local function apply(key,what,tfmdata,features,trace,report)
     if features and next(features) then
-        local properties       = tfmdata.properties
-        local whathandler      = handlers[what]
-        local whatfeatures     = whathandler.features
-        local whatmanipulators = whatfeatures.manipulators
-        local mode             = properties.mode
-        local manipulators     = whatmanipulators[mode]
-        if manipulators then
-            for i=1,#manipulators do
-                local step = manipulators[i]
+        local properties   = tfmdata.properties
+        local whathandler  = handlers[what]
+        local whatfeatures = whathandler.features
+        local whatactions  = whatfeatures[key]
+        local mode         = properties.mode
+        local actions      = whatactions[mode]
+        if actions then
+            for i=1,#actions do
+                local step    = actions[i]
                 local feature = step.name
-                local value = features[feature]
+                local value   = features[feature]
                 if value then
                     local action = step.action
                     if trace then
-                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,properties.fullname)
+                        report("applying feature %s %a for mode %a for font %a",key,feature,mode,properties.fullname)
                     end
                     if action then
                         action(tfmdata,feature,value)
@@ -1478,6 +1479,18 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
                 end
             end
         end
+    end
+end
+
+function constructors.applymanipulators(what,tfmdata,features,trace,report)
+    if features and next(features) then
+        apply("manipulators",what,tfmdata,features,trace,report)
+    end
+end
+
+function constructors.applyfinalizers(what,tfmdata,features,trace,report)
+    if features and next(features) then
+        apply("finalizers",what,tfmdata,features,trace,report)
     end
 end
 

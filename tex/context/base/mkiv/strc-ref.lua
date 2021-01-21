@@ -2615,9 +2615,10 @@ implement {
 -- }
 
 implement {
-    name    = "askedreference",
-    public  = true,
-    actions = function()
+    name      = "askedreference",
+    public    = true,
+    protected = true,
+    actions   = function()
         local actions = references.currentset
         if actions then
             context("[p=%s,r=%s]",actions.prefix or "",actions.reference)

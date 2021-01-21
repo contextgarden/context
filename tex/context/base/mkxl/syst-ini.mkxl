@@ -143,8 +143,11 @@
     function tex.enableprimitives() end % so we kind of protect what's there
 }
 
+\permanent\let\undefined\undefined
+
 \immutable\def\space{ }
 \immutable\def\empty{}
+\mutable  \def\temp {}
 
 \immutable\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
 \immutable\letcharcode \tildeasciicode    \       %                 tilde
@@ -259,7 +262,7 @@
 %D 255. Users can use the scratch registers upto 31 without problem but all others
 %D are reserved.
 
-\let\wlog\gobbleoneargument % Let's get rid of this one.
+\permanent\let\wlog\gobbleoneargument % Let's get rid of this one.
 
 %D The allocators share a common helper macro.
 

@@ -943,7 +943,7 @@
    \pack_framed_initialize
    \pack_framed_process_box_indeed} % group ends here
 
-\let\postprocessframebox\relax
+\mutable\let\postprocessframebox\relax
 
 %D A nice example by Aditya:
 %D

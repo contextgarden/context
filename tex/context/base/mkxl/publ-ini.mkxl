@@ -1893,14 +1893,14 @@
   {\begingroup
    \let\savedcurrentbtx\currentbtx
    \def\currentbtx{#1}%
-   \usebtxstyle\c!style
+   \usebtxstyleparameter\c!style
    \let\currentbtx\savedcurrentbtx}
 
 \permanent\protected\def\btxstartcolor[#1]%
   {\begingroup
    \let\savedcurrentbtx\currentbtx
    \def\currentbtx{#1}%
-   \usebtxcolor\c!color
+   \usebtxcolorparameter\c!color
    \let\currentbtx\savedcurrentbtx}
 
 \permanent\protected\def\btxstartstyleandcolor[#1]%

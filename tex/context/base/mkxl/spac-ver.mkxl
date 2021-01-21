@@ -1234,8 +1234,8 @@
 \permanent\protected\def\pseudostrut
   {\noindent} % better: \dontleavehmode
 
-\let\pseudobegstrut\pseudostrut
-\let\pseudoendstrut\removeunwantedspaces
+\aliased\let\pseudobegstrut\pseudostrut
+\aliased\let\pseudoendstrut\removeunwantedspaces
 
 \permanent\protected\def\resetteststrut
   {\strutwidth\zeropoint

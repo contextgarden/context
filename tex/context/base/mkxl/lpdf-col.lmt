@@ -785,7 +785,8 @@ do
         end
 
         vfinjectors.stopcolor = function()
-            pdfprint("text", "Q")
+         -- pdfprint("text", "Q")
+            pdfprint("page", "Q")
         end
 
     end)

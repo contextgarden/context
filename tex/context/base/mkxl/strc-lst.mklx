@@ -1551,9 +1551,9 @@
 
 % todo:
 
-\def\utilitylistlength{\listlength} % old name ... uses in styles
+\permanent\def\utilitylistlength{\listlength} % also in strc-reg (downward compatible name)
 
-\mutable\let\listlength\!!zerocount % better use listmode
+\mutable\let\listlength\!!zerocount           % also in strc-reg
 
 \permanent\tolerant\protected\def\determinelistcharacteristics[#list]#spacer[#settings]%
   {\begingroup

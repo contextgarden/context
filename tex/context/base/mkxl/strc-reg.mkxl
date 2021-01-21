@@ -602,13 +602,15 @@
 
 % todo: c!language ipv s!language
 
-\let\utilityregisterlength\!!zerocount
+\permanent\def\utilityregisterlength{\listlength} % also in strc-lst (downward compatible name)
+
+% \mutable\let\listlength\!!zerocount             % also in strc-lst
 
 \permanent\tolerant\protected\def\determineregistercharacteristics[#1]#*[#2]%
   {\begingroup
    \setupregister[#1][#2]%
    \edef\currentregister{\firstinset{#1}}%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\clf_analyzeregister
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\listlength{\clf_analyzeregister
      {\currentregister}%
      {%
         language    {\registerparameter\s!language}%

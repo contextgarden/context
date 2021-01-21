@@ -327,16 +327,6 @@
    \strc_pagenumbers_set_location
 \to \everysetuppagenumbering
 
-\appendtoks
-   \ifdefined\trackingmarginnotestrue
-     \ifdoublesided
-       \trackingmarginnotestrue
-     \else
-       \trackingmarginnotesfalse
-     \fi
-   \fi
-\to \everysidedswitch
-
 \ifdefined \page_backgrounds_recalculate \else
     \let\page_backgrounds_recalculate\relax
 \fi

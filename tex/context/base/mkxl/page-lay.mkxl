@@ -1233,12 +1233,12 @@
 
 \aliased\let\doifmarginswapelse\doifelsemarginswap
 
-\def\swapmargins % name will change, frozen?
-  {\doifelsemarginswap\relax\doswapmargins}
+\protected\def\page_layouts_swap_margins % name will change, frozen?
+  {\doifelsemarginswap\relax\page_layouts_swap_margins_indeed}
 
-\permanent\protected\def\doswapmargins
-  {\enforced\let\swapmargins  \relax % to prevent local swapping
-   \enforced\let\doswapmargins\relax % to prevent local swapping
+\protected\def\page_layouts_swap_margins_indeed
+  {\let\page_layouts_swap_margins       \relax % to prevent local swapping
+   \let\page_layouts_swap_margins_indeed\relax % to prevent local swapping
    \the\everyswapmargins}
 
 \permanent\def\rightorleftpageaction

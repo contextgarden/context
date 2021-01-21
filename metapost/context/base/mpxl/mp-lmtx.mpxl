@@ -2221,6 +2221,34 @@ def lmt_registerglyph  = applyparameters "mpsglyph"  "lmt_do_registerglyph"  end
 newscriptindex mfid_registerglyphs ; mfid_registerglyphs := scriptindex "registerglyphs" ; def lmt_do_registerglyphs = runscript mfid_registerglyphs enddef ;
 newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registerglyph"  ; def lmt_do_registerglyph  = runscript mfid_registerglyph  enddef ;
 
+% An experimental macro:
+
+vardef composeglyph(suffix snippets) =
+    save llx, lly, urx, ury, u ;
+    u := getparameter "mpsfont" "unicode" ;
+    snippets[u] := image (
+        for i=1 upto getparametercount "mpsfont" "shapes" :
+            draw scantokens ( getparameter "mpsfont" "shapes" i "shape" )
+                withcolor getparameter "mpsfont" "shapes" i "color" ;
+        endfor ;
+    ) ;
+    llx := xpart llcorner snippets[u] ;
+    lly := ypart llcorner snippets[u] ;
+    urx := xpart urcorner snippets[u] ;
+    ury := ypart urcorner snippets[u] ;
+    lmt_registerglyph [
+        category    = getparameter "mpsfont" "category",
+        unicode     = u,
+        code        = "draw " & str snippets & "[" & decimal u & "]",
+        height      =   ury,
+        depth       = - lly,
+        width       =   urx - llx,
+        boundingbox = { llx, lly, urx, ury }
+    ] ;
+enddef ;
+
+permanent composeglyph ;
+
 % Again an experiment (todo: the faster method):
 
 newscriptindex mfid_remaptext ; mfid_remaptext := scriptindex "remaptext" ; def lmt_remaptext = runscript mfid_remaptext enddef ;

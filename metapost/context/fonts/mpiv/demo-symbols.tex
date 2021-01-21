@@ -1,21 +1,36 @@
+%\setupbodyfont[dejavu]
+
 \starttext
 
-    \definemetafont[demo-symbols][demo-symbols.mp]
+    \ifcase\contextlmtxmode
 
-    \startbuffer
-        watch this: {\demo\char"261A} \quad  \ruledhbox{\demo\char"261A}
-    \stopbuffer
+        \definemetafont[demo-symbols][demo-symbols.mp]
 
-    \definefont[demo][demo@demo-symbols]
+        \startbuffer
+            watch this: {\demo\char"261A} \quad  \ruledhbox{\demo\char"261A}
+        \stopbuffer
 
-    \getbuffer \blank
+        \definefont[demo][demo@demo-symbols]
 
-    \definefont[demo][demo@demo-symbols at \the\dimexpr3\exheight]
+        \getbuffer \blank
 
-    \getbuffer \blank
+        \definefont[demo][demo@demo-symbols at \the\dimexpr3\exheight]
 
-    \definefont[demo][demo@demo-symbols at \the\dimexpr4\exheight]
+        \getbuffer \blank
 
-    \getbuffer \blank
+        \definefont[demo][demo@demo-symbols at \the\dimexpr4\exheight]
+
+        \getbuffer \blank
+
+    \else
+
+        \showglyphs
+
+        \startTEXpage[offset=10pt]
+            \definemetafont[MyDemoA][demo-symbols][at 10pt]\MyDemoA\char9754
+            \definemetafont[MyDemoB][demo-symbols][at 30pt]\MyDemoB\char9754
+        \stopTEXpage
+
+    \fi
 
 \stoptext

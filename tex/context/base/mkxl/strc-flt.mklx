@@ -595,8 +595,8 @@
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 
-\let\askedfloatmethod \empty
-\let\askedfloatoptions\empty
+\mutable\let\askedfloatmethod \empty
+\mutable\let\askedfloatoptions\empty
 
 \def\strc_floats_reset_variables
   {\global\emptyfloatcaptionfalse

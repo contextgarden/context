@@ -1227,9 +1227,9 @@ do  -- else too many locals
                 name = o_name
                 sub = o_sub
             end
-if texconditionals["c_font_compact"] then
-    size = 655360
-end
+            if texconditionals["c_font_compact"] then
+                size = 655360
+            end
             -- so far
             -- some settings can have been overloaded
             if lookup and lookup ~= "" then
@@ -1364,10 +1364,10 @@ end
                     context(function()
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
-tfmdata.original = specification.specification
-                        local id = definefont(tfmdata)
+                        tfmdata.original = specification.specification
+                        local id = definefont(tfmdata,properties.id)
                         csnames[id] = specification.cs
-                        properties.id = id
+                        properties.id = id -- already set
                         definers.register(tfmdata,id) -- to be sure, normally already done
                         texdefinefont(global,cs,id)
                         constructors.finalize(tfmdata)
@@ -1401,10 +1401,10 @@ tfmdata.original = specification.specification
                     end)
                     return
                 else
-tfmdata.original = specification.specification
-                    local id = definefont(tfmdata)
+                    tfmdata.original = specification.specification
+                    local id = definefont(tfmdata,properties.id)
                     csnames[id] = specification.cs
-                    properties.id = id
+                    properties.id = id -- already set
                     definers.register(tfmdata,id) -- to be sure, normally already done
                     texdefinefont(global,cs,id)
                     constructors.finalize(tfmdata)

@@ -163,6 +163,7 @@ local function read_from_tfm(specification)
         shared.features  = features
         shared.resources = resources
         --
+        properties.id         = specification.id
         properties.name       = tfmdata.name           -- todo: fallback
         properties.fontname   = tfmdata.fontname       -- todo: fallback
         properties.psname     = tfmdata.psname         -- todo: fallback

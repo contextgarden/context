@@ -1132,7 +1132,7 @@
 %     \stopitemize
 % \stopitemize
 
-\tolerant\protected\def\startitemgroupitem[#reference]% we can reuse more
+\tolerant\permanent\protected\def\startitemgroupitem[#reference]% we can reuse more
   {\def\currentitemreference{#reference}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
@@ -1170,7 +1170,7 @@
    \hskip\d_strc_itemgroups_signal     % concat
    \itemgroupparameter\c!command}
 
-\protected\def\stopitemgroupitem
+\protected\permanent\def\stopitemgroupitem
   {\ifhmode
      \endstrut % new per 2017-12-15
    \fi
@@ -1180,7 +1180,7 @@
      \endgraf
    \fi}
 
-\tolerant\protected\def\startitemgrouphead[#reference]%
+\tolerant\permanent\protected\def\startitemgrouphead[#reference]%
   {\ifconditional\c_strc_itemgroups_first \else
      \strc_itemgroups_insert_breakallow
    \fi
@@ -1201,7 +1201,7 @@
      \strc_itemgroups_stop_head_indeed
      \strc_itemgroups_head_body_indeed}
 
-\protected\def\stopitemgrouphead
+\protected\permanent\def\stopitemgrouphead
   {\dostoptagged
    \stopitemgroupitem}
 
@@ -1306,14 +1306,14 @@
      {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
       \unskip}}
 
-\protected\def\startspecialitemgroupitem[#name]% todo: frozen
+\protected\permanent\def\startspecialitemgroupitem[#name]% todo: frozen
   {\ifcsname\??itemgroupstart#name\endcsname
       \expandafter\lastnamedcs
     \else
       \expandafter\strc_itemgroups_start_do_item
     \fi}
 
-\protected\def\stopspecialitemgroupitem % todo: frozen
+\protected\permanent\def\stopspecialitemgroupitem % todo: frozen
   {\stopitemgroupitem}
 
 \letvalue{\??itemgroupstart\v!item}\strc_itemgroups_start_do_item
@@ -1579,25 +1579,25 @@
 
 %D The local commands:
 
-\ifdefined\item             \else \let\item            \relax \fi
-\ifdefined\sub              \else \let\sub             \relax \fi
-\ifdefined\sym              \else \let\sym             \relax \fi
-\ifdefined\ran              \else \let\ran             \relax \fi
-\ifdefined\its              \else \let\its             \relax \fi
-\ifdefined\mar              \else \let\mar             \relax \fi
-\ifdefined\noitem           \else \let\noitem          \relax \fi
-\ifdefined\itm              \else \let\itm             \relax \fi
-\ifdefined\but              \else \let\but             \relax \fi
-\ifdefined\nop              \else \let\nop             \relax \fi
-\ifdefined\txt              \else \let\txt             \relax \fi
-\ifdefined\head             \else \let\head            \relax \fi
-\ifdefined\headsym          \else \let\headsym         \relax \fi
-\ifdefined\startitem        \else \let\startitem       \relax \fi
-\ifdefined\stopitem         \else \let\stopitem        \relax \fi
-\ifdefined\starthead        \else \let\starthead       \relax \fi
-\ifdefined\stophead         \else \let\stophead        \relax \fi
-\ifdefined\startspecialitem \else \let\startspecialitem\relax \fi
-\ifdefined\stopspecialitem  \else \let\stopspecialitem \relax \fi
+\ifdefined\item             \else         \let\item            \relax \fi % defined later
+\ifdefined\sub              \else \aliased\let\sub             \relax \fi
+\ifdefined\sym              \else \aliased\let\sym             \relax \fi
+\ifdefined\ran              \else \aliased\let\ran             \relax \fi
+\ifdefined\its              \else \aliased\let\its             \relax \fi
+\ifdefined\mar              \else \aliased\let\mar             \relax \fi
+\ifdefined\noitem           \else \aliased\let\noitem          \relax \fi
+\ifdefined\itm              \else \aliased\let\itm             \relax \fi
+\ifdefined\but              \else \aliased\let\but             \relax \fi
+\ifdefined\nop              \else \aliased\let\nop             \relax \fi
+\ifdefined\txt              \else \aliased\let\txt             \relax \fi
+\ifdefined\head             \else         \let\head            \relax \fi % defined later
+\ifdefined\headsym          \else \aliased\let\headsym         \relax \fi
+\ifdefined\startitem        \else         \let\startitem       \relax \fi % defined later
+\ifdefined\stopitem         \else \aliased\let\stopitem        \relax \fi
+\ifdefined\starthead        \else \aliased\let\starthead       \relax \fi
+\ifdefined\stophead         \else \aliased\let\stophead        \relax \fi
+\ifdefined\startspecialitem \else \aliased\let\startspecialitem\relax \fi
+\ifdefined\stopspecialitem  \else \aliased\let\stopspecialitem \relax \fi
 
 
 \appendtoks
@@ -1624,7 +1624,7 @@
 
 \ifx\currentinterface \s!english \else
 
-    \def\next#1#2{\ifcsname#1\endcsname\else\enforced\letcsname#1\endcsname#2\fi}
+    \def\next#1#2{\ifcsname#1\endcsname\else\enforced\aliased\letcsname#1\endcsname#2\fi}
 
     \etoksapp\itemgroupcommands{%
         \next{\v!item        }\strc_itemgroups_start_do_item
@@ -1735,7 +1735,7 @@
      \expandafter\strc_itemgroups_collected_flush
    \fi}
 
-\protected\def\stopcollectitems % todo: frozen
+\protected\permanent\def\stopcollectitems % todo: frozen
   {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_done   \zerocount
      \c_strc_itemgroups_collected_current\zerocount
@@ -1751,10 +1751,10 @@
      \fi
    \fi}
 
-\protected\def\startcollectitems % todo: frozen
+\protected\permanent\def\startcollectitems % todo: frozen
   {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_stored\zerocount
-     \letcsname\e!start\v!item\endcsname\strc_itemgroups_collected_store
+     \enforced\letcsname\e!start\v!item\endcsname\strc_itemgroups_collected_store
    \fi}
 
 %D Left-overs:

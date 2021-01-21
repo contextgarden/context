@@ -404,14 +404,14 @@
 %D decided not to use that slow and sometimes troublesome solution. Instead we stick
 %D to some 'old' \CONTEXT\ macros for typesetting typical \TEX\ characters.
 
-\def\lesscharacter    {<} % obsolete
-\def\morecharacter    {>} % obsolete
+\immutable\def\lesscharacter    {<} % obsolete
+\immutable\def\morecharacter    {>} % obsolete
 
-\let\texescape        \textbackslash
-\let\leftargument     \textbraceleft
-\let\rightargument    \textbraceright
-\let\inlinemathmarker \textdollar
-\def\displaymathmarker{\textdollar\textdollar}
+\immutable\let\texescape        \textbackslash
+\immutable\let\leftargument     \textbraceleft
+\immutable\let\rightargument    \textbraceright
+\immutable\let\inlinemathmarker \textdollar
+\immutable\def\displaymathmarker{\textdollar\textdollar}
 
 \def\buff_verbatim_special_type#1#2#% # gobbles spaces
   {\dontleavehmode\bgroup
@@ -429,10 +429,10 @@
 \protected\def\mat{\buff_verbatim_special_type\inlinemathmarker \inlinemathmarker}
 \protected\def\dis{\buff_verbatim_special_type\displaymathmarker\displaymathmarker}
 
-\let\normaltexttex\tex
-\let\normaltextarg\arg
-\let\normaltextmat\mat
-\let\normaltextdis\dis
+\aliased\let\normaltexttex\tex
+\aliased\let\normaltextarg\arg
+\aliased\let\normaltextmat\mat
+\aliased\let\normaltextdis\dis
 
 \permanent\protected\def\astype
   {\dontleavehmode

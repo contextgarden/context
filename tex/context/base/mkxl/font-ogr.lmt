@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-ogr'] = {
 -- Here we deal with graphic variants and for now also color support ends up here
 -- but that might change. It's lmtx only code.
 
-local tostring, tonumber, next, type = tostring, tonumber, next, type
+local tostring, tonumber, next, type, rawget = tostring, tonumber, next, type, rawget
 local round, max, mod, div = math.round, math.max, math.mod, math.div
 local find = string.find
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
@@ -121,13 +121,57 @@ do
         end
     end
 
-    function dropins.swap(method,tfmdata,shapes,...) -- by unicode
+--     function dropins.swap(method,tfmdata,shapes,...) -- by unicode
+--         if method and shapes then
+--             local characters   = tfmdata.characters
+--             local descriptions = tfmdata.descriptions
+--             local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
+--             local idx  = 255
+--             local slot = 0
+--             -- we can have a variant where shaped are by unicode and not by index
+--             for k, v in next, characters do
+--                 local description = descriptions[k]
+--                 if description then
+--                     local shape = shapes[k]
+--                     if shape then
+--                         if idx >= 255 then
+--                             idx = 1
+--                             colrshapes = setmetatableindex({ },shapes)
+--                             slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
+--                             dropchars = tfmdrop.characters
+--                             dropdescs = tfmdrop.descriptions
+--                         else
+--                             idx = idx + 1
+--                         end
+--                         colrshapes[idx] = shape -- so not: description
+--                         -- todo: prepend
+--                         v.commands = { { "slot", slot, idx } }
+--                         -- hack to prevent that type 3 also gets 'use' flags .. todo
+--                         local c = { commands = false, index = idx, dropin = tfmdrop }
+--                         local d = { } -- index = idx, dropin = tfmdrop }
+--                         setmetatableindex(c,v)
+--                         setmetatableindex(d,description)
+--                         dropchars[idx] = c
+--                         dropdescs[idx] = d -- not needed
+--                     end
+--                 end
+--             end
+--         else
+--             -- error
+--         end
+--     end
+
+    function dropins.swap(method,tfmdata,shapes) -- by unicode
         if method and shapes then
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
-            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
-            local idx  = 255
-            local slot = 0
+            local droppedin    = tfmdata.droppedin
+            local tfmdrop      = tfmdata.tfmdrop
+            local dropchars    = tfmdata.dropchars
+            local dropdescs    = tfmdata.dropdescs
+            local colrshapes   = tfmdata.colrshapes
+            local idx          = tfmdata.dropindex or 255
+            local slot         = tfmdata.dropslot  or 0
             -- we can have a variant where shaped are by unicode and not by index
             for k, v in next, characters do
                 local description = descriptions[k]
@@ -156,8 +200,60 @@ do
                     end
                 end
             end
+            tfmdata.droppedin  = droppedin
+            tfmdata.tfmdrop    = tfmdrop
+            tfmdata.dropchars  = dropchars
+            tfmdata.dropdescs  = dropdescs
+            tfmdata.colrshapes = colrshapes
+            tfmdata.dropindex  = idx
+            tfmdata.dropslot   = slot
         else
             -- error
+        end
+    end
+
+    function dropins.swapone(method,tfmdata,shape,unicode)
+        if method and shape then
+            local characters   = tfmdata.characters
+            local descriptions = tfmdata.descriptions
+            local droppedin    = tfmdata.droppedin
+            local tfmdrop      = tfmdata.tfmdrop
+            local dropchars    = tfmdata.dropchars
+--             local dropdescs    = tfmdata.dropdescs
+            local colrshapes   = tfmdata.colrshapes
+            local idx          = tfmdata.dropindex or 255
+            local slot         = tfmdata.dropslot  or 0
+            local character    = characters[unicode]
+--             local description  = descriptions[unicode] or { }
+            if character then
+                if idx >= 255 then
+                    idx = 1
+                    colrshapes = setmetatableindex({ },shapes)
+                    slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
+                    dropchars = tfmdrop.characters
+                    dropdescs = tfmdrop.descriptions
+                else
+                    idx = idx + 1
+                end
+                colrshapes[idx] = shape.code -- so not: description
+                -- todo: prepend
+                character.commands = { { "slot", slot, idx } }
+                -- hack to prevent that type 3 also gets 'use' flags .. todo
+                local c = { commands = false, index = idx, dropin = tfmdrop }
+--                 local d = { } -- index = idx, dropin = tfmdrop }
+                setmetatableindex(c,character)
+--                 setmetatableindex(d,description)
+                dropchars[idx] = c
+--                 dropdescs[idx] = d -- not needed
+            end
+            tfmdata.droppedin  = droppedin
+            tfmdata.tfmdrop    = tfmdrop
+            tfmdata.dropchars  = dropchars
+--             tfmdata.dropdescs  = dropdescs
+            tfmdata.colrshapes = colrshapes
+            tfmdata.dropindex  = idx
+            tfmdata.dropslot   = slot
+            return
         end
     end
 
@@ -171,12 +267,21 @@ do -- this will move to its own module
         local v = {
             glyphs     = { },
             parameters = {
-                units = 1000
+                units = 10
             },
         }
         t[k] = v
         return v
     end)
+
+    function dropins.getshape(name,n)
+        local s = shapes[name]
+        return s and s.glyphs and s.glyphs[n]
+    end
+
+    function dropins.getshapes(name)
+        return shapes[name]
+    end
 
     function dropins.registerglyphs(parameters)
         local category = parameters.name
@@ -308,16 +413,22 @@ do -- this will move to its own module
                             local wd = shape.width  or defaultwidth
                             local ht = shape.height or defaultheight
                             local dp = shape.depth  or defaultdepth
+                            local bb = shape.boundingbox
                             local uc = shape.tounicode
                             if uc then
                                 uc = round(uc) -- brrr can be 123.0
                             end
+                            if bb then
+                                for i=1,4 do bb[i] = scale * bb[i] end
+                            end
                             local newc = {
-                                index   = index, -- into usedshapes
-                                width   = scale * (wd + spread),
-                                height  = scale * ht,
-                                depth   = scale * dp,
-                                unicode = uc or unicode,
+                                index       = index, -- into usedshapes -- used?
+                                width       = scale * (wd + spread),
+                                height      = scale * ht,
+                                depth       = scale * dp,
+                                boundingbox = bb,
+                                unicode     = uc or unicode,
+                             -- shape       = shape, -- maybe a copy
                             }
                             --
                             characters  [unicode] = newc

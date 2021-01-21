@@ -45,8 +45,8 @@
 \setuplow [\c!style=\tx,\c!distance=\zeropoint,\c!down=.48\exheight] % historical
 \setuphigh[\c!style=\tx,\c!distance=\zeropoint,\c!up  =.86\exheight] % values
 
-\appendtoks \setuevalue\currentlow {\typo_scripts_low [\currentlow ]}\to \everydefinelow
-\appendtoks \setuevalue\currenthigh{\typo_scripts_high[\currenthigh]}\to \everydefinehigh
+\appendtoks \frozen\protected\edefcsname\currentlow \endcsname{\typo_scripts_low [\currentlow ]}\to \everydefinelow
+\appendtoks \frozen\protected\edefcsname\currenthigh\endcsname{\typo_scripts_high[\currenthigh]}\to \everydefinehigh
 
 \protected\def\typo_scripts_low[#1]#2%
   {\dontleavehmode

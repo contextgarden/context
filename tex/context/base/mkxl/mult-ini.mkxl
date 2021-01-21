@@ -366,7 +366,7 @@
 \def\mult_messages_start_nop#1#2\stopmessages
   {\endgroup}
 
-\let\stopmessages\relax
+\aliased\let\stopmessages\relax
 
 \permanent\protected\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\immutable\setgvalue{\m!prefix!#1}{#1}\fi

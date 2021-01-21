@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-01-18 18:15
+-- merge date  : 2021-01-21 18:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -21237,6 +21237,7 @@ local function read_from_otf(specification)
  if tfmdata then
   tfmdata.properties.name=specification.name
   tfmdata.properties.sub=specification.sub
+  tfmdata.properties.id=specification.id
   tfmdata=constructors.scale(tfmdata,specification)
   local allfeatures=tfmdata.shared.features or specification.features.normal
   constructors.applymanipulators("otf",tfmdata,allfeatures,trace_features,report_otf)
@@ -34833,6 +34834,7 @@ local function read_from_afm(specification)
  local tfmdata=afmtotfm(specification)
  if tfmdata then
   tfmdata.properties.name=specification.name
+  tfmdata.properties.id=specification.id
   tfmdata=constructors.scale(tfmdata,specification)
   local allfeatures=tfmdata.shared.features or specification.features.normal
   constructors.applymanipulators("afm",tfmdata,allfeatures,trace_features,report_afm)

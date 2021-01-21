@@ -12,6 +12,7 @@ local format     = string.format
 local formatters = string.formatters
 local chardata   = characters.data
 local fontdata   = fonts.hashes.identifiers
+local round      = math.round
 
 local vffonts    = fonts.handlers.vf
 
@@ -97,7 +98,7 @@ local function process(mpxformat,name,instances,scalefactor)
         local fontname = file.removesuffix(file.basename(name))
         local modification = attributes.modification
         local filesize = attributes.size
-        local hash = file.robustname(formatters["%s %05i %03i"](fontname,scalefactor*1000,instances))
+        local hash = file.robustname(formatters["%s %05i %03i"](fontname,round(scalefactor*1000),instances))
         local lists = containers.read(mpfonts.cache,hash)
         if not lists or lists.modification ~= modification or lists.filesize ~= filesize or lists.instances ~= instances or lists.scalefactor ~= scalefactor then
             statistics.starttiming(flusher)
@@ -167,8 +168,8 @@ local function build(g,v)
     local t = { }
     for d=1,#data do
         t = fonts.constructors.scale(data[d],-1000)
-     -- local id = font.nextid()
-     -- t.fonts = { { id = id } }
+        local id = font.nextid()
+        t.fonts = { { id = id } }
         fontdata[id] = t
         if v[5] then
             vffonts.helpers.composecharacters(t)

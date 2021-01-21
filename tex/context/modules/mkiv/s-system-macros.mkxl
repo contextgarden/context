@@ -192,6 +192,8 @@ scanning for alignment specific primitives.
 \BC number of flagged macros  \NC \NumberOfFlagged \NC \NR
 \stoptabulate
 
+\stoptext
+
 \page
 
 % \startMPcalculation

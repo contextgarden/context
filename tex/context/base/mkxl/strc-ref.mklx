@@ -736,6 +736,8 @@
 %D When a reference is not found, we typeset a placeholder (two glyphs are often
 %D enough to represent the reference text).
 
+% \askedreference defined in lua
+
 \def\dummyreference{{\tttf ??}}
 \def\emptyreference{{\tttf !!}}
 

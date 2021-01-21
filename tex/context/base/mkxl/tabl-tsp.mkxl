@@ -248,6 +248,8 @@
    \let\postprocesstsplit     \donothing
 \to \everyresettsplit
 
+\mutable\let\postprocesstsplit\donothing
+
 \permanent\protected\def\resettsplit
   {\the\everyresettsplit}
 

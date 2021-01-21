@@ -216,8 +216,8 @@
      \vskip\s_page_one_between_top_insert
    \egroup}
 
-\let\totaltopinserted\!!zeropoint
-\let\totalbotinserted\!!zeropoint
+\mutable\let\totaltopinserted\!!zeropoint
+\mutable\let\totalbotinserted\!!zeropoint
 
 \protected\def\page_one_command_set_top_insertions
   {\bgroup

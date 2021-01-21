@@ -143,11 +143,11 @@
 \newdimen\layerwidth
 \newdimen\layerheight
 
-\let\lastlayerxpos\!!zeropoint
-\let\lastlayerypos\!!zeropoint
-\let\lastlayerwd  \!!zeropoint
-\let\lastlayerht  \!!zeropoint
-\let\lastlayerdp  \!!zeropoint
+\mutable\let\lastlayerxpos\!!zeropoint
+\mutable\let\lastlayerypos\!!zeropoint
+\mutable\let\lastlayerwd  \!!zeropoint
+\mutable\let\lastlayerht  \!!zeropoint
+\mutable\let\lastlayerdp  \!!zeropoint
 
 \appendtoks
     \edef\p_pack_layers_doublesided{\layerparameter\c!doublesided}%
@@ -370,11 +370,11 @@
    \global\setbox\layerpagebox\vpack %to \layerparameter\c!height % new, otherwise no negative y possible
      {\offinterlineskip
       \ifvoid\layerpagebox
-        \let\lastlayerwidth \zeropoint
-        \let\lastlayerheight\zeropoint
+        \scratchwidth \zeropoint
+        \scratchheight\zeropoint
       \else
-        \edef\lastlayerwidth {\the\wd\layerpagebox}%
-        \edef\lastlayerheight{\the\ht\layerpagebox}%
+        \scratchwidth \wd\layerpagebox
+        \scratchheight\ht\layerpagebox
         \ht\layerpagebox\zeropoint
         \dp\layerpagebox\zeropoint
         \wd\layerpagebox\zeropoint
@@ -410,14 +410,14 @@
         \gsetboxllx\layerpagebox\scratchdimen
       \fi
       \advance\scratchdimen\wd\nextbox
-      \wd\nextbox\ifdim\scratchdimen>\lastlayerwidth \scratchdimen \else \lastlayerwidth \fi
+      \wd\nextbox\ifdim\scratchdimen>\scratchwidth \scratchdimen \else \scratchwidth \fi
       \scratchdimen\dimexpr\d_pack_layers_y_position+\d_pack_layers_y_offset\relax
       \ifdim\scratchdimen<\getboxlly\layerpagebox
         \gsetboxlly\layerpagebox\scratchdimen
       \fi
       % ll compensation
       \advance\scratchdimen\dimexpr\ht\nextbox+\dp\nextbox\relax
-      \ht\nextbox\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
+      \ht\nextbox\ifdim\scratchdimen>\scratchheight \scratchdimen \else \scratchheight \fi
       \dp\nextbox\zeropoint
       % placement
       \hsize\p_pack_layers_width

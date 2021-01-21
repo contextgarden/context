@@ -1138,8 +1138,8 @@
      \tabl_ntb_let_tag\c_tabl_ntb_current_row\c_tabl_ntb_current_col\c_tabl_ntb_none
    \fi}
 
-\let\startTBLprocessing\relax % public
-\let\stopTBLprocessing \relax % public
+\mutable\let\startTBLprocessing\relax % public
+\mutable\let\stopTBLprocessing \relax % public
 
 \newcount\c_tabl_prelocated_rows % \prelocateTBLrows{1000} may speed up large tables
 

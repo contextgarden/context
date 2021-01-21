@@ -228,12 +228,10 @@
 
 \aliased\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
 
-
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
 
-\protected\def\tolerantTABLEbreaktrue   {\settrue \c_tabl_tabulate_tolerant_break} % used in styles !
-%protected\def\handletabulatepbreakfalse{\setfalse\c_tabl_tabulate_handlepbreak  } % depricated
+\permanent\protected\def\tolerantTABLEbreaktrue{\settrue\c_tabl_tabulate_tolerant_break} % used in styles !
 
 \permanent\def\noftabulaterows{\number\c_tabl_tabulate_noflines} % handy for testing if a table is empty
 
@@ -1109,8 +1107,8 @@
 
 % todo: make footer synonym to tail
 
-\setuvalue{\e!start\v!tabulatehead}{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
-\setuvalue{\e!start\v!tabulatetail}{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
+\permanent\protected\defcsname\e!start\v!tabulatehead\endcsname{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
+\permanent\protected\defcsname\e!start\v!tabulatetail\endcsname{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
 
 \let\m_tabl_tabulate_data\empty
 
