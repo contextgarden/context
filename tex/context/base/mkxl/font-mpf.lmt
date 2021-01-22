@@ -76,7 +76,9 @@ local function setmetaglyphs(category,fontid,unicode,specification)
         newdata.depth    = -lly
         newdata.unicode  = unicode
         -- commands = { { "offset", -llx, 0, newdata.commands[1][1], newdata.commands[1][2] } }
-        newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
+        if llx ~= 0 then
+            newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
+        end
         -- pass dimensions to lua
         characters[unicode] = newdata
         -- pass dimensions to tex

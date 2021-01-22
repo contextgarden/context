@@ -2223,15 +2223,9 @@ newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registe
 
 % An experimental macro:
 
-vardef composeglyph(suffix snippets) =
-    save llx, lly, urx, ury, u ;
-    u := getparameter "mpsfont" "unicode" ;
-    snippets[u] := image (
-        for i=1 upto getparametercount "mpsfont" "shapes" :
-            draw scantokens ( getparameter "mpsfont" "shapes" i "shape" )
-                withcolor getparameter "mpsfont" "shapes" i "color" ;
-        endfor ;
-    ) ;
+vardef registercomposedglyph (expr u) (suffix snippets) =
+    save llx, lly, urx, ury ;
+snippets[u] := snippets[u] shifted (-xpart llcorner snippets[u], 0) ;
     llx := xpart llcorner snippets[u] ;
     lly := ypart llcorner snippets[u] ;
     urx := xpart urcorner snippets[u] ;
@@ -2247,7 +2241,20 @@ vardef composeglyph(suffix snippets) =
     ] ;
 enddef ;
 
-permanent composeglyph ;
+vardef composeglyph (suffix snippets) =
+    save u ; u := getparameter "mpsfont" "unicode" ;
+    snippets[u] := image (
+        for i=1 upto getparametercount "mpsfont" "shapes" :
+            draw scantokens ( getparameter "mpsfont" "shapes" i "shape" )
+                if hasparameter "mpsfont" "shapes" i "color" :
+                    withcolor getparameter "mpsfont" "shapes" i "color"
+                fi ;
+        endfor ;
+    ) ;
+    registercomposedglyph(u, snippets) ;
+enddef ;
+
+permanent registercomposeglyph, composeglyph ;
 
 % Again an experiment (todo: the faster method):
 

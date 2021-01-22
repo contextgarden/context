@@ -26,7 +26,7 @@ if not modules then modules = { } end modules ['mlib-scn'] = {
 -- endfor ;
 -- popparameters;
 
-local type, next, rawget, getmetatable = type, next, rawget, getmetatable
+local type, next, rawget, getmetatable, tonumber = type, next, rawget, getmetatable, tonumber
 local byte, gmatch = string.byte, string.gmatch
 local insert, remove = table.insert, table.remove
 
@@ -480,6 +480,14 @@ local function getparameterdefault()
         if vl == nil then
             return injectnumeric(0)
         else
+            if type(vl) == "string" then
+                local td = type(list[n])
+                if td == "number" then
+                    vl = tonumber(vl)
+                elseif td == "boolean" then
+                    vl = vl == "true"
+                end
+            end
             return get(vl)
         end
     else
@@ -527,6 +535,14 @@ local function getparameterdefault()
         if v == nil then
             return get(list[n])
         else
+            if type(v) == "string" then
+                local td = type(list[n])
+                if td == "number" then
+                    v = tonumber(v)
+                elseif td == "boolean" then
+                    v = v == "true"
+                end
+            end
             return get(v)
         end
     end

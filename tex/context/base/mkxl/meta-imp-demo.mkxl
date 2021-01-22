@@ -184,4 +184,50 @@ metapost.metafonts.demo = {
     \DemoB\setupinterlinespace \dorecurse{20}{\dorecurse{1000}{g h }\par}\page
     \DemoC\setupinterlinespace \dorecurse{30}{\dorecurse{1000}{g h }\par}\page
 
+    \unexpanded\def\MyChar#1%
+      {\begingroup
+       \DemoA
+       \iffontchar\font\privatecharactercode{forever-#1}\else
+         \setmetaglyph {
+           category {demo}
+           name     {forever-#1}
+           code     {DemoGlyph}
+           shapes   {
+               { shape {DemoCenter}     color {middlegray} }
+               { shape {DemoLowerLeft}  color {dark#1}     }
+               { shape {DemoLowerRight} color {dark#1}     }
+               { shape {DemoUpperRight} color {dark#1}     }
+               { shape {DemoUpperLeft}  color {dark#1}     }
+               { shape {DemoUp}         color {light#1}    }
+               { shape {DemoDown}       color {light#1}    }
+               { shape {DemoLeft}       color {light#1}    }
+               { shape {DemoRight}      color {light#1}    }
+           }
+         }%
+       \fi
+       \privatecharacter{forever-#1}%
+       \endgroup}
+
+    \dontcomplain
+
+    \dorecurse{1000}{%
+        \MyChar{red}\space
+        \MyChar{green}\space
+        \MyChar{blue}\space
+        \MyChar{yellow}\space
+    }
+
+    \page
+
+    \start
+        \glyphxscale 1200
+        \glyphyscale  800
+        \dorecurse{1000}{%
+            \MyChar{red}\allowbreak
+            \MyChar{green}\allowbreak
+            \MyChar{blue}\allowbreak
+            \MyChar{yellow}\allowbreak
+        }
+    \stop
+
 \stoptext

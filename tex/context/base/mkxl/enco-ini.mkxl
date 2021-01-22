@@ -326,8 +326,7 @@
    \gletcsname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
 
 \permanent\protected\def\normalcontrolspace
- %{\iffontchar\font\numexpr\expandafter`\textcontrolspace\relax
-  {\iffontchar\font\textcontrolspace % in luametatex we also accept a char
+  {\iffontchar\font\numexpr\expandafter`\textcontrolspace\relax
      \textcontrolspace
    \else
      \fallbackcontrolspace
@@ -336,8 +335,7 @@
 \aliased\let\textvisiblespace\normalcontrolspace
 
 \permanent\protected\def\optionalcontrolspace
- %{\iffontchar\font\numexpr\expandafter`\textcontrolspace\relax
-  {\iffontchar\font\textcontrolspace % in luametatex we also accept a char
+  {\iffontchar\font\numexpr\expandafter`\textcontrolspace\relax
      \textcontrolspace
    \else
      \asciispacechar % used for export !

@@ -1,0 +1,139 @@
+%D \module
+%D   [       file=meta-imp-clock,
+%D        version=2021.01.21,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Demo Clock Font,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is just a demo of defining a font in \METAPOST. The rendering as well as definitions
+%D are delayed till we actually need the glyph. A crazy examples made in crazy times.
+
+\startMPcalculation{simplefun}
+
+    % the 0 in getparameterdefault makes sure we convert to a number
+
+    picture DemoClocks[];
+
+    vardef ClockCircle =
+        image(draw fullcircle scaled 10 ;)
+    enddef ;
+
+    vardef ClockPoints =
+        image (
+            for i=1 upto 12 :
+                draw (0,5) rotated ((360 * i) / 12) withpen pencircle scaled 1 ;
+            endfor ;
+        )
+    enddef ;
+
+    vardef ClockTicks =
+        image (
+            for i=1 upto 12 :
+                draw ((0,4.5)--(0,5.5)) rotated ((360 * i) / 12) ;
+            endfor ;
+        )
+    enddef ;
+
+    vardef ClockCenter =
+        image (
+            draw origin withpen pencircle scaled 1 ;
+        )
+    enddef ;
+
+    vardef ClockHour =
+        image(
+            draw (origin -- (0,4)) rotated (
+              - 360 * (getparameterdefault "mpsfont" "hour"   0) / 12
+              - 360 * (getparameterdefault "mpsfont" "minute" 0) / (60 * 12)
+
+        ) )
+    enddef ;
+
+    vardef ClockMinute =
+        image(
+            draw (origin -- (0,5)) rotated (
+              - 360 * (getparameterdefault "mpsfont" "minute" 0) / 60
+            )
+        )
+    enddef ;
+
+    vardef DemoClock =
+        composeglyph(DemoClocks) ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "clock",
+        units    = 10,
+        width    = 10,
+        height   = 10,
+        depth    = 0,
+    ] ;
+
+    lmt_registerglyph [
+        category = "clock",
+    ] ;
+
+\stopMPcalculation
+
+% \startluacode
+%     metapost.metafonts.clock = { }
+% \stopluacode
+
+\continueifinputfile{meta-imp-clock.mkxl}
+
+% \enableexperiments[fonts.compact]
+
+\setuplayout[tight]
+
+\setupbodyfont[dejavu]
+
+\definefontfeature[clock][metapost=clock,metafont=clock]
+
+\definefont[ClockFont][Serif*clock]
+
+\starttext
+
+\unexpanded\def\MyClock#1#2%
+  {\begingroup
+   \ClockFont
+   \iffontchar\font\privatecharactercode{CLOCK:#1:#2}\else
+     % We could move this out to a helper \MyClockMake{#1}{#2} but normally
+     % it's efficient enough. (If we trace a lot it matters more.)
+     \setmetaglyph {
+       category {clock}
+       name     {CLOCK:#1:#2}
+       code     {DemoClock}
+       hour     {#1}
+       minute   {#2}
+       shapes   {
+            { shape {ClockCircle}  color {darkred}    }
+            { shape {ClockTicks}   color {middlegray} }
+          % { shape {ClockBullets} color {middlegray} }
+            { shape {ClockHour}    color {darkgreen}  }
+            { shape {ClockMinute}  color {darkblue}   }
+            { shape {ClockCenter}  color {middlegray} }
+       }
+     }%
+   \fi
+   \setalternate{\twodigits{#1}:\twodigits{#2}}% cut'n'paste in acrobat
+   \privatecharacter{CLOCK:#1:#2}%
+   \endgroup}
+
+\dorecurse{8}{
+    \begingroup
+        \glyphxscale \numexpr 1000+#100\relax
+        \glyphyscale \glyphxscale
+        \veryraggedright
+        \dostepwiserecurse{0}{60}{1}{
+            \MyClock{3}{##1}\hskip\zeropoint plus \onepoint\allowbreak% space
+        }
+        \blank
+    \endgroup
+}
+\stoptext
