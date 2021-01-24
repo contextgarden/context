@@ -1,0 +1,151 @@
+if not modules then modules = { } end modules ['font-mpf'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local formatters        = string.formatters
+local sortedhash        = table.sortedhash
+
+local addcharacters     = fonts.constructors.addcharacters
+local fontdata          = fonts.hashes.identifiers
+
+local otf               = fonts.handlers.otf
+local otfregister       = otf.features.register
+
+----- getshapes         = fonts.dropins.getshapes
+
+local register          = fonts.collections.register
+local checkenabled      = fonts.collections.checkenabled
+local newprivateslot    = fonts.helpers.newprivateslot
+
+local currentfont       = font.current
+
+-- hm, seems to gobble the first \char
+
+local makesetups = formatters["box:%s:%S"]
+
+local function makeglyphbox(char,spec)
+    token.expand_macro("makeglyphbox",true,spec.setups or tostring(char))
+    local b = tex.takebox("glyphbox")
+    spec.code = {
+        width  = b.width,
+        height = b.height,
+        depth  = b.depth,
+        objnum = tex.saveboxresource(b,nil,nil,true),
+    }
+end
+
+local function setboxglyphs(category,fontid,unicode,specification)
+    local box = specification.code
+    if unicode and box then
+        local tfmdata    = fontdata[fontid]
+        local characters = tfmdata.characters
+        local newdata    = {
+            width   = box.width  or 0,
+            height  = box.height or 0,
+            depth   = box.depth  or 0,
+            unicode = unicode,
+        }
+        -- pass dimensions to lua
+        characters[unicode] = newdata
+        -- this also adapts newdata (add commands)
+        fonts.dropins.swapone("box",tfmdata,specification,unicode)
+        -- pass dimensions to tex
+        addcharacters(fontid, { characters = { [unicode] = newdata } })
+        return fontid, unicode
+    else
+        logs.report("box glyph", "invalid glyph box for %C",unicode)
+    end
+end
+
+local function setboxglyph(specification)
+    if specification then
+        local name = specification.name
+        if name then
+            local private = newprivateslot(name)
+            local font    = currentfont()
+            if not specification.setups then
+                specification.setups = name
+            end
+            -- we can actually delay font if needed
+            register(font,private,function(font,private)
+                makeglyphbox(private,specification)
+                return setboxglyphs(category,font,private,specification)
+            end)
+            checkenabled()
+        end
+    end
+end
+
+local boxes = table.setmetatableindex("table")
+
+function fonts.helpers.registerglyphbox(specification)
+    local category = specification.category
+    local whatever = specification.unicode or specification.name
+    if category and whatever then
+        boxes[category][whatever] = { action = makeglyphbox } -- always
+    end
+end
+
+local function initializebox(tfmdata,kind,value)
+    local boxes = boxes[value]
+    if value then
+        local font = tfmdata.properties.id
+        -- just preregister the list
+        for char, spec in sortedhash(boxes) do
+            spec.setups = makesetups(value,char)
+            if type(char) == "string" then
+                char = newprivateslot(name)
+            end
+            -- check if spec.code
+            register(font,char,function(font,char)
+                local action = spec.action
+                if type(action) == "function" then
+                    action(char,spec)
+                end
+                return setboxglyphs(value,font,char,spec)
+            end)
+        end
+        checkenabled()
+    end
+end
+
+fonts.helpers.setboxglyphs = setboxglyphs
+fonts.helpers.setboxglyph  = setboxglyph
+
+interfaces.implement {
+    name      = "registerboxglyph", -- combine with next one
+    public    = true,
+    protected = true,
+    actions   = fonts.helpers.registerglyphbox,
+    arguments = { {
+        { "category" },
+        { "unicode", "integer" },
+        { "name" },
+    } },
+}
+
+interfaces.implement {
+    name      = "setboxglyph",
+    public    = true,
+    protected = true,
+    actions   = setboxglyph,
+    arguments = { { "*" } },
+}
+
+fonts.handlers.otf.features.register {
+    name         = "box",
+    description  = "box glyphs",
+    manipulators = {
+        base = initializebox,
+        node = initializebox,
+    }
+}
+
+-- fonts.helpers.registerboxglyph { category = "demo", unicode = 103 }
+-- fonts.helpers.registerboxglyph { category = "demo", unicode = 104 }
+-- fonts.helpers.registerboxglyph { category = "demo", unicode = 105 }
+-- fonts.helpers.registerboxglyph { category = "demo", unicode = 106 }

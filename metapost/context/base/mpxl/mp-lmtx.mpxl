@@ -2225,8 +2225,12 @@ newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registe
 
 vardef registercomposedglyph (expr u) (suffix snippets) =
     save llx, lly, urx, ury ;
-snippets[u] := snippets[u] shifted (-xpart llcorner snippets[u], 0) ;
     llx := xpart llcorner snippets[u] ;
+    if llx <> 0 :
+        % this should be an option or we need a lsb
+        snippets[u] := snippets[u] shifted (-llx, 0) ;
+        llx := 0;
+    fi ;
     lly := ypart llcorner snippets[u] ;
     urx := xpart urcorner snippets[u] ;
     ury := ypart urcorner snippets[u] ;

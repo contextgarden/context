@@ -1576,7 +1576,12 @@
   {\bgroup
    \strc_floats_set_local_hsize
    \ifcase\c_strc_floats_rotation\else
-     \swapdimens\hsize\vsize
+     % Swapping fails in overloadmode and is also wrong (as it then is persistent due
+     % to global being inherited).
+    %\swapdimens\hsize\vsize
+     \scratchdimen\hsize
+     \hsize\vsize
+     \vsize\scratchdimen
    \fi
    \forgetall
    \postponenotes

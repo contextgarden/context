@@ -101,6 +101,23 @@ function moduledata.ipsum.direct(settings)
     end
 end
 
+interfaces.implement {
+    name      = "ipsum",
+    protected = true,
+    actions   = moduledata.ipsum.typeset,
+    arguments = { {
+        { "alternative" },
+        { "filename" },
+        { "n" },
+        { "left" },
+        { "right" },
+        { "before" },
+        { "after" },
+        { "inbetween" },
+        { "separator" },
+    } },
+}
+
 \stopluacode
 
 \unprotect
@@ -129,26 +146,25 @@ end
    \useipsumstyleandcolor\c!style\c!color
    % hm, also changes dates
    \uselanguageparameter\ipsumparameter
-   \ctxlua{moduledata.ipsum.typeset {
-      alternative = "\ipsumparameter\c!alternative",
-      filename    = "\ipsumparameter\c!file",
-      n           = "\ipsumparameter\c!n",
-      left        = "\luaescapestring{\ipsumparameter\c!left}",
-      right       = "\luaescapestring{\ipsumparameter\c!right}",
-      before      = "\luaescapestring{\ipsumparameter\c!before}",
-      after       = "\luaescapestring{\ipsumparameter\c!after}",
-      inbetween   = "\luaescapestring{\ipsumparameter\c!inbetween}",
-   }}
+   \clf_ipsum
+      alternative {\ipsumparameter\c!alternative}
+      filename    {\ipsumparameter\c!file}
+      n           {\ipsumparameter\c!n}
+      left        {\ipsumparameter\c!left}
+      right       {\ipsumparameter\c!right}
+      before      {\ipsumparameter\c!before}
+      after       {\ipsumparameter\c!after}
+      inbetween   {\ipsumparameter\c!inbetween}
+   \relax
 \stopsetups
 
 \def\directipsum#1% only one argument, expanded
-  {\ctxlua{moduledata.ipsum.typeset {
-      alternative = "\namedipsumparameter{#1}\c!alternative",
-      filename    = "\namedipsumparameter{#1}\c!file",
-      n           = "\namedipsumparameter{#1}\c!n",
-      separator   = "\luaescapestring{\ipsumparameter\c!separator}",
-   }}
-}
+  {\clf_ipsum
+      alternative {\namedipsumparameter{#1}\c!alternative}
+      filename    {\namedipsumparameter{#1}\c!file}
+      n           {\namedipsumparameter{#1}\c!n}
+      separator   {\ipsumparameter\c!separator}
+   \relax}
 
 \protect
 

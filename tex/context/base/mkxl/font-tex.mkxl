@@ -1,0 +1,120 @@
+%D \module
+%D   [       file=font-tex,
+%D        version=2021.23.01,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=\TEX\ Glyphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / TeX Glyphs}
+
+\registerctxluafile{font-tex}{autosuffix}
+
+%D This mechanism turns boxes into glyphs. Of course this assumes that the
+%D backend code supports it. It's an experiment and we can do similar things
+%D with \METAPOST. The interface is not frozen and might change and evolve.
+
+%D \starttyping
+%D \starttext
+%D
+%D \startsetups box:demo:103
+%D     \externalfigure[t:/sources/cow-brown.pdf][height=12pt]
+%D \stopsetups
+%D
+%D \startsetups box:demo:104
+%D     \externalfigure[t:/sources/cow-black.pdf][height=10pt]
+%D \stopsetups
+%D
+%D \startsetups box:demo:105
+%D     \externalfigure[t:/sources/mill.png][height=12pt]
+%D \stopsetups
+%D
+%D \startsetups box:demo:106
+%D     \externalfigure[t:/sources/hacker.jpg][height=12pt]
+%D \stopsetups
+%D
+%D \registerboxglyph category {demo} unicode 103 \relax % rather low level for now
+%D \registerboxglyph category {demo} unicode 104 \relax % rather low level for now
+%D \registerboxglyph category {demo} unicode 105 \relax % rather low level for now
+%D \registerboxglyph category {demo} unicode 106 \relax % rather low level for now
+%D
+%D \definefontfeature[whatever][box=demo]
+%D
+%D \definedfont[Serif*whatever]
+%D
+%D % \enabletrackers[fonts.collecting]
+%D
+%D \startTEXpage%[offset=0pt]
+%D    %\hbox{g}%
+%D     \hbox{\char103}%
+%D     \hbox{\char104}%
+%D \stopTEXpage
+%D
+%D \startsetups box:demo:whatever
+%D     \startMPcode
+%D         picture p ; p := image (draw figure "t:/sources/hacker.jpg" ysized 10pt);
+%D         fill      boundingbox p enlarged .5pt randomized 2pt withcolor "darkgray" ;
+%D         clip p to boundingbox p enlarged -1pt randomized 2pt ;
+%D         draw p ;
+%D     \stopMPcode
+%D \stopsetups
+%D
+%D % in current font!
+%D
+%D \iffontchar\font\privatecharactercode{demo:whatever}\else
+%D     \setboxglyph {
+%D         category {demo}
+%D         name     {demo:whatever}
+%D         setups   {box:demo:whatever}
+%D     }%
+%D \fi
+%D
+%D \startTEXpage[offset=10pt]
+%D     \char\privatecharactercode{demo:whatever}%
+%D \stopTEXpage
+%D
+%D \startTEXpage%[offset=0pt]
+%D     \ruledhbox{\char103}
+%D     \ruledhbox{\char104}
+%D     \ruledhbox{\char105}
+%D     \ruledhbox{\char106}
+%D \stopTEXpage
+%D
+%D \dorecurse{1000}{
+%D     \char 103\relax \space
+%D     \char 104\relax \space
+%D     \char 105\relax \space
+%D     \char 106\relax \space
+%D }
+%D
+%D \page
+%D
+%D \setupalign[verytolerant,flushleft]
+%D
+%D \dorecurse{100}{
+%D     #1:
+%D     \glyph yoffset -2pt `i\relax
+%D     \glyph yoffset -3pt `j\relax\space
+%D }
+%D \stoptext
+%D \stoptyping
+
+\newbox\glyphbox
+
+% somehow makes the first \char disappear
+%
+% \permanent\protected\def\makeglyphbox#1%
+%   {\setbox\glyphbox\hbox{\directsetup{#1}}}
+%
+% so we group:
+
+\permanent\protected\def\makeglyphbox#1%
+  {\begingroup
+   \global\setbox\glyphbox\hbox{\directsetup{#1}}%
+ % \writestatus{glyphbox}{#1 => (\the\wd\glyphbox,\the\ht\glyphbox,\the\dp\glyphbox)}%
+   \endgroup}

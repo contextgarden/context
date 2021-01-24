@@ -253,7 +253,6 @@ do
             tfmdata.colrshapes = colrshapes
             tfmdata.dropindex  = idx
             tfmdata.dropslot   = slot
-            return
         end
     end
 

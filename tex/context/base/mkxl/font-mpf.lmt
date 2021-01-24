@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-ogr'] = {
+if not modules then modules = { } end modules ['font-mpf'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -14,10 +14,7 @@ local metapost = metapost
 local metafonts    = { }
 metapost.metafonts = metafonts
 
-local fastserialize     = table.fastserialize
 local sortedhash        = table.sortedhash
-local settings_to_hash  = utilities.parsers.settings_to_hash
-local settings_to_array = utilities.parsers.settings_to_array
 
 local addcharacters     = fonts.constructors.addcharacters
 local fontdata          = fonts.hashes.identifiers

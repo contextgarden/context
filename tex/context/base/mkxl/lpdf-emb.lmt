@@ -1504,11 +1504,15 @@ do
         local f_stream     = formatters["%.6N 0 d0 %s"]
         local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"]
         local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm %s"]
+        local f_stream_s   = formatters["%N 0 0 %N 0 0 cm /%s Do"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to
         -- make sure that we use bytes as index in the page stream as well as in the
         -- tounicode vector.
+
+        -- All this type three magic is a tribute to Don Knuth who uses bitmap fonts in
+        -- his books.
 
         local c_notdef = nil
         local r_notdef = nil
@@ -1541,6 +1545,12 @@ do
         -- pdf inclusion
 
         local used = setmetatableindex("table")
+
+        function lpdf.registerfontmethod(name,f)
+            if f and not methods[name] then
+                methods[name] = f
+            end
+        end
 
         function methods.pdf(filename,details)
             local properties = details.properties
@@ -1600,6 +1610,36 @@ do
                 return pdfshapes, 1/units, pdftopdf, closepdf, getresources
             end
         end
+
+        -- box inclusion (todo: we can share identical glyphs if needed but the gain
+        -- is minimal especially when we use compact font mode)
+
+        lpdf.registerfontmethod("box",function(filename,details)
+            local properties = details.properties
+            local boxes      = properties.indexdata[1]
+            local xforms     = pdfdictionary()
+            local nofglyphs  = 0
+            local scale      = 10 * details.parameters.size/details.parameters.designsize
+            local units      = details.parameters.units
+            local function boxtopdf(image,data) -- image == glyph
+                nofglyphs    = nofglyphs + 1
+                local scale  = units / scale -- e.g. 1000 / 12
+                local width  = (data.width or 0) * bpfactor * scale
+                local name   = f_glyph(nofglyphs)
+                local stream = f_stream_s(scale,scale,name)
+                image.embedded_name      = name
+                image.embedded_stream    = stream
+                image.embedded_reference = pdfreference(image.objnum)
+                xforms[name] = image.embedded_reference
+                return f_image_w(width,stream), width
+            end
+            local function wrapup()
+            end
+            local function getresources()
+                return pdfdictionary { XObject = xforms }
+            end
+            return boxes, 1/units, boxtopdf, wrapup, getresources
+        end)
 
         -- mps inclusion
 

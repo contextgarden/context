@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.01.22 09:38}
+\immutable\edef\contextversion{2021.01.24 16:02}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -389,6 +389,7 @@
 \loadmklxfile{font-gds}
 \loadmklxfile{font-aux}
 \loadmklxfile{font-sel}
+\loadmkxlfile{font-tex}
 
 \loadmkxlfile{typo-tal}
 \loadmkxlfile{typo-par} % par builders (uses fonts)
