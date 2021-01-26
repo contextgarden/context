@@ -581,7 +581,7 @@
 %D
 %D \showsetup{showpalet}
 
-\fetchruntimecommand \showpalet \f!colo_run
+\fetchmodulecommand \showpalet \f!colo_run
 
 %D \macros
 %D   {showcolorcomponents}
@@ -590,7 +590,7 @@
 %D \showcolorcomponents[color-1,color-2]
 %D \stoptyping
 
-\fetchruntimecommand \showcolorcomponents \f!colo_run
+\fetchmodulecommand \showcolorcomponents \f!colo_run
 
 %D \macros
 %D   {comparepalet}
@@ -613,7 +613,7 @@
 %D
 %D \showsetup{comparepalet}
 
-\fetchruntimecommand \comparepalet \f!colo_run
+\fetchmodulecommand \comparepalet \f!colo_run
 
 %D \macros
 %D   {showcolor}
@@ -629,7 +629,7 @@
 %D
 %D \showsetup{showcolor}
 
-\fetchruntimecommand \showcolor \f!colo_run
+\fetchmodulecommand \showcolor \f!colo_run
 
 %D It would make sense to put the following code in \type {colo-mps}, but it it
 %D rather low level.
@@ -727,16 +727,16 @@
 \letvalue{\??colorsetter       -}\empty % used?
 \letvalue{\??transparencysetter-}\empty % used?
 
-% new: expandable (see tbl)
+% new: expandable (see tbl preamble)
 
-\def\colo_helpers_fast_activate
+\def\colo_helpers_direct_activate
   {\ifempty\currentcolorprefix
-     \expandafter\colo_helpers_fast_activate_nop
+     \expandafter\colo_helpers_direct_activate_nop
    \else
-     \expandafter\colo_helpers_fast_activate_yes
+     \expandafter\colo_helpers_direct_activate_yes
    \fi}
 
-\def\colo_helpers_fast_activate_yes#1%
+\def\colo_helpers_direct_activate_yes#1%
   {\ifcsname\??colorsetter\currentcolorprefix#1\endcsname
      \lastnamedcs
      \begincsname\??transparencysetter\currentcolorprefix#1\endcsname
@@ -745,7 +745,7 @@
      \begincsname\??transparencysetter#1\endcsname
    \fi}
 
-\def\colo_helpers_fast_activate_nop#1%
+\def\colo_helpers_direct_activate_nop#1%
   {\ifcsname\??colorsetter#1\endcsname
      \lastnamedcs
      \begincsname\??transparencysetter#1\endcsname
@@ -755,17 +755,13 @@
   {\begincsname\??colorsetter       \v_colo_dummy_name\endcsname
    \begincsname\??transparencysetter\v_colo_dummy_name\endcsname}
 
-\let\dofastcoloractivation\colo_helpers_fast_activate
-
 % so far
 
 \permanent\protected\def\colo_helpers_activate#1% two-step is not that much faster but less tracing
   {\edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
-    %\expandafter
      \colo_helpers_activate_nop
    \else
-    %\expandafter
      \colo_helpers_activate_yes
    \fi}
 
@@ -1010,11 +1006,17 @@
 %D \stoptyping
 %D
 %D \stopmode
+%D
+%D All this will move to m-tikz.mkxl as it doesn't belong in the core. They are
+%D mutable because \quote {who knows what gets redefined}.
 
-\protected\def\pgf@context@registercolor#1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\zerocount\thecolorattribute{#1}}}
-\protected\def\pgf@context@registergray #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plustwo  \thecolorattribute{#1}}}
-\protected\def\pgf@context@registerrgb  #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusthree\thecolorattribute{#1}}}
-\protected\def\pgf@context@registercmyk #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusfour \thecolorattribute{#1}}}
+\mutable\let\color@ \relax
+\mutable\let\xcolor@\relax
+
+\mutable\protected\def\pgf@context@registercolor#1{\edefcsname\string\color@#1\endcsname{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\zerocount\thecolorattribute{#1}}}
+\mutable\protected\def\pgf@context@registergray #1{\edefcsname\string\color@#1\endcsname{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plustwo  \thecolorattribute{#1}}}
+\mutable\protected\def\pgf@context@registerrgb  #1{\edefcsname\string\color@#1\endcsname{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusthree\thecolorattribute{#1}}}
+\mutable\protected\def\pgf@context@registercmyk #1{\edefcsname\string\color@#1\endcsname{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusfour \thecolorattribute{#1}}}
 
 %D \starttyping
 %D \ifdefined\pgf@context@registercolor

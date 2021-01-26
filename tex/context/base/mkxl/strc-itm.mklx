@@ -1588,7 +1588,7 @@
 \ifdefined\noitem           \else \aliased\let\noitem          \relax \fi
 \ifdefined\itm              \else \aliased\let\itm             \relax \fi
 \ifdefined\but              \else \aliased\let\but             \relax \fi
-\ifdefined\nop              \else \aliased\let\nop             \relax \fi
+\ifdefined\nop              \else         \let\nop             \relax \fi % used often by myself
 \ifdefined\txt              \else \aliased\let\txt             \relax \fi
 \ifdefined\head             \else         \let\head            \relax \fi % defined later
 \ifdefined\headsym          \else \aliased\let\headsym         \relax \fi

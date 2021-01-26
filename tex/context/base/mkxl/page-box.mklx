@@ -110,8 +110,8 @@
 
 \def\page_boxes_apply_orientate_indeed#odd#even#box%
   {\setbox#box\vpack
-     {\edef\somerotation{\number\ifdoublesided\ifodd\realpageno#odd\else#even\fi\else#odd\fi}%
-      \dorotatebox\somerotation\hpack{\box#box}}}
+     {\edef\p_rotation{\number\ifdoublesided\ifodd\realpageno#odd\else#even\fi\else#odd\fi}%
+      \dorotatebox\p_rotation\hpack{\box#box}}}
 
 \def\page_boxes_apply_mirror#box%
   {\setbox#box\vpack{\mirror{\box#box}}}

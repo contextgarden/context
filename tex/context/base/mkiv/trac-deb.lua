@@ -326,8 +326,6 @@ directives.register("system.showerror", lmx.overloaderror)
 --     end
 -- end)
 
-local implement = interfaces.implement
-
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }
 implement { name = "disabletrackers",    actions = trackers.disable,    arguments = "string" }

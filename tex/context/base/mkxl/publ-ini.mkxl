@@ -56,6 +56,7 @@
 \registerctxluafile{publ-fnd}{} % new method (for the moment only local)
 \registerctxluafile{publ-jrn}{}
 \registerctxluafile{publ-reg}{}
+\registerctxluafile{publ-tra}{} % has more general helpers too
 
 \unprotect
 
@@ -2009,12 +2010,12 @@
 
 %D Delayed loading:
 
-\fetchruntimecommand \showbtxdatasetfields       \f!publ_tra
-\fetchruntimecommand \showbtxdatasetcompleteness \f!publ_tra
-\fetchruntimecommand \showbtxdatasetauthors      \f!publ_tra
-\fetchruntimecommand \showbtxhashedauthors       \f!publ_tra
-\fetchruntimecommand \showbtxfields              \f!publ_tra
-\fetchruntimecommand \showbtxtables              \f!publ_tra
+\fetchmodulecommand \showbtxdatasetfields       \f!publ_tra
+\fetchmodulecommand \showbtxdatasetcompleteness \f!publ_tra
+\fetchmodulecommand \showbtxdatasetauthors      \f!publ_tra
+\fetchmodulecommand \showbtxhashedauthors       \f!publ_tra
+\fetchmodulecommand \showbtxfields              \f!publ_tra
+\fetchmodulecommand \showbtxtables              \f!publ_tra
 
 %D Some potential crap:
 %D

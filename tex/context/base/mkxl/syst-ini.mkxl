@@ -266,18 +266,18 @@
 
 %D The allocators share a common helper macro.
 
-\protected\permanent\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef  \c_syst_max_allocated_register}
-\protected\permanent\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef  \c_syst_max_allocated_register}
-\protected\permanent\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef   \c_syst_max_allocated_register}
-\protected\permanent\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef \c_syst_max_allocated_register}
-\protected\permanent\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \integerdef\c_syst_max_allocated_register}
-\protected\permanent\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef   \c_syst_max_allocated_register}
-\protected\permanent\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \integerdef\c_syst_max_allocated_read}
-\protected\permanent\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \integerdef\c_syst_max_allocated_write}
-\protected\permanent\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \integerdef\c_syst_max_allocated_register}
-\protected\permanent\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef   \c_syst_max_allocated_insert}
-\protected\permanent\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\integerdef\c_syst_max_allocated_language} % not needed in context
-\protected\permanent\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \integerdef\c_syst_max_allocated_family}   % not needed in context
+\permanent\protected\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef  \c_syst_max_allocated_register}
+\permanent\protected\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef  \c_syst_max_allocated_register}
+\permanent\protected\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef   \c_syst_max_allocated_register}
+\permanent\protected\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef \c_syst_max_allocated_register}
+\permanent\protected\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \integerdef\c_syst_max_allocated_register}
+\permanent\protected\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef   \c_syst_max_allocated_register}
+\permanent\protected\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \integerdef\c_syst_max_allocated_read}
+\permanent\protected\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \integerdef\c_syst_max_allocated_write}
+\permanent\protected\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \integerdef\c_syst_max_allocated_register}
+\permanent\protected\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef   \c_syst_max_allocated_insert}
+\permanent\protected\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\integerdef\c_syst_max_allocated_language} % not needed in context
+\permanent\protected\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \integerdef\c_syst_max_allocated_family}   % not needed in context
 
 \aliased\let\newfam\newfamily
 
@@ -286,10 +286,10 @@
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\protected\def\setconstant         {}
-\protected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
+\permanent\protected\def\setconstant         {}
+\permanent\protected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
-\protected\def\newconstant#1%
+\permanent\protected\def\newconstant#1%
   {\ifrelax#1%
     %\writestatus{!!!!!!!!!!}{\string #1 => RELAX}%
      \unletfrozen#1%
@@ -300,7 +300,7 @@
      \newcount#1%
    \fi}
 
-\protected\def\setnewconstant#1{\newconstant#1#1}
+\permanent\protected\def\setnewconstant#1{\newconstant#1#1}
 
 % %D The next definitions are really needed (in \CONTEXT):
 

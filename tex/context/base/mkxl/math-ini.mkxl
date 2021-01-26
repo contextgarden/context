@@ -704,9 +704,15 @@
 
 \chardef\c_math_strut"28
 
-\protected\def\math_strut_htdp#1%
-  {\s!height\fontcharht#1\c_math_strut
-   \s!depth \fontchardp#1\c_math_strut}
+% \protected\def\math_strut_htdp#1%
+%   {\s!height\fontcharht#1\c_math_strut
+%    \s!depth \fontchardp#1\c_math_strut}
+%
+% now we need this (kind of inefficient):
+
+\protected\def\math_strut_htdp#1% nasty!
+  {\s!height\dimexpr\mathscale#1\fontcharht#1\c_math_strut/\glyphscale\relax
+   \s!depth \dimexpr\mathscale#1\fontchardp#1\c_math_strut/\glyphscale\relax}
 
 \protected\def\math_strut_normal
   {\vrule
@@ -2675,7 +2681,7 @@
    \scratchdepth       \dimexpr\scratchbottomoffset+\m_math_inline_openup_dp\relax
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
    \begingroup
-     \dofastcoloractivation{darkred}%
+     \dousecolorparameter{darkred}%
      \vrule\s!width\emwidth\s!height\scratchheight\s!depth-\scratchtopoffset\relax
    \endgroup
    \kern-\emwidth
@@ -2686,7 +2692,7 @@
   {\endgroup
    \kern-\emwidth
    \begingroup
-     \dofastcoloractivation{darkblue}%
+     \dousecolorparameter{darkblue}%
      \vrule\s!width\emwidth\s!height-\scratchbottomoffset\s!depth\scratchdepth\relax
    \endgroup
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}

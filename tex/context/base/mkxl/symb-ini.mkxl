@@ -324,7 +324,7 @@
 %D
 %D \showsetup{showsymbolset}
 
-\fetchruntimecommand \showsymbolset \f!symb_run
+\fetchmodulecommand \showsymbolset \f!symb_run
 
 %D \macros
 %D   {usesymbols}

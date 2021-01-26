@@ -1,0 +1,276 @@
+%D \module
+%D   [       file=colo-run,
+%D        version=1997.04.01,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Runtime loaded commands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{colo-run}{}
+
+\unprotect
+
+%D Colors
+
+%D These are nicer in \LUA\ code than in \TEX\ code but not more efficient.
+
+\permanent\protected\gdef\showcolorbar[#1]%
+  {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
+
+\permanent\protected\tolerant\gdef\showcolorset[#1]%
+  {\ctxcommand{showcolorset("#1")}}
+
+\permanent\protected\tolerant\gdef\showcolorcomponents[#1]%
+  {\ctxcommand{showcolorcomponents("#1")}}
+
+\permanent\protected\tolerant\gdef\showcolor[#1]%
+  {\ifparameter#1\or
+     \usecolors   [#1]% delayed and we can only ask for the set if
+     \showcolorset[#1]% loading has happened
+   \fi}
+
+%D The rest might also be done in \LUA\ although there is not much beauty to gain
+%D here (too much typesetting specific). Also, these macros are pretty old and
+%D hardly used so best keep them as they are. But we keep them because they always
+%D worked and it doesn't hurt to see some \MKII|-|code every now and then.
+
+%D Palets
+
+permanent\protected\tolerant\gdef\showpalet[#1]#*[#2]%
+  {\doifelsecolorpalet{#1}
+     {\doifelseinset\v!vertical{#2}\colo_palets_show_vertical\colo_palets_show_horizontal{#1}{#2}}%
+     {}}
+
+\gdef\colo_palets_show_vertical#1#2%
+  {\begingroup
+   \forgetall
+   \setlocalhsize
+   \hsize\localhsize
+   \offinterlineskip
+   \setuppalet[#1]
+   \tabskip\zeropoint
+   \def\colo_palets_show_palet##1%
+     {\doifelseinset\v!number{#2}{##1\hskip.5\emwidth}{}%
+      \aligntab
+      \color    [##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+      \graycolor[##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+      \aligntab
+      \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{##1}}%
+      \crcr}
+   \halign
+     {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\cr
+      \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\cr
+      \colo_palets_process[#1]\colo_palets_show_palet\crcr}%
+  \endgroup}
+
+\gdef\colo_palets_show_horizontal#1#2% todo: bTABLE etc
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
+      \setuppalet[#1]
+      \tabskip\zeropoint
+      \scratchwidth\zeropoint
+      \doifinset\v!number{#2}
+        {\def\colo_palets_show_palet##1%
+           {\setbox\scratchbox\hbox{##1}%
+            \ifdim\scratchwidth<\wd\scratchbox
+              \scratchwidth\wd\scratchbox
+            \fi}%
+         \colo_palets_process[#1]\colo_palets_show_palet}%
+      \advance\scratchwidth\emwidth
+      \ifdim\scratchwidth<5\emwidth
+        \scratchwidth5\emwidth
+      \fi
+      \halign
+        {\alignmark\alignmark\aligntab\aligntab\hbox to \scratchwidth{\hss\alignmark\alignmark\hss}\cr
+         \doifinset\v!number{#2}
+           {\def\colo_palets_show_palet##1{\aligntab\strut##1}%
+            \colo_palets_process[#1]\colo_palets_show_palet}\cr
+         \doifinset\v!name{#2}{#1\hskip.5\emwidth}%
+         \def\colo_palets_show_palet##1%
+           {\aligntab\strut\color[##1]{\vrule\s!width\scratchwidth\s!height\strutht\s!depth\zeropoint}}%
+         \colo_palets_process[#1]\colo_palets_show_palet\crcr
+         \noalign{\vskip-\strutdepth}%
+         \def\colo_palets_show_palet##1%
+           {\aligntab\graycolor[##1]{\vrule\s!width\scratchwidth\s!height\zeropoint\s!depth\strutdp}}%
+         \colo_palets_process[#1]\colo_palets_show_palet\crcr
+         \doifinset\v!value{#2}
+           {\def\colo_palets_show_palet##1%
+             {\aligntab\vbox
+                {\hsize\scratchwidth
+                 \vskip.25\exheight
+                 \everypar{\strut}
+                 \veryraggedcenter
+                 \let\colorformatseparator\endgraf
+                 \colorvalue{##1}}}%
+            \colo_palets_process[#1]\colo_palets_show_palet}%
+         \crcr}}}
+
+\gdef\colo_palets_process[#1]%
+  {\getpaletlist[#1]%
+   \normalexpanded{\globalprocesscommalist[\paletlist]}}
+
+\permanent\protected\tolerant\gdef\comparepalet[#1]%
+  {\doifelsecolorpalet{#1}%
+     {\hbox
+        {\colo_palets_compare_indeed\color{#1}%
+         \quad
+         \colo_palets_compare_indeed\graycolor{#1}}}%
+     {}}
+
+\gdef\colo_palets_compare_indeed#1#2%
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
+      \setuppalet[#2]
+      \getpaletsize[#2]%
+      \getpaletlist[#2]%
+      \scratchwidth2\emwidth\relax
+      \hsize\paletsize\scratchwidth
+      \def\colo_palets_compare##1%
+        {\hbox
+           {\setbox0\hbox
+              {#1[##1]{\vrule\s!width\hsize\s!height3ex}}%
+            \wd0\zeropoint
+            \box0
+            \hbox to \hsize
+              {\def\colo_palets_compare####1%
+                 {\hbox to \scratchwidth
+                    {\hss#1[####1]{\vrule\s!width.5\scratchwidth\s!height2.25\exheight\s!depth-.75\exheight}\hss}}%
+               \processcommacommand[\paletlist]\colo_palets_compare}}
+         \endgraf}
+      \processcommacommand[\paletlist]\colo_palets_compare}}
+
+%D Groups
+
+permanent\protected\tolerant\gdef\showcolorgroup[#1]#*[#2]%
+  {\doifcolor{#1:1}
+     {\doifelseinset\v!vertical{#2}\colo_groups_show_vertical\colo_groups_show_horizontal{#1}{#2}}}
+
+\gdef\colo_groups_show_horizontal#1#2%
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
+      \setuppalet
+      \tabskip\zeropoint
+      \def\colorformatseparator{\strut\cr}
+      \def\colo_groups_show_group##1%
+        {\doifcolor{#1:##1}{\vbox
+           {\halign
+              {\hss\alignmark\alignmark\alignmark\alignmark\hss\cr
+               \doifinset\v!number{#2}{\strut##1}\cr
+               \color    [#1:##1]{\vrule\s!width4\emwidth\s!height\strutht  \s!depth\zeropoint}\cr
+               \graycolor[#1:##1]{\vrule\s!width4\emwidth\s!height\zeropoint\s!depth\strutdp  }\cr
+               \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}}}%
+      \hbox
+        {\doifinset\v!name{#2}
+           {\strut
+            \doifelseinset\v!value{#2}
+              {\raise3\lineheight\hbox{#1\hskip.5\emwidth}}
+              {#1}%
+            \hskip.5\emwidth}%
+         \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
+         \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
+
+\gdef\colo_groups_show_vertical#1#2%
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
+      \setuppalet
+      \tabskip\zeropoint
+      \def\colo_groups_show_group##1%
+        {\doifcolor{#1:##1}
+           {\doifinset\v!number{#2}
+              {##1\hskip.5\emwidth}%
+            \aligntab
+            \color    [#1:##1]{\vrule\s!width2.5\emwidth\s!height\strutht\s!depth\strutdp}%
+            \graycolor[#1:##1]{\vrule\s!width2.5\emwidth\s!height\strutht\s!depth\strutdp}
+            \aligntab
+            \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{#1:##1}}%
+            \crcr}}%
+      \halign
+        {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\hss\cr
+         \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\crcr
+         \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
+         \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
+
+\permanent\protected\tolerant\gdef\comparecolorgroup[#1]%
+  {\doifcolor{#1:1}
+     {\hbox
+        {\colo_groups_compare_indeed\color    {#1}\quad
+         \colo_groups_compare_indeed\graycolor{#1}}}}
+
+\gdef\colo_groups_compare_indeed#1#2%
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \scratchcounter\zerocount
+      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\scratchcounter\plusone}}
+      \scratchwidth2\emwidth\relax
+      \hsize\scratchcounter\scratchwidth
+      \dorecurse\scratchcounter{\colo_groups_compare_step{#1}{#2}\recurselevel}}}
+
+\def\colo_groups_compare_step#1#2#3%
+  {\hbox to \hsize
+     {\setbox\scratchbox\hbox
+        {#1[#2:#3]{\vrule\s!width\hsize\s!height3\exheight}}%
+      \wd\scratchbox\zeropoint
+      \box\scratchbox
+      \hbox to \hsize
+        {\hss
+         \dorecurse\scratchcounter
+            {#1[#2:\recurselevel]{\vrule\s!width.5\scratchwidth\s!height2.25\exheight\s!depth-.75\exheight}%
+         \hss}}}
+   \endgraf}
+
+\protect
+
+\continueifinputfile{s-colors-show.mkxl}
+
+\setupwhitespace[big]
+
+\usecolors[dem]
+
+\starttext
+
+\startsubject[title=\type{\showpalet}]
+    \showpalet [alfa] [horizontal,name,number,value]
+\stopsubject
+
+\startsubject[title=\type{\showcolorcomponents}]
+    \showcolorcomponents[red,green,blue]
+\stopsubject
+
+\startsubject[title=\type{\comparepalet}]
+    \comparepalet[alfa]
+\stopsubject
+
+\startsubject[title=\type{\showcolor}]
+    \showcolor[rgb]
+\stopsubject
+
+\startsubject[title=\type{\showcolorgroup}]
+    \showcolorgroup[magenta]
+    \showcolorgroup[cyan]
+    \showcolorgroup[yellow]
+\stopsubject
+
+\startsubject[title=\type{\comparecolorgroup}]
+    \comparecolorgroup[magenta]
+\stopsubject
+
+\stoptext

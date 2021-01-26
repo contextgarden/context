@@ -207,7 +207,7 @@
 %D This command obeys the standard method for locating files. We could move this
 %D function to the \LUA\ end.
 
-\installsystemnamespace {fileonce}
+\installsystemnamespace{fileonce}
 
 \permanent\protected\def\doonlyonce#whatever%
   {\ifcsname\??fileonce#whatever\endcsname

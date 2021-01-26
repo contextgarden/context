@@ -63,17 +63,21 @@ end
 
 local function setboxglyph(specification)
     if specification then
-        local name = specification.name
-        if name then
-            local private = newprivateslot(name)
-            local font    = currentfont()
+        local name    = specification.name
+        local unicode = specification.unicode
+        local font    = currentfont()
+        if not unicode and name then
+            unicode = newprivateslot(name)
+            specification.unicode = unicode
+        end
+        if unicode then
             if not specification.setups then
                 specification.setups = name
             end
             -- we can actually delay font if needed
-            register(font,private,function(font,private)
-                makeglyphbox(private,specification)
-                return setboxglyphs(category,font,private,specification)
+            register(font,unicode,function(font,private)
+                makeglyphbox(unicode,specification)
+                return setboxglyphs(category,font,unicode,specification)
             end)
             checkenabled()
         end
@@ -133,7 +137,12 @@ interfaces.implement {
     public    = true,
     protected = true,
     actions   = setboxglyph,
-    arguments = { { "*" } },
+    arguments = { {
+        { "category" },
+        { "unicode", "integer" },
+        { "name" },
+        { "*" }
+    } },
 }
 
 fonts.handlers.otf.features.register {

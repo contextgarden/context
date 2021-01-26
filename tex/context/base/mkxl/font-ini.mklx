@@ -1880,12 +1880,12 @@
    \orelse\ifcsname\??fontclassnop#class\endcsname
      % already tried
    \else   % too messy: \ifcase\currentgrouplevel % (unpredictable)
-     \trycurrentfontclass{#class}%
+     \fonts_helpers_try_currentfontclass{#class}%
    \fi}
 
-\ifdefined\trycurrentfontclass \else
+\ifdefined\fonts_helpers_try_currentfontclass \else
 
-    \protected\def\trycurrentfontclass#typeface%
+    \protected\def\fonts_helpers_try_currentfontclass#typeface%
       {\letcsname\??fontclassnop#typeface\endcsname\empty}
 
 \fi
@@ -2428,15 +2428,7 @@
      \fullrestoreglobalbodyfont
    \fi}
 
-\permanent\protected\def\showbodyfontstate
-  {\dontleavehmode
-   \start
-   \infofont
-   [fontclass: \fontclass,\space
-    fontbody:  \fontbody ,\space
-    fontface:  \fontface ,\space
-    fontsize:  \fontsize ]%
-   \stop}
+\fetchmodulecommand \showbodyfontstate \f!font_run
 
 %D Handy for manuals:
 

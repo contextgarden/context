@@ -177,37 +177,6 @@
 
 % will become file-run
 
-%D To save memory, we implement some seldomly used commands in a lazy way. Nota
-%D bene: such runtime definitions are to be defined global.
-%D
-%D \starttyping
-%D \fetchruntimecommand \showaccents \f!file_run % last is a file name
-%D \stoptyping
-
-\installcorenamespace{runtimeloaded}
-
-\permanent\protected\def\fetchruntimecommand#1#2%
-  {\protected\def#1{\dofetchruntimecommand#1{#2}}}
-
-\def\dofetchruntimecommand#1#2% actually a test on #1 being define would be ok as well
-  {\ifcsname\??runtimeloaded#2\endcsname
-     % already loaded
-   \else
-     \glet#1\undefined
-     \startreadingfile
-       \startnointerference % \bgroup
-         \cleanupfeatures % better \setnormalcatcodes / test first
-         \readfile{#2.\mksuffix}\donothing\donothing
-       \stopnointerference  % \egroup
-     \stopreadingfile
-     \letgvalue{\??runtimeloaded#2}\empty
-   \fi
-   \ifdefined#1\else
-     \writestatus\m!system{command \string#1 not found in file #2}%
-     \protected\gdef#1{{\infofont[unknown command \string#1]}}%
-   \fi
-   #1}
-
 %D \macros
 %D   {doifolderversionelse}
 %D
@@ -273,5 +242,21 @@
 
 \permanent\protected\def\installmodulecommandluaone#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_one_lua{\csstring#1}{#2}}}}
 \permanent\protected\def\installmodulecommandluatwo#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_two_lua{\csstring#1}{#2}}}}
+
+%D This replaces \type {\fetchruntimecommand}:
+%D
+%D \starttyping
+%D \fetchmodulecommand \csname {module}
+%D \stoptyping
+
+\permanent\protected\def\fetchmodulecommand#1#2%
+  {\mutable\protected\def#1{\syst_fetch_module_command#1{#2}}}
+
+\def\syst_fetch_module_command#1#2% actually a test on #1 being define would be ok as well
+  {%writestatus\m!systems{fetching \string#1}%
+   \usemodule[#2]%
+   #1}
+
+\aliased\let\fetchruntimecommand\fetchmodulecommand % obsolete
 
 \protect \endinput

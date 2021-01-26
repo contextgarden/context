@@ -31,19 +31,18 @@
 %D
 %D The implementation is rather straightforward in using \type {\halign}.
 
-\fetchruntimecommand \showbodyfont  \f!font_run
+\fetchmodulecommand \showbodyfont \f!font_run
 
 %D \macros
-%D   {showfontstrip, testminimalbaseline, showminimalbaseline}
+%D   {showfontstrip, showminimalbaseline}
 %D
 %D The next command can come in handy when combining different fonts into a
 %D collection (typeface) and determining optimal baseline distances.
 %D
 %D \showfontstrip \blank \showminimalbaseline
 
-\fetchruntimecommand \showfontstrip       \f!font_run
-\fetchruntimecommand \testminimalbaseline \f!font_run
-\fetchruntimecommand \showminimalbaseline \f!font_run
+\fetchmodulecommand \showfontstrip       \f!font_run
+\fetchmodulecommand \showminimalbaseline \f!font_run
 
 %D \macros
 %D   {showkerning}
@@ -52,7 +51,7 @@
 %D
 %D \showkerning{Can you guess what kerning is?}
 
-\fetchruntimecommand \showkerning \f!font_run
+\fetchmodulecommand \showkerning \f!s_fonts_show
 
 %D \macros
 %D   {showbodyfontenvironment,showfont,showfontstyle,showligatures}
@@ -65,7 +64,7 @@
 %D
 %D \showsetup{showbodyfontenvironment}
 
-\fetchruntimecommand \showbodyfontenvironment \f!font_run
+\fetchmodulecommand \showbodyfontenvironment \f!font_run
 
 %D The following command generates a fontmap:
 %D
@@ -76,12 +75,12 @@
 %D \typebuffer
 %D \getbuffer
 
-\fetchruntimecommand \showfont           \f!font_run
-\fetchruntimecommand \showfontstyle      \f!font_run
-\fetchruntimecommand \showligature       \f!font_run
-\fetchruntimecommand \showligatures      \f!font_run
-\fetchruntimecommand \showcharratio      \f!font_run
-\fetchruntimecommand \showfontparameters \f!font_run
+\fetchmodulecommand \showfont           \f!font_run
+\fetchmodulecommand \showfontstyle      \f!font_run
+\fetchmodulecommand \showligature       \f!font_run
+\fetchmodulecommand \showligatures      \f!font_run
+\fetchmodulecommand \showcharratio      \f!font_run
+\fetchmodulecommand \showfontparameters \f!font_run
 
 \permanent\protected\def\showchardata#1{\ctxcommand{showchardata("#1")}}   % todo: direct implementor
 \permanent\protected\def\showfontdata  {\ctxcommand{showfontparameters()}} % todo: direct implementor
@@ -98,237 +97,13 @@
 
 \aliased\let\doiffontpresentelse\doifelsefontpresent
 
-% experimental, maybe this becomes a module
+%D The otf tracer code is now moved. If the individual commands are needed
+%D one can just load the module.
 
-\newbox\otfcollector
-
-\permanent\protected\def\startotfcollecting{\ctxlua{nodes.tracers.steppers.start()}}
-\permanent\protected\def\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
-\permanent\protected\def\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
-
-% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{الضَّرَّ} \page
-% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{لِلّٰهِ} \page
-
-\permanent\protected\def\showotfstepglyphs#1%
-  {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
-   \unhbox\otfcollector}
-
-\permanent\protected\def\otfstepspace
-  {\removeunwantedspaces
-   \hskip.5\emwidth \s!plus .125\emwidth \s!minus .125\emwidth\relax}
-
-\permanent\protected\def\otfstepcharcommand#1#2#3% font char class
-  {\otfstepspace
-   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
-   \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
-   \ifzeropt\wd\scratchbox
-     \scratchwidth.125\onepoint
-     \scratchdistance\dimexpr(\emwidth/2-\scratchwidth)\relax
-     \kern\scratchdistance
-     \ruledhbox to \scratchwidth{\hss\box\scratchbox\hss}%
-     \kern-\scratchwidth
-     \hskip\scratchdistance
-   \else
-     \ruledhbox{\box\scratchbox}%
-   \fi
-   \otfstepspace}
-
-\permanent\protected\def\otfstepfontcommand#1#2#3% id font size
-  {\begingroup
-   \tttf #1: #2 @ \the\dimexpr#3\scaledpoint\relax
-   \endgroup}
-
-\permanent\protected\def\otfstepmessagecommand#1#2%
-  {\begingroup
-   \tttf\language\minusone
-   \veryraggedright
-   \forgetparindent
-   \forgeteverypar
-   \hangindent\emwidth
-   \hangafter\plusone
-   \dontleavehmode\detokenize{#1}\removeunwantedspaces
-   \doifsomething{#2}{,\space\detokenize{#2}}\endgraf
-   \endgroup
-   \blank}
-
-\permanent\protected\def\showotfstepfont
-  {\ctxlua{nodes.tracers.steppers.font("otfstepfontcommand")}}
-
-\permanent\protected\def\showotfstepchars#1%
-  {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand","otfstepspace")}}
-
-\permanent\protected\def\showotfstepmessages#1%
-  {\ctxlua{nodes.tracers.steppers.messages(#1,"otfstepmessagecommand",true)}}
-
-\permanent\protected\def\showotfstepfeatures
-  {\ctxlua{nodes.tracers.steppers.features()}}
-
-\permanent\protected\def\otfnoffeaturesteps
-  {\ctxlua{nodes.tracers.steppers.nofsteps()}}
-
-\newconstant\showotfstepsmode  \showotfstepsmode\plusfour
-
-\protected\def\showotfsteps_n
-  {\blank
-   \begingroup
-     \advance\leftskip6\emwidth
-     \showotfstepmessages\recurselevel
-     \par
-   \endgroup
-   \blank
-   \dontleavehmode
-   \hbox to \hsize \bgroup
-     \hbox to 6\emwidth \bgroup
-       \bf
-       \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
-       \hss
-     \egroup
-     \vtop \bgroup
-       \hsize\dimexpr\hsize-6\emwidth\relax
-       \resetallattributes
-       \lefttoright
-       \dontleavehmode
-       \ifnum\recurselevel=\scratchcounter
-         \ruledhbox{\box\otfcompositionbox}%
-       \else
-         \ruledhbox{\showotfstepglyphs\recurselevel}%
-       \fi
-       \quad
-       \showotfstepchars\recurselevel
-       \hfill
-       \par
-     \egroup
-   \egroup
-   \blank}
-
-\permanent\protected\def\showotfsteps
-  {\begingroup
-   \veryraggedright
-   \forgetparindent
-   \forgeteverypar
-   \tt
-   \lefttoright
-   \hbox to \hsize \bgroup
-     \hbox to 6\emwidth{\bf font\hss}%
-     \vtop \bgroup
-       \hsize\dimexpr\hsize-6\emwidth\relax
-       \language\minusone
-       \bf
-       \showotfstepfont
-     \egroup
-   \egroup
-   \blank
-   \hbox to \hsize \bgroup
-     \hbox to 6\emwidth{\bf features\hss}%
-     \vtop \bgroup
-       \hsize\dimexpr\hsize-6\emwidth\relax
-       \language\minusone
-       \showotfstepfeatures
-     \egroup
-   \egroup
-   \blank
-   \scratchcounter\otfnoffeaturesteps\relax
-   \dorecurse\scratchcounter
-     {\ifcase\showotfstepsmode
-      \or % 1 = only first
-        \ifnum\recurselevel=\plusone
-          \showotfsteps_n
-        \fi
-      \or % 2 = only last
-        \ifnum\recurselevel=\scratchcounter
-          \showotfsteps_n
-        \fi
-      \or % 3 = first and last
-        \ifnum\recurselevel=\plusone
-          \showotfsteps_n
-        \orelse\ifnum\recurselevel=\scratchcounter
-          \showotfsteps_n
-        \fi
-      \else % everything
-        \showotfsteps_n
-      \fi}%
-   \endgroup}
-
-\permanent\protected\def\startotfsample
-  {\enabletrackers[otf.sample.silent]% beware, kind of global
-   \startotfcollecting
-   \begingroup
-   \veryraggedright
-   \forgetparindent
-   \forgeteverypar}
-
-\permanent\protected\def\stopotfsample
-  {\endgroup
-   \stopotfcollecting
-   \disabletrackers[otf.sample]% beware, kind of global: otf.sample
-   \showotfsteps
-   \resetotfcollecting}
-
-\newbox\otfcompositionbox
-
-% this should go in spac-ali:
-
-\installcorenamespace{otfcompositiondir}
-
-\letvalue{\??otfcompositiondir  -1}\righttoleft
-\letvalue{\??otfcompositiondir r2l}\righttoleft
-\letvalue{\??otfcompositiondir l2r}\lefttoright
-\letvalue{\??otfcompositiondir  +1}\lefttoright
-\letvalue{\??otfcompositiondir   1}\lefttoright
-
-\permanent\protected\def\setotfcompositiondirection#1%
- {\begincsname\??otfcompositiondir#1\endcsname}
-
-\permanent\protected\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
-  {\begingroup
-   \forgetparindent
-   \forgeteverypar
- % \setupcolors[\c!state=\v!start]%
-   \setupalign[\v!verytolerant,\v!flushleft]%
-   \startotfsample
-   \nohyphens
-   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\setotfcompositiondirection{#2}\relax#3}%
-   \stopotfsample
-   \endgroup}
-
-%D \startbuffer
-%D \startotfcompositionlist{Serif*default @ 11pt}{l2r}%
-%D     \showotfcompositionsample{effe}
-%D \stopotfcompositionlist
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-
-\permanent\protected\def\showotfcompositionlist#1#2#3%
-  {\begingroup
-   \definedfont[#1]%
-   \setbox\scratchbox\hbox\bgroup
-     \setotfcompositiondirection{#2}%
-     #3%
-   \egroup
-   \strut
-   \def|##1|{\kern\onepoint\string|\kern\onepoint##1\kern\onepoint\string|\kern\onepoint}%
-   \cldcontext{nodes.listtoutf(tex.box[\number\scratchbox].list,"{\\kern\\onepoint}",true)}%
-   \endgroup}
-
-\aliased\let\showotfcompositionsample\gobbleoneargument
-
-\permanent\protected\def\startotfcompositionlist#1#2#3\stopotfcompositionlist
-  {\begingroup
-   \enforced\protected\def\showotfcompositionsample##1%
-     {\NC\type{##1}%
-      \NC\showotfcompositionlist{Mono}{#2}{##1}%
-      \NC\showotfcompositionlist{#1}{#2}{##1}%
-      \NC\definedfont[#1]##1%
-      \NC\NR}%
-   \starttabulate[|||||]%
-     #3%
-   \stoptabulate
-   \endgroup}
-
-\aliased\let\stopotfcompositionlist\relax
-
-% new
+\fetchmodulecommand \showotfcomposition      \f!font_run
+\fetchmodulecommand \showotfcompositionlist  \f!font_run
+\fetchmodulecommand \startotfsample          \f!font_run
+\fetchmodulecommand \startotfcompositionlist \f!font_run
 
 % \permanent\protected\def\savefontdata[#1]% not yet in i-*.xml
 %   {\begingroup

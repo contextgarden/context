@@ -417,7 +417,7 @@
 
 \settrue\autotypescripts
 
-\protected\def\trycurrentfontclass#typeface%
+\protected\def\fonts_helpers_try_currentfontclass#typeface%
   {\ifconditional\autotypescripts
      \usetypescript[#typeface]%
      \ifcsname\??fontclassyes#typeface\endcsname

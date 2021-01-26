@@ -30,8 +30,8 @@
 \aliased\let\stoplua    \relax % tex catcodes
 \aliased\let\stopluacode\relax % lua catcodes
 
-%D It might makes sense to have a \type {\directelua} so that we can avoid the \type
-%D {\normalexpanded} around \type {\directlua}. Something to discuss in the team.
+%D In the meantime the \LUATEX\ interface has become stable but we still
+%D see traces of old here (needs checking).
 
 \permanent\protected\def\startlua % \stoplua
   {\begingroup
@@ -39,7 +39,7 @@
    \luat_start_lua_indeed}
 
 \def\luat_start_lua_indeed#1\stoplua
-  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
+  {\normalexpanded{\endgroup\noexpand\directlua{#1}}}
 
 \permanent\protected\def\startluacode % \stopluacode
   {\begingroup
@@ -48,7 +48,8 @@
    \luat_start_lua_code_indeed}
 
 \def\luat_start_lua_code_indeed#1\stopluacode
-  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
+ %{\normalexpanded{\endgroup\noexpand\directlua{#1}}}
+  {\directlua{#1\beginlocalcontrol\endgroup\endlocalcontrol}}
 
 %D Some delayed definitions:
 
@@ -57,11 +58,15 @@
 \ifdefined\obeyspaces  \else \let\obeyspaces  \relax \fi
 \ifdefined\obeyedspace \else \let\obeyedspace \relax \fi
 
-\let\obeylualines\relax
+\aliased\let\obeylualines\relax % not used, will go away
 
 \newtoks\everyluacode
 
 %D It is nicer for checking with \type {s-system-macros} if we have some meaning:
+
+\pushoverloadmode
+    \let\-\explicitdiscretionary
+\popoverloadmode
 
 \ifdefined\n \else \def\n{n} \fi \ifdefined\r \else \def\r{r} \fi
 \ifdefined\f \else \def\f{f} \fi \ifdefined\t \else \def\t{t} \fi
@@ -90,10 +95,6 @@
 \immutable\edef\lua_letter_five     {\string\5} \immutable\edef\lua_letter_six      {\string\6}
 \immutable\edef\lua_letter_seven    {\string\7} \immutable\edef\lua_letter_eight    {\string\8}
 \immutable\edef\lua_letter_nine     {\string\9} \immutable\edef\lua_letter_zero     {\string\0}
-
-\pushoverloadmode
-    \let\-\explicitdiscretionary
-\popoverloadmode
 
 \everyluacode {% \appendtoks
    \enforced\let\\\lua_letter_backslash
@@ -127,9 +128,9 @@
 %D \ctxlua {something([\luastringsep[anything tricky can go here]\luastringsep])}
 %D \stoptyping
 
-\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
+\def\luastringsep{===}       % this permits \typefile{self} otherwise nested b/e sep problems
 
-\edef\!!bs{[\luastringsep[}
+\edef\!!bs{[\luastringsep[}  % later redefined as mutable
 \edef\!!es{]\luastringsep]}
 
 %D We have a the following available as primitive so there is no need for it:

@@ -102,7 +102,7 @@
 %D
 %D \showsetup{showcolorgroup}
 
-\fetchruntimecommand \showcolorgroup \f!colo_run
+\fetchmodulecommand \showcolorgroup \f!colo_run
 
 %D There are ten predefined color groups, like \color [green] {\em groen}, \color
 %D [red] {\em rood}, \color [blue] {\em blauw}, \color [cyan] {\em cyaan}, \color
@@ -158,6 +158,6 @@
 %D
 %D \showsetup{comparecolorgroup}
 
-\fetchruntimecommand \comparecolorgroup \f!colo_run
+\fetchmodulecommand \comparecolorgroup \f!colo_run
 
 \protect \endinput

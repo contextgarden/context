@@ -979,8 +979,8 @@
 
 \installcorenamespace{constructionclosesymbol}
 
-\let\placeclosesymbol\donothing
-\let\qed             \donothing
+\mutable\let\placeclosesymbol\donothing
+\mutable\let\qed             \donothing
 
 \def\strc_constructions_close_symbol_reset % no need for global
   {\global\expandafter\settrue\csname\??constructionclosesymbol\currentconstruction\endcsname

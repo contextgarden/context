@@ -116,5 +116,6 @@
 \permanent\protected\def\makeglyphbox#1%
   {\begingroup
    \global\setbox\glyphbox\hbox{\directsetup{#1}}%
+   \finalizeobjectbox\glyphbox
  % \writestatus{glyphbox}{#1 => (\the\wd\glyphbox,\the\ht\glyphbox,\the\dp\glyphbox)}%
    \endgroup}

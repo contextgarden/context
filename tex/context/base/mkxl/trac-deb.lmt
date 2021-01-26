@@ -31,7 +31,7 @@ local runlocal     = tex.runlocal
 local terminaldata = false
 local context      = context
 
-interfaces.implement {
+implement {
     name    = "fetchterminaldata",
     actions = function()
         context(terminaldata)
@@ -53,7 +53,7 @@ function texio.terminal()
     end
 end
 
-interfaces.implement {
+implement {
     name      = "readfromterminal",
     public    = true,
     protected = true,
@@ -385,8 +385,6 @@ directives.register("system.showerror", lmx.overloaderror)
 --         os.execute(editor)
 --     end
 -- end)
-
-local implement = interfaces.implement
 
 implement { name = "showtrackers",       public = true, protected = true, actions = trackers.show }
 implement { name = "enabletrackers",     public = true, protected = true, actions = trackers.enable,     arguments = "optional" }

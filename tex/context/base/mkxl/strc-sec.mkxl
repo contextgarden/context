@@ -522,16 +522,16 @@
 
 % structure sections (the parents of chapter etc)
 
-\let\firstsectionname\empty
-\let\lastsectionname \empty
+\permanent\let\firstsectionname\empty
+\permanent\let\lastsectionname \empty
 
-\let\resetallstructuremarks            \relax
-\let\resetcurrentstructuremarks        \relax
-\let\resetcurrentstructuremarkswithpage\relax
+%aliased\let\resetallstructuremarks            \relax
+%aliased\let\resetcurrentstructuremarks        \relax
+\aliased\let\resetcurrentstructuremarkswithpage\relax
 
-\def\resetallstructuremarks            {\resetmarking[\firstsectionname]} % will become option (was \v!section-1)
-\def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
-%def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
+\permanent\protected\def\resetallstructuremarks            {\resetmarking[\firstsectionname]} % will become option (was \v!section-1)
+\permanent\protected\def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
+%permanent\protected\def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
 
 % We could use a commandhandler here but sections are somewhat special in the
 % sense that we have two ways of chaining: the main section (levels) as well
@@ -582,9 +582,9 @@
      \ifnum\maxstructuredepth>\plusone
        \normalexpanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
-     \xdef\lastsectionname{#1}%
+     \enforced\xdef\lastsectionname{#1}%
      \ifempty\firstsectionname
-        \glet\firstsectionname\lastsectionname
+        \enforced\glet\firstsectionname\lastsectionname
      \fi
    \fi}
 
@@ -1304,8 +1304,8 @@
 
 % list references, will be redone in lua when we need it
 
-\let\startlistreferences\relax
-\let\stoplistreferences \relax
+% \let\startlistreferences\relax
+% \let\stoplistreferences \relax
 
 % experimental
 

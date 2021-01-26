@@ -1320,12 +1320,12 @@
 %D %showsetup{showgrid}
 %D %showsetup{showusage}
 
-\fetchruntimecommand \showprint   \f!page_run
-\fetchruntimecommand \showframe   \f!page_run
-\fetchruntimecommand \showlayout  \f!page_run
-\fetchruntimecommand \showsetups  \f!page_run
-\fetchruntimecommand \showmargins \f!page_run
-\fetchruntimecommand \showgrid    \f!page_run
+\fetchmodulecommand \showprint   \f!page_run
+\fetchmodulecommand \showframe   \f!page_run
+\fetchmodulecommand \showlayout  \f!page_run
+\fetchmodulecommand \showsetups  \f!page_run
+\fetchmodulecommand \showmargins \f!page_run
+\fetchmodulecommand \showgrid    \f!page_run
 
 \glet\page_grids_add_to_box\gobbleoneargument
 \glet\page_grids_add_to_one\gobbleoneargument

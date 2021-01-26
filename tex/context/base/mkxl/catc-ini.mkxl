@@ -39,13 +39,13 @@
 %D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots for
 %D catcodes. (This active mess probably needs an update some day.)
 
-\installsystemnamespace {catcodelet} % let : \let
-\installsystemnamespace {catcodedef} % def : \def
-\installsystemnamespace {catcodeued} % ued : \protected\def
-\installsystemnamespace {catcodeget} %       \meaning
+\installsystemnamespace{catcodelet} % let : \let
+\installsystemnamespace{catcodedef} % def : \def
+\installsystemnamespace{catcodeued} % ued : \protected\def
+\installsystemnamespace{catcodeget} %       \meaning
 
-\installsystemnamespace {catcodetablet}
-\installsystemnamespace {catcodetablen}
+\installsystemnamespace{catcodetablet}
+\installsystemnamespace{catcodetablen}
 
 \newcount\c_syst_catcodes_n \c_syst_catcodes_n\zerocount % 0 = signal, so advance before allocate
 \newcount\c_syst_catcodes_a

@@ -105,7 +105,7 @@
      % case two
    \else
      \edef\v_spac_indentation_current{#1}% single entry in list
-     \let\normalindentation\v_spac_indentation_current
+     \let\v_spac_indentation_normal\v_spac_indentation_current
      \spac_indentation_setup_size
    \fi}
 
@@ -143,8 +143,8 @@
 \installindentingmethod \v!odd   {\c_spac_indentation_toggle_state\plusone}
 \installindentingmethod \v!even  {\c_spac_indentation_toggle_state\plustwo}
 
-\installindentingmethod \v!normal{\ifempty\normalindentation\else
-                                    \let\v_spac_indentation_current\normalindentation
+\installindentingmethod \v!normal{\ifempty\v_spac_indentation_normal\else
+                                    \let\v_spac_indentation_current\v_spac_indentation_normal
                                     \spac_indentation_setup_size
                                   \fi}
 
@@ -1192,14 +1192,14 @@
 \newsignal\d_spac_ignore_spaces_signal
 \newcount \c_spac_ignore_spaces
 
-\protected\def\startignorespaces
+\permanent\protected\def\startignorespaces
   {\advance\c_spac_ignore_spaces\plusone
    \ifcase\c_spac_ignore_spaces\or \ifhmode
      \hskip\d_spac_ignore_spaces_signal
    \fi \fi
    \ignorespaces}
 
-\protected\def\stopignorespaces
+\permanent\protected\def\stopignorespaces
   {\ifcase\c_spac_ignore_spaces \or
      \ifhmode
        \doloop\spac_ignore_spaces_body

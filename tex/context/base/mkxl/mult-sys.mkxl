@@ -566,11 +566,11 @@
 %D The setup files for the language, font, color and special subsystems have a common
 %D prefix. This means that we have at most three characters for unique filenames.
 
-\definefileconstant {colo_run} {colo-run}
-\definefileconstant {font_run} {font-run}
-\definefileconstant {page_run} {page-run}
-\definefileconstant {symb_run} {symb-run}
-\definefileconstant {publ_tra} {publ-tra}
+\definefileconstant {colo_run} {s-colors-run}
+\definefileconstant {font_run} {s-fonts-show}
+\definefileconstant {page_run} {s-layout-show}
+\definefileconstant {symb_run} {s-symbols-show}
+\definefileconstant {publ_tra} {s-publications-show}
 
 %D For figure inclusion we need(ed):
 

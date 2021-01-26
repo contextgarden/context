@@ -350,7 +350,7 @@
 
 \ifdefined\databox \else \newbox\databox \fi
 
-\unexpanded\gdef\testminimalbaseline#1% to be used in a 10 column tabulate
+\unexpanded\gdef\font_show_minimal_baseline#1% to be used in a 10 column tabulate
   {\setbox\databox\ruledhbox{#1}%
    \scratchdimen\htdp\databox
    \normalexpanded {
@@ -374,18 +374,14 @@
      \font_show_only_english\showminimalbaseline
    \else
      \starttabulate[|l|T|T|T|T|T|T|T|T|T|]
-       \testminimalbaseline{\hbox to \emwidth{\hss\showstruts\strut\hss}}%
-       \testminimalbaseline{(/)}%
-       \testminimalbaseline{\normalstartimath\frac{1}{2}x\normalsuperscript2\normalsubscript3\normalstopimath}
+       \font_show_minimal_baseline{\hbox to \emwidth{\hss\showstruts\strut\hss}}%
+       \font_show_minimal_baseline{(/)}%
+       \font_show_minimal_baseline{\normalstartimath\frac{1}{2}x\normalsuperscript2\normalsubscript3\normalstopimath}
      \stoptabulate
    \fi}
 
-\unexpanded\gdef\showkerning#1%
-  {\bgroup
-   \let\MPfshowcommand\ruledhbox
-   \setMPtext\s!dummy{#1}%
-   \startMPcode draw textext(\MPstring\s!dummy);\stopMPcode
-   \egroup}
+\unexpanded\gdef\showkerning
+  {\groupedcommandcs\showfontkerns\relax}
 
 \unexpanded\gdef\showcharratio
   {\dowithnextboxcontent

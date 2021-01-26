@@ -87,7 +87,7 @@
      \writestatus\m!system{duplicate system namespace '#1'}\wait
    \else
      \global\advance\c_syst_helpers_n_of_namespaces\plusone
-     \edefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+     \immutable\edefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
 %D \macros

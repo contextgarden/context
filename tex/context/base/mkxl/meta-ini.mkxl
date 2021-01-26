@@ -754,6 +754,8 @@
 \protected\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
 
+\mutable\let\usedMPgraphicname\empty
+
 \permanent\tolerant\protected\def\useMPgraphic#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname

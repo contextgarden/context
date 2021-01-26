@@ -1118,28 +1118,27 @@ The effect can depend on the font (and for Cambria one can use for instance \typ
 
 Sometimes you might want to act upon the size of a delimiter, something that is
 not really possible because of the fact that they are calculated {\em after} most
-has been typeset already. In the following example the all|-|zero specification
-is the trigger to make a fake box with the last delimiter dimensions and shift.
-It's an ugly hack but its relative simple and not intrusive implementation has no
-side effects. Any other heuristic solution would not satisfy possible demands
-anyway. Here is a rather low level example:
+has been typeset already. For this we have two keyword: \type {phantom} and
+\type {void}. In both cases the symbol is replaced by an empty rule, in the first
+case all three dimensions are preserved in the last case only the height and depth.
 
 \startbuffer
 \startformula
-\Uleft  \Udelimiter 5 0 "222B
-\frac{\frac{a}{b}}{\frac{c}{d}}
-\Uright \Udelimiter 5 0 "222B
-\kern-2\fontcharwd\textfont0 "222B
-\mathlimop{\Uvextensible \Udelimiter 0 0 0}_1^2 x
+    x\mathlimop{\Uvextensible         \Udelimiter 5 0 "222B}_1^2 x
+\stopformula
+\vskip-9ex
+\startformula \red
+    x\mathlimop{\Uvextensible phantom \Udelimiter 5 0 "222B}_1^2 x
+\stopformula
+\vskip-9ex
+\startformula \blue
+    x\mathlimop{\Uvextensible void    \Udelimiter 5 0 "222B}_1^2 x
 \stopformula
 \stopbuffer
 
 \typebuffer
 
-The last line, by passing zero values, results in a fake operator that has the
-dimensions of the previous delimiter. We can then backtrack over the (presumed)
-width and the two numbers become limit operators. As said, it's not pretty but it
-works.
+In typeset form this looks like:
 
 \getbuffer
 

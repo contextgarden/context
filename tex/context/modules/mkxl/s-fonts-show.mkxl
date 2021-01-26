@@ -1,0 +1,661 @@
+%D \module
+%D   [       file=font-run,
+%D        version=1998.09.11, % (second)
+%D        version=2001.02.20, % (third)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Runtime Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D [This code is hooked into the core macros and saves some format
+%D space. It needs a cleanup as it's real old derioved \MKII\ code]
+%D
+%D Better use \type{\bTABLE...\eTABLE}.
+
+\unprotect
+
+\gdef\module_fonts_show_prepare#1%
+  {\iftok{#1}\emptytoks
+      \edef\m_module_fonts_show_title{\the\bodyfontsize}%
+   \else
+      \switchtobodyfont[#1]%
+      \edef\m_module_fonts_show_title{#1}%
+   \fi
+   \ifempty\fontclass
+     \edef\m_module_fonts_show_title{[\m_module_fonts_show_title]}%
+   \orelse\ifx\fontclass\m_module_fonts_show_title
+     \edef\m_module_fonts_show_title{[\m_module_fonts_show_title]}%
+   \else
+     \edef\m_module_fonts_show_title{[\fontclass]\space[\m_module_fonts_show_title]}%
+   \fi}
+
+\permanent\protected\tolerant\gdef\showbodyfont[#1]%
+  {\ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox
+     {\module_fonts_show_prepare{#1}%
+      \def\next##1##2##3##4%
+        {\bTR
+           \bTD{##4}\type{##1}\eTD
+           \bTD{##4}##1##3{\tf   ##2}\eTD
+           \bTD{##4}##1##3{\tf   ##2}\eTD
+           \bTD{##4}##1##3{\bf   ##2}\eTD
+           \bTD{##4}##1##3{\sl   ##2}\eTD
+           \bTD{##4}##1##3{\it   ##2}\eTD
+           \bTD{##4}##1##3{\bs   ##2}\eTD
+           \bTD{##4}##1##3{\bi   ##2}\eTD
+           \bTD{##4}##1##3{\tfx  ##2}\eTD
+           \bTD{##4}##1##3{\tfxx ##2}\eTD
+           \bTD{##4}##1##3{\tfa  ##2}\eTD
+           \bTD{##4}##1##3{\tfb  ##2}\eTD
+           \bTD{##4}##1##3{\tfc  ##2}\eTD
+           \bTD{##4}##1##3{\tfd  ##2}\eTD
+         \eTR}%
+      \bTABLE[\c!align=\v!middle,\c!loffset=.5ex,\c!roffset=.5ex]
+         \bTR\bTD[\c!nx=14,\c!offset=1ex]\tttf{\m_module_fonts_show_title}\eTD\eTR
+         \next{}{}\type{}%
+         \next\rm{\languageparameter\c!text}\relax{\tfd\setstrut\strut}%
+         \next\ss{\languageparameter\c!text}\relax{\tfd\setstrut\strut}%
+         \next\tt{\languageparameter\c!text}\relax{\tfd\setstrut\strut}%
+         \next\mr{\languageparameter\c!text}\mathematics{\tfd\setstrut\strut}%
+      \eTABLE}%
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
+
+\permanent\protected\tolerant\gdef\showbodyfontenvironment[#1]%
+  {\ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox
+     {\module_fonts_show_prepare{#1}%
+      \def\next##1##2%
+        {\bTR
+           \bTD##1\bodyfontsizevariable{##2}\s!text\eTD
+           \bTD##1\bodyfontsizevariable{##2}\s!script\eTD
+           \bTD##1\bodyfontsizevariable{##2}\s!scriptscript\eTD
+           \bTD##1\bodyfontsizevariable{##2}\s!x\eTD
+           \bTD##1\bodyfontsizevariable{##2}\s!xx\eTD
+           \bTD##1\bodyfontsizevariable{##2}\v!small\eTD
+           \bTD##1\bodyfontsizevariable{##2}\v!big\eTD
+          %\bTD##1\bodyfontsizevariable{##2}\c!interlinespace\eTD
+         \eTR}%
+      \def\nextone{\next\relax}%
+      \bTABLE[\c!align=\v!middle,\c!loffset=.5ex,\c!roffset=.5ex]
+        \bTR\bTD[\c!nx=7,\c!offset=1ex]\tttf{\m_module_fonts_show_title}\eTD\eTR
+        \next{\tttf\thirdofthreearguments}\relax
+        \processbodyfontenvironmentlist{nextone}
+      \eTABLE}%
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
+
+\permanent\protected\tolerant\gdef\showfont[#1]#*[#2]%
+  {\bgroup
+   \iftok{#1}\emptytoks\else
+     \definedfont[#1]%
+     \ifdim2.5\emwidth>.05\hsize
+       \tx
+       \ifdim2.5\emwidth>.05\hsize
+         \txx
+       \fi
+     \fi
+   \fi
+   \integerdef\c_module_fonts_font_id\fontid\font
+   \doifelsenothing{#2}
+     {\module_fonts_show_font_indeed{#1}\zerocount}
+     {\doifelse{#2}\v!all
+        {\dostepwiserecurse\zerocount{255}\plusone
+           {\scratchcounterone  \recurselevel
+            \scratchcountertwo  \numexpr\scratchcounterone*256\relax
+            \scratchcounterthree\numexpr\scratchcountertwo+255\relax
+            \doloop
+              {\iffontchar\font\scratchcountertwo
+                 \module_fonts_show_font_indeed{#1}\scratchcounterone
+                 \exitloop
+               \orelse\ifnum\scratchcountertwo=\scratchcounterthree
+                 \exitloop
+               \else
+                 \advance\scratchcountertwo\plusone
+               \fi}}}
+        {\processcommalist[#2]{\module_fonts_show_font_indeed{#1}}}}%
+   \egroup}
+
+\gdef\module_fonts_show_font_indeed#1#2% made some 50% faster but still slow
+  {\bgroup
+   \ifinsidefloat\else\startbaselinecorrection\fi
+   \vbox\bgroup
+   \scratchdimenone  2.5\emwidth
+   \scratchdimentwo  2.4\emwidth
+   \scratchdimenthree2.3\emwidth
+   \edef\charplane{\number#2}%
+   \forgetall
+   \startoverlay % easier in cld
+     {\vbox
+        {\tf
+         \setstrut
+         \setfontid\c_module_fonts_font_id
+         \offinterlineskip
+         \unexpanded\def\wrapbox##1%
+           {\vpack to \scratchdimenone
+              {\vss
+               \hpack to \scratchdimenone
+                 {\setfontid\c_module_fonts_font_id
+                  \ifzeropt\interwordspace
+                    \setbox##1\hpack{\raise.5\dp##1\hpack{\lower.5\ht##1\copy##1}}%
+                    \ht##1\zeropoint
+                    \dp##1\zeropoint
+                  \else
+                    \ht##1\strutht
+                    \dp##1\strutdp
+                    \strut
+                  \fi
+                  \hss\copy##1\hss}
+               \vss}}%
+         \unexpanded\def\textbox##1%
+           {\vpack to \scratchdimentwo
+              {\hsize\scratchdimenthree
+               ##1%
+               \par}}%
+         \unexpanded\def\scratchnum
+           {\blue
+            \tinyfont
+            \hfill
+            \number\scratchcounter
+            \vfill
+            \octnumber\scratchcounter
+            \hfill
+            \lchexnumbers\scratchcounter}%
+         \setbox\scratchboxone\hpack{\tf\textbox{}}%
+         \setbox\scratchboxtwo\hpack{\tf\gray\vrule\s!width\exheight\s!height.5\exheight\s!depth.5\exheight}%
+         \setbox\scratchboxtwo\wrapbox\scratchboxtwo
+         \setbox\scratchboxthree\hpack
+           {\startoverlay
+              {\box\scratchboxtwo}
+              {\box\scratchboxone}
+            \stopoverlay}%
+         \dostepwiserecurse\zerocount{15}\plusone
+           {\scratchcounterone\recurselevel
+            \hpack
+              {\dostepwiserecurse\zerocount{15}\plusone
+                 {\scratchcountertwo  \recurselevel
+                  \scratchcounter     \numexpr\scratchcounterone*16+\scratchcountertwo\relax
+                  \scratchcounterthree\numexpr\charplane*256+\scratchcounter\relax
+                  \iffontchar\font\scratchcounterthree
+                    \setbox\scratchbox\ruledhpack{\char\scratchcounterthree}%
+                    \bgroup
+                    \tf
+                    \startoverlay
+                      {\wrapbox\scratchbox}
+                      {\textbox\scratchnum}
+                    \stopoverlay
+                    \egroup
+                  \else
+                    \copy\scratchboxthree
+                  \fi}}}%
+          \par}}
+     {\tf\basegrid[\c!nx=16,\c!ny=16,\c!dx=2.5,\c!dy=2.5,\c!unit=em]}
+   \stopoverlay
+   \nointerlineskip
+   \vskip2\points
+   % the \noexpand before \blank is needed for non etex
+   \edef\theshowfontspecs{name: {\noexpand\black\fontname\font}\quad plane: \charplane\enspace"\hexnumber\charplane}%
+   \tf % also sets em
+   \hbox to 40\emwidth{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
+   \egroup
+   \ifinsidefloat\else\stopbaselinecorrection\fi
+   \egroup}
+
+% \showfontstyle[modern][rm][tf][all] % #2, #3 and #4 can be 'all'
+%
+% no lists any more, so no 'all' any longer
+% no need to clean this up
+
+\permanent\protected\tolerant\gdef\showfontstyle[#1]#*[#2]#*[#3]#*[#4]
+  {\bgroup
+   \edef\m_module_fonts_show_styles      {\iftok{#2}\emptytoks\s!rm,\s!ss,\s!tt,\s!mm\else#2\fi}%
+   \edef\m_module_fonts_show_alternatives{\iftok{#3}\emptytoks\s!tf,\s!bf,\s!it,\s!sl,\s!bs,\s!bi\else#3\fi}%
+   \iftok{#1}\emptytoks\else
+     \switchtobodyfont[#1]
+   \fi
+   \raggedright
+   \protected\def\dododocommand##1%
+     {\dostepwiserecurse\zerocount{255}\plusone
+        {\scratchcounter\numexpr##1*256+\recurselevel\relax
+         \iffontchar\font\scratchcounter\relax
+           \char\scratchcounter
+           \space
+         \fi}}%
+   \protected\def\dodocommand##1##2%
+     {\starttextrule{\tttf #1 ##1 ##2}
+      \nobreak\getvalue{##2}%
+      \doifelsenothing{#4}
+        {\dododocommand\zerocount}
+        {\doifelse{#4}\v!all
+           {\dostepwiserecurse\zerocount{255}\plusone{\normalexpanded{\dododocommand{\recurselevel}}}}
+           {\processcommalist[#4]{\dododocommand}}}%
+      \par \nobreak
+      \stoptextrule}
+   \protected\def\docommand##1%
+     {\getvalue{##1}%
+      \processcommacommand[\m_module_fonts_show_alternatives]{\dodocommand{##1}}}
+   \processcommacommand[\m_module_fonts_show_styles]\docommand
+   \egroup}
+
+\permanent\protected\gdef\showligature#1%
+  {\hbox{\type{#1}\enspace\showglyphs#1}}
+
+\permanent\protected\tolerant\gdef\showligatures[#1]% we keep it around for compatibility reasons
+  {\bgroup
+   \def\module_fonts_show_ligature##1{\hbox{\showglyphs##1}}%
+   \doifsomething{#1}{\definedfont[#1*default]}%
+   \starttabulate[|*{7}{c|}]
+     \NC\type{ff}
+     \NC\type{fi}
+     \NC\type{fl}
+     \NC\type{ffi}
+     \NC\type{ffl}
+     \NC\type{--}
+     \NC\type{---}
+     \NC\NR
+     \NC\module_fonts_show_ligature{ff}
+     \NC\module_fonts_show_ligature{fi}
+     \NC\module_fonts_show_ligature{fl}
+     \NC\module_fonts_show_ligature{ffi}
+     \NC\module_fonts_show_ligature{ffl}
+     \NC\module_fonts_show_ligature{--}
+     \NC\module_fonts_show_ligature{---}
+     \NC\NR
+   \stoptabulate
+   \egroup}
+
+\permanent\protected\gdef\showkerning
+  {\groupedcommandcs\showfontkerns\relax}
+
+\permanent\gdef\module_fonts_char_ratio#1#2%
+  {\ifzeropt\nextboxhtdp\else
+     \cldcontext{\number#1/\number\nextboxhtdp}%
+   \fi}
+
+\permanent\protected\gdef\showcharratio
+  {\dowithnextboxcontent
+     {\switchtobodyfont[10pt]}%
+     {\starttabulate[|l|l|l|]
+        \NC height \NC \the\nextboxht \NC \module_fonts_char_ratio\nextboxht \NC \NR
+        \NC depth  \NC \the\nextboxdp \NC \module_fonts_char_ratio\nextboxdp \NC \NR
+      \stoptabulate}
+     \hbox}
+
+\permanent\protected\gdef\showfontparameters
+  {\starttabulate[|tl|l|]
+     \NC \type {\slantperpoint}    \NC \the\fontslantperpoint   \font \NC\NR
+     \NC \type {\interwordspace}   \NC \the\fontinterwordspace  \font \NC\NR
+     \NC \type {\interwordstretch} \NC \the\fontinterwordstretch\font \NC\NR
+     \NC \type {\interwordshrink}  \NC \the\fontinterwordshrink \font \NC\NR
+     \NC \type {\exheight}         \NC \the\fontexheight        \font \NC\NR
+     \NC \type {\emwidth}          \NC \the\fontemwidth         \font \NC\NR
+     \NC \type {\extraspace}       \NC \the\fontextraspace      \font \NC\NR
+   \stoptabulate}
+
+\unexpanded\gdef\module_fonts_show_minimal_baseline#1% to be used in a 10 column tabulate
+  {\setbox\scratchbox\ruledhbox{#1}%
+   \normalexpanded {
+     \NC \ruledhbox{#1}%
+     \NC ->
+     \NC \the\htdp\scratchbox
+     \NC =
+     \NC \the\ht\scratchbox
+     \NC +
+     \NC \the\dp\scratchbox
+     \NC \ifcmpdim\htdp\scratchbox\baselineskip <\or=\or>\fi
+     \NC \the\baselineskip
+     \NC (\ifdim\htdp\scratchbox>\baselineskip not \fi ok)
+     \NC \NR}}
+
+\permanent\protected\gdef\showminimalbaseline
+  {\starttabulate[|l|T|T|T|T|T|T|T|T|T|]
+     \module_fonts_show_minimal_baseline{\hbox to \emwidth{\hss\showstruts\strut\hss}}%
+     \module_fonts_show_minimal_baseline{(/)}%
+     \module_fonts_show_minimal_baseline{\normalstartimath\frac{1}{2}x\normalsuperscript2\normalsubscript3\normalstopimath}
+   \stoptabulate}
+
+\permanent\protected\tolerant\gdef\showfontstrip[#1]%
+  {\bgroup
+   \def\module_fonts_show_strip_a##1##2%
+     {\tttf\string##1}
+   \def\module_fonts_show_strip_b##1##2%
+     {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
+   \def\module_fonts_show_strip_c##1##2%
+     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+      \tt\tfx\the\ht\scratchbox}%
+   \def\module_fonts_show_strip_d##1##2%
+     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+      \tt\tfx\the\wd\scratchbox}%
+   \def\module_fonts_show_strip_indeed##1##2##3%
+     {\NC##2\rm{##3}\NC
+         ##2\ss{##3}\NC
+         ##2\tt{##3}\NC
+         ##2\mathematics{##3}\NC
+         \tttf##1\NR}
+   \starttabulate[|c|c|c|c|c|]
+     \module_fonts_show_strip_indeed\relax\module_fonts_show_strip_a\empty
+     \TB
+     \module_fonts_show_strip_indeed\relax\module_fonts_show_strip_b{xxxx}
+     \module_fonts_show_strip_indeed\relax\module_fonts_show_strip_b{12345}
+     \module_fonts_show_strip_indeed\relax\module_fonts_show_strip_b{(Agw)}
+     \TB
+     \module_fonts_show_strip_indeed{(x height)}\module_fonts_show_strip_c{x}
+     \module_fonts_show_strip_indeed{(m  width)}\module_fonts_show_strip_d{m}
+   \stoptabulate
+   \egroup}
+
+%D This is now moved here as there is no reason to have it in the core. Some of
+%D the helpers might move to a more protected namespace.
+
+\newbox\otfcollector
+
+\permanent\protected\gdef\startotfcollecting{\ctxlua{nodes.tracers.steppers.start()}}
+\permanent\protected\gdef\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
+\permanent\protected\gdef\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
+
+% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{الضَّرَّ} \page
+% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{لِلّٰهِ} \page
+
+\permanent\protected\gdef\showotfstepglyphs#1%
+  {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
+   \unhbox\otfcollector}
+
+\permanent\protected\gdef\otfstepspace
+  {\removeunwantedspaces
+   \hskip.5\emwidth \s!plus .125\emwidth \s!minus .125\emwidth\relax}
+
+\permanent\protected\gdef\otfstepcharcommand#1#2#3% font char class
+  {\otfstepspace
+   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
+   \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \ifzeropt\wd\scratchbox
+     \scratchwidth.125\onepoint
+     \scratchdistance\dimexpr(\emwidth/2-\scratchwidth)\relax
+     \kern\scratchdistance
+     \ruledhbox to \scratchwidth{\hss\box\scratchbox\hss}%
+     \kern-\scratchwidth
+     \hskip\scratchdistance
+   \else
+     \ruledhbox{\box\scratchbox}%
+   \fi
+   \otfstepspace}
+
+\permanent\protected\gdef\otfstepfontcommand#1#2#3% id font size
+  {\begingroup
+   \tttf #1: #2 @ \the\dimexpr#3\scaledpoint\relax
+   \endgroup}
+
+\permanent\protected\gdef\otfstepmessagecommand#1#2%
+  {\begingroup
+   \tttf\language\minusone
+   \veryraggedright
+   \forgetparindent
+   \forgeteverypar
+   \hangindent\emwidth
+   \hangafter\plusone
+   \dontleavehmode\detokenize{#1}\removeunwantedspaces
+   \doifsomething{#2}{,\space\detokenize{#2}}\endgraf
+   \endgroup
+   \blank}
+
+\permanent\protected\gdef\showotfstepfont
+  {\ctxlua{nodes.tracers.steppers.font("otfstepfontcommand")}}
+
+\permanent\protected\gdef\showotfstepchars#1%
+  {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand","otfstepspace")}}
+
+\permanent\protected\gdef\showotfstepmessages#1%
+  {\ctxlua{nodes.tracers.steppers.messages(#1,"otfstepmessagecommand",true)}}
+
+\permanent\protected\gdef\showotfstepfeatures
+  {\ctxlua{nodes.tracers.steppers.features()}}
+
+\permanent\protected\gdef\otfnoffeaturesteps
+  {\ctxlua{nodes.tracers.steppers.nofsteps()}}
+
+\newconstant\showotfstepsmode  \showotfstepsmode\plusfour
+
+\protected\gdef\showotfsteps_n
+  {\blank
+   \begingroup
+     \advance\leftskip6\emwidth
+     \showotfstepmessages\recurselevel
+     \par
+   \endgroup
+   \blank
+   \dontleavehmode
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth \bgroup
+       \bf
+       \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
+       \hss
+     \egroup
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \resetallattributes
+       \lefttoright
+       \dontleavehmode
+       \ifnum\recurselevel=\scratchcounter
+         \ruledhbox{\box\otfcompositionbox}%
+       \else
+         \ruledhbox{\showotfstepglyphs\recurselevel}%
+       \fi
+       \quad
+       \showotfstepchars\recurselevel
+       \hfill
+       \par
+     \egroup
+   \egroup
+   \blank}
+
+\permanent\protected\gdef\showotfsteps
+  {\begingroup
+   \veryraggedright
+   \forgetparindent
+   \forgeteverypar
+   \tt
+   \lefttoright
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth{\bf font\hss}%
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \language\minusone
+       \bf
+       \showotfstepfont
+     \egroup
+   \egroup
+   \blank
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth{\bf features\hss}%
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \language\minusone
+       \showotfstepfeatures
+     \egroup
+   \egroup
+   \blank
+   \scratchcounter\otfnoffeaturesteps\relax
+   \dorecurse\scratchcounter
+     {\ifcase\showotfstepsmode
+      \or % 1 = only first
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \fi
+      \or % 2 = only last
+        \ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi
+      \or % 3 = first and last
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \orelse\ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi
+      \else % everything
+        \showotfsteps_n
+      \fi}%
+   \endgroup}
+
+\permanent\protected\gdef\startotfsample
+  {\enabletrackers[otf.sample.silent]% beware, kind of global
+   \startotfcollecting
+   \begingroup
+   \veryraggedright
+   \forgetparindent
+   \forgeteverypar}
+
+\permanent\protected\gdef\stopotfsample
+  {\endgroup
+   \stopotfcollecting
+   \disabletrackers[otf.sample]% beware, kind of global: otf.sample
+   \showotfsteps
+   \resetotfcollecting}
+
+\newbox\otfcompositionbox
+
+% this should go in spac-ali:
+
+\installcorenamespace{otfcompositiondir}
+
+\gletcsname\??otfcompositiondir  -1\endcsname\righttoleft
+\gletcsname\??otfcompositiondir r2l\endcsname\righttoleft
+\gletcsname\??otfcompositiondir l2r\endcsname\lefttoright
+\gletcsname\??otfcompositiondir  +1\endcsname\lefttoright
+\gletcsname\??otfcompositiondir   1\endcsname\lefttoright
+
+\permanent\protected\gdef\setotfcompositiondirection#1%
+ {\begincsname\??otfcompositiondir#1\endcsname}
+
+\permanent\protected\gdef\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
+  {\begingroup
+   \forgetparindent
+   \forgeteverypar
+ % \setupcolors[\c!state=\v!start]%
+   \setupalign[\v!verytolerant,\v!flushleft]%
+   \startotfsample
+   \nohyphens
+   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\setotfcompositiondirection{#2}\relax#3}%
+   \stopotfsample
+   \endgroup}
+
+%D \startbuffer
+%D \startotfcompositionlist{Serif*default @ 11pt}{l2r}%
+%D     \showotfcompositionsample{effe}
+%D \stopotfcompositionlist
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\permanent\protected\gdef\showotfcompositionlist#1#2#3%
+  {\begingroup
+   \definedfont[#1]%
+   \setbox\scratchbox\hbox\bgroup
+     \setotfcompositiondirection{#2}%
+     #3%
+   \egroup
+   \strut
+   \def|##1|{\kern\onepoint\string|\kern\onepoint##1\kern\onepoint\string|\kern\onepoint}%
+   \cldcontext{nodes.listtoutf(tex.box[\number\scratchbox].list,"{\\kern\\onepoint}",true)}%
+   \endgroup}
+
+\mutable\glet\showotfcompositionsample\gobbleoneargument
+
+\permanent\protected\gdef\startotfcompositionlist#1#2#3\stopotfcompositionlist
+  {\begingroup
+   \protected\def\showotfcompositionsample##1%
+     {\NC\type{##1}%
+      \NC\showotfcompositionlist{Mono}{#2}{##1}%
+      \NC\showotfcompositionlist{#1}{#2}{##1}%
+      \NC\definedfont[#1]##1%
+      \NC\NR}%
+   \starttabulate[|||||]%
+     #3%
+   \stoptabulate
+   \endgroup}
+
+\aliased\glet\stopotfcompositionlist\relax
+
+%D Till here.
+
+\permanent\protected\def\showbodyfontstate
+  {\dontleavehmode
+   \start
+   \infofont
+   [fontclass: \fontclass,\space
+    fontbody:  \fontbody ,\space
+    fontface:  \fontface ,\space
+    fontsize:  \fontsize ]%
+   \stop}
+
+\protect
+
+\continueifinputfile{s-fonts-show.mkxl}
+
+\setupwhitespace[big]
+
+\dontcomplain
+
+\starttext
+
+\startsubject[title=\type{\showkerning}]
+    \showkerning{Just a small sentence with hopefully some kerns.}
+\stopsubject
+
+\startsubject[title=\type{\showcharratio}]
+    \showcharratio{testg}
+\stopsubject
+
+\startsubject[title=\type{\showfontparameters}]
+    \showfontparameters
+\stopsubject
+
+\startsubject[title=\type{\showminimalbaseline}]
+    \showminimalbaseline
+\stopsubject
+
+\startsubject[title=\type{\showfontstrip}]
+    \showfontstrip
+\stopsubject
+
+\startsubject[title=\type{\showbodyfont}]
+    \showbodyfont
+\stopsubject
+
+\startsubject[title=\type{\showbodyfontenvironment}]
+    \showbodyfontenvironment
+\stopsubject
+
+\startsubject[title=\type{\showligature}]
+    \showligature{fi}
+    \showligature{fx}
+\stopsubject
+
+\startsubject[title=\type{\showligatures}]
+    \showligatures
+\stopsubject
+
+\startsubject[title=\type{\showfontstyle}]
+    \showfontstyle[][rm][tf][all]
+\stopsubject
+
+\startsubject[title=\type{\showfont}]
+    \showfont
+\stopsubject
+
+\startsubject[title=\type{\showbodyfontstate}]
+    \showbodyfontstate
+\stopsubject
+
+\page
+
+\startsubject[title=\type{\showotfcomposition}]
+    \showotfcomposition{arabtype*arabic at 48pt}{-1}{الضَّرَّ}
+    \page
+    \showotfcomposition{arabtype*arabic at 48pt}{-1}{لِلّٰهِ}
+    \page
+\stopsubject
+
+\stoptext

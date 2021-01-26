@@ -106,9 +106,9 @@
 %D     \NC \type{\operatingsystem}   \NC \operatingsystem   \NC \NR
 %D \stoptabulate
 
-\appendtoks
-    \edef\outputresolution{\directsystemparameter\c!resolution}%
-\to \everysetupsystem
+% \appendtoks
+%     \edef\outputresolution{\directsystemparameter\c!resolution}%
+% \to \everysetupsystem
 
 %D The system modes set by the setup command can be used in situations like:
 %D
@@ -142,7 +142,7 @@
 \setupsystem
   [\c!directory=,
    \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
-   \c!resolution=600,% in dpi, no unit in mkiv
+ % \c!resolution=600,% in dpi, no unit in mkiv, not used in lmtx
  % \c!random=, % obsolete here
  % \c!file=\jobname,
  % \c!inputfile=\outputfilename,

@@ -69,7 +69,7 @@
 \let\m_font_file\empty
 
 \def \defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
-\edef\nullfontname   {\fontname\nullfont}
+%edef\nullfontname   {\fontname\nullfont}
 
 \permanent\protected\def\definefontsynonym[#name]#spacer[#file]%
   {\edef\m_font_name{#name}%

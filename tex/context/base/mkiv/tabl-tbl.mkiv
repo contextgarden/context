@@ -224,6 +224,9 @@
 \newconstant     \c_tabl_tabulate_localcolorspan
 \newconstant     \c_tabl_tabulate_modus
 
+%newconditional  \c_tabl_pre_is_set
+\newconditional  \c_tabl_post_is_set
+
 \let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
 
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
@@ -424,9 +427,9 @@
    \fi\fi}
 
 % \unexpanded % we can expand this one
-\def\tabl_tabulate_inject_post_skip#1%
+\def\tabl_tabulate_inject_post_skip#1#2%
   {\ifdim#1>\zeropoint
-     \kern#1\relax % was \hskip
+     \kern\ifnum\c_tabl_tabulate_columns=\c_tabl_tabulate_nofcolumns#2\else#1\fi\relax
    \else\ifnum\c_tabl_tabulate_columns=\c_tabl_tabulate_nofcolumns
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_last\else
@@ -516,7 +519,9 @@
         \egroup
         \aligntab
         \noexpand\dostoptagged
-        \tabl_tabulate_inject_post_skip{\the\dimexpr\s_tabl_tabulate_post}% get rid of plus
+        \tabl_tabulate_inject_post_skip
+          {\the\ifconditional\c_tabl_post_is_set\s_tabl_tabulate_post\else\s_tabl_tabulate_last\fi}%
+          {\the\s_tabl_tabulate_post}%
         \alignmark\alignmark
    }%
    \toksapp\t_tabl_tabulate_dummy{\NC}%
@@ -527,7 +532,9 @@
      \s_tabl_tabulate_post\zeropoint
    \fi
   %\let\gettabulateexit\dogettabulateexit % still needed ?
-   \d_tabl_tabulate_width\zeropoint}
+   \d_tabl_tabulate_width\zeropoint
+   %setfalse\c_tabl_pre_is_set
+   \setfalse\c_tabl_post_is_set}
 
 \unexpanded\def\installtabulatepreambleoption#1#2%
   {\setvalue{\??tabulatepreamble\string#1}{#2}}%
@@ -622,17 +629,21 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_preskip#1%
-  {\doifelsenumber{#1}%
+  {%settrue\c_tabl_pre_is_set
+   \doifelsenumber{#1}%
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_posskip#1%
-  {\doifelsenumber{#1}%
+  {\settrue\c_tabl_post_is_set
+   \doifelsenumber{#1}%
      {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
-  {\doifelsenumber{#1}%
+  {%settrue\c_tabl_pre_is_set
+   \settrue\c_tabl_post_is_set
+   \doifelsenumber{#1}%
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
 
@@ -803,6 +814,8 @@
    \c_tabl_tabulate_modus\zerocount
    \setfalse\c_tabl_tabulate_pwidth_set
    \setfalse\c_tabl_tabulate_reshape
+   %setfalse\c_tabl_pre_is_set
+   \setfalse\c_tabl_post_is_set
    \t_tabl_tabulate_before\emptytoks
    \t_tabl_tabulate_after\emptytoks
    \t_tabl_tabulate_bmath\emptytoks

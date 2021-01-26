@@ -51,6 +51,9 @@
 
 % maybe use chardefs
 
+\mutable\let\currentbidimode\empty
+\mutable\let\currentbidistamp\empty
+
 \def\typo_dir_get_mode
   {\def\currentbidimode{\clf_getbidimode % test edef
         scope  {\directionsparameter\c!bidi}%

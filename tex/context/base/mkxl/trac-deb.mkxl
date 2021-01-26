@@ -18,8 +18,6 @@
 
 \unprotect
 
-\permanent\protected\def\breakpoint{\showdebuginfo\wait}
-
 % \showtrackers           % defined at the lua end
 % \enabletrackers    [#1] % defined at the lua end
 % \disabletrackers   [#1] % defined at the lua end
@@ -33,7 +31,6 @@
 % \enableexperiments [#1] % defined at the lua end
 % \disableexperiments[#1] % defined at the lua end
 %
-% \showdebuginfo          % defined at the lua end
 % \overloaderror          % defined at the lua end
 %
 % \showlogcategories      % defined at the lua end
