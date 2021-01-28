@@ -35,9 +35,10 @@
 \def\syst_textracers_enable #1{\begincsname  enabletracer#1\endcsname}
 \def\syst_textracers_disable#1{\begincsname disabletracer#1\endcsname}
 
-% The next one is for Taco, although we can use directives as well:
+%D The next one is for Taco, although we can use directives as well which is the
+%D preferred way!
 
-\protected\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
+\permanent\protected\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
 
 %D This is not really a tracker but for decades it lived in my \type {cont-loc}
 %D file. I moved it here because I wanted someone else to use it. This macro is not

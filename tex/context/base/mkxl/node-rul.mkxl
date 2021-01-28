@@ -82,8 +82,8 @@
 
 \newtoks\t_node_rules_checklist
 
-\let\c_node_rules_index\relax % temporary synonym
-\let\p_node_rules_color\empty
+\mutable\let\c_node_rules_index\relax % temporary synonym (can be shared)
+\mutable\let\p_node_rules_color\empty
 
 \aliased\let\setupbars\setupbar
 
@@ -363,7 +363,7 @@
 
 \newtoks\t_node_shifts_checklist
 
-\let\c_node_shifts_index\relax % temporary synonym
+\mutable\let\c_node_shifts_index\relax % temporary synonym (can be shared)
 
 \let\setupshifts\setupshift
 
@@ -472,7 +472,7 @@
 
 \newtoks\t_node_linefiller_checklist
 
-\let\c_node_linefiller_index\relax % temporary synonym
+\mutable\let\c_node_linefiller_index\relax % temporary synonym (can be shared)
 
 \aliased\let\setuplinefillers\setuplinefiller
 

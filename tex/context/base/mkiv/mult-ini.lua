@@ -308,7 +308,7 @@ local function gss(s)
     contextsprint(vrbcatcodes,getsetupstring(s))
 end
 
-implement { -- will b eoverloaded
+implement { -- will be overloaded
     name      = "getsetupstring",
     actions   = gss,
     arguments = "string",

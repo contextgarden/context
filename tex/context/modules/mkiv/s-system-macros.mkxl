@@ -30,6 +30,7 @@
 \enablemode[texmacros]
 % \enablemode[metapostmacros]
 \enablemode[notmarked]
+% \enablemode[everything]
 
 \startmodule[system-macros]
 
@@ -101,12 +102,13 @@
 
         require("mtx-interface")
 
-        local data    = scripts.interface.editor("data")
-        local files   = data and data.common and data.common.filenames or { }
-        local flagged = 0
-        local total   = 0
-        local list    = tex.hashtokens()
-        local all     = not tex.modes.notmarked
+        local data       = scripts.interface.editor("data")
+        local files      = data and data.common and data.common.filenames or { }
+        local flagged    = 0
+        local total      = 0
+        local list       = tex.hashtokens()
+        local all        = not tex.modes.notmarked
+        local everything = tex.modes.everything
 
         table.sort(list)
 
@@ -128,7 +130,7 @@
                     local cscommand  = gsub(v.cmdname or "","_"," ")
                     local undefined  = cscommand == "undefined cs"
                     local marked     = (dealtwith and "+") or (whatever and "-") or (instance and "!")
-                    if (all or not marked) and not find(k,"^[pvm]_") and not find(k,"^![tT]") then
+                    if everything or ((all or not marked) and not find(k,"^[pvm]_") and not find(k,"^![tT]")) then
                         local parameters = v.parameters
                         local noaligned  = v.noaligned  and "noaligned"
                         local filename   = files[k]
@@ -229,6 +231,7 @@
             local types      = metapost.types
             local parameters = metapost.knownparameters
             local procodes   = mplib.propertycodes
+            local everything = tex.modes.everything
 
             context.startcolumns { n = 5, distance = "1em" }
                 context.nohyphens(false)
@@ -259,7 +262,7 @@
                         elseif property == "mutable"  then
                             context.bf(false)
                             context.lightmagenta(false)
-                        elseif not find(name,"^%a+_") then
+                        elseif everything or not find(name,"^%a+_") then
                             -- todo:
                             if vardef then
                                 context.bf(false)

@@ -82,8 +82,9 @@
 \installcorenamespace{mpclip}
 
 \newtoks \t_meta_initializations  % tex, each
-\def     \t_meta_inclusions     {\csname\??mpinclusions \currentMPinstance\endcsname} % token register
-\def     \t_meta_definitions    {\csname\??mpdefinitions\currentMPinstance\endcsname} % token register
+
+\permanent\def\t_meta_inclusions {\csname\??mpinclusions \currentMPinstance\endcsname} % token register
+\permanent\def\t_meta_definitions{\csname\??mpdefinitions\currentMPinstance\endcsname} % token register
 
 %D The next command is, of course, dedicated to Mojca, who needs it for gnuplot.
 %D Anyway, the whole multiple engine mechanism is to keep her gnuplot from

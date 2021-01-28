@@ -265,7 +265,7 @@
     \global\advance\c_tabl_tabulate_nofrealrows\plusone
 \to \t_tabl_tabulate_every_real_row
 
-\def\b_tabl_tabulate_current#1%
+\permanent\def\b_tabl_tabulate_current#1%
   {\csname\??tabulatebox\number#1\endcsname} % beware, a synonym
 
 \def\tabl_tabulate_initialize_boxes#1%
@@ -1550,7 +1550,7 @@
      \expandafter\ignorespaces % interferes with the more tricky hooks
    \fi}
 
-\protected\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
+\protected\def\tabl_tabulate_set_quick#1% see \startlegend \startgiven (for the moment still public)
   {\enforced\let#1\tabl_tabulate_column_inject_auto
    \enforced\let\\\tabl_tabulate_column_inject_auto} % brrr, will go
 
@@ -1658,7 +1658,6 @@
   {\begingroup
    \clf_enablebackgroundalign % was \node_backgrounds_align_initialize
    \glet\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
-   \global\settrue\c_tabl_tabulate_has_colors
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
@@ -2174,8 +2173,8 @@
    \s_tabl_tabulate_last\s_tabl_tabulate_first
    \s_tabl_tabulate_pre\zeropoint
    \s_tabl_tabulate_post\zeropoint
-   %setfalse\s_tabl_pre_is_set
-   \setfalse\s_tabl_post_is_set
+   %setfalse\c_tabl_pre_is_set
+   \setfalse\c_tabl_post_is_set
    \global\c_tabl_tabulate_columns\zerocount
    \global\c_tabl_tabulate_nofauto\zerocount
    \global\c_tabl_tabulate_noflines\zerocount
@@ -2535,7 +2534,7 @@
 
 \setuptabulate
   [\v!legend]
-  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
+  [\c!unit=.75em,\c!inner=\tabl_tabulate_set_quick\leg,EQ={=}]
 
 \definetabulate
   [\v!legend][\v!two]
@@ -2547,7 +2546,7 @@
 
 \setuptabulate
   [\v!fact]
-  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
+  [\c!unit=.75em,\c!inner=\tabl_tabulate_set_quick\fact,EQ={=}]
 
 %D Another example:
 %D

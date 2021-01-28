@@ -257,10 +257,14 @@
 \permanent\protected\def\chemicalbottext#1{\global\settrue\c_chem_some_text\gdef\m_chem_bot_text{#1}\ignorespaces}
 \permanent\protected\def\chemicalmidtext#1{\global\settrue\c_chem_some_text\gdef\m_chem_mid_text{#1}\ignorespaces}
 
+\mutable\let\toptext\empty
+\mutable\let\bottext\empty
+\mutable\let\midtext\empty
+
 \appendtoks
-    \enforced\let\toptext\chemicaltoptext \glet\m_chem_top_text\empty
-    \enforced\let\bottext\chemicalbottext \glet\m_chem_bot_text\empty
-    \enforced\let\midtext\chemicalmidtext \glet\m_chem_mid_text\empty
+    \let\toptext\chemicaltoptext \glet\m_chem_top_text\empty
+    \let\bottext\chemicalbottext \glet\m_chem_bot_text\empty
+    \let\midtext\chemicalmidtext \glet\m_chem_mid_text\empty
     \global\setfalse\c_chem_some_text
 \to \everystructurechemical
 

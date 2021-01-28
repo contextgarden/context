@@ -1037,6 +1037,8 @@
      \fi
    \fi}
 
+\let\syst_process_action_in_set_all\relax
+
 \tolerant\protected\def\syst_helpers_process_all_actions_in_set_indeed[#1]#*[#2]%
   {\globalpushmacro\syst_process_action_in_set_all
    \def\syst_process_action_in_set##1%
@@ -1145,7 +1147,7 @@
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_else_yes
 %       \fi}%
-%    \normalexpanded{\syst_helpers_do_do_if_in_string_else#1}\e_o_t\ignorearguments\ignorearguments}
+%    \normalexpanded{\syst_helpers_do_do_if_in_string_else#1}\s!e_o_t_token\ignorearguments\ignorearguments}
 %
 % \protected\def\syst_helpers_do_if_in_string_else_delimited#1% ##2 can be {abc}
 %   {\normalexpanded{\protected\def\syst_helpers_do_do_if_in_string_else##1,\m_syst_sub_string,##2}%
@@ -1155,7 +1157,7 @@
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_else_yes
 %       \fi}%
-%    \normalexpanded{\syst_helpers_do_do_if_in_string_else,#1,}\e_o_t\ignorearguments\ignorearguments}
+%    \normalexpanded{\syst_helpers_do_do_if_in_string_else,#1,}\s!e_o_t_token\ignorearguments\ignorearguments}
 %
 % \protected\def\doifinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
@@ -1173,7 +1175,7 @@
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_yes
 %       \fi}%
-%    \normalexpanded{\syst_helpers_do_do_if_in_string#1}\e_o_t\ignorearguments\ignorearguments}
+%    \normalexpanded{\syst_helpers_do_do_if_in_string#1}\s!e_o_t_token\ignorearguments\ignorearguments}
 %
 % \protected\def\doifnotinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
@@ -1191,7 +1193,7 @@
 %       \or
 %         \expandafter\syst_helpers_do_if_not_in_string_yes
 %       \fi}%
-%    \normalexpanded{\syst_helpers_do_do_if_not_in_string#1}\e_o_t\ignorearguments\ignorearguments}
+%    \normalexpanded{\syst_helpers_do_do_if_not_in_string#1}\s!e_o_t_token\ignorearguments\ignorearguments}
 %
 % \def\syst_helpers_do_if_in_string_else_yes#0\ignorearguments\ignorearguments#2#0{#2}
 % \def\syst_helpers_do_if_in_string_else_nop#0\ignorearguments#0#3{#3}
@@ -2875,11 +2877,11 @@
 \def\syst_helpers_dodo_global
   {\resetglobal\global}
 
-\def\saveglobal
+\permanent\protected\def\saveglobal
   {\let\syst_helpers_dodo_global\dodoglobal
    \let\syst_helpers_redo_global\redoglobal}
 
-\def\restoreglobal
+\permanent\protected\def\restoreglobal
   {\enforced\let\redoglobal\syst_helpers_redo_global
    \enforced\let\dodoglobal\syst_helpers_dodo_global}
 
@@ -6355,20 +6357,20 @@
 \permanent\protected\def\ignoreimplicitspaces
   {\doifelsenextchar\relax\relax\relax}
 
-%D \macros
-%D   {processwords}
-%D
-%D Not that sophisticated but sometimes users (like in metafun).
-
-%D This will be overloaded.
-
-\def\syst_helpers_process_word#1 #2\_e_o_w_
-  {\doifsomething{#1}{\processword{#1} \syst_helpers_process_word#2 \_e_o_w_}}
-
-\def\processwords#1%
-  {\syst_helpers_process_word#1 \_e_o_w_}% no \unskip
-
-\let\processword\relax
+% %D \macros
+% %D   {processwords}
+% %D
+% %D Not that sophisticated but sometimes users (like in metafun).
+%
+% %D This will be overloaded.
+%
+% \def\syst_helpers_process_word#1 #2\s!e_o_t_token
+%   {\doifsomething{#1}{\processword{#1} \syst_helpers_process_word#2 \s!e_o_t_token}}
+%
+% \def\processwords#1%
+%   {\syst_helpers_process_word#1 \s!e_o_t_token}% no \unskip
+%
+% \let\processword\relax
 
 %D \macros
 %D   {startnointerference}
@@ -6418,25 +6420,22 @@
 \def\syst_helpers_direct_double_empty_one_nop#1{#1[][]}
 \def\syst_helpers_direct_double_empty_two_nop#1[#2]{#1[#2][]}
 
-%D Used in math definitions (in an \type {\edef}):
-
-%D \startbuffer
-%D [\docheckedpair{}]
-%D [\docheckedpair{a}]
-%D [\docheckedpair{a,b}]
-%D [\docheckedpair{a,b,c}]
-%D \stopbuffer
-%D
-%D \typebuffer \startlines \getbuffer \stoplines
-
-\permanent\def\docheckedpair#1%
-  {\syst_helpers_checked_pair#1,,\_o_e_p_}
-
-% \def\syst_helpers_checked_pair#1,#2,#0\_o_e_p_
+% %D Used in math definitions (in an \type {\edef}). This will be replaced.
+% %D
+% %D \startbuffer
+% %D [\docheckedpair{}]
+% %D [\docheckedpair{a}]
+% %D [\docheckedpair{a,b}]
+% %D [\docheckedpair{a,b,c}]
+% %D \stopbuffer
+% %D
+% %D \typebuffer \startlines \getbuffer \stoplines
+%
+% \permanent\def\docheckedpair#1%
+%   {\syst_helpers_checked_pair#1,,\s!e_o_t_token}
+%
+% \def\syst_helpers_checked_pair#1,#2,#-\s!e_o_t_token
 %   {#1,#2}
-
-\def\syst_helpers_checked_pair#1,#2,#-\_o_e_p_
-  {#1,#2}
 
 %D Here are some nasty helpers. They can be used to fill often expanded token
 %D lists efficiently (see tabulate for an example).

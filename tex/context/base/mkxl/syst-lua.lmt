@@ -63,7 +63,7 @@ local ctx_gobbleoneargument    = context.gobbleoneargument
 
 implement { -- will be overloaded later
     name      = "writestatus",
-    arguments = "2 strings",
+    arguments = "2 arguments",
     actions   = logs.status,
 }
 

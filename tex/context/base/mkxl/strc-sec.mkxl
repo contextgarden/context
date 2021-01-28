@@ -1298,9 +1298,7 @@
    \getsomefullstructurenumber{\thenamedheadlevel{#1}}{#2}%
    \endgroup}
 
-\aliased\let\sectioncountervalue\structurevalue
-
-\def\currentheadtext{obsolete,\space use marks}
+% \mutable\def\currentheadtext{obsolete,\space use marks}
 
 % list references, will be redone in lua when we need it
 

@@ -387,8 +387,8 @@
       \fi}%
    \tempstring}
 
-\def\newtableformatkey    #1{\setvalue{!tk<\string#1>}}
-\def\doreadtableformatkeys#1{\getvalue{!tk<\string#1>}}
+\permanent\protected\def\newtableformatkey    #1{\defcsname   !tk<\string#1>\endcsname}
+\permanent          \def\doreadtableformatkeys#1{\begincsname !tk<\string#1>\endcsname}
 
 % Key "b":  b{TOKENS} adds TOKENS to the left of (before) the template
 
@@ -892,7 +892,7 @@
 \let\m_tabl_table_vrule_color\empty
 \let\m_tabl_table_hrule_color\empty
 
-\def\do!ttInsertVrule
+\def\tabl_table_insert_vrule
   {\vrule\s!width
      \ifnum\!tgCode=\plusone
        \ifempty\!tgValue
@@ -916,10 +916,10 @@
      \switchtocolor[\m_tabl_table_vrule_color]%
    \fi
    \ifcase\c_tabl_table_n_of_vrules\or
-     \do!ttInsertVrule
+     \tabl_table_insert_vrule
      \unskip
    \else
-     \dorecurse\c_tabl_table_n_of_vrules\do!ttInsertVrule
+     \dorecurse\c_tabl_table_n_of_vrules\tabl_table_insert_vrule
      \global\c_tabl_table_n_of_vrules\plusone
      \unskip
    \fi

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Runner}
 
-\registerctxluafile{cont-run}{}
+\registerctxluafile{cont-run}{autosuffix}
 
 % \enabletrackers[system.synctex.visualize]
 % \enabletrackers[system.synctex.xml]

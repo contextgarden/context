@@ -1,0 +1,395 @@
+if not modules then modules = { } end modules ['font-mps'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tostring   = tostring
+local concat     = table.concat
+local formatters = string.formatters
+
+-- QP0 [QP1] QP2 => CP0 [CP1 CP2] CP3
+
+-- CP0 = QP0
+-- CP3 = QP2
+--
+-- CP1 = QP0 + 2/3 *(QP1-QP0)
+-- CP2 = QP2 + 2/3 *(QP1-QP2)
+
+fonts               = fonts or { }
+local metapost      = fonts.metapost or { }
+fonts.metapost      = metapost
+
+local f_moveto      = formatters["(%N,%N)"]
+local f_lineto      = formatters["--(%N,%N)"]
+local f_curveto     = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
+local s_cycle       = "--cycle"
+
+local f_nofill      = formatters["nofill %s;"]
+local f_dofill      = formatters["fill %s;"]
+
+local f_draw_trace  = formatters["drawpathonly %s;"]
+local f_draw        = formatters["draw %s;"]
+
+local f_boundingbox = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
+local f_vertical    = formatters["((%N,%N)--(%N,%N))"]
+
+function metapost.boundingbox(d,factor)
+    local bounds = d.boundingbox
+    local factor = factor or 1
+    local llx    = factor*bounds[1]
+    local lly    = factor*bounds[2]
+    local urx    = factor*bounds[3]
+    local ury    = factor*bounds[4]
+    return f_boundingbox(llx,lly,urx,lly,urx,ury,llx,ury)
+end
+
+function metapost.widthline(d,factor)
+    local bounds = d.boundingbox
+    local factor = factor or 1
+    local lly    = factor*bounds[2]
+    local ury    = factor*bounds[4]
+    local width  = factor*d.width
+    return f_vertical(width,lly,width,ury)
+end
+
+function metapost.zeroline(d,factor)
+    local bounds = d.boundingbox
+    local factor = factor or 1
+    local lly    = factor*bounds[2]
+    local ury    = factor*bounds[4]
+    return f_vertical(0,lly,0,ury)
+end
+
+function metapost.paths(d,xfactor,yfactor)
+    local sequence = d.sequence
+    local segments = d.segments
+    local list     = { }
+    local path     = { } -- recycled
+    local size     = 0
+    local xfactor  = xfactor or 1
+    local yfactor  = yfactor or xfactor
+    if sequence then
+        local i = 1
+        local n = #sequence
+        while i < n do
+            local operator = sequence[i]
+            if operator == "m" then -- "moveto"
+                if size > 0 then
+                    size = size + 1
+                    path[size] = s_cycle
+                    list[#list+1] = concat(path,"",1,size)
+                    size = 1
+                else
+                    size = size + 1
+                end
+                path[size] = f_moveto(xfactor*sequence[i+1],yfactor*sequence[i+2])
+                i = i + 3
+            elseif operator == "l" then -- "lineto"
+                size = size + 1
+                path[size] = f_lineto(xfactor*sequence[i+1],yfactor*sequence[i+2])
+                i = i + 3
+            elseif operator == "c" then -- "curveto"
+                size = size + 1
+                path[size] = f_curveto(xfactor*sequence[i+1],yfactor*sequence[i+2],xfactor*sequence[i+3],yfactor*sequence[i+4],xfactor*sequence[i+5],yfactor*sequence[i+6])
+                i = i + 7
+            elseif operator =="q" then -- "quadraticto"
+                size = size + 1
+                -- first is always a moveto
+                local l_x = xfactor*sequence[i-2]
+                local l_y = yfactor*sequence[i-1]
+                local m_x = xfactor*sequence[i+1]
+                local m_y = yfactor*sequence[i+2]
+                local r_x = xfactor*sequence[i+3]
+                local r_y = yfactor*sequence[i+4]
+                path[size] = f_curveto (
+                    l_x + 2/3 * (m_x-l_x),
+                    l_y + 2/3 * (m_y-l_y),
+                    r_x + 2/3 * (m_x-r_x),
+                    r_y + 2/3 * (m_y-r_y),
+                    r_x, r_y
+                )
+                i = i + 5
+            else
+                -- weird
+                i = i + 1
+            end
+        end
+    elseif segments then
+        for i=1,#segments do
+            local segment  = segments[i]
+            local operator = segment[#segment]
+            if operator == "m" then -- "moveto"
+                if size > 0 then
+                    size = size + 1
+                    path[size] = s_cycle
+                    list[#list+1] = concat(path,"",1,size)
+                    size = 1
+                else
+                    size = size + 1
+                end
+                path[size] = f_moveto(xfactor*segment[1],yfactor*segment[2])
+            elseif operator == "l" then -- "lineto"
+                size = size + 1
+                path[size] = f_lineto(xfactor*segment[1],yfactor*segment[2])
+            elseif operator == "c" then -- "curveto"
+                size = size + 1
+                path[size] = f_curveto(xfactor*segment[1],yfactor*segment[2],xfactor*segment[3],yfactor*segment[4],xfactor*segment[5],yfactor*segment[6])
+            elseif operator =="q" then -- "quadraticto"
+                size = size + 1
+                -- first is always a moveto
+                local prev = segments[i-1]
+                local l_x = xfactor*prev[#prev-2]
+                local l_y = yfactor*prev[#prev-1]
+                local m_x = xfactor*segment[1]
+                local m_y = yfactor*segment[2]
+                local r_x = xfactor*segment[3]
+                local r_y = yfactor*segment[4]
+                path[size] = f_curveto (
+                    l_x + 2/3 * (m_x-l_x),
+                    l_y + 2/3 * (m_y-l_y),
+                    r_x + 2/3 * (m_x-r_x),
+                    r_y + 2/3 * (m_y-r_y),
+                    r_x, r_y
+                )
+            else
+                -- weird
+            end
+        end
+    else
+        return
+    end
+    if size > 0 then
+        size = size + 1
+        path[size] = s_cycle
+        list[#list+1] = concat(path,"",1,size)
+    end
+    return list
+end
+
+function metapost.fill(paths)
+    local r = { }
+    local n = #paths
+    for i=1,n do
+        if i < n then
+            r[i] = f_nofill(paths[i])
+        else
+            r[i] = f_dofill(paths[i])
+        end
+    end
+    return concat(r)
+end
+
+function metapost.draw(paths,trace)
+    local r = { }
+    local n = #paths
+    for i=1,n do
+        if trace then
+            r[i] = f_draw_trace(paths[i])
+        else
+            r[i] = f_draw(paths[i])
+        end
+    end
+    return concat(r)
+end
+
+function metapost.maxbounds(data,index,factor)
+    local maxbounds   = data.maxbounds
+    local factor      = factor or 1
+    local glyphs      = data.glyphs
+    local glyph       = glyphs[index]
+    local boundingbox = glyph.boundingbox
+    local xmin, ymin, xmax, ymax
+    if not maxbounds then
+        xmin = 0
+        ymin = 0
+        xmax = 0
+        ymax = 0
+        for i=1,#glyphs do
+            local d = glyphs[i]
+            if d then
+                local b = d.boundingbox
+                if b then
+                    if b[1] < xmin then xmin = b[1] end
+                    if b[2] < ymin then ymin = b[2] end
+                    if b[3] > xmax then xmax = b[3] end
+                    if b[4] > ymax then ymax = b[4] end
+                end
+            end
+        end
+        maxbounds = { xmin, ymin, xmax, ymax }
+        data.maxbounds = maxbounds
+    else
+        xmin = maxbounds[1]
+        ymin = maxbounds[2]
+        xmax = maxbounds[3]
+        ymax = maxbounds[4]
+    end
+    local llx   = boundingbox[1]
+    local lly   = boundingbox[2]
+    local urx   = boundingbox[3]
+    local ury   = boundingbox[4]
+    local width = glyph.width
+    if llx > 0 then
+        llx = 0
+    end
+    if width > urx then
+        urx = width
+    end
+    return f_boundingbox(
+        factor*llx,factor*ymin,
+        factor*urx,factor*ymin,
+        factor*urx,factor*ymax,
+        factor*llx,factor*ymax
+    )
+end
+
+-- This is a nice example of tex, metapost and lua working in tandem. Each kicks in at the
+-- right time. It's probably why I like watching https://www.youtube.com/watch?v=c5FqpddnJmc
+-- so much: precisely (and perfectly) timed too.
+
+local texgetbox        = tex.getbox
+
+local nodecodes        = nodes.nodecodes -- no nuts yet
+local rulecodes        = nodes.rulecodes
+
+local rule_code        = nodecodes.rule
+
+local normalrule_code  = rulecodes.normal
+local outlinerule_code = rulecodes.outline
+local userrule_code    = rulecodes.user
+local emptyrule_code   = rulecodes.empty
+
+local nuts             = nodes.nuts
+local getwhd           = nuts.getwhd
+local getexpansion     = nuts.getexpansion
+local isglyph          = nuts.isglyph
+
+local characters       = fonts.hashes.characters
+local parameters       = fonts.hashes.parameters
+local shapes           = fonts.hashes.shapes
+local topaths          = metapost.paths
+
+local f_text           = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
+local f_rule           = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
+local f_bounds         = formatters["checkbounds(%N,%N,%N,%N);"]
+local s_nothing        = "(origin scaled 10)"
+
+local sc               = 10
+local fc               = number.dimenfactors.bp
+
+function metapost.glyph(kind,font,char,advance,shift,ex)
+    local character = characters[font][char]
+    if character then
+        local index = character.index
+        if index then
+            local shapedata = shapes[font]
+            local glyphs    = shapedata.glyphs -- todo: subfonts fonts.shapes.indexed(font,sub)
+            if glyphs then
+                local glyf = glyphs[index]
+                if glyf then
+                    local units    = 1000 -- factor already takes shapedata.units into account
+                    local yfactor  = (sc/units) * parameters[font].factor / 655.36
+                    local xfactor  = yfactor
+                    local shift    = shift or 0
+                    local advance  = advance or 0
+                    local exfactor = ex or 0
+                    local wfactor  = 1
+                    local detail   = kind == "p" and tostring(char) or ""
+                    if exfactor ~= 0 then
+                        wfactor = (1+(ex/units)/1000)
+                        xfactor = xfactor * wfactor
+                    end
+                    local paths = topaths(glyf,xfactor,yfactor)
+                    if paths then
+                        return f_text(kind,#paths,advance,shift,detail,paths) -- , character.width * fc * wfactor
+                    end
+                end
+            end
+        end
+    end
+end
+
+local kind   = ""
+local buffer = { }
+local b      = 0
+
+local function reset()
+    buffer = { }
+    b      = 0
+end
+
+local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
+    local char, font = isglyph(current)
+    local code = metapost.glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current))
+    if code then
+        b = b + 1
+        buffer[b] = code
+    end
+end
+
+local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
+    if subtype == normalrule_code then
+        b = b + 1
+        buffer[b] = f_rule("f",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+    elseif subtype == outlinerule_code then
+        b = b + 1
+        buffer[b] = f_rule("d",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+    elseif subtype == userrule_code then
+     -- print("USER RULE")
+     -- b = b + 1
+     -- buffer[b] = f_rule("d",size_h*fc,size_v*fc,pos_h*fc,pos_v*fc)
+    elseif subtype == emptyrule_code then
+        -- ignore
+    else
+     -- b = b + 1
+     -- buffer[b] = f_rule("f",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+    end
+end
+
+local function flushsimplerule(pos_h, pos_v, pos_r, size_h, size_v)
+    flush_rule(false,pos_h,pos_v,pos_r,size_h,size_v,normalrule_code)
+end
+
+local function flushspecialrule(pos_h, pos_v, pos_r, w, h, d, l, outline)
+    flush_rule(false,pos_h,pos_v-d,pos_r,w,h+d,outline and outlinerule_code or normalrule_code)
+end
+
+-- installer
+
+drivers.install {
+    name    = "mpo",
+    actions = {
+        initialize = function()
+            reset()
+        end,
+        finalize = function(driver,details)
+            local bb  = details.boundingbox
+            local llx = bb[1] * fc
+            local lly = bb[2] * fc
+            local urx = bb[3] * fc
+            local ury = bb[4] * fc
+            b = b + 1
+            buffer[b] = f_bounds(llx,lly,urx,ury)
+        end,
+    },
+    flushers = {
+        updatefontstate = updatefontstate,
+        character       = flushcharacter,
+        rule            = flushrule,
+        simplerule      = flushsimplerule,
+        specialrule     = flushspecialrule,
+    }
+}
+
+function metapost.boxtomp(n,k)
+    kind = k
+    nodes.handlers.finalizebox(n)
+    drivers.converters.lmtx(drivers.instances.mpo,texgetbox(n),"box",1)
+    local result = concat(buffer,";")
+    reset()
+    return result
+end
+

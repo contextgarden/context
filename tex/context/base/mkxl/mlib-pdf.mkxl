@@ -46,7 +46,7 @@
    \global\MPurx   \zeropoint
    \global\MPury   \zeropoint}
 
-\let\popMPboundingbox\relax
+\aliased\let\popMPboundingbox\relax
 
 \permanent\protected\def\pushMPboundingbox
   {\enforced\permanent\protected\edef\popMPboundingbox

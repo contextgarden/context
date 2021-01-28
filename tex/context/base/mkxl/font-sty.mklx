@@ -252,8 +252,8 @@
 
 \protected\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
   {\bgroup
-   \def\g_style{\font_styles_use_defined{#name}}%
-   \afterassignment\g_style
+   \def\currentstyle{\font_styles_use_defined{#name}}%
+   \afterassignment\currentstyle
    \let\nexttoken}
 
 \protected\def\font_styles_use_defined#name%

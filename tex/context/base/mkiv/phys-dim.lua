@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 
 local rawset, next = rawset, next
 local V, P, S, R, C, Cc, Cs, matchlpeg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
-local format, lower = string.format, string.lower
+local format, lower, gsub = string.format, string.lower, string.gsub
 local appendlpeg = lpeg.append
 local utfchartabletopattern = lpeg.utfchartabletopattern
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
@@ -1001,3 +1001,15 @@ implement { name = "digits_reverse", actions = makedigits,   arguments = { "stri
 implement { name = "unit_normal",    actions = makeunit,     arguments = "string"}
 implement { name = "unit_reverse",   actions = makeunit,     arguments = { "string", true } }
 implement { name = "registerunit",   actions = registerunit, arguments = "2 strings" }
+
+implement {
+    name      = "hyphenateddigits",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "string" },
+    actions   = function(filler, digits)
+        digits = gsub(digits,"(%d)","%1\\digitsbreak")
+        digits = gsub(digits,"\\-$",filler)
+        context(digits)
+    end
+}

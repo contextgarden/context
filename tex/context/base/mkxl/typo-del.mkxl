@@ -288,13 +288,13 @@
 
 \newsignal\d_typo_delimited_signal
 
-\let\currentdelimitedtext\s!unknown
+\mutable\let\currentdelimitedtext\s!unknown
 
 \installglobalmacrostack\currentdelimitedtext
 
-\let\delimitedtextlevel\!!zerocount
+\mutable\let\delimitedtextlevel\!!zerocount
 
-\def\c_typo_delimited_nesting{\csname\??delimitedtextlevel\currentparentdelimitedtext\endcsname}
+\permanent\def\c_typo_delimited_nesting{\csname\??delimitedtextlevel\currentparentdelimitedtext\endcsname}
 
 % the \setlanguageparameter macro sets but we are ungrouped .. only used here
 %

@@ -13,7 +13,7 @@
 
 \unprotect
 
-\starttexdefinition unexpanded btx:list:inject:text #content
+\starttexdefinition mutable protected btx:list:inject:text #content
     \ifconditional\btxinteractivetext
         \ifx\currentbtxinternal\empty
             #content
@@ -39,7 +39,7 @@
    }
 \stopsetups
 
-\starttexdefinition unexpanded btx:list:inject:number #content
+\starttexdefinition mutable protected btx:list:inject:number #content
     \ifconditional\btxinteractivenumber
         \ifx\currentbtxinternal\empty
             #content
@@ -55,7 +55,7 @@
     \fi
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:list:helpers:concat
+\starttexdefinition mutable protected btx:list:helpers:concat
     \space
 \stoptexdefinition
 
@@ -66,7 +66,7 @@
     }
 \stopsetups
 
-\starttexdefinition unexpanded btx:list:numbering #variant
+\starttexdefinition mutable protected btx:list:numbering #variant
     \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:#variant]
         \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:#variant] {
             \fastsetup{\s!btx:\s!list:\s!numbering}

@@ -277,9 +277,9 @@
 
 %D A few special ones .. will be cleaned up
 
-\def\pageanchor  {page:\the\realpageno} % for the moment only one pagesize
-\def\textanchor  {text:\the\realpageno}
-\def\regionanchor{region:0}
+\permanent\def\pageanchor  {page:\the\realpageno} % for the moment only one pagesize
+\permanent\def\textanchor  {text:\the\realpageno}
+\permanent\def\regionanchor{region:0}
 
 \newcount\c_anch_column % will be delegated to lua
 \newcount\c_anch_text   % will be delegated to lua

@@ -75,6 +75,8 @@
 
 \ifdefined\+ \else \def\+{+} \fi \ifdefined\- \else \def\-{-} \fi
 
+\ifdefined\? \else \def\?{?} \fi \ifdefined\! \else \def\!{!} \fi % bonus
+
 \ifdefined\1 \else \def\1{1} \fi \ifdefined\2 \else \def\2{2} \fi
 \ifdefined\3 \else \def\3{3} \fi \ifdefined\4 \else \def\4{4} \fi
 \ifdefined\5 \else \def\5{5} \fi \ifdefined\6 \else \def\6{6} \fi

@@ -51,7 +51,7 @@
 %D
 %D \showkerning{Can you guess what kerning is?}
 
-\fetchmodulecommand \showkerning \f!s_fonts_show
+\fetchmodulecommand \showkerning \f!font_run
 
 %D \macros
 %D   {showbodyfontenvironment,showfont,showfontstyle,showligatures}

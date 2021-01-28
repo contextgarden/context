@@ -1135,7 +1135,8 @@ vardef mfun_do_outline_text_flush (expr kind, n, x, y, c) (text t) =
 enddef ;
 
 vardef mfun_do_outline_rule_flush (expr kind, x, y, w, h) =
-    mfun_do_outline_text_flush (kind, 1, x, y, "") (fullsquare xyscaled(w,h))
+%     mfun_do_outline_text_flush (kind, 1, x, y, "") (fullsquare xyscaled(w,h))
+    mfun_do_outline_text_flush (kind, 1, x, y, "") (unitsquare xyscaled(w,h))
 enddef ;
 
 numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;

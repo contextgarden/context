@@ -25,8 +25,6 @@
 
 % triggerpagebuilder % defined at the lua end
 
-\def\m!otr{otr} % todo
-
 \installcorenamespace{outputroutine}
 
 \installswitchcommandhandler \??outputroutine {outputroutine} \??outputroutine

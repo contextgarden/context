@@ -142,7 +142,10 @@ local spaces    = space^0
 
 local global    = nil
 local protected = nil
+local permanent = nil
 local expanded  = nil
+local mutable   = nil
+local immutable = nil
 local optional  = nil
 local tolerant  = nil
 local instance  = nil
@@ -185,10 +188,13 @@ local pattern = (
           + ( P("nospaces")   * space / catcodes_n )
           + ( P("global")     * space / function()  global    = true end)
           + ( P("protected")  * space / function()  protected = true end)
+          + ( P("permanent")  * space / function()  permanent = true end)
           + ( P("expanded")   * space / function()  expanded  = true end)
           + ( P("tolerant")   * space / function()  tolerant  = true end)
           + ( P("instance")   * space / function()  instance  = true end)
           + ( P("frozen")     * space / function()  frozen    = true end)
+          + ( P("mutable")    * space / function()  mutable   = true end)
+          + ( P("immutable")  * space / function()  immutable = true end)
           + ( P("unexpanded") * space / function()  protected = true end)
           + ( option          * space / function(s) tolerant  = true
                                                     optional  = s    end)
@@ -207,7 +213,10 @@ local ctx_dostarttexdefinition = context.dostarttexdefinition
 local function texdefinition_one(str)
     global    = false
     protected = false
+    permanent = false
     expanded  = false
+    mutable   = false
+    immutable = false
     optional  = 0
     tolerant  = false
     instance  = false
@@ -218,9 +227,17 @@ end
 
 local function texdefinition_two()
     context (
-        (tolerant and [[\tolerant]] or "") .. (frozen and [[\frozen]] or "") .. (protected and [[\protected]] or "") .. (instance and [[\instance]] or "") ..
-        [[\expandafter]] .. (global and (expanded and [[\xdef]] or [[\gdef]]) or (expanded and [[\edef]] or [[\def]])) ..
-        [[\csname ]] .. csname .. [[\endcsname ]] ..
+        (tolerant  and [[\tolerant]]  or "") ..
+        (frozen    and [[\frozen]]    or "") ..
+        (protected and [[\protected]] or "") ..
+        (permanent and [[\permanent]] or "") ..
+        (instance  and [[\instance]]  or "") ..
+        (mutable   and [[\mutable]]   or "") ..
+        (immutable and [[\immutable]] or "") ..
+--         [[\expandafter]] .. (global and (expanded and [[\xdef]] or [[\gdef]]) or (expanded and [[\edef]] or [[\def]])) ..
+--         [[\csname ]] .. csname .. [[\endcsname ]] ..
+        (global and (expanded and [[\xdefcsname ]] or [[\gdefcsname ]]) or (expanded and [[\edefcsname ]] or [[\defcsname ]])) ..
+        csname .. [[\endcsname ]] ..
         rest
     )
 end

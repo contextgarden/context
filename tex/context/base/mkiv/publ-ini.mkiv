@@ -919,7 +919,7 @@
 %D \starttyping
 %D % #1 is number of entries
 %D
-%D \starttexdefinition unexpanded btx:for:alan:wrapper #1
+%D \starttexdefinition mutable protected btx:for:alan:wrapper #1
 %D     \bTABLE
 %D         % we can have a command or setups
 %D         \flushbtxentries[command=\texdefinition{btx:for:alan:content}]
@@ -928,7 +928,7 @@
 %D
 %D % #1 is tag
 %D
-%D \starttexdefinition unexpanded btx:for:alan:content #1
+%D \starttexdefinition mutable protected btx:for:alan:content #1
 %D     \bTR
 %D         \bTD
 %D             \btxsettag{#1}

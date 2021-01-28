@@ -846,7 +846,7 @@
 
 % #title can be title or booktitle
 
-\starttexdefinition unexpanded btx:apa:translated-title #title
+\starttexdefinition mutable protected btx:apa:translated-title #title
     \ifx\currentbtxlanguage\empty
         % no need for an extra
     \else\ifx\mainbtxlanguage\currentbtxlanguage
@@ -865,7 +865,7 @@
     \fi\fi
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:composed-title #title
+\starttexdefinition mutable protected btx:apa:composed-title #title
     \btxstartstyleandcolor[apa:\s!list:#title:\currentbtxcategory]
         \begingroup
             \language[\currentbtxlanguage]
@@ -884,7 +884,7 @@
     \btxstopstyleandcolor
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:title
+\starttexdefinition mutable protected btx:apa:title
     \setmode{btx:apa:title-placed}
     % we make the title active, opening "file"
     \btxdoifelse {file} {
@@ -925,7 +925,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:title-if-not-placed
+\starttexdefinition mutable protected btx:apa:title-if-not-placed
     \doifelsemode {btx:apa:title-placed} {
         \resetmode{btx:apa:title-placed}
     } {
@@ -940,7 +940,7 @@
     \btxlabeltext{apa:nd}
 \stopsetups
 
-\starttexdefinition unexpanded btx:apa:suffixedyear
+\starttexdefinition mutable protected btx:apa:suffixedyear
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflushsuffix
@@ -965,7 +965,7 @@
 
 % #author may be author(set) or editor
 
-\starttexdefinition unexpanded btx:apa:author-or-editor #author
+\starttexdefinition mutable protected btx:apa:author-or-editor #author
     \btxdoifelse {#author} {
         \btxstartstyleandcolor[apa:\s!list:#author]
             \btxusecommand[apa:\s!list:#author]{
@@ -1048,7 +1048,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:authoryear
+\starttexdefinition mutable protected btx:apa:authoryear
     % we make the authoryear active, pointing to the citation
     \texdefinition{btx:format:inject}
         {internal(\currentbtxinternal)}
@@ -1073,7 +1073,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:editor-in
+\starttexdefinition mutable protected btx:apa:editor-in
     \btxdoif {booktitle} {
         \btxlabeltext{In}
         \btxspace
@@ -1086,7 +1086,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:organization-if-not-author
+\starttexdefinition mutable protected btx:apa:organization-if-not-author
     \btxdoif {organization} {
         \doifnot {\btxfoundname{author}} {organization} {
             \btxspace
@@ -1099,7 +1099,7 @@
 % TODO: The title is terminated with period. However,
 % we probably don't want this before the parenthesis.
 
-\starttexdefinition unexpanded btx:apa:leftparenthesis-or-comma
+\starttexdefinition mutable protected btx:apa:leftparenthesis-or-comma
     \doifelsemode {btx:apa:editionset-is-empty} {
         \btxleftparenthesis
         \resetmode{btx:apa:editionset-is-empty}
@@ -1108,7 +1108,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:editionset
+\starttexdefinition mutable protected btx:apa:editionset
     \setmode{btx:apa:editionset-is-empty}
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
@@ -1157,7 +1157,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:journal
+\starttexdefinition mutable protected btx:apa:journal
     \btxstartstyleandcolor[apa:\s!list:journal]
         \btxusecommand [apa:\s!list:journal] {
             \btxflush{journal}
@@ -1165,7 +1165,7 @@
     \btxstopstyleandcolor
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:volume
+\starttexdefinition mutable protected btx:apa:volume
     \btxstartstyleandcolor[apa:\s!list:volume]
         \btxflush{volume}
     \btxstopstyleandcolor
@@ -1173,7 +1173,7 @@
 
  % this could be simplified!
 
-\starttexdefinition unexpanded btx:apa:journal-volume-number-pages
+\starttexdefinition mutable protected btx:apa:journal-volume-number-pages
     \btxdoif {journal} {
         \btxspace
         \texdefinition{btx:apa:journal}
@@ -1222,7 +1222,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:wherefrom-publisher
+\starttexdefinition mutable protected btx:apa:wherefrom-publisher
     \btxdoifelse {address} {
         \btxflush{address}
         \btxdoif {country} {
@@ -1256,7 +1256,7 @@
 
 % use \btxentry here?
 
-\starttexdefinition unexpanded btx:apa:url
+\starttexdefinition mutable protected btx:apa:url
     \begingroup
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
@@ -1273,7 +1273,7 @@
 
 % use \btxentry here?
 
-\starttexdefinition unexpanded btx:apa:doi
+\starttexdefinition mutable protected btx:apa:doi
     \begingroup
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
@@ -1288,7 +1288,7 @@
     \endgroup
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:note
+\starttexdefinition mutable protected btx:apa:note
     \btxdoif {note} {
         \btxleftparenthesis
         \btxflush{note}
@@ -1296,7 +1296,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:url-doi-note
+\starttexdefinition mutable protected btx:apa:url-doi-note
     \doif {\btxfoundname{doi}} {url} {
         \btxspace
         \btxlabeltext{apa:Retrieved}
@@ -1311,7 +1311,7 @@
     \removeunwantedspaces
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:apa:type
+\starttexdefinition mutable protected btx:apa:type
     \btxdoif {type} {
         \btxleftbracket
         \btxflush{type}

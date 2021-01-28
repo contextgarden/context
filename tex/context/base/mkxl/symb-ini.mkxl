@@ -58,8 +58,8 @@
 \setupsymbols
   [\c!stylealternative=\v!text]
 
-\let\currentsymbol   \empty
-\let\currentsymbolset\empty
+\mutable\let\currentsymbol   \empty
+\mutable\let\currentsymbolset\empty
 
 \newtoks\t_symb_setups
 

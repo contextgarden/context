@@ -79,7 +79,7 @@
 
 \registerctxluafile{node-fnt}{autosuffix} % here
 
-\registerctxluafile{font-mps}{} % outline fun
+\registerctxluafile{font-mps}{autosuffix} % outline fun
 
 \registerctxluafile{font-lua}{}
 

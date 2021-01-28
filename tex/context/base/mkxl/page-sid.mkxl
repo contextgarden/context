@@ -379,14 +379,14 @@
 %D {\pagedepth} and \type {\pageshrink} in the next two. If we ever need
 %D that it will become options.
 
-\def\e_page_sides_flush_criterium
+\permanent\def\d_page_sides_flush_criterium
   {\dimexpr
       \d_page_sides_vsize
      -\d_page_sides_bottomtotal
      -\pagetotal
    \relax}
 
-\def\e_page_sides_room_criterium
+\permanent\def\d_page_sides_room_criterium
   {\dimexpr
       \d_page_sides_vsize
      -\d_page_sides_bottomtotal % added here too
@@ -418,7 +418,7 @@
 
 \def\page_sides_flush_floats
   {\par
-   \ifdim\e_page_sides_flush_criterium>\zeropoint
+   \ifdim\d_page_sides_flush_criterium>\zeropoint
      \page_sides_flush_floats_progress
      \page_sides_flush_floats_after_next
    \fi
@@ -427,7 +427,7 @@
 \def\page_sides_flush_floats_text
   {\par
    % what with \c_anch_backgrounds_text_level>\plusone
-   \ifdim\e_page_sides_flush_criterium>\zeropoint
+   \ifdim\d_page_sides_flush_criterium>\zeropoint
      \page_sides_flush_floats_progress
      \page_sides_flush_floats_after_none
    \fi
@@ -458,7 +458,7 @@
 
 \permanent\protected\def\doifelsesidefloat
   {\par
-   \ifdim\e_page_sides_room_criterium>\zeropoint % -\pagedepth
+   \ifdim\d_page_sides_room_criterium>\zeropoint % -\pagedepth
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -511,7 +511,7 @@
    \forgetall
    \offinterlineskip
    \doloop
-     {\scratchdimen\e_page_sides_flush_criterium
+     {\scratchdimen\d_page_sides_flush_criterium
       \ifdim\scratchdimen>\onepoint      % good enough, can become configurable
         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
           \exitloop

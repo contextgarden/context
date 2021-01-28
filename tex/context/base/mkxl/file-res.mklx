@@ -62,7 +62,7 @@
 %D to redefine the original \type {\input} when needed, for instance when loading
 %D third party libraries.
 
-\let\readfilename\empty
+\mutable\let\readfilename\empty
 
 \def\syst_files_read_file#protocol#path#name% #true #false
   {\edef\readfilename{\clf_getreadfilename{#protocol}{#path}{#name}}%

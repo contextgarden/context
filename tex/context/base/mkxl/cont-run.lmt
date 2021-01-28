@@ -192,7 +192,7 @@ end
 
 local function processjob()
 
-    tokens.setters.macro("processjob","") -- make a
+    tokens.setters.macro("processjob","","permanent")
 
     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
@@ -200,7 +200,7 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
-    environment.lmtxmode = false
+    environment.lmtxmode = CONTEXTLMTXMODE -- should be true
 
     if arguments.nosynctex then
         luatex.synctex.setup {
@@ -211,6 +211,20 @@ local function processjob()
             state  = interfaces.variables.start,
             method = interfaces.variables.max,
         }
+    end
+
+    local overloadmode = arguments.overloadmode
+
+    if overloadmode == "warning" then
+        overloadmode = 3 -- 5
+    elseif overloadmode == "error" then
+        overloadmode = 4 -- 6
+    else
+        overloadmode = tonumber(overloadmode)
+    end
+
+    if overloadmode then
+        tex.set("overloadmode",overloadmode)
     end
 
     if not filename or filename == "" then
@@ -287,8 +301,11 @@ local function processjob()
 end
 
 implement {
-    name     = "processjob",
-    public   = true,
-    onlyonce = true,
-    actions  = processjob,
+    name      = "processjob",
+ -- protected = true
+    public    = true,
+    onlyonce  = true,
+    actions   = processjob,
 }
+
+texconfig.firstline = "\\processjob " -- experiment, yet undocumented

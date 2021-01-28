@@ -196,6 +196,9 @@
 %D \setlayer [identifier] [optional parameters] {data}
 %D \stoptyping
 
+\mutable\let\currentlayerwidth \empty
+\mutable\let\currentlayerheight\empty
+
 \permanent\tolerant\protected\def\setcurrentlayerdimensions[#1]#*[#2]% name left|right
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
    \edef\currentlayerheight{\thelayerheight{#2#1}}}
@@ -528,6 +531,9 @@
 
 % optimized
 
+\mutable\integerdef\b_layer_one\zerocount
+\mutable\integerdef\b_layer_two\zerocount
+
 \def\pack_layers_flush_single
   {\ifcsname\??layerbox\currentlayer\endcsname
      \ifvoid\lastnamedcs
@@ -538,10 +544,10 @@
          \fi
        \fi
      \else
-       \chardef\b_layer_one\lastnamedcs
+       \chardef\b_layer_one\lastnamedcs % will be \integerdef
        \ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
          \ifvoid\lastnamedcs\else
-           \chardef\b_layer_two\lastnamedcs
+           \chardef\b_layer_two\lastnamedcs % will be \integerdef
            \startoverlay
              {\pack_layers_flush_indeed\plusone   \currentlayer                 \b_layer_one}%
              {\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two}%

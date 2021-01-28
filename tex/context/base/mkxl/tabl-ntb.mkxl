@@ -969,10 +969,10 @@
 \def\tabl_ntb_n_of_rows     {\number\c_tabl_ntb_maximum_row}
 \def\tabl_ntb_n_of_columns  {\number\c_tabl_ntb_maximum_col}
 
-\let\currentTABLErow   \!!zerocount
-\let\currentTABLEcolumn\!!zerocount
-\let\nofTABLErows      \!!zerocount
-\let\nofTABLEcolumns   \!!zerocount
+\mutable\let\currentTABLErow   \!!zerocount
+\mutable\let\currentTABLEcolumn\!!zerocount
+\mutable\let\nofTABLErows      \!!zerocount
+\mutable\let\nofTABLEcolumns   \!!zerocount
 
 % there is no gain in a \doifelsenextoptionalcs variant
 

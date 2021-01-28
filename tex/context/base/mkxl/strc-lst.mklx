@@ -359,13 +359,13 @@
 \def\strc_lists_process_pagenumber#1%
   {\begincsname\??listpagenumber#1\endcsname}
 
-\def\structurelistlocation
+\permanent\def\structurelistlocation
   {\clf_listlocation\numexpr\currentlistindex\relax}
 
-\def\structurelistrealpagenumber
+\permanent\def\structurelistrealpagenumber
   {\clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax}
 
-\protected\def\structurelistpagenumber
+\permanent\protected\def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
    \ifconditional\c_lists_show_realpage
      \clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax
@@ -373,18 +373,18 @@
      \clf_listprefixedpage
        {\currentlist}%
        \currentlistindex
-       {
-         separatorset  {\listparameter\c!pageprefixseparatorset}
-         conversionset {\listparameter\c!pageprefixconversionset}
-         set           {\listparameter\c!pageprefixset}
-         segments      {\listparameter\c!pageprefixsegments}
-         connector     {\listparameter\c!pageprefixconnector}
+       {%
+         separatorset  {\listparameter\c!pageprefixseparatorset}%
+         conversionset {\listparameter\c!pageprefixconversionset}%
+         set           {\listparameter\c!pageprefixset}%
+         segments      {\listparameter\c!pageprefixsegments}%
+         connector     {\listparameter\c!pageprefixconnector}%
        }%
-       {
-         prefix        {\listparameter\c!pageprefix}
-         conversionset {\listparameter\c!pageconversionset}
-         starter       {\listparameter\c!pagestarter}
-         stopper       {\listparameter\c!pagestopper}
+       {%
+         prefix        {\listparameter\c!pageprefix}%
+         conversionset {\listparameter\c!pageconversionset}%
+         starter       {\listparameter\c!pagestarter}%
+         stopper       {\listparameter\c!pagestopper}%
        }%
      \relax
    \fi
@@ -511,7 +511,7 @@
    \dostoptagged
    \listextraparameter\c!after}
 
-\protected\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
+\permanent\protected\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
   {\clf_pushlist#index\relax
   %\let\currentlistentrylocation\empty
    \edef\currentlist      {#tag}%
@@ -860,7 +860,7 @@
     % because we want to avoid redundant lua calls we expand the
     % location beforehand
     \ifempty\currentlistentrylocation
-        \edef\currentlistentrylocation{\structurelistlocation}% needs attention
+        \enforced\edef\currentlistentrylocation{\structurelistlocation}% needs attention
     \fi
     % because these tests happen often and because we're dealing with
     % rather complex composed data we have special conditionals; keep

@@ -702,20 +702,20 @@
    chicago:edition={Utgåva},
    chicago:Editor=Redaktör,
    chicago:Editors=Redaktörer,
-   chicago:Volume=Band,        
+   chicago:Volume=Band,
    chicago:Volumes=Band,
    chicago:nd={u.å.},                  % utan årtal
    chicago:supplement=Bilaga,          % Supplement
    chicago:MotionPicture=Spelfilm,     % ?
    chicago:Writer={Manusförfattare},   % Assuming for a movie
-   chicago:Writers={Manusförfattare},  % 
+   chicago:Writers={Manusförfattare},  %
    chicago:Producer=Producent,         % Assuming for a movie
-   chicago:Producers=Producenter,      % 
+   chicago:Producers=Producenter,      %
    chicago:Director={Regissör},        % Assuming for a movie
-   chicago:Directors={Regissörer},     % 
+   chicago:Directors={Regissörer},     %
    chicago:Recordedby={Inspelad av},   % Assuming for a movie
    chicago:Author={Författare},
-   chicago:Translator={Översättare},       
+   chicago:Translator={Översättare},
    chicago:Advanced={Avancerad onlinepublikation}, % ?
    chicago:Retrieved={Hämtad från}]
 
@@ -845,7 +845,7 @@
 
 % #title can be title or booktitle
 
-\starttexdefinition unexpanded btx:chicago:translated-title #title
+\starttexdefinition mutable protected btx:chicago:translated-title #title
     \ifx\currentbtxlanguage\empty
         % no need for an extra
     \else\ifx\mainbtxlanguage\currentbtxlanguage
@@ -864,7 +864,7 @@
     \fi\fi
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:composed-title #title
+\starttexdefinition mutable protected btx:chicago:composed-title #title
     \btxstartstyleandcolor[chicago:\s!list:#title:\currentbtxcategory]
         \begingroup
             \language[\currentbtxlanguage]
@@ -883,7 +883,7 @@
     \btxstopstyleandcolor
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:title
+\starttexdefinition mutable protected btx:chicago:title
     \setmode{btx:chicago:title-placed}
     % we make the title active, opening "file"
     \btxdoifelse {file} {
@@ -924,7 +924,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:title-if-not-placed
+\starttexdefinition mutable protected btx:chicago:title-if-not-placed
     \doifelsemode {btx:chicago:title-placed} {
         \resetmode{btx:chicago:title-placed}
     } {
@@ -939,7 +939,7 @@
     \btxlabeltext{chicago:nd}
 \stopsetups
 
-\starttexdefinition unexpanded btx:chicago:suffixedyear
+\starttexdefinition mutable protected btx:chicago:suffixedyear
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflushsuffix
@@ -964,7 +964,7 @@
 
 % #author may be author(set) or editor
 
-\starttexdefinition unexpanded btx:chicago:author-or-editor #author
+\starttexdefinition mutable protected btx:chicago:author-or-editor #author
     \btxdoifelse {#author} {
         \btxstartstyleandcolor[chicago:\s!list:#author]
             \btxusecommand[chicago:\s!list:#author]{
@@ -1047,7 +1047,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:authoryear
+\starttexdefinition mutable protected btx:chicago:authoryear
     % we make the authoryear active, pointing to the citation
     \texdefinition{btx:format:inject}
         {internal(\currentbtxinternal)}
@@ -1070,7 +1070,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:editor-in
+\starttexdefinition mutable protected btx:chicago:editor-in
     \btxdoif {booktitle} {
         \btxlabeltext{In}
         \btxspace
@@ -1083,7 +1083,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:organization-if-not-author
+\starttexdefinition mutable protected btx:chicago:organization-if-not-author
     \btxdoif {organization} {
         \doifnot {\btxfoundname{author}} {organization} {
             \btxspace
@@ -1096,7 +1096,7 @@
 % TODO: The title is terminated with period. However,
 % we probably don't want this before the parenthesis.
 
-\starttexdefinition unexpanded btx:chicago:leftparenthesis-or-comma
+\starttexdefinition mutable protected btx:chicago:leftparenthesis-or-comma
     \doifelsemode {btx:chicago:editionset-is-empty} {
         \btxleftparenthesis
         \resetmode{btx:chicago:editionset-is-empty}
@@ -1105,7 +1105,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:editionset
+\starttexdefinition mutable protected btx:chicago:editionset
     \setmode{btx:chicago:editionset-is-empty}
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:chicago:leftparenthesis-or-comma}
@@ -1154,7 +1154,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:journal
+\starttexdefinition mutable protected btx:chicago:journal
     \btxstartstyleandcolor[chicago:\s!list:journal]
         \btxusecommand [chicago:\s!list:journal] {
             \btxflush{journal}
@@ -1162,7 +1162,7 @@
     \btxstopstyleandcolor
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:volume
+\starttexdefinition mutable protected btx:chicago:volume
     \btxstartstyleandcolor[chicago:\s!list:volume]
         \btxflush{volume}
     \btxstopstyleandcolor
@@ -1170,7 +1170,7 @@
 
  % this could be simplified!
 
-\starttexdefinition unexpanded btx:chicago:journal-volume-number-pages
+\starttexdefinition mutable protected btx:chicago:journal-volume-number-pages
     \btxdoif {journal} {
         \btxspace
         \texdefinition{btx:chicago:journal}
@@ -1219,7 +1219,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:wherefrom-publisher
+\starttexdefinition mutable protected btx:chicago:wherefrom-publisher
     \btxdoifelse {address} {
         \btxflush{address}
         \btxdoif {country} {
@@ -1253,7 +1253,7 @@
 
 % use \btxentry here?
 
-\starttexdefinition unexpanded btx:chicago:url
+\starttexdefinition mutable protected btx:chicago:url
     \begingroup
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
@@ -1270,7 +1270,7 @@
 
 % use \btxentry here?
 
-\starttexdefinition unexpanded btx:chicago:doi
+\starttexdefinition mutable protected btx:chicago:doi
     \begingroup
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
@@ -1285,7 +1285,7 @@
     \endgroup
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:note
+\starttexdefinition mutable protected btx:chicago:note
     \btxdoif {note} {
         \btxleftparenthesis
         \btxflush{note}
@@ -1293,7 +1293,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:url-doi-note
+\starttexdefinition mutable protected btx:chicago:url-doi-note
     \doif {\btxfoundname{doi}} {url} {
         \btxspace
         \btxlabeltext{chicago:Retrieved}
@@ -1308,7 +1308,7 @@
     \removeunwantedspaces
 \stoptexdefinition
 
-\starttexdefinition unexpanded btx:chicago:type
+\starttexdefinition mutable protected btx:chicago:type
     \btxdoif {type} {
         \btxleftbracket
         \btxflush{type}

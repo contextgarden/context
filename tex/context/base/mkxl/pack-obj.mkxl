@@ -42,7 +42,7 @@
 \newif   \ifinobject
 \newbox  \objectbox
 
-\def\objectoffset{1cm}
+\mutable\def\objectoffset{1cm}
 
 \newdimen\objectoff  \permanent\def\objectmargin{\the\objectoff}
 \newdimen\objectwd   \permanent\def\objectwidth {\the\objectwd}

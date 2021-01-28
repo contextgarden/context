@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% We can protect \currentlanguage etc too.
-
 % \cldcontext{languages.numbers[tex.count.mainlanguagenumber]}
 
 %D This module implements multi||language support of \CONTEXT, which should not be
@@ -60,8 +58,8 @@
 %D    \startmode[*nl] dutch   \stopmode}
 %D \stoptyping
 
-\let\currentlanguage    \empty
-\let\currentmainlanguage\empty
+\mutable\let\currentlanguage    \empty
+\mutable\let\currentmainlanguage\empty
 
 %D \macros
 %D   {defaultlanguage,languageparameter,specificlanguageparameter}
@@ -72,7 +70,7 @@
 \installcorenamespace{language}
 \installcorenamespace{languagelinked}
 
-\def\currentusedlanguage{\currentlanguage}
+\mutable\def\currentusedlanguage{\currentlanguage}
 
 \permanent\def\defaultlanguage#1%
   {\ifcsname\??language#1\s!default\endcsname

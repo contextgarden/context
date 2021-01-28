@@ -388,6 +388,7 @@ return {
   "mathrulesfam",
   "mathrulesmode",
   "mathrulethicknessmode",
+  "mathscale",
   "mathscriptboxmode",
   "mathscriptcharmode",
   "mathscriptsmode",

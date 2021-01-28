@@ -2813,18 +2813,34 @@
 
 \newcount\c_temp_framed_crap
 
+% \permanent\tolerant\protected\def\pack_framed_defined_process[#1]#*[#2]% official (not much checking, todo: parent)
+%   {\bgroup
+%    \ifcsname\??regularframedlevel#1\endcsname
+%     %\expandafter\let\expandafter\c_pack_framed_temp\csname\??regularframedlevel#1\endcsname
+%      \expandafter\let\expandafter\c_pack_framed_temp\lastnamedcs
+%    \else
+%      \let\c_pack_framed_temp\c_temp_framed_crap
+%    \fi
+%    \advance\c_pack_framed_temp\plusone
+%    \defcsname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
+%    \bgroup
+%    \edef\currentframed{#1>\the\c_pack_framed_temp}%
+%    \pack_framed_initialize
+%    \setupcurrentframed[#2]% here !
+%    \pack_framed_process_indeed}
+
 \permanent\tolerant\protected\def\pack_framed_defined_process[#1]#*[#2]% official (not much checking, todo: parent)
   {\bgroup
    \ifcsname\??regularframedlevel#1\endcsname
     %\expandafter\let\expandafter\c_pack_framed_temp\csname\??regularframedlevel#1\endcsname
-     \expandafter\let\expandafter\c_pack_framed_temp\lastnamedcs
+     \scratchcounter\lastnamedcs
    \else
-     \let\c_pack_framed_temp\c_temp_framed_crap
+     \scratchcounter\c_temp_framed_crap
    \fi
-   \advance\c_pack_framed_temp\plusone
-   \defcsname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
+   \advance\scratchcounter\plusone
+   \defcsname\??framed#1>\the\scratchcounter:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
    \bgroup
-   \edef\currentframed{#1>\the\c_pack_framed_temp}%
+   \edef\currentframed{#1>\the\scratchcounter}%
    \pack_framed_initialize
    \setupcurrentframed[#2]% here !
    \pack_framed_process_indeed}
@@ -2965,7 +2981,7 @@
 %D \the\dimexpr\themaxboxwidth\scratchbox\relax
 %D \stoptyping
 
-\let\themaxboxwidth\clf_themaxboxwidth
+% \let\themaxboxwidth % defined at the lua end
 
 %D Fast enough for most cases (we could do a massive \type {\ifhastok} instead):
 

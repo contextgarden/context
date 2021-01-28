@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.01.26 18:02}
+\immutable\edef\contextversion{2021.01.28 18:17}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -50,7 +50,7 @@
 \immutable\edef\mksuffix   {mkiv}
 \immutable\edef\contextmark{LMTX}
 
-\ifdefined\normalinput \else \let\normalinput\input \fi
+\ifdefined\normalinput \else \aliased\let\normalinput\input \fi
 
 \def\loadmarkfile#1{\normalinput{#1.\mksuffix}}
 \def\loadmkivfile#1{\normalinput{#1.mkiv}}
@@ -62,13 +62,6 @@
 %D We start with setting up some basic \TEX\ machinery.
 
 \loadmkxlfile{syst-ini}
-
-%D We just quit if new functionality is expected.
-
-\ifnum\luatexversion<200 % also change message
-    \writestatus{!!!!}{Your luametatex binary is too old, you need at least version 2.00!}
-    \expandafter\end
-\fi
 
 %D Some checking (more primitives are now defined):
 

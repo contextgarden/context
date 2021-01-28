@@ -634,6 +634,7 @@
 \to \everyplaceregister
 
 \newconditional\c_strc_registers_text_interaction
+\newconditional\c_strc_registers_page_done
 
 \permanent\tolerant\protected\def\placeregister[#1]#*[#2]%
   {\ifarguments\else

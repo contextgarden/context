@@ -420,16 +420,13 @@
 %D
 %D \typbuffer \getbuffer
 
-\def\periodswidth  {.5\emwidth}  % downward compatible
-\def\periodsdefault{3}           % downward compatible
-
 \installcorenamespace {periods}
 
 \installsetuponlycommandhandler \??periods {periods}
 
 \setupperiods
-  [\c!n=\periodsdefault,
-   \c!width=\periodswidth, % can also be \v!fit
+  [\c!n=3,
+   \c!width=.5\emwidth, % can also be \v!fit
    \c!distance=.25\emwidth,
    \c!symbol=.]
 

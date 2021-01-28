@@ -108,6 +108,11 @@
 \newdimen\d_grph_steps_y
 \newbox  \b_grph_steps_colorbar
 
+\ifdefined\referring\else \mutable\let\referring\relax \fi
+\ifdefined\marking  \else \mutable\let\marking  \relax \fi
+\ifdefined\remark   \else \mutable\let\remark   \relax \fi
+\ifdefined\colorbar \else \mutable\let\colorbar \relax \fi
+
 \tolerant\protected\def\grph_steps_place_figure#1#2#3#4[#5]%
   {\hpack
      {\setbox\scratchbox\hpack

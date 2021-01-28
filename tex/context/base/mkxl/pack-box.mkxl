@@ -193,7 +193,7 @@
 
 \newconditional\c_pack_boxes_collector_valid_box
 
-\let\b_pack_boxes_collector\scratchbox
+\mutable\let\b_pack_boxes_collector\scratchbox
 
 \def\pack_boxes_collector_check_box#1%
   {\edef\currentcollector{#1}%

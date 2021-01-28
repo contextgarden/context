@@ -696,6 +696,10 @@
 \newcount\c_font_scaled_font_mode_saved
 \newcount\c_font_scaled_points
 
+\mutable\let\somefontspec         \empty
+\mutable\let\lastrawfontcall      \relax
+\mutable\let\lastglobalrawfontcall\relax
+
 \protected\def\font_helpers_low_level_define
   {\ifconditional\c_font_compact
      \expandafter\font_helpers_low_level_define_compact

@@ -30,10 +30,10 @@
 
 \ifdefined\pageno \else \aliased\let\pageno\userpageno \fi
 
-\def\realfolio{\the\realpageno}
-\def\userfolio{\the\userpageno}
-\def\subfolio {\the\subpageno }
-\def\lastfolio{\the\lastpageno}
+\permanent\def\realfolio{\the\realpageno}
+\permanent\def\userfolio{\the\userpageno}
+\permanent\def\subfolio {\the\subpageno }
+\permanent\def\lastfolio{\the\lastpageno}
 
 \newtoks\everyinitializepagecounters
 

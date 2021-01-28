@@ -243,6 +243,7 @@ nodes.maxboxwidth = maxboxwidth
 
 implement {
     name      = "themaxboxwidth",
+    public    = true,
     actions   = function(n) context("%rsp",maxboxwidth(getbox(n))) end, -- r = rounded
     arguments = "integer"
 }

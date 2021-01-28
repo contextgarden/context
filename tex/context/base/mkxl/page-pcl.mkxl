@@ -480,7 +480,7 @@
    \fi
    \egroup}
 
-\def\d_page_col_collected_top_float_height % pseudo
+\permanent\def\d_page_col_collected_top_float_height % pseudo
   {\dimexpr
      \d_page_floats_inserted_top +
      \maxcollectedfloatstotal +

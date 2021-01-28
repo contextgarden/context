@@ -98,8 +98,6 @@
 \catcode\tildeasciicode          \activecatcode      % `\~     tilde is active
 %catcode\delasciicode            \invalidcatcode     % `\^^?   ascii delete is invalid
 
-\chardef\statuswrite 128 % we need to get rid of this one
-
 %D First we need to initialization the primitives. Because \CONTEXT\ is already a
 %D pretty old macro package, we have a couple of issues with respect to primitives.
 %D The \ETEX\ engine added a few as did \PDFTEX. The \LUATEX\ engine added even
@@ -244,11 +242,13 @@
 \permanent\countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
 \permanent\countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
 
-\immutable\integerdef\zerocount     =   0
-\immutable\integerdef\plusone       =   1
-\immutable\integerdef\minusone      =  -1
+\immutable\integerdef\zerocount       0
+\immutable\integerdef\plusone         1
+\immutable\integerdef\minusone       -1
 
-\immutable\integerdef\normalpagebox = 255  % hardcoded in pdftex/xetex
+\immutable\integerdef\normalpagebox 255  % hardcoded in pdftex/xetex
+
+\immutable\integerdef\statuswrite   \minusone
 
 % A few traditional allocations (these might go):
 
@@ -741,7 +741,7 @@
    \popoverloadmode
    %let\pushoverloadmode\relax
    %let\popoverloadmode\relax
-% \tracingall
+ % \tracingall
    \normaldump}
 
 \permanent\protected\def\input
@@ -820,12 +820,14 @@
 %D   {newmacro,setnewmacro,newfraction}
 %D
 %D Let's be complete and also introduce some definers. These are not mandate
-%D but handy for grepping.
+%D but handy for grepping. We make these mutable because they are \type
+%D {\let} (the only advantage is that we often give them names with some
+%D prefix.
 
-\permanent\protected\def\newmacro   #1{\let#1\empty}
-\permanent\protected\def\setnewmacro#1{\let#1}
+\permanent\protected\def\newmacro   #1{\mutable\let#1\empty}
+\permanent\protected\def\setnewmacro#1{\mutable\let#1}
 
-\permanent\protected\def\newfraction#1{\let#1\!!plusone}
+\permanent\protected\def\newfraction#1{\mutable\let#1\!!plusone}
 
 \def\!!zerocount{0} % later redefined
 \def\!!plusone  {1} % later redefined
@@ -937,28 +939,39 @@
 %D get. Beware: this macro does not support nested loops. We use a namespace
 %D prefix \type {@@pln}.
 
-\permanent\def\loop#1\repeat{\def\@@plnbody{#1}\@@plniterate} % might go
+\permanent\def\loop#1\repeat{\def\syst_plain_body{#1}\syst_plain_iterate} % might go
 
 %D The following makes \type {\loop} \unknown\ \type {\if} \unknown\ \type
 %D {\repeat} skippable (clever trick):
 
 \permanent\let\repeat\fi % so both \loop and \repeat are reserved words!
 
-%D The original (no \type {@@pln} there):
+%D The original (no \type {syst_plain_} there):
 %D
 %D \starttyping
-%D \def\@@plniterate{\@@plnbody\let\next\@@plniterate\else\let\next\relax\fi\next}
+%D \def\syst_plain_iterate
+%D   {\syst_plain_body
+%D    \let\next\syst_plain_iterate
+%D    \else
+%D      \let\next\relax
+%D    \fi
+%D    \next}
 %D \stoptyping
 %D
 %D A more efficient alternative:
 %D
 %D \starttyping
-%D \def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\expandafter\relax\fi}
+%D \def\syst_plain_iterate
+%D   {\syst_plain_body
+%D    \expandafter\syst_plain_iterate
+%D    \else\expandafter\relax\fi}
 %D \stoptyping
 %D
 %D An even more efficient one:
 
-\def\@@plniterate{\@@plnbody\expandafter\@@plniterate\else\fi}
+\def\syst_plain_iterate
+  {\syst_plain_body
+   \expandafter\syst_plain_iterate\else\fi}
 
 %D We don't define a real output routine yet but at least get rid of pages:
 

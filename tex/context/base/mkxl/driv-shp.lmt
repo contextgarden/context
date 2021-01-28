@@ -74,32 +74,30 @@ local dircodes          = nodes.dircodes
 local dirvalues         = nodes.dirvalues
 local subtypes          = nodes.subtypes
 
-local normaldir_code          = dircodes.normal
+local lefttoright_code  = dirvalues.lefttoright
+local righttoleft_code  = dirvalues.righttoleft
 
-local lefttoright_code        = dirvalues.lefttoright
-local righttoleft_code        = dirvalues.righttoleft
+local glyph_code        = nodecodes.glyph
+local kern_code         = nodecodes.kern
+local glue_code         = nodecodes.glue
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local dir_code          = nodecodes.dir
+local disc_code         = nodecodes.disc
+local math_code         = nodecodes.math
+local rule_code         = nodecodes.rule
+local whatsit_code      = nodecodes.whatsit
+----- penalty_code      = nodecodes.penalty
+----- boundary_code     = nodecodes.boundary
 
-local glyph_code              = nodecodes.glyph
-local kern_code               = nodecodes.kern
-local glue_code               = nodecodes.glue
-local hlist_code              = nodecodes.hlist
-local vlist_code              = nodecodes.vlist
-local dir_code                = nodecodes.dir
-local disc_code               = nodecodes.disc
-local math_code               = nodecodes.math
-local rule_code               = nodecodes.rule
-local whatsit_code            = nodecodes.whatsit
------ penalty_code            = nodecodes.penalty
------ boundary_code           = nodecodes.boundary
+local leaders_code      = gluecodes.leaders
+local cleaders_code     = gluecodes.cleaders
+local xleaders_code     = gluecodes.xleaders
+local gleaders_code     = gluecodes.gleaders
 
-local leaders_code            = gluecodes.leaders
-local cleaders_code           = gluecodes.cleaders
-local xleaders_code           = gluecodes.xleaders
-local gleaders_code           = gluecodes.gleaders
+local spaceskip_code    = gluecodes.spaceskip
 
-local spaceskip_code          = gluecodes.spaceskip
-
-local getpagedimensions       = layouts.getpagedimensions
+local getpagedimensions = layouts.getpagedimensions
 
 local drivers   = drivers
 local instances = drivers.instances
@@ -1219,7 +1217,7 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
 
     -- we need to do this once ...
 
-    if not updatefontstate then
+--    if not updatefontstate then
 
         updatefontstate   = flushers.updatefontstate
 
@@ -1233,31 +1231,36 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
         flushspecialrule  = flushers.specialrule
         flushliteral      = flushers.literal
 
-        flushwhatsit      = setmetatableindex ( {
-            [whatsitcodes.literal]        = flushliteral,
-            [whatsitcodes.latelua]        = flushlatelua,
-            [whatsitcodes.userdefined]    = function() end,      -- special purpose, handled in callbacks
-            [whatsitcodes.savepos]        = flushsavepos,        -- only used by generic packages
-            [whatsitcodes.save]           = flushers.save,
-            [whatsitcodes.restore]        = flushers.restore,
-            [whatsitcodes.setmatrix]      = flushers.setmatrix,
-            [whatsitcodes.open]           = flushopenout,        -- generic
-            [whatsitcodes.close]          = flushcloseout,       -- generic
-            [whatsitcodes.write]          = flushwriteout,       -- generic
-            [whatsitcodes.startmatrix]    = flushers.startmatrix,
-            [whatsitcodes.stopmatrix]     = flushers.stopmatrix,
-            [whatsitcodes.startscaling]   = flushers.startscaling,
-            [whatsitcodes.stopscaling]    = flushers.stopscaling,
-            [whatsitcodes.startrotation]  = flushers.startrotation,
-            [whatsitcodes.stoprotation]   = flushers.stoprotation,
-            [whatsitcodes.startmirroring] = flushers.startmirroring,
-            [whatsitcodes.stopmirroring]  = flushers.stopmirroring,
-            [whatsitcodes.startclipping]  = flushers.startclipping,
-            [whatsitcodes.stopclipping]   = flushers.stopclipping,
-            [whatsitcodes.setstate]       = flushers.setstate,
-        }, function(t, k) report("weird whatsit %a",k) return function() end end)
+        flushwhatsit      = rawget(flushers,"whatsit")
 
-    end
+        if not flushwhatsit then
+            flushwhatsit = setmetatableindex ( {
+                [whatsitcodes.literal]        = flushliteral,
+                [whatsitcodes.latelua]        = flushlatelua,
+                [whatsitcodes.userdefined]    = function() end,      -- special purpose, handled in callbacks
+                [whatsitcodes.savepos]        = flushsavepos,        -- only used by generic packages
+                [whatsitcodes.save]           = flushers.save,
+                [whatsitcodes.restore]        = flushers.restore,
+                [whatsitcodes.setmatrix]      = flushers.setmatrix,
+                [whatsitcodes.open]           = flushopenout,        -- generic
+                [whatsitcodes.close]          = flushcloseout,       -- generic
+                [whatsitcodes.write]          = flushwriteout,       -- generic
+                [whatsitcodes.startmatrix]    = flushers.startmatrix,
+                [whatsitcodes.stopmatrix]     = flushers.stopmatrix,
+                [whatsitcodes.startscaling]   = flushers.startscaling,
+                [whatsitcodes.stopscaling]    = flushers.stopscaling,
+                [whatsitcodes.startrotation]  = flushers.startrotation,
+                [whatsitcodes.stoprotation]   = flushers.stoprotation,
+                [whatsitcodes.startmirroring] = flushers.startmirroring,
+                [whatsitcodes.stopmirroring]  = flushers.stopmirroring,
+                [whatsitcodes.startclipping]  = flushers.startclipping,
+                [whatsitcodes.stopclipping]   = flushers.stopclipping,
+                [whatsitcodes.setstate]       = flushers.setstate,
+            }, function(t, k) report("weird whatsit %a",k) return function() end end)
+            flushers.whatsit = flushwhatsit
+        end
+
+--    end
 
     reset_dir_stack()
     reset_state()

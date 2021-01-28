@@ -365,7 +365,7 @@
   [\s!default:and=och,
    \s!default:number={nr.},
    \s!default:edition={Utgåva},
-   \s!default:Editor=Redaktör, 
+   \s!default:Editor=Redaktör,
    \s!default:Editors=Redaktörer,
    \s!default:Volume=Band,
    \s!default:Volumes=Band,
@@ -374,7 +374,7 @@
 
 % First some helpers:
 
-\starttexdefinition btx:default:composed-title
+\starttexdefinition mutable protected btx:default:composed-title
     \begingroup
         \language[\currentbtxlanguage]
         \btxflush{title}
@@ -385,7 +385,7 @@
     \endgroup
 \stoptexdefinition
 
-\starttexdefinition btx:default:title
+\starttexdefinition mutable protected btx:default:title
     \btxdoif {title} {
         \btxspace
         \btxstartstyleandcolor [default:list:title:\currentbtxcategory]
@@ -397,7 +397,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:default:author
+\starttexdefinition mutable protected btx:default:author
     \btxdoif {author} {
         \btxflush{author}
         \doif {\btxfoundname{author}} {editor} {
@@ -412,12 +412,12 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:default:year
+\starttexdefinition mutable protected btx:default:year
     \btxflush{year}
     \btxflushsuffix
 \stoptexdefinition
 
-\starttexdefinition btx:default:journal
+\starttexdefinition mutable protected btx:default:journal
     \btxdoif {journal} {
         \btxspace
         \btxstartstyleandcolor [default:list:journal]
@@ -450,7 +450,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:default:editionset
+\starttexdefinition mutable protected btx:default:editionset
     \btxdoif {editionset} {
         \removeunwantedspaces
         \removepunctuation
@@ -483,7 +483,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:default:publisher
+\starttexdefinition mutable protected btx:default:publisher
     \btxdoif {publisher} {
         \btxflush{publisher}
         \btxcomma

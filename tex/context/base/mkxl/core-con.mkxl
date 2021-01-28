@@ -32,8 +32,8 @@
 % needed for arab:
 
 \permanent\protected\def\isolateseparators % even works with list separator overloading
-  {\def\spr##1{{##1}}%            % we can probably best mess around with zwj
-   \def\stp##1{{##1}}}            % and friends
+  {\def\spr##1{{##1}}% % we can probably best mess around with zwj
+   \def\stp##1{{##1}}} % and friends
 
 %D \macros
 %D   {numbers}
@@ -449,7 +449,7 @@
      \normalyear\normalmonth\normalday
    \endgroup}
 
-\permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
+\permanent\tolerant\protected\def\setdate[#1]% sets the date !
   {\dontleavehmode
    \ifparameter#1\or
      \begingroup
@@ -462,8 +462,12 @@
         \normalday  \number\directdummyparameter\c!d\relax
         \normalmonth\number\directdummyparameter\c!m\relax
         \normalyear \number\directdummyparameter\c!y\relax}%
-   \fi
+   \fi}
+
+\permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
+  {\dontleavehmode
    \begingroup
+   \setdate[#1]% sets the date !
    \the\everycurrentdate
    \edef\forceddatespecification{#2}%
    \syst_converters_check_date_specification\forceddatespecification
@@ -484,14 +488,14 @@
 %D The currenttime is actually the jobtime. You can specify a pattern similar
 %D to the previous date macro using the keys \type {h}, \type {m} and a separator.
 
+\mutable\let\currenthour  \!!plusone
+\mutable\let\currentminute\!!plusone
+\mutable\let\currentsecond\!!plusone
+
 \permanent\protected\def\calculatecurrenttime
   {\edef\currenthour  {\clf_hour  }%
    \edef\currentminute{\clf_minute}%
    \edef\currentsecond{\clf_second}}
-
-\let\currenthour  \!!plusone
-\let\currentminute\!!plusone
-\let\currentsecond\!!plusone
 
 % \def\currenttimespecification{h,:,m}
 

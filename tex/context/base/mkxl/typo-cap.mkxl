@@ -213,7 +213,8 @@
     \enforced\let\cap\autocap
 \to \everydump
 
-\aliased\let\kap\cap          % for old times sake
+\ifdefined\kap\else \aliased\let\kap\cap \fi % for old times sake
+
 \aliased\let\Caps\SmallCapped % for old times sake
 
 \aliased\let\mixedcaps\pseudoMixedCapped

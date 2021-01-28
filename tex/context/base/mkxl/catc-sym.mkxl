@@ -53,13 +53,13 @@
 
 \unprotect
 
-%immutable\edef\_n_u_l_{\expandtoken \othercatcode \zerocount} % nul(l)
-%immutable\edef\_s_o_h_{\expandtoken \othercatcode \plusone  } % start of header       ^^^^0001
-\immutable\edef\_s_t_x_{\expandtoken \othercatcode \plustwo  } % start of text         ^^^^0002
-\immutable\edef\_e_t_x_{\expandtoken \othercatcode \plusthree} % end of text           ^^^^0003
-\immutable\edef\_e_o_t_{\expandtoken \othercatcode \plusfour } % end of transmission   ^^^^0004
-%immutable\edef\_e_n_q_{\expandtoken \othercatcode \plusfive } % enquiry
-%immutable\edef\_a_c_k_{\expandtoken \othercatcode \plussix  } % aknowledgement
+%immutable\edef\s!n_u_l_token{\expandtoken \othercatcode \zerocount} % nul(l)
+%immutable\edef\s!s_o_h_token{\expandtoken \othercatcode \plusone  } % start of header       ^^^^0001
+%immutable\edef\s!s_t_x_token{\expandtoken \othercatcode \plustwo  } % start of text         ^^^^0002
+%immutable\edef\s!e_t_x_token{\expandtoken \othercatcode \plusthree} % end of text           ^^^^0003
+%immutable\edef\s!e_o_t_token{\expandtoken \othercatcode \plusfour } % end of transmission   ^^^^0004
+%immutable\edef\s!e_n_q_token{\expandtoken \othercatcode \plusfive } % enquiry
+%immutable\edef\s!a_c_k_token{\expandtoken \othercatcode \plussix  } % aknowledgement
 
 \protect
 

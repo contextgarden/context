@@ -233,6 +233,9 @@
 \permanent\protected\def\grph_nodes_code#1%
   {\etoksapp\t_meta_nodes{#1}}
 
+\aliased\let\mpcode    \relax
+\aliased\let\nodeMPcode\relax
+
 \appendtoks
    \enforced\let\nodeMPcode\grph_nodes_code
    \enforced\let\mpcode    \grph_nodes_code

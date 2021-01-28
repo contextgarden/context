@@ -718,7 +718,7 @@
      \fi
    \fi}
 
-\protected\def\setmaxdepth
+\permanent\protected\def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
 \newskip \usedbaselineskip  % These used to be \normal... but that isn't pretty
@@ -793,10 +793,10 @@
 %D \rm \saveinterlinespace .... {\ss \restoreinterlinespace .... \endgraf}
 %D \stoptyping
 
-\let\restoreinterlinespace\relax
+\aliased\let\restoreinterlinespace\relax
 
 \permanent\protected\def\saveinterlinespace
-  {\protected\edef\restoreinterlinespace
+  {\enforced\permanent\protected\edef\restoreinterlinespace
      {\lineheight         \the\lineheight
       \openstrutheight    \the\openstrutheight
       \openstrutdepth     \the\openstrutdepth
@@ -1358,7 +1358,8 @@
 % attributes
 
 \newcount\c_spac_keep_lines_together
-\let\restoreinterlinepenalty\relax
+
+\aliased\let\restoreinterlinepenalty\relax
 
 \protected\def\spac_penalties_restore
   {\global\enforced\let\restoreinterlinepenalty\relax

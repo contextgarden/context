@@ -120,9 +120,6 @@
 
 % \testfeatureonce{100000}{\color[red]{}} % 1.046 => 0.541
 
-\let\g_color\empty
-\let\g_style\empty
-
 \permanent\protected\def\switchtocolor[#1]{\begincsname#1\endcsname}
 
 % transparency

@@ -58,7 +58,7 @@
    \immutable\integerdef#1\c_syst_catcodes_n
    \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
 
-\newtoks \everysetdefaultcatcodes
+\newtoks\everysetdefaultcatcodes
 
 \everysetdefaultcatcodes % this might get dropped
   {\catcode\backslashasciicode\othercatcode
@@ -167,14 +167,14 @@
 
 \def\syst_catcodes_reinstate_normal
   {\begingroup
-   \edef\c_syst_char_code{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\c_syst_char_code
+   \edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \global\letcharcode\c_syst_catcodes_b\temp
    \endgroup}
 
 \def\syst_catcodes_reinstate_unexpanded
   {\begingroup
-   \protected\edef\c_syst_char_code{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\c_syst_char_code
+   \protected\edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \global\letcharcode\c_syst_catcodes_b\temp
    \endgroup}
 
 \newconstant\defaultcatcodetable
@@ -249,7 +249,7 @@
      -%
    \fi}
 
-\def\catcodetablename
+\permanent\def\catcodetablename
   {\ifnum\currentcatcodetable>\zerocount
      \csname\??catcodetablen\number\currentcatcodetable\endcsname
    \else

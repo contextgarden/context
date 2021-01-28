@@ -473,6 +473,14 @@
 \newconditional\fieldisvertical
 \newconditional\fieldishorizontal
 
+\mutable\let\currentfieldtotalframed  \empty
+\mutable\let\currentfieldlabelframed  \empty
+\mutable\let\currentfieldcontentframed\empty
+
+\mutable\let\fieldtotalframedparameterhash  \empty % weird that we have to flag this
+\mutable\let\fieldlabelframedparameterhash  \empty % idem
+\mutable\let\fieldcontentframedparameterhash\empty % idem
+
 \permanent\tolerant\protected\def\field[#tag]#spacer[#label]% can be sped up with \setupcurrentfieldtotalframed etc
   {\iflocation
      \dontleavehmode

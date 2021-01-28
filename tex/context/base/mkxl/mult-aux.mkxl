@@ -996,7 +996,7 @@
 % many assignments and mechanism that do are also slow; the advantage is mostly nicer
 % in tracing
 
-\let\c_mult_set\relax
+\mutable\let\c_mult_set\relax
 
 \protected\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
   {\newcount#3%

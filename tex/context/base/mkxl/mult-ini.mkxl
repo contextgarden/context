@@ -735,20 +735,20 @@
 
 %D For at the \LUA\ end (experiment):
 
-\def\ui_c#1#2{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}%
-              \immutable\gdefcsname\k!prefix!#2\endcsname{#1}} % backmapping from non english
-\def\ui_s  #1{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}%
-              \immutable\gdefcsname\k!prefix!#1\endcsname{#1}} % backmapping from non english
-\def\ui_v#1#2{\immutable\gdefcsname\v!prefix!#1\endcsname{#2}}
-\def\ui_e#1#2{\immutable\gdefcsname\e!prefix!#1\endcsname{#2}}
-\def\ui_a#1#2{\frozen\protected\def#2{#1}} % will go away
-
-\startinterface english
-
-    \def\ui_c#1#2{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}}
-    \def\ui_s  #1{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}}
-
-\stopinterface
+% \def\ui_c#1#2{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}%
+%               \immutable\gdefcsname\k!prefix!#2\endcsname{#1}} % backmapping from non english
+% \def\ui_s  #1{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}%
+%               \immutable\gdefcsname\k!prefix!#1\endcsname{#1}} % backmapping from non english
+% \def\ui_v#1#2{\immutable\gdefcsname\v!prefix!#1\endcsname{#2}}
+% \def\ui_e#1#2{\immutable\gdefcsname\e!prefix!#1\endcsname{#2}}
+% \def\ui_a#1#2{\frozen\protected\def#2{#1}} % will go away
+%
+% \startinterface english
+%
+%     \def\ui_c#1#2{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}}
+%     \def\ui_s  #1{\immutable\gdefcsname\c!prefix!#1\endcsname{#1}}
+%
+% \stopinterface
 
 %D So much for the basic multi||lingual interface commands. The macro's can be
 %D enhanced with more testing facilities, but for the moment they suffice.

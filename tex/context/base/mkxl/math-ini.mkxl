@@ -702,7 +702,7 @@
 %definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
 \definemathcommand [joinrel]   [rel] {\mkern-3mu}
 
-\chardef\c_math_strut"28
+\immutable\chardef\c_math_strut"28
 
 % \protected\def\math_strut_htdp#1%
 %   {\s!height\fontcharht#1\c_math_strut

@@ -83,9 +83,9 @@
 \def\buff_parallel_define_instance#name#instance%
   {\normalexpanded{\buff_parallel_define_saved[#instance][#name]}%
    \definebuffer[#instance]%
-  %\edef\t_buff_parallel{\csname\??parallelhandler#name\endcsname}%
-   \expandafter\let\expandafter\t_buff_parallel\csname\??parallelhandler#name\endcsname
-   \toksapp\t_buff_parallel{\edef\currentparallelinstance{#instance}\buff_process_parallel_instance\relax}%
+   \toksapp
+     \csname\??parallelhandler#name\endcsname
+     {\edef\currentparallelinstance{#instance}\buff_process_parallel_instance\relax}%
    \setuevalue{\e!stop#instance}{\buff_parallel_save{#instance}}}
 
 \pushoverloadmode

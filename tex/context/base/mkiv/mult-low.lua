@@ -45,6 +45,8 @@ return {
         --
         "attributeunsetvalue",
         --
+        "statuswrite",
+        --
         "uprotationangle", "rightrotationangle", "downrotationangle", "leftrotationangle",
         --
         "inicatcodes",
