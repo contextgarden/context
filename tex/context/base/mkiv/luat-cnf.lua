@@ -27,6 +27,8 @@ texconfig.max_strings     =   500000
 texconfig.hash_extra      =   200000
 texconfig.function_size   =    32768
 texconfig.properties_size =    10000
+texconfig.level_max       =      500
+texconfig.level_chr       =       46 -- period
 
 if CONTEXTLMTXMODE > 0 then
 
@@ -70,6 +72,8 @@ local variablenames = CONTEXTLMTXMODE > 0 and {
     token_size      = true,
     node_size       = true,
     buffer_size     = true,
+    level_max       = true,
+    level_chr       = true,
 } or {
     error_line      = false,
     half_error_line = false,
@@ -85,6 +89,8 @@ local variablenames = CONTEXTLMTXMODE > 0 and {
     function_size   = true,
     properties_size = true,
     fix_mem_init    = true,
+    level_max       = true,
+    level_chr       = true,
 }
 
 local stub = [[

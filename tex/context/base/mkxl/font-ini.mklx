@@ -814,7 +814,7 @@
     %\scaledfontsize\plusone
      \let\somefontspec\empty
      \let\lastrawfontcall\relax
-     \letcsname#csname\endcsname\relax
+     \mutable\letcsname#csname\endcsname\relax
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
@@ -923,7 +923,7 @@
     %\scaledfontsize\plusone
      \let\somefontspec\empty
      \let\lastrawfontcall\relax
-     \letcsname#csname\endcsname\relax
+     \mutable\letcsname#csname\endcsname\relax
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
      %
@@ -940,7 +940,7 @@
         \edef\somefontsizey{\glyphyscale\somefontsizey\relax}%
      \fi
      \ifempty\fontclass\else\global\fi
-     \protected\edefcsname#csname\endcsname
+     \mutable\protected\edefcsname#csname\endcsname
        {\setfontid\the\fontid\csname#csname\endcsname\relax
         \glyphscale\the\glyphscale\relax
         \somefontsizex
@@ -1061,11 +1061,11 @@
 
 \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
   {\doifelsesetups{#settings}%
-     {\setuvalue{#name}{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
-     {\setuvalue{#name}{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
+     {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
+     {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
 
 \def\font_basics_define_font_b[#name][#specification][#dummy]%
-  {\setuvalue{#name}{\font_basics_define_font_without_parameters{#name}{#specification}}}
+  {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_without_parameters{#name}{#specification}}}
 
 \def\font_basics_define_font_with_parameters#name#specification#settings%
   {\font_basics_define_font_without_parameters{#name}{#specification}%
@@ -1086,7 +1086,7 @@
        \csname#name\endcsname
        \glet\lastglobalrawfontcall\lastrawfontcall
      \endgroup
-     \letcsname#name\endcsname\lastglobalrawfontcall
+     \aliased\letcsname#name\endcsname\lastglobalrawfontcall
    \fi}
 
 %D The instance namespace protection makes the switch local so that we can redefine a
@@ -2496,7 +2496,7 @@
 %D We don't support language specific synonyms here.
 
 \permanent\tolerant\protected\def\definebodyfontswitch[#command]#spacer[#specification]% no longer a commalist (not useful)
-  {\setvalue{#command}{\switchtobodyfont[#specification]}}%
+  {\frozen\protected\defcsname#command\endcsname{\switchtobodyfont[#specification]}}%
 
 %D \macros
 %D   {setsmallbodyfont,setmainbodyfont,setbigbodyfont}

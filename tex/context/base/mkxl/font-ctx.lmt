@@ -1362,6 +1362,7 @@ do  -- else too many locals
                     end
                     mathematics.resolvefallbacks(tfmdata,specification,fallbacks)
                     context(function()
+                        -- We're doing math fallbacks.
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
                         tfmdata.original = specification.specification
@@ -1370,6 +1371,7 @@ do  -- else too many locals
                         properties.id = id -- already set
                         definers.register(tfmdata,id) -- to be sure, normally already done
                         texdefinefont(global,cs,id)
+                     -- texdefinefont(cs,id,global and "global")
                         constructors.finalize(tfmdata)
                         if trace_defining then
                             report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
@@ -1407,6 +1409,7 @@ do  -- else too many locals
                     properties.id = id -- already set
                     definers.register(tfmdata,id) -- to be sure, normally already done
                     texdefinefont(global,cs,id)
+                 -- texdefinefont(cs,id,global and "global")
                     constructors.finalize(tfmdata)
                     if trace_defining then
                         report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
@@ -1426,6 +1429,7 @@ do  -- else too many locals
                 end
                 csnames[tfmdata] = specification.cs
                 texdefinefont(global,cs,tfmdata)
+             -- texdefinefont(cs,tfmdata,global and "global")
                 -- resolved (when designsize is used):
                 local size = round(fontdata[tfmdata].parameters.size or 0)
              -- ctx_setsomefontsize(size .. "sp")
@@ -1541,6 +1545,7 @@ do  -- else too many locals
             elseif type(tfmdata) == "number" then
                 if cs then
                     texdefinefont(specification.global,cs,tfmdata)
+                 -- texdefinefont(cs,tfmdata,specification.global and "global")
                     csnames[tfmdata] = cs
                 end
                 stoptiming(fonts)
@@ -1551,6 +1556,7 @@ do  -- else too many locals
                 definers.register(tfmdata,id)
                 if cs then
                     texdefinefont(specification.global,cs,id)
+                 -- texdefinefont(cs,id,specification.global and "global")
                     csnames[id] = cs
                 end
                 constructors.finalize(tfmdata)

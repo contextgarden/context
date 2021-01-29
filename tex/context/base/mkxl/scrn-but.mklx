@@ -675,6 +675,14 @@
    \endgroup
    \ignorespaces}
 
+\aliased\let\startraw \aliased\let\stopraw\relax
+\aliased\let\startbut \aliased\let\stopbut\relax
+\aliased\let\startgot \aliased\let\stopgot\relax
+\aliased\let\startnop \aliased\let\stopnop\relax
+\aliased\let\starttxt \aliased\let\stoptxt\relax
+\aliased\let\startrul \aliased\let\stoprul\relax
+\aliased\let\startcom \aliased\let\stopcom\relax
+
 \protected\def\scrn_menu_raw_start[#action]#text\stopraw
   {\scrn_menu_action_start
    \gotobox{\ignorespaces#text\unskip}[#action]%

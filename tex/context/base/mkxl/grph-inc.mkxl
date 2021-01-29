@@ -76,6 +76,8 @@
    \c!hfactor        =,
    \c!wfactor        =,
    \c!factor         =,
+   \c!defaultwidth   =8\lineheight,
+   \c!defaultheight  =6\lineheight,
    \c!maxwidth       =\externalfigureparameter\c!width,
    \c!maxheight      =\externalfigureparameter\c!height,
    \c!xscale         =,
@@ -456,9 +458,9 @@
   [\c!hfactor    =\externalfigureparameter\c!hfactor,
    \c!wfactor    =\externalfigureparameter\c!wfactor,
    \c!factor     =\externalfigureparameter\c!factor,
-   \c!maxwidth   =\externalfigureparameter\c!maxwidth ,
+   \c!maxwidth   =\externalfigureparameter\c!maxwidth,
    \c!maxheight  =\externalfigureparameter\c!maxheight,
-   \c!equalwidth =\externalfigureparameter\c!equalwidth ,
+   \c!equalwidth =\externalfigureparameter\c!equalwidth,
    \c!equalheight=\externalfigureparameter\c!equalheight,
    \c!xscale     =\externalfigureparameter\c!xscale,
    \c!yscale     =\externalfigureparameter\c!yscale,
@@ -492,9 +494,6 @@
 \newbox \foundexternalfigure
 \newtoks\externalfigurepostprocessors
 
-\def\defaultfigurewidth  {8\lineheight} % permanent ? frozen ?
-\def\defaultfigureheight {6\lineheight} % permanent ? frozen ?
-
 \permanent\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
 \permanent\def\figurewidth         {\clf_figurestatus{width}{0}sp}
 \permanent\def\figureheight        {\clf_figurestatus{height}{0}sp}
@@ -513,8 +512,8 @@
 \permanent\def\figurefilecache     {\clf_figurerequest{cache}{}}
 \permanent\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
 
-\permanent\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\defaultfigurewidth\relax}sp}
-\permanent\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\defaultfigureheight\relax}sp}
+\permanent\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\externalfigureparameter\c!defaultwidth\relax}sp}
+\permanent\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\externalfigureparameter\c!defaultheight\relax}sp}
 \permanent\def\figurexresolution   {\clf_figureused{xresolution}{0}}
 \permanent\def\figureyresolution   {\clf_figureused{yresolution}{0}}
 \permanent\def\figureorientation   {\clf_figureused{orientation}{1}}
@@ -573,8 +572,8 @@
       {\externalfigureparameter\c!directory}%
     \clf_figure_reset
       \foundexternalfigure
-      \defaultfigurewidth
-      \defaultfigureheight
+      \externalfigureparameter\c!defaultwidth
+      \externalfigureparameter\c!defaultheight
     \relax
 \to \everyexternalfigureresets
 
@@ -651,7 +650,7 @@
   {\hss\egroup\egroup}
 
 \permanent\protected\def\emptyfoundexternalfigure % sort of obsolete
-  {\startfoundexternalfigure\defaultfigurewidth\defaultfigureheight
+  {\startfoundexternalfigure{\externalfigureparameter\c!defaultwidth}{\externalfigureparameter\c!defaultheight}%
    \stopfoundexternalfigure}
 
 % \doifmodeelse{*\v!last}
@@ -807,10 +806,10 @@
    \d_grph_include_collection_maxheight\zeropoint}
 
 \permanent\protected\def\stopexternalfigurecollection
-  {\setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minwidth }{\the\d_grph_include_collection_minwidth }%
-   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxwidth }{\the\d_grph_include_collection_maxwidth }%
-   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minheight}{\the\d_grph_include_collection_minheight}%
-   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxheight}{\the\d_grph_include_collection_maxheight}%
+  {\xdefcsname\??externalfigurecollection\currentexternalfigurecollection:\c!minwidth \endcsname{\the\d_grph_include_collection_minwidth }%
+   \xdefcsname\??externalfigurecollection\currentexternalfigurecollection:\c!maxwidth \endcsname{\the\d_grph_include_collection_maxwidth }%
+   \xdefcsname\??externalfigurecollection\currentexternalfigurecollection:\c!minheight\endcsname{\the\d_grph_include_collection_minheight}%
+   \xdefcsname\??externalfigurecollection\currentexternalfigurecollection:\c!maxheight\endcsname{\the\d_grph_include_collection_maxheight}%
    \endgroup}
 
 \permanent\def\externalfigurecollectionparameter#1#2%

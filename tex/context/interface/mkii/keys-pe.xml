@@ -780,6 +780,8 @@
 		<cd:constant name='deepnumbercommand' value='فرمان‌شماره‌عمیق'/>
 		<cd:constant name='deeptextcommand' value='فرمان‌متن‌عمیق'/>
 		<cd:constant name='default' value='پیش‌فرض'/>
+		<cd:constant name='defaultheight' value='defaultheight'/>
+		<cd:constant name='defaultwidth' value='defaultwidth'/>
 		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='تاخیر'/>
 		<cd:constant name='depth' value='عمق'/>

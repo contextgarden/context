@@ -277,8 +277,8 @@
    \setstructuresynchronization\currentstructurelistnumber
    \endgroup}
 
-\let\currentsectioncountervalue \!!zerocount % redefined later
-\let\previoussectioncountervalue\!!zerocount % redefined later
+\mutable\let\currentsectioncountervalue \!!zerocount % redefined later
+\mutable\let\previoussectioncountervalue\!!zerocount % redefined later
 
 % We can access the (stored) data with the following macros.
 %
@@ -474,6 +474,10 @@
 \appendtoks
    \setstructurelevel\currenthead{\thenamedheadlevel\currenthead}%
 \to \everyredefinehead
+
+\mutable\let\currentsectionheadcoupling\empty
+\mutable\let\currentsectionheadsection \empty
+\mutable\let\currentsectionlevel       \empty
 
 \appendtoks
     % beware, this is a global register

@@ -376,6 +376,9 @@
 
 % currentstructurecomponent => \strc_current_ or just \m_strc_
 
+\mutable\let\currentname   \empty
+\mutable\let\currentcounter\empty
+
 \protected\def\strc_counters_register_component#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %

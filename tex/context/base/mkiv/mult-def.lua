@@ -8368,6 +8368,14 @@ return {
    ["pe"]="پیش‌فرض",
    ["ro"]="implicit",
   },
+  ["defaultwidth"]={
+   ["en"]="defaultwidth",
+   ["nl"]="defaultbreedte",
+  },
+  ["defaultheight"]={
+   ["en"]="defaultheight",
+   ["nl"]="defaulthoogte",
+  },
   ["delay"]={
    ["cs"]="prodleva",
    ["de"]="wartezeit",

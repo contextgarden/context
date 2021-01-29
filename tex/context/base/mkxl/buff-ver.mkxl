@@ -448,8 +448,8 @@
 %D The basic display verbatim commands are defined in an indirect way. As we
 %D will see, they are a specific case of a more general mechanism.
 
-\let\beginofverbatimlines\relax % hooks
-\let\endofverbatimlines  \relax % hooks
+\mutable\let\beginofverbatimlines\relax % hooks
+\mutable\let\endofverbatimlines  \relax % hooks
 
 \protected\def\buff_verbatim_typing_start#1% tricky non standard lookahead
   {\begingroup

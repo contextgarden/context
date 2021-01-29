@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.01.28 18:17}
+\immutable\edef\contextversion{2021.01.29 19:41}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -52,11 +52,11 @@
 
 \ifdefined\normalinput \else \aliased\let\normalinput\input \fi
 
-\def\loadmarkfile#1{\normalinput{#1.\mksuffix}}
-\def\loadmkivfile#1{\normalinput{#1.mkiv}}
-\def\loadmkvifile#1{\normalinput{#1.mkvi}}
-\def\loadmkxlfile#1{\normalinput{#1.mkxl}}
-\def\loadmklxfile#1{\normalinput{#1.mklx}}
+\permanent\protected\def\loadmarkfile#1{\normalinput{#1.\mksuffix}}
+\permanent\protected\def\loadmkivfile#1{\normalinput{#1.mkiv}}
+\permanent\protected\def\loadmkvifile#1{\normalinput{#1.mkvi}}
+\permanent\protected\def\loadmkxlfile#1{\normalinput{#1.mkxl}}
+\permanent\protected\def\loadmklxfile#1{\normalinput{#1.mklx}}
 
 %D First we load the system modules. These implement a lot of manipulation macros.
 %D We start with setting up some basic \TEX\ machinery.

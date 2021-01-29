@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{luat-usr}{}
+\registerctxluafile{luat-usr}{autosuffix}
 
 %D A few goodies:
 %D
@@ -30,8 +30,8 @@
 %D
 %D \typebuffer \startlines \getbuffer \stoplines
 
-\let\luascript\clf_luascript  % todo: public implementors
-\let\luathread\clf_luathread  % todo: public implementors
+% \luascript % defined at the lua end
+% \luathread % defined at the lua end
 
 %D \macros
 %D   {definenamedlua}

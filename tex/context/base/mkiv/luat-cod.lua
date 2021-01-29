@@ -33,6 +33,8 @@ texconfig.stack_size      =   10000
 texconfig.function_size   =   32768
 texconfig.properties_size =   10000
 texconfig.fix_mem_init    = 1000000
+texconfig.level_max       =     500
+texconfig.level_chr       =      46 -- period
 
 -- registering bytecode chunks
 

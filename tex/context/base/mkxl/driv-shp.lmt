@@ -138,6 +138,7 @@ local flushcharacter
 local flushfontchar
 local flushrule
 local flushliteral
+local flushwhatsit
 
 -- make local
 
@@ -533,39 +534,6 @@ local function reset_dir_stack()
     dirstack = { }
 end
 
-local leaderlevel = 0
-
-local function flushlatelua(current,h,v)
-    -- Here we assume maganement by the lua function so currently we don't
-    -- check for leaderlevel.
-    return backends.latelua(current,h,v)
-end
-
-local function flushwriteout(current)
-    if leaderlevel == 0 then
-        backends.writeout(current)
-    end
-end
-
-local function flushopenout(current)
-    if leaderlevel == 0 then
-        backends.openout(current)
-    end
-end
-
-local function flushcloseout(current)
-    if leaderlevel == 0 then
-        backends.closeout(current)
-    end
-end
-
-local function flushsavepos(current,pos_h,pos_v)
-    jobpositions.lastx = pos_h
-    jobpositions.lasty = pos_v
-end
-
-local flushwhatsit
-
 local hlist_out, vlist_out  do
 
     local function applyanchor(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
@@ -732,7 +700,7 @@ local hlist_out, vlist_out  do
                                     end
                                 end
                                 local shift = getshift(leader)
-                                leaderlevel = leaderlevel + 1
+                                pushleaderlevel()
                                 while cur_h + width <= edge do
                                     local basepoint_h = 0
                                  -- local basepoint_v = shift
@@ -754,7 +722,7 @@ local hlist_out, vlist_out  do
                                     end
                                     cur_h = cur_h + width + lx
                                 end
-                                leaderlevel = leaderlevel - 1
+                                popleaderlevel()
                                 cur_h = edge - 10
                             else
                                 cur_h = cur_h + gluewidth
@@ -1050,7 +1018,7 @@ local hlist_out, vlist_out  do
                                     end
                                 end
                                 local shift = getshift(leader)
-                                leaderlevel = leaderlevel + 1
+                                pushleaderlevel()
                                 while cur_v + total <= edge do -- todo: <= edge - total
                                     -- synch_pos_with_cur(ref_h, ref_v, getshift(leader), cur_v + height)
                                     if pos_r == righttoleft_code then
@@ -1067,7 +1035,7 @@ local hlist_out, vlist_out  do
                                     end
                                     cur_v = cur_v + total + ly
                                 end
-                                leaderlevel = leaderlevel - 1
+                                popleaderlevel()
                                 cur_v = edge - 10
                             else
                                 cur_v = cur_v + glueheight
@@ -1215,52 +1183,21 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     initialize        = actions.initialize
     finalize          = actions.finalize
 
-    -- we need to do this once ...
+    updatefontstate   = flushers.updatefontstate
 
---    if not updatefontstate then
+    pushorientation   = flushers.pushorientation
+    poporientation    = flushers.poporientation
 
-        updatefontstate   = flushers.updatefontstate
+    pushleaderlevel   = flushers.pushleaderlevel
+    popleaderlevel    = flushers.popleaderlevel
 
-        pushorientation   = flushers.pushorientation
-        poporientation    = flushers.poporientation
-
-        flushcharacter    = flushers.character
-        flushfontchar     = flushers.fontchar
-        flushrule         = flushers.rule
-        flushsimplerule   = flushers.simplerule
-        flushspecialrule  = flushers.specialrule
-        flushliteral      = flushers.literal
-
-        flushwhatsit      = rawget(flushers,"whatsit")
-
-        if not flushwhatsit then
-            flushwhatsit = setmetatableindex ( {
-                [whatsitcodes.literal]        = flushliteral,
-                [whatsitcodes.latelua]        = flushlatelua,
-                [whatsitcodes.userdefined]    = function() end,      -- special purpose, handled in callbacks
-                [whatsitcodes.savepos]        = flushsavepos,        -- only used by generic packages
-                [whatsitcodes.save]           = flushers.save,
-                [whatsitcodes.restore]        = flushers.restore,
-                [whatsitcodes.setmatrix]      = flushers.setmatrix,
-                [whatsitcodes.open]           = flushopenout,        -- generic
-                [whatsitcodes.close]          = flushcloseout,       -- generic
-                [whatsitcodes.write]          = flushwriteout,       -- generic
-                [whatsitcodes.startmatrix]    = flushers.startmatrix,
-                [whatsitcodes.stopmatrix]     = flushers.stopmatrix,
-                [whatsitcodes.startscaling]   = flushers.startscaling,
-                [whatsitcodes.stopscaling]    = flushers.stopscaling,
-                [whatsitcodes.startrotation]  = flushers.startrotation,
-                [whatsitcodes.stoprotation]   = flushers.stoprotation,
-                [whatsitcodes.startmirroring] = flushers.startmirroring,
-                [whatsitcodes.stopmirroring]  = flushers.stopmirroring,
-                [whatsitcodes.startclipping]  = flushers.startclipping,
-                [whatsitcodes.stopclipping]   = flushers.stopclipping,
-                [whatsitcodes.setstate]       = flushers.setstate,
-            }, function(t, k) report("weird whatsit %a",k) return function() end end)
-            flushers.whatsit = flushwhatsit
-        end
-
---    end
+    flushcharacter    = flushers.character
+    flushfontchar     = flushers.fontchar
+    flushrule         = flushers.rule
+    flushsimplerule   = flushers.simplerule
+    flushspecialrule  = flushers.specialrule
+    flushliteral      = flushers.literal
+    flushwhatsit      = flushers.whatsit
 
     reset_dir_stack()
     reset_state()

@@ -989,11 +989,11 @@
 \let\delayedendstrut\relax
 \let\delayedstrut   \relax
 
-\let\localoffset\empty
-\let\localwidth \empty
-\let\localheight\empty
-\let\localformat\empty
-\let\localstrut \empty
+\mutable\let\localoffset\empty
+\mutable\let\localwidth \empty
+\mutable\let\localheight\empty
+\mutable\let\localformat\empty
+\mutable\let\localstrut \empty
 
 \protected\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset

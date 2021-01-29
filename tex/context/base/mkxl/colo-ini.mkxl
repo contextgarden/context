@@ -1220,10 +1220,10 @@
 %D \getbuffer
 %D \stopexample
 
-\let\currentcolorname\s!black % todo
-\let\outercolorname  \s!black % todo
+\mutable\let\currentcolorname\s!black % todo
+\mutable\let\outercolorname  \s!black % todo
 
-\let\colorformatseparator\space
+\mutable\let\colorformatseparator\space
 
 \permanent\def\MPcolor#1%
   {\clf_mpcolor
