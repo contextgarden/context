@@ -397,6 +397,7 @@
 \definefontfeature
   [mathematics]
   [mode=base,
+ % mode=none, % better, maybe do this last
    kern=yes,
  % liga=yes, % makes no sense
  % tlig=yes, % makes no sense
@@ -420,10 +421,8 @@
     \mathnolimitsmode\plusone % font driven (only opentype)
 \fi
 
-\ifdefined\mathitalicsmode
-    \mathitalicsmode\plusone   % simple noads become zero
-  % \mathitalicsmode\plustwo   % idem but inner is kept (for testing)
-\fi
+\mathitalicsmode\plusone    % 1 : add to simple noad
+%mathitalicsmode\plusthree  % 2 : add italic kerns for diagnostics
 
 % \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 

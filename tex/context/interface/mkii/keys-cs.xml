@@ -780,6 +780,8 @@
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
 		<cd:constant name='default' value='implicitni'/>
+		<cd:constant name='defaultheight' value='defaultheight'/>
+		<cd:constant name='defaultwidth' value='defaultwidth'/>
 		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='prodleva'/>
 		<cd:constant name='depth' value='hloubka'/>

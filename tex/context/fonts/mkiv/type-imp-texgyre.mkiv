@@ -14,6 +14,13 @@
 %D There are some weird ones that are never used .. all these Caps ... we can better
 %D split them into pagella-caps etc.
 
+%D The tx and px font setups depend on the definitions in px-math.lfg and tx-math.lfg
+%D and because these fonts (mappings, names) are not that stable you should not use
+%D these variants. At some point I will remove this because we have \OPENTYPE\ fonts
+%D that (mostly) work. The mechanism to construct virtual math fonts will probably stay
+%D around but I won't waste time on sorting out all the (changing) font hassles. Also,
+%D the T1 fonts involved are unlikely to be available.
+
 \definefontfeature
   [mathcollapseitalics]
   [collapseitalics=yes]

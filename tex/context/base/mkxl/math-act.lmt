@@ -229,8 +229,6 @@ sequencers.appendaction("mathparameters","system","mathematics.overloadparameter
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
 
-local virtualized = mathematics.virtualized
-
 -- no, it's a feature now (see good-mth):
 --
 -- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")

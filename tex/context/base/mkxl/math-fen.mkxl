@@ -124,15 +124,17 @@
        \fi
      \orelse\ifx\p_factor\v!none
        #3%
-       \s!height\zeropoint
-       \s!depth\zeropoint
+       \s!height\zeropoint % redundant with "exact"
+       \s!depth\zeropoint  % redundant with "exact"
        \ifempty\p_mathclass\else
          \s!class\p_mathclass
        \fi
        \s!axis
+       \s!exact % new
      % #2%
      \else
-       \scratchdimen\ifx\p_factor\v!fixed\scaledpoint\else\dimexpr\p_factor\bodyfontsize/2\relax\fi
+      %\scratchdimen\ifx\p_factor\v!fixed\scaledpoint\else\dimexpr\p_factor\bodyfontsize/2\relax\fi
+       \scratchdimen\ifx\p_factor\v!fixed\zeropoint\else\dimexpr\p_factor\bodyfontsize/2\relax\fi
        #3%
        \s!height\scratchdimen
        \s!depth\scratchdimen
@@ -140,6 +142,7 @@
          \s!class\p_mathclass
        \fi
        \s!axis
+       \s!exact
      \fi
      \Udelimiter#4\fam#1\relax
    \fi}
@@ -223,6 +226,11 @@
   {\advance\c_math_fenced_nesting\plusone
    \begingroup
    \edef\currentmathfence{#1}%
+% under test:
+\c_attr_mathsize\attributeunsetvalue
+\letmathfenceparameter\c!size\empty
+\letmathfenceparameter\c!factor\v!auto
+% so far
    \ifparameter#2\or\setupcurrentmathfence[#2]\fi
    \math_fenced_fenced_common
    \edef\p_size{\mathfenceparameter\c!size}%
@@ -598,15 +606,20 @@
 % 3: htdp * 1.33^n
 % 4: size * 1.33^n
 
-\setnewconstant\bigmathdelimitermethod \plusone
+\setnewconstant\bigmathdelimitermethod \plustwo     % \plusone
 \setnewconstant\bigmathdelimitervariant\plusthree
 
-\protected\def\plainbigdelimiters % traditional method
-  {\bigmathdelimitermethod\plustwo}
+\appendtoks
+    \bigmathdelimitermethod \mathfenceparameter\c!method\relax
+    \bigmathdelimitervariant\mathfenceparameter\c!alternative\relax
+\to \everysetupmathfence
 
-\plainbigdelimiters % is default for the moment but not so nice
+\setupmathfence[\c!method=1,\c!alternative=2]
 
-% \setconstant\bigmathdelimitermethod\plusone
+% \protected\def\plainbigdelimiters % traditional method
+%   {\bigmathdelimitermethod\plustwo}
+%
+% \plainbigdelimiters % is default for the moment but not so nice
 
 \installcorenamespace{mathbig}
 

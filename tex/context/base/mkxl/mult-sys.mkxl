@@ -108,6 +108,7 @@
 \definesystemconstant {author}
 \definesystemconstant {auto}
 \definesystemconstant {axis}
+\definesystemconstant {exact}
 \definesystemconstant {a}
 \definesystemconstant {bf}
 \definesystemconstant {big}

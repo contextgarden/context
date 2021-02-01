@@ -785,6 +785,8 @@ function constructors.scale(tfmdata,specification)
     --
     properties.setitalics = hasitalics -- for postprocessing
     --
+ -- if hasmath then properties.mode = "none" end -- possible optimization but it needs testing
+    --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
     constructors.trytosharefont(target,tfmdata)

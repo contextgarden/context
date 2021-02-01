@@ -400,6 +400,7 @@ return {
   "noaligned",
   "noboundary",
   "nohrule",
+  "norelax",
   "normalizelinemode",
   "nospaces",
   "novrule",

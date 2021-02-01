@@ -5,13 +5,13 @@
 
 % TeX Gyre Pagella (Palatino)
 
-rpxpplr  TeXGyrePagella-Regular     "encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
-rpxpplb  TeXGyrePagella-Bold        "encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
-rpxpplri TeXGyrePagella-Italic      "encq8r ReEncodeFont" <q-8r.enc <qplri.pfb
-rpxpplbi TeXGyrePagella-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qplbi.pfb
-% no idea why these were added
-rpxpplro TeXGyrePagella-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
-rpxpplbo TeXGyrePagella-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
+% rpxpplr  TeXGyrePagella-Regular     "encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+% rpxpplb  TeXGyrePagella-Bold        "encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
+% rpxpplri TeXGyrePagella-Italic      "encq8r ReEncodeFont" <q-8r.enc <qplri.pfb
+% rpxpplbi TeXGyrePagella-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qplbi.pfb
+% % no idea why these were added
+% rpxpplro TeXGyrePagella-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+% rpxpplbo TeXGyrePagella-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
 
 % PX Text
 

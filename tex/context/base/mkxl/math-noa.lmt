@@ -854,7 +854,7 @@ do
                 local chr = getchar(delimiter)
                 if chr > 0 then
                     local fam = getfam(delimiter)
-                    local id = getfontoffamily(fam)
+                    local id  = getfontoffamily(fam)
                     if id > 0 then
                         local data = fontdata[id]
                         local char = mathematics.big(data,chr,size,method)

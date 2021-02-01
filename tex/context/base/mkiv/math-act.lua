@@ -228,8 +228,6 @@ sequencers.appendaction("mathparameters","system","mathematics.overloadparameter
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
 
-local virtualized = mathematics.virtualized
-
 -- no, it's a feature now (see good-mth):
 --
 -- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
@@ -245,6 +243,8 @@ mathematics.tweaks = tweaks
 
 -- these could go to math-fbk
 
+-- local virtualized = mathematics.virtualized
+--
 -- local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
 --     local characters = target.characters
 --  -- if not characters[newchr] then -- xits needs an enforce
@@ -602,10 +602,10 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                 fonts = { }
                 target.fonts = fonts
             end
-            -- 
+            --
             target.type = "virtual"
             target.properties.virtualized = true
-            -- 
+            --
             if #fonts == 0 then
                 fonts[1] = { id = 0, size = size } -- self, will be resolved later
             end

@@ -6,18 +6,10 @@ if not modules then modules = { } end modules ['math-vfu'] = {
     license   = "see context related readme files"
 }
 
--- All these math vectors .. thanks to Aditya and Mojca they become
--- better and better. If you have problems with math fonts or miss
--- characters report it to the ConTeXt mailing list. Also thanks to
--- Boguslaw for finding a couple of errors.
---
--- This mechanism will stay around. Even when we've switched to the
--- real fonts, one can still say:
---
--- \enablemode[lmmath,pxmath,txmath]
---
--- to get the virtual counterparts. There are still areas where the
--- virtuals are better.
+-- All these math vectors .. thanks to Aditya and Mojca they become better and
+-- better. If you have problems with math fonts or miss characters report it to the
+-- ConTeXt mailing list. Also thanks to Boguslaw for finding a couple of errors.
+-- This mechanism will eventually disappear.
 
 -- 20D6 -> 2190
 -- 20D7 -> 2192
@@ -772,7 +764,10 @@ function vfmath.define(specification,set,goodies)
     local mathparameters = { }
     local descriptions   = { }
     local metadata       = { }
-    local properties     = { }
+    local properties     = {
+        hasitalics = true,
+        hasmath    = true,
+    }
     local goodies        = { }
     local main           = {
         metadata         = metadata,
@@ -783,6 +778,9 @@ function vfmath.define(specification,set,goodies)
         mathparameters   = mathparameters,
         fonts            = fontlist,
         goodies          = goodies,
+        --
+        fullname         = properties.fullname,
+        nomath           = false,
     }
     --
     for key, value in next, parent do
@@ -818,21 +816,15 @@ function vfmath.define(specification,set,goodies)
         setmetatableindex(goodies,parent.goodies)
     end
     --
-    properties.hasitalics  = true
-    properties.hasmath     = true
-    --
     local fullname = properties.fullname -- parent via mt
     if fullname then
         unique = unique + 1
         properties.fullname = fullname .. "-" .. unique
     end
     --
-    -- we need to set some values in main as well (still?)
-    --
-    main.fullname = properties.fullname
-    main.nomath   = false
-    --
-    parameters.x_height = parameters.x_height or 0
+    if not parameters.x_height then
+        parameters.x_height = 0
+    end
     --
     local already_reported = false
     local parameters_done = false
@@ -905,19 +897,22 @@ function vfmath.define(specification,set,goodies)
                         local fc       = fs.characters
                         local fd       = fs.descriptions
                         local si       = shared[s]
+                        local fontname = fs.properties.name or "unknown"
                         local skewchar = ss.skewchar
-                        local indices  = { }
+                        local backmap  = ss.backmap
                         -- we need to know the original order because the loader has made a
                         -- unicode font of it and weird glyphnames have spoiled that a bit
-                        for unicode, character in next, fc do
-                            indices[character.order or character.index or unicode] = unicode
+                        if backmap then
+                            backmap = { }
+                            for unicode, character in next, fc do
+                                backmap[character.order or character.index or unicode] = unicode
+                            end
                         end
                         for unicode, i in next, vector do
-                            -- so, here we have an extra remapping (compared to mkiv)
-                            local index = indices[i]
+                            -- So, here we can have an extra remapping (compared to mkiv).
+                            local index = backmap and backmap[i] or i
                             local fci = fc[index]
                             if not fci then
-                                local fontname = fs.properties.name or "unknown"
                                 local rf = reported[fontname]
                                 if not rf then rf = { } reported[fontname] = rf end
                                 local rv = rf[vectorname]
@@ -927,9 +922,9 @@ function vfmath.define(specification,set,goodies)
                                     if trace_virtual then
                                         local d = chardata[unicode].description
                                         if index then
-                                            report_virtual("unicode slot %U has no index %H in vector %a for font %a (%S)",unicode,index,vectorname,fontname,d)
+                                            report_virtual("character %C has no index %H in vector %a for font %a (%S)",unicode,index,vectorname,fontname,d)
                                         else
-                                            report_virtual("unicode slot %U has no entry in vector %a for font %a (%S)",unicode,vectorname,fontname,d)
+                                            report_virtual("character %C has no entry in vector %a for font %a (%S)",unicode,vectorname,fontname,d)
                                         end
                                     elseif not already_reported then
                                         report_virtual("the mapping is incomplete for %a at %p",name,size)
@@ -946,8 +941,15 @@ function vfmath.define(specification,set,goodies)
                                 local kerns  = fci.kerns
                                 local width  = fci.width
                                 local italic = fci.italic
+-- if trace_virtual then
+--     report_virtual("character %C uses index %H in vector %a for font %a, %s, %s",
+--         unicode,index,vectorname,fontname,
+--         kerns and "adding kerns" or "no kerns",
+--         kerns and "adding italic" or "no italic"
+--     )
+-- end
                                 if italic and italic > 0 then
-                                        -- int_a^b
+                                    -- int_a^b
                                     if isextension then
                                         width = width + italic -- for obscure reasons the integral as a width + italic correction
                                     end
@@ -1097,6 +1099,9 @@ function vfmath.define(specification,set,goodies)
             mathematics.extras.copy(main) --not needed here (yet)
         end
     end
+-- inspect(characters[0x1D465])
+-- inspect(fonts.encodings.math["tex-it"])
+-- inspect(fontlist)
     --
     main.mathparameters = mathparameters -- still traditional ones
     -- This should change (some day) as it's the only place where we look forward,

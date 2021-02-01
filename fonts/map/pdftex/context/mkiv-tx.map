@@ -5,24 +5,24 @@
 
 % TeX Gyre Termes (Times)
 
-rtxptmr  TeXGyreTermes-Regular     "encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
-rtxptmb  TeXGyreTermes-Bold        "encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
-rtxptmri TeXGyreTermes-Italic      "encq8r ReEncodeFont" <q-8r.enc <qtmri.pfb
-rtxptmbi TeXGyreTermes-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qtmbi.pfb
-% no idea why these were added
-rtxptmro TeXGyreTermes-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
-rtxptmbo TeXGyreTermes-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
-
-% TeX Gyre Heros (Helvetica)
-
-rtxphvr  TeXGyreHeros-Regular     "encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
-rtxphvb  TeXGyreHeros-Bold        "encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
-% probably not used by txfonts
-% rtxphvri TeXGyreHeros-Italic      "encqrm ReEncodeFont" <q-rm.enc <qtmri.pfb
-% rtxphvbi TeXGyreHeros-BoldItalic  "encqrm ReEncodeFont" <q-rm.enc <qtmbi.pfb
-% followed original definitions; one could also use the italic version
-rtxphvro TeXGyreHeros-Oblique     ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
-rtxphvbo TeXGyreHeros-BoldOblique ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
+% rtxptmr  TeXGyreTermes-Regular     "encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
+% rtxptmb  TeXGyreTermes-Bold        "encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
+% rtxptmri TeXGyreTermes-Italic      "encq8r ReEncodeFont" <q-8r.enc <qtmri.pfb
+% rtxptmbi TeXGyreTermes-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qtmbi.pfb
+% % no idea why these were added
+% rtxptmro TeXGyreTermes-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmr.pfb
+% rtxptmbo TeXGyreTermes-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qtmb.pfb
+%
+% % TeX Gyre Heros (Helvetica)
+%
+% rtxphvr  TeXGyreHeros-Regular     "encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
+% rtxphvb  TeXGyreHeros-Bold        "encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
+% % probably not used by txfonts
+% % rtxphvri TeXGyreHeros-Italic      "encqrm ReEncodeFont" <q-rm.enc <qtmri.pfb
+% % rtxphvbi TeXGyreHeros-BoldItalic  "encqrm ReEncodeFont" <q-rm.enc <qtmbi.pfb
+% % followed original definitions; one could also use the italic version
+% rtxphvro TeXGyreHeros-Oblique     ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmr.pfb
+% rtxphvbo TeXGyreHeros-BoldOblique ".167 SlantFont encqrm ReEncodeFont" <q-rm.enc <qtmb.pfb
 
 % TX Text
 

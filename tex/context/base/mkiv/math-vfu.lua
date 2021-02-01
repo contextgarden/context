@@ -915,7 +915,7 @@ function vfmath.define(specification,set,goodies)
             else
                 local vectorname = ss.vector
                 if vectorname then
-                    local offset      = 0xFF000
+                    local offset      = 0xFF000 -- todo: -- private
                     local vector      = mathencodings[vectorname]
                     local rotcev      = reverse[vectorname]
                     local isextension = ss.extension
@@ -923,11 +923,11 @@ function vfmath.define(specification,set,goodies)
                         local fc       = fs.characters
                         local fd       = fs.descriptions
                         local si       = shared[s]
+                        local fontname = fs.properties.name or "unknown"
                         local skewchar = ss.skewchar
                         for unicode, index in next, vector do
                             local fci = fc[index]
                             if not fci then
-                                local fontname = fs.properties.name or "unknown"
                                 local rf = reported[fontname]
                                 if not rf then rf = { } reported[fontname] = rf end
                                 local rv = rf[vectorname]

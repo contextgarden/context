@@ -6,6 +6,8 @@
   [title=conditionals,
    color=middleblue]
 
+\pushoverloadmode
+
 \startsection[title=Preamble]
 
 \startsubsection[title=Introduction]
@@ -1306,18 +1308,23 @@ reason to go this complex but obscure \TEX\ code attracts some users so \unknown
 
 When you have a macro that has for instance assignments, and when you expand that
 macro inside an \type {\edef}, these assignments are not actually expanded but
-tokenized. In \LUATEX\ there is a way to immediately apply these assignments and
-that feature can be used to write a fully expandable user test. For instance:
+tokenized. In \LUAMETATEX\ there is a way to apply these assignments without side
+effects and that feature can be used to write a fully expandable user test. For
+instance:
 
 \startbuffer
 \def\truecondition {\iftrue}
 \def\falsecondition{\iffalse}
 
 \def\fontwithidhaschar#1#2%
-  {\immediateassignment\scratchcounter\numexpr\fontid\font\relax
-   \immediateassignment\setfontid\numexpr#1\relax
+  {\beginlocalcontrol
+   \scratchcounter\numexpr\fontid\font\relax
+   \setfontid\numexpr#1\relax
+   \endlocalcontrol
    \iffontchar\font\numexpr#2\relax
-      \immediateassignment\setfontid\scratchcounter
+      \beginlocalcontrol
+      \setfontid\scratchcounter
+      \endlocalcontrol
       \expandafter\truecondition
    \else
       \expandafter\falsecondition
@@ -1406,6 +1413,125 @@ with \type {\ifcondition} (it has bitten me already a few times).
 
 \stopsection
 
+\startsection[title=Relaxing]
+
+When \TEX\ scans for a number or dimension it has to check tokens one by one. On
+the case of a number, the scanning stops when there is no digit, in the case of a
+dimension the unit determine the end of scanning. In the case of a number, when a
+token is not a digit that token gets pushed back. When digits are scanned a
+trailing space or \type {\relax} is pushed back. Instead of a number of dimension
+made from digits, periods and units, the scanner also accepts registers, both the
+direct accessors like \type {\count} and \type {\dimen} and those represented by
+one token. Take these definitions:
+
+\startbuffer
+\newdimen\MyDimenA \MyDimenA=1pt  \dimen0=\MyDimenA
+\newdimen\MyDimenB \MyDimenB=2pt  \dimen2=\MyDimenB
+\stopbuffer
+
+\typebuffer \getbuffer
+
+I will use these to illustrate the side effects of scanning. Watch the spaces
+in the result.
+
+% \startbuffer[a]
+% \testfeatureonce{1000000}{
+%     \whatever{1pt}{2pt}%
+%     \whatever{1pt}{1pt}%
+%     \whatever{\dimen0}{\dimen2}%
+%     \whatever{\dimen0}{\dimen0}%
+%     \whatever\MyDimenA\MyDimenB
+%     \whatever\MyDimenA\MyDimenB
+% } \elapsedtime
+% \stopbuffer
+
+\startbuffer[b]
+\starttabulate[|T|T|]
+\NC \type {\whatever{1pt}{2pt}}         \NC \edef\temp{\whatever        {1pt}{2pt}}[\meaning\temp] \NC \NR
+\NC \type {\whatever{1pt}{1pt}}         \NC \edef\temp{\whatever        {1pt}{1pt}}[\meaning\temp] \NC \NR
+\NC \type {\whatever{\dimen0}{\dimen2}} \NC \edef\temp{\whatever{\dimen0}{\dimen2}}[\meaning\temp] \NC \NR
+\NC \type {\whatever{\dimen0}{\dimen0}} \NC \edef\temp{\whatever{\dimen0}{\dimen0}}[\meaning\temp] \NC \NR
+\NC \type {\whatever\MyDimenA\MyDimenB} \NC \edef\temp{\whatever\MyDimenA\MyDimenB}[\meaning\temp] \NC \NR
+\NC \type {\whatever\MyDimenA\MyDimenB} \NC \edef\temp{\whatever\MyDimenA\MyDimenB}[\meaning\temp] \NC \NR
+\stoptabulate
+\stopbuffer
+
+First I show what effect we want to avoid. When second argument contains a number
+(digits) the zero will become part of it so we actually check \type {\dimen00}
+here.
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\ifdim#1=#20\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+The solution is to add a space but watch how that one can end up in the result:
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\ifdim#1=#2 0\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+A variant is using \type {\relax} and this time we get this token retained in
+the output.
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\ifdim#1=#2\relax0\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+A solution that doesn't have side effects of forcing the end of a number (using a
+space or \type {\relax} is one where we use expressions. The added overhead of
+scanning expressions is taken for granted because the effect is what we like:
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\ifdim\dimexpr#1\relax=\dimexpr#2\relax0\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+Just for completeness we show a more obscure trick: this one hides assignments to
+temporary variables. Although performance is okay, it is the least efficient
+one so far.
+
+\ifdefined\beginlocalcontrol
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\beginlocalcontrol
+   \MyDimenA#1\relax
+   \MyDimenB#2\relax
+   \endlocalcontrol
+   \ifdim\MyDimenA=\MyDimenB0\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+\fi
+
+It is kind of a game to come up with alternatives but for sure those involve
+dirty tricks and more tokens (and runtime). The next can be considered a dirty
+trick too: we use a special variant of \type {\relax}. When a number is scanned
+it acts as relax, but otherwise it just is ignored and disappears.
+
+\ifdefined\norelax\else\let\norelax\relax\fi
+
+\startbuffer[c]
+\def\whatever#1#2%
+  {\ifdim#1=#2\norelax0\else1\fi}
+\stopbuffer
+
+\typebuffer[c] \getbuffer[c,b]
+
+\stopsection
+
 \startsubject[title=Colofon]
 
 \starttabulate
@@ -1417,6 +1543,8 @@ with \type {\ifcondition} (it has bitten me already a few times).
 \stoptabulate
 
 \stopsubject
+
+\popoverloadmode
 
 \stopdocument
 
