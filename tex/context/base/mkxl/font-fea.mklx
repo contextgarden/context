@@ -136,7 +136,8 @@
 
 % beware: these are global features on top of existing font features
 
-\let\currentfeature      \s!current
+\mutable\let\currentfeature\s!current
+
 \let\m_font_feature_list \s!current
 \let\m_font_feature_asked\empty
 

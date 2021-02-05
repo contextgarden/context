@@ -291,10 +291,6 @@
 
 \tabl_tabulate_initialize_boxes{16} % not really needed
 
-\let\initializetablebox  \tabl_tabulate_initialize_box   % used elsewhere, will change
-\let\initializetableboxes\tabl_tabulate_initialize_boxes % used elsewhere, will change
-\let\tablebox            \b_tabl_tabulate_current
-
 % 0 = NC column next   EQ equal column
 % 1 = RC column raw    RQ equal column raw
 % 2 = HC column hook   HQ equal column hook

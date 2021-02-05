@@ -200,7 +200,7 @@
 \newdimen\d_framed_target_wd
 \newdimen\d_framed_target_ht
 \newdimen\d_framed_target_dp
-\newdimen\d_framed_linewidth  \let\ruledlinewidth\d_framed_linewidth % needed at lua end
+\newdimen\d_framed_linewidth  \aliased\let\ruledlinewidth\d_framed_linewidth % needed at lua end
 
 \let\p_framed_frame           \empty % \framedparameter\c!frame
 \let\p_framed_backgroundoffset\empty
@@ -539,6 +539,8 @@
 \newdimen\framedbackgrounddepth
 \newdimen\framedbackgroundoffset
 
+\aliased\let\foregroundbox\relax
+
 \def\pack_framed_background_box_content% fuzzy but needed hack, this \vss, otherwise
   {\vpack to \framedbackgroundheight{\vss\box\b_framed_normal\vss}} % vertical shift \backgroundheight
 
@@ -567,7 +569,7 @@
       \else
         \setlayoutcomponentattribute{\v!background:\p_framed_component}%
       \fi
-      \let\foregroundbox\pack_framed_background_box_content
+      \enforced\let\foregroundbox\pack_framed_background_box_content
       \hpack \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
          \the\everybackgroundbox % moved
          \expandafter\pack_framed_process_backgrounds\p_framed_background,\s!unknown,\relax % hm, messy .. look into it
@@ -759,7 +761,7 @@
 %D for passing this identifier between brackets lays in the mere fact that this way
 %D we can use the optional argument grabbers.
 
-\def\defaultframeoffset{.25\exheight}
+\mutable\def\defaultframeoffset{.25\exheight}
 
 \installcorenamespace{regularframedlevel}
 
@@ -985,15 +987,23 @@
 
 \defineinterfaceconstant {fr!analyze} {fr:analyze} % private option
 
-\let\delayedbegstrut\relax
-\let\delayedendstrut\relax
-\let\delayedstrut   \relax
+\aliased\let\delayedbegstrut\relax
+\aliased\let\delayedendstrut\relax
+\aliased\let\delayedstrut   \relax
 
 \mutable\let\localoffset\empty
 \mutable\let\localwidth \empty
 \mutable\let\localheight\empty
 \mutable\let\localformat\empty
 \mutable\let\localstrut \empty
+
+\mutable\let\framedwidth \empty
+\mutable\let\framedheight\empty
+\mutable\let\framedoffset\empty
+
+\aliased\let\localbegstrut\relax
+\aliased\let\localendstrut\relax
+\aliased\let\localstrut   \relax
 
 \protected\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset

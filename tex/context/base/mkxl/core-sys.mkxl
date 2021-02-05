@@ -23,7 +23,7 @@
 
 \permanent\protected\def\newcontextversion#1%
   {\doifelse{#1}\contextversion
-      {\let\newcontextversion\gobbleoneargument}
+      {\aliased\let\newcontextversion\gobbleoneargument}
       {\writeline
        \writestatus{Fatal    Error}{Your format does not match the base files!}%
        \writeline

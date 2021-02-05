@@ -232,7 +232,7 @@
 
 \else
 
-  \def\defaultinterface{english}
+  \immutable\def\defaultinterface{english}
 
   \permanent\overloaded\protected\def\selectinterface
     {\enforced\permanent\protected\def\selectinterface##1##2%
@@ -252,8 +252,8 @@
 
 \fi
 
-\ifdefined\currentinterface \else \let\currentinterface\defaultinterface \fi
-\ifdefined\currentresponses \else \let\currentresponses\defaultinterface \fi
+\ifdefined\currentinterface \else \aliased\let\currentinterface\defaultinterface \fi
+\ifdefined\currentresponses \else \aliased\let\currentresponses\defaultinterface \fi
 
 %D \macros
 %D   {startinterface}

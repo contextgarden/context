@@ -424,10 +424,10 @@
    \aftergroup\egroup
    \let\nexttoken}
 
-\protected\def\tex{\buff_verbatim_special_type\texescape        \relax}
-\protected\def\arg{\buff_verbatim_special_type\leftargument     \rightargument}
-\protected\def\mat{\buff_verbatim_special_type\inlinemathmarker \inlinemathmarker}
-\protected\def\dis{\buff_verbatim_special_type\displaymathmarker\displaymathmarker}
+\mutable\protected\def\tex{\buff_verbatim_special_type\texescape        \relax}
+\mutable\protected\def\arg{\buff_verbatim_special_type\leftargument     \rightargument}
+\mutable\protected\def\mat{\buff_verbatim_special_type\inlinemathmarker \inlinemathmarker}
+\mutable\protected\def\dis{\buff_verbatim_special_type\displaymathmarker\displaymathmarker}
 
 \aliased\let\normaltexttex\tex
 \aliased\let\normaltextarg\arg
@@ -930,25 +930,25 @@
 \newcount      \c_buff_verbatim_current
 \newconditional\c_buff_optimize_linebreaks
 
-           \def\doverbatimspace           {\obeyedspace}
+\permanent\protected\def\doverbatimspace           {\obeyedspace}
 
-\protected\def\doinlineverbatimstart     {}
-\protected\def\doinlineverbatimstop      {}
-\protected\def\doinlineverbatimbeginline {}
-\protected\def\doinlineverbatimnewline   {\obeyedspace}
-\protected\def\doinlineverbatimemptyline {\obeyedspace}
+\permanent\protected\def\doinlineverbatimstart     {}
+\permanent\protected\def\doinlineverbatimstop      {}
+\permanent\protected\def\doinlineverbatimbeginline {}
+\permanent\protected\def\doinlineverbatimnewline   {\obeyedspace}
+\permanent\protected\def\doinlineverbatimemptyline {\obeyedspace}
 
-\protected\def\dodisplayverbatimstart    {\advance\c_buff_verbatim_current\plusone
-                                          \buff_verbatim_begin_of_line}
-\protected\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
-\protected\def\dodisplayverbatimbeginline{\advance\c_buff_verbatim_current\plusone
-                                          \buff_verbatim_begin_of_line}
-\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
-                                          \par
-                                          \ifconditional\c_buff_optimize_linebreaks
-                                            \buff_verbatim_inject_breaks
-                                          \fi}
-\protected\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
+\permanent\protected\def\dodisplayverbatimstart    {\advance\c_buff_verbatim_current\plusone
+                                                    \buff_verbatim_begin_of_line}
+\permanent\protected\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
+\permanent\protected\def\dodisplayverbatimbeginline{\advance\c_buff_verbatim_current\plusone
+                                                    \buff_verbatim_begin_of_line}
+\permanent\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
+                                                    \par
+                                                    \ifconditional\c_buff_optimize_linebreaks
+                                                      \buff_verbatim_inject_breaks
+                                                    \fi}
+\permanent\protected\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
 
 \protected\def\buff_verbatim_inject_breaks
   {\ifnum\c_buff_verbatim_current=\plusone
@@ -993,6 +993,6 @@
 
 %D This is \type {\asciimode} without the double comment hackery:
 
-\protected\def\literalmode{\setcatcodetable\txtcatcodes}
+\permanent\protected\def\literalmode{\setcatcodetable\txtcatcodes}
 
 \protect \endinput

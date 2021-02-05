@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo: implementor
+
 \startluacode
     function commands.showsymbolset(collection,symbols,fontid)
         if type(symbols) == "string" then
@@ -43,24 +45,26 @@
         end
         local detail = defined and byname
         context.start()
-        context.forcesymbolset { collection }
+        context.setupsymbolset { collection }
         context.starttabulate { detail and "|lT|l|l|lT|" or "|lT|l|l|"}
         for symbol, how in table.sortedhash(list) do
-            context.NC()
             if detail and how then
-                context.bold(symbol)
+                context.BC()
             else
-                context(symbol)
+                context.NC()
             end
+            context(symbol)
             context.NC()
             context.symbol(symbol)
             context.NC()
             context.framed(options,context.nested.symbol(symbol))
-            context.NC()
             if detail and how then
-                context.bold("defined")
+                context.BC()
+                context("defined")
+            else
                 context.NC()
             end
+            context.NC()
             context.NR()
         end
         context.stoptabulate()

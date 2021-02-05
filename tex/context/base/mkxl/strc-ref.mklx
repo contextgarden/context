@@ -731,15 +731,15 @@
 %D An unknown reference is reported on the screen, in the log file and, when
 %D enabled, in the left margin of the text.
 
-\let\unknownreference\gobbleoneargument
+\mutable\let\unknownreference\gobbleoneargument
 
 %D When a reference is not found, we typeset a placeholder (two glyphs are often
 %D enough to represent the reference text).
 
 % \askedreference defined in lua
 
-\def\dummyreference{{\tttf ??}}
-\def\emptyreference{{\tttf !!}}
+\mutable\def\dummyreference{{\tttf ??}}
+\mutable\def\emptyreference{{\tttf !!}}
 
 \installtextracker
   {structures.referencing.show}
@@ -978,9 +978,12 @@
     \ifdefined\in    \aliased\let\normalmathin   \in    \permanent\protected\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \aliased\let\in   \strc_references_in    \fi
     \ifdefined\over  \aliased\let\normalmathover \over  \permanent\protected\def\over {\mathortext\normalmathover \strc_references_about} \else \aliased\let\over \strc_references_about \fi
     %
-    \ifdefined\at    \aliased\let\normalmathat   \at    \permanent\protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \aliased\let\at   \strc_references_at    \fi
-    \ifdefined\about \aliased\let\normalmathabout\about \permanent\protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \aliased\let\about\strc_references_about \fi
-    \ifdefined\from  \aliased\let\normalmathfrom \from  \permanent\protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \aliased\let\from \strc_references_from  \fi
+  % \ifdefined\at    \aliased\let\normalmathat   \at    \permanent\protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \aliased\let\at   \strc_references_at    \fi
+  % \ifdefined\about \aliased\let\normalmathabout\about \permanent\protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \aliased\let\about\strc_references_about \fi
+  % \ifdefined\from  \aliased\let\normalmathfrom \from  \permanent\protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \aliased\let\from \strc_references_from  \fi
+    \aliased\let\at   \strc_references_at
+    \aliased\let\about\strc_references_about
+    \aliased\let\from \strc_references_from
 \to \everydump
 
 \permanent          \def\filterreference  #key{\clf_filterreference{#key}} % no checking, expandable
@@ -2130,7 +2133,7 @@
      \getparameters[\??referencingprefix#kind:#category][#settings]%
    \fi}
 
-\def\referencestructureprefixparameter#kind#name#category#parameter%
+\permanent\def\referencestructureprefixparameter#kind#name#category#parameter%
   {\ifcsname\??referencingprefix#name:#category#parameter\endcsname
      \lastnamedcs
    \orelse\ifcsname\??referencingprefix#kind:#category#parameter\endcsname

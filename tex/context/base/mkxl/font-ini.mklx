@@ -351,6 +351,8 @@
   {\pop_macro_savedfont
    \savedfont}
 
+\aliased\let\popcurrentfont\relax
+
 \permanent\protected\def\pushcurrentfont
   {\enforced\permanent\protected\edef\popcurrentfont
      {\def\noexpand\fontbody       {\fontbody}%
@@ -423,9 +425,9 @@
 \permanent\def\thenormalizedbodyfontsize#body%
   {\clf_nbfs\dimexpr#body\relax}
 
-\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
-\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
-\edef\normalizedbodyfontsize      {\thenormalizedbodyfontsize\bodyfontsize}
+\mutable\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
+\mutable\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
+\mutable\edef\normalizedbodyfontsize      {\thenormalizedbodyfontsize\bodyfontsize}
 
 %D \macros
 %D   {mapfontsize}
@@ -659,6 +661,7 @@
 
 \mutable\let\somefontname \s!unknown
 \mutable\let\somefontspec \s!unknown
+\mutable\let\somefontfile \s!unknown
 \mutable\let\somefontsize \zerocount
 \mutable\let\somefontsizey\empty
 \mutable\let\somefontsizey\empty
@@ -2393,11 +2396,10 @@
 
 \permanent\protected\def\fastswitchtobodyfont#name%
   {\ifcsname\??fontenvironments\normalizedbodyfontsize#name\endcsname
-    %\edef\futurebodyfontsize{\csname\??fontenvironments\normalizedbodyfontsize#name\endcsname}%
-     \edef\futurebodyfontsize{\lastnamedcs}%
-     \ifcsname\??fontbodyknown\futurebodyfontsize\endcsname
-       \font_basics_complete_switch\futurebodyfontsize
-       \localbodyfontsize\futurebodyfontsize\relax
+     \edef\p_bodyfont{\lastnamedcs}%
+     \ifcsname\??fontbodyknown\p_bodyfont\endcsname
+       \font_basics_complete_switch\p_bodyfont
+       \localbodyfontsize\p_bodyfont\relax
      \fi
    \fi
    \csname\??fontstyle\fontstyle\endcsname

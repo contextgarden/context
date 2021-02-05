@@ -266,8 +266,8 @@
 \chardef \| = \barasciicode
 
 \pushoverloadmode
-         \catcodetable        \ctxcatcodes
-    \let \defaultcatcodetable \ctxcatcodes
+                \catcodetable       \ctxcatcodes
+    \aliased\let\defaultcatcodetable\ctxcatcodes
 \popoverloadmode
 
 \endinput

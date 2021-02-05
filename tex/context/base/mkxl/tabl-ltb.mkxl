@@ -61,6 +61,12 @@
 \installcorenamespace{linetableheight}
 \installcorenamespace{linetabledepth}
 
+% (For now) we share these three:
+
+\aliased\let\tabl_lines_initialize_box  \tabl_tabulate_initialize_box
+\aliased\let\tabl_lines_initialize_boxes\tabl_tabulate_initialize_boxes
+\aliased\let\b_tabl_lines_current       \b_tabl_tabulate_current
+
 \newconditional \c_tabl_lines_preroll
 \newconditional \c_tabl_lines_in_table
 
@@ -93,7 +99,7 @@
 
 \newconditional \linetableautoheight  \settrue\linetableautoheight
 
-\initializetablebox\zerocount % holds repeater
+\tabl_lines_initialize_box\zerocount % holds repeater
 
 \pushoverloadmode
 
@@ -313,12 +319,12 @@
   {\backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}}
 
 \def\tabl_lines_save_part
-  {\global\setbox\tablebox\c_tabl_lines_part
+  {\global\setbox\b_tabl_lines_current\c_tabl_lines_part
    \ifcase\c_tabl_lines_part\relax
      \box\scratchbox % just storing
    \else
      \vbox
-       {\ifvoid\tablebox\c_tabl_lines_part\else\unvbox\tablebox\c_tabl_lines_part\fi
+       {\ifvoid\b_tabl_lines_current\c_tabl_lines_part\else\unvbox\b_tabl_lines_current\c_tabl_lines_part\fi
         \edef\p_background{\linetablerparameter\c!background}%
         \ifx\p_background\v!color
           \backgroundline[\linetablerparameter\c!backgroundcolor]{\box\scratchbox}%
@@ -344,7 +350,7 @@
      \else
        \dorecurse\c_tabl_lines_n_of_parts
          {\c_tabl_lines_part\recurselevel
-          \dp\tablebox\c_tabl_lines_part\strutdepth
+          \dp\b_tabl_lines_current\c_tabl_lines_part\strutdepth
           % noindent en endgraf needed else whitespace mess-up!
           \whitespace % here not after verticalstrut
           \ifdim\topskipgap=\zeropoint\else
@@ -356,7 +362,7 @@
             \nointerlineskip % fix topskip
           \fi
           \noindent\strut
-          \hpack to \hsize{\box\tablebox\c_tabl_lines_part\hss}%
+          \hpack to \hsize{\box\b_tabl_lines_current\c_tabl_lines_part\hss}%
           \endgraf
           \ifnum\c_tabl_lines_part<\c_tabl_lines_n_of_parts\relax
             \linetableparameter\c!inbetween
@@ -367,7 +373,7 @@
          % after, later
        \fi
        \c_tabl_lines_head_state\plusthree
-       \global\setbox\tablebox\zerocount\emptybox % here
+       \global\setbox\b_tabl_lines_current\zerocount\emptybox % here
      \fi
      % reset \c_tabl_lines_row will be an option, currently
      % starts at zero after split
@@ -440,7 +446,7 @@
          \global\c_tabl_lines_page \plusone
        \fi
        \global\advance\c_tabl_lines_part\plusone
-       \global\d_tabl_lines_width\wd\tablebox\zerocount
+       \global\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
        \tabl_lines_start_part
      \fi
    \else
@@ -474,7 +480,7 @@
        \global\advance\c_tabl_lines_part\plusone
        \ifnum\c_tabl_lines_part>\c_tabl_lines_n_of_parts
          \global\c_tabl_lines_n_of_parts\c_tabl_lines_part
-         \initializetablebox\c_tabl_lines_part
+         \tabl_lines_initialize_box\c_tabl_lines_part
        \fi
        \global\d_tabl_lines_width\wd\b_tabl_lines_cell
        \tabl_lines_start_part
@@ -482,8 +488,8 @@
          % check for left/right page
          \ifcase\c_tabl_lines_page\donetrue\or\donetrue\or\donefalse\fi\ifdone
            % insert repeater
-           \global\advance\d_tabl_lines_width\wd\tablebox\zerocount
-           \ifconditional\c_tabl_lines_preroll\kern\wd\else\unhcopy\fi\tablebox\zerocount
+           \global\advance\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
+           \ifconditional\c_tabl_lines_preroll\kern\wd\else\unhcopy\fi\b_tabl_lines_current\zerocount
          \fi
        \fi
      \fi
@@ -527,7 +533,7 @@
       \advance\scratchcounter##1%
       \xdefcsname\??linetablepart\number\c_tabl_lines_n_of_parts\endcsname{\the\scratchcounter}}%
    \processcommacommand[\linetableparameter\c!n]\docommand
-   \initializetableboxes\c_tabl_lines_n_of_parts
+   \tabl_lines_initialize_boxes\c_tabl_lines_n_of_parts
    \global\c_tabl_lines_part\ifcase\c_tabl_lines_repeat\plusone\else\zerocount\fi % repeater
    \global\c_tabl_lines_step\plusone
    \global\c_tabl_lines_line\zerocount

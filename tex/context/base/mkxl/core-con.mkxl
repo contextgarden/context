@@ -178,15 +178,6 @@
    \egroup}
 
 %D \macros
-%D   {protectconversion}
-%D
-%D The previous two commands are not robust enough to be passed to \type
-%D {\write} en \type{\message}. That's why we introduce:
-
-\permanent\protected\def\protectconversion
-  {\let\doconvertcharacters\firstofoneargument}
-
-%D \macros
 %D   {normaltime,normalyear,normalmonth,normalday}
 %D
 %D The last part of this module is dedicated to converting dates. Because we want to
@@ -526,11 +517,9 @@
       #3}%
    \endgroup}
 
-\def\lastmonth{12} % can be set to e.g. 1 when testing
-
 \permanent\protected\def\processyear#1#2#3#4% year command before after
   {\begingroup
-   \dorecurse\lastmonth
+   \dorecurse\plustwelve
      {\normalyear #1\relax
       \normalmonth\recurselevel\relax
       #3\processmonth\normalyear\normalmonth{#2}#4}%
@@ -977,9 +966,9 @@
 
 %D Taken from x-asciimath (see digits-001.tex for an example):
 
-\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
-\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
-\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
+\mutable\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
+\mutable\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
+\mutable\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
 
 \permanent\protected\def\spaceddigits#1%
   {\clf_spaceddigits

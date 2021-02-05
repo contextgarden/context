@@ -173,16 +173,16 @@
 
 %D Math (will move):
 
-\definemathaccent acute     \mathacute
-\definemathaccent grave     \mathgrave
-\definemathaccent ddot      \mathddot
-\definemathaccent tilde     \mathtilde
-\definemathaccent bar       \mathbar
-\definemathaccent breve     \mathbreve
-\definemathaccent check     \mathcheck
-\definemathaccent hat       \mathhat
-\definemathaccent vec       \mathvec
-\definemathaccent dot       \mathdot
+%definemathaccent acute     \mathacute
+%definemathaccent grave     \mathgrave
+%definemathaccent ddot      \mathddot
+%definemathaccent tilde     \mathtilde
+%definemathaccent bar       \mathbar
+%definemathaccent breve     \mathbreve
+%definemathaccent check     \mathcheck
+%definemathaccent hat       \mathhat
+%definemathaccent vec       \mathvec
+%definemathaccent dot       \mathdot
 %definemathaccent widetilde \mathwidetilde
 %definemathaccent widehat   \mathwidehat
 

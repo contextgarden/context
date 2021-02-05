@@ -113,9 +113,9 @@
    \ifhmode
      \expandafter\inlinemathematics
    \orelse\ifintable
-     \doubleexpandafter\inlinemathematics
+     \expandafter\inlinemathematics
    \else
-     \doubleexpandafter\displaymathematics
+     \expandafter\displaymathematics
    \fi}
 
 %D \macros
@@ -129,12 +129,14 @@
 
 \newsignal\dimensionsignal
 
-\def\dimensiontypeface  {\tf}
-\def\dimensionhalfspace {\,}
+\mutable\def\dimensiontypeface  {\tf}
+\mutable\def\dimensionhalfspace {\,}
 
-\protected\def\dimension#1%
+\aliased\let\dodimensionsignal\relax
+
+\permanent\protected\def\dimension#1%
   {\pushmacro\dodimensionsignal
-   \gdef\dodimensionsignal{\kern\dimensionsignal}%
+   \enforced\gdef\dodimensionsignal{\kern\dimensionsignal}%
    \ifzeropt\lastskip
      \ifzeropt\lastkern
        \ifmmode
@@ -153,8 +155,8 @@
    \dodimensionsignal
    \popmacro\dodimensionsignal}
 
-\protected\def\nodimension#1%
-  {\unskip#1\glet\dodimensionsignal\relax}
+\permanent\protected\def\nodimension#1%
+  {\unskip#1\enforced\glet\dodimensionsignal\relax}
 
 % experiment, not yet to be used
 

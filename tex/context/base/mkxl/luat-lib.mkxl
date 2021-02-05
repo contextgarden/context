@@ -93,12 +93,12 @@
 \registerctxluafile{lxml-aux}{}
 \registerctxluafile{lxml-mis}{}
 
-\pushoverloadmode
-
-\permanent\protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}
-\permanent\protected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}}
-\permanent\protected\def\writeline      {\ctxlua{logs.newline()}}
-
-\popoverloadmode
+% \pushoverloadmode
+%
+% \ifdefined\writestatus \else \protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}  \fi
+% \ifdefined\writestring \else \protected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}} \fi
+% \ifdefined\writeline   \else \protected\def\writeline      {\ctxlua{logs.newline()}}                      \fi
+%
+% \popoverloadmode
 
 \endinput

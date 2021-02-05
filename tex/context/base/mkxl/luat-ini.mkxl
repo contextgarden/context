@@ -21,7 +21,7 @@
 %D will keep code outside \TEX\ files as much as possible. The solutions evolved
 %D with the engine but one can find some history in the \MKIV\ files and articles.
 
-\ifdefined\setnaturalcatcodes \else \let\setnaturalcatcodes\relax \fi
+%ifdefined\setnaturalcatcodes \else \let\setnaturalcatcodes\relax \fi
 \ifdefined\obeylualines       \else \let\obeylualines      \relax \fi
 \ifdefined\obeyluatokens      \else \let\obeyluatokens     \relax \fi
 
@@ -77,11 +77,11 @@
 
 \ifdefined\? \else \def\?{?} \fi \ifdefined\! \else \def\!{!} \fi % bonus
 
-\ifdefined\1 \else \def\1{1} \fi \ifdefined\2 \else \def\2{2} \fi
-\ifdefined\3 \else \def\3{3} \fi \ifdefined\4 \else \def\4{4} \fi
-\ifdefined\5 \else \def\5{5} \fi \ifdefined\6 \else \def\6{6} \fi
-\ifdefined\7 \else \def\7{7} \fi \ifdefined\8 \else \def\8{8} \fi
-\ifdefined\9 \else \def\9{9} \fi \ifdefined\0 \else \def\0{0} \fi
+\ifdefined\1 \else \mutable\def\1{1} \fi \ifdefined\2 \else \mutable\def\2{2} \fi
+\ifdefined\3 \else \mutable\def\3{3} \fi \ifdefined\4 \else \mutable\def\4{4} \fi
+\ifdefined\5 \else \mutable\def\5{5} \fi \ifdefined\6 \else \mutable\def\6{6} \fi
+\ifdefined\7 \else \mutable\def\7{7} \fi \ifdefined\8 \else \mutable\def\8{8} \fi
+\ifdefined\9 \else \mutable\def\9{9} \fi \ifdefined\0 \else \mutable\def\0{0} \fi
 
 \immutable\edef\lua_letter_backslash{\string\\}
 \immutable\edef\lua_letter_bar      {\string\|} \immutable\edef\lua_letter_dash     {\string\-}

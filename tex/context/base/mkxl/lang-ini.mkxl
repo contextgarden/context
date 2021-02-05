@@ -39,7 +39,7 @@
 %D zero has no patterns, first of all because I like to start numbering at one. It
 %D may come in handy for special purposes as well.
 
-\normallanguage\zerocount \def\loadedlanguage{1}
+\normallanguage\zerocount
 
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}
@@ -413,7 +413,8 @@
 
 % \uchyph\plusone :
 
-\chardef \completehyphenationmodecode \numexpr
+% \chardef \completehyphenationmodecode \numexpr
+\permanent \integerdef \completehyphenationmodecode \numexpr
     \normalhyphenationmodecode            % \discretionary
   + \automatichyphenationmodecode         % -
   + \explicithyphenationmodecode          % \-
@@ -473,6 +474,8 @@
 % \to \everylanguage
 
 %D You can setup the default language to reset settings.
+
+\mutable\let\currentlanguagesetups\empty
 
 \appendtoks
     \edef\currentlanguagesetups{\languageparameter\c!setups}%

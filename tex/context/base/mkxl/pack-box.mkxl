@@ -51,6 +51,8 @@
 %
 % \anchor[text-1][preset=lefttop][framed settings]{HELLO WORLD}
 
+\mutable\let\currentanchor\empty
+
 \permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#3]#*[#4]% name targetlayer layersetting framedsetting
   {\setvalue{\??anchor#1}{\pack_anchors_process_defined{#2}{#3}{#4}}}
 
@@ -324,8 +326,8 @@
   {\begingroup
    \pack_boxes_collector_check_box{#1}%
    \ifconditional\c_pack_boxes_collector_valid_box
+     \letcollectorparameter\c!hoffset\zeropoint
      \letcollectorparameter\c!voffset\zeropoint
-     \letcollectorparameter\h!voffset\zeropoint
      \setupcurrentcollector[#2]%
      \global\wd\b_pack_boxes_collector\dimexpr\wd\b_pack_boxes_collector+\collectorparameter\c!hoffset\relax
      \global\ht\b_pack_boxes_collector\dimexpr\ht\b_pack_boxes_collector+\collectorparameter\c!voffset\relax
@@ -544,6 +546,9 @@
 \setvalue{\??bleedinglocation tr}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
 \setvalue{\??bleedinglocation rt}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
 
+\mutable\let\currentbleedposition\empty
+\mutable\let\currentpageposition \empty
+
 \permanent\tolerant\protected\def\bleed[#1]%
   {\hbox\bgroup
    \global\advance\c_pack_boxes_bleeds\plusone
@@ -551,8 +556,8 @@
    \enforced\permanent\xdef\bleedwidth {\the\hsize}%
    \enforced\permanent\xdef\bleedheight{\the\vsize}%
    %
-   \edef\currentbgposition  {bleed:\number\c_pack_boxes_bleeds}%
-   \edef\currentpageposition{page:0}% todo: per page
+   \edef\currentbleedposition{bleed:\number\c_pack_boxes_bleeds}%
+   \edef\currentpageposition {page:0}% todo: per page
    %
    \setupcurrentbleeding[#1]%
    %
@@ -574,9 +579,9 @@
    \enforced\permanent\xdef\bleedwidth{\the\dimexpr
      \ifdone
        \ifconditional\c_pack_boxes_l
-         \scratchwidth+\MPx\currentbgposition-\MPx\currentpageposition
+         \scratchwidth+\MPx\currentbleedposition-\MPx\currentpageposition
        \orelse\ifconditional\c_pack_boxes_r
-         \paperwidth  -\MPx\currentbgposition+\MPx\currentpageposition % not checked
+         \paperwidth  -\MPx\currentbleedposition+\MPx\currentpageposition % not checked
        \else
          \scratchwidth
        \fi
@@ -587,9 +592,9 @@
    \enforced\permanent\xdef\bleedheight{\the\dimexpr
      \ifdone
        \ifconditional\c_pack_boxes_t
-         \paperheight  -\MPy\currentbgposition+\MPy\currentpageposition % not checked
+         \paperheight  -\MPy\currentbleedposition+\MPy\currentpageposition % not checked
        \orelse\ifconditional\c_pack_boxes_b
-         \scratchheight+\MPy\currentbgposition-\MPy\currentpageposition + \MPh\currentbgposition % not checked (\MPh added)
+         \scratchheight+\MPy\currentbleedposition-\MPy\currentpageposition + \MPh\currentbleedposition % not checked (\MPh added)
        \else
          \scratchheight
        \fi
@@ -618,7 +623,7 @@
    \ht\nextbox\scratchheight
    \dp\nextbox\zeropoint
    \ifdone
-     \hpos\currentbgposition{\box\nextbox}%
+     \hpos\currentbleedposition{\box\nextbox}%
    \else
      \box\nextbox
    \fi

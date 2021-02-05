@@ -226,8 +226,8 @@
 
 \aliased\let\normalmathoverbar    \overbar
 \aliased\let\normalmathunderbar   \underbar
-\aliased\let\normalmathoverstrike \overstrike
-\aliased\let\normalmathunderstrike\understrike
+%aliased\let\normalmathoverstrike \overstrike
+%aliased\let\normalmathunderstrike\understrike
 
 \definebar[\v!overbar]   [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
 \definebar[\v!underbar]  [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
@@ -273,19 +273,19 @@
     \enforced\permanent\expandafter\let\expandafter\overbar\csname\v!overbar\endcsname
 \fi
 
-\ifdefined\normalmathunderstrike
-    \enforced\permanent\expandafter\let\expandafter\normaltextunderstrike\csname\v!understrike\endcsname
-    \enforced\permanent\protected\def\understrike{\mathortext\normalmathunderstrike\normaltextunderstrike}
-\else
-    \enforced\permanent\expandafter\let\expandafter\understrike\csname\v!understrike\endcsname
-\fi
-
-\ifdefined\normalmathoverstrike
-    \enforced\permanent\expandafter\let\expandafter\normaltextoverstrike\csname\v!overstrike\endcsname
-    \enforced\permanent\protected\def\overstrike{\mathortext\normalmathoverstrike \normaltextoverstrike}
-\else
-    \enforced\permanent\expandafter\let\expandafter\overstrike\csname\v!overstrike\endcsname
-\fi
+% \ifdefined\normalmathunderstrike
+%     \enforced\permanent\expandafter\let\expandafter\normaltextunderstrike\csname\v!understrike\endcsname
+%     \enforced\permanent\protected\def\understrike{\mathortext\normalmathunderstrike\normaltextunderstrike}
+% \else
+%     \enforced\permanent\expandafter\let\expandafter\understrike\csname\v!understrike\endcsname
+% \fi
+%
+% \ifdefined\normalmathoverstrike
+%     \enforced\permanent\expandafter\let\expandafter\normaltextoverstrike\csname\v!overstrike\endcsname
+%     \enforced\permanent\protected\def\overstrike{\mathortext\normalmathoverstrike \normaltextoverstrike}
+% \else
+%     \enforced\permanent\expandafter\let\expandafter\overstrike\csname\v!overstrike\endcsname
+% \fi
 
 \enforced\permanent\expandafter\let\expandafter\overstrikes\csname\v!overstrikes\endcsname
 \enforced\permanent\expandafter\let\expandafter\underbars  \csname\v!underbars  \endcsname
@@ -441,17 +441,17 @@
 \expandafter\let\expandafter\shiftup   \csname\v!shiftup   \endcsname
 \expandafter\let\expandafter\shiftdown \csname\v!shiftdown \endcsname
 
-% This is a weird helper:
+% This is a weird helper.. these might go away:
 
-\protected\def\dostartisolation{\signalcharacter}
-\protected\def\dostopisolation {\signalcharacter}
-\protected\def\doisolator      {\signalcharacter}
+\permanent\protected\def\dostartisolation{\signalcharacter}
+\permanent\protected\def\dostopisolation {\signalcharacter}
+\permanent\protected\def\doisolator      {\signalcharacter}
 
-\protected\def\dosetupisolatedalign#1%
+\permanent\protected\def\dosetupisolatedalign#1%
   {\doisolator
    \setupalign[#1]\relax}
 
-\protected\def\doisolatedgroupedalign#1#2%
+\permanent\protected\def\doisolatedgroupedalign#1#2%
   {\groupedcommand
      {\begingroup\dostartisolation\begingroup#1}
      {#2\endgroup\dostopisolation\endgroup}}

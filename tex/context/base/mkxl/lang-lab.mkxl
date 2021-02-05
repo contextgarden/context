@@ -60,7 +60,7 @@
 
 \installcorenamespace{label}
 
-\let\currentlabelcategory\empty
+% \let\currentlabelcategory\empty
 
 \permanent\tolerant\protected\def\definelabelclass[#1]#*[#2]%
   {\normalexpanded
@@ -77,29 +77,45 @@
 
 % hm, not interfaced
 
-\let\thetextprefix\empty
+\mutable\let\thetextprefix\empty
+
+\mutable\let\currenttextprefixclass\s!unknown
+\mutable\let\currenttextprefixname \empty
+\mutable\let\currenttextprefixtag  \s!unknown
 
 \protected\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
-  {\permanent\instance\setuvalue {setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
-   \permanent\instance\setuvalue{preset#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
-   \permanent\instance\setuvalue  {copy#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_copy }%
-   \permanent\instance\setuvalue {start#1text}{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_start[#1]}%
-   \permanent\instance\letvalue   {stop#1text}\relax
+  {\permanent\instance\protected\defcsname  setup#1text\endcsname{\protecttextprefixes#2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \permanent\instance\protected\defcsname preset#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \permanent\instance\protected\defcsname   copy#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_copy }%
+   \permanent\instance\protected\defcsname  start#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_start[#1]}%
+   \permanent\instance          \letcsname   stop#1text\endcsname \relax
    \permanent\instance\def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo % used for math and tags
      \instance\def#3{#5#4}%
+%      \instance\def#5##1##2% ##1=language
+%        {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
+%           \lastnamedcs
+%         \orelse\ifcsname\??label#1:##1:##2\endcsname
+%           \lastnamedcs
+%         \orelse\ifcsname\??language##1\s!default\endcsname
+%           \expandafter#5\lastnamedcs{##2}%
+%         \orelse\ifcsname\??label\currentlabelcategory#1:##2\endcsname
+%           \lastnamedcs
+%         \orelse\ifcsname\??label#1:##2\endcsname
+%           \lastnamedcs
+%         \orelse\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+%           \lastnamedcs
+%         \orelse\ifcsname\??label#1:\s!en:##2\endcsname
+%           \lastnamedcs
+%         \else
+%           ##2%
+%         \fi}%
      \instance\def#5##1##2% ##1=language
-       {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
-          \lastnamedcs
-        \orelse\ifcsname\??label#1:##1:##2\endcsname
+       {\ifcsname\??label#1:##1:##2\endcsname
           \lastnamedcs
         \orelse\ifcsname\??language##1\s!default\endcsname
           \expandafter#5\lastnamedcs{##2}%
-        \orelse\ifcsname\??label\currentlabelcategory#1:##2\endcsname
-          \lastnamedcs
         \orelse\ifcsname\??label#1:##2\endcsname
-          \lastnamedcs
-        \orelse\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
           \lastnamedcs
         \orelse\ifcsname\??label#1:\s!en:##2\endcsname
           \lastnamedcs
@@ -124,10 +140,10 @@
         \else
           \enforced\let\thetextprefix\dummytextprefix
         \fi}%
-     \permanent\instance\protected\def#6##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
-     \permanent\instance\protected\def#7##1{#3{##1}\expandafter\flushrightlabelclass\thetextprefix}%
-     \permanent\instance\protected\def#8##1{#3{##1}\expandafter\flushbothlabelclass \thetextprefix}% #2
-     \permanent\instance\protected\def#9##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+     \permanent \instance\protected\def#6##1{#3{##1}\expandafter\firstoftwoarguments   \thetextprefix}% \flushleftlabelclass
+     \permanent\instance\protected\def#7##1{#3{##1}\expandafter\secondoftwoarguments  \thetextprefix}% \flushrightlabelclass
+     \permanent\instance\protected\def#8##1{#3{##1}\expandafter\lang_labels_flush_both\thetextprefix}% \flushbothlabelclass #2
+     \permanent\instance\protected\def#9##1{#3{##1}\expandafter\firstoftwoarguments   \thetextprefix}% \flushleftlabelclass
    \fi
    \appendtoks
      \enforced\permanent\instance\let#6\firstofoneargument % to be checked
@@ -138,10 +154,10 @@
 
 % why not lang_* ?
 
-\let\flushleftlabelclass \firstoftwoarguments
-\let\flushrightlabelclass\secondoftwoarguments
+% \let\flushleftlabelclass \firstoftwoarguments
+% \let\flushrightlabelclass\secondoftwoarguments
 
-\permanent\def\flushbothlabelclass#1#2#3{#1#3#2}
+\permanent\def\lang_labels_flush_both#1#2#3{#1#3#2}
 
 \permanent\def\dummytextprefix{\empty\empty}
 
@@ -162,9 +178,6 @@
 \appendtoks \enforced\let\labellanguage\currentlanguage \to \everycurrentdate
 
 \newconstant\protecttextprefixes
-
-\let\currenttextprefixtag  \s!unknown
-\let\currenttextprefixclass\s!unknown
 
 \tolerant\def\lang_labels_text_prefix_start[#1]#*[#2]#*[#3]% class language name
   {\ifarguments\or\or

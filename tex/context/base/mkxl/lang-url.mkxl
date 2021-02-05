@@ -62,8 +62,8 @@
     \enforced\let\Ux\eUx
 \to \everyhyphenatedurl
 
-\let\hyphenatedurlseparator    \empty % \periodcentered
-\let\hyphenatedurldiscretionary\empty
+\mutable\let\hyphenatedurlseparator    \empty % \periodcentered
+\mutable\let\hyphenatedurldiscretionary\empty
 
 \setnewconstant\hyphenatedurllefthyphenmin \plusthree
 \setnewconstant\hyphenatedurlrighthyphenmin\plusthree

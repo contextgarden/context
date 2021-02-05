@@ -463,9 +463,9 @@
 % \definefontfeature[mathscript]       [math-script]
 % \definefontfeature[mathscriptscript] [math-scriptscript]
 
-\definefontfeature
-  [missing]
-  [missing=yes]
+% \definefontfeature
+%   [missing]
+%   [missing=yes]
 
 %D Nice to have too:
 

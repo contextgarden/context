@@ -138,21 +138,21 @@
 
 \appendtoks
     \normalexpanded{\definelist[\currentformula]}% is expansion needed?
-    \frozen\instance\setuevalue{\e!start\currentformula\v!formula}{\strc_formulas_start_formula{\currentformula}}%
-    \frozen\instance\setuevalue{\e!stop \currentformula\v!formula}{\strc_formulas_stop_formula}%
+    \frozen\instance\protected\edefcsname\e!start\currentformula\v!formula\endcsname{\strc_formulas_start_formula{\currentformula}}%
+    \frozen\instance\protected\edefcsname\e!stop \currentformula\v!formula\endcsname{\strc_formulas_stop_formula}%
 \to \everydefineformula
 
 \definelist[\v!formula]
 
-\permanent\setuvalue{\e!start\v!formula}{\strc_formulas_start_formula{}}
-\permanent\setuvalue{\e!stop \v!formula}{\strc_formulas_stop_formula}
+\permanent\defcsname\e!start\v!formula\endcsname{\strc_formulas_start_formula{}}
+\permanent\defcsname\e!stop \v!formula\endcsname{\strc_formulas_stop_formula}
 
 \let\strc_formulas_start_formula\relax % defined later
 \let\strc_formulas_stop_formula \relax % defined later
 
 \permanent\tolerant\protected\def\defineformulaalternative[#1]#*[#2]#*[#3]%
-  {\frozen\instance\setvalue{\e!start#1\v!formula}{#2}%
-   \frozen\instance\setvalue{\e!stop #1\v!formula}{#3}}
+  {\frozen\instance\defcsname\e!start#1\v!formula\endcsname{#2}%
+   \frozen\instance\defcsname\e!stop #1\v!formula\endcsname{#3}}
 
 % sp = single line paragraph  sd = single line display
 % mp = multi  line paragraph  md = multy  line display
@@ -971,17 +971,15 @@
 % \protected\def\switchtoformulabodyfont
 %   {\switchtobodyfont}
 
-\setuvalue{\v!formula}{\dosingleempty\strc_formulas_formula}
-
-\def\strc_formulas_formula[#1]#2% todo: tagged
+\tolerant\permanent\protected\def\formula[#1];#2% todo: tagged
   {\begingroup
-   \edef\p_direct{#1}%
-   \ifempty\p_direct \else
-     \rawprocesscommalist[\p_direct]\strc_formulas_option
+   \ifparameters#1\else
+     \rawprocesscommacommand[#1]\strc_formulas_option
    \fi
-   % not : \def\strc_formulas_formula[##1]##2{\mathematics{##2}}%
    \mathematics{#2}%
    \endgroup}
+
+\aliased\letcsname\v!formula\endcsname\formula
 
 %D \starttyping
 %D % test \par       % no preceding hlist

@@ -232,7 +232,7 @@
 \newconditional\punctafterdiscretionary
 \newconditional\spaceafterdiscretionary
 
-\def\lang_discretionaries_check_before %i sused grouped
+\def\lang_discretionaries_check_before %is used grouped
   {\ifvmode
      \dontleavehmode
    \fi
@@ -269,14 +269,14 @@
       \futurelet\nexttoken\next}%
    \next}
 
-\let\discretionarytoken   \relax
-\let\textmodediscretionary\relax
+\let\lang_discretionaries_token \relax
+\let\lang_discretionaries_action\relax
 
 \permanent\protected\def\activedododotextmodediscretionary#1#2%
-  {\edef\discretionarytoken{\detokenize{#2}}%
-   \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
+  {\edef\lang_discretionaries_token{\detokenize{#2}}%
+   \def\lang_discretionaries_action{\handletextmodediscretionary{#1}}%
    \lang_discretionaries_check_after
-   \ifempty\discretionarytoken
+   \ifempty\lang_discretionaries_token
      \ifx#1\nexttoken % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
          \lastnamedcs
@@ -294,22 +294,22 @@
      \else
        \lang_discretionaries_check_before
        % the next line has been changed (20050203)
-       % \prewordbreak\hbox{\textmodediscretionary\nexttoken}\postwordbreak
+       % \prewordbreak\hbox{\lang_discretionaries_action\nexttoken}\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
          \lastnamedcs
        \orelse\ifconditional\spaceafterdiscretionary
-        %\prewordbreak\textmodediscretionary\relax
-         \wordboundary\textmodediscretionary\relax
+        %\prewordbreak\lang_discretionaries_action\relax
+         \wordboundary\lang_discretionaries_action\relax
        \orelse\ifconditional\punctafterdiscretionary
-        %\prewordbreak\textmodediscretionary\relax
-         \wordboundary\textmodediscretionary\relax
+        %\prewordbreak\lang_discretionaries_action\relax
+         \wordboundary\lang_discretionaries_action\relax
        \else
-        %\prewordbreak\textmodediscretionary\prewordbreak
-         \wordboundary\textmodediscretionary\wordboundary
+        %\prewordbreak\lang_discretionaries_action\prewordbreak
+         \wordboundary\lang_discretionaries_action\wordboundary
        \fi
      \fi
-   \orelse\ifcsname\??discretionaryaction\discretionarytoken\endcsname
+   \orelse\ifcsname\??discretionaryaction\lang_discretionaries_token\endcsname
      \lastnamedcs
    \else
      \lang_discretionaries_check_before
@@ -352,9 +352,9 @@
    \endcsname}
 
 \setuvalue{\??discretionarymode d}#1%
-  {\edef\discretionarytoken{\detokenize{#1}}%
-   \let\textmodediscretionary\compoundhyphen
-   \ifcsname\??discretionaryaction\discretionarytoken\endcsname
+  {\edef\lang_discretionaries_token{\detokenize{#1}}%
+   \let\lang_discretionaries_action\compoundhyphen
+   \ifcsname\??discretionaryaction\lang_discretionaries_token\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\indirectdiscretionary

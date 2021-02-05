@@ -883,11 +883,8 @@
   {\meta_prepare_instance_variable{#1}%
    \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
 
-\unexpanded\def\getMPdata  {\clf_getMPdata}
-           \let\rawMPdata   \clf_getMPdata
-
-\unexpanded\def\getMPstored{\clf_getMPstored}
-           \let\rawMPstored \clf_getMPstored
+\unexpanded\def\getMPdata{\clf_getMPdata}
+           \let\rawMPdata \clf_getMPdata
 
 %D We need this trick because we need to make sure that the tex scanner sees
 %D newlines and does not quit. Also, we do need to flush the buffer under a normal

@@ -565,6 +565,8 @@
 
 % Key "\doendtableformat": Equivalent to "."
 
+\aliased\let\doendtableformat\relax
+
 \newtableformatkey \doendtableformat
   {\!tkTestForBeginFormat\doendtableformat{\!tfFinishFormat}}
 
@@ -2157,15 +2159,6 @@
     {\tablerowfactor\zerocount}
     {\tablerowfactor\plustwo  }%
 \to \localtabledefinitions
-
-\def\dohandlebar % here ?
-  {\ifmmode
-     \expandafter\domathmodebar
-   \orelse\ifintable
-     \expandafter\domathmodebar
-   \else
-     \expandafter\dotextmodebar
-   \fi}
 
 \appendtoks
    \expandnamespaceparameter\??tablealign\directtablesparameter\c!align\s!unknown

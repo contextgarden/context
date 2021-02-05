@@ -137,7 +137,7 @@
 \mutable\let\currentparallellabel   \empty
 \mutable\let\currentparallelcontent \empty
 
-\def\doflushparallel#instance#status#line#label#content% called at lua end
+\permanent\protected\def\doflushparallel#instance#status#line#label#content% called at lua end
   {\begingroup
    \def\currentparallelinstance{#instance}%
    \def\currentparallelnumber  {#status}%

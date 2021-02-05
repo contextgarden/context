@@ -122,11 +122,11 @@
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the current fontsize, an
 %D ugly but usefull hack.
 
-\let\logofont\nullfont
+\mutable\let\logofont\nullfont
 
 % \loadmapfile[original-base.map] % stil needed? not if we assume afm
 
-\protected\def\setMFPfont% more sensitive for low level changes
+\permanent\protected\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%
      \ifx\fontalternative\s!bf\s!bf\orelse
      \ifx\fontalternative\s!it\s!sl\orelse

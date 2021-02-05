@@ -80,12 +80,12 @@
 \ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
 \ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
 
-\protected\def\dostarttext
+\permanent\protected\def\dostarttext
   {\enforced\glet\dostarttext\relax
    \the\everystarttext
    \global\everystarttext\emptytoks}
 
-\protected\def\dostoptext
+\permanent\protected\def\dostoptext
   {\enforced\glet\dostoptext\relax
    \strc_pagenumbers_flush_final_page
    \page % hm, bonus

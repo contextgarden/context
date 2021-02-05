@@ -600,8 +600,11 @@
 \permanent\protected\def\disablehiddenbackground
   {\global\setfalse\c_page_backgrounds_hidden_enabled}
 
-\def\hiddenbackgroundlist
+\immutable\def\hiddenbackgroundlist
   {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
+
+\permanent\protected\def\prependhiddenbackground#1{\enforced\edef\hiddenbackgroundlist{#1,\hiddenbackgroundlist}}
+\permanent\protected\def\appendhiddenbackground #1{\enforced\edef\hiddenbackgroundlist{\hiddenbackgroundlist,#1}}
 
 \defineoverlay[\v!text-2][\positionregionoverlay\textanchor{\v!text-2}] % no new anchor, we share text
 \defineoverlay[\v!text-1][\positionregionoverlay\textanchor{\v!text-1}]

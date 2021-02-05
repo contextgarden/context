@@ -92,11 +92,8 @@
   {\bgroup
    \iftok{#1}\emptytoks\else
      \definedfont[#1]%
-     \ifdim2.5\emwidth>.05\hsize
-       \tx
-       \ifdim2.5\emwidth>.05\hsize
-         \txx
-       \fi
+     \ifdim40\emwidth>\hsize
+       \glyphscale750\relax
      \fi
    \fi
    \integerdef\c_module_fonts_font_id\fontid\font
@@ -126,7 +123,7 @@
    \scratchdimenone  2.5\emwidth
    \scratchdimentwo  2.4\emwidth
    \scratchdimenthree2.3\emwidth
-   \edef\charplane{\number#2}%
+   \scratchcounterfour#2\relax
    \forgetall
    \startoverlay % easier in cld
      {\vbox
@@ -177,8 +174,8 @@
             \hpack
               {\dostepwiserecurse\zerocount{15}\plusone
                  {\scratchcountertwo  \recurselevel
-                  \scratchcounter     \numexpr\scratchcounterone*16+\scratchcountertwo\relax
-                  \scratchcounterthree\numexpr\charplane*256+\scratchcounter\relax
+                  \scratchcounterthree\numexpr\scratchcounterone*16+\scratchcountertwo\relax
+                  \scratchcounterthree\numexpr\scratchcounterfour*256+\scratchcounterthree\relax
                   \iffontchar\font\scratchcounterthree
                     \setbox\scratchbox\ruledhpack{\char\scratchcounterthree}%
                     \bgroup
@@ -197,7 +194,7 @@
    \nointerlineskip
    \vskip2\points
    % the \noexpand before \blank is needed for non etex
-   \edef\theshowfontspecs{name: {\noexpand\black\fontname\font}\quad plane: \charplane\enspace"\hexnumber\charplane}%
+   \edef\theshowfontspecs{name: {\noexpand\black\fontname\font}\quad plane: \the\scratchcounterfour\enspace"\hexnumber\scratchcounterfour}%
    \tf % also sets em
    \hbox to 40\emwidth{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup

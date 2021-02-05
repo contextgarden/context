@@ -796,6 +796,9 @@
    \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
    \let\currentitemgroup\savedcurrentitemgroup}
 
+\let\p_itemgroups_options      \empty
+\let\p_itemgroups_extra_options\empty
+
 \permanent\tolerant\protected\def\startitemgroup[#category]#spacer[#options]#spacer[#settings]%
   {\begingroup % (1)
    \nofarguments\lastarguments
@@ -806,8 +809,8 @@
    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
    %
-   \edef\itemgroupoptions{\itemgroupparameter\c!option}%
-   \let\itemgroupextraoptions\empty
+   \edef\p_itemgroups_options{\itemgroupparameter\c!option}%
+   \let\p_itemgroups_extra_options\empty
    \ifcase\nofarguments
      \strc_itemgroups_start_indeed{}%
    \or
@@ -816,27 +819,27 @@
      \ifhastok={#options}%
        \strc_itemgroups_start_indeed{#options}%
      \else
-       \edef\itemgroupextraoptions{#options}%
+       \edef\p_itemgroups_extra_options{#options}%
        \strc_itemgroups_start_indeed{}%
      \fi
    \or
-     \edef\itemgroupextraoptions{#options}%
+     \edef\p_itemgroups_extra_options{#options}%
      \strc_itemgroups_start_indeed{#settings}%
    \fi}
 
 \def\strc_itemgroups_start_indeed#settings%
-  {\ifempty\itemgroupoptions
-     \let\itemgroupoptions\itemgroupextraoptions
-   \orelse\ifempty\itemgroupextraoptions
+  {\ifempty\p_itemgroups_options
+     \let\p_itemgroups_options\p_itemgroups_extra_options
+   \orelse\ifempty\p_itemgroups_extra_options
      % ok
    \else
-     \edef\itemgroupoptions{\itemgroupoptions,\itemgroupextraoptions}%
+     \edef\p_itemgroups_options{\p_itemgroups_options,\p_itemgroups_extra_options}%
    \fi
    \begingroup % (2)
    \the\itemgroupcommands
    \setconditional\c_strc_itemgroups_text_saved\c_strc_itemgroups_text
    \strc_itemgroups_initialize_local
-   \strc_itemgroups_preset_stage_one\itemgroupoptions
+   \strc_itemgroups_preset_stage_one\p_itemgroups_options
 %
 %    \ifhmode
 %      \ifconditional\c_strc_itemgroups_auto_concat
@@ -856,19 +859,19 @@
    \fi
    \c_strc_itemgroups_n_of_items\zerocount
    \strc_itemgroups_check_n_of_items
-   \ifempty\itemgroupoptions
+   \ifempty\p_itemgroups_options
      \strc_itemgroups_setup_symbol_default
      \strc_itemgroups_reset_continue_state
      \setupcurrentitemgroup[#settings]%
    \else
-     \strc_itemgroups_process_options\itemgroupoptions
+     \strc_itemgroups_process_options\p_itemgroups_options
      \setupcurrentitemgroup[#settings]%
      \ifconditional\c_strc_itemgroups_continue
        \strc_itemgroups_setup_symbol_continue
        \strc_itemgroups_fetch_continue_state
      \else
        \strc_itemgroups_setup_symbol_asked
-       \strc_itemgroups_store_continue_state\itemgroupoptions{#settings}%
+       \strc_itemgroups_store_continue_state\p_itemgroups_options{#settings}%
      \fi
    \fi
    %
@@ -1135,6 +1138,8 @@
 %         \item bla $\displaystyle\int^{x^{y^4}}$ \item bla
 %     \stopitemize
 % \stopitemize
+
+\mutable\let\currentitemreference\empty
 
 \tolerant\permanent\protected\def\startitemgroupitem[#reference]% we can reuse more
   {\def\currentitemreference{#reference}%

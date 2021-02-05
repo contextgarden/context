@@ -216,6 +216,8 @@
 %D Every now and then we want to define a font directly, for instance when we
 %D typeset title pages. The next macro saves some typing:
 
+\mutable\let\nextfont\relax % this one could be more private but this is okay
+
 \permanent\protected\def\setfont% geen \font_helpers_set_font mogelijk
   {\afterassignment\font_basics_set_font\font\nextfont=}
 

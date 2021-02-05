@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.02.01 13:17}
+\immutable\edef\contextversion{2021.02.05 17:41}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -65,9 +65,9 @@
 
 %D Some checking (more primitives are now defined):
 
-\ifdefined\defaultinterface   \else \def\defaultinterface  {english}         \fi
-%ifdefined\messageinterface   \else \let\messageinterface  \defaultinterface \fi
-\ifdefined\defaultlanguagetag \else \def\defaultlanguagetag{en}              \fi
+\ifdefined\defaultinterface   \else \immutable\def\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \immutable\let\messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \immutable\def\defaultlanguagetag{en}              \fi
 
 %D There is only this way to pass the version info to \LUA\ (currently). Hm, we could
 %D now put it into the environment.
@@ -80,7 +80,7 @@
 
 \loadmkxlfile{norm-ctx}
 \loadmkxlfile{syst-pln}
-\loadmkxlfile{syst-mes}
+%loadmkxlfile{syst-mes}
 
 \loadmkxlfile{luat-cod}
 \loadmkxlfile{luat-bas}

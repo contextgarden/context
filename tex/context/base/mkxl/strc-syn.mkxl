@@ -418,13 +418,15 @@
     }
 \stopsetups
 
+\aliased\let\synonymentry\relax
+
 \permanent\tolerant\protected\def\placelistofsynonyms[#1]#*[#2]%
   {\begingroup
    \edef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
      {\strc_constructions_initialize{#1}%
       \setupcurrentsimplelist[#2]%
-      \let\synonymentry\strc_synonym_normal
+      \enforced\let\synonymentry\strc_synonym_normal
       % so we can hook tabulate into before and after
       \normalexpanded{\simplelistparameter\c!before
         \noexpand\clf_processsynonyms
@@ -611,9 +613,9 @@
    \setupcurrentsimplelist[#2]%
    \edef\p_simplelist_command{\simplelistparameter\c!command}%
    \ifempty\p_simplelist_command
-     \let\synonymentry\strc_sorting_normal
+     \enforced\let\synonymentry\strc_sorting_normal
    \else
-     \let\synonymentry\strc_sorting_command
+     \enforced\let\synonymentry\strc_sorting_command
    \fi
    % so we can hook tabulate into before and after
    \normalexpanded{\simplelistparameter\c!before

@@ -806,8 +806,6 @@
      \begincsname\??transparencysetter\currentcolorparameter\endcsname
    \fi}
 
-\let\dosetcolorattribute\dousecolorhashparameter % for a while
-
 \permanent\protected\def\deactivatecolor % sort of public but a bad name
   {\let\currentcolorname\s!black
    \c_attr_color       \attributeunsetvalue
@@ -1071,8 +1069,8 @@
 %D \stopregistercolor
 %D \stoptyping
 
-\let\maintextcolor   \empty
-\def\defaulttextcolor{black}
+\mutable\let\maintextcolor   \empty
+\mutable\def\defaulttextcolor{black}
 
 \permanent\protected\def\inheritmaintextcolor
   {\ifempty\maintextcolor\else\colo_helpers_activate\maintextcolor\fi}

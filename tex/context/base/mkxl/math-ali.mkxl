@@ -1046,8 +1046,8 @@
 
 \installcorenamespace{mathmatrixalignlocation}
 
-\let\mathmatrixleft \empty % experimental hook
-\let\mathmatrixright\empty % experimental hook
+\mutable\let\mathmatrixleft \empty % experimental hook
+\mutable\let\mathmatrixright\empty % experimental hook
 
 \setvalue{\??mathmatrixalignlocation\v!top   }{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
 \setvalue{\??mathmatrixalignlocation\v!high  }{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
@@ -1202,7 +1202,7 @@
    \setupcurrentmathmatrix[#2]%
    \math_matrix_start[\currentmathmatrix]}
 
-\permanent\protected\def\stopnamedmatrix
+\noaligned\permanent\protected\def\stopnamedmatrix
   {\math_matrix_stop
    \endgroup}
 

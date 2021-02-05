@@ -30,15 +30,11 @@
 % \let\/=/
 % \let\emphasiscorrection\donothing
 
-\ifdefined \normalitaliccorrection \else
-    \aliased\let\normalitaliccorrection\italiccorrection
-\fi
-
 \permanent\protected\def\italiccorrection
   {\ifnum\c_attr_italics<\plusone\normalitaliccorrection\fi}
 
 \pushoverloadmode
-    \aliased\let\/\italiccorrection
+    \aliased\let\/\italiccorrection % replaces the primitive
 \popoverloadmode
 
 % 1 = end of word

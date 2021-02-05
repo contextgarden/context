@@ -50,6 +50,28 @@
 \letvalue{\??graphictexdepth         n}\donothing
 \letvalue{\??graphictexdepth\s!nodepth}\donothing
 
+% old hackery, slightly modernized
+
+\permanent\protected\def\definetextext[#1]%
+  {\tolerant\defcsname\??graphictexarguments#1\endcsname}
+
+\permanent\tolerant\def\sometxt[#1]#*[#2]%
+  {\ifarguments
+     \expandafter\meta_some_txt_a
+   \or
+     \expandafter\meta_some_txt_b
+   \or
+     \expandafter\meta_some_txt_c
+   \or
+   \fi{#1}{#2}}
+
+\def\meta_some_txt_a#1#2#3{textext.drt("\clf_metapostescaped{#3}")}
+\def\meta_some_txt_b#1#2#3{textext.drt("\mpsometxt{#1}{\clf_metapostescaped{#3}}")}
+\def\meta_some_txt_c#1#2#3{textext.drt("\mpsometxt{#1}[#2]{\clf_metapostescaped{#3}}")}
+
+\permanent\protected\def\mpsometxt#1%
+  {\begincsname\??graphictexarguments#1\endcsname}
+
 % \definetextext[framed]{\framed}
 %
 % \startMPcode
@@ -65,39 +87,7 @@
 %     draw \sometxt[framed][foregroundstyle=bold]{Mojca's};
 %     draw \sometxt[framed]{eyes only!} rotated -45 ;
 % \stopMPcode
-
-\permanent\protected\def\definetextext[#1]%
-  {\def\currenttextext{#1}%
-   \doifelsenextoptionalcs\meta_textext_define_one\meta_textext_define_zero}
-
-\def\meta_textext_define_one {\setvalue{\??graphictexarguments1:\currenttextext}}
-\def\meta_textext_define_zero{\setvalue{\??graphictexarguments0:\currenttextext}}
-
-\permanent\def\sometxt#1#{\meta_some_txt{#1}}
-
-\def\meta_some_txt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
-  {textext.drt("\mpsometxt#1{\clf_metapostescaped{#2}}")}
-
-\permanent\protected\def\mpsometxt % no _ catcode
-  {\doifelsenextoptionalcs\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
-
-\def\meta_some_txt_indeed_yes[#1]%
-  {\def\currenttextext{#1}%
-   \csname\??graphictexarguments
-     \ifcsname\??graphictexarguments0:#1\endcsname0\else
-     \ifcsname\??graphictexarguments1:#1\endcsname1\else
-                                       ?\fi\fi
-   \endcsname}
-
-\def\meta_some_txt_indeed_nop
-  {}
-
-\setvalue{\??graphictexarguments ?}{}
-\setvalue{\??graphictexarguments 0}{\csname\??graphictexarguments\currenttextext\endcsname}
-\setvalue{\??graphictexarguments 1}{\dosingleempty\meta_gx_one}
-
-\def\meta_gx_one{\csname\??graphictexarguments1:\currenttextext\endcsname}
-
+%
 % \definetextext[framed][#1]#2{\framed[width=4cm]{\switchtobodyfont[#1]#2}}
 % \definetextext[simple]{\framed[width=8cm]}
 %

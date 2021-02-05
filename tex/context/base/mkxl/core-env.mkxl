@@ -306,16 +306,49 @@
 
 \installmacrostack\c_syst_modes_set_done
 
+% \permanent\protected\def\startmodeset
+%   {\push_macro_c_syst_modes_set_done
+%    \setfalse\c_syst_modes_set_done
+%    \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+%
+% \aliased\let\stopmodeset\relax
+%
+% \def\syst_modes_set_start[#1]%
+%   {\edef\m_mode_case{#1}%
+%    \unless\ifx\m_mode_case\s!default
+%      \expandafter\syst_modes_set_check
+%    \orelse\ifconditional\c_syst_modes_set_done
+%      \expandafter\syst_modes_set_quit
+%    \else
+%      \expandafter\syst_modes_set_yes
+%    \fi}
+%
+% \def\syst_modes_set_check
+%   {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
+%
+% \def\syst_modes_set_yes#1%
+%   {\settrue\c_syst_modes_set_done
+%    #1%
+%    \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+%
+% \def\syst_modes_set_nop#1%
+%   {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+%
+% \def\syst_modes_set_quit#-\stopmodeset
+%   {\pop_macro_c_syst_modes_set_done}
+
 \permanent\protected\def\startmodeset
   {\push_macro_c_syst_modes_set_done
    \setfalse\c_syst_modes_set_done
-   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+   \syst_modes_set_start}
 
 \aliased\let\stopmodeset\relax
 
-\def\syst_modes_set_start[#1]%
+\tolerant\def\syst_modes_set_start#.[#1]% skip spaces and pars
   {\edef\m_mode_case{#1}%
-   \unless\ifx\m_mode_case\s!default
+   \ifempty\m_mode_case
+     \expandafter\syst_modes_set_quit
+   \orunless\ifx\m_mode_case\s!default
      \expandafter\syst_modes_set_check
    \orelse\ifconditional\c_syst_modes_set_done
      \expandafter\syst_modes_set_quit
@@ -326,13 +359,13 @@
 \def\syst_modes_set_check
   {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
 
-\def\syst_modes_set_yes#1%
+\tolerant\def\syst_modes_set_yes#1%
   {\settrue\c_syst_modes_set_done
    #1%
-   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+   \syst_modes_set_start}
 
-\def\syst_modes_set_nop#1%
-  {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
+\tolerant\def\syst_modes_set_nop#1%
+  {\syst_modes_set_start}
 
 \def\syst_modes_set_quit#-\stopmodeset
   {\pop_macro_c_syst_modes_set_done}
@@ -609,6 +642,8 @@
 \permanent\protected\def\setevariables{\syst_variables_set[\getraweparameters]}
 \permanent\protected\def\setgvariables{\syst_variables_set[\getrawgparameters]}
 \permanent\protected\def\setxvariables{\syst_variables_set[\getrawxparameters]}
+
+\mutable\let\currentvariableclass\empty
 
 \tolerant\def\syst_variables_set[#1]#*[#2]#*[#3]% tricky, test on s-pre-60
   {\doifelse{#2}\currentvariableclass

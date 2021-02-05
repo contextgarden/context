@@ -186,7 +186,7 @@
      \box\b_page_otr_special
    \fi}
 
-\def\page_otr_add_special_content
+\permanent\protected\def\page_otr_add_special_content
   {\dowithnextboxcs\page_otr_add_special_content_indeed\hbox}
 
 \permanent\protected\def\page_otr_add_special_content_indeed

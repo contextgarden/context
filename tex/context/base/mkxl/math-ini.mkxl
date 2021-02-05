@@ -179,13 +179,13 @@
 \permanent\protected\def\startpickupmath % for the moment private
   {\ifconditional\indisplaymath
      \startforceddisplaymath
-     \let\stoppickupmath\stopforceddisplaymath
+     \enforced\let\stoppickupmath\stopforceddisplaymath
    \else
      \startimath
-     \let\stoppickupmath\stopimath
+     \enforced\let\stoppickupmath\stopimath
    \fi}
 
-\let\stoppickupmath\relax
+\aliased\let\stoppickupmath\relax
 
 % \protected\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
@@ -221,24 +221,29 @@
 
 \installswitchcommandhandler \??mathematics {mathematics} \??mathematics
 
-\permanent\protected\def\startmathematics % no grouping, if ever then also an optional second
-  {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
-
 \installmacrostack\currentmathematics
 
-\protected\def\math_mathematics_start_yes[#1]%
+% \permanent\protected\def\startmathematics % no grouping, if ever then also an optional second
+%   {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
+%
+% \protected\def\math_mathematics_start_yes[#1]%
+%   {\push_macro_currentmathematics
+%    \edef\currentmathematics{#1}% check for valid
+%    \the\everyswitchmathematics}
+%
+% \protected\def\math_mathematics_start_nop
+%   {\push_macro_currentmathematics
+%    \let\currentmathematics\empty
+%    \the\everyswitchmathematics}
+
+\permanent\protected\tolerant\def\startmathematics[#1]% no grouping, if ever then also an optional second
   {\push_macro_currentmathematics
    \edef\currentmathematics{#1}% check for valid
    \the\everyswitchmathematics}
 
-\protected\def\math_mathematics_start_nop
-  {\push_macro_currentmathematics
-   \let\currentmathematics\empty
-   \the\everyswitchmathematics}
-
 \permanent\protected\def\stopmathematics
   {\pop_macro_currentmathematics
-   \the\everyswitchmathematics}
+   \the\everyswitchmathematics} % only needed at level zero
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
 
@@ -597,7 +602,7 @@
 %D
 %D To be done.
 
-\let\mathboldsymbol\relax % yet unsupported, will be
+\mutable\let\mathboldsymbol\relax % yet unsupported, will be
 
 \permanent\protected\def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
@@ -812,7 +817,7 @@
 \let\math_tags_mi\firstofoneunexpanded
 
 \protected\def\math_tags_mn#1{\begingroup\mathupright\math_set_o_both#1\endgroup}
-\protected\def\math_tags_ms#1{\begingroup\mathupright\math_set_p_both#1\endgroup}
+\protected\def\math_tags_ms#1{\begingroup\mathupright\math_set_p_both#1\endgroup} % why not just \text
 
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
@@ -832,9 +837,9 @@
    \ifempty\p_functionstyle
      \expandafter\math_mfunction_styled_none
    \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-     \doubleexpandafter\math_mfunction_styled_text
+     \expandafter\math_mfunction_styled_text
    \else
-     \doubleexpandafter\math_mfunction_styled_math
+     \expandafter\math_mfunction_styled_math
    \fi}
 
 \protected\def\math_mfunction_styled_text#1%
@@ -885,6 +890,11 @@
    \endgroup}
 
 \ifdefined\apply \else \aliased\let\apply\relax \fi
+
+\mutable\let\mo\relax
+\mutable\let\mi\relax
+\mutable\let\mn\relax
+\mutable\let\ms\relax
 
 \appendtoks
     \enforced\let\math_tags_mfunctiontxt\clf_tagmfunctiontxt
@@ -1109,8 +1119,8 @@
 
 % most math fonts have messed up primes, just test this: $\prime^{\prime^{\prime}}$
 
-{ \catcode\circumflexasciicode\othercatcode       \glet\othercircumflextoken      ^ }
-{ \catcode\circumflexasciicode\superscriptcatcode \glet\superscriptcircumflextoken^ }
+{ \catcode\circumflexasciicode\othercatcode       \immutable\glet\othercircumflextoken      ^ }
+{ \catcode\circumflexasciicode\superscriptcatcode \immutable\glet\superscriptcircumflextoken^ }
 
 \ifdefined \prime \else
     \Umathchardef\prime "0 "0 "2032
@@ -1451,8 +1461,8 @@
 \permanent\protected\def\mathgreekitalic {\c_attr_mathgreek"333\relax}
 \permanent\protected\def\mathgreekdefault{\c_attr_mathgreek"000\relax}
 
-\let\mathgreeknormal\mathgreekupright
-\let\mathgreeknone  \mathgreekdefault
+\aliased\let\mathgreeknormal\mathgreekupright
+\aliased\let\mathgreeknone  \mathgreekdefault
 
 \appendtoks
     \c_attr_mathgreek\c_math_greek_attribute
@@ -1963,8 +1973,8 @@
 
 %D Some dimension fun:
 
-\let\mathexheight \exheight                   % also in math-ini.mkiv
-\def\mathemwidth {\Umathquad\normalmathstyle} % also in math-ini.mkiv
+\aliased  \let\mathexheight \exheight                   % also in math-ini.mkiv
+\permanent\def\mathemwidth {\Umathquad\normalmathstyle} % also in math-ini.mkiv
 
 %D A plain inheritance:
 

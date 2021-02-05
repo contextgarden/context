@@ -26,6 +26,7 @@ local setfont            = nuts.setfont
 local nextchar           = nuts.traversers.char
 local getscales          = nuts.getscales
 local setscales          = nuts.setscales
+local setprop            = nuts.setprop
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -238,11 +239,9 @@ function collections.clonevector(name)
         if factor then
             vector.factor = factor
         end
-if texconditionals["c_font_compact"] then
-        if rscale then
+        if texconditionals["c_font_compact"] and rscale then
             vector.rscale = rscale
         end
-end
         if trace_collecting then
             if target then
                 report_fonts("remapping font %a to %a for range %U - %U, offset %X, target %U",current,cloneid,start,stop,offset,target)
@@ -344,9 +343,9 @@ function collections.prepare(name) -- we can do this in lua now .. todo
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
-if texconditionals["c_font_compact"] then
-    scale = 1
-end
+            if texconditionals["c_font_compact"] then
+                scale = 1
+            end
             if fontpatternhassize(name) then
                 context.font_fallbacks_clone_unique(name,scale)
             else
@@ -419,17 +418,17 @@ function collections.process(head) -- this way we keep feature processing
             local vect = vector[char]
             if vect then
                 local kind = type(vect)
+                local newfont, newchar
                 if kind == "table" then
-                    local newfont = vect[1]
-                    local newchar = vect[2]
+                    newfont = vect[1]
+                    newchar = vect[2]
                     if trace_collecting then
                         report_fonts("remapping character %C in font %a to character %C in font %a%s",
                             char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
                         )
                     end
-                    setfont(n,newfont,newchar)
                 elseif kind == "function" then
-                    local newfont, newchar = vect(font,char,vector)
+                    newfont, newchar = vect(font,char,vector)
                     if not newfont then
                         newfont = font
                     end
@@ -441,7 +440,6 @@ function collections.process(head) -- this way we keep feature processing
                             char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
                         )
                     end
-                    setfont(n,newfont,newchar)
                     vector[char] = { newfont, newchar }
                 else
                     local fakemono = vector.factor
@@ -450,10 +448,11 @@ function collections.process(head) -- this way we keep feature processing
                             font,vect,char,not chardata[vect][char] and " (missing)" or ""
                         )
                     end
+                    newfont = vect
                     if fakemono then
-                        setfont(n,vect,monoslot(vect,char,font,fakemono))
+                        newchar = monoslot(vect,char,font,fakemono)
                     else
-                        setfont(n,vect)
+                        newchar = char
                     end
                 end
                 local rscale = vector.rscale
@@ -461,6 +460,8 @@ function collections.process(head) -- this way we keep feature processing
                     local s, x, y = getscales(n)
                     setscales(n,s*rscale,x*rscale,y*rscale)
                 end
+                setfont(n,newfont,newchar)
+                setprop(n, "original", { font = font, char = char })
             end
         end
     end

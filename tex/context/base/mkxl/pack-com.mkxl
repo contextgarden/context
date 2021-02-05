@@ -228,6 +228,10 @@
 
 \newtoks\everycombination
 
+\aliased\let\combination\empty
+
+\let\p_nx_ny\empty
+
 \permanent\protected\def\stopcombination
   {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
    \dostoptagged
@@ -239,52 +243,52 @@
   {\bgroup % so we can grab a group
    \pack_combinations_push
    \edef\currentcombination{#1}%
-   \edef\currentcombinationspec{#2}%
+   \edef\p_nx_ny{#2}%
    %
-   \ifempty\currentcombinationspec
+   \ifempty\p_nx_ny
      \ifcondition\validassignment{#1}%
        \let\currentcombination\empty
        \setupcurrentcombination[#1]%
-       \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+       \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
      \else
        \doifelseinstring{*}\currentcombination
-         {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+         {\edef\p_nx_ny{\currentcombination*\plusone*}%
           \let\currentcombination\empty}
          {\doifelsenumber\currentcombination
-            {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+            {\edef\p_nx_ny{\currentcombination*\plusone*}%
              \let\currentcombination\empty}
-            {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
+            {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
      \fi
    \else
      \ifcondition\validassignment{#2}%
        \setupcurrentcombination[#2]%
-       \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+       \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
      \else
-       \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
+       \edef\p_nx_ny{\p_nx_ny*\plusone*}%
      \fi
    \fi
    %
 % test first:
 %
-%    \ifempty\currentcombinationspec
+%    \ifempty\p_nx_ny
 %      \ifhastok={#1}%
 %        \let\currentcombination\empty
 %        \setupcurrentcombination[#1]%
-%        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %      \orelse\ifhastok*{\currentcombination}%
-%        \edef\currentcombinationspec{\currentcombination*\plusone*}%
+%        \edef\p_nx_ny{\currentcombination*\plusone*}%
 %        \let\currentcombination\empty
 %      \orelse\ifchknum\currentcombination\or
-%        \edef\currentcombinationspec{\currentcombination*\plusone*}%
+%        \edef\p_nx_ny{\currentcombination*\plusone*}%
 %        \let\currentcombination\empty
 %      \else
-%        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %      \fi
 %    \orelse\ifhastok={#2}%
 %      \setupcurrentcombination[#2]%
-%      \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%      \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %    \else
-%      \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
+%      \edef\p_nx_ny{\p_nx_ny*\plusone*}%
 %    \fi
    %
    \forgetall
@@ -306,8 +310,8 @@
    %
    \dostarttaggedchained\t!combination\currentcombination\??combination
    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
-   \let\combination\empty % permits \combination{}{} handy for cld
-   \normalexpanded{\pack_combinations_start_indeed[\currentcombinationspec]}}
+   \enforced\let\combination\empty % permits \combination{}{} handy for cld
+   \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 
 \let\pack_combinations_check_x_y\relax
 

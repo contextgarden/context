@@ -84,6 +84,7 @@
 
 \mutable\let\twopassdata    \empty
 \mutable\let\twopassdatalist\empty
+\mutable\let\noftwopassitems\!!zeropoint
 
 \def\syst_twopass_check % can be delegated to lua once obsolete is gone
   {\ifempty\twopassdata

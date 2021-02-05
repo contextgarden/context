@@ -29,12 +29,12 @@
    \expandnamespaceparameter\??hyphenmarksign\dummyparameter\c!sign\v!normal}
 
 \setvalue{\??hyphenmarksign\v!normal}%
-  {\let\textmodehyphen\normalhyphen
-   \let\textmodehyphendiscretionary\normalhyphendiscretionary}
+  {\enforced\let\textmodehyphen\normalhyphen
+   \enforced\let\textmodehyphendiscretionary\normalhyphendiscretionary}
 
 \setvalue{\??hyphenmarksign\v!wide}%
-  {\let\textmodehyphen\composedhyphen
-   \let\textmodehyphendiscretionary\composedhyphendiscretionary}
+  {\enforced\let\textmodehyphen\composedhyphen
+   \enforced\let\textmodehyphendiscretionary\composedhyphendiscretionary}
 
 \setuphyphenmark[\c!sign=\v!wide]
 
@@ -60,8 +60,8 @@
      {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!compoundhyphen}}}
 
-\let\textmodehyphen             \composedhyphen
-\let\textmodehyphendiscretionary\composedhyphendiscretionary
+\aliased\let\textmodehyphen             \composedhyphen
+\aliased\let\textmodehyphendiscretionary\composedhyphendiscretionary
 
 \definesymbol[\c!leftcompoundhyphen]  [\languageparameter\c!leftcompoundhyphen]
 \definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
@@ -314,7 +314,7 @@
 %D     \NC [fr:en] \NC {\tttf fr} \quotation[fr:en]{{\tttf <en=\currentlanguage>} something french} \NC \NR
 %D \stoptabulate
 
-\let\currentdelimitedlanguage\empty
+\mutable\let\currentdelimitedlanguage\empty
 
 \installglobalmacrostack\currentdelimitedlanguage
 

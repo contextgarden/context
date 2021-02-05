@@ -17,13 +17,17 @@
 
 \registerctxluafile{grph-epd}{}
 
+% hm, this one is globally overloaded
+
 \def\figurereference{\clf_figurestatus{reference}{}} % might become private
+
+\mutable\let\mergedfigurereference\empty
 
 \defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]
 
 \startsetups system:graphics:epdf
     \clf_figure_mergegoodies{\externalfigureparameter\c!interaction}%
-    \reference[\figurereference]{}% todo: dest area
+    \reference[\mergedfigurereference]{}% todo: dest area
 \stopsetups
 
 \defineframed

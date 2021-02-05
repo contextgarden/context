@@ -226,6 +226,8 @@
 \setvalue{\??metanodesoption            dashed}{dashed evenly}
 \setvalue{\??metanodesoption            dotted}{dashed withdots scaled .5}
 
+\aliased\let\connectnodes\relax
+
 \appendtoks
    \enforced\let\connectnodes\grph_nodes_fromto
 \to \t_every_meta_nodes

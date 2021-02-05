@@ -627,8 +627,8 @@
 \letvalue{\??noteinteractiondisplay\v!text  }\strc_references_prepare_display_references_yes_text
 \letvalue{\??noteinteractiondisplay\v!yes   }\strc_references_prepare_display_references_yes_number
 
-\let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
-\let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
+\mutable\let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
+\mutable\let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
 
 \protected\def\strc_notes_set_style_color_inline_yes#style#color%
   {\usenotestyleandcolor#style#color%

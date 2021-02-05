@@ -771,9 +771,9 @@
     \fi
 \to \everybtxlistrendering
 
-\def\nofbtxlistentries  {0}
-\def\currentbtxlistentry{0}
-\def\currentbtxlistindex{0} % only for internal use (points back to big list)
+\mutable\let\nofbtxlistentries  \!!zerocount
+\mutable\let\currentbtxlistentry\!!zerocount
+\mutable\let\currentbtxlistindex\!!zerocount % only for internal use (points back to big list)
 
 \newconditional\c_publ_prefixed
 
@@ -1888,28 +1888,28 @@
 %     \btxusecommand[btx:apa:list:article:title]{foo}
 % \btxstopstyle
 
-\let\savedcurrentbtx\empty
+\mutable\let\m_btx_saved_current\empty
 
 \permanent\protected\def\btxstartstyle[#1]%
   {\begingroup
-   \let\savedcurrentbtx\currentbtx
+   \let\m_btx_saved_current\currentbtx
    \def\currentbtx{#1}%
    \usebtxstyleparameter\c!style
-   \let\currentbtx\savedcurrentbtx}
+   \let\currentbtx\m_btx_saved_current}
 
 \permanent\protected\def\btxstartcolor[#1]%
   {\begingroup
-   \let\savedcurrentbtx\currentbtx
+   \let\m_btx_saved_current\currentbtx
    \def\currentbtx{#1}%
    \usebtxcolorparameter\c!color
-   \let\currentbtx\savedcurrentbtx}
+   \let\currentbtx\m_btx_saved_current}
 
 \permanent\protected\def\btxstartstyleandcolor[#1]%
   {\begingroup
-   \let\savedcurrentbtx\currentbtx
+   \let\m_btx_saved_current\currentbtx
    \def\currentbtx{#1}%
    \usebtxstyleandcolor\c!style\c!color
-   \let\currentbtx\savedcurrentbtx}
+   \let\currentbtx\m_btx_saved_current}
 
 \aliased\let\btxstopstyle        \endgroup
 \aliased\let\btxstopcolor        \endgroup

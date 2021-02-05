@@ -1,0 +1,68 @@
+%D \module
+%D   [       file=mp-miss.mpiv,
+%D        version=2021.02.01,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=missing glyphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known metafun_loaded_miss : endinput ; fi ;
+
+newinternal boolean metafun_loaded_miss ; metafun_loaded_miss := true ; immutable metafun_loaded_miss ;
+
+picture MissingSnippets[][];
+
+vardef MissingGlyphSymbol(expr w, h, d) =
+    image (
+        draw (0,-d)--(w,-d)--(w,h)--(0,h)--cycle ;
+        if d <> 0 : draw (0,0)--(w,0) ;
+    )
+enddef ;
+
+vardef MissingLowercase   = image ( draw MissingGlyphSymbol(.45, .55,  .20) scaled 1000 ; ) enddef ;
+vardef MissingUppercase   = image ( draw MissingGlyphSymbol(.65, .70,  .25) scaled 1000 ; ) enddef ;
+vardef MissingMark        = image ( draw MissingGlyphSymbol(.15, .70, -.50) scaled 1000 ; ) enddef ;
+vardef MissingPunctuation = image ( draw MissingGlyphSymbol(.15, .55,  .20) scaled 1000 ; ) enddef ;
+vardef MissingUnknown     = image ( draw MissingGlyphSymbol(.45, .20,    0) scaled 1000 ; ) enddef ;
+
+% vardef MissingGlyph =
+%     pickup pencircle scaled 0.05 ;
+%     composeglyph(MissingSnippets[getparameterdefault "mpsfont" "namespace" 1]) ;
+% enddef ;
+
+vardef MissingGlyph =
+    save u ; u := getparameterdefault "mpsfont" "unicode" 1;
+    save s ; s := getparameterdefault "mpsfont" "scale" 1 ;
+    save n ; n := getparameterdefault "mpsfont" "namespace" 1 ;
+    save i ; i := getparameterdefault "mpsfont" "slant" 0 ;
+    save w ; w := getparameterdefault "mpsfont" "weight" 1 ;
+    pickup pencircle scaled (0.05 * w) ;
+    MissingSnippets[n][u] := image (
+        draw scantokens ( getparameter "mpsfont" "shapes" (1) "shape" )
+            withcolor getparameter "mpsfont" "shapes" (1) "color"
+    ) scaled s slanted i ;
+    registercomposedglyph(u, MissingSnippets[n]) ;
+enddef ;
+
+lmt_registerglyphs [
+    name   = "missing",
+    units  =  1000,
+    width  =  100,
+    height =  100,
+    depth  =  0,
+] ;
+
+% we need to set up some basics (signals to the backend and such) at definition
+% time so we just force a bogus shape (zero)
+
+lmt_registerglyph [
+    category = "missing",
+] ;
+
+permanent MissingSnippets, MissingGlyphSymbol, MissingLowercase, MissingUppercase,
+    MissingMark, MissingPunctuation, MissingUnknown, MissingGlyph ;

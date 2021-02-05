@@ -104,6 +104,8 @@
 %def\mathsizesuffix{\ifcase\fontface\or\mathtextsuffix\or\mathscriptsuffix\or\mathscriptscriptsuffix\fi}
 \mutable\let\mathsizesuffix\empty
 
+\mutable\let\fontfamily\relax % for now public but it is a helper
+
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%

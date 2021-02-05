@@ -1828,7 +1828,7 @@ do
 
         mainwriters["type3"] = function(details)
             local properties   = details.properties
-            local basefontname = details.basefontname or properties.name
+            local basefontname = properties.basefontname or details.basefontname or properties.name -- messy
             local askedmethod  = properties.method or "pk"
             local method       = methods[askedmethod] or methods.pk
             if not method then

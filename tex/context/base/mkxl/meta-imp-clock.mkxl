@@ -89,6 +89,8 @@
 
 % \enableexperiments[fonts.compact]
 
+\nopdfcompression
+
 \setuplayout[tight]
 
 \setupbodyfont[dejavu]

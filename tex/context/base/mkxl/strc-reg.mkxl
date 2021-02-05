@@ -159,6 +159,10 @@
 \mutable\let\currentregisterseeword     \empty
 \mutable\let\currentregistersynchronize \empty
 \mutable\let\currentregisterxmlsetup    \empty
+\mutable\let\currentregisterprocessors  \empty
+\mutable\let\currentregisterprocessorsa \empty
+\mutable\let\currentregisterprocessorsb \empty
+\mutable\let\currentregisterprocessorsc \empty
 
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
@@ -251,17 +255,23 @@
    \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
    \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}}
 
+\def\strc_registers_register_page_expand_processors
+  {\xdef\currentregisterprocessorsa{\registerparameter{\c!processors:1}}%
+   \xdef\currentregisterprocessorsb{\registerparameter{\c!processors:2}}%
+   \xdef\currentregisterprocessorsc{\registerparameter{\c!processors:3}}}
+
 \def\strc_registers_register_page_entry_indeed#1#2#3% register data userdata
   {\begingroup
    \edef\currentregister{#1}%
    %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
    \setupcurrentregister[#2]%
-   \edef\currentregisterlabel    {\registerparameter\c!label}%
-   \edef\currentregisterexpansion{\registerparameter\c!expansion}%
-   \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%
-   \xdef\currentregisterkeys     {\registerparameter\c!keys}%
-   \xdef\currentregisterentries  {\registerparameter\c!entries}%
-   \xdef\currentregisterxmlsetup {\registerparameter\c!xmlsetup}%
+   \edef\currentregisterlabel     {\registerparameter\c!label}%
+   \edef\currentregisterexpansion {\registerparameter\c!expansion}%
+   \edef\currentregisterownnumber {\registerparameter\c!ownnumber}%
+   \xdef\currentregisterkeys      {\registerparameter\c!keys}%
+   \xdef\currentregisterentries   {\registerparameter\c!entries}%
+   \xdef\currentregisterprocessors{\registerparameter\c!processors}%
+   \xdef\currentregisterxmlsetup  {\registerparameter\c!xmlsetup}%
    \ifempty\currentregisterentries
      \ifx\currentregisterexpansion\s!xml
        \strc_registers_register_page_expand_xml_entries
@@ -286,6 +296,7 @@
        \strc_registers_register_page_expand_yes_keys
      \fi
    \fi
+   \strc_registers_register_page_expand_processors
    \setnextinternalreference
    % we could consider storing register entries in a list which we
    % could then sort
@@ -329,6 +340,15 @@
                 }
             \else
                 key {\currentregisterkeys}%
+            \fi
+            \ifempty\currentregisterprocessors
+                processors {
+                    {\currentregisterprocessorsa}%
+                    {\currentregisterprocessorsb}%
+                    {\currentregisterprocessorsc}%
+                }
+            \else
+                processor {\currentregisterprocessors}%
             \fi
         }%
         userdata {\detokenize\expandafter{\normalexpanded{#3}}}

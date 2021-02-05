@@ -187,6 +187,7 @@ end
 
 local userrule    -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 local outlinerule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
+local emptyrule   -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 
 local function initialize()
     --
@@ -236,6 +237,10 @@ local function initialize()
     --
     if not outlinerule then
        outlinerule = nuts.pool.outlinerule
+    end
+    --
+    if not emptyrule then
+       emptyrule = nuts.pool.emptyrule
     end
     initialize = false
 end
@@ -783,7 +788,7 @@ local ruledbox do
 
     ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
         local wd, ht, dp = getwhd(current)
-        if wd ~= 0 then
+        local force_origin = wd == 0 or (dp + ht) == 0
             local shift = getshift(current)
             local next = getnext(current)
             local prev = previous
@@ -804,7 +809,9 @@ local ruledbox do
             -- we need to trigger the right mode (else sometimes no whatits)
             local info = setlink(
                 this and copy_list(this) or nil,
-                (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+                (force_origin and emptyrule(wd,ht,dp)) -- we accept some overhead
+             or (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth))
+             or userrule {
                     width  = wd,
                     height = ht,
                     depth  = dp,
@@ -819,9 +826,9 @@ local ruledbox do
             --
             setattr(info,a_layer,layer)
             if vertical then
-                if shift == 0 then
+                if not force_origin and shift == 0 then
                     info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
-                elseif trace_origin then
+                elseif trace_origin or force_origin then
                     local size   = 2*size
                     local origin = o_cache[size]
                     origin = copy_list(origin)
@@ -839,9 +846,9 @@ local ruledbox do
                 end
                 info = new_vlist(info,wd,ht,dp,shift)
             else
-                if shift == 0 then
+                if not force_origin and shift == 0 then
                     info = setlink(current,new_kern(-wd),info)
-                elseif trace_origin then
+                elseif trace_origin or force_origin then
                     local size   = 2*size
                     local origin = o_cache[size]
                     origin = copy_list(origin)
@@ -869,9 +876,9 @@ local ruledbox do
             else
                 return head, info
             end
-        else
-            return head, current
-        end
+     -- else
+     --     return head, current
+     -- end
     end
 
 end

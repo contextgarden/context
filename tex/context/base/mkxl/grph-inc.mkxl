@@ -423,12 +423,12 @@
       {\naturalhpack{\strc_references_flush_destination_nodes\directgotodumbbox{#2}[cross:b:#1]}}%
    \endgroup}
 
-\let\doexternalfigurerepeat\gobblefourarguments % called from lua end
+\aliased\let\doexternalfigurerepeat\gobblefourarguments % called from lua end
 
 \permanent\tolerant\protected\def\placeregisteredexternalfigures[#1]%
   {\page
    \begingroup
-   \protected\def\doexternalfigurerepeat{\grph_include_place_registered_indeed{#1}}%
+   \enforced\protected\def\doexternalfigurerepeat{\grph_include_place_registered_indeed{#1}}%
    \dorecurse\clf_figure_nof_registered_pages
     {\page
      \clf_figure_flush_registered_pages\recurselevel
@@ -448,7 +448,7 @@
 
 %D Scaling:
 
-\let\dowithfigure\relax % name might change (into a proper hook)
+\mutable\let\dowithfigure\relax % name might change (into a proper hook)
 
 \permanent\protected\def\doscalefigure % used at lua end
   {\global\setbox\foundexternalfigure\vpack{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}

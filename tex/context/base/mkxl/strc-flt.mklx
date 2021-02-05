@@ -2548,7 +2548,7 @@
 
 \initializeboxstack\??localfloatstack
 
-\newcount\c_strc_localfloats_n  \let\noflocalfloats\c_strc_localfloats_n
+\newcount\c_strc_localfloats_n  \aliased\let\noflocalfloats\c_strc_localfloats_n
 
 \permanent\protected\def\resetlocalfloats
   {\global\c_strc_localfloats_n\zerocount

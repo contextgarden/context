@@ -485,18 +485,22 @@ end
 
 do
 
-    local takebox    = nuts.takebox
-    local flush_list = nuts.flush_list
-    local copy_list  = nuts.copy_list
-    local getwhd     = nuts.getwhd
-    local setbox     = nuts.setbox
-    local new_hlist  = nuts.pool.hlist
+    local tonut           = nodes.tonut
+    local takebox         = nuts.takebox
+    local flush_list      = nuts.flush_list
+    local copy_list       = nuts.copy_list
+    local getwhd          = nuts.getwhd
+    local setbox          = nuts.setbox
+    local new_hlist       = nuts.pool.hlist
 
-    local boxes      = { }
-    nodes.boxes      = boxes
-    local cache      = table.setmetatableindex("table")
-    local report     = logs.reporter("boxes","cache")
-    local trace      = false
+    local values          = tokens.values
+    local dimension_value = values.dimension
+
+    local boxes           = { }
+    nodes.boxes           = boxes
+    local cache           = table.setmetatableindex("table")
+    local report          = logs.reporter("boxes","cache")
+    local trace           = false
 
     trackers.register("nodes.boxes",function(v) trace = v end)
 
@@ -562,7 +566,7 @@ do
         setbox(box,b or nil)
     end
 
-    function boxes.dimensions(category,name)
+    local function dimensions(category,name)
         name = tonumber(name) or name
         local b = cache[category][name]
         if b then
@@ -571,6 +575,8 @@ do
             return 0, 0, 0
         end
     end
+
+    boxes.dimensions = dimensions
 
     function boxes.reset(category,name)
         name = tonumber(name) or name
@@ -599,18 +605,24 @@ do
 
     implement {
         name      = "putboxincache",
+        public    = true,
+        protected = true,
         arguments = { "string", "string", "integer" },
         actions   = boxes.save,
     }
 
     implement {
         name      = "getboxfromcache",
+        public    = true,
+        protected = true,
         arguments = { "string", "string", "integer" },
         actions   = boxes.restore,
     }
 
     implement {
         name      = "directboxfromcache",
+        public    = true,
+        protected = true,
         arguments = "2 strings",
         actions   = { boxes.direct, context },
      -- actions   = function(category,name) local b = boxes.direct(category,name) if b then context(b) end end,
@@ -618,6 +630,8 @@ do
 
     implement {
         name      = "directcopyboxfromcache",
+        public    = true,
+        protected = true,
         arguments = { "string", "string", true },
         actions   = { boxes.direct, context },
      -- actions   = function(category,name) local b = boxes.direct(category,name,true) if b then context(b) end end,
@@ -625,20 +639,79 @@ do
 
     implement {
         name      = "copyboxfromcache",
+        public    = true,
+        protected = true,
         arguments = { "string", "string", "integer", true },
         actions   = boxes.restore,
     }
 
     implement {
         name      = "doifelseboxincache",
+        public    = true,
+        protected = true,
         arguments = "2 strings",
         actions   = { boxes.found, doifelse },
     }
 
     implement {
         name      = "resetboxesincache",
+        public    = true,
+        protected = true,
         arguments = "string",
         actions   = boxes.reset,
+    }
+
+    -- we can share this ...
+
+    implement {
+        name      = "getboxwdfromcache",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        arguments = "2 strings",
+        actions   = function(category,name)
+            local w, h, d = dimensions(category,name)
+            return dimension_value, w
+        end,
+    }
+
+    implement {
+        name      = "getboxhtfromcache",
+        arguments = "2 strings",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function(category,name)
+            local w, h, d = dimensions(category,name)
+            return dimension_value, h
+        end,
+    }
+
+    implement {
+        name      = "getboxdpfromcache",
+        arguments = "2 strings",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function(category,name)
+            local w, h, d = dimensions(category,name)
+            return dimension_value, d
+        end,
+    }
+
+    implement {
+        name      = "putnextboxincache",
+        public    = true,
+        protected = true,
+        arguments = { "string", "string", "box" },
+        actions   = function(category,name,b)
+            name = tonumber(name) or name
+            b = tonut(b)
+            if trace then
+                report("category %a, name %a, %s (%s)",category,name,"save",b and "content" or "empty")
+            end
+            cache[category][name] = b or false
+        end
     }
 
 end

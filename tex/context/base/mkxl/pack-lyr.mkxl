@@ -95,7 +95,7 @@
    \c!sy=1,
    \c!region=\layeranchor]
 
-\def\layeranchor{\currentlayer:\the\realpageno}
+\permanent\def\layeranchor{\currentlayer:\the\realpageno}
 
 \let\p_pack_layers_doublesided\empty
 \let\p_pack_layers_state      \empty

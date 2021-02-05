@@ -207,13 +207,13 @@
 
 \aliased\let\stopboxedcontent\egroup
 
-%D We store some original meanings, maybe in \type {math-ini}.
-
-\let\normalat   \at
-\let\normalin   \in
-\let\normalfrom \from
-%let\normalover \over
-\let\normalabout\about
+% %D We store some original meanings, maybe in \type {math-ini}.
+%
+% \let\normalat   \at
+% \let\normalin   \in
+% \let\normalfrom \from
+% \let\normalover \over
+% \let\normalabout\about
 
 %D This will be implemented way later:
 

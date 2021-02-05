@@ -616,6 +616,9 @@
    \listparameter\c!stopper
    \rightlabeltext\currentlistlabel}
 
+\mutable\let\currentlistnumber\!!zerocount
+\mutable\let\currentlistlabel \empty
+
 \protected\def\strc_lists_symbol_default
   {\dontleavehmode
    \strut

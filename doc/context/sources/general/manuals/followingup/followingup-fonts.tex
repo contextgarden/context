@@ -8,24 +8,24 @@
 
 \startsection[title={History}]
 
-The infrastructure for fonts makes for a large part of the code of any \TEX\
-macro package. We have to go back in time to understand why. When \TEX\ showed
-up, fonts were collections of bitmaps and measures. There were at most 256 glyphs
-in a font and in order to do its job, \TEX\ needed to know (and still needs to
-know) the width, height and depth of glyphs. If you want ligatures it also needs
-to know how to construct them from the input and when you want kerning there has
-to be additional information about what neighboring glyphs need a kern in
-between. Math is yet another subtask that demands extra information, like chains
-of glyphs that grow in size and if needed even recipes of how to construct large
-shapes from smaller ones.
+The infrastructure for fonts makes up a large part of the code of any \TEX\ macro
+package. We have to go back in time to understand why. When \TEX\ showed up,
+fonts were collections of bitmaps and measures. There were at most 256 glyphs in
+a font and in order to do its job, \TEX\ needed to know (and still needs to know)
+the width, height and depth of glyphs. If you want ligatures it also needs to
+know how to construct them from the input and when you want kerning there has to
+be additional information about what neighboring glyphs need a kern in between.
+Math is yet another subtask that demands extra information, like chains of glyphs
+that grow in size and if needed even recipes of how to construct large shapes
+from smaller ones.
 
-Fonts come in sizes, and for instance Latin Modern has quite a few variants where
-the shapes are adapted to the size. This means that when you need a 9pt regular
-shape alongside a 12pt one, two fonts have to be loaded. This is quite visible in
-math where we have three related sizes: text, script and scriptscript, grouped in
-so called families. When we scale the digit~2 to the same height you will notice
-that the text, script and scriptscript sizes look different (the last three are
-unscaled):
+Fonts come in sizes. Latin Modern and the original Computer Modern, for instance,
+have quite a few variants where the shapes are adapted to the size. This means
+that when you need a 9pt regular shape alongside a 12pt one, two fonts have to be
+loaded. This is quite visible in math where we have three related sizes: text,
+script and scriptscript, grouped in so called families. When we scale the digit~2
+to the same height you will notice that the text, script and scriptscript sizes
+look different (the last three are unscaled):
 
 \startlinecorrection
 \dontleavehmode\scale[frame=on,height=5ex]{$\textstyle         2$}\quad
@@ -49,18 +49,18 @@ just give a short summary of what a font system has to deal with.
 \startitemize
 \startitem
     In a bodyfont setup different sizes (9pt, 10pt, 12pt) can have their own
-    specific set of fonts. This can result in quite some definitions that relate
-    to the style, like regular, bold, italic, bolditalic, slanted and
-    boldslanted, etc. When possible loading the fonts is delayed. But in
-    \CONTEXT\ often the number of actually loaded fonts is not that large.
+    specific set of fonts. This can result in quite a number of definitions that
+    relate to the style, like regular, bold, italic, bold italic, slanted, bold
+    slanted, etc. When possible loading the fonts is delayed. In \CONTEXT\ often
+    the number of fonts that are actually loaded is not that large.
 \stopitem
 \startitem
     Some font designs have different shapes per bodyfont size. A minor
     complication is that when one is missing some heuristic best|-|match choice
-    might be needed. Okay, in practice only Latin Modern falls into this
-    category. Maybe \OPENTYPE\ variable fonts can be seen this way, but, although
-    we supported that right from the start, I haven't noticed much interest in
-    the \TEX\ community.
+    might be needed. Okay, in practice only Latin Modern falls into this category
+    for \CONTEXT. Maybe \OPENTYPE\ variable fonts can be seen this way, but,
+    although we supported that right from the start, I haven't noticed much
+    interest in the \TEX\ community.
 \stopitem
 \startitem
     Within a bodyfont size we distinguish size variants. We can go smaller (x and
@@ -75,45 +75,45 @@ just give a short summary of what a font system has to deal with.
     others (keep in mind that we started in the age of bitmaps).
 \stopitem
 \startitem
-    Special features, like smallcaps or oldstyle numerals, can demand their own
+    Special features, such as smallcaps or oldstyle numerals, can demand their own
     definitions. More loading and automatic definitions can be triggered by sizes
-    needed in for instance scripts and titles.
+    needed in, e.g., scripts and titles.
 \stopitem
 \startitem
-    A document can have a mixed setup, that is: use different font designs in one
+    A document can have a mixed setup, that is: using different font
+    designs within one
     document, so some kind of namespace subsystem is needed.
 \stopitem
 \startitem
-    In an eight bit font world, we not only have text fonts but also collections
+    In an eight|-|bit font world, we not only have text fonts but also collections
     of symbols, and even in math there are additional symbol collections. In
-    \OPENTYPE\ symbols end up in text fonts, but there we have tons of emoji's
+    \OPENTYPE\ symbols end up in text fonts, but there we have tons of emojis
     and color fonts. All has to be dealt with in an integrated way. And we're
     not even talking of virtual fonts, (runtime) \METAPOST\ generated fonts, and
     so on.
 \stopitem
 \startitem
-    In traditional eight bit engines the dependency of hyphenation on the
-    encoding of a font can result in the necessity to load a font multiple times
-    in different encodings, something that depends on the language mix used.
-    Interesting is that coming up with an European encoding (covering most Latin
-    languages) was not that hard, especially when one keeps in mind that many
-    eight bit encodings waste slots on seldom used symbols, but by that time
-    \OPENTYPE\ and and \UNICODE\ input started to dominate.
+    In traditional eight|-|bit engines, hyphenation depends on a font's encoding,
+    which can require loading a font multiple times in different encodings. This
+    depends on the language mix used. A side point is that defining a European
+    encoding covering most Latin languages was not that hard, especially when one
+    keeps in mind that many eight|-|bit encodings waste slots on seldom used
+    symbols, but by that time \OPENTYPE\ and \UNICODE\ input started to dominate.
 \stopitem
 \startitem
     In the more modern \OPENTYPE\ fonts combinations of features can demand
-    additional instances (one can think of language|/|script combinations,
-    substitutions in base mode, special effects like boldening, color fonts,
-    etc.).
+    additional instances: one can think of language|/|script combinations,
+    substitutions in base mode, special effects like emboldening, color fonts,
+    etc.
 \stopitem
 \startitem
-    Math is complicated by the fact that in traditional \TEX\ alphabets come from
-    different fonts which is why we have many so called families; sometimes a
-    font has several alphabets which means that some mapping can be needed.
-    Operating on the size, shape, encoding and style axes puts some demands on
-    the font system. Add to this (often) partial (due to lack of fonts) bold
-    support and it gets even more complicated. In \OPENTYPE\ all the alphabets
-    come from one font.
+    Math is complicated by the fact that in traditional \TEX, alphabets come from
+    different fonts, which is why we have many so|-|called families; a font can
+    have several alphabets which means that some mapping can be needed. Operating
+    on the size, shape, encoding and style axes puts some demands on the font
+    system. Add to this the (often) partial (due to lack of fonts) bold support
+    and it gets even more complicated. In \OPENTYPE\ all the alphabets come from
+    one font.
 \stopitem
 \startitem
     There is additional math auto|-|definition and loading code for the sizes
@@ -123,12 +123,12 @@ just give a short summary of what a font system has to deal with.
 
 All this has resulted in a pretty complex subsystem. Although going \OPENTYPE\
 (and emulated \OPENTYPE\ with \TYPEONE\ fonts as we do in \MKIV) removes some
-complications, like encodings, it does also add complexity because of the many
-possible font features, either or not dependent on script and language. Text as
-well as math got simpler at the \TEX\ end (but that is compensated by quite a bit
-\LUA\ code that deals with new features).
+complications, like encodings, it also adds complexity because of the many
+possible font features, either dependent or not on script and language. Text as
+well as math got simpler in the \TEX\ code, though that was traded for quite a
+bit of \LUA\ code to deal with new features.
 
-Also, in order to let a font subsystem not impact performance to much, let alone
+So, in order to let the font subsystem not impact performance too much, let alone
 extensive memory usage, the \CONTEXT\ font subsystem is rather optimized. The
 biggest burden comes from fonts that have a dynamic (adaptive) definition because
 then we need to do quite a bit of testing per font switch, but even that has
@@ -138,67 +138,68 @@ always been rather fast.
 
 \startsection[title={Reality}]
 
-In \MKIV\ and therefore also in \LMTX\ more font magic happens. The initial node
-lists that make up a box or paragraph can get manipulated in several ways and
-often fonts are involved. The font features (smallcaps, oldstyle, alternates,
-etc.) can be defined static (as part of the definition) or dynamic (resolved on
-the spot at the cost of some overhead). Characters can be remapped, fonts can be
-replaced. The math subsystem in \MKIV\ was different right from the start: we use
-a limited number of families (regular, bold, l2r and r2l), and stay abstract till
-the moment we need to deal with the specific alphabets. But still, in \MKIV, we
-have the families with three fonts.
+In \MKIV\ and therefore also in \LUAMETATEX\ (\LMTX) more font magic happens. The
+initial node lists that make up a box or paragraph can get manipulated in several
+ways and often fonts are involved. The font features (smallcaps, oldstyle,
+alternates, etc.)\ can be defined as static (part of the definition) or as
+dynamic (resolved on the spot at the cost of some overhead). Characters can be
+remapped, fonts can be replaced. The math subsystem in \MKIV\ was different right
+from the start: we use a limited number of families (regular, bold, l2r and r2l),
+and stay abstract till the moment we need to deal with the specific alphabets.
+But still, in \MKIV, we have the families with three fonts.
 
-In the \LUAMETATEX\ manual we show some math magic and we do so for different
-fonts. As a side effect, we set up half a dozen bodyfont collections: Lucida,
-Pagella, Latin Modern, Dejavu, the math standard Cambria, etc. Even with delayed
-and shared font loading, we end up with 158 instances but quite a bit of them are
-math fonts, at least six per bodyfont size: regular and bold (boldened) text,
-script and scriptscript. Of course most are just copies with different scaling
-that reuse already loaded resources. In the final\PDF\ we have 21 subset fonts.
+In the \LUAMETATEX\ manual we show some math magic for different fonts. As a side
+effect, we set up half a dozen bodyfont collections: Lucida, Pagella, Latin
+Modern, Dejavu, the math standard Cambria, etc. Even with delayed and shared font
+loading, we end up with 158 instances but quite a few of them are math fonts, at
+least six per bodyfont size: regular and bold (emboldened) text, script and
+scriptscript. Of course most are just copies with different scaling that reuse
+already loaded resources. In the final \PDF\ we have 21 subsetted fonts.
 
 If we look at the math fonts that we use today, there is however quite some
-overlap. It starts with a text font. From that script and scriptscript variants
+overlap. It starts with a text font. From that, script and scriptscript variants
 are derived, but often these variants use many text size related shapes too. Some
 shapes get alternatives (from the \type {ssty} feature), and the whole clone gets
-scaled. But, much of the logic of for instance extensibles is the same.
+scaled. But, much of the logic of, for instance, extensibles is the same.
 
-A similar situation happens with for instance large \CJK\ fonts: there are hardly
-any advanced features involved there, so any size is basically a copy with scaled
-dimensions, and these fonts can be real huge!
+A similar situation happens with large \CJK\ fonts: there are hardly any advanced
+features involved there, so any size is basically a copy with scaled dimensions,
+and these fonts can be truly huge!
 
-Actually, when we talk about features, in many cases in \CONTEXT\ you don't
-define them as part of the font. For instance small caps can best be triggered by
-using a dynamic feature: applied to a specific stretch of text. In fact, often
-features like superiors of fractions only work well on characters that fit the
-bill and produce weird side effects otherwise (a matter of design completeness).
-When the font handler does its work there are actually four cases: no features
-get applied, something that for instance happens with most mono spaced fonts,
-base mode is used, which means that the \TEX\ machinery takes care of
-constructing ligatures and injecting kerns, and node mode, where \LUA\ handles
-the features. The fourth case is a special case of node mode where a different
-feature set is applied. \footnote {We also have so called plug mode where an
-external renderer can do the work but that one is only around for some
-experiments during Idris Hamid's font development.} At the cost of some extra
-overhead (for each node mode run) dynamic features are quite powerful and save
-quite some memory and definitions. \footnote {The generic font handler that is
-derived from the \CONTEXT\ one doesn't implement this so it runs a little
-faster.} The overhead comes from much more testing regarding the font we deal
-with because suddenly the same font can demand different treatments, depending on
-what dynamic features are active. \footnote {Originally this model was introduced
-for a dynamic paragraph optimization subsystem for Arabic but no one really uses
-it because there there are no suitable fonts.}
+When we talk about features, in many cases in \CONTEXT\ you don't define them as
+part of the font. For instance small caps can best be triggered by using a
+dynamic feature: applied to a specific stretch of text. In fact, often features
+like superiors of fractions only work well on characters that fit the bill and
+produce weird side effects otherwise (a matter of design completeness). When the
+font handler does its work there are actually four cases: no features get applied
+(something that happens with, for instance, most monospaced fonts); base mode is
+used (which means that the \TEX\ machinery takes care of constructing ligatures
+and injecting kerns); and node mode (where \LUA\ handles the features). The
+fourth case is a special case of node mode where a different feature set is
+applied. \footnote {We also have so|-|called plug mode where an external renderer
+can do the work but that one is only around due to some experiments during Idris
+Hamid's font development.} At the cost of some extra overhead (for each node mode
+run) dynamic features are quite powerful and save quite a lot of memory and
+definitions. \footnote {The generic font handler that is derived from the
+\CONTEXT\ one doesn't implement this, so it runs a little faster.} The overhead
+comes from much more testing regarding the font we deal with because suddenly the
+same font can demand different treatments, depending on what dynamic features are
+active. \footnote {Originally this model was introduced for a dynamic paragraph
+optimization subsystem for Arabic but in practice no one uses it because there
+are no suitable fonts.}
 
-Although the font handling is responsible for much of the time spent in \LUA, it is
-still reasonable given what has to be done. Actually, because we have an extensible
-system, it's often the extensions that takes additional runtime. Flexibility comes
-at a price.
+Although the font handling is responsible for much of the time spent in \LUA, it
+is still reasonable given what has to be done. Because we have an extensible
+system, it's often the extensions that takes additional runtime. Flexibility
+comes at a price.
 
 \stopsection
 
 \startsection[title={Progress}]
 
-At some point I started playing with realtime glyph scaling. Here realtime means that
-it doesn't depend on the font definition. To get an idea, here is an example:
+At some point I started playing with realtime glyph scaling. Here realtime means
+that it doesn't depend on the font definition. To get an idea, here is an example
+(all examples are additionally scaled for \TUGBOAT):
 
 \startbuffer
 test {\glyphxscale 2500 test} test
@@ -208,13 +209,13 @@ test {\glyphxscale 2500 test} test
 
 \getbuffer
 
-The glyphs in the current font get scaled horizontally without the need for an extra
-font instance. Now, this kind of trickery puts some constraints on the font handling,
-as is demonstrated in the next example. We use Latin Modern because that font has
-all these ligatures:
+The glyphs in the current font get scaled horizontally without the need for an
+extra font instance. Now, this kind of trickery puts some constraints on the font
+handling, as is demonstrated in the next example. We use Latin Modern because
+that font has all these ligatures:
 
 \startbuffer
-\definedfont[lmroman-regular*default]%
+\definedfont[lmroman10-regular*default]%
 e{\glyphxscale 2500 ff}icient
 ef{\glyphxscale 2500 f}icient
 ef{\glyphxscale 2500 fi}cient
@@ -225,25 +226,25 @@ e{\glyphxscale 2500 ffi}cient
 
 {\getbuffer}
 
-So, in order to deal with this kind of scaling, we now operate not only on the
-font (id) and dynamic feature axes, but also on the scales of which we have three
-variants: glyph scale, glyph xscale and glyph yscale). There is actually also a
-state dimension but we leave that for now; think of flagging glyphs as initial or
-final. This brings the number of axis to six. It is important to stress that in
+In order to deal with this kind of scaling, we now operate not only on the font
+(id) and dynamic feature axes, but also on the scales, of which we have three
+variants: glyph scale, glyph xscale and glyph yscale. There is actually also a
+state dimension but we omit that for now (think of flagging glyphs as initial or
+final). This brings the number of axis to six. It is important to stress that in
 these examples the same font instance is used!
 
-Just for the record: there are several approaches to switching fonts possible but
-for now we stick to a simple font id switch plus glyph scale settings at the
-\TEX\ end. A variant would be to introduce a new mechanism where id's and scales
-go together but for now I see no real gain in that.
+Just for the record: several approaches to switching fonts are possible but for
+now we stick to a simple font id switch plus glyph scale settings at the \TEX\
+end. A variant would be to introduce a new mechanism where id's and scales go
+together but for now I see no real gain in that.
 
 \stopsection
 
 \startsection[title={Math}]
 
-Given what is written in the previous sections, a logical question would be
-\quotation {Can we apply scaling to math?} and the answer is \quotation {Yes, we
-can!}. But we actually go a bit further and that is partly due to some other
+Given what has been discussed in the previous sections, a logical question would
+be \quotation {Can we apply scaling to math?} and the answer is \quotation {Yes,
+we can!}. We can even go a bit further and that is partly due to some other
 properties of the engine.
 
 From \PDFTEX\ the \LUATEX\ engines inherited character protrusion and glyph
@@ -252,11 +253,11 @@ carry the expanded dimensions, in \LUATEX\ at some point this was replaced by an
 expansion field in the glyph and kern nodes. So, instead of changing the font id
 of expanded glyphs, the same id is used but with the applied expansion factor set
 in the glyph. A side effect was that in places where dimensions are needed, we
-call functions that calculate the expanded widths on request (as these can
-change during linebreak calculations) in combination with accessing font
-dimensions directly. This level of abstraction is even more present in
-\LUAMETATEX. This means that we have an uniform interface to fonts and as a side
-effect scaling is to be dealt with in only a few places in the code.
+call functions that calculate the expanded widths on request (as these can change
+during linebreak calculations) in combination with accessing font dimensions
+directly. This level of abstraction is even more present in \LUAMETATEX. This
+means that we have an uniform interface to fonts and as a side effect scaling
+need be dealt with in only a few places in the code.
 
 Now, in math we have a few more complications. First of all, we have three sizes
 to consider and we also have lots of parameters that depend on the size. But, as
@@ -267,52 +268,53 @@ one bodyfont size of math (note that each math family has three sizes, where the
 script and script sizes can have different, fine tuned, shapes) and just scale
 that on demand.
 
-Once all that was in place it was a logical next step to see if we could actually
-stick to one instance. Because in \LUAMETATEX\ we try to load fonts efficiently
+Once all that was in place it was a logical next step to see if we could stick to
+just a single instance. Because in \LUAMETATEX\ we try to load fonts efficiently
 we store only the minimally needed information at the \TEX\ end. A font with no
 math therefore has less data per glyph. Again, this brings some abstraction that
-actually helped to implement the one instance mechanism. A math glyph has
-optional lists of increasing sizes and vertical or horizontal extensibles. So
-what got added was an optional chain of smaller sizes. If a character has 3
-different glyphs for the three sizes, the text glyph has a pointer to the script
-glyph which in turn has a pointer to the scriptscript glyph. This means that when
-the math engine needs a specific character at a given size (text, script,
-scriptscript) we just follow that chain.
+helped to implement the one instance mechanism. A math glyph has optional lists
+of increasing sizes and vertical or horizontal extensibles. So what got added was
+an optional chain of smaller sizes. If a character has three different glyphs for
+the three sizes, the text glyph has a pointer to the script glyph which in turn
+has a pointer to the scriptscript glyph. This means that when the math engine
+needs a specific character at a given size (text, script, scriptscript) we just
+follow that chain.
 
 In an \OPENTYPE\ math font the script and scriptscript sizes are specified as
 percentages of the text size. When the dimensions of a glyph are needed, we just
 scale on the fly. Again this adds some overhead but I'm pretty sure that no user
-will notice this.
+will notice.
 
 So, to summarize: if we need a character at scriptscript size, we access the text
 size glyph, check for a pointer to a script size, go there, and again check for a
-smaller size. We just use what fits the bill. And, when we need dimensions we
+smaller size. We use only what fits the bill. And, when we need dimensions we
 just scale. In order to scale we need the relative size, so we need to set that
 up when we load the font. Because in \CONTEXT\ we also can assemble a virtual
 \OPENTYPE\ font from \TYPEONE\ fonts, it was actually that (old) compatibility
-feature, the one that implements \TYPEONE\ bases \OPENTYPE\ math, that took most
-time to adapt, not so much because it is complicates but because in \LMTX\ we
-have to bypass some advanced loading mechanisms. Because we can scale in two
-dimensions the many (font related) math parameters also need to be dealt with
-accordingly.
+feature, the one that implements \TYPEONE\ based on \OPENTYPE\ math, that took
+the most time to adapt, not so much because it is complicated but because in
+\LMTX\ we have to bypass some advanced loading mechanisms. Because we can scale
+in two dimensions the many (font|-|related) math parameters also need to be dealt
+with accordingly.
 
 The end result is that for math we now only need to define two fonts per bodyfont
 setup: regular and bold at the natural scale (normally 10pt) and we share these
-for all sizes. It is because of this and what we describe in the next section
-that the 158 instances for the \LUAMETATEX\ manual can now be brought down to 30.
+for all sizes. As a result of this and what we describe in the next section, the
+158 instances for the \LUAMETATEX\ manual can be reduced to~30.
+
 
 \stopsection
 
 \startsection[title={Text}]
 
 Sharing instances in text mode is relatively simple, although we do have to keep
-in mind that these are extra axis when dealing with font features: two
+in mind that scaling is an extra axis when dealing with font features: two
 neighboring glyphs with the same font id and dynamics but with different scales
 are effectively from different fonts.
 
-Another complication is that when we use font fallbacks (read: take missing
+Another complication is that when we use font fallbacks (read:\ take missing
 glyphs from another font) we no longer have a dedicated instance but use a shared
-one. This in itself if not a problem but we do need to handle specified relative
+one. This in itself is not a problem but we do need to handle specified relative
 scales. This was not that hard to patch in \CONTEXT\ \LMTX.
 
 We can enforce aggressive font sharing with:
@@ -321,7 +323,7 @@ We can enforce aggressive font sharing with:
 \enableexperiments[fonts.compact]
 \stoptyping
 
-After that we often use less instances. Just to give an idea, on the \LUAMETATEX\
+After that we often use fewer instances. Just to give an idea, on the \LUAMETATEX\
 manual we get these stats:
 
 \starttyping
@@ -329,14 +331,14 @@ manual we get these stats:
 290 pages,  9.5 sec, 149M lua, 35M tex,  30 instances
 \stoptyping
 
-So, we win on all fronts when we use this glyph scale mechanism. The magic
-primitive that deals with this is \type {\glyphscale} primitive that accepts a
+So, we win on all fronts when we use this glyph scaling mechanism. The magic
+primitive that deals with this is named \type {\glyphscale}; it  accepts a
 number, where \type {1200} and \type {1.2} both mean scaling to 20\percent\ more
-than normal. But one can best not use this primitive directly.
+than normal. But it's best not to use this primitive directly.
 
-A specific font can be defined using the \type {\definefont} command. In \LMTX\ a
-regular scaler can be followed by two scale factors. The next example
-demonstrates this:
+A specific scaled font can be defined using the \type {\definefont} command. In
+\LMTX\ a regular scaler can be followed by two scale factors. The next example
+demonstrates this (as can be seen, the \type {yoffset} affects the baseline):
 
 \startbuffer
 \definefont[FooA][Serif*default @ 12pt 1800 500]
@@ -414,14 +416,14 @@ This gives:
 
 \getbuffer
 
-Just for the record: the Latin Modern fonts, when set up to use design sizes, will
-still use the specific size related files.
+Just for the record: the Latin Modern fonts, when set up to use design sizes,
+will still use the specific size|-|related files.
 
 \stopsection
 
 \startsection[title={Hackery}]
 
-You can actually use negative scale values, as is demonstrated in the following
+You can use negative scale values, as is demonstrated in the following
 code:
 
 \startbuffer
@@ -450,8 +452,8 @@ gives:
 \stoplinecorrection
 
 Glyphs can have offsets and these are used for implementing \OPENTYPE\ features.
-However, they are also available at the \TEX\ end. Take this example where we use
-the new \type {\glyph} primitive (a variant of \type {\char} that takes
+However, they are also available on the \TEX\ side. Take this example where we
+use the new \type {\glyph} primitive (a variant of \type {\char} that takes
 keywords):
 
 \startbuffer
@@ -465,13 +467,13 @@ keywords):
 
 \typebuffer \getbuffer
 
-This example demonstrates that the \type {\glyph} primitive takes quite some
+This example demonstrates that the \type {\glyph} primitive takes quite a few
 keywords: \type {xoffset}, \type {yoffset}, \type {xscale}, \type {yscale}, \type
-{left}, \type {right}, \type {raise}, \type {options}, \type {font} and \type {id}
-where the last two take a font identifier or font id (an positive number). For
-this article it's enough to know that the option indicates that glyph dimension
-should include the offset. In a moment we will see an alternative that doesn't
-need that.
+{left}, \type {right}, \type {raise}, \type {options}, \type {font} and \type
+{id} where the last two take a font identifier or font id (a positive number).
+For this article it's enough to know that the option indicates that glyph
+dimension should include the offset. In a moment we will see an alternative that
+doesn't need that.
 
 \startbuffer
 \samplefile{jojomayer}
@@ -497,7 +499,7 @@ To quote Jojo Mayer:
 Keep in mind that this can interfere badly with font feature processing which also
 used offsets. It might often work out okay vertically, but less well horizontally.
 
-The scales, as mentioned, works with pseudo scales but that is sometimes a bit
+The scales, as mentioned, works with pseudo|-|scales but that is sometimes a bit
 cumbersome. This is why a special \type {\numericscale} primitive has been
 introduced.
 
@@ -555,8 +557,8 @@ The result is the same:
     \darkgreen \getbuffer[definition,example]
 \stopnarrower
 
-But anyway: don't over|-|do it. We have dealt with such cases for decades without
-these fancy new features. The next example show margins in action:
+But anyway: don't overdo it. We have dealt with such cases for decades without
+these fancy new features. The next example shows margins in action:
 
 \startlinecorrection
 \bTABLE[align=middle,width=.33\textwidth]
@@ -618,14 +620,14 @@ dimensions of a glyph.
 \startsection[title={Implementation}]
 
 Discussing the implementation in the engine makes no sense here, also because
-details might change. However, it is good to know that quite some properties
-travel with the glyph nodes, for instance the scales, margins, offsets, language,
-script and state properties, control over kerning, ligaturing, expansion and
-protrusion, etc. The dimensions (width, height and depth) are not stored in the
-glyph node but calculated from the font, scales and optionally the offsets and
-expansion factor. One problem is that the more clever (and nice) solutions we
-cook up, the more it might impact performance. So, I will delay some experiments
-till I have a more powerful machine.
+details might change. However, it is good to know that many properties travel
+with the glyph nodes, for instance the scales, margins, offsets, language, script
+and state properties, control over kerning, ligaturing, expansion and protrusion,
+etc. The dimensions (width, height and depth) are not stored in the glyph node
+but calculated from the font, scales and optionally the offsets and expansion
+factor. One problem is that the more clever (and nice) solutions we cook up, the
+more it might impact performance. So, I will delay some experiments till I have a
+more powerful machine.
 
 One reason for {\em not} storing the dimensions in a glyph node is that we often
 copy those nodes or change character fields in the font handler and we definitely
@@ -633,17 +635,17 @@ don't want the wrong dimensions there. At that moment, offsets and margin fields
 don't reflect features yet, so copying them is no big deal because at that moment
 these are still zero. However, dimensions are rather character bound so every
 time a character is set, we also would have to set the dimensions. Even worse,
-when we can set them, the question arises if they actually were already set
-explicitly. So, this is a can of worms we're not going to open: the basic width,
-height and depth of the glyph as specified in the font is used and combined with
-actual dimensions (likely already scaled according the glyph scales) in offset
-and margin fields.
+when we can set them, the question arises if they were already set explicitly.
+So, this is a can of worms we're not going to open: the basic width, height and
+depth of the glyph as specified in the font is used and combined with actual
+dimensions (likely already scaled according the glyph scales) in offset and
+margin fields.
 
 Now, I have to admit that especially playing with using margins to glyphs instead
 of font kerns is more of an experiment to see what the consequences are than a
-necessity, but what would be the joy of \TEX\ without such experiments. And as
+necessity, but what would be the joy of \TEX\ without such experiments? And as
 usual, in \CONTEXT\ these will become options in the font handler that one can
-either or not enable.
+enable, or not.
 
 \stopsection
 

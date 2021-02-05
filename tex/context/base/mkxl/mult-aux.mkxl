@@ -379,8 +379,6 @@
         \expandafter\noexpand\csname use#2styleparameter\endcsname
         \expandafter\noexpand\csname use#2colorparameter\endcsname}}
 
-\let\definehandlerparent\empty
-
 \def\mult_check_for_parent#1#2#3#4%
   {\ifcsname#1#4:\s!parent\endcsname\orelse\ifx#4\empty\else
      \writestatus\m!system{error: invalid parent #4 for #3, #4 defined too (best check it)}%
@@ -492,10 +490,10 @@
         \expandafter\noexpand\csname everysetup#2root\endcsname
         \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
 
-\let\doingrootsetupnamed\plusone    % \setuplayout[name][key=value]
-\let\doingrootsetuproot \plustwo    % \setuplayout      [key=value]
-\let\doingrootsetnamed  \plusthree  % \setuplayout[name]
-\let\doingrootsetroot   \plusfour   % \setuplayout
+\aliased\let\doingrootsetupnamed\plusone    % \setuplayout[name][key=value]
+\aliased\let\doingrootsetuproot \plustwo    % \setuplayout      [key=value]
+\aliased\let\doingrootsetnamed  \plusthree  % \setuplayout[name]
+\aliased\let\doingrootsetroot   \plusfour   % \setuplayout
 
 \protected\def\mult_interfaces_install_switch_setup_handler_a#1#2#3%
   {\frozen\protected\def#3{\mult_interfaces_get_parameters{#1#2:}}}

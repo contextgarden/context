@@ -83,6 +83,8 @@
 \permanent\def\strc_counters_way   #1{\clf_way{\namedcounterparameter{#1}\c!way}}
 \permanent\def\thenamedcounterlevel#1{\xthenamedheadlevel{\clf_way{\namedcounterparameter{#1}\c!way}}}
 
+\mutable\let\currentcounterlevel\!!zerocount % yes or no public ?
+
 \protected\def\strc_counters_check_setup
   {\edef\p_name{\directcounterparameter\s!name}%
    \ifx\currentcounter\p_name

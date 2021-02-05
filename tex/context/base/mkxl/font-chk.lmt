@@ -113,125 +113,153 @@ end
 fonts.loggers.onetimemessage = onetimemessage
 
 local fakes = {
-    lowercase   = { width  = .45, height = .55, depth  =  .20 },
-    uppercase   = { width  = .65, height = .70, depth  =  .25 },
-    mark        = { width  = .15, height = .70, depth  = -.50 },
-    punctuation = { width  = .15, height = .55, depth  =  .20 },
-    unknown     = { width  = .45, height = .20, depth  = 0    },
+    MissingLowercase   = { width  = .45, height = .55, depth  =  .20 },
+    MissingUppercase   = { width  = .65, height = .70, depth  =  .25 },
+    MissingMark        = { width  = .15, height = .70, depth  = -.50 },
+    MissingPunctuation = { width  = .15, height = .55, depth  =  .20 },
+    MissingUnknown     = { width  = .45, height = .20, depth  = 0    },
 }
 
 local mapping = allocate {
-    lu = { "uppercase",    "darkred"     },
-    ll = { "lowercase",    "darkred"     },
-    lt = { "uppercase",    "darkred"     },
-    lm = { "lowercase",    "darkred"     },
-    lo = { "lowercase",    "darkred"     },
-    mn = { "mark",         "darkgreen"   },
-    mc = { "mark",         "darkgreen"   },
-    me = { "mark",         "darkgreen"   },
-    nd = { "lowercase",    "darkblue"    },
-    nl = { "lowercase",    "darkblue"    },
-    no = { "lowercase",    "darkblue"    },
-    pc = { "punctuation",  "darkcyan"    },
-    pd = { "punctuation",  "darkcyan"    },
-    ps = { "punctuation",  "darkcyan"    },
-    pe = { "punctuation",  "darkcyan"    },
-    pi = { "punctuation",  "darkcyan"    },
-    pf = { "punctuation",  "darkcyan"    },
-    po = { "punctuation",  "darkcyan"    },
-    sm = { "lowercase",    "darkmagenta" },
-    sc = { "lowercase",    "darkyellow"  },
-    sk = { "lowercase",    "darkyellow"  },
-    so = { "lowercase",    "darkyellow"  },
+    lu = { "MissingUppercase",    "darkred"     },
+    ll = { "MissingLowercase",    "darkred"     },
+    lt = { "MissingUppercase",    "darkred"     },
+    lm = { "MissingLowercase",    "darkred"     },
+    lo = { "MissingLowercase",    "darkred"     },
+    mn = { "MissingMark",         "darkgreen"   },
+    mc = { "MissingMark",         "darkgreen"   },
+    me = { "MissingMark",         "darkgreen"   },
+    nd = { "MissingLowercase",    "darkblue"    },
+    nl = { "MissingLowercase",    "darkblue"    },
+    no = { "MissingLowercase",    "darkblue"    },
+    pc = { "MissingPunctuation",  "darkcyan"    },
+    pd = { "MissingPunctuation",  "darkcyan"    },
+    ps = { "MissingPunctuation",  "darkcyan"    },
+    pe = { "MissingPunctuation",  "darkcyan"    },
+    pi = { "MissingPunctuation",  "darkcyan"    },
+    pf = { "MissingPunctuation",  "darkcyan"    },
+    po = { "MissingPunctuation",  "darkcyan"    },
+    sm = { "MissingLowercase",    "darkmagenta" },
+    sc = { "MissingLowercase",    "darkyellow"  },
+    sk = { "MissingLowercase",    "darkyellow"  },
+    so = { "MissingLowercase",    "darkyellow"  },
 }
 
-table.setmetatableindex(mapping, { "unknown", "darkgray" })
+table.setmetatableindex(mapping, { "MissingUnknown", "darkgray" })
+
+checkers.mapping = mapping
 
 -- We provide access by (private) name for tracing purposes. We also need
 -- to make sure the dimensions are known at the lua and tex end.
 
-local cache = { }
-
-local function add(tfmdata,name,color,size,collected)
-    local hash     = formatters["%s_%s_%i"](name,color,floor(size))
-    local chardata = cache[hash]
-    if not chardata then
-        local fake   = fakes[name]
-        local width  = size * fake.width
-        local height = size * fake.height
-        local depth  = size * fake.depth
-        chardata = {
-            width    = width,
-            height   = height,
-            depth    = depth,
-            commands = {
-                { "frame", width, height, depth, 65536/5, false, true, true, color },
-            }
-        }
-        cache[hash] = chardata
-    end
-    if not hasprivate(tfmdata,privatename) then
-        local privatename = formatters["placeholder %s %s"](name,color)
-        local privatecode = addprivate(tfmdata, privatename, chardata)
-        collected[privatecode] = chardata
-    end
-    return chardata
-end
-
-local function addplaceholder(font,char)
-    local tfmdata    = fontdata[font or true]
-    local characters = tfmdata.characters
-    local size       = tfmdata.parameters.size
-    local scale      = size * bpfactor
-    local collected  = { }
-    local category   = chardata[char].category or "unknown"
-    local fakedata   = mapping[category]
-    local chardata   = add(tfmdata,fakedata[1],fakedata[2],size,collected)
-    collected [char] = chardata
-    characters[char] = chardata
-    addcharacters(font, { characters = collected })
-    return "char", char -- needed for math-noa
-end
+-- local cache = { }
+--
+-- local function add(tfmdata,name,color,size,collected)
+--     local hash     = formatters["%s_%s_%i"](name,color,floor(size))
+--     local chardata = cache[hash]
+--     if not chardata then
+--         local fake   = fakes[name]
+--         local width  = size * fake.width
+--         local height = size * fake.height
+--         local depth  = size * fake.depth
+--         chardata = {
+--             width    = width,
+--             height   = height,
+--             depth    = depth,
+--             commands = {
+--                 { "frame", width, height, depth, 65536/5, false, true, true, color },
+--             }
+--         }
+--         cache[hash] = chardata
+--     end
+--     if not hasprivate(tfmdata,privatename) then
+--         local privatename = formatters["placeholder %s %s"](name,color)
+--         local privatecode = addprivate(tfmdata, privatename, chardata)
+--         collected[privatecode] = chardata
+--     end
+--     return chardata
+-- end
+--
+-- function checkers.placeholder(font,char)
+--     local tfmdata    = fontdata[font or true]
+--     local characters = tfmdata.characters
+--     local size       = tfmdata.parameters.size
+--     local scale      = size * bpfactor
+--     local collected  = { }
+--     local category   = chardata[char].category or "unknown"
+--     local fakedata   = mapping[category]
+--     local chardata   = add(tfmdata,fakedata[1],fakedata[2],size,collected)
+--     collected [char] = chardata
+--     characters[char] = chardata
+--     addcharacters(font, { characters = collected })
+--     return "char", char -- needed for math-noa
+-- end
 
 -- For old times sake we keep this: a whole bunch of fake symbols
 
-local function addplaceholders(tfmdata)
-    local properties = tfmdata.properties
-    local size       = tfmdata.parameters.size
-    local scale      = size * bpfactor
-    local collected  = { }
-    local colors     = { "darkred", "darkgreen", "darkblue", "darkcyan", "darkmagenta", "darkyellow", "darkgray" }
-    for name, v in sortedhash(fakes) do
-        for i=1,#colors do
-            add(tfmdata,name,colors[i],size,collected)
-        end
-    end
-    if next(collected) then
-        local id = properties.id
-        if id then
-            addcharacters(id, { characters = collected })
-        end
-    end
+-- local function addplaceholders(tfmdata,feature,value)
+--     if value then
+--         local properties = tfmdata.properties
+--         local size       = tfmdata.parameters.size
+--         local scale      = size * bpfactor
+--         local collected  = { }
+--         local colors     = { "darkred", "darkgreen", "darkblue", "darkcyan", "darkmagenta", "darkyellow", "darkgray" }
+--         for name, v in sortedhash(fakes) do
+--             for i=1,#colors do
+--                 add(tfmdata,name,colors[i],size,collected)
+--             end
+--         end
+--         if next(collected) then
+--             local id = properties.id
+--             if id then
+--                 addcharacters(id, { characters = collected })
+--             end
+--         end
+--     end
+-- end
+
+-- local chardata = characters.data
+-- local fontdata = fonts.hashes.identifiers
+-- local mapping  = fonts.checkers.mapping
+
+function checkers.placeholder(font,char)
+    local category = chardata[char].category or "lu" -- todo: unknown
+    local fakedata = mapping[category]
+    local tfmdata  = fontdata[font]
+    local units    = tfmdata.parameters.units or 1000
+    local slant    = (tfmdata.parameters.slant or 0)/65536
+    local scale    = units/1000
+    local rawdata  = tfmdata.shared and tfmdata.shared.rawdata
+    local weight   = (rawdata and rawdata.metadata and rawdata.metadata.pfmweight or 400)/400
+    local specification = {
+        code      = "MissingGlyph",
+        scale     = scale,
+        slant     = slant,
+        weight    = weight,
+        namespace = font,
+        shapes    = { { shape = fakedata[1], color = fakedata[2] } },
+    }
+    fonts.helpers.setmetaglyphs("missing", font, char, specification)
 end
 
-registerotffeature {
-    name        = "missing",
-    description = "missing symbols",
-    manipulators = {
-        base = addplaceholders,
-        node = addplaceholders,
-    }
-}
+-- registerotffeature {
+--     name        = "missing",
+--     description = "missing symbols",
+--     default     = false,
+--     manipulators = {
+--         base = addplaceholders,
+--         node = addplaceholders,
+--     }
+-- }
 
 -- fonts.loggers.add_placeholders        = function(id) addplaceholders(fontdata[id or true]) end
 -- fonts.loggers.category_to_placeholder = mapping
-
-checkers.placeholder = addplaceholder
 
 function checkers.missing(head)
     local lastfont   = nil
     local characters = nil
     if action == "replace" then
+        local addplaceholder = checkers.placeholder -- so we can overload
         for n, char, font in nextglyph, head do
             if font ~= lastfont then
                 lastfont   = font
@@ -239,7 +267,10 @@ function checkers.missing(head)
             end
             if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
                 onetimemessage(font,char,"missing (will be flagged)")
-                addplaceholder(font,char)
+                local f, c = addplaceholder(font,char)
+                if f and c then
+                    setchar(head, c, f)
+                end
             end
         end
     elseif action == "remove" then
@@ -327,7 +358,6 @@ end
 
 checkers.getmissing = getmissing
 
-
 do
 
     local reported = true
@@ -345,14 +375,20 @@ do
         end
     end)
 
+    local loaded = false
+
     trackers.register("fonts.missing", function(v)
         if v then
             enableaction("processors","fonts.checkers.missing")
         else
             disableaction("processors","fonts.checkers.missing")
         end
-        if v == "replace" then
-            otffeatures.defaults.missing = true
+     -- if v == "replace" then
+     --     otffeatures.defaults.missing = true
+     -- end
+        if not loaded and v == "replace" then
+            metapost.simple("simplefun",'loadfile("mp-miss.mpxl");')
+            loaded = true
         end
         action = v
     end)

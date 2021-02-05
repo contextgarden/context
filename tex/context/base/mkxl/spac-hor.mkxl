@@ -418,7 +418,7 @@
 % When we don't add the % here, we effectively get \<endlinechar> and
 % since we have by default \def\^^M{\ } we get into a loop.
 
-\let\normalspaceprimitive=\ % space-comment is really needed
+\aliased\let\normalspaceprimitive=\ % space-comment is really needed
 
 %D As the \type{\ } is convenient in:
 %D
@@ -431,14 +431,26 @@
 %D from now on we treat it as a normal space and not as a space with \type
 %D {sfcode} 1000.
 
+% \permanent\protected\def\specialspaceprimitive
+%   {\begingroup
+%    % so, no fancy extra spacing after: foo i.e.\ bar
+%    \nonfrenchspacing\normalspaceprimitive
+%    \endgroup}
+
 \permanent\protected\def\specialspaceprimitive
-  {\begingroup
-   % so, no fancy extra spacing after: foo i.e.\ bar
-   \nonfrenchspacing\normalspaceprimitive
-   \endgroup}
+  {% is a current state, set explicitly or when a character is appended
+   \ifhmode
+     \spacefactor\plusthousand
+   \else
+     \dontleavehmode
+   \fi
+   \normalspaceprimitive}
+
+% \permanent\protected\def\normalnotobeyedspace
+%   {\mathortext\normalspaceprimitive\specialspaceprimitive} % no \dontleavehmode\space (else no frenchspacing)
 
 \permanent\protected\def\normalnotobeyedspace
-  {\mathortext\normalspaceprimitive\specialspaceprimitive} % no \dontleavehmode\space (else no frenchspacing)
+  {\ifmmode\normalspaceprimitive\else\specialspaceprimitive\fi} % no \dontleavehmode\space (else no frenchspacing)
 
 \pushoverloadmode
 
@@ -1070,7 +1082,7 @@
    \s!plus#2\interwordstretch
   \s!minus#3\interwordshrink}
 
-\def\fixedspaceamount#1%
+\permanent\def\fixedspaceamount#1%
   {#1\interwordspace}
 
 % moved from page-lin

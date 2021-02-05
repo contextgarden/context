@@ -26,4 +26,30 @@
 \permanent\protected\def\removemissingcharacters {\enabletrackers[fonts.missing=remove]}
 \permanent\protected\def\replacemissingcharacters{\enabletrackers[fonts.missing=replace]}
 
+% \enableexperiments[fonts.compact]
+
+%D \starttyping
+%D \replacemissingcharacters
+%D
+%D \startbuffer
+%D     \startlines[before=,after=]
+%D         \strut {\tf test \char 12345\ test \char 12346\ test}
+%D         \strut {\bf test \char 12345\ test \char 12346\ test}
+%D         \strut {\it test \char 12345\ test \char 12346\ test}
+%D         \strut {\bi test \char 12345\ test \char 12346\ test}
+%D         \strut {test ὀ ρ φ α ν ῖ ο ς test}
+%D     \stoplines
+%D \stopbuffer
+%D
+%D \starttext
+%D     \startTEXpage[offset=2pt,strut=no]
+%D         \getbuffer
+%D         \switchtobodyfont[pagella]
+%D         \getbuffer
+%D         \switchtobodyfont[dejavu]
+%D         \getbuffer
+%D     \stopTEXpage
+%D \stoptext
+%D \stoptyping
+
 \endinput

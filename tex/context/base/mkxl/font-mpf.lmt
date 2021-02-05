@@ -34,8 +34,8 @@ local newprivateslot    = fonts.helpers.newprivateslot
 local currentfont       = font.current
 
 local function setmetaglyphs(category,fontid,unicode,specification)
-    local tfmdata = fontdata[fontid]
     if unicode then
+        local tfmdata    = fontdata[fontid]
         local characters = tfmdata.characters
         specification.unicode  = unicode
         specification.category = category
@@ -68,10 +68,10 @@ local function setmetaglyphs(category,fontid,unicode,specification)
         fonts.dropins.swapone("mps",tfmdata,shape,unicode)
         --
         local olddata = characters[unicode]
-        newdata.width    = urx - llx
-        newdata.height   = ury
-        newdata.depth    = -lly
-        newdata.unicode  = unicode
+        newdata.width   = urx - llx
+        newdata.height  = ury
+        newdata.depth   = -lly
+        newdata.unicode = unicode
         -- commands = { { "offset", -llx, 0, newdata.commands[1][1], newdata.commands[1][2] } }
         if llx ~= 0 then
             newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
@@ -89,7 +89,7 @@ local function setmetaglyph(specification)
         local category = specification.category
         local name     = specification.name
         if category and name then
-            local fontid  = currentfont()
+            local fontid  = specification.fontid or currentfont()
             local private = newprivateslot(name)
             register(fontid,private,function(font,char)
                 return setmetaglyphs(category,font,char,specification) end

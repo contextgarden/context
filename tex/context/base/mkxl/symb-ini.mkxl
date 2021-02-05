@@ -316,8 +316,8 @@
 \permanent\protected\def\resetsymbolset
   {\t_symb_setups\emptytoks}
 
-\permanent\protected\def\forcesymbolset[#1]%
-  {\t_symb_setups{\symb_fetch{#1}}}
+\permanent\protected\def\forcesymbolset[#1]% still needed? why not just usesymbolset
+  {\normalexpanded{\t_symb_setups{\symb_fetch{#1}}}}
 
 %D \macros
 %D   {showsymbolset}

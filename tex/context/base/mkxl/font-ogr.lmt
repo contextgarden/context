@@ -53,27 +53,28 @@ do
     -- todo: pass specification table instead
 
     function dropins.provide(method,t_tfmdata,indexdata,...)
-        local droppedin          = dropins.nextid()
-        local t_characters       = t_tfmdata.characters
-        local t_descriptions     = t_tfmdata.descriptions
-        local t_properties       = t_tfmdata.properties
-        local d_tfmdata          = setmetatableindex({ },t_tfmdata)
-        local d_properties       = setmetatableindex({ },t_properties)
-        d_tfmdata.properties     = d_properties
-        local d_characters       = { } -- setmetatableindex({ },t_characters)   -- hm, index vs unicode
-        local d_descriptions     = { } -- setmetatableindex({ },t_descriptions) -- hm, index vs unicode
-        d_tfmdata.characters     = d_characters
-        d_tfmdata.descriptions   = d_descriptions
-        d_tfmdata.parentdata     = t_tfmdata -- so we can access it if needed
-        d_properties.instance    = - droppedin -- will become an extra element in the hash
-        identifiers[droppedin]   = d_tfmdata
-        local fonts              = t_tfmdata.fonts or { }
-        t_tfmdata.fonts          = fonts
-        d_properties.format      = "type3"
-        d_properties.method      = method
-        d_properties.indexdata   = { indexdata, ... } -- can take quite some memory
-        local slot               = #fonts + 1
-        fonts[slot]              = { id = droppedin }
+        local droppedin           = dropins.nextid()
+        local t_characters        = t_tfmdata.characters
+        local t_descriptions      = t_tfmdata.descriptions
+        local t_properties        = t_tfmdata.properties
+        local d_tfmdata           = setmetatableindex({ },t_tfmdata)
+        local d_properties        = setmetatableindex({ },t_properties)
+        d_properties.basefontname = "ContextRuntimeFont" .. droppedin
+        d_tfmdata.properties      = d_properties
+        local d_characters        = { } -- setmetatableindex({ },t_characters)   -- hm, index vs unicode
+        local d_descriptions      = { } -- setmetatableindex({ },t_descriptions) -- hm, index vs unicode
+        d_tfmdata.characters      = d_characters
+        d_tfmdata.descriptions    = d_descriptions
+        d_tfmdata.parentdata      = t_tfmdata -- so we can access it if needed
+        d_properties.instance     = - droppedin -- will become an extra element in the hash
+        identifiers[droppedin]    = d_tfmdata
+        local fonts               = t_tfmdata.fonts or { }
+        t_tfmdata.fonts           = fonts
+        d_properties.format       = "type3"
+        d_properties.method       = method
+        d_properties.indexdata    = { indexdata, ... } -- can take quite some memory
+        local slot                = #fonts + 1
+        fonts[slot]               = { id = droppedin }
         return slot, droppedin, d_tfmdata, d_properties
     end
 

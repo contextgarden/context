@@ -32,6 +32,7 @@ local fontgoodies        = fonts.goodies or { }
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 local getattr            = nuts.getattr
+local getprop            = nuts.getprop
 local nextglyph          = nuts.traversers.glyph
 
 -- colorschemes
@@ -61,8 +62,10 @@ local function setcolorscheme(tfmdata,scheme)
                 local characters = tfmdata.characters
                 for i=1,#what do
                     local w = what[i]
-                    for j=1,#w do
-                        local name = w[j]
+                    local force = w.force
+                    local list  = w.list or w
+                    for j=1,#list do
+                        local name = list[j]
                         local kind = type(name)
                         if name == "*" then
                             -- inefficient but only used for tracing anyway
@@ -81,9 +84,15 @@ local function setcolorscheme(tfmdata,scheme)
                                 -- limited usage: we only deal with non reassigned
                                 -- maybe some day I'll also support the ones with a
                                 -- tounicode in this range
-                                for unicode=start,stop do
-                                    if characters[unicode] then
+                                if force then
+                                    for unicode=start,stop do
                                         reverse[unicode] = i
+                                    end
+                                else
+                                    for unicode=start,stop do
+                                        if characters[unicode] then
+                                            reverse[unicode] = i
+                                        end
                                     end
                                 end
                             end
@@ -150,6 +159,13 @@ function colorschemes.coloring(head)
             if f ~= lastfont then
                 lastfont   = f
                 lastscheme = fontproperties[f].colorscheme
+                if not lastscheme then
+                    local p = getprop(n, "original")
+                    if p then
+                        lastfont   = p.font
+                        lastscheme = fontproperties[lastfont].colorscheme
+                    end
+                end
             end
             if a ~= lastattr then
                 lastattr  = a

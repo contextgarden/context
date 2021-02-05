@@ -892,8 +892,8 @@
   {\endgraf
    \egroup}
 
-\let\beginshapebox\beginofshapebox
-\let\endshapebox  \endofshapebox
+\aliased\let\beginshapebox\beginofshapebox
+\aliased\let\endshapebox  \endofshapebox
 
 \permanent\protected\def\flushshapebox
   {\bgroup
@@ -1040,16 +1040,23 @@
 
 %D This can be done in a more modern way but for nostalgic reasons we keep it.
 
+\mutable\let\nextprocessedtoken\empty
+
+\mutable\let\before \relax % for now mutable
+%mutable\let\between\relax % is a math character
+\mutable\let\after  \relax % for now mutable
+\mutable\let\white  \relax % for now mutable
+
 \permanent\protected\def\processtokens#1#2#3#4#5%
   {\begingroup
    \def\lastcharacter{\lastcharacter}% hm, recursive ?
    \enforced\permanent\def\space{ }%
    \enforced\let\\\space
-   \def\before {#1}%
-   \def\between{#2}%
-   \def\after  {#3}%
-   \def\white  {#4}%
-   \let\savedbefore\before
+   \enforced\def\before {#1}%
+   \enforced\def\between{#2}%
+   \enforced\def\after  {#3}%
+   \enforced\def\white  {#4}%
+   \enforced\let\savedbefore\before
    \syst_boxes_processtokens#5\lastcharacter
    \endgroup}
 
@@ -1059,7 +1066,7 @@
 \def\syst_boxes_redo_processedtoken
   {\dowithnextbox
      {\before{\copy\nextbox}% \before can use nextbox several times
-      \let\before\between
+      \enforced\let\before\between
       \syst_boxes_processtokens}
       \hbox\bgroup}
 
@@ -1071,10 +1078,10 @@
    \else
      \expandafter\if\space\nextprocessedtoken
        \after\white
-       \let\before\savedbefore
+       \enforced\let\before\savedbefore
      \else
        \before\nextprocessedtoken
-       \let\before\between
+       \enforced\let\before\between
      \fi
      \expandafter\syst_boxes_processtokens
    \fi}
@@ -2415,16 +2422,17 @@
 %D \resetboxesincache{foo}
 %D \stoptyping
 
-\permanent\protected\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
-\permanent\protected\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
-\permanent\protected\def\doifelseboxincache    #1#2{\clf_doifelseboxincache    {#1}{#2}}
-\permanent\protected\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
-\permanent\protected\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
-\permanent\protected\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}
-\permanent\protected\def\resetboxesincache       #1{\clf_resetboxesincache     {#1}}
-
-\permanent\protected\def\putnextboxincache#1#2%
-  {\dowithnextbox{\putboxincache{#1}{#2}\nextbox}}
+% \putboxincache          % {category} {name} number
+% \getboxfromcache        % {category} {name} number
+% \doifelseboxincache     % {category} {name}
+% \copyboxfromcache       % {category} {name} number
+% \directboxfromcache     % {category} {name}
+% \directcopyboxfromcache % {category} {name}
+% \resetboxesincache      % {category}
+% \putnextboxincache      % {category} {name} box
+% \getboxwdfromcache      % {category} {name}
+% \getboxhtfromcache      % {category} {name}
+% \getboxdpfromcache      % {category} {name}
 
 %D \macros
 %D   {removedepth, obeydepth}
@@ -2661,6 +2669,8 @@
 \newdimen\lastnaturalboxwd
 \newdimen\lastnaturalboxht
 \newdimen\lastnaturalboxdp
+
+%D We can define these public in lua:
 
 \aliased\let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
 \aliased\let\naturalwd           \clf_naturalwd            % calculates and returns wd

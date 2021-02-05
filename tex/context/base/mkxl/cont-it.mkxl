@@ -13,8 +13,8 @@
 
 \catcode`\{=1 \catcode`\}=2
 
-\def\defaultinterface  {italian}
-\def\defaultlanguagetag{it}
+\immutable\def\defaultinterface  {italian}
+\immutable\def\defaultlanguagetag{it}
 
 \input context.mkxl
 

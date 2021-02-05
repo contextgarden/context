@@ -36,6 +36,8 @@ local context           = context
 
 local nodeinjections    = backends.pdf.nodeinjections
 
+local setmacro          = tokens.setters.macro
+
 local pdfarray          = lpdf.array
 local pdfdictionary     = lpdf.dictionary
 local pdfconstant       = lpdf.constant
@@ -337,7 +339,7 @@ function codeinjections.mergereferences(specification)
         end
     end
     -- moved outside previous test
-    context.setgvalue("figurereference",reference) -- global, todo: setmacro
+    setmacro("mergedfigurereference",reference,"global")
     if trace_links then
         report_link("setting figure reference to %a",reference)
     end

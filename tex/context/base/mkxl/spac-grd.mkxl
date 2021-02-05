@@ -326,7 +326,7 @@
      \fi
    \fi}
 
-\let\normalstartbaselinecorrection\startbaselinecorrection
+\aliased\let\normalstartbaselinecorrection\startbaselinecorrection
 
 \pushoverloadmode
 

@@ -24,7 +24,7 @@
 
 \definefontsynonym [ContextNavigation] [contnav]
 
-\def\ContextNavigationGlyph{\getnamedglyphdirect{ContextNavigation}} % #1
+\permanent\protected\def\ContextNavigationGlyph{\getnamedglyphdirect{ContextNavigation}} % #1
 
 \startsymbolset [navigation 1]
 
@@ -122,8 +122,15 @@
 
 \stopsymbolset
 
-%D \showsymbolset[navigation 1]
-%D \showsymbolset[navigation 2]
-%D \showsymbolset[navigation 3]
+\protect
 
-\protect \endinput
+\continueifinputfile{symb-imp-nav.mkiv}
+
+\starttext
+    \showsymbolset[navigation 1]\page
+    \showsymbolset[navigation 2]\page
+    \showsymbolset[navigation 3]\page
+    \ContextNavigationGlyph{char03}\quad
+    \ContextNavigationGlyph{char67}\quad
+    \ContextNavigationGlyph{charcb}
+\stoptext

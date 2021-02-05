@@ -13,8 +13,8 @@
 
 \catcode`\{=1 \catcode`\}=2
 
-\def\defaultinterface  {romanian}
-\def\defaultlanguagetag{ro}
+\immutable\def\defaultinterface  {romanian}
+\immutable\def\defaultlanguagetag{ro}
 
 \input context.mkxl
 

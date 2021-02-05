@@ -107,7 +107,7 @@
 
 \appendtoks
     \showcontextbanner
-    \initializenewlinechar
+   %\initializenewlinechar
     \calculatecurrenttime
     \syst_files_load
     % for the moment here (before doc env)
@@ -149,7 +149,7 @@
 % temporary here:
 
 \pushoverloadmode
-    \frozen\protected\def\arg{\mathortext\normalmatharg\normaltextarg}
+    \frozen\protected\def\arg{\mathortext\normalmatharg\normaltextarg} % might be overloaded
 \popoverloadmode
 
 % might move to \everydump or even disappear:

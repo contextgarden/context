@@ -299,8 +299,26 @@ implement {
 
 implement {
     name      = "immediatemessage",
+    public    = true,
     arguments = { "'message'", "string" },
     actions   = logs.status
+}
+
+implement {
+    name      = "writestring",
+    public    = true,
+    protected = true,
+    arguments = "string",
+    actions   = function (s)
+        logs.writer(s,"\n")
+    end,
+}
+
+implement {
+    name      = "writeline",
+    public    = true,
+    protected = true,
+    actions   = logs.newline,
 }
 
 implement {

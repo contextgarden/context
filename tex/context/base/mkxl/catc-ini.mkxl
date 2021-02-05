@@ -20,21 +20,21 @@
 %D file. There is some overlap in code with \MKII\ but we take that for granted.
 %D Also, in \MKIV\ less active characters are used.
 
-\begingroup
-    \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\Uchar\newlineasciicode}
-\endgroup
+% \begingroup
+%     \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\Uchar\newlineasciicode}
+% \endgroup
 
 % \endlinechar = \endoflineasciicode % appended to input lines
 % \newlinechar = \newlineasciicode   % can be used in write
 
 % rather special and used in writing to file: \let\par\outputnewlinechar
 
-\permanent\protected\def\initializenewlinechar % operating system dependent
-  {\begingroup
-   \letcharcode\newlineasciicode\relax
-   \newlinechar\newlineasciicode
-   \xdef\outputnewlinechar{\Uchar\newlineasciicode}%
-   \endgroup}
+% \permanent\protected\def\initializenewlinechar % operating system dependent
+%   {\begingroup
+%    \enforced\letcharcode\newlineasciicode\relax
+%    \newlinechar\newlineasciicode
+%    \xdef\outputnewlinechar{\Uchar\newlineasciicode}%
+%    \endgroup}
 
 %D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots for
 %D catcodes. (This active mess probably needs an update some day.)

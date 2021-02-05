@@ -12,6 +12,8 @@
 %C details.
 
 %D Some lmtx upgrading work needs to be done here.
+%D
+%D For real \METAFUN\ magic see \type {https://art-aleatoire.com/}.
 
 % initializations:
 %
@@ -60,7 +62,7 @@
 
 \writestatus{loading}{MetaPost Graphics / Initializations}
 
-\registerctxluafile{meta-ini}{}
+\registerctxluafile{meta-ini}{autosuffix}
 
 \unprotect
 
@@ -197,9 +199,9 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_show_properties}
 
-\def\currentMPgraphicname{\s!unknown}
-\def\currentMPinstance   {\defaultMPinstance}
-\def\currentMPformat     {\currentMPinstance}
+\mutable\def\currentMPgraphicname{\s!unknown}
+\mutable\def\currentMPinstance   {\defaultMPinstance}
+\mutable\def\currentMPformat     {\currentMPinstance}
 
 \defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[minifun]    [\s!format=minifun,\s!extensions=\v!yes,\s!initializations=\v!yes]
@@ -407,6 +409,8 @@
 \mutable\def\width {0 } % left-over
 \mutable\def\height{0 } % left-over
 
+\mutable\let\currentMPclip\empty
+
 \protected\def\meta_grab_clip_path#1#2#3%
   {\begingroup
    \d_overlay_width #2\relax
@@ -488,7 +492,8 @@
 
 \newbox\b_meta_variable_box
 
-\let \currentmpvariableclass          \empty
+\mutable\let \currentmpvariableclass  \empty % public
+
 \let \m_meta_current_variable         \empty
 \let \m_meta_current_variable_template\empty
 
@@ -598,7 +603,7 @@
 
 % todo: frozen or not?
 
-\def\overlaystamp % watch the \MPcolor, since colors can be redefined
+\permanent\def\overlaystamp % watch the \MPcolor, since colors can be redefined
   {\the\d_overlay_width    :%
    \the\d_overlay_height   :%
    \the\d_overlay_depth    :%
@@ -784,7 +789,7 @@
 
 \def\m_meta_page_prefix{\doifelseoddpage oe}
 
-\def\overlaypagestamp
+\permanent\def\overlaypagestamp
   {\m_meta_page_prefix     :%
    \the\d_overlay_width    :%
    \the\d_overlay_height   :%
@@ -808,7 +813,7 @@
 
 \permanent\tolerant\protected\def\uniqueMPpagegraphic#=#=%
   {\meta_begin_graphic_group{#1}%
-   \let\overlaystamp\overlaypagestamp
+   \enforced\let\overlaystamp\overlaypagestamp
    \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
    \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
    \meta_end_graphic_group}
@@ -830,13 +835,10 @@
 
 \def\meta_extend_overlay_stamp#1%
   {\meta_prepare_instance_variable{#1}%
-   \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
+   \enforced\permanent\edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
 
-\permanent\protected\def\getMPdata  {\clf_getMPdata}
-            \aliased\let\rawMPdata   \clf_getMPdata       % we need frozen at the lua end
-
-\permanent\protected\def\getMPstored{\clf_getMPstored}
-            \aliased\let\rawMPstored \clf_getMPstored     % we need frozen at the lua end
+% \getMPdata % define at the lua end
+% \rawMPdata % define at the lua end
 
 %D We need this trick because we need to make sure that the tex scanner sees
 %D newlines and does not quit. Also, we do need to flush the buffer under a normal

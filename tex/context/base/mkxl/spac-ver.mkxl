@@ -1502,12 +1502,12 @@
 \permanent\protected\def\installsnapvalues#1#2%
   {\let\m_spac_snapper\empty
    \rawprocesscommacommand[#2]\spac_grids_expand_snapper
-   \edef\currentsnapper{#1:\m_spac_snapper}%
-   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname
+   \edef\p_spac_snapper{#1:\m_spac_snapper}%
+   \ifcsname\??gridsnapperattributes\p_spac_snapper\endcsname
      \scratchcounter\lastnamedcs % already defined
    \else
      \scratchcounter\clf_definesnapmethod{#1}{\m_spac_snapper}%
-     \edefcsname\??gridsnapperattributes\currentsnapper\endcsname{\the\scratchcounter}%
+     \edefcsname\??gridsnapperattributes\p_spac_snapper\endcsname{\the\scratchcounter}%
    \fi
    \edefcsname\??gridsnappers#1\endcsname{\c_attr_snapmethod\the\scratchcounter\relax}%
    \letcsname\??gridsnappersets#1\endcsname\m_spac_snapper}

@@ -15,8 +15,8 @@
 
 % No protection because we have a module that overloads them!
 
-\protected\def\setupbibtex         {\usemodule[oldbibtex]\setupbibtex}
-\protected\def\setuppublications   {\usemodule[oldbibtex]\setuppublications}
-\protected\def\setuppublicationlist{\usemodule[oldbibtex]\setuppublicationlist}
+\mutable\protected\def\setupbibtex         {\usemodule[oldbibtex]\setupbibtex}
+\mutable\protected\def\setuppublications   {\usemodule[oldbibtex]\setuppublications}
+\mutable\protected\def\setuppublicationlist{\usemodule[oldbibtex]\setuppublicationlist}
 
 \protect

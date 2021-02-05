@@ -304,7 +304,7 @@
 
 % %D The next definitions are really needed (in \CONTEXT):
 
-\newlinechar\newlineasciicode  \edef\outputnewlinechar{\Uchar\newlineasciicode} % {^^J}
+\newlinechar\newlineasciicode  \permanent\edef\outputnewlinechar{\Uchar\newlineasciicode} % {^^J}
 
 %D One reason to start high with allocation is that it permits us to allocate
 %D consecutive ranges more easily, for instance if for \MPLIB\ we want to allocate a
@@ -733,11 +733,11 @@
 
 \pushoverloadmode
 
-\protected\def\dump
+\permanent\protected\def\dump
   {\the\everydump
    \global\everydump\emptytoks
    \pushoverloadmode
-   \glet\dump\relax
+   \enforced\glet\dump\relax
    \popoverloadmode
    %let\pushoverloadmode\relax
    %let\popoverloadmode\relax

@@ -205,8 +205,6 @@
      \currentstyleparameter
    \fi}
 
-\let\dosetfontattribute\dousestylehashparameter % for a while
-
 %D New commands (not yet interfaced):
 %D
 %D \startbuffer
@@ -271,7 +269,7 @@
 
 \installcorenamespace{styleargument}
 
-\protected\def\style[#name]% as this is can be a switch we use groupedcommand % frozen?
+\permanent\protected\def\style[#name]% as this is can be a switch we use groupedcommand % frozen?
   {\csname\??styleargument
      \ifcsname\??stylecheck#name\endcsname
        2% defined as style
@@ -415,7 +413,7 @@
    \dousestylehashparameter{#1}{#2}%
    \dousecolorhashparameter{#1}{#3}}
 
-\let\dostopattributes\endgroup
+\aliased\let\dostopattributes\endgroup
 
 %D New but it needs to be supported explicitly (as in natural tables).
 

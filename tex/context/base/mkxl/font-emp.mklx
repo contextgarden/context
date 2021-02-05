@@ -152,7 +152,9 @@
 %D italic correction. As a bonus we also look for something that looks like a dash,
 %D in which case we don't correct.
 
-\let\italiccorrection=\/ % tex primitive
+\aliased\let\normalitaliccorrection\/ % the tex primitive
+
+\let\italiccorrection\normalitaliccorrection % will be overloaded
 
 \permanent\protected\def\emphasiscorrection % public, not in raw alignment groups, else omit problem
   {\ifhmode\ifnum\currentgrouptype=\aligngroupcode\else

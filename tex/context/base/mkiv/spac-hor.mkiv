@@ -478,11 +478,20 @@
 %D from now on we treat it as a normal space and not as a space with \type
 %D {sfcode} 1000.
 
+% \unexpanded\def\specialspaceprimitive
+%   {\begingroup
+%    % so, no fancy extra spacing after: foo i.e.\ bar
+%    \nonfrenchspacing\normalspaceprimitive
+%    \endgroup}
+
 \unexpanded\def\specialspaceprimitive
-  {\begingroup
-   % so, no fancy extra spacing after: foo i.e.\ bar
-   \nonfrenchspacing\normalspaceprimitive
-   \endgroup}
+  {% is a current state, set explicitly or when a character is appended
+   \ifhmode
+     \spacefactor\plusthousand
+   \else
+     \dontleavehmode
+   \fi
+   \normalspaceprimitive}
 
 \unexpanded\def\normalnotobeyedspace
   {\mathortext\normalspaceprimitive\specialspaceprimitive} % no \dontleavehmode\space (else no frenchspacing)

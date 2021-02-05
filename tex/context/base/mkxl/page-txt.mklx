@@ -90,6 +90,9 @@
     \fi
 \to \everysetuplayoutelement
 
+\mutable\let\currenttextstate \empty
+\mutable\let\previoustextstate\empty
+
 \def\page_layouts_reset_element_status#vertical%
   {\gdefcsname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
 
@@ -172,6 +175,8 @@
 \permanent\protected\def\setupfootertexts{\setuptexts[\v!footer]}
 \permanent\protected\def\setupbottomtexts{\setuptexts[\v!bottom]}
 
+\mutable\let\currentlayoutelementstate\empty
+
 \permanent\tolerant\protected\def\setuptexts[#vertical]#spacer[#horizontal]#spacer[#a]#spacer[#b]#spacer[#c]#spacer[#d]%
   {\ifarguments
      % there is always one
@@ -238,15 +243,15 @@
    \uselayoutelementstyleandcolor#style#color%
    \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ignorecrlf
-   \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
-   \ifempty\currentlayoutelementwidth\else
+   \edef\p_width{\layoutelementparameter#width}%
+   \ifempty\p_width\else
      \expandafter\page_layouts_process_element_limited
    \fi\p_text
    \endgroup}
 
 \def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
   {\limitated
-      left     \currentlayoutelementwidth
+      left     \p_width
       text     {#content}
       sentinel {\unknown}
    \relax}
@@ -266,6 +271,8 @@
 %D variable. This is handled by the next couple of macros.
 
 \newcount\c_page_layouts_element_state_n
+
+\mutable\let\textlinestatus\empty
 
 \def\page_layouts_set_element_status#vertical%
   {\c_page_layouts_element_state_n=0\namedlayoutelementparameter#vertical\c!n\relax

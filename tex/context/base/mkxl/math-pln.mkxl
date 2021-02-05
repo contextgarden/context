@@ -28,29 +28,29 @@
 
 % will move
 
-\def\oalign#1%
+\permanent\def\oalign#1%
   {\leavevmode % plain tex uses this
    \vtop
      {\baselineskip\zeroskip
       \lineskip.25\exheight
       \ialign{\alignmark\alignmark\crcr#1\crcr}}}
 
-\def\ooalign % chars over each other
+\permanent\def\ooalign % chars over each other
   {\lineskiplimit-\maxdimen
    \oalign}
 
 % needs checking
 
-\def\choose{\atopwithdelims()}
-\def\brack {\atopwithdelims[]}
-\def\brace {\atopwithdelims\{\}}
+\permanent\protected\def\choose{\atopwithdelims()}
+\permanent\protected\def\brack {\atopwithdelims[]}
+\permanent\protected\def\brace {\atopwithdelims\{\}}
 
 % needs checking
 
-\protected\def\buildrel#1\over#2%
+\permanent\protected\def\buildrel#1\over#2%
   {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
 
-\protected\def\bmod
+\permanent\protected\def\bmod
   {\nonscript
    \mskip-\medmuskip
    \mkern5mu
@@ -60,12 +60,12 @@
    \nonscript
    \mskip-\medmuskip}
 
-\protected\def\pmod#1%
+\permanent\protected\def\pmod#1%
   {\allowbreak
    \mkern18mu
    (\mfunction{mod}\mskip\medmuskip#1)}
 
-\protected\def\cases#1%
+\permanent\protected\def\cases#1%
   {\left\{%
    \mskip\thinmuskip
    \vcenter
@@ -80,7 +80,7 @@
         \crcr}}%
    \right.}
 
-\protected\def\matrix#1%
+\permanent\protected\def\matrix#1%
   {\emptyhbox
    \mskip\thinmuskip
    \vcenter
@@ -101,7 +101,7 @@
         \noalign{\kern-\baselineskip}}}%
    \mskip\thinmuskip}
 
-\protected\def\pmatrix#1%
+\permanent\protected\def\pmatrix#1%
   {\left(\matrix{#1}\right)}
 
 % \protected\def\openup

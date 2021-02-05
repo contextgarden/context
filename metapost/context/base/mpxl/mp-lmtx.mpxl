@@ -2224,6 +2224,7 @@ newscriptindex mfid_registerglyph  ; mfid_registerglyph  := scriptindex "registe
 % An experimental macro:
 
 vardef registercomposedglyph (expr u) (suffix snippets) =
+    save s ; s := getparameterdefault "mpsfont" "scale" 1 ;
     save llx, lly, urx, ury ;
     llx := xpart llcorner snippets[u] ;
     if llx <> 0 :
@@ -2231,9 +2232,9 @@ vardef registercomposedglyph (expr u) (suffix snippets) =
         snippets[u] := snippets[u] shifted (-llx, 0) ;
         llx := 0;
     fi ;
-    lly := ypart llcorner snippets[u] ;
-    urx := xpart urcorner snippets[u] ;
-    ury := ypart urcorner snippets[u] ;
+    lly := ypart llcorner snippets[u] / s ;
+    urx := xpart urcorner snippets[u] / s ;
+    ury := ypart urcorner snippets[u] / s ;
     lmt_registerglyph [
         category    = getparameter "mpsfont" "category",
         unicode     = u,
@@ -2247,6 +2248,7 @@ enddef ;
 
 vardef composeglyph (suffix snippets) =
     save u ; u := getparameter "mpsfont" "unicode" ;
+    save s ; s := getparameterdefault "mpsfont" "scale" 1 ;
     snippets[u] := image (
         for i=1 upto getparametercount "mpsfont" "shapes" :
             draw scantokens ( getparameter "mpsfont" "shapes" i "shape" )
@@ -2254,7 +2256,7 @@ vardef composeglyph (suffix snippets) =
                     withcolor getparameter "mpsfont" "shapes" i "color"
                 fi ;
         endfor ;
-    ) ;
+    ) scaled s ;
     registercomposedglyph(u, snippets) ;
 enddef ;
 

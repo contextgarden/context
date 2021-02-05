@@ -35,6 +35,11 @@
 
 \unprotect
 
+%D These are for local helpers, the names are historic:
+
+\mutable\let\docommand  \relax
+\mutable\let\dodocommand\relax
+
 %D \macros
 %D   {unexpanded}
 %D
@@ -95,7 +100,7 @@
 %D
 %D There is already \type{\space} but just to be sure we also provide this one:
 
-\def\normalspace{ }
+\permanent\def\normalspace{ }
 
 \newif\if!!donea   \newif\if!!doneb    \newif\if!!donec  % soon obsolete in lmtx
 \newif\if!!doned   \newif\if!!donee    \newif\if!!donef  % soon obsolete in lmtx
@@ -1375,43 +1380,45 @@
 
 %D Some more raw material:
 
-\def\syst_helpers_raw_process_action#1=>#2,%
-  {\ifarguments
-    %\expandafter\syst_helpers_raw_process_action_gobble
-   \or
-     \expandafter\syst_helpers_raw_process_action_gobble
-   \or
-     \edef\m_syst_string_two{#1}%
-     \ifx\m_syst_string_one\m_syst_string_two
-       \def\m_syst_helpers_process_action{#2}%
-       \expandafter\expandafter\expandafter\syst_helpers_raw_process_action_gobble
-     \else
-       \ifx\s!unknown\m_syst_string_two
-         \def\m_syst_helpers_process_action_unknown{#2}%
-       \fi
-       \expandafter\expandafter\expandafter\syst_helpers_raw_process_action_next
-     \fi
-   \fi}
-
-\def\syst_helpers_raw_process_action_gobble#-\ignorearguments
-  {}
-
-\def\syst_helpers_raw_process_action_next
-  {\expandafterspaces\syst_helpers_raw_process_action}
-
-\protected\def\xrawprocessaction[#1]#2[#3]%
-  {\edef\m_syst_string_one{#1}%
-   \ifempty\m_syst_string_one
-      \let\m_syst_string_one\s!default
-   \fi
-   \let\m_syst_helpers_process_action\relax
-   \let\m_syst_helpers_process_action_unknown\relax
-   \syst_helpers_raw_process_action#3\ignorearguments\ignorearguments\ignorearguments
-   \ifrelax\m_syst_helpers_process_action
-     \m_syst_helpers_process_action_unknown
-   \else
-     \m_syst_helpers_process_action
-   \fi}
+% probably never used
+%
+% \def\syst_helpers_raw_process_action#1=>#2,%
+%   {\ifarguments
+%     %\expandafter\syst_helpers_raw_process_action_gobble
+%    \or
+%      \expandafter\syst_helpers_raw_process_action_gobble
+%    \or
+%      \edef\m_syst_string_two{#1}%
+%      \ifx\m_syst_string_one\m_syst_string_two
+%        \def\m_syst_helpers_process_action{#2}%
+%        \expandafter\expandafter\expandafter\syst_helpers_raw_process_action_gobble
+%      \else
+%        \ifx\s!unknown\m_syst_string_two
+%          \def\m_syst_helpers_process_action_unknown{#2}%
+%        \fi
+%        \expandafter\expandafter\expandafter\syst_helpers_raw_process_action_next
+%      \fi
+%    \fi}
+%
+% \def\syst_helpers_raw_process_action_gobble#-\ignorearguments
+%   {}
+%
+% \def\syst_helpers_raw_process_action_next
+%   {\expandafterspaces\syst_helpers_raw_process_action}
+%
+% \permanent\protected\def\xrawprocessaction[#1]#*[#2]%
+%   {\edef\m_syst_string_one{#1}%
+%    \ifempty\m_syst_string_one
+%       \let\m_syst_string_one\s!default
+%    \fi
+%    \let\m_syst_helpers_process_action\relax
+%    \let\m_syst_helpers_process_action_unknown\relax
+%    \syst_helpers_raw_process_action#2\ignorearguments\ignorearguments\ignorearguments
+%    \ifrelax\m_syst_helpers_process_action
+%      \m_syst_helpers_process_action_unknown
+%    \else
+%      \m_syst_helpers_process_action
+%    \fi}
 
 %D When we process the list \type {a,b,c,d,e}, the raw routine takes over 30\% less
 %D time, when we feed $20+$ character strings we gain about 20\%. Alternatives which
@@ -1546,7 +1553,7 @@
 %D funny to see that this alternative saw the light so lately --- can be used to do
 %D expanded assigments.
 
-\let\currentvalue\empty
+% \mutable\let\currentvalue\empty % only mkii
 
 \permanent\protected\def\getparameters   {\dogetparameters\dosetvalue}
 \permanent\protected\def\geteparameters  {\dogetparameters\dosetevalue}
@@ -2785,53 +2792,52 @@
    \read16 to \wait
    \endgroup}
 
-%D \macros
-%D   {writestring,writeline,
-%D    writestatus,statuswidth,normalwritestatus}
-%D
-%D Maybe one didn't notice, but we've already introduced a macro for showing
-%D messages. In the multi||lingual modules, we will also introduce a mechanism for
-%D message passing. For the moment we stick to the core macros:
-%D
-%D \starttyping
-%D \writestring {string}
-%D \writeline
-%D \writestatus {category} {message}
-%D \stoptyping
-%D
-%D Messages are formatted. One can provide the maximum with of the identification
-%D string with the macro \type {\statuswidth}.
-
-\setnewconstant\statuswidth  15
-%setnewconstant\statuswrite 128 % \pluscxxviii
-
-\ifdefined\writestring \else
-
-    \protected\def\writestring{\immediate\write\statuswrite}
-    \protected\def\writeline  {\writestring{}}
-
-\fi
-
-\protected\def\normalwritestatus#1#2%
-  {\writestring{\expandafter\syst_helpers_split_status_yes\expandafter\statuswidth#1%
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\space
-     \space\space\space\space\space\space\end
-     \space:\space#2}}
-
-\def\syst_helpers_split_status_yes#1#2%
-  {\ifcase#1 \expandafter\syst_helpers_split_status_nop\fi#2%
-   \expandafter\syst_helpers_split_status_yes\expandafter{\the\numexpr#1+\minusone\relax}}
-
-\def\syst_helpers_split_status_nop#1\end
-  {}
+% %D \macros
+% %D   {writestring,writeline,writestatus}
+% %D
+% %D Maybe one didn't notice, but we've already introduced a macro for showing
+% %D messages. In the multi||lingual modules, we will also introduce a mechanism for
+% %D message passing. For the moment we stick to the core macros:
+% %D
+% %D \starttyping
+% %D \writestring {string}
+% %D \writeline
+% %D \writestatus {category} {message}
+% %D \stoptyping
+% %D
+% %D Messages are formatted. One can provide the maximum with of the identification
+% %D string with the macro \type {\statuswidth}.
+%
+% \setnewconstant\statuswidth  15
+% \setnewconstant\statuswrite 128 % \pluscxxviii
+%
+% \ifdefined\writestring \else
+%
+%     \protected\def\writestring{\immediate\write\statuswrite}
+%     \protected\def\writeline  {\writestring{}}
+%
+% \fi
+%
+% \protected\def\normalwritestatus#1#2%
+%   {\writestring{\expandafter\syst_helpers_split_status_yes\expandafter\statuswidth#1%
+%      \space\space\space\space\space\space\space
+%      \space\space\space\space\space\space\space
+%      \space\space\space\space\space\space\end
+%      \space:\space#2}}
+%
+% \def\syst_helpers_split_status_yes#1#2%
+%   {\ifcase#1 \expandafter\syst_helpers_split_status_nop\fi#2%
+%    \expandafter\syst_helpers_split_status_yes\expandafter{\the\numexpr#1+\minusone\relax}}
+%
+% \def\syst_helpers_split_status_nop#1\end
+%   {}
 
 %D \macros
 %D   {immediatemessage}
 %D
 %D A fully expandable message:
 
-\aliased\let\immediatemessage\clf_immediatemessage % {} mandate / todo permanent at lua end
+% \immediatemessage % {} mandate / defined at the lua end
 
 %D \macros
 %D   {rawgetparameters}
@@ -3078,7 +3084,7 @@
 
 \permanent\protected\def\savenormalmeaning#1%
   {\ifcsname normal\csstring#1\endcsname \else
-     \letcsname normal\csstring#1\endcsname#1%
+     \aliased\letcsname normal\csstring#1\endcsname#1%
    \fi}
 
 %D \macros
@@ -5665,7 +5671,9 @@
 %D assignment, this time by using \type {\futurelet}, and grabbing an argument as
 %D well. That way we can handle the sentinal, a blank space and grouped tokens.
 
-\protected\def\syst_helpers_handle_tokens % \nexthandledtoken is part of interface
+\mutable\let\nexthandledtoken\empty % part of public interface
+
+\protected\def\syst_helpers_handle_tokens
   {\futurelet\nexthandledtoken\syst_helpers_handle_tokens_indeed}
 
 \permanent\protected\def\handletokens#1\with#2%
@@ -6177,12 +6185,12 @@
 
 \aliased\let\doifnonzeropositiveelse\doifelsenonzeropositive
 
-% here ?
+%D Some old|-|time favourites:
 
-\protected\def\dosetrawvalue #1#2#3{\defcsname        #1#2\endcsname{#3}}
-\protected\def\dosetrawevalue#1#2#3{\edefcsname       #1#2\endcsname{#3}}
-\protected\def\dosetrawgvalue#1#2#3{\global\defcsname #1#2\endcsname{#3}}
-\protected\def\dosetrawxvalue#1#2#3{\global\edefcsname#1#2\endcsname{#3}}
+\permanent\protected\def\dosetrawvalue #1#2#3{\defcsname        #1#2\endcsname{#3}}
+\permanent\protected\def\dosetrawevalue#1#2#3{\edefcsname       #1#2\endcsname{#3}}
+\permanent\protected\def\dosetrawgvalue#1#2#3{\global\defcsname #1#2\endcsname{#3}}
+\permanent\protected\def\dosetrawxvalue#1#2#3{\global\edefcsname#1#2\endcsname{#3}}
 
 \permanent\protected\def\getrawparameters      {\dogetparameters\dosetrawvalue }
 \permanent\protected\def\getraweparameters     {\dogetparameters\dosetrawevalue}
@@ -6216,7 +6224,7 @@
 \aliased\let\elapsedtime   \clf_elapsedtime % todo: at lua end
 \aliased\let\elapsedseconds\elapsedtime
 
-\let\elapsedsteps\!!zerocount
+\aliased\let\elapsedsteps\!!zerocount
 
 \permanent\protected\def\elapsedsteptime % unexpanded ! a bit useless but who knows ...
   {\clf_elapsedsteptime\elapsedsteps\relax}
@@ -6224,11 +6232,11 @@
 \newcount\c_syst_helpers_test_feature_n
 \newcount\c_syst_helpers_test_feature_m
 
-\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
+\permanent\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 
 \permanent\protected\def\testfeature#1#2%
   {\c_syst_helpers_test_feature_m#1\relax
-   \xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
+   \enforced\xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
    \def\syst_helpers_test_feature_yes
      {\advance\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
