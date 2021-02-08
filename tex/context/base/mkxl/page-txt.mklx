@@ -422,7 +422,7 @@
 %D The placement of a whole line is handled by the next two macros. These are hooked
 %D into the general purpose token list registers mentioned before.
 
-\let\currentlayouttextline\relax
+\mutable\let\currentlayouttextline\relax
 
 \def\page_layouts_place_text_line_indeed#vertical#height%
   {\let\currentlayouttextline#vertical%

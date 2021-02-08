@@ -520,7 +520,7 @@
    \pop_macro_currentheadparent
    \pop_macro_currenthead}
 
-\let\currentnamedsection\empty
+\mutable\let\currentnamedsection\empty
 
 \installmacrostack\currentnamedsection
 
@@ -572,10 +572,12 @@
 
 \newtoks\everydefinesection
 
+\mutable\let\currentsection\empty % historic alias
+
 \permanent\protected\def\definesection[#1]%
   {\ifcsname\??headlevel#1\endcsname \else
-     \edef\currentsection{#1}% not used, will go
      \edef\currenthead{#1}%
+     \let\currentsection\currenthead % just an alias
      \global\advance\maxstructuredepth\plusone
      \setevalue{\??headlevel#1}{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
@@ -613,7 +615,7 @@
     % be part of the parent chain lookup mechanism; it's also
     % mkii compatible. Somewhat weird that it's part of the
     % top level structure but it will be flattened anyway.
-    \let\currenthead\currentsection %
+  % \let\currenthead\currentsection % hm
     \setheadparameter\c!textstyle  {\directheadparameter\c!style}%
     \setheadparameter\c!textcolor  {\directheadparameter\c!color}%
     \setheadparameter\c!numberstyle{\directheadparameter\c!style}%

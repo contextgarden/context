@@ -599,7 +599,9 @@
 % see usage. Probaly by that time this feature is dropped (as are other media
 % rel;ated ones).
 
-\let\currentrendering\empty
+\mutable\let\currentrendering      \empty
+\mutable\let\currentrenderingtype  \empty
+\mutable\let\currentrenderingwindow\empty
 
 \definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
 \definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]

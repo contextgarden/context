@@ -92,23 +92,25 @@
    \c!mpoffset=.25\exheight]
 
 \appendtoks
-    \frozen\instance\setuevalue{\currentmathradical}{\math_radical_handle{\currentmathradical}}
+    \frozen\protected\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
 \to \everydefinemathradical
 
-\protected\def\math_radical_handle#tag%
+\mutable\let\currentmathradical      \empty
+\mutable\let\currentmathradicaldegree\empty
+
+\tolerant\protected\def\math_radical_handle#tag#*[#degree]#:#body%
   {\begingroup
    \edef\currentmathradical{#tag}%
-   \doifelsenextoptionalcs\math_radical_degree_yes\math_radical_degree_nop}
-
-\def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
+   \edef\currentmathradicaldegree{#degree}%
+   \ifempty\currentmathradicaldegree
+     \let\currentmathradicaldegree\m_math_no_degree
+   \fi
+   \math_radical_alternative{#body}%
+   \endgroup}
 
 \def\m_math_no_degree{{}}
 
-\def\math_radical_degree_yes[#degree]{\edef\currentmathradicaldegree{#degree}\math_radical_indeed}
-\def\math_radical_degree_nop         {\let\currentmathradicaldegree\m_math_no_degree\math_radical_indeed}
-
-\def\math_radical_indeed#body%
-  {\math_radical_alternative{#body}\endgroup}
+\def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 
 \setvalue{\??mathradicalalternative\v!default}%  #body%
   {\rootradical{\currentmathradicaldegree}}   % {#body}}

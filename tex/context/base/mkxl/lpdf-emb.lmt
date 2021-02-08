@@ -1574,9 +1574,8 @@ do
                         local name   = f_glyph(nofglyphs)
                         local stream = nil
                         if fixdepth then
-                            local depth  = data.depth  or 0
-                            local height = data.height or 0
-                            if depth ~= 0 or height ~= 0 then
+                            local depth = data.depth  or 0
+                            if depth ~= 0 then
                                 local d     = data.dropin.descriptions[data.index]
                                 local b     = d.boundingbox
                                 local l     = b[1]
@@ -1584,13 +1583,13 @@ do
                                 local w     = r - l
                                 local scale = w / d.width
                                 local x     = l
-                                local y     = - b[4] - b[2] - d.depth
+                             -- local y     = - b[4] - b[2] - (d.depth or 0)
+                                local y     = - (d.depth or 0)
                                 local scale = w / (image.width * bpfactor)
                                 stream = f_image_c_xy(scale,scale,x,y,name)
-                            else
-                                stream = f_image_c(name)
                             end
-                        else
+                        end
+                        if not stream then
                             stream = f_image_c(name)
                         end
                         useddoc[glyph]           = image

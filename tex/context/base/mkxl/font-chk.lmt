@@ -76,8 +76,10 @@ local nextglyph            = nuts.traversers.glyph
 
 local remove_node          = nuts.remove
 local insert_node_after    = nuts.insert_after
+local insert_node_before   = nuts.insert_before
+local copy_node            = nuts.copy
 
-local action = false
+local actions = false
 
 -- to tfmdata.properties ?
 
@@ -149,78 +151,9 @@ table.setmetatableindex(mapping, { "MissingUnknown", "darkgray" })
 
 checkers.mapping = mapping
 
--- We provide access by (private) name for tracing purposes. We also need
--- to make sure the dimensions are known at the lua and tex end.
-
--- local cache = { }
---
--- local function add(tfmdata,name,color,size,collected)
---     local hash     = formatters["%s_%s_%i"](name,color,floor(size))
---     local chardata = cache[hash]
---     if not chardata then
---         local fake   = fakes[name]
---         local width  = size * fake.width
---         local height = size * fake.height
---         local depth  = size * fake.depth
---         chardata = {
---             width    = width,
---             height   = height,
---             depth    = depth,
---             commands = {
---                 { "frame", width, height, depth, 65536/5, false, true, true, color },
---             }
---         }
---         cache[hash] = chardata
---     end
---     if not hasprivate(tfmdata,privatename) then
---         local privatename = formatters["placeholder %s %s"](name,color)
---         local privatecode = addprivate(tfmdata, privatename, chardata)
---         collected[privatecode] = chardata
---     end
---     return chardata
--- end
---
--- function checkers.placeholder(font,char)
---     local tfmdata    = fontdata[font or true]
---     local characters = tfmdata.characters
---     local size       = tfmdata.parameters.size
---     local scale      = size * bpfactor
---     local collected  = { }
---     local category   = chardata[char].category or "unknown"
---     local fakedata   = mapping[category]
---     local chardata   = add(tfmdata,fakedata[1],fakedata[2],size,collected)
---     collected [char] = chardata
---     characters[char] = chardata
---     addcharacters(font, { characters = collected })
---     return "char", char -- needed for math-noa
--- end
-
--- For old times sake we keep this: a whole bunch of fake symbols
-
--- local function addplaceholders(tfmdata,feature,value)
---     if value then
---         local properties = tfmdata.properties
---         local size       = tfmdata.parameters.size
---         local scale      = size * bpfactor
---         local collected  = { }
---         local colors     = { "darkred", "darkgreen", "darkblue", "darkcyan", "darkmagenta", "darkyellow", "darkgray" }
---         for name, v in sortedhash(fakes) do
---             for i=1,#colors do
---                 add(tfmdata,name,colors[i],size,collected)
---             end
---         end
---         if next(collected) then
---             local id = properties.id
---             if id then
---                 addcharacters(id, { characters = collected })
---             end
---         end
---     end
--- end
-
--- local chardata = characters.data
--- local fontdata = fonts.hashes.identifiers
--- local mapping  = fonts.checkers.mapping
+-- We provide access by (private) name for tracing purposes. We also need to make
+-- sure the dimensions are known at the lua and tex end. For previous variants see
+-- the mkiv files or older lmtx files. I decided to just drop the old stuff here.
 
 function checkers.placeholder(font,char)
     local category = chardata[char].category or "lu" -- todo: unknown
@@ -242,77 +175,84 @@ function checkers.placeholder(font,char)
     fonts.helpers.setmetaglyphs("missing", font, char, specification)
 end
 
--- registerotffeature {
---     name        = "missing",
---     description = "missing symbols",
---     default     = false,
---     manipulators = {
---         base = addplaceholders,
---         node = addplaceholders,
---     }
--- }
-
--- fonts.loggers.add_placeholders        = function(id) addplaceholders(fontdata[id or true]) end
--- fonts.loggers.category_to_placeholder = mapping
-
 function checkers.missing(head)
-    local lastfont   = nil
-    local characters = nil
-    if action == "replace" then
-        local addplaceholder = checkers.placeholder -- so we can overload
+    local lastfont       = nil
+    local characters     = nil
+    local found          = nil
+    local addplaceholder = checkers.placeholder -- so we can overload
+    if actions.replace or actions.decompose then
         for n, char, font in nextglyph, head do
             if font ~= lastfont then
                 lastfont   = font
                 characters = fontcharacters[font]
             end
             if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
-                onetimemessage(font,char,"missing (will be flagged)")
-                local f, c = addplaceholder(font,char)
-                if f and c then
-                    setchar(head, c, f)
+                if actions.decompose then
+                    local c = chardata[char]
+                    if c then
+                        local s = c.specials
+                        if s and s[1] == "char" then
+                            local l = #s
+                            if l > 2 then
+                                -- check first
+                                local okay = true
+                                for i=2,l do
+                                    if not characters[s[i]] then
+                                        okay = false
+                                        break
+                                    end
+                                end
+                                if okay then
+                                    -- we work backward
+                                    local o = n -- we're not supposed to change n (lua 5.4+)
+                                    onetimemessage(font,char,"missing (decomposed)")
+                                    setchar(n,s[l])
+                                    for i=l-1,2,-1 do
+                                        head, o = insert_node_before(head,o,copy_node(n))
+                                        setchar(o,s[i])
+                                    end
+                                    goto DONE
+                                end
+                            end
+                        end
+                    end
                 end
-            end
-        end
-    elseif action == "remove" then
-        -- faster than while loop so we delay removal
-        local found = nil
-        for n, char, font in nextglyph, head do
-            if font ~= lastfont then
-                lastfont   = font
-                characters = fontcharacters[font]
-            end
-            if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
-                onetimemessage(font,char,"missing (will be deleted)")
-                if not found then
-                    found = { n }
-                else
-                    found[#found+1] = n
+                if actions.replace then
+                    onetimemessage(font,char,"missing (replaced)")
+                    local f, c = addplaceholder(font,char)
+                    if f and c then
+                        setchar(n, c, f)
+                    end
+                    goto DONE
                 end
+                if actions.remove then
+                    onetimemessage(font,char,"missing (deleted)")
+                    if not found then
+                        found = { n }
+                    else
+                        found[#found+1] = n
+                    end
+                    goto DONE
+                end
+                onetimemessage(font,char,"missing (checked)")
+              ::DONE::
             end
         end
-        if found then
-            for i=1,#found do
-                head = remove_node(head,found[i],true)
-            end
-        end
-    else
-        for n, char, font in nextglyph, head do
-            if font ~= lastfont then
-                lastfont   = font
-                characters = fontcharacters[font]
-            end
-            if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
-                onetimemessage(font,char,"missing")
-            end
+    end
+    if found then
+        for i=1,#found do
+            head = remove_node(head,found[i],true)
         end
     end
     return head
 end
 
 local relevant = {
-    "missing (will be deleted)",
-    "missing (will be flagged)",
-    "missing"
+    "missing (decomposed)",
+    "missing (replaced)",
+    "missing (deleted)",
+    "missing (checked)",
+    "missing",
 }
 
 local function getmissing(id)
@@ -380,17 +320,19 @@ do
     trackers.register("fonts.missing", function(v)
         if v then
             enableaction("processors","fonts.checkers.missing")
+            if v == true then
+                actions = { check = true }
+            else
+                actions = utilities.parsers.settings_to_set(v)
+                if not loaded and actions.replace then
+                    metapost.simple("simplefun",'loadfile("mp-miss.mpxl");')
+                    loaded = true
+                end
+            end
         else
             disableaction("processors","fonts.checkers.missing")
+            actions = false
         end
-     -- if v == "replace" then
-     --     otffeatures.defaults.missing = true
-     -- end
-        if not loaded and v == "replace" then
-            metapost.simple("simplefun",'loadfile("mp-miss.mpxl");')
-            loaded = true
-        end
-        action = v
     end)
 
     logs.registerfinalactions(function()

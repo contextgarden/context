@@ -82,13 +82,12 @@
   [\c!align=\v!normal,
    \c!strut=\v!no]
 
+\mutable\let\currentdefinedchemical\empty
+
 \permanent\protected\def\setupchemicalframed
   {\setupframed[\??chemicalframed]}
 
-\permanent\protected\overloaded\def\definechemical % is global (so we don't use the commandhandler)
-  {\dosingleargument\chem_define}
-
-\def\chem_define[#1]#2%
+\permanent\protected\tolerant\overloaded\def\definechemical[#1]#:#2% is global (so we don't use the commandhandler)
   {\startnointerference
    \edef\currentdefinedchemical{#1}%
    \enforced\let\chemical\chem_chemical_nested
@@ -102,7 +101,7 @@
 % chemical symbols
 
 \permanent\tolerant\protected\def\definechemicalsymbol[#1]#*[#2]%
-  {\ifarguments\else\setvalue{\??chemicalsymbol#1}{#2}\fi}
+  {\ifarguments\else\defcsname\??chemicalsymbol#1\endcsname{#2}\fi}
 
 \permanent\protected\def\chemicalsymbol[#1]%
   {\csname\??chemicalsymbol\ifcsname\??chemicalsymbol#1\endcsname#1\else\s!unknown\fi\endcsname}

@@ -49,15 +49,66 @@
 
 \installcorenamespace{accents}
 
+%D These will go away:
+
 \permanent\protected\def\defineaccent#1 #2 #3 %
   {\dodefineaccentcommand{#1}%
    \dodefineaccent{#1}{#2}{#3}}
 
 \permanent\protected\def\dodefineaccentcommand#1%
-  {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}}
+  {\ifcsname\string#1\endcsname\else
+     \setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}%
+   \fi}
 
 \permanent\protected\def\dodefineaccent#1#2#3% no spaces, used low level
   {\setvalue{\??accents\string#1\string#2\empty}{#3}}
+
+%D Because now have this (\type {\chr} issues a one|-|time warning):
+
+% \permanent\protected\def\dodefinecombine#1% \" \' \. \= \H \^ \` \c \k \r \u \v \~
+%   {\ifcsname\string#1\endcsname\else
+%      % for now permanent even as these are kind of obsolete
+%      \permanent\protected\edefcsname\string#1\endcsname##1{\noexpand\chr{\string#1##1}}%
+%    \fi}
+
+%D But, we now go for this:
+
+\permanent\protected\edef\withgrave             #1{\noexpand\chr{#1\Uchar"300}} \aliased\let\` \withgrave
+\permanent\protected\edef\withacute             #1{\noexpand\chr{#1\Uchar"301}} \aliased\let\' \withacute
+\permanent\protected\edef\withcircumflex        #1{\noexpand\chr{#1\Uchar"302}} \aliased\let\^ \withcircumflex
+\permanent\protected\edef\withtilde             #1{\noexpand\chr{#1\Uchar"303}} \aliased\let\~ \withtilde
+\permanent\protected\edef\withmacron            #1{\noexpand\chr{#1\Uchar"304}} \aliased\let\= \withmacron
+% permanent\protected\edef\withoverline          #1{\noexpand\chr{#1\Uchar"305}}
+\permanent\protected\edef\withbreve             #1{\noexpand\chr{#1\Uchar"306}} \aliased\let\u \withbreve
+\permanent\protected\edef\withdot               #1{\noexpand\chr{#1\Uchar"307}} \aliased\let\. \withdot
+\permanent\protected\edef\withdieresis          #1{\noexpand\chr{#1\Uchar"308}} \aliased\let\" \withdieresis
+% permanent\protected\edef\withhook              #1{\noexpand\chr{#1\Uchar"309}}
+\permanent\protected\edef\withring              #1{\noexpand\chr{#1\Uchar"30A}} \aliased\let\r \withring
+\permanent\protected\edef\withhungarumlaut      #1{\noexpand\chr{#1\Uchar"30B}} \aliased\let\H \withhungarumlaut
+\permanent\protected\edef\withcaron             #1{\noexpand\chr{#1\Uchar"30C}} \aliased\let\v \withcaron
+% permanent\protected\edef\withverticalline      #1{\noexpand\chr{#1\Uchar"30D}}
+% permanent\protected\edef\withdoubleverticalline#1{\noexpand\chr{#1\Uchar"30E}}
+% permanent\protected\edef\withdoublegrave       #1{\noexpand\chr{#1\Uchar"30F}}
+\permanent\protected\edef\withcedilla           #1{\noexpand\chr{#1\Uchar"327}} \aliased\let\c \withcedilla
+\permanent\protected\edef\withogonek            #1{\noexpand\chr{#1\Uchar"328}} \aliased\let\k \withogonek
+
+\aliased\let\withdiaeresis\withdieresis
+
+% \starttabulate[||||]
+%     \NC \getvalue{agrave}        \NC \withgrave       {a} \NC \`{a} \NC \NR
+%     \NC \getvalue{aacute}        \NC \withacute       {a} \NC \'{a} \NC \NR
+%     \NC \getvalue{acircumflex}   \NC \withcircumflex  {a} \NC \^{a} \NC \NR
+%     \NC \getvalue{atilde}        \NC \withtilde       {a} \NC \~{a} \NC \NR
+%     \NC \getvalue{amacron}       \NC \withmacron      {a} \NC \={a} \NC \NR
+%     \NC \getvalue{ebreve}        \NC \withbreve       {e} \NC \u{e} \NC \NR
+%     \NC \getvalue{cdotaccent}    \NC \withdot         {c} \NC \.{c} \NC \NR
+%     \NC \getvalue{ediaeresis}    \NC \withdieresis    {e} \NC \"{e} \NC \NR
+%     \NC \getvalue{uring}         \NC \withring        {u} \NC \r{u} \NC \NR
+%     \NC \getvalue{uhungarumlaut} \NC \withhungarumlaut{u} \NC \H{u} \NC \NR
+%     \NC \getvalue{ecaron}        \NC \withcaron       {e} \NC \v{e} \NC \NR
+%     \NC \getvalue{ecedilla}      \NC \withcedilla     {e} \NC \c{e} \NC \NR
+%     \NC \getvalue{eogonek}       \NC \withogonek      {e} \NC \k{e} \NC \NR
+% \stoptabulate
 
 % the following dirty trick is needed to catch \asciimath{\^{1/5}log}:
 
@@ -74,16 +125,20 @@
 
 \immutable\letvalue{\??accents}\empty
 
-\permanent\protected\def\dodefinecommand#1#2%
-  {\frozen\setuvalue{\string#1}{#2}} % not permanent as these are kind of obsolete
-
 \permanent\protected\def\definecharacter#1 #2 %
   {\doifelsenumber{\string#2}
      {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
      {\setuvalue{\string#1}{#2}}}
 
+%D specials: \aa \ae \cc \i \ij \l \o \oe \sz \par
+%D SPECIALS: \AA \AE \CC \j \IJ \L \O \OE \SZ \par
+
 \permanent\protected\def\definecommand#1 #2 %
   {\setuvalue{\string#1}{#2}}
+
+\permanent\protected\def\dodefinecommand#1#2% \O \L \AE ...
+  {% not permanent as these are kind of obsolete
+   \frozen\protected\defcsname\string#1\endcsname{#2}}
 
 %D \macros
 %D   {everyuppercase, everylowercase, everysanitize}

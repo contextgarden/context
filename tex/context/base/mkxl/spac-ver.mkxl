@@ -1708,6 +1708,9 @@
 \permanent\protected\def\setupgridsnapping[#1]% less overhead than setuplayout (needs testing)
   {\setlayoutparameter\c!grid{#1}\synchronizegridsnapping}
 
+\mutable\let\checkedgridmethod\empty   % these can become private
+\mutable\let\checkedgridscope \v!local % these can become private
+
 \permanent\protected\def\checkgridmethod#1%
   {\edef\p_grid{#1}%
    \ifempty\p_grid

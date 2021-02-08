@@ -1357,22 +1357,25 @@
 %D never occur. Nevertheless we implement the whole scheme, if not for future
 %D extensions.
 
-%D \macros
-%D   {doassigncheckedframeoffset}
-%D
-%D Offset helper (see menus):
-
-\def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
-  {\edef\checkedframeoffset{#2}%
-   #1%
-     \ifempty\checkedframeoffset      \zeropoint\orelse
-     \ifx\checkedframeoffset\v!overlay\zeropoint\orelse
-     \ifx\checkedframeoffset\v!none   \zeropoint\orelse
-     \ifx\checkedframeoffset\v!frame  \zeropoint\orelse
-     \ifx\checkedframeoffset\v!default\zeropoint\else
-       #2%
-     \fi
-   \relax}
+% %D \macros
+% %D   {doassigncheckedframeoffset}
+% %D
+% %D Offset helper (see menus):
+%
+% \def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
+%   {\edef\checkedframeoffset{#2}%
+%    #1%
+%      \ifempty\checkedframeoffset      \zeropoint\orelse
+%      \ifx\checkedframeoffset\v!overlay\zeropoint\orelse
+%      \ifx\checkedframeoffset\v!none   \zeropoint\orelse
+%      \ifx\checkedframeoffset\v!frame  \zeropoint\orelse
+%      \ifx\checkedframeoffset\v!default\zeropoint\else
+%        #2%
+%      \fi
+%    \relax}
+%
+% \def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
+%   {#1\ifchkdim#2\or#2\else\zeropoint\fi}%
 
 %D \macros
 %D   {ifreshapeframebox}

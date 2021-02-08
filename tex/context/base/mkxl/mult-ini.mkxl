@@ -19,7 +19,7 @@
 
 \unprotect
 
-\registerctxluafile{mult-ini}{}
+\registerctxluafile{mult-ini}{autosuffix}
 \registerctxluafile{mult-fmt}{initexonly}
 
 %D \macros
@@ -368,28 +368,25 @@
 
 \aliased\let\stopmessages\relax
 
+\mutable\let\currentmessagetext\empty
+
 \permanent\protected\def\setinterfacemessage#1#2#3%
-  {\ifcsname\m!prefix!#1\endcsname\else\immutable\setgvalue{\m!prefix!#1}{#1}\fi
+  {\ifcsname\m!prefix!#1\endcsname\else\immutable\gdefcsname\m!prefix!#1\endcsname{#1}\fi
    \clf_setinterfacemessage{#1}{#2}{#3}}
 
-\pushoverloadmode
-
-\permanent\protected\def\setmessagetext   #1#2{\relax\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
-\permanent\protected\def\getmessage       #1#2{\relax\clf_getmessage{#1}{#2}}
-\permanent\protected\def\doifelsemessage  #1#2{\relax\clf_doifelsemessage{#1}{#2}}
-\permanent\protected\def\showmessage    #1#2#3{\relax\clf_showmessage{#1}{#2}{#3}}
-\permanent\protected\def\writestatus      #1#2{\relax\clf_writestatus{#1}{#2}}
-\permanent\protected\def\message              {\relax\clf_message}
-
-\popoverloadmode
+% \getmessage       % {tag} {index} -> \currentmessagetext
+% \doifelsemessage  % {tag} {index}
+% \showmessage      % {tag} {index} {detail}
+% \writestatus      % {tag} {string}
+% \message          % {string}
 
 \aliased\let\doifmessageelse\doifelsemessage
 
 \permanent\protected\def\inlinemessage #1{\dontleavehmode{\tttf#1}}
 \permanent\protected\def\displaymessage#1{\blank\inlinemessage{#1}\blank}
 
-\permanent\let\getsetupstring\clf_getsetupstring
-\permanent\let\rawsetupstring\clf_rawsetupstring
+% \getsetupstring % {tag} defined at the lua end
+% \rawsetupstring % {tag} defined at the lua end
 
 %D For old times sake:
 
@@ -752,6 +749,8 @@
 
 %D So much for the basic multi||lingual interface commands. The macro's can be
 %D enhanced with more testing facilities, but for the moment they suffice.
+
+% use \Uchar
 
 \ifdefined\zwnj \else \immutable\edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe % maybe to char-utf.mkiv
 \ifdefined\zwj  \else \immutable\edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe % maybe to char-utf.mkiv

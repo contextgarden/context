@@ -1,0 +1,239 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=characters,
+   color=middlered]
+
+\startsection[title=Introduction]
+
+This explanation is part of the low level manuals because in practice users will
+not have to deal with these matters in \MKIV\ and even less in \LMTX. You can
+skip to the last section for commands.
+
+\stopsection
+
+\startsection[title=History]
+
+If we travel back in time to when \TEX\ was written we end up in eight bit
+character universe. In fact, the first versions assumed seven bits, but for
+comfortable use with languages other than English that was not sufficient.
+Support for eight bits permits the usage of so called code pages as supported by
+operating systems. Although \ASCII\ input became kind of the standard soon
+afterwards, the engine can be set up for different encodings. This is not only
+true for \TEX, but for many of its companions, like \METAFONT\ and therefore
+\METAPOST. \footnote {This remapping to an internal representation (e.g. ebcdic)
+is not present in \LUATEX\ where we assume \UTF8 to be the input encoding. The
+\METAPOST\ library that comes with \LUATEX\ still has that code but in
+\LUAMETATEX\ it's gone. There one can set up the machinery to be \UTF8 aware
+too.}
+
+Core components of a \TEX\ engine are hyphenation of words, applying
+inter|-|character kerns and build ligatures. In traditional \TEX\ engines those
+processes are interwoven into the par builder but in \LUATEX\ these are separate
+stages. The original approach is the reason that there is a relation between the
+input encoding and the font encoding: the character in the input is the slot used
+in a reference to a glyph. When producing the final result (e.g.\ \PDF) there can
+also be a mapping to an index in a font resource.
+
+\starttyping
+input A [tex ->] font slot A [backend ->] glyph index A
+\stoptyping
+
+The mapping that \TEX\ does is normally one|-|to|-|one but an input character can
+undergo some transformation. For instance a character beyond \ASCII\ 126 can be
+made active and expand to some character number that then becomes the font slot.
+So, it is the expansion (or meaning) of a character that end up as numeric
+reference in the glyph node. Virtual fonts can introduce yet another remapping
+but that's only visible in the backend.
+
+Actually, in \LUATEX\ the same happens but in practice there is no need to go
+active because (at least in \CONTEXT) we assume a \UNICODE\ path so there the
+font slot is the \UNICODE\ got from the \UTF8 input.
+
+In the eight bit universe macro packages (have to) provide all kind of means to
+deal with (in the perspective of English) special characters. For instance, \type
+{\"a} would put a diaeresis on top of the a or even better, refer to a character
+in the encoding that the chosen font provides. Because there are some limitations
+of what can go in an eight bit font, and because in different countries the used
+\TEX\ fonts evolved kind of independent, we ended up with quite some different
+variants of fonts. It was only with the Latin Modern project that this became
+better. Interesting is that when we consider the fact that such a font has often
+also hardly used symbols (like registered or copyright) coming up with an
+encoding vector that covers most (latin based) European languages (scripts) is
+not impossible \footnote {And indeed in the Latin Modern project we came up with
+one but it was already to late for it to become popular.} Special symbols could
+simply go into a dedicated font, also because these are always accessed via a
+macro so who cares about the input. It never happened.
+
+Keep in mind that when \UTF8 is used with eight bit engines, \CONTEXT\ will
+convert sequences of characters into a slot in a font (depending on the font
+encoding used which itself depends on the coverage needed). For this every first
+(possible) byte of a multibyte \UTF\ sequence is an active character, which is no
+big deal because these are outside the \ASCII\ range. Normal \ASCII\ characters
+are single byte \UTF\ sequences and fall through without treatment.
+
+Anyway, in \CONTEXT\ \MKII\ we dealt with this by supporting mixed encodings,
+depending on the (local) language, referencing the relevant font. It permits
+users to enter the text in their preferred input encoding and also get the words
+properly hyphenated. But we can leave these \MKII\ details behind.
+
+\stopsection
+
+\startsection[title=The heritage]
+
+In \MKIV\ we got rid of input and font encodings, although one can still load
+files in a specific code page. \footnote {I'm not sure if users ever depend on an
+input encoding different from \UTF8.} We also kept the means to enter special
+characters, if only because text editors seldom support(ed) a wide range of
+visual editing of those. This is why we still have
+
+\starttyping[option=TEX]
+\"u \^a \v{s} \AE \ij \eacute \oslash
+\stoptyping
+
+and many more. The ones with one character names are rather common in the \TEX\
+community but it is definitely a weird mix of symbols. The next two are kind of
+outdated: in these days you delegate that to the font handler, where turning them
+into \quote {single} character references depends on what the font offers, how it
+is set up with respect to (for instance) ligatures, and even might depend on
+language or script.
+
+The ones with the long names partly are tradition, but as we have a lot of them,
+in \MKII\ they actually serve a purpose. These verbose names are used in the so
+called encoding vectors and are part of the \UTF\ expansion vectors. They are
+also used in labels so that we have a good indication if what goes in there:
+remember that in those times editors often didn't show characters, unless the
+font for display had them, or the operating system somehow provided them from
+another font. These verbose names are used for latin, greek and cyrillic and for
+some other scripts and symbols. They take up quite a bit of hash space and the
+format file. \footnote {In \MKII\ we have an abstract front|-|end with respect to
+encodings and also an abstract backend with respect to supported drivers but both
+approaches no longer make sense today.}
+
+\stopsection
+
+\startsection[title=The \LMTX\ approach]
+
+In the process of tagging all (public) macros in \LMTX\ (which happened in
+2020|-|2021) I wondered if we should keep these one character macros, the
+references to special characters and the verbose ones. When asked on the mailing
+list it became clear that users still expect the short ones to be present, often
+just because old \BIBTEX\ files are used that might need them. However, in \MKIV\
+and \LMTX\ we load \BIBTEX\ files in a way that turn these special character
+references into proper \UTF8 input so it makes a weak argument. Anyway, although
+they could go, for now we keep them because users expect them. However, in \LMTX\
+the implementation is somewhat different now, a bit more efficient in terms of
+hash and memory, potentially a bit less efficient in runtime, but no one will
+notice that.
+
+A new command has been introduced, the very short \type {\chr}.
+
+\startbuffer
+\chr {à} \chr {á} \chr {ä}
+\chr {`a} \chr {'a} \chr {"a}
+\chr {a acute} \chr {a grave} \chr {a umlaut}
+\chr {aacute}  \chr {agrave}  \chr {aumlaut}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In the first line the composed character using two characters, a base and a so
+called mark. Actually, one doesn't have to use \type {\chr} in that case because
+\CONTEXT\ does already collapse characters for you. The second line looks like
+the shortcuts \type {\`}, \type {\'} and \type {\"}. The third and fourth lines
+could eventually replace the more symbolic long names, if we feel the need. Watch
+out: in \UNICODE\ input the marks come {\em after}.
+
+\startlines \getbuffer \stoplines
+
+Currently the repertoire is somewhat limited but it can be easily be extended. It
+all depends on user needs (doing Greek and Cyrillic for instance). The reason why
+we actually save code deep down is that the helpers for this have always been
+there. \footnote {So if needed I can port this approach back to \MKIV, but for
+now we keep it as is because we then have a reference.}
+
+The \type {\"} commands are now just aliases to more verbose and less hackery
+looking macros:
+
+\starttabulate[|||||]
+    \NC \type {\withgrave}        \NC \withgrave       {a} \NC \type {\`} \NC \`{a} \NC \NR
+    \NC \type {\withacute}        \NC \withacute       {a} \NC \type {\'} \NC \'{a} \NC \NR
+    \NC \type {\withcircumflex}   \NC \withcircumflex  {a} \NC \type {\^} \NC \^{a} \NC \NR
+    \NC \type {\withtilde}        \NC \withtilde       {a} \NC \type {\~} \NC \~{a} \NC \NR
+    \NC \type {\withmacron}       \NC \withmacron      {a} \NC \type {\=} \NC \={a} \NC \NR
+    \NC \type {\withbreve}        \NC \withbreve       {e} \NC \type {\u} \NC \u{e} \NC \NR
+    \NC \type {\withdotaccent}    \NC \withdot         {c} \NC \type {\.} \NC \.{c} \NC \NR
+    \NC \type {\withdiaeresis}    \NC \withdieresis    {e} \NC \type {\"} \NC \"{e} \NC \NR
+    \NC \type {\withring}         \NC \withring        {u} \NC \type {\r} \NC \r{u} \NC \NR
+    \NC \type {\withhungarumlaut} \NC \withhungarumlaut{u} \NC \type {\H} \NC \H{u} \NC \NR
+    \NC \type {\withcaron}        \NC \withcaron       {e} \NC \type {\v} \NC \v{e} \NC \NR
+    \NC \type {\withcedilla}      \NC \withcedilla     {e} \NC \type {\c} \NC \c{e} \NC \NR
+    \NC \type {\withogonek}       \NC \withogonek      {e} \NC \type {\k} \NC \k{e} \NC \NR
+\stoptabulate
+
+Not all fonts have these special characters. Most natural is to have them
+available as precomposed single glyphs, but it can be that they are just two
+shapes with the marks anchored to the base. It can even be that the font somehow
+overlays them, assuming (roughly) equal widths. The \type {compose} font feature
+in \CONTEXT\ normally can handle most well.
+
+An occasional ugly rendering doesn't matter that much: better have something than
+nothing. But when it's the main language (script) that needs them you'd better
+look for a font that handles them. When in doubt, in \CONTEXT\ you can enable
+checking:
+
+\starttabulate[|l|l|]
+    \BC command                           \BC equivalent to \NC \NR
+    \NC \type {\checkmissingcharacters}   \NC \type{\enabletrackers[fonts.missing]} \NC \NR
+    \NC \type {\removemissingcharacters}  \NC \type{\enabletrackers[fonts.missing=remove]} \NC \NR
+    \NC \type {\replacemissingcharacters} \NC \type{\enabletrackers[fonts.missing=replace]} \NC \NR
+    \NC \type {\handlemissingcharacters}  \NC \type{\enabletrackers[fonts.missing={decompose,replace}]} \NC \NR
+\stoptabulate
+
+The decompose variant will try to turn a composed character into its components
+so that at least you get something. If that fails it will inject a replacement
+symbol that stands out so that you can check it. The console also mentions
+missing glyphs. You don't need to enable this by default \footnote {There is some
+overhead involved here.} but you might occasionally do it when you use a font for
+the first time.
+
+In \LMTX\ this mechanism has been upgraded so that replacements follow the shape
+and are actually real characters. The decomposition has not yet been ported back
+to \MKIV.
+
+\stopsection
+
+\startsubject[title=Colofon]
+
+\starttabulate
+\NC Author      \NC Hans Hagen         \NC \NR
+\NC \CONTEXT    \NC \contextversion    \NC \NR
+\NC \LUAMETATEX \NC \texengineversion  \NC \NR
+\NC Support     \NC www.pragma-ade.com \NC \NR
+\NC             \NC contextgarden.net  \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument
+
+% on an old machine, so consider them just relative measures
+%
+% mkiv  lmtx
+%
+% 0.012 0.009 % faster core code
+% 0.028 0.036 % different io code path
+% 0.055 0.043 % different io code path / faster core code
+% 0.156 0.129 % more efficient resolving
+% 0.153 0.119 % more efficient resolving
+%
+% \ifdefined\withdieresis\else\let\withdieresis\"\fi % for mkiv
+%
+% \setbox0\hpack{\testfeatureonce{100000}{ü}}                \par \elapsedtime \par % direct
+% \setbox0\hpack{\testfeatureonce{100000}{ü}}                \par \elapsedtime \par % composed (input)
+% \setbox0\hpack{\testfeatureonce{100000}{u{}̈}}              \par \elapsedtime \par % overlay
+% \setbox0\hpack{\testfeatureonce{100000}{\withdieresis{u}}} \par \elapsedtime \par % official also \"u
+% \setbox0\hpack{\testfeatureonce{100000}{\" u}}             \par \elapsedtime \par % alias of previous
+

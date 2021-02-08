@@ -21,6 +21,23 @@
 
 \registerctxluafile{spac-ali}{autosuffix,optimize}
 
+% Used once so ... replace it or use if more frequently ...
+
+\installcorenamespace {alignswitch}
+
+% maybe \setconstantvalue or so
+
+\expandafter\integerdef\csname\??alignswitch\v!left  \endcsname\zerocount
+\expandafter\integerdef\csname\??alignswitch\v!middle\endcsname\plusone
+\expandafter\integerdef\csname\??alignswitch\v!right \endcsname\plustwo
+
+\mutable\integerdef\alignmentswitch\zerocount
+
+\permanent\protected\def\setalignmentswitch#1%
+  {\integerdef\alignmentswitch\csname\??alignswitch\ifcsname\??alignswitch#1\endcsname#1\else\v!left\fi\endcsname}
+
+% till here
+
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
 

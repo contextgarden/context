@@ -15,18 +15,6 @@
 
 \unprotect
 
-%D The code here has evolved over time and might not be the best
-%D around. Maybe much will be gone a some point.
-
-\installcorenamespace {alignswitch}
-
-\letvalue{\??alignswitch\v!left  }\zerocount
-\letvalue{\??alignswitch\v!middle}\plusone
-\letvalue{\??alignswitch\v!right }\plustwo
-
-\permanent\protected\def\setalignmentswitch#1%
-  {\chardef\alignmentswitch\csname\??alignswitch\ifcsname\??alignswitch#1\endcsname#1\else\v!left\fi\endcsname}
-
 \newif      \ifpagestatemismatch
 \newcount   \realpagestateno
 \newconstant\frozenpagestate

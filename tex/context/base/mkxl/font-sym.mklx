@@ -163,6 +163,8 @@
      \font_basics_define_symbolic_font
    \fi}
 
+\mutable\let\currentsymbolfont\empty
+
 \def\font_basics_define_symbolic_font
   {\definefont[currentsymbolfont][\askedsymbolfont]%
    \currentsymbolfont

@@ -292,9 +292,9 @@ local ligaturemapping = allocate {
 }
 
 -- Older accent handling code can be found in char-def.lua but in the meantime
--- we moved on.
+-- we moved on. First the one with commands:
 
-local untex
+local untex, pattern
 
 local function toutfpattern()
     if not untex then
@@ -325,16 +325,12 @@ local function toutfpattern()
     return untex
 end
 
-texcharacters.toutfpattern = toutfpattern
-
-local pattern = nil
-
 local function prepare()
     pattern = Cs((toutfpattern() + P(1))^0)
     return pattern
 end
 
-function texcharacters.toutf(str,strip)
+local function textoutf(str,strip)
     if str == "" then
         return str
     elseif not find(str,"\\",1,true) then
@@ -344,6 +340,9 @@ function texcharacters.toutf(str,strip)
         return lpegmatch(pattern or prepare(),str)
     end
 end
+
+texcharacters.toutfpattern = toutfpattern
+texcharacters.toutf        = textoutf
 
 -- print(texcharacters.toutf([[\~{Z}]],true))
 -- print(texcharacters.toutf([[\'\i]],true))
@@ -357,6 +356,105 @@ end
 -- print(texcharacters.toutf([[\v{r}]],true))
 -- print(texcharacters.toutf([[fo{\"o}{\ss}ar]],true))
 -- print(texcharacters.toutf([[H{\'a}n Th\^e\llap{\raise 0.5ex\hbox{\'{\relax}}} Th{\'a}nh]],true))
+
+-- Next the ones without backslash
+
+local untex, pattern
+
+local function toutfpattern()
+    if not untex then
+        local hash = { }
+        for k, v in next, accentmapping do
+            for kk, vv in next, v do
+                hash[k..kk] = vv
+            end
+        end
+        for k, v in next, commandmapping do
+            hash[k] = v
+        end
+        for k, v in next, ligaturemapping do
+            hash[k] = v
+        end
+        untex = utfchartabletopattern(hash) / hash
+    end
+    return untex
+end
+
+local function prepare()
+    pattern = Cs((toutfpattern() + P(1))^0)
+    return pattern
+end
+
+local function textoutf(str)
+    return lpegmatch(pattern or prepare(),str)
+end
+
+texcharacters.strtoutfpattern = toutfpattern
+texcharacters.strtextoutf     = textoutf
+
+local collapse = utffilters.collapse
+
+--
+
+local pattern
+
+local hash = {
+    ["acute"]              = "́",  -- 0x300
+    ["breve"]              = "̆",  -- 0x301
+    ["caron"]              = "̌",  -- 0x302
+    ["cedilla"]            = "̧",  -- 0x303
+    ["circumflex"]         = "̂",  -- 0x304
+    ["diaeresis"]          = "̈",  -- 0x305
+    ["dieresis"]           = "̈",  -- 0x305
+    ["umlaut"]             = "̈",  -- 0x305
+    ["dot"]                = "̇",  -- 0x306
+    ["doublegrave"]        = "̏",  -- 0x307
+    ["doubleverticalline"] = "̎",  -- 0x308
+    ["grave"]              = "̀",  -- 0x309
+    ["hook"]               = "̉",  -- 0x30A
+    ["hungarumlaut"]       = "̋",  -- 0x30B
+    ["macron"]             = "̄",  -- 0x30C
+    ["ogonek"]             = "̨", -- 0x30D -- hm
+    ["overline"]           = "̅",  -- 0x30E
+    ["ring"]               = "̊",  -- 0x30F
+    ["tilde"]              = "̃",  -- 0x327
+    ["verticalline"]       = "̍",  -- 0x328
+}
+
+local function prepare()
+    pattern = Cs((utfchartabletopattern(hash) / hash + lpegpatterns.space/"" + lpegpatterns.utf8character)^0)
+    return pattern
+end
+
+local hash = table.setmetatableindex(function(t,k)
+    local f = ""
+    k = lpegmatch(pattern or prepare(),k) or k
+    local v = collapse(k) or k
+    if k == v then
+        v = commandmapping[k] or k
+        if k ~= v then
+            f = "\\"
+        end
+    end
+    if k == v then
+        v = textoutf(k) or k
+        if k ~= v then
+            f = "\\"
+        end
+    end
+    report_defining("instead of old school '%s%s' you can input the utf sequence %s",f,k,v)
+    t[k] = v
+    return v
+end)
+
+interfaces.implement {
+    name      = "chr",
+    arguments = "argument",
+    public    = true,
+    actions   = function(str)
+        context(hash[str]) -- expandable
+    end
+}
 
 function texcharacters.safechar(n) -- was characters.safechar
     local c = data[n]
@@ -389,16 +487,28 @@ local ctxcatcodes   = catcodes.numbers.ctxcatcodes
 local texsetmacro   = tokens.setters.macro
 local texsetchar    = tokens.setters.char
 
+-- function texcharacters.defineaccents()
+--     local ctx_dodefineaccentcommand  = context.dodefineaccent
+--     local ctx_dodefineaccent         = context.dodefineaccent
+--     local ctx_dodefinecommand        = context.dodefinecommand
+--     for accent, group in next, accentmapping do
+--         ctx_dodefineaccentcommand(accent)
+--         for character, mapping in next, group do
+--             ctx_dodefineaccent(accent,character,mapping)
+--         end
+--     end
+--     for command, mapping in next, commandmapping do
+--         ctx_dodefinecommand(command,mapping)
+--     end
+--     os.exit()
+-- end
+
 function texcharacters.defineaccents()
-    local ctx_dodefineaccentcommand = context.dodefineaccentcommand
-    local ctx_dodefineaccent        = context.dodefineaccent
-    local ctx_dodefinecommand       = context.dodefinecommand
-    for accent, group in next, accentmapping do
-        ctx_dodefineaccentcommand(accent)
-        for character, mapping in next, group do
-            ctx_dodefineaccent(accent,character,mapping)
-        end
-    end
+ -- local ctx_dodefinecombine = context.dodefinecombine
+    local ctx_dodefinecommand = context.dodefinecommand
+ -- for accent, group in next, accentmapping do
+ --     ctx_dodefinecombine(accent)
+ -- end
     for command, mapping in next, commandmapping do
         ctx_dodefinecommand(command,mapping)
     end

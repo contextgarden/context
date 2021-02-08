@@ -434,10 +434,10 @@
 \newconditional\c_scrn_menu_zerodimensions
 
 \def\scrn_menu_set_used
-  {\doassigncheckedframeoffset\d_scrn_menu_offset_left  {\interactionmenuparameter\c!leftoffset  }%
-   \doassigncheckedframeoffset\d_scrn_menu_offset_right {\interactionmenuparameter\c!rightoffset }%
-   \doassigncheckedframeoffset\d_scrn_menu_offset_top   {\interactionmenuparameter\c!topoffset   }%
-   \doassigncheckedframeoffset\d_scrn_menu_offset_bottom{\interactionmenuparameter\c!bottomoffset}%
+  {\d_scrn_menu_offset_left  \ifchkdim\interactionmenuparameter\c!leftoffset  \or\lastchkdim\else\zeropoint\fi
+   \d_scrn_menu_offset_right \ifchkdim\interactionmenuparameter\c!rightoffset \or\lastchkdim\else\zeropoint\fi
+   \d_scrn_menu_offset_top   \ifchkdim\interactionmenuparameter\c!topoffset   \or\lastchkdim\else\zeropoint\fi
+   \d_scrn_menu_offset_bottom\ifchkdim\interactionmenuparameter\c!bottomoffset\or\lastchkdim\else\zeropoint\fi
    \d_scrn_menu_asked_width  \interactionmenuparameter\c!maxwidth
    \d_scrn_menu_asked_height \interactionmenuparameter\c!maxheight
    \d_scrn_menu_used_width\dimexpr

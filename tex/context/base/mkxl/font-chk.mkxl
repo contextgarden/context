@@ -22,9 +22,10 @@
 % \definefontfeature[default][default][missing=yes]
 % \enabletrackers[fonts.missing=replace]
 
-\permanent\protected\def\checkcharactersinfont   {\enabletrackers[fonts.missing]}
+\permanent\protected\def\checkmissingcharacters  {\enabletrackers[fonts.missing]}
 \permanent\protected\def\removemissingcharacters {\enabletrackers[fonts.missing=remove]}
 \permanent\protected\def\replacemissingcharacters{\enabletrackers[fonts.missing=replace]}
+\permanent\protected\def\handlemissingcharacters {\enabletrackers[fonts.missing={decompose,replace}]}
 
 % \enableexperiments[fonts.compact]
 

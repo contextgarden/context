@@ -32,6 +32,8 @@ return {
   "iffontchar",
   "interactionmode",
   "interlinepenalties",
+  "lastchkdim",
+  "lastchknum",
   "lastlinefit",
   "lastnodetype",
   "marks",
