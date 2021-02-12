@@ -288,7 +288,8 @@
 
 \newsignal\d_typo_delimited_signal
 
-\mutable\let\currentdelimitedtext\s!unknown
+\mutable\let\currentdelimitedtext      \s!unknown
+\mutable\let\currentparentdelimitedtext\currentdelimitedtext
 
 \installglobalmacrostack\currentdelimitedtext
 
@@ -315,6 +316,8 @@
 %D \stoptabulate
 
 \mutable\let\currentdelimitedlanguage\empty
+\mutable\let\innerdelimitedlanguage  \empty
+\mutable\let\outerdelimitedlanguage  \empty
 
 \installglobalmacrostack\currentdelimitedlanguage
 

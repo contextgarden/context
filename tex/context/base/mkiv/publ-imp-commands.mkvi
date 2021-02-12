@@ -2,6 +2,8 @@
 
 % for tugboat
 
+\mutable\protected\def\acro#1{\dontleavehmode{\smallcaps#1}} % can be redefined
+
 \definebtxcommand\hbox   {\hbox}
 \definebtxcommand\vbox   {\vbox}
 \definebtxcommand\llap   {\llap}
@@ -9,7 +11,7 @@
 \definebtxcommand\url  #1{\hyphenatedurl{#1}}
 \definebtxcommand\acro #1{\dontleavehmode{\smallcaps#1}}
 
-\let\<<
-\let\>>
+\mutable\let\<< % for now \mutable, maybe \definebtxcommand\<{<}
+\mutable\let\>> % for now \mutable, maybe \definebtxcommand\>{>}
 
 \protect \endinput

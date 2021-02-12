@@ -129,8 +129,8 @@
 
 \permanent\protected\def\setlocationcolorspecified#1% not grouped !
   {\ifnum#1=\plusone
-     \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
-     \ifempty\askedcontrastcolor
+     \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
+     \ifempty\p_contrastcolor
        \useinteractioncolorparameter\c!color
      \else
        \useinteractioncolorparameter\c!contrastcolor
@@ -141,8 +141,8 @@
 
 \permanent\protected\def\setlocationattributesspecified#1% not grouped !
   {\ifnum#1=\plusone
-     \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
-     \ifempty\askedcontrastcolor
+     \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
+     \ifempty\p_contrastcolor
        \useinteractionstyleandcolor\c!style\c!color
      \else
        \useinteractionstyleandcolor\c!style\c!contrastcolor
@@ -153,11 +153,11 @@
 
 \permanent\protected\def\setlocationcolorspecspecified#1#2% \resolver
   {\ifnum#1=\plusone
-     \edef\askedcontrastcolor{#2\c!contrastcolor}%
-     \ifempty\askedcontrastcolor
+     \edef\p_contrastcolor{#2\c!contrastcolor}%
+     \ifempty\p_contrastcolor
        \colo_helpers_activate{#2\c!color}%
      \else
-       \colo_helpers_activate\askedcontrastcolor
+       \colo_helpers_activate\p_contrastcolor
      \fi
    \else
      \colo_helpers_activate{#2\c!color}%

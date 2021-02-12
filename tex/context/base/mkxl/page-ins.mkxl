@@ -60,7 +60,7 @@
 
 \newtoks\t_page_inserts_list
 
-\let\doprocessinsert\relax
+\mutable\let\doprocessinsert\relax % probably kind of obsolete now
 
 %D Maybe some day we will move settings here.
 

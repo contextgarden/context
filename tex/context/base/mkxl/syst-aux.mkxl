@@ -122,8 +122,6 @@
 \setnewconstant \downrotationangle  180
 \setnewconstant \leftrotationangle  270
 
-\ifdefined\data \else \let\data \relax \fi % dep checker
-
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
 %D
@@ -1322,7 +1320,10 @@
 \aliased\let\rawprocesscommalist   \processcommalist    % can go
 \aliased\let\rawprocesscommacommand\processcommacommand % can go
 
-%D Here is one without nesting .. still needed?
+%D Here is one without nesting .. still needed? Only used for modes (no nesting
+%D there).
+
+\mutable\let\fastcommalistcommand\relax
 
 \protected\def\syst_helpers_process_fast_comma_item#1,%
   {\ifarguments
@@ -2901,19 +2902,19 @@
      \protected\expandafter\def
    \fi#1}
 
-\permanent\protected\def\redefine#1%
+\protected\def\redefine#1%
   {\ifdefined#1%
      \message{[\noexpand#1is redefined]}%
    \fi
    \protected\def#1}
 
-\permanent\protected\def\definemacro#1%
-  {\ifdefined#1%
-     \message{[\noexpand#1is already defined]}%
-     \protected\expandafter\def\expandafter\gobbleddefinition
-   \else
-     \protected\expandafter\def
-   \fi#1}
+% \permanent\protected\def\definemacro#1%
+%   {\ifdefined#1%
+%      \message{[\noexpand#1is already defined]}%
+%      \protected\expandafter\def\expandafter\gobbleddefinition
+%    \else
+%      \protected\expandafter\def
+%    \fi#1}
 
 % \define\hans{hans}
 % \redefine\hans{hans}
@@ -6060,23 +6061,21 @@
 \newdimen   \roundingeps \roundingeps=10sp
 \newconstant\compresult
 
-\permanent\def\comparedimension#1#2%
+\permanent\protected\def\comparedimension#1#2%
   {\compresult
-     \ifdim#1<#2%
+     \ifcmpdim#1#2 % space wil be skipped
        \zerocount
-     \orelse\ifdim#1<#2%
+     \or
        \plusone
      \else
        \plustwo
      \fi}
 
-\permanent\def\comparedimensioneps#1#2% todo: use eps feature
+\permanent\protected\def\comparedimensioneps#1#2% todo: use eps feature
   {\compresult
-     \ifdim\dimexpr#1-#2\relax<\roudingeps
+     \ifabsdim\dimexpr#1-#2\relax<\roundingeps
        \zerocount
-     \orelse\ifdim\dimexpr#2-#1\relax<\roudingeps
-       \zerocount
-     \orelse\ifdim#1<#2%
+     \orelse\ifdim#1<#2 % space wil be skipped
        \plusone
      \else
        \plustwo
@@ -6301,10 +6300,10 @@
 
 \permanent\def\negated#1{\if-#1\else-#1\fi} % does only work in macros or text
 
-\def\gobbleassigndimen#1\\{}
-
-\permanent\def\assigndimen#1#2%
-  {\afterassignment\gobbleassigndimen#1=#2\zeropoint\\}
+% \def\gobbleassigndimen#1\\{}
+%
+% \permanent\def\assigndimen#1#2%
+%   {\afterassignment\gobbleassigndimen#1=#2\zeropoint\\}
 
 %D Maybe ... toksapp should deal with this ...
 

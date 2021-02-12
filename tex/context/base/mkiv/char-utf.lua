@@ -86,33 +86,40 @@ characters.decomposed = decomposed
 
 local graphemes = characters.graphemes
 local collapsed = characters.collapsed
+local combined  = characters.combined
 local mathlists = characters.mathlists
 
 if graphemes then
 
     mark(graphemes)
     mark(collapsed)
+    mark(combined)
     mark(mathlists)
 
 else
 
     graphemes = allocate()
     collapsed = allocate()
+    combined  = allocate()
     mathlists = allocate()
 
     characters.graphemes = graphemes
     characters.collapsed = collapsed
+    characters.combined  = combined
     characters.mathlists = mathlists
 
     local function backtrack(v,last,target)
         local vs = v.specials
-        if vs and #vs == 3 and vs[1] == "char" then
-            local one = vs[2]
-            local two = vs[3]
-            local first  = utfchar(one)
-            local second = utfchar(two) .. last
-            collapsed[first..second] = target
-            backtrack(data[one],second,target)
+        if vs and #vs == 3 then
+            local kind = vs[1]
+            if  kind == "char" or kind == "with" then
+                local one = vs[2]
+                local two = vs[3]
+                local first  = utfchar(one)
+                local second = utfchar(two) .. last
+                collapsed[first..second] = target
+                backtrack(data[one],second,target)
+            end
         end
     end
 
@@ -141,28 +148,39 @@ else
         if vs then
             local kind = vs[1]
             local size = #vs
-            if kind == "char" and size == 3 then -- what if more than 3
-                --
-                local one = vs[2]
-                local two = vs[3]
-                local first       = utfchar(one)
-                local second      = utfchar(two)
-                local combination = utfchar(unicode)
-                --
-                collapsed[first..second] = combination
-                backtrack(data[one],second,combination)
-                -- sort of obsolete:
-                local cgf = graphemes[first]
-                if not cgf then
-                    cgf = { [second] = combination }
-                    graphemes[first] = cgf
-                else
-                    cgf[second] = combination
+            if kind == "char" then
+                if size == 3 then
+                    local one = vs[2]
+                    local two = vs[3]
+                    local first       = utfchar(one)
+                    local second      = utfchar(two)
+                    local combination = utfchar(unicode)
+                    --
+                    collapsed[first..second] = combination
+                    backtrack(data[one],second,combination)
+                    -- sort of obsolete:
+                    local cgf = graphemes[first]
+                    if not cgf then
+                        cgf = { [second] = combination }
+                        graphemes[first] = cgf
+                    else
+                        cgf[second] = combination
+                    end
                 end
-                --
-            end
-            if (kind == "char" or kind == "compat") and (size > 2) and (v.mathclass or v.mathspec) then
-                setlist(unicode,vs,2,"specials")
+                if size > 2 and (v.mathclass or v.mathspec) then
+                    setlist(unicode,vs,2,"specials")
+                end
+            elseif kind == "with" then
+                if size == 3 then
+                    combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                end
+            elseif kind == "compat" then
+                if size == 3 then
+                    combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                end
+                if size > 2 and (v.mathclass or v.mathspec) then
+                    setlist(unicode,vs,2,"specials")
+                end
             end
         end
         local ml = v.mathlist
@@ -182,6 +200,7 @@ else
     if storage then
         storage.register("characters/graphemes", graphemes, "characters.graphemes")
         storage.register("characters/collapsed", collapsed, "characters.collapsed")
+        storage.register("characters/combined",  combined,  "characters.combined")
         storage.register("characters/mathlists", mathlists, "characters.mathlists")
     end
 
@@ -223,6 +242,25 @@ function utffilters.collapse(str,filename)
         return str
     else
         return lpegmatch(p_collapse,str) or str
+    end
+end
+
+local p_combine = nil -- only for tex
+
+local function prepare()
+    local tree = utfchartabletopattern(combined)
+    p_combine = Cs((tree/combined + p_utf8character)^0)
+end
+
+function utffilters.combine(str) -- not in files
+    -- we could merge collapse into combine ... maybe
+    if not p_combine then
+        prepare()
+    end
+    if not str or str == "" or #str == 1 then
+        return str
+    else
+        return lpegmatch(p_combine,str) or str
     end
 end
 

@@ -180,12 +180,12 @@
 
 \setfalse\fontattributeisset
 
-\let\currentstyleparameter           \empty % these might become private (possible conflict with defines)
-\let\currentdetokenizedstyleparameter\empty % these might become private (possible conflict with defines)
+\let\m_font_style_parameter            \empty % was \currentstyleparameter
+\let\m_font_detokenized_style_parameter\empty % was \currentdetokenizedstyleparameter
 
 \permanent\protected\def\dousestyleparameter#value%
-  {\edef\currentstyleparameter{#value}%
-   \ifempty\currentstyleparameter\else
+  {\edef\m_font_style_parameter{#value}%
+   \ifempty\m_font_style_parameter\else
      \expandafter\dousecurrentstyleparameter
    \fi}
 
@@ -195,14 +195,14 @@
    \fi}
 
 \permanent\protected\def\dousecurrentstyleparameter % empty check outside here
-  {\edef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+  {\edef\m_font_detokenized_style_parameter{\detokenize\expandafter{\m_font_style_parameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
-   \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
+   \ifcsname\??alternativestyle\m_font_detokenized_style_parameter\endcsname
      \lastnamedcs
-   \orelse\ifcsname\currentdetokenizedstyleparameter\endcsname
+   \orelse\ifcsname\m_font_detokenized_style_parameter\endcsname
      \lastnamedcs
    \else
-     \currentstyleparameter
+     \m_font_style_parameter
    \fi}
 
 %D New commands (not yet interfaced):

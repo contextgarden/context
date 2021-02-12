@@ -796,8 +796,7 @@
    \global\setfalse\c_tabl_auto_align_mode
    \global\advance\c_tabl_tabulate_columns\plusone
    \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
-   \edef\currenttabulationtrulespec{#1}%
-   \ifempty\currenttabulationtrulespec
+   \iftok{#1}\emptytoks
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -818,8 +817,7 @@
 \permanent\protected\def\tabl_tabulate_set_last_entry#1% rulespec
   {\glet\m_tabl_tabulate_color\empty
    \glet\m_tabl_tabulate_vrule_color\empty
-   \edef\currenttabulationtrulespec{#1}%
-   \ifempty\currenttabulationtrulespec
+   \iftok{#1}\emptytoks
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -1580,13 +1578,15 @@
    \directvskip\s_tabl_tabulate_separator
    \egroup}
 
+\let\m_tabl_tabulate_hrule_color\empty
+
 \def\tabl_tabulate_hrule_preset_step#1%
   {\doifelsenumber{#1}%
      {\global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default}
-     {\xdef\currenttabulationlocalhrulecolor{#1}}}
+     {\xdef\m_tabl_tabulate_hrule_color{#1}}}
 
 \def\tabl_tabulate_hrule_preset[#1]%
-  {\glet\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
+  {\glet\m_tabl_tabulate_hrule_color\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
    \iftok{#1}\emptytoks\else\rawprocesscommalist[#1]\tabl_tabulate_hrule_preset_step\fi}
 
@@ -1598,7 +1598,7 @@
    \relax}
 
 \def\tabl_tabulate_hrule_inject_colored
-  {\dousecolorparameter\currenttabulationlocalhrulecolor
+  {\dousecolorparameter\m_tabl_tabulate_hrule_color
    \tabl_tabulate_hrule_inject_normal}
 
 \protected\def\tabl_tabulate_hrule_inject_first
@@ -1608,7 +1608,7 @@
 
 \protected\def\tabl_tabulate_hrule_inject_second
   {\ifcase\d_tabl_tabulate_hrulethickness_local\else
-     \ifempty\currenttabulationlocalhrulecolor
+     \ifempty\m_tabl_tabulate_hrule_color
        \tabl_tabulate_hrule_inject_normal
      \else
        \tabl_tabulate_hrule_inject_colored
@@ -2523,6 +2523,9 @@
 % \stoptabulatie
 
 %D Predefined categories (moved from core-mis):
+
+\mutable\let\leg \relax % column separators
+\mutable\let\fact\relax % column separators
 
 \definetabulate
   [\v!legend]

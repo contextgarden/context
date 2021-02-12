@@ -234,17 +234,15 @@
 \let\strc_linenotes_traced\gobbleoneargument
 
 \def\strc_linenotes_traced_indeed#1%
-  {\iftracelinenotes
-     \hpack to \zeropoint
-       {\forgetall
-        \hsize\zeropoint
-        \hss
-        \vpack to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
-        {\color[blue]{\vl}}%
-        \vpack to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
-        \hss}%
-      \prewordbreak
-   \fi}
+  {\hpack to \zeropoint
+     {\forgetall
+      \hsize\zeropoint
+      \hss
+      \vpack to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
+      {\color[blue]{\vl}}%
+      \vpack to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
+      \hss}%
+   \prewordbreak}
 
 \unexpanded\def\tracelinenotes
   {\let\strc_linenotes_traced\strc_linenotes_traced_indeed}

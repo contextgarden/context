@@ -499,6 +499,7 @@
 \permanent\def\figureheight        {\clf_figurestatus{height}{0}sp}
 \permanent\def\figurexscale        {\clf_figurestatus{xscale}{1}}
 \permanent\def\figureyscale        {\clf_figurestatus{yscale}{1}}
+\permanent\def\figurereference     {\clf_figurestatus{reference}{}}
 
 \permanent\def\figuresize          {\clf_figurerequest{size}{}}
 \permanent\def\figurelabel         {\clf_figurerequest{label}{}}
@@ -525,6 +526,7 @@
 
 \permanent\def\figurefullname      {\clf_figureused{fullname}{}}
 \permanent\def\noffigurepages      {\clf_figureused{pages}{0}}
+
 
 % \permanent\def\figurefilepath      {\clf_figurefilepath} % public in lua
 % \permanent\def\figurefilename      {\clf_figurefilename} % public in lua
@@ -705,7 +707,7 @@
         \iftrialtypesetting \else \feedbackexternalfigure \fi
       \fi}}
 
-\let\feedbackexternalfigure\relax % hook
+\mutable\let\feedbackexternalfigure\relax % hook
 
 \permanent\protected\def\getfiguredimensions
   {\dodoubleempty\grph_include_get_dimensions}
@@ -795,6 +797,8 @@
       \ifdim\scratchdimen>\d_grph_include_collection_maxheight \d_grph_include_collection_maxheight\scratchdimen \fi
       \ifdim\scratchdimen<\d_grph_include_collection_minheight \d_grph_include_collection_minheight\scratchdimen \fi
    \fi}
+
+\mutable\let\currentexternalfigurecollection\empty
 
 \permanent\protected\def\startexternalfigurecollection[#1]%
   {\begingroup

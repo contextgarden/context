@@ -195,39 +195,39 @@
 \frozen\protected\def\normaldigitscommasymbol {,}
 \frozen\protected\def\normaldigitsperiodsymbol{.}
 
-\aliased\let\normaldigitsseparatorspace\digitsseparatorspace
+\frozen\let\normaldigitsseparatorspace\digitsseparatorspace
 
 \installcorenamespace{digitscomma}
 \installcorenamespace{digitsperiod}
 \installcorenamespace{digitsspace}
 
-\letvalue{\??digitscomma 0}\normaldigitscommasymbol
-\letvalue{\??digitsperiod0}\normaldigitsperiodsymbol
-\letvalue{\??digitsspace 0}\normaldigitsseparatorspace
+\letcsname\??digitscomma 0\endcsname\normaldigitscommasymbol
+\letcsname\??digitsperiod0\endcsname\normaldigitsperiodsymbol
+\letcsname\??digitsspace 0\endcsname\normaldigitsseparatorspace
 
-\letvalue{\??digitscomma 1}\normaldigitsperiodsymbol
-\letvalue{\??digitsperiod1}\normaldigitscommasymbol
-\letvalue{\??digitsspace 1}\normaldigitsseparatorspace
+\letcsname\??digitscomma 1\endcsname\normaldigitsperiodsymbol
+\letcsname\??digitsperiod1\endcsname\normaldigitscommasymbol
+\letcsname\??digitsspace 1\endcsname\normaldigitsseparatorspace
 
-\letvalue{\??digitscomma 2}\normaldigitscommasymbol
-\letvalue{\??digitsperiod2}\normaldigitsperiodsymbol
-\letvalue{\??digitsspace 2}\normaldigitsseparatorspace
+\letcsname\??digitscomma 2\endcsname\normaldigitscommasymbol
+\letcsname\??digitsperiod2\endcsname\normaldigitsperiodsymbol
+\letcsname\??digitsspace 2\endcsname\normaldigitsseparatorspace
 
-\letvalue{\??digitscomma 3}\thinspace
-\letvalue{\??digitsperiod3}\normaldigitscommasymbol
-\letvalue{\??digitsspace 3}\thinspace
+\letcsname\??digitscomma 3\endcsname\thinspace
+\letcsname\??digitsperiod3\endcsname\normaldigitscommasymbol
+\letcsname\??digitsspace 3\endcsname\thinspace
 
-\letvalue{\??digitscomma 4}\thinspace
-\letvalue{\??digitsperiod4}\normaldigitsperiodsymbol
-\letvalue{\??digitsspace 4}\thinspace
+\letcsname\??digitscomma 4\endcsname\thinspace
+\letcsname\??digitsperiod4\endcsname\normaldigitsperiodsymbol
+\letcsname\??digitsspace 4\endcsname\thinspace
 
-\letvalue{\??digitscomma 5}\thickspace
-\letvalue{\??digitsperiod5}\normaldigitscommasymbol
-\letvalue{\??digitsspace 5}\thickspace
+\letcsname\??digitscomma 5\endcsname\thickspace
+\letcsname\??digitsperiod5\endcsname\normaldigitscommasymbol
+\letcsname\??digitsspace 5\endcsname\thickspace
 
-\letvalue{\??digitscomma 6}\thickspace
-\letvalue{\??digitsperiod6}\normaldigitsperiodsymbol
-\letvalue{\??digitsspace 6}\thickspace
+\letcsname\??digitscomma 6\endcsname\thickspace
+\letcsname\??digitsperiod6\endcsname\normaldigitsperiodsymbol
+\letcsname\??digitsspace 6\endcsname\thickspace
 
 \frozen\protected\def\digitscommasymbol       {\csname\??digitscomma \number\c_phys_digits_method\endcsname}
 \frozen\protected\def\digitsperiodsymbol      {\csname\??digitsperiod\number\c_phys_digits_method\endcsname}
@@ -390,11 +390,10 @@
 \frozen\protected\def\unitsbackspace  {\negthinspace}
 
 \permanent\protected\def\installunitsseparator#1#2%
-  {\setvalue{\??unitseparator#1}{#2}}
+  {\defcsname\??unitseparator#1\endcsname{#2}}
 
 \protected\def\phys_units_separator
-  {\edef\currentunitsseparator{\unitparameter\c!separator}% no longer needed
-   \ifcsname\??unitseparator\currentunitsseparator\endcsname\lastnamedcs\else\cdot\fi}
+  {\ifcsname\??unitseparator\unitparameter\c!separator\endcsname\lastnamedcs\else\cdot\fi}
 
 \installunitsseparator\v!normal {\cdot}
 \installunitsseparator\v!big    {\unitsbigspace}
@@ -403,12 +402,11 @@
 \installunitsseparator\v!none   {}
 
 \permanent\protected\def\installunitsspace#1#2%
-  {\setvalue{\??unitspace#1}{#2}}
+  {\defcsname\??unitspace#1\endcsname{#2}}
 
 \protected\def\phys_units_space
   {\unskip % weird, why is unskip needed
-   \edef\currentunitsspace{\unitparameter\c!space}%
-   \ifcsname\??unitspace\currentunitsspace\endcsname\lastnamedcs\else\unitsmediumspace\fi}
+   \ifcsname\??unitspace\unitparameter\c!space\endcsname\lastnamedcs\else\unitsmediumspace\fi}
 
 \installunitsspace\v!normal{\unitsmediumspace}
 \installunitsspace\v!big   {\unitsbigspace}
@@ -443,15 +441,15 @@
 %    \the\everyunits
   %\removeunwantedspaces % not ok yet
    \useunitstyleandcolor\c!style\c!color
-   \edef\currentunitsalternative{\unitparameter\c!alternative}%
+   \edef\scratchstringone{\unitparameter\c!alternative}%
    \ifmmode
-     \ifx\currentunitsalternative\v!text
+     \ifx\scratchstringone\v!text
        \expandafter\expandafter\expandafter\phys_units_direct_text_in_math
      \else
        \expandafter\expandafter\expandafter\phys_units_direct_math
      \fi
    \else
-     \ifx\currentunitsalternative\v!mathematics
+     \ifx\scratchstringone\v!mathematics
        \expandafter\expandafter\expandafter\phys_units_direct_math_in_text
      \else
        \expandafter\expandafter\expandafter\phys_units_direct_text

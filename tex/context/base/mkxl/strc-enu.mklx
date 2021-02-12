@@ -141,31 +141,32 @@
    \frozen\instance\setuevalue{\e!start#tag}{\strc_enumerations_start  [#tag]}% we could pass level here as well (faster)
    \frozen\instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
 
+\let\m_strc_enumeration_sub\empty
+
 \appendtoks
+    \let\m_strc_enumeration_sub\empty
     \ifempty\currentenumerationparent
        % clone => parent | subclone => clone | subsubclone => subclone
-       \let\currentenumerationsub\empty
        \strc_define_commands_enumeration
-         {\currentenumerationsub\currentenumeration}%
+         {\m_strc_enumeration_sub\currentenumeration}%
          \plusone
          \empty
        \edef\p_levels{\enumerationparameter\c!levels}%
        \dostepwiserecurse\plustwo\p_levels\plusone
          {\strc_define_commands_enumeration
-            {\v!sub\currentenumerationsub\currentenumeration}%
+            {\v!sub\m_strc_enumeration_sub\currentenumeration}%
             \recurselevel
-            {\currentenumerationsub\currentenumeration}%
-          \edef\currentenumerationsub{\v!sub\currentenumerationsub}}%
+            {\m_strc_enumeration_sub\currentenumeration}%
+          \edef\m_strc_enumeration_sub{\v!sub\m_strc_enumeration_sub}}%
    \else
        % clone => parent | subclone => subparent | subsubclone => subsubparent
-       \let\currentenumerationsub\empty
        \edef\p_levels{\enumerationparameter\c!levels}%
        \dorecurse\p_levels
          {\strc_define_commands_enumeration
-            {\currentenumerationsub\currentenumeration}%
+            {\m_strc_enumeration_sub\currentenumeration}%
             \recurselevel
-            {\currentenumerationsub\currentenumerationparent}%
-          \edef\currentenumerationsub{\v!sub\currentenumerationsub}}%
+            {\m_strc_enumeration_sub\currentenumerationparent}%
+          \edef\m_strc_enumeration_sub{\v!sub\m_strc_enumeration_sub}}%
    \fi
    \edef\p_counter{\enumerationparameter\s!counter}% can inherit from parent
    \ifempty\p_counter %

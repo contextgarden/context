@@ -209,32 +209,23 @@
    \hsize\dummyparameter\c!width\relax
    \emergencystretch10\scratchoffset
    \parfillskip\zeropoint
-   \baselineskip\zeropoint plus \onepoint minus \onepoint
-   \beginofshapebox
    \leftskip \scratchoffset
    \rightskip\scratchoffset}
 
 \permanent\protected\def\stopnicelyfilledbox
-  {\doifelse{\dummyparameter\c!strut}\v!yes
-     {\xdef\doflushnicelyfilledbox
-        {\ht\shapebox\the\strutht
-         \dp\shapebox\the\strutdp
-         \box\shapebox}}%
-     {\gdef\doflushnicelyfilledbox
-        {\box\shapebox}}%
-   \endofshapebox
-   \doreshapebox
-     {\doflushnicelyfilledbox}
-     {\penalty\shapepenalty}
-     {\kern\shapekern}
-     {\vfil}%
-   \kern\scratchoffset
-   \vfilneg
-   \flushshapebox
-   \vfilneg
-   \kern\scratchoffset
+  {\egroup
+   \vbox to \dummyparameter\c!height \bgroup
+     \doifelse{\dummyparameter\c!strut}\v!yes
+       {\dorecurse{\boxlines\scratchbox}%
+          {\boxlineht\scratchbox\recurselevel\strutht
+           \boxlinedp\scratchbox\recurselevel\strutdp
+           \boxline\scratchbox\recurselevel
+           \vss}}%
+       {\dorecurse{\boxlines\scratchbox}%
+          {\boxline\scratchbox\recurselevel
+           \vss}}%
+     \unskip
    \egroup
-   \box\scratchbox
    \egroup}
 
 \protect \endinput

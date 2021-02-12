@@ -1534,6 +1534,8 @@
      \scratchdimen\wd\scratchbox\relax
    \fi}
 
+\newdimen\d_tabl_ntb_saved_hsize
+
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
   %\setbox\scratchbox\hbox
@@ -1593,12 +1595,12 @@
          % added jun 2014 because someone had less columns than nx .. sigh / see *nx*
          \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
        \fi
-       \edef\savedhsize{\the\hsize}%
+       \d_tabl_ntb_saved_hsize\hsize
      % \hsize\wd\scratchbox\relax % new per 17/04/2006
        \hsize\scratchdimen\relax % new per 17/04/2006
        \tabl_ntb_check_widths_one % trial run
        \tabl_ntb_check_widths_two % real run
-       \hsize\savedhsize
+       \hsize\d_tabl_ntb_saved_hsize
        \let\tabl_ntb_cell_process\tabl_ntb_cell_process_c
        \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
      \fi

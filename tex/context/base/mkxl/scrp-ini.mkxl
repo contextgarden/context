@@ -42,6 +42,8 @@
 \registerctxluafile{scrp-tha}{}
 \registerctxluafile{scrp-tib}{}
 
+\definesystemattribute[script][public,pickup]
+
 %D Since scripts need specific \LUA\ code we use hard coded attribute values, but we
 %D might have more tricks at some time, so we use a proper define macro too.
 
@@ -65,7 +67,7 @@
 
 \permanent\protected\def\setglobalscript[#1]%
   {\setlocalscript[#1]%
-   \pickupscriptattribute}
+   \pickupscriptattribute} % pagebuilder
 
 \aliased\let\setscript\setlocalscript
 

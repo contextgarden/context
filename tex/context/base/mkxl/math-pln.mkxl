@@ -104,21 +104,13 @@
 \permanent\protected\def\pmatrix#1%
   {\left(\matrix{#1}\right)}
 
-% \protected\def\openup
-%   {\afterassignment\math_openup\scratchdimen=}
-%
-% \def\math_openup
-%   {\advance\lineskip     \scratchdimen
-%    \advance\baselineskip \scratchdimen
-%    \advance\lineskiplimit\scratchdimen}
-
-\let\math_closeup\relax
-
-\protected\def\math_openup
+\permanent\protected\def\math_openup
   {\afterassignment\math_openup_indeed\scratchdimen}
 
+\aliased\let\math_closeup\relax
+
 \def\math_openup_indeed
-  {\protected\edef\math_closeup
+  {\enforced\permanent\protected\edef\math_closeup
      {\lineskip     \the\lineskip
       \baselineskip \the\baselineskip
       \lineskiplimit\the\lineskiplimit
@@ -127,10 +119,10 @@
    \advance \baselineskip  \scratchdimen
    \advance \lineskiplimit \scratchdimen}
 
-\let\openup  \math_openup
-\def\closeup{\math_closeup} % dynamic
+\permanent\protected\def\openup {\math_openup } % the low level ones are used elsewhere
+\permanent\protected\def\closeup{\math_closeup} % the low level ones are used elsewhere
 
-\protected\def\displaylines#1%
+\permanent\protected\def\displaylines#1%
   {\the\mathdisplayaligntweaks
    \tabskip\zeroskip
    \halign

@@ -58,6 +58,7 @@
 %D    \startmode[*nl] dutch   \stopmode}
 %D \stoptyping
 
+\mutable\let\askedlanguage      \empty
 \mutable\let\currentlanguage    \empty
 \mutable\let\currentmainlanguage\empty
 
@@ -189,6 +190,8 @@
   {\ifcsname\??languagelinked#1\endcsname\lastnamedcs\else#1\fi}
 
 % \language[#1] gave unwanted side effect of loading language specifics
+
+\mutable\let\currentsetuplanguage\empty
 
 \permanent\tolerant\protected\def\installlanguage[#1]#*[#2]%
   {\ifcondition\validassignment{#2}%

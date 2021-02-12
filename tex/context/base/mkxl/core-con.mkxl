@@ -26,14 +26,14 @@
 %D considered splitting this module in a support one and a core one, but to keep
 %D things simple as well as preserve the overview, I decided against splitting.
 
-\let\spr\firstofoneargument % separator
-\let\stp\firstofoneargument % stopper
+\aliased\let\spr\firstofoneargument % separator
+\aliased\let\stp\firstofoneargument % stopper
 
-% needed for arab:
+% needed for arab (but can disappear as no ons used it, experiment for idris)
 
 \permanent\protected\def\isolateseparators % even works with list separator overloading
-  {\def\spr##1{{##1}}% % we can probably best mess around with zwj
-   \def\stp##1{{##1}}} % and friends
+  {\enforced\permanent\def\spr##1{{##1}}%  % we can probably best mess around with zwj
+   \enforced\permanent\def\stp##1{{##1}}}  % and friends
 
 %D \macros
 %D   {numbers}
@@ -126,8 +126,6 @@
 %D
 %D \showsetup{character}
 %D \showsetup{Character}
-
-\def\unknowncharacter{-} % else in lists \relax
 
 \permanent\def\character#1{\clf_character\numexpr#1\relax}
 \permanent\def\Character#1{\clf_Character\numexpr#1\relax}
@@ -302,6 +300,8 @@
 
 \aliased\let\doifleapyearelse\doifelseleapyear
 
+\mutable\let\numberofdays\!!zerocount
+
 \permanent\protected\def\getdayspermonth#1#2%
   {\edef\numberofdays{\clf_nofdays\numexpr#1\relax\numexpr#2\relax}}
 
@@ -432,11 +432,11 @@
   {\dontleavehmode
    \begingroup
    \the\everycurrentdate
-   \edef\forceddatespecification{#1}%
-   \syst_converters_check_date_specification\forceddatespecification
+   \edef\m_syst_converters_date{#1}%
+   \syst_converters_check_date_specification\m_syst_converters_date
    \syst_converters_check_date_specification\currentdatespecification
    \clf_currentdate
-     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
+     {\m_syst_converters_date}{\currentdatespecification}{\labellanguage}%
      \normalyear\normalmonth\normalday
    \endgroup}
 
@@ -457,11 +457,11 @@
    \begingroup
    \setdate[#1]% sets the date !
    \the\everycurrentdate
-   \edef\forceddatespecification{#2}%
-   \syst_converters_check_date_specification\forceddatespecification
+   \edef\m_syst_converters_date{#2}%
+   \syst_converters_check_date_specification\m_syst_converters_date
    \syst_converters_check_date_specification\currentdatespecification
    \clf_currentdate
-     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
+     {\m_syst_converters_date}{\currentdatespecification}{\labellanguage}%
      \normalyear\normalmonth\normalday
    \endgroup}
 
@@ -641,8 +641,10 @@
 \permanent\def\ordinalnumber #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
 \permanent\def\Ordinalnumber #1{\Words{\clf_ordinal\numexpr#1\relax{\currentlanguage}}}
 
-\permanent\def\verbosenumber#1{\clf_verbose\numexpr#1\relax{\currentlanguage}}
-\permanent\def\VerboseNumber#1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}}}
+\mutable\let\verbosenumberconnector\space
+
+\permanent\def\verbosenumber#1{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}
+\permanent\def\VerboseNumber#1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}}
 
 %D As longs as symbols are linked to levels or numbers, we can also use the
 %D conversion mechanism, but in for instance the itemization macros, we prefer

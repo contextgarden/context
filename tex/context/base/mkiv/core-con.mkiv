@@ -664,8 +664,10 @@
 \def\ordinalnumber      #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
 \def\Ordinalnumber      #1{\Words{\clf_ordinal\numexpr#1\relax{\currentlanguage}}}
 
-\def\verbosenumber      #1{\clf_verbose\numexpr#1\relax{\currentlanguage}}
-\def\VerboseNumber      #1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}}}
+\let\verbosenumberconnector\space
+
+\def\verbosenumber      #1{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}
+\def\VerboseNumber      #1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}}
 
 %D As longs as symbols are linked to levels or numbers, we can also use the
 %D conversion mechanism, but in for instance the itemization macros, we prefer

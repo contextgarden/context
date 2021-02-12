@@ -26,11 +26,14 @@
 %
 % todo: and how about metapost ... i need a mp.hashtokens in order to do that and I also
 % need to think about protection there (tricky as we use an avl hash there)
+%
+% public undefined : SmallCaps scitebuffer sciteinlinebuffer
+% single todos     : \ \- \\ \_
 
 \enablemode[texmacros]
-% \enablemode[metapostmacros]
-\enablemode[notmarked]
-% \enablemode[everything]
+\enablemode[metapostmacros]
+% \enablemode[notmarked]
+\enablemode[everything]
 
 \startmodule[system-macros]
 
@@ -55,6 +58,7 @@
         local ctx_NC   = context.NC
         local ctx_NR   = context.NR
         local ctx_bold = context.bold
+        local ctx_verb = context.verbatim
 
         local find     = string.find
         local gsub     = string.gsub
@@ -140,7 +144,7 @@
                         end
                         ctx_NC() if marked     then context(marked)     end
                         ctx_NC() if primitive  then ctx_bold(csname)    else
-                                                    context(csname)     end
+                                                    ctx_verb(csname)    end
                         ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
                         ctx_NC()                    context(cscommand)
                         ctx_NC() if primitive  then context(primitive)  end

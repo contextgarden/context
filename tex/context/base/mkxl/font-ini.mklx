@@ -459,7 +459,7 @@
 \installcorenamespace{mappedfontsize}
 
 \permanent\tolerant\protected\def\mapfontsize[#from]#spacer[#to]%
-  {\ifarguments\or\or\setvalue{\??mappedfontsize\the\dimexpr#from\relax}{#to}\fi}
+  {\ifarguments\or\or\defcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname{#to}\fi}
 
 \def\font_basics_set_mapped_fontsize#from%
   {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
@@ -663,7 +663,7 @@
 \mutable\let\somefontspec \s!unknown
 \mutable\let\somefontfile \s!unknown
 \mutable\let\somefontsize \zerocount
-\mutable\let\somefontsizey\empty
+\mutable\let\somefontsizex\empty
 \mutable\let\somefontsizey\empty
 
 \newcount\scaledfontmode  % also used at the lua end

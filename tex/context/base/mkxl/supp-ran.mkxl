@@ -36,6 +36,7 @@
 \permanent\protected\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat\dimexpr#2\relax\dimexpr#3\relax}}
 \permanent\protected\def\setrandomseed      #1{\clf_setrandomseed\numexpr#1\relax}
 \permanent\protected\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
+\permanent\protected\def\newrandomseed        {\clf_getrandomseed}
 %permanent\protected\def\pushrandomseed       {\clf_pushrandomseed}
 %permanent\protected\def\poprandomseed        {\clf_poprandomseed}
 %permanent\protected\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop

@@ -1255,9 +1255,9 @@
 %D $(x,y) = (\MPrunset{point}{,})$
 %D \stoptyping
 
-\permanent\def\MPrunvar  #1{\clf_mprunvar{#1}}         \let\mprunvar\MPrunvar
-\permanent\def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \let\mpruntab\MPruntab % #2 is number
-\permanent\def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \let\mprunset\MPrunset
+\permanent\def\MPrunvar  #1{\clf_mprunvar{#1}}         \aliased\let\mprunvar\MPrunvar
+\permanent\def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \aliased\let\mpruntab\MPruntab % #2 is number
+\permanent\def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \aliased\let\mprunset\MPrunset
 
 \prependtoks \clf_mppushvariables \to \everybeforepagebody
 \appendtoks  \clf_mppopvariables  \to \everyafterpagebody

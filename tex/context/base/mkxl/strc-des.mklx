@@ -192,8 +192,7 @@
    \c!before=,
    \c!after=]
 
-\protected\def\setuptab
-  {\setupdescription[tab]}
+\permanent\protected\def\setuptab{\setupdescription[tab]} % for old times
 
 %D Maybe we should remove this definition.
 

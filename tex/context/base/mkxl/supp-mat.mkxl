@@ -60,8 +60,6 @@
 
 \aliased\let\Ucheckedstopdisplaymath\relax
 
-\def\normalmathaligntab{&} % \let\normalmathaligntab\aligntab does to work well in a let to & (a def works ok)
-
 % \let\normalsuper\Usuperscript % obsolete
 % \let\normalsuber\Usubscript   % obsolete
 

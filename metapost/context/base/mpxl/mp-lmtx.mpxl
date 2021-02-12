@@ -2336,3 +2336,13 @@ permanent
     lmt_registerglyphs, lmt_registerglyph,
     lmt_remaptext, rawmaptext, svgtext, svg,
     OverlayMesh ;
+
+% nice hack
+
+newscriptindex mfid_scrutenized ; mfid_scrutenized := scriptindex "scrutenized" ;
+
+primarydef p scrutenized n =
+    runscript mfid_scrutenized p n
+enddef ;
+
+permanent scrutenized ;

@@ -146,6 +146,8 @@ function scripts.unicode.update()
     local index                = texttables.index
     local characterdata        = characters.data
     --
+    local descriptions         = { }
+    --
     for unicode, ud in table.sortedpairs(unicodedata) do
         if not skipped[unicode] then
             local char = rawget(characterdata,unicode)
@@ -162,6 +164,7 @@ function scripts.unicode.update()
                 local cjkwd     = ed and lower(ed[2] or "n")
                 local mirror    = bd and tonumber(bd[2],16)
                 local arabic    = nil
+                descriptions[description] = unicode
                 if sparse and direction == "l" then
                     direction = nil
                 end
@@ -382,6 +385,26 @@ function scripts.unicode.update()
             end
         end
     end
+    -- we need the hash .. add missing specials
+    for unicode, data in table.sortedhash(characterdata) do
+        if not data.specials or data.comment and find(data.comment,"check special") then
+            local description = data.description
+            local b, m = match(description,"^(.+) WITH (.+)$")
+            if b and m and (find(b,"^LATIN") or find (b,"^CYRILLIC")) then
+                local base = descriptions[b]
+                local mark = descriptions[m]
+                if not mark and m == "STROKE" then
+                    mark = descriptions["SOLIDUS"] -- SLASH
+                end
+                if base and mark then
+                    report("adding extra char special for %a",description)
+                    data.specials = { "with", base, mark }
+                    data.comment  = nil
+                end
+            end
+        end
+    end
+    --
     for i=1,#standardizedvariants do
         local si = standardizedvariants[i]
         local pair, addendum = si[1], strip(si[2])
@@ -519,6 +542,10 @@ function scripts.unicode.load()
             arabicshaping        = splitdefinition(textdata.arabicshaping,true),
             index                = splitindex(textdata.index),
         }
+        --
+        for k, v in table.sortedhash(textfiles) do
+            report("using: %s",v)
+        end
         return true
     else
         preamble = nil

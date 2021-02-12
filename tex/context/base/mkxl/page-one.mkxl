@@ -61,8 +61,8 @@
 % We really need a setting! Todo, what key to use?
 
 \pushoverloadmode
-    \setnewconstant\kindofpagetextareas\plustwo % \plusone can become default some day
-    \overloaded\let\kindofpagetextareas\kindofpagetextareas
+    \setnewconstant\kindofpagetextareas\plustwo                     % \plusone can become default some day
+    \overloaded\mutable\let\kindofpagetextareas\kindofpagetextareas % fo rnow mutable, can become a key/value
 \popoverloadmode
 
 \def\page_one_registered_text_area_a % two arguments: (un)vbox n

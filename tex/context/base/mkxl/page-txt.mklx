@@ -411,13 +411,14 @@
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
    \or % 3
-     \edef\currentlayoutelement{#vertical:#horizontal}%
-     \letcsname\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
+%      \edef\currentlayoutelement{#vertical:#horizontal}%
+%      \letcsname\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
+     \letcsname\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
    \fi}
 
-\letvalue{\??layouttextcontent\v!text:\c!middle}\c!middletext
-\letvalue{\??layouttextcontent\v!text:\c!left  }\c!lefttext
-\letvalue{\??layouttextcontent\v!text:\c!right }\c!righttext
+\letcsname\??layouttextcontent\v!text:\c!middle\endcsname\c!middletext
+\letcsname\??layouttextcontent\v!text:\c!left  \endcsname\c!lefttext
+\letcsname\??layouttextcontent\v!text:\c!right \endcsname\c!righttext
 
 %D The placement of a whole line is handled by the next two macros. These are hooked
 %D into the general purpose token list registers mentioned before.

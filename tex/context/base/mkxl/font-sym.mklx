@@ -129,7 +129,9 @@
 
 \installcorenamespace{symbolfont}
 
-\let\thedefinedfont\relax
+\mutable\let\skedsymbolfont   \empty % for diagnostics
+\mutable\let\currentsymbolfont\empty
+\mutable\let\askedsymbolfont  \empty
 
 \permanent\protected\def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
@@ -162,8 +164,6 @@
    \else
      \font_basics_define_symbolic_font
    \fi}
-
-\mutable\let\currentsymbolfont\empty
 
 \def\font_basics_define_symbolic_font
   {\definefont[currentsymbolfont][\askedsymbolfont]%

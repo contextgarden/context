@@ -13,7 +13,7 @@
 
 % \normalend % uncomment this to get the real base runtime
 
-\newcontextversion{2021.02.08 16:58}
+\newcontextversion{2021.02.12 18:45}
 
 %D This file is loaded at runtime, thereby providing an excellent place for hacks,
 %D patches, extensions and new features. There can be local overloads in cont-loc
@@ -39,9 +39,13 @@
     \enforced\aliased\let\w\mathword
 \to \everymathematics
 
+% so we need to be able to load modules in ini mode
+
 \pushoverloadmode
     % charts needs these
     \overloaded\unletfrozen\name % for now
+    \mutable\let\name\name
+    \mutable\let\text\text
     \overloaded\frozen\let\type\type
 \popoverloadmode
 

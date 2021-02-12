@@ -798,7 +798,7 @@
     \glet\currentstructuresynchronize\donothing
 \to \everyheadsynchronization
 
-\unexpanded\def\theheadsynchonization
+\unexpanded\def\theheadsynchronization
   {% no, interferes: \signalcharacter
    \the\everyheadsynchronization}
 
@@ -927,7 +927,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
          \let\getheadnumber\fullheadnumber
@@ -941,7 +941,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
        \else
@@ -953,7 +953,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
        \strc_sectioning_after_nop
@@ -964,7 +964,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
        \dostoptagged
@@ -972,7 +972,7 @@
      \else\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \dostarttagged\t!sectioncaption\empty
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
@@ -986,7 +986,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
        \strc_sectioning_after_nop
@@ -1051,7 +1051,7 @@
   {\global\setbox\b_sectioning_delayed\hpack\bgroup
      \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
      \hpack\headreferenceattributes{}% also does the mark
-     \theheadsynchonization
+     \theheadsynchronization
    \egroup}
 
 \unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
@@ -1061,7 +1061,7 @@
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
       \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
-      \theheadsynchonization}} % and it's a node anyway
+      \theheadsynchronization}} % and it's a node anyway
 
 \def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}
 \def\theheadreferenceattributes#1{\csname\??hiddenheadattr#1\endcsname}

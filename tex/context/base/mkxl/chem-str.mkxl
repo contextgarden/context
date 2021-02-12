@@ -445,6 +445,13 @@
      \hss
    \egroup}
 
+\permanent\let\X\relax
+\permanent\let\T\relax
+\permanent\let\B\relax
+\permanent\let\L\relax
+\permanent\let\M\relax
+\permanent\let\R\relax
+
 \appendtoks
    \enforced\let  |\chemicalbar % \SR{N|NH}
    \enforced\let \+\chemicaloxidationplus

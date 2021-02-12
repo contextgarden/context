@@ -289,8 +289,10 @@
 
 \newconstant\c_strc_constructions_nested_state % to be redone
 
-\def\resetconstructions % to be used in e.g. footnotes
-  {\c_strc_constructions_nested_state\zerocount}
+% not used any more
+%
+% \def\resetconstructions % to be used in e.g. footnotes
+%   {\c_strc_constructions_nested_state\zerocount}
 
 \protected\setvalue{\??constructioncommandhandler\v!construction}%
   {\endgroup}
@@ -606,7 +608,7 @@
    \relax
    \hangindent\ifx#1\v!right-\fi\constructionsheadwidth}
 
-\protected\def\flushconstructionheadbox
+\permanent\protected\def\flushconstructionheadbox
   {\ifhbox\constructionheadbox\unhbox\else\box\fi\constructionheadbox}
 
 % The setups. These only deal with placement of the descriptor and initializing the
@@ -1000,7 +1002,7 @@
 
 %D The storage macros:
 
-\let\currentconstructionlistentry\!!zerocount
+\mutable\let\currentconstructionlistentry\!!zerocount
 
 \protected\def\strc_constructions_register
   {\clf_doifelselisthasentry\numexpr\currentconstructionlistentry\relax
@@ -1082,7 +1084,7 @@
    \fi
    %
    \ifx\currentconstructiontitle\v!none % will become obsolete
-     \global\noconstructioncaptiontrue\global\noconstructionnumbertrue
+     \global\noconstructioncaptiontrue
    \fi
    %
    \ifnoconstructioncaption % then why analyze anyway?

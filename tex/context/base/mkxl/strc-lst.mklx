@@ -1548,9 +1548,9 @@
 
 \aliased\let\stopcurrentlistentrywrapper\egroup
 
-\aliased\let\currentlistentryreferenceattribute  \strc_lists_get_reference_attribute
-\aliased\let\currentlistentrydestinationattribute\strc_lists_get_destination_attribute
-\aliased\let\currentlistentrylimitedtext         \strc_lists_limitated_text
+\permanent\def\currentlistentryreferenceattribute  {\strc_lists_get_reference_attribute}   % this definition can change
+\permanent\def\currentlistentrydestinationattribute{\strc_lists_get_destination_attribute} % this definition can change
+\permanent\def\currentlistentrylimitedtext         {\strc_lists_limitated_text}            % this definition can change
 
 % todo:
 

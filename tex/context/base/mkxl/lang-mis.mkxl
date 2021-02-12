@@ -521,7 +521,7 @@
      \discretionary{-}{}{}%
    \fi}
 
-\let\ignorecompoundcharacter\relax
+% \aliased\let\ignorecompoundcharacter\relax
 
 %D \macros
 %D   {disablediscretionaries,disablecompoundcharacter}
@@ -529,15 +529,15 @@
 %D Occasionally we need to disable this mechanism. For the moment we assume that
 %D \type {|} is used.
 
-\let\disablediscretionaries   \ignorediscretionaries
-\let\disablecompoundcharacters\ignorecompoundcharacter
+\aliased\let\disablediscretionaries   \ignorediscretionaries
+%aliased\let\disablecompoundcharacters\ignorecompoundcharacter
 
 %D \macros
 %D   {normalcompound}
 %D
 %D Handy in for instance XML. (Kind of obsolete)
 
-\ifdefined\normalcompound \else \let\normalcompound=| \fi
+\ifdefined\normalcompound \else \aliased\let\normalcompound=| \fi
 
 %D \macros
 %D   {compound}
@@ -564,7 +564,7 @@
 %D Here we hook some code into the clean up mechanism needed for verbatim data.
 
 \appendtoks
-   %\disablecompoundcharacters
+    %disablecompoundcharacters
     \disablediscretionaries
 \to \everycleanupfeatures
 

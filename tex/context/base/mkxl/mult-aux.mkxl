@@ -716,9 +716,9 @@
    \installdirectstyleandcolorhandler{#1}{#2}}
 
 \permanent\protected\def\installsetuponlycommandhandler#1#2%
-  {\installdirectparameterhandler{#1}{#2}%
-   \installdirectsetuphandler    {#1}{#2}%
-  }% maybe \installdirectparametersethandler {#1}{#2}%
+  {\installdirectparameterhandler   {#1}{#2}%
+   \installdirectsetuphandler       {#1}{#2}%
+   \installdirectparametersethandler{#1}{#2}}
 
 % Experiment:
 

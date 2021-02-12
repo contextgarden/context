@@ -64,6 +64,8 @@
 
 \mutable\let\referenceprefix               \empty
 
+\mutable\let\currentdestinationattribute   \empty
+
 \mutable\let\currentreferenceattribute     \empty
 \mutable\let\currentreferencecoding        \empty
 \mutable\let\currentreferencecontent       \empty
@@ -384,8 +386,8 @@
 \permanent\protected\def\hboxreference[#1]{\boxreference[#1]\hbox}
 \permanent\protected\def\vboxreference[#1]{\boxreference[#1]\vbox}
 
-\def\defaultreferencepage#text{[[[#text]]]}
-\def\defaultreferencetext#text{[[[#text]]]}
+\mutable\def\defaultreferencepage#text{[[[#text]]]}
+\mutable\def\defaultreferencetext#text{[[[#text]]]}
 
 %D For internal usage:
 
@@ -1244,7 +1246,7 @@
 \setvalue{\??referencinginteraction\v!symbol}%
   {\referencesymbol}
 
-\def\referencesequence
+\permanent\def\referencesequence
   {\ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
      \expandafter\lastnamedcs
    \else
@@ -1378,7 +1380,7 @@
      \resetinteractionparameter\c!contrastcolor
      \resetinteractionparameter\c!color
    \fi
-   \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
+   \ifx\currentreferenceformatlabel\wildcardsymbol
       \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
    \fi
    \ifx\currentreferenceformatautocase\v!yes
@@ -1404,8 +1406,6 @@
    \enforced\let\leftofreferencecontent \empty
    \enforced\let\rightofreferencecontent\empty
    \strc_references_pickup_goto}
-
-\def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
 
 \permanent\protected\def\autoreferencelabeltext
   {\clf_getcurrentreferencemetadata{name}}
@@ -1588,8 +1588,10 @@
      \expandafter\strc_references_start_goto_nop
    \fi}
 
+\aliased\let\stopgoto\relax
+
 \permanent\protected\def\strc_references_start_goto_nop
-  {\let\stopgoto\strc_references_stop_goto_nop}
+  {\enforced\let\stopgoto\strc_references_stop_goto_nop}
 
 \permanent\protected\def\strc_references_stop_goto_nop
   {\endgroup}

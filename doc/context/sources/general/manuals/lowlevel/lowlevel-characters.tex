@@ -203,6 +203,23 @@ In \LMTX\ this mechanism has been upgraded so that replacements follow the shape
 and are actually real characters. The decomposition has not yet been ported back
 to \MKIV.
 
+The full list of commands can be queried when a tracing module is loaded:
+
+\startbuffer
+\usemodule[s][characters-combinations]
+
+\showcharactercombinations
+\stopbuffer
+
+\typebuffer
+
+We get this list:
+
+\getbuffer
+
+Some combinations are special for \CONTEXT\ because \UNICODE\ doesn't specify
+decomposition for all composed characters.
+
 \stopsection
 
 \startsubject[title=Colofon]

@@ -7554,9 +7554,9 @@
 
 \def\comparedimension#1#2%
   {\compresult
-     \ifdim#1<#2%
+     \ifdim#1<#2 % space wil be skipped
        \zerocount
-     \else\ifdim#1<#2%
+     \else\ifdim#1<#2 % space wil be skipped
        \plusone
      \else
        \plustwo
@@ -7568,7 +7568,7 @@
        \zerocount
      \else\ifdim\dimexpr#2-#1\relax<\roudingeps
        \zerocount
-     \else\ifdim#1<#2%
+     \else\ifdim#1<#2 % space wil be skipped
        \plusone
      \else
        \plustwo

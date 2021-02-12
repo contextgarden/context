@@ -146,12 +146,13 @@
 \aliased\letcsname\??buttonlocation          \endcsname\plusone % default
 
 \newconditional\c_scrn_button_skipped
+\newconstant   \locationboxpagestate
 
 \def\scrn_button_make#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\begingroup
    \c_attr_reference\attributeunsetvalue
    \global\setfalse\c_scrn_button_skipped
-   \chardef\locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
+   \locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
    \doifelsereferencefound{#action}\scrn_button_make_yes\scrn_button_make_nop
      #currentparameter%
      #inheritedframed%
@@ -433,6 +434,8 @@
 
 \newconditional\c_scrn_menu_zerodimensions
 
+\mutable\let\currentinteractionmenulocation\empty
+
 \def\scrn_menu_set_used
   {\d_scrn_menu_offset_left  \ifchkdim\interactionmenuparameter\c!leftoffset  \or\lastchkdim\else\zeropoint\fi
    \d_scrn_menu_offset_right \ifchkdim\interactionmenuparameter\c!rightoffset \or\lastchkdim\else\zeropoint\fi
@@ -448,8 +451,8 @@
    \relax}
 
 \def\scrn_menu_set_final
-  {\d_scrn_menu_final_width \namedinteractionmenuparameter\askedinteractionmenulocation\c!maxwidth
-   \d_scrn_menu_final_height\namedinteractionmenuparameter\askedinteractionmenulocation\c!maxheight}
+  {\d_scrn_menu_final_width \namedinteractionmenuparameter\currentinteractionmenulocation\c!maxwidth
+   \d_scrn_menu_final_height\namedinteractionmenuparameter\currentinteractionmenulocation\c!maxheight}
 
 \def\scrn_menu_apply_final
   {\ifconditional\c_scrn_menu_zerodimensions
@@ -505,14 +508,14 @@
 
 \def\scrn_menu_insert_indeed#location%
   {\begingroup
-   \xdef\askedinteractionmenulocation{#location}%
+   \xdef\currentinteractionmenulocation{#location}%
    \scrn_menu_set_final
    \ifcase\d_scrn_menu_final_width \orelse \ifcase\d_scrn_menu_final_height \else
      \forgetall
      \global\d_scrn_menu_next_distance\zeropoint
      \let\scrn_menu_action\scrn_menu_package_indeed
      \the\everysetmenucommands
-     \csname\??menupacker\namedinteractionmenuparameter\askedinteractionmenulocation\c!alternative\endcsname
+     \csname\??menupacker\namedinteractionmenuparameter\currentinteractionmenulocation\c!alternative\endcsname
    \fi
    \endgroup}
 
@@ -520,13 +523,13 @@
 
 \setvalue{\??menupacker\v!vertical}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_vertical
-   \setbox\b_scrn_menu\hbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \setbox\b_scrn_menu\hbox{\scrn_menu_actions\currentinteractionmenulocation}%
    \scrn_menu_apply_final
    \box\b_scrn_menu}
 
 \setvalue{\??menupacker\v!horizontal}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_horizontal
-   \setbox\b_scrn_menu\vbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \setbox\b_scrn_menu\vbox{\scrn_menu_actions\currentinteractionmenulocation}%
    \scrn_menu_apply_final
    \box\b_scrn_menu}
 
@@ -609,10 +612,10 @@
 \newtoks       \t_scrn_menu_meta_data
 
 \def\scrn_menu_button_meta_template
-  {\askedinteractionmenulocation _menu_button(%
+  {\currentinteractionmenulocation _menu_button(%
      \number\c_scrn_menu_position,%
      \number\c_scrn_menu_page_mode,%
-     \MPpos{\askedinteractionmenulocation:\number\c_scrn_menu_position}%
+     \MPpos{\currentinteractionmenulocation:\number\c_scrn_menu_position}%
    );}
 
 \permanent\def\MPmenubuttons#1{\the\t_scrn_menu_meta_data}
@@ -623,7 +626,7 @@
 
 \def\scrn_menu_whole_position % cannot happen in previous due to align
   {\setbox\b_scrn_menu\hbox \bgroup
-     \hpos{menu:\askedinteractionmenulocation:\the\realpageno}{\box\b_scrn_menu}%
+     \hpos{menu:\currentinteractionmenulocation:\the\realpageno}{\box\b_scrn_menu}%
    \egroup}
 
 % removed: \restorestandardblank (vspacing) ... should happen elsewhere
@@ -675,13 +678,13 @@
    \endgroup
    \ignorespaces}
 
-\aliased\let\startraw \aliased\let\stopraw\relax
-\aliased\let\startbut \aliased\let\stopbut\relax
-\aliased\let\startgot \aliased\let\stopgot\relax
-\aliased\let\startnop \aliased\let\stopnop\relax
-\aliased\let\starttxt \aliased\let\stoptxt\relax
-\aliased\let\startrul \aliased\let\stoprul\relax
-\aliased\let\startcom \aliased\let\stopcom\relax
+\aliased\let\startraw \aliased\let\stopraw\relax \ifdefined\raw\else \aliased\let\raw\relax \fi
+\aliased\let\startbut \aliased\let\stopbut\relax \ifdefined\but\else \aliased\let\but\relax \fi
+\aliased\let\startgot \aliased\let\stopgot\relax \ifdefined\got\else \aliased\let\got\relax \fi
+\aliased\let\startnop \aliased\let\stopnop\relax \ifdefined\nop\else \aliased\let\nop\relax \fi
+\aliased\let\starttxt \aliased\let\stoptxt\relax \ifdefined\txt\else \aliased\let\txt\relax \fi
+\aliased\let\startrul \aliased\let\stoprul\relax \ifdefined\rul\else \aliased\let\rul\relax \fi
+\aliased\let\startcom \aliased\let\stopcom\relax \ifdefined\com\else \aliased\let\com\relax \fi
 
 \protected\def\scrn_menu_raw_start[#action]#text\stopraw
   {\scrn_menu_action_start
@@ -710,7 +713,7 @@
      {\c_scrn_menu_page_mode\plustwo}%
    \xtoksapp\t_scrn_menu_meta_data{\scrn_menu_button_meta_template}%
    \hpos
-     {\askedinteractionmenulocation:\number\c_scrn_menu_position}%
+     {\currentinteractionmenulocation:\number\c_scrn_menu_position}%
      {\scrn_button_make
         #currentparameter%
         #inheritedframed%
@@ -1033,7 +1036,7 @@
    \removeunwantedspaces
    \endgroup}
 
-\def\doregistermenubutton#1#2#3% used at lua end
+\permanent\protected\def\doregistermenubutton#1#2#3% used at lua end
   {\ifcstok{\interactionmenuparameter\c!state}\v!start
      \scrn_menu_menu_button_c{#1}{}{#2}{#3}%
    \fi

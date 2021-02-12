@@ -1224,7 +1224,7 @@ local words = {
    [1000000000000] = "trillion",
 }
 
-local function translate(n)
+local function translate(n,connector)
     local w = words[n]
     if w then
         return w
@@ -1274,7 +1274,7 @@ local function translate(n)
     if n > 0 then
         compose_one(n)
     end
-    return #t > 0 and concat(t," ") or tostring(n)
+    return #t > 0 and concat(t,connector or " ") or tostring(n)
 end
 
 data.english = {
@@ -1346,7 +1346,7 @@ local words = {
    [1000000000000] = "billón",
 }
 
-local function translate(n)
+local function translate(n,connector)
     local w = words[n]
     if w then
         return w
@@ -1401,7 +1401,7 @@ local function translate(n)
     if n > 0 then
         compose_one(n)
     end
-    return #t > 0 and concat(t," ") or tostring(n)
+    return #t > 0 and concat(t,connector or " ") or tostring(n)
 end
 
 data.spanish = {
@@ -1417,20 +1417,20 @@ data.es = data.spanish
 
 -- verbose handler:
 
-function converters.verbose.translate(n,language)
+function converters.verbose.translate(n,language,connector)
     local t = language and data[language]
-    return t and t.translate(n) or n
+    return t and t.translate(n,connector) or n
 end
 
-local function verbose(n,language)
+local function verbose(n,language,connector)
     local t = language and data[language]
-    context(t and t.translate(n) or n)
+    context(t and t.translate(n,connector) or n)
 end
 
 implement {
     name      = "verbose",
     actions   = verbose,
-    arguments = { "integer", "string" }
+    arguments = { "integer", "string", "string" }
 }
 
 -- These are just helpers but not really for the tex end. Do we have to

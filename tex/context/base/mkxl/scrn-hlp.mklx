@@ -69,20 +69,21 @@
    \c!backgroundcolor=gray]
 
 \appendtoks
-    \frozen\instance\setuevalue         \currenthelp {\scrn_help_argument{\currenthelp}}%
-    \frozen\instance\setuevalue{\e!start\currenthelp}{\scrn_help_start   {\currenthelp}}%
-    \frozen\instance\setuevalue{\e!stop \currenthelp}{\scrn_help_stop                  }%
+    \frozen\instance\protected\edefcsname        \currenthelp\endcsname{\scrn_help_argument{\currenthelp}}%
+    \frozen\instance\protected\edefcsname\e!start\currenthelp\endcsname{\scrn_help_start   {\currenthelp}}%
+    \frozen\instance\protected\edefcsname\e!stop \currenthelp\endcsname{\scrn_help_stop                  }%
 \to \everydefinehelp
+
+\mutable\let\currenthelpreference\empty
+\mutable\let\currenthelpname     \empty
 
 \protected\def\scrn_help_argument#category%
   {\def\currenthelp{#category}%
    \global\advance\c_scrn_help_n\plusone
    \edef\currenthelpname{help:\number\c_scrn_help_n}%
-   \doifelselocation
-     {\dosingleempty\scrn_help_argument_indeed}
-     {\dosingleempty\scrn_help_argument_ignore}}
+   \doifelselocation\scrn_help_argument_indeed\scrn_help_argument_ignore}
 
-\def\scrn_help_argument_indeed[#reference]#text#target%
+\tolerant\def\scrn_help_argument_indeed[#reference]#:#text#target%
   {\edef\currenthelpreference{#reference}%
    \dontleavehmode \hbox \bgroup
      \dontcomplain
@@ -93,17 +94,14 @@
      {\helpsignal{\number\c_scrn_help_n}#target}%
      [\helpaction{\number\c_scrn_help_n}]}
 
-\def\scrn_help_argument_ignore[#reference]#text#target%
+\tolerant\def\scrn_help_argument_ignore[#reference]#:#text#target%
   {#target}
 
-\protected\def\scrn_help_start#category%
-  {\def\currenthelp{#category}%
-   \global\advance\c_scrn_help_n\plusone
+\tolerant\protected\def\scrn_help_start#category#spacer[#reference]%
+  {\global\advance\c_scrn_help_n\plusone
+   \edef\currenthelp{#category}%
+   \edef\currenthelpreference{#reference}%
    \edef\currenthelpname{help:\number\c_scrn_help_n}%
-   \dosingleempty\scrn_help_start_indeed}
-
-\def\scrn_help_start_indeed[#reference]%
-  {\edef\currenthelpreference{#reference}%
    \grabbufferdatadirect\currenthelp{\e!start\currenthelp}{\e!stop\currenthelp}}
 
 \protected\def\scrn_help_stop

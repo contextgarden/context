@@ -463,10 +463,19 @@
 \unexpanded\def\resettextcontent
   {\dotripleempty\page_layouts_reset_text_content}
 
+% \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
+%   {\edef\currentlayoutelement{#vertical:#horizontal}%
+%    \ifthirdargument
+%      \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
+%    \else\ifsecondargument
+%      \resetlayoutelementparameter\c!lefttext
+%      \resetlayoutelementparameter\c!middletext
+%      \resetlayoutelementparameter\c!righttext
+%    \fi\fi}
+
 \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
-  {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \ifthirdargument
-     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
+  {\ifthirdargument
+     \letvalueempty{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
    \else\ifsecondargument
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext

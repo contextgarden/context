@@ -149,32 +149,33 @@
    \instance\setuevalue{\e!start#tag}{\strc_notations_start  [#tag]}%
    \instance\setuevalue{\e!stop #tag}{\strc_notations_stop   }}
 
+\let\m_strc_notation_sub\empty
+
 \appendtoks
+    \let\m_strc_notation_sub\empty
     \ifempty\currentnotationparent
        % clone => parent | subclone => clone | subsubclone => subclone
-       \let\currentnotationsub\empty
        \strc_define_commands_notation
-         {\currentnotationsub\currentnotation}%
+         {\m_strc_notation_sub\currentnotation}%
          \plusone
          \empty
        \edef\p_levels{\notationparameter\c!levels}%
        \dostepwiserecurse\plustwo\p_levels\plusone
          {\strc_define_commands_notation
-            {\v!sub\currentnotationsub\currentnotation}%
+            {\v!sub\m_strc_notation_sub\currentnotation}%
             \recurselevel
-            {\currentnotationsub\currentnotation}%
-          \edef\currentnotationsub{\v!sub\currentnotationsub}}%
+            {\m_strc_notation_sub\currentnotation}%
+          \edef\m_strc_notation_sub{\v!sub\m_strc_notation_sub}}%
         \definelist[\currentnotation]% goodie
    \else
        % clone => parent | subclone => subparent | subsubclone => subsubparent
-       \let\currentnotationsub\empty
        \edef\p_levels{\notationparameter\c!levels}%
        \dorecurse\p_levels
          {\strc_define_commands_notation
-            {\currentnotationsub\currentnotation}%
+            {\m_strc_notation_sub\currentnotation}%
             \recurselevel
-            {\currentnotationsub\currentnotationparent}%
-          \edef\currentnotationsub{\v!sub\currentnotationsub}}%
+            {\m_strc_notation_sub\currentnotationparent}%
+          \edef\m_strc_notation_sub{\v!sub\m_strc_notation_sub}}%
         \definelist[\currentnotation][\currentnotationparent]% goodie
    \fi
    \edef\p_counter{\notationparameter\s!counter}% can inherit from parent
@@ -540,7 +541,7 @@
      \ifcsname\??noteinteractiondisplay\p_interaction\endcsname\p_interaction\else\v!no\fi
    \endcsname}
 
-\def\currentnotenumber{0}
+\mutable\let\currentnotenumber\!!zerocount
 
 \let\strc_notes_get_reference_attribute_symbol  \empty
 \let\strc_notes_get_destination_attribute_symbol\empty
@@ -551,81 +552,76 @@
 
 % inline
 
-\def\strc_references_prepare_inline_references_nop
+\let\m_strc_notes_internal\relax
+
+\def\strc_notes_prepare_inline_references_nop
   {\let\strc_notes_get_reference_attribute_symbol\empty
    \let\strc_notes_get_destination_attribute_symbol\empty
    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_nop}
 
-% \def\strc_references_prepare_inline_references_yes
-%   {\strc_references_set_simple_reference{symb:\currentnote:\currentnotenumber}% destination
-%    \strc_references_get_simple_reference{internal(\clf_noteinternal{\currentnote}\currentnotenumber)}% reference
-%    \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
-%    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
-%    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
-
-\def\strc_references_prepare_inline_references_yes
-  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
-   \strc_references_set_simple_reference{*\currentnoteinternal}% destination
-   \strc_references_get_simple_reference{internal(\currentnoteinternal)}% reference
+\def\strc_notes_prepare_inline_references_yes
+  {\edef\m_strc_notes_internal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \strc_references_set_simple_reference{*\m_strc_notes_internal}% destination
+   \strc_references_get_simple_reference{internal(\m_strc_notes_internal)}% reference
    \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
 
-\letvalue{\??noteinteractioninline\v!no    }\strc_references_prepare_inline_references_nop
-\letvalue{\??noteinteractioninline\v!all   }\strc_references_prepare_inline_references_yes
-\letvalue{\??noteinteractioninline\v!number}\strc_references_prepare_inline_references_yes
-\letvalue{\??noteinteractioninline\v!text  }\strc_references_prepare_inline_references_yes
-\letvalue{\??noteinteractioninline\v!yes   }\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!no    }\strc_notes_prepare_inline_references_nop
+\letvalue{\??noteinteractioninline\v!all   }\strc_notes_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!number}\strc_notes_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!text  }\strc_notes_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!yes   }\strc_notes_prepare_inline_references_yes
 
 % display (for 'all' we need unique text and number attributes so we resolve twice
 % as we otherwise don't get the number one which is lapped in the margin so we need
 % to explicitly visit it)
 
-\def\strc_references_prepare_display_references_nop
+\def\strc_notes_prepare_display_references_nop
   {\let\strc_notes_set_reference_attribute_number\donothing
    \let\strc_notes_set_reference_attribute_text\donothing
    \let\strc_notes_set_destination_attribute_text\donothing
    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_nop}
 
-\def\strc_references_prepare_display_references_yes_number
-  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
-   \ifcase\currentnoteinternal\relax
-     \strc_references_prepare_display_references_nop
+\def\strc_notes_prepare_display_references_yes_number
+  {\edef\m_strc_notes_internal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\m_strc_notes_internal\relax
+     \strc_notes_prepare_display_references_nop
    \else
      \let\strc_notes_set_reference_attribute_text\donothing
-     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
      \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 
-\def\strc_references_prepare_display_references_yes_text
-  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
-   \ifcase\currentnoteinternal\relax
-     \strc_references_prepare_display_references_nop
+\def\strc_notes_prepare_display_references_yes_text
+  {\edef\m_strc_notes_internal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\m_strc_notes_internal\relax
+     \strc_notes_prepare_display_references_nop
    \else
-     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
      \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_reference_attribute_number\donothing
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 
-\def\strc_references_prepare_display_references_yes_all
-  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
-   \ifcase\currentnoteinternal\relax
-     \strc_references_prepare_display_references_nop
+\def\strc_notes_prepare_display_references_yes_all
+  {\edef\m_strc_notes_internal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\m_strc_notes_internal\relax
+     \strc_notes_prepare_display_references_nop
    \else
-     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
      \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
-     \strc_references_get_simple_reference{*\currentnoteinternal}% reference
+     \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
      \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 
-\letvalue{\??noteinteractiondisplay\v!no    }\strc_references_prepare_display_references_nop
-\letvalue{\??noteinteractiondisplay\v!all   }\strc_references_prepare_display_references_yes_all
-\letvalue{\??noteinteractiondisplay\v!number}\strc_references_prepare_display_references_yes_number
-\letvalue{\??noteinteractiondisplay\v!text  }\strc_references_prepare_display_references_yes_text
-\letvalue{\??noteinteractiondisplay\v!yes   }\strc_references_prepare_display_references_yes_number
+\letvalue{\??noteinteractiondisplay\v!no    }\strc_notes_prepare_display_references_nop
+\letvalue{\??noteinteractiondisplay\v!all   }\strc_notes_prepare_display_references_yes_all
+\letvalue{\??noteinteractiondisplay\v!number}\strc_notes_prepare_display_references_yes_number
+\letvalue{\??noteinteractiondisplay\v!text  }\strc_notes_prepare_display_references_yes_text
+\letvalue{\??noteinteractiondisplay\v!yes   }\strc_notes_prepare_display_references_yes_number
 
 \mutable\let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
 \mutable\let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
@@ -710,7 +706,7 @@
      \dostoptagged
    \egroup
    \endgroup
-   \glet\lastnotesymbol\relax}
+   \glet\lastnotesymbol\empty}
 
 \protected\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
@@ -721,7 +717,7 @@
    \fi
    \nobreak
    \hpack to .5\emwidth{}%
-   \glet\lastnotesymbol\relax}
+   \glet\lastnotesymbol\empty}
 
 \protected\def\strc_notes_inject_separator % patch by WS due to request on list
   {\edef\p_textseparator{\noteparameter\c!textseparator}%
@@ -757,18 +753,18 @@
 % eraseinsertionbackup
 % restoreinsertionbackup
 
-\def\savenotedata      {} % \writestatus{todo}{save    note data}}
-\def\restorenotedata   {} % \writestatus{todo}{restore note data}}
-\def\savenotecontent   {} % \writestatus{todo}{save    note content}}
-\def\restorenotecontent{} % \writestatus{todo}{restore note content}}
-\def\erasenotebackup   {} % \writestatus{todo}{erase   note backup}}
+% \def\savenotedata      {} % \writestatus{todo}{save    note data}}
+% \def\restorenotedata   {} % \writestatus{todo}{restore note data}}
+% \def\savenotecontent   {} % \writestatus{todo}{save    note content}}
+% \def\restorenotecontent{} % \writestatus{todo}{restore note content}}
+% \def\erasenotebackup   {} % \writestatus{todo}{erase   note backup}}
 
 % page-set:
 
-\def\enablenotes    {\writestatus{todo}{enable  notes}}
-\def\disablenotes   {\writestatus{todo}{disable notes}}
-\def\savenotes      {\writestatus{todo}{save    notes}}
-\def\flushsavednotes{\writestatus{todo}{flush   notes}}
+% \def\enablenotes    {\writestatus{todo}{enable  notes}}
+% \def\disablenotes   {\writestatus{todo}{disable notes}}
+% \def\savenotes      {\writestatus{todo}{save    notes}}
+% \def\flushsavednotes{\writestatus{todo}{flush   notes}}
 
 % experiment: (compare scope=text and scope=page)
 %
@@ -1063,7 +1059,8 @@
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \ifnum\currentnofcolumns=\zerocount
+ % \ifnum\currentnofcolumns=\zerocount
+   \ifnum\nofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
    \page_inserts_set_location\currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
@@ -1267,9 +1264,6 @@
 
 \protected\def\strc_notes_inject_text % hm main?
   {\clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}
-
-\let\startpushnote\relax
-\let\stoppushnote \relax
 
 \newsignal\d_strc_notes_signal
 
@@ -1558,9 +1552,11 @@
 
 \newconditional\inlocalnotes
 
+\mutable\let\localnoteslist\empty
+
 \permanent\tolerant\protected\def\startlocalnotes[#list]% grouping ? (we used to have a second argument ... settings)
-  {\def\localnoteslist{#list}%
-   \settrue\inlocalnotes
+  {\settrue\inlocalnotes
+   \def\localnoteslist{#list}%
    \processcommacommand[\localnoteslist]\strc_notes_local_start_step}
 
 \permanent\protected\def\stoplocalnotes
@@ -1712,10 +1708,8 @@
   {\begingroup
    \setupcurrentnote[\c!location=]%
    \inheritednoteframed
-     {\edef\currentnotewidth{\noteparameter\c!width}%
-      \doifelsedimension\currentnotewidth\donothing
-        {\edef\currentnotewidth{\the\hsize}}%
-      \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
+     {\doifelsedimension{\noteparameter\c!width}\donothing{\setexpandednoteparameter\c!width{\the\hsize}}%
+      \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
         \flushlocalnotes\currentnote
       \stopsimplecolumns}%
    \endgroup}
@@ -1753,7 +1747,7 @@
 
     % used in page-mul
 
-    \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\nofcolumns} \fi
+ %  \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\nofcolumns} \fi
 
     \permanent\protected\def\fakenotes
       {\ifhmode\endgraf\fi\ifvmode
@@ -1820,7 +1814,7 @@
 %D \appendtoks \synchronizenotes \to \everypar
 %D \stoptyping
 
-\let\synchronizenotes\relax
+% \let\synchronizenotes\relax
 
 %D When typesetting footnotes, we have to return to the footnote specific bodyfont
 %D size, which is in most cases derived from the global document bodyfont size. In
@@ -1902,7 +1896,7 @@
 
 \installcorenamespace{notesymbol}
 
-\let\lastnotesymbol\relax % todo: per class
+\mutable\let\lastnotesymbol\empty % todo: per class
 
 \permanent\tolerant\protected\def\notesymbol[#tag]#spacer[#reference]%
   {\ifnotesenabled

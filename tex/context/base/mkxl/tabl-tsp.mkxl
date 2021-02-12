@@ -76,6 +76,7 @@
 
 \mutable\let   \extrasplitfloatlines \!!zerocount
 \mutable\let   \splitfloatfinalizer  \relax
+\mutable\let   \splitfloatcommand    \empty
 
 \mutable\let   \floatcaptionsuffix   \empty
 
@@ -396,6 +397,8 @@
 %D xtables.
 
 \aliased\let\resetdirecttsplit\resettsplit
+
+\mutable\let\tsplitdirectsplitter\relax
 
 \permanent\protected\def\handledirecttsplit
   {\page_split_float_check_caption{\tsplitdirectwidth}%

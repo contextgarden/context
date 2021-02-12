@@ -156,6 +156,8 @@
    }}%
    \advance\c_meta_nodes_n\plusone}
 
+\aliased\let\placenode\relax
+
 \appendtoks
    \enforced\let\placenode\grph_nodes_node
 \to \t_every_meta_nodes

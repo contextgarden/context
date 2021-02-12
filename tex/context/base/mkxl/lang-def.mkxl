@@ -606,9 +606,6 @@
 % Sardian, Catalan, French, Ladino, Portuguese, Proven\c{c}al,
 % Spanish
 
-\ifdefined\guillemotspace \else \let\guillemotspace\empty \fi
-\ifdefined\sentencespace  \else \let\sentencespace \empty \fi
-
 \installlanguage
   [\s!fr]
   [\c!spacing=\v!packed,

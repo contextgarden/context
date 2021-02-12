@@ -787,43 +787,43 @@
    \fi{\flushnextbox}%
    \egroup}
 
-\letvalue{\??alignedboxes                  }\middlebox
-\letvalue{\??alignedboxes\v!middle         }\middlebox
-\letvalue{\??alignedboxes\v!middle\v!middle}\middlebox
-\letvalue{\??alignedboxes\v!left           }\leftbox
-\letvalue{\??alignedboxes\v!left  \v!top   }\lefttopbox
-\letvalue{\??alignedboxes\v!left  \v!bottom}\leftbottombox
-\letvalue{\??alignedboxes\v!right          }\rightbox
-\letvalue{\??alignedboxes\v!right \v!top   }\righttopbox
-\letvalue{\??alignedboxes\v!right \v!bottom}\rightbottombox
-\letvalue{\??alignedboxes\v!bottom         }\bottombox
-\letvalue{\??alignedboxes\v!bottom\v!left  }\bottomleftbox
-\letvalue{\??alignedboxes\v!bottom\v!right }\bottomrightbox
-\letvalue{\??alignedboxes\v!top            }\topbox
-\letvalue{\??alignedboxes\v!top   \v!left  }\topleftbox
-\letvalue{\??alignedboxes\v!top   \v!right }\toprightbox
-\letvalue{\??alignedboxes\v!line           }\baselinemiddlebox % \v!grid is taken
-\letvalue{\??alignedboxes\v!line  \v!left  }\baselineleftbox
-\letvalue{\??alignedboxes\v!line  \v!middle}\baselinemiddlebox
-\letvalue{\??alignedboxes\v!line  \v!right }\baselinerightbox
-\letvalue{\??alignedboxes                 c}\middlebox
-\letvalue{\??alignedboxes                 l}\leftbox
-\letvalue{\??alignedboxes                 r}\rightbox
-\letvalue{\??alignedboxes                 b}\bottombox
-\letvalue{\??alignedboxes                 t}\topbox
-\letvalue{\??alignedboxes                lt}\lefttopbox
-\letvalue{\??alignedboxes                lb}\leftbottombox
-\letvalue{\??alignedboxes                rt}\righttopbox
-\letvalue{\??alignedboxes                rb}\rightbottombox
-\letvalue{\??alignedboxes                tl}\topleftbox
-\letvalue{\??alignedboxes                bl}\bottomleftbox
-\letvalue{\??alignedboxes                tr}\toprightbox
-\letvalue{\??alignedboxes                br}\bottomrightbox
-\letvalue{\??alignedboxes                 m}\middlebox
-\letvalue{\??alignedboxes                 g}\baselinemiddlebox
-\letvalue{\??alignedboxes                gl}\baselineleftbox
-\letvalue{\??alignedboxes                gc}\baselinemiddlebox
-\letvalue{\??alignedboxes                gr}\baselinerightbox
+\letcsname\??alignedboxes                  \endcsname\middlebox
+\letcsname\??alignedboxes\v!middle         \endcsname\middlebox
+\letcsname\??alignedboxes\v!middle\v!middle\endcsname\middlebox
+\letcsname\??alignedboxes\v!left           \endcsname\leftbox
+\letcsname\??alignedboxes\v!left  \v!top   \endcsname\lefttopbox
+\letcsname\??alignedboxes\v!left  \v!bottom\endcsname\leftbottombox
+\letcsname\??alignedboxes\v!right          \endcsname\rightbox
+\letcsname\??alignedboxes\v!right \v!top   \endcsname\righttopbox
+\letcsname\??alignedboxes\v!right \v!bottom\endcsname\rightbottombox
+\letcsname\??alignedboxes\v!bottom         \endcsname\bottombox
+\letcsname\??alignedboxes\v!bottom\v!left  \endcsname\bottomleftbox
+\letcsname\??alignedboxes\v!bottom\v!right \endcsname\bottomrightbox
+\letcsname\??alignedboxes\v!top            \endcsname\topbox
+\letcsname\??alignedboxes\v!top   \v!left  \endcsname\topleftbox
+\letcsname\??alignedboxes\v!top   \v!right \endcsname\toprightbox
+\letcsname\??alignedboxes\v!line           \endcsname\baselinemiddlebox % \v!grid is taken
+\letcsname\??alignedboxes\v!line  \v!left  \endcsname\baselineleftbox
+\letcsname\??alignedboxes\v!line  \v!middle\endcsname\baselinemiddlebox
+\letcsname\??alignedboxes\v!line  \v!right \endcsname\baselinerightbox
+\letcsname\??alignedboxes                 c\endcsname\middlebox
+\letcsname\??alignedboxes                 l\endcsname\leftbox
+\letcsname\??alignedboxes                 r\endcsname\rightbox
+\letcsname\??alignedboxes                 b\endcsname\bottombox
+\letcsname\??alignedboxes                 t\endcsname\topbox
+\letcsname\??alignedboxes                lt\endcsname\lefttopbox
+\letcsname\??alignedboxes                lb\endcsname\leftbottombox
+\letcsname\??alignedboxes                rt\endcsname\righttopbox
+\letcsname\??alignedboxes                rb\endcsname\rightbottombox
+\letcsname\??alignedboxes                tl\endcsname\topleftbox
+\letcsname\??alignedboxes                bl\endcsname\bottomleftbox
+\letcsname\??alignedboxes                tr\endcsname\toprightbox
+\letcsname\??alignedboxes                br\endcsname\bottomrightbox
+\letcsname\??alignedboxes                 m\endcsname\middlebox
+\letcsname\??alignedboxes                 g\endcsname\baselinemiddlebox
+\letcsname\??alignedboxes                gl\endcsname\baselineleftbox
+\letcsname\??alignedboxes                gc\endcsname\baselinemiddlebox
+\letcsname\??alignedboxes                gr\endcsname\baselinerightbox
 
 % left/right/top/bottomoffset -> dimensions change
 % x/y | method=fixed          -> dimensions don't change
@@ -978,7 +978,7 @@
 \permanent\protected\def\rtabbed{\pack_boxes_tabbed\hss  \relax}
 \permanent\protected\def\ctabbed{\pack_boxes_tabbed\hss  \hss}
 
-\let\mtabbed\ctabbed
+\aliased\let\mtabbed\ctabbed
 
 % to be documented
 

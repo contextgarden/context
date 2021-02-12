@@ -172,11 +172,13 @@
    \c!leftmargin=.2\emwidth,
    \c!rightmargin=.2\emwidth]
 
-\aliased\let\mathdotfill\dotfill
+% If users really want it:
+%
+% \permanent\protected\def\mathdotfill{\cleaders\hbox{$\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu$}\hfill} % plain
+% \permanent\protected\def\textdotfill{\filler[dotfill]}
+% \permanent\protected\def\dotfill    {\mathortext\mathdotfill\textdotfill}
 
-\permanent\protected\def\textdotfill{\filler[dotfill]}
-
-\permanent\protected\def\dotfill{\mathortext\mathdotfill\textdotfill}
+\permanent\protected\def\dotfill{\filler[dotfill]}
 
 % maybe box -> symbol
 

@@ -201,10 +201,23 @@
     \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetuplayouttarget
 
+\def\scrn_canvas_synchronize_common {
+    mode        {\interactionscreenparameter\c!option}%
+    singlesided \ifsinglesided true\else false\fi\space
+    doublesided \ifdoublesided true\else false\fi\space
+    copies      \numexpr\interactionscreenparameter\c!copies\relax
+    print       {\interactionscreenparameter\c!print}%
+}
+
+\appendtoks
+    \let\scrn_canvas_synchronize_common\empty
+\to \everyaftershipout
+
 \def\scrn_canvas_synchronize_only
   {\clf_setupcanvas
      paperwidth  \printpaperwidth
      paperheight \printpaperheight
+     \scrn_canvas_synchronize_common
    \relax}
 
 \def\scrn_canvas_synchronize_set#width#height%
@@ -223,9 +236,6 @@
 \def\scrn_canvas_synchronize_complex_indeed
   {\scrn_canvas_calculate % otherwise we need to hook it into setuppage etc
    \clf_setupcanvas
-        mode        {\interactionscreenparameter\c!option}%
-        singlesided \ifsinglesided true\else false\fi\space
-        doublesided \ifdoublesided true\else false\fi\space
         leftoffset  \canvasbackoffset
         topoffset   \canvastopoffset
         width       \canvaswidth
@@ -236,10 +246,10 @@
         trimoffset  \canvastrimoffset
         bleedoffset \canvasbleedoffset
         artoffset   \canvasartoffset
-        copies      \numexpr\interactionscreenparameter\c!copies\relax
-        print       {\interactionscreenparameter\c!print}%
+        \scrn_canvas_synchronize_common
    \relax
   %\glet\scrn_canvas_synchronize_simple \relax
+   % one shot only
    \glet\scrn_canvas_synchronize_complex\relax}
 
 \appendtoks

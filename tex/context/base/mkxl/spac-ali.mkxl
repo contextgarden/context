@@ -502,7 +502,7 @@
 
 \newconstant\c_spac_align_state_page
 
-\def\bottomalignlimit{\plusthree\lineheight}
+\mutable\def\bottomalignlimit{\plusthree\lineheight}
 
 \newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
 
@@ -892,23 +892,18 @@
    \fi}
 
 \permanent\protected\def\showpardata
-  {\edef\thepardata
-     {\hbox{font: \fontname\font}\endgraf
-      \spac_show_par_data
-        \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
-        \hsize     \vsize
-        \leftskip  \rightskip
-        \spaceskip \xspaceskip
-        \parindent \parfillskip
-        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
-        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
-        \doublehyphendemerits \finalhyphendemerits \adjdemerits
-      \relax}%
-   \dontleavehmode
-   \begingroup
-   \inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{\thepardata}}}%
-   \endgroup
-   \let\showpardata\relax}
+  {\normalexpanded{\dontleavehmode\inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{%
+     \hbox{font: \fontname\font}\endgraf
+     \spac_show_par_data
+       \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
+       \hsize     \vsize
+       \leftskip  \rightskip
+       \spaceskip \xspaceskip
+       \parindent \parfillskip
+       \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
+       \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
+       \doublehyphendemerits \finalhyphendemerits \adjdemerits
+   \relax}}}}}
 
 \permanent\protected\def\startshowpardata
   {\begingroup

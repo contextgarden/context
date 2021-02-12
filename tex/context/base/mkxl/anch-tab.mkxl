@@ -224,7 +224,12 @@
     \glet\anch_tabulate_flush_epos\relax
 \to \everytabulate
 
-%D In order to prevent potential clashes with abbreviations, postpone the mapping.
+%D In order to prevent potential clashes with abbreviations, postpone the mapping and
+%D make them mutable.
+
+\mutable\let\GSC\empty
+\mutable\let\GFC\empty
+\mutable\let\GTC\empty
 
 \appendtoks
     \enforced\let\GSC\tbGSC

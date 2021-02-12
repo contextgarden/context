@@ -130,7 +130,7 @@
 
 \installcommandhandler \??simplelist {simplelist} \??simplelist
 
-\let\setupsimplelists\setupsimplelist
+\aliased\let\setupsimplelists\setupsimplelist
 
 \setupsimplelists[%
     %c!title=,
@@ -447,11 +447,13 @@
    \edef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
      {\normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
-        \strc_synonyms_place_list[#1][#2]%
+        \placelistofsynonyms[#1][#2]%
         \page
       \stopnamedsection}%
      {}% todo: message that invalid
    \endgroup}
+
+\mutable\let\currentsimplelistentry\empty
 
 \protected\def\strc_synonym_normal#1#2#3#4%
   {\begingroup

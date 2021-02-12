@@ -79,7 +79,7 @@
         \setdirection[\number\directionsbidimode]%
     \fi
     \ifx\p_bidi\v!global
-        \pickupdirectionsattribute
+        \pickupdirectionsattribute % pagebuilder
     \else
         \forgetdirectionsattribute
     \fi

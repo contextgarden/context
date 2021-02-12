@@ -680,6 +680,8 @@
 \permanent\protected\def\tlap{\begingroup\dowithnextboxcs\syst_boxes_do_tlap\vbox}
 \permanent\protected\def\blap{\begingroup\dowithnextboxcs\syst_boxes_do_blap\vbox}
 
+%D in \LMTX\ this mechanism is obsolete! Use boxlines instead!
+
 %D \macros
 %D   {beginofshapebox,
 %D    reshapebox, doreshapebox,
@@ -823,7 +825,7 @@
      {\kern   \shapekern   }%
      {\vskip  \shapeskip   }}
 
-\def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+\permanent\protected\def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\global\reshapingfailedfalse
    \ifzeropt\ht\oldshapebox
      \setbox\newshapebox\emptyvbox
@@ -835,8 +837,6 @@
         \doloop{\dodoreshapebox{#1}{#2}{#3}{#4}}}%
      \setbox\newshapebox\box\tmpshapebox
    \fi}
-
-\ifdefined\originalshapebox \else \let\originalshapebox\oldshapebox \fi
 
 % We will turn this into a \MKIV\ variant (we can use \type {\vpack} too).
 
@@ -969,12 +969,14 @@
 %D use \type {\shapedhbox} instead of \type {\hbox}, since it manages the height and
 %D depth of the line.
 
-\permanent\protected\def\shapedhbox        % lines with non strutted dimensions have
-  {\expanded{\dowithnextbox       % interlineskip so if we want the original
-     {\ht\nextbox\the\ht\shapebox % spacing, we need to preserve the original
-      \dp\nextbox\the\dp\shapebox % height and depth which is definitely
-      \box\nextbox}}              % needed if we apply struts to the 'new'
-   \hbox}                         % box or do something that changed ist size
+\permanent\protected\def\shapedhbox % lines with non strutted dimensions have
+  {\expanded{\dowithnextbox         % interlineskip so if we want the original
+     {\ht\nextbox\the\ht\shapebox   % spacing, we need to preserve the original
+      \dp\nextbox\the\dp\shapebox   % height and depth which is definitely
+      \box\nextbox}}                % needed if we apply struts to the 'new'
+   \hbox}                           % box or do something that changed ist size
+
+%D Till here obsolete.
 
 %D \macros
 %D   {hyphenatedword,
@@ -1049,15 +1051,14 @@
 
 \permanent\protected\def\processtokens#1#2#3#4#5%
   {\begingroup
-   \def\lastcharacter{\lastcharacter}% hm, recursive ?
    \enforced\permanent\def\space{ }%
    \enforced\let\\\space
    \enforced\def\before {#1}%
    \enforced\def\between{#2}%
    \enforced\def\after  {#3}%
    \enforced\def\white  {#4}%
-   \enforced\let\savedbefore\before
-   \syst_boxes_processtokens#5\lastcharacter
+   \enforced\let\m_syst_boxes_before\before
+   \syst_boxes_processtokens#5\s!e_o_t_token
    \endgroup}
 
 \def\syst_boxes_processtokens% the space after = is essential
@@ -1071,14 +1072,14 @@
       \hbox\bgroup}
 
 \def\syst_boxes_do_processtokens
-  {\ifx\nextprocessedtoken\lastcharacter
+  {\ifx\nextprocessedtoken\s!e_o_t_token
      \after
    \orelse\ifx\nextprocessedtoken\bgroup
      \expandafter\syst_boxes_redo_processedtoken
    \else
      \expandafter\if\space\nextprocessedtoken
        \after\white
-       \enforced\let\before\savedbefore
+       \enforced\let\before\m_syst_boxes_before
      \else
        \before\nextprocessedtoken
        \enforced\let\before\between
@@ -1140,12 +1141,16 @@
 
 %D See \MKIV\ file for the older implementation.
 
+\let\m_syst_boxes_left \empty
+\let\m_syst_boxes_right\empty
+
 \permanent\protected\def\limitatetext#1#2#3%
-  {\splitatcomma{#2}\leftlimit\rightlimit
+  {% we could also split in \LUA
+   \splitatcomma{#2}\m_syst_boxes_left\m_syst_boxes_right
    \limitated
-      left     \leftlimit
-  \ifempty\rightlimit\else
-      right    \rightlimit
+      left     \m_syst_boxes_left
+  \ifempty\m_syst_boxes_right\else
+      right    \m_syst_boxes_right
   \fi
       strip    true
       sentinel {#3}
@@ -1254,7 +1259,7 @@
 \permanent\protected\def\processwords#1%
   {\processisolatedwords{#1}\processword}
 
-\let\processword\relax
+\mutable\let\processword\relax
 
 \permanent\protected\def\applytosplitstringchar#1#2%
   {\dontleavehmode\clf_processsplit
@@ -1515,10 +1520,16 @@
 \newif\ifstretchrigidcolumns
 \newif\iftightrigidcolumns    % if true: just a vbox, no depth/noflines/gridsnap corrrections
 
+\mutable\let\rigidcolumnlines\!!zerocount
+
+\newbox  \rigidcolumnbox
+\newdimen\rigidhsize
+\newcount\rigidcolumns
+
 \permanent\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
-  {\xdef\savedrigidhsize{\the\hsize}%
+  {\global\rigidhsize\hsize
+   \global\rigidcolumns#3\relax
    \hsize#1\relax
-   \global\chardef\rigidcolumns#3\relax
    \scratchdimen -#2\relax
    \multiply\scratchdimen #3\relax
    \advance\scratchdimen  #2\relax
@@ -1528,13 +1539,9 @@
 % ==
 %
 % \def\setrigidcolumnhsize#1#2#3%
-%   {\xdef\savedrigidhsize{\the\hsize}%
-%    \global\chardef\rigidcolumns#3\relax
-%    \hsize=\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
-
-\newbox\rigidcolumnbox
-
-\mutable\let\rigidcolumnlines\!!zerocount
+%   {\global\rigidhsize\hsize
+%    \rigidcolumns#3\relax
+%    \hsize\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
 
 \permanent\protected\def\rigidcolumnbalance#1%
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
@@ -1573,7 +1580,7 @@
         \setbox0=\box\rigidcolumnbox
         \doloop
           {\setbox\rigidcolumnbox=\copy0
-           \setbox\scratchbox\hpack to \savedrigidhsize
+           \setbox\scratchbox\hpack to \rigidhsize
              {\dorecurse\rigidcolumns
                 {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
                    \dp\scratchbox\openstrutdepth
@@ -2704,29 +2711,29 @@
 \permanent\protected\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \aliased\let\stopvboxregister\egroup
 \permanent\protected\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \aliased\let\stopvtopregister\egroup
 
-%D For whatever third party package needs it:
-%D
-%D \starttyping
-%D \newlocalbox\BoxOne
-%D \newlocalbox\BoxTwo
-%D
-%D \setbox\BoxOne\hbox{Box One}
-%D \setbox\BoxTwo\hbox{Box Two}
-%D
-%D [\box\BoxTwo] [\box\BoxOne]
-%D \stoptyping
-
-\installcorenamespace{localbox}
-
-\permanent\protected\def\newlocalbox#1%
-  {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
-   \ifrelax#1%
-     \syst_aux_new_localbox#1%
-   \fi}
-
-\def\syst_aux_new_localbox#1%
-  {\expandafter\newbox\csname\??localbox\string#1\endcsname
-   \newlocalbox#1}
+% %D For whatever third party package needs it:
+% %D
+% %D \starttyping
+% %D \newlocalbox\BoxOne
+% %D \newlocalbox\BoxTwo
+% %D
+% %D \setbox\BoxOne\hbox{Box One}
+% %D \setbox\BoxTwo\hbox{Box Two}
+% %D
+% %D [\box\BoxTwo] [\box\BoxOne]
+% %D \stoptyping
+%
+% \installcorenamespace{localbox}
+%
+% \permanent\protected\def\newlocalbox#1%
+%   {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
+%    \ifrelax#1%
+%      \syst_aux_new_localbox#1%
+%    \fi}
+%
+% \def\syst_aux_new_localbox#1%
+%   {\expandafter\newbox\csname\??localbox\string#1\endcsname
+%    \newlocalbox#1}
 
 %D Who knows when this comes in handy:
 

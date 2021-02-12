@@ -21,6 +21,7 @@
 
 \bitwiseflip \normalizelinemode \parindentskipcode
 \bitwiseflip \normalizelinemode \normalizelinecode
+\bitwiseflip \normalizelinemode \clipwidthcode
 
 \let\v_spac_indentation_current\empty % amount/keyword
 
@@ -602,9 +603,9 @@
    \zwj\dorecurse\scratchcounter{\hskip\emwidth\zwj}%
    \endgroup}
 
-% Suggested by GB (not the name -):
+% Suggested by GB (not the name) so we keep it for sentimental reasons:
 
-\def\rapfillskip{.5\hsize plus .092\hsize minus .5\hsize} % D.A.'s value
+\permanent\protected\def\rapfillskip{.5\hsize plus .092\hsize minus .5\hsize} % D.A.'s value
 
 % Bovendien definieren we enkele extra \fill's:
 
@@ -689,36 +690,13 @@
 \newskip       \s_spac_narrower_right_last
 \newconditional\s_spac_narrower_last_swap
 
-% \def\spac_narrower_start_apply#1%
-%   {\narrowerparameter\c!before
-%    \global\s_spac_narrower_left  \zeropoint
-%    \global\s_spac_narrower_right \zeropoint
-%    \global\s_spac_narrower_middle\zeropoint
-%    \edef\askednarrower{#1}%
-%    \ifx\askednarrower\v!reverse
-%      \ifconditional\s_spac_narrower_last_swap
-%        \leftskip \s_spac_narrower_right_last
-%        \rightskip\s_spac_narrower_left_last
-%        \setfalse\s_spac_narrower_last_swap
-%      \else
-%        \leftskip \s_spac_narrower_left_last
-%        \rightskip\s_spac_narrower_right_last
-%        \settrue\s_spac_narrower_last_swap
-%      \fi
-%    \else
-%      \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
-%      \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
-%      \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
-%    \fi
-%    \seteffectivehsize}
-
 \def\spac_narrower_start_apply#1%
   {\narrowerparameter\c!before
    \global\s_spac_narrower_left  \zeropoint
    \global\s_spac_narrower_right \zeropoint
    \global\s_spac_narrower_middle\zeropoint
-   \edef\askednarrower{#1}%
-   \ifx\askednarrower\v!reverse
+   \edef\scratchstringone{#1}%
+   \ifx\scratchstringone\v!reverse
      \ifconditional\s_spac_narrower_last_swap
        \frozen\leftskip \s_spac_narrower_right_last
        \frozen\rightskip\s_spac_narrower_left_last
@@ -729,7 +707,7 @@
        \settrue\s_spac_narrower_last_swap
      \fi
    \else
-     \normalexpanded{\processcommalistwithparameters[\askednarrower]}\spac_narrower_initialize
+     \normalexpanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
      \frozen\advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
      \frozen\advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \fi
@@ -858,15 +836,17 @@
 
 \installcorenamespace{tolerancemethods}
 
+\mutable\let\bottomtolerance\empty % why not zero (not used annyway, but for now we keep it)
+
 \permanent\protected\def\installtolerancemethod#1#2#3%
   {\defcsname\??tolerancemethods#1:#2\endcsname{#3}}
 
-\installtolerancemethod \v!vertical   \v!verystrict   {\let\bottomtolerance\empty}
+\installtolerancemethod \v!vertical   \v!verystrict   {\let\bottomtolerance\empty} % why not zero
 \installtolerancemethod \v!vertical   \v!strict       {\def\bottomtolerance{.050}}
 \installtolerancemethod \v!vertical   \v!tolerant     {\def\bottomtolerance{.075}}
 \installtolerancemethod \v!vertical   \v!verytolerant {\def\bottomtolerance{.100}}
 
-\installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize}
+\installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize\relax}
 \installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\s!plus.25em\s!minus.25em\relax}
 \installtolerancemethod \v!horizontal \v!verystrict   {\tolerance\plustwohundred}
 \installtolerancemethod \v!horizontal \v!strict       {\tolerance1500 }
@@ -880,14 +860,6 @@
 
 \def\spac_tolerances_step_vertical  #1{\csname\??tolerancemethods\v!vertical  :#1\endcsname}
 \def\spac_tolerances_step_horizontal#1{\csname\??tolerancemethods\v!horizontal:#1\endcsname}
-
-%% \protected\def\setuptolerance
-%%   {\dosingleargument\spac_tolerances_setup}
-%%
-%% \def\spac_tolerances_setup[#1]%
-%%   {\doifelseinset\v!vertical{#1}%
-%%      {\processcommacommand[#1]\spac_tolerances_step_vertical  }
-%%      {\processcommacommand[#1]\spac_tolerances_step_horizontal}}
 
 \permanent\tolerant\protected\def\setuptolerance[#1]%
   {\ifarguments\or
@@ -1047,30 +1019,30 @@
 
 % needed for unicode:
 
-%protected\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip1}
-%protected\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
-%protected\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
-%protected\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
-%protected\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
-%protected\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
-%protected\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
-%protected\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
-%protected\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
-%protected\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
-%protected\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
-%protected\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
-%protected\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
-%protected\def\zerowidthspace          {\hskip\zeropoint}
+% \protected\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip1}
+% \protected\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+% \protected\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
+% \protected\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
+% \protected\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
+% \protected\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
+% \protected\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+% \protected\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+% \protected\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
+% \protected\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
+% \protected\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
+% \protected\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
+% \protected\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
+% \protected\def\zerowidthspace          {\hskip\zeropoint}
 
 \definehspace[.5][.1250\emwidth] % hair
 \definehspace[1] [.1667\emwidth] % thin
 \definehspace[2] [.2222\emwidth] % med
 \definehspace[3] [.2777\emwidth] % thick
 
-\aliased\let \, \thinspace
-\aliased\let \: \medspace
-\aliased\let \; \thickspace
-\aliased\let \! \negthinspace
+\suggestedalias \, \thinspace
+\suggestedalias \: \medspace
+\suggestedalias \; \thickspace
+\suggestedalias \! \negthinspace
 
 % plain ...
 %
@@ -1182,7 +1154,7 @@
 
 %D For the moment here (used in page-txt):
 
-\protected\def\ignoredlinebreak{\unskip\space\ignorespaces}
+\permanent\protected\def\ignoredlinebreak{\unskip\space\ignorespaces}
 
 %D \macros
 %D   {startignorespaces}

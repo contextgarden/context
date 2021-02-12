@@ -358,8 +358,9 @@
 \permanent\tolerant\protected\def\fitfield[#tag]#spacer[#settings]%
   {\iflocation
      \begingroup
-       \edef\currentdefaultfieldvalue{\clf_getdefaultfieldvalue{#tag}}%
-       \setbox\b_scrn_field_fit_symbol\hbox{\symbol[\currentdefaultfieldvalue]}%
+       \setbox\b_scrn_field_fit_symbol\hbox\bgroup
+         \normalexpanded{\symbol[\clf_getdefaultfieldvalue{#tag}]}%
+       \egroup
        \fitfieldframed
          {\fieldbody[#tag]
             [\c!width=\wd\b_scrn_field_fit_symbol,
@@ -378,6 +379,8 @@
 \installparameterhandler     \??fieldlabel   {fieldlabelframed}
 \installparameterhandler     \??fieldcontent {fieldcontentframed}
 \installparameterhandler     \??fieldtotal   {fieldtotalframed}
+
+\installparametersethandler  \??fieldcontent {fieldcontentframed}
 
 \installsetuphandler         \??fieldlabel   {fieldlabelframed}
 \installsetuphandler         \??fieldcontent {fieldcontentframed}
@@ -667,6 +670,8 @@
 \tolerant\def\scrn_tooltip_ignore[#settings]#:#anchortext#tiptext%
   {#anchortext}
 
+\mutable\let\currenttooltipname\empty
+
 \tolerant\def\scrn_tooltip_indeed[#settings]#:#anchortext#tiptext% a more modern aproach (push buttons)
   {\dontleavehmode \hbox \bgroup
      \dontcomplain
@@ -695,10 +700,10 @@
        {\fieldbody[\currenttooltipname:txt]}%
      \setbox\b_scrn_tooltip_text\hbox
        {\strut\lower\dimexpr.25ex+\ht\b_scrn_tooltip_text\relax\box\b_scrn_tooltip_text}%
-     \edef\currenttooltiplocation{\tooltipparameter\c!location}%
-     \ifx\currenttooltiplocation\v!left
+     \edef\p_location{\tooltipparameter\c!location}%
+     \ifx\p_location\v!left
        \hsmashed{\hskip\wd\b_scrn_tooltip_anchor\llap{\box\b_scrn_tooltip_text}}%
-     \orelse\ifx\currenttooltiplocation\v!middle
+     \orelse\ifx\p_location\v!middle
        \hsmashed to \wd\b_scrn_tooltip_anchor{\hss\box\b_scrn_tooltip_text\hss}%
      \else
        \hsmashed{\box\b_scrn_tooltip_text}%
@@ -906,7 +911,9 @@
 \permanent\permanent\protected\def\scrn_menu_psh_direct[#reference]#text\\
   {\scrn_menu_psh_start[#reference]\stoprob}
 
-\aliased\let\stoppsh\relax
+\aliased\let\startpsh\relax % maybe mutable
+\aliased\let\stoppsh \relax % maybe mutable
+\aliased\let\psh     \relax % maybe mutable
 
 \appendtoks
     \enforced\let\startpsh\scrn_menu_psh_start
@@ -1018,7 +1025,9 @@
 \permanent\protected\def\scrn_menu_rob_direct[#reference]#text\\
   {\scrn_menu_rob_start[#reference]#text\stoprob}
 
-\aliased\let\stoprob\relax
+\aliased\let\startrob\relax % maybe mutable
+\aliased\let\stoprob \relax % maybe mutable
+\aliased\let\rob     \relax % maybe mutable
 
 \appendtoks
     \enforced\let\startrob\scrn_menu_rob_start

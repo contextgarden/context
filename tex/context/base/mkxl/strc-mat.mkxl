@@ -328,7 +328,9 @@
 \mutable\let\currentformulasreference     \empty
 \mutable\let\currentformulareference      \empty
 \mutable\let\currentsubformulareference   \empty
+\mutable\let\currentnestedformulanumber   \empty
 \mutable\let\currentnestedformulareference\empty
+\mutable\let\currentnestedformulaattribute\empty
 
 \appendtoks
     \glet\currentformulasreference     \empty
@@ -349,10 +351,10 @@
     \glet\currentnestedformulasuffix\empty
 \to \everyresetformulas
 
-\mutable\let\currentplaceformulasynchronize\relax
-\mutable\let\currentformulasynchronize     \relax
-\mutable\let\currentsubformulasynchronize  \relax
-\mutable\let\currentformulassynchronize    \relax
+\mutable\let\currentplaceformulasynchronize \relax
+\mutable\let\currentformulassynchronize     \relax
+\mutable\let\currentsubformulasynchronize   \relax
+\mutable\let\currentnestedformulasynchronize\relax
 
 \appendtoks
     \glet\currentplaceformulasynchronize \relax
@@ -503,19 +505,19 @@
 
 \pushoverloadmode
 
-\let\reqno\eqno % no longer valid as we just nil it
+\aliased\let\reqno\eqno % no longer valid as we just nil it
 
-\let\math_native_leqno\leqno
-\let\math_native_reqno\reqno
+\aliased\let\math_native_leqno\leqno
+\aliased\let\math_native_reqno\reqno
 
-\protected\def\normaleqno#1{\writestatus\m!system{no native (l)eqno equation number support}}
+\permanent\protected\def\normaleqno#1{\writestatus\m!system{no native (l)eqno equation number support}}
 
-\let\normalleqno\normaleqno
-\let\normalreqno\normaleqno
+\aliased\let\normalleqno\normaleqno
+\aliased\let\normalreqno\normaleqno
 
-\let\leqno\normaleqno
-\let\reqno\normaleqno
-\let\eqno \normaleqno
+\aliased\let\leqno\normaleqno
+\aliased\let\reqno\normaleqno
+\aliased\let\eqno \normaleqno
 
 \popoverloadmode
 

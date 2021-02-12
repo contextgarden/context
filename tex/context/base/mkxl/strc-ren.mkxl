@@ -118,14 +118,14 @@
 \protected\def\strc_rendering_place_head_text
   {\strc_rendering_start_placement
    \setheadmarking
-   \doresetstructureheadnumbercontent
+   \strc_sectioning_reset_head_number_content
    \ifconditional\c_strc_sectioning_empty
      \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
    \else
      \docheckheadreference
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
-        \doresetstructureheadnumbercontent
+        \strc_sectioning_reset_head_number_content
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \strc_rendering_inject_text}%
@@ -136,8 +136,8 @@
   {\strc_rendering_start_placement
    \setheadmarking
    \doifelsetext\getheadnumber
-     \dosetstructureheadnumbercontent
-     \doresetstructureheadnumbercontent
+     \strc_sectioning_set_head_number_content
+     \strc_sectioning_reset_head_number_content
    \ifconditional\c_strc_sectioning_empty
      \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
    \else % = needed
@@ -173,7 +173,10 @@
 \permanent\protected\def\startlocalheadsetup{\bgroup\strc_rendering_initialize_spacing}
 \permanent\protected\def\stoplocalheadsetup {\egroup}
 
-\protected\def\strc_rendering_initialize_spacing
+\aliased\let\headsetupspacing\relax
+\aliased\let\localheadsetup  \relax
+
+\permanent\protected\def\strc_rendering_initialize_spacing
   {\forgetall % local !
    \edef\p_align{\headparameter\c!align}%
    \ifempty\p_align \else
@@ -216,9 +219,9 @@
    \dontcomplain
    \postponenotes
    \strc_rendering_initialize_interaction
-   % delayed
-   \let\localheadsetup  \strc_rendering_initialize_spacing % historic name
-   \let\headsetupspacing\strc_rendering_initialize_spacing}
+   % delayed:
+   \enforced\let\localheadsetup  \strc_rendering_initialize_spacing  % historic name, kept around because some styles use it
+   \enforced\let\headsetupspacing\strc_rendering_initialize_spacing} % official name
 
 \def\strc_rendering_initialize_interaction
   {\resetinteractionparameter\c!style

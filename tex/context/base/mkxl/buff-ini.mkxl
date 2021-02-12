@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Buffer Macros / Buffers}
 
-\registerctxluafile{buff-ini}{}
+\registerctxluafile{buff-ini}{autosuffix}
 
 \unprotect
 
@@ -76,7 +76,7 @@
    \scratchcounter\catcodetable
    \clf_erasebuffer{#1}%
    \setcatcodetable\vrbcatcodes
-   \protected\def\dofinishpickupbuffer
+   \protected\def\buff_finish
      {\endgroup % (1)
       \endgroup % (2)
       #5}%
@@ -88,7 +88,8 @@
      {#1}%
      {#2}%
      {#3}%
-     {\string\dofinishpickupbuffer}%
+%      {\string\dofinishpickupbuffer}%
+     \buff_finish
      \scratchcounter
      \ifnum#6=\plusone\s!true\else\s!false\fi
  % \relax}

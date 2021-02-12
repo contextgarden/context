@@ -163,7 +163,7 @@ return {
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         --
-        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
+        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode", "clipwidthcode",
         --
         "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
         "noexpansioncode", "noprotrusioncode",
@@ -251,6 +251,7 @@ return {
         --
         "filledhboxb", "filledhboxr", "filledhboxg", "filledhboxc", "filledhboxm", "filledhboxy", "filledhboxk",
         --
+        "scratchstringone", "scratchstringtwo", "tempstring",
         "scratchcounter", "globalscratchcounter", "privatescratchcounter",
         "scratchdimen", "globalscratchdimen", "privatescratchdimen",
         "scratchskip", "globalscratchskip", "privatescratchskip",
@@ -548,5 +549,7 @@ return {
         "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
         --
         "pushoverloadmode", "popoverloadmode",
+        --
+        "suggestedalias",
     }
 }

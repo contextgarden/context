@@ -73,6 +73,8 @@
 
 \installcorenamespace{layoutcomponentattribute}
 
+\mutable\let\layoutcomponentboxattribute\empty
+
 \permanent\def\attr_layoutcomponent_initialize#1%
   {\edef\layoutcomponentboxattribute{\clf_definedlayoutcomponent{#1}}%
    \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%

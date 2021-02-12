@@ -434,7 +434,7 @@
      \expandafter\math_unknown_middle
    \fi}
 
-\protected\def\lfence#1%
+\permanent\protected\def\lfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
    \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
@@ -443,7 +443,7 @@
      \expandafter\math_unknown_left
    \fi}
 
-\protected\def\rfence#1%
+\permanent\protected\def\rfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
    \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
@@ -452,7 +452,7 @@
      \expandafter\math_unknown_right
    \fi}
 
-\protected\def\mfence#1%
+\permanent\protected\def\mfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
    \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
@@ -628,7 +628,7 @@
 \setvalue{\??mathbig3}{1.45}
 \setvalue{\??mathbig4}{1.75}
 
-\protected\def\choosemathbig#1#2% so we accept \big{||} as well
+\permanent\protected\def\choosemathbig#1#2% so we accept \big{||} as well
   {{\naturalhbox\bgroup
       \startimath
         \ifcase\bigmathdelimitermethod
@@ -681,7 +681,7 @@
      \fi
    \fi}
 
-\protected\def\mathdelimiterstep#1#2%
+\permanent\protected\def\mathdelimiterstep#1#2%
   {\begingroup
    \math_fenced_force_size\plusone{#1}%
    \math_fenced_step#2\relax
@@ -750,13 +750,13 @@
 
 \newconditional\c_math_fences_auto
 
-\protected\def\enableautofences
+\permanent\protected\def\enableautofences
   {\clf_enableautofences
    \glet\clf_enableautofences\relax % onlyonce anyway
-   \protected\gdef\enableautofences{\settrue\c_math_fences_auto}%
+   \enforced\permanent\protected\gdef\enableautofences{\settrue\c_math_fences_auto}%
    \enableautofences}
 
-\protected\def\disableautofences
+\permanent\protected\def\disableautofences
   {\setfalse\c_math_fences_auto}
 
 \protected\def\math_fences_used_left
@@ -818,10 +818,9 @@
 
 \newconstant\c_math_fences_delimiters_mode \c_math_fences_delimiters_mode"16 % \numexpr"02+"04+"10\relax
 
-%protected\def\enableautofencemode {\mathdelimitersmode\plussix} % the shift (1) is too fragile
-\protected\def\enableautofencemode {\mathdelimitersmode\c_math_fences_delimiters_mode}
-
-\protected\def\disableautofencemode{\mathdelimitersmode\zerocount}
+%permanent\protected\def\enableautofencemode {\mathdelimitersmode\plussix} % the shift (1) is too fragile
+\permanent\protected\def\enableautofencemode {\mathdelimitersmode\c_math_fences_delimiters_mode}
+\permanent\protected\def\disableautofencemode{\mathdelimitersmode\zerocount}
 
 \appendtoks
     \ifempty\currentmathfence

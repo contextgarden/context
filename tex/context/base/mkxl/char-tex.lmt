@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['char-tex'] = {
 
 local lpeg = lpeg
 local tonumber, next, type = tonumber, next, type
-local format, find, gmatch, match = string.format, string.find, string.gmatch, string.match
+local format, find, gmatch, match, gsub = string.format, string.find, string.gmatch, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local concat, tohash = table.concat, table.tohash
 local P, C, R, S, V, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.V, lpeg.Cs, lpeg.Cc
@@ -27,6 +27,9 @@ local characters            = characters
 local texcharacters         = { }
 characters.tex              = texcharacters
 local utffilters            = characters.filters.utf
+
+local allocate              = utilities.storage.allocate or function() return { } end
+local mark                  = utilities.storage.mark     or allocate
 
 local is_character          = characters.is_character
 local is_letter             = characters.is_letter
@@ -393,61 +396,100 @@ texcharacters.strtoutfpattern = toutfpattern
 texcharacters.strtextoutf     = textoutf
 
 local collapse = utffilters.collapse
+local combine  = utffilters.combine
 
---
+if not interfaces then return end
+
+local implement = interfaces.implement
 
 local pattern
 
-local hash = {
-    ["acute"]              = "́",  -- 0x300
-    ["breve"]              = "̆",  -- 0x301
-    ["caron"]              = "̌",  -- 0x302
-    ["cedilla"]            = "̧",  -- 0x303
-    ["circumflex"]         = "̂",  -- 0x304
-    ["diaeresis"]          = "̈",  -- 0x305
-    ["dieresis"]           = "̈",  -- 0x305
-    ["umlaut"]             = "̈",  -- 0x305
-    ["dot"]                = "̇",  -- 0x306
-    ["doublegrave"]        = "̏",  -- 0x307
-    ["doubleverticalline"] = "̎",  -- 0x308
-    ["grave"]              = "̀",  -- 0x309
-    ["hook"]               = "̉",  -- 0x30A
-    ["hungarumlaut"]       = "̋",  -- 0x30B
-    ["macron"]             = "̄",  -- 0x30C
-    ["ogonek"]             = "̨", -- 0x30D -- hm
-    ["overline"]           = "̅",  -- 0x30E
-    ["ring"]               = "̊",  -- 0x30F
-    ["tilde"]              = "̃",  -- 0x327
-    ["verticalline"]       = "̍",  -- 0x328
-}
+local verbosemarks = characters.verbosemarks
+
+if verbosemarks then
+
+    mark(verbosemarks)
+
+else
+
+    verbosemarks = allocate {
+        ["stroke"]               = utfchar(0x02F), ["slash"]        = utfchar(0x02F),
+        ["middle dot"]           = utfchar(0x0B7),
+
+        ["grave"]                = utfchar(0x300),
+        ["acute"]                = utfchar(0x301),
+        ["circumflex"]           = utfchar(0x302),
+        ["tilde"]                = utfchar(0x303),
+        ["macron"]               = utfchar(0x304), ["line"]         = utfchar(0x304),
+        ["overline"]             = utfchar(0x305),
+        ["breve"]                = utfchar(0x306),
+        ["dot"]                  = utfchar(0x307),
+        ["dieresis"]             = utfchar(0x308), ["diaeresis"]    = utfchar(0x308),
+        ["hook"]                 = utfchar(0x309),
+        ["ring"]                 = utfchar(0x30A),
+        ["double acute"]         = utfchar(0x30B), ["hungarumlaut"] = utfchar(0x30B), -- tex speak
+        ["caron"]                = utfchar(0x30C),
+        ["vertical line"]        = utfchar(0x30D),
+        ["double vertical line"] = utfchar(0x30E),
+        ["double grave"]         = utfchar(0x30F),
+        ["inverted breve"]       = utfchar(0x311),
+        ["dot below"]            = utfchar(0x323),
+        ["ring below"]           = utfchar(0x325),
+        ["cedilla"]              = utfchar(0x327), ["comma below"]  = utfchar(0x327),
+        ["ogonek"]               = utfchar(0x328),
+        ["caron below"]          = utfchar(0x32C),
+        ["circumflex below"]     = utfchar(0x32D),
+        ["tilde below"]          = utfchar(0x330),
+        ["macron below"]         = utfchar(0x331), ["line below"]   = utfchar(0x331),
+
+        ["hook below"]           = utfchar(0x1FA9D),
+    }
+
+    characters.verbosemarks = verbosemarks
+
+    if storage then
+        storage.register("characters/verbosemarks", verbosemarks, "characters.verbosemarks")
+    end
+
+end
 
 local function prepare()
-    pattern = Cs((utfchartabletopattern(hash) / hash + lpegpatterns.space/"" + lpegpatterns.utf8character)^0)
+    pattern = Cs((utfchartabletopattern(verbosemarks) / verbosemarks + lpegpatterns.space/"" + lpegpatterns.utf8character)^0)
     return pattern
 end
 
 local hash = table.setmetatableindex(function(t,k)
     local f = ""
     k = lpegmatch(pattern or prepare(),k) or k
-    local v = collapse(k) or k
-    if k == v then
-        v = commandmapping[k] or k
-        if k ~= v then
-            f = "\\"
-        end
+    local v = collapse(k) or k -- char specials
+-- print("collapse",k,v)
+    if k ~= v then
+        goto DONE
     end
-    if k == v then
-        v = textoutf(k) or k
-        if k ~= v then
-            f = "\\"
-        end
+    v = combine(k) or k -- with specials
+-- print("combine",k,v)
+    if k ~= v then
+        goto DONE
     end
+    v = commandmapping[k] or k
+-- print("command",k,v)
+    if k ~= v then
+        f = "\\"
+        goto DONE
+    end
+    v = textoutf(k) or k
+-- print("utf",k,v)
+    if k ~= v then
+        f = "\\"
+        goto DONE
+    end
+  ::DONE::
     report_defining("instead of old school '%s%s' you can input the utf sequence %s",f,k,v)
     t[k] = v
     return v
 end)
 
-interfaces.implement {
+implement {
     name      = "chr",
     arguments = "argument",
     public    = true,
@@ -471,10 +513,6 @@ if not context or not commands then
 end
 
 -- all kind of initializations
-
-if not interfaces then return end
-
-local implement     = interfaces.implement
 
 local tex           = tex
 local texsetlccode  = tex.setlccode
@@ -504,11 +542,11 @@ local texsetchar    = tokens.setters.char
 -- end
 
 function texcharacters.defineaccents()
- -- local ctx_dodefinecombine = context.dodefinecombine
+    local ctx_dodefinecombine = context.dodefinecombine
     local ctx_dodefinecommand = context.dodefinecommand
- -- for accent, group in next, accentmapping do
- --     ctx_dodefinecombine(accent)
- -- end
+    for verbose, mark in next, verbosemarks do
+        ctx_dodefinecombine((gsub(verbose," ","")),mark)
+    end
     for command, mapping in next, commandmapping do
         ctx_dodefinecommand(command,mapping)
     end
@@ -856,7 +894,7 @@ local function overload(c,u,code,codes)
     end
 end
 
-interfaces.implement {
+implement {
     name      = "overloaduppercase",
     arguments = "2 strings",
     actions   = function(c,u)
@@ -864,10 +902,93 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "overloadlowercase",
     arguments = "2 strings",
     actions   = function(c,u)
         overload(c,u,"lccode","lccodes")
     end
 }
+
+-- Just for fun we support keywords:
+--
+-- \startTEXpage[offset=10pt]
+--     abg"
+--     \sl \showboxes
+--     \accent               `" h%
+--     \accent               `" x%
+--     \accent yoffset  .2ex `" x
+--     \accent yoffset 1.1ex `x x%
+-- \stopTEXpage
+--
+-- We could do this:
+--
+-- \startTEXpage[offset=10pt]
+--     abg"
+--     \sl \showboxes
+--     \withaccent               `" h%
+--     \withaccent               `" x%
+--     \withaccent yoffset  .2ex `" x
+--     \withaccent yoffset 1.1ex accent `x base `x%
+-- \stopTEXpage
+--
+-- But only when users demand it:
+--
+-- do
+--
+--     local new_glyph = nodes.pool.glyph
+--
+--     local scankeyword   = tokens.scanners.keyword
+--     local scaninteger   = tokens.scanners.integer
+--     local scandimension = tokens.scanners.dimension
+--     local scantoken     = tokens.scanners.token
+--
+--     implement {
+--         name      = "withaccent",
+--         public    = true,
+--         protected = true,
+--         actions   = function()
+--             local xoffset = 0
+--             local yoffset = 0
+--             local accent  = false
+--             local base    = false
+--             local zwj     = 0x200D
+--             while true do
+--                 if scankeyword("xoffset") then
+--                     xoffset = scandimension()
+--                 elseif scankeyword("yoffset") then
+--                     yoffset = scandimension()
+--                 elseif scankeyword("accent") then
+--                     accent = scaninteger()
+--                 elseif scankeyword("base") then
+--                     base = scaninteger()
+--                 else
+--                     break
+--                 end
+--             end
+--             if not accent then
+--                 accent = scaninteger()
+--             end
+--             if not base then
+--                 local nxttok = scantoken()
+--                 base = nxttok.cmdname == "char_number" and scaninteger() or nxttok.index
+--             end
+--             if base and accent and base > 0 and accent > 0 then
+--                 base   = new_glyph(true,base)
+--                 zwj    = new_glyph(true,zwj)
+--                 accent = new_glyph(true,accent)
+--                 local slant   = fonts.hashes.parameters[true].slant / 65536 -- a la tex
+--                 local xheight = fonts.hashes.parameters[true].xheight -- hm, compensated for glyphscale?
+--                 accent.xoffset = xoffset - .5*(base.width -accent.width) + .5*(base.height-accent.height) * slant
+--                 accent.yoffset = yoffset - (xheight - accent.height)
+--                 accent.left    = accent.width
+--                 accent.options = accent.options | 0x40 | 0x80
+--                 context.dontleavehmode()
+--                 context(base)
+--                 context(zwj)
+--                 context(accent)
+--             end
+--         end,
+--     }
+--
+-- end

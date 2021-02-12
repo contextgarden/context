@@ -13,32 +13,29 @@
 
 %D This is stripped down version of the original enco-ini.tex file. For more details
 %D you might want to study the \MKII\ file but since \LUATEX\ is unicode inside we
-%D need less code.
-
-%D Much in here will disappear in \LMTX\ because we assume proper \UNICODE\ usage.
-
-% When dealing with characters we have four cases to take into account when moving
-% from \MKII\ to \MKIV:
-
-% 1. <byte 200>   => ref to slot 200 in current font
-% 2. \char 200    => ref to slot 200 in current font
-% 3. <active 200> => can (e.g.) map to another slot in current font
-% 4. \namedglyph  => can map to some slot in some font
-
-% Using case 2 for special characters is doomed to fail because we are not going
-% to intercept these on the fly as happens automatically with traditional font
-% encoding handling. We could do that in a node pass but it's not worth the effort
-% because we seldom use this case in a document source.
-
-% We can consider using utf as internal format for mkii. The main reason for not
-% doing this before was that it was slow. On the other hand, it would make dealing
-% with utility files easier. However, we've now kind of frozen mkii.
+%D need less code. When we moved to \LMTX\ again some disappeared and the composition
+%D macros were upgraded in the process.
+%D
+%D An historic note: When dealing with characters we have four cases to take into
+%D account when moving from \MKII\ to \MKIV:
+%D
+%D \starttabulate[|l|l|]
+%D     \NC \type {<byte 200>}   \NC ref to slot 200 in current font \NC \NR
+%D     \NC \type {\char 200}    \NC ref to slot 200 in current font \NC \NR
+%D     \NC \type {<active 200>} \NC can (e.g.) map to another slot in current font \NC \NR
+%D     \NC \type {\namedglyph}  \NC can map to some slot in some font \NC \NR
+%D \stoptabulate
+%D
+%D Using case 2 for special characters is doomed to fail because we are not going to
+%D intercept these on the fly as happens automatically with traditional font
+%D encoding handling. We could do that in a node pass but it's not worth the effort
+%D because we seldom use this case in a document source.
 
 \writestatus{loading}{ConTeXt Encoding Macros / Initialization}
 
 \unprotect
 
-%D Obsolete (but sometimes used in styles)
+%D This one is obsolete but maybe sometimes still used in styles:
 
 \immutable\let\defaultencoding\s!default
 
@@ -49,7 +46,7 @@
 
 \installcorenamespace{accents}
 
-%D These will go away:
+%D These might go away:
 
 \permanent\protected\def\defineaccent#1 #2 #3 %
   {\dodefineaccentcommand{#1}%
@@ -57,60 +54,11 @@
 
 \permanent\protected\def\dodefineaccentcommand#1%
   {\ifcsname\string#1\endcsname\else
-     \setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}%
+     \edefcsname\string#1\endcsname{\noexpand\dohandleaccent{\string#1}}%
    \fi}
 
 \permanent\protected\def\dodefineaccent#1#2#3% no spaces, used low level
-  {\setvalue{\??accents\string#1\string#2\empty}{#3}}
-
-%D Because now have this (\type {\chr} issues a one|-|time warning):
-
-% \permanent\protected\def\dodefinecombine#1% \" \' \. \= \H \^ \` \c \k \r \u \v \~
-%   {\ifcsname\string#1\endcsname\else
-%      % for now permanent even as these are kind of obsolete
-%      \permanent\protected\edefcsname\string#1\endcsname##1{\noexpand\chr{\string#1##1}}%
-%    \fi}
-
-%D But, we now go for this:
-
-\permanent\protected\edef\withgrave             #1{\noexpand\chr{#1\Uchar"300}} \aliased\let\` \withgrave
-\permanent\protected\edef\withacute             #1{\noexpand\chr{#1\Uchar"301}} \aliased\let\' \withacute
-\permanent\protected\edef\withcircumflex        #1{\noexpand\chr{#1\Uchar"302}} \aliased\let\^ \withcircumflex
-\permanent\protected\edef\withtilde             #1{\noexpand\chr{#1\Uchar"303}} \aliased\let\~ \withtilde
-\permanent\protected\edef\withmacron            #1{\noexpand\chr{#1\Uchar"304}} \aliased\let\= \withmacron
-% permanent\protected\edef\withoverline          #1{\noexpand\chr{#1\Uchar"305}}
-\permanent\protected\edef\withbreve             #1{\noexpand\chr{#1\Uchar"306}} \aliased\let\u \withbreve
-\permanent\protected\edef\withdot               #1{\noexpand\chr{#1\Uchar"307}} \aliased\let\. \withdot
-\permanent\protected\edef\withdieresis          #1{\noexpand\chr{#1\Uchar"308}} \aliased\let\" \withdieresis
-% permanent\protected\edef\withhook              #1{\noexpand\chr{#1\Uchar"309}}
-\permanent\protected\edef\withring              #1{\noexpand\chr{#1\Uchar"30A}} \aliased\let\r \withring
-\permanent\protected\edef\withhungarumlaut      #1{\noexpand\chr{#1\Uchar"30B}} \aliased\let\H \withhungarumlaut
-\permanent\protected\edef\withcaron             #1{\noexpand\chr{#1\Uchar"30C}} \aliased\let\v \withcaron
-% permanent\protected\edef\withverticalline      #1{\noexpand\chr{#1\Uchar"30D}}
-% permanent\protected\edef\withdoubleverticalline#1{\noexpand\chr{#1\Uchar"30E}}
-% permanent\protected\edef\withdoublegrave       #1{\noexpand\chr{#1\Uchar"30F}}
-\permanent\protected\edef\withcedilla           #1{\noexpand\chr{#1\Uchar"327}} \aliased\let\c \withcedilla
-\permanent\protected\edef\withogonek            #1{\noexpand\chr{#1\Uchar"328}} \aliased\let\k \withogonek
-
-\aliased\let\withdiaeresis\withdieresis
-
-% \starttabulate[||||]
-%     \NC \getvalue{agrave}        \NC \withgrave       {a} \NC \`{a} \NC \NR
-%     \NC \getvalue{aacute}        \NC \withacute       {a} \NC \'{a} \NC \NR
-%     \NC \getvalue{acircumflex}   \NC \withcircumflex  {a} \NC \^{a} \NC \NR
-%     \NC \getvalue{atilde}        \NC \withtilde       {a} \NC \~{a} \NC \NR
-%     \NC \getvalue{amacron}       \NC \withmacron      {a} \NC \={a} \NC \NR
-%     \NC \getvalue{ebreve}        \NC \withbreve       {e} \NC \u{e} \NC \NR
-%     \NC \getvalue{cdotaccent}    \NC \withdot         {c} \NC \.{c} \NC \NR
-%     \NC \getvalue{ediaeresis}    \NC \withdieresis    {e} \NC \"{e} \NC \NR
-%     \NC \getvalue{uring}         \NC \withring        {u} \NC \r{u} \NC \NR
-%     \NC \getvalue{uhungarumlaut} \NC \withhungarumlaut{u} \NC \H{u} \NC \NR
-%     \NC \getvalue{ecaron}        \NC \withcaron       {e} \NC \v{e} \NC \NR
-%     \NC \getvalue{ecedilla}      \NC \withcedilla     {e} \NC \c{e} \NC \NR
-%     \NC \getvalue{eogonek}       \NC \withogonek      {e} \NC \k{e} \NC \NR
-% \stoptabulate
-
-% the following dirty trick is needed to catch \asciimath{\^{1/5}log}:
+  {\defcsname\??accents\string#1\string#2\empty\endcsname{#3}}
 
 \permanent\protected\def\dohandleaccent#1#2% expandable because we want them in the tuc file
   {\csname\??accents
@@ -125,27 +73,93 @@
 
 \immutable\letvalue{\??accents}\empty
 
+%D Because now have this (\type {\chr} issues a one|-|time warning):
+
+\permanent\protected\def\dodefinecombine#1#2%
+  {\ifcsname\string#1\endcsname\else
+     \permanent\protected\defcsname with#1\endcsname##1{\chr{##1#2}}%
+   \fi}
+
+%D The following dirty trick is needed to catch \asciimath{\^{1/5}log}, although:
+%D do we?
+
 \permanent\protected\def\definecharacter#1 #2 %
   {\doifelsenumber{\string#2}
-     {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
-     {\setuvalue{\string#1}{#2}}}
+     {\edefcsname\string#1\endcsname{\Uchar#2}}
+     {\protected\defcsname\string#1\endcsname{#2}}}
 
 %D specials: \aa \ae \cc \i \ij \l \o \oe \sz \par
 %D SPECIALS: \AA \AE \CC \j \IJ \L \O \OE \SZ \par
 
 \permanent\protected\def\definecommand#1 #2 %
-  {\setuvalue{\string#1}{#2}}
+  {\protected\defcsname\string#1\endcsname{#2}}
 
 \permanent\protected\def\dodefinecommand#1#2% \O \L \AE ...
   {% not permanent as these are kind of obsolete
    \frozen\protected\defcsname\string#1\endcsname{#2}}
 
-%D \macros
-%D   {everyuppercase, everylowercase, everysanitize}
+%D We set up some things in \LUA:
 
-\newtoks \everyuppercase
-\newtoks \everylowercase
-\newtoks \everysanitize
+\clf_defineaccents % one time
+
+%D This defined commands like \type {\withgrave} and \type {\withcaronbelow} and
+%D some of these have aliases. Below ee also alias the traditional one character
+%D accent commands.
+%D
+%D \starttabulate[||||]
+%D     \NC \getvalue{agrave}        \NC \withgrave       {a} \NC \`{a} \NC \NR
+%D     \NC \getvalue{aacute}        \NC \withacute       {a} \NC \'{a} \NC \NR
+%D     \NC \getvalue{acircumflex}   \NC \withcircumflex  {a} \NC \^{a} \NC \NR
+%D     \NC \getvalue{atilde}        \NC \withtilde       {a} \NC \~{a} \NC \NR
+%D     \NC \getvalue{amacron}       \NC \withmacron      {a} \NC \={a} \NC \NR
+%D     \NC \getvalue{ebreve}        \NC \withbreve       {e} \NC \u{e} \NC \NR
+%D     \NC \getvalue{cdotaccent}    \NC \withdot         {c} \NC \.{c} \NC \NR
+%D     \NC \getvalue{ediaeresis}    \NC \withdieresis    {e} \NC \"{e} \NC \NR
+%D     \NC \getvalue{uring}         \NC \withring        {u} \NC \r{u} \NC \NR
+%D     \NC \getvalue{uhungarumlaut} \NC \withhungarumlaut{u} \NC \H{u} \NC \NR
+%D     \NC \getvalue{ecaron}        \NC \withcaron       {e} \NC \v{e} \NC \NR
+%D     \NC \getvalue{ecedilla}      \NC \withcedilla     {e} \NC \c{e} \NC \NR
+%D     \NC \getvalue{eogonek}       \NC \withogonek      {e} \NC \k{e} \NC \NR
+%D \stoptabulate
+%D
+%D Now we alias these traditional shortcuts:
+
+\pushoverloadmode
+
+\suggestedalias \` \withgrave
+\suggestedalias \' \withacute
+\suggestedalias \^ \withcircumflex
+\suggestedalias \~ \withtilde
+\suggestedalias \= \withmacron
+\suggestedalias \u \withbreve
+\suggestedalias \. \withdot
+\suggestedalias \" \withdieresis
+\suggestedalias \r \withring
+\suggestedalias \H \withdoubleacute
+\suggestedalias \v \withcaron
+\suggestedalias \c \withcedilla
+\suggestedalias \k \withogonek
+\suggestedalias \d \withdotbelow
+
+\popoverloadmode
+
+% From \type {enco-com} we had these, maybe that's better:
+
+% \aliased\let\AE\AEligature   \aliased\let\ae\aeligature
+% \aliased\let\OE\OEligature   \aliased\let\oe\oeligature
+% \aliased\let\IJ\IJligature   \aliased\let\ij\ijligature
+% \aliased\let\AA\textAngstrom \aliased\let\aa\aring
+% \aliased\let\CC\Ccedilla     \aliased\let\cc\ccedilla
+% \aliased\let\L \Lslash       \aliased\let\l \lslash
+% \aliased\let\O \Oslash       \aliased\let\o \oslash
+% \aliased\let\SZ\Eszett       \aliased\let\sz\eszett    % \aliased\let\SS\Ssharp
+
+% %D \macros
+% %D   {everyuppercase, everylowercase, everysanitize}
+%
+% \newtoks \everyuppercase
+% \newtoks \everylowercase
+% \newtoks \everysanitize
 
 %D Accent handling (try to avoid this):
 
@@ -153,7 +167,7 @@
 % \buildtextaccent\textacute q
 
 %D We can use offsets in \LMTX\ but even that makes no sense because we have
-%D a virtual feature already in \MKIV.
+%D a virtual feature already in \MKIV. These builders are depricated:
 
 \newbox\b_enco_accent
 
@@ -206,8 +220,6 @@
 \permanent\protected\def\buildtextogonek     {\bottomaccent{-.1ex}{.5}{0}{\textogonek}}
 \permanent\protected\def\buildtextbottomcomma{\bottomaccent{.15ex}{0}{5}{\tx,}}
 
-\aliased\let\d\buildtextbottomdot
-
 \permanent\protected\def\topaccent#1#2#3#4#5% down right slantcorrection accent char
   {\dontleavehmode
    \bgroup
@@ -225,21 +237,6 @@
 
 \permanent\protected\def\definemathaccent#1 #2%
   {\setvalue{#1}{\mathaccent#2 }}
-
-%D Math (will move):
-
-%definemathaccent acute     \mathacute
-%definemathaccent grave     \mathgrave
-%definemathaccent ddot      \mathddot
-%definemathaccent tilde     \mathtilde
-%definemathaccent bar       \mathbar
-%definemathaccent breve     \mathbreve
-%definemathaccent check     \mathcheck
-%definemathaccent hat       \mathhat
-%definemathaccent vec       \mathvec
-%definemathaccent dot       \mathdot
-%definemathaccent widetilde \mathwidetilde
-%definemathaccent widehat   \mathwidehat
 
 % from enco-def:
 
@@ -264,17 +261,6 @@
 \immutable\def\oumlaut {ö} \immutable\def\Oumlaut {Ö}
 \immutable\def\uumlaut {ü} \immutable\def\Uumlaut {Ü}
 
-% From \type {enco-com} we had these:
-
-% \aliased\let\AE\AEligature   \aliased\let\ae\aeligature
-% \aliased\let\OE\OEligature   \aliased\let\oe\oeligature
-% \aliased\let\IJ\IJligature   \aliased\let\ij\ijligature
-% \aliased\let\AA\textAngstrom \aliased\let\aa\aring
-% \aliased\let\CC\Ccedilla     \aliased\let\cc\ccedilla
-% \aliased\let\L \Lslash       \aliased\let\l \lslash
-% \aliased\let\O \Oslash       \aliased\let\o \oslash
-% \aliased\let\SZ\Eszett       \aliased\let\sz\eszett    % \aliased\let\SS\Ssharp
-
 %D For old times sake we keep these (obsolete):
 
 \immutable\def\textflorin{ƒ} \immutable\def\florin  {ƒ}
@@ -293,27 +279,6 @@
 \immutable\let\hash   \texthash
 
 \popoverloadmode
-
-%D These come from the \MKII\ file \type {enco-mis}:
-
-\permanent\protected\def\fakepercent
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
-
-\permanent\protected\def\fakeperthousand
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
-
-\permanent\protected\def\fakepermine
-  {\dontleavehmode
-   \bgroup
-   \setbox\scratchbox\hbox
-     {\mathematics{+}}%
-   \hbox to \wd\scratchbox
-     {\hss
-      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
-      \hss}%
-   \egroup}
-
-\def\permine{\fakepermine}
 
 %D some more: what with freezing here?
 
@@ -337,27 +302,27 @@
 %D from \unknown\ long long ago when we had no real useful names for them. Some
 %D ancient styles might still use them.
 
-\aliased\let\lowerleftsingleninequote \quotesinglebase
-\aliased\let\lowerleftdoubleninequote \quotedblbase
-\aliased\let\lowerrightsingleninequote\quotesinglebase
-\aliased\let\lowerrightdoubleninequote\quotedblbase
+\aliased\let\lowerleftsingleninequote \quotesinglebase % ‚
+\aliased\let\lowerleftdoubleninequote \quotedblbase    % „
+\aliased\let\lowerrightsingleninequote\quotesinglebase % ‚
+\aliased\let\lowerrightdoubleninequote\quotedblbase    % „
 
-\aliased\let\upperleftsingleninequote \quoteright
-\aliased\let\upperleftdoubleninequote \quotedblright
-\aliased\let\upperrightsingleninequote\quoteright
-\aliased\let\upperrightdoubleninequote\quotedblright
+\aliased\let\upperleftsingleninequote \quoteright      % ’
+\aliased\let\upperleftdoubleninequote \quotedblright   % ”
+\aliased\let\upperrightsingleninequote\quoteright      % ’
+\aliased\let\upperrightdoubleninequote\quotedblright   % ”
 
-\aliased\let\upperleftsinglesixquote  \quoteleft
-\aliased\let\upperleftdoublesixquote  \quotedblleft
-\aliased\let\upperrightsinglesixquote \quoteleft
-\aliased\let\upperrightdoublesixquote \quotedblleft
+\aliased\let\upperleftsinglesixquote  \quoteleft       % ‘
+\aliased\let\upperleftdoublesixquote  \quotedblleft    % “
+\aliased\let\upperrightsinglesixquote \quoteleft       % ‘
+\aliased\let\upperrightdoublesixquote \quotedblleft    % “
 
-\aliased\let\leftsubguillemot         \guilsingleleft
-\aliased\let\rightsubguillemot        \guilsingleright
+\aliased\let\leftsubguillemot         \guilsingleleft  % ‹
+\aliased\let\rightsubguillemot        \guilsingleright % ›
 
-% Some left-overs that wil go away!
+% Some left-overs that will go away!
 
-\permanent\protected\def\textblacksquare{\dontleavehmode\hbox{\vrule\s!width.3\s!em\s!height.4\s!em\s!depth-.1\s!em}}
+\permanent\protected\def\textblacksquare{\dontleavehmode\hpack{\vrule\s!width.3\s!em\s!height.4\s!em\s!depth-.1\s!em}}
 %permanent\protected\def\schwa          {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
 \permanent\protected\def\schwagrave     {\buildtextgrave\schwa}
 
@@ -395,26 +360,6 @@
    \else
      \asciispacechar % used for export !
    \fi}
-
-% a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
-% stringified .. anyhow, we define this at the lua end now but keep it here as a
-% reference
-%
-% \defineaccent ^ {\empty} {\textcircumflex}
-% \defineaccent ` {\empty} {\textgrave}
-% \defineaccent ~ {\empty} {\texttilde}
-% \defineaccent " {\empty} {\textdiaeresis}
-% \defineaccent ' {\empty} {\textacute}
-% \defineaccent . {\empty} {\textdotaccent}
-% \defineaccent = {\empty} {\textmacron}
-% \defineaccent c {\empty} {\textcedilla}
-% \defineaccent H {\empty} {\texthungarumlaut}
-% \defineaccent k {\empty} {\textogonek}
-% \defineaccent r {\empty} {\textring}
-% \defineaccent u {\empty} {\textbreve}
-% \defineaccent v {\empty} {\textcaron}
-
-\clf_defineaccents % one time
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
 
@@ -457,9 +402,13 @@
 
 %D Moved from core-mis:
 
-\permanent\protected\def\celsius   #1{#1\mathematics{^\circ}C}
-\permanent\protected\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
-\permanent\protected\def\fraction#1#2{\mathematics{#1\over#2}}
+% \permanent\protected\def\celsius   #1{#1\mathematics{^\circ}C}
+% \permanent\protected\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
+% \permanent\protected\def\fraction#1#2{\mathematics{#1\over#2}}
+
+\permanent\protected\def\celsius   #1{#1\iffontchar\font`℃℃\else\mathematics{^\circ}C\fi}   % 0x2103
+\permanent\protected\def\inch        {\iffontchar\font`″″\else\mathematics{\prime\prime}\fi} % 0x2103
+\permanent\protected\def\fraction#1#2{\mathematics{\Uabove exact .125\exheight {#1}{#2}}}
 
 %D \startbuffer
 %D \startlines
@@ -534,29 +483,6 @@
     \enforced\let\buildtextaccent\secondoftwoarguments
 \to \everysimplifycommands
 
-%D A plain one:
-
-% \protected\def\t#1{%
-%   \dontleavehmode
-%   \begingroup
-%     \setbox\scratchboxone\hpack{#1}%
-%     \setbox\scratchboxtwo\hpack\bgroup
-%       \iffontchar\font"0361\relax
-%          \char"0361\relax
-%       \else
-%          \iffontchar\font"2040\relax\else
-%            \the\textfont0
-%          \fi
-%          \char"2040
-%       \fi
-%     \egroup
-%     \scratchdimenone\wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi
-%     \scratchdimentwo\dimexpr-\ht\scratchboxtwo+\ht\scratchboxone+.45\exheight\relax
-%     \hpack to \scratchdimenone\bgroup
-%       \hpack to \scratchdimenone{\hss\box\scratchboxone\hss}%
-%       \hskip   -\scratchdimenone
-%       \hpack to \scratchdimenone{\hss\raise\scratchdimentwo\box\scratchboxtwo\hss}%
-%     \egroup
-%   \endgroup}
+%D See enco-ini.mkivc for a definition of the obsolete \type {\t}.
 
 \protect \endinput

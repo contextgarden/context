@@ -102,6 +102,8 @@
      \setupframed[\??framedtablecolumn#1:#2][#3]%
    \fi}
 
+\mutable\let\currentframedtable\empty
+
 \permanent\tolerant\protected\def\startframedtable[#1]#*[#2]%
   {\begingroup
    \forgetall

@@ -638,8 +638,8 @@
 \permanent\protected\def\mathbox  #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
 \permanent\protected\def\mathnolop#1{\mathop{#1}\nolimits}
 
-\let\mathnothing\firstofoneunexpanded
-\let\mathalpha  \firstofoneunexpanded
+\aliased\let\mathnothing\firstofoneunexpanded
+\aliased\let\mathalpha  \firstofoneunexpanded
 
 \setnewconstant\mathordcode     \zerocount  \letvalue{\??mathcodecommand     ord}\mathord
 \setnewconstant\mathopcode      \plusone    \letvalue{\??mathcodecommand      op}\mathop
@@ -681,10 +681,10 @@
 
 \permanent\tolerant\protected\def\definemathcommand[#1]#*[#2]#*[#3]#:#*#4% command class args meaning
   {\ifparameter#3\or
-     \edef\nofmathcommandarguments{#3}% make this one m_arguments
-     \ifx\nofmathcommandarguments\v!one
+     \edef\scratchstringone{#3}% make this one m_arguments
+     \ifx\scratchstringone\v!one
        \frozen\protected\defcsname\??mathcommand#1\endcsname##1{\mathcodecommand{#2}{#4{##1}}}%
-     \orelse\ifx\nofmathcommandarguments\v!two
+     \orelse\ifx\scratchstringone\v!two
        \frozen\protected\defcsname\??mathcommand#1\endcsname##1##2{\mathcodecommand{#2}{#4{##1}{##2}}}%
      \else
        \frozen\protected\defcsname\??mathcommand#1\endcsname{\mathcodecommand{#2}{#4}}%
@@ -758,7 +758,7 @@
 %D
 %D Todo:
 
-\protected\def\mf{\begincsname\fontalternative\endcsname} % todo: \frozen
+\permanent\protected\def\mf{\begincsname\fontalternative\endcsname} % todo: \frozen
 
 % \let\normalmathop\mathop % already defined
 
@@ -932,7 +932,7 @@
 %       \let\mfunction         \math_function_style_mfunction
 %       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
-\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+\mutable\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
 
 \permanent\protected\def\mscaledtext#1%
   {\mathchoice
@@ -992,12 +992,14 @@
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
 
+\permanent\def\normalmathaligntab{&} % \let\normalmathaligntab\aligntab does to work well in a let to & (a def works ok)
+
 \appendtoks
     \edef\p_ampersand{\mathematicsparameter\s!ampersand}%
     \ifx\p_ampersand\v!normal
-        \let\specialmathaligntab\normalmathaligntab
+        \enforced\let\specialmathaligntab\normalmathaligntab
     \else
-        \let\specialmathaligntab\mathampersand
+        \enforced\let\specialmathaligntab\mathampersand
     \fi
 \to \everysetupmathematics
 
@@ -1189,13 +1191,13 @@
     \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
-    \glet\specialmathaligntab\normalmathaligntab
+    \aliased\glet\specialmathaligntab\normalmathaligntab
 
-    \permanent\protected\gdef\obeymathcatcodes
-      {\let _\normalsubscript
-       \let ^\normalsuperscript
-       \def &\specialmathaligntab
-       }
+    \permanent\protected\gdef\obeymathcatcodes{%
+        \enforced\let _\normalsubscript
+        \enforced\let ^\normalsuperscript
+        \enforced\def &\specialmathaligntab
+    }
 
     \doglobal\appendtoks
         \enforced\let _\normalsubscript
@@ -1770,8 +1772,8 @@
     \fi
 \to \everysetupmathematics
 
-\def\enablemathpunctuation {\csname\??mathautopunctuation\v!no \endcsname}
-\def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
+\permanent\protected\def\enablemathpunctuation {\csname\??mathautopunctuation\v!no \endcsname}
+\permanent\protected\def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
 
 \setupmathematics
   [\v!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
@@ -2579,7 +2581,7 @@
 
 % force text mode, will be overloaded later
 
-\ifdefined\text\else \let\text\hbox \fi
+\ifdefined\text\else \aliased\let\text\hbox \fi
 
 % \protected\def\mathoptext#1{\mathop{\text{#1}}}
 

@@ -207,6 +207,8 @@
 %D indentation as set (by the output routine) inside the group are forgotten
 %D afterwards. (I must not forget its existence).
 
+\mutable\let\currentparagraphproperties\empty % visible for tracing
+
 \permanent\def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded
      {\noexpand#1%
@@ -233,7 +235,7 @@
 
 \installcorenamespace{paragraphintro}
 
-\let\insertparagraphintro\relax % hook into everypar
+\let\spac_paragraphs_flush_intro\relax % hook into everypar
 
 \newtoks\t_spac_paragraphs_intro_first
 \newtoks\t_spac_paragraphs_intro_next
@@ -257,22 +259,22 @@
    \global\t_spac_paragraphs_intro_first\emptytoks
    \global\t_spac_paragraphs_intro_next \emptytoks
    \global\t_spac_paragraphs_intro_each \emptytoks
-   \glet\insertparagraphintro\relax}
+   \glet\spac_paragraphs_flush_intro\relax}
 
 \setvalue{\??paragraphintro\v!first}#1%
   {\global\settrue\c_spac_paragraphs_intro_first
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
-   \glet\insertparagraphintro\spac_paragraphs_flush_intro}
+   \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 \setvalue{\??paragraphintro\v!next}#1%
   {\global\settrue\c_spac_paragraphs_intro_next
    \gtoksapp\t_spac_paragraphs_intro_next{#1}%
-   \glet\insertparagraphintro\spac_paragraphs_flush_intro}
+   \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 \setvalue{\??paragraphintro\v!each}#1%
   {\global\settrue\c_spac_paragraphs_intro_each
    \gtoksapp\t_spac_paragraphs_intro_each{#1}%
-   \glet\insertparagraphintro\spac_paragraphs_flush_intro}
+   \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 %D We can say:
 %D
@@ -313,18 +315,18 @@
 \permanent\protected\def\flushatparagraph#1%
   {\global\c_spac_paragraphs_intro_first\plusone
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
-   \glet\insertparagraphintro\spac_paragraphs_flush_intro}
+   \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 %D Here comes the flusher (we misuse the one level expansion of token registers to
 %D feed a nice stream into the paragraph.)
 
-\protected\def\spac_paragraphs_flush_intro % we make sure that the token lists expand directly
-  {\normalexpanded{%                        % after another so the first code is there twice
+\protected\def\spac_paragraphs_flush_intro_indeed % we make sure that the token lists expand directly
+  {\normalexpanded{%                              % after another so the first code is there twice
      \ifconditional\c_spac_paragraphs_intro_each
        \ifconditional\c_spac_paragraphs_intro_next
-         \glet\insertparagraphintro\spac_paragraphs_flush_intro_next
+         \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_next
        \else
-         \glet\insertparagraphintro\spac_paragraphs_flush_intro_each
+         \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_each
        \fi
        \ifconditional\c_spac_paragraphs_intro_first
          \global\setfalse\c_spac_paragraphs_intro_first
@@ -334,7 +336,7 @@
        \the\t_spac_paragraphs_intro_each
      \else
        \ifconditional\c_spac_paragraphs_intro_next
-         \glet\insertparagraphintro\spac_paragraphs_flush_intro_next
+         \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_next
        \fi
        \ifconditional\c_spac_paragraphs_intro_first
          \global\setfalse\c_spac_paragraphs_intro_first
@@ -348,11 +350,11 @@
      \global\setfalse\c_spac_paragraphs_intro_next
      \global\t_spac_paragraphs_intro_next\emptytoks
      \ifconditional\c_spac_paragraphs_intro_each
-       \glet\insertparagraphintro\spac_paragraphs_flush_intro_each
+       \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_each
        \the\t_spac_paragraphs_intro_next
        \the\t_spac_paragraphs_intro_each
      \else
-       \glet\insertparagraphintro\relax
+       \glet\spac_paragraphs_flush_intro\relax
        \the\t_spac_paragraphs_intro_next
      \fi}}
 
@@ -365,7 +367,7 @@
 %D This macro collects data that will be flushed at the next paragraph. By using
 %D this macro you can avoid interfering nodes (writes, etc).
 
-\let\flushpostponednodedata\relax % hook into everypar
+\aliased\let\flushpostponednodedata\relax % hook into everypar
 
 \newbox  \b_spac_postponed_data
 %newcount\c_spac_postponed_data
@@ -382,7 +384,7 @@
 %   {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
 %    \global\advance\c_spac_postponed_data\minusone
 %    \ifvoid\b_spac_postponed_data\else
-%      \glet\flushpostponednodedata\spac_postponed_data_flush
+%      \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
 %    \fi}
 
 \newtoks\everyflushatnextpar
@@ -393,13 +395,13 @@
 \permanent\protected\def\poppostponednodedata
   {\globalpopbox\b_spac_postponed_data
    \ifvoid\b_spac_postponed_data\else
-     \glet\flushpostponednodedata\spac_postponed_data_flush
+     \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
    \fi}
 
 \permanent\protected\def\flushatnextpar
   {\begingroup
    \the\everyflushatnextpar
-   \glet\flushpostponednodedata\spac_postponed_data_flush
+   \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
    \dowithnextboxcs\spac_postponed_data_finish\hpack}
 
 % \def\spac_postponed_data_finish
@@ -433,7 +435,7 @@
      \ifvoid\b_spac_postponed_data\else
        \hpack{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
      \fi
-     \glet\flushpostponednodedata\relax
+     \enforced\glet\flushpostponednodedata\relax
    }%\fi}
 
 \permanent\protected\def\doflushatpar % might be renamed

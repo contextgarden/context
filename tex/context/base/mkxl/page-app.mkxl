@@ -45,8 +45,8 @@
    \c!location=\v!middle]
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currentfittingpage}{\startfittingpage[\currentfittingpage]}%
-    \frozen\instance\setuevalue{\e!stop \currentfittingpage}{\stopfittingpage}%
+    \frozen\instance\protected\edefcsname\e!start\currentfittingpage\endcsname{\startfittingpage[\currentfittingpage]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentfittingpage\endcsname{\stopfittingpage}%
 \to \everydefinefittingpage
 
 \permanent\tolerant\protected\def\startfittingpage[#1]#*[#2]%
@@ -107,10 +107,10 @@
    \enforced\let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
      [\fittingpageparameter\c!paper]
-     [   \v!auto=>\def\fittingpapersize{\printpapersize},
-      \s!unknown=>\let\fittingpapersize\commalistelement,
-      \s!default=>\def\fittingpapersize{fittingpage}]%
-   \normalexpanded{\setuppapersize[fittingpage][\fittingpapersize]}%
+     [   \v!auto=>\let\scratchstringone\printpapersize,
+      \s!unknown=>\let\scratchstringone\commalistelement,
+      \s!default=>\def\scratchstringone{fittingpage}]%
+   \normalexpanded{\setuppapersize[fittingpage][\scratchstringone]}%
    \startmakeup[fittingpage]%
      \box\b_page_fitting
    \stopmakeup

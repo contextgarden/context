@@ -61,8 +61,8 @@
 
 \newskip \s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
 
-\def\skipfactor    {.75}
-\def\skipgluefactor{.25}
+\mutable\def\skipfactor    {.75}
+\mutable\def\skipgluefactor{.25}
 
 \permanent\def\normalskipamount
   {\openlineheight
@@ -109,15 +109,15 @@
 
 \installcorenamespace{interlinespacerelative}
 
-\let\setrelativeinterlinespace    \relax % used elsewhere
-\let\currentrelativeinterlinespace\empty
+\aliased\let\setrelativeinterlinespace    \relax % used elsewhere
+\mutable\let\currentrelativeinterlinespace\empty
 
 \setvalue{\??interlinespacerelative\v!on   }{\oninterlineskip}
 \setvalue{\??interlinespacerelative\v!off  }{\offinterlineskip}
-\setvalue{\??interlinespacerelative\v!reset}{\let\currentrelativeinterlinespace\empty
-                                             \let\setrelativeinterlinespace\relax
+\setvalue{\??interlinespacerelative\v!reset}{\enforced\let\currentrelativeinterlinespace\empty
+                                             \enforced\let\setrelativeinterlinespace\relax
                                              \setfontparameters}
-\setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
+\setvalue{\??interlinespacerelative\v!auto }{\enforced\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
 \def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
   {\doifelsedimenstring{#1}%
@@ -135,7 +135,7 @@
      \spac_linespacing_set_specified_relative_interlinespace{#1}%
    \fi}
 
-\def\spac_linespacing_set_relative_interlinespace
+\permanent\protected\def\spac_linespacing_set_relative_interlinespace
   {\ifempty\currentrelativeinterlinespace\else
      \spacing\currentrelativeinterlinespace
    \fi}
@@ -250,7 +250,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\protected\def\dosomebreak#1%
+\permanent\protected\def\dosomebreak#1% should be replaced by something \blank
   {\doifoutervmode
      {\s_spac_lastskip\lastskip
       \removelastskip
@@ -825,13 +825,13 @@
 
 \setbox\strutbox\hpack{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
 
-\def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
-
+% \permanent\protected\def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
+%
 % \protected\def\strut
 %   {\relax
 %    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
-
-\let\normalstrut\strut
+%
+% \aliased\let\normalstrut\strut
 
 %D The double \type {\hbox} construction enables us to backtrack boxes.
 
@@ -1004,7 +1004,7 @@
 %   {\relax
 %    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
 
-\let\normalstrut\strut
+\aliased\let\normalstrut\strut
 
 \permanent\protected\def\halfstrut
   {\relax
@@ -1691,15 +1691,15 @@
 \def\spac_grids_check_yes
   {\gridsnappingtrue
    \setsystemmode\v!grid
-   \spac_grids_snap_value_set\askedgridmode}
+   \spac_grids_snap_value_set\p_grid}
 
-\protected\def\synchronizegridsnapping
-  {\edef\askedgridmode{\layoutparameter\c!grid}%
-   \ifx\askedgridmode\v!no         % official
+\permanent\protected\def\synchronizegridsnapping
+  {\edef\p_grid{\layoutparameter\c!grid}%
+   \ifx\p_grid\v!no         % official
      \spac_grids_check_nop
-   \orelse\ifx\askedgridmode\v!off % for taco and luigi
+   \orelse\ifx\p_grid\v!off % for taco and luigi
      \spac_grids_check_nop
-   \orelse\ifempty\askedgridmode   % to be sure
+   \orelse\ifempty\p_grid   % to be sure
      \spac_grids_check_nop
    \else
      \spac_grids_check_yes

@@ -194,6 +194,8 @@
 \mutable\let\currentfloatnumber     \empty
 \mutable\let\currentfloatsynchronize\empty
 
+\let\m_strc_floats_previous_number  \empty % we can also just push/pop
+
 %D We need to do it again here:
 
 \setupfloat
@@ -393,10 +395,10 @@
         \s!hasnumber=\v!yes,%
         \s!hastitle=\v!yes]%
        [#userdata]%
-     \glet\previousfloatnumber    \m_strc_counters_last_registered_index
-     \glet\currentfloatnumber     \m_strc_counters_last_registered_index
-     \glet\currentfloatattribute  \m_strc_counters_last_registered_attribute
-     \glet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
+     \glet\m_strc_floats_previous_number\m_strc_counters_last_registered_index
+     \glet\currentfloatnumber           \m_strc_counters_last_registered_index
+     \glet\currentfloatattribute        \m_strc_counters_last_registered_attribute
+     \glet\currentfloatsynchronize      \m_strc_counters_last_registered_synchronize
      %
    % \iflocation
    %    \c_attr_destination\currentfloatattribute\relax
@@ -413,12 +415,14 @@
 \newdimen\d_strc_floats_caption_height
 \newdimen\d_strc_floats_caption_depth
 
+\let\m_strc_floats_last_caption_tag\empty
+
 \def\strc_floats_make_complete_caption
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
    \strc_floats_make_complete_caption_before
    \synchronizedisplaydirection % temp hack, till we have a proper model
    \noindent
-   \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
+   \gdef\m_strc_floats_last_caption_tag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
    \begingroup
      \ifnofloatcaption
        \global\d_strc_floats_caption_height\zeropoint
@@ -580,7 +584,7 @@
 % before we're really dealing with the float. Some day I'll root out the global
 % settings.
 
-\let\lastplacedfloat\empty
+\aliased\let\lastplacedfloat\empty
 
 \def\strc_floats_set_current_tag#tag%
   {\edef\currentfloat{#tag}%
@@ -591,7 +595,7 @@
      \donothing
      {\writestatus\m!floatblocks{unknown float type '\currentfloat'}%
       \let\currentfloat\v!figure}% also a hack
-   \glet\lastplacedfloat\currentfloat
+   \enforced\glet\lastplacedfloat\currentfloat
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 
@@ -1091,7 +1095,7 @@
 \def\strc_floats_place_packaged_boxes_indeed#userdata%
   {\bgroup
    \ifconditional\usesamefloatnumber
-     \glet\currentfloatnumber     \previousfloatnumber
+     \glet\currentfloatnumber     \m_strc_floats_previous_number
      \glet\currentfloatattribute  \empty
      \glet\currentfloatsynchronize\relax
    \else
@@ -1125,10 +1129,10 @@
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
        [#userdata]%
-     \glet\previousfloatnumber    \m_strc_counters_last_registered_index
-     \glet\currentfloatnumber     \m_strc_counters_last_registered_index
-     \glet\currentfloatattribute  \m_strc_counters_last_registered_attribute
-     \glet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
+     \glet\m_strc_floats_previous_number\m_strc_counters_last_registered_index
+     \glet\currentfloatnumber           \m_strc_counters_last_registered_index
+     \glet\currentfloatattribute        \m_strc_counters_last_registered_attribute
+     \glet\currentfloatsynchronize      \m_strc_counters_last_registered_synchronize
    \fi
    %
    \iftrialtypesetting\else\global\setfalse\usesamefloatnumber\fi % one shot
@@ -1567,8 +1571,19 @@
 \newconditional\c_floats_adapt_to_caption_width
 \newconditional\c_floats_store_minimal_package
 
-\def\captionminwidth {15\bodyfontsize} % can become parameter (but what name)
-\def\captionovershoot{2\emwidth}       % can become parameter (but what name)
+\newdimen\d_strc_floats_caption_hsize
+\newdimen\d_strc_floats_caption_min_width
+\newdimen\d_strc_floats_caption_overshoot
+
+% These are expandable, for diagnostic purposes only, but might eventually go away:
+
+\permanent\def\captionhsize    {\the\d_strc_floats_caption_hsize}
+\permanent\def\captionminwidth {\the\d_strc_floats_caption_min_width}
+\permanent\def\captionovershoot{\the\d_strc_floats_caption_overshoot}
+
+\def\strc_floats_set_caption_criteria % can become parameter (but what name)
+  {\d_strc_floats_caption_min_width15\bodyfontsize
+   \d_strc_floats_caption_overshoot 2\emwidth}
 
 \let\strc_floats_mark_pag_as_free\relax
 
@@ -1730,15 +1745,15 @@
 
 \def\strc_floats_prepare_stack_caption_auto
   {\ifempty\p_strc_floats_caption_align \else
-     \doifnotinset\v!middle\p_strc_floats_caption_align{\let\captionovershoot\!!zeropoint}%
+     \doifnotinset\v!middle\p_strc_floats_caption_align{\d_strc_floats_caption_overshoot\zeropoint}%
    \fi
-   \edef\captionhsize{\the\wd\b_strc_floats_content}%
+   \d_strc_floats_caption_hsize\wd\b_strc_floats_content
    \scratchwidth\floatcaptionparameter\c!maxwidth\relax
    \ifconditional\c_floats_adapt_to_caption_width
-     \let\captionminwidth \!!zeropoint
-     \let\captionovershoot\!!zeropoint
+     \d_strc_floats_caption_min_width\zeropoint
+     \d_strc_floats_caption_overshoot\zeropoint
    \fi
-   \ifdim\captionhsize>\scratchwidth
+   \ifdim\d_strc_floats_caption_hsize>\scratchwidth
      % float is wider than \hsize
      \setbox\b_strc_floats_caption\vbox
        {\settrialtypesetting
@@ -1749,8 +1764,8 @@
      \ifdim\ht\scratchbox>\lineheight % more lines
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
-          \hsize\dimexpr\captionhsize-\captionovershoot\relax
-          \ifdim\hsize<\captionminwidth\relax
+          \hsize\dimexpr\d_strc_floats_caption_hsize-\d_strc_floats_caption_overshoot\relax
+          \ifdim\hsize<\d_strc_floats_caption_min_width\relax
             \hsize\scratchwidth
           \fi
           \strc_floats_make_complete_caption}%
@@ -1762,16 +1777,15 @@
      \fi
    \else
      % float is smaller of equal to \hsize
-     \ifdim\captionhsize<\captionminwidth\relax
-       \scratchdimen\captionminwidth % float smaller than min width
-       \edef\captionhsize{\the\scratchdimen}%
-% \ifconditional\c_floats_adapt_to_caption_width
-%   \setbox\b_strc_floats_content\hpack to \captionhsize{\hss\box\b_strc_floats_content\hss}%
-% \fi
+     \ifdim\d_strc_floats_caption_hsize<\d_strc_floats_caption_min_width\relax
+       \d_strc_floats_caption_hsize\d_strc_floats_caption_min_width % float smaller than min width
+     % \ifconditional\c_floats_adapt_to_caption_width
+     %   \setbox\b_strc_floats_content\hpack to \d_strc_floats_caption_hsize{\hss\box\b_strc_floats_content\hss}%
+     % \fi
      \fi
      \setbox\scratchbox\vbox     % test with overshoot
        {\settrialtypesetting
-        \scratchdimen\dimexpr\captionhsize+\captionovershoot+3\emwidth\relax % 3em is an average word length
+        \scratchdimen\dimexpr\d_strc_floats_caption_hsize+\d_strc_floats_caption_overshoot+3\emwidth\relax % 3em is an average word length
         \ifdim\scratchdimen<\hsize
           \hsize\scratchdimen
         \fi
@@ -1781,7 +1795,7 @@
        % at least an average word longer than a line
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
-          \scratchdimen\dimexpr\captionhsize+\captionovershoot\relax
+          \scratchdimen\dimexpr\d_strc_floats_caption_hsize+\d_strc_floats_caption_overshoot\relax
           \ifdim\scratchdimen<\hsize
             \hsize\scratchdimen
           \fi
@@ -1789,13 +1803,13 @@
      \orelse\ifempty\p_strc_floats_caption_align
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
-          \hsize\captionhsize
+          \hsize\d_strc_floats_caption_hsize
           \raggedcenter % overloads
           \strc_floats_make_complete_caption}%
      \else
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
-          \hsize\captionhsize
+          \hsize\d_strc_floats_caption_hsize
           \strc_floats_make_complete_caption}%
      \fi
    \fi}
@@ -2379,6 +2393,7 @@
   {\ifvisible
      \par
      \edef\floatcaptiondirectives{\floatparameter\c!location,\floatcaptionparameter\c!location}%
+     \strc_floats_set_caption_criteria
      \ifconditional\c_strc_floats_par_float
        \strc_floats_set_paragraph_variant
      \else

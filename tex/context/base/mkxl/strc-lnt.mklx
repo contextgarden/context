@@ -87,6 +87,8 @@
 
 % maybe do this in lua
 
+\mutable\let\currentlinenotereference\empty
+
 \def\page_lines_in_from{\in[lr:b:\currentlinenotereference]}
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
 
@@ -136,6 +138,8 @@
 
 \let\currentlinenotereference\empty
 
+\mutable\let\linenotelinenumber\relax
+
 \protected\def\strc_linenotes_indeed#1#2#3%
   {\begingroup
    % we keep things local so we can use it as regular note too
@@ -145,8 +149,8 @@
    \xdef\m_page_lines_previous_to  {\begincsname\??linenotespreviousto  \currentnotation\endcsname}%
    \strc_linenotes_check_compression
    \let\currentnote\currentnotation
-   \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook
-   \letnoteparameter    \c!textcommand  \gobbleoneargument % todo: deep hook
+   \letnotationparameter\c!numbercommand\linenotelinenumber % todo: deep hook, beware: should be mutable
+   \letnoteparameter    \c!textcommand  \gobbleoneargument  % todo: deep hook
    \csname\??linenote\currentnotation\endcsname{#3}%
    \gletcsname\??linenotespreviousfrom\currentnotation\endcsname\m_page_lines_current_from
    \gletcsname\??linenotespreviousto  \currentnotation\endcsname\m_page_lines_current_to
@@ -231,17 +235,15 @@
 \let\strc_linenotes_traced\gobbleoneargument
 
 \def\strc_linenotes_traced_indeed#1%
-  {\iftracelinenotes
-     \hpack to \zeropoint
-       {\forgetall
-        \hsize\zeropoint
-        \hss
-        \vpack to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
-        {\color[blue]{\vl}}%
-        \vpack to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
-        \hss}%
-      \prewordbreak
-   \fi}
+  {\hpack to \zeropoint
+     {\forgetall
+      \hsize\zeropoint
+      \hss
+      \vpack to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
+      {\color[blue]{\vl}}%
+      \vpack to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
+      \hss}%
+   \prewordbreak}
 
 \permanent\protected\def\tracelinenotes
   {\let\strc_linenotes_traced\strc_linenotes_traced_indeed}

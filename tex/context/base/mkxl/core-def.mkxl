@@ -38,13 +38,13 @@
   % \flushmargincontents
   % \flushcommentanchors
     \flushnotes
-    \synchronizenotes
+  % \synchronizenotes
   % \OTRSETshowstatus
     \registerparoptions
   % \flushsyncpositions
     \flushpostponednodedata
     \typo_delimited_repeat
-    \insertparagraphintro
+    \spac_paragraphs_flush_intro
     \typo_initial_handle
     \typo_firstline_handle
     %

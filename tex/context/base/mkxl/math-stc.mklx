@@ -1265,7 +1265,7 @@
    %\immutable\letcsname#1\expandafter\endcsname\csname#1\endcsname
    } % huh?
 
-\defineextensiblefiller [barfill]                ["203E]
+%defineextensiblefiller [barfill]                ["203E] % yet undefined
 \defineextensiblefiller [relfill]                ["002D]
 \defineextensiblefiller [equalfill]              ["003D]
 \defineextensiblefiller [leftarrowfill]          ["2190]

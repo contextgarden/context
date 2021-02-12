@@ -54,9 +54,9 @@
   {\ifarguments \orelse \ifcsname\??luacode#1\endcsname \else
      \bgroup
      %
-     \edef\fullname{lua_code_#1}%
+     \edef\m_syst_lua_name{lua_code_#1}%
      %
-     \clf_registernamedlua{#1}{#2}{\fullname}%
+     \clf_registernamedlua{#1}{#2}{\m_syst_lua_name}%
      %
      \frozen\instance\protected\xdefcsname\s!start#1\s!code\endcsname
        {\begingroup
@@ -69,9 +69,9 @@
      \normalexpanded{\xdefcsname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
        {\noexpand\expandafter\endgroup
           \noexpand\expandafter
-          \expandafter\noexpand\csname clf_\fullname\endcsname
+          \expandafter\noexpand\csname clf_\m_syst_lua_name\endcsname
           \noexpand\expandafter{\noexpand\normalexpanded{##1}}}%
-     \frozen\instance\gletcsname#1\s!code\expandafter\endcsname\csname clf_\fullname\endcsname
+     \frozen\instance\gletcsname#1\s!code\expandafter\endcsname\csname clf_\m_syst_lua_name\endcsname
      \egroup
    \fi}
 

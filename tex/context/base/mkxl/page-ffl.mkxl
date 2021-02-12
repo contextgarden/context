@@ -91,7 +91,7 @@
 
 \let\m_strc_floats_state\relax
 
-\protected\def\strc_floats_facing_flush
+\permanent\protected\def\strc_floats_facing_flush
   {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
      \ifodd\c_strc_floats_facing_flushed
        \ifodd\realpageno

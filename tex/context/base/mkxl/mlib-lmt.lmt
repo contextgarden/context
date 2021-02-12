@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mlib-lmt'] = {
 -- todo: check for possible inject usage
 
 local type = type
+local round = math.round
 
 local aux            = mp.aux
 local mpdirect       = aux.direct
@@ -17,6 +18,8 @@ local mppath         = mp.path
 local scan           = mp.scan
 local scannumeric    = scan.numeric
 local scanpath       = scan.path
+
+local injectpath     = mp.inject.path
 
 local getparameter   = metapost.getparameter
 local registerscript = metapost.registerscript
@@ -146,3 +149,31 @@ do
 end
 
 todecimal = xdecimal and xdecimal.new or tonumber -- bonus
+
+-- mail on list by Mikael Sundqvist and Taco's analysis of near duplicate points (2021/02/11+)
+
+registerscript("scrutenized", function()
+    local p = scanpath()
+    local d = 10^scannumeric()
+    for i=1,#p do
+        local pi = p[i]
+        pi[1] = round(pi[1] * d) / d
+        pi[2] = round(pi[2] * d) / d
+    end
+    local x1 = round(p[1][1])
+    local y1 = round(p[1][2])
+    local n = 1
+    local t = { p[1], cycle = p.cycle }
+    for i=2,#p do
+        local pi = p[i]
+        local x2 = round(pi[1])
+        local y2 = round(pi[2])
+        if x1 ~= x2 or y1 ~= y2 then
+            n = n + 1
+            t[n] = p[i]
+            x1 = x2
+            y1 = y2
+        end
+    end
+    injectpath(t)
+end)

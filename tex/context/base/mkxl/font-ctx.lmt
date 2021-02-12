@@ -2932,8 +2932,11 @@ do
 
     helpers.getinstancespec = getinstancespec
 
+    -- expandable
+
     implement {
         name      = "currentfontinstancespec",
+        public    = true,
         actions   = function()
             local t = getinstancespec() -- current font
             if t then

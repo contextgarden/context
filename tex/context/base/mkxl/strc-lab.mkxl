@@ -71,31 +71,32 @@
 
 % todo: \strc_labels_command for user
 
+\let\m_strc_labels_sub\empty
+
 \appendtoks
+    \let\m_strc_labels_sub\empty
     \ifempty\currentlabelparent
        % clone => parent | subclone => clone | subsubclone => subclone
-       \let\currentlabelsub\empty
        \strc_define_commands_label
-         {\currentlabelsub\currentlabel}%
+         {\m_strc_labels_sub\currentlabel}%
          \plusone
          \empty
        \edef\p_levels{\labelparameter\c!levels}%
        \dostepwiserecurse\plustwo\p_levels\plusone
          {\strc_define_commands_label
-            {\v!sub\currentlabelsub\currentlabel}%
+            {\v!sub\m_strc_labels_sub\currentlabel}%
             \recurselevel
-            {\currentlabelsub\currentlabel}%
-          \edef\currentlabelsub{\v!sub\currentlabelsub}}%
+            {\m_strc_labels_sub\currentlabel}%
+          \edef\m_strc_labels_sub{\v!sub\m_strc_labels_sub}}%
    \else
        % clone => parent | subclone => subparent | subsubclone => subsubparent
-       \let\currentlabelsub\empty
        \edef\p_levels{\labelparameter\c!levels}%
        \dorecurse\p_levels
          {\strc_define_commands_label
-            {\currentlabelsub\currentlabel}%
+            {\m_strc_labels_sub\currentlabel}%
             \recurselevel
-            {\currentlabelsub\currentlabelparent}%
-          \edef\currentlabelsub{\v!sub\currentlabelsub}}%
+            {\m_strc_labels_sub\currentlabelparent}%
+          \edef\m_strc_labels_sub{\v!sub\m_strc_labels_sub}}%
    \fi
    \edef\p_counter{\labelparameter\s!counter}% can inherit from parent
    \ifempty\p_counter %

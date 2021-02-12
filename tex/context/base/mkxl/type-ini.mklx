@@ -491,7 +491,7 @@
         \gdefcsname\??typescriptdefaultstyles#name\endcsname{#style}%
       \fi
       \ifcsname#name\endcsname \else
-        \protected\gdefcsname#name\endcsname{\switchtotypeface[#name][#style]}%
+        \protected\frozen\instance\gdefcsname#name\endcsname{\switchtotypeface[#name][#style]}%
       \fi}}
 
 \def\font_typefaces_defining_start#name#style#settings%
@@ -520,7 +520,7 @@
    \pop_macro_fontclassstyle
    \pop_macro_fontclass}
 
-\def\dofastdefinetypeface#name#style#fontshape#fontsize#settings% called from the lua end (via case d)
+\permanent\protected\def\dofastdefinetypeface#name#style#fontshape#fontsize#settings% called from the lua end (via case d)
   {\font_typefaces_define_indeed[#name][#style]%
    \font_typefaces_defining_start{#name}{#style}{#settings}%
    \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%

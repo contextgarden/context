@@ -119,7 +119,7 @@
    \c!rule=\v!auto]
 
 \appendtoks
-    \instance\setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
+    \instance\frozen\protected\edefcsname\currentmathfraction\endcsname{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
 
 % Sometimes users want control over the distances:
@@ -440,9 +440,9 @@
 \definemathfraction[xfrac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
 \definemathfraction[xxfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
 
-\let\normalxfrac\xfrac
+\aliased\let\normalxfrac\xfrac
 
-\protected\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
+\permanent\protected\def\xfrac#1#2{\normalxfrac{\enforced\let\xfrac\xxfrac#1}{\enforced\let\xfrac\xxfrac#2}}
 
 %D Spacing (sensitive for definition of \triggermathstyle:
 
@@ -700,8 +700,8 @@
 %D These macros are based on Michael J.~Downes posting on
 %D comp.text.tex on 2001/12/06 but adapted a bit.
 
-\protected\def\splitfrac #1#2{{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
-\protected\def\splitdfrac#1#2{{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
+\permanent\protected\def\splitfrac #1#2{{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
+\permanent\protected\def\splitdfrac#1#2{{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
 
 %D For testing:
 

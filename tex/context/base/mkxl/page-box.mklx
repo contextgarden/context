@@ -256,7 +256,7 @@
 \newconditional\c_page_areas_enabled
 \newbox        \b_page_areas_registered
 
-\def\enabletextarearegistration
+\permanent\protected\def\enabletextarearegistration
   {\global\settrue\c_page_areas_enabled}
 
 \def\page_areas_registered_box

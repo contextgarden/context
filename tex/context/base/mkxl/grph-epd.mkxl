@@ -19,8 +19,6 @@
 
 % hm, this one is globally overloaded
 
-\def\figurereference{\clf_figurestatus{reference}{}} % might become private
-
 \mutable\let\mergedfigurereference\empty
 
 \defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]

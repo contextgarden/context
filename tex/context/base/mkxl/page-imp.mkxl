@@ -433,8 +433,7 @@
       \box\scratchbox\box#5\hss}}
 
 \permanent\protected\def\gotonextarrangepage
-  {\global\advance\arrangeno \plusone
-   \def\pagecutmarksymbol{\the\arrangeno}}
+  {\global\advance\arrangeno\plusone}
 
 \permanent\protected\def\outputarrangedbox#1%
   {\begingroup

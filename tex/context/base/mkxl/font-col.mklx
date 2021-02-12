@@ -68,9 +68,11 @@
    \fi
 \to\everydefinefont
 
+\let\m_font_fallbacks_spec\empty
+
 \def\font_fallbacks_start_cloning
   {\begingroup
-   \let\savedfontspec\somefontspec}
+   \let\m_font_fallbacks_spec\somefontspec}
 
 \def\font_fallbacks_stop_cloning
   {\endgroup}
@@ -86,7 +88,7 @@
    \setfalse\c_font_auto_size} % no \setfontcharacteristics and \the\everyfontswitch needed
 
 \def\font_fallbacks_clone_inherited#font% also a second argument
-  {\font_fallbacks_clone_unique{#font \savedfontspec}}
+  {\font_fallbacks_clone_unique{#font \m_font_fallbacks_spec}}
 
 \def\font_fallbacks_register_main        #name{\clf_fontcollectionregister{#name}}
 \def\font_fallbacks_prepare_clone_vectors#name{\clf_fontcollectionclone{#name}}

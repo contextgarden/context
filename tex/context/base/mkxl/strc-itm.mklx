@@ -397,9 +397,9 @@
 \mutable\let\itemgroupsecond\empty
 
 \def\strc_itemgroups_process_option#option%
-  {\edef\itemgroupconstantvalue{#option}%
-   \ifempty\itemgroupconstantvalue\else
-     \splitatasterisk\itemgroupconstantvalue\itemgroupfirst\itemgroupsecond
+  {\edef\scratchstringone{#option}%
+   \ifempty\scratchstringone\else
+     \splitatasterisk\scratchstringone\itemgroupfirst\itemgroupsecond
      \ifempty\itemgroupsecond
         \let\itemgroupsecond\itemgroupfirst
         \let\itemgroupfirst\!!plusone
@@ -407,7 +407,7 @@
      \ifcsname\??itemgroupkeyword\itemgroupsecond\endcsname
        \lastnamedcs
      \else
-       \strc_itemgroups_set_symbol\itemgroupconstantvalue
+       \strc_itemgroups_set_symbol\scratchstringone
      \fi
    \fi}
 
@@ -781,7 +781,7 @@
    \fi}
 
 \def\strc_itemgroups_calculate_list_width#level%
-  {\let\savedcurrentitemgroup\currentitemgroup
+  {\let\m_strc_itemgroups_saved\currentitemgroup
    \edef\currentitemgroup{\currentparentitemgroup:\number#level}%
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
      \d_strc_itemgroups_list_width\d_strc_itemgroups_max_width
@@ -794,7 +794,7 @@
      \d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
    \fi
    \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
-   \let\currentitemgroup\savedcurrentitemgroup}
+   \let\currentitemgroup\m_strc_itemgroups_saved}
 
 \let\p_itemgroups_options      \empty
 \let\p_itemgroups_extra_options\empty
@@ -1097,17 +1097,22 @@
      \ifconditional\c_strc_itemgroups_intro\strc_itemgroups_insert_breakno\fi
    \fi}
 
+\newcount\c_strc_itemgroups_prev_level
+
+\def\strc_itemgroups_inbetween_command
+  {\nameditemgroupparameter{\currentparentitemgroup:\number\c_strc_itemgroups_prev_level}\c!inbetween}
+
 \def\strc_itemgroups_start_item_first_two
   {\ifconditional\c_strc_itemgroups_paragraph\else
-     \edef\previtemlevel{\the\numexpr\c_strc_itemgroups_nesting-\plusone}%
+     \c_strc_itemgroups_prev_level\numexpr\c_strc_itemgroups_nesting-\plusone\relax
      \ifcase\c_strc_itemgroups_spacing_mode
        \strc_itemgroups_before_command
      \or
        \doifelsenothing\strc_itemgroups_before_command % should possibly expand to empty
-         {\nameditemgroupparameter{\currentparentitemgroup:\previtemlevel}\c!inbetween}%
+         \strc_itemgroups_inbetween_command
          \strc_itemgroups_before_command
      \else
-       \nameditemgroupparameter{\currentparentitemgroup:\previtemlevel}\c!inbetween
+       \strc_itemgroups_inbetween_command
      \fi
      \strc_itemgroups_tag_start_group
    \fi}
@@ -1597,7 +1602,7 @@
 \ifdefined\noitem           \else \aliased\let\noitem          \relax \fi
 \ifdefined\itm              \else \aliased\let\itm             \relax \fi
 \ifdefined\but              \else \aliased\let\but             \relax \fi
-\ifdefined\nop              \else         \let\nop             \relax \fi % used often by myself
+%ifdefined\nop              \else         \let\nop             \relax \fi % used often by myself
 \ifdefined\txt              \else \aliased\let\txt             \relax \fi
 \ifdefined\head             \else         \let\head            \relax \fi % defined later
 \ifdefined\headsym          \else \aliased\let\headsym         \relax \fi
@@ -1694,12 +1699,14 @@
 
 \let\strc_itemgroups_collected_store\relax
 
+\let\m_strc_itemgroups_collected\empty
+
 \normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
   {\advance\c_strc_itemgroups_collected_stored\plusone
    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
 
 \def\strc_itemgroups_collected_flush_randomize
-  {\collecteditemgroupitem}
+  {\m_strc_itemgroups_collected}
 
 \def\strc_itemgroups_collected_flush_horizontal
   {\begingroup
@@ -1712,18 +1719,12 @@
      \fi
    \fi
    \noindent % no \dontleavehmode
-   \hbox to \dimexpr\availablehsize/\scratchcounter\relax{\collecteditemgroupitem\hss}%
+   \hbox to \dimexpr\availablehsize/\scratchcounter\relax{\m_strc_itemgroups_collected\hss}%
    \endgroup}
 
-% \def\strc_itemgroups_collected_flush_indeed
-%   {\collecteditemgroupitem
-%    \iftrialtypesetting
-%      \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
-%    \fi}
-
 \def\strc_itemgroups_collected_flush_indeed
-  {\collecteditemgroupitem
-   \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}}
+  {\m_strc_itemgroups_collected
+   \letcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname\undefined}
 
 \def\strc_itemgroups_collected_flush
   {\ifconditional\c_strc_itemgroups_randomize
@@ -1732,7 +1733,7 @@
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
    \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
-     \edef\collecteditemgroupitem{\lastnamedcs}%
+     \edef\m_strc_itemgroups_collected{\lastnamedcs}%
      \ifconditional\c_strc_itemgroups_horizontal
        \strc_itemgroups_collected_flush_horizontal
      \else
@@ -1768,15 +1769,15 @@
 
 %D Left-overs:
 
-\protected\def\item % todo: frozen
+\permanent\protected\def\item % todo: frozen
   {\strc_itemgroups_item_alone}
 
-\def\strc_itemgroups_item_alone[#category]#text\par
+\tolerant\def\strc_itemgroups_item_alone[#category]#:#text\par
   {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
    \startitem#text\stopitem
    \stopitemgroup}
 
-\protected\def\head % todo: frozen
+\permanent\protected\def\head % todo: frozen
   {\strc_itemgroups_head_alone}
 
 \def\strc_itemgroups_head_alone[#category]#head\par#body\par

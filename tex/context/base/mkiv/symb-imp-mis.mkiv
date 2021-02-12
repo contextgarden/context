@@ -72,9 +72,9 @@
 \definesymbol [numero]      [\textnumero]
 \definesymbol [euro]        [\texteuro]
 
-\let\euro\texteuro
+\aliased\let\euro\texteuro
 
-\def\Numero{\symbol[Numero]} % obsolete
-\def\numero{\symbol[numero]} % obsolete
+\permanent\protected\def\Numero{\symbol[Numero]} % obsolete
+\permanent\protected\def\numero{\symbol[numero]} % obsolete
 
 \protect \endinput

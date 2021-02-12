@@ -877,7 +877,8 @@
    \begingroup
    \scratchcounter\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
-   \let\savedcurrentregister\currentregister
+%    \let\savedcurrentregister\currentregister
+   \pushmacro\currentregister
    \edef\currentregister{\currentregister:\number\scratchcounter}%
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\scratchcounter>\plusone
@@ -886,7 +887,8 @@
    \d_strc_registers_hangindent\registerparameter\c!distance\relax
    \c_strc_registers_hangafter \plusone
    \blank[\v!samepage]%
-   \let\currentregister\savedcurrentregister}
+%    \let\currentregister\savedcurrentregister}
+   \popmacro\currentregister}
 
 \permanent\protected\def\stopregisterentries
   {\endgraf
@@ -1198,7 +1200,7 @@
    \enforced\frozen\def\registeronepage{\registerpagebuttonsymbol\gobblefivearguments}%
    \enforced\frozen\def\registerpagerange{\registerpagebuttonsymbol\gobbleeightarguments}}
 
-\protected\def\setregisterpagerendering
+\protected\def\strc_registers_set_page_rendering
   {\doifelse{\registerparameter\c!pagenumber}\v!no
      {\enforced\frozen\let \currentregisterpagesymbol\v!none}
      {\enforced\frozen\edef\currentregisterpagesymbol{\registerparameter\c!symbol}}%
@@ -1213,7 +1215,7 @@
    \fi}
 
 \appendtoks
-     \setregisterpagerendering
+     \strc_registers_set_page_rendering
 \to \everyplaceregister
 
 %D The linked register code will be reimplemented (not that hard) when it's needed

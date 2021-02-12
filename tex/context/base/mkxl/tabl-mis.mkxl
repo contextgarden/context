@@ -31,7 +31,7 @@
 %D
 %D (This rather old but updated code used to be in \type {core-mis.mkiv}.)
 
-\let\kindoftabposition\!!zerocount
+\mutable\let\kindoftabposition\!!zerocount
 
 \permanent\tolerant\protected\def\somekindoftab[#1]%
   {\bgroup

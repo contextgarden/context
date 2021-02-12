@@ -69,12 +69,12 @@
   {\begincsname\??pagebreakmethod#1\endcsname}
 
 \permanent\protected\def\installpagebreakmethod#1#2% low level definer
-  {\setvalue{\??pagebreakmethod#1}{#2}}
+  {\defcsname\??pagebreakmethod#1\endcsname{#2}}
 
 \aliased\let\installpagebreakhandler\installpagebreakmethod % will go
 
 \permanent\tolerant\protected\def\definepagebreak[#1]#*[#2]%
-  {\setvalue{\??pagebreaks#1}{#2}}
+  {\defcsname\??pagebreaks#1\endcsname{#2}}
 
 \appendtoks
     \flushnotes
@@ -123,7 +123,7 @@
 \permanent\protected\def\simplifypagebreak % to be used grouped !
   {\enforced\permanent\protected\def\pagebreak[##1]{\goodbreak}}
 
-\protected\def\disablepagebreaks % to be used grouped !
+\permanent\protected\def\disablepagebreaks % to be used grouped !
   {\enforced\let\page_breaks_process\gobbleoneoptional}
 
 \installpagebreakmethod \s!dummy
@@ -309,12 +309,12 @@
   {\begincsname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
 
 \permanent\protected\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
-  {\setvalue{\??columnbreakmethod#1:#2}{#3}}
+  {\defcsname\??columnbreakmethod#1:#2\endcsname{#3}}
 
 \aliased\let\installcolumnbreakhandler\installcolumnbreakmethod % will go
 
 \permanent\tolerant\protected\def\definecolumnbreak[#1]#*[#2]%
-  {\setvalue{\??columnbreaks#1}{#2}}
+  {\defcsname\??columnbreaks#1\endcsname{#2}}
 
 %D So, page ornaments are reset after a pagebreak command, unless set!
 
@@ -381,7 +381,7 @@
      \endgroup
    \fi}
 
-\setvalue{\??pagecheckermethod 0}%
+\defcsname\??pagecheckermethod 0\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
        \ifdim\page_check_amount>.99\pagegoal
@@ -398,7 +398,7 @@
      \pagecheckerparameter\c!inbetween
    \fi}
 
-\setvalue{\??pagecheckermethod 1}%
+\defcsname\??pagecheckermethod 1\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
        \ifdim\dimexpr\page_check_amount-\pagegoal\relax>-\lineheight
@@ -416,7 +416,7 @@
      \pagecheckerparameter\c!inbetween
    \fi}
 
-\setvalue{\??pagecheckermethod 2}%
+\defcsname\??pagecheckermethod 2\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
        \getnoflines\pagegoal
@@ -434,7 +434,7 @@
      \pagecheckerparameter\c!inbetween
    \fi}
 
-\setvalue{\??pagecheckermethod 3}%
+\defcsname\??pagecheckermethod 3\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
        \ifdim\dimexpr\page_check_amount-10\scaledpoint\relax>\pagegoal

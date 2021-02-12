@@ -31,7 +31,7 @@
 
 \newconstant\c_grph_buffers_mode
 
-\let\lasttypesetbuffer\empty
+\mutable\let\lasttypesetbuffer\empty
 
 \permanent\protected\def\typesetbuffer    {\bgroup\setconstant\c_grph_buffers_mode\plusone  \grph_buffers_typeset}
 \permanent\protected\def\typesetbufferonly{\bgroup\setconstant\c_grph_buffers_mode\zerocount\grph_buffers_typeset}
@@ -302,7 +302,7 @@
    \hbox % \hpack ?
      {\quad
       \thisissomeinternal\s!vwb{#6}%
-      \gotosomeinternal\s!vwa{#6}\realfolio{\hbox to 1.5\emwidth{\the\c_grph_steps_reference\presetgoto\hfill}}%
+      \gotosomeinternal\s!vwa{#6}\realfolio{\hbox to 1.5\emwidth{\the\c_grph_steps_reference\hfill}}%
       \quad#1 (#2,#3) (#4,#5) [#6]\hfill}%
    \endgraf}
 

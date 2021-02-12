@@ -14,6 +14,18 @@
 %D We provide typescripts for version one and two of the stix fonts. There is a
 %D xits variant based on the first (not opentype) release that also provides
 %D bidirectional math.
+%D
+%D Users should be aware of the fact that the stix filenames keep changing so if
+%D something fails, make sure you have the files and that the names below match
+%D those on your system. (In \TEX\ distributions there's 2 and Two and math can have
+%D -Regular appended or not.
+%D
+%D There's now also:
+%D
+%D   stixtwotext-medium.otf
+%D   stixtwotext-mediumitalic.otf
+%D   stixtwotext-semibold.otf
+%D   stixtwotext-semibolditalic.otf
 
 \definefontfeature
   [stixtwomath]
@@ -43,15 +55,15 @@
     % version two
 
     \starttypescript [\s!math] [stixtwo] [\s!name]
-        \definefontsynonym[MathRoman][\s!file:stix2math.otf] [\s!features={\s!math\mathsizesuffix,stixtwomath,mathextra},\s!goodies=stix-two-math]
+        \definefontsynonym[MathRoman][\s!file:stixtwomath-regular.otf] [\s!features={\s!math\mathsizesuffix,stixtwomath,mathextra},\s!goodies=stix-two-math]
     \stoptypescript
 
     \starttypescript [\s!serif] [stixtwo] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym[\s!Serif]          [\s!file:stix2text-regular.otf]   [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBold]      [\s!file:stix2text-bold.otf]      [\s!features=\s!default]
-        \definefontsynonym[\s!SerifItalic]    [\s!file:stix2text-italic.otf]    [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBoldItalic][\s!file:stix2text-bolditalic.otf][\s!features=\s!default]
+        \definefontsynonym[\s!Serif]          [\s!file:stixtwotext-regular.otf]   [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:stixtwotext-bold.otf]      [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:stixtwotext-italic.otf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixtwotext-bolditalic.otf][\s!features=\s!default]
     \stoptypescript
 
     \starttypescript[stixtwo]

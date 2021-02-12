@@ -37,7 +37,7 @@
 
 \newtoks\everyinitializepagecounters
 
-\protected\def\initializepagecounters
+\permanent\protected\def\initializepagecounters
   {\the\everyinitializepagecounters}
 
 \appendtoks
@@ -243,7 +243,7 @@
    \fi
 \to \everybeforepagebody
 
-\def\therealsubpageno#1% new helper
+\permanent\def\therealsubpageno#1% new helper
   {\the\numexpr\c_strc_subpage_first_real+#1+\minusone\relax}
 
 % Equivalents (compatibility):
@@ -441,17 +441,17 @@
 % just for downward compatbility
 
 \appendtoks
-    \edef\askeduserpagenumber{\namedcounterparameter\s!userpage\c!number}%
-    \ifempty\askeduserpagenumber \else
-      \normalexpanded{\setuppagenumber[\c!start=\askeduserpagenumber,\c!number=]}%
+    \edef\scratchstringone{\namedcounterparameter\s!userpage\c!number}%
+    \ifempty\scratchstringone \else
+      \normalexpanded{\setuppagenumber[\c!start=\scratchstringone,\c!number=]}%
       \userpageno\strc_counters_raw\s!userpage
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
 
 \appendtoks
-    \edef\askedsubpagenumber{\namedcounterparameter\s!subpage\c!number}%
-    \ifempty\askedsubpagenumber \else
-      \normalexpanded{\setupsubpagenumber[\c!start=\askedsubpagenumber,\c!number=]}%
+    \edef\scratchstringone{\namedcounterparameter\s!subpage\c!number}%
+    \ifempty\scratchstringone \else
+      \normalexpanded{\setupsubpagenumber[\c!start=\scratchstringone,\c!number=]}%
       \subpageno\strc_counters_raw\s!subpage\relax
     \fi
 \to \everysetupsubpagenumber % todo: set state: none, start, stop, reset

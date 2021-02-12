@@ -254,16 +254,16 @@
 %D Because some characters have a special meaning, we provide shortcuts to their
 %D character representation. Some will be overloaded (which might change).
 
-\chardef \^ = \circumflexasciicode
-\chardef \_ = \underscoreasciicode
-\chardef \& = \ampersandasciicode
-\chardef \% = \commentasciicode
-\chardef \# = \hashasciicode
-\chardef \$ = \dollarasciicode
-\chardef \{ = \leftbraceasciicode
-\chardef \} = \rightbraceasciicode
-\chardef \\ = \backslashasciicode
-\chardef \| = \barasciicode
+\permanent\chardef \^ = \circumflexasciicode
+\permanent\chardef \_ = \underscoreasciicode
+\permanent\chardef \& = \ampersandasciicode
+\permanent\chardef \% = \commentasciicode
+\permanent\chardef \# = \hashasciicode
+\permanent\chardef \$ = \dollarasciicode
+\permanent\chardef \{ = \leftbraceasciicode
+\permanent\chardef \} = \rightbraceasciicode
+\permanent\chardef \\ = \backslashasciicode
+\permanent\chardef \| = \barasciicode
 
 \pushoverloadmode
                 \catcodetable       \ctxcatcodes

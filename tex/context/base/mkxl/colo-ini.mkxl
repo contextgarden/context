@@ -126,22 +126,22 @@
 
 \permanent\protected\def\transparent[#1]%
   {\bgroup
-   \edef\currenttransparencyname{#1}%
+   \edef\scratchstringone{#1}%
    % the \relax catches a non existent csname
-   \ifx\currenttransparencyname\v!reset
+   \ifx\scratchstringone\v!reset
      \c_attr_transparency\attributeunsetvalue
    \else
-     \begincsname\??transparencysetter\currenttransparencyname\endcsname\relax
+     \begincsname\??transparencysetter\scratchstringone\endcsname\relax
    \fi
    \let\nexttoken}
 
 \permanent\protected\def\starttransparent[#1]%$
   {\begingroup
-   \edef\currenttransparencyname{#1}%
-   \ifx\currenttransparencyname\v!reset
+   \edef\scratchstringone{#1}%
+   \ifx\scratchstringone\v!reset
      \c_attr_transparency\attributeunsetvalue
    \else
-     \begincsname\??transparencysetter\currenttransparencyname\endcsname\relax
+     \begincsname\??transparencysetter\scratchstringone\endcsname\relax
    \fi}
 
 \permanent\protected\def\stoptransparent
@@ -243,7 +243,7 @@
    \colo_helpers_activate{#1}%
    \normalexpanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\number\c_attr_color\fi}}}
 
-\let\grey\graycolor % these macros are only used in tracing
+% \aliased\let\grey\graycolor % these macros are only used in tracing
 
 %D \macros
 %D   {startcurrentcolor,stopcurrentcolor}

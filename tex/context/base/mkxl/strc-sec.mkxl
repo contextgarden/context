@@ -55,7 +55,8 @@
 \def\m_strc_references_prefix_yes{+}
 \def\m_strc_references_prefix_nop{-}
 
-\let\currentstructurereferenceprefix\empty
+\mutable\let\currentstructurereferenceprefix\empty
+\mutable\let\currentstructurereferencetext  \empty
 
 \installglobalmacrostack\currentstructurereferenceprefix
 
@@ -526,8 +527,8 @@
 
 % structure sections (the parents of chapter etc)
 
-\permanent\let\firstsectionname\empty
-\permanent\let\lastsectionname \empty
+\aliased\let\firstsectionname\empty
+\aliased\let\lastsectionname \empty
 
 %aliased\let\resetallstructuremarks            \relax
 %aliased\let\resetcurrentstructuremarks        \relax
@@ -588,7 +589,7 @@
      \ifnum\maxstructuredepth>\plusone
        \normalexpanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
-     \enforced\xdef\lastsectionname{#1}%
+     \enforced\permanent\xdef\lastsectionname{#1}%
      \ifempty\firstsectionname
         \enforced\glet\firstsectionname\lastsectionname
      \fi
@@ -765,11 +766,11 @@
 
 \newmode\v!sectionnumber
 
-\def\dosetstructureheadnumbercontent
+\def\strc_sectioning_set_head_number_content   % was: \dosetstructureheadnumbercontent
   {\setsystemmode\v!sectionnumber
    \settrue\headshownumber} % why ?
 
-\def\doresetstructureheadnumbercontent
+\def\strc_sectioning_reset_head_number_content % was: \doresetstructureheadnumbercontent
   {\resetsystemmode\v!sectionnumber
    \setfalse\headshownumber} % why ?
 
@@ -802,7 +803,7 @@
     \enforced\glet\currentstructuresynchronize\donothing
 \to \everyheadsynchronization
 
-\protected\def\theheadsynchonization
+\permanent\protected\def\theheadsynchronization % public
   {% no, interferes: \signalcharacter
    \the\everyheadsynchronization}
 
@@ -932,7 +933,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
          \let\getheadnumber\fullheadnumber
@@ -946,7 +947,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
        \else
@@ -958,7 +959,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
        \strc_sectioning_after_nop
@@ -969,7 +970,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
        \dostoptagged
@@ -977,7 +978,7 @@
      \orelse\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \dostarttagged\t!sectioncaption\empty
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
@@ -991,7 +992,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
-       \let\getheadsyncs\theheadsynchonization
+       \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
        \strc_sectioning_after_nop
@@ -1056,7 +1057,7 @@
   {\global\setbox\b_sectioning_delayed\hpack\bgroup
      \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
      \hpack\headreferenceattributes{}% also does the mark
-     \theheadsynchonization
+     \theheadsynchronization
    \egroup}
 
 \protected\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
@@ -1066,7 +1067,7 @@
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
       \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
-      \theheadsynchonization}} % and it's a node anyway
+      \theheadsynchronization}} % and it's a node anyway
 
 \permanent\def\synchronizehead           #1{\begincsname\??hiddenheadsync#1\endcsname}
 \permanent\def\theheadreferenceattributes#1{\begincsname\??hiddenheadattr#1\endcsname}

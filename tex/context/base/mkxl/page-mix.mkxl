@@ -387,7 +387,7 @@
 %D \stopmixedcolumns
 %D \stoptyping
 
-\let\currentmixedcolumnsmethod\empty
+\mutable\let\currentmixedcolumnsmethod\empty
 
 \installmacrostack\currentmixedcolumns
 \installmacrostack\currentmixedcolumnsmethod

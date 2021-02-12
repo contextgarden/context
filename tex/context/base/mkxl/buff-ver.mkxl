@@ -46,23 +46,23 @@
   {\spaceskip\fontcharwd\font`x\relax
    \xspaceskip\spaceskip}
 
-\setvalue{\??typinglines\v!no        }{\buff_verbatim_ignore_hyphens}
-\setvalue{\??typinglines\v!normal    }{\buff_verbatim_ignore_hyphens}
-\setvalue{\??typinglines\v!yes       }{\buff_verbatim_obey_breakpoints}
-\setvalue{\??typinglines\v!hyphenated}{\buff_verbatim_obey_hyphens}
+\defcsname\??typinglines\v!no        \endcsname{\buff_verbatim_ignore_hyphens}
+\defcsname\??typinglines\v!normal    \endcsname{\buff_verbatim_ignore_hyphens}
+\defcsname\??typinglines\v!yes       \endcsname{\buff_verbatim_obey_breakpoints}
+\defcsname\??typinglines\v!hyphenated\endcsname{\buff_verbatim_obey_hyphens}
 
-\setvalue{\??typingspace\v!on        }{\enforced\let\obeyedspace\specialcontrolspace}
-\setvalue{\??typingspace\v!stretch   }{\enforced\let\obeyedspace\specialstretchedspace}
-\setvalue{\??typingspace\v!normal    }{}
-\setvalue{\??typingspace\v!fixed     }{\enforced\let\obeyedspace\specialfixedspace}
+\defcsname\??typingspace\v!on        \endcsname{\enforced\let\obeyedspace\specialcontrolspace}
+\defcsname\??typingspace\v!stretch   \endcsname{\enforced\let\obeyedspace\specialstretchedspace}
+\defcsname\??typingspace\v!normal    \endcsname{}
+\defcsname\??typingspace\v!fixed     \endcsname{\enforced\let\obeyedspace\specialfixedspace}
 
-\setvalue{\??typingblank\v!standard  }{\s_spac_whitespace_parskip}
-\setvalue{\??typingblank\v!small     }{\smallskipamount}
-\setvalue{\??typingblank\v!medium    }{\medskipamount}
-\setvalue{\??typingblank\v!big       }{\bigskipamount}
-\setvalue{\??typingblank\v!halfline  }{.5\baselineskip}
-\setvalue{\??typingblank\v!line      }{\baselineskip}
-\setvalue{\??typingblank\v!none      }{\zeropoint}
+\defcsname\??typingblank\v!standard  \endcsname{\s_spac_whitespace_parskip}
+\defcsname\??typingblank\v!small     \endcsname{\smallskipamount}
+\defcsname\??typingblank\v!medium    \endcsname{\medskipamount}
+\defcsname\??typingblank\v!big       \endcsname{\bigskipamount}
+\defcsname\??typingblank\v!halfline  \endcsname{.5\baselineskip}
+\defcsname\??typingblank\v!line      \endcsname{\baselineskip}
+\defcsname\??typingblank\v!none      \endcsname{\zeropoint}
 
 \protected\def\buff_verbatim_obey_hyphens
   {}
@@ -96,7 +96,7 @@
    \begincsname\??typingspace\p_buff_space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
-\protected\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
+\permanent\protected\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
   {\buff_verbatim_initialize_type_one
    \buff_verbatim_initialize_type_two}
 
@@ -577,6 +577,8 @@
 
 % [category] [settings] {name} % for historic reasons, all filenames are {}
 
+\mutable\let\currenttypingfile\empty
+
 \appendtoks
     \frozen\instance\setuevalue{\e!type\currenttyping\v!file}{\typefile[\currenttyping]}%
 \to \everydefinetyping
@@ -602,15 +604,15 @@
 
 \def\buff_verbatim_type_file_checked#1#2%
   {\doifelsetypingfile{#2}
-     {\buff_verbatim_type_file_indeed{#1}\askedtypingfile}
+     {\buff_verbatim_type_file_indeed{#1}\currenttypingfile}
      {\showmessage\m!verbatims1{#2}}}
 
 \permanent\protected\def\doifelsetypingfile#1%
-  {\edef\askedtypingfile{\locfilename{#1}}%
-   \ifempty\askedtypingfile
-     \edef\askedtypingfile{\locfilename{#1.tex}}% downward compatible
+  {\edef\currenttypingfile{\locfilename{#1}}%
+   \ifempty\currenttypingfile
+     \edef\currenttypingfile{\locfilename{#1.tex}}% downward compatible
    \fi
-   \ifempty\askedtypingfile
+   \ifempty\currenttypingfile
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
@@ -656,16 +658,16 @@
           \c!stop=\typingparameter\c!stop, % ?
           \c!step=\typingparameter\c!step]}
 
-\overloaded\protected\def\endofverbatimlinenumbering
+\permanent\protected\def\endofverbatimlinenumbering
   {\stoplinenumbering}
 
 \def\buff_verbatim_setup_line_numbering
   {\ifdefined\startlinenumbering
-     \edef\currenttypingnumbering{\typingparameter\c!numbering}%
-     \ifx\currenttypingnumbering\v!file
+     \edef\p_numbering{\typingparameter\c!numbering}%
+     \ifx\p_numbering\v!file
        \setuplinenumbering[\currenttyping][\c!method=\v!file]%
        \settrue\verbatimnumberinglines
-     \orelse\ifx\currenttypingnumbering\v!line
+     \orelse\ifx\p_numbering\v!line
        \settrue\verbatimnumberinglines
      \else
        \setfalse\verbatimnumberinglines
@@ -959,7 +961,7 @@
      \nobreak
    \fi}
 
-\protected\def\dodisplayverbatiminitialize#1%
+\permanent\protected\def\dodisplayverbatiminitialize#1%
   {\forgetparindent % maybe more
    \c_buff_verbatim_noflines#1\relax
    \c_buff_verbatim_current\zerocount}

@@ -379,6 +379,6 @@
 
 % bonus
 
-\let\currentfontinstancespec\clf_currentfontinstancespec % expandable
+% \currentfontinstancespec % define ad the lua end
 
 \protect \endinput

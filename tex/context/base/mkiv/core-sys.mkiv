@@ -132,10 +132,10 @@
         [  \v!small=>\divide\scratchcounter 15, %  900,
           \v!medium=>\divide\scratchcounter 30, % 1800,
              \v!big=>\divide\scratchcounter 60, % 3600,
-          \v!normal=>\getnewrandomseed\scratchcounter,
-         \s!default=>\getnewrandomseed\scratchcounter,
+          \v!normal=>\scratchcounter\newrandomseed,
+         \s!default=>\scratchcounter\newrandomseed,
          \s!unknown=>\scratchcounter#1]%
-      \expanded{\setrandomseed{\the\scratchcounter}}%
+      \setrandomseed\scratchcounter
     % \writestatus\m!system{randomseed: \the\scratchcounter}%
       \endgroup}}
 

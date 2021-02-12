@@ -250,13 +250,6 @@
 
 \immutable\integerdef\statuswrite   \minusone
 
-% A few traditional allocations (these might go):
-
-\countdef \count@   255 % hm, used in \newif .. todo: replace it there
-\dimendef \dimen@     0
-\dimendef \dimen@i    1 % global only
-\dimendef \dimen@ii   2
-
 %D So, effectively we start allocating from 256 and upwards. The inserts sit in the
 %D range 128 upto 254. Page numbers use the counters 0 upto 9 and the pagebox is
 %D 255. Users can use the scratch registers upto 31 without problem but all others
@@ -398,9 +391,12 @@
 \mutable\let\scratchmacrotwo\relax
 
 %D \macros
-%D   {tempstring}
+%D   {tempstring, scratchstring*}
 
-\mutable\let\tempstring\empty
+\mutable\let\tempstring      \empty
+
+\mutable\let\scratchstringone\empty
+\mutable\let\scratchstringtwo\empty
 
 %D \macros
 %D   {scratchwidth, scratchheight, scratchdepth, scratchoffset, scratchdistance}
@@ -1136,5 +1132,39 @@
 %D Also here:
 
 \listcallbackmode\plusone
+
+%D Often used as cs key:
+
+\mutable\let\on  \empty
+\mutable\let\of  \empty
+\mutable\let\and \empty
+\mutable\let\with\empty
+\mutable\let\nop \empty % used often
+\mutable\let\yes \empty % used often
+
+%D Another experiment:
+
+\def\syst_suggested_alias#1#2% expandable
+  {\beginlocalcontrol
+   \writestatus{suggestion}{use \string#2 instead of \string#1}%
+   \enforced\glet#1#2%
+   \endlocalcontrol
+   #2}
+
+\permanent\protected\def\suggestedalias#1#2%
+  {\ifflags#2\permanent\permanent\fi % the rest is taken with the copy
+   \def#1{\syst_suggested_alias#1#2}}
+
+% A few traditional allocations (these might go):
+
+% \countdef \count@   255 % hm, used in \newif .. todo: replace it there
+% \dimendef \dimen@     0
+% \dimendef \dimen@i    1 % global only
+% \dimendef \dimen@ii   2
+
+\suggestedalias \count@   \scratchcounter
+\suggestedalias \dimen@   \scratchdimen
+\suggestedalias \dimen@i  \scratchdimenone
+\suggestedalias \dimen@ii \scratchdimentwo
 
 \protect \endinput

@@ -1,0 +1,30 @@
+if not modules then modules = { } end modules ['s-characters-properties'] = {
+    version   = 1.001,
+    comment   = "companion to s-characters-properties.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+moduledata.characters              = moduledata.characters              or { }
+moduledata.characters.combinations = moduledata.characters.combinations or { }
+
+local context = context
+local ctx_NC  = context.NC
+local ctx_NR  = context.NR
+local ctx_MR  = context.MR
+local ctx_ML  = context.ML
+
+function moduledata.characters.combinations.showcombinations(settings)
+    context.starttabulate { "|l|T|cTw(1em)|T|"  }
+    for k, v in table.sortedhash(characters.verbosemarks) do
+        local m = "with" .. string.gsub(k," ","")
+        ctx_NC() context(k)
+        ctx_NC() context("%U",v)
+        ctx_NC() context("%s",v)
+        ctx_NC() if token.is_defined(m) then context("\\string\\%s",m) end
+        ctx_NC() ctx_NR()
+    end
+    context.stoptabulate()
+end
+

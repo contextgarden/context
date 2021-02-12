@@ -22,7 +22,7 @@ local cache = table.setmetatableindex(function(t,k) -- can be made weak
     if v < 0x10000 then
         v = format("%04x",v)
     else
-        v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
+        v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00)
     end
     t[k] = v
     return v

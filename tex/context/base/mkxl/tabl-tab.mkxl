@@ -1496,9 +1496,11 @@
    \global\setfalse\hassometabletail
    \expanded{\doifelseinstring{|}{#1}}
      {\xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}}
-     {\doifelsedefined{\??tabletemplate#1}
-        {\gdef\tabl_table_restart{\getvalue{\??tabletemplate#1}}}
-        {\gdef\tabl_table_restart{\tabl_table_restart_indeed{\getvalue{#1}}}}}%
+     {\ifcsname\??tabletemplate#1\endcsname
+        \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
+      \else
+        \gdef\tabl_table_restart{\tabl_table_restart_indeed{\begincsname#1\endcsname}}%
+      \fi}%
    \egroup
    \tabl_table_restart}
 
@@ -1515,6 +1517,8 @@
 
 \newtoks\localtabledefinitions
 
+\mutable\let\currenttableformat\empty
+
 \def\tabl_table_third_stage#1%
   {\global\settrue\tableactionstatepermitted
    \tabl_table_set_action\tableunknownstate
@@ -1526,7 +1530,7 @@
    \forgetall % added
    \edef\currenttableformat{#1}%
    \doifsomething\currenttableformat
-     {\dogettablenofcolumns\currenttableformat
+     {\tabl_tables_get_nofcolumns\currenttableformat
       % more modern is to use catcode tables
       \expandafter\tabl_table_begin_format\currenttableformat\doendtableformat}}
 
@@ -1657,11 +1661,11 @@
 
 \def\tabl_table_set_head[#1][#2]#3\end
   {\gdef\tabl_table_head{\begincsname\??tablehead#1\endcsname}% new
-   \setvalue{\??tablehead#1}{\noalign{\global\settrue\hassometablehead}#3}}
+   \defcsname\??tablehead#1\endcsname{\noalign{\global\settrue\hassometablehead}#3}}
 
 \def\tabl_table_set_tail[#1][#2]#3\end
   {\gdef\tabl_table_tail{\begincsname\??tabletail#1\endcsname}% new
-   \setvalue{\??tabletail#1}{\noalign{\global\settrue\hassometabletail}#3}}
+   \defcsname\??tabletail#1\endcsname{\noalign{\global\settrue\hassometabletail}#3}}
 
 \normalexpanded {
     \aliased\letcsname\e!stop\v!tablehead\endcsname\relax
@@ -1862,7 +1866,7 @@
 
 \bgroup \catcode\barasciicode\othercatcode
 
-\gdef\dogettablenofcolumns#1% todo: also divert this to lua as with tabulate
+\gdef\tabl_tables_get_nofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup
    \cleanupfeatures % needed !
    \tabl_table_use_bar
@@ -2116,6 +2120,7 @@
 \permanent\def\tabl_table_FIVE {\use\plusfive}
 \permanent\def\tabl_table_SIX  {\use\plussix}
 
+\aliased\let\LOW  \relax
 \aliased\let\TWO  \relax
 \aliased\let\THREE\relax
 \aliased\let\FOUR \relax
@@ -2140,19 +2145,19 @@
 
 \installsetuponlycommandhandler \??tables {tables} % some day we can have named tables
 
-\setvalue{\??tabledistance\v!none  }{\tabl_table_OpenUp00\def\LOW{\Lower6 }}
-\setvalue{\??tabledistance\v!small }{\tabl_table_OpenUp00\def\LOW{\Lower6 }} % == baseline
-\setvalue{\??tabledistance\v!medium}{\tabl_table_OpenUp11\def\LOW{\Lower7 }}
-\setvalue{\??tabledistance\v!big   }{\tabl_table_OpenUp22\def\LOW{\Lower8 }}
+\defcsname\??tabledistance\v!none  \endcsname{\tabl_table_OpenUp00\enforced\def\LOW{\Lower6 }}
+\defcsname\??tabledistance\v!small \endcsname{\tabl_table_OpenUp00\enforced\def\LOW{\Lower6 }} % == baseline
+\defcsname\??tabledistance\v!medium\endcsname{\tabl_table_OpenUp11\enforced\def\LOW{\Lower7 }}
+\defcsname\??tabledistance\v!big   \endcsname{\tabl_table_OpenUp22\enforced\def\LOW{\Lower8 }}
 
 \appendtoks
     \expandnamespaceparameter\??tabledistance\directtablesparameter\c!distance\v!medium
 \to \localtabledefinitions
 
-\setvalue{\??tablealign\v!right  }{\def\tabl_table_paralignment{\raggedright}}
-\setvalue{\??tablealign\v!left   }{\def\tabl_table_paralignment{\raggedleft}}
-\setvalue{\??tablealign\v!middle }{\def\tabl_table_paralignment{\raggedcenter}}
-\setvalue{\??tablealign\s!unknown}{\def\tabl_table_paralignment{\notragged}}
+\defcsname\??tablealign\v!right  \endcsname{\def\tabl_table_paralignment{\raggedright}}
+\defcsname\??tablealign\v!left   \endcsname{\def\tabl_table_paralignment{\raggedleft}}
+\defcsname\??tablealign\v!middle \endcsname{\def\tabl_table_paralignment{\raggedcenter}}
+\defcsname\??tablealign\s!unknown\endcsname{\def\tabl_table_paralignment{\notragged}}
 
 \appendtoks
   \doifelse{\directtablesparameter\c!distance}\v!none

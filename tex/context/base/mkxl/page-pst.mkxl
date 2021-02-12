@@ -52,6 +52,8 @@
 \newcount      \c_page_postponed_blocks_next_page % set at the lua end
 \newconditional\c_page_postponed_busy
 
+\mutable\let\currentpostponedpage\empty
+
 \permanent\protected\setvalue{\e!start\v!postponing}%
   {\bgroup
    \obeylines

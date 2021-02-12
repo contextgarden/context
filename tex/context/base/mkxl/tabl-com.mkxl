@@ -80,6 +80,10 @@
 \permanent\let\VT\relax
 \permanent\let\XC\relax
 
+\permanent\let\FC\relax
+\permanent\let\RB\relax
+\permanent\let\RT\relax
+
 \popoverloadmode
 
 \installmacrostack\BC

@@ -30,8 +30,8 @@
 %D \macros
 %D   {definemathalignment, setupmathalignment, startmathalignment}
 %D
-%D Modules may provide additional alignment features. The following mechanisms are
-%D provided by the core.
+%D Modules may provide additional alignment features. The following kind of plain
+%D mechanisms are provided by the core.
 
 \newtoks\t_math_align_a
 \newtoks\t_math_align_b
@@ -49,7 +49,7 @@
    \mathalignmentparameter\c!separator
    \relax}
 
-\def\displayopenupvalue{.25\bodyfontsize}
+\mutable\def\displayopenupvalue{.25\bodyfontsize}
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
@@ -83,8 +83,8 @@
    #1%
    \stopimath}
 
-\def\eqalign#1% why no halign here, probably because of displaywidth
-  {\emptyhbox
+\permanent\protected\def\eqalign#1% why no halign here, probably because of displaywidth
+  {\emptyhbox % why no \dontleavehmode
    \mskip\thinmuskip
    \vcenter
      {\math_openup\displayopenupvalue % was: \openup\jot
@@ -262,9 +262,9 @@
 \def\math_handle_eqalign_no_l_aligned{\math_both_eqalign_no_aligned\math_prepare_l_eqalign_no}
 \def\math_finish_eqalign_no          {\crcr\egroup}
 
-\let\reqalignno\relax
-\let\leqalignno\relax
-\let\eqalignno \relax
+\aliased\let\reqalignno\relax % just in case someone used that
+\aliased\let\leqalignno\relax % just in case someone used that
+\aliased\let\eqalignno \relax % just in case someone used that
 
 %D Here we implement the user interface part. We start with basic math alignments:
 
@@ -709,7 +709,7 @@
    \mathcasesparameter\c!left
    \vcenter\bgroup
    \push_macro_math_cases_NC
-   \enforced\let\endmath\relax
+ % \enforced\let\endmath\relax
    \enforced\let\NC\math_cases_NC_zero
    \enforced\let\MC\math_cases_MC_zero
    \enforced\let\NR\math_cases_NR_zero
@@ -734,7 +734,7 @@
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!numberdistance\relax
-     \let\formuladistance\!!zeropoint
+   % \let\formuladistance\!!zeropoint
      \span\math_text_in_eqalign{\alignmark\alignmark}%
      \crcr} % todo: number
 
@@ -960,7 +960,7 @@
    \math_matrix_pickup
    \the\everymathmatrix
    %
-   \enforced\let\endmath\relax
+ % \enforced\let\endmath\relax
    %
    \setbox\nextbox\vbox\bgroup
    \math_matrix_start_table

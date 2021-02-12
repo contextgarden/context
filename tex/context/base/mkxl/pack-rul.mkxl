@@ -939,7 +939,7 @@
    \box\b_framed_normal
    \egroup}
 
-\protected\def\localbackgroundframed#1% namespace component box
+\permanent\protected\def\localbackgroundframed#1% namespace component box
   {\bgroup
    \edef\currentframed{#1}%
    \pack_framed_initialize
@@ -1181,6 +1181,9 @@
    \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint         \d_framed_width \else\zeropoint\fi}% public
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
    \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
+   % for now: i need to think of something better
+   \bitwiseflip \normalizelinemode -\clipwidthcode
+   % but that's for later
    \ifempty\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
    \else

@@ -275,6 +275,8 @@
      \egroup
   \fi}
 
+\aliased\let\forcedbotbaselinecorrection\botbaselinecorrection
+
 \permanent\protected\def\dobaselinecorrection
   {\ifdim\prevdepth>\zeropoint
      \vspacing[\the\dimexpr-\prevdepth+\strutdp\relax]%

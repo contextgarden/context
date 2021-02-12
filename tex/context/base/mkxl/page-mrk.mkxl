@@ -156,16 +156,7 @@
 \installcorenamespace{layoutmarking}
 
 \permanent\protected\def\installpagecutmark#1#2%
-  {\setvalue{\??layoutmarking#1}{#2}}
-
-% \installpagecutmark\v!off
-%   {}
-
-% \installpagecutmark\v!text
-%   {\settrue\c_page_marks_add_more_lines
-%    \settrue\c_page_marks_add_more_number
-%    \let\pagecutmarksymbol\empty
-%    \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext}
+  {\defcsname\??layoutmarking#1\endcsname{#2}}
 
 \installpagecutmark\v!on
   {%settrue\c_page_marks_add_page_lines

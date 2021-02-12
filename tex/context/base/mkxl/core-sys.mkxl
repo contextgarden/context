@@ -132,10 +132,10 @@
         [  \v!small=>\divide\scratchcounter 15, %  900,
           \v!medium=>\divide\scratchcounter 30, % 1800,
              \v!big=>\divide\scratchcounter 60, % 3600,
-          \v!normal=>\getnewrandomseed\scratchcounter,
-         \s!default=>\getnewrandomseed\scratchcounter,
+          \v!normal=>\scratchcounter\newrandomseed,
+         \s!default=>\scratchcounter\newrandomseed,
          \s!unknown=>\scratchcounter#1]%
-      \expanded{\setrandomseed{\the\scratchcounter}}%
+      \setrandomseed\scratchcounter
     % \writestatus\m!system{randomseed: \the\scratchcounter}%
       \endgroup}}
 
@@ -303,10 +303,14 @@
    \fi
    #1#2{#3}}
 
-% new:
+\aliased\let\redefine\define
+
+% new but maybe not needed:
 %
 % \checked\def \whatever#alpha#beta{#alpha + #beta}
 % \checked\edef\whatever#alpha#beta{#alpha + #beta}
+
+\mutable\let\gobbleddefinition\relax % only for diagnostics
 
 \permanent\protected\def\unique#1#2%
   {\ifdefined#2%

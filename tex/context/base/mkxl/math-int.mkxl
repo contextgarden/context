@@ -40,7 +40,7 @@
 
 \newconstant\mathintlimitmode
 
-\def\intlimits % also used elsewhere
+\permanent\def\intlimits % also used elsewhere
   {\ifcase\mathintlimitmode
      \nolimits
    \or

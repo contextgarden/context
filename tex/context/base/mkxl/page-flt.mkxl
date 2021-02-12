@@ -127,7 +127,7 @@
 \protected\def\page_floats_collect#1#2#3%
   {\clf_collectfloat{#1}\dimexpr#2\relax\dimexpr#3\relax}
 
-\def\nofstackedfloatincategory#1%
+\permanent\def\nofstackedfloatsincategory#1% was singular
   {\clf_nofstackedfloats{#1}}
 
 \let\page_floats_column_push_saved\page_floats_push_saved % overloaded in page-mul
@@ -186,6 +186,8 @@
 \mutable\let\floatsetupcontent\empty
 \mutable\let\floatsetupwidth  \empty
 \mutable\let\floatsetupheight \empty
+
+\aliased\let\placesetupfloat\gobbleoneoptional
 
 \permanent\tolerant\protected\def\placefloatwithsetups[#1]#*[#2]#*[#3]#:#4%
   {\def\floatsetupcaption{#4}%
@@ -252,7 +254,7 @@
   {\ifconditional\c_page_floats_room \else
      \ifdim\dimexpr\pagegoal-\pagetotal-3\lineheight\relax>\zeropoint
        \startlinecorrection[blank]
-       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \mhbox{\inframed{\labeltexts{placeholder}{\m_strc_floats_last_caption_tag}}}%
        \stoplinecorrection
      \else
        \allowbreak
