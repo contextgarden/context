@@ -124,7 +124,7 @@
   {\enforced\permanent\protected\def\pagebreak[##1]{\goodbreak}}
 
 \permanent\protected\def\disablepagebreaks % to be used grouped !
-  {\enforced\let\page_breaks_process\gobbleoneoptional}
+  {\enforced\let\pagebreak\gobbleoneoptional}
 
 \installpagebreakmethod \s!dummy
   {\page_otr_command_flush_all_floats

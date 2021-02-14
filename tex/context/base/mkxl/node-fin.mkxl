@@ -21,9 +21,10 @@
 \permanent\protected\def\finalizeobjectbox #1{\clf_finalizebox#1\relax}
 \permanent\protected\def\finalizeshipoutbox#1{\clf_finalizebox#1\relax}
 
-% Experimental (for Aditya):
+% Experimental (for Aditya), not in mkxl, if we need it, it has to be more
+% clever.
 
-\permanent\protected\def\cleanupbox#1{\clf_cleanupbox#1\relax}
+% \permanent\protected\def\cleanupbox#1{\clf_cleanupbox#1\relax}
 
 % Tricky stuff: this might become obsolete. It is about time to check this out
 % now (after more than a decade)! The few times that we need this we can better

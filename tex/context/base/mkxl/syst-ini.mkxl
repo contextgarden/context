@@ -395,6 +395,7 @@
 
 \mutable\let\tempstring      \empty
 
+\mutable\let\scratchstring   \empty
 \mutable\let\scratchstringone\empty
 \mutable\let\scratchstringtwo\empty
 
@@ -935,6 +936,8 @@
 %D get. Beware: this macro does not support nested loops. We use a namespace
 %D prefix \type {@@pln}.
 
+\let\syst_plain_body\relax
+
 \permanent\def\loop#1\repeat{\def\syst_plain_body{#1}\syst_plain_iterate} % might go
 
 %D The following makes \type {\loop} \unknown\ \type {\if} \unknown\ \type
@@ -1166,5 +1169,148 @@
 \suggestedalias \dimen@   \scratchdimen
 \suggestedalias \dimen@i  \scratchdimenone
 \suggestedalias \dimen@ii \scratchdimentwo
+
+%D The next feature is experimental and could go into another system module, but it
+%D feels more natural to have it here.
+%D
+%D \starttyping
+%D \begingroup
+%D   \newlocaldimen\mydimena % \mydimena1\onepoint
+%D   \newlocaldimen\mydimenb % \mydimenb2\onepoint
+%D   \begingroup
+%D     \newlocaldimen\mydimena % \mydimena3\onepoint
+%D     \newlocaldimen\mydimenb % \mydimenb4\onepoint
+%D     \newlocaldimen\mydimenc % \mydimenc5\onepoint
+%D   \endgroup
+%D \endgroup
+%D
+%D \begingroup
+%D   \setlocaldimen\mydimena 1\onepoint
+%D   \setlocaldimen\mydimenb 2\onepoint
+%D   \begingrou
+%D     \setlocaldimen\mydimena 3\onepoint
+%D     \setlocaldimen\mydimenb 4\onepoint
+%D     \setlocaldimen\mydimenc 5\onepoint
+%D   \endgroup
+%D \endgroup
+%D \stoptyping
+%D
+%D There is a little extra overhead in the overload protection but not that much.
+%D Instead of:
+
+% \newcount\c_syst_local_count \c_syst_local_count \c_syst_max_allocated_register
+% \newcount\c_syst_local_dimen \c_syst_local_dimen \c_syst_local_count
+% \newcount\c_syst_local_skip  \c_syst_local_skip  \c_syst_local_count
+% \newcount\c_syst_local_muskip\c_syst_local_muskip\c_syst_local_count
+% \newcount\c_syst_local_box   \c_syst_local_box   \c_syst_local_count
+% \newcount\c_syst_local_toks  \c_syst_local_toks  \c_syst_local_count
+
+%D We do this:
+
+\permanent\countdef\c_syst_local_count  = 72 \c_syst_local_count  = \c_syst_max_allocated_register
+\permanent\countdef\c_syst_local_dimen  = 73 \c_syst_local_dimen  = \c_syst_local_count
+\permanent\countdef\c_syst_local_skip   = 74 \c_syst_local_skip   = \c_syst_local_count
+\permanent\countdef\c_syst_local_muskip = 75 \c_syst_local_muskip = \c_syst_local_count
+\permanent\countdef\c_syst_local_box    = 76 \c_syst_local_box    = \c_syst_local_count
+\permanent\countdef\c_syst_local_toks   = 77 \c_syst_local_toks   = \c_syst_local_count
+\permanent\countdef\c_syst_local_read   = 78 \c_syst_local_read   = \c_syst_local_count
+\permanent\countdef\c_syst_local_write  = 79 \c_syst_local_write  = \c_syst_local_count
+
+% We should have used  \c_syst_local_dimen = \numexpr \c_syst_max_allocated_register +
+% 1\relax, but we do this instead (it's no problem loosing a few registers).
+
+\c_syst_max_allocated_register \numexpr\c_syst_max_allocated_register:2\relax % floor
+
+\permanent\protected\def\syst_local_overflow#1#2{\writestatus\m!system{no room for local #1 \string#2}\wait}
+
+\permanent\protected\def\setnewlocaldimen#1%
+  {\ifnum\c_syst_local_dimen>\c_syst_max_allocated_register
+     \advance\c_syst_local_dimen\minusone\dimendef#1\c_syst_local_dimen
+   \else
+     \syst_local_overflow_dimen#1%
+   \fi
+   #1}
+
+\permanent\protected\def\setnewlocalcount#1%
+  {\ifnum\c_syst_local_count>\c_syst_max_allocated_register
+     \advance\c_syst_local_count\minusone
+     \overloaded\frozen\countdef#1\c_syst_local_count
+   \else
+     \syst_local_overflow_count#1%
+   \fi
+   #1}
+
+\permanent\protected\def\setnewlocalskip#1%
+  {\ifnum\c_syst_local_skip>\c_syst_max_allocated_register
+     \advance\c_syst_local_skip\minusone
+     \overloaded\frozen\skipdef#1\c_syst_local_skip
+   \else
+     \syst_local_overflow_skip#1%
+   \fi
+   #1}
+
+\permanent\protected\def\setnewlocalmuskip#1%
+  {\ifnum\c_syst_local_muskip>\c_syst_max_allocated_register
+     \advance\c_syst_local_muskip\minusone
+     \overloaded\frozen\muskipdef#1\c_syst_local_muskip
+   \else
+     \syst_local_overflow_muskip#1%
+   \fi
+   #1}
+
+\permanent\protected\def\setnewlocaltoks#1%
+  {\ifnum\c_syst_local_toks>\c_syst_max_allocated_register
+     \advance\c_syst_local_toks\minusone
+     \overloaded\frozen\toksdef#1\c_syst_local_toks
+   \else
+     \syst_local_overflow_toks#1%
+   \fi
+   #1}
+
+\permanent\protected\def\setnewlocalbox#1%
+  {\ifnum\c_syst_local_box>\c_syst_max_allocated_register
+     \advance\c_syst_local_box\minusone
+     \overloaded\frozen\integerdef#1\c_syst_local_box
+   \else
+     \syst_local_overflow_box#1%
+   \fi
+   \setbox#1}
+
+\permanent\protected\def\newlocalread#1% so no set
+  {\ifnum\c_syst_local_read>\c_syst_max_allocated_register
+     \advance\c_syst_local_read\minusone
+     \overloaded\frozen\integerdef#1\c_syst_local_read
+   \else
+     \syst_local_overflow_read#1%
+   \fi}
+
+\permanent\protected\def\newlocalwrite#1% so no set
+  {\ifnum\c_syst_local_write>\c_syst_max_allocated_register
+     \advance\c_syst_local_write\minusone
+     \overloaded\frozen\integerdef#1\c_syst_local_write
+   \else
+     \syst_local_overflow_write#1%
+   \fi}
+
+%D The error handlers:
+
+\permanent\protected\def\syst_local_overflow_count {\syst_local_overflow {count}}
+\permanent\protected\def\syst_local_overflow_dimen {\syst_local_overflow {dimen}}
+\permanent\protected\def\syst_local_overflow_skip  {\syst_local_overflow  {skip}}
+\permanent\protected\def\syst_local_overflow_muskip{\syst_local_overflow{muskip}}
+\permanent\protected\def\syst_local_overflow_toks  {\syst_local_overflow  {toks}}
+\permanent\protected\def\syst_local_overflow_box   {\syst_local_overflow   {box}}
+\permanent\protected\def\syst_local_overflow_read  {\syst_local_overflow  {read}}
+\permanent\protected\def\syst_local_overflow_write {\syst_local_overflow {write}}
+
+%D We sacrifice a little performance but save some tokens by not defineing these
+%D completely:
+
+\permanent\protected\def\newlocalcount #1{\setnewlocalcount #1\zerocount }
+\permanent\protected\def\newlocaldimen #1{\setnewlocaldimen #1\zeropoint }
+\permanent\protected\def\newlocalskip  #1{\setnewlocalskip  #1\zeroskip  }
+\permanent\protected\def\newlocalmuskip#1{\setnewlocalmuskip#1\zeromuskip}
+\permanent\protected\def\newlocaltoks  #1{\setnewlocaltoks  #1\emptytoks }
+\permanent\protected\def\newlocalbox   #1{\setnewlocalbox   #1\emptybox  }
 
 \protect \endinput

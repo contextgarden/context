@@ -636,11 +636,8 @@
 %D
 %D These speak for themselves. See \type {colo-ext} for usage.
 
-\permanent\protected\def\negatecolorcomponent#1% #1 = \macro
-  {\edef#1{\clf_negatecolorcomponent{#1}}}
-
-\permanent\def\negatedcolorcomponent#1%
-  {\clf_negatecolorcomponent{#1}}
+\permanent\protected\def\negatecolorcomponent #1{\edef#1{\clf_negatedcolorcomponent{#1}}}
+\permanent          \def\negatedcolorcomponent#1{\clf_negatedcolorcomponent{#1}}
 
 %D \macros
 %D   {MPcolor}

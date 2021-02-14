@@ -297,17 +297,19 @@
      \expandafter\strc_notations_start_reference
    \fi[#2]}
 
+\let\strc_notations_pickup_yes\relax
+
 \protected\def\strc_notations_start_setups[#1]%
-  {\normalexpanded{\def\noexpand\strc_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_setups_indeed[#1]{##1}}}%
-   \strc_pickup_yes}
+  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_setups_indeed[#1]{##1}}}%
+   \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_setups_indeed[#1]#*#2%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
 \protected\def\strc_notations_start_reference[#1]%
-  {\normalexpanded{\def\noexpand\strc_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_reference_indeed[#1]{##1}}}%
-   \strc_pickup_yes}
+  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_reference_indeed[#1]{##1}}}%
+   \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_reference_indeed[#1]#*#2%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
@@ -549,6 +551,9 @@
 \let\strc_notes_set_reference_attribute_number\donothing
 \let\strc_notes_set_reference_attribute_text  \donothing
 \let\strc_notes_set_destination_attribute_text\donothing
+
+\let\strc_notes_set_style_color_inline \relax
+\let\strc_notes_set_style_color_display\relax
 
 % inline
 

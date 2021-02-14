@@ -105,6 +105,8 @@
 %D with \type {\currentcolumnbox}. In case of the mid columns, \type
 %D {\firstcolumnbox} and \type {\lastcolumnbox} are handled outside these macro's.
 
+\let\page_columns_action\relax
+
 \permanent\protected\def\dohandleallcolumnscs#1{\let\page_columns_action  #1\page_columns_all_indeed}
 \permanent\protected\def\dohandleallcolumns  #1{\def\page_columns_action{#1}\page_columns_all_indeed}
 

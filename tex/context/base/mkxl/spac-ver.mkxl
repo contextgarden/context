@@ -165,11 +165,11 @@
 
 \installmacrostack\currentinterlinespace
 
-\permanent\overloaded\tolerant\protected\def\setupinterlinespace[#1]#*[#2]%
+\permanent\overloaded\tolerant\protected\def\setupinterlinespace[#1]%
   {\ifarguments
      \settrue\interlinespaceisset
      \spac_linespacing_synchronize_local
-   \or
+   \else
      \settrue\interlinespaceisset
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
         \edef\currentinterlinespace{#1}%
@@ -178,9 +178,6 @@
      \else
        \spac_linespacing_setup_specified_or_relative[#1]%
      \fi
-   \or
-     \settrue\interlinespaceisset
-     \setup_interlinespace[#1][#2]%
    \fi}
 
 \def\spac_linespacing_setup_specified_or_relative[#1]%
@@ -1892,6 +1889,7 @@
 %
 % \ifgridsnapping will go
 
+\installcorenamespace{vspacing}
 \installcorenamespace{vspacingamount}
 
 \permanent\tolerant\protected\def\definevspacingamount[#1]#*[#2]#*[#3]% can be combined
@@ -1991,24 +1989,8 @@
 \def\spac_vspacing_yes_ignore[#1]{\ifmmode\else\par\fi}
 \def\spac_vspacing_nop_ignore    {\ifmmode\else\par\fi}
 
-\installcorenamespace{vspacing}
-
 \permanent\protected\def\directvspacing#1%
  {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\iftok{#1}\emptytoks\currentvspacing\else#1\fi}\fi\fi}
-
-\def\spac_vspacing_dim_preset#1%
-  {\ifcsname\??vspacing#1\endcsname
-     \lastnamedcs
-   \else
-     \spac_vspacing_yes_preset{#1}%
-   \fi}
-
-\def\spac_vspacing_yes_preset#1%
-  {\xdefcsname\??vspacing#1\endcsname{\clf_vspacing{#1}}%
-  %\writestatus{}{}%
-  %\writestatus{#1}{\expandafter\meaning\csname\??vspacing#1\endcsname}%
-  %\writestatus{}{}%
-   \csname\??vspacing#1\endcsname}
 
 \permanent\protected\def\directdefaultvspacing
   {\ifinpagebody % somewhat weird

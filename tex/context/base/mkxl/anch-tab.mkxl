@@ -372,7 +372,7 @@
 
 \protected\def\anch_framed_handle
   {\bgroup
-   \anch_framed_indeed}
+   \positionframed}
 
 \permanent\tolerant\protected\def\positionframed[#1]#*[#2]%
   {\setbox\scratchbox\hpack

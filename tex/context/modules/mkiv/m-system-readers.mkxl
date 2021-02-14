@@ -1,0 +1,148 @@
+%D \module
+%D   [       file=m-system-readers,
+%D        version=2021.02.13,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Reading from files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[system-readers]
+
+% \unprotect
+%
+% \installcorenamespace {markedlines}
+%
+% \permanent\protected\def\startmarkedlines[#1]%
+%   {\edef\scratchstring{#1}%
+%    \scratchcounter\numexpr\inputlineno+\plusone\relax
+%    \gobbleuntilandfinalize\stopmarkedlines}
+%
+% \permanent\protected\def\stopmarkedlines
+%   {\edefcsname\??markedlines\scratchstring\endcsname
+%      {{\the\scratchcounter}{\the\numexpr\inputlineno+\minusone\relax}}}
+%
+% \protected\def\firstmarkedline#1%
+%   {\numexpr
+%      \ifcsname\??markedlines#1\endcsname
+%        \normalexpanded{\noexpand\firstoftwoarguments\lastnamedcs}%
+%      \else
+%        \zerocount
+%     \fi
+%    \relax}
+%
+% \protected\def\lastmarkedline#1%
+%   {\numexpr
+%      \ifcsname\??markedlines#1\endcsname
+%        \normalexpanded{\noexpand\secondoftwoarguments\lastnamedcs}%
+%      \else
+%        \zerocount
+%     \fi
+%    \relax}
+%
+% \protected\def\markedlines#1%
+%   {\ifcsname\??markedlines\scratchstring\endcsname\lastnamedcs\else{0}{0}\fi}
+%
+% \protect
+
+\startluacode
+
+    local createtoken   = token.create
+    local gobbletoken   = token.gobble
+    local integer_value = tokens.values.integer
+
+    local marked = { }
+
+    interfaces.implement {
+        name      = "startmarkedlines",
+        public    = true,
+        protected = true,
+        arguments = "optional",
+        actions   = function(tag)
+            local start = status.readstate.linenumber + 1
+            gobbletoken(createtoken("startmarkedlines"),createtoken("stopmarkedlines"))
+            local state = status.readstate
+            marked[tag] = { state.filename, start, state.linenumber - 1 }
+        end
+    }
+
+
+    interfaces.implement {
+        name      = "markedfilename",
+        public    = true,
+     -- usage     = "value",
+        arguments = "string",
+        actions   = function(tag)
+            local m = marked[tag]
+         -- return m and m[1] or ""
+            context(m and m[1] or "")
+        end
+    }
+
+    interfaces.implement {
+        name      = "firstmarkedline",
+        public    = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(tag)
+            local m = marked[tag]
+            return integer_value, m and m[2] or 0
+        end
+    }
+
+    interfaces.implement {
+        name      = "lastmarkedline",
+        public    = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(tag)
+            local m = marked[tag]
+            return integer_value, m and m[3] or 0
+        end
+    }
+
+\stopluacode
+
+\continueifinputfile{m-system-readers.mkxl}
+
+\starttext
+
+\startmarkedlines[test]
+SOME LINE 1
+SOME LINE 2
+SOME LINE 3
+SOME LINE 4
+\stopmarkedlines
+
+\startmarkedlines[more]
+SOME MORE 1
+SOME MORE 2
+SOME MORE 3
+SOME MORE 4
+\stopmarkedlines
+
+\begingroup
+    \newlocalread\myreada
+    \immediate\openin\myreada {\markedfilename{test}}
+    \dostepwiserecurse{\lastmarkedline{test}}{\firstmarkedline{test}}{-1}{
+        \readline\myreada line #1 to \scratchstring #1 : \scratchstring \par
+    }
+    \immediate\closein\myreada
+\endgroup
+
+\blank
+
+\begingroup
+    \newlocalread\myreada
+    \immediate\openin\myreada {\markedfilename{more}}
+    \dostepwiserecurse{\firstmarkedline{more}}{\lastmarkedline{more}}{1}{
+        \read    \myreada line #1 to \scratchstring #1 : \scratchstring \par
+    }
+    \immediate\closein\myreada
+\endgroup
+
+\stoptext

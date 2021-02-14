@@ -396,9 +396,12 @@ do
         usage     = "value",
         actions   = function(prefix)
             local n = scaninteger()
-                      scankeyword("to")
-            local m = scancsname(true)
             local c = channels[n]
+            if scankeyword("line") and c then
+                c:gotoline(scaninteger())
+            end
+            scankeyword("to")
+            local m = scancsname(true)
             local g = 0
             local s
             l = 0
@@ -466,9 +469,12 @@ do
         usage     = "value",
         actions   = function(prefix)
             local n = scaninteger()
-                      scankeyword("to")
-            local m = scancsname(true)
             local c = channels[n]
+            if scankeyword("line") and c then
+                c:gotoline(scaninteger())
+            end
+            scankeyword("to")
+            local m = scancsname(true)
             local s = c and c:reader()
             if s then
                 local e = texgetcount("endlinechar") -- we can have tex.endline if needed

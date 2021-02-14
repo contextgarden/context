@@ -245,14 +245,17 @@
 \newconditional\c_spac_paragraphs_intro_next
 \newconditional\c_spac_paragraphs_intro_each
 
+\let\spac_paragraphs_flush_intro\relax
+\let\spac_paragraphs_intro_step \relax
+
 \permanent\protected\tolerant\def\setupparagraphintro[#1]#*[#2]%
   {\def\spac_paragraphs_intro_step##1%
      {\csname\??paragraphintro\ifcsname\??paragraphintro##1\endcsname##1\fi\endcsname{#2}}%
    \processcommacommand[#1]\spac_paragraphs_intro_step}
 
-\letvalue{\??paragraphintro\empty}\gobbleoneargument
+\letcsname\??paragraphintro\empty\endcsname\gobbleoneargument
 
-\setvalue{\??paragraphintro\v!reset}#1%
+\defcsname\??paragraphintro\v!reset\endcsname#1%
   {\global\setfalse\c_spac_paragraphs_intro_first
    \global\setfalse\c_spac_paragraphs_intro_next
    \global\setfalse\c_spac_paragraphs_intro_each
@@ -261,17 +264,17 @@
    \global\t_spac_paragraphs_intro_each \emptytoks
    \glet\spac_paragraphs_flush_intro\relax}
 
-\setvalue{\??paragraphintro\v!first}#1%
+\defcsname\??paragraphintro\v!first\endcsname#1%
   {\global\settrue\c_spac_paragraphs_intro_first
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
-\setvalue{\??paragraphintro\v!next}#1%
+\defcsname\??paragraphintro\v!next\endcsname#1%
   {\global\settrue\c_spac_paragraphs_intro_next
    \gtoksapp\t_spac_paragraphs_intro_next{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
-\setvalue{\??paragraphintro\v!each}#1%
+\defcsname\??paragraphintro\v!each\endcsname#1%
   {\global\settrue\c_spac_paragraphs_intro_each
    \gtoksapp\t_spac_paragraphs_intro_each{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}

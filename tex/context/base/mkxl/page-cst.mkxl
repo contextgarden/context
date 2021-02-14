@@ -633,6 +633,8 @@
 
 \newdimen\d_page_grd_span_width
 
+\let\page_grd_span_stop\relax
+
 \permanent\tolerant\protected\def\startpagegridspan[#1]#*[#2]#*[#3]% [#3] gobbles space
   {\endgraf % else rubish output if forgotten
    \synchronizepagegrid

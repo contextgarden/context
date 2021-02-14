@@ -556,6 +556,8 @@
 %D In this implementation the \type {\aftergroup} construction is needed because
 %D \type {\afterassignment} is executed inside the box.
 
+\let\syst_boxes_with_next_box\relax
+
 \permanent\protected\def\dowithnextbox#1%
   {\def\syst_boxes_with_next_box{#1}%
    \afterassignment\syst_boxes_with_next_box_indeed
@@ -639,6 +641,9 @@
 %    \let\syst_boxes_with_next_box_two#1%
 %    \afterassignment\syst_boxes_with_next_box_content_indeed
 %    \setbox\nextbox}
+%
+% \def\syst_boxes_with_next_box_content_indeed
+%   {\syst_boxes_with_next_box_two\aftergroup\syst_boxes_with_next_box_one}
 
 \permanent\protected\def\dowithnextboxcontent#1#2% inside, after
   {\afterassigned{#1\aftergrouped{#2}}%
@@ -647,9 +652,6 @@
 \permanent\protected\def\dowithnextboxcontentcs#1#2% inside, after
   {\afterassigned{#1\aftergroup#2}%
    \setbox\nextbox}
-
-\def\syst_boxes_with_next_box_content_indeed
-  {\syst_boxes_with_next_box_two\aftergroup\syst_boxes_with_next_box_one}
 
 %D \macros
 %D   {llap, rlap, tlap, blap, clap}
@@ -1852,6 +1854,8 @@
 %D the general handler.
 
 \newbox\processbox % public : this is the one where \nextbox's end up in
+
+\let\syst_boxes_process_indeed\relax
 
 \permanent\protected\def\processboxes#1%
   {\bgroup

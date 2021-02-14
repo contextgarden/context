@@ -546,17 +546,13 @@
 \let\page_col_command_flush_top_insertions   \page_one_command_flush_top_insertions
 \let\page_col_command_flush_bottom_insertions\page_one_command_flush_bottom_insertions
 
-%let\page_col_command_set_top_insertions            \page_one_command_set_top_insertions
-\let\page_col_command_set_bottom_insertions         \page_one_command_set_bottom_insertions
+\let\page_col_command_set_bottom_insertions  \page_one_command_set_bottom_insertions
 
-%let\page_col_command_set_top_insertions_indeed     \page_one_command_set_top_insertions
-\let\page_col_command_set_bottom_insertions_indeed  \page_one_command_set_botttom_insertions
-
-\let\page_col_command_flush_float_box               \page_one_command_flush_float_box
-\let\page_col_command_synchronize_side_floats       \page_one_command_synchronize_side_floats
-\let\page_col_command_flush_side_floats             \page_one_command_flush_side_floats
-\let\page_col_command_flush_margin_blocks           \page_one_command_flush_margin_blocks
-\let\page_col_command_test_page                     \page_one_command_test_page
+\let\page_col_command_flush_float_box        \page_one_command_flush_float_box
+\let\page_col_command_synchronize_side_floats\page_one_command_synchronize_side_floats
+\let\page_col_command_flush_side_floats      \page_one_command_flush_side_floats
+\let\page_col_command_flush_margin_blocks    \page_one_command_flush_margin_blocks
+\let\page_col_command_test_page              \page_one_command_test_page
 
 %D The separator code is more or less the same as mixed columns but we need
 %D to compensate for the top floats so we comment a bit for now.

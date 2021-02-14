@@ -17,6 +17,8 @@
 \installcorenamespace                      {selectfont}
 \installsimplecommandhandler \??selectfont {selectfont}
 
+\let\selectfont_index\!!zerocount
+
 \protected\def\selectfont_register[#style][#settings]%
   {\begingroup
    \edef\currentselectfont{\expandnamespacevalue\??fontshortstyle{#style}\s!rm}%

@@ -469,10 +469,10 @@ a private attribute we define one.
 \startbuffer
 \newattribute\MyAt
 \setbox\scratchbox\hbox attr \MyAt 123 {whatever}
-[\the\boxattr\scratchbox\MyAt]
-\boxattr\scratchbox\MyAt 456
-[\the\boxattr\scratchbox\MyAt]
-[\ifnum\boxattr\scratchbox\MyAt>400 okay\fi]
+[\the\boxattribute\scratchbox\MyAt]
+\boxattribute\scratchbox\MyAt 456
+[\the\boxattribute\scratchbox\MyAt]
+[\ifnum\boxattribute\scratchbox\MyAt>400 okay\fi]
 \stopbuffer
 
 \typebuffer[option=TEX]

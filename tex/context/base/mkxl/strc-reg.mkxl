@@ -64,6 +64,8 @@
 
 % maybe we should drop the plural form
 
+\let\strc_registers_setup_step\relax
+
 \permanent\tolerant\protected\overloaded\def\setupregister[#1]#*[#2]#*[#3]%
   {\ifarguments\or
      \strc_registers_setup_saved[#1]%

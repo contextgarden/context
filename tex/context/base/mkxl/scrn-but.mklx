@@ -521,6 +521,8 @@
 
 %D This calls: % can be \c!command for vertical/horizontal
 
+\let\scrn_menu_packager\relax
+
 \setvalue{\??menupacker\v!vertical}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_vertical
    \setbox\b_scrn_menu\hbox{\scrn_menu_actions\currentinteractionmenulocation}%
@@ -630,6 +632,8 @@
    \egroup}
 
 % removed: \restorestandardblank (vspacing) ... should happen elsewhere
+
+\let\scrn_menu_between_action_indeed\relax
 
 \def\scrn_menu_package_vertical#content%
   {\begingroup

@@ -754,7 +754,7 @@
 
 \permanent\tolerant\protected\def\fieldstack[#tag]#spacer[#symbols]#spacer[#settings]%
   {\ifparameter#symbols\or
-     \scrn_fieldstack_define[#tag][#symbols][#settings]%
+     \definefieldstack[#tag][#symbols][#settings]%
    \fi
    \csname\??fieldstack#tag\endcsname}
 
@@ -958,6 +958,8 @@
   [rollbutton]
   [\c!frame=\v!off,
    \c!offset=\v!overlay]
+
+\let\scrn_rollbutton_symbol\relax
 
 \def\scrn_rollbutton_symbol_m
   {\scrn_rollbutton_symbol_indeed

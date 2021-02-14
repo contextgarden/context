@@ -340,7 +340,7 @@
   {\iftrialtypesetting
      \expandafter\gobbletwooptionals
    \else
-     \expandafterstrc_set_element_user_properties
+     \expandafter\strc_tags_set_element_user_properties
    \fi}
 
 \protected\def\strc_tags_enable_properties

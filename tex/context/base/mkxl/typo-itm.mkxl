@@ -134,13 +134,8 @@
 
 % rendering
 
-\setvalue{\??itemshorizontal\v!margin}#1%
-  {\ifnum\c_typo_items_m=\plusone\hss\else\hfill\fi
-   \strut#1%
-   \ifnum\c_typo_items_m=\c_typo_items_n\hss\else\hfill\fi}
-
-\setvalue{\??itemshorizontal\s!unknown}%
-  {\simplealignedbox\scratchwidth\m_typo_items_align}
+\let\typo_items_item\relax
+\let\typo_items_make\relax
 
 \def\typo_items_item_horizontal
   {\advance\c_typo_items_m\plusone
@@ -152,9 +147,6 @@
      \fi
    \endcsname}
 
-\setvalue{\??itemsvertical\s!unknown}%
-  {\simplealignedbox\scratchwidth\m_typo_items_align}
-
 \def\typo_items_item_vertical
   {\advance\c_typo_items_m\plusone
    \csname\??itemsvertical
@@ -164,6 +156,17 @@
        \s!unknown
      \fi
    \endcsname}
+
+\defcsname\??itemshorizontal\v!margin\endcsname#1%
+  {\ifnum\c_typo_items_m=\plusone\hss\else\hfill\fi
+   \strut#1%
+   \ifnum\c_typo_items_m=\c_typo_items_n\hss\else\hfill\fi}
+
+\defcsname\??itemshorizontal\s!unknown\endcsname
+  {\simplealignedbox\scratchwidth\m_typo_items_align}
+
+\defcsname\??itemsvertical\s!unknown\endcsname
+  {\simplealignedbox\scratchwidth\m_typo_items_align}
 
 \def\typo_items_make_horizontal#1%
   {\divide\scratchwidth\c_typo_items_n

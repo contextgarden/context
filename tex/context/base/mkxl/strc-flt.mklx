@@ -1581,6 +1581,9 @@
 \permanent\def\captionminwidth {\the\d_strc_floats_caption_min_width}
 \permanent\def\captionovershoot{\the\d_strc_floats_caption_overshoot}
 
+\let\strc_floats_align_content\relax
+\let\strc_floats_align_caption\relax
+
 \def\strc_floats_set_caption_criteria % can become parameter (but what name)
   {\d_strc_floats_caption_min_width15\bodyfontsize
    \d_strc_floats_caption_overshoot 2\emwidth}

@@ -741,25 +741,31 @@
 %    \strc_itemgroups_insert_reference
 %    \endgroup}
 
+\let\strc_itemgroups_temp_symbol  \empty
+\let\strc_itemgroups_used_symbol  \empty
+\let\strc_itemgroups_asked_symbol \empty
+\let\strc_itemgroups_margin_symbol\empty
+\let\strc_itemgroups_extra_symbol \empty
+
 \def\strc_itemgroups_set_symbol#symbol%
-  {\edef\strc_itemgroups_tmp_symbol{#symbol}%
-   \ifempty\strc_itemgroups_tmp_symbol \else
-     \doifelsesymboldefined\strc_itemgroups_tmp_symbol
+  {\edef\strc_itemgroups_temp_symbol{#symbol}%
+   \ifempty\strc_itemgroups_temp_symbol \else
+     \doifelsesymboldefined\strc_itemgroups_temp_symbol
         \strc_itemgroups_set_symbol_symbol
-        {\doifelseconversiondefined\strc_itemgroups_tmp_symbol
+        {\doifelseconversiondefined\strc_itemgroups_temp_symbol
            \strc_itemgroups_set_symbol_conversion
            \donothing}%
    \fi}
 
 \def\strc_itemgroups_set_symbol_symbol
-  {\let\currentitemgroupsymbol\strc_itemgroups_tmp_symbol
+  {\let\currentitemgroupsymbol\strc_itemgroups_temp_symbol
    \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
    \strc_itemgroups_store_local_symbol\v_strc_itemgroups_unknown_symbol
    \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_symbol_item
    \let\strc_itemgroups_asked_symbol\empty}
 
 \def\strc_itemgroups_set_symbol_conversion
-  {\let\currentitemgroupsymbol\strc_itemgroups_tmp_symbol
+  {\let\currentitemgroupsymbol\strc_itemgroups_temp_symbol
    \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
    \strc_itemgroups_store_local_symbol\strc_itemgroups_insert_item_counter
    \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_conversion_item

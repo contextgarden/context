@@ -543,11 +543,8 @@
 \def\pack_textrule_nop[#1]%
   {\doifelsenextbgroupcs\pack_textrule_nop_indeed_yes\pack_textrule_nop_indeed_nop}
 
-\def\pack_textrule_nop_indeed_yes
-  {\csname\??textrulealternatives\v!top\endcsname}
-
-\def\pack_textrule_nop_indeed_nop
-  {\csname\??textrulealternatives\v!bottom\endcsname\empty}
+\def\pack_textrule_nop_indeed_yes{\csname\??textrulealternatives\v!top   \endcsname}
+\def\pack_textrule_nop_indeed_nop{\csname\??textrulealternatives\v!bottom\endcsname\empty}
 
 %D\startbuffer
 %D\showstruts
@@ -668,7 +665,8 @@
 
 \permanent\protected\def\starttextrule#1%
   {\bgroup
-   \def\pack_textrule_nop_indeed{\csname\??textrulealternatives\v!middle\endcsname}%
+   \def\pack_textrule_nop_indeed_nop{\csname\??textrulealternatives\v!middle\endcsname}%
+  %\let\pack_textrule_nop_indeed_yes\pack_textrule_nop_indeed_nop % needs checking
    \csname\??textrulealternatives\v!top\endcsname{#1}%
    \bgroup
    \usebodyfontparameter\directtextrulesparameter}
@@ -715,11 +713,12 @@
    \c!style=,
    \c!color=]
 
+\def\pack_fillinrules_rule_indeed{\thinrules}
+
 \permanent\tolerant\protected\def\fillinrules[#1]#:#=#*#=%
   {\endgraf
    \begingroup
    \setupcurrentfillinrules[#1]%
-   \let\pack_fillinrules_rule\thinrules
    \directfillinrulesparameter\c!before
    \setupcurrentthinrules
      [\c!n=\directfillinrulesparameter\c!n,
@@ -748,7 +747,7 @@
    \fi
    \setupwhitespace[\v!big]%
    \ignorespaces
-   \pack_fillinrules_rule
+   \pack_fillinrules_rule_indeed
    \iftok{#3}\emptytoks\else
      \kern\scratchdistance
      \usefillinrulesstyleandcolor\c!style\c!color
@@ -770,9 +769,8 @@
 \permanent\tolerant\protected\def\fillintext[#1]#:#=#*#=%
   {\endgraf
    \begingroup
-   \setupcurrentfillinrules[#1]%
-   \def\pack_fillinrules_rule{\unhbox\nextbox\unskip}%
-   \dowithnextbox{\pack_fillinrules_indeed{#2}{\hfill#3}}%
+   \def\pack_fillinrules_rule_indeed{\unhbox\nextbox\unskip}% hm, needs checking
+   \dowithnextbox{\fillinrules[#1]{#2}{\hfill#3}}%
    \hbox\bgroup\let\par\egroup\ignorespaces}
 
 %D \macros

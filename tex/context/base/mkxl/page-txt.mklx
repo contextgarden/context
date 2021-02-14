@@ -763,9 +763,10 @@
 
 \def\page_layouts_reset_page_number_location
   {\ifrelax\m_page_layouts_page_number_location_v\else
+     % this can be done better now, no meaning hackery needed
      \edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
-     \edef\page_layouts_previous_page_number_locator{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location_x}%
-     \doif{\meaning\page_layouts_previous_page_number_locator}{\meaning\page_layouts_place_page_number}
+     \edef\tempstring{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location_x}%
+     \doif{\meaning\tempstring}{\meaning\page_layouts_place_page_number}
        {\resetlayoutelementparameter\m_page_layouts_page_number_location_x}%
    \fi}
 

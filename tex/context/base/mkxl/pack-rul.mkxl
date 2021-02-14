@@ -520,6 +520,8 @@
    \box\b_framed_extra
    \egroup}
 
+\let\pack_framed_overlay_initialize\relax
+
 \def\pack_framed_process_background_indeed_external
   {\pack_framed_overlay_initialize
    \pack_framed_process_background_indeed_internal}
@@ -1182,7 +1184,7 @@
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
    \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
    % for now: i need to think of something better
-   \bitwiseflip \normalizelinemode -\clipwidthcode
+ % \bitwiseflip \normalizelinemode -\clipwidthcode % now handled in analyzer
    % but that's for later
    \ifempty\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
@@ -1870,26 +1872,20 @@
 \newtoks \t_pack_framed_mathframed
 
 \appendtoks
-    \frozen\instance\setuevalue{\currentmathframed}{\pack_framed_mathframed{\currentmathframed}}%
+    \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
 \to \everydefinemathframed
 
-\protected\def\pack_framed_mathframed#1%
+\let\pack_framed_mc_one\relax
+\let\pack_framed_mc_two\relax
+
+\tolerant\protected\def\pack_framed_mathframed[#1]#*[#2]#:#3% needs testing !
   {\begingroup
    \edef\currentmathframed{#1}%
-   \dosingleempty\pack_framed_mathframed_indeed}
-
-\def\pack_framed_math_pos
-  {\global\advance\c_pack_framed_mathframed\plusone
-   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mathframed}%
-   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mathframed}%
-   \xypos\pack_framed_mc_two}
-
-\def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
-  {\setupcurrentmathframed[#1]%
+   \setupcurrentmathframed[#2]%
    \c_framed_mstyle\normalmathstyle
    \edef\m_framed_location{\mathframedparameter\c!location}%
    \ifx\m_framed_location\v!mathematics
-     \enforced\let\normalstrut\pack_framed_math_pos
+     \enforced\let\normalstrut\pack_framed_math_pos % I don't like this overload!
    \orelse\ifx\m_framed_location\v!low\else
      \enforced\let\normalstrut\pack_framed_math_strut
    \fi
@@ -1897,10 +1893,16 @@
      \Ustartmath
      \triggermathstyle\c_framed_mstyle
      \the\t_pack_framed_mathframed
-     #2%
+     #3%
      \Ustopmath
    \egroup
    \endgroup}
+
+\def\pack_framed_math_pos
+  {\global\advance\c_pack_framed_mathframed\plusone
+   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mathframed}%
+   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mathframed}%
+   \xypos\pack_framed_mc_two}
 
 \appendtoks
     \mathraggedstatus\plustwo   % makes \startalign work
@@ -2770,6 +2772,8 @@
 
 %D The simple brace (or group) delimited case is typeset slightly different
 %D and is not aligned.
+
+\let\pack_framed_strut\relax
 
 \tolerant\protected\def\pack_framed_text_direct[#1]#*[#2]%
   {\bgroup

@@ -404,6 +404,9 @@
 
 \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
 
+\let\tabl_ntb_setup_step     \gobbleoneargument
+\let\tabl_ntb_setup_step_step\gobbleoneargument
+
 \permanent\tolerant\protected\def\setupTABLE[#1]#*[#2]#*[#3]%
   {\ifarguments
      \expandafter\gobblethreeoptionals
@@ -1535,6 +1538,8 @@
    \fi}
 
 \newdimen\d_tabl_ntb_saved_hsize
+
+\let\tabl_ntb_pass\relax
 
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex

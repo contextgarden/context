@@ -57,6 +57,7 @@ local getboxglue        = nuts.getboxglue
 
 local hpack             = nuts.hpack
 local getdimensions     = nuts.dimensions
+local naturalhsize      = nuts.naturalhsize
 local flush_node        = nuts.flush
 
 local traversers        = nuts.traversers
@@ -97,7 +98,15 @@ local function doreshapeframedbox(n)
                 if list then
                     if id == hlist_code then
                         if subtype == boxlist_code or subtype == linelist_code then
-                            lastlinelength = getdimensions(list)
+                            -- the fast one also returns compensation (plus node)
+                            local w, c, n = naturalhsize(list)
+                            if n then
+                                -- can become an option in framed: strict
+                                w = w - c
+                            else
+                             -- print("no compensation found")
+                            end
+                            lastlinelength = w
                         else
                             lastlinelength = width
                         end

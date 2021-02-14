@@ -163,6 +163,8 @@
      \expandafter\syst_start_yes
    \fi}
 
+\let\syst_stop_indeed\donothing
+
 \def\syst_start_yes
  {\ifempty\m_syst_start_stop
     \let\syst_stop_indeed\donothing

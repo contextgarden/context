@@ -2550,6 +2550,8 @@
 
 % this can become an option:
 
+\let\math_display_align_hack_indeed\relax
+
 \protected\def\math_display_align_hack % I don't like the global, maybe we should push and pop
   {\glet\math_display_align_hack_indeed\math_display_align_hack_remove_skip
    \math_openup\displayopenupvalue % was \math_openup\jot

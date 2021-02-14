@@ -87,6 +87,8 @@
      \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
    \fi}
 
+\let\math_accents_color_pop\donothing
+
 \def\math_accents_color_push_yes
   {\pushcolor[\p_math_accent_color]%
    \let\math_accents_color_pop\popcolor}

@@ -95,7 +95,7 @@
    \endgroup}
 
 \permanent\protected\def\autosetpagestate#1%
-  {\syst_pagestates_set[#1]\relax}
+  {\setpagestate[#1]\relax}
 
 \permanent\def\autopagestatenumber#1{\begincsname\??pagestatecounter#1\endcsname}
 

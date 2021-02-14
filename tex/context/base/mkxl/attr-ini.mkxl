@@ -80,7 +80,7 @@
   {\the\t_attr_list_pickup\relax}
 
 \permanent\protected\def\newattribute#1%
-  {\attr_basics_define_indeed\s!public[\csstring#1][]%
+  {\attr_basics_define_indeed[\s!public][\csstring#1][]%
    \expandafter\glet\expandafter#1\csname\??attributeid\csstring#1\endcsname}
 
 % expandable so we can \edef them for speed

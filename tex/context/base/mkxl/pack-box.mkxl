@@ -56,7 +56,9 @@
 \permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#3]#*[#4]% name targetlayer layersetting framedsetting
   {\setvalue{\??anchor#1}{\pack_anchors_process_defined{#2}{#3}{#4}}}
 
-\def\pack_anchors_process_defined#1#2#3%
+\let\pack_anchors_process_defined_indeed\gobbletwooptionals
+
+\def\pack_anchors_process_defined#1#2#3% brrr
   {\tolerant\def\pack_anchors_process_defined_indeed[##1]##*[##2]%
      {\ifarguments
         \def\next{\pack_anchors_process_indeed{#1}{#2}{#3}}%
@@ -473,7 +475,7 @@
      {\egroup\csname#1\endcsname}}
 
 \permanent\tolerant\protected\def\defineornament[#1]#*[#2]#*[#3]%
-  {\setuvalue{#1}{\pack_ornament_text[#2][#3]}}
+  {\protected\frozen\instance\defcsname#1\endcsname{\ornamenttext[#2][#3]}}
 
 % \defineornament
 %   [affiliation]

@@ -289,13 +289,6 @@
 
 %D The next one is handy in predictable situations:
 
-\def\syst_helpers_do_if_fast_optional_check_else
-  {\ifx\nexttoken\syst_helpers_next_optional_character_token
-     \expandafter\m_syst_action_yes
-   \else
-     \expandafter\m_syst_action_nop
-   \fi}
-
 \permanent\protected\def\doifelsefastoptionalcheck#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
@@ -898,6 +891,8 @@
 %D \def\command[#1]{... #1 ...}
 %D \stoptyping
 
+\let\syst_helpers_do_process_comma_list_with_parameters\gobbleoneargument
+
 \permanent\protected\def\processcommalistwithparameters[#1]#2%
   {\def\syst_helpers_do_process_comma_list_with_parameters##1{#2[##1]}%
    \processcommalist[#1]\syst_helpers_do_process_comma_list_with_parameters}
@@ -967,6 +962,11 @@
 
 \mutable\let\commalistelement\empty
 
+\let\m_syst_string_one\empty
+\let\m_syst_string_two\empty
+
+\let\syst_helpers_do_compare_process_action\relax
+
 \protected\def\syst_helpers_do_compare_process_action_a[#1=>#2][#3]%
   {\edef\m_syst_string_two{#1}%
    \ifx\m_syst_string_two\s!default
@@ -1018,6 +1018,9 @@
      \expandafter\syst_helpers_process_first_action_in_set_indeed
    \fi
    [#1]}
+
+\let\syst_helpers_do_process_action   \gobbleoneargument
+\let\syst_helpers_do_do_process_action\gobbleoneargument
 
 \tolerant\protected\def\syst_helpers_process_first_action_in_set_indeed[#1]#*[#2]%
   {\def\syst_helpers_do_process_action##1%
@@ -1308,6 +1311,8 @@
 %D Spaces embedded in the list, for instance after commas, spoil the search process.
 %D The gain in speed depends on the length of the argument (the longer the argument,
 %D the less we gain). The question is: do we still need these raw variants?
+
+\let\syst_helpers_do_make_raw_comma_list\gobbleoneargument
 
 \permanent\protected\def\makerawcommalist[#1]#2% use \processnext ... here
   {\scratchtoks\emptytoks
@@ -1601,6 +1606,8 @@
 %D \getemptyparameters [label] [...=...,...=...]
 %D \stoptyping
 
+\let\syst_helpers_get_empty_parameters\gobbleoneargument
+
 \permanent\protected\def\getemptyparameters[#1]#*[#2]%
   {\def\syst_helpers_get_empty_parameters##1{\doassignempty[#1][##1]}%
    \processcommalist[#2]\syst_helpers_get_empty_parameters}
@@ -1630,9 +1637,11 @@
 \mutable\let\currentassignmentlistkey    \empty
 \mutable\let\currentassignmentlistvalue  \empty
 
+\let\syst_helpers_process_assign_entry\gobbleoneargument
+
 \permanent\protected\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
-  {\def\syst_helpers_process_assignment_entry##1{#2}% {##2}{##3} % namespace is ignored
-   \dogetparameters\syst_helpers_process_assignment_entry[][#1]}
+  {\def\syst_helpers_process_assign_entry##1{#2}% {##2}{##3} % namespace is ignored
+   \dogetparameters\syst_helpers_process_assign_entry[][#1]}
 
 \permanent\protected\def\processassignmentcommand[#1]%
   {\normalexpanded{\processassignmentlist[#1]}}
@@ -1691,6 +1700,8 @@
 %D
 %D By using \type {\docopyvalue} we've prepared this command for use in a
 %D multi||lingual environment.
+
+\let\syst_helpers_copy_parameter\relax
 
 \permanent\protected\def\copyparameters[#1]#*[#2]#*[#3]%
   {\doifnot{#1}{#2}
@@ -2884,6 +2895,8 @@
 \def\syst_helpers_dodo_global
   {\resetglobal\global}
 
+\let\syst_helpers_redo_global\relax
+
 \permanent\protected\def\saveglobal
   {\let\syst_helpers_dodo_global\dodoglobal
    \let\syst_helpers_redo_global\redoglobal}
@@ -3240,6 +3253,8 @@
 %D \dowith{a,b,c}{[#1]}
 %D \stoptyping
 
+\let\syst_helpers_with\gobbleoneargument
+
 \permanent\protected\def\dowith#1#2%
   {\def\syst_helpers_with##1{#2}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_with}
@@ -3471,10 +3486,10 @@
 %D Think of:
 %D
 %D \starttyping
-%D \domatch {(\letterpercent w+) *(\letterpercent w*)} {aa bb cc dd} {
+%D \doloopovermatch {(\letterpercent w+) *(\letterpercent w*)} {aa bb cc dd} {
 %D     [
-%D     \domatch{(\letterpercent w)(\letterpercent w)} {#1} {(##1 ##2)}
-%D     \domatch{(\letterpercent w)(\letterpercent w)} {#2} {(##1 ##2)}
+%D     \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#1} {(##1 ##2)}
+%D     \doloopovermatch{(\letterpercent w)(\letterpercent w)} {#2} {(##1 ##2)}
 %D     ]
 %D }
 %D
@@ -3874,6 +3889,9 @@
 
 \permanent\protected\def\gobbleuntil#1%
   {\def\syst_helpers_gobble_indeed##-#1{}\syst_helpers_gobble_indeed}
+
+\permanent\protected\def\gobbleuntilandfinalize#1%
+  {\def\syst_helpers_gobble_indeed##-#1{#1}\syst_helpers_gobble_indeed}
 
 \permanent\protected\def\gobbleuntilrelax#-\relax
   {}
@@ -4432,6 +4450,8 @@
 % {\scratchtoks{} \removetoks x\from\scratchtoks [\the\scratchtoks]}
 % {\scratchtoks{xaa} \removetoks x\from\scratchtoks [\the\scratchtoks]}
 % {\scratchtoks{a\relax b} \removetoks \relax\from\scratchtoks [\showthe\scratchtoks]}
+
+\let\syst_helpers_remove_toks\relax
 
 \permanent\protected\def\removetoks#1\from#2%
   {\def\syst_helpers_remove_toks##1#1##2\empty\empty\empty##3^^^^0004%
@@ -5083,6 +5103,8 @@
 %D A complete match of two sets can be tested with \type {\doifallcommonelse}, where
 %D the first two arguments are sets.
 
+\let\syst_helpers_do_common_check_all\gobbleoneargument
+
 \def\syst_helpers_do_if_all_common_else#1#2#3#4% slow
   {\def\syst_helpers_do_common_check_all##1%
      {\doifnotinset{##1}{#4}\donefalse
@@ -5216,6 +5238,7 @@
 %D As we can see below, spaces following a control sequence are to enclosed in \type
 %D {{}}.
 
+\let\syst_helpers_strip_character  \relax
 \let\m_syst_helpers_strip_character\empty
 
 \permanent\protected\def\stripcharacter#1\from#2\to#3%
@@ -5429,6 +5452,9 @@
 %      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
 %    \processcommalist[#2]\syst_helpers_process_assign_list_step}
 
+\let\syst_helpers_process_assign_list_assign\gobbleoneoptional
+\let\syst_helpers_process_assign_list_step  \gobbleoneargument
+
 \permanent\protected\def\processassignlist#1[#2]#3%
   {\def\syst_helpers_process_assign_list_assign[##1=##-=##2]%
      {\doif{##2}\relax{#3{##1}}}%
@@ -5628,6 +5654,8 @@
 %D Running this one not always gives the expected results. Consider for instance the
 %D macro for which I originally wrote this token handler.
 
+\let\syst_helpers_split_off_tokens\gobbleoneargument
+
 \permanent\protected\def\splitofftokens#1\from#2\to#3% slow but hardly used
   {\ifnum#1>\zerocount
      \privatescratchcounter#1\relax
@@ -5673,6 +5701,8 @@
 %D well. That way we can handle the sentinal, a blank space and grouped tokens.
 
 \mutable\let\nexthandledtoken\empty % part of public interface
+
+\let\syst_helpers_handle_tokens_command\relax
 
 \protected\def\syst_helpers_handle_tokens
   {\futurelet\nexthandledtoken\syst_helpers_handle_tokens_indeed}
@@ -6230,6 +6260,9 @@
 
 \newcount\c_syst_helpers_test_feature_n
 \newcount\c_syst_helpers_test_feature_m
+
+\let\syst_helpers_test_feature_yes\relax
+\let\syst_helpers_test_feature_nop\relax
 
 \permanent\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 

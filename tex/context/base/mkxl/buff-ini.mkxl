@@ -66,8 +66,8 @@
 
 \def\buff_start_indeed_default#1#2#3#4{\buff_start_indeed\empty{#1}{#2}{#3}}
 
-% \let\buff_finish\relax
-% \let\buff_gobble\relax
+\let\buff_finish\relax
+%let\buff_gobble\relax
 
 \protected\def\buff_pickup#1#2#3#4#5#6% name, startsequence, stopsequence, before, after, undent
   {\begingroup % (1)
@@ -222,7 +222,7 @@
 
 % maybe still used elsewhere
 
-\permanent\protected\def\doprocesstexbuffer#1{\buff_process_tex[#1]} % still used? if not ... it will go away
+% \aliased\doprocesstexbuffer\mkvibuffer
 
 \aliased\let\dostartbuffer\grabbufferdata % for old times sake, this will go away
 

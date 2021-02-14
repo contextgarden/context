@@ -468,6 +468,8 @@
    \fi
    \savebox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}{\box\b_pack_combinations_caption}}
 
+\let\pack_combinations_flush_captions_indeed\relax
+
 \def\pack_combinations_flush_captions
   {\noalign
      {\ifdim\d_pack_combinations_ht>\zeropoint
@@ -765,24 +767,25 @@
 \installcorenamespace{pairedboxnature}
 \installcorenamespace{pairedboxalign}
 
+\let\pack_pairedboxes_flush      \relax
 \let\pack_pairedboxes_fill_top   \relax
 \let\pack_pairedboxes_fill_bottom\relax
 
-\setvalue{\??pairedboxnature\v!left}%
+\defcsname\??pairedboxnature\v!left\endcsname
   {\settrue\c_pack_pairedboxes_horizontal
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_left}
 
-\setvalue{\??pairedboxnature\v!right}%
+\defcsname\??pairedboxnature\v!right\endcsname
   {\settrue\c_pack_pairedboxes_horizontal
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_right}
 
-\setvalue{\??pairedboxnature\v!top}%
+\defcsname\??pairedboxnature\v!top\endcsname
   {\setfalse\c_pack_pairedboxes_horizontal
    \let\pack_pairedboxes_fill_top\relax
    \let\pack_pairedboxes_fill_bottom\vss
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_top}
 
-\setvalue{\??pairedboxnature\v!bottom}%
+\defcsname\??pairedboxnature\v!bottom\endcsname
   {\setfalse\c_pack_pairedboxes_horizontal
    \let\pack_pairedboxes_fill_top\vss
    \let\pack_pairedboxes_fill_bottom\relax
@@ -812,38 +815,43 @@
    \pairedboxparameter\c!inbetween
    \box\b_pack_pairedboxes_second}
 
-\setvalue{\??pairedboxalign\v!left}% 0
+\let\pack_pairedboxes_align_l\relax
+\let\pack_pairedboxes_align_r\relax
+\let\pack_pairedboxes_align_t\relax
+\let\pack_pairedboxes_align_b\relax
+
+\defcsname\??pairedboxalign\v!left\endcsname % 0
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\hss
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\relax}
 
-\setvalue{\??pairedboxalign\v!right}% 1
+\defcsname\??pairedboxalign\v!right\endcsname % 1
   {\let\pack_pairedboxes_align_l\hss
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\relax}
 
-\setvalue{\??pairedboxalign\v!high}% 2
+\defcsname\??pairedboxalign\v!high\endcsname % 2
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\vss}
 
-\setvalue{\??pairedboxalign\v!low}% 3
+\defcsname\??pairedboxalign\v!low\endcsname % 3
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\vss
    \let\pack_pairedboxes_align_b\relax}
 
-\setvalue{\??pairedboxalign\v!middle}% 4
+\defcsname\??pairedboxalign\v!middle\endcsname % 4
   {\let\pack_pairedboxes_align_l\hss
    \let\pack_pairedboxes_align_r\hss
    \let\pack_pairedboxes_align_t\vss
    \let\pack_pairedboxes_align_b\vss}
 
-\setvalue{\??pairedboxalign\v!bottom}{\csname\??pairedboxalign\v!low \endcsname}
-\setvalue{\??pairedboxalign   \v!top}{\csname\??pairedboxalign\v!high\endcsname}
+\defcsname\??pairedboxalign\v!bottom\endcsname{\csname\??pairedboxalign\v!low \endcsname}
+\defcsname\??pairedboxalign   \v!top\endcsname{\csname\??pairedboxalign\v!high\endcsname}
 
 \def\pack_pairedbox_valign#1{\setbox#1\vpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
 \def\pack_pairedbox_halign#1{\setbox#1\hpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}

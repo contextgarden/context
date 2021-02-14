@@ -224,9 +224,11 @@
 
 \installcorenamespace {mathalignlocation}
 
-\setvalue{\??mathalignlocation\v!top   }{\let\math_alignment_halign_method\halign\tpack}
-\setvalue{\??mathalignlocation\v!bottom}{\let\math_alignment_halign_method\halign\vpack}
-\setvalue{\??mathalignlocation\v!center}{\let\math_alignment_halign_method\halign\vcenter}
+\defcsname\??mathalignlocation\v!top   \endcsname{\let\math_alignment_halign_method\halign\tpack}
+\defcsname\??mathalignlocation\v!bottom\endcsname{\let\math_alignment_halign_method\halign\vpack}
+\defcsname\??mathalignlocation\v!center\endcsname{\let\math_alignment_halign_method\halign\vcenter}
+
+\let\math_alignment_halign_method\relax
 
 \def\math_both_eqalign_no_aligned#1%
   {\let\math_alignment_halign_method\math_halign_checked
@@ -693,6 +695,8 @@
 \let\math_cases_NR\math_align_NR_generic
 
 \installmacrostack\math_cases_NC
+
+\let\math_cases_strut\relax
 
 \permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
   {\begingroup

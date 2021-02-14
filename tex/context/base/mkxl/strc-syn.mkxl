@@ -636,7 +636,7 @@
   {\begingroup
    \edef\currentsimplelist{#1}%
    \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
-   \strc_sorting_place_list[#1][#2]%
+   \placelistofsorts[#1][#2]%
    \page
    \stopnamedsection
    \endgroup}

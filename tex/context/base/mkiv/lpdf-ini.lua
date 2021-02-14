@@ -298,7 +298,9 @@ do
         if v < 0x10000 then
             v = format("%04x",v)
         else
+            v = v - 0x10000
             v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00)
+         -- v = format("%04x%04x",rshift(v-0x10000,10)+0xD800,v%1024+0xDC00)
         end
         t[k] = v
         return v
@@ -319,7 +321,7 @@ do
     local pattern = C(4) / function(s) -- needs checking !
         local now = tonumber(s,16)
         if more > 0 then
-            now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+            now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
             more = 0
             return utfchar(now)
         elseif now >= 0xD800 and now <= 0xDBFF then

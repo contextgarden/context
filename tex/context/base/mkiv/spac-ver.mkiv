@@ -166,17 +166,11 @@
 \installmacrostack\currentinterlinespace
 
 \unexpanded\def\setupinterlinespace
-  {\dodoubleempty\spac_linespacing_setup}
+  {\dosingleempty\spac_linespacing_setup}
 
-\ifdefined\setupinterlinespace_double \else
-    \let\setupinterlinespace_double\setup_interlinespace % for a while
-\fi
-
-\def\spac_linespacing_setup[#1][#2]%
+\def\spac_linespacing_setup[#1]%
   {\settrue\interlinespaceisset % reset has to be done when needed
-   \ifsecondargument
-     \setupinterlinespace_double[#1][#2]%
-   \else\iffirstargument
+   \iffirstargument
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
         \edef\currentinterlinespace{#1}%
         \spac_linespacing_setup_specified_interline_space
@@ -187,7 +181,7 @@
    \else
      \let\currentinterlinespace\empty
      \spac_linespacing_synchronize_local
-   \fi\fi}
+   \fi}
 
 \def\spac_linespacing_setup_specified_or_relative[#1]%
   {\doifelseassignment{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%

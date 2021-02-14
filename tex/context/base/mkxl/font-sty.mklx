@@ -180,12 +180,11 @@
 
 \setfalse\fontattributeisset
 
-\let\m_font_style_parameter            \empty % was \currentstyleparameter
-\let\m_font_detokenized_style_parameter\empty % was \currentdetokenizedstyleparameter
+\mutable\let\currentdetokenizedstyleparameter\empty
 
 \permanent\protected\def\dousestyleparameter#value%
-  {\edef\m_font_style_parameter{#value}%
-   \ifempty\m_font_style_parameter\else
+  {\edef\currentstyleparameter{#value}%
+   \ifempty\currentstyleparameter\else
      \expandafter\dousecurrentstyleparameter
    \fi}
 
@@ -195,14 +194,14 @@
    \fi}
 
 \permanent\protected\def\dousecurrentstyleparameter % empty check outside here
-  {\edef\m_font_detokenized_style_parameter{\detokenize\expandafter{\m_font_style_parameter}}%
+  {\edef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
-   \ifcsname\??alternativestyle\m_font_detokenized_style_parameter\endcsname
+   \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
-   \orelse\ifcsname\m_font_detokenized_style_parameter\endcsname
+   \orelse\ifcsname\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
    \else
-     \m_font_style_parameter
+     \currentstyleparameter
    \fi}
 
 %D New commands (not yet interfaced):
@@ -360,6 +359,7 @@
      \font_styles_define_style_collection_a\s!default
   \fi}
 
+\let\font_styles_define_style_collection  \relax
 \let\font_styles_define_style_collection_a\relax
 \let\font_styles_define_style_collection_b\relax
 

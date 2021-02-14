@@ -18,19 +18,16 @@
 \newif\ifproductionrun
 
 \permanent\let\ctxdirectlua       \directlua
-\permanent\let\ctxlatelua         \latelua
 \permanent\def\ctxsprint       #1{\directlua{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
 \permanent\def\ctxwrite        #1{\directlua{tex.write(#1)}} % saves tokens
 \permanent\def\ctxcommand      #1{\directlua{commands.#1}} % saves tokens
 \permanent\def\ctxdirectcommand#1{\directlua{commands.#1}} % saves tokens
-\permanent\def\ctxlatecommand  #1{\latelua  {commands.#1}} % saves tokens
 \permanent\def\ctxreport       #1{\directlua{logs.writer[[#1]]}}
 
 %D Take your choice \unknown
 
 \aliased\let\ctxlua       \ctxdirectlua
 \aliased\let\luacode      \ctxdirectlua
-\aliased\let\lateluacode  \ctxlatelua
 \aliased\let\directluacode\ctxdirectlua
 
 %D Reporting the version of \LUA\ that we use is done as follows:
@@ -41,5 +38,11 @@
 \permanent\def\ctxloadluafile      #1{\ctxlua{lua.registercode("#1")}}
 
 \registerctxluafile{luat-cod.lmt}{autosuffix}
+
+\toksapp \everydump {%
+   \permanent\let\ctxlatelua       \latelua
+   \permanent\def\ctxlatecommand#1{\latelua{commands.#1}}%
+    \aliased\let\lateluacode       \ctxlatelua
+} % no \appendtoks yet
 
 \protect \endinput

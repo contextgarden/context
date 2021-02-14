@@ -149,6 +149,12 @@ local function textopener(tag,filename,filehandle,coding)
         filename    = filename,
         noflines    = noflines,
      -- currentline = 0,
+        gotoline    = function(self,n)
+            currentline = n - 1
+            if currentline <= 0 then
+                currentline = 0
+            end
+        end,
         endoffile   = function()
             return not lines or currentline >= noflines
         end,

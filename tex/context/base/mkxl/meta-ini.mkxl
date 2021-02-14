@@ -314,6 +314,9 @@
 \let\meta_process_graphic_figure_start\relax
 \let\meta_process_graphic_figure_stop \relax
 
+\let\normal_meta_process_graphic_start\relax
+\let\normal_meta_process_graphic_stop \relax
+
 \permanent\protected\def\processMPfigurefile#1% special case: obeys beginfig .. endfig and makes pages
   {\begingroup
    \let\normal_meta_process_graphic_start\meta_process_graphic_start
@@ -851,7 +854,7 @@
    \meta_end_graphic_group}
 
 \permanent\tolerant\protected\def\runMPbuffer[#1]%
-  {\startnointerference\meta_process_buffer[#1]\stopnointerference}
+  {\startnointerference\processMPbuffer[#1]\stopnointerference}
 
 %D \macros
 %D   {startMPenvironment, resetMPenvironment}
@@ -1303,24 +1306,24 @@
 \setupMPgraphics
   [\c!color=\v!local]
 
-%D This can save some runtime: rename the mpy file from a first run (when stable) to
-%D another file and reuse it. One can also use the original filename, but a copy is
-%D often better.
-%D
-%D \starttyping
-%D \setupMPgraphics
-%D   [mpy=\jobname.mpy]
-%D \stoptyping
-
-\mutable\let\MPdataMPYfile\empty
-
-\appendtoks
-    \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
-    \ifempty\p_mpy \else
-      \let\MPdataMPYfile\p_mpy
-      \clf_registermpyfile{\p_mpy}%
-    \fi
-\to \everysetupMPgraphics
+% %D This can save some runtime: rename the mpy file from a first run (when stable) to
+% %D another file and reuse it. One can also use the original filename, but a copy is
+% %D often better.
+% %D
+% %D \starttyping
+% %D \setupMPgraphics
+% %D   [mpy=\jobname.mpy]
+% %D \stoptyping
+%
+% \mutable\let\MPdataMPYfile\empty
+%
+% \appendtoks
+%     \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
+%     \ifempty\p_mpy \else
+%       \let\MPdataMPYfile\p_mpy
+%       \clf_registermpyfile{\p_mpy}%
+%     \fi
+% \to \everysetupMPgraphics
 
 %D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
 

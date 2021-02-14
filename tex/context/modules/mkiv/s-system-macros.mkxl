@@ -146,11 +146,12 @@
                         ctx_NC() if primitive  then ctx_bold(csname)    else
                                                     ctx_verb(csname)    end
                         ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
-                        ctx_NC()                    context(cscommand)
+                        ctx_NC() if undefined  then context.red(false) end
+                                                    context(cscommand)
                         ctx_NC() if primitive  then context(primitive)  end
                         ctx_NC() if permanent  then context(permanent)  end
-                        ctx_NC() if frozen     then context(frozen)     end
                         ctx_NC() if immutable  then context(immutable)  end
+                        ctx_NC() if frozen     then context(frozen)     end
                         ctx_NC() if mutable    then context(mutable)    end
                         ctx_NC() if instance   then context(instance)   end
                         ctx_NC() if noaligned  then context(noaligned)  end

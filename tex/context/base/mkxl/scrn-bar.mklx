@@ -253,6 +253,8 @@
 
 \newconstant\c_scrn_bar_mode
 
+\let\scrn_bar_goto_indeed\relax
+
 \protected\def\scrn_bar_goto_x#command%
   {\doifelse{\interactionbarparameter\c!symbol}\v!yes
      {\setupsymbolset[\interactionparameter\c!symbolset]%

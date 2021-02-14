@@ -44,8 +44,9 @@
 \let\freezerandomseed \pushrandomseed
 \let\defrostrandomseed\poprandomseed
 
-\def\randomnumber  #1#2{\clf_getrandomnumber\numexpr#1\relax\numexpr#2\relax}
-\let\mprandomnumber     \clf_getmprandomnumber
+\setnewconstant \mpscaledmax 4095 % for old times sake
 
+\def\randomnumber  #1#2{\clf_getrandomnumber\numexpr#1\relax\numexpr#2\relax}
+\def\mprandomnumber    {\clf_getrandomnumber\zerocount\mpscaledmax}
 
 \protect \endinput

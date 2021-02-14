@@ -575,7 +575,7 @@
 
 \permanent\tolerant\protected\def\inherittypeface[#name]#spacer[#styles]#spacer[#parentclass]%
   {\iftok{#styles}\emptytoks
-     \font_typescripts_inherit_indeed[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]%
+     \inherittypeface[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]%
    \orelse\iftok{#name}{#parentclass}\else
      \glet\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
      \def\font_typescripts_inherit_check_step#style{\edefcsname\??typescriptinheritances#name:#style\endcsname{#parentclass}}%

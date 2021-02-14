@@ -1473,6 +1473,8 @@
 % \def\doverysimpletableHL % todo
 %   {\noalign{\normalexpanded{\noexpand\tabl_table_normal_full_rule\m_tabl_table_HLheight}}
 
+\let\tabl_table_restart\relax
+
 \def\tabl_table_restart_indeed#1%
   {\gdef\tabl_table_restart{#1}%
    \tabl_table_restart

@@ -2359,17 +2359,6 @@ end
 
 do
 
-    -- old variant
-
---     implement {
---         name      = "vspacing",
---         actions   = vspacing.analyze,
---         scope     = "private",
---         arguments = "string"
---     }
-
-    -- new variant
-
     interfaces.implement {
         name      = "injectvspacing",
         actions   = vspacing.inject,

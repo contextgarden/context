@@ -127,6 +127,8 @@
 
 \aliased\let\typo_paragraphs_setup_saved\setupparagraphs
 
+\let\typo_paragraphs_setup_step\gobbleoneargument
+
 \overloaded\permanent\tolerant\protected\def\setupparagraphs[#1]#*[#2]#*[#3]% we are downward compatible with [each] and [1,3]
   {\ifarguments\or
       \typo_paragraphs_setup_saved[#1]%
@@ -141,12 +143,12 @@
    \fi}
 
 \appendtoks
-    \frozen\instance\letvalue{\e!next \currentparagraphs}\nextparagraphs
-    \frozen\instance\letvalue\currentparagraphs\nextparagraphs
-    \frozen\instance\setuevalue{\e!start\currentparagraphs}{\startparagraphs[\currentparagraphs]}%
-    \frozen\instance\letvalue{\e!stop \currentparagraphs}\stopparagraphs
+    \frozen\instance\letcsname\e!next \currentparagraphs\endcsname\nextparagraphs
+    \frozen\instance\letcsname\currentparagraphs\endcsname\nextparagraphs
+    \frozen\instance\protected\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
+    \frozen\instance\letcsname\e!stop \currentparagraphs\endcsname\stopparagraphs
     %frozen\instance\setuevalue{\e!setup\currentparagraph\e!endsetup}{\typo_paragraphs_setup_saved[\currentparagraphs]}%
-    \dorecurse{\paragraphsparameter\c!n}
+    \dorecurse{\paragraphsparameter\c!n}%
       {\normalexpanded{\typo_paragraphs_setup_saved[\currentparagraphs:\recurselevel][\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%
     \typo_paragraphs_setup_saved[\currentparagraphs:1][\c!distance=\zeropoint]%
 \to \everydefineparagraphs
@@ -155,6 +157,9 @@
 \newcount\c_typo_paragraphs_max
 \newdimen\d_typo_paragraphs_width
 \newdimen\d_typo_paragraphs_auto
+
+\let\typo_paragraphs_start_cell\relax
+\let\typo_paragraphs_stop_cell \relax
 
 \permanent\protected\def\startparagraphs[#1]% quite slow
   {\bgroup % (1)
@@ -187,7 +192,7 @@
    \fi
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
-   \enforced\let\\\typo_paragraphs_next % downward compatible
+   \enforced\let\\\nextparagraphs % downward compatible
    \edef\p_offset{\paragraphsparameter\c!offset}%
    \doifelsedimension\p_offset
      {\scratchoffset\p_offset}%

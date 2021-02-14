@@ -198,6 +198,8 @@
 
 % all
 
+\let\syst_modes_check_all_step\gobbleoneargument
+
 \def\syst_modes_check_all_indeed#1%
   {\ifcsname\??mode#1\endcsname
      \ifcase\lastnamedcs

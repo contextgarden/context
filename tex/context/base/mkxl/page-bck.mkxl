@@ -508,6 +508,8 @@
 \def\v_page_backgrounds_single_set{\v!text,\v!hidden,\v!paper,\v!page,\v!leftpage,\v!rightpage}
 \def\v_page_backgrounds_common_set{\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge}
 
+\let\page_backgrounds_setup_step_nested\relax
+
 \protected\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
   {\global\settrue\c_page_backgrounds_some
    \def\page_backgrounds_setup_step##1%

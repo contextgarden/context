@@ -2604,11 +2604,11 @@
   {\ifcsname\??predefinedfont#1\endcsname
      \lastnamedcs
    \else
-     \definedfont[#1]%
+     \font_basics_predefined{#1}%
    \fi}
 
 \protected\def\font_basics_predefine#1#2%
-  {\font_basics_defined_font_yes[#2]%
+  {\definedfont[#2]%
    \gletcsname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
 
 \protected\def\font_basics_predefined#1%
@@ -2616,7 +2616,7 @@
 
 %D Handy helper:
 
-\permanent\protected\def\savedefinedfont[#1]%
+\permanent\protected\def\savedefinedfont[#1]% hm, how about scales
   {\bgroup
    \definedfont[#1]%
    \xdef\saveddefinedfontid  {\number\fontid\font}%

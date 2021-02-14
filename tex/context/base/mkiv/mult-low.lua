@@ -251,7 +251,7 @@ return {
         --
         "filledhboxb", "filledhboxr", "filledhboxg", "filledhboxc", "filledhboxm", "filledhboxy", "filledhboxk",
         --
-        "scratchstringone", "scratchstringtwo", "tempstring",
+        "scratchstring", "scratchstringone", "scratchstringtwo", "tempstring",
         "scratchcounter", "globalscratchcounter", "privatescratchcounter",
         "scratchdimen", "globalscratchdimen", "privatescratchdimen",
         "scratchskip", "globalscratchskip", "privatescratchskip",
@@ -551,5 +551,9 @@ return {
         "pushoverloadmode", "popoverloadmode",
         --
         "suggestedalias",
+        --
+        "newlocalcount", "newlocaldimen", "newlocalskip", "newlocalmuskip", "newlocaltoks", "newlocalbox",
+        "newlocalwrite", "newlocalread",
+        "setnewlocalcount", "setnewlocaldimen", "setnewlocalskip", "setnewlocalmuskip", "setnewlocaltoks", "setnewlocalbox",
     }
 }

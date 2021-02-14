@@ -538,6 +538,8 @@
 
 % 1 0 name n 0 | 0 1 name n 0 | 1 1 name n n
 
+\let\math_stackers_stop_group\endgroup
+
 \protected\def\math_stackers_start_group#category%
   {\begingroup
    \edef\currentmathstackers{#category}%
