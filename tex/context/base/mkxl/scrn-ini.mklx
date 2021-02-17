@@ -56,6 +56,13 @@
 \setupinteraction
   [\c!state=\v!stop]
 
+\setupinteraction
+  [\c!title=,
+   \c!subtitle=,
+   \c!author=,
+   \c!keyword=,
+   \c!date=]
+
 \appendtoks
     \setupinteraction % todo: remember info at the lua end (already possible)
 \to \everyjob
@@ -177,52 +184,52 @@
 
 %D Identity
 
+% \newconditional\c_scrn_identity_preroll
+%
+% \installtexdirective
+%   {interaction.identity.preroll}
+%   {\settrue \c_scrn_identity_preroll}
+%   {\setfalse\c_scrn_identity_preroll}
+%
+% \def\scrn_identity_prerolled#1%
+%   {\begingroup
+%    \edef\tempstring{\interactionparameter#1}%
+%    \ifempty\tempstring
+%      \endgroup
+%    \else
+%      \the\everypreroll
+%      \nodestostring\tempstring{\tempstring}%
+%      \normalexpanded{\endgroup\setexpandedinteractionparameter{#1}{\tempstring}}%
+%    \fi}
+%
 % \def\scrn_identity_synchronize
-%   {\clf_setupidentity
+%   {\begingroup
+%    \ifconditional\c_scrn_identity_preroll
+%      \scrn_identity_prerolled\c!title
+%      \scrn_identity_prerolled\c!subtitle
+%      \scrn_identity_prerolled\c!author
+%      \scrn_identity_prerolled\c!date
+%      \scrn_identity_prerolled\c!keyword
+%    \fi
+%    \clf_setupidentity
 %        title    {\interactionparameter\c!title}%
 %        subtitle {\interactionparameter\c!subtitle}%
 %        author   {\interactionparameter\c!author}%
 %      % creator  {ConTeXt - \contextversion}%
 %        date     {\interactionparameter\c!date}%
 %        keywords {\interactionparameter\c!keyword}%
-%    \relax}
-
-\newconditional\c_scrn_identity_preroll
-
-\installtexdirective
-  {interaction.identity.preroll}
-  {\settrue \c_scrn_identity_preroll}
-  {\setfalse\c_scrn_identity_preroll}
-
-\def\scrn_identity_prerolled#1%
-  {\begingroup
-   \edef\tempstring{\interactionparameter#1}%
-   \ifempty\tempstring
-     \endgroup
-   \else
-     \the\everypreroll
-     \nodestostring\tempstring{\tempstring}%
-     \normalexpanded{\endgroup\setexpandedinteractionparameter{#1}{\tempstring}}%
-   \fi}
+%    \relax
+%    \endgroup}
 
 \def\scrn_identity_synchronize
-  {\begingroup
-   \ifconditional\c_scrn_identity_preroll
-     \scrn_identity_prerolled\c!title
-     \scrn_identity_prerolled\c!subtitle
-     \scrn_identity_prerolled\c!author
-     \scrn_identity_prerolled\c!date
-     \scrn_identity_prerolled\c!keyword
-   \fi
-   \clf_setupidentity
-       title    {\interactionparameter\c!title}%
-       subtitle {\interactionparameter\c!subtitle}%
-       author   {\interactionparameter\c!author}%
-     % creator  {ConTeXt - \contextversion}%
-       date     {\interactionparameter\c!date}%
-       keywords {\interactionparameter\c!keyword}%
-   \relax
-   \endgroup}
+  {\clf_setupidentity
+       title    {\prerolltostring{\interactionparameter\c!title}}%
+       subtitle {\prerolltostring{\interactionparameter\c!subtitle}}%
+       author   {\prerolltostring{\interactionparameter\c!author}}%
+     % creator  {ConTeXt - \contextversion}% fixed
+       date     {\prerolltostring{\interactionparameter\c!date}}%
+       keywords {\prerolltostring{\interactionparameter\c!keyword}}%
+   \relax}
 
 \appendtoks
     \scrn_identity_synchronize
@@ -243,12 +250,5 @@
     \scrn_identity_document{keywords}\c!keyword
     \scrn_identity_document    {date}\c!date
 \to \everystartdocument % or stop
-
-\setupinteraction
-  [\c!title=,
-   \c!subtitle=,
-   \c!author=,
-   \c!keyword=,
-   \c!date=]
 
 \protect \endinput

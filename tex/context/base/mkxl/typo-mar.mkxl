@@ -195,7 +195,9 @@
    \ifparameter#dataparameters\or
      \setupcurrentmargindata[#dataparameters]%
    \fi
-   \doifelsenothing{#content}\donefalse\donetrue
+ % \doifelsenothing{#content}\donefalse\donetrue
+ % \doifelsetext{#content}\donetrue\donefalse
+   \ifparameter#content\donefalse\or\donetrue\else\donefalse\fi
    \global\advance\c_typo_margins_n\plusone
    \ifdone
      \edef\currentmarginreference{\margindataparameter\c!reference}%

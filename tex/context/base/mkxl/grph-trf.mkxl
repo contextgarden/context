@@ -185,7 +185,7 @@
    \fi}
 
 \def\grph_scale_apply_yes
-  {\setbox\nextbox\naturalhpack
+  {\setbox\nextbox\hcontainer
      {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
       \smashedbox\nextbox
       \dostopscaling}%
@@ -656,7 +656,7 @@
    \wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
-   \setbox\nextbox\naturalhpack
+   \setbox\nextbox\hcontainer
      {\advance\scratchwidth \dimexpr\clippingparameter\c!leftoffset  +\clippingparameter\c!rightoffset\relax
       \advance\scratchheight\dimexpr\clippingparameter\c!bottomoffset+\clippingparameter\c!topoffset  \relax
       \dostartclipping{\clippingparameter\c!mp}\scratchwidth\scratchheight
@@ -942,7 +942,7 @@
    %
    \setbox\nextbox\naturalvpack to \d_grph_rotate_y_size
      {\vfilll
-      \naturalhpack to \d_grph_rotate_x_size
+      \hcontainer to \d_grph_rotate_x_size
         {\dostartrotation\p_rotation_rotation
            \wd\nextbox\zeropoint
            \ht\nextbox\zeropoint

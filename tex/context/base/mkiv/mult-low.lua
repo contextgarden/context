@@ -73,7 +73,8 @@ return {
         "frozenadjustcode", "frozenprotrudecode", "frozentolerancecode", "frozenstretchcode",
         "frozenloosenesscode", "frozenlastlinecode", "frozenlinepenaltycode", "frozenclubpenaltycode",
         "frozenwidowpenaltycode", "frozendisplaypenaltycode", "frozenbrokenpenaltycode",
-        "frozendemeritscode", "frozenshapecode", "frozenlinecode",  "frozenallcode",
+        "frozendemeritscode", "frozenshapecode", "frozenlinecode", "frozenhyphenationcode",
+        "frozenallcode",
         --
         "activemathcharcode",
         --
@@ -162,6 +163,7 @@ return {
         "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
+        "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode",
         --
         "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode", "clipwidthcode",
         --
@@ -277,7 +279,7 @@ return {
         "next", "nexttoken",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
-        "boxisempty",
+        "boxisempty", "boxtostring", "contentostring", "prerolltostring",
         --
         "givenwidth", "givenheight", "givendepth", "scangivendimensions",
         --
@@ -519,6 +521,8 @@ return {
         "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack", "naturaltpack",
         "reversehbox", "reversevbox", "reversevtop", "reversehpack", "reversevpack", "reversetpack",
         --
+        "hcontainer", "vcontainer", "tcontainer",
+        --
         "frule",
         --
         "compoundhyphenpenalty",
@@ -548,7 +552,7 @@ return {
          --
         "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
         --
-        "pushoverloadmode", "popoverloadmode",
+        "pushoverloadmode", "popoverloadmode", "pushrunstate", "poprunstate",
         --
         "suggestedalias",
         --

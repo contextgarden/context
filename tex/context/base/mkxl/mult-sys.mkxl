@@ -149,6 +149,7 @@
 \definesystemconstant {command}
 \definesystemconstant {compare}
 \definesystemconstant {complex}
+\definesystemconstant {container}
 \definesystemconstant {counter}
 \definesystemconstant {cramped}
 \definesystemconstant {current}

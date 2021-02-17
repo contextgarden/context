@@ -50,6 +50,8 @@ local boxrule_code       = rulecodes.box
 local imagerule_code     = rulecodes.image
 local emptyrule_code     = rulecodes.empty
 
+local container_code     = nodes.listcodes.container
+
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
@@ -195,6 +197,9 @@ local function process(attribute,head,inheritance,default) -- one attribute
         elseif id == hlist_code or id == vlist_code then
             -- tricky checking
             local outer
+            if subtype == container_code then
+                check = true
+            end
             if getorientation(stack) then
                 outer = getattr(stack,attribute)
                 if outer then
@@ -308,6 +313,9 @@ local function simple(attribute,head)
             check  = true
             leader = content
         elseif id == hlist_code or id == vlist_code then
+            if subtype == container_code then
+                check = true
+            end
             if getorientation(stack) then
                 local outer = getattr(stack,attribute)
                 if outer then
@@ -384,6 +392,9 @@ end
 --             leader = content -- getleader(stack)
 --         elseif id == hlist_code or id == vlist_code then
 --             -- tricky checking
+--             if subtype == container_code then
+--                 check = true
+--             end
 --             local outer
 --             if getorientation(stack) then
 --                 outer = getattr(stack,attribute)
@@ -506,6 +517,9 @@ local function selective(attribute,head,inheritance,default) -- two attributes
             leader = content -- getleader(stack)
         elseif id == hlist_code or id == vlist_code then
             -- tricky checking
+            if subtype == container_code then
+                check = true
+            end
             local outer, s
             if getorientation(stack) then
                 outer, s = getattrs(stack,attribute,nsselector)
@@ -642,6 +656,9 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
             if content then
              -- the problem is that broken lines gets the attribute which can be a later one
                 local list
+                if subtype == container_code then
+                    check = true
+                end
                 if nslistwise then
                     local a = getattr(stack,attribute)
                     if a and current ~= a and nslistwise[a] then -- viewerlayer / needs checking, see below
@@ -730,6 +747,9 @@ end
 --             local content = getlist(current)
 --             if content then
 --                 local list
+--                 if subtype == container_code then
+--                     check = true
+--                 end
 --                 if nslistwise then
 --                     local a = getattr(current,attribute)
 --                     if a and attrib ~= a and nslistwise[a] then -- viewerlayer
@@ -821,6 +841,9 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
             check  = true
         elseif id == hlist_code or id == vlist_code then
             local list
+            if subtype == container_code then
+                check = true
+            end
             if nslistwise then
                 local a = getattr(current,attribute)
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer

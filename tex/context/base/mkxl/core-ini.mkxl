@@ -60,7 +60,7 @@
 \newtoks \everyforgetall
 \newtoks \everycleanupfeatures
 \newtoks \everysimplifycommands
-\newtoks \everypreroll
+%newtoks \everypreroll
 
 \aliased\let\simplifiedcommands\everysimplifycommands % backward compatible, will stay as it's used in styles
 

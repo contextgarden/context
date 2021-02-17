@@ -666,7 +666,7 @@
 
 \protected\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
-   \hpack{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
+   \hpack container{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
 \protected\def\meta_use_box
   {\setunreferencedobject{MP}}

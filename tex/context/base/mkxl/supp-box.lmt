@@ -380,6 +380,7 @@ implement {
 implement {
     name      = "boxtostring",
     arguments = "integer",
+    public    = true,
     actions   = function(n)
         context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
     end

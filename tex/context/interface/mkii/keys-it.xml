@@ -780,6 +780,8 @@
 		<cd:constant name='deepnumbercommand' value='deepnumbercommand'/>
 		<cd:constant name='deeptextcommand' value='deeptextcommand'/>
 		<cd:constant name='default' value='implicito'/>
+		<cd:constant name='defaultheight' value='defaultheight'/>
+		<cd:constant name='defaultwidth' value='defaultwidth'/>
 		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='attesa'/>
 		<cd:constant name='depth' value='profondita'/>
@@ -1124,6 +1126,7 @@
 		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='stampabile'/>
 		<cd:constant name='process' value='process'/>
+		<cd:constant name='processors' value='processors'/>
 		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='properties' value='properties'/>
 		<cd:constant name='pubsep' value='pubsep'/>

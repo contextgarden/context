@@ -32,6 +32,8 @@ local context           = context
 
 local implement         = interfaces.implement
 
+local getmacro          = tokens.getters.macro
+
 local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
 local report_free       = logs.reporter("backgrounds","free")
@@ -1193,24 +1195,27 @@ implement {
     arguments = { "string", "string", "integer" }
 }
 
-local f_template_a = formatters[ [[
-path posboxes[], posregions[] ;
-numeric pospages[] ;
-numeric nofposboxes ;
-nofposboxes := %s ;
-%t ;
-]] ]
+-- todo: use inject
 
-local f_template_b = formatters[ [[
-pospages[%s] := %s ;
-posboxes[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
-posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
-]] ]
+do
 
-implement {
-    name      = "fetchposboxes",
-    arguments = { "string", "string", "integer" },
-    actions   = function(tags,anchor,page)  -- no caching (yet) / page
+    local scanstring = mp.scan.string
+
+    local f_template_a = formatters[ [[
+    path posboxes[], posregions[] ;
+    numeric pospages[] ;
+    numeric nofposboxes ;
+    nofposboxes := %s ;
+    %t
+    ]] ]
+
+    local f_template_b = formatters[ [[
+    pospages[%s] := %s ;
+    posboxes[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
+    posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
+    ]] ]
+
+    local function getposboxes(tags,anchor,page)  -- no caching (yet) / page
         local collected = jobpositions.collected
         if type(tags) == "string" then
             tags = utilities.parsers.settings_to_array(tags)
@@ -1250,9 +1255,44 @@ implement {
              -- print("\n missing",tag)
             end
         end
-        context(f_template_a(nofboxes,list))
+        return f_template_a(nofboxes,list)
     end
-}
+
+    local namespace
+
+ -- metapost.registerscript("var", function()
+ --     local name = scanstring()
+ --     if not namespace then
+ --         namespace = getmacro("??graphicvariable")
+ --     end
+ --     return getmacro(namespace .. getmacro("currentmpvariableclass") .. ":" .. name)
+ -- end
+
+    metapost.registerscript("getposboxes", function()
+         local tags   = scanstring()
+         local anchor = scanstring()
+         local page   = nil
+         if tags == "self" then
+            if not namespace then
+                namespace = getmacro("??graphicvariable")
+            end
+            tags = getmacro(namespace .. getmacro("currentmpvariableclass") .. ":self")
+         end
+         if anchor == "anchor" then
+            anchor = getmacro("MPanchorid") -- brrr
+         end
+         if tags and anchor then
+            return getposboxes(tags,anchor,page)
+         end
+    end)
+
+    implement {
+        name      = "fetchposboxes",
+        arguments = { "string", "string", "integer" },
+        actions   = { getposboxes, context },
+    }
+
+end
 
 local doifelse = commands.doifelse
 

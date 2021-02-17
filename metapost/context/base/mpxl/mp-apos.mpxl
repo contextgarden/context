@@ -26,7 +26,7 @@ nofposboxes := 0 ;
 def boxlineoptions = withcolor .8blue  enddef ;
 def boxfilloptions = withcolor .8white enddef ;
 
-permanent posboxes, posregions, pospages, nofposboxes ;
+mutable posboxes, posregions, pospages, nofposboxes ;
 
 def connect_positions =
     if nofposboxes = 2 :
@@ -102,3 +102,9 @@ def anch_sidebars_draw (expr firstpage, lastpage, yfirst, ylast, height, depth,
         withcolor linecolor ;
     endgroup ;
 enddef ;
+
+% new interface
+
+newscriptindex mfid_getposboxes ; mfid_getposboxes := scriptindex "getposboxes" ;
+
+def getposboxes(expr tags, anchor) = runscript mfid_getposboxes tags anchor ; enddef ;

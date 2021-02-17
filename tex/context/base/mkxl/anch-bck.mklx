@@ -668,6 +668,7 @@
 
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
     \MPgetposboxes{\MPvar{self}}{\MPanchorid}
+  % getposboxes("self","anchor") ;
     if nofposboxes = 1 :
         posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
         fill posboxes[1] withcolor \MPvar{fillcolor} ;
@@ -686,6 +687,7 @@
     boxlineoffset := \MPvar{lineoffset} ;
     def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
     \MPgetposboxes{\MPvar{from},\MPvar{to}}{\MPanchorid}
+  % getposboxes("from,to","anchor") ;
     connect_positions ;
 \stopMPpositiongraphic
 

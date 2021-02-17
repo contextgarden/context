@@ -726,6 +726,9 @@
 
 \aliased\let\popoverloadmode\relax
 
+\let\pushrunstate\relax % will be defined later
+\let\poprunstate \relax % will be defined later
+
 \newtoks\everydump
 
 \pushoverloadmode

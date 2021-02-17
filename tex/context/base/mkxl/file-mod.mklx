@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{file-mod}{}
+\registerctxluafile{file-mod}{autosuffix}
 
 %D \macros
 %D   {usemodule}

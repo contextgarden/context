@@ -84,4 +84,12 @@
 \permanent\protected\def\dostopclipping
   {\clf_stopclipping}
 
+%D This wrapper is needed when you use code that messes with e.g. local color
+%D directives, invisible for the rest of the machinery. It's only needed in very
+%D special cases, like around the above scaler directives:
+
+\permanent\protected\edef\hcontainer{\hpack \s!direction\directionlefttoright \s!container\space}
+\permanent\protected\edef\vcontainer{\vpack \s!direction\directionlefttoright \s!container\space}
+\permanent\protected\edef\tcontainer{\tpack \s!direction\directionlefttoright \s!container\space}
+
 \protect \endinput

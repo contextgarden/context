@@ -242,6 +242,18 @@ documentation of the source but some are definitely \LUAMETATEX\ specific.
     context.stoptabulate()
 \stopluacode
 
+Most variables speak for themselves, some are more obscure. For instance the
+\type {run_state} variable indicates what the engine is doing:
+
+\starttabulate[|l|l|p|]
+\DB n \NC meaning      \NC explanation \NC \NR
+\TB
+\NC 0 \NC initializing \NC \type {--ini} mnode \NC \NR
+\NC 1 \NC updating     \NC relates to \lpr {overloadmode} \NC \NR
+\NC 2 \NC production   \NC a regular (format driven) run \NC \NR
+\LL
+\stoptabulate
+
 \stopsection
 
 \startsection[title={The \type {tex} library}][library=tex]
@@ -1527,7 +1539,7 @@ The understood parameters are as follows:
 \NC \type{exhyphenpenalty}      \NC number          \NC \NC \NR
 \NC \type{pdfadjustspacing}     \NC number          \NC \NC \NR
 \NC \type{adjdemerits}          \NC number          \NC \NC \NR
-\NC \type{pdfprotrudechars}     \NC number          \NC \NC \NR
+\NC \type{protrudechars}        \NC number          \NC \NC \NR
 \NC \type{linepenalty}          \NC number          \NC \NC \NR
 \NC \type{lastlinefit}          \NC number          \NC \NC \NR
 \NC \type{doublehyphendemerits} \NC number          \NC \NC \NR

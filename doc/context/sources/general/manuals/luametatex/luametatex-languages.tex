@@ -315,7 +315,7 @@ Hyphenation and discretionary injection is driven by a mode parameter which is
 a bitset made from the following values, some of which we saw in the previous
 examples.
 
-\starttabulate[|||]
+\starttabulate[|l|p|]
 \NC \number \normalhyphenationmodecode           \NC honour (normal) \prm{discretionary}'s \NC \NR
 \NC \number \automatichyphenationmodecode        \NC turn \type {-} into (automatic) discretionaries \NC \NR
 \NC \number \explicithyphenationmodecode         \NC turn \type {\-} into (explicit) discretionaries \NC \NR
@@ -327,6 +327,8 @@ examples.
 \NC \number \automaticpenaltyhyphenationmodecode \NC use \lpr {automatichyphenpenalty} \NC \NR
 \NC \number \explicitpenaltyhyphenationmodecode  \NC use \lpr {explicithyphenpenalty} \NC \NR
 \NC \number \permitgluehyphenationmodecode       \NC turn glue in discretionaries into kerns \NC \NR
+\NC \number \lazyligatureshyphenationmodecode    \NC controls how successive explicit discretionaries are handled in base mode \NC \NR
+\NC \number \forcecheckhyphenationmodecode       \NC treat all discretionaries equal when breaking lines (in all three passes) \NC \NR
 \stoptabulate
 
 \stopsection
@@ -706,113 +708,15 @@ that we provide (which is part of \CONTEXT) distinguishes between base mode
 (which essentially is what we describe here and which delegates the task to \TEX)
 and node mode (which deals with more complex fonts.
 
-Let's look at an example. Take the word \type {office}, hyphenated \type
-{of-fice}, using a \quote {normal} font with all the \type {f}-\type {f} and
-\type {f}-\type {i} type ligatures:
-
-\starttabulate[|l|l|]
-\NC initial              \NC \type {{o}{f}{f}{i}{c}{e}}             \NC\NR
-\NC after hyphenation    \NC \type {{o}{f}{{-},{},{}}{f}{i}{c}{e}}  \NC\NR
-\NC first ligature stage \NC \type {{o}{{f-},{f},{<ff>}}{i}{c}{e}}  \NC\NR
-\NC final result         \NC \type {{o}{{f-},{<fi>},{<ffi>}}{c}{e}} \NC\NR
-\stoptabulate
-
-That's bad enough, but let us assume that there is also a hyphenation point
-between the \type {f} and the \type {i}, to create \type {of-f-ice}. Then the
-final result should be:
-
-\starttyping
-{o}{{f-},
-    {{f-},
-     {i},
-     {<fi>}},
-    {{<ff>-},
-     {i},
-     {<ffi>}}}{c}{e}
-\stoptyping
-
-with discretionaries in the post-break text as well as in the replacement text of
-the top-level discretionary that resulted from the first hyphenation point.
-
-Here is that nested solution again, in a different representation:
-
-\testpage[4]
-
-\starttabulate[|l|c|c|c|c|c|c|]
-\DB         \BC pre           \BC     \BC post      \BC       \BC replace       \BC       \NC \NR
-\TB
-\NC topdisc \NC \type {f-}    \NC (1) \NC sub 1     \NC       \NC sub 2         \NC       \NC \NR
-\NC sub 1   \NC \type {f-}    \NC (2) \NC \type {i} \NC (3)   \NC \type {<fi>}  \NC (4)   \NC \NR
-\NC sub 2   \NC \type {<ff>-} \NC (5) \NC \type {i} \NC (6)   \NC \type {<ffi>} \NC (7)   \NC \NR
-\LL
-\stoptabulate
-
-When line breaking is choosing its breakpoints, the following fields will
-eventually be selected:
-
-\starttabulate[|l|c|c|]
-\NC \type {of-f-ice} \NC \type {f-}    \NC (1) \NC \NR
-\NC                  \NC \type {f-}    \NC (2) \NC \NR
-\NC                  \NC \type {i}     \NC (3) \NC \NR
-\NC \type {of-fice}  \NC \type {f-}    \NC (1) \NC \NR
-\NC                  \NC \type {<fi>}  \NC (4) \NC \NR
-\NC \type {off-ice}  \NC \type {<ff>-} \NC (5) \NC \NR
-\NC                  \NC \type {i}     \NC (6) \NC \NR
-\NC \type {office}   \NC \type {<ffi>} \NC (7) \NC \NR
-\stoptabulate
-
-The current solution in \LUATEX\ is not able to handle nested discretionaries,
-but it is in fact smart enough to handle this fictional \type {of-f-ice} example.
-It does so by combining two sequential discretionary nodes as if they were a
-single object (where the second discretionary node is treated as an extension of
-the first node).
-
-One can observe that the \type {of-f-ice} and \type {off-ice} cases both end with
-the same actual post replacement list (\type {i}), and that this would be the
-case even if \type {i} was the first item of a potential following ligature like
-\type {ic}. This allows \LUATEX\ to do away with one of the fields, and thus make
-the whole stuff fit into just two discretionary nodes.
-
-The mapping of the seven list fields to the six fields in this discretionary node
-pair is as follows:
-
-\starttabulate[|l|c|c|]
-\DB field                 \BC description   \NC       \NC \NR
-\TB
-\NC \type {disc1.pre}     \NC \type {f-}    \NC (1)   \NC \NR
-\NC \type {disc1.post}    \NC \type {<fi>}  \NC (4)   \NC \NR
-\NC \type {disc1.replace} \NC \type {<ffi>} \NC (7)   \NC \NR
-\NC \type {disc2.pre}     \NC \type {f-}    \NC (2)   \NC \NR
-\NC \type {disc2.post}    \NC \type {i}     \NC (3,6) \NC \NR
-\NC \type {disc2.replace} \NC \type {<ff>-} \NC (5)   \NC \NR
-\LL
-\stoptabulate
-
-What is actually generated after ligaturing has been applied is therefore:
-
-\starttyping
-{o}{{f-},
-    {<fi>},
-    {<ffi>}}
-   {{f-},
-    {i},
-    {<ff>-}}{c}{e}
-\stoptyping
-
-The two discretionaries have different subtypes from a discretionary appearing on
-its own: the first has subtype 4, and the second has subtype 5. The need for
-these special subtypes stems from the fact that not all of the fields appear in
-their \quote {normal} location. The second discretionary especially looks odd,
-with things like the \type {<ff>-} appearing in \type {disc2.replace}. The fact
-that some of the fields have different meanings (and different processing code
-internally) is what makes it necessary to have different subtypes: this enables
-\LUATEX\ to distinguish this sequence of two joined discretionary nodes from the
-case of two standalone discretionaries appearing in a row.
-
-Of course there is still that relationship with fonts: ligatures can be implemented by
-mapping a sequence of glyphs onto one glyph, but also by selective replacement and
-kerning. This means that the above examples are just representing the traditional
-approach.
+In so called base mode, where \TEX\ does the work, the ligature construction
+(normally) goes in small steps. An \type {f} followed by an \type {f} becomes an
+\type {ff} ligatures and that one followed by an \type {i} can become a \type
+{ffi} ligature. The situation can be complicated by hyphenation points between
+these characters. When there are several in a ligature collapsing happens. Flag
+{\tttf "\uchexnumbers {\lazyligatureshyphenationmodecode} in the \lpr
+{\hyphenationmode} variable determines if this happens lazy or greedy, i.e.\ the
+first hyphen wins or the last one does. In practice a \CONTEXT\ user won't have
+to deal with this because most fonts are processed in node mode.
 
 \stopsection
 

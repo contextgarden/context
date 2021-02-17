@@ -142,17 +142,15 @@ local targetpath = "."
 -- pdftex went beyond "9" but anyway we test for it
 
 if LUATEXENGINE == nil then
-    LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine)
-                or (find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
+    LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine) or "luametatex"
 end
 
 if LUATEXVERSION == nil then
-    LUATEXVERSION = status.luatex_version/100
-                  + tonumber(status.luatex_revision)/10000
+    LUATEXVERSION = status.luatex_version/100 + tonumber(status.luatex_revision)/10000
 end
 
 if CONTEXTLMTXMODE == nil then
-    CONTEXTLMTXMODE = LUATEXENGINE == "luametatex" and 1 or 0
+    CONTEXTLMTXMODE = 1
 end
 
 if LUATEXFUNCTIONALITY == nil then
@@ -164,11 +162,11 @@ if LUATEXFORMATID == nil then
 end
 
 if JITSUPPORTED == nil then
-    JITSUPPORTED = LUATEXENGINE == "luajittex" or jit -- "or jit" can go
+    JITSUPPORTED = false
 end
 
 if INITEXMODE == nil then
-    INITEXMODE = status.ini_version
+    INITEXMODE = status.run_state == 0 -- initializing updating production
 end
 
 environment.luatexengine        = LUATEXENGINE

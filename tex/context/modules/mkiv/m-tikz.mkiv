@@ -7,35 +7,69 @@
     \protect
 \fi
 
-\ifcase\contextlmtxmode \else
-    \overloadmode\zerocount
-\fi
 
-\pushcatcodetable
+\pushoverloadmode
 
-    \setcatcodetable\texcatcodes
+    \pushcatcodetable
 
-    \catcode`\@=11
-    \catcode`\|=12
-    \catcode`\!=12
+        \setcatcodetable\texcatcodes
 
-    \input t-pgf.tex
-    \input t-pgffor.tex
-    \input tikz.code.tex
+        \catcode`\@=11
+        \catcode`\|=12
+        \catcode`\!=12
 
-\popcatcodetable
+        \input t-pgf.tex
+        \input t-pgffor.tex
+        \input tikz.code.tex
 
-\protected\def\tikzerrormessage#1#2#3%
+    \popcatcodetable
+
+\popoverloadmode
+
+\permanent\protected\def\tikzerrormessage#1#2#3%
   {\writestatus{#1}{#2}}
 
-\protected\def\starttikzpicture
-  {\begingroup
-   \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
-   \overloadmode\zerocount
-   \tikzpicture}
+\ifcase\contextlmtxmode
 
-\protected\def\stoptikzpicture
-  {\endtikzpicture
-   \endgroup}
+    \let\starttikzsettings\relax
+    \let\stoptikzsettings \relax
+
+    \protected\def\starttikzpicture
+      {% \dontleavehmode
+       \begingroup
+       \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
+       \tikzpicture}
+
+    \protected\def\stoptikzpicture
+      {\endtikzpicture
+       \endgroup}
+
+\else
+
+    % for now:
+
+    \overloadmode\zerocount
+
+    % but this will be mandate for settings outside the start .. stop
+
+    \permanent\protected\def\starttikzsettings
+      {\pushoverloadmode}
+
+    \permanent\protected\def\stoptikzsettings
+      {\popoverloadmode}
+
+    \permanent\protected\def\starttikzpicture
+      {\dontleavehmode
+       \hcontainer\bgroup
+     % \pushoverloadmode
+       \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
+       \tikzpicture}
+
+    \permanent\protected\def\stoptikzpicture
+      {\endtikzpicture
+     % \popoverloadmode
+       \egroup}
+
+\fi
 
 \stopmodule

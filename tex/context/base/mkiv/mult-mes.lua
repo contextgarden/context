@@ -1159,6 +1159,9 @@ return {
             no = "slutten av blokk %a (seksjon)",
             ro = "sfarsit de bloc sectiune %a",
         },
+        ["structures:3"] = {
+            en = "title to bookmark: %s",
+        },
         ["symbols:1"] = {
             cs = "nacita se soubor symbolu %a",
             de = "Lade Symboldatei %a",

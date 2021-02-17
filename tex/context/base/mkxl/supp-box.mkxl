@@ -2656,10 +2656,41 @@
 
 %D A bit dirty:
 
+% \permanent\protected\def\nodestostring#1#2% more tolerant for #2=\cs
+%   {\begingroup
+%    \setbox\nextbox\hbox{#2}%
+%    \normalexpanded{\endgroup\edef\noexpand#1{\boxtostring\nextbox}}}
+%
+% \permanent\def\tostring
+%   {\beginlocalcontrol
+%    \dowithnextbox{\endlocalcontrol\boxtostring\nextbox}\hbox}
+%
+% \permanent\def\tostring
+%   {\beginlocalcontrol\begingroup
+%    \dowithnextbox{\normalexpanded{\endgroup\endlocalcontrol\boxtostring\nextbox}}\hbox}
+
+\def\syst_boxes_contenttostring
+  {\normalexpanded{\endgroup\endlocalcontrol\boxtostring\nextbox}}
+
+\permanent\def\contenttostring
+  {\beginlocalcontrol\begingroup
+   \dowithnextboxcs\syst_boxes_contenttostring\hbox}
+
+\newtoks\everypreroll
+
+\let\prerolltostring\firstofoneargument % we need to bypass initializations
+
+\appendtoks
+    \permanent\def\prerolltostring
+      {\beginlocalcontrol\begingroup
+       \the\everypreroll
+       \dowithnextboxcs\syst_boxes_contenttostring\hbox}
+\to \everydump
+
+% depricated:
+
 \permanent\protected\def\nodestostring#1#2% more tolerant for #2=\cs
-  {\begingroup
-   \setbox\nextbox\hbox{#2}%
-   \normalexpanded{\endgroup\edef\noexpand#1{\clf_boxtostring\nextbox}}}
+  {\edef#2{\contenttostring{#1}}}
 
 %D Even more dirty:
 

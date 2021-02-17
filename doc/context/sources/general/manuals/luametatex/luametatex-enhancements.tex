@@ -1818,12 +1818,13 @@ what the engine provides right now. We use a bitmap:
 \starttabulate[|l|l|]
 \DB value \BC reported \NC \NR
 \TB
-\NC \type{0x0001} \NC normalize line as described above         \NC \NR
-\NC \type{0x0002} \NC use a skip for parindent instead of a box \NC \NR
-\NC \type{0x0004} \NC swap hangindent in l2r mode               \NC \NR
-\NC \type{0x0008} \NC swap parshape in l2r mode                 \NC \NR
-\NC \type{0x0010} \NC put breaks after dir in l2r mode          \NC \NR
-\NC \type{0x0020} \NC remove margin kerns (\PDFTEX\ left-over)  \NC \NR
+\NC \type{0x0001} \NC normalize line as described above            \NC \NR
+\NC \type{0x0002} \NC use a skip for parindent instead of a box    \NC \NR
+\NC \type{0x0004} \NC swap hangindent in l2r mode                  \NC \NR
+\NC \type{0x0008} \NC swap parshape in l2r mode                    \NC \NR
+\NC \type{0x0010} \NC put breaks after dir in l2r mode             \NC \NR
+\NC \type{0x0020} \NC remove margin kerns (\PDFTEX\ left-over)     \NC \NR
+\NC \type{0x0040} \NC if needed clip width and use correction kern \NC \NR
 \LL
 \stoptabulate
 

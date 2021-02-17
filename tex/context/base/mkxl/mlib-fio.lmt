@@ -224,10 +224,10 @@ mplib.propertycodes = propertycodes
 local report = logs.reporter("metafun", "log")
 
 local function overload(property,name)
-    if overloadmode then
-        local iserror =
+    if overloadmode and property >= 0 then
         -- turn of warning after format is loaded
-        report("overloading %s %a",propertycodes[property] or "unknown", name)
+        local code = propertycodes[property] or "unknown"
+        report("overloading %s %a",code, name)
         -- no overload permitted
         if overloadmode == "error" then
             luatex.abort()

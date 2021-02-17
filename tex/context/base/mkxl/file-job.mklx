@@ -271,6 +271,18 @@
   [\c!before=\directsetup{\s!document:\v!start},
    \c!after =\directsetup{\s!document:\v!stop}]
 
+% to be discussed:
+%
+% \setupdocument
+%   [metadata:title=\documentvariable\c!title,
+%    metadata:subject=\documentvariable\c!subtitle,
+%    metadata:subtitle=\documentvariable\c!subtitle,
+%    metadata:author=\documentvariable\c!author,
+%    metadata:authors=\documentvariable\c!author,
+%    metadata:keyword=\documentvariable\c!keyword,
+%    metadata:keywords=\documentvariable\c!keyword,
+%    metadata:date=\documentvariable\c!date]
+
 \def\syst_document_setup#1%
   {\directsetup{\doifelsesetups{\currentdocument:\v!start}\currentdocument\s!document:\v!start}}
 

@@ -737,6 +737,10 @@
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}
 
+% experiment
+
+\defcsname\??aligncommand\v!always\endcsname{\toksapp\t_spac_align_collected{\bitwiseflip\hyphenationmode\forcecheckhyphenationmodecode}}
+
 \definehspace [\v!final] [\emspaceamount]
 
 \def\spac_align_flush_parfill

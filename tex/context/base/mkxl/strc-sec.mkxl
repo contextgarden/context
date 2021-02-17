@@ -111,26 +111,6 @@
 \mutable\let\currentheadrenderingsetup      \empty
 \mutable\let\currentheadtext                \empty
 
-% The next directive only makes sense when we have sort of garanteed outcome (math is not so
-% nice for instance).
-%
-% \enabledirectives[references.bookmarks.preroll]
-
-\newconditional\c_strc_bookmarks_preroll
-
-\installtexdirective
-  {references.bookmarks.preroll}
-  {\settrue \c_strc_bookmarks_preroll}
-  {\setfalse\c_strc_bookmarks_preroll}
-
-\def\strc_sectioning_autobookmark#1%
-  {\begingroup
- % \settrialtypesetting
-   \the\everypreroll
-   \nodestostring\tempstring{#1}%
-   \glet\currentstructurebookmark\tempstring
-   \endgroup}
-
 % zeros:
 %
 % \setuphead[subsection][criterium=all]
@@ -166,9 +146,9 @@
        \xdef\currentstructurelist         {\structureparameter\c!list}%
        \xdef\currentstructurereferencetext{\structureparameter\c!referencetext}%
      \xmlstopraw
-     \iflocation \ifempty\currentstructurebookmark \ifconditional\c_strc_bookmarks_preroll
-       \strc_sectioning_autobookmark\currentstructuretitle
-     \fi \fi \fi
+     \iflocation \ifempty\currentstructurebookmark
+       \xdef\currentstructurebookmark{\prerolltostring{\currentstructuretitle}}%
+     \fi \fi
      \ifempty\currentstructurelist
        \glet\currentstructurelist\currentstructuretitle
      \fi
@@ -180,9 +160,9 @@
        \xdef\currentstructuremarking      {\structureparameter\c!marking}%
        \xdef\currentstructurelist         {\structureparameter\c!list}%
        \xdef\currentstructurereferencetext{\structureparameter\c!referencetext}%
-       \iflocation \ifempty\currentstructurebookmark \ifconditional\c_strc_bookmarks_preroll
-         \strc_sectioning_autobookmark\currentstructuretitle
-       \fi \fi \fi
+       \iflocation \ifempty\currentstructurebookmark
+        \xdef\currentstructurebookmark{\prerolltostring{\currentstructuretitle}}%
+       \fi \fi
      \else
        \xdef\currentstructuretitle        {\detokenizedstructureparameter\c!title}%
        \xdef\currentstructurebookmark     {\detokenizedstructureparameter\c!bookmark}%
@@ -190,14 +170,7 @@
        \xdef\currentstructurelist         {\detokenizedstructureparameter\c!list}%
        \xdef\currentstructurereferencetext{\detokenizedstructureparameter\c!referencetext}%
        \iflocation \ifempty\currentstructurebookmark
-         \ifconditional\c_strc_bookmarks_preroll
-           \strc_sectioning_autobookmark{\structureparameter\c!title}%
-         \else
-           \begingroup
-           \simplifycommands
-           \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
-           \endgroup
-         \fi
+         \xdef\currentstructurebookmark{\prerolltostring{\structureparameter\c!title}}%
        \fi \fi
      \fi
      \ifempty\currentstructurelist
@@ -205,6 +178,9 @@
      \fi
      \glet\currentstructurecoding\s!tex
    \fi
+   \iflocation \ifempty\currentstructurebookmark \orelse \ifx\currentstructurebookmark\currentstructuretitle \else
+     \showmessage\m!structures3{\currentstructurebookmark}%
+   \fi \fi
    \setnextinternalreference
    \storeinternalreference\currentstructurename{\the\locationcount}%
    \strc_sectioning_set_reference_prefix
