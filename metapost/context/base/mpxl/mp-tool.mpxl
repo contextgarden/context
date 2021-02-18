@@ -1446,7 +1446,8 @@ vardef arrowhead expr p =
 enddef ;
 
 vardef drawarrowpath expr p =
-    save autoarrows ; boolean autoarrows ; autoarrows := true ;
+%     save autoarrows ; boolean autoarrows ; autoarrows := true ;
+    interim autoarrows := true ;
     drawarrow p mfun_opt_pth
 enddef ;
 
@@ -1455,8 +1456,8 @@ def midarrowhead expr p =
 enddef ;
 
 vardef arrowheadonpath (expr p, s) =
-    save autoarrows ; boolean autoarrows ;
-    autoarrows := true ;
+%     save autoarrows ; boolean autoarrows ;
+    interim autoarrows := true ;
     set_ahlength(scaled ahfactor) ; % added
     arrowhead p if s < 1 : cutafter (point (s*arclength(p) + (ahlength/2)) on p) fi
 enddef ;
@@ -1709,8 +1710,10 @@ extra_beginfig := extra_beginfig & " linecap  := rounded ; " ; % restores
 
 %D Normally, arrowheads don't scale well. So we provide a hack.
 
-boolean autoarrows ; autoarrows := false ;  % todo: newinternal boolean autoarrows ;
+% boolean autoarrows ; autoarrows := false ;  % todo: newinternal boolean autoarrows ;
 numeric ahfactor   ; ahfactor   := 2.5 ;    % todo: newinternal         ahfactor ;
+
+newinternal boolean autoarrows ;
 
 permanent ahfactor, ahlength, autoarrows ;
 

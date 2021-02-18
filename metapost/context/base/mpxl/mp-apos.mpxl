@@ -105,6 +105,8 @@ enddef ;
 
 % new interface
 
-newscriptindex mfid_getposboxes ; mfid_getposboxes := scriptindex "getposboxes" ;
+newscriptindex mfid_getposboxes  ; mfid_getposboxes  := scriptindex "getposboxes" ;
+newscriptindex mfid_getmultipars ; mfid_getmultipars := scriptindex "getmultipars" ;
 
-def getposboxes(expr tags, anchor) = runscript mfid_getposboxes tags anchor ; enddef ;
+def getposboxes (expr tags, anchor) = runscript mfid_getposboxes  tags anchor ; enddef ;
+def getmultipars(expr tags, anchor) = runscript mfid_getmultipars tags anchor ; enddef ;

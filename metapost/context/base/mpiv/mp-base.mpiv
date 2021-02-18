@@ -237,11 +237,13 @@ EOF   = char  0 ; % end-of-file for readfrom and write..to
 
 % pen constants
 
-pen pensquare, penrazor, penspeck ;
+pen pensquare, penrazor, penspec ;
 
 pensquare = makepen(unitsquare shifted -(.5,.5)) ;
 penrazor  = makepen((-.5,0) -- (.5,0) -- cycle) ;
-penspeck  = pensquare scaled eps ;
+penspec   = pensquare scaled eps ;
+
+def penspeck = penspec enddef ;
 
 % nullary operators
 

@@ -13,6 +13,8 @@
 
 \writestatus{loading}{MetaPost Library Graphics / Initializations}
 
+\installcorenamespace{graphicvariable}
+
 \registerctxluafile{mlib-fio}{autosuffix}
 \registerctxluafile{mlib-run}{autosuffix}
 \registerctxluafile{mlib-ctx}{autosuffix}

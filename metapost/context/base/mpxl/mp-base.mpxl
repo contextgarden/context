@@ -895,7 +895,7 @@ defaultscale := 1 ;
 labeloffset  := 3bp ;
 dotlabeldiam := 3bp ;
 
-permanent defaultfont, defaultscale, labeloffset, dotlabeldiam ;
+mutable defaultfont, defaultscale, labeloffset, dotlabeldiam ;
 
 vardef thelabel@#(expr s,z) = % Position s near z
     save p ; picture p ;

@@ -24,6 +24,7 @@ local lpegmatch = lpeg.match
 local jobpositions      = job.positions
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
+local settings_to_array = utilities.parsers.settings_to_array
 
 local enableaction      = nodes.tasks.enableaction
 
@@ -33,6 +34,8 @@ local context           = context
 local implement         = interfaces.implement
 
 local getmacro          = tokens.getters.macro
+local scanmpstring      = mp.scan.string
+local mpgnamespace      = getmacro("??graphicvariable")
 
 local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
@@ -56,6 +59,12 @@ local f_pair_i          = formatters["(%r,%r)"] -- rounded
 graphics                = graphics or { }
 local backgrounds       = { }
 graphics.backgrounds    = backgrounds
+
+-- -- -- these can go -- -- --
+
+backgrounds.point = f_point
+backgrounds.pair  = f_pair
+backgrounds.path  = f_path
 
 -- -- --
 
@@ -1183,9 +1192,29 @@ end
 
 backgrounds.fetchmultipar = fetchmultipar
 
-backgrounds.point = f_point
-backgrounds.pair  = f_pair
-backgrounds.path  = f_path
+local function getwhatever(action)
+     local tags   = scanmpstring()
+     local anchor = scanmpstring()
+     local page   = nil
+     if tags == "self" then
+        tags = getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":self",true) -- Isn't it already edef'd?
+     elseif type(tags) == "string" then
+        tags = settings_to_array(tags)
+        for i=1,#tags do
+            tags[i] = getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. tags[i],true) -- Isn't it already edef'd?
+        end
+     end
+     if anchor == "anchor" then
+        anchor = getmacro("MPanchorid") -- brrr
+     end
+     if tags and anchor then
+        return action(tags,anchor,page)
+     end
+end
+
+metapost.registerscript("getmultipars", function()
+    return getwhatever(fetchmultipar)
+end)
 
 -- n anchor page
 
@@ -1198,8 +1227,6 @@ implement {
 -- todo: use inject
 
 do
-
-    local scanstring = mp.scan.string
 
     local f_template_a = formatters[ [[
     path posboxes[], posregions[] ;
@@ -1218,7 +1245,7 @@ do
     local function getposboxes(tags,anchor,page)  -- no caching (yet) / page
         local collected = jobpositions.collected
         if type(tags) == "string" then
-            tags = utilities.parsers.settings_to_array(tags)
+            tags = settings_to_array(tags)
         end
         local list     = { }
         local nofboxes = 0
@@ -1258,32 +1285,8 @@ do
         return f_template_a(nofboxes,list)
     end
 
-    local namespace
-
- -- metapost.registerscript("var", function()
- --     local name = scanstring()
- --     if not namespace then
- --         namespace = getmacro("??graphicvariable")
- --     end
- --     return getmacro(namespace .. getmacro("currentmpvariableclass") .. ":" .. name)
- -- end
-
     metapost.registerscript("getposboxes", function()
-         local tags   = scanstring()
-         local anchor = scanstring()
-         local page   = nil
-         if tags == "self" then
-            if not namespace then
-                namespace = getmacro("??graphicvariable")
-            end
-            tags = getmacro(namespace .. getmacro("currentmpvariableclass") .. ":self")
-         end
-         if anchor == "anchor" then
-            anchor = getmacro("MPanchorid") -- brrr
-         end
-         if tags and anchor then
-            return getposboxes(tags,anchor,page)
-         end
+        return getwhatever(getposboxes)
     end)
 
     implement {
@@ -1294,25 +1297,29 @@ do
 
 end
 
-local doifelse = commands.doifelse
+do
 
-implement {
-    name      = "doifelserangeonpage",
-    arguments = { "string", "string", "integer" },
-    actions   = function(first,last,page)
-        local c = jobpositions.collected
-        local f = c[first]
-        if f then
-            f = f.p
-            if f and f ~= true and page >= f then
-                local l = c[last]
-                if l then
-                    l = l.p
-                    doifelse(l and l ~= true and page <= l)
-                    return
+    local doifelse = commands.doifelse
+
+    implement {
+        name      = "doifelserangeonpage",
+        arguments = { "string", "string", "integer" },
+        actions   = function(first,last,page)
+            local c = jobpositions.collected
+            local f = c[first]
+            if f then
+                f = f.p
+                if f and f ~= true and page >= f then
+                    local l = c[last]
+                    if l then
+                        l = l.p
+                        doifelse(l and l ~= true and page <= l)
+                        return
+                    end
                 end
             end
+            doifelse(false)
         end
-        doifelse(false)
-    end
-}
+    }
+
+end

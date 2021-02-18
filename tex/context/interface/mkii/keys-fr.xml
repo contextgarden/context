@@ -780,6 +780,8 @@
 		<cd:constant name='deepnumbercommand' value='commandeprofondenumero'/>
 		<cd:constant name='deeptextcommand' value='commandeprofondetexte'/>
 		<cd:constant name='default' value='defaut'/>
+		<cd:constant name='defaultheight' value='defaultheight'/>
+		<cd:constant name='defaultwidth' value='defaultwidth'/>
 		<cd:constant name='define' value='define'/>
 		<cd:constant name='delay' value='retard'/>
 		<cd:constant name='depth' value='profondeur'/>
@@ -1124,6 +1126,7 @@
 		<cd:constant name='print' value='imprimer'/>
 		<cd:constant name='printable' value='imprimable'/>
 		<cd:constant name='process' value='traiter'/>
+		<cd:constant name='processors' value='processors'/>
 		<cd:constant name='profile' value='profil'/>
 		<cd:constant name='properties' value='proprietes'/>
 		<cd:constant name='pubsep' value='seppub'/>
@@ -1137,6 +1140,7 @@
 		<cd:constant name='reference' value='reference'/>
 		<cd:constant name='referencemethod' value='methodereference'/>
 		<cd:constant name='referenceprefix' value='prefixereference'/>
+		<cd:constant name='referencetext' value='referencetext'/>
 		<cd:constant name='referencing' value='referencement'/>
 		<cd:constant name='region' value='region'/>
 		<cd:constant name='regionin' value='regiondedans'/>

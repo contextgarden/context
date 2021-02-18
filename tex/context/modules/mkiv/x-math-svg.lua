@@ -35,10 +35,10 @@ local pagedata      = { }
 local statusname    = "x-math-svg-status.lua"
 local pdfname       = "x-math-svg.pdf"
 
-local pdftosvg      = os.which("mudraw")
+local pdftosvg      = os.which("mutool")
 
 local f_make_tex    = formatters[ [[context --global kpse:x-math-svg.mkvi --inputfile="%s" --svgstyle="%s" --batch --noconsole --once --purgeall]] ]
-local f_make_svg    = formatters[ [[mudraw -o "math-%%d.svg" "%s" 1-9999]] ]
+local f_make_svg    = formatters[ [[mutool draw -o "math-%%d.svg" "%s" 1-9999]] ]
 
 ----- f_inline      = formatters[ [[<div class='math-inline' style='vertical-align:%p'></div>]] ]
 local f_inline      = formatters[ [[<div class='math-inline'></div>]] ]
@@ -101,7 +101,7 @@ function svgmath.convert(filename,svgstyle)
         -- invalid filename
         return false, "invalid filename"
     elseif not pdftosvg then
-        return false, "mudraw is not installed"
+        return false, "mutool is not installed"
     end
 
     os.execute(f_make_tex(filename,svgstyle))

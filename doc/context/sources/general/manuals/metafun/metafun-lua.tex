@@ -24,11 +24,17 @@ of a graphic from data but often it makes more sense to do the reverse. I finall
 found time and reason to look into this and in the following sections I will
 describe how it's done.
 
+\blank
+
+{\bi The \LUA\ interface in \MKIV\ is way more limited than in \LMTX\ and new
+features will only show up in \LMTX, simply because the \METAPOST\ library in
+\LUAMETATEX\ is more powerful.}
+
 \stopintro
 
-\startsection[title=Introduction]
-
-\stopsection
+% \startsection[title=Introduction]
+%
+% \stopsection
 
 \startsection[title=The basics]
 
@@ -232,7 +238,7 @@ helper is \type {mp.quoted}, as in:
 
 \startbuffer
 draw
-    textext(lua("mp.quoted('@0.3f'," & decimal n & ")"))
+    textext(lua("mp.quoted('@0.3f'," & decimal 1.234 & ")"))
     withcolor darkred ;
 \stopbuffer
 
@@ -416,73 +422,73 @@ So in the end we can simplify the code that we started with to:
 
 \stopsection
 
-\startsection[title=Access to variables]
-
-The question with such mechanisms is always: how far should we go. Although
-\METAPOST\ is a macro language it has properties of procedural languages. It also
-has more introspective features at the user end. For instance, one can loop over
-the resulting picture and manipulate it. This means that we don't need full
-access to \METAPOST\ internals. However, it makes sense to provide access to
-basic variables: \type {numeric}, \type {string}, and \type {boolean}.
-
-\startbuffer
-draw textext(lua("mp.quoted('@0.15f',mp.get.numeric('pi')-math.pi)"))
-    ysized 1cm
-    withcolor darkred ;
-\stopbuffer
-
-\typebuffer
-
-In double mode you will get zero printed but in scaled mode we definitely get a
-difference:
-
-\startlinecorrection[blank]
-\processMPbuffer
-\stoplinecorrection
-
-\startbuffer
-boolean b ; b := true ;
-draw textext(lua("mp.quoted(mp.get.boolean('b') and 'yes' or 'no')"))
-    ysized 1cm
-    withcolor darkred ;
-\stopbuffer
-
-In the next example we use \type {mp.quoted} to make sure that indeed we pass a
-string. The \type {textext} macro can deal with numbers but an unquoted \type
-{yes} or \type {no} is asking for problems.
-
-\typebuffer
-
-Especially when more text is involved it makes sense to predefine a helper in
-the \type {MP} namespace if only because \METAPOST\ (currently) doesn't like
-newlines in the middle of a string, so a \type {lua} call has to be on one line.
-
-\startlinecorrection[blank]
-\processMPbuffer
-\stoplinecorrection
-
-Here is an example where \LUA\ does something that would be close to impossible,
-especially if more complex text is involved.
-
-% \enabletrackers[metapost.lua]
-
-\startbuffer
-string s ; s := "ΤΕΧ" ; % "τεχ"
-draw textext(lua("mp.quoted(characters.lower(mp.get.string('s')))"))
-    ysized 1cm
-    withcolor darkred ;
-\stopbuffer
-
-\typebuffer
-
-As you can see here, the whole repertoire of helper functions can be used in
-a \METAFUN\ definition.
-
-\startlinecorrection[blank]
-\processMPbuffer
-\stoplinecorrection
-
-\stopsection
+% \startsection[title=Access to variables]
+%
+% The question with such mechanisms is always: how far should we go. Although
+% \METAPOST\ is a macro language it has properties of procedural languages. It also
+% has more introspective features at the user end. For instance, one can loop over
+% the resulting picture and manipulate it. This means that we don't need full
+% access to \METAPOST\ internals. However, it makes sense to provide access to
+% basic variables: \type {numeric}, \type {string}, and \type {boolean}.
+%
+% \startbuffer
+% draw textext(lua("mp.quoted('@0.15f',mp.get.numeric('pi')-math.pi)"))
+%     ysized 1cm
+%     withcolor darkred ;
+% \stopbuffer
+%
+% \typebuffer
+%
+% In double mode you will get zero printed but in scaled mode we definitely get a
+% difference:
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% \startbuffer
+% boolean b ; b := true ;
+% draw textext(lua("mp.quoted(mp.get.boolean('b') and 'yes' or 'no')"))
+%     ysized 1cm
+%     withcolor darkred ;
+% \stopbuffer
+%
+% In the next example we use \type {mp.quoted} to make sure that indeed we pass a
+% string. The \type {textext} macro can deal with numbers but an unquoted \type
+% {yes} or \type {no} is asking for problems.
+%
+% \typebuffer
+%
+% Especially when more text is involved it makes sense to predefine a helper in
+% the \type {MP} namespace if only because \METAPOST\ (currently) doesn't like
+% newlines in the middle of a string, so a \type {lua} call has to be on one line.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% Here is an example where \LUA\ does something that would be close to impossible,
+% especially if more complex text is involved.
+%
+% % \enabletrackers[metapost.lua]
+%
+% \startbuffer
+% string s ; s := "ΤΕΧ" ; % "τεχ"
+% draw textext(lua("mp.quoted(characters.lower(mp.get.string('s')))"))
+%     ysized 1cm
+%     withcolor darkred ;
+% \stopbuffer
+%
+% \typebuffer
+%
+% As you can see here, the whole repertoire of helper functions can be used in
+% a \METAFUN\ definition.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% \stopsection
 
 \startsection[title=The library]
 
@@ -678,53 +684,53 @@ So this gives:
 
 \startlinecorrection[blank] \getbuffer \stoplinecorrection
 
-A variant call is the following: \footnote {Getting that to work properly in the
-library was non||trivial as the loop variable \type {i} is an abstract nameless
-variable at the \METAPOST\ end. When investigating this Luigi Scarso and I found out
-that the internals of \METAPOST\ are not really geared for interfacing this way
-but in the end it worked out well.}
-
-\startbuffer
-\startMPcode
-  for i=1 upto lua("mp.size(MP.myset)") :
-    fill area
-      lua("mp.path(MP.myset[mp.get.numeric('i')])")
-      xysized (HSize,5ExHeight)
-      withcolor basiccolors[i]/2
-      withtransparency (2,.25) ;
-  endfor ;
-\stopMPcode
-\stopbuffer
-
-\typebuffer
-
-The result is the same:
-
-\startlinecorrection[blank] \getbuffer \stoplinecorrection
-
-\startbuffer
-\startluacode
-  MP.mypath = function(i)
-    return mp.path(MP.myset[mp.get.numeric(i)])
-  end
-\stopluacode
-\stopbuffer
-
-\typebuffer \getbuffer
-
-\startbuffer
-\startMPcode
-  for i=1 upto lua("mp.size(MP.myset)") :
-    fill area
-      lua("MP.mypath('i')")
-      xysized (HSize,5ExHeight)
-      withcolor basiccolors[i]/2
-      withtransparency (2,.25) ;
-  endfor ;
-\stopMPcode
-\stopbuffer
-
-\typebuffer
+% A variant call is the following: \footnote {Getting that to work properly in the
+% library was non||trivial as the loop variable \type {i} is an abstract nameless
+% variable at the \METAPOST\ end. When investigating this Luigi Scarso and I found out
+% that the internals of \METAPOST\ are not really geared for interfacing this way
+% but in the end it worked out well.}
+%
+% \startbuffer
+% \startMPcode
+%   for i=1 upto lua("mp.size(MP.myset)") :
+%     fill area
+%       lua("mp.path(MP.myset[mp.get.numeric('i')])")
+%       xysized (HSize,5ExHeight)
+%       withcolor basiccolors[i]/2
+%       withtransparency (2,.25) ;
+%   endfor ;
+% \stopMPcode
+% \stopbuffer
+%
+% \typebuffer
+%
+% The result is the same:
+%
+% \startlinecorrection[blank] \getbuffer \stoplinecorrection
+%
+% \startbuffer
+% \startluacode
+%   MP.mypath = function(i)
+%     return mp.path(MP.myset[mp.get.numeric(i)])
+%   end
+% \stopluacode
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% \startbuffer
+% \startMPcode
+%   for i=1 upto lua("mp.size(MP.myset)") :
+%     fill area
+%       lua("MP.mypath('i')")
+%       xysized (HSize,5ExHeight)
+%       withcolor basiccolors[i]/2
+%       withtransparency (2,.25) ;
+%   endfor ;
+% \stopMPcode
+% \stopbuffer
+%
+% \typebuffer
 
 This snippet of \METAPOST\ code still looks kind of horrible so how can we make
 it look better? Here is an attempt, First we define a bit more \LUA:
@@ -1167,285 +1173,285 @@ the same name defined.
 
 \stopsection
 
-\startsection[title=Large paths]
+% \startsection[title=Large paths]
+%
+% The plugins (like those dealing with text) also use calls in the \type {mp}
+% namespace but they have sort of protected names, starting with \type {mf_}. These
+% are visible but not meant to be used by users. Not only can their name change,
+% their functionality can as well.
+%
+% The following are actually private as they have related macros but also have a
+% public alias:
+%
+% \startlines
+% lua.mp.pathlength(name)
+% lua.mp.pathpoint(i)
+% lua.mp.pathleft(i)
+% lua.mp.pathright(i)
+% lua.mp.pathreset()
+% \stoplines
+%
+% They are meant for special high|-|performance path access, for example:
+%
+% \startlinecorrection
+% \startMPcode
+%     save p, q, r;
+%     path p ; p := for i=1 upto 1000 :
+%         (i,0) -- (i,4 + uniformdeviate 4) --
+%     endfor cycle ;
+%     fill p xysized (TextWidth,20mm) withcolor red ;
+%
+%     path q ; q := for i=1 upto lua.mp.pathlength("p") :
+%         if (i mod 4) == 0 : lua.mp.pathpoint(i) -- fi
+%     endfor cycle ;
+%     fill q xysized (TextWidth,2cm) shifted (0,-45mm) withcolor green ;
+%
+%     path r ; r := for i inpath p :
+%         if not odd (i) : pointof i -- fi
+%     endfor cycle ;
+%     fill r xysized (TextWidth,2cm) shifted (0,-70mm) withcolor blue ;
+% \stopMPcode
+% \stoplinecorrection
+%
+% Because a lookup of a point in \METAPOST\ is a linear lookup over a linked list
+% for very large paths the gain is significant when using \LUA\ because there the
+% points are stored in an indexed table. The left and right points can be used
+% vebose like
+%
+% \starttyping
+% lua.mp.pathpoint(i) controls lua.mp.pathleft(i) and lua.mp.pathright(i)
+% \stoptyping
+%
+% or more terse:
+%
+% \starttyping
+% pointof i controls leftof i and rightof i
+% \stoptyping
+%
+% Beware: this kind of trickery is {\em only} needed when you have very large paths
+% that are to be manipulated and the. Otherwise it's overkill.
+%
+% \stopsection
+%
+% \startsection[title={Interfacing to \TEX}]
+%
+% The next bunch of calls is for accessing \TEX\ registers. You can set their
+% values and get them as well.
+%
+% \starttyping
+% lua.mp.getmacro(k)
+% lua.mp.getdimen(k)
+% lua.mp.getcount(k)
+% lua.mp.gettoks (k)
+%
+% lua.mp.setmacro(k,v)
+% lua.mp.setdimen(k,v)
+% lua.mp.setcount(k,v)
+% lua.mp.settoks (k,v)
+% \stoptyping
+%
+% When you mess around with variables and run into issues it might help to
+% report values on the console. The \type {report} function does this:
+%
+% \starttyping
+% lua.mp.report(a,b)
+% \stoptyping
+%
+% \startlinecorrection
+% \startMPcode
+% lua.mp.report("status","a circle") ;
+% fill fullcircle xyscaled (2cm,1cm) withcolor red ;
+% lua.mp.report("status","its boundingbox [@N,@N,@N,@N]",
+%     xpart llcorner currentpicture, ypart llcorner currentpicture,
+%     xpart urcorner currentpicture, ypart urcorner currentpicture
+% ) ;
+% draw boundingbox currentpicture withcolor blue ;
+% report("status","the size: @Nbp x @Nbp",
+%     bbwidth(currentpicture), bbheight(currentpicture)
+% ) ;
+% message("done") ;
+% \stopMPcode
+% \stoplinecorrection
+%
+% The console shows:
+%
+% \starttyping
+% metapost > status : a circle
+% metapost > status : its boundingbox [-28.34645,-14.17323,28.34645,14.17323]
+% metapost > status : the size: 57.1929bp x 28.84647bp
+% metapost > message : done
+% \stoptyping
+%
+% There are two more getters. These can be used to access the specific graphic
+% related variables set at the \TEX\ end.
+%
+% \starttyping
+% mp.texvar(name)
+% mp.texstr(name)
+% \stoptyping
+%
+% If you have adaptive styles you might want to test for modes.
+%
+% \starttyping
+% if lua.mp.mode("screen") : % or processingmode
+%     % some action only needed for screen documents
+% fi ;
+% if lua.mp.systemmode("first") :
+%     % some action for the first run
+% fi ;
+% \stoptyping
+%
+% For convenience these are wrapped into macros:
+%
+% \starttyping
+% if texmode("screen") :
+%     % some action only needed for screen documents
+% fi ;
+% if systemmode("first") :
+%     % some action for the first run
+% fi ;
+% \stoptyping
+%
+% When you implement your own helpers you can fall back on some auxiliary functions
+% in the \type {mp} namespace. Actually these are collected in \type {mp.aux} and
+% thereby protected from being overwritten by mistake. Here they are:
+%
+% % mp.flush()
+% % mp.size(t)
+%
+% \stopsection
 
-The plugins (like those dealing with text) also use calls in the \type {mp}
-namespace but they have sort of protected names, starting with \type {mf_}. These
-are visible but not meant to be used by users. Not only can their name change,
-their functionality can as well.
-
-The following are actually private as they have related macros but also have a
-public alias:
-
-\startlines
-lua.mp.pathlength(name)
-lua.mp.pathpoint(i)
-lua.mp.pathleft(i)
-lua.mp.pathright(i)
-lua.mp.pathreset()
-\stoplines
-
-They are meant for special high|-|performance path access, for example:
-
-\startlinecorrection
-\startMPcode
-    save p, q, r;
-    path p ; p := for i=1 upto 1000 :
-        (i,0) -- (i,4 + uniformdeviate 4) --
-    endfor cycle ;
-    fill p xysized (TextWidth,20mm) withcolor red ;
-
-    path q ; q := for i=1 upto lua.mp.pathlength("p") :
-        if (i mod 4) == 0 : lua.mp.pathpoint(i) -- fi
-    endfor cycle ;
-    fill q xysized (TextWidth,2cm) shifted (0,-45mm) withcolor green ;
-
-    path r ; r := for i inpath p :
-        if not odd (i) : pointof i -- fi
-    endfor cycle ;
-    fill r xysized (TextWidth,2cm) shifted (0,-70mm) withcolor blue ;
-\stopMPcode
-\stoplinecorrection
-
-Because a lookup of a point in \METAPOST\ is a linear lookup over a linked list
-for very large paths the gain is significant when using \LUA\ because there the
-points are stored in an indexed table. The left and right points can be used
-vebose like
-
-\starttyping
-lua.mp.pathpoint(i) controls lua.mp.pathleft(i) and lua.mp.pathright(i)
-\stoptyping
-
-or more terse:
-
-\starttyping
-pointof i controls leftof i and rightof i
-\stoptyping
-
-Beware: this kind of trickery is {\em only} needed when you have very large paths
-that are to be manipulated and the. Otherwise it's overkill.
-
-\stopsection
-
-\startsection[title={Interfacing to \TEX}]
-
-The next bunch of calls is for accessing \TEX\ registers. You can set their
-values and get them as well.
-
-\starttyping
-lua.mp.getmacro(k)
-lua.mp.getdimen(k)
-lua.mp.getcount(k)
-lua.mp.gettoks (k)
-
-lua.mp.setmacro(k,v)
-lua.mp.setdimen(k,v)
-lua.mp.setcount(k,v)
-lua.mp.settoks (k,v)
-\stoptyping
-
-When you mess around with variables and run into issues it might help to
-report values on the console. The \type {report} function does this:
-
-\starttyping
-lua.mp.report(a,b)
-\stoptyping
-
-\startlinecorrection
-\startMPcode
-lua.mp.report("status","a circle") ;
-fill fullcircle xyscaled (2cm,1cm) withcolor red ;
-lua.mp.report("status","its boundingbox [@N,@N,@N,@N]",
-    xpart llcorner currentpicture, ypart llcorner currentpicture,
-    xpart urcorner currentpicture, ypart urcorner currentpicture
-) ;
-draw boundingbox currentpicture withcolor blue ;
-report("status","the size: @Nbp x @Nbp",
-    bbwidth(currentpicture), bbheight(currentpicture)
-) ;
-message("done") ;
-\stopMPcode
-\stoplinecorrection
-
-The console shows:
-
-\starttyping
-metapost > status : a circle
-metapost > status : its boundingbox [-28.34645,-14.17323,28.34645,14.17323]
-metapost > status : the size: 57.1929bp x 28.84647bp
-metapost > message : done
-\stoptyping
-
-There are two more getters. These can be used to access the specific graphic
-related variables set at the \TEX\ end.
-
-\starttyping
-mp.texvar(name)
-mp.texstr(name)
-\stoptyping
-
-If you have adaptive styles you might want to test for modes.
-
-\starttyping
-if lua.mp.mode("screen") : % or processingmode
-    % some action only needed for screen documents
-fi ;
-if lua.mp.systemmode("first") :
-    % some action for the first run
-fi ;
-\stoptyping
-
-For convenience these are wrapped into macros:
-
-\starttyping
-if texmode("screen") :
-    % some action only needed for screen documents
-fi ;
-if systemmode("first") :
-    % some action for the first run
-fi ;
-\stoptyping
-
-When you implement your own helpers you can fall back on some auxiliary functions
-in the \type {mp} namespace. Actually these are collected in \type {mp.aux} and
-thereby protected from being overwritten by mistake. Here they are:
-
-% mp.flush()
-% mp.size(t)
-
-\stopsection
-
-\startsection[title={Interfacing to \METAPOST}]
-
-There is also experimental access to some of the \METAPOST\ internals. In order
-to deal with (large) paths a few more iterator related helpers are provided too.
-
-% mp.set (numeric string path boolean)
-
-\starttyping
-n = mp.getnumeric(name)
-s = mp.getstring(name)
-b = mp.getboolean(name)
-p = mp.getpath(name)
-\stoptyping
-
-A is path a table of tables that have six values: the coordinates and the
-pre- and postcontrol. You can manipulate this table and feed it back into
-\METAPOST.
-
-\startlinecorrection
-\startMPcode
-numeric n ; n := lua.mp.newhash() ;
-
-for i=1 upto 3 :
-    lua.mp.tohash(n,i) ;
-endfor ;
-
-fill fullcircle scaled 10mm withcolor
-    if lua.mp.inhash(n,3) : green else : red fi ;
-
-fill fullcircle scaled 5mm withcolor
-    if lua.mp.inhash(n,4) : green else : red fi ;
-
-lua.mp.disposehash(n)
-\stopMPcode
-\stoplinecorrection
-
-You can also store values with keys and access them later:
-
-\startlinecorrection
-\startMPcode
-numeric n ; n := lua.mp.newhash() ;
-
-for i=1 upto 3 :
-    lua.mp.tohash(n,i,decimal sqrt(i)) ;
-endfor ;
-
-draw textext(lua.mp.fromhash(n,3))
-    ysized 1cm
-    withcolor blue ;
-
-lua.mp.disposehash(n)
-\stopMPcode
-\stoplinecorrection
-
-You can also name your own hash:
-
-\startlinecorrection
-\startMPcode
-lua.mp.newhash("foo") ;
-
-for i=1 upto 3 :
-    lua.mp.tohash("foo",i,decimal sqrt(i)) ;
-endfor ;
-
-draw textext(lua.mp.fromhash("foo",2))
-    ysized 1cm
-    withcolor green ;
-
-lua.mp.disposehash("foo")
-\stopMPcode
-\stoplinecorrection
-
-Although it might look like \METAPOST\ supports arrays the reality is that it
-doesn't really. There is a concept of suffixes but internally these are just a
-way to compose macros. The following test is one that is used in one of the
-\METAFUN\ modules written by Alan Braslau.
-
-\startlinecorrection
-\startMPcode
-path p, q[] ;
-
-if lua.mp.isarray(str q[1]) :
-    fill fullcircle scaled 1cm withcolor red ;
-    draw textext(lua.mp.prefix(str q[1])) withcolor white;
-else :
-    fill fullsquare scaled 1cm withcolor blue ;
-fi ;
-
-currentpicture := currentpicture shifted (-2cm,0) ;
-
-if lua.mp.isarray(str p) :
-    fill fullcircle scaled 1cm withcolor red ;
-else :
-    fill fullsquare scaled 1cm withcolor blue ;
-fi ;
-\stopMPcode
-\stoplinecorrection
-
-Another helper relates to extensions that \METAFUN\ adds to \METAPOST. When you
-iterate over a picture you can recognize these as objects. The next code shows
-the \LUA\ call as well as the more convenient macro call. So, \type {textext}
-clearly is a foreign object.
-
-\startlinecorrection
-\startMPcode
-picture p ; p := image (
-    fill fullcircle scaled 1cm withcolor red ;
-    draw textext("ok") withcolor white ;
-) ;
-
-for i within p :
-    if not picture i :
-        draw i ysized 4cm ;
-    elseif isobject i :
-        draw i xsized 3cm ;
-    else :
-        draw i ysized 4cm ;
-    fi ;
-endfor ;
-
-currentpicture := currentpicture shifted (-6cm,0) ;
-
-for i within p :
-    if isobject(i) :
-        draw i xsized 5cm ;
-    else :
-        draw i ysized 3cm withcolor blue;
-    fi ;
-endfor ;
-\stopMPcode
-\stoplinecorrection
+% \startsection[title={Interfacing to \METAPOST}]
+%
+% There is also experimental access to some of the \METAPOST\ internals. In order
+% to deal with (large) paths a few more iterator related helpers are provided too.
+%
+% % mp.set (numeric string path boolean)
+%
+% \starttyping
+% n = mp.getnumeric(name)
+% s = mp.getstring(name)
+% b = mp.getboolean(name)
+% p = mp.getpath(name)
+% \stoptyping
+%
+% A is path a table of tables that have six values: the coordinates and the
+% pre- and postcontrol. You can manipulate this table and feed it back into
+% \METAPOST.
+%
+% \startlinecorrection
+% \startMPcode
+% numeric n ; n := lua.mp.newhash() ;
+%
+% for i=1 upto 3 :
+%     lua.mp.tohash(n,i) ;
+% endfor ;
+%
+% fill fullcircle scaled 10mm withcolor
+%     if lua.mp.inhash(n,3) : green else : red fi ;
+%
+% fill fullcircle scaled 5mm withcolor
+%     if lua.mp.inhash(n,4) : green else : red fi ;
+%
+% lua.mp.disposehash(n)
+% \stopMPcode
+% \stoplinecorrection
+%
+% You can also store values with keys and access them later:
+%
+% \startlinecorrection
+% \startMPcode
+% numeric n ; n := lua.mp.newhash() ;
+%
+% for i=1 upto 3 :
+%     lua.mp.tohash(n,i,decimal sqrt(i)) ;
+% endfor ;
+%
+% draw textext(lua.mp.fromhash(n,3))
+%     ysized 1cm
+%     withcolor blue ;
+%
+% lua.mp.disposehash(n)
+% \stopMPcode
+% \stoplinecorrection
+%
+% You can also name your own hash:
+%
+% \startlinecorrection
+% \startMPcode
+% lua.mp.newhash("foo") ;
+%
+% for i=1 upto 3 :
+%     lua.mp.tohash("foo",i,decimal sqrt(i)) ;
+% endfor ;
+%
+% draw textext(lua.mp.fromhash("foo",2))
+%     ysized 1cm
+%     withcolor green ;
+%
+% lua.mp.disposehash("foo")
+% \stopMPcode
+% \stoplinecorrection
+%
+% Although it might look like \METAPOST\ supports arrays the reality is that it
+% doesn't really. There is a concept of suffixes but internally these are just a
+% way to compose macros. The following test is one that is used in one of the
+% \METAFUN\ modules written by Alan Braslau.
+%
+% \startlinecorrection
+% \startMPcode
+% path p, q[] ;
+%
+% if lua.mp.isarray(str q[1]) :
+%     fill fullcircle scaled 1cm withcolor red ;
+%     draw textext(lua.mp.prefix(str q[1])) withcolor white;
+% else :
+%     fill fullsquare scaled 1cm withcolor blue ;
+% fi ;
+%
+% currentpicture := currentpicture shifted (-2cm,0) ;
+%
+% if lua.mp.isarray(str p) :
+%     fill fullcircle scaled 1cm withcolor red ;
+% else :
+%     fill fullsquare scaled 1cm withcolor blue ;
+% fi ;
+% \stopMPcode
+% \stoplinecorrection
+%
+% Another helper relates to extensions that \METAFUN\ adds to \METAPOST. When you
+% iterate over a picture you can recognize these as objects. The next code shows
+% the \LUA\ call as well as the more convenient macro call. So, \type {textext}
+% clearly is a foreign object.
+%
+% \startlinecorrection
+% \startMPcode
+% picture p ; p := image (
+%     fill fullcircle scaled 1cm withcolor red ;
+%     draw textext("ok") withcolor white ;
+% ) ;
+%
+% for i within p :
+%     if not picture i :
+%         draw i ysized 4cm ;
+%     elseif isobject i :
+%         draw i xsized 3cm ;
+%     else :
+%         draw i ysized 4cm ;
+%     fi ;
+% endfor ;
+%
+% currentpicture := currentpicture shifted (-6cm,0) ;
+%
+% for i within p :
+%     if isobject(i) :
+%         draw i xsized 5cm ;
+%     else :
+%         draw i ysized 3cm withcolor blue;
+%     fi ;
+% endfor ;
+% \stopMPcode
+% \stoplinecorrection
 
 % not yet, still experimental:
 %

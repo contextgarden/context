@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% when tested for a while: \MPgetmultipars -> getmultipars
+% when tested for a while: \MPvar          -> mpvar
+
 \writestatus{loading}{ConTeXt Anchoring Macros / Backgrounds}
 
 %D This module is quite okay but at some point I might add methods that use
@@ -595,6 +598,7 @@
 \startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
     \includeMPgraphic{mpos:region:setup} ;
     \includeMPgraphic{mpos:region:extra} ;
+  % \getmultipars("self","anchor") ;
     \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
     \includeMPgraphic{\MPvar{mp}} ;
     \includeMPgraphic{mpos:region:anchor} ;
@@ -666,13 +670,21 @@
    lineoffset=5pt,
    linewidth=1pt]
 
+% \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
+%     getposboxes("self","anchor") ;
+%     if nofposboxes = 1 :
+%         posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
+%         fill posboxes[1] withcolor \MPvar{fillcolor} ;
+%         draw posboxes[1] withpen pencircle scaled \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+%     fi ;
+% \stopMPpositiongraphic
+
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
-    \MPgetposboxes{\MPvar{self}}{\MPanchorid}
-  % getposboxes("self","anchor") ;
+    getposboxes("self","anchor") ;
     if nofposboxes = 1 :
-        posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
-        fill posboxes[1] withcolor \MPvar{fillcolor} ;
-        draw posboxes[1] withpen pencircle scaled \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+        posboxes[1] := (posboxes[1] enlarged mpvar "lineoffset") cornered mpvar "lineoffset" ;
+        fill posboxes[1] withcolor mpvar "fillcolor" ;
+        draw posboxes[1] withpen pencircle scaled mpvar "linewidth"  withcolor mpvar "linecolor"  ;
     fi ;
 \stopMPpositiongraphic
 
@@ -682,12 +694,19 @@
    lineoffset=.25ex,
    linewidth=1pt]
 
+% \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
+%     boxlinewidth  := \MPvar{linewidth} ;
+%     boxlineoffset := \MPvar{lineoffset} ;
+%     def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+%     getposboxes("from,to","anchor") ;
+%     connect_positions ;
+% \stopMPpositiongraphic
+
 \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
-    boxlinewidth  := \MPvar{linewidth} ;
-    boxlineoffset := \MPvar{lineoffset} ;
-    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-    \MPgetposboxes{\MPvar{from},\MPvar{to}}{\MPanchorid}
-  % getposboxes("from,to","anchor") ;
+    boxlinewidth  := mpvar "linewidth" ;
+    boxlineoffset := mpvar "lineoffset" ;
+    def boxlineoptions = withcolor mpvar "linecolor" enddef ;
+    getposboxes("from,to","anchor") ;
     connect_positions ;
 \stopMPpositiongraphic
 

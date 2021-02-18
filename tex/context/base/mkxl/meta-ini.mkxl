@@ -500,7 +500,7 @@
 \let \m_meta_current_variable         \empty
 \let \m_meta_current_variable_template\empty
 
-\installcorenamespace{graphicvariable}
+% \installcorenamespace{graphicvariable} % already set
 
 \def\meta_prepare_variable_default{\MPcolor{black}} % just to be sure we use a color but ...
 

@@ -31,7 +31,7 @@ LUATEXFUNCTIONALITY = status.development_id or 6346
 LUATEXFORMATID      = status.format_id or 0
 JITSUPPORTED        = false
 INITEXMODE          = status.run_state == 0 -- initializing updating production
-CONTEXTLMTXMODE     = 1
+CONTEXTLMTXMODE     = 0
 
 status.ini_version = INITEXMODE -- for a while
 

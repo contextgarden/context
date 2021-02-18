@@ -53,7 +53,8 @@ local bor = bit32.bor -- it's really time to ditch support for luajit
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
-local elapsedtime       = statistics.elapsedtime
+local resettiming       = statistics.resettiming
+local elapsedtiming     = statistics.elapsed
 
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
@@ -250,6 +251,7 @@ end
 
 function mp.lmt_contours_start()
 
+    resettiming("lmt_contours")
     starttiming("lmt_contours")
 
     nofcontours = nofcontours + 1
@@ -546,14 +548,12 @@ end
 
 function mp.lmt_contours_stop()
     local p = getparameterset()
-    local e = stoptiming("lmt_contours")
+    stoptiming("lmt_contours")
     setcache(p)
     p.result = nil
     local f = p["function"]
     local l = p.functions
-    report("index %i, %0.3f seconds for: %s",
-        nofcontours, e, "[ " .. concat(l or { f } ," ] [ ") .. " ]"
-    )
+    report("index %i, %0.3f seconds for: %s", nofcontours, elapsedtiming("lmt_contours"), "[ " .. concat(l or { f } ," ] [ ") .. " ]")
 end
 
 function mp.lmt_contours_bitmap_set()

@@ -25,7 +25,7 @@
 
 \unprotect
 
-\definesystemvariable {sh}  % ShapedText .. todo: commandhandler
+\ifdefined\??sh \else \definesystemvariable {sh}  \fi % ShapedText .. todo: commandhandler
 
 \unexpanded\def\setupshapetexts
   {\dodoubleempty\getparameters[\??sh]}

@@ -2346,3 +2346,25 @@ primarydef p scrutenized n =
 enddef ;
 
 permanent scrutenized ;
+
+% for now here
+
+% newscriptindex mfid_mpv_numeric   ; mfid_mpv_numeric   := scriptindex "mpv_numeric" ;
+% newscriptindex mfid_mpv_dimension ; mfid_mpv_dimension := scriptindex "mpv_dimension" ;
+% newscriptindex mfid_mpv_string    ; mfid_mpv_string    := scriptindex "mpv_string" ;
+%
+% def mpv_numeric   = runscript mfid_mpv_numeric   enddef ;
+% def mpv_dimension = runscript mfid_mpv_dimension enddef ;
+% def mpv_string    = runscript mfid_mpv_string    enddef ;
+%
+% permanent mpv_numeric, mpv_dimension, mpv_string ;
+
+newscriptindex mfid_mpvar ; mfid_mpvar := scriptindex "mpvar" ;
+
+def mpvar = runscript mfid_mpvar enddef ;
+
+permanent mpvar ;
+
+% for old times sake (metafun manual)
+
+vardef textual primary p = false enddef ;

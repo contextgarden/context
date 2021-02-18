@@ -327,9 +327,11 @@ is represented by a lioness. It is still unclear if they have a relationship,
 but if so, and if a cub is born, may it enjoy \METAFUN.}
 \stopbuffer
 
+\pushoverloadmode
 \startquotation
 \def\processwords#1{#1}\getbuffer[lions]
 \stopquotation
+\popoverloadmode
 
 The low level \CONTEXT\ macro \type {\processwords} provides a mechanism to treat
 the individual words of its argument. The macro is called as follows:

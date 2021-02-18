@@ -88,3 +88,17 @@ registerscript("showhashentry", function()
         end
     end
 end)
+
+local getmacro      = tokens.getters.macro
+local mpgnamespace  = getmacro("??graphicvariable")
+
+local scanmpstring  = mp.scan.string
+
+local injectnumeric = mp.inject.numeric
+local injectstring  = mp.inject.string
+
+-- registerscript("mpv_numeric",   function() injectnumeric  (getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. scanmpstring())) end)
+-- registerscript("mpv_dimension", function() return getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. scanmpstring()) end)
+-- registerscript("mpv_string",    function() injectstring   (getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. scanmpstring())) end)
+
+registerscript("mpvar", function() return getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. scanmpstring(), true) end) -- Isn't it already edef'd?

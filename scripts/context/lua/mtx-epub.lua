@@ -497,7 +497,7 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
 
     -- end of todo
 
-    local pdftosvg   = os.which("mudraw") and formatters[ [[mudraw -o "%s" "%s" %s]] ]
+    local pdftosvg   = os.which("mutool") and formatters[ [[mutool draw -o "%s" "%s" %s]] ]
 
     local f_svgpage  = formatters["%s-page-%s.svg"]
     local f_svgname  = formatters["%s.svg"]
@@ -509,7 +509,7 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
     local newfiles   = { }
 
     if not pdftosvg then
-        report("the %a binary is not present","mudraw")
+        report("the %a binary is not present","mutool")
     end
 
     -- a coverpage file has to be in the root of the export tree

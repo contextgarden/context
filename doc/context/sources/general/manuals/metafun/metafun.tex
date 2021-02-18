@@ -28,12 +28,19 @@
 %
 % comment   : This is one of the manuals that can be ordered at http://www.h2o-books.com and
 %             it's actually meant to be read on paper.
+%
+% comment   : Before I started updating the manual to lmtx (luametafun) I made sure that it
+%             processed okay in the february version of lmtx. The runtime for 446 pages is
+%             below 18 seconds and with compact fonts we gain half a second. So we can safely
+%             conclude that we're not worse off wrt performance. (I used the same machine.)
 
-\enabledirectives[hyphenator.optimize]
-\enabledirectives[hyphenator.flatten]
+% \enabledirectives[hyphenator.optimize]
+% \enabledirectives[hyphenator.flatten]
 % \setuphyphenation[method=traditional]
 
 % \enabletrackers[*defin*]
+
+% \enableexperiments[fonts.compact]
 
 % \enablemode[screen]
 \enablemode[print]

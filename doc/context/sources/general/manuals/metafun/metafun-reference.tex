@@ -476,7 +476,7 @@ defineshade cshade withshademethod "circular" ;
 \ShowSampleJ {mm} {pencircle transform} {pencircle}
 \ShowSampleJ {mm} {pensquare transform} {pensquare}
 \ShowSampleJ {mm} {penrazor transform}  {penrazor}
-\ShowSampleK {mm} {penspeck transform}  {penspeck}
+\ShowSampleK {mm} {penspec transform}   {penspec}
 
 \ShowSampleL {mm} {draw}         {fullcircle}
 \ShowSampleL {mm} {fill}         {fullcircle}
@@ -610,7 +610,7 @@ defineshade cshade withshademethod "circular" ;
 
 \ShowSampleS {fm}
   {externalfigure string ...}
-  {draw externalfigure "mycow.pdf" scaled 3cm}
+  {draw externalfigure "mycow.pdf" ysized 3cm}
 
 \ShowSampleT {fm} {addbackground text}
   {addbackground withcolor .625 yellow}
@@ -637,11 +637,11 @@ defineshade cshade withshademethod "circular" ;
 
 \ShowSampleT {mm}
   {withmask string}
-  {draw externalfigure "m-1.png" scaled 2cm withmask "m-2.png"}
+  {draw externalfigure "m-1.png" ysized 2cm withmask "m-2.png"}
   {Scale := 1 ;
-   draw externalfigure "m-2.png" scaled 2cm shifted (-3cm,0) ;
-   draw externalfigure "m-1.png" scaled 2cm shifted (-6cm,0) ;
-   draw externalfigure "m-1.png" scaled 2cm withmask "m-2.png"}
+   draw externalfigure "m-2.png" ysized 2cm shifted (-3cm,0) ;
+   draw externalfigure "m-1.png" ysized 2cm shifted (-6cm,0) ;
+   draw externalfigure "m-1.png" ysized 2cm withmask "m-2.png"}
 
 \stopsection
 

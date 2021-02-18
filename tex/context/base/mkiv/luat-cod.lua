@@ -144,7 +144,7 @@ if LUATEXVERSION == nil then
 end
 
 if CONTEXTLMTXMODE == nil then
-    CONTEXTLMTXMODE = LUATEXENGINE == "luametatex" and 1 or 0
+    CONTEXTLMTXMODE = 0
 end
 
 if LUATEXFUNCTIONALITY == nil then

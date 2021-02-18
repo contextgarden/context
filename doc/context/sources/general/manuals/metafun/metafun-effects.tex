@@ -363,9 +363,9 @@ moment shading is only supported in \PDF. In the following examples, we will use
 the next three colors:
 
 \startbuffer
-\definecolor[a][darkyellow]
-\definecolor[b][s=.8]
-\definecolor[c][darkred]
+\definecolor[mycolora][darkyellow]
+\definecolor[mycolorb][s=.8]
+\definecolor[mycolorc][darkred]
 \stopbuffer
 
 \typebuffer
@@ -386,13 +386,13 @@ First we discuss the old method which is still valid and also available in
 \startuniqueMPgraphic{CircularShade}
   path  p ;
   p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
-  circular_shade(p,0,\MPcolor{a},\MPcolor{b}) ;
+  circular_shade(p,0,\MPcolor{mycolora},\MPcolor{mycolorb}) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{LinearShade}
   path  p ;
   p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
-  linear_shade(p,0,\MPcolor{a},\MPcolor{b});
+  linear_shade(p,0,\MPcolor{mycolora},\MPcolor{mycolorb});
 \stopuniqueMPgraphic
 \stopbuffer
 
@@ -458,7 +458,7 @@ stepping through the color values, we can use the more efficient and generalized
      width := \overlaywidth ;
      height := \overlayheight ;
      path p ; p := unitsquare xscaled width yscaled height ;
-     #2_shade(p,#3,\MPcolor{a},\MPcolor{b}) ;
+     #2_shade(p,#3,\MPcolor{mycolora},\MPcolor{mycolorb}) ;
    \stopuniqueMPgraphic
    \defineoverlay[shade-#1][\uniqueMPgraphic{shade-#1}]%
    \framed[background=shade-#1,width=2cm,height=2cm,frame=off]{}}
@@ -501,7 +501,7 @@ stepping through the color values, we can use the more efficient and generalized
 % \startbuffer
 % path p ; p := fullcircle scaled 1cm ;
 % for i=0 step 2cm until 8cm :
-%   circular_shade(p shifted (i,0),0,\MPcolor{a},\MPcolor{b}) ;
+%   circular_shade(p shifted (i,0),0,\MPcolor{mycolora},\MPcolor{mycolorb}) ;
 % endfor ;
 % \stopbuffer
 %
@@ -518,7 +518,7 @@ stepping through the color values, we can use the more efficient and generalized
 % the center of the shading stays at the first circle.
 %
 % \startbuffer
-% circular_shade(fullcircle scaled 1cm,0,\MPcolor{a},\MPcolor{b}) ;
+% circular_shade(fullcircle scaled 1cm,0,\MPcolor{mycolora},\MPcolor{mycolorb}) ;
 % picture s ; s := currentpicture ; currentpicture := nullpicture ;
 % for i=0 step 2cm until 8cm :
 %   addto currentpicture also s shifted (i,0) ;
@@ -544,7 +544,7 @@ stepping through the color values, we can use the more efficient and generalized
 
 \startbuffer
 sh := define_circular_shade
-  (origin,origin,0,8cm,\MPcolor{a},\MPcolor{b}) ;
+  (origin,origin,0,8cm,\MPcolor{mycolora},\MPcolor{mycolorb}) ;
 for i=0 step 2cm until 8cm :
   fill fullcircle scaled 1cm shifted (i,0) withshade sh ;
 endfor ;
@@ -570,9 +570,9 @@ the shade. The next macro demonstrates the principles in a different way.
 def test_shade (expr a, b, ra, rb) =
   pickup pencircle scaled 1mm ;
 
-  color ca ; ca := \MPcolor{a} ;
-  color cb ; cb := \MPcolor{b} ;
-  color cc ; cc := \MPcolor{c} ;
+  color ca ; ca := \MPcolor{mycolora} ;
+  color cb ; cb := \MPcolor{mycolorb} ;
+  color cc ; cc := \MPcolor{mycolorc} ;
 
   path pa ; pa := fullcircle scaled 2ra shifted a ;
   path pb ; pb := fullcircle scaled 2rb shifted b ;
@@ -640,9 +640,9 @@ test_shade(origin shifted (.25cm,0), origin, .50cm, 1cm) ;
 def test_shade (expr a, b) =
   pickup pencircle scaled 1mm ;
 
-  color ca ; ca := \MPcolor{a} ;
-  color cb ; cb := \MPcolor{b} ;
-  color cc ; cc := \MPcolor{c} ;
+  color ca ; ca := \MPcolor{mycolora} ;
+  color cb ; cb := \MPcolor{mycolorb} ;
+  color cc ; cc := \MPcolor{mycolorc} ;
 
   sh := define_linear_shade(a,b,ca,cb) ;
 

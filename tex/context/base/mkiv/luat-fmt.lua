@@ -297,9 +297,9 @@ function environment.run_format(formatname,scriptname,filename,primaryflags,seco
         luafile        = quoted(scriptname),
         texfile        = filename ~= "" and quoted(filename) or "",
     }
-    statistics.starttiming()
+    statistics.starttiming("make format")
     local result  = runner(specification)
-    local runtime = statistics.stoptiming()
+    statistics.stoptiming("make format")
     if verbose then
         report_format()
       if binarypath and binarypath ~= "" then
@@ -317,7 +317,7 @@ function environment.run_format(formatname,scriptname,filename,primaryflags,seco
       if secondaryflags ~= "" then
         report_format("secondary flags  : %s",secondaryflags)
       end
-        report_format("run time         : %.3f seconds",runtime)
+        report_format("run time         : %0.3f seconds",statistics.elapsed("make format"))
         report_format("return value     : %s",result == 0 and "okay" or "error")
         report_format()
     end
