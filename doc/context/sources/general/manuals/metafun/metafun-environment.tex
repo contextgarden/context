@@ -182,24 +182,50 @@
 
 \defineoverlay[titled][\uniqueMPgraphic{titled}]
 
+% \starttexdefinition unexpanded ChapterCommand #1#2
+%     \ifconditional\headshownumber
+%         \ifdim\leftmarginwidth<\rightmarginwidth
+%           \donetrue
+%         \else
+%           \donefalse
+%         \fi
+%         \hskip-\ifdone\leftmargintotal\else\rightmargintotal\fi
+%         \framed [
+%             background=titled,
+%             frame=off,
+%             offset=0pt
+%         ] {
+%             \hbox to \ifdone\leftmarginwidth\else\rightmarginwidth\fi {
+%                 #1
+%                 \hss
+%             }
+%             \hskip\ifdone\leftmargindistance\else\rightmargindistance\fi
+%             #2
+%         }
+%     \else
+%         \framed [
+%             background=titled,
+%             frame=off,
+%             offset=0pt
+%         ] {
+%             #2
+%         }
+%     \fi
+% \stoptexdefinition
+
 \starttexdefinition unexpanded ChapterCommand #1#2
     \ifconditional\headshownumber
-        \ifdim\leftmarginwidth<\rightmarginwidth
-          \donetrue
-        \else
-          \donefalse
-        \fi
-        \hskip-\ifdone\leftmargintotal\else\rightmargintotal\fi
+        \hskip-\leftmargintotal\relax
         \framed [
             background=titled,
             frame=off,
             offset=0pt
         ] {
-            \hbox to \ifdone\leftmarginwidth\else\rightmarginwidth\fi {
+            \hbox to \leftmarginwidth {
                 #1
                 \hss
             }
-            \hskip\ifdone\leftmargindistance\else\rightmargindistance\fi
+            \hskip\leftmargindistance\relax
             #2
         }
     \else

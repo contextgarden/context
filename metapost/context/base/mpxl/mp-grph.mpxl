@@ -84,6 +84,7 @@ def loadfigure primary filename =
 enddef ;
 
 def mfun_load_figure (expr filename) text figureattributes =
+    mutable beginfig, endfig ;
     begingroup ;
     save figurenumber, figurepicture, number, fixedplace ;
     numeric figurenumber  ; figurenumber := 0 ;
@@ -114,6 +115,7 @@ def mfun_load_figure (expr filename) text figureattributes =
     addto figurepicture also currentpicture figureattributes ;
     currentpicture := figurepicture  ;
     endgroup ;
+    permanent beginfig, endfig ;
 enddef ;
 
 % We only use the new method now.

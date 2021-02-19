@@ -30,23 +30,16 @@
 %             it's actually meant to be read on paper.
 %
 % comment   : Before I started updating the manual to lmtx (luametafun) I made sure that it
-%             processed okay in the february version of lmtx. The runtime for 446 pages is
-%             below 18 seconds and with compact fonts we gain half a second. So we can safely
-%             conclude that we're not worse off wrt performance. (I used the same machine.)
+%             processed okay in the february 2021 version of lmtx. The runtime for 448 pages
+%             (which is 20 more than the previous test) is some 16.5 seconds (just below 16
+%             with compact fonts). So we can safely conclude that we're not worse off with
+%             respect to performance. (I use the same machine.)
 
-% \enabledirectives[hyphenator.optimize]
-% \enabledirectives[hyphenator.flatten]
-% \setuphyphenation[method=traditional]
-
-% \enabletrackers[*defin*]
-
-% \enableexperiments[fonts.compact]
+\enableexperiments[fonts.compact]
 
 % \enablemode[screen]
 \enablemode[print]
 % \enablemode[book]
-
-% \usemodule[luacalls]
 
 % todo: check startintro .. stopintro each chapter
 

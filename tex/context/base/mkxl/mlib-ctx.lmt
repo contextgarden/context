@@ -266,10 +266,10 @@ function metapost.getclippath(specification) -- why not a special instance for t
             result = metapost.filterclippath(result)
         end
         stoptiming(metapost)
-        metapost.pushformat()
+        metapost.popformat()
         return result
     else
-        metapost.pushformat()
+        metapost.popformat()
     end
 end
 

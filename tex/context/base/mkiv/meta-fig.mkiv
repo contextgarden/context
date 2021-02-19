@@ -65,8 +65,8 @@
    \getfiguredimensions[#1]% [\c!object=\v!no] already set
    \startMPcode
      draw externalfigure "#1"
-       xscaled \the\dimexpr\figurewidth \relax\space % must be points
-       yscaled \the\dimexpr\figureheight\relax\space % must be points
+       xsized \the\dimexpr\figurewidth \relax\space % must be points
+       ysized \the\dimexpr\figureheight\relax\space % must be points
        #2 ;
    \stopMPcode
    \egroup}

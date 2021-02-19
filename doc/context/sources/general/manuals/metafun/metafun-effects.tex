@@ -1472,8 +1472,8 @@ graphics in \PNG, \PDF, and \JPG\ format, or more precise: those formats
 supported by \PDFTEX.\pagereference[hacker]
 
 \startbuffer
-draw externalfigure "hacker.png" scaled 5cm shifted (-6cm,0) ;
-draw externalfigure "hacker.png" scaled 5cm slanted .5 ;
+draw externalfigure "hacker.png" xsized 5cm shifted (-6cm,0) ;
+draw externalfigure "hacker.png" xsized 5cm slanted .5 ;
 \stopbuffer
 
 \typebuffer
@@ -1497,7 +1497,7 @@ for i := 1 upto 5 :
   c := .5(s,s) ;                      % center of picture
   d := (2cm*i,.5cm) randomized .5cm ; % displacement
   draw externalfigure "hacker.png"
-    scaled s rotatedaround (c,0 randomized 30) shifted d ;
+    ysized s rotatedaround (c,0 randomized 30) shifted d ;
 endfor ;
 \stopbuffer
 
@@ -1516,7 +1516,7 @@ figure inclusion and shading.
 
 \startbuffer
 picture p ;
-p := externalfigure "hacker.png" scaled 150pt ;
+p := externalfigure "hacker.png" xsized 150pt ;
 clip p to unitcircle scaled 150pt ;
 circular_shade(boundingbox p enlarged 10pt, 0, .2red, .9red) ;
 addto currentpicture also p ;
