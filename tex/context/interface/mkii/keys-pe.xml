@@ -1126,6 +1126,7 @@
 		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='قابل‌چاپ'/>
 		<cd:constant name='process' value='پردازش'/>
+		<cd:constant name='processors' value='processors'/>
 		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='properties' value='properties'/>
 		<cd:constant name='pubsep' value='pubsep'/>

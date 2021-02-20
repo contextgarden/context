@@ -29,14 +29,37 @@ local function defaultcolormodel() -- can be helper
     return (colormethod == 0 or colormethod == 1) and 1 or 3
 end
 
-local t = os.date("*t") -- maybe this should be a very early on global
+do
 
-registerscript("year",   function() return t.year  end)
-registerscript("month",  function() return t.month end)
-registerscript("day",    function() return t.day   end)
-registerscript("hour",   function() return t.hour  end)
-registerscript("minute", function() return t.min   end)
-registerscript("second", function() return t.sec   end)
+    local t = os.date("*t") -- maybe this should be a very early on global
+
+    -- If we want to do a vardef then we first need to catch an endgroup and
+    -- that then fails because we have a variable sitting there, so they need
+    -- to be def's at the mp end.
+
+    local assignment_code = metapost.codes.assignment
+
+    local mpscannext      = mp.scan.next
+    local mpscaninteger   = mp.scan.integer
+
+    local function item(name)
+        local n = mpscannext(true) -- keep
+        if n == assignment_code then
+            mpscannext()
+            t[name] = mpscaninteger()
+        else
+            return t[name]
+        end
+    end
+
+    registerscript("year",   function() return item("year")  end)
+    registerscript("month",  function() return item("month") end)
+    registerscript("day",    function() return item("day")   end)
+    registerscript("hour",   function() return item("hour")  end)
+    registerscript("minute", function() return item("min")   end)
+    registerscript("second", function() return item("sec")   end)
+
+end
 
 registerscript("PaperHeight",          function() return getdimen("paperheight")          * factor end)
 registerscript("PaperWidth",           function() return getdimen("paperwidth")           * factor end)

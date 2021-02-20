@@ -161,7 +161,7 @@ local function pen_characteristics(object)
     local t = pen_info(object)
     rx, ry, sx, sy, tx, ty = t.rx, t.ry, t.sx, t.sy, t.tx, t.ty
     divider = sx*sy - rx*ry
-    return not (sx==1 and rx==0 and ry==0 and sy==1 and tx==0 and ty==0), t.width
+    return not (sx == 1 and rx == 0 and ry == 0 and sy == 1 and tx == 0 and ty == 0), t.width
 end
 
 local function mpconcat(px, py) -- no tx, ty here / we can move this one inline if needed
@@ -193,7 +193,8 @@ local function flushnormalpath(path, t, open)
         pth = path[i]
         if not ith then
             t[nt] = f_m(pth.x_coord,pth.y_coord)
-        elseif curved(ith,pth) then
+--         elseif curved(ith,pth) then
+elseif pth.curved then
             t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
         else
             t[nt] = f_l(pth.x_coord,pth.y_coord)
@@ -203,8 +204,9 @@ local function flushnormalpath(path, t, open)
     if not open then
         nt = nt + 1
         local one = path[1]
-        if curved(pth,one) then
-            t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
+--         if curved(pth,one) then
+if one.curved then
+            t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord)
         else
             t[nt] = f_l(one.x_coord,one.y_coord)
         end
@@ -233,7 +235,8 @@ local function flushconcatpath(path, t, open)
         pth = path[i]
         if not ith then
             t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
-        elseif curved(ith,pth) then
+--         elseif curved(ith,pth) then
+elseif pth.curved then
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
@@ -245,7 +248,8 @@ local function flushconcatpath(path, t, open)
     if not open then
         nt = nt + 1
         local one = path[1]
-        if curved(pth,one) then
+--         if curved(pth,one) then
+if one.curved then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(one.x_coord, one.y_coord))

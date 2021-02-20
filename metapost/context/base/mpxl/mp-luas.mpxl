@@ -223,8 +223,8 @@ newscriptindex mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
 % def utflen = runscript mfid_utflen enddef ;
 % def utfsub = runscript mfid_utfsub enddef ;
 
-vardef utfnum(expr s) = runscript mfid_utfnum s enddef ; % str
-vardef utflen(expr s) = runscript mfid_utflen s enddef ; % str
+vardef utfnum expr s  = runscript mfid_utfnum s enddef ; % str
+vardef utflen expr s  = runscript mfid_utflen s enddef ; % str
 vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional) last
 
 permanent utfnum, utflen, utfsub ;
@@ -265,14 +265,15 @@ permanent getparameters, presetparameters, hasparameter, hasoption, getparameter
     getparametercount, getmaxparametercount, getparameterpath, getparameterpen, getparametertext, % getparameteroption,
     applyparameters, pushparameters, popparameters ;
 
-% This might also be done in stock mkiv:
+% No vardef's because we need to scan for an assignment too and we'll see
+% an endgroup otherwise.
 
-newscriptindex mfid_year   ; mfid_year   := scriptindex "year"   ; vardef year   = runscript mfid_year   enddef ;
-newscriptindex mfid_month  ; mfid_month  := scriptindex "month"  ; vardef month  = runscript mfid_month  enddef ;
-newscriptindex mfid_day    ; mfid_day    := scriptindex "day"    ; vardef day    = runscript mfid_day    enddef ;
-newscriptindex mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = runscript mfid_hour   enddef ;
-newscriptindex mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
-newscriptindex mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;
+newscriptindex mfid_year   ; mfid_year   := scriptindex "year"   ; def year   = runscript mfid_year   enddef ;
+newscriptindex mfid_month  ; mfid_month  := scriptindex "month"  ; def month  = runscript mfid_month  enddef ;
+newscriptindex mfid_day    ; mfid_day    := scriptindex "day"    ; def day    = runscript mfid_day    enddef ;
+newscriptindex mfid_hour   ; mfid_hour   := scriptindex "hour"   ; def hour   = runscript mfid_hour   enddef ;
+newscriptindex mfid_minute ; mfid_minute := scriptindex "minute" ; def minute = runscript mfid_minute enddef ;
+newscriptindex mfid_second ; mfid_second := scriptindex "second" ; def second = runscript mfid_second enddef ;
 
 permanent year, month, day, hour, minute, second ; % overloaded
 

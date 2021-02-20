@@ -393,11 +393,11 @@ vardef lmt_do_arrow =
         save l ; string l ; l := getparameter "location" ;
         save k ; string k ; k := getparameter "kind" ;
         save p ; path   p ; p := getparameter "path" ;
-        save ahvariant ; ahvariant := if a = "dimpled" : 1 elseif a = "curved" : 2 else : 0 fi ;
-        save ahdimple  ; ahdimple  := getparameter "dimple" ;
-        save ahscale   ; ahscale   := getparameter "scale" ;
-        save ahangle   ; ahangle   := getparameter "angle" ;
-        save ahlength  ; ahlength  := getparameter "length" ;
+        interim ahvariant := if a = "dimpled" : 1 elseif a = "curved" : 2 else : 0 fi ;
+        interim ahdimple  := getparameter "dimple" ;
+        interim ahscale   := getparameter "scale" ;
+        interim ahangle   := getparameter "angle" ;
+        interim ahlength  := getparameter "length" ;
         if not getparameter "headonly" :
             draw p ;
         fi ;

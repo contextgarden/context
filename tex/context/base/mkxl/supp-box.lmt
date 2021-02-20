@@ -382,7 +382,7 @@ implement {
     arguments = "integer",
     public    = true,
     actions   = function(n)
-        context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
+        context.verbatim(nodes.toutf(texgetbox(n).list)) -- helper is defined later
     end
 }
 

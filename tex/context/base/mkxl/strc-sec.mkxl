@@ -179,7 +179,8 @@
      \glet\currentstructurecoding\s!tex
    \fi
    \iflocation \ifempty\currentstructurebookmark \orelse \ifx\currentstructurebookmark\currentstructuretitle \else
-     \showmessage\m!structures3{{\currentstructurebookmark}}%
+    %\showmessage\m!structures3{{\currentstructurebookmark}}% comma interference
+     \writestatus{\m!structures}{bookmark:\space\currentstructurebookmark}%
    \fi \fi
    \setnextinternalreference
    \storeinternalreference\currentstructurename{\the\locationcount}%

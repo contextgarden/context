@@ -1,0 +1,89 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-technology
+
+\startchapter[title={Technology}]
+
+The \METAPOST\ library that we use in \LUAMETATEX\ is a follow up on the library
+used in \LUATEX\ which itself is a follow up on the original \METAPOST\ program
+that again was a follow up on Don Knuths \METAFONT, the natural companion to
+\TEX.
+
+When we start with John Hobbies \METAPOST\ we see a graphical engine that
+provides a simple but powerful programming language meant for making graphics,
+not the freehand kind, but the more systematic ones. The output is \POSTSCRIPT\
+but a simple kind that can easily be converted to \PDF. \footnote {For that
+purpose I wrote a converter in the \TEX\ language for \PDFTEX, and even within
+the limitations of \TEX\ at that time (fonts, number of registers, memory) it
+worked out quite well.} It's output is very accurate and performance is great.
+
+As part of the \LUATEX\ development project Taco Hoekwater turned \METAPOST\ into
+\MPLIB, a downward compatible library where \METAPOST\ became a small program
+using that library. But there is more: there are (when enabled) backends that
+produce \PNG\ or \SVG, but when used these also add dependencies on moving
+targets. The library by default uses the so called scaled numbers: floats that
+internally are long integers. But it can also work in doubles, decimal and binary
+and especially the last two create a dependency on libraries. It is good to
+notice that as in the original \METAPOST\ the \POSTSCRIPT\ output handling is
+visible all over the source. Also, the way \TYPEONE\ fonts are handled has been
+extended, for instance by providing access to shapes.
+
+At some point a \LUA\ interface got added that made it possible to call out to
+the \LUA\ instance used in \LUATEX, so the three concepts: \TEX, \METAPOST\ and
+\LUA\ can combine forces. A snippet of code can be run, and a result can be piped
+back. Although there is some limited access to \METAPOST\ internals, the normal
+way to go is by serializing \METAPOST\ data to the \LUA\ end and let \METAPOST\
+scan the result using \type {scantokens}.
+
+The library in \LUAMETATEX\ is a bit different. Of course it has the same core
+graphic engine, but there is no longer a backend. In \CONTEXT\ \MKIV\ the
+\POSTSCRIPT\ (and other) backends were not used anyway because it operates on the
+exported \LUA\ representation of the result. Combined with the \type {prescript}
+and \type {postscript} features introduced in the library that provides all we
+need to make interesting extensions to the graphical engine (color, shading,
+image inclusion, text, etc). The \METAPOST\ font support features are also not
+used because we need support for \OPENTYPE\ and even in \MKII\ (for \PDFTEX\ and
+\XETEX) we used a different approach to fonts.
+
+It is for that reason that the library we use in \LUAMETATEX\ is a leaner version
+of its ancestor. As mentioned, there is no backend code, only the \LUA\ export,
+which saves a lot, and there are no traces of font support left, which also drops
+many lines of code. We forget about the binary number model because it needs a
+large library that also occasionally changes, but one can add it if needed. This
+means that there are no dependencies except for decimal but that library is
+relatively small and doesn't change at all. It also means that the resulting
+\MPLIB\ library is much smaller, but it's still a substantial component in
+\LUAMETATEX. Internally I use the future version number 3. The original
+\METAPOST\ program is version 1, so the library got version 2, and that one
+basically being frozen (it's in bug|-|fix mode) means that it will stick to that.
+
+Another difference is that from the \LUA\ end one has access to several scanners
+and also has possibilities to efficiently push back results to the engine.
+Running scripts can also be done more efficient. This permits a rather efficient
+(in terms of performance and memory usage) way to extend the language and add for
+instance key|/|value based interfaces. There are some more additions, like for
+instance pre- and postscripts to clip, boundary and group objects. Internals can
+be numeric, string and boolean. One can use \UTF\ input although that has also be
+added to the ancestor. Some redundant internal input|/|output remapping has been
+removed and we are more tolerant to newlines in return values from \LUA. Error
+messages have been normalized, internal documentation cleaned up a bit. A few
+anomalies have been fixed too. All in- and output is now under \LUA\ control.
+Etcetera. The (now very few) source files are still \CWEB\ files but the
+conversion to \CCODE\ is done with a \LUA\ script that uses (surprise) the
+\LUAMETATEX\ engine as \LUA\ processor. This give a bit nicer \CCODE\ output for
+when we view it in e.g.\ Visual Studio too (normally the \CWEB\ output is not
+meant to be seen by humans).
+
+Keep in mind that it's still \METAPOST\ with all it provided, but some has to be
+implemented in macros or in \LUA\ via callbacks. The simple fact that the
+original library is the standard and is also the core of \METAPOST\ most of these
+changes and additions cannot be backported to the original, but that is no big
+deal. The advantage is that we can experiment with new features without
+endangering users outside the \CONTEXT\ bubble. The same is true for the \LUA\
+interface, which already is upgraded in many aspects.
+
+\stopchapter
+
+\stopcomponent
