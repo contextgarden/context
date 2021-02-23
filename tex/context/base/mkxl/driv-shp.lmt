@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['driv-shp'] = {
 }
 
 local type, next = type, next
-local round = math.round
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -16,7 +15,11 @@ local concat            = table.concat
 local keys              = table.keys
 local sortedhash        = table.sortedhash
 local splitstring       = string.split
+local find              = string.find
+local stripstring       = string.strip
 local idiv              = number.idiv
+local sequenced         = table.sequenced
+local round             = math.round
 local extract           = bit32.extract
 local nuts              = nodes.nuts
 
@@ -1312,7 +1315,8 @@ do
 
     ----- tonut      = nodes.tonut
     local properties = nodes.properties.data
-    local flush      = texio.write_nl
+    local flush      = texio.write
+    local flushline  = texio.write_nl
 
     local periods    = utilities.strings.newrepeater(".")
 
@@ -1321,12 +1325,22 @@ do
         if p then
             local done = false
             for k, v in sortedhash(p) do
-                if done then
-                    flush("\n")
-                else
-                    done = true
+                local t = type(v)
+--                 if done then
+--                     flushline("\n")
+--                 else
+--                     done = true
+--                 end
+                if t == "string" then
+                    if find(v,"[\n\r]") then
+                        v =  "\n" .. stripstring(v) .. "\n"
+                    end
+                elseif t == "table" then
+                    v = sequenced(v)
+                elseif t ~= "number" and t ~= "boolean" then
+                    v = "<" .. tostring(v) .. ">"
                 end
-                flush(periods[l+1] .. " " .. k .. " = " .. tostring(v))
+                flushline(periods[l+1] .. " " .. k .. " = " .. v)
             end
         end
     end
@@ -1338,7 +1352,7 @@ do
 
     callback.register("show_whatsit",function(n,l)
         local s = nodes.whatsitcodes[n.subtype]
-        texio.write(" [" .. s .. "]")
+        flush(" [" .. s .. "]")
         local w = whatsittracers[s]
         if w then
             w(n,l)

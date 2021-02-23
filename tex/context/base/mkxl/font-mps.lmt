@@ -280,7 +280,7 @@ local s_nothing        = "(origin scaled 10)"
 local sc               = 10
 local fc               = number.dimenfactors.bp
 
-function metapost.glyph(kind,font,char,advance,shift,ex)
+local function glyph(kind,font,char,advance,shift,ex)
     local character = characters[font][char]
     if character then
         local index = character.index
@@ -312,6 +312,8 @@ function metapost.glyph(kind,font,char,advance,shift,ex)
     end
 end
 
+metapost.glyph = glyph
+
 local kind   = ""
 local buffer = { }
 local b      = 0
@@ -323,7 +325,7 @@ end
 
 local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
     local char, font = isglyph(current)
-    local code = metapost.glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current))
+    local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current))
     if code then
         b = b + 1
         buffer[b] = code
@@ -333,7 +335,7 @@ end
 local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
     if subtype == normalrule_code then
         b = b + 1
-        buffer[b] = f_rule("f",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+        buffer[b] = f_rule(kind,pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
     elseif subtype == outlinerule_code then
         b = b + 1
         buffer[b] = f_rule("d",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
@@ -350,11 +352,11 @@ local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
 end
 
 local function flushsimplerule(pos_h, pos_v, pos_r, size_h, size_v)
-    flush_rule(false,pos_h,pos_v,pos_r,size_h,size_v,normalrule_code)
+    flushrule(false,pos_h,pos_v,pos_r,size_h,size_v,normalrule_code)
 end
 
 local function flushspecialrule(pos_h, pos_v, pos_r, w, h, d, l, outline)
-    flush_rule(false,pos_h,pos_v-d,pos_r,w,h+d,outline and outlinerule_code or normalrule_code)
+    flushrule(false,pos_h,pos_v-d,pos_r,w,h+d,outline and outlinerule_code or normalrule_code)
 end
 
 -- installer
@@ -373,6 +375,7 @@ drivers.install {
             local ury = bb[4] * fc
             b = b + 1
             buffer[b] = f_bounds(llx,lly,urx,ury)
+         -- inspect(buffer)
         end,
     },
     flushers = {

@@ -2222,10 +2222,10 @@ The \type {simple} option disables all. The simple results are shown in
 
 When you use this feature you need to be aware of the fact that fonts can have
 features, for instance ligatures and kerns between characters. In \in {figure}
-[fig:outlines:features] we see a few examples with and without features, one with
-Pagella (the Zapf quote) and one with Optima Nova (the Tufte quote).
+[fig:outlines:features] we see a few examples, one with Pagella (the Zapf quote)
+and one with Dejavu (the Tufte quote).
 
-\startplacefigure[reference=fig:outlines:features,title={Pagela (\OPENTYPE) and Optima Nova (\TYPEONE)}]
+\startplacefigure[reference=fig:outlines:features,title={Pagela and Dejavu}]
     \startcombination[1*4]
         \bgroup
             \def|#1|{-}%
@@ -2249,24 +2249,24 @@ Pagella (the Zapf quote) and one with Optima Nova (the Tufte quote).
         \egroup {pagella / default features}
         \bgroup
             \def|#1|{-}%
-            \definedfont[lt55476.afm*none]% optima nova
+            \definedfont[dejavuserif.ttf*none]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{tufte}}")
                     (withcolor .375white)
                     (withcolor .625green withpen pencircle scaled 1/10) ;
             \stopMPcode
-        \egroup {optima nova / no features}
+        \egroup {dejavu serif / no features}
         \bgroup
             \def|#1|{-}%
-            \definedfont[lt55476.afm*default]% optima nova
+            \definedfont[dejavuserif.ttf*default]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{tufte}}")
                     (withcolor .375white)
                     (withcolor .625yellow withpen pencircle scaled 1/10) ;
             \stopMPcode
-        \egroup {optima nova / default features}
+        \egroup {dejavu serif / default features}
     \stopcombination
 \stopplacefigure
 
@@ -2286,6 +2286,125 @@ like:
 \startlinecorrection
     \processMPbuffer
 \stoplinecorrection
+
+The next example needs the \type {hanbatang-lvt.ttf} font so when you process this
+you might want to install that first. In \MKIV\ and \LMTX\ you can put that font
+in \typ {<texroot>/texmf-fonts/data/hanbantang} or a similar path.
+
+We start by defining the font:
+
+% \definefontfeature
+%   [korean-base]
+%   [goodies=hanbatanglvt,
+%    colorscheme=default,
+%    mode=node,
+%    script=hang,
+%    language=kor]
+
+\startbuffer
+\definefontfeature
+  [korean-base]
+  [goodies=hanbatanglvt,
+   colorscheme=default,
+   mode=node,
+   script=hang,
+   language=kor]
+
+\definefont[KoreanFont][hanbatanglvt*korean-base]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Next we define a macro that will draw the outline:
+
+\startbuffer
+\startMPdefinitions
+  string KoreanColors[] ;
+
+  KoreanColors[1] := "darkred" ;
+  KoreanColors[2] := "darkgreen" ;
+  KoreanColors[3] := "darkblue" ;
+  KoreanColors[4] := "darkyellow" ;
+  KoreanColors[5] := "darkgray" ;
+
+  newinternal KoreanSplit ; KoreanSplit := -1 ;
+  newinternal KoreanCode  ; KoreanCode  := -2 ;
+  newinternal KoreanMode  ; KoreanMode  := KoreanSplit ;
+
+  def KoreanOutline(expr txt) =
+    picture p ; p := outlinetext.p(txt) ;
+    numeric n ; n := 0 ;
+    string old, new ; old := "" ;
+    for i within p :
+      if KoreanMode == KoreanSplit :
+        n := n + 1 ;
+      elseif KoreanMode == KoreanCode :
+        new := prescriptpart i ;
+        if new <> old :
+            old := new ;
+            n := n + 1 ;
+        fi ;
+      else :
+        n := KoreanMode ;
+      fi ;
+      if unknown KoreanColors[n] :
+        n := 1 ;
+      fi ;
+      draw pathpart i
+        withpen pencircle scaled 1/10
+        withcolor KoreanColors[n] ;
+    endfor ;
+  enddef ;
+
+  def KoreanTest(expr txt) =
+    image (
+        KoreanMode  := KoreanSplit ; KoreanOutline(txt) ;
+        currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
+        KoreanMode  := KoreanCode ; KoreanOutline(txt) ;
+        currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
+        KoreanMode  := 3 ; KoreanOutline(txt) ;
+    )
+  enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+Because we want to reuse this definition, we define it for all what comes:
+
+\typebuffer \getbuffer
+
+% entered as three characters: ᄅ  ᅡ  ᆺ (mail collapses)
+%
+% \startMPcode KoreanTest("\KoreanFont 랏") ; \stopMPcode
+
+\startbuffer
+\startcombination[3*2]
+    {\startMPcode draw KoreanTest("\KoreanFont 랏") ysized 15mm ; \stopMPcode} {}
+    {\startMPcode draw KoreanTest("\KoreanFont 논") ysized 15mm ; \stopMPcode} {}
+    {\startMPcode draw KoreanTest("\KoreanFont 왕") ysized 15mm ; \stopMPcode} {}
+    {\startMPcode draw KoreanTest("\KoreanFont 닭") ysized 15mm ; \stopMPcode} {}
+    {\startMPcode draw KoreanTest("\KoreanFont 박") ysized 15mm ; \stopMPcode} {}
+    {\startMPcode draw KoreanTest("\KoreanFont 서") ysized 15mm ; \stopMPcode} {}
+\stopcombination
+\stopbuffer
+
+We use this macro in the following example. The results can be seen in \in
+{figure} [koreanoutlines]. There is one drawback of this example: It contributes
+a lot to the runtime: about 2.5~seconds to a 16~second run without this example.
+\footnote {This is partly due to an enforced intermediate garbage collection
+step.} The font itself loads fast but the outlines take their time because a few
+hundred megabytes of \LUA\ tables are involved. Instead you can define the
+feature to use \typ {goodies=hanbatanglvt} and \typ {colorscheme=default} and
+play with that.
+
+\typebuffer
+
+\startplacefigure[title=Some Korean magic,reference=koreanoutlines]
+    \doifelsemode{optional} {
+        \getbuffer
+    } {
+        \framed{A large optional example is not shown here!}
+    }
+\stopplacefigure
 
 \stopsection
 

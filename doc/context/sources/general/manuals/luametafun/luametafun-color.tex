@@ -1,0 +1,138 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-color
+
+\startchapter[title={Color}]
+
+There are by now plenty of examples made by users that use color and \METAFUN\
+provides all kind of helpers. So do we need more? When I play around with things
+or when users come with questions that then result in a nice looking graphic, the
+result might en dup as example of coding. The following is an example of showing
+of colors. We have a helper that goes from a so called lab specification to rgb
+and it does that via xyz transformations. It makes no real sense to interface
+this beyond this converter. We use this opportunity to demonstrate how to make
+an interface.
+
+\startbuffer
+\startMPdefinitions
+  vardef cielabmatrix(expr l, mina, maxa, minb, maxb, stp) =
+    image (
+      for a = mina step stp until maxa :
+        for b = minb step stp until maxb :
+          draw (a,b) withcolor labtorgb(l,a,b) ;
+        endfor ;
+      endfor ;
+    )
+  enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+Here we define a macro that makes a color matrix. It can be used as follows
+
+\startbuffer
+\startcombination[nx=4,ny=1]
+  {\startMPcode draw cielabmatrix(20, -100, 100, -100, 100, 5) ysized 35mm withpen pencircle scaled 2.5 ; \stopMPcode} {\type {l = 20}}
+  {\startMPcode draw cielabmatrix(40, -100, 100, -100, 100, 5) ysized 35mm withpen pencircle scaled 2.5 ; \stopMPcode} {\type {l = 40}}
+  {\startMPcode draw cielabmatrix(60, -100, 100, -100, 100, 5) ysized 35mm withpen pencircle scaled 2.5 ; \stopMPcode} {\type {l = 60}}
+  {\startMPcode draw cielabmatrix(80, -100, 100, -100, 100, 5) ysized 35mm withpen pencircle scaled 2.5 ; \stopMPcode} {\type {l = 80}}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+One can of course mess around a bit:
+
+\startbuffer
+\startcombination[nx=4,ny=1]
+  {\startMPcode draw cielabmatrix(20, -100, 100, -100, 100, 10) ysized 35mm randomized 1 withpen pensquare scaled 4 ; \stopMPcode} {\type {l = 20}}
+  {\startMPcode draw cielabmatrix(40, -100, 100, -100, 100, 10) ysized 35mm randomized 1 withpen pensquare scaled 4 ; \stopMPcode} {\type {l = 40}}
+  {\startMPcode draw cielabmatrix(60, -100, 100, -100, 100, 10) ysized 35mm randomized 1 withpen pensquare scaled 4 ; \stopMPcode} {\type {l = 60}}
+  {\startMPcode draw cielabmatrix(80, -100, 100, -100, 100, 10) ysized 35mm randomized 1 withpen pensquare scaled 4 ; \stopMPcode} {\type {l = 80}}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Normally, when you don't go beyond this kind of usage, a simple macro like the
+above will do. But when you want to make something that is upward compatible
+(which is one of the principles behind the \CONTEXT\ user interface(s), you can
+do this:
+
+\startbuffer
+\startcombination[nx=4,ny=1]
+    {\startMPcode draw lmt_labtorgb [ l = 20, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 20}}
+    {\startMPcode draw lmt_labtorgb [ l = 40, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 40}}
+    {\startMPcode draw lmt_labtorgb [ l = 60, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 60}}
+    {\startMPcode draw lmt_labtorgb [ l = 80, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 80}}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+This is a predefined macro in the reserved \type {lmt_} namespace (don't use that
+one yourself, create your own). First we preset the possible parameters:
+
+\starttyping[option=MP]
+presetparameters "labtorgb" [
+  mina = -100,
+  maxa =  100,
+  minb = -100,
+  maxb =  100,
+  step =    5,
+  l    =   50,
+] ;
+\stoptyping
+
+Next we define the main interface macro:
+
+\starttyping[option=MP]
+def lmt_labtorgb = applyparameters "labtorgb" "lmt_do_labtorgb" enddef ;
+\stoptyping
+
+Last we do the actual implementation, which looks a lot like the one we
+started with:
+
+\starttyping[option=MP]
+vardef lmt_do_labtorgb =
+  image (
+    pushparameters "labtorgb" ;
+      save l ; l := getparameter "l" ;
+      for a = getparameter "mina" step getparameter "step"
+            until getparameter "maxa" :
+        for b = getparameter "minb" step getparameter "step"
+            until getparameter "maxb" :
+          draw (a,b) withcolor labtorgb(l,a,b) ;
+        endfor ;
+      endfor ;
+    popparameters ;
+  )
+enddef ;
+\stoptyping
+
+Of course we can now add all kind of extra features but this is what we currently
+have. Maybe this doesn't belong in the \METAFUN\ core but it's not that much code
+and a nice demo. After all, there is much in there that is seldom used.
+
+\stopchapter
+
+\stopcomponent
+
+

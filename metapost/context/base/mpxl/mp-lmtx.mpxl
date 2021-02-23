@@ -2368,3 +2368,36 @@ permanent mpvar ;
 % for old times sake (metafun manual)
 
 vardef textual primary p = false enddef ;
+
+% also for the menafun manual:
+
+newscriptindex mfid_labtorgb ; mfid_labtorgb := scriptindex "labtorgb" ;
+
+def labtorgb(expr l,a,b) = runscript mfid_labtorgb l a b enddef ;
+
+permanent labtorgb ;
+
+presetparameters "labtorgb" [
+    mina = -100,
+    maxa =  100,
+    minb = -100,
+    maxb =  100,
+    step =    5,
+    l    =   50,
+] ;
+
+def lmt_labtorgb = applyparameters "labtorgb" "lmt_do_labtorgb" enddef ;
+
+vardef lmt_do_labtorgb =
+    image (
+        pushparameters "labtorgb" ;
+            save l ; l := getparameter "l" ;
+            for a = getparameter "mina" step getparameter "step" until getparameter "maxa" :
+                for b = getparameter "minb" step getparameter "step" until getparameter "maxb" :
+                  % draw (a,b) withcolor labtorgb(l,a,b) ;
+                    draw (a,b) withcolor runscript mfid_labtorgb l a b ;
+                endfor ;
+            endfor ;
+        popparameters ;
+    )
+enddef ;

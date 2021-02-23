@@ -82,13 +82,21 @@ local function findmpfile(name,ftype)
     return nil
 end
 
-finders.file = function(specification,name,mode,ftype)
-    return findmpfile(name,ftype)
+local function finder(name,mode,kind)
+    if mode == "r" then
+        return findmpfile(name,kind)
+    elseif file.is_writable(name) then
+        return name
+    else
+        return nil
+    end
 end
 
-local function finder(name,mode,kind)
-    return findmpfile(name,kind)
+finders.file = function(specification,name,mode,ftype)
+ -- finder(name,mode,kind)
+    return finder(name,mode,ftype)
 end
+
 
 local findtexfile = resolvers.findtexfile
 local opentexfile = resolvers.opentexfile
@@ -182,6 +190,7 @@ local function fileopener()
          -- report_metapost("opening terminal")
             return terminal
         elseif mode == "w" then
+            -- we need an extra check here for permissions
             local f = io.open(name,"wb")
             if f then
              -- report_metapost("opening file %a for writing",full)

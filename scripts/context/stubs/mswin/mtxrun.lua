@@ -21423,7 +21423,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16099, stripped down to: 11379
+-- original size: 16409, stripped down to: 11591
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -21673,7 +21673,10 @@ caches.getwritablepath=getwritablepath
 caches.setfirstwritablefile=setfirstwritablefile
 caches.getfirstreadablefile=getfirstreadablefile
 caches.setluanames=setluanames
+local checkmemory=utilities and utilities.lua and utilities.lua.checkmemory
+local threshold=100 
 function caches.loaddata(readables,name,writable)
+ local used=checkmemory and checkmemory()
  if type(readables)=="string" then
   readables={ readables }
  end
@@ -21700,7 +21703,11 @@ function caches.loaddata(readables,name,writable)
   end
   if loader then
    loader=loader()
-   collectgarbage("step")
+   if checkmemory then
+    checkmemory(used,threshold)
+   else 
+    collectgarbage("step") 
+   end
    return loader
   end
  end
@@ -23799,7 +23806,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-fil"] = package.loaded["data-fil"] or true
 
--- original size: 4365, stripped down to: 3588
+-- original size: 4365, stripped down to: 3452
 
 if not modules then modules={} end modules ['data-fil']={
  version=1.001,
@@ -23819,7 +23826,6 @@ local scanfiles=resolvers.scanfiles
 local registerfilehash=resolvers.registerfilehash
 local appendhash=resolvers.appendhash
 local loadcachecontent=caches.loadcontent
-local checkgarbage=utilities.garbagecollector and utilities.garbagecollector.check
 function resolvers.locators.file(specification)
  local filename=specification.filename
  local realname=resolveprefix(filename) 
@@ -23909,10 +23915,7 @@ function loaders.file(specification,filetype)
    if trace_locating then
     report_files("file loader: %a loaded",filename)
    end
-   local s=f:read("*a") 
-   if checkgarbage then
-    checkgarbage(#s)
-   end
+   local s=f:read("*a")
    f:close()
    if s then
     return true,s,#s
@@ -25776,8 +25779,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1023710
--- stripped bytes    : 404796
+-- original bytes    : 1024020
+-- stripped bytes    : 405030
 
 -- end library merge
 

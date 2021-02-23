@@ -20,6 +20,7 @@ local scannumeric    = scan.numeric
 local scanpath       = scan.path
 
 local injectpath     = mp.inject.path
+local injectcolor    = mp.inject.color
 
 local getparameter   = metapost.getparameter
 local registerscript = metapost.registerscript
@@ -188,3 +189,11 @@ registerscript("scrutenized", function()
   -- injectpath(t)
 end)
 
+-- A goodie, mostly a side effect of updating the metafun manual.
+
+
+local labtorgb = attributes.colors.labtorgb
+
+registerscript("labtorgb", function()
+    injectcolor(labtorgb(scannumeric(),scannumeric(),scannumeric()))
+end)

@@ -333,7 +333,7 @@ nodes (in this case 121049).</p>
 
 <p>The following code is kind of experimental. In the documents
 that describe the development of <l n='luatex'/> we report
-on speed tests. One observation is thta it sometimes helps to
+on speed tests. One observation is that it sometimes helps to
 restart the collector. Okay, experimental code has been removed,
 because messing aroudn with the gc is too unpredictable.</p>
 --ldx]]--
@@ -346,6 +346,8 @@ local garbagecollector     = utilities.garbagecollector
 
 garbagecollector.enabled   = false -- could become a directive
 garbagecollector.criterium = 4*1024*1024
+
+-- garbagecollector.enabled   = true
 
 -- Lua allocates up to 12 times the amount of memory needed for
 -- handling a string, and for large binary chunks (like chinese otf

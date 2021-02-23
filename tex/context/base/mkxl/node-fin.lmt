@@ -199,6 +199,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
             local outer
             if subtype == container_code then
                 check = true
+current = 0
             end
             if getorientation(stack) then
                 outer = getattr(stack,attribute)
@@ -315,6 +316,7 @@ local function simple(attribute,head)
         elseif id == hlist_code or id == vlist_code then
             if subtype == container_code then
                 check = true
+current = 0
             end
             if getorientation(stack) then
                 local outer = getattr(stack,attribute)
@@ -394,6 +396,7 @@ end
 --             -- tricky checking
 --             if subtype == container_code then
 --                 check = true
+-- current = 0
 --             end
 --             local outer
 --             if getorientation(stack) then
@@ -519,6 +522,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
             -- tricky checking
             if subtype == container_code then
                 check = true
+current = 0
             end
             local outer, s
             if getorientation(stack) then
@@ -658,6 +662,7 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                 local list
                 if subtype == container_code then
                     check = true
+current = 0
                 end
                 if nslistwise then
                     local a = getattr(stack,attribute)
@@ -749,6 +754,7 @@ end
 --                 local list
 --                 if subtype == container_code then
 --                     check = true
+-- current = 0
 --                 end
 --                 if nslistwise then
 --                     local a = getattr(current,attribute)
@@ -843,6 +849,7 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
             local list
             if subtype == container_code then
                 check = true
+-- attrib = default or unsetvalue -- or just umsetvalue
             end
             if nslistwise then
                 local a = getattr(current,attribute)

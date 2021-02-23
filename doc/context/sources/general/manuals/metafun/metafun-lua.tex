@@ -1173,8 +1173,47 @@ the same name defined.
 
 \stopsection
 
-% \startsection[title=Large paths]
-%
+\startsection[title=Accessing paths]
+
+A path in \METAPOST\ is internally a linked list of knots and each knot has a
+coordinate and two control points. Access to specific points of very large path
+can be somewhat slow. First of all, the lookup start at the beginning and when
+you use fractions (say halfway between point 4 and 5) the engine has to find the
+spot. For this (and other reasons not mentioned here) we have a way to access
+paths different, using \LUA\ behind the scenes.
+
+\startbuffer
+path p ; p := fullcircle xysized (4cm,2cm) ;
+for i inpath p:
+    drawdot  leftof i withpen pencircle scaled 2mm withcolor darkred ;
+    drawdot pointof i withpen pencircle scaled 3mm withcolor darkgreen ;
+    drawdot rightof i withpen pencircle scaled 2mm withcolor darkblue ;
+endfor ;
+draw for i inpath p:
+    pointof i .. controls (leftof i) and (rightof i) ..
+endfor cycle withpen pencircle scaled .5mm withcolor white ;
+
+p := p shifted (5cm,0) ;
+draw for i inpath p:
+    pointof i --
+endfor cycle withpen pencircle scaled .5mm withcolor .5white ;
+for i inpath p:
+    drawdot pointof i withpen pencircle scaled 3mm withcolor darkgreen ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+Here we access the main coordinate and the two control points. The last draw is of course
+just mimicking drawing the path.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+
+\stopsection
+
 % The plugins (like those dealing with text) also use calls in the \type {mp}
 % namespace but they have sort of protected names, starting with \type {mf_}. These
 % are visible but not meant to be used by users. Not only can their name change,

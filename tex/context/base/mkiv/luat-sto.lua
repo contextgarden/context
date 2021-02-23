@@ -94,22 +94,6 @@ if environment.initex then
 
 end
 
--- to be tested with otf caching:
-
-function lua.collectgarbage(threshold)
-    local current = collectgarbage("count")
-    local threshold = threshold or 256 * 1024
-    while true do
-        collectgarbage("collect")
-        local previous = collectgarbage("count")
-        if current - previous < threshold then
-            break
-        else
-            current = previous
-        end
-    end
-end
-
 statistics.register("stored bytecode data", function()
     local nofbytecodes = CONTEXTLMTXMODE > 0 and status.luastate.bytecodes or status.luabytecodes
     local nofmodules   = (storage.nofmodules > 0 and storage.nofmodules) or (nofbytecodes - lua.firstbytecode - 1)

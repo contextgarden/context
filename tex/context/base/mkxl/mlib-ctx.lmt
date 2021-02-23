@@ -233,17 +233,6 @@ implement {
     arguments = { "integer", "integer", "integer", "integer" }
 }
 
-implement {
-    name      = "mpflushreset",
-    actions   = function() metapost.flushreset() end -- not yet implemented
-}
-
-implement {
-    name      = "mpflushliteral",
-    actions   = function(str) metapost.flushliteral(str) end, -- not yet implemented
-    arguments = "string",
-}
-
 -- this has to become a codeinjection
 
 function metapost.getclippath(specification) -- why not a special instance for this

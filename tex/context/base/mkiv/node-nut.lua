@@ -200,7 +200,6 @@ nuts.unset_attribute         = direct.unset_attribute
 nuts.usedlist                = direct.usedlist
 nuts.uses_font               = direct.uses_font
 nuts.vpack                   = direct.vpack
-nuts.writable_spec           = direct.writable_spec
 nuts.write                   = direct.write
 nuts.mlist_to_hlist          = direct.mlist_to_hlist
 nuts.has_dimensions          = direct.has_dimensions

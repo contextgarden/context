@@ -130,115 +130,14 @@ local sentinel  = spaces * (nohash^1 / "\\%0")
 local sargument = (single * digit)^1
 local dargument = (double * digit)^1
 
--- first variant:
---
--- local texpreamble = nil
--- local usespaces   = nil
---
--- local pattern = Cs( -- ^-1
---     ( P("spaces") / function() usespaces = true return "" end )^0
---   * spaces
---   * ( P("nospaces") / function() usespaces = false return "" end )^0
---   * spaces
---   * ( P("global") / "\\global" )^0
---   * spaces
---   * ( P("unexpanded") / "\\unexpanded" )^0
---   * spaces
---   * Cc("\\expandafter\\")
---   * spaces
---   * ( P("expanded") / "e" )^0
---   * spaces
---   * ( P((1-S(" #"))^1) / "def\\csname %0\\endcsname" )
---   * spaces
---   * (
---    --   (double * digit)^1 * sentinel^-1 * double^-1
---    -- + (single * digit)^1 * sentinel^-1 * single^-1
---         ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
---       + ( P("[") * sargument * P("]") + sargument)^1 * sentinel^-1 * single^-1
---       + sentinel^-1 * (double+single)^-1
---     )
--- )
---
--- local ctx_dostarttexdefinition = context.dostarttexdefinition
---
--- local function texdefinition_one(str)
---     usespaces   = nil
---     texpreamble = lpegmatch(pattern,str)
---     if usespaces == true then
---         setcatcode(32,10) -- space
---         setcatcode(13, 5) -- endofline
---     elseif usespaces == false then
---         setcatcode(32, 9) -- ignore
---         setcatcode(13, 9) -- ignore
---     else
---         -- this is default
---      -- setcatcode(32,10) -- space
---      -- setcatcode(13, 9) -- ignore
---     end
---     ctx_dostarttexdefinition()
--- end
---
--- local function texdefinition_two()
---     context(texpreamble)
--- end
-
--- second variant:
---
--- -- default:
--- --
--- -- setcatcode(32,10) -- space
--- -- setcatcode(13, 9) -- ignore
---
--- local function catcodes_s()
---     setcatcode(32,10) -- space
---     setcatcode(13, 5) -- endofline
---     return ""
--- end
---
--- local function catcodes_n()
---     setcatcode(32, 9) -- ignore
---     setcatcode(13, 9) -- ignore
---     return ""
--- end
---
--- local pattern = Cs( -- ^-1
---              ( P("spaces")     * space / catcodes_s )^0
---   * spaces * ( P("nospaces")   * space / catcodes_n )^0
---   * spaces * ( P("global")     * space / "\\global" )^0
---   * spaces * ( P("unexpanded") * space / "\\unexpanded" )^0
---   * spaces *                          Cc("\\expandafter\\")
---   * spaces * ( P("expanded")           / "e" )^0
---   * spaces * ( P((1-S(" #["))^1)       / "def\\csname %0\\endcsname" )
---   * spaces * (
---    --   (double * digit)^1 * sentinel^-1 * double^-1
---    -- + (single * digit)^1 * sentinel^-1 * single^-1
---         ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
---       + ( P("[") * sargument * P("]") + sargument)^1 * sentinel^-1 * single^-1
---       + sentinel^-1 * (double+single)^-1
---     )
--- )
---
--- local texpreamble = nil
---
--- local ctx_dostarttexdefinition = context.dostarttexdefinition
---
--- local function texdefinition_one(str)
---     texpreamble = lpegmatch(pattern,str)
---     ctx_dostarttexdefinition()
--- end
---
--- local function texdefinition_two()
---     context(texpreamble)
--- end
-
 -- third variant:
 
-local global     = nil
-local unexpanded = nil
-local expanded   = nil
-local optional   = nil
-local csname     = nil
-local rest       = nil
+local global    = nil
+local protected = nil
+local expanded  = nil
+local optional  = nil
+local csname    = nil
+local rest      = nil
 
 local function catcodes_s()
     setcatcode(32,10) -- space
@@ -261,28 +160,6 @@ local option = (
       + P("quintuple")
       + P("sixtuple")
   ) * (P("empty") + P("argument"))
-
--- local pattern = (
---              ( P("spaces")     * space / catcodes_s )^0
---   * spaces * ( P("nospaces")   * space / catcodes_n )^0
---   * spaces * ( P("global")     * space * Cc(true) + Cc(false) )
---   * spaces * ( P("unexpanded") * space * Cc(true) + Cc(false) )
---   * spaces * ( P("expanded")   * space * Cc(true) + Cc(false) )
---   * spaces * ( C(option)       * space + Cc(false) )
---   * spaces * ( C((1-S(" #["))^1) )
---   * spaces *   Cs(
---         ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
---       + ( P("[") * sargument * P("]") + sargument)^1 * sentinel^-1 * single^-1
---       + sentinel^-1 * (double+single)^-1
---     )
--- )
---
--- local ctx_dostarttexdefinition = context.dostarttexdefinition
---
--- local function texdefinition_one(str)
---     global, unexpanded, expanded, optional, csname, rest = lpegmatch(pattern,str)
---     ctx_dostarttexdefinition()
--- end
 
 local pattern = (
     (
@@ -313,10 +190,10 @@ local pattern = (
 local ctx_dostarttexdefinition = context.dostarttexdefinition
 
 local function texdefinition_one(str)
-    global     = false
-    unexpanded = false
-    expanded   = false
-    optional   = false
+    global    = false
+    protected = false
+    expanded  = false
+    optional  = false
     csname, rest = lpegmatch(pattern,str)
     ctx_dostarttexdefinition()
 end
@@ -324,7 +201,7 @@ end
 local function texdefinition_two()
     if optional then
         context (
-            (unexpanded and [[\unexpanded]] or "") ..
+            (protected and [[\protected]] or "") ..
             [[\expandafter]] .. (global and [[\xdef]] or [[\edef]]) ..
             [[\csname ]] .. csname .. [[\endcsname{\expandafter\noexpand\expandafter\do]] .. optional ..
             [[\csname _do_]] .. csname .. [[_\endcsname}\expandafter]] .. (global and [[\gdef]] or  [[\edef]]) ..
@@ -333,7 +210,7 @@ local function texdefinition_two()
         )
     else
         context (
-            (unexpanded and [[\unexpanded]] or "") ..
+            (protected and [[\protected]] or "") ..
             [[\expandafter]] .. (global and (expanded and [[\xdef]] or [[\gdef]]) or (expanded and [[\edef]] or [[\def]])) ..
             [[\csname ]] .. csname .. [[\endcsname ]] ..
             rest

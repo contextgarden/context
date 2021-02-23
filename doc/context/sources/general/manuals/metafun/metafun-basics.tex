@@ -2875,6 +2875,20 @@ The leftmost shape uses \type {eofill} and therefore the odd||even rule gets
 applied. This time we follow the line and when it gets crossed en even number of
 times the area will not be filled.
 
+Here is another example:
+
+\startbuffer
+eofill for i=1 upto 12: fullcircle scaled ((i/12)*cm) -- endfor cycle ;
+\stopbuffer
+
+\typebuffer
+
+The successive larger circle are unfilled and basically form one path:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
 A glyph is often constructed from more than one path and eventually the shape is
 filled with an odd||even fill (\type {eofill}) operation. Take the following
 sequence:

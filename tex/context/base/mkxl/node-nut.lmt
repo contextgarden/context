@@ -241,7 +241,6 @@ local nuts = {
     usedlist                = direct.usedlist,
     uses_font               = direct.uses_font,
     vpack                   = direct.vpack,
-    writable_spec           = direct.writable_spec,
     write                   = direct.write,
     append                  = direct.append,
     has_glyph_option        = direct.has_glyph_option,

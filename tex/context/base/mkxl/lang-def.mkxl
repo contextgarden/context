@@ -309,8 +309,55 @@
    \c!date={\v!day,\space,\v!month,\space,\v!year},
    \s!patterns=\s!uk]
 
-\installlanguage [\s!russian]   [\s!ru]
-\installlanguage [\s!ukrainian] [\s!ua]
+\installlanguage
+  [\s!be]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoublesixquote,
+   \c!leftquote=\lowerleftdoubleninequote,
+   \c!rightquote=\upperrightdoublesixquote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
+
+ \installlanguage
+  [\s!sr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\hbox{\endash\space},
+   \c!rightsentence=\hbox{\space\endash},
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperrightsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperleftdoubleninequote,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
+
+\installlanguage
+  [\s!mk]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
+
+\installlanguage [\s!russian]    [\s!ru]
+\installlanguage [\s!ukrainian]  [\s!ua]
+\installlanguage [\s!belarussian][\s!be]
+\installlanguage [\s!serbian]    [\s!sr]
+\installlanguage [\s!sr-latn]    [\s!sr]
+\installlanguage [\s!sr-cyrl]    [\s!sr]
+\installlanguage [\s!macedonian] [\s!mk]
+
 
 % Uralic Languages: Cheremiss, Estonian, Finnish, Karelian, Laap,
 % Mordvinian, Permian tongues, Hungarian, Ostyak, Vogul, Samoyed

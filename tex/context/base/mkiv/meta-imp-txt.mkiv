@@ -80,16 +80,17 @@
 
 \unexpanded\def\adaptparshape
   {\def\docommand##1%
-     {\ifcase\scratchcounter
-        \expandafter\appendtoks\space##1 \to\scratchtoks
-      \else
-        \advance\scratchcounter\minusone
-      \fi}%
+     {\doifsomething{##1}%
+        {\ifcase\scratchcounter\relax
+           \expandafter\appendtoks\space##1 \to\scratchtoks
+         \else
+           \advance\scratchcounter\minusone
+         \fi}}%
    \scratchcounter\prevgraf
    \doglobal\decrement(\totalparlines,\scratchcounter)%
    \multiply\scratchcounter\plustwo
    \scratchtoks\emptytoks
-   \expanded{\processseparatedlist[\the\partoks][\space]}\docommand
+   \expanded{\processseparatedlist[\the\partoks][\space]}\docommand % we can have two spaces
    \global\partoks\scratchtoks
    \parshape\totalparlines\the\partoks\relax}
 

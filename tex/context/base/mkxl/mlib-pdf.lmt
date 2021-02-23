@@ -41,8 +41,6 @@ metapost.flushers.pdf = pdfflusher
 
 metapost.n            = 0
 
-local experiment      = true -- uses context(node) that already does delayed nodes
-local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.originliteral
 
 local f_f  = formatters["%.6N"]
@@ -89,62 +87,27 @@ function metapost.convert(specification,result)
     return true -- done
 end
 
-function metapost.flushliteral(d)
-    if savedliterals then
-        write_node(mpsliteral(savedliterals[d]))
-    else
-        report_metapost("problem flushing literal %a",d)
-    end
-end
-
-function metapost.flushreset() -- will become obsolete and internal
-    savedliterals = nil
-end
-
-function pdfflusher.comment(message)
+function pdfflusher.tocomment(message)
     if message then
-        message = formatters["%% mps graphic %s: %s"](metapost.n,message)
-        if experiment then
-            context(mpsliteral(message))
-        elseif savedliterals then
-            local last = #savedliterals + 1
-            savedliterals[last] = message
-            context.MPLIBtoPDF(last)
-        else
-            savedliterals = { message }
-            context.MPLIBtoPDF(1)
-        end
+        return formatters["%% mps graphic %s: %s"](metapost.n,message)
+    else
+        return formatters["%% mps graphic %s"](metapost.n)
     end
 end
 
 function pdfflusher.startfigure(n,llx,lly,urx,ury,message)
-    savedliterals = nil
     metapost.n = metapost.n + 1
     context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury))
-    if message then pdfflusher.comment(message) end
 end
 
 function pdfflusher.stopfigure(message)
-    if message then pdfflusher.comment(message) end
     context.stopMPLIBtoPDF()
-    context.MPLIBflushreset() -- maybe just at the beginning
 end
 
 function pdfflusher.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
-        if experiment then
-            context(mpsliteral(pdfliterals))
-        else
-            if savedliterals then
-                local last = #savedliterals + 1
-                savedliterals[last] = pdfliterals
-                context.MPLIBtoPDF(last)
-            else
-                savedliterals = { pdfliterals }
-                context.MPLIBtoPDF(1)
-            end
-        end
+        context(mpsliteral(pdfliterals))
     end
 end
 
@@ -391,10 +354,6 @@ local function popproperties()
     metapost.properties = remove(stack)
 end
 
-local function nocomment() end
-
-metapost.comment = nocomment
-
 function metapost.flush(specification,result)
     if result then
         local flusher   = specification.flusher
@@ -412,7 +371,7 @@ function metapost.flush(specification,result)
             local flushfigure        = flusher.flushfigure
             local textfigure         = flusher.textfigure
          -- local processspecial     = flusher.processspecial or metapost.processspecial
-            metapost.comment         = flusher.comment or nocomment
+            local tocomment          = flusher.tocomment
             for index=1,#figures do
                 local figure     = figures[index]
                 local properties = pushproperties(figure)
@@ -431,6 +390,9 @@ function metapost.flush(specification,result)
                     if urx < llx then
                         -- invalid
                         startfigure(properties.number,0,0,0,0,"invalid",figure)
+                        if tocomment then
+                            result[#result+1] = tocomment("invalid")
+                        end
                         stopfigure()
                     else
 
@@ -439,6 +401,9 @@ function metapost.flush(specification,result)
                         local groupstack = { }
 
                         local function processfigure()
+                            if tocomment then
+                                result[#result+1] = tocomment("begin")
+                            end
                             result[#result+1] = "q"
                             if objects then
     --                             resetplugins(result) -- we should move the colorinitializer here
@@ -687,6 +652,9 @@ function metapost.flush(specification,result)
                                 end
                             end
                             result[#result+1] = "Q"
+                            if tocomment then
+                                result[#result+1] = tocomment("end")
+                            end
                             flushfigure(result)
                         end
                         startfigure(properties.number,llx,lly,urx,ury,"begin",figure)
@@ -696,7 +664,6 @@ function metapost.flush(specification,result)
                             processfigure()
                         end
                         stopfigure("end")
-
                     end
                     if askedfig ~= "all" then
                         break
@@ -704,7 +671,6 @@ function metapost.flush(specification,result)
                 end
                 popproperties()
             end
-            metapost.comment = nocomment
             resetplugins(result) -- we should move the colorinitializer here
         end
     end

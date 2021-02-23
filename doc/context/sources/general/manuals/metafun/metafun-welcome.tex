@@ -3497,6 +3497,70 @@ line properties.
 
 \stopsection
 
+\startsection[title={\UTF8}]
+
+The \METAPOST\ library used in \LUATEX\ and \LUAMETATEX\ supports \UTF8\ input.
+Actually there is not much magic needed to do this because all the engine in
+interested in is bytes and some just have a special meaning (like parenthesis,
+symbols that have a meaning in formulas etc).
+
+\startbuffer
+save p ; pen p ; p := currentpen ;
+pickup pencircle scaled .05;
+
+picture ○ ; ○ := image (draw fullcircle) ;
+picture ◎ ; ◎ := image (draw fullcircle ; draw fullcircle scaled .5) ;
+
+draw ◎ ysized  2cm                       withcolor darkblue ;
+draw ○ xsized  2cm       shifted (3cm,0) withcolor darkgreen ;
+draw ○ xysized (3cm,2cm) shifted (7cm,0) withcolor darkred ;
+\stopbuffer
+
+\typebuffer
+
+Here we use a \UTF8\ encoded character as macro name and the next image
+demonstrate that it does work indeed:
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+You can do crazy things like use emoji for special operators
+
+\startbuffer
+def ✏ = withpen pencircle enddef ;
+def ✖️ = scaled enddef ;
+fill fullsquare ✖️ 1cm ✏ ✖️ 1mm withcolor darkgray ;
+draw fullsquare ✖️ 1cm ✏ ✖️ 1mm withcolor darkblue ;
+\stopbuffer
+
+\typebuffer
+
+But do we really want to go there?
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Normally using \UTF8\ makes more sense in text or regular macro names, so if you
+want to use accented characters it is possible:
+
+\startbuffer
+def rændömîzèd = randomized 1/10 enddef ;
+
+draw textext ("\strut rændömîzèd") ;
+draw boundingbox currentpicture rændömîzèd
+    enlarged 2mm
+    withpen pencircle scaled 1mm
+    withcolor darkgreen ;
+\stopbuffer
+
+\typebuffer
+
+\page[preference]
+
+it really does work:
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

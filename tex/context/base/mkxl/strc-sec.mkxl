@@ -473,8 +473,8 @@
 \to \everyredefinehead
 
 \appendtoks
-   \frozen\instance\setuevalue{\e!start\currenthead}{\strc_sectioning_start[\currenthead]}%
-   \frozen\instance\setuevalue{\e!stop \currenthead}{\strc_sectioning_stop [\currenthead]}%
+   \frozen\instance\protected\edefcsname\e!start\currenthead\endcsname{\strc_sectioning_start[\currenthead]}%
+   \frozen\instance\protected\edefcsname\e!stop \currenthead\endcsname{\strc_sectioning_stop [\currenthead]}%
 \to \everydefinehead
 
 % so \subject as well as \section will need two commands when ownnumber
@@ -484,8 +484,8 @@
 \appendtoks
     \ifempty\currenthead \else
       \doifelse{\headparameter\c!ownnumber}\v!yes
-        {\instance\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
-        {\instance\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
+        {\instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_own[\currenthead]}}
+        {\instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_nop[\currenthead]}}%
     \fi
 \to \everysetuphead
 
@@ -543,10 +543,10 @@
 \permanent\def\xthenamedheadlevel#1%
   {\namedsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
 
-\setvalue{\??headlevel\v!block}{0}
-\setvalue{\??headlevel\v!none }{-1}
-\setvalue{\??headlevel\v!text }{-2}
-\setvalue{\??headlevel\v!head }{-3}
+\defcsname\??headlevel\v!block\endcsname{0}
+\defcsname\??headlevel\v!none \endcsname{-1}
+\defcsname\??headlevel\v!text \endcsname{-2}
+\defcsname\??headlevel\v!head \endcsname{-3}
 
 \newtoks\everydefinesection
 
@@ -686,10 +686,10 @@
 \newconditional\headisdisplay   % public
 \newconditional\headissomewhere % public
 
-\setvalue{\??headincrement\v!yes  }{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
-\setvalue{\??headincrement\v!no   }{\setfalse\c_strc_sectioning_increment\setfalse\c_strc_sectioning_to_list}
-\setvalue{\??headincrement\v!list }{\setfalse\c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
-\setvalue{\??headincrement\s!empty}{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\defcsname\??headincrement\v!yes  \endcsname{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\defcsname\??headincrement\v!no   \endcsname{\setfalse\c_strc_sectioning_increment\setfalse\c_strc_sectioning_to_list}
+\defcsname\??headincrement\v!list \endcsname{\setfalse\c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\defcsname\??headincrement\s!empty\endcsname{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
 
 \protected\def\strc_sectioning_initialize_increment
   {\edef\currentheadincrement{\headparameter\c!incrementnumber}%
@@ -708,31 +708,31 @@
      % use  : \currentheadincrement as spec
    \fi}
 
-\setvalue{\??headplace\v!yes}%
+\defcsname\??headplace\v!yes\endcsname
   {\setfalse\c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
    \setfalse\c_strc_sectioning_hidden
    \setfalse\c_strc_sectioning_section}
 
-\setvalue{\??headplace\v!empty}%
+\defcsname\??headplace\v!empty\endcsname
   {\settrue \c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
    \setfalse\c_strc_sectioning_hidden
    \setfalse\c_strc_sectioning_section}
 
-\setvalue{\??headplace\v!no}%
+\defcsname\??headplace\v!no\endcsname
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
    \setfalse\c_strc_sectioning_hidden
    \setfalse\c_strc_sectioning_section}
 
-\setvalue{\??headplace\v!hidden}%
+\defcsname\??headplace\v!hidden\endcsname
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
    \settrue \c_strc_sectioning_hidden
    \setfalse\c_strc_sectioning_section}
 
-\setvalue{\??headplace\v!section}%
+\defcsname\??headplace\v!section\endcsname
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
    \settrue \c_strc_sectioning_hidden
@@ -1086,13 +1086,13 @@
 
 % pagebreaks
 
-\letvalue{\??headmarknop\v!page   }\donothing
-\setvalue{\??headmarknop\v!reset  }{\resetcurrentstructuremarks}
-\letvalue{\??headmarknop\s!unknown}\donothing
+\letcsname\??headmarknop\v!page   \endcsname\donothing
+\defcsname\??headmarknop\v!reset  \endcsname{\resetcurrentstructuremarks}
+\letcsname\??headmarknop\s!unknown\endcsname\donothing
 
-\letvalue{\??headmarkyes\v!page   }\donothing  % to be checked: {\resetcurrentstructuremarks}
-\setvalue{\??headmarkyes\v!reset  }{\resetcurrentstructuremarks}
-\letvalue{\??headmarkyes\s!unknown}\donothing
+\letcsname\??headmarkyes\v!page   \endcsname\donothing  % to be checked: {\resetcurrentstructuremarks}
+\defcsname\??headmarkyes\v!reset  \endcsname{\resetcurrentstructuremarks}
+\letcsname\??headmarkyes\s!unknown\endcsname\donothing
 
 \def\strc_sectioning_check_layout
   {\edef\p_page{\headparameter\c!page}%

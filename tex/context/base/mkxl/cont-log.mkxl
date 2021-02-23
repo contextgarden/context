@@ -139,20 +139,27 @@
 \def\syst_logos_meta_hyphen % there is no hyphenchar in this font
   {\discretionary{\vrule\s!height.33\emwidth\s!depth-.27\emwidth\s!width.33\emwidth}{}{}}
 
-\frozen\instance\protected\def\MetaFont
+\frozen\instance\protected\def\MetaFontLogo
   {\dontleavehmode
    \begingroup
    \setMFPfont META\syst_logos_meta_hyphen FONT%
    \endgroup}
 
-% \protected\def\MetaPost
+\protected\def\MetaPostLogo
+  {\dontleavehmode
+   \begingroup
+   \setMFPfont META\syst_logos_meta_hyphen POST%
+   \endgroup}
+
+% \protected\def\MetaFunLogo
 %   {\dontleavehmode
 %    \begingroup
-%    \setMFPfont META\syst_logos_meta_hyphen POST%
+%    \setMFPfont META\syst_logos_meta_hyphen FUN%
 %    \endgroup}
-%
+
 % As decided on the ConText Meeting 2013 the logo has been simplified:
 
+\instance\protected\def\MetaFont{MetaFont}
 \instance\protected\def\MetaPost{MetaPost}
 \instance\protected\def\MetaFun {MetaFun}
 

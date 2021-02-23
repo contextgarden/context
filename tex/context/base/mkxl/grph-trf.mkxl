@@ -560,7 +560,7 @@
 \def\grph_scale_fast_yes#1%
   {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1\onepoint/1000\relax}% brrr
    \let\finalscaleboxyscale\finalscaleboxxscale
-   \dowithnextboxcs\grph_scale_fast_finish\hbox}
+   \dowithnextboxcs\grph_scale_fast_finish\hbox} % container ?
 
 \def\grph_scale_fast_finish
   {\grph_scale_apply
@@ -571,7 +571,7 @@
   {\bgroup
    \edef\p_sx{#1}%
    \edef\p_sy{#2}%
-   \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
+   \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox} % container?
 
 \def\grph_scale_fast_sx_xy_finish
   {\grph_scale_check_sx_sy
@@ -656,13 +656,13 @@
    \wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
-   \setbox\nextbox\hcontainer
+   \setbox\nextbox\naturalhpack
      {\advance\scratchwidth \dimexpr\clippingparameter\c!leftoffset  +\clippingparameter\c!rightoffset\relax
       \advance\scratchheight\dimexpr\clippingparameter\c!bottomoffset+\clippingparameter\c!topoffset  \relax
       \dostartclipping{\clippingparameter\c!mp}\scratchwidth\scratchheight
         \box\nextbox
       \dostopclipping}%
-   \setbox\nextbox\naturalhpack
+   \setbox\nextbox\hcontainer
      {\hskip-\clippingparameter\c!leftoffset
       \lower \clippingparameter\c!bottomoffset
       \box\nextbox}%

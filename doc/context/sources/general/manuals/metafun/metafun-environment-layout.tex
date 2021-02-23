@@ -71,9 +71,11 @@
 \setuppagenumbering
   [alternative=doublesided]
 
+\definefontfallback[moremono] [dejavusansmono] [0x0000-0xFFFF] [rscale=0.85]
+
 \definetypeface [metafunbodyfont] [rm] [serif] [pagella]  [default]
 \definetypeface [metafunbodyfont] [ss] [sans]  [modern]   [default]
-\definetypeface [metafunbodyfont] [tt] [mono]  [modern]   [default]
+\definetypeface [metafunbodyfont] [tt] [mono]  [modern]   [default] [fallbacks=moremono]
 \definetypeface [metafunbodyfont] [mm] [math]  [palatino] [default]
 
 \setupbodyfont [metafunbodyfont,10pt] % 11 pt and 12pt -> errors due to intersection mess

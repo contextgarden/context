@@ -645,6 +645,23 @@ defineshade cshade withshademethod "circular" ;
 
 \stopsection
 
+\startsection[title={Access}]
+
+\ShowSampleW
+    {mm} {leftof  n}
+    {for i inpath fullcircle : drawdot leftof  i ; endfor}
+    {for i inpath fullcircle xsized 3cm: drawdot leftof  i withpen pencircle scaled 2mm InRed    ; endfor}
+\ShowSampleW
+    {mm} {pointof n}
+    {for i inpath fullcircle : drawdot pointof i ; endfor}
+    {for i inpath fullcircle xsized 3cm: drawdot pointof i withpen pencircle scaled 2mm InYellow ; endfor}
+\ShowSampleW
+    {mm} {rightof n}
+    {for i inpath fullcircle : drawdot rightof i ; endfor}
+    {for i inpath fullcircle xsized 3cm: drawdot rightof i withpen pencircle scaled 2mm InRed    ; endfor}
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

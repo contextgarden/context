@@ -154,10 +154,12 @@ newscriptindex mfid_getdimen ; mfid_getdimen := scriptindex "getdimen" ; def get
 newscriptindex mfid_getcount ; mfid_getcount := scriptindex "getcount" ; def getcount = runscript mfid_getcount enddef ;
 newscriptindex mfid_gettoks  ; mfid_gettoks  := scriptindex "gettoks"  ; def gettoks  = runscript mfid_gettoks  enddef ;
 
-newscriptindex mfid_setmacro ; mfid_setmacro := scriptindex "setmacro" ; def setmacro = runscript mfid_setmacro enddef ;
-newscriptindex mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def setdimen = runscript mfid_setdimen enddef ;
-newscriptindex mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount = runscript mfid_setcount enddef ;
-newscriptindex mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks  = runscript mfid_settoks  enddef ;
+% todo: figure out a mixed interface: setdimen "foo" 123pt ; setdimen("foo", 123pt) ;
+
+newscriptindex mfid_setmacro ; mfid_setmacro := scriptindex "setmacro" ; def setmacro(expr k, v) = runscript mfid_setmacro k v ; enddef ;
+newscriptindex mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def setdimen(expr k, v) = runscript mfid_setdimen k v ; enddef ;
+newscriptindex mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount(expr k, v) = runscript mfid_setcount k v ; enddef ;
+newscriptindex mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks (expr k, v) = runscript mfid_settoks  k v ; enddef ;
 
 permanent getmacro, getdimen, getcount, gettoks, setmacro, setdimen, setcount, settoks ;
 

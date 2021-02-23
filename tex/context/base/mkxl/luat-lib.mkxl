@@ -71,7 +71,7 @@
 \registerctxluafile{data-use}{}
 \registerctxluafile{data-aux}{}
 
-\registerctxluafile{luat-cbk}{}
+\registerctxluafile{luat-cbk}{autosuffix}
 \registerctxluafile{luat-run}{}
 \registerctxluafile{luat-fio}{autosuffix}
 \registerctxluafile{luat-cnf}{}

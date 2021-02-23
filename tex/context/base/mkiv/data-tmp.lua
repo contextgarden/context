@@ -324,7 +324,11 @@ caches.setluanames          = setluanames
 --
 -- runtime files like fonts are written to the writable cache anyway
 
+local checkmemory = utilities and utilities.lua and utilities.lua.checkmemory
+local threshold   = 100 -- MB
+
 function caches.loaddata(readables,name,writable)
+    local used = checkmemory and checkmemory()
     if type(readables) == "string" then
         readables = { readables }
     end
@@ -352,7 +356,11 @@ function caches.loaddata(readables,name,writable)
         end
         if loader then
             loader = loader()
-            collectgarbage("step")
+            if checkmemory then
+                checkmemory(used,threshold)
+            else -- generic
+                collectgarbage("step") -- option, really slows down!
+            end
             return loader
         end
     end

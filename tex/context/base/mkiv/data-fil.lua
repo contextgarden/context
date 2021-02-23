@@ -22,7 +22,7 @@ local appendhash       = resolvers.appendhash
 
 local loadcachecontent = caches.loadcontent
 
-local checkgarbage     = utilities.garbagecollector and utilities.garbagecollector.check
+----- checkgarbage     = utilities.garbagecollector and utilities.garbagecollector.check
 
 function resolvers.locators.file(specification)
     local filename = specification.filename
@@ -128,9 +128,9 @@ function loaders.file(specification,filetype)
                 report_files("file loader: %a loaded",filename)
             end
             local s = f:read("*a") -- io.readall(f) is faster but we never have large files here
-            if checkgarbage then
-                checkgarbage(#s)
-            end
+         -- if checkgarbage then
+         --     checkgarbage(#s)
+         -- end
             f:close()
             if s then
                 return true, s, #s

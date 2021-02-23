@@ -1150,7 +1150,9 @@
   {% we could also split in \LUA
    \splitatcomma{#2}\m_syst_boxes_left\m_syst_boxes_right
    \limitated
+  \ifempty\m_syst_boxes_left\else
       left     \m_syst_boxes_left
+  \fi
   \ifempty\m_syst_boxes_right\else
       right    \m_syst_boxes_right
   \fi

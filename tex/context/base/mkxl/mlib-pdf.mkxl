@@ -88,8 +88,6 @@
 
 % MPLIB specific:
 
-\permanent\def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
-
 \permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
    \dostarttagged\t!mpgraphic\empty
@@ -107,9 +105,6 @@
    \egroup
    \dostoptagged
    \meta_process_graphic_figure_stop}
-
-\permanent\protected\def\MPLIBflushreset % This can (will) move to the Lua end.
-  {\clf_mpflushreset}
 
 %D Kind of special:
 %
