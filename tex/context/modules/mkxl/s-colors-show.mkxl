@@ -41,7 +41,7 @@
 
 %D Palets
 
-permanent\protected\tolerant\gdef\showpalet[#1]#*[#2]%
+\permanent\protected\tolerant\gdef\showpalet[#1]#*[#2]%
   {\doifelsecolorpalet{#1}
      {\doifelseinset\v!vertical{#2}\colo_palets_show_vertical\colo_palets_show_horizontal{#1}{#2}}%
      {}}
@@ -152,7 +152,7 @@ permanent\protected\tolerant\gdef\showpalet[#1]#*[#2]%
 
 %D Groups
 
-permanent\protected\tolerant\gdef\showcolorgroup[#1]#*[#2]%
+\permanent\protected\tolerant\gdef\showcolorgroup[#1]#*[#2]%
   {\doifcolor{#1:1}
      {\doifelseinset\v!vertical{#2}\colo_groups_show_vertical\colo_groups_show_horizontal{#1}{#2}}}
 

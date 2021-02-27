@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-02-23 17:41
+-- merge date  : 2021-02-27 19:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -3158,25 +3158,59 @@ local function points(n)
  n=n*ptf
  if n%1==0 then
   return format("%ipt",n)
+ else
+  return lpegmatch(stripzeros,format("%.5fpt",n)) 
  end
- return lpegmatch(stripzeros,format("%.5fpt",n)) 
 end
-local function basepoints(n)
+local function nupoints(n)
  if n==0 then
-  return "0pt"
+  return "0"
  end
  n=tonumber(n)
  if not n or n==0 then
-  return "0pt"
+  return "0"
+ end
+ n=n*ptf
+ if n%1==0 then
+  return format("%i",n)
+ else
+  return format("%.5f",n) 
+ end
+end
+local function basepoints(n)
+ if n==0 then
+  return "0bp"
+ end
+ n=tonumber(n)
+ if not n or n==0 then
+  return "0bp"
  end
  n=n*bpf
  if n%1==0 then
   return format("%ibp",n)
+ else
+  return lpegmatch(stripzeros,format("%.5fbp",n)) 
  end
- return lpegmatch(stripzeros,format("%.5fbp",n)) 
+end
+local function nubasepoints(n)
+ if n==0 then
+  return "0"
+ end
+ n=tonumber(n)
+ if not n or n==0 then
+  return "0"
+ end
+ n=n*bpf
+ if n%1==0 then
+  return format("%i",n)
+ else
+  return format("%.5f",n) 
+ end
 end
 number.points=points
+number.nupoints=nupoints
 number.basepoints=basepoints
+number.nubasepoints=nubasepoints
 local rubish=spaceortab^0*newline
 local anyrubish=spaceortab+newline
 local stripped=(spaceortab^1/"")*newline
@@ -3454,7 +3488,9 @@ local environment={
  concat=table.concat,
  signed=number.signed,
  points=number.points,
+ nupoints=number.nupoints,
  basepoints=number.basepoints,
+ nubasepoints=number.nubasepoints,
  utfchar=utf.char,
  utfbyte=utf.byte,
  lpegmatch=lpeg.match,
@@ -3649,9 +3685,17 @@ local format_p=function()
  n=n+1
  return format("points(a%s)",n)
 end
+local format_P=function()
+ n=n+1
+ return format("nupoints(a%s)",n)
+end
 local format_b=function()
  n=n+1
  return format("basepoints(a%s)",n)
+end
+local format_B=function()
+ n=n+1
+ return format("nubasepoints(a%s)",n)
 end
 local format_t=function(f)
  n=n+1
@@ -3805,7 +3849,7 @@ local builder=Cs { "start",
 +V("n") 
 +V("N") 
 +V("k")
-+V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
++V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
 +V("W") 
 +V("a") 
 +V("A") 
@@ -3843,7 +3887,9 @@ local builder=Cs { "start",
  ["u"]=(prefix_any*P("u"))/format_u,
  ["U"]=(prefix_any*P("U"))/format_U,
  ["p"]=(prefix_any*P("p"))/format_p,
+ ["P"]=(prefix_any*P("P"))/format_P,
  ["b"]=(prefix_any*P("b"))/format_b,
+ ["B"]=(prefix_any*P("B"))/format_B,
  ["t"]=(prefix_tab*P("t"))/format_t,
  ["T"]=(prefix_tab*P("T"))/format_T,
  ["l"]=(prefix_any*P("l"))/format_l,

@@ -1,0 +1,423 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=paragraphs,
+   color=middlecyan]
+
+\startsection[title=Introduction]
+
+This manual is mostly discussing a few wrappers around low level \TEX\ features.
+Its writing is triggered by an update to the \METAFUN\ and \LUAMETAFUN\ manuals
+where we mess a bit with shapes. It gave a good reason to also cover some more
+paragraph related topics but it might take a while to complete. Remind me if you
+feel that takes too much time.
+
+\stopsection
+
+\startsection[title=Properties]
+
+A paragraph is just a collection of lines that result from one input line that
+got broken. This process of breaking into lines is influenced by quite some
+parameters. In traditional \TEX\ and also in \LUAMETATEX\ by default the values
+that are in effect when the end of the paragraph is met are used. So, when you
+change them in a group and then ends the paragraph after the group, the values
+you've set in the group are not used.
+
+However, in \LUAMETATEX\ we can optionally store them with the paragraph. When
+that happens the values current at the start are frozen. You can still overload
+them but that has to be done explicitly then. The advantage is that grouping no
+longer interferes with the line break algorithm. The magic primitive is \type
+{\snapshotpar}.
+
+\starttabulate
+\NC \type {\hsize}                 \NC \NC \NR
+\NC \type {\leftskip}              \NC \NC \NR
+\NC \type {\rightskip}             \NC \NC \NR
+\NC \type {\hangindent}            \NC \NC \NR
+\NC \type {\hangafter}             \NC \NC \NR
+\NC \type {\parindent}             \NC \NC \NR
+\NC \type {\parfillleftskip}       \NC \NC \NR
+\NC \type {\parfillrightskip}      \NC \NC \NR
+\NC \type {\adjustspacing}         \NC \NC \NR
+\NC \type {\protrudechars}         \NC \NC \NR
+\NC \type {\pretolerance}          \NC \NC \NR
+\NC \type {\tolerance}             \NC \NC \NR
+\NC \type {\emergencystretch}      \NC \NC \NR
+\NC \type {\looseness}             \NC \NC \NR
+\NC \type {\lastlinefit}           \NC \NC \NR
+\NC \type {\linepenalty}           \NC \NC \NR
+\NC \type {\interlinepenalty}      \NC \NC \NR
+\NC \type {\clubpenalty}           \NC \NC \NR
+\NC \type {\widowpenalty}          \NC \NC \NR
+\NC \type {\displaywidowpenalty}   \NC \NC \NR
+\NC \type {\brokenpenalty}         \NC \NC \NR
+\NC \type {\adjdemerits}           \NC \NC \NR
+\NC \type {\doublehyphendemerits}  \NC \NC \NR
+\NC \type {\finalhyphendemerits}   \NC \NC \NR
+\NC \type {\parshape}              \NC \NC \NR
+\NC \type {\interlinepenalties}    \NC \NC \NR
+\NC \type {\clubpenalties}         \NC \NC \NR
+\NC \type {\widowpenalties}        \NC \NC \NR
+\NC \type {\displaywidowpenalties} \NC \NC \NR
+\NC \type {\baselineskip}          \NC \NC \NR
+\NC \type {\lineskip}              \NC \NC \NR
+\NC \type {\lineskiplimit}         \NC \NC \NR
+\NC \type {\adjustspacingstep}     \NC \NC \NR
+\NC \type {\adjustspacingshrink}   \NC \NC \NR
+\NC \type {\adjustspacingstretch}  \NC \NC \NR
+\NC \type {\hyphenationmode}       \NC \NC \NR
+\stoptabulate
+
+There are more paragraph related parameters than in for instance \PDFTEX\ and
+\LUATEX\ and these are (to be) explained in the \LUAMETATEX\ manual. You can
+imagine that keeping this around with the paragraph adds some extra overhead to
+the machinery but most users won't notice that because is is compensated by gains
+elsewhere.
+
+In \LMTX\ taking these snapshots is turned on by default and because it thereby
+fundamentally influences the par builder, users can run into compatibility issues
+but in practice there has been no complaints (and this feature has been in use
+quite a while before this document was written). One reason for users not
+noticing is that one of the big benefits is probably handled by tricks mentioned on the
+mailing list. Imagine that you have this:
+
+\starttyping[option=TEX]
+{\bf watch out:} here is some text
+\stoptyping
+
+In this small example the result will be as expected. But what if something magic
+with the start of a paragraph is done? Like this:
+
+\starttyping[option=TEX]
+\placefigure[left]{A cow!}{\externalfigure[cow.pdf]}
+
+{\bf watch out:} here is some text ... of course much more is needed to
+    get a flow around the figure!
+\stoptyping
+
+The figure will hang at the left side of the paragraph but it is put there when
+the text starts and that happens inside the bold group. It means that the
+properties we set in order to get the shape around the figure are lost as soon as
+we're at \quote{\type {here is some text}} and definitely is wrong when the
+paragraph ends and the par builder has to use them to get the shape right. We get
+text overlapping the figure. A trick to overcome this is:
+
+\starttyping[option=TEX]
+\dontleavehmode {\bf watch out:} here is some text ... of course much
+    more is needed to get a flow around the figure!
+\stoptyping
+
+where the first macro makes sure we already start a paragraph before the group is
+entered (using a \type {\strut} also works). It's not nice and I bet users have
+been bitten by this and by now know the tricks. But, with snapshots such fuzzy
+hacks are not needed any more! The same is true with this:
+
+\starttyping[option=TEX]
+{\leftskip 1em some text \par}
+\stoptyping
+
+where we had to explicitly end the paragraph inside the group in order to retain
+the skip. I suppose that users normally use the high level environments so they
+never had to worry about this. It's also why users probably won't notice that
+this new mechanism has been active for a while. Actually, when you now change a
+parameter inside the paragraph will not be applied (unless you prefix it with
+\type {\frozen}) but no one did that anyway.
+
+{\em todo: freeze categories, overloading, turning on and off, etc}
+
+\stopsection
+
+\startsection[title=Wraping up]
+
+In \CONTEXT\ \LMTX\ we have a mechanism to exercise macros (or content) before a
+paragraph ends. This is implemented using the \type {\wrapuppar} primitive. The
+to be wrapped up material is bound to the current paragraph which in order to
+get this done has to be started when this primitive is used.
+
+Although the high level interface has been around for a while it still needs a
+bit more testing (read: use cases are needed). In the few cases where we already
+use it application can be different because again it relates to snapshots. This
+because in the past we had to use tricks that also influenced the user interface
+of some macros (which made them less natural as one would expect). So the
+question is: where do we apply it in old mechanisms and where not.
+
+{\em todo: accumulation, interference, where applied, limitations}
+
+% \vbox   {vbox    : \wrapuppar{1}test\par x\wrapuppar{2}test}\blank
+% \vtop   {vtop    : \wrapuppar{1}test\par x\wrapuppar{2}test}\blank
+% \vcenter{vcenter : \wrapuppar{1}test\par x\wrapuppar{2}test}\blank
+% $$x = \vcenter{vcenter : \wrapuppar{1}test\par x\wrapuppar{2}test}$$\blank
+% x\vadjust{vadjust : \wrapuppar{1}test\par x\wrapuppar{2}test}x\blank
+
+\stopsection
+
+\startsection[title=Shapes]
+
+In \CONTEXT\ we don't use \type {\parshape} a lot. It is used in for instance
+side floats but even then not in all cases. It's more meant for special
+applications. This means that in \MKII\ and \MKIV\ we don't have some high level
+interface. However, when \METAFUN\ got upgraded to \LUAMETAFUN, and the manual
+also needed an update, one of the examples in that manual that used shapes also
+got done differently (read: nicer). And that triggered the arrival of a new high
+level shape mechanism.
+
+One important property of the \type {\parshape} mechanism is that it works per
+paragraph. You define a shape in terms of a left margin and width of a line. The
+shape has a fixed number of such pairs and when there is more content, the last one
+is used for the rest of the lines. When the paragraph is finished, the shape is
+forgotten.
+
+{\em Not discussed here is a variant that will end up in \LUAMETATEX\ that works
+with the progression, i.e.\ takes the height of the content so far into account.
+This is somewhat tricky because for that to work vertical skips need to be
+frozen, which is no real big deal but has to be done careful in the code.}
+
+The high level interface is a follow up on the example in the \METAFUN\ manual and
+uses shapes that carry over to the next paragraph. In addition we can cycle over
+a shape. In this interface shapes are defined using keyword. Here are some
+examples:
+
+\starttyping[option=TEX]
+\startparagraphshape[test]
+    left 1mm right 1mm
+    left 5mm right 5mm
+\stopparagraphshape
+\stoptyping
+
+This shape has only two entries so the first line will have a 1mm margin while
+later lines will get 5mm margins. This translates into a \type {\parshape} like:
+
+\starttyping[option=TEX]
+\parshape 2
+    1mm \dimexpr\hsize-1mm\relax
+    5mm \dimexpr\hsize-5mm\relax
+\stoptyping
+
+Watch the number \type {2}: it tells how many specification lines follow. As you
+see, we need to calculate the width.
+
+\starttyping[option=TEX]
+\startparagraphshape[test]
+    left 1mm right 1mm
+    left 5mm right 5mm
+    repeat
+\stopparagraphshape
+\stoptyping
+
+This variant will alternate between 1mm and 5mm margins. The repeating feature is
+translated as follows. Maybe at some point I will introduce a few more options.
+
+\starttyping[option=TEX]
+\parshape 2 options 1
+    1mm \dimexpr\hsize-1mm\relax
+    5mm \dimexpr\hsize-5mm\relax
+\stoptyping
+
+A shape can have some repetition, and we can save keystrokes by copying the last
+entry. The resulting \type {\parshape} becomes rather long.
+
+\starttyping[option=TEX]
+\startparagraphshape[test]
+    left 1mm right 1mm
+    left 2mm right 2mm
+    left 3mm right 3mm
+    copy 8
+    left 4mm right 4mm
+    left 5mm right 5mm
+    left 5mm hsize 10cm
+\stopparagraphshape
+\stoptyping
+
+Also watch the \type {hsize} keyword: we don't calculate the hsize from the \type
+{left} and \type {right} values but explicitly set it.
+
+\starttyping[option=TEX]
+\startparagraphshape[test]
+    left 1mm right 1mm
+    right 3mm
+    left 5mm right 5mm
+    repeat
+\stopparagraphshape
+\stoptyping
+
+When a \type {right} keywords comes first the \type {left} is assumed to be zero.
+In the examples that follow we will use a couple of definitions:
+
+\startbuffer[setup]
+\startparagraphshape[test]
+    both 1mm both 2mm both 3mm both 4mm both 5mm both 6mm
+    both 7mm both 6mm both 5mm both 4mm both 3mm both 2mm
+\stopparagraphshape
+\stopbuffer
+
+\startbuffer[setup-repeat]
+\startparagraphshape[test-repeat]
+    both 1mm both 2mm both 3mm both 4mm both 5mm both 6mm
+    both 7mm both 6mm both 5mm both 4mm both 3mm both 2mm
+    repeat
+\stopparagraphshape
+\stopbuffer
+
+\typebuffer[setup,setup-repeat][option=TEX]
+
+The last one could also be defines as:
+
+\starttyping[option=TEX]
+\startparagraphshape[test-repeat]
+    \rawparagraphshape{test} repeat
+\stopparagraphshape
+\stoptyping
+
+In the previous code we already introduced the \type {repeat} option. This will
+make the shape repeat at the engine level when the shape runs out of specified
+lines. In the application of a shape definition we can specify a \type {method}
+to be used and that determine if the next paragraph will start where we left off
+and discard afterwards (\type {shift}) or that we move the discarded lines up
+front so that we never run out of lines (\type {cycle}). It sounds complicated
+but just keep in mind that \type {repeat} is part of the \type {\parshape} and
+act within a paragraph while \type {shift} and \type {cycle} are applied when a
+new paragraph is started.
+
+\startbuffer[demo]
+\startshapedparagraph[list=test]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+\startbuffer[demo-repeat]
+\startshapedparagraph[list=test-repeat]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+In \in {figure} [fig:shape:discard] you see the following applied:
+
+\typebuffer[demo,demo-repeat][option=TEX]
+
+\startplacefigure[title=Discarded shaping,reference=fig:shape:discard]
+\startcombination[nx=2,ny=2]
+    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}               {discard, finite shape,    page 1}
+    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}               {discard, finite shape,    page 2}
+    {\typesetbuffer[setup-repeat,demo-repeat][page=1,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 1}
+    {\typesetbuffer[setup-repeat,demo-repeat][page=2,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 2}
+\stopcombination
+\stopplacefigure
+
+In \in {figure} [fig:shape:shift] we use this instead:
+
+\startbuffer[demo]
+\startshapedparagraph[list=test,method=shift]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+\startbuffer[demo-shift]
+\startshapedparagraph[list=test-repeat,method=shift]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[demo,demo-repeat][option=TEX]
+
+\startplacefigure[title=Shifted shaping,,reference=fig:shape:shift]
+\startcombination[nx=2,ny=2]
+    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 1}
+    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 2}
+    {\typesetbuffer[setup-repeat,demo-shift][page=1,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 1}
+    {\typesetbuffer[setup-repeat,demo-shift][page=2,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 2}
+\stopcombination
+\stopplacefigure
+
+Finally, in \in {figure} [fig:shape:cycle] we use:
+
+\startbuffer[demo]
+\startshapedparagraph[list=test,method=cycle]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+\startbuffer[demo-cycle]
+\startshapedparagraph[list=test-repeat,method=cycle]
+    \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[demo,demo-repeat][option=TEX]
+
+\startplacefigure[title=Cycled shaping,reference=fig:shape:cycle]
+\startcombination[nx=2,ny=2]
+    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 1}
+    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 2}
+    {\typesetbuffer[setup-repeat,demo-cycle][page=1,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 1}
+    {\typesetbuffer[setup-repeat,demo-cycle][page=2,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 2}
+\stopcombination
+\stopplacefigure
+
+These examples are probably too small to see the details but you can run them
+yourself or zoom in on the details. In the margin we show the values used. Here
+is a simple example of (non) poetry. There are other environments that can be
+used instead but this makes a good example anyway.
+
+\startbuffer
+\startparagraphshape[test]
+    left 0em right 0em
+    left 1em right 0em
+    repeat
+\stopparagraphshape
+
+\startshapedparagraph[list=test,method=cycle]
+    verse line 1.1\crlf verse line 2.1\crlf
+    verse line 3.1\crlf verse line 4.1\par
+    verse line 1.2\crlf verse line 2.2\crlf
+    verse line 3.2\crlf verse line 4.2\crlf
+    verse line 5.2\crlf verse line 6.2\par
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+{\em todo: move the new (still in {\em \type {meta-imp-txt.mkxl})} code into the
+core and integrate it in {\em \type {\startshapedparagraph}} as method {\em \type
+{mp}} in which case the list is a list of graphics.}
+
+\starttyping[option=TEX]
+\startshapedparagraph[list={test 1,test 2,test 3,test 4},method=mp]
+    .....
+\stopshapedparagraph
+\stoptyping
+
+{\em So methods then become kind of plugins.}
+
+A mechanism like this is often never completely automatic in the sense that you
+need to keep an eye on the results. Depending on user demands more features can
+be added. With weird shapes you might want to set up the alignment to be \type
+{tolerant} and have some \type {stretch}.
+
+\stopsection
+
+% \startsection[title=Linebreaks]
+\startsection[title=Modes]
+
+% \ruledvbox{1\ifhmode\writestatus{!}{HMODE 1}\fi}                               % hsize
+% \ruledvbox{\hbox{\strut 2}\ifhmode\writestatus{!}{HMODE 2}\fi}                 % fit
+% \ruledvbox{\hbox{\strut 3}\hbox{\strut 3}\ifhmode\writestatus{!}{HMODE 3}\fi}  % fit
+% \ruledvbox{\hbox{\strut 4}4\ifhmode\writestatus{!}{HMODE 4}\fi}                % hsize
+% \ruledvbox{\hbox{\strut 5}5\hbox{\strut 5}\ifhmode\writestatus{!}{HMODE 5}\fi} % hsize
+% \ruledvbox{6\hbox{\strut 6}\ifhmode\writestatus{!}{HMODE 6}\fi}                % hsize
+
+{\em todo: some of the side effects of so called modes}
+
+\stopsection
+
+\startsection[title=Normalization]
+
+{\em todo: users don't need to bother about this but it might be interesting anyway}
+
+\stopsection
+
+\stopdocument
+

@@ -1,0 +1,177 @@
+if not modules then modules = { } end modules ['typo-par'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Just some experimental stuff .. trying to improve some ancient metafun manual
+-- hackery that has been on the angenda for too long already. Names might names
+-- anyway.
+
+local insert, remove = table.insert, table.remove
+
+local texget        = tex.get
+local texset        = tex.set
+local shiftparshape = tex.shiftparshape
+
+local sequencers    = utilities.sequencers
+local appendaction  = sequencers.appendaction
+local enableaction  = sequencers.enableaction
+local disableaction = sequencers.disableaction
+
+local stack   = { }
+local top     = nil
+local enabled = false
+
+interfaces.implement {
+    name      = "pushparagraphtweak",
+    public    = true,
+    protected = true,
+    arguments = "string",
+    actions   = function(t)
+        insert(stack,top)
+        if not top then
+            enableaction("paragraphcontext","builders.checkparcontext")
+            enabled = true
+        end
+        top = t
+    end
+}
+interfaces.implement {
+    name      = "popparagraphtweak",
+    public    = true,
+    protected = true,
+    actions   = function()
+        top = remove(stack)
+        if not top then
+            disableaction("paragraphcontext","builders.checkparcontext")
+            enabled = false
+        end
+    end
+}
+
+function builders.checkparcontext(where)
+    if top and where == "normal" then
+        if top == "cycle" then
+            local s = texget("parshape",true)
+            if s then
+                local p = texget("prevgraf")
+                while p > s do
+                    p = p - s
+                end
+                shiftparshape(p,true)
+            end
+            return true
+        elseif top == "shift" then
+            shiftparshape(texget("prevgraf"))
+            return true
+        end
+    end
+end
+
+appendaction("paragraphcontext","system","builders.checkparcontext")
+
+-- Another experiment: continuing parshapes with alternative definitions:
+--
+-- left d | right d | left d right d | both d | left d hsize d |
+-- copy n | reset | repeat | done
+
+do
+
+    local scanners     = tokens.scanners
+    local scanword     = scanners.word
+    local scandimen    = scanners.dimen
+    local scancardinal = scanners.cardinal
+
+    interfaces.implement {
+        name      = "setparagraphshape",
+        protected = true,
+        actions   = function()
+            local t = { }
+            local n = 0
+            local h = texget("hsize")
+            while true do
+                local key = scanword()
+              ::AGAIN::
+                if key == "left" then
+                    local l = scandimen()
+                    key = scanword()
+                    if key == "right" then
+                        n = n + 1 ; t[n] = { l, h - l - scandimen() }
+                    elseif key == "hsize" then
+                        n = n + 1 ; t[n] = { l, scandimen() }
+                    else
+                        n = n + 1 ; t[n] = { l, h }
+                        goto AGAIN
+                    end
+                elseif key == "right" then
+                    n = n + 1 ; t[n] = { 0, h - scandimen() }
+                elseif key == "both" then
+                    local b = scandimen()
+                    n = n + 1 ; t[n] = { b, h - b - b }
+                elseif key == "copy" then
+                    local c = scancardinal()
+                    for i=1,c do
+                        local m = n + 1
+                        t[m] = t[n]
+                        n = m
+                    end
+                elseif key == "done" then
+                    -- in case the user ended with "done"
+                    scanword()
+                    break
+                elseif key == "repeat" then
+                    t["repeat"] = true
+                elseif key == "reset" then
+                    n = n + 1 ; t[n] = { 0, h }
+                    break
+                else
+                    logs.report("system","bad key %a in paragraphshape",key)
+                    break
+                end
+            end
+            texset("parshape",t)
+        end,
+    }
+
+    local NC = context.NC
+    local NR = context.NR
+    local VL = context.VL
+
+    interfaces.implement {
+        name      = "showparagraphshape",
+        protected = true,
+        public    = true,
+        actions   = function()
+            local p = texget("parshape")
+            if p then
+                -- only english interface (for now)
+                context.inleftmargin(
+                    {
+                        align   = "flushright",
+                        strut   = "no",
+                        width   = "0pt",
+                     -- voffset = "-\\lineheight"
+                    }, function()
+                        context.starttabulate {
+                            before = "",
+                            after  = "",
+                            unit   = "2pt",
+                            rulethickness = ".1pt",
+                            format = "|rb{\\smallinfofont}|lb{\\smallinfofont}|"
+                        }
+                            for i=1,#p do
+                                NC() context("%P",p[i][1])
+                                VL() context("%P",p[i][2])
+                                NC() NR()
+                            end
+                        context.stoptabulate()
+                    end
+                )
+            end
+        end
+    }
+
+end

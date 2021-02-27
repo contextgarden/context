@@ -1211,6 +1211,282 @@ just mimicking drawing the path.
 \processMPbuffer
 \stoplinecorrection
 
+\stopsection
+
+\startsection[title=Acessing \TEX]
+
+In \MKIV\ and \LMTX\ it is possible to access \TEX\ registers and macros from the
+\METAPOST\ end. Let's first define and set some:
+
+\startbuffer
+\newdimen\MyMetaDimen  \MyMetaDimen = 2mm
+\newcount\MyMetaCount  \MyMetaCount = 10
+\newtoks \MyMetaToks   \MyMetaToks  = {\bfd \TeX}
+     \def\MyMetaMacro                 {not done}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startMPcode
+    for i=1 upto getcount("MyMetaCount") :
+        draw fullcircle scaled (i * getdimen("MyMetaDimen")) ;
+    endfor ;
+    draw textext(gettoks("MyMetaToks")) xsized 15mm withcolor darkred ;
+    setglobaldimen("MyMetaDimen", bbwidth(currentpicture)) ;
+    setglobalmacro("MyMetaMacro", "done") ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \getbuffer
+\stoplinecorrection
+
+We can now look at the two updated globals where \type {\MyMetaMacro: \the\MyMetaDimen}
+typesets: {\tttf \MyMetaMacro: \the\MyMetaDimen}. As demonstrated you can best define your
+own registers but in principle you can also access system ones, like \type {\scratchdimen}
+and friends.
+
+\stopsection
+
+\startsection[title=Abstraction]
+
+We will now stepwise implement some simple helpers for accessing data in files.
+The examples are kind of useless but demonstrate how interfaces evolved. The
+basic command to communicate with \LUA\ is \type {runscript}. In this example
+we will load a (huge) file and run over the lines.
+
+\starttyping
+\startMPcode{doublefun}
+  save q ; string q ; q := "'\\" & ditto & "'" ;
+  runscript (
+    "GlobalData = string.splitlines(io.loaddata('foo.tmp')) return ''"
+  ) ;
+  numeric l ; l = runscript (
+    "return string.format('\letterpercent q',\letterhash GlobalData)"
+  );
+  for i=1 step 1 until l :
+    l := length ( runscript (
+      "return string.format('\letterpercent q',GlobalData[" & decimal i & "])"
+    ) ) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+The \type {runscript} primitive takes a string and should return a string (in
+\LUAMETATEX\ you can also return nothing). This low level solution will serve as
+our benchmark: it takes 2.04 seconds on the rather large (64MB) test file with
+10.000 lines.
+
+The code looks somewhat clumsy. This is because in \METAPOST\ escaping is not
+built in so one has to append a double quote character using \type {char 34} and
+the \type {ditto} string is defined as such. This mess is why in \CONTEXT\ we
+have an interface:
+
+\starttyping
+\startMPcode{doublefun}
+  lua("GlobalData = string.splitlines(io.loaddata('foo.tmp'))") ;
+  numeric l ;
+  for i=1 step 1 until lua("mp.print(\#GlobalData)") :
+    l := length(lua("mp.quoted(GlobalData[" & decimal i & "])")) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+As expected we pay a price for the additional overhead, so this time we need 2.28
+seconds to process the file. The return value of a run is a string that is fed
+into \type {scantokens}. Here \type {print} function prints the number as string
+and that gets scanned back to a number. The \type {quoted} function returns a
+string in a string so when we're back in \METAPOST\ that gets scanned as string.
+
+When code is used more frequently, we can make a small library, like this:
+
+\starttyping
+\startluacode
+  local MyData = { }
+  function mp.LoadMyData(filename)
+    MyData = string.splitlines(io.loaddata(filename))
+  end
+  local mpprint  = mp.print
+  local mpquoted = mp.quoted
+  function mp.MyDataSize()
+    mpprint(#MyData)
+  end
+  function mp.MyDataString(i)
+    mpquoted(MyData[i] or "")
+  end
+\stopluacode
+\stoptyping
+
+It is not that hard to imagine a more advanced mechanisms where data from multiple
+files can be handled at the same time. This code is used as:
+
+\starttyping
+\startMPcode{doublefun}
+  lua.mp.LoadMyData("foo.tmp") ;
+  numeric l ;
+  for i=1 step 1 until lua.mp.MyDataSize() :
+    l := length(lua.mp.MyDataString(i)) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+The \type {mp} namespace at the \LUA\ end is a subnamespace at the \METAPOST\
+end. This solution needs 2.20 seconds so we're still slower than the first one,
+but in \LUAMETATEX\ with \LMTX we can do better. First the \LUA\ code:
+
+\starttyping
+\startluacode
+  local injectnumeric = mp.inject.numeric
+  local injectstring  = mp.inject.string
+  local MyData = { }
+  function mp.LoadMyData(filename)
+    MyData = string.splitlines(io.loaddata(filename))
+  end
+  function mp.MyDataSize()
+    injectnumeric(#MyData)
+  end
+  function mp.MyDataString(i)
+    injectstring(MyData[i] or "")
+  end
+\stopluacode
+\stoptyping
+
+This time we use injectors. The mentioned \type {print} helpers serialize data so
+numbers, pairs, colors etc are converted to a string that represents them that is
+fed back to \METAPOST\ after the snippet is run. Multiple prints are collected
+into one string. An injecter follows a more direct route: it pushes back a proper
+\METAPOST\ data type.
+
+\starttyping
+\startMPcode{doublefun}
+  lua.mp.LoadMyData("foo.tmp") ;
+  numeric l ;
+  for i=1 step 1 until lua.mp.MyDataSize() :
+    l := length(lua.mp.MyDataString(i)) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+This usage brings us down to 1.14 seconds, so we're still not good. The next
+variant is performing similar: 1.05 seconds.
+
+\starttyping
+\startMPcode{doublefun}
+  runscript("mp.LoadMyData('foo.tmp')") ;
+  numeric l ;
+  for i=1 step 1 until runscript("mp.MyDataSize()") :
+    l := length(runscript("mp.MyDataString(" & decimal i & ")")) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+We will now delegate scanning to the \LUA\ end.
+
+\starttyping
+\startluacode
+  local injectnumeric = mp.inject.numeric
+  local injectstring  = mp.inject.string
+  local scannumeric   = mp.scan.numeric
+  local scanstring    = mp.scan.string
+  local MyData = { }
+  function mp.LoadMyData()
+    MyData = string.splitlines(io.loaddata(scanstring()))
+  end
+  function mp.MyDataSize()
+    injectnumeric(#MyData)
+  end
+  function mp.MyDataString()
+    injectstring(MyData[scannumeric()] or "")
+  end
+\stopluacode
+\stoptyping
+
+This time we are faster than the clumsy code we started with: 0.87 seconds.
+
+\starttyping
+\startMPcode{doublefun}
+  runscript("mp.LoadMyData()") "foo.tmp" ;
+  numeric l ;
+  for i=1 step 1 until runscript("mp.MyDataSize()") :
+    l := length(runscript("mp.MyDataString()") i) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+In \LMTX\ we can add some more abstraction. Performance is about the same and
+sometimes a bit faster but that depends on extreme usage: you need thousands of
+call to notice.
+
+\starttyping
+\startluacode
+  local injectnumeric = mp.inject.numeric
+  local injectstring  = mp.inject.string
+  local scannumeric   = mp.scan.numeric
+  local scanstring    = mp.scan.string
+  local MyData = { }
+  metapost.registerscript("LoadMyData", function()
+    MyData = string.splitlines(io.loaddata(scanstring()))
+  end)
+  metapost.registerscript("MyDataSize", function()
+    injectnumeric(#MyData)
+  end)
+  metapost.registerscript("MyDataString", function()
+    injectstring(MyData[scannumeric()] or "")
+  end)
+\stopluacode
+\stoptyping
+
+We have the same scripts but we register them. At the \METAPOST\ end we resolve
+the registered scripts and then call \type {runscript} with the (abstract) numeric
+value:
+
+\starttyping
+\startMPcode{doublefun}
+  newscriptindex my_script_LoadMyData   ;
+  newscriptindex my_script_MyDataSize   ;
+  newscriptindex my_script_MyDataString ;
+
+  my_script_LoadMyData   := scriptindex "LoadMyData"   ;
+  my_script_MyDataSize   := scriptindex "MyDataSize"   ;
+  my_script_MyDataString := scriptindex "MyDataString" ;
+
+  runscript my_script_LoadMyData "foo.tmp" ;
+  numeric l ;
+  for i=1 step 1 until runscript my_script_MyDataSize :
+    l := length(my_script_MyDataString i) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+This is of course nicer:
+
+\starttyping
+\startMPcode{doublefun}
+  def LoadMyData  (expr s) = runscript my_script_LoadMyData   s enddef ;
+  def MyDataSize           = runscript my_script_MyDataSize     enddef ;
+  def MyDataString(expr i) = runscript my_script_MyDataString i enddef ;
+
+  LoadMyData("foo.tmp") ;
+  numeric l ;
+  for i=1 step 1 until MyDataSize :
+    l := length(MyDataString(i)) ;
+  endfor ;
+  draw textext(decimal l);
+\stopMPcode
+\stoptyping
+
+So, to sumarize, there are many ways to look at this: verbose direct ones
+but also nicely abstract ones.
 
 \stopsection
 

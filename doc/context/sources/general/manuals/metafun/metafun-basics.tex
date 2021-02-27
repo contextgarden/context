@@ -463,7 +463,7 @@ draw boundingcircle p withpen pencircle scaled 1mm withcolor .625yellow ;
 
 You can consider the \type {boundingcircle} to be a round boundingbox.
 
-\startlinecorrection
+\startlinecorrection[blank]
 \startcombination[nx=3,ny=1,location=middle]
     {\processMPbuffer[a]} {square}
     {\processMPbuffer[b]} {circle}
@@ -3593,6 +3593,70 @@ a default value of 20.
         {\processMPbuffer[b]} {}
     \stopcombination
 \stopplacefigure
+
+\stopsection
+
+\startsection[title=Grouping]
+
+The grouping model in \METAPOST\ is kind of special. Basically anything that
+happens in a group is processed in some nested action and doesn't interfere with
+the outside. However, the last value put (back) into the input is picked up after
+the group. A \type {vardef} acts that way:
+
+\startbuffer
+vardef foo (expr i, j) =
+  save ii, jj ; ii := 2*i ; jj :=j/2 ;
+  (i, j) -- (ii,jj)
+enddef ;
+
+draw (foo(1,2) .. foo(5,1) .. foo(12,3))
+    ysized 1cm
+    withpen pencircle scaled 2mm
+    withcolor darkred ;
+
+draw boundingbox currentpicture withcolor darkyellow ;
+\stopbuffer
+
+\typebuffer
+
+This weird shape comes out:
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+We save two variables, and then give new local numerics with their names some
+values. Then we \quote {return} a path. A \type {vardef} automatically starts
+with a \type {begingroup} and ends with an \type {endgroup}. The next example
+shows how we can use that grouping trick directly. The \type {--} has to come
+before the \type {begingroup}.
+
+\startbuffer
+vardef turtle expr p =
+  save a ; pair a ; a := point 0 of p ; a
+  for i = 1 upto length(p) if cycle p : - 1 fi :
+    -- begingroup a := a shifted point i of p ; a endgroup
+  endfor
+  if cycle p : -- cycle fi
+enddef ;
+
+draw        ((0, 0) -- (10, 0) -- (100, 10) -- (-5,20) -- cycle)
+    withpen pencircle scaled 2 withcolor darkred ;
+draw turtle ((0, 0) -- (10, 0) -- (100, 10) -- (-5,20) -- cycle)
+    withpen pencircle scaled 2 withcolor darkyellow ;
+\stopbuffer
+
+\typebuffer
+
+Turtle graphics use relative positions. Actually they use one number and switch
+direction but the above is okay too. Effectively we loop over the path and use
+each point as a relative move, so we recalculate it.
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+We could have said \type {-- hide(a := a shifted point i of p) a} because the
+\type {hide} macro does that the grouping trick.
 
 \stopsection
 

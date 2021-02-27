@@ -1,0 +1,339 @@
+%D \module
+%D   [       file=meta-txt,
+%D        version=2000.07.06,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Text Tricks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D See comments in the \MKIV\ module. This is an upgraded version for \LMTX,
+%D where we can so some things nicer.
+
+\unprotect
+
+%D Text in shapes. Here we use the option to prune a parshape when a new paragraph
+%D is seen. It's an experimental feature so I need to keep an eye on how it evolves.
+%D This time we combine \TEX, \METAPOST\ and \LUA, so we do't need a temporary file
+%D to communicate from \METAPOST\ to \TEX. We just store information in \LUA\ tables.
+
+\ifdefined\startshapetext
+
+    % now moved into the core
+
+\else
+
+    \ifdefined\shapetextbox \else
+        \newbox  \shapetextbox
+        \newcount\shapetextindex
+    \fi
+
+    \ctxloadluafile{meta-imp-txt.lmt}
+
+    \startMPextensions loadmodule "text" ; \stopMPextensions
+
+    \protected\def\startshapetext[#1]%
+      {\begingroup
+       \global\shapetextindex\zerocount
+       \global\setbox\shapetextbox\vbox\bgroup
+         % analyze the mp shapes
+         \ctxlua{metapost.parshapes.reset()}
+         \def\docommand##1%
+           {\ctxlua{metapost.parshapes.next()}%
+            \startMPcalculation
+              \includeMPgraphic{##1}%
+            \stopMPcalculation}%
+         \processcommalist[#1]\docommand
+         \forgetall
+         \dontcomplain
+         % setup tex part (maybe just enable grid snapping)
+         \setuptolerance[\v!verytolerant,\v!stretch]% default
+         \setuplayout[\c!grid=\v!yes]%
+         \ctxlua{metapost.parshapes.wholeshape()}%
+         \pushparagraphtweak {prune}}
+
+    \protected\def\stopshapetext
+      {\popparagraphtweak
+       \egroup
+       \endgroup}
+
+    \def\getshapeparameter#1{\ctxlua{metapost.parshapes.get(\number\shapetextindex,"#1")}}
+
+    \protected\def\getshapetext
+      {\vbox\bgroup
+       \forgetall
+       \dontcomplain
+       \global\advance\shapetextindex\plusone
+       \scratchcounter\getshapeparameter{lines}\relax
+       \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
+       \scratchheight \getshapeparameter{height}\scaledpoint\relax
+       \setbox\scratchbox\vpack to \scratchheight
+         {\splittopskip\strutheight
+          \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+          \ifcase\numexpr\getshapeparameter{first}\relax\else
+            \vskip\lineheight
+          \fi
+          \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+          \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
+       \wd\scratchbox\scratchwidth
+       \ht\scratchbox\scratchheight
+       \dp\scratchbox\zeropoint
+       \box\scratchbox
+       \egroup}
+
+\fi
+
+%D Following:
+
+% \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}
+%
+% \unexpanded\def\getfollowtoken#1%
+%  {\hbox\bgroup
+%     \strut
+%     \ctxlua{mp.follow_text(#1)}%
+%   \egroup}
+
+\definefontfeature[mp:tp][liga=no]
+
+% if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
+% if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
+% if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
+% if al < len[n]:
+%    RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
+%    al := arclength RotPath ;
+% fi ;
+% if TraceRot :
+%    draw RotPath withpen pencircle scaled 1pt withcolor blue ;
+% fi ;
+% if TraceRot :
+%     draw boundingbox currentpicture withpen pencircle scaled .25pt withcolor blue ;
+% fi ;
+
+\protected\def\dofollowtokens#1#2%
+  {\dontleavehmode
+   \vpack\bgroup
+   \forgetall
+   \dontcomplain
+   \addff{mp:tp}%
+   \startMPcode
+      \includeMPgraphic{followtokens}
+      draw lmt_followtext [ path = RotPath, text = "#2", spread = #1 ] ;
+   \stopMPcode
+   \egroup}
+
+\protected\def\followtokens        {\dofollowtokens{true}}
+\protected\def\followtokenscentered{\dofollowtokens{false}}
+
+%D Fuzzy counters:
+
+\startuseMPgraphic{fuzzycount}
+    begingroup
+        save height, span, drift, d, cp ;
+        height := 3/ 5 * LineHeight ;
+        span   := 1/ 3 * height ;
+        drift  := 1/10 * height ;
+        pickup pencircle scaled (1/12 * height) ;
+        def d = (uniformdeviate drift) enddef ;
+        for i := 1 upto \MPvar{n} :
+            draw
+                if (i mod 5)=0 : ((-d - 4.5span,d) -- (d -0.5span,height - d))
+                else           : ((-d,          d) -- (d,         height - d)) fi
+                shifted (span*i,d-drift) ;
+        endfor;
+        picture cp ; cp := currentpicture ; % for readability
+        setbounds currentpicture to
+            (llcorner cp shifted (0,-ypart llcorner cp) --
+             lrcorner cp shifted (0,-ypart lrcorner cp) --
+             urcorner cp                                --
+             ulcorner cp                                -- cycle) ;
+    endgroup ;
+\stopuseMPgraphic
+
+\setupMPvariables
+  [fuzzycount]
+  [n=10]
+
+\protected\def\fuzzycount#1%
+  {\dontleavehmode\bgroup
+     \tx
+     \useMPgraphic{fuzzycount}{n=#1}%
+   \egroup}
+
+\defineconversion[fuzzy][\fuzzycount]
+
+%D English rules:
+
+\setupMPvariables
+  [EnglishRule]
+  [height=1ex,
+   width=\localhsize,
+   color=darkgray]
+
+\defineblank
+  [EnglishRule]
+  [medium]
+
+\startuniqueMPgraphic{EnglishRule}{height,width,color}
+    x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
+    y1 = y3 = 0 ; y2 = -y4 = \MPvar{height} / 2 ;
+    fill z1 .. z2 .. z3 & z3 .. z4 .. z1 & cycle withcolor \MPvar{color} ;
+\stopuniqueMPgraphic
+
+\protected\def\EnglishRule
+  {\startlinecorrection[EnglishRule]%
+     \setlocalhsize
+     \noindentation
+     \reuseMPgraphic{EnglishRule}%
+   \stoplinecorrection}
+
+%D Tight text (for old times sake): the following macro returns a tight bound
+%D character sequence.
+%D
+%D \useMPlibrary[txt]
+%D
+%D \startlinecorrection
+%D \TightText{\ss\bf 123}{0cm}{3cm}{red}
+%D \stoplinecorrection
+
+\protected\def\TightText#1#2#3#4%
+  {\hpack
+     {\startMPcode
+        picture p ; p := image (graphictext "#1" withfillcolor red) ;
+        draw p xsized #2 ysized #3 withcolor \MPcolor{#4} ;
+      \stopMPcode}}
+
+\protected\def\TightText#1#2#3#4%
+  {\dontleavehmode
+   \startMPcode
+      draw outlinetext.f ("#1") (\iftok{#4}\emptytoks \else withcolor \MPcolor{#4} \fi)
+        \iftok{#2}\emptytoks \else xsized #2 \fi
+        \iftok{#3}\emptytoks \else ysized  #3 \fi
+      ;
+   \stopMPcode}
+
+\protect
+
+\continueifinputfile{meta-imp-txt.mkxl}
+
+\setupbodyfont[pagella,10pt]
+
+% \useMPlibrary[txt]
+
+\starttext
+
+%D Shapes:
+
+\startuseMPgraphic{test 1}
+    path p ; p := fullcircle scaled 6cm ;
+
+    build_parshape(p,BodyFontSize/2,0,0,LineHeight,StrutHeight,StrutDepth,StrutHeight) ;
+
+    draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 2}
+    path p ; p := fullsquare rotated 45 scaled 5cm ;
+
+    build_parshape(p,BodyFontSize/2,0,0,LineHeight,StrutHeight,StrutDepth,StrutHeight) ;
+
+    draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 3}
+    numeric w, h ; w := h := 6cm ;
+    path p ; p := (.5w,h) -- (0,h) -- (0,0) -- (w,0) &
+        (w,0) .. (.75w,.5h) .. (w,h) & (w,h) -- cycle ;
+
+    build_parshape(p,BodyFontSize/2,0,0,LineHeight,StrutHeight,StrutDepth,StrutHeight) ;
+
+    draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 4}
+    numeric w, h, o, d ;
+
+    def shape = (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
+        (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
+    enddef ;
+
+    d := BodyFontSize/2;
+
+    w := h := 6cm ; o := d ; path p ; p := shape ;
+    w := h := 6cm ; o := 0 ; path q ; q := shape ;
+
+    build_parshape(p,q,d,d,LineHeight,StrutHeight,StrutDepth,StrutHeight) ;
+
+    draw q withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+
+\defineoverlay[test 1][\useMPgraphic{test 1}]
+\defineoverlay[test 2][\useMPgraphic{test 2}]
+\defineoverlay[test 3][\useMPgraphic{test 3}]
+\defineoverlay[test 4][\useMPgraphic{test 4}]
+
+\startbuffer
+    \startshapetext[test 1,test 2,test 3,test 4]
+        \setupalign[verytolerant,stretch,normal]%
+        \samplefile{douglas} % Douglas R. Hofstadter
+    \stopshapetext
+    \startTEXpage[offset=10pt]
+        \startcombination[2*2]
+            {\framed[offset=overlay,frame=off,background=test 1]{\getshapetext}} {test 1}
+            {\framed[offset=overlay,frame=off,background=test 2]{\getshapetext}} {test 2}
+            {\framed[offset=overlay,frame=off,background=test 3]{\getshapetext}} {test 3}
+            {\framed[offset=overlay,frame=off,background=test 4]{\getshapetext}} {test 4}
+        \stopcombination
+    \stopTEXpage
+\stopbuffer
+
+\getbuffer
+
+\startMPextensions
+    boolean trace_parshape ; trace_parshape := true ;
+\stopMPextensions
+
+\getbuffer
+
+%D Fuzzycount (maybe handy):
+
+\startitemize[fuzzy,nostopper]
+    \startitem This is real fuzzy. \stopitem
+    \startitem But it can be even more fuzzier. \stopitem
+    \startitem And how about this. \stopitem
+\stopitemize
+
+\EnglishRule
+
+\startitemize[continue,broad]
+    \startitem This is real fuzzy. \stopitem
+    \startitem But it can be even more fuzzier. \stopitem
+    \startitem And how about this. \stopitem
+\stopitemize
+
+%D Tight text (manual stuff):
+
+\ruledhbox{\TightText{oeps wat doet dit}{10cm}{1cm}{red}}   \blank
+\ruledhbox{\TightText{oeps wat doet dit}{10cm}{}   {green}} \blank
+\ruledhbox{\TightText{oeps wat doet dit}{}    {1cm}{blue}}  \blank
+\ruledhbox{\TightText{oeps wat doet dit}{}    {}   {}}      \blank
+
+%D Old fashioned:
+
+\startuseMPgraphic{followtokens}
+    path RotPath ; RotPath := reverse halfcircle xyscaled 3cm  ;
+    draw RotPath ;
+\stopuseMPgraphic
+
+\startTEXpage
+    \followtokens{{\hskip1em}some text{\hskip1em}}
+\stopTEXpage
+
+\startTEXpage
+    \followtokenscentered{{\hskip1em}some text{\hskip1em}}
+\stopTEXpage
+
+\stoptext

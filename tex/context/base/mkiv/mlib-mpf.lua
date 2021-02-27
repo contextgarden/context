@@ -927,6 +927,11 @@ do
     function mp.setcount(k,v) setcount(k,v) end
     function mp.settoks (k,v) settoks (k,v) end
 
+    function mp.setglobalmacro(k,v) setmacro(k,v,"global") end
+    function mp.setglobaldimen(k,v) setdimen("global",k,v/bpfactor) end
+    function mp.setglobalcount(k,v) setcount("global",k,v) end
+    function mp.setglobaltoks (k,v) settoks ("global",k,v) end
+
     -- def foo = lua.mp.foo ... enddef ; % loops due to foo in suffix
 
     mp._get_macro_ = mp.getmacro
@@ -938,6 +943,11 @@ do
     mp._set_dimen_ = mp.setdimen
     mp._set_count_ = mp.setcount
     mp._set_toks_  = mp.settoks
+
+    mp._set_global_macro_ = mp.setglobalmacro
+    mp._set_global_dimen_ = mp.setglobaldimen
+    mp._set_global_count_ = mp.setglobalcount
+    mp._set_global_toks_  = mp.setglobaltoks
 
 end
 

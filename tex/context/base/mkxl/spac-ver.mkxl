@@ -112,12 +112,12 @@
 \aliased\let\setrelativeinterlinespace    \relax % used elsewhere
 \mutable\let\currentrelativeinterlinespace\empty
 
-\setvalue{\??interlinespacerelative\v!on   }{\oninterlineskip}
-\setvalue{\??interlinespacerelative\v!off  }{\offinterlineskip}
-\setvalue{\??interlinespacerelative\v!reset}{\enforced\let\currentrelativeinterlinespace\empty
-                                             \enforced\let\setrelativeinterlinespace\relax
-                                             \setfontparameters}
-\setvalue{\??interlinespacerelative\v!auto }{\enforced\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
+\defcsname\??interlinespacerelative\v!on   \endcsname{\oninterlineskip}
+\defcsname\??interlinespacerelative\v!off  \endcsname{\offinterlineskip}
+\defcsname\??interlinespacerelative\v!reset\endcsname{\enforced\let\currentrelativeinterlinespace\empty
+                                                      \enforced\let\setrelativeinterlinespace\relax
+                                                      \setfontparameters}
+\defcsname\??interlinespacerelative\v!auto \endcsname{\enforced\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
 \def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
   {\doifelsedimenstring{#1}%
@@ -1244,14 +1244,14 @@
 
 %D Keyword based strutting:
 
-\letvalue{\??struts\v!yes    }\setstrut
-\letvalue{\??struts\v!auto   }\setautostrut
-\letvalue{\??struts\v!no     }\setnostrut
-\letvalue{\??struts\v!cap    }\setcapstrut
-\letvalue{\??struts\v!fit    }\setfontstrut
-\letvalue{\??struts\v!line   }\setstrut
-\letvalue{\??struts\s!default}\setstrut
-\letvalue{\??struts\empty    }\setstrut
+\letcsname\??struts\v!yes    \endcsname\setstrut
+\letcsname\??struts\v!auto   \endcsname\setautostrut
+\letcsname\??struts\v!no     \endcsname\setnostrut
+\letcsname\??struts\v!cap    \endcsname\setcapstrut
+\letcsname\??struts\v!fit    \endcsname\setfontstrut
+\letcsname\??struts\v!line   \endcsname\setstrut
+\letcsname\??struts\s!default\endcsname\setstrut
+\letcsname\??struts\empty    \endcsname\setstrut
 
 %D Handy:
 
@@ -2333,12 +2333,12 @@
   {\stopbaselinecorrection
    \egroup}
 
-\letvalue{\??fixedalternatives   \v!high}\bbox
-\letvalue{\??fixedalternatives    \v!low}\tbox
-\letvalue{\??fixedalternatives \v!middle}\vcenter
-\letvalue{\??fixedalternatives   \v!lohi}\vcenter
-\letvalue{\??fixedalternatives\s!unknown}\tbox
-\letvalue{\??fixedalternatives\s!default}\tbox
+\letcsname\??fixedalternatives   \v!high\endcsname\bbox
+\letcsname\??fixedalternatives    \v!low\endcsname\tbox
+\letcsname\??fixedalternatives \v!middle\endcsname\vcenter
+\letcsname\??fixedalternatives   \v!lohi\endcsname\vcenter
+\letcsname\??fixedalternatives\s!unknown\endcsname\tbox
+\letcsname\??fixedalternatives\s!default\endcsname\tbox
 
 \protected\def\typo_fixed_finish#1%
   {\expandnamespacevalue\??fixedalternatives{#1}\s!default{\box\nextbox}}

@@ -26,5 +26,35 @@
 %registerctxluafile{node-ltp}{optimize}
 \registerctxluafile{node-ltp}{}
 \registerctxluafile{trac-par}{}
+\registerctxluafile{typo-par}{}
+
+%D Just a reminder:
+%D
+%D \starttyping
+%D \def\whatever#1{#1mm \dimexpr\hsize-#1mm\relax}
+%D
+%D \parshape
+%D     14
+%D     options 1 % repeat
+%D     \whatever{0} \whatever {2}\whatever {4}\whatever{6}\whatever{8}\whatever{10}\whatever{12}\whatever{14}
+%D     \whatever{12}\whatever{10}\whatever{8}\whatever{6}\whatever {4}\whatever {2}
+%D \pushparagraphtweak {repeat}
+%D     \dorecurse{10}{\samplefile{tufte} \samplefile{tufte} \par}
+%D \popparagraphtweak
+%D \page
+%D
+%D \dorecurse{2}{
+%D     \parshape 4 5mm 125mm 0mm 120mm 5mm 125mm 0mm 120mm
+%D     \pushparagraphtweak {repeat}
+%D         \dorecurse{10}{
+%D             verse line 1\crlf
+%D             verse line 2\crlf
+%D             verse line 3\crlf
+%D             verse line 4\par
+%D         }
+%D     \popparagraphtweak
+%D     \page
+%D }
+%D \stoptyping
 
 \protect \endinput

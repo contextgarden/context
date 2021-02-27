@@ -1,0 +1,157 @@
+%D \module
+%D   [       file=mp-text.mpiv,
+%D        version=2000.07.10,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=text support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D This one is only used in metafun so it will become a module.
+
+if known context_text : endinput ; fi ;
+
+boolean context_text ; context_text := true ;
+
+% This is still mostly the same as the one discussed in the good old \METAFUN\
+% example code but modernized abit to suit \LMTX.
+
+newscriptindex mfid_setparshapeproperty ; mfid_setparshapeproperty := scriptindex "setparshapeproperty" ;
+
+def build_parshape (expr p, offset_or_path, dx, dy, baselineskip, strutheight, strutdepth, topskip) =
+
+    if unknown trace_parshape :
+        boolean trace_parshape ; trace_parshape := false ;
+    fi ;
+
+    begingroup ;
+
+    save
+        q, l, r, line, tt, bb,
+        n, hsize, vsize, vvsize, voffset, hoffset, width, indent,
+        ll, lll, rr, rrr, cp, cq, t, b ;
+
+    path
+        q, l, r, line, tt, bb ;
+    numeric
+        n, hsize, vsize, vvsize, voffset, hoffset, width[], indent[] ;
+    pair
+        ll, lll, rr, rrr, cp, cq, t, b ;
+
+    n  := 0 ;
+    cp := center p ;
+
+    if path offset_or_path :
+        q       := offset_or_path ;
+        cq      := center q ;
+        voffset := dy ;
+        hoffset := dx ;
+    else :
+        q       := p ;
+        cq      := center q ;
+        hoffset := offset_or_path + dx ;
+        voffset := offset_or_path + dy ;
+    fi ;
+
+    hsize := xpart lrcorner q - xpart llcorner q ;
+    vsize := ypart urcorner q - ypart lrcorner q ;
+
+    q := p shifted - cp ;
+
+    runscript mfid_setparshapeproperty "voffset" voffset ;
+    runscript mfid_setparshapeproperty "hoffset" hoffset ;
+    runscript mfid_setparshapeproperty "width"   hsize ;
+    runscript mfid_setparshapeproperty "height"  vsize ;
+
+    if not path offset_or_path :
+        q := q xscaled ((hsize-2hoffset)/hsize) yscaled ((vsize-2voffset)/vsize) ;
+    fi ;
+
+    hsize := xpart lrcorner q - xpart llcorner q ;
+    vsize := ypart urcorner q - ypart lrcorner q ;
+
+    t := (ulcorner q -- urcorner q) intersection_point q ;
+    b := (llcorner q -- lrcorner q) intersection_point q ;
+
+    if xpart directionpoint t of q < 0 :
+        q := reverse q ;
+    fi ;
+
+    l := q cutbefore t ;
+    l := l if xpart point 0 of q < 0 : & q fi cutafter b ;
+
+    r := q cutbefore b ;
+    r := r if xpart point 0 of q > 0 : & q fi cutafter t ;
+
+    vardef found_point (expr lin, pat, sig) =
+        pair a, b ;
+        a := pat intersection_point (lin shifted (0,strutheight)) ;
+        if intersection_found :
+        a := a shifted (0,-strutheight) ;
+        else :
+        a := pat intersection_point lin ;
+        fi ;
+        b := pat intersection_point (lin shifted (0,-strutdepth)) ;
+        if intersection_found :
+            if sig :
+                if xpart b > xpart a : a := b shifted (0,strutdepth) fi ;
+            else :
+                if xpart b < xpart a : a := b shifted (0,strutdepth) fi ;
+            fi ;
+        fi ;
+        a
+    enddef ;
+
+    if (strutheight+strutdepth<baselineskip) :
+        vvsize := vsize ;
+    else :
+        vvsize := (vsize div baselineskip) * baselineskip ;
+    fi ;
+
+    runscript mfid_setparshapeproperty "first" false ;
+
+    for i=topskip step baselineskip until vvsize :
+
+        line := (ulcorner q -- urcorner q) shifted (0,-i-eps) ;
+
+        ll := found_point(line,l,true ) ;
+        rr := found_point(line,r,false) ;
+
+        if trace_parshape :
+            fill (ll--rr--rr shifted (0,strutheight)--ll shifted (0,strutheight)--cycle) shifted cp withcolor .6white ;
+            fill (ll--rr--rr shifted (0,-strutdepth)--ll shifted (0,-strutdepth)--cycle) shifted cp withcolor .8white ;
+            draw ll shifted cp withpen pencircle scaled 2pt ;
+            draw rr shifted cp withpen pencircle scaled 2pt ;
+            draw (ll--rr) shifted cp  withpen pencircle scaled .5pt ;
+        fi ;
+
+        n := n + 1 ;
+        indent[n] := abs(xpart ll - xpart llcorner q) ;
+        width[n]  := abs(xpart rr - xpart ll) ;
+
+        if (i=strutheight) and (width[n]<baselineskip) :
+            n := n - 1 ;
+            runscript mfid_setparshapeproperty "first" true ;
+        fi ;
+
+    endfor ;
+
+    if trace_parshape :
+        drawarrow p            withpen pencircle scaled 2pt withcolor red ;
+        drawarrow l shifted cp withpen pencircle scaled 1pt withcolor green ;
+        drawarrow r shifted cp withpen pencircle scaled 1pt withcolor blue ;
+    fi ;
+
+    runscript mfid_setparshapeproperty "lines" n ;
+
+    for i=1 upto n:
+        runscript mfid_setparshapeproperty "line" i (indent[i]) (width[i]) ;
+    endfor ;
+
+    endgroup ;
+
+enddef ;

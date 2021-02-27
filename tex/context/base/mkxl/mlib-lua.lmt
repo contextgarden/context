@@ -9,8 +9,14 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 local type = type
 local insert, remove = table.insert, table.remove
 
+local trace  = false  trackers.register("metapost.instance",function(v) trace = v end)
+
+local report = logs.reporter("metapost","instance")
+
 local codes = mplib.getcodes()
 local types = mplib.gettypes()
+
+-- for k,v in next, mplib do if type(v) == "function" then local f = v mplib[k] = function(...) print(k) return v(...) end end end
 
 table.hashed(codes)
 table.hashed(types)
@@ -25,6 +31,9 @@ local inject = mp.inject
 
 local currentmpx = nil
 local stack      = { }
+
+local function reports(s) report("%a scan %s",  tostring(currentmpx),s) end -- temporary, till we're okay
+local function reporti(s) report("%a inject %s",tostring(currentmpx),s) end -- temporary, till we're okay
 
 local scan_next       = mplib.scan_next
 local scan_expression = mplib.scan_expression
@@ -46,21 +55,21 @@ local skip_token      = mplib.skip_token
 
 local get_hashentry   = mplib.gethashentry
 
-scan.next       = function(k)   return scan_next      (currentmpx,k)   end
-scan.expression = function(k)   return scan_expression(currentmpx,k)   end
-scan.token      = function(k)   return scan_token     (currentmpx,k)   end
-scan.symbol     = function(k,e) return scan_symbol    (currentmpx,k,e) end
-scan.property   = function(k)   return scan_property  (currentmpx,k)   end
-scan.numeric    = function()    return scan_numeric   (currentmpx)     end
-scan.integer    = function()    return scan_integer   (currentmpx)     end
-scan.boolean    = function()    return scan_boolean   (currentmpx)     end
-scan.string     = function()    return scan_string    (currentmpx)     end
-scan.pair       = function(t)   return scan_pair      (currentmpx,t)   end
-scan.color      = function(t)   return scan_color     (currentmpx,t)   end
-scan.cmykcolor  = function(t)   return scan_cmykcolor (currentmpx,t)   end
-scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
-scan.path       = function(t)   return scan_path      (currentmpx,t)   end
-scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
+scan.next       = function(k)   if trace then reporti("next")       end return scan_next      (currentmpx,k)   end
+scan.expression = function(k)   if trace then reporti("expression") end return scan_expression(currentmpx,k)   end
+scan.token      = function(k)   if trace then reporti("token")      end return scan_token     (currentmpx,k)   end
+scan.symbol     = function(k,e) if trace then reporti("symbol")     end return scan_symbol    (currentmpx,k,e) end
+scan.property   = function(k)   if trace then reporti("property")   end return scan_property  (currentmpx,k)   end
+scan.numeric    = function()    if trace then reporti("numeric")    end return scan_numeric   (currentmpx)     end
+scan.integer    = function()    if trace then reporti("integer")    end return scan_integer   (currentmpx)     end
+scan.boolean    = function()    if trace then reporti("boolean")    end return scan_boolean   (currentmpx)     end
+scan.string     = function()    if trace then reporti("string")     end if currentmpx then return scan_string    (currentmpx) end    end
+scan.pair       = function(t)   if trace then reporti("pair")       end return scan_pair      (currentmpx,t)   end
+scan.color      = function(t)   if trace then reporti("color")      end return scan_color     (currentmpx,t)   end
+scan.cmykcolor  = function(t)   if trace then reporti("cmykcolor")  end return scan_cmykcolor (currentmpx,t)   end
+scan.transform  = function(t)   if trace then reporti("transform")  end return scan_transform (currentmpx,t)   end
+scan.path       = function(t)   if trace then reporti("path")       end return scan_path      (currentmpx,t)   end
+scan.pen        = function(t)   if trace then reporti("pen")        end return scan_pen       (currentmpx,t)   end
 
 skip.token      = function(t)   return skip_token     (currentmpx,t)   end
 
@@ -84,16 +93,17 @@ local inject_cmykcolor = mplib.inject_cmykcolor
 local inject_transform = mplib.inject_transform
 local inject_whatever  = mplib.inject_whatever
 
-------.path      = function(t,cycle,curled)  return inject_path     (currentmpx,t,cycle,curled)  end
-inject.numeric   = function(n)               return inject_numeric  (currentmpx,n)               end
-inject.pair      = function(x,y)             return inject_pair     (currentmpx,x,y)             end
-inject.boolean   = function(b)               return inject_boolean  (currentmpx,b)               end
-inject.integer   = function(i)               return inject_integer  (currentmpx,i)               end
-inject.string    = function(s)               return inject_string   (currentmpx,s)               end
-inject.color     = function(r,g,b)           return inject_color    (currentmpx,r,g,b)           end
-inject.cmykcolor = function(c,m,y,k)         return inject_cmykcolor(currentmpx,c,m,y,k)         end
-inject.transform = function(x,y,xx,xy,yx,yy) return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
-inject.whatever  = function(...)             return inject_whatever (currentmpx,...)             end
+
+------.path      = function(t,cycle,curled)  if trace then reporti("path")      end return inject_path     (currentmpx,t,cycle,curled)  end
+inject.numeric   = function(n)               if trace then reporti("numeric")   end return inject_numeric  (currentmpx,n)               end
+inject.pair      = function(x,y)             if trace then reporti("pair")      end return inject_pair     (currentmpx,x,y)             end
+inject.boolean   = function(b)               if trace then reporti("boolean")   end return inject_boolean  (currentmpx,b)               end
+inject.integer   = function(i)               if trace then reporti("integer")   end return inject_integer  (currentmpx,i)               end
+inject.string    = function(s)               if trace then reporti("string")    end return inject_string   (currentmpx,s)               end
+inject.color     = function(r,g,b)           if trace then reporti("color")     end return inject_color    (currentmpx,r,g,b)           end
+inject.cmykcolor = function(c,m,y,k)         if trace then reporti("cmykcolor") end return inject_cmykcolor(currentmpx,c,m,y,k)         end
+inject.transform = function(x,y,xx,xy,yx,yy) if trace then reporti("transform") end return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
+inject.whatever  = function(...)             if trace then reporti("whatever")  end return inject_whatever (currentmpx,...)             end
 
 inject.triplet    = inject.color
 inject.quadruplet = inject.cmykcolor
@@ -136,6 +146,7 @@ function inject.path(p,close,connector)
             end
         end
     end
+    if trace then reporti("path") end
     return inject_path(currentmpx,p,close,curled)
 end
 
@@ -173,12 +184,19 @@ function mp.autoinject(m)
 end
 
 function metapost.pushscriptrunner(mpx)
-    insert(stack,mpx)
+    if trace then
+        report("%a => %a",tostring(currentmpx),tostring(mpx))
+    end
+    insert(stack,currentmpx)
     currentmpx = mpx
 end
 
 function metapost.popscriptrunner()
-    currentmpx = remove(stack,mpx)
+    local mpx = remove(stack)
+    if trace then
+        report("%a <= %a",tostring(mpx),tostring(currentmpx))
+    end
+    currentmpx = mpx
 end
 
 function metapost.currentmpx()

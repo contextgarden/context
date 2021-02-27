@@ -771,7 +771,7 @@
    \begingroup
    \def\pack_fillinrules_rule_indeed{\unhbox\nextbox\unskip}% hm, needs checking
    \dowithnextbox{\fillinrules[#1]{#2}{\hfill#3}}%
-   \hbox\bgroup\let\par\egroup\ignorespaces}
+   \hbox\bgroup\enforced\let\par\egroup\ignorespaces} % bah, i will drop this compatibility hack
 
 %D \macros
 %D   {fillinline, setupfillinlines}

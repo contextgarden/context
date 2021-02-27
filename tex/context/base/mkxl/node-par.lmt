@@ -13,36 +13,76 @@ local sequencers  = utilities.sequencers
 
 -- This are called a lot!
 
-local actions = nodes.tasks.actions("everypar")
+do
 
-local function everypar(head)
-    starttiming(builders)
-    head = actions(head)
-    stoptiming(builders)
-    return head
-end
+    local actions = nodes.tasks.actions("everypar")
 
-callbacks.register("insert_par",everypar,"after paragraph start")
-
-local actions = sequencers.new {
-    name         = "paragraph",
-    arguments    = "mode,indented",
-    returnvalues = "indented",
-    results      = "indented",
-}
-
-sequencers.appendgroup(actions,"before") -- user
-sequencers.appendgroup(actions,"system") -- private
-sequencers.appendgroup(actions,"after" ) -- user
-
-local function paragraph(mode,indented)
-    local runner = actions.runner
-    if runner then
+    local function everypar(head)
         starttiming(builders)
-        indented = runner(mode,indented)
+        head = actions(head)
         stoptiming(builders)
+        return head
     end
-    return indented
+
+    callbacks.register("insert_par",everypar,"after paragraph start")
+
 end
 
-callbacks.register("begin_paragraph",paragraph,"before paragraph start")
+do
+
+    local actions = sequencers.new {
+        name         = "paragraph",
+        arguments    = "mode,indented,context",
+        returnvalues = "indented",
+        results      = "indented",
+    }
+
+    sequencers.appendgroup(actions,"before") -- user
+    sequencers.appendgroup(actions,"system") -- private
+    sequencers.appendgroup(actions,"after" ) -- user
+
+    local function paragraph(mode,indented)
+        local runner = actions.runner
+        if runner then
+            starttiming(builders)
+            indented = runner(mode,indented)
+            stoptiming(builders)
+        end
+        return indented
+    end
+
+    callbacks.register("begin_paragraph",paragraph,"before paragraph start")
+
+end
+
+-- This one is a playground for some old metafun gimmicks that I want to improve
+-- while I'm updating the manual to lmtx. but it might also be useful for other
+-- purposes. It fits in the category obscure and probably takes while to stabelize
+-- (if it stays at all).
+
+do
+
+    local actions = sequencers.new {
+        name         = "paragraphcontext",
+        arguments    = "context",
+        returnvalues = "ignore",
+        results      = "ignore",
+    }
+
+    ----------.appendgroup(actions,"before") -- user
+    sequencers.appendgroup(actions,"system") -- private
+    ----------.appendgroup(actions,"after" ) -- user
+
+    local function parcontext(parcontext)
+        local runner = actions.runner
+        if runner then
+            starttiming(builders)
+            local ignore = runner(parcontext)
+            stoptiming(builders)
+            return ignore
+        end
+    end
+
+    callbacks.register("paragraph_context",parcontext,"when the context is dealt with")
+
+end

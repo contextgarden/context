@@ -149,6 +149,11 @@ def setdimen(expr k,v) = lua.mp._set_dimen_(k,v) enddef ;
 def setcount(expr k,v) = lua.mp._set_count_(k,v) enddef ;
 def settoks (expr k,v) = lua.mp._set_toks_ (k,v) enddef ;
 
+def setglobalmacro(expr k,v) = lua.mp._set_global_macro_(k,v) enddef ;
+def setglobaldimen(expr k,v) = lua.mp._set_global_dimen_(k,v) enddef ;
+def setglobalcount(expr k,v) = lua.mp._set_global_count_(k,v) enddef ;
+def setglobaltoks (expr k,v) = lua.mp._set_global_toks_ (k,v) enddef ;
+
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
 vardef positionxy    (expr name) = lua.mp.positionxy    (name) enddef ;

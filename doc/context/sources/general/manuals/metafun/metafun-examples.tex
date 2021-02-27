@@ -3264,6 +3264,259 @@ We get:
 
 \stopsection
 
+\startsection[title=Educational]
+
+I made this example long ago, when some family member had to learn tables by
+heart. For some reason, at school, this is made into a complex issue, with tricks
+and such, even it if only involves only a few numbers. My own experience (if I
+remember right) was that some of these numbers are trivial, and that there is
+quite some symmetry, so in practice only a quarter needs to be remembered. And,
+assuming that you can easily deduct the trivial cases, one can just calculate the
+rest if needed.
+
+\startbuffer
+\start \ttbf \startMPcode
+  def MyDraw(expr i, j, c) =
+    fill fullsquare shifted (i,j) withcolor c withtransparency (1,.5) ;
+  enddef ;
+
+  for i = 1 upto 10 :
+  for j = 1 upto 10 : MyDraw( i,  -j, "middlered"   ) ; endfor ; endfor ;
+
+  for j = 1 upto 10 : MyDraw( 1,  -j, "middleblue"  ) ; endfor ;
+  for i = 1 upto 10 : MyDraw( i, -10, "middlegreen" ) ; endfor ;
+  for i = 1 upto 10 : MyDraw( i,  -1, "middleyellow") ; endfor ;
+  for j = 1 upto 10 : MyDraw(10,  -j, "middlecyan"  ) ; endfor ;
+  for j = 1 upto 10 : MyDraw( 5,  -j, "middlegray"  ) ; endfor ;
+  for j = 1 upto 10 : MyDraw( j,  -j, "middlegray"  ) ; endfor ;
+
+  draw image ( for i = 1 upto 10 : for j = 1 upto 10 :
+    draw textext(decimal (i*j)) ysized .25 shifted (i,-j) ;
+  endfor ; endfor ; ) withcolor white ;
+
+  currentpicture := currentpicture ysized 10cm ;
+\stopMPcode \stop
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title=Overlapping glyphs,reference=fig:tentable]
+    \getbuffer
+\stopplacefigure
+
+Here we use both transparency and colors to stress the reduction of cases. The
+named colors resolve to ones defined at the \TEX\ end. We see the redndering
+\in {figure} [fig:tentable].
+
+\startsection[title=Glyph magic]
+
+The next example is the result of a tread on the mailing list. After Henri Menke
+posted a some glyph overlap code, I made a variant that more suited the way we do
+it in \METAFUN. In the meantime Floris van Maanen had found out that some glyphs
+need a more inventive solution so after that the code evolved. By then the \type
+{outlinetext}, \type {drawoutlinetext} and \type {filloutlinetext} helpers had
+been added to the code base.
+
+Because this is complicated stuff, we just show the two solutions. The first one
+is a relative simple one, the second one uses an approach suggested by Alan
+Braslau and therefore uses some of the code that can be found in the \type
+{crossingunder} macro.
+
+\startbuffer
+\startMPdefinitions
+def ShowOverlapInOutlinesA(expr first, second) =
+  path p_i, p_j, s_i, s_j ;
+  numeric n_i, n_j, index ;
+  pair found ;
+  index := 0 ;
+  for i within first :
+    for j within second :
+      p_i := pathpart i ; n_i := length(p_i) ;
+      p_j := pathpart j ; n_j := length(p_j) ;
+      for ii = 0 upto n_i - 1 :
+        s_i := subpath(ii,ii+1) of p_i ;
+        for jj = 0 upto n_j - 1 :
+          s_j := subpath(jj,jj+1) of p_j ;
+          found := s_i intersection_point s_j ;
+          if intersection_found :
+            index := index + 1 ;
+            drawdot found
+              withpen pencircle scaled 4 withcolor white ;
+            draw textext("\strut\ttbf " & decimal index) ysized 3
+              shifted found ;
+          fi ;
+        endfor ;
+      endfor ;
+    endfor ;
+  endfor ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This is the solution based on \type {crossingunder}, a macro that has been
+introduced as part of Alan's neat node module.
+
+\startbuffer
+\startMPdefinitions
+def ShowOverlapInOutlinesB(expr first, second) =
+  begingroup ;
+    save p, q, n, t, a, b, c, bcuttings, hold, found ;
+    path p, q ;
+    numeric n, hold ;
+    path a, b, c, bcuttings ;
+    pair found ;
+    c := makepath(currentpen scaled crossingscale) ;
+    for f within first :
+      numeric t[];
+      path hold[];
+      t[0] := n := hold := 0 ;
+      for s within second :
+        p := pathpart f ;
+        q := pathpart s ;
+        a := p ;
+        for i=1 upto crossingnumbermax : % safeguard
+          clearxy ; z = a intersectiontimes q ;
+          if x < 0 :
+            exitif hold < 1 ;
+            a := hold[hold] ; hold := hold - 1 ;
+            clearxy ; z = a intersectiontimes q ;
+          fi
+          (t[incr n], whatever) = p intersectiontimes point x of a ;
+          if x = 0 :
+            a := a cutbefore c shifted point x of a ;
+          elseif x = length a :
+            a := a cutafter  c shifted point x of a ;
+          else : % before or after?
+            b := subpath (0,x)        of a cutafter  c shifted point x of a ;
+            bcuttings := cuttings ;
+            a := subpath (x,length a) of a cutbefore c shifted point x of a ;
+            clearxy ; z = a intersectiontimes q ;
+            if x < 0 :
+              a := b ;
+              cuttings := bcuttings ;
+            elseif length bcuttings > 0 :
+              clearxy ; z = b intersectiontimes q ;
+              if x >= 0 :
+                hold[incr hold] := b ;
+              fi
+            fi
+          fi
+          if length cuttings = 0 :
+            exitif hold < 1 ;
+            a := hold[hold] ; hold := hold - 1 ;
+          fi
+        endfor ;
+      endfor ;
+      t[incr n] = length p ;
+      for i=1 upto n :
+        found := point t[i] of p ;
+        drawdot found
+          withpen pencircle scaled 4 withcolor white ;
+        draw textext("\strut\ttbf " & decimal i) ysized 3
+          shifted found ;
+      endfor ;
+    endfor ;
+  endgroup ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We demonstrate the differences with an example. The result can be seen in
+\in {figure} [fig:overlapping:a].
+
+\startbuffer
+\startcombination
+  {\startMPcode
+      picture first, second ;
+     first  := outlinetext.p("N") ; first  := first  scaled 10 ;
+     second := outlinetext.p("T") ; second := second scaled 10 ;
+     second := second rotatedaround(center second, 5) shifted (1,-1) ;
+     filloutlinetext(first ) withcolor .5[darkblue,white] ;
+     filloutlinetext(second) withcolor .5[darkred,white] ;
+     drawoutlinetext(first ) ;
+     drawoutlinetext(second) ;
+     ShowOverlapInOutlinesA(first, second) ;
+     addbackground withcolor darkgray ;
+     currentpicture := currentpicture scaled 2.5 ;
+   \stopMPcode} {Method A}
+   {\startMPcode
+      picture first, second ;
+      first  := outlinetext.p("N") ; first  := first  scaled 10 ;
+      second := outlinetext.p("T") ; second := second scaled 10 ;
+      second := second rotatedaround(center second, 5) shifted (1,-1) ;
+      filloutlinetext(first ) withcolor .5[darkgreen,white] ;
+      filloutlinetext(second) withcolor .5[darkyellow,white] ;
+      drawoutlinetext(first ) ;
+      drawoutlinetext(second) ;
+      ShowOverlapInOutlinesB(first, second) ;
+      addbackground withcolor darkgray ;
+      currentpicture := currentpicture scaled 2.5 ;
+    \stopMPcode} {Method B}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title=Overlapping glyphs,reference=fig:overlapping:a]
+    \getbuffer
+\stopplacefigure
+
+We duplicate some code because the pictures will change in the process of
+analyzing. Let's make a helper for that:
+
+\startbuffer
+\startMPdefinitions
+def ShowOverlap(expr f, s, m) =
+  picture first, second ;
+  first  := outlinetext.p(f) ; first  := first  scaled 10 ;
+  second := outlinetext.p(s) ; second := second scaled 10 ;
+
+  filloutlinetext(first ) withcolor darkblue ;
+  drawoutlinetext(first ) ;
+
+  filloutlinetext(second) withcolor darkred  ;
+  drawoutlinetext(second) ;
+
+  if m == 2 :
+    ShowOverlapInOutlinesB
+  else :
+    ShowOverlapInOutlinesA
+  fi (first, second) ;
+
+  addbackground withcolor darkgray ;
+  currentpicture := currentpicture ysized 4cm ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Again we demonstrate the differences with some examples. The result can be seen in
+\in {figure} [fig:overlapping:b].
+
+\startbuffer
+  \startcombination[nx=3,ny=2]
+    {\startMPcode ShowOverlap("N","T",1)                 ; \stopMPcode} {Method 1}
+    {\startMPcode ShowOverlap("\$","Q",1)                ; \stopMPcode} {Method 1}
+    {\startMPcode ShowOverlap("\tttf ABC","\tttf PQR",1) ; \stopMPcode} {Method 1}
+    {\startMPcode ShowOverlap("N","T",2)                 ; \stopMPcode} {Method 2}
+    {\startMPcode ShowOverlap("\$","Q",2)                ; \stopMPcode} {Method 2}
+    {\startMPcode ShowOverlap("\tttf ABC","\tttf PQR",2) ; \stopMPcode} {Method 2}
+  \stopcombination
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title=Overlapping glyphs,reference=fig:overlapping:b]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

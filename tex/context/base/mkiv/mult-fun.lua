@@ -176,6 +176,7 @@ return {
         "isarray", "prefix", "dimension",
         "getmacro", "getdimen", "getcount", "gettoks",
         "setmacro", "setdimen", "setcount", "settoks",
+        "setglobalmacro", "setglobaldimen", "setglobalcount", "setglobaltoks",
         --
         "positionpath", "positioncurve", "positionxy", "positionpxy",
         "positionwhd", "positionpage", "positionregion", "positionbox",

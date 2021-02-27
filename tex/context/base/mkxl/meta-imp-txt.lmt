@@ -1,0 +1,86 @@
+if not modules then modules = { } end modules ['meta-imp-txt'] = {
+    version   = 1.001,
+    comment   = "companion to meta-imp-txt.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local setmetatableindex = table.setmetatableindex
+
+local texset      = tex.set
+
+local scannumeric = mp.scan.numeric
+local scaninteger = mp.scan.integer
+local scanboolean = mp.scan.boolean
+local scanstring  = mp.scan.string
+
+local bpfactor    = number.dimenfactors.bp
+
+local metapost  = metapost
+
+local parshapes  = { }
+local properties = { }
+
+-- initialize shapes to 0 hsize
+
+metapost.parshapes = { }
+
+function metapost.parshapes.reset()
+    parshapes  = { }
+    properties = { }
+end
+
+function metapost.parshapes.next()
+    properties = { }
+    parshapes[#parshapes+1] = properties
+end
+
+function metapost.parshapes.inspect()
+    inspect(parshapes)
+end
+
+function metapost.parshapes.get(index,name)
+    local v = parshapes[index][name]
+    if type(v) == "boolean" then
+        context(v and 1 or 0)
+    else
+        context(v)
+    end
+end
+
+function metapost.parshapes.wholeshape() -- maybe just collect them earlier
+    local t, n = { }, 0
+    for i=1,#parshapes do
+        local s = parshapes[i].shape
+        for i=1,#s do
+            n = n + 1
+            t[n] = s[i]
+        end
+    end
+    texset("parshape",t)
+end
+
+metapost.registerscript("setparshapeproperty", function()
+    local k = scanstring()
+    if k == "line" then
+        local entry  = properties.shape[scannumeric()]
+        local indent = scannumeric() / bpfactor
+        local width  = scannumeric() / bpfactor
+        entry[1] = indent
+        entry[2] = width
+    elseif k == "lines" then
+        properties.lines = scaninteger()
+        properties.shape = setmetatableindex(function(t,k)
+            local v = { 0, properties.width or 0 }
+            t[k] = v
+            return v
+        end)
+    elseif k == "first" then
+        properties[k] = scanboolean()
+    elseif k == "inspect" then
+        inspect(properties)
+    else
+        properties[k] = scannumeric() / bpfactor
+    end
+end)

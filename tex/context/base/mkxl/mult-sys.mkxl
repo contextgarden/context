@@ -571,7 +571,7 @@
 %D The setup files for the language, font, color and special subsystems have a common
 %D prefix. This means that we have at most three characters for unique filenames.
 
-\definefileconstant {colo_run} {s-colors-run}
+\definefileconstant {colo_run} {s-colors-show}
 \definefileconstant {font_run} {s-fonts-show}
 \definefileconstant {page_run} {s-layout-show}
 \definefileconstant {symb_run} {s-symbols-show}

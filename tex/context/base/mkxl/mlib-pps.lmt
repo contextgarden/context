@@ -565,26 +565,6 @@ local function checkaskedfig(askedfig) -- return askedfig, wrappit
     end
 end
 
-local function extrapass()
-    if trace_runs then
-        report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
-    end
-    metapost.preparetextextsdata()
-    runmetapost {
-        mpx         = top.mpx,
-        askedfig    = top.askedfig,
-        incontext   = true,
-        data        = {
-            top.wrappit and do_begin_fig or "",
-            no_trial_run,
-            top.initializations,
-            do_safeguard,
-            top.data,
-            top.wrappit and do_end_fig or "",
-        },
-    }
-end
-
 -- This one is called from the \TEX\ end so the specification is different
 -- from the specification to metapost,run cum suis! The definitions and
 -- extension used to be handled here but are now delegated to the format

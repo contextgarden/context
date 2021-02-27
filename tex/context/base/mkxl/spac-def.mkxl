@@ -45,7 +45,7 @@
 % maybe more
 
 \prependtoks
-    \let\par\normalpar
+    \enforced\let\par\normalpar
 \to \everybeforepagebody % see \fillinline (was endgraf)
 
 % needs checking:

@@ -161,7 +161,15 @@ newscriptindex mfid_setdimen ; mfid_setdimen := scriptindex "setdimen" ; def set
 newscriptindex mfid_setcount ; mfid_setcount := scriptindex "setcount" ; def setcount(expr k, v) = runscript mfid_setcount k v ; enddef ;
 newscriptindex mfid_settoks  ; mfid_settoks  := scriptindex "settoks"  ; def settoks (expr k, v) = runscript mfid_settoks  k v ; enddef ;
 
-permanent getmacro, getdimen, getcount, gettoks, setmacro, setdimen, setcount, settoks ;
+newscriptindex mfid_setglobalmacro ; mfid_setglobalmacro := scriptindex "setglobalmacro" ; def setglobalmacro(expr k, v) = runscript mfid_setglobalmacro k v ; enddef ;
+newscriptindex mfid_setglobaldimen ; mfid_setglobaldimen := scriptindex "setglobaldimen" ; def setglobaldimen(expr k, v) = runscript mfid_setglobaldimen k v ; enddef ;
+newscriptindex mfid_setglobalcount ; mfid_setglobalcount := scriptindex "setglobalcount" ; def setglobalcount(expr k, v) = runscript mfid_setglobalcount k v ; enddef ;
+newscriptindex mfid_setglobaltoks  ; mfid_setglobaltoks  := scriptindex "setglobaltoks"  ; def setglobaltoks (expr k, v) = runscript mfid_setglobaltoks  k v ; enddef ;
+
+permanent
+    getmacro, getdimen, getcount, gettoks,
+    setmacro, setdimen, setcount, settoks,
+    setglobalmacro, setglobaldimen, setglobalcount, setglobaltoks ;
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;

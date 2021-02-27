@@ -354,9 +354,10 @@
 \protected\def\dousepublications#1%
   {\doonlyonce{#1.\f!bibextension}{\dodousepublications{#1}}}
 
+\pushoverloadmode
+
 \protected\def\dodousepublications#1% brr, this par stuff
-  {\let\@@savedpar\par
-   \let\par\ignorespaces
+  {\enforced\let\par\ignorespaces
    \ifhmode\kern\zeropoint\fi
    \pushcatcodetable
    \setcatcodetable\ctxcatcodes
@@ -365,7 +366,9 @@
      {\showmessage\m!publications{2}{#1.\f!bibextension}}%
    \popcatcodetable
    \ifhmode\removeunwantedspaces\fi
-   \let\par\@@savedpar}
+   \enforced\let\par\normalpar}
+
+\popoverloadmode
 
 %D \macros{setuppublicationlist}
 %D

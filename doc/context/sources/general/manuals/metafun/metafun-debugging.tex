@@ -56,9 +56,8 @@ parent point with thin lines.
 \processMPbuffer
 \stoplinecorrection
 
-You can deduce the direction of a path from the way the
-points are numbered, but using an arrow to indicate the
-direction is more clear.
+You can deduce the direction of a path from the way the points are numbered, but
+using an arrow to indicate the direction is more clear.
 
 \startbuffer
 path p ; p := fullcircle xscaled 4cm yscaled 3cm ;
@@ -375,6 +374,164 @@ When we overlay these three we get. The envelope only returns the outer curve.
     {\getbuffer[c]}
 \stopoverlay
 \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Performance]
+
+On the average performance of \METAPOST\ is quite okay. The original program uses
+scaled numbers, which are floats packed into an integer. The library also
+supports doubles, decimal and binary number models. In \CONTEXT\ we only support
+scaled, double and decimal. Because the library has to support multiple models
+there is more overhead and therefore it is also slower. There's also more dynamic
+memory allocation going on. In the transition from \MKII\ to \MKIV\ some of the
+critical code (like the code involved in passing \TEX\ states to \METAPOST) had
+to be optimized, although when the \LUA\ interface was added, betters ways became
+possible. We have to accept the penalty in performance and often can gain back a
+lot because we have the \LUA\ interface.
+
+One of the main bottlenecks in storing quantities. \footnote {Recently, Taco
+Hoekwater has done some excellent explanations about the way \METAPOST\ scans the
+input and create variables and you can find his presentations at meetings on the
+\CONTEXT\ garden.} When we see something \type {a[1]} and \type {a[3]} the \type
+{a} is a root variable and the \type {1} and {3} are entries in a linked list
+from that root. It's not an array in the sense that there is some upper bound and
+that there's also a slot \type {2}. There is order but the list is sparse. When
+access is needed, for instance to do some calculations, a linear lookup (from the
+head of the list) takes place. This is quite okay performance wise because
+normally these list are small. The same is true for a path, which is also a
+linked list. If you need point 25, it is looked up by starting at the first knot
+of the path. The longer the path, the more time it takes to reach arbitrary
+points. In the \LUA\ chapter we give an example of how to get around that
+limitation.
+
+Concerning the arrays, here is s trick to get around a performance bottleneck:
+
+\starttyping
+numeric foo[];
+
+def set_foo(expr c, s) =
+    foo[c] := s ;
+enddef ;
+
+def get_foo(expr c) =
+    foo[c]
+enddef ;
+\stoptyping
+
+If you use this as follows:
+
+\starttyping
+numeric n ; n = 123 ;
+
+for i=1 upto 20000 :
+    set_foo(i,n) ;
+endfor ;
+
+for i=1 upto 20000 :
+    n := get_foo(i) ;
+endfor ;
+\stoptyping
+
+the runtime can (for instance) be 3.3 seconds, but when you use the following
+variant, it goes down to 0.13 seconds.
+
+\starttyping
+numeric foo[][][][]; % 12345 : 1  12  123  44 instead of 12344
+
+def set_foo(expr c, s) =
+    foo[c div 10000][c div 1000][c div 100][c] := s ;
+enddef ;
+def get_foo(expr c) =
+    foo[c div 10000][c div 1000][c div 100][c]
+enddef ;
+\stoptyping
+
+This time the lookup is not split into phases each being relatively fast. So, in
+order to reach slot 1234 the engine doesn't have to check and jump over what
+comes before that. You basically create a tree here: 0 (hit), 1000 (hit in one),
+200 (hit in two), 34 (hit in 34). We could go to a single digit but that doesn't
+save much. Before we had ways to store data at the \LUA\ end we used this a few
+times in macros that dealt with data (like Alan Braslau's node and graphics
+modules). This is typically something one can figure out by looking at the (non
+trivial) source code.
+
+Here is another example. In \LUA\ we can easily create a large file, like this:
+
+\starttyping
+\startluacode
+  local t = { }
+  for i=1,10000 do
+    t[i] = string.rep(
+      "here we have number " ..
+      tostring(i) ..
+      " out of the 10000 numbers that we will test"
+    ,100)
+  end
+  t = table.concat(t,"\n")
+  io.savedata("foo1.tmp",t)
+  io.savedata("foo2.tmp",t)
+  io.savedata("foo3.tmp",t)
+\stopluacode
+\stoptyping
+
+We make two copies because we do two experiments and we want to treat them equal with
+respect to caching.
+
+\starttyping
+\startMPcode
+  string f ; f := "foo1.tmp" ;
+  string s[] ;
+  numeric n ; n := 0 ;
+  for i=1 upto 10000 :
+    s[i] := readfrom f ;
+    exitif s[i] = EOF ;
+    n := n + 1 ;
+  endfor ;
+\stopMPcode
+\stoptyping
+
+Say that this runs in 2.2 seconds, how come that the next one runs in 1.7 seconds
+instead?
+
+\starttyping
+\startMPcode
+  string f ; f := "foo2.tmp" ;
+  string s[] ;
+  string ss ;
+  numeric n ; n := 0 ;
+  for i=1 upto 10000 :
+    ss := readfrom f ;
+    exitif ss = EOF ;
+    s[i] := ss ;
+    n := n + 1 ;
+  endfor ;
+\stopMPcode
+\stoptyping
+
+The main reason is that the first case we have two lookups in the linked list
+that determines variable \type {s} and the longer the list, the more time it will
+take. In the second case we use an intermediate variable. Although that means
+extra memory (de)allocation it still pays of. In practice you don't need to worry
+too much about it but of course we can again follow the tree approach:
+
+\startMPcode
+  string f ; f := "foo3.tmp" ;
+  string s[][][] ;
+  string ss ;
+  numeric n ; n := 0 ;
+  for i=1 upto 10000 :
+    ss := readfrom f ;
+    exitif ss = EOF ;
+    s[i div 1000][i div 100][i] := ss ;
+    n := n + 1 ;
+  endfor ;
+\stopMPcode
+
+This time we go down to 1.5 second. Timings could be a bit different in \MKIV\ and
+\LMTX\ because in \LUAMETATEX\ all \METAPOST\ file \IO\ goes through \LUA\ but the
+relative performance gains are the same. With \LUATEX\ and \MKIV\ I measures
+2.9, 2.5 and 2.1 and with \LUAMETATEX\ and \LMTX\ I got 2.3, 1.7 and 1.5.
 
 \stopsection
 

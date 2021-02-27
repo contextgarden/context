@@ -33,19 +33,19 @@
      \fi
    \endcsname}
 
-\setvalue{\??lastnodepusher\number\kernnodecode}%
+\defcsname\??lastnodepusher\number\kernnodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\kern\the\lastkern\relax}%
    \kern-\lastkern}
 
-\setvalue{\??lastnodepusher\number\gluenodecode}%
+\defcsname\??lastnodepusher\number\gluenodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\vskip\the\lastskip\relax}%
    \vskip-\lastskip}
 
-\setvalue{\??lastnodepusher\number\penaltynodecode}%
+\defcsname\??lastnodepusher\number\penaltynodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\penalty\the\lastpenalty\relax}%
    \nobreak}
 
-\setvalue{\??lastnodepusher\s!unknown}%
+\defcsname\??lastnodepusher\s!unknown\endcsname
   {\enforced\permanent\let\poplastnode\relax}
 
 %D Moved from supp-box:

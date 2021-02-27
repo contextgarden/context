@@ -76,7 +76,7 @@
    \endgroup}
 
 \permanent\protected\def\installshipoutmethod#1#2%      % a handler takes one argument: something to be boxed
-  {\setgvalue{\??shipoutmethod#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
+  {\gdefcsname\??shipoutmethod#1\endcsname##1{#2{##1}}} % and shipped out (don't depend on the exact package)
 
 \aliased\let\installpagehandler\installshipoutmethod % will go
 
@@ -257,7 +257,7 @@
    \global\advance\paperheight-2\dimexpr\paperoffset/\arrangedpageY\relax}
 
 \permanent\protected\def\doinstallarrangedoption#1#2%
-  {\setvalue{\??layoutarrangeoption#1}{#2}}
+  {\gdefcsname\??layoutarrangeoption#1\endcsname{#2}}
 
 \permanent\def\doinstalledarrangedoption#1%
   {\ifcsname\??layoutarrangeoption#1\endcsname
@@ -306,6 +306,10 @@
 \doinstallarrangedoption\v!background
   {\global\settrue\arrangedbackgroundstate}
 
+\aliased\let\poparrangedpages  \relax
+\aliased\let\pusharrangedpage  \gobbleoneargument
+\aliased\let\handlearrangedpage\relax
+
 \permanent\protected\def\setuparranging[#1]%
   {\ifconditional\arrangingdisabledstate \else
      %global\setfalse\arrangingdisabledstate
@@ -316,9 +320,10 @@
      \global\setfalse\arrangedswapstate
      \gdef\arrangedrotationO{0}%
      \gdef\arrangedrotationE{180}%
+     % if we use --arrange we have an initial "disable" here
      \processcommalist[#1]\doinstalledarrangedoption
-     \ifdefined\handlearrangedpage\else
-       \global\arrangingpagesfalse
+     \ifrelax\poparrangedpages
+       \global\arrangingpagesfalse % nothing set yet
      \fi
      \setuppapersize
      \ifarrangingpages
@@ -331,14 +336,10 @@
    \fi}
 
 \permanent\protected\def\installpagearrangement #1 % will change, no space
-  {\setgvalue{\??layoutarranger#1}}
+  {\gdefcsname\??layoutarranger#1\endcsname}
 
 \permanent\def\checkinstalledpagearrangement#1% can be empty: aaa,,bbb
   {\begincsname\??layoutarranger#1\endcsname}
-
-\aliased\let\poparrangedpages  \relax
-\aliased\let\pusharrangedpage  \relax
-\aliased\let\handlearrangedpage\relax
 
 \permanent\protected\def\dosetuparrangement#1#2#3#4#5#6#7#8%
   {\global\arrangedpageX  #1%
@@ -346,9 +347,9 @@
    \global\arrangedpageT  #3%
    \global\c_page_marks_nx#4%
    \global\c_page_marks_ny#5%
-   \enforced\permanent\glet\pusharrangedpage  #6%
-   \enforced\permanent\glet\poparrangedpages  #7%
-   \enforced\permanent\glet\handlearrangedpage#8}
+   \enforced\glet\pusharrangedpage  #6%
+   \enforced\glet\poparrangedpages  #7%
+   \enforced\glet\handlearrangedpage#8}
 
 \installpagearrangement {\v!normal}
   {\global\arrangingpagesfalse}

@@ -1131,9 +1131,9 @@
 
 %D For now here: will get a proper solution
 
-\pushoverloadmode
-\mutable\let\par\par
-\popoverloadmode
+% \pushoverloadmode
+% \mutable\let\par\par
+% \popoverloadmode
 
 %D Also here:
 

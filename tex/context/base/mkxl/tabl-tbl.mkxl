@@ -760,11 +760,11 @@
 
 \installcorenamespace{tabulatecolorspec}
 
-\setvalue{\??tabulatecolorspec C}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\zerocount}
-\setvalue{\??tabulatecolorspec L}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusone  }
-\setvalue{\??tabulatecolorspec M}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plustwo  }
-\setvalue{\??tabulatecolorspec R}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusthree}
-\setvalue{\??tabulatecolorspec T}#1{\xdef\m_tabl_tabulate_text_color{#1}}
+\defcsname\??tabulatecolorspec C\endcsname#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\zerocount}
+\defcsname\??tabulatecolorspec L\endcsname#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusone  }
+\defcsname\??tabulatecolorspec M\endcsname#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plustwo  }
+\defcsname\??tabulatecolorspec R\endcsname#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusthree}
+\defcsname\??tabulatecolorspec T\endcsname#1{\xdef\m_tabl_tabulate_text_color{#1}}
 
 \def\tabl_tabulate_set_color_span#1#2%
   {\csname\??tabulatecolorspec#1\endcsname{#2}%
@@ -1163,19 +1163,40 @@
    \let\currenttabulationparent\empty
    \tabl_start_regular}
 
+% \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
+%   {\let\currenttabulation\currenttabulationparent
+%    \iftok{#1}\emptytoks
+%      \ifhastok={#2}\relax
+%        \setupcurrenttabulation[#2]%
+%      \fi
+%    \orelse\ifhastok={#1}\relax
+%      \iftok{#2}\emptytoks\else
+%         \settabulationparameter\c!format{#2}%
+%      \fi
+%      \setupcurrenttabulation[#1]%
+%    \else
+%      \settabulationparameter\c!format{#1}%
+%      \ifhastok={#2}\relax
+%        \setupcurrenttabulation[#2]%
+%      \fi
+%    \fi
+%    \tabl_tabulate_start_building}
+
 \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
   {\let\currenttabulation\currenttabulationparent
    \iftok{#1}\emptytoks
      \ifhastok={#2}\relax
        \setupcurrenttabulation[#2]%
      \fi
-   \orelse\ifhastok={#1}
-     \ifhastok{#2}\relax
+   \orelse\ifhastok={#1}\relax
+     \iftok{#2}\emptytoks\else
         \settabulationparameter\c!format{#2}%
      \fi
      \setupcurrenttabulation[#1]%
    \else
-     \settabulationparameter\c!format{#1}%
+     \iftok{#1}\emptytoks\else
+       \settabulationparameter\c!format{#1}%
+     \fi
      \ifhastok={#2}\relax
        \setupcurrenttabulation[#2]%
      \fi
@@ -1194,10 +1215,10 @@
     \enforced\letvalue{\e!start\v!tabulate}\tabl_tabulate_start_ignore % only the main one
 \to \everytabulate
 
-\setvalue{\??tabulatesplit\v!yes   }{\settrue\c_tabl_tabulate_split}
-\setvalue{\??tabulatesplit\v!repeat}{\settrue\c_tabl_tabulate_split}
-\setvalue{\??tabulatesplit\v!no    }{\setfalse\c_tabl_tabulate_split}
-\setvalue{\??tabulatesplit\v!auto  }{\ifinsidefloat\ifinsidesplitfloat\else\setfalse\c_tabl_tabulate_split\fi\fi}
+\defcsname\??tabulatesplit\v!yes   \endcsname{\settrue\c_tabl_tabulate_split}
+\defcsname\??tabulatesplit\v!repeat\endcsname{\settrue\c_tabl_tabulate_split}
+\defcsname\??tabulatesplit\v!no    \endcsname{\setfalse\c_tabl_tabulate_split}
+\defcsname\??tabulatesplit\v!auto  \endcsname{\ifinsidefloat\ifinsidesplitfloat\else\setfalse\c_tabl_tabulate_split\fi\fi}
 
 % todo: spacing around tabulate when bodyfont is set
 
@@ -1548,13 +1569,13 @@
   {\enforced\let#1\tabl_tabulate_column_inject_auto
    \enforced\let\\\tabl_tabulate_column_inject_auto} % brrr, will go
 
-\setvalue{\??tabulateseparator\v!blank }{\s_tabl_tabulate_separator\bigskipamount}
-\setvalue{\??tabulateseparator\v!depth }{\s_tabl_tabulate_separator\strutdp}
-\setvalue{\??tabulateseparator\v!small }{\def\m_tabl_tabulate_separator_factor{.25}}
-\setvalue{\??tabulateseparator\v!medium}{\def\m_tabl_tabulate_separator_factor{.5}}
-\setvalue{\??tabulateseparator\v!big   }{}
-\setvalue{\??tabulateseparator\v!none  }{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
-\setvalue{\??tabulateseparator\v!grid  }{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
+\defcsname\??tabulateseparator\v!blank \endcsname{\s_tabl_tabulate_separator\bigskipamount}
+\defcsname\??tabulateseparator\v!depth \endcsname{\s_tabl_tabulate_separator\strutdp}
+\defcsname\??tabulateseparator\v!small \endcsname{\def\m_tabl_tabulate_separator_factor{.25}}
+\defcsname\??tabulateseparator\v!medium\endcsname{\def\m_tabl_tabulate_separator_factor{.5}}
+\defcsname\??tabulateseparator\v!big   \endcsname{}
+\defcsname\??tabulateseparator\v!none  \endcsname{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
+\defcsname\??tabulateseparator\v!grid  \endcsname{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
 
 \def\tabl_tabulate_column_rule_separator_step#1%
   {\ifcsname\??tabulateseparator#1\endcsname
@@ -1758,13 +1779,13 @@
 %D Beware, we cannot use \type {\protected} on \type {\HL} cum suis, since \TEX's
 %D hard coded noalign lookahead fails on it! I mistakenly added this for a while.
 
-\setvalue{\??tabulatealigning\v!normal}{0}
-\setvalue{\??tabulatealigning\v!right }{1}
-\setvalue{\??tabulatealigning\v!left  }{2}
-\setvalue{\??tabulatealigning\v!middle}{3}
+\defcsname\??tabulatealigning\v!normal\endcsname{0}
+\defcsname\??tabulatealigning\v!right \endcsname{1}
+\defcsname\??tabulatealigning\v!left  \endcsname{2}
+\defcsname\??tabulatealigning\v!middle\endcsname{3}
 
-\setvalue{\??tabulateheader\v!repeat}{\plusone}
-\setvalue{\??tabulateheader\v!text  }{\plustwo}
+\defcsname\??tabulateheader\v!repeat\endcsname{\plusone}
+\defcsname\??tabulateheader\v!text  \endcsname{\plustwo}
 
 \protected\def\tabl_tabulate_bskip_first {\setbox\b_tabl_tabulate\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
 \protected\def\tabl_tabulate_eskip_first {\par\egroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_yes}
@@ -2584,13 +2605,13 @@
 
 \pushoverloadmode
 
-\permanent\protected\setuvalue{starttabulate}%
+\permanent\protected\defcsname starttabulate\endcsname
   {\bgroup % whole thing
    \settrue\c_tabl_generic
    \let\currenttabulationparent\empty
    \tabl_start_regular}
 
-\permanent\letvalue{stoptabulate}\relax % testcase cvs-002.tex
+\permanent\letcsname stoptabulate\endcsname\relax % testcase cvs-002.tex
 
 \popoverloadmode
 
