@@ -1,0 +1,125 @@
+%D \module
+%D   [       file=typo-shp,
+%D        version=2021.02.27, % was meta-txt / meta-imp-txt / 2000.07.06
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Paragraph Shapes,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I finally decided to move some of the code written in 2000 for the
+%D \METAFUN\ manual to its own core module. Of course it got adapted
+%D to the way \LMTX\ does things.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Paragraph Shapes}
+
+\registerctxluafile{typo-shp}{autosuffix}
+
+\unprotect
+
+%D Something new (experimental and evolving):
+%D
+%D \starttyping
+%D \parshape
+%D      3
+%D      options 1 % repeat
+%D      0cm 10cm 2cm 8cm 4cm 6cm
+%D      lots of text
+%D \stoptyping
+%D
+%D \starttyping
+%D \parshape 4 5mm 125mm 0mm 120mm 5mm 125mm 0mm 120mm
+%D \pushparagraphtweak {repeat}
+%D     verse line 1\crlf
+%D     verse line 2\crlf
+%D     verse line 3\crlf
+%D     verse line 4\par
+%D     etc
+%D \popparagraphtweak
+%D \stoptyping
+
+%D But we wrap this in a more abstract interface:
+
+\installcorenamespace {parshapes}
+
+\aliased\let\stopparagraphshape\relax
+
+\permanent\protected\def\startparagraphshape[#1]#2\stopparagraphshape
+  {\defcsname\??parshapes#1\endcsname{#2}}
+
+\permanent\protected\def\rawparagraphshape#1%
+  {\begincsname\??parshapes#1\endcsname}
+
+\permanent\protected\def\setparagraphshape[#1]%
+  {\ifcsname\??parshapes#1\endcsname
+     \expandafter\clf_setparagraphshape\lastnamedcs done\relax
+   \fi}
+
+\def\spac_shapes_calculate#1% called locally in \LUA
+  {\startMPcalculation \includeMPgraphic{#1} \stopMPcalculation}
+
+\permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
+  {\begingroup
+   \getdummyparameters[\c!method=,\c!list=,\c!mp=,\c!repeat=,#1]%
+   \edef\p_mp    {\dummyparameter\c!mp}%
+   \edef\p_repeat{\dummyparameter\c!repeat}%
+   \normalexpanded
+     {\endgroup
+      \ifempty\p_mp
+        \setparagraphshape[\dummyparameter\c!list]%
+      \else
+        \setparagraphmetashape[\dummyparameter\c!mp][\ifx\p_repeat\v!yes repeat\fi]%
+      \fi
+      \pushparagraphtweak{\dummyparameter\c!method}\relax}}
+
+\permanent\protected\def\stopshapedparagraph
+  {\popparagraphtweak}
+
+%D As it is not much code we now put it here:
+
+\newbox  \shapetextbox
+\newcount\shapetextindex
+
+\permanent\protected\def\startshapetext[#1]%
+  {\begingroup
+   \global\shapetextindex\zerocount
+   \global\setbox\shapetextbox\vbox\bgroup
+     \setparagraphmetashape[#1]%
+     \forgetall
+     \dontcomplain
+     \setuptolerance[\v!verytolerant,\v!stretch]% default
+   % \setuplayout[\c!grid=\v!yes]% goes wrong, we need a local one
+     \pushparagraphtweak {shift}}
+
+\permanent\protected\def\stopshapetext
+  {\popparagraphtweak
+   \egroup
+   \endgroup}
+
+\permanent\protected\def\getshapetext
+  {\vbox\bgroup
+   \forgetall
+   \dontcomplain
+   \global\advance\shapetextindex\plusone
+   \scratchcounter\getshapeparameter{lines}\relax
+   \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
+   \scratchheight \getshapeparameter{height}\scaledpoint\relax
+   \setbox\scratchbox\vpack to \scratchheight
+     {\splittopskip\strutheight
+      \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+      \ifcase\numexpr\getshapeparameter{first}\relax\else
+        \vskip\lineheight
+      \fi
+      \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+      \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
+   \wd\scratchbox\scratchwidth
+   \ht\scratchbox\scratchheight
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
+   \egroup}
+
+\protect

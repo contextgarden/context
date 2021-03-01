@@ -3464,12 +3464,8 @@ let dump = relax ;
 
 def loadmodule expr name = % no vardef
     % input can't be used directly in a macro
-    if unknown scantokens("context_" & name) :
-        save s ; string s ;
-      % s := "mp-" & name & ".mpiv" ;
-      % message("loading module",s) ;
-      % s := "input " & s ;
-        s := "input " & "mp-" & name & ".mpiv" ;
+    if (unknown scantokens("context_" & name)) and (unknown scantokens("metafun_loaded" & name)) :
+        save s ; string s ; s := "input " & ditto & "mp-" & name & ditto;
         expandafter scantokens expandafter s
     fi ;
 enddef ;

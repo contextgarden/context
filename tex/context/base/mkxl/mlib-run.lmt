@@ -327,7 +327,9 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
         end
     end
     if preamble then
+        metapost.pushscriptrunner(mpx)
         executempx(mpx,preamble)
+        metapost.popscriptrunner()
     end
     specification.mpx = mpx
     return mpx

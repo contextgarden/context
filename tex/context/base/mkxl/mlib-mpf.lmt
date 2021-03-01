@@ -22,7 +22,8 @@ local report_luarun  = logs.reporter("metapost","lua")
 local report_script  = logs.reporter("metapost","script")
 local report_message = logs.reporter("metapost")
 
-local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
+local trace_luarun   = false  trackers.register("metapost.lua",   function(v) trace_luarun = v end)
+local trace_script   = false  trackers.register("metapost.script",function(v) trace_script = v end)
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
@@ -86,11 +87,18 @@ do
         else
             runscripts[nofscripts] = name
         end
+        if trace_script then
+            report_script("registering script %a as %i",name,nofscripts)
+        end
         return nofscripts
     end
 
     function metapost.scriptindex(name)
-        return runnames[name] or 0
+        local index = runnames[name] or 0
+        if trace_script then
+            report_script("fetching scriptindex %i of %a",index,name)
+        end
+        return index
     end
 
     -- The gbuffer sharing and such is not really needed now but make a dent when

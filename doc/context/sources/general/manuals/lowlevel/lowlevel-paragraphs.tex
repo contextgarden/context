@@ -8,11 +8,197 @@
 
 \startsection[title=Introduction]
 
-This manual is mostly discussing a few wrappers around low level \TEX\ features.
-Its writing is triggered by an update to the \METAFUN\ and \LUAMETAFUN\ manuals
-where we mess a bit with shapes. It gave a good reason to also cover some more
-paragraph related topics but it might take a while to complete. Remind me if you
-feel that takes too much time.
+This manual is mostly discussing a few low level wrappers around low level \TEX\
+features. Its writing is triggered by an update to the \METAFUN\ and \LUAMETAFUN\
+manuals where we mess a bit with shapes. It gave a good reason to also cover some
+more paragraph related topics but it might take a while to complete. Remind me if
+you feel that takes too much time.
+
+Because paragraphs and their construction are rather central to \TEX, you can
+imagine that the engine exposes dealing with them. This happens via commands
+(primitives) but only when it's robust. Then there are callbacks, and some
+provide detailed information about what we're dealing with. However, intercepting
+node lists can already be hairy and we do that a lot in \CONTEXT. Intercepting
+and tweaking paragraph properties is even more tricky, which is why we try to
+avoid that in the core. But \unknown\ in the following sections you will see that
+there are actually a couple of mechanism that do so. Often new features like this
+are built in stepwise and enabled locally for a while and when they seem okay
+they get enabled by default. \footnote {For this we have \type
+{\enableexperiments} which one can use in \type {cont-loc.mkxl} or \type
+{cont-exp.mkxl}, files that are loaded runtime when on the system. When you use
+them, make sure they don't interfere; they are not part of the updates, contrary
+to \type {cont-new.mkxl}.}
+
+\stopsection
+
+\startsection[title=Paragraphs]
+
+Before we demonstrate some trickery, let's see what a paragraph is. Normally a
+document source is formatted like this:
+
+\starttyping[option=TEX]
+some text (line 1)
+some text (line 2)
+
+some more test (line 1)
+some more test (line 2)
+\stoptyping
+
+There are two blocks of text here separated by an empty line and they become two
+paragraphs. Unless configured otherwise an empty line is an indication that we
+end a paragraph. You can also explicitly do that:
+
+\starttyping[option=TEX]
+some text (line 1)
+some text (line 2)
+\par
+some more test (line 1)
+some more test (line 2)
+\stoptyping
+
+When \TEX\ starts a paragraph, it actually also does something think of:
+
+\starttyping[option=TEX]
+[\the\everypar]some text      (line 1) some text      (line 2) \par
+[\the\everypar]some more test (line 1) some more test (line 2) \par
+\stoptyping
+
+or more accurate:
+
+\starttyping[option=TEX]
+[\the\everypar]some text      some text      \par
+[\the\everypar]some more test some more test \par
+\stoptyping
+
+because the end|-|of|-|line character has become a space. As mentioned,
+an empty line is actually the end of a paragraph. But in \LUAMETATEX\
+we can cheat a bit. If we have this:
+
+\startbuffer
+line 1
+
+line 2
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We can do this (watch how we need to permit overloading a primitive when we have
+enabled \type {\overloadmode}):
+
+\startbuffer
+\pushoverloadmode
+\def\linepar{\removeunwantedspaces !\ignorespaces}
+\popoverloadmode
+line 1
+
+line 2
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This comes out as:
+
+\start \getbuffer \stop
+
+I admit that since it got added (as part of some cleanup halfway the overhaul of
+the engine) I never saw a reason to use it, but it is a cheap feature. The \type
+{\linepar} primitive is undefined (\type {\undefined}) by default so no user sees
+it anyway. Just don't use it unless maybe for some pseudo database trickery (I
+considered using it for the database module but it is not needed). In a similar
+fashion, just don't redefine \type {\par}: it's asking for troubles and \quote
+{not done} in \CONTEXT\ anyway.
+
+Back to reality. In \LUATEX\ we get a node list that starts with a so called
+\type {localpar} node and ends with a \type {\parfillskip}. The first node is
+prepended automatically. That list travels through the system: hyphenation,
+applying font properties, break the effectively one line into lines, wrap them
+and add them to a vertical list, etc. Each stage can be intercepted via
+callbacks.
+
+When the paragraph is broken into lines hanging indentation or a so called par
+shape can be applied, and we will see more of that later, here we talk \type
+{\par} and show another \LUAMETATEX\ trick:
+
+\startbuffer
+\def\foo{{\bf test:} \ignorepars}
+
+\foo
+
+line
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The macro typesets some text and then skips to the next paragraph:
+
+\start \getbuffer \stop
+
+Think of this primitive as being a more powerful variant of \type
+{\ignorespaces}. This leaves one aspect: how do we start a paragraph. Technically
+we need to force \TEX\ into so called horizontal mode. When you look at plain
+\TEX\ documents you will notice commands like \type {\noindent} and \type
+{\indent}. In \CONTEXT\ we have more high level variants, for instance we have
+\type {\noindentation}.
+
+A robust way to make sure that you get in horizontal mode is using \type
+{\dontleavehmode} which is a wink to \type {\leavevmode}, a command that you
+should never use in \CONTEXT, so when you come from plain or \LATEX, it's one of
+the commands you should wipe from your memory.
+
+When \TEX\ starts with a paragraph the \type {\everypar} token list is expanded
+and again this is a primitive you should not mess with yourself unless in very
+controlled situations. If you change its content, you're on your own with respect
+to interferences and side effects.
+
+One of the things that \TEX\ does in injecting the indentation. Even when there
+is none, it gets added, not as skip but as an empty horizontal box of a certain
+width. This is easier on the engine when it constructs the paragraph from the one
+liner: starting with a skip demands a bit more testing in the process (a nice
+trick so to say). However, in \CONTEXT\ we enable the \LUAMETATEX\ feature that
+does use a skip instead of a box. It's part of the normalization that is
+discussed later. Instead of checking for a box with property indent, we check for
+a skip with such property. This is often easier and cleaner.
+
+A bit off topic is the fact that in traditional \TEX\ empty lines or \type {\par}
+primitives can trigger an error. This has to do with the fact that the program
+evolved in a time where paper terminals were used and runtime could be excessive.
+So, in order to catch a possible missing brace, a concept of \type {\long}
+macros, permitting \type {\par} or equivalents in arguments, was introduced as
+well as not permitting them in for instance display math. In \CONTEXT\ \MKII\
+most macros that could be sensitive for this were defined as \type {\long} so
+that users never had to bother about it and probably were not even aware of it.
+Right from the start in \LUATEX\ these error|-|triggers could be disabled which
+of course we enable in \CONTEXT\ and in \LUAMETATEX\ these features have been
+removed altogether. I don't think users will complain about this.
+
+If you want to enforce a newline but not a new paragraph you can use the \type
+{\crlf} command. When used on its own it will produce an empty line. Don't use
+this to create whitespace between lines.
+
+If you want to do something after so called par tokens are seen you can do this:
+
+\startbuffer
+\def\foo{{\bf >>>> }}
+\expandafterpars\foo
+
+this is a new paragraph ...
+
+\expandafterpars\foo
+\par\par\par\par
+this is a new paragraph ...
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This not to be confused with \type {\everypar} which is a token list that \TEX\
+itself injects before each paragraph (also nested ones).
+
+\getbuffer
+
+This is typically a primitive that will only be used in macros. You can actually
+program it using macros: pickup a token, check and push it back when it's not a
+par equivalent token. The primitive is is just nicer (and easier on the log when
+tracing is enabled).
 
 \stopsection
 
@@ -29,59 +215,67 @@ However, in \LUAMETATEX\ we can optionally store them with the paragraph. When
 that happens the values current at the start are frozen. You can still overload
 them but that has to be done explicitly then. The advantage is that grouping no
 longer interferes with the line break algorithm. The magic primitive is \type
-{\snapshotpar}.
+{\snapshotpar} which takes a number made from categories mentioned below:
 
-\starttabulate
-\NC \type {\hsize}                 \NC \NC \NR
-\NC \type {\leftskip}              \NC \NC \NR
-\NC \type {\rightskip}             \NC \NC \NR
-\NC \type {\hangindent}            \NC \NC \NR
-\NC \type {\hangafter}             \NC \NC \NR
-\NC \type {\parindent}             \NC \NC \NR
-\NC \type {\parfillleftskip}       \NC \NC \NR
-\NC \type {\parfillrightskip}      \NC \NC \NR
-\NC \type {\adjustspacing}         \NC \NC \NR
-\NC \type {\protrudechars}         \NC \NC \NR
-\NC \type {\pretolerance}          \NC \NC \NR
-\NC \type {\tolerance}             \NC \NC \NR
-\NC \type {\emergencystretch}      \NC \NC \NR
-\NC \type {\looseness}             \NC \NC \NR
-\NC \type {\lastlinefit}           \NC \NC \NR
-\NC \type {\linepenalty}           \NC \NC \NR
-\NC \type {\interlinepenalty}      \NC \NC \NR
-\NC \type {\clubpenalty}           \NC \NC \NR
-\NC \type {\widowpenalty}          \NC \NC \NR
-\NC \type {\displaywidowpenalty}   \NC \NC \NR
-\NC \type {\brokenpenalty}         \NC \NC \NR
-\NC \type {\adjdemerits}           \NC \NC \NR
-\NC \type {\doublehyphendemerits}  \NC \NC \NR
-\NC \type {\finalhyphendemerits}   \NC \NC \NR
-\NC \type {\parshape}              \NC \NC \NR
-\NC \type {\interlinepenalties}    \NC \NC \NR
-\NC \type {\clubpenalties}         \NC \NC \NR
-\NC \type {\widowpenalties}        \NC \NC \NR
-\NC \type {\displaywidowpenalties} \NC \NC \NR
-\NC \type {\baselineskip}          \NC \NC \NR
-\NC \type {\lineskip}              \NC \NC \NR
-\NC \type {\lineskiplimit}         \NC \NC \NR
-\NC \type {\adjustspacingstep}     \NC \NC \NR
-\NC \type {\adjustspacingshrink}   \NC \NC \NR
-\NC \type {\adjustspacingstretch}  \NC \NC \NR
-\NC \type {\hyphenationmode}       \NC \NC \NR
+\starttabulate[|l|l|r|]
+\BC variable                       \BC category        \BC code                                     \NC \NR
+\NC \type {\hsize}                 \NC hsize           \NC 0x\uchexnumbers\frozenhsizecode          \NC \NR
+\NC \type {\leftskip}              \NC skip            \NC 0x\uchexnumbers\frozenskipcode           \NC \NR
+\NC \type {\rightskip}             \NC skip            \NC 0x\uchexnumbers\frozenskipcode           \NC \NR
+\NC \type {\hangindent}            \NC hang            \NC 0x\uchexnumbers\frozenhangcode           \NC \NR
+\NC \type {\hangafter}             \NC hang            \NC 0x\uchexnumbers\frozenhangcode           \NC \NR
+\NC \type {\parindent}             \NC indent          \NC 0x\uchexnumbers\frozenindentcode         \NC \NR
+\NC \type {\parfillleftskip}       \NC par fill        \NC 0x\uchexnumbers\frozenparfillcode        \NC \NR
+\NC \type {\parfillrightskip}      \NC par fill        \NC 0x\uchexnumbers\frozenparfillcode        \NC \NR
+\NC \type {\adjustspacing}         \NC adjust          \NC 0x\uchexnumbers\frozenadjustcode         \NC \NR
+\NC \type {\adjustspacingstep}     \NC adjust          \NC 0x\uchexnumbers\frozenadjustcode         \NC \NR
+\NC \type {\adjustspacingshrink}   \NC adjust          \NC 0x\uchexnumbers\frozenadjustcode         \NC \NR
+\NC \type {\adjustspacingstretch}  \NC adjust          \NC 0x\uchexnumbers\frozenadjustcode         \NC \NR
+\NC \type {\protrudechars}         \NC protrude        \NC 0x\uchexnumbers\frozenprotrudecode       \NC \NR
+\NC \type {\pretolerance}          \NC tolerance       \NC 0x\uchexnumbers\frozentolerancecode      \NC \NR
+\NC \type {\tolerance}             \NC tolerance       \NC 0x\uchexnumbers\frozentolerancecode      \NC \NR
+\NC \type {\emergencystretch}      \NC stretch         \NC 0x\uchexnumbers\frozenstretchcode        \NC \NR
+\NC \type {\looseness}             \NC looseness       \NC 0x\uchexnumbers\frozenloosenesscode      \NC \NR
+\NC \type {\lastlinefit}           \NC last line       \NC 0x\uchexnumbers\frozenlastlinecode       \NC \NR
+\NC \type {\linepenalty}           \NC line penalty    \NC 0x\uchexnumbers\frozenlinepenaltycode    \NC \NR
+\NC \type {\interlinepenalty}      \NC line penalty    \NC 0x\uchexnumbers\frozenlinepenaltycode    \NC \NR
+\NC \type {\interlinepenalties}    \NC line penalty    \NC 0x\uchexnumbers\frozenlinepenaltycode    \NC \NR
+\NC \type {\clubpenalty}           \NC club penalty    \NC 0x\uchexnumbers\frozenclubpenaltycode    \NC \NR
+\NC \type {\clubpenalties}         \NC club penalty    \NC 0x\uchexnumbers\frozenclubpenaltycode    \NC \NR
+\NC \type {\widowpenalty}          \NC widow penalty   \NC 0x\uchexnumbers\frozenwidowpenaltycode   \NC \NR
+\NC \type {\widowpenalties}        \NC widow penalty   \NC 0x\uchexnumbers\frozenwidowpenaltycode   \NC \NR
+\NC \type {\displaywidowpenalty}   \NC display penalty \NC 0x\uchexnumbers\frozendisplaypenaltycode \NC \NR
+\NC \type {\displaywidowpenalties} \NC display penalty \NC 0x\uchexnumbers\frozendisplaypenaltycode \NC \NR
+\NC \type {\brokenpenalty}         \NC broken penalty  \NC 0x\uchexnumbers\frozenbrokenpenaltycode  \NC \NR
+\NC \type {\adjdemerits}           \NC demerits        \NC 0x\uchexnumbers\frozendemeritscode       \NC \NR
+\NC \type {\doublehyphendemerits}  \NC demerits        \NC 0x\uchexnumbers\frozendemeritscode       \NC \NR
+\NC \type {\finalhyphendemerits}   \NC demerits        \NC 0x\uchexnumbers\frozendemeritscode       \NC \NR
+\NC \type {\parshape}              \NC shape           \NC 0x\uchexnumbers\frozenshapecode          \NC \NR
+\NC \type {\baselineskip}          \NC line            \NC 0x\uchexnumbers\frozenlinecode           \NC \NR
+\NC \type {\lineskip}              \NC line            \NC 0x\uchexnumbers\frozenlinecode           \NC \NR
+\NC \type {\lineskiplimit}         \NC line            \NC 0x\uchexnumbers\frozenlinecode           \NC \NR
+\NC \type {\hyphenationmode}       \NC hyphenation     \NC 0x\uchexnumbers\frozenhyphenationcode    \NC \NR
 \stoptabulate
 
-There are more paragraph related parameters than in for instance \PDFTEX\ and
-\LUATEX\ and these are (to be) explained in the \LUAMETATEX\ manual. You can
-imagine that keeping this around with the paragraph adds some extra overhead to
-the machinery but most users won't notice that because is is compensated by gains
-elsewhere.
+
+As you can see here, there are more paragraph related parameters than in for
+instance \PDFTEX\ and \LUATEX\ and these are (to be) explained in the
+\LUAMETATEX\ manual. You can imagine that keeping this around with the paragraph
+adds some extra overhead to the machinery but most users won't notice that
+because is is compensated by gains elsewhere.
+
+This is pretty low level and there are a bunch of helpers that support this but
+these are not really user level macros. As with everything \TEX\ you can mess
+around as much as you like, and the code gives plenty of examples but when you do
+this, you're on your own because it can interfere with \CONTEXT\ core
+functionality.
 
 In \LMTX\ taking these snapshots is turned on by default and because it thereby
 fundamentally influences the par builder, users can run into compatibility issues
 but in practice there has been no complaints (and this feature has been in use
 quite a while before this document was written). One reason for users not
-noticing is that one of the big benefits is probably handled by tricks mentioned on the
-mailing list. Imagine that you have this:
+noticing is that one of the big benefits is probably handled by tricks mentioned
+on the mailing list. Imagine that you have this:
 
 \starttyping[option=TEX]
 {\bf watch out:} here is some text
@@ -122,14 +316,12 @@ where we had to explicitly end the paragraph inside the group in order to retain
 the skip. I suppose that users normally use the high level environments so they
 never had to worry about this. It's also why users probably won't notice that
 this new mechanism has been active for a while. Actually, when you now change a
-parameter inside the paragraph will not be applied (unless you prefix it with
-\type {\frozen}) but no one did that anyway.
-
-{\em todo: freeze categories, overloading, turning on and off, etc}
+parameter inside the paragraph its new value will not be applied (unless you
+prefix it with \type {\frozen} or snapshot it) but no one did that anyway.
 
 \stopsection
 
-\startsection[title=Wraping up]
+\startsection[title=Wrapping up]
 
 In \CONTEXT\ \LMTX\ we have a mechanism to exercise macros (or content) before a
 paragraph ends. This is implemented using the \type {\wrapuppar} primitive. The
@@ -153,26 +345,59 @@ question is: where do we apply it in old mechanisms and where not.
 
 \stopsection
 
+\startsection[title=Hanging]
+
+There are two mechanisms for getting a specific paragraph shape: rectangular
+hanging and arbitrary shapes. Both mechanisms work top|-|down. The first
+mechanism uses a combination of \type {\hangafter} and \type {\hangindent}, and
+the second one depends on \type {\parshape}. In this section we discuss the
+rectangular one.
+
+\startbuffer[hang]
+\hangafter  4 \hangindent  4cm \samplefile{tufte} \page
+\hangafter -4 \hangindent  4cm \samplefile{tufte} \page
+\hangafter  4 \hangindent -4cm \samplefile{tufte} \page
+\hangafter -4 \hangindent -4cm \samplefile{tufte} \page
+\stopbuffer
+
+\typebuffer[hang][option=TEX]
+
+As you can see in \in {figure} [fig:hang], the four cases are driven by the sign
+of the values. If you want to hang into the margin you need to use different
+tricks, like messing with the \type {\leftskip}, \type {\rightskip} or \type
+{\parindent} parameters (which then of course can interfere with other mechanisms
+uses at the same time).
+
+\startplacefigure[title=Hanging indentation,reference=fig:hang]
+\startcombination[nx=2,ny=2]
+    {\typesetbuffer[hang][page=1,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent +4cm}}
+    {\typesetbuffer[hang][page=2,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent +4cm}}
+    {\typesetbuffer[hang][page=3,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent -4cm}}
+    {\typesetbuffer[hang][page=4,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent -4cm}}
+\stopcombination
+\stopplacefigure
+
+\stopsection
+
 \startsection[title=Shapes]
 
 In \CONTEXT\ we don't use \type {\parshape} a lot. It is used in for instance
-side floats but even then not in all cases. It's more meant for special
+side floats but even there not in all cases. It's more meant for special
 applications. This means that in \MKII\ and \MKIV\ we don't have some high level
 interface. However, when \METAFUN\ got upgraded to \LUAMETAFUN, and the manual
 also needed an update, one of the examples in that manual that used shapes also
-got done differently (read: nicer). And that triggered the arrival of a new high
+got done differently (read: nicer). And that triggered the arrival of a new low
 level shape mechanism.
 
 One important property of the \type {\parshape} mechanism is that it works per
 paragraph. You define a shape in terms of a left margin and width of a line. The
-shape has a fixed number of such pairs and when there is more content, the last one
-is used for the rest of the lines. When the paragraph is finished, the shape is
-forgotten.
-
-{\em Not discussed here is a variant that will end up in \LUAMETATEX\ that works
-with the progression, i.e.\ takes the height of the content so far into account.
-This is somewhat tricky because for that to work vertical skips need to be
-frozen, which is no real big deal but has to be done careful in the code.}
+shape has a fixed number of such pairs and when there is more content, the last
+one is used for the rest of the lines. When the paragraph is finished, the shape
+is forgotten. \footnote {Not discussed here is a variant that might end up in
+\LUAMETATEX\ that works with the progression, i.e.\ takes the height of the
+content so far into account. This is somewhat tricky because for that to work
+vertical skips need to be frozen, which is no real big deal but has to be done
+careful in the code.}
 
 The high level interface is a follow up on the example in the \METAFUN\ manual and
 uses shapes that carry over to the next paragraph. In addition we can cycle over
@@ -321,7 +546,7 @@ In \in {figure} [fig:shape:shift] we use this instead:
 
 \typebuffer[demo,demo-repeat][option=TEX]
 
-\startplacefigure[title=Shifted shaping,,reference=fig:shape:shift]
+\startplacefigure[title=Shifted shaping,reference=fig:shape:shift]
 \startcombination[nx=2,ny=2]
     {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 1}
     {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 2}
@@ -378,24 +603,236 @@ used instead but this makes a good example anyway.
 
 \typebuffer[option=TEX]
 
-\getbuffer
+\start \getbuffer \stop
 
-{\em todo: move the new (still in {\em \type {meta-imp-txt.mkxl})} code into the
-core and integrate it in {\em \type {\startshapedparagraph}} as method {\em \type
-{mp}} in which case the list is a list of graphics.}
+Because the idea for this feature originates in \METAFUN, we will now kick in
+some \METAPOST. The following code creates a shape for a circle. We use a
+2mm offset here:
+
+\startbuffer
+\startuseMPgraphic{circle}
+    path p ; p := fullcircle scaled TextWidth ;
+    build_parshape(p,
+        2mm, 0, 0,
+        LineHeight, StrutHeight, StrutDepth, StrutHeight
+    ) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\start \getbuffer \stop
+
+We plug this into the already described macros:
+
+\startbuffer
+\startshapedparagraph[list=circle,mp=circle]%
+    \setupalign[verytolerant,stretch,last]%
+    \samplefile{tufte}
+    \samplefile{tufte}
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+And get ourself a circular shape. Watch out, at this moment the shape environment
+does not add grouping so when as in this case you change the alignment it can
+influence the document.
+
+\start \getbuffer \stop
+
+\startbuffer[framed]
+\framed[align=normal,width=\textwidth,offset=2mm,strut=no]\bgroup
+    \getbuffer
+\egroup
+\stopbuffer
+
+Assuming that the shape definition above is in a buffer we can do this:
+
+\typebuffer[option=TEX]
+
+The result is shown in \in {figure} [fig:shape:circle]. Because all action
+happens in the framed environment, we can also use this definition:
 
 \starttyping[option=TEX]
-\startshapedparagraph[list={test 1,test 2,test 3,test 4},method=mp]
-    .....
-\stopshapedparagraph
+\startuseMPgraphic{circle}
+    path p ; p := fullcircle scaled \the\dimexpr\framedwidth+\framedoffset*2\relax ;
+    build_parshape(p,
+        \framedoffset, 0, 0,
+        LineHeight, StrutHeight, StrutDepth, StrutHeight
+    ) ;
+    draw p ;
+\stopuseMPgraphic
 \stoptyping
 
-{\em So methods then become kind of plugins.}
+\startplacefigure[title=A framed circular shape,reference=fig:shape:circle]
+    \getbuffer[framed]
+\stopplacefigure
 
 A mechanism like this is often never completely automatic in the sense that you
 need to keep an eye on the results. Depending on user demands more features can
 be added. With weird shapes you might want to set up the alignment to be \type
 {tolerant} and have some \type {stretch}.
+
+The interface described in the \METAFUN\ manual is pretty old, the time stamp of
+the original code is mid 2000, but the principles didn't change. The examples in
+\type {meta-imp-txt.mkxl} can now be written as:
+
+\startuseMPgraphic{test 1}
+  begingroup ;
+    save p ; path p ; p := fullcircle scaled 6cm ;
+    lmt_parshape [
+        path        = p,
+        offset      = BodyFontSize/2,
+        dx          = 0,           % default
+        dy          = 0,           % default
+        lineheight  = LineHeight,  % default
+        strutheight = StrutHeight, % default
+        strutdepth  = StrutDepth,  % default
+        topskip     = StrutHeight, % default
+    ] ;
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 2}
+  begingroup ;
+    save p ; path p ; p := fullsquare rotated 45 scaled 5cm ;
+    lmt_parshape [
+        path   = p,
+        offset = BodyFontSize/2,
+        trace  = true,
+    ] ;
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 3}
+  begingroup ;
+    save w, h, p ; path p ; w := h := 6cm ;
+
+    p := (.5w,h) -- (   0,  h) -- (0,0) -- (w,0) &
+         (  w,0) .. (.75w,.5h) .. (w,h) &  (w,h) -- cycle ;
+
+    lmt_parshape [
+        path   = p,
+        offset = BodyFontSize/2,
+    ] ;
+
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{test 4}
+  begingroup ;
+    save d, p, q ; path p, q ; d := BodyFontSize/2;
+
+    vardef shape(expr w, h, o) =
+        (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
+        (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
+    enddef ;
+
+    p := shape(6cm, 6cm, d) ; q := shape(6cm, 6cm, 0) ;
+
+    lmt_parshape [
+        path       = p,
+        offsetpath = q,
+        dx         = d,
+        dy         = d,
+        trace      = true,
+    ] ;
+
+    draw q withpen pencircle scaled 1pt ;
+  endgroup ;
+\stopuseMPgraphic
+
+\defineoverlay[test 1][\useMPgraphic{test 1}]
+\defineoverlay[test 2][\useMPgraphic{test 2}]
+\defineoverlay[test 3][\useMPgraphic{test 3}]
+\defineoverlay[test 4][\useMPgraphic{test 4}]
+
+\startbuffer
+  \startshapetext[test 1,test 2,test 3,test 4]
+    \setupalign[verytolerant,stretch,normal]%
+    \samplefile{douglas} % Douglas R. Hofstadter
+  \stopshapetext
+  \startcombination[2*2]
+    {\framed[offset=overlay,frame=off,background=test 1]{\getshapetext}}
+        {test 1}
+    {\framed[offset=overlay,frame=off,background=test 2]{\getshapetext}}
+        {test 2}
+    {\framed[offset=overlay,frame=off,background=test 3]{\getshapetext}}
+        {test 3}
+    {\framed[offset=overlay,frame=off,background=test 4]{\getshapetext}}
+        {test 4}
+  \stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In \in {figure} [fig:shapes:chain] we see the result. Watch how for two shapes
+we have enabled tracing. Of course you need to tweak till all fits well but we're
+talking of special situations anyway.
+
+\startplacefigure[Title=Multiple shapes,reference=fig:shapes:chain]
+    \getbuffer
+\stopplacefigure
+
+Here is a bit more extreme example. Again we use a circle:
+
+\startbuffer
+\startuseMPgraphic{circle}
+    lmt_parshape [
+        path       = fullcircle scaled 136mm,
+        offset     = 2mm,
+        bottomskip = - 1.5LineHeight,
+    ] ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+But we output a longer text:
+
+\startbuffer
+\startshapedparagraph[list=circle,mp=circle,repeat=yes,method=cycle]%
+    \setupalign[verytolerant,stretch,last]\dontcomplain
+    {\darkred     \samplefile{tufte}}\par
+    {\darkgreen   \samplefile{tufte}}\par
+    {\darkblue    \samplefile{tufte}}\par
+    {\darkcyan    \samplefile{tufte}}\par
+    {\darkmagenta \samplefile{tufte}}\par
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get a multi|-|page shape:
+
+\start \getbuffer \stop
+
+Compare this with:
+
+\startbuffer
+\startshapedparagraph[list=circle,mp=circle,repeat=yes,method=cycle]%
+    \setupalign[verytolerant,stretch,last]\dontcomplain
+    {\darkred     \samplefile{tufte}}
+    {\darkgreen   \samplefile{tufte}}
+    {\darkblue    \samplefile{tufte}}
+    {\darkcyan    \samplefile{tufte}}
+    {\darkmagenta \samplefile{tufte}}
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Which gives:
+
+\start \getbuffer \stop
+
+Here the \type {bottomskip} takes care of subtle rounding issues as well as
+discarding the last line in the shape so that we get nicer continuation. There is
+no full automated solution for all you can come up with.
 
 \stopsection
 
@@ -421,3 +858,18 @@ be added. With weird shapes you might want to set up the alignment to be \type
 
 \stopdocument
 
+\everyhbox \everyvbox : useless unless one resets
+\parattr
+\snapshotpar
+\wrapuppar
+
+% \parfillleftskip
+
+% I rewarded myself after writing a section by watching the video "Final Thing On
+% My Mind", The Pineapple This, Live, 2020, the usual perfect GH performance,
+% wondering if live would turn to normal so that we could go to such concerts once
+% again given successive covids. Writing manuals can do with a distraction.
+%
+% Gavin Harrison: Soundcheck, Drummerworld Jan 27, 2021 ... I wish I could make
+% something called a check into pefect solo. Okay, another section and I'll check
+% out the latest Simon Phillips and other favourite dummer uploads.

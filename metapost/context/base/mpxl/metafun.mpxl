@@ -48,6 +48,7 @@ input "mp-apos.mpxl" ;
 input "mp-abck.mpxl" ;
 input "mp-blob.mpxl" ;
 input "mp-lmtx.mpxl" ;
+input "mp-text.mpxl" ;
 
 newinternal string metafunversion ; metafunversion := "metafun xl " & mfun_timestamp;
 

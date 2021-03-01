@@ -21,31 +21,44 @@ local appendaction  = sequencers.appendaction
 local enableaction  = sequencers.enableaction
 local disableaction = sequencers.disableaction
 
+local implement     = interfaces.implement
+
 local stack   = { }
 local top     = nil
 local enabled = false
 
-interfaces.implement {
+local trace   = false  trackers.register("paragraphs.tweaks",function(v) trace = v end)
+
+local report  = logs.reporter("paragraphs","tweaks")
+
+implement {
     name      = "pushparagraphtweak",
     public    = true,
     protected = true,
     arguments = "string",
     actions   = function(t)
         insert(stack,top)
-        if not top then
+        if not enabled then
+            if trace then
+                report("enabling")
+            end
             enableaction("paragraphcontext","builders.checkparcontext")
             enabled = true
         end
         top = t
     end
 }
-interfaces.implement {
+
+implement {
     name      = "popparagraphtweak",
     public    = true,
     protected = true,
     actions   = function()
         top = remove(stack)
-        if not top then
+        if enabled and not top then
+            if trace then
+                report("disabling")
+            end
             disableaction("paragraphcontext","builders.checkparcontext")
             enabled = false
         end
@@ -61,12 +74,21 @@ function builders.checkparcontext(where)
                 while p > s do
                     p = p - s
                 end
+                if trace then
+                    report("cycling %i",s)
+                end
                 shiftparshape(p,true)
+                return true
             end
-            return true
         elseif top == "shift" then
-            shiftparshape(texget("prevgraf"))
-            return true
+            local s = texget("parshape",true)
+            if s then
+                if trace then
+                    report("shifting %i", s)
+                end
+                shiftparshape(texget("prevgraf"))
+                return true
+            end
         end
     end
 end
@@ -85,7 +107,7 @@ do
     local scandimen    = scanners.dimen
     local scancardinal = scanners.cardinal
 
-    interfaces.implement {
+    implement {
         name      = "setparagraphshape",
         protected = true,
         actions   = function()
@@ -140,7 +162,7 @@ do
     local NR = context.NR
     local VL = context.VL
 
-    interfaces.implement {
+    implement {
         name      = "showparagraphshape",
         protected = true,
         public    = true,

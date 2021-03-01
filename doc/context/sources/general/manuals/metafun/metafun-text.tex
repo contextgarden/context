@@ -974,11 +974,8 @@ define an offset too.
 
 \startbuffer
 \startuseMPgraphic{text vars}
-  baselineskip := 8pt ;
-  strutheight  := (7.2/10) * baselineskip ;
-  strutdepth   := (2.8/10) * baselineskip ;
-  offset       := baselineskip/2 ;
-  topskip      := strutheight ;
+  MyOffset  := LineHeight/2 ;
+  MyTopSkip := StrutHeight ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -999,8 +996,8 @@ dimensions.
   hsize := xpart lrcorner p - xpart llcorner p ;
   vsize := ypart urcorner p - ypart lrcorner p ;
 
-  q := p xscaled ((hsize-2offset)/hsize)
-         yscaled ((vsize-2offset)/vsize) ;
+  q := p xscaled ((hsize-2MyOffset)/hsize)
+         yscaled ((vsize-2MyOffset)/vsize) ;
 
   hsize := xpart lrcorner q - xpart llcorner q ;
   vsize := ypart urcorner q - ypart lrcorner q ;
@@ -1061,7 +1058,7 @@ Then we use \type {\useMPgraphic{text}} to call up the picture.
 The offset is not optimal. Note the funny gap at the top. We could try to fix
 this, but there is a better way to optimize both paths.
 
-We lower the top edge of \type {q}'s bounding box by \type {topskip}, then cut
+We lower the top edge of \type {q}'s bounding box by \type {MyTopSkip}, then cut
 any part of the left and right pieces of \type {q} that lie above it. Similarly,
 we raise the bottom edge and cut off the pieces that fall below this line.
 
@@ -1069,8 +1066,8 @@ we raise the bottom edge and cut off the pieces that fall below this line.
 \startuseMPgraphic{text cutoff}
   path tt, bb ;
 
-  tt := (ulcorner q -- urcorner q) shifted (0,-topskip) ;
-  bb := (llcorner q -- lrcorner q) shifted (0,strutdepth) ;
+  tt := (ulcorner q -- urcorner q) shifted (0,-MyTopSkip) ;
+  bb := (llcorner q -- lrcorner q) shifted (0,StrutDepth) ;
 
   l := l cutbefore (l intersectionpoint tt) ;
   l := l cutafter  (l intersectionpoint bb) ;
@@ -1120,18 +1117,18 @@ line has a height and depth, we have to determine which part touches first.
 \startuseMPgraphic{text calc}
   vardef found_point (expr lin, pat, sig) =
     pair a, b ;
-    a := pat intersection_point (lin shifted (0,strutheight)) ;
+    a := pat intersection_point (lin shifted (0,StrutHeight)) ;
     if intersection_found :
-      a := a shifted (0,-strutheight) ;
+      a := a shifted (0,-StrutHeight) ;
     else :
       a := pat intersection_point lin ;
     fi ;
-    b := pat intersection_point (lin shifted (0,-strutdepth)) ;
+    b := pat intersection_point (lin shifted (0,-StrutDepth)) ;
     if intersection_found :
       if sig :
-        if xpart b > xpart a : a := b shifted (0,strutdepth) fi ;
+        if xpart b > xpart a : a := b shifted (0,StrutDepth) fi ;
       else :
-        if xpart b < xpart a : a := b shifted (0,strutdepth) fi ;
+        if xpart b < xpart a : a := b shifted (0,StrutDepth) fi ;
       fi ;
     fi ;
     a
@@ -1153,7 +1150,7 @@ subpath).
 \startuseMPgraphic{text step}
   path line; pair lll, rrr ;
 
-  for i=topskip step baselineskip until vsize :
+  for i=MyTopSkip step LineHeight until vsize :
 
     line := (ulcorner q -- urcorner q) shifted (0,-i) ;
 
@@ -1165,17 +1162,17 @@ subpath).
 \typebuffer \getbuffer
 
 Here we divide the available space in lines. The first line starts at \type
-{strutheight} from the top.
+{StrutHeight} from the top.
 
 We can now finish our graphic by visualizing the lines. Both the height and depth
 of the lines are shown.
 
 \startbuffer
 \startuseMPgraphic{text line}
-    fill (lll--rrr--rrr shifted (0,strutheight)--lll
-      shifted (0,strutheight)--cycle) withcolor .5white ;
-    fill (lll--rrr--rrr shifted (0,-strutdepth)--lll
-      shifted (0,-strutdepth)--cycle) withcolor .7white ;
+    fill (lll--rrr--rrr shifted (0,StrutHeight)--lll
+      shifted (0,StrutHeight)--cycle) withcolor .5white ;
+    fill (lll--rrr--rrr shifted (0,-StrutDepth)--lll
+      shifted (0,-StrutDepth)--cycle) withcolor .7white ;
     draw lll withpen pencircle scaled 2pt ;
     draw rrr withpen pencircle scaled 2pt ;
     draw (lll--rrr) withpen pencircle scaled .5pt ;
@@ -1214,13 +1211,13 @@ we get better results when we (on purpose) take a smaller height.
 \startuseMPgraphic{text step}
   path line; pair lll, rrr ; numeric vvsize ;
 
-  if (strutheight+strutdepth<baselineskip) :
+  if (StrutHeight+StrutDepth<LineHeight) :
     vvsize := vsize ;
   else :
-    vvsize := (vsize div baselineskip) * baselineskip ;
+    vvsize := (vsize div LineHeight) * LineHeight ;
   fi ;
 
-  for i=topskip step baselineskip until vvsize :
+  for i=MyTopSkip step LineHeight until vvsize :
 
     line := (ulcorner q -- urcorner q) shifted (0,-i) ;
 
@@ -1240,11 +1237,8 @@ better) results.
 
 \startbuffer
 \startuseMPgraphic{text vars}
-baselineskip := 8pt ;
-strutheight  := 4pt ;
-strutdepth   := 2pt ;
-offset       := 4pt ;
-topskip      := 3pt ;
+MyOffset  := .5LineHeight ;
+MyTopSkip := StrutHeight ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1261,8 +1255,8 @@ this is to let \METAPOST\ write a \type {\parshape} specification.
 
 \startbuffer
 \startuseMPgraphic{text macro}
-  def provide_parshape (expr p, offset, baselineskip,
-    strutheight, strutdepth, topskip) =
+  def provide_parshape (expr p, MyOffset, LineHeight,
+    StrutHeight, StrutDepth, MyTopSkip) =
 
     \includeMPgraphic{text move}
     \includeMPgraphic{text split}
@@ -1285,13 +1279,13 @@ the loop we write those values to a file using another loop.
 \startuseMPgraphic{text loop}
   path line; pair lll, rrr ; numeric vvsize, n ; n := 0 ;
 
-  if (strutheight+strutdepth<baselineskip) :
+  if (StrutHeight+StrutDepth<LineHeight) :
     vvsize := vsize ;
   else :
-    vvsize := (vsize div baselineskip) * baselineskip ;
+    vvsize := (vsize div LineHeight) * LineHeight ;
   fi ;
 
-  for i=topskip step baselineskip until vvsize :
+  for i=MyTopSkip step LineHeight until vvsize :
 
     line := (ulcorner q -- urcorner q) shifted (0,-i) ;
 
@@ -1327,12 +1321,12 @@ We can call this macro using the part we used in the previous examples.
   path p ; p := ((0,1)..(-1,0)..(1,0)--cycle) scaled 65pt ;
 
   provide_parshape
-   (p,                     % shape path
-    .5*\baselinedistance,  % offset
-    \baselinedistance,     % distance between lines
-    \strutheight,          % height of a line
-    \strutdepth,           % depth of a line
-    \strutheight) ;        % height of first line
+   (p,              % shape path
+    .5*LineHeight,  % offset
+    LineHeight,     % distance between lines
+    StrutHeight,    % height of a line
+    StrutDepth,     % depth of a line
+    StrutHeight) ;  % height of first line
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1405,7 +1399,7 @@ happens in border cases. For instance, too small first lines are ignored. First
 we define a circle. Watch how the dimensions are set in the graphic. The
 arguments passed to \type {build_parshape} are: path, an offset, an additional
 horizontal and vertical displacement, the baseline distance, the height and depth
-of the line, and the height of the first line (topskip in \TEX\ terminology). The
+of the line, and the height of the first line (MyTopSkip in \TEX\ terminology). The
 height and depth of a line are often called strut height and depth, with a strut
 being an invisible character with maximum dimensions.
 
@@ -1413,8 +1407,8 @@ being an invisible character with maximum dimensions.
 \startuseMPgraphic{test 1}
   path p ; p := fullcircle scaled 6cm ;
 
-  build_parshape(p,6pt,0,0,\baselinedistance,
-    \strutheight,\strutdepth,\strutheight) ;
+  build_parshape(p,6pt,0,0,LineHeight,
+    StrutHeight,StrutDepth,StrutHeight) ;
 
   draw p withpen pencircle scaled 1pt ;
 \stopuseMPgraphic
@@ -1429,8 +1423,8 @@ suits the small lines at the top and bottom.
 \startuseMPgraphic{test 2}
   path p ; p := fullsquare rotated 45 scaled 5cm ;
 
-  build_parshape(p,6pt,0,0,\baselinedistance,
-    \strutheight,\strutdepth,\strutheight) ;
+  build_parshape(p,6pt,0,0,LineHeight,
+    StrutHeight,StrutDepth,StrutHeight) ;
 
   draw p withpen pencircle scaled 1pt ;
 \stopuseMPgraphic
@@ -1447,8 +1441,8 @@ always trivial.
   path p ; p := (.5w,h) -- (0,h) -- (0,0) -- (w,0) &
     (w,0) .. (.75w,.5h) .. (w,h) & (w,h) -- cycle ;
 
-  build_parshape(p,6pt,0,0,\baselinedistance,
-    \strutheight,\strutdepth,\strutheight) ;
+  build_parshape(p,6pt,0,0,LineHeight,
+    StrutHeight,StrutDepth,StrutHeight) ;
 
   draw p withpen pencircle scaled 1pt ;
 \stopuseMPgraphic
@@ -1472,8 +1466,8 @@ needed, since we need these later on.
   w := h := 6cm ; o := 6pt ; path p ; p := shape ;
   w := h := 6cm ; o := 0pt ; path q ; q := shape ;
 
-  build_parshape(p,q,6pt,6pt,\baselinedistance,
-    \strutheight,\strutdepth,\strutheight) ;
+  build_parshape(p,q,6pt,6pt,LineHeight,
+    StrutHeight,StrutDepth,StrutHeight) ;
 
   draw q withpen pencircle scaled 1pt ;
 \stopuseMPgraphic
@@ -1591,8 +1585,8 @@ define a quote typeset in a circular paragraph shape.
 
 \startbuffer[shape]
 \startuseMPgraphic{center}
-  build_parshape(fullcircle scaled 8cm,0,0,0,\baselinedistance,
-    \strutheight,\strutdepth,\strutheight) ;
+  build_parshape(fullcircle scaled 8cm,0,0,0,LineHeight,
+    StrutHeight,StrutDepth,StrutHeight) ;
 \stopuseMPgraphic
 
 \startshapetext[center]

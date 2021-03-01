@@ -2373,7 +2373,7 @@ vardef textual primary p = false enddef ;
 
 newscriptindex mfid_labtorgb ; mfid_labtorgb := scriptindex "labtorgb" ;
 
-def labtorgb(expr l,a,b) = runscript mfid_labtorgb l a b enddef ;
+def labtorgb(expr l, a, b) = runscript mfid_labtorgb l a b enddef ;
 
 permanent labtorgb ;
 

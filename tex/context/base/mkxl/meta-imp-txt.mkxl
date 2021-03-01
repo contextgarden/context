@@ -21,70 +21,8 @@
 %D This time we combine \TEX, \METAPOST\ and \LUA, so we do't need a temporary file
 %D to communicate from \METAPOST\ to \TEX. We just store information in \LUA\ tables.
 
-\ifdefined\startshapetext
-
-    % now moved into the core
-
-\else
-
-    \ifdefined\shapetextbox \else
-        \newbox  \shapetextbox
-        \newcount\shapetextindex
-    \fi
-
-    \ctxloadluafile{meta-imp-txt.lmt}
-
-    \startMPextensions loadmodule "text" ; \stopMPextensions
-
-    \protected\def\startshapetext[#1]%
-      {\begingroup
-       \global\shapetextindex\zerocount
-       \global\setbox\shapetextbox\vbox\bgroup
-         % analyze the mp shapes
-         \ctxlua{metapost.parshapes.reset()}
-         \def\docommand##1%
-           {\ctxlua{metapost.parshapes.next()}%
-            \startMPcalculation
-              \includeMPgraphic{##1}%
-            \stopMPcalculation}%
-         \processcommalist[#1]\docommand
-         \forgetall
-         \dontcomplain
-         % setup tex part (maybe just enable grid snapping)
-         \setuptolerance[\v!verytolerant,\v!stretch]% default
-         \setuplayout[\c!grid=\v!yes]%
-         \ctxlua{metapost.parshapes.wholeshape()}%
-         \pushparagraphtweak {prune}}
-
-    \protected\def\stopshapetext
-      {\popparagraphtweak
-       \egroup
-       \endgroup}
-
-    \def\getshapeparameter#1{\ctxlua{metapost.parshapes.get(\number\shapetextindex,"#1")}}
-
-    \protected\def\getshapetext
-      {\vbox\bgroup
-       \forgetall
-       \dontcomplain
-       \global\advance\shapetextindex\plusone
-       \scratchcounter\getshapeparameter{lines}\relax
-       \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
-       \scratchheight \getshapeparameter{height}\scaledpoint\relax
-       \setbox\scratchbox\vpack to \scratchheight
-         {\splittopskip\strutheight
-          \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
-          \ifcase\numexpr\getshapeparameter{first}\relax\else
-            \vskip\lineheight
-          \fi
-          \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
-          \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
-       \wd\scratchbox\scratchwidth
-       \ht\scratchbox\scratchheight
-       \dp\scratchbox\zeropoint
-       \box\scratchbox
-       \egroup}
-
+\ifdefined\startshapetext \else
+    \writestatus{system}{something is wrong here}
 \fi
 
 %D Following:

@@ -69,7 +69,7 @@ local suffixlist = { "mpxl", "mpiv", "mp" } -- no "mf"
 local function findmpfile(name,ftype)
     local validtyp = validftype(ftype)
     local fullname = findfile(name,validtyp)
-    if fullname and fulllname ~= "" then
+    if fullname and fullname ~= "" then
         return fullname
     elseif suffix(name) == "" then
         for i=1,#suffixlist do

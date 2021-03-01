@@ -94,7 +94,9 @@ local relations = allocate { -- todo: handlers also here
         mp = {
             names    = { "mp" },
             variable = 'MPINPUTS',
-            suffixes = { 'mp', 'mpvi', 'mpiv', 'mpxl', 'mpii' },
+            suffixes = CONTEXTLMTXMODE > 0
+                and { 'mp', 'mpxl', 'mpvi', 'mpiv', 'mpii' }
+                or  { 'mp',         'mpvi', 'mpiv', 'mpii' },
             usertype = true,
         },
         tex = {

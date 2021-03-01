@@ -398,11 +398,21 @@
 
 \aliased\let\btxsetup\fastsetup
 
+\permanent\def\btxrawfield   #1{\clf_btxfield {\currentbtxdataset}{\currentbtxtag}{#1}}
+
 \permanent\def\btxfield      #1{\dostarttagged\t!pubfld{#1}\clf_btxfield {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 \permanent\def\btxdetail     #1{\dostarttagged\t!pubfld{#1}\clf_btxdetail{\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 \permanent\def\btxflush      #1{\dostarttagged\t!pubfld{#1}\clf_btxflush {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 \permanent\def\btxdirect     #1{\dostarttagged\t!pubfld{#1}\clf_btxdirect{\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 %permanent\def\btxauthorfield#1{\dostarttagged\t!pubfld{#1}\clf_btxauthorfield         \currentbtxauthorindex{#1}\dostoptagged}
+
+% Also possible but inefficient:
+%
+% \permanent\def\btxfield      #1{\localcontrolled{\dostarttagged\t!pubfld{#1}}\clf_btxfield {\currentbtxdataset}{\currentbtxtag}{#1}\localcontrolled{\dostoptagged}}
+% \permanent\def\btxdetail     #1{\localcontrolled{\dostarttagged\t!pubfld{#1}}\clf_btxdetail{\currentbtxdataset}{\currentbtxtag}{#1}\localcontrolled{\dostoptagged}}
+% \permanent\def\btxflush      #1{\localcontrolled{\dostarttagged\t!pubfld{#1}}\clf_btxflush {\currentbtxdataset}{\currentbtxtag}{#1}\localcontrolled{\dostoptagged}}
+% \permanent\def\btxdirect     #1{\localcontrolled{\dostarttagged\t!pubfld{#1}}\clf_btxdirect{\currentbtxdataset}{\currentbtxtag}{#1}\localcontrolled{\dostoptagged}}
+% %permanent\def\btxauthorfield#1{\localcontrolled{\dostarttagged\t!pubfld{#1}}\clf_btxauthorfield         \currentbtxauthorindex{#1}\localcontrolled{\dostoptagged}}
 
 %D How complex will we go? Can we assume that e.g. an apa style will not be mixed
 %D with another one? I think this assumption is okay. For manuals we might want to
@@ -691,7 +701,7 @@
    \dostarttagged\t!publication\empty
    \dotagpublication\currentbtxdataset\currentbtxtag
    \redoconvertfont % see (**) in strc-lst, this will become an configuration option
-   \edef\currentbtxcategory{\btxfield{category}}%
+   \edef\currentbtxcategory{\btxrawfield{category}}%
    \ignorespaces
    \ifconditional\c_btx_list_texts
      \dostarttagged\t!listtext\s!left

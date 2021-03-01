@@ -396,6 +396,10 @@
 
 \let\btxsetup\fastsetup
 
+% This fails when we check field values:
+
+\let\btxrawfield\btxfield
+
 \def\btxfield      #1{\dostarttagged\t!pubfld{#1}\clf_btxfield {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 \def\btxdetail     #1{\dostarttagged\t!pubfld{#1}\clf_btxdetail{\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
 \def\btxflush      #1{\dostarttagged\t!pubfld{#1}\clf_btxflush {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
@@ -681,7 +685,7 @@
    \dostarttagged\t!publication\empty
    \dotagpublication\currentbtxdataset\currentbtxtag
    \redoconvertfont % see (**) in strc-lst, this will become an configuration option
-   \edef\currentbtxcategory{\btxfield{category}}%
+   \edef\currentbtxcategory{\btxrawfield{category}}%
    \ignorespaces
    \ifconditional\c_btx_list_texts
      \dostarttagged\t!listtext\s!left
