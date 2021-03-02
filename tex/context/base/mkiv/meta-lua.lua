@@ -89,7 +89,7 @@ mplib.finders.mpstemplate = function(specification,name,mode,ftype)
         data = errorformatter(nameonly)
     end
     local name = luatex.registertempfile(nameonly,true)
-    local data = metapost.checktexts(data)
+--     local data = metapost.checktexts(data)
     io.savedata(name,data)
     return name
 end

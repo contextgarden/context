@@ -9,8 +9,10 @@ if not modules then modules = { } end modules ['meta-imp-txt'] = {
 local setmetatableindex = table.setmetatableindex
 local settings_to_array = utilities.parsers.settings_to_array
 
+local texget       = tex.get
 local texset       = tex.set
 local texgetcount  = tex.getcount
+local texgetglue   = tex.getglue
 
 local expandmacro  = token.expand_macro
 
@@ -115,3 +117,151 @@ implement {
         context(value)
     end
 }
+
+-- Another experiment: continuing parshapes with alternative definitions:
+--
+-- left d | right d | left d right d | both d | left d hsize d |
+-- copy n | reset | repeat | done
+
+do
+
+    local scanners     = tokens.scanners
+    local scanword     = scanners.word
+    local scandimen    = scanners.dimen
+    local scanstring   = scanners.string
+    local scancardinal = scanners.cardinal
+
+    implement {
+        name      = "setparagraphshape",
+        protected = true,
+        actions   = function()
+            local t = { }
+            local n = 0
+            local h = texget("hsize")
+            local a = 0
+            while true do
+                local key = scanword()
+              ::AGAIN::
+                if key == "left" then
+                    local l = scandimen()
+                    key = scanword()
+                    if key == "right" then
+                        n = n + 1 ; t[n] = { l, a + h - l - scandimen() }
+                    elseif key == "hsize" then
+                        n = n + 1 ; t[n] = { l, a + scandimen() }
+                    else
+                        n = n + 1 ; t[n] = { l, a + h }
+                        goto AGAIN
+                    end
+                elseif key == "right" then
+                    n = n + 1 ; t[n] = { 0, a + h - scandimen() }
+                elseif key == "both" then
+                    local b = scandimen()
+                    n = n + 1 ; t[n] = { b, a + h - b - b }
+                elseif key == "copy" then
+                    local c = scancardinal()
+                    for i=1,c do
+                        local m = n + 1
+                        t[m] = t[n]
+                        n = m
+                    end
+                elseif key == "done" then
+                    -- in case the user ended with "done"
+                    scanword()
+                    break
+                elseif key == "metapost" then
+                    local list = settings_to_array(scanstring())    -- array
+                    properties = { }
+                    parshapes  = { }
+                    for i=1,#list do
+                        properties = { }
+                        parshapes[i] = properties
+                        expandmacro("spac_shapes_calculate","{"..list[i].."}")
+                    end
+                    for i=1,#parshapes do
+                        local p = parshapes[i]
+                        local s = p.shape
+                        if s then
+                            for i=1,(p.lines or #s) do
+                                local si = s[i]
+                                n = n + 1 ; t[n] = { si[1], a + si[2] }
+                            end
+                        end
+                    end
+                elseif key == "repeat" then
+                    t["repeat"] = true
+                elseif key == "delete" then
+                    local c = scancardinal()
+                    for i=1,c do
+                        if n > 0 then
+                            t[n] = nil
+                            n = n - 1
+                        else
+                            break
+                        end
+                    end
+                elseif key == "reset" then
+                    n = n + 1 ; t[n] = { 0, a + h }
+                    break
+                elseif key == "absolute" then
+                    local s = scanword()
+                    local l = texgetglue("leftskip")
+                    local r = texgetglue("rightskip")
+                    if s == "left" then
+                        a = l
+                    elseif s == "right" then
+                        a = r
+                    elseif s == "both" then
+                        a = l + r
+                    else
+                        a = l + r
+                        goto AGAIN
+                    end
+                else
+                    logs.report("system","bad key %a in paragraphshape",key)
+                    break
+                end
+            end
+            texset("parshape",t)
+        end,
+    }
+
+    local NC = context.NC
+    local NR = context.NR
+    local VL = context.VL
+
+    implement {
+        name      = "showparagraphshape",
+        protected = true,
+        public    = true,
+        actions   = function()
+            local p = texget("parshape")
+            if p then
+                -- only english interface (for now)
+                context.inleftmargin(
+                    {
+                        align   = "flushright",
+                        strut   = "no",
+                        width   = "0pt",
+                     -- voffset = "-\\lineheight"
+                    }, function()
+                        context.starttabulate {
+                            before = "",
+                            after  = "",
+                            unit   = "2pt",
+                            rulethickness = ".1pt",
+                            format = "|rb{\\smallinfofont}|lb{\\smallinfofont}|"
+                        }
+                            for i=1,#p do
+                                NC() context("%P",p[i][1])
+                                VL() context("%P",p[i][2])
+                                NC() NR()
+                            end
+                        context.stoptabulate()
+                    end
+                )
+            end
+        end
+    }
+
+end

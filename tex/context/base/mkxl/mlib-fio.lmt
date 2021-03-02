@@ -53,7 +53,6 @@ end
 local finders = { }
 mplib.finders = finders -- also used in meta-lua.lua
 
-
 local function validftype(ftype)
     if ftype == "mp" then
         return "mp"
@@ -82,7 +81,7 @@ local function findmpfile(name,ftype)
     return nil
 end
 
-local function finder(name,mode,kind)
+finders.file = function(specification,name,mode,kind)
     if mode == "r" then
         return findmpfile(name,kind)
     elseif file.is_writable(name) then
@@ -92,11 +91,12 @@ local function finder(name,mode,kind)
     end
 end
 
-finders.file = function(specification,name,mode,ftype)
- -- finder(name,mode,kind)
-    return finder(name,mode,ftype)
+local function finder(name,mode,kind) -- fake message for mpost.map and metafun.mpvi
+    local specification = url.hashed(name)
+    local finder = finders[specification.scheme] or finders.file
+    local found = finder(specification,name,mode,validftype(ftype))
+    return found
 end
-
 
 local findtexfile = resolvers.findtexfile
 local opentexfile = resolvers.opentexfile

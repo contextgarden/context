@@ -353,14 +353,14 @@ mechanism uses a combination of \type {\hangafter} and \type {\hangindent}, and
 the second one depends on \type {\parshape}. In this section we discuss the
 rectangular one.
 
-\startbuffer[hang]
+\startbuffer[demo-5]
 \hangafter  4 \hangindent  4cm \samplefile{tufte} \page
 \hangafter -4 \hangindent  4cm \samplefile{tufte} \page
 \hangafter  4 \hangindent -4cm \samplefile{tufte} \page
 \hangafter -4 \hangindent -4cm \samplefile{tufte} \page
 \stopbuffer
 
-\typebuffer[hang][option=TEX]
+\typebuffer[demo-5][option=TEX]
 
 As you can see in \in {figure} [fig:hang], the four cases are driven by the sign
 of the values. If you want to hang into the margin you need to use different
@@ -370,10 +370,10 @@ uses at the same time).
 
 \startplacefigure[title=Hanging indentation,reference=fig:hang]
 \startcombination[nx=2,ny=2]
-    {\typesetbuffer[hang][page=1,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent +4cm}}
-    {\typesetbuffer[hang][page=2,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent +4cm}}
-    {\typesetbuffer[hang][page=3,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent -4cm}}
-    {\typesetbuffer[hang][page=4,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent -4cm}}
+    {\typesetbuffer[demo-5][page=1,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent +4cm}}
+    {\typesetbuffer[demo-5][page=2,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent +4cm}}
+    {\typesetbuffer[demo-5][page=3,width=.4\textwidth,frame=on]} {\type{\hangafter +4 \hangindent -4cm}}
+    {\typesetbuffer[demo-5][page=4,width=.4\textwidth,frame=on]} {\type{\hangafter -4 \hangindent -4cm}}
 \stopcombination
 \stopplacefigure
 
@@ -470,14 +470,14 @@ Also watch the \type {hsize} keyword: we don't calculate the hsize from the \typ
 When a \type {right} keywords comes first the \type {left} is assumed to be zero.
 In the examples that follow we will use a couple of definitions:
 
-\startbuffer[setup]
+\startbuffer[setup-0]
 \startparagraphshape[test]
     both 1mm both 2mm both 3mm both 4mm both 5mm both 6mm
     both 7mm both 6mm both 5mm both 4mm both 3mm both 2mm
 \stopparagraphshape
 \stopbuffer
 
-\startbuffer[setup-repeat]
+\startbuffer[setup-0-repeat]
 \startparagraphshape[test-repeat]
     both 1mm both 2mm both 3mm both 4mm both 5mm both 6mm
     both 7mm both 6mm both 5mm both 4mm both 3mm both 2mm
@@ -485,7 +485,7 @@ In the examples that follow we will use a couple of definitions:
 \stopparagraphshape
 \stopbuffer
 
-\typebuffer[setup,setup-repeat][option=TEX]
+\typebuffer[setup-0,setup-0-repeat][option=TEX]
 
 The last one could also be defines as:
 
@@ -505,13 +505,13 @@ but just keep in mind that \type {repeat} is part of the \type {\parshape} and
 act within a paragraph while \type {shift} and \type {cycle} are applied when a
 new paragraph is started.
 
-\startbuffer[demo]
+\startbuffer[demo-1]
 \startshapedparagraph[list=test]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
 \stopbuffer
 
-\startbuffer[demo-repeat]
+\startbuffer[demo-1-repeat]
 \startshapedparagraph[list=test-repeat]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
@@ -519,64 +519,64 @@ new paragraph is started.
 
 In \in {figure} [fig:shape:discard] you see the following applied:
 
-\typebuffer[demo,demo-repeat][option=TEX]
+\typebuffer[demo-1,demo-1-repeat][option=TEX]
 
 \startplacefigure[title=Discarded shaping,reference=fig:shape:discard]
 \startcombination[nx=2,ny=2]
-    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}               {discard, finite shape,    page 1}
-    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}               {discard, finite shape,    page 2}
-    {\typesetbuffer[setup-repeat,demo-repeat][page=1,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 1}
-    {\typesetbuffer[setup-repeat,demo-repeat][page=2,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 2}
+    {\typesetbuffer[setup-0,demo-1]       [page=1,width=.4\textwidth,frame=on]} {discard, finite shape,    page 1}
+    {\typesetbuffer[setup-0,demo-1]       [page=2,width=.4\textwidth,frame=on]} {discard, finite shape,    page 2}
+    {\typesetbuffer[setup-0,demo-1-repeat][page=1,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 1}
+    {\typesetbuffer[setup-0,demo-1-repeat][page=2,width=.4\textwidth,frame=on]} {discard, repeat in shape, page 2}
 \stopcombination
 \stopplacefigure
 
 In \in {figure} [fig:shape:shift] we use this instead:
 
-\startbuffer[demo]
+\startbuffer[demo-2]
 \startshapedparagraph[list=test,method=shift]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
 \stopbuffer
 
-\startbuffer[demo-shift]
+\startbuffer[demo-2-shift]
 \startshapedparagraph[list=test-repeat,method=shift]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
 \stopbuffer
 
-\typebuffer[demo,demo-repeat][option=TEX]
+\typebuffer[demo-2,demo-2-repeat][option=TEX]
 
 \startplacefigure[title=Shifted shaping,reference=fig:shape:shift]
 \startcombination[nx=2,ny=2]
-    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 1}
-    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 2}
-    {\typesetbuffer[setup-repeat,demo-shift][page=1,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 1}
-    {\typesetbuffer[setup-repeat,demo-shift][page=2,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 2}
+    {\typesetbuffer[setup-0,demo-2][page=1,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 1}
+    {\typesetbuffer[setup-0,demo-2][page=2,width=.4\textwidth,frame=on]}              {shift, finite shape,    page 2}
+    {\typesetbuffer[setup-0-repeat,demo-2-shift][page=1,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 1}
+    {\typesetbuffer[setup-0-repeat,demo-2-shift][page=2,width=.4\textwidth,frame=on]} {shift, repeat in shape, page 2}
 \stopcombination
 \stopplacefigure
 
 Finally, in \in {figure} [fig:shape:cycle] we use:
 
-\startbuffer[demo]
+\startbuffer[demo-3]
 \startshapedparagraph[list=test,method=cycle]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
 \stopbuffer
 
-\startbuffer[demo-cycle]
+\startbuffer[demo-3-cycle]
 \startshapedparagraph[list=test-repeat,method=cycle]
     \dorecurse{8}{\showparagraphshape\samplefile{tufte} \par}
 \stopshapedparagraph
 \stopbuffer
 
-\typebuffer[demo,demo-repeat][option=TEX]
+\typebuffer[demo-3,demo-3-repeat][option=TEX]
 
 \startplacefigure[title=Cycled shaping,reference=fig:shape:cycle]
 \startcombination[nx=2,ny=2]
-    {\typesetbuffer[setup,demo][page=1,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 1}
-    {\typesetbuffer[setup,demo][page=2,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 2}
-    {\typesetbuffer[setup-repeat,demo-cycle][page=1,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 1}
-    {\typesetbuffer[setup-repeat,demo-cycle][page=2,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 2}
+    {\typesetbuffer[setup-0,demo-3][page=1,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 1}
+    {\typesetbuffer[setup-0,demo-3][page=2,width=.4\textwidth,frame=on]}              {cycle, finite shape,    page 2}
+    {\typesetbuffer[setup-0-repeat,demo-3-cycle][page=1,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 1}
+    {\typesetbuffer[setup-0-repeat,demo-3-cycle][page=2,width=.4\textwidth,frame=on]} {cycle, repeat in shape, page 2}
 \stopcombination
 \stopplacefigure
 
@@ -626,7 +626,7 @@ some \METAPOST. The following code creates a shape for a circle. We use a
 We plug this into the already described macros:
 
 \startbuffer
-\startshapedparagraph[list=circle,mp=circle]%
+\startshapedparagraph[mp=circle]%
     \setupalign[verytolerant,stretch,last]%
     \samplefile{tufte}
     \samplefile{tufte}
@@ -710,15 +710,12 @@ the original code is mid 2000, but the principles didn't change. The examples in
 \startuseMPgraphic{test 3}
   begingroup ;
     save w, h, p ; path p ; w := h := 6cm ;
-
     p := (.5w,h) -- (   0,  h) -- (0,0) -- (w,0) &
          (  w,0) .. (.75w,.5h) .. (w,h) &  (w,h) -- cycle ;
-
     lmt_parshape [
         path   = p,
         offset = BodyFontSize/2,
     ] ;
-
     draw p withpen pencircle scaled 1pt ;
   endgroup ;
 \stopuseMPgraphic
@@ -726,14 +723,11 @@ the original code is mid 2000, but the principles didn't change. The examples in
 \startuseMPgraphic{test 4}
   begingroup ;
     save d, p, q ; path p, q ; d := BodyFontSize/2;
-
     vardef shape(expr w, h, o) =
         (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
         (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
     enddef ;
-
     p := shape(6cm, 6cm, d) ; q := shape(6cm, 6cm, 0) ;
-
     lmt_parshape [
         path       = p,
         offsetpath = q,
@@ -741,7 +735,6 @@ the original code is mid 2000, but the principles didn't change. The examples in
         dy         = d,
         trace      = true,
     ] ;
-
     draw q withpen pencircle scaled 1pt ;
   endgroup ;
 \stopuseMPgraphic
@@ -795,7 +788,7 @@ Here is a bit more extreme example. Again we use a circle:
 But we output a longer text:
 
 \startbuffer
-\startshapedparagraph[list=circle,mp=circle,repeat=yes,method=cycle]%
+\startshapedparagraph[mp=circle,repeat=yes,method=cycle]%
     \setupalign[verytolerant,stretch,last]\dontcomplain
     {\darkred     \samplefile{tufte}}\par
     {\darkgreen   \samplefile{tufte}}\par
@@ -814,7 +807,7 @@ We get a multi|-|page shape:
 Compare this with:
 
 \startbuffer
-\startshapedparagraph[list=circle,mp=circle,repeat=yes,method=cycle]%
+\startshapedparagraph[mp=circle,repeat=yes,method=cycle]%
     \setupalign[verytolerant,stretch,last]\dontcomplain
     {\darkred     \samplefile{tufte}}
     {\darkgreen   \samplefile{tufte}}
@@ -833,6 +826,86 @@ Which gives:
 Here the \type {bottomskip} takes care of subtle rounding issues as well as
 discarding the last line in the shape so that we get nicer continuation. There is
 no full automated solution for all you can come up with.
+
+Mixing a \METAPOST\ specification into a regular one is also possible. The next
+example demonstrates this as well as the option to remove some lines from a
+specification:
+
+\starttyping[option=TEX]
+\startparagraphshape[test]
+    left 0em right 0em
+    left 1em right 0em
+    metapost {circle}
+    delete 3
+    metapost {circle,circle,circle}
+    delete 7
+    metapost {circle}
+    repeat
+\stopparagraphshape
+\stoptyping
+
+You can combine a shape with narrowing a paragraph. Watch the \type {absolute}
+keyword in the next code. The result is shown in \in {figure} [fig:shape:skips].
+
+\startbuffer[demo-4]
+\startuseMPgraphic{circle}
+    lmt_parshape [
+        path       = fullcircle scaled TextWidth,
+        bottomskip = - 1.5LineHeight,
+    ] ;
+\stopuseMPgraphic
+
+\startparagraphshape[test-1]
+    metapost {circle} repeat
+\stopparagraphshape
+
+\startparagraphshape[test-2]
+    absolute left metapost {circle} repeat
+\stopparagraphshape
+
+\startparagraphshape[test-3]
+    absolute right metapost {circle} repeat
+\stopparagraphshape
+
+\startparagraphshape[test-4]
+    absolute both metapost {circle} repeat
+\stopparagraphshape
+
+\showframe
+
+\startnarrower[4*left,2*right]
+    \startshapedparagraph[list=test-1,repeat=yes,method=repeat]%
+        \setupalign[verytolerant,stretch,last]\dontcomplain
+        \dorecurse{3}{\samplefile{thuan}}
+    \stopshapedparagraph
+    \page
+    \startshapedparagraph[list=test-2,repeat=yes,method=repeat]%
+        \setupalign[verytolerant,stretch,last]\dontcomplain
+        \dorecurse{3}{\samplefile{thuan}}
+    \stopshapedparagraph
+    \page
+    \startshapedparagraph[list=test-3,repeat=yes,method=repeat]%
+        \setupalign[verytolerant,stretch,last]\dontcomplain
+        \dorecurse{3}{\samplefile{thuan}}
+    \stopshapedparagraph
+    \page
+    \startshapedparagraph[list=test-4,repeat=yes,method=repeat]%
+        \setupalign[verytolerant,stretch,last]\dontcomplain
+        \dorecurse{3}{\samplefile{thuan}}
+    \stopshapedparagraph
+\stopnarrower
+\stopbuffer
+
+\typebuffer[demo-4][option=TEX]
+
+\startplacefigure[title=Skip compensation,reference=fig:shape:skips]
+\startcombination[nx=2,ny=2]
+    {\typesetbuffer[demo-4][page=1,width=.4\textwidth,frame=on]} {test 1}
+    {\typesetbuffer[demo-4][page=2,width=.4\textwidth,frame=on]} {test 2, left}
+    {\typesetbuffer[demo-4][page=3,width=.4\textwidth,frame=on]} {test 3, right}
+    {\typesetbuffer[demo-4][page=4,width=.4\textwidth,frame=on]} {test 4, both}
+\stopcombination
+\stopplacefigure
 
 \stopsection
 

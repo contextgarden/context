@@ -1,4 +1,4 @@
-% engine=luatex language=uk
+% language=uk
 %
 % copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
 
@@ -22,83 +22,128 @@ this is not the case. In this chapter we explore the ways to add text to
 
 \index{text}
 
-You can let \METAPOST\ process text that is typeset by \TEX. Such text is first
-embedded in the \METAPOST\ file in the following way:
+The \METAPOST\ program is about graphics, not about text. Its ancestor was made
+for creating fonts and in order to do so, it actually had some limited
+capabilities to add text to a graphic, like coordinates to points. Now, when
+you really want to add typeset text, we need something more. The traditional way
+to add some text to a \METAPOST\ graphic was to use this:
 
 \starttyping
 btex Some text to be typeset by \TEX etex
 \stoptyping
 
-This returns a picture, but only after \METAPOST\ has made sure that \TEX\ has
-converted it into something useful. This process of conversion is slightly system
-dependent and even a bit obscure. Traditional \METAPOST\ calls a program that
-filters the \type {btex}|\unknown|\type {etex} commands, next it calls \TEX\ by
-passing the output routine, in order to make sure that each piece of text ends up
-on its own page, and afterwards it again calls a program that converts the \DVI\
-pages into \METAPOST\ pictures. In \LUATEX's \MPLIB\ a different route is
-followed.
+The machinery was set up in such a way that these snippets got delegated to \TEX,
+and the resulting \DVI\ converted back into a a \METAPOST\ picture with objects
+that refer to a font and character. Although the \METAPOST\ program could handle
+that by calling out to \TEX, we never used that method. In \MKII\ we had two
+flows: either direct processing, or collect all texts and process them between
+runs. Because the backend (conversion to \PDF) was under \CONTEXT\ control we
+could do more than usual. You can find some information in the older manuals.
 
-In \CONTEXT\ \MKII, when using \WEBC, you can generate the graphics at run||time.
-This takes more time than processing the graphics afterwards, but has the
-advantage that \TEX\ knows immediately what graphic it is dealing with. When
-enabled, \CONTEXT\ will call either \METAPOST, or, when the graphic contains
-\type {btex}||\type {etex} commands, call \TEXEXEC, which in turn makes sure that
-the right auxiliary programs are executed.
+In \CONTEXT\ \MKIV\ we started using the library variant of \METAPOST. Its
+integration in \LUATEX\ made it possible to do all text rendering runtime at high
+speed. This change has an enormous speed gain: when this manual had about 425
+pages, on my laptop with mobile 3840QM processor, one run of this document takes
+18 seconds (14.5 with \LUAJITTEX) and that includes loading a bunch of (outline)
+fonts and processing some 2200 \METAPOST\ images. While writing the first version
+of this manual runtime was upto 50 times slower for half the number of pages so
+compared to \MKII\ we have gained a lot.
 
-In \CONTEXT\ \MKIV\ you won't notice this at all because everything is tightly
-integrated with \LUATEX's \MPLIB. This has an enormous speed gain: when this
-manual had about 425 pages, on my laptop with mobile 3840QM processor, one run of
-this document takes 18 seconds (14.5 with \LUAJITTEX) and that includes loading a
-bunch of (outline) fonts and processing some 2200 \METAPOST\ images. While
-writing the first version of this manual runtime was upto 50 times slower for
-half the number of pages so compared to \MKII\ we have gained a lot.
+In \MKIV\ we still have two internal runs per \METAPOST\ graphic that has text:
+the first time the texts snippets are collected and afterwards handed over to
+\LUA\ that tells the \TEX\ ending to process it. The dimensions are saved and
+used in a second processing of the graphic. Contrary to \MKII\ the user doesn't
+see these two runs: they appear as one. In \in {figure} [fig:text:mkiv] this is
+illustrated.
 
-\startFLOWchart[metatex]
+\startFLOWchart[mkiv]
     \startFLOWcell
-      \name       {script 1}
+      \name       {metapost 1}
       \location   {1,1}
       \shape      {action}
-      \text       {\type{context}}
+      \text       {\METAPOST\ \type{textext 1}}
+      \connection [rl] {lua 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {lua 1}
+      \location   {2,1}
+      \shape      {action}
+      \text       {\LUA}
       \connection [rl] {context 1}
+      \connection [bb] {metapost 2}
     \stopFLOWcell
     \startFLOWcell
       \name       {context 1}
-      \location   {2,1}
-      \shape      {action}
-      \text       {\CONTEXT}
-      \connection [bt] {metapost 1}
-      \connection [rl] {script 2}
-    \stopFLOWcell
-    \startFLOWcell
-      \name       {metapost 1}
-      \location   {2,2}
-      \shape      {action}
-      \text       {\METAPOST}
-    \stopFLOWcell
-    \startFLOWcell
-      \name       {script 2}
       \location   {3,1}
-      \shape      {action}
-      \text       {\type{context}}
-      \connection [rl] {context  2}
-      \connection [bt] {metapost 2}
-    \stopFLOWcell
-    \startFLOWcell
-      \name       {context 2}
-      \location   {4,1}
       \shape      {action}
       \text       {\CONTEXT}
     \stopFLOWcell
     \startFLOWcell
       \name       {metapost 2}
-      \location   {3,2}
+      \location   {4,1}
       \shape      {action}
-      \text       {\METAPOST}
+      \text       {\METAPOST\ \type{textext 2}}
+      \connection [bb] {lua 1}
+      \connection [rl] {backend 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {backend 1}
+      \location   {5,1}
+      \shape      {action}
+      \text       {backend}
     \stopFLOWcell
 \stopFLOWchart
 
-\startplacefigure[title={How \TEX\ and \METAPOST\ work together.}]
-    \FLOWchart[metatex]
+In the later versions of \MKIV\ it was possible to jump out to \TEX\ immediately
+and save the second run, although there were cases where this was not possible
+(reliable). In \LMTX\ we always have one run. This is summarized in \in {figure}
+[fig:text:mkiv]. All this has to do with the fact that \TEX, \METAPOST\ and \LUA\
+are integrated but still kind of independent. When you expand a macro (that
+triggers processing of a graphic) you end up in a call to the \METAPOST\ library
+but \TEX\ is still in that macro. In \LUATEX\ and more advanced in \LUAMETATEX\
+you can sort of spawn a subprocess in \TEX\ (called local control) and indeed
+process the text immediately and use the calculated dimension after that has been
+done. All that \METAPOST\ needs is dimensions as it the backend that eventually
+will include the text.
+
+\startplacefigure[title={How \TEX\ and \METAPOST\ work together (\MKIV).},reference=fig:text:mkiv]
+    \FLOWchart[mkiv]
+\stopplacefigure
+
+\startFLOWchart[lmtx]
+    \startFLOWcell
+      \name       {context 1}
+      \location   {1,1}
+      \shape      {action}
+      \text       {\CONTEXT}
+      \connection [rl] {lua 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {lua 1}
+      \location   {2,1}
+      \shape      {action}
+      \text       {\LUA}
+      \connection [lr] {context 1}
+      \connection [rl] {metapost 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {metapost 1}
+      \location   {3,1}
+      \shape      {action}
+      \text       {\METAPOST\ \type{textext}}
+      \connection [lr] {lua 1}
+      \connection [rl] {backend 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {backend 1}
+      \location   {5,1}
+      \shape      {action}
+      \text       {backend}
+    \stopFLOWcell
+\stopFLOWchart
+
+\startplacefigure[title={How \TEX\ and \METAPOST\ work together (\LMTX).},reference=fig:text:lmtx]
+    \FLOWchart[lmtx]
 \stopplacefigure
 
 \stopsection
@@ -107,55 +152,57 @@ half the number of pages so compared to \MKII\ we have gained a lot.
 
 \index{environments}
 
-In case you want to pass code that is shared by all \type {btex}||\type {etex}
-pictures, \METAPOST\ provides:
+The \type {textext} command is the main text handling command and it is used in many places
+in this manual. It takes a string.
 
-\starttyping
-verbatimtex \DefineSomeCommands etex ;
-\stoptyping
+In \MKII\ text was processed between runs or immediately but still by running an
+independent \TEX\ run. That has some consequences when the text was to share its
+properties with the main document. This means that in \MKII\ we pass
+characteristics of the layout, spacing, fonts, color and optionally an
+environment that a user has set up. This is mentioned in the older manual but no
+longer relevant in \MKIV\ and \LMTX. Because we handle the text runtime we
+automatically use the same style and document properties.
 
-However, in \CONTEXT\ one has a better mechanism available. In \CONTEXT\ \MKII\
-the advised method is passing environments. The best way to pass them is the
-following. As an example we switch to the 15 basic \POSTSCRIPT\ fonts.
-
-\startbuffer[pos]
-\startMPenvironment
-  \usetypescript[palatino][texnansi] % mkii has encodings
-  \setupbodyfont[palatino]
-\stopMPenvironment
-\stopbuffer
-
-\typebuffer[pos]
-
-This means that in code like the following, a Palatino font will be used.
+This means that in code like the following, a Palatino font will be used because
+that is what we use in this document.
 
 \starttyping
 \startMPcode
-draw btex Meta is a female lion! etex
-  xysized (\the\textwidth,\the\textheight) ;
+draw btex Meta is a female lion! etex xysized (TextWidth,TextHeight) ;
 \stopMPcode
 \stoptyping
 
-However, in \CONTEXT\ \MKIV\ this method is no longer recomended as all
-processing happens in the same run anyway.
+But even when we still support \type {btex} we strongly advise users to use this:
 
-% beware: extensive scaling can make acrobat crash and okular drop the !
+\starttyping
+\startMPcode
+draw textext("Meta is a female lion!") xysized (TextWidth,TextHeight) ;
+\stopMPcode
+\stoptyping
+
+In this example as well in the next one you see that we access \type {TextWidth}
+directly. In older examples in the \CONTEXT\ distribution you will notice that we
+serialize \TEX\ registers like \type {\textwidth}. This is still valid but less
+preferable. Here \type {TextWidth} is actually a macro that calls out to \LUA\
+from where we fetch the value of \type {\textwidth} and pipe it back to
+\METAPOST\ in a way that makes it look like we have a variable.
 
 \startbuffer[lioncode]
 \startMPcode
-numeric w, h ; w := \the\textwidth ; h := w/2 ;
+numeric w, h ; w := TextWidth ; h := w/2 ;
 
-picture p ; p := btex \colored[r=.375,g=.375]{Meta is a female lion!} etex
-    xysized (w,h) ;
-picture q ; q := btex \colored[r=.625]       {Meta is a female lion!} etex
-    xysized (w,h) ;
+picture p ; p := textext.urt("Meta is a female lion!") xysized (w,h) ;
+picture q ; q := textext.urt("Meta is a female lion!") xysized (w,h) ;
 
-path b ; b := boundingbox p ; draw p ;
+path b ; b := boundingbox p ; draw p withcolor "darkyellow" ;
 
-for i=(.28w,.90h),(.85w,.90h),(w,.05h) :
+draw textextanchor(p) withpen pencircle scaled 5mm withcolor "darkblue" ;
+
+for i = (.28w,.90h), (.85w,.90h), (w,.05h) :
   picture r ; r := q ;
   path s ; s := (fullsquare xscaled .05w yscaled .4h) shifted i ;
-  clip r to s ; draw r ; % draw s ;
+  clip r to s ;
+  draw r  withcolor "darkred";
 endfor ;
 
 setbounds currentpicture to b ;
@@ -167,27 +214,34 @@ setbounds currentpicture to b ;
 \in {Figure} [lionclip] shows the previous sentence in a slightly different look.
 You may consider coloring the dots to be an exercise in clipping.
 
-\getbuffer[pos]
+\startplacefigure[title={An example of clipping.},reference=lionclip]
+  \getbuffer[lioncode]
+\stopplacefigure
 
-\placefigure
-  [here][lionclip]
-  {An example of clipping.}
-  {\getbuffer[lioncode]}
+In this example we show that the origin of the text. By default it gets centered
+but the \type {urt} suffix moves it. Here is another example of showing the
+origin:
 
-\resetMPenvironment
+\startbuffer
+\startMPcode
+picture p ; p := thetextext.top("foo",(10,1));
+picture q ; q := thetextext.lft("foo",(1,10));
 
-An environment can be reset with \typ {\resetMPenvironment} or by passing \type
-{reset} to \typ {\startMPenvironment}.
+draw textextanchor(p) withpen pencircle scaled 2mm withcolor "darkred" ;
+draw textextanchor(q) withpen pencircle scaled 1mm withcolor "white" ;
 
-\starttyping
-\startMPenvironment[reset]
-  \usetypescript[postscript][texnansi] % mkii
-  \setupbodyfont[postscript]
-\stopMPenvironment
-\stoptyping
+draw p;
+draw q;
+\stopMPcode
+\stopbuffer
 
-So, to summarize: if you're using \CONTEXT\ \MKIV\ you might as well forgot what
-you just read.
+\typebuffer
+
+It gives the following:
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
 
 \stopsection
 
@@ -222,12 +276,117 @@ defaultscale := \the\bodyfontsize/10 ;
 \stoptyping
 
 This means that they will adapt themselves to the current body font (in this
-document we get \truefontname{Regular}) and the current size of the bodyfont
+document we get \truefontname {Regular}) and the current size of the bodyfont
 (here \the\bodyfontsize/10).
+
+Normally you can stick to the default and forget about these details. More important
+is how you anchor labels. This is best shown with some examples:
+
+\startbuffer
+\startMPcode
+  path p ; p := fullcircle scaled 3cm ;
+
+  drawarrow p ;
+
+  dotlabel     ("test",point 0 of p) withcolor red ;
+  dotlabel.rt  ("rt",  point 1 of p) ;
+  dotlabel.urt ("urt", point 2 of p) ;
+  dotlabel.top ("top", point 3 of p) ;
+  dotlabel.ulft("ulft",point 4 of p) ;
+  dotlabel.lft ("lft", point 5 of p) ;
+  dotlabel.llft("llft",point 6 of p) ;
+  dotlabel.bot ("bot", point 7 of p) ;
+  dotlabel.lrt ("lrt", point 8 of p) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  path p ; p := fullcircle scaled 3cm ;
+
+  drawarrow p ;
+
+  dotlabel     ("test",p) ;
+  dotlabel.rt  ("rt",  p) ;
+  dotlabel.urt ("urt", p) ;
+  dotlabel.top ("top", p) ;
+  dotlabel.ulft("ulft",p) ;
+  dotlabel.lft ("lft", p) ;
+  dotlabel.llft("llft",p) ;
+  dotlabel.bot ("bot", p) ;
+  dotlabel.lrt ("lrt", p) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  p := (origin..right..up..left) scaled 3cm ;
+
+  drawarrow p ;
+
+  label     ("test",p) ;
+  label.rt  ("rt",  p) ;
+  label.urt ("urt", p) ;
+  label.top ("top", p) ;
+  label.ulft("ulft",p) ;
+  label.lft ("lft", p) ;
+  label.llft("llft",p) ;
+  label.bot ("bot", p) ;
+  label.lrt ("lrt", p) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  picture p ; p := image(drawarrow (origin..right..up..left) scaled 3cm ;) ;
+
+  draw p ;
+  draw bbox p dashed evenly ;
+
+  label     ("test",p) ;
+  label.rt  ("rt",  p) ;
+  label.urt ("urt", p) ;
+  label.top ("top", p) ;
+  label.ulft("ulft",p) ;
+  label.lft ("lft", p) ;
+  label.llft("llft",p) ;
+  label.bot ("bot", p) ;
+  label.lrt ("lrt", p) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  picture p ; p := image(drawarrow (origin..right..up..left) scaled 3cm ;) ;
+
+  draw p ;
+  draw bbox p dashed evenly ;
+
+  draw textext     ("test") shifted theoffset     (p) ;
+  draw textext.lft ("rt")   shifted theoffset.rt  (p) ;
+  draw textext.llft("urt")  shifted theoffset.urt (p) ;
+  draw textext.bot ("top")  shifted theoffset.top (p) ;
+  draw textext.lrt ("ulft") shifted theoffset.ulft(p) ;
+  draw textext.rt  ("lft")  shifted theoffset.lft (p) ;
+  draw textext.urt ("llft") shifted theoffset.llft(p) ;
+  draw textext.top ("bot")  shifted theoffset.bot (p) ;
+  draw textext.ulft("lrt")  shifted theoffset.lrt (p) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
 
 \stopsection
 
-\startsection[title={\TeX\ text}]
+\startsection[title={Text along a path}]
 
 \index{text}
 
@@ -237,16 +396,22 @@ step. The advantage of this method is that we can do intermediate calculations i
 While doing so we want to achieve the following:
 
 \startitemize[packed]
-\item  the text should be properly kerned, i.e.\ the
-       spacing between characters should be optimal,
-\item  the position on the circle should vary, and
-\item  the radius of the circle should vary.
+    \startitem
+        the text should be properly kerned, i.e.\ the spacing between characters
+        should be optimal,
+    \stopitem
+    \startitem
+        the position on the circle should vary, and
+    \stopitem
+    \startitem
+        the radius of the circle should vary.
+    \stopitem
 \stopitemize
 
-This implementation is not the most straightforward one, but by doing it step by
-step, at least we see what is involved. Later, we will see a better method. If
-you run these examples yourself, you must make sure that the \TEX\ environment of
-your document matches the one used by \METAPOST.
+This code below is a bit rusted but it illustrates the principles. In \MKIV\ and
+\LMTX\ we have typesetting along a curve built in so we no longer show the \TEX\
+code that integrates it. This implementation is not the most straightforward one,
+but by doing it step by step, at least we see what is involved.
 
 We let the bodyfont match the font used in this document, and define \type
 {RotFont} to be the regular typeface, the one you are reading right now, but
@@ -574,7 +739,8 @@ the top half of a fullcircle.
 We will now package all of this into a nice, efficient macro, using, of course,
 the predefined scratch registers \type {\MPtoks} and \type {\MPbox}. First we
 define the token processor. Note again the expansion inhibition switch \type
-{[-]}.
+{[-]}. This code is presented as an example of how these mechanissm evolved in
+\CONTEXT.
 
 \startbuffer
 \def\processrotationtoken#1%
@@ -654,170 +820,34 @@ buffers, you can even combine steps and replace them at will. This is how we mad
 the previous step by step examples: We put each sub||graphic in a buffer and then
 called the ones we wanted.
 
-We now present a more general approach to typesetting along a given path. This
-method is not only more robust and general, it is also a more compact definition,
-especially if we omit the tracing and testing code. We use a familiar auxiliary
-definition. The \type {\setstrut} and \type {\strut} commands ensure that the
-lines have the proper depth and height.
+Next we show how it is done today in \LMTX. Instead of wrapping it in a macro we
+just do all in \METAPOST. Watch how we use the key|/|value interface:
 
 \startbuffer
-\def\processfollowingtoken#1%
-  {\appendtoks#1\to\MPtoks
-   \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
-   \startMPdrawing
-     n := n + 1 ; len[n] := \the\wd\MPbox ;
-   \stopMPdrawing
-   \startMPdrawing[-]
-     pic[n] := btex \RotFont\setstrut\strut#1 etex ;
-     pic[n] := pic[n] shifted -llcorner pic[n] ;
-   \stopMPdrawing}
-\stopbuffer
-
-\typebuffer \getbuffer
-
-In \MKII\ the previous code is collected in the macro \type {\followtokens} but
-in \MKIV\ we use a different approach. There we use a mix of \TEX, \METAPOST, and
-\LUA\ to define that macro. The principles remain the same but the code is more
-robust.
-
-\useMPlibrary[txt]
-
-So, how does this compare to earlier results? The original, full text as typeset
-by \TEX, looks like:
-
-\blank \start \RotFont We now follow some arbitrary path ... \stop \blank
-
-In the examples, the text is typeset along the path with:
-
-\startbuffer[toks]
-\followtokens{We now follow some arbitrary path ...}
-\stopbuffer
-
-\typebuffer[toks]
-
-\startlinecorrection[blank]
-\getbuffer[toks]
-\stoplinecorrection
-
-Since we did not set a path, a dummy path is used. We can provide a path by
-(re)defining the graphic \type {followtokens}.
-
-\startbuffer[trac]
-\startMPinclusions
-  boolean TraceRot ; TraceRot := true ;
-\stopMPinclusions
-\stopbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := fullcircle ;
-\stopuseMPgraphic
-\stopbuffer
-
-\startbuffer
-\typebuffer[draw]
-\startlinecorrection[blank]
-\hbox
-  {\getbuffer[draw,toks]\hskip1cm
-   \getbuffer[trac,draw,toks]}
-\stoplinecorrection
-\stopbuffer
-
-\getbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := reverse fullcircle ;
-\stopuseMPgraphic
-\stopbuffer
-
-\getbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := (-3cm,-1cm)--(0,1cm)--(3cm,-1cm) ;
-\stopuseMPgraphic
-\stopbuffer
-
-\getbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := (-3cm,0)--(3cm,1cm) ;
-\stopuseMPgraphic
-\stopbuffer
-
-\getbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(3cm,0) ;
-\stopuseMPgraphic
-\stopbuffer
-
-\getbuffer
-
-\startbuffer[draw]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(0cm,-2cm)..(3cm,0) ;
-\stopuseMPgraphic
-\stopbuffer
-
-\getbuffer
-
-When turned on, tracing will produce bounding boxes as well as draw the path.
-Tracing can be turned on by saying:
-
-\typebuffer[trac]
-
-% let's turn it off now
-
-\startMPinclusions
-  boolean TraceRot ; TraceRot := false ;
-\stopMPinclusions
-
-The next example is dedicated to Giuseppe Bilotta who wants to handle multiple
-strings and uses a patched version of \type {\followtokens}. To avoid a
-complicated explanation, we will present an alternative here that uses overlays.
-This method also avoids complicated path definitions.
-
-\startbuffer
-\startoverlay
-  {\startuseMPgraphic{followtokens}
-     draw fullcircle scaled 5cm .
-       withpen pencircle scaled 1pt withcolor .625yellow ;
-     draw fullsquare scaled 5.25cm
-       withpen pencircle scaled 1pt withcolor .625red ;
-     drawoptions (withcolor .625red) ;
-     path RotPath ; RotPath := halfcircle scaled 5cm ;
-     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-   \stopuseMPgraphic
-   \followtokens { Met{\`a} superiore }}
-  {\startuseMPgraphic{followtokens}
-     drawoptions (withcolor .625red) ;
-     path RotPath ; RotPath := halfcircle rotated 90 scaled 5cm ;
-     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-   \stopuseMPgraphic
-   \followtokens { {$\star$} }}
-  {\startuseMPgraphic{followtokens}
-     drawoptions (withcolor .625red) ;
-     path RotPath ; RotPath := halfcircle rotated 180 scaled 5cm ;
-     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-   \stopuseMPgraphic
-   \followtokens { Met{\`a} inferiore }}
-  {\startuseMPgraphic{followtokens}
-     drawoptions (withcolor .625red) ;
-     path RotPath ; RotPath := halfcircle rotated 270 scaled 5cm ;
-     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-   \stopuseMPgraphic
-   \followtokens { {$\star$} }}
-\stopoverlay
+\startMPcode
+  draw lmt_followtext [
+    path   = halfcircle rotated 45 scaled 4cm,
+    text   = "Does it work ok?",
+    spread = true,
+    trace  = true,
+  ] ;
+  draw lmt_followtext [
+    path   = halfcircle rotated -30 scaled 3cm,
+    text   = "Does it work ok?",
+    spread = false,
+    trace  = true,
+  ] shifted (4cm,0) ;
+  draw lmt_followtext [
+    path   = reverse halfcircle scaled 2cm,
+    text   = "Does it work ok?",
+    spread = true,
+    trace  = true,
+  ] shifted (8cm,0) ;
+\stopMPcode
+\stopMPcode
 \stopbuffer
 
 \typebuffer
-
-In order to fool the overlay macro that each graphic has the same size, we force
-a bounding box.
 
 \startlinecorrection[blank]
 \getbuffer
@@ -825,7 +855,7 @@ a bounding box.
 
 \stopsection
 
-\startsection[title={Talking to \TEX}]
+\startsection[title={Using shapes}]
 
 Sometimes, others may say oftentimes, we are in need for some fancy typesetting.
 If we want to typeset a paragraph of text in a non standard shape, like a circle,
@@ -1248,165 +1278,38 @@ MyTopSkip := StrutHeight ;
 \useMPgraphic{text}
 \stoplinecorrection
 
-This kind of graphic trickery in itself is not enough to get \TEX\ into
-typesetting within the bounds of a closed curve. Since \METAPOST\ can write
-information to a file, and \TEX\ can read such a file, a natural way to handle
-this is to let \METAPOST\ write a \type {\parshape} specification.
+Now that we know a bit how this works we demonstrate the implementation in \LMTX.
+Where in \MKIV\ and \MKII\ we let \METAPOST\ pass the dimensions to \TEX\ via a
+temporary file in \LMTX\ we communicate more directly. You can take a look at the
+source code if you want to know how that works.
 
-\startbuffer
-\startuseMPgraphic{text macro}
-  def provide_parshape (expr p, MyOffset, LineHeight,
-    StrutHeight, StrutDepth, MyTopSkip) =
-
-    \includeMPgraphic{text move}
-    \includeMPgraphic{text split}
-    \includeMPgraphic{text cutoff}
-    \includeMPgraphic{text draw}
-    \includeMPgraphic{text calc}
-    \includeMPgraphic{text loop}
-    \includeMPgraphic{text save}
-
-  enddef ;
-\stopuseMPgraphic
-\stopbuffer
-
-\typebuffer \getbuffer
-
-We have to adapt the for||loop to register the information about the lines. After
-the loop we write those values to a file using another loop.
-
-\startbuffer
-\startuseMPgraphic{text loop}
-  path line; pair lll, rrr ; numeric vvsize, n ; n := 0 ;
-
-  if (StrutHeight+StrutDepth<LineHeight) :
-    vvsize := vsize ;
-  else :
-    vvsize := (vsize div LineHeight) * LineHeight ;
-  fi ;
-
-  for i=MyTopSkip step LineHeight until vvsize :
-
-    line := (ulcorner q -- urcorner q) shifted (0,-i) ;
-
-    lll := found_point(line,l,true ) ;
-    rrr := found_point(line,r,false) ;
-
-    n := n + 1 ;
-
-    indent[n] := abs(xpart lll - xpart llcorner q) ;
-    width[n]  := abs(xpart rrr - xpart lll) ;
-
-  endfor ;
-\stopuseMPgraphic
-
-\startuseMPgraphic{text save}
-  write "\parshape " & decimal n to "mfun-mp-data.txt" ;
-  for i=1 upto n:
-    write decimal indent[i]&"bp " &
-          decimal  width[i]&"bp " to "mfun-mp-data.txt" ;
-  endfor ;
-  write EOF to "mfun-mp-data.txt" ;
-\stopuseMPgraphic
-\stopbuffer
-
-\typebuffer \getbuffer
-
-We can call this macro using the part we used in the previous examples.
-
-\startbuffer
-\startuseMPgraphic{text}
-  \includeMPgraphic{text macro}
-
-  path p ; p := ((0,1)..(-1,0)..(1,0)--cycle) scaled 65pt ;
-
-  provide_parshape
-   (p,              % shape path
-    .5*LineHeight,  % offset
-    LineHeight,     % distance between lines
-    StrutHeight,    % height of a line
-    StrutDepth,     % depth of a line
-    StrutHeight) ;  % height of first line
-\stopuseMPgraphic
-\stopbuffer
-
-\typebuffer \getbuffer
-
-After we called \type {\useMPgraphic{text}}, the resulting file looks as follows.
-You can call up this file by its anonymous name \type {\MPdatafile}, since this
-macro gets the value of the graphic at hand.
-
-\startnointerference
-    \useMPgraphic{text}
-\stopnointerference
-
-\typefile{mfun-mp-data.txt}
-
-So, reading in this file at the start of a paragraph will setup \TEX\ to follow
-this shape.
-
-The final implementation is a bit more complicated since it takes care of paths
-that are not centered around the origin and don't start at the top point. We
-achieve this by moving the path to the center:
-
-\starttyping
-cp := center p ; q := p shifted - cp ;
-\stoptyping
-
-The arbitrary starting point is taken care of by a slightly more complicated path
-cutter. First we make sure that the path runs counterclockwise.
-
-\starttyping
-if xpart directionpoint t of q < 0 : q := reverse q fi ;
-\stoptyping
-
-Knowing this, we can split the path in two, using a slightly different splitter:
-
-\starttyping
-l := q cutbefore t ;
-l := l if xpart point 0 of q < 0 : & q fi cutafter b ;
-r := q cutbefore b ;
-r := r if xpart point 0 of q > 0 : & q fi cutafter t ;
-\stoptyping
-
-As always, when implementing a feature like this, some effort goes into a proper
-user interface. In doing so, we need some \TEX\ trickery that goes beyond this
-text, like collecting text and splitting of the part needed. Also, we want to be
-able to handle multiple shapes at once, like the next example demonstrates.
-
-\stopsection
-
-\startsection[title={Libraries}]
-
-\index{graphics+libraries}
-
-In \MKIV\ and \LMTX\ the \METAFUN\ driven text around a curve is a core
-functionality. In \LMTX\ the specific paragraph shape are available in the core
-too. Otherwise you need to load a module:
-
-\startbuffer
-\useMPlibrary[txt]
-\stopbuffer
-
-\typebuffer \getbuffer
-
-We define four shapes. They are not really beautiful, but they demonstrate what
-happens in border cases. For instance, too small first lines are ignored. First
-we define a circle. Watch how the dimensions are set in the graphic. The
-arguments passed to \type {build_parshape} are: path, an offset, an additional
-horizontal and vertical displacement, the baseline distance, the height and depth
-of the line, and the height of the first line (MyTopSkip in \TEX\ terminology). The
+We start by defining four shapes. They are not really beautiful, but they
+demonstrate what happens in border cases. For instance, too small first lines are
+ignored. First we define a circle. Watch how the dimensions are set in the
+graphic. The arguments passed to \type {lmt_parshape} are: path, an offset, an
+additional horizontal and vertical displacement, the baseline distance, the
+height and depth of the line, and the height of the first line (aka topskip). The
 height and depth of a line are often called strut height and depth, with a strut
-being an invisible character with maximum dimensions.
+being an invisible character with maximum dimensions. Variables like \type
+{StrutHeight} refer to values at the \TEX\ end. We play safe and group so that we
+can save variables.
 
 \startbuffer
 \startuseMPgraphic{test 1}
-  path p ; p := fullcircle scaled 6cm ;
-
-  build_parshape(p,6pt,0,0,LineHeight,
-    StrutHeight,StrutDepth,StrutHeight) ;
-
-  draw p withpen pencircle scaled 1pt ;
+  begingroup ;
+    save p ; path p ; p := fullcircle scaled 6cm ;
+    lmt_parshape [
+        path        = p,
+        offset      = BodyFontSize/2,
+        dx          = 0,           % default
+        dy          = 0,           % default
+        lineheight  = LineHeight,  % default
+        strutheight = StrutHeight, % default
+        strutdepth  = StrutDepth,  % default
+        topskip     = StrutHeight, % default
+    ] ;
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1417,12 +1320,15 @@ suits the small lines at the top and bottom.
 
 \startbuffer
 \startuseMPgraphic{test 2}
-  path p ; p := fullsquare rotated 45 scaled 5cm ;
-
-  build_parshape(p,6pt,0,0,LineHeight,
-    StrutHeight,StrutDepth,StrutHeight) ;
-
-  draw p withpen pencircle scaled 1pt ;
+  begingroup ;
+    save p ; path p ; p := fullsquare rotated 45 scaled 5cm ;
+    lmt_parshape [
+        path   = p,
+        offset = BodyFontSize/2,
+        trace  = true,
+    ] ;
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1433,14 +1339,16 @@ always trivial.
 
 \startbuffer
 \startuseMPgraphic{test 3}
-  numeric w, h ; w := h := 6cm ;
-  path p ; p := (.5w,h) -- (0,h) -- (0,0) -- (w,0) &
-    (w,0) .. (.75w,.5h) .. (w,h) & (w,h) -- cycle ;
-
-  build_parshape(p,6pt,0,0,LineHeight,
-    StrutHeight,StrutDepth,StrutHeight) ;
-
-  draw p withpen pencircle scaled 1pt ;
+  begingroup ;
+    save w, h, p ; path p ; w := h := 6cm ;
+    p := (.5w,h) -- (   0,  h) -- (0,0) -- (w,0) &
+         (  w,0) .. (.75w,.5h) .. (w,h) &  (w,h) -- cycle ;
+    lmt_parshape [
+        path   = p,
+        offset = BodyFontSize/2,
+    ] ;
+    draw p withpen pencircle scaled 1pt ;
+  endgroup ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1453,19 +1361,22 @@ needed, since we need these later on.
 
 \startbuffer
 \startuseMPgraphic{test 4}
-  numeric w, h, o ;
-
-  def shape = (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
-    (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
-  enddef ;
-
-  w := h := 6cm ; o := 6pt ; path p ; p := shape ;
-  w := h := 6cm ; o := 0pt ; path q ; q := shape ;
-
-  build_parshape(p,q,6pt,6pt,LineHeight,
-    StrutHeight,StrutDepth,StrutHeight) ;
-
-  draw q withpen pencircle scaled 1pt ;
+  begingroup ;
+    save d, p, q ; path p, q ; d := BodyFontSize/2;
+    vardef shape(expr w, h, o) =
+        (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
+        (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
+    enddef ;
+    p := shape(6cm, 6cm, d) ; q := shape(6cm, 6cm, 0) ;
+    lmt_parshape [
+        path       = p,
+        offsetpath = q,
+        dx         = d,
+        dy         = d,
+        trace      = true,
+    ] ;
+    draw q withpen pencircle scaled 1pt ;
+  endgroup ;
 \stopuseMPgraphic
 \stopbuffer
 
@@ -1491,7 +1402,7 @@ of shapes.
 \startshapetext[test 1,test 2,test 3,test 4]
   \forgetall % as it says
   \setupalign[verytolerant,stretch,normal]%
-  \input douglas % Douglas R. Hofstadter
+  \samplefile{douglas}% Douglas R. Hofstadter
 \stopshapetext
 \stopbuffer
 
@@ -1517,7 +1428,8 @@ set to the current shape dimensions. The normal result is shown in \in {figure}
 
 \getbuffer[shapes]
 
-By using a buffer we keep \type {\placefigure} readable.
+By using a buffer we keep \type {\placefigure} readable. You might have noticed
+that for two shapes we turned on tracing.
 
 \startbuffer[a]
 \placefigure
@@ -1539,51 +1451,20 @@ By using a buffer we keep \type {\placefigure} readable.
 
 \doifmodeelse{screen}{\getbuffer[text,b]}{\getbuffer[text,a]}
 
-The traced alternative is shown in \in {figure} [fig:traced shapes]. This one is
-defined as:
-
-\startbuffer[a]
-\placefigure
-  [here][fig:traced shapes]
-  {A continuous text, typeset in a non||standard shape,
-   spread over four areas (tracing on).}
-  {\startMPinclusions
-     boolean trace_parshape ; trace_parshape := true ;
-   \stopMPinclusions
-   \getbuffer}
-\stopbuffer
-
-\startbuffer[b]
-\placefigure
-  [here][fig:traced shapes]
-  {A continuous text, typeset in a non||standard shape,
-   spread over four areas (tracing on).}
-  {\startMPinclusions
-     boolean trace_parshape ; trace_parshape := true ;
-   \stopMPinclusions
-   \scale[factor=max,height=.9\textheight]{\getbuffer}}
-\stopbuffer
-
-\typebuffer[a]
-
-\doifmodeelse{screen}{\getbuffer[text,b]}{\getbuffer[text,a]}
-
-% {\em This mechanism is still somewhat experimental and will be optimized and
-% extended with name spaces and more.}
-
 \blank
 
 We can combine all those tricks, although the input is somewhat fuzzy. First we
-define a quote typeset in a circular paragraph shape.
+define a quote typeset in a circular paragraph shape where we use the defaults.
 
 \startbuffer[shape]
 \startuseMPgraphic{center}
-  build_parshape(fullcircle scaled 8cm,0,0,0,LineHeight,
-    StrutHeight,StrutDepth,StrutHeight) ;
+  lmt_parshape [
+    path = fullcircle scaled 8cm,
+  ]
 \stopuseMPgraphic
 
 \startshapetext[center]
-  \input douglas
+  \samplefile{douglas}%
 \stopshapetext
 
 \defineoverlay[center][\useMPgraphic{center}]
@@ -1595,20 +1476,23 @@ We will surround this text with a circular line, that we define as follows. By
 using a buffer we keep things organized.
 
 \startbuffer
-\startbuffer[circle]
-\startuseMPgraphic{followtokens}
-  path RotPath ; RotPath := reverse fullcircle
-    rotatedaround(origin,90)
-    xscaled \overlaywidth yscaled \overlayheight ;
-  drawoptions (withcolor .625red) ;
+\startuseMPgraphic{circle}
+  save p ; path p ;
+  p := reverse fullcircle rotatedaround(origin,90)
+    xscaled OverlayWidth yscaled OverlayHeight ;
+
+  draw lmt_followtext [
+    path   = p,
+    text   = "This is just a dummy text, kerned by \TeX\ and typeset
+              in a circle using \MetaPost.\quad",
+    spread = true,
+    trace  = true,
+  ] ;
+
+% draw p ;
 \stopuseMPgraphic
 
-\followtokens
-  {This is just a dummy text, kerned by \TeX\ and typeset
-   in a circle using \MetaPost.\quad}
-\stopbuffer
-
-\defineoverlay[edge][{\getbuffer[circle]}]
+\defineoverlay[edge][\useMPgraphic{circle}]
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -1616,155 +1500,20 @@ using a buffer we keep things organized.
 The text and graphics come together in a framed text:
 
 \startbuffer
-\startbuffer[quote]
-\framed
-  [offset=24pt,
-   background=edge,
-   frame=off,
-   backgroundoffset=-18pt]
-  {\getshapetext}
-\stopbuffer
-
-\placefigure
-  {One more time Hofstadter's quotation (normal).}
-  {\getbuffer[shape,quote]}
-
-\placefigure
-  {One more time Hofstadter's quotation (traced).}
-  {\startMPinclusions
-      boolean TraceRot ; TraceRot := true ;
-   \stopMPinclusions
-   \getbuffer[shape,quote]}
+\startplacefigure[title={One more time Hofstadter's quotation (normal).}]
+  \getbuffer[shape,quote]%
+  \framed
+    [offset=24pt,
+     background=edge,
+     frame=off,
+     backgroundoffset=-18pt]
+    {\getshapetext}
+\stopplacefigure
 \stopbuffer
 
 \typebuffer \getbuffer
 
-% {\em Here also, I will rewrite things a bit so that we can avoid \type
-% {\startMPdrawing} outside the macro, and thereby avoid problems. I can also add
-% the maps cdrom cover as example.}
-
 \stopsection
-
-% \startsection[title={Visualizing \TEX}]
-%
-% The next example is a bit out of place in this manual, but nevertheless
-% demonstrates how one can use \METAPOST\ to get insight in what \TEX\ is doing
-% inside.
-%
-% The author of \PDFTEX, \THANH, has extended the paragraph builder with a
-% provision for protruding characters and glyphs substitution, also known as {\it
-% hz} (which stands for Hermann Zapf). The {\it hz} optimization involves an
-% additional pass over the lines and|/|or paragraph, in order to determine how
-% inconsistency in gaps can be reduced by substituting an \quote {\scale [sx=1.01]
-% {a}} by an \quote {\scale [sx=5] {a}} or \quote {\scale [sx=.5] {a}}. In \in
-% {figure} [fig:hz] you can find the visualization in action. By means of colors we
-% indicate in what way glyphs are substituted by slightly larger or smaller values.
-% More details on how the {\it hz} optimization works can be found in \THANH's
-% thesis.
-%
-% \placefigure
-%   [page][fig:hz]
-%   {When we feed \TEX\ code into \METAPOST\ and back, we
-%    can visualize {\it hz}||optimization in a colorful way.}
-%   {\doifmodeelse{screen}
-%      {\externalfigure[mfun-hzs.pdf][height=.8\textheight]}
-%      {\externalfigure[mfun-hzp.pdf][height=.8\textheight]}}
-%
-% In order to avoid a complicated discussion about how to set up \PDFTEX\ to use
-% {\it hz} |<|this can best be left over to the macro package that you use|>| we
-% will illustrate the method behind this kind of visualizations in a more simple
-% case.
-%
-% When you include a \METAPOST\ graphic in \PDFTEX, the output produced by
-% \METAPOST\ is interpreted by a bunch of macros and converted into raw \PDF\ code.
-% In the process special extensions, like shading, transparency, graphic inclusion,
-% are taken care of. When the converter encounters a font inclusion directive,
-% i.e.\ the \POSTSCRIPT\ \type {fshow} operator, it uses the \TEX\ font handler to
-% take care of the font. A benefit of this approach is that \TEX\ and \METAPOST\
-% share the same font resources and therefore the inclusion is done in the way
-% expected.
-%
-% The low level macro that takes care of the font inclusion provides a couple of so
-% called hooks, that permit us to do additional manipulations with the character
-% sequences that are encountered.
-%
-% \startbuffer[demo]
-% draw
-%   btex \definedfont[cmr10]%
-%     Combine the power of \TeX\ and \MetaPost !
-%   etex scaled 2 ;
-% \stopbuffer
-%
-% \typebuffer[demo]
-%
-% When processed, this gives the graphic:
-%
-% \startlinecorrection[blank]
-% \processMPbuffer[demo]
-% \stoplinecorrection
-%
-% The result is not spectacular, and there is no indication that \METAPOST\ has
-% been in action. The following line of code sets the hook \type {\MPfshowcommand}
-% |<|this commands takes one argument|>| to produce a ruled horizontal box.
-%
-% \startbuffer
-% \let\MPfshowcommand\ruledhbox
-% \stopbuffer
-%
-% \typebuffer
-%
-% \startlinecorrection[blank]
-% \getbuffer \processMPbuffer[demo]
-% \stoplinecorrection
-%
-% If you watch closely, you will see that the ruled boxes contain one or more
-% characters (or more precise glyphs). This is a result from \TEX\ explicitely
-% kerning characters.
-%
-% A second hook is provided in the macro that takes care of the font switch. This
-% command is defined as follows:
-%
-% \starttyping
-% \def\setMPfshowfont#1#2%
-%   {\font\temp=#1\space at #2\relax\temp}
-% \stoptyping
-%
-% The first argument is the raw font name, and the second argument specifies the
-% desired size. If we want to see what fonts are involved, we can redefine the
-% hooks as follows.
-%
-% \starttyping
-% \def\setMPfshowfont#1#2%
-%   {\message{[using #1 at #2 in mp graphic]}%
-%    \font\temp=#1\space at #2\relax\temp}
-% \stoptyping
-%
-% It happens that two fonts are used: \type {cmr10} and \type {logo10}. Once we
-% know this, we can apply some magic: we set the color to the fontname and define a
-% couple of colors that match the name.
-%
-% \startbuffer
-% \definecolor [cmr10]  [darkred]
-% \definecolor [logo10] [darkyellow]
-%
-% \def\setMPfshowfont#1#2%
-%   {\color[#1]\font\temp=#1\space at #2\relax\temp}
-% \stopbuffer
-%
-% \typebuffer
-%
-% In the case of the \type {\it hz} examples we had to define a couple of more
-% colors, but the principle remains.
-%
-% \startlinecorrection[blank]
-% \getbuffer \processMPbuffer[demo]
-% \stoplinecorrection
-%
-% We don't expect the user to use tricks like this on a daily basis, but it
-% demonstrates that with a bit of knowlegde of the internals of \CONTEXT, you can
-% produce nice examples of typographic programming.
-%
-% \stopsection
 
 \stopchapter
 

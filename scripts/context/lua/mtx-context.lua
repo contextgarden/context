@@ -1694,6 +1694,9 @@ elseif getargument("purge") then
 elseif getargument("purgeall") then
     -- only when no filename given, supports --pattern
     scripts.context.purge(true,nil,true)
+elseif getargument("pattern") then
+    environment.filenames = dir.glob(getargument("pattern"))
+    scripts.context.timed(scripts.context.autoctx)
 else
     application.help("basic")
 end

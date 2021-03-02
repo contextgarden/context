@@ -2406,6 +2406,100 @@ play with that.
     }
 \stopplacefigure
 
+On the mailing list occasionally questions pop op with respect to outlines and
+user Garulfo came up with a neat solution for shaded text. First some examples:
+
+\startbuffer
+\startMPcode
+   picture p ; p := lmt_outline [
+     text          = "\strut foo f o o",
+     drawcolor     = "white",
+     rulethickness = .2
+   ] ysized 3cm ;
+   fill boundingbox p
+    withshademethod "linear"
+    withshadedirection(0,1)
+    withshadecolors ("darkblue", "darkyellow") ;
+   draw p;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Here the background shines through the text:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+You can actually use the effects features which for a larger text is more
+efficient because it just renders the font differently. The result is
+shown in \in {figure} [fig:effects:text].
+
+\startbuffer[effects-text]
+\startuseMPgraphic{MyShade}
+  fill OverlayBox
+    withshademethod "linear"
+    withshadedirection(0,1)
+   withshadecolors (red, blue) ;
+\stopuseMPgraphic
+
+\defineoverlay[MyShade][\useMPgraphic{MyShade}]
+
+\setupbackgrounds[page][background=MyShade]
+
+\startmakeup
+    \definedfont[SerifBold*default @ 50pt] \setupinterlinespace
+
+    \defineeffect[MyOutline][alternative=outer,rulethickness=1pt]
+
+    \startcolor[white]
+        \starteffect[MyOutline]
+            \input jojomayer
+        \stopeffect
+    \stopcolor
+\stopmakeup
+\stopbuffer
+
+\typebuffer[effects-text]
+
+\startplacefigure[title=Regular text effects,reference=fig:effects:text]
+    \typesetbuffer[effects-text][height=.3\textheight]
+\stopplacefigure
+
+We now come to the neat example:
+
+\startbuffer
+\startMPcode
+    picture tt ; tt := lmt_outline [
+        kind = "fillup",
+        text = "\definedfont[name:texgyrepagellabold*default]foo f o o",
+    ] xsized 12cm ;
+
+    path bb ; bb := boundingbox tt ;
+
+    path pp ; pp := bb enlarged 2cm ;
+
+    fill pp
+       withshademethod "linear"
+       withshadedirection down
+       withshadecolors ("darkred", "darkblue") ;
+
+    for i within tt :
+        nofill pathpart i;
+    endfor ;
+
+    eofill bb withcolor "darkgray" ;
+    clip currentpicture to bb ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+It uses a clever combination of refilling the shape and background:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
 \stopsection
 
 \startsection[title=Transparency groups]

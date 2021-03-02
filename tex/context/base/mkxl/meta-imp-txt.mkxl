@@ -214,18 +214,18 @@
 \defineoverlay[test 4][\useMPgraphic{test 4}]
 
 \startbuffer
-    \startshapetext[test 1,test 2,test 3,test 4]
-        \setupalign[verytolerant,stretch,normal]%
-        \samplefile{douglas} % Douglas R. Hofstadter
-    \stopshapetext
-    \startTEXpage[offset=10pt]
-        \startcombination[2*2]
-            {\framed[offset=overlay,frame=off,background=test 1]{\getshapetext}} {test 1}
-            {\framed[offset=overlay,frame=off,background=test 2]{\getshapetext}} {test 2}
-            {\framed[offset=overlay,frame=off,background=test 3]{\getshapetext}} {test 3}
-            {\framed[offset=overlay,frame=off,background=test 4]{\getshapetext}} {test 4}
-        \stopcombination
-    \stopTEXpage
+\startshapetext[test 1,test 2,test 3,test 4]
+    \setupalign[verytolerant,stretch,normal]%
+    \samplefile{douglas} % Douglas R. Hofstadter
+\stopshapetext
+\startTEXpage[offset=10pt]
+    \startcombination[2*2]
+        {\framed[offset=overlay,frame=off,background=test 1]{\getshapetext}} {test 1}
+        {\framed[offset=overlay,frame=off,background=test 2]{\getshapetext}} {test 2}
+        {\framed[offset=overlay,frame=off,background=test 3]{\getshapetext}} {test 3}
+        {\framed[offset=overlay,frame=off,background=test 4]{\getshapetext}} {test 4}
+    \stopcombination
+\stopTEXpage
 \stopbuffer
 
 \getbuffer

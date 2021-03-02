@@ -22,12 +22,12 @@ undefined or special variables. Consider the following:
 
 \starttyping
 vardef foo@#(text t) =
-    save s ; string s ; s := str @# ;
-    if length(s) > 0 :
-        textext(s)
-    else :
-        nullpicture
-    fi
+  save s ; string s ; s := str @# ;
+  if length(s) > 0 :
+    textext(s)
+  else :
+    nullpicture
+  fi
 enddef ;
 \stoptyping
 
@@ -41,7 +41,7 @@ But if afterwards we say:
 
 \starttyping
 vardef bar(expr x) =
-    123
+  123
 enddef ;
 \stoptyping
 
@@ -52,6 +52,141 @@ The lesson is: when you get unexpected results or errors, check your variable
 definitions. You can use the \type {begingroup} and \type {endgroup} primitives
 to protect your variables but then you also need to explicitly use \type {save}
 to store their meanings and allocate new ones after that inside the group.
+
+\stopsection
+
+\startsection[title=Templates]
+
+This section is a bit off|-|topic and thereby also qualifies as sneaky. At the
+\TEX\ end we have a couple of alternative input methods, like \XML\ and templates.
+Just because we want to be consistent, the \METAPOST\ end also offers this.
+
+The first example resembled the \type{btex ... etex} approach:
+
+\startbuffer
+\startbuffer[test-a]
+  blua for i=0,100,20 do elua
+    draw fullcircle scaled (blua p(i) elua * cm)
+      withcolor "darkgreen" withpen pencircle scaled 1cm ;
+  blua end elua
+
+  blua for i=10,100,20 do elua
+    draw fullcircle scaled (blua p(i) elua * cm)
+      withcolor "darkred" withpen pencircle scaled 1cm ;
+  blua end elua
+\stopbuffer
+
+\startMPcode
+    draw image (
+        loadfile ("mpstemplate://buffer?name=test-a") ;
+    ) ysized 3cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[test-1][option=TEX]
+
+The filename is specified as a \URI\ and the \type {mpstemplate} does the magic
+here.
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+The second example is like the \type {lmx} files that you can find in the distibution:
+
+\startbuffer
+\startbuffer[test-b]
+  <?lua for i=0,100,20 do ?>
+    draw fullcircle scaled (<?lua p(i) ?> * cm)
+      withcolor "darkblue" withpen pencircle scaled 1cm ;
+  <?lua end ?>
+
+  <?lua for i=10,100,20 do ?>
+    draw fullcircle scaled (<?lua p(i) ?> * cm)
+      withcolor "darkyellow" withpen pencircle scaled 1cm ;
+  <?lua end ?>
+\stopbuffer
+
+\startMPcode
+  draw image (
+    loadfile ("mpstemplate://buffer?name=test-b") ;
+  ) ysized 3cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[test-b][option=TEX]
+
+The filename is again specified as a \URI:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  picture p[] ; % we can't input nested
+  loadfile("mpstemplate://buffer?name=test-a&method=metapost") ;
+  p[1] := currentpicture ; currentpicture := nullpicture ;
+  loadfile("mpstemplate://buffer?name=test-b&method=xml") ;
+  p[2] := currentpicture ; currentpicture := nullpicture ;
+  draw p[1] ysized 3cm ;
+  draw p[2] ysized 4cm shifted (4cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The combination comes out as:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+Another approach is to load as image, which saves some typing:
+
+\startbuffer
+\startMPpage[offset=10pt]
+  draw image (loadfile("mpstemplate://buffer?name=test-a&method=metapost"))
+    xsized 2cm shifted ( 3cm,0) ;
+  draw image (loadfile("mpstemplate://buffer?name=test-b&method=xml"))
+    xsized 2cm shifted ( 6cm,0) ;
+  draw loadimage ("mpstemplate://buffer?name=test-a&method=metapost")
+    xsized 2cm shifted ( 9cm,0) ;
+  draw loadimage ("mpstemplate://buffer?name=test-b&method=xml")
+    xsized 2cm shifted (12cm,0) ;
+\stopMPpage
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The result is predictable:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+Of course there is also a \type {cld} approach possible:
+
+\startbuffer
+\startluacode
+  context.startMPcode() -- context.startMPpage { offset = "10pt" }
+    for i=0,100,20 do
+      context ( [[draw fullcircle scaled (%s * cm)
+        withcolor "darkmagenta" withpen pencircle scaled 1cm ;]], i)
+    end
+    for i=10,100,20 do
+      context ( [[draw fullcircle scaled (%s * cm)
+        withcolor "darkcyan" withpen pencircle scaled 1cm ;]], i)
+    end
+  context.stopMPcode() -- context.stoppage()
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The commented commands will create a page. This is a convenient way to make
+graphics that can be used in other documents (programs). For practical reasons the
+example is scaled down:
+
+\startlinecorrection[blank] \scale[height=3cm]{\getbuffer} \stoplinecorrection
+
+All these methods are rather efficient because all happens in memory and without
+intermediate runs. It is this kind of features that the tight integration of \TEX,
+\METAPOST\ and \LUA\ make possible.
+
+\stoptext
 
 \stopsection
 

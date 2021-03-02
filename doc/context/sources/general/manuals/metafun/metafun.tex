@@ -77,7 +77,11 @@
     \component   metafun-gadgets
     \component   metafun-effects
     \component   metafun-functions
+\ifcase\contextlmtxmode
     \component   metafun-text
+\else
+    \component   metafun-text-lmtx
+\fi
     \component   metafun-debugging
     \component   metafun-styles
     \component   metafun-examples

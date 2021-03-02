@@ -307,3 +307,13 @@ def showproperty  = runscript mfid_showproperty  enddef ;
 def showhashentry = runscript mfid_showhashentry enddef ;
 
 permanent showproperty, showhashentry ;
+
+newscriptindex mfid_textextanchor ; mfid_textextanchor := scriptindex("textextanchor") ;
+
+def textextanchor = runscript mfid_textextanchor enddef ;
+
+vardef textextanchor(expr p) =
+    runscript mfid_textextanchor (prescriptpart p)
+enddef ;
+
+permanent textextanchor ;

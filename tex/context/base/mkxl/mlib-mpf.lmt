@@ -1065,16 +1065,28 @@ end
 
 do
 
-    local mppair = mp.pair
+ -- local mppair = mp.pair
+ --
+ -- function mp.textextanchor(s)
+ --     local x, y = match(s,"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
+ --     if x and y then
+ --         x = tonumber(x)
+ --         y = tonumber(y)
+ --     end
+ --     mppair(x or 0,y or 0)
+ -- end
 
-    function mp.textextanchor(s)
-        local x, y = match(s,"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
+    local injectpair = inject.pair
+    local scanstring = scan.string
+
+    metapost.registerscript("textextanchor", function()
+        local x, y = match(scanstring(),"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
         if x and y then
             x = tonumber(x)
             y = tonumber(y)
         end
-        mppair(x or 0,y or 0)
-    end
+        injectpair(x or 0,y or 0)
+    end)
 
 end
 

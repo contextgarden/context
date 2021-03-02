@@ -44,6 +44,8 @@ local formatters = string.formatters
 local todimen = number.todimen
 local replacetemplate = utilities.templates.replace
 
+local addsuffix, joinfile, nameonly, basename, filesuffix = file.addsuffix, file.join, file.nameonly, file.basename, file.suffix
+
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
 local trace_details = false  trackers.register  ("export.trace.details", function(v) trace_details = v end)
@@ -328,10 +330,10 @@ local styletemplate = [[
         [3] = "left",    ["3"] = "left",    [variables.flushleft ] = "left",
     }
 
-    function wrapups.allusedstyles(basename)
+    function wrapups.allusedstyles(filename)
         local result = { replacetemplate(namespacetemplate, {
             what            = "styles",
-            filename        = basename,
+            filename        = filename,
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or cssnamespacenop,
             cssnamespaceurl = cssnamespaceurl,
@@ -415,27 +417,27 @@ local imagetemplate = [[
     local collected = { }
 
     local function usedname(name,page)
-        if file.suffix(name) == "pdf" then
+        if filesuffix(name) == "pdf" then
             -- temp hack .. we will have a remapper
             if page and page > 1 then
-                name = f_svgpage(file.nameonly(name),page)
+                name = f_svgpage(nameonly(name),page)
             else
-                name = f_svgname(file.nameonly(name))
+                name = f_svgname(nameonly(name))
             end
         end
         local scheme = url.hasscheme(name)
         if not scheme or scheme == "file" then
             -- or can we just use the name ?
-            return file.join("../images",file.basename(url.filename(name)))
+            return joinfile("../images",basename(url.filename(name)))
         else
             return name
         end
     end
 
-    function wrapups.allusedimages(basename)
+    function wrapups.allusedimages(filename)
         local result = { replacetemplate(namespacetemplate, {
             what            = "images",
-            filename        = basename,
+            filename        = filename,
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
             cssnamespaceurl = cssnamespaceurl,
@@ -3498,7 +3500,7 @@ local cssheadlink = [[
             elseif cssfile == "export-example.css" then
                 -- ignore
             elseif not done[cssfile] then
-                cssfile = file.join(path,cssfile)
+                cssfile = joinfile(path,basename(cssfile))
                 report_export("adding css reference '%s'",cssfile)
                 files[#files+1]   = cssfile
                 result[#result+1] = replacetemplate(csspreamble, { filename = cssfile })
@@ -3559,10 +3561,10 @@ local htmltemplate = [[
         mixed   = "inline",
     }
 
-    local function allusedelements(basename)
+    local function allusedelements(filename)
         local result = { replacetemplate(namespacetemplate, {
             what            = "template",
-            filename        = basename,
+            filename        = filename,
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
             cssnamespaceurl = cssnamespaceurl,
@@ -3877,11 +3879,6 @@ local htmltemplate = [[
     end
 
  -- local cssfile = nil  directives.register("backend.export.css", function(v) cssfile = v end)
-
-    local addsuffix = file.addsuffix
-    local joinfile  = file.join
-    local nameonly  = file.nameonly
-    local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
 

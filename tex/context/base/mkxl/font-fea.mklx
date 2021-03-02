@@ -143,6 +143,8 @@
 
 \newconstant\c_font_feature_state
 
+\newevery\everyfontfeatureswitch
+
 % hashing at this end is slower
 
 \permanent\tolerant\protected\def\addfeature        [#1]#;#2{\edef\m_font_feature_asked{#1#2}\font_feature_add}
@@ -171,7 +173,8 @@
   {\clf_addfeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
-   \let\currentfeature\m_font_feature_asked}
+   \let\currentfeature\m_font_feature_asked
+   \the\everyfontfeatureswitch}
 
 \protected\def\font_feature_subtract
   {\ifnum\c_font_feature_state=\minusone
@@ -186,7 +189,8 @@
   {\clf_subtractfeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
    \c_font_feature_state\minusone
-   \let\currentfeature\m_font_feature_asked}
+   \let\currentfeature\m_font_feature_asked
+   \the\everyfontfeatureswitch}
 
 \protected\def\font_feature_replace
   {\ifnum\c_font_feature_state=\zerocount
@@ -201,7 +205,8 @@
   {\clf_replacefeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
    \c_font_feature_state\zerocount
-   \let\currentfeature\m_font_feature_asked}
+   \let\currentfeature\m_font_feature_asked
+   \the\everyfontfeatureswitch}
 
 \permanent\protected\def\resetfeature
   {\ifx\currentfeature\s!current \else
@@ -235,25 +240,26 @@
   {\clf_addfeature{\s!current}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\s!current+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
-   \let\currentfeature\m_font_feature_asked}
+   \let\currentfeature\m_font_feature_asked
+   \the\everyfontfeatureswitch}
 
 \installcorenamespace{featureshortcut}
 
-\letvalue{\??featureshortcut +}\addfeature
-\letvalue{\??featureshortcut -}\subtractfeature
-\letvalue{\??featureshortcut =}\replacefeature
-\letvalue{\??featureshortcut !}\resetandaddfeature
-\letvalue{\??featureshortcut >}\revivefeature
-\letvalue{\??featureshortcut <}\resetfeature
+\letcsname\??featureshortcut +\endcsname\addfeature
+\letcsname\??featureshortcut -\endcsname\subtractfeature
+\letcsname\??featureshortcut =\endcsname\replacefeature
+\letcsname\??featureshortcut !\endcsname\resetandaddfeature
+\letcsname\??featureshortcut >\endcsname\revivefeature
+\letcsname\??featureshortcut <\endcsname\resetfeature
 
-\letvalue{\??featureshortcut\v!more   }\addfeature      % add set to previous set and combine with font set
-\letvalue{\??featureshortcut\v!less   }\subtractfeature % subtract set from previous set and combine with font set
-\letvalue{\??featureshortcut\v!new    }\replacefeature  % replace font set
-\letvalue{\??featureshortcut\v!reset  }\resetfeature    % forget sets and revert to font set
-\letvalue{\??featureshortcut\v!default}\revivefeature   % make sure the current set is used on top of the font set
-\letvalue{\??featureshortcut\v!old    }\revivefeature
-\letvalue{\??featureshortcut\v!local  }\resetandaddfeature
-\letvalue{\??featureshortcut\s!unknown}\empty
+\letcsname\??featureshortcut\v!more   \endcsname\addfeature      % add set to previous set and combine with font set
+\letcsname\??featureshortcut\v!less   \endcsname\subtractfeature % subtract set from previous set and combine with font set
+\letcsname\??featureshortcut\v!new    \endcsname\replacefeature  % replace font set
+\letcsname\??featureshortcut\v!reset  \endcsname\resetfeature    % forget sets and revert to font set
+\letcsname\??featureshortcut\v!default\endcsname\revivefeature   % make sure the current set is used on top of the font set
+\letcsname\??featureshortcut\v!old    \endcsname\revivefeature
+\letcsname\??featureshortcut\v!local  \endcsname\resetandaddfeature
+\letcsname\??featureshortcut\s!unknown\endcsname\empty
 
 % experimental bonus:
 
