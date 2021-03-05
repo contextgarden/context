@@ -112,6 +112,11 @@
                 </flag>
             </subcategory>
             <subcategory>
+                <flag name="pages">
+                    <short>report pagenumbers of names pages and list references (<ref name="page"/>=... or <ref name="page"/>=...)</short>
+                </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="jit">
                     <short>use luajittex with jit turned off (only use the faster virtual machine)</short>
                 </flag>

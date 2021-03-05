@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['util-lib'] = {
     license   = "see context related readme files",
 }
 
+-- not used in context any more
+
 --[[
 
 The problem with library bindings is manyfold. They are of course platform

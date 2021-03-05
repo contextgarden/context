@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['page-ini'] = {
 
 local tonumber, rawget, rawset, type, next = tonumber, rawget, rawset, type, next
 local match = string.match
-local sort, tohash, insert, remove = table.sort, table.tohash, table.insert, table.remove
+local sort, tohash, insert, remove, sortedkeys = table.sort, table.tohash, table.insert, table.remove, table.sortedkeys
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 
 local texgetcount  = tex.getcount
@@ -87,10 +87,23 @@ function pages.mark(name,list)
     end
 end
 
+local tobemarked = { }
+
+function pages.markedlist(realpage)
+    if realpage then
+        local m = rawget(tobemarked,realpage) or rawget(data,realpage)
+        return m and next(m) and sortedkeys(m)
+    end
+end
+
 local function marked(name)
     local realpage = texgetcount("realpageno")
     for i=last,realpage-1 do
-        rawset(data,i,nil)
+        local di = data[i]
+        if di then
+            tobemarked[i] =  di
+            rawset(data,i,nil)
+        end
     end
     local pagedata = rawget(data,realpage)
     return pagedata and pagedata[name] and true or false

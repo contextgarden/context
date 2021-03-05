@@ -40,13 +40,14 @@ def lmt_parshape = applyparameters "parshape" "lmt_do_parshape" enddef ;
 
 def lmt_do_parshape = % todo: check and improve this rather oldie
 
-    begingroup ;
+    begingroup ; pushparameters "parshape" ;
 
     save
         p, q, l, r, line, tt, bb,
         dx, dy, baselineskip, strutheight, strutdepth, topskip, bottomskip, offset, trace,
         n, hsize, vsize, vvsize, voffset, hoffset, width, indent,
-        ll, lll, rr, rrr, cp, cq, t, b ;
+        ll, lll, rr, rrr, cp, cq, t, b,
+        found_point ;
 
     path
         p, q, l, r, line, tt, bb ;
@@ -60,24 +61,24 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
 
     % specification:
 
-    p            := getparameterdefault "parshape" "path"         fullsquare ;
-    dx           := getparameterdefault "parshape" "dx"           0 ;
-    dy           := getparameterdefault "parshape" "dy"           0 ;
-    baselineskip := getparameterdefault "parshape" "baselineskip" LineHeight ;
-    strutheight  := getparameterdefault "parshape" "strutheight"  StrutHeight ;
-    strutdepth   := getparameterdefault "parshape" "strutdepth"   StrutDepth ;
-    topskip      := getparameterdefault "parshape" "topskip"      StrutHeight ;
-    bottomskip   := getparameterdefault "parshape" "bottomskip"   0 ;
-    offset       := getparameterdefault "parshape" "offset"       0 ;
-    trace        := getparameterdefault "parshape" "trace"        false ;
+    p            := getparameterdefault "path"         fullsquare ;
+    dx           := getparameterdefault "dx"           0 ;
+    dy           := getparameterdefault "dy"           0 ;
+    baselineskip := getparameterdefault "baselineskip" LineHeight ;
+    strutheight  := getparameterdefault "strutheight"  StrutHeight ;
+    strutdepth   := getparameterdefault "strutdepth"   StrutDepth ;
+    topskip      := getparameterdefault "topskip"      StrutHeight ;
+    bottomskip   := getparameterdefault "bottomskip"   0 ;
+    offset       := getparameterdefault "offset"       0 ;
+    trace        := getparameterdefault "trace"        false ;
 
     %
 
     n  := 0 ;
     cp := center p ;
 
-    if hasparameter "parshape" "offsetpath" :
-        q       := getparameter "parshape" "offsetpath" ;
+    if hasparameter "offsetpath" :
+        q       := getparameter "offsetpath" ;
         voffset := dy ;
         hoffset := dx ;
     else :
@@ -98,7 +99,7 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
     runscript mfid_setparshapeproperty "width"   hsize ;
     runscript mfid_setparshapeproperty "height"  vsize ;
 
-    if not path offset_or_path :
+    if hasparameter "offsetpath" :
         q := q xscaled ((hsize-2hoffset)/hsize) yscaled ((vsize-2voffset)/vsize) ;
     fi ;
 
@@ -119,7 +120,7 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
     r := r if xpart point 0 of q > 0 : & q fi cutafter t ;
 
     vardef found_point (expr lin, pat, sig) =
-        pair a, b ;
+        save a, b; pair a, b ;
         a := pat intersection_point (lin shifted (0,strutheight)) ;
         if intersection_found :
         a := a shifted (0,-strutheight) ;
@@ -183,7 +184,7 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
         runscript mfid_setparshapeproperty "line" i (indent[i]) (width[i]) ;
     endfor ;
 
-    endgroup ;
+    popparameters ; endgroup ;
 
 enddef ;
 

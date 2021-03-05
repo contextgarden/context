@@ -51,8 +51,8 @@ wish, your comments, your grocery list, whatever. Comments in \METAPOST, prefixe
 by a percent sign, as in \typ {% Let's draw a circle}, are ignored by the
 interpreter, but useful reminders for the programmer.
 
-If the file is saved as \type {yourfile.mp}, then the file is processed by
-\METAPOST\ by issuing the following command:
+Traditionally, if the file is saved as \type {yourfile.mp}, then the file is
+processed by \METAPOST\ by issuing the following command:
 
 \starttyping
 mpost yourfile
@@ -88,7 +88,7 @@ If you have installed \CONTEXT, somewhere on your system there resides a file
 following line at the top of your file:
 
 \starttyping
-input mp-tool ; % or input metafun ;
+input metafun ;
 \stoptyping
 
 By loading this file, the resulting graphic will provide a high resolution
@@ -96,10 +96,44 @@ bounding box, which enables more accurate placement. The file also sets the \typ
 {prologues := 1} so that viewers like \GHOSTVIEW\ can refresh the file when it is
 changed.
 
+{\bf However!} When you use \METAPOST\ in \CONTEXT, you will not run the
+mentioned program at all: you embed your graphic in the document and we will
+discuss this later. You can still use separate files but then you process them as
+follows:
+
+\starttyping
+mtxrun --script metapost somefile.mp
+\stoptyping
+
+Alternatively you can wrap the individual pictures in a \TEX\ file, say \type
+{yourfile.tex}:
+
+\starttyping
+\starttext
+    \startMPpage
+        % code
+    \stopMPpage
+    \startMPpage
+        % code
+    \stopMPpage
+\stoptext
+\stoptyping
+
+and then run:
+
+\starttyping
+context somefile.tex
+\stoptyping
+
+after which you can use the resulting \PDF\ file (if it has more pages you just
+filter the page from that file).
+
 Next we will introduce some more \METAPOST\ commands. From now on, we will omit
 the encapsulating \type {beginfig} and \type {endfig} macros. If you want to
 process these examples yourself, you should add those commands yourself, or if
-you use \CONTEXT\ you don't need them at all.
+you use \CONTEXT\ you don't need them at all. You can for instance wrap them in a
+\type {\startMPpage} \unknown\ \type {\stopMPpage} environment if you want to
+play around.
 
 \startbuffer
 pickup pencircle scaled .5cm ;
@@ -3377,7 +3411,43 @@ context("%3!texexp!",     10.4698E30,"@2.3f","@2i")
 
 \typebuffer
 
-This gives: \inlinebuffer .
+This gives: \inlinebuffer . In \in {figure} [fig:formatters] we see some more
+formatters.
+
+\startbuffer
+for i=1 upto 12 :
+    draw
+        thefmttext("\letterpercent 3!date!","month,space,year",2019,i)
+        shifted (0,i *cm / 2);
+    draw
+        thefmttext("@3!date!","month,space,year",2019,i)
+        shifted (4cm,i *cm / 2);
+endfor ;
+
+for i=1 upto 20 :
+    draw
+        thefmttext(decimal i)
+        shifted (1cm,-i/2*cm);
+    draw
+        thefmttext("@!month!",i)
+        shifted (4cm,-i/2*cm);
+    draw
+        thefmttext("@!weekday!",i)
+        shifted (7cm,-i/2*cm);
+    draw
+        thefmttext("@!monthshort!",i)
+        shifted (10cm,-i/2*cm);
+    draw
+        thefmttext("@3!dayoftheweek!",i,1,2018)
+        shifted (13cm,-i/2*cm);
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title=formatters,reference=fig:formatters]
+    \framed{\scale[width=.8\textwidth]{\processMPbuffer}}
+\stopplacefigure
 
 \stopsection
 
@@ -3657,6 +3727,149 @@ each point as a relative move, so we recalculate it.
 
 We could have said \type {-- hide(a := a shifted point i of p) a} because the
 \type {hide} macro does that the grouping trick.
+
+\stopsection
+
+\startsection[title=External files]
+
+You can put code in an external file and load that one when needed. The low level
+command is \type {input}:
+
+\starttyping
+input myfile ;
+input myfile.mp ;
+input myfile.mpiv ;
+input myfile.mpxl ;
+input "myfile.mpxl" ;
+\stoptyping
+
+In \CONTEXT\ we have modules and their name starts with \type {mp-} and the
+suffix can depend on what version you use (\type {mpii}, \type {mpiv}, \type
+{mpxl}) but that will be dealt with automatically.
+
+\starttyping
+loadmodule("mine") ;
+\stoptyping
+
+This will locate \type {mp-mine} with the proper suffix and often a module will
+be set up to be loaded only once. For loading files \LUAMETAFUN\ provides:
+
+\starttyping
+loadfile("somefile.mp") ;
+\stoptyping
+
+Which is a bit more robust than the \type {input} commands that is kind of fuzzy
+because it takes a sequence of tokens or a string. When you embed code in a
+document source there are some environments that permit loading of definitions
+and extensions.
+
+\starttyping
+\startMPdefinitions
+   % code passed to the library directly
+\stopMPdefinitions
+
+\startMPextensions
+   % code passed to the library but via tex (expansion step)
+\stopMPextensions
+\stoptyping
+
+\stopsection
+
+\startsection[title=Instances]
+
+The library supports several numbering models. The default is \type {scaled} that
+uses integers that represent a (relatively small) float. Although you can go up
+to 32K it's wise to stay below 4096. The \type {double} number model supports 64
+bit floating point and the \type {decimal} model arbitrary precision. In \LUATEX\
+there is also \type {binary} for arbitrary precision but in \LUAMETATEX\ that
+model is not provided.
+
+You can use different models and instances alongside. In \MKIV\ and \LMTX\ we have
+a few predefined. The \type {metafun} instance is the default. Here we show the
+ones that use \METAFUN:
+
+\starttyping[style=\ttx]
+\defineMPinstance[metafun]   [format=metafun,extensions=yes,initializations=yes]
+\defineMPinstance[minifun]   [format=minifun,extensions=yes,initializations=yes]
+\defineMPinstance[extrafun]  [format=metafun,extensions=yes,initializations=yes]
+\defineMPinstance[lessfun]   [format=metafun]
+\defineMPinstance[doublefun] [format=metafun,extensions=yes,initializations=yes,method=double]
+\defineMPinstance[decimalfun][format=metafun,extensions=yes,initializations=yes,method=decimal]
+\defineMPinstance[mprun]     [format=metafun,extensions=yes,initializations=yes]
+\defineMPinstance[simplefun] [format=metafun,method=double] % for internal usage
+\stoptyping
+
+All instances will load additional definitions btu extensions (expanded
+definitions) and initializations (before each graphic) are optional.
+
+\starttyping
+\startMPdefinitions
+\stopMPdefinitions
+
+\startMPextensions
+\stopMPextensions
+
+\startMPinitializations
+\stopMPinitializations
+\stoptyping
+
+You can search the sources of manuals and test suite for examples of usage, but here are
+some:
+
+\startbuffer
+\defineMPinstance[foo][definitions=yes]
+\defineMPinstance[bar][definitions=yes]
+
+\startMPdefinitions{foo}
+    vardef p = image (
+        draw fullsquare scaled 1cm withcolor "darkgreen" ;
+        draw textext("1") ;
+    )
+    enddef ;
+\stopMPdefinitions
+
+\startMPdefinitions{bar}
+    vardef p = image (
+        draw (fullsquare rotated 45) scaled 1cm withcolor "darkyellow" ;
+        draw textext("2") ;
+    )
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use both as:
+
+\startbuffer[demo-1]
+\startMPcode{foo}
+    draw p ;
+    draw image (
+        draw fullcircle scaled 1cm withcolor "darkblue" ;
+        draw textext("3") withcolor "darkred" ;
+    ) ;
+    draw p ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[demo-2]
+\startMPcode{bar}
+    draw p ;
+    draw image (
+        draw fullcircle scaled 1cm withcolor "darkblue" ;
+        draw textext("4") withcolor "darkred" ;
+    ) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[demo-1,demo-2]
+
+\startlinecorrection
+\startcombination[nx=2,ny=1]
+    {\getbuffer[demo-1]} {foo}
+    {\getbuffer[demo-2]} {bar}
+\stopcombination
+\stoplinecorrection
 
 \stopsection
 

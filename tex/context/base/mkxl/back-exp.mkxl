@@ -15,7 +15,10 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / XML export}
 
-\registerctxluafile{back-exp}{}
+\registerctxluafile{back-exp}        {autosuffix}
+\registerctxluafile{back-exp-imp-tag}{autosuffix}
+\registerctxluafile{back-exp-imp-mth}{autosuffix}
+\registerctxluafile{back-exp-imp-ref}{autosuffix}
 
 %D This is an experimental exporter and a logical follow up on tagging. The
 %D exporter assumes a properly tagged document. Some elements get a couple

@@ -1,0 +1,261 @@
+if not modules then modules = { } end modules ['back-exp-imp-ref'] = {
+    version   = 1.001,
+    comment   = "companion to back-exp.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- quite some code deals with exporting references  --
+
+-- links:
+--
+-- url      :
+-- file     :
+-- internal : automatic location
+-- location : named reference
+
+-- references:
+--
+-- implicit : automatic reference
+-- explicit : named reference
+
+local tonumber = tonumber
+local lpegmatch = lpeg.match
+local insert = table.insert
+
+local references      = structures.references
+
+local structurestags  = structures.tags
+local specifications  = structurestags.specifications
+local locatedtag      = structurestags.locatedtag
+
+local backend         = structurestags.backend
+
+local setattribute    = backend.setattribute
+local extras          = backend.extras
+local fixes           = backend.fixes
+local referencehash   = backend.referencehash
+local destinationhash = backend.destinationhash
+
+local implement       = interfaces.implement
+
+local evaluators = { }
+local specials   = { }
+local explicits  = { }
+
+evaluators.inner = function(di,var)
+    local inner = var.inner
+    if inner then
+        setattribute(di,"location",inner,true)
+    end
+end
+
+evaluators.outer = function(di,var)
+    local file, url = references.checkedfileorurl(var.outer,var.outer)
+    if url then
+        setattribute(di,"url",url,true)
+    elseif file then
+        setattribute(di,"file",file,true)
+    end
+end
+
+evaluators["outer with inner"] = function(di,var)
+    local file = references.checkedfile(var.f)
+    if file then
+        setattribute(di,"file",file,true)
+    end
+    local inner = var.inner
+    if inner then
+        setattribute(di,"inner",inner,true)
+    end
+end
+
+evaluators.special = function(di,var)
+    local handler = specials[var.special]
+    if handler then
+        handler(di,var)
+    end
+end
+
+do
+
+    evaluators["special outer with operation"]     = evaluators.special
+    evaluators["special operation"]                = evaluators.special
+    evaluators["special operation with arguments"] = evaluators.special
+
+    function specials.url(di,var)
+        local url = references.checkedurl(var.operation)
+        if url and url ~= "" then
+            setattribute(di,"url",url,true)
+        end
+    end
+
+    function specials.file(di,var)
+        local file = references.checkedfile(var.operation)
+        if file and file ~= "" then
+            setattribute(di,"file",file,true)
+        end
+    end
+
+    function specials.fileorurl(di,var)
+        local file, url = references.checkedfileorurl(var.operation,var.operation)
+        if url and url ~= "" then
+            setattribute(di,"url",url,true)
+        elseif file and file ~= "" then
+            setattribute(di,"file",file,true)
+        end
+    end
+
+    function specials.internal(di,var)
+        local internal = references.checkedurl(var.operation)
+        if internal then
+            setattribute(di,"location",internal)
+        end
+    end
+
+    local function adddestination(di,references) -- todo: specials -> exporters and then concat
+        if references then
+            local reference = references.reference
+            if reference and reference ~= "" then
+                local prefix = references.prefix
+                if prefix and prefix ~= "" then
+                    setattribute(di,"prefix",prefix,true)
+                end
+                setattribute(di,"destination",reference,true)
+                for i=1,#references do
+                    local r = references[i]
+                    local e = evaluators[r.kind]
+                    if e then
+                        e(di,r)
+                    end
+                end
+            end
+        end
+    end
+
+    function extras.addimplicit(di,references)
+        if references then
+            local internal = references.internal
+            if internal then
+                setattribute(di,"implicit",internal)
+            end
+        end
+    end
+
+    function extras.addinternal(di,references)
+        if references then
+            local internal = references.internal
+            if internal then
+                setattribute(di,"internal",internal)
+            end
+        end
+    end
+
+    local p_firstpart = lpeg.Cs((1-lpeg.P(","))^0)
+
+    local function addreference(di,references)
+        if references then
+            local reference = references.reference
+            if reference and reference ~= "" then
+                local prefix = references.prefix
+                if prefix and prefix ~= "" then
+                    setattribute(di,"prefix",prefix)
+                end
+                setattribute(di,"reference",reference,true)
+                setattribute(di,"explicit",lpegmatch(p_firstpart,reference),true)
+            end
+            local internal = references.internal
+            if internal and internal ~= "" then
+                setattribute(di,"implicit",internal)
+            end
+        end
+    end
+
+    local function link(di,element,n,fulltag)
+        -- for instance in lists a link has nested elements and no own text
+        local reference = referencehash[fulltag]
+        if reference then
+            adddestination(di,structures.references.get(reference))
+            return true
+        else
+            local data = di.data
+            if data then
+                for i=1,#data do
+                    local di = data[i]
+                    if di then
+                        local fulltag = di.fulltag
+                        if fulltag and link(di,element,n,fulltag) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local function reference(di,element,n,fulltag)
+        local destination = destinationhash[fulltag]
+        if destination then
+            local d = structures.references.internals[destination]
+            if d then
+                addreference(di,d.references)
+                return true
+            else
+                return false
+            end
+        else
+            local data = di.data
+            if data then
+                for i=1,#data do
+                    local di = data[i]
+                    if di then
+                        local fulltag = di.fulltag
+                        if fulltag and reference(di,element,n,fulltag) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    extras.adddestination = adddestination
+    extras.addreference   = addreference
+
+    extras.link           = link
+    extras.reference      = reference
+
+end
+
+do
+
+    function fixes.linenumber(di,data,i)
+        local ni = data[i+1]
+        if ni then
+            if ni.data then
+                while true do
+                    local d = ni.data[1]
+                    if d then
+                        local e = d.element
+                        if e then
+                            if e == "line" or e == "verbatimline" then
+                                insert(d.data,1,di)
+                                data[i] = false
+                                return
+                            else
+                                ni = d
+                            end
+                        else
+                            return
+                        end
+                    else
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+end
+

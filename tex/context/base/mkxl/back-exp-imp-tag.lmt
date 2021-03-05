@@ -1,0 +1,846 @@
+if not modules then modules = { } end modules ['back-exp-imp-tag'] = {
+    version   = 1.001,
+    comment   = "companion to back-exp.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Because we run into the 200 locals limit we now split the file into smaller
+-- parts.
+
+local tonumber = tonumber
+local todimen = number.todimen
+local sortedhash, setmetatableindex, concat, insert = table.sortedhash, table.setmetatableindex, table.concat, table.insert
+local settings_to_hash = utilities.parsers.settings_to_hash
+local lpegmatch = lpeg.match
+local formatters = string.formatters
+
+local references        = structures.references
+local structurestags    = structures.tags
+local taglist           = structurestags.taglist
+local specifications    = structurestags.specifications
+local properties        = structurestags.properties
+local locatedtag        = structurestags.locatedtag
+
+local backend           = structurestags.backend
+
+local setattribute      = backend.setattribute
+local extras            = backend.extras
+local checks            = backend.checks
+local fixes             = backend.fixes
+local listdata          = backend.listdata
+local finalizers        = backend.finalizers
+local usedstyles        = backend.usedstyles -- for now
+local usedimages        = backend.usedimages -- for now
+local referencehash     = backend.referencehash
+local destinationhash   = backend.destinationhash
+
+local implement         = interfaces.implement
+
+do
+
+    local itemgroups = { }
+
+    local function setitemgroup(packed,level,symbol)
+        itemgroups[locatedtag("itemgroup")] = {
+            packed = packed,
+            symbol = symbol,
+            level  = level,
+        }
+    end
+
+    local function setitem(kind)
+        itemgroups[locatedtag("item")] = {
+            kind = kind,
+        }
+    end
+
+    function extras.itemgroup(di,element,n,fulltag)
+        local hash = itemgroups[fulltag]
+        if hash then
+            setattribute(di,"packed",hash.packed and "yes" or nil)
+            setattribute(di,"symbol",hash.symbol)
+            setattribute(di,"level",hash.level)
+        end
+    end
+
+    function extras.item(di,element,n,fulltag)
+        local hash = itemgroups[fulltag]
+        if hash then
+            local kind = hash.kind
+            if kind and kind ~= "" then
+                setattribute(di,"kind",kind)
+            end
+        end
+    end
+
+    implement {
+        name      = "settagitemgroup",
+        actions   = setitemgroup,
+        arguments = { "boolean", "integer", "string" }
+    }
+
+    implement {
+        name      = "settagitem",
+        actions   = setitem,
+        arguments = "string"
+    }
+
+    structurestags.setitemgroup = setitemgroup
+    structurestags.setitem      = setitem
+
+end
+
+do
+
+    local registered = structures.sections.registered
+
+    local function resolve(di,element,n,fulltag)
+        local data = listdata[fulltag]
+        if data then
+            extras.addreference(di,data.references)
+            return true
+        else
+            local data = di.data
+            if data then
+                for i=1,#data do
+                    local di = data[i]
+                    if di then
+                        local ft = di.fulltag
+                        if ft and resolve(di,element,n,ft) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    function extras.section(di,element,n,fulltag)
+        local r = registered[specifications[fulltag].detail]
+        if r then
+            setattribute(di,"level",r.level)
+        end
+        resolve(di,element,n,fulltag)
+    end
+
+    local floats = { }
+
+    local function setfloat(options,method)
+        floats[locatedtag("float")] = {
+            options = options,
+            method  = method,
+        }
+    end
+
+    function extras.float(di,element,n,fulltag)
+        local hash = floats[fulltag]
+        if hash then
+            local method  = hash.method
+            if not method or method == "" then
+                method = "here"
+            end
+            setattribute(di,"method",method)
+            local options = hash.options
+            if options and options ~= "" then
+                options = settings_to_hash(options)
+                options[method] = nil
+                options = concat(sortedkeys(options),",")
+                if #options > 0 then
+                    setattribute(di,"options",options)
+                end
+            end
+        end
+        resolve(di,element,n,fulltag)
+    end
+
+    implement {
+        name      = "settagfloat",
+        actions   = setfloat,
+        arguments = "2 strings",
+    }
+
+    structurestags.setfloat = setfloat
+
+end
+
+do
+
+    local registered = { }
+
+    local function setformulacontent(n)
+        registered[locatedtag("formulacontent")] = {
+            n = n,
+        }
+    end
+
+    function extras.formulacontent(di,element,n,fulltag)
+        local r = registered[fulltag]
+        if r then
+            setattribute(di,"n",r.n)
+        end
+    end
+
+    implement {
+        name      = "settagformulacontent",
+        actions   = setformulacontent,
+        arguments = "integer",
+    }
+
+    structurestags.setformulacontent = setformulacontent
+
+end
+
+do
+
+    local symbols = { }
+
+    local function settagdelimitedsymbol(symbol)
+        symbols[locatedtag("delimitedsymbol")] = {
+            symbol = symbol,
+        }
+    end
+
+    function extras.delimitedsymbol(di,element,n,fulltag)
+        local hash = symbols[fulltag]
+        if hash then
+            setattribute(di,"symbol",hash.symbol or nil)
+        end
+    end
+
+    implement {
+        name      = "settagdelimitedsymbol",
+        actions   = settagdelimitedsymbol,
+        arguments = "string"
+    }
+
+    structurestags.settagdelimitedsymbol = settagdelimitedsymbol
+
+end
+
+
+do
+
+    local symbols = { }
+
+    local function settagsubsentencesymbol(symbol)
+        symbols[locatedtag("subsentencesymbol")] = {
+            symbol = symbol,
+        }
+    end
+
+    function extras.subsentencesymbol(di,element,n,fulltag)
+        local hash = symbols[fulltag]
+        if hash then
+            setattribute(di,"symbol",hash.symbol or nil)
+        end
+    end
+
+    implement {
+        name      = "settagsubsentencesymbol",
+        actions   = settagsubsentencesymbol,
+        arguments = "string"
+    }
+
+    structurestags.settagsubsentencesymbol = settagsubsentencesymbol
+
+end
+
+do
+
+    local synonyms = { }
+    local sortings = { }
+
+    local function setsynonym(tag)
+        synonyms[locatedtag("synonym")] = tag
+    end
+
+    function extras.synonym(di,element,n,fulltag)
+        local tag = synonyms[fulltag]
+        if tag then
+            setattribute(di,"tag",tag)
+        end
+    end
+
+    local function setsorting(tag)
+        sortings[locatedtag("sorting")] = tag
+    end
+
+    function extras.sorting(di,element,n,fulltag)
+        local tag = sortings[fulltag]
+        if tag then
+            setattribute(di,"tag",tag)
+        end
+    end
+
+    implement {
+        name      = "settagsynonym",
+        actions   = setsynonym,
+        arguments = "string"
+    }
+
+    implement {
+        name      = "settagsorting",
+        actions   = setsorting,
+        arguments = "string"
+    }
+
+    structurestags.setsynonym = setsynonym
+    structurestags.setsorting = setsorting
+
+end
+
+do
+
+    local descriptions = { }
+    local symbols      = { }
+    local linked       = { }
+
+    -- we could move the notation itself to the first reference (can be an option)
+
+    local function setnotation(tag,n) -- needs checking (is tag needed)
+        -- we can also use the internals hash or list
+        local nd = structures.notes.get(tag,n)
+        if nd then
+            local references = nd.references
+            descriptions[references and references.internal] = locatedtag("description")
+        end
+    end
+
+    local function setnotationsymbol(tag,n) -- needs checking (is tag needed)
+        local nd = structures.notes.get(tag,n) -- todo: use listdata instead
+        if nd then
+            local references = nd.references
+            symbols[references and references.internal] = locatedtag("descriptionsymbol")
+        end
+    end
+
+    function finalizers.descriptions(tree)
+        local n = 0
+        for id, tag in sortedhash(descriptions) do
+            local sym = symbols[id]
+            if sym then
+                n = n + 1
+                linked[tag] = n
+                linked[sym] = n
+            end
+        end
+    end
+
+    function extras.description(di,element,n,fulltag)
+        local id = linked[fulltag]
+        if id then
+            setattribute(di,"insert",id)
+        end
+    end
+
+    function extras.descriptionsymbol(di,element,n,fulltag)
+        local id = linked[fulltag]
+        if id then
+            setattribute(di,"insert",id)
+        end
+    end
+
+    implement {
+        name      = "settagnotation",
+        actions   = setnotation,
+        arguments = { "string", "integer" }
+    }
+
+    implement {
+        name      = "settagnotationsymbol",
+        actions   = setnotationsymbol,
+        arguments = { "string", "integer" }
+    }
+
+    structurestags.setnotation       = setnotation
+    structurestags.setnotationsymbol = setnotationsymbol
+
+end
+
+
+do
+
+    local strippedtag    = structurestags.strip -- we assume global styles
+
+    local highlight      = { }
+    local construct      = { }
+
+    usedstyles.highlight = highlight
+    usedstyles.construct = construct
+
+    local function sethighlight(name,style,color,mode)
+        if not highlight[name] then
+            highlight[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
+    end
+
+    local function setconstruct(name,style,color,mode)
+        if not construct[name] then
+            construct[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
+    end
+
+    implement {
+        name      = "settagconstruct",
+        actions   = setconstruct,
+        arguments = { "string", "string", "integer", "integer" }
+    }
+
+    implement {
+        name      = "settaghighlight",
+        actions   = sethighlight,
+        arguments = { "string", "string", "integer", "integer" }
+    }
+
+    structurestags.sethighlight = sethighlight
+    structurestags.setconstruct = setconstruct
+
+end
+
+do
+
+    local f_id       = formatters["%s-%s"]
+    local image      = { }
+    usedimages.image = image
+
+    structurestags.usewithcare.images = image
+
+    local function setfigure(name,used,page,width,height,label)
+        local fulltag = locatedtag("image")
+        local spec    = specifications[fulltag]
+        if spec then
+            local page = tonumber(page)
+            image[fulltag] = {
+                id     = f_id(spec.tagname,spec.tagindex),
+                name   = name,
+                used   = used,
+                page   = page and page > 1 and page or nil,
+                width  = todimen(width, "cm","%0.3F%s"),
+                height = todimen(height,"cm","%0.3F%s"),
+                label  = label,
+            }
+        else
+            -- we ignore images in layers in the background / pagebody
+        end
+    end
+
+    function extras.image(di,element,n,fulltag)
+        local data = image[fulltag]
+        if data then
+            setattribute(di,"name",data.name)
+            setattribute(di,"page",data.page)
+            setattribute(di,"id",data.id)
+            setattribute(di,"width",data.width)
+            setattribute(di,"height",data.height)
+            setattribute(di,"label",data.height)
+        end
+    end
+
+    implement {
+        name      = "settagfigure",
+        actions   = setfigure,
+        arguments = { "string", "string", "string", "dimen", "dimen", "string" }
+    }
+
+    structurestags.setfigure = setfigure
+
+end
+
+do
+
+    local combinations = { }
+
+    local function setcombination(nx,ny)
+        combinations[locatedtag("combination")] = {
+            nx = nx,
+            ny = ny,
+        }
+    end
+
+    function extras.combination(di,element,n,fulltag)
+        local data = combinations[fulltag]
+        if data then
+            setattribute(di,"nx",data.nx)
+            setattribute(di,"ny",data.ny)
+        end
+    end
+
+    implement {
+        name      = "settagcombination",
+        actions   = setcombination,
+        arguments = { "integer", "integer" }
+    }
+
+    structurestags.setcombination = setcombination
+
+end
+
+do
+
+    local function hascontent(data)
+        for i=1,#data do
+            local di = data[i]
+            if not di or di.tg == "ignore" then
+                --
+            else
+                local content = di.content
+                if content == " " then
+                    --
+                elseif content then
+                    return true
+                else
+                    local d = di.data
+                    if d and #d > 0 and hascontent(d) then
+                        return true
+                    end
+                end
+            end
+        end
+    end
+
+    local tabledata = { }
+
+    local function settablecell(rows,columns,align)
+        if align > 0 or rows > 1 or columns > 1 then -- or kind > 0
+            tabledata[locatedtag("tablecell")] = {
+                rows    = rows,
+                columns = columns,
+                align   = align,
+            }
+        end
+    end
+
+    local function gettablecell(fulltag)
+        return tabledata[fulltag]
+    end
+
+    function extras.tablecell(di,element,n,fulltag)
+        local hash = tabledata[fulltag]
+        if hash then
+            local columns = hash.columns
+            if columns and columns > 1 then
+                setattribute(di,"columns",columns)
+            end
+            local rows = hash.rows
+            if rows and rows > 1 then
+                setattribute(di,"rows",rows)
+            end
+            local align = hash.align
+            if not align or align == 0 then
+                -- normal
+            elseif align == 1 then -- use numbertoalign here
+                setattribute(di,"align","flushright")
+            elseif align == 2 then
+                setattribute(di,"align","middle")
+            elseif align == 3 then
+                setattribute(di,"align","flushleft")
+            end
+        end
+    end
+
+    local tabulatedata = { }
+
+    local function settabulatecell(align,kind)
+        if align > 0 or kind > 0 then
+            tabulatedata[locatedtag("tabulatecell")] = {
+                align = align,
+                kind  = kind, -- 1 = bold head
+            }
+        end
+    end
+
+    local function gettabulatecell(fulltag)
+        return tabulatedata[fulltag]
+    end
+
+    function extras.tabulate(di,element,n,fulltag)
+        local data = di.data
+        for i=1,#data do
+            local di = data[i]
+            if di.tg == "tabulaterow" and not hascontent(di.data) then
+                di.element = "" -- or simply remove
+            end
+        end
+    end
+
+    function extras.tabulatecell(di,element,n,fulltag)
+        local hash = tabulatedata[fulltag]
+        if hash then
+            local align = hash.align
+            if not align or align == 0 then
+                -- normal
+            elseif align == 1 then
+                setattribute(di,"align","flushleft")
+            elseif align == 2 then
+                setattribute(di,"align","flushright")
+            elseif align == 3 then
+                setattribute(di,"align","middle")
+            end
+            local kind = hash.kind
+            if kind == 1 then
+                setattribute(di,"kind","strong")
+            elseif kind == 2 then
+                setattribute(di,"kind","equals")
+            end
+        end
+    end
+
+    implement {
+        name      = "settagtablecell",
+        actions   = settablecell,
+        arguments = { "integer", "integer", "integer" }
+    }
+
+    implement {
+        name      = "settagtabulatecell",
+        actions   = settabulatecell,
+        arguments = { "integer", "integer" },
+    }
+
+    structurestags.settablecell    = settablecell
+    structurestags.gettablecell    = gettablecell
+    structurestags.settabulatecell = settabulatecell
+    structurestags.gettabulatecell = gettabulatecell
+
+end
+
+do
+
+    -- todo: internal is already hashed
+
+    local p_stripper = lpeg.patterns.stripper
+
+    local function setregister(tag,n) -- check if tag is needed
+        local data = structures.registers.get(tag,n)
+        if data then
+            referencehash[locatedtag("registerlocation")] = data
+        end
+    end
+
+    function extras.registerlocation(di,element,n,fulltag)
+        local data = referencehash[fulltag]
+        if type(data) == "table" then
+            extras.addinternal(di,data.references)
+            return true
+        else
+            -- needs checking, probably bookmarks
+        end
+    end
+
+    function extras.registerpages(di,element,n,fulltag) -- ignorebreaks
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            if d.content == " " then
+                d.content = ""
+            end
+        end
+    end
+
+    function extras.registerseparator(di,element,n,fulltag) -- ignorespaces
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            local c = d.content
+            if type(c) == "string" then
+                d.content = lpegmatch(p_stripper,c)
+            end
+        end
+    end
+
+    implement {
+        name      = "settagregister",
+        actions   = setregister,
+        arguments = { "string", "integer" }
+    }
+
+    structurestags.setregister = setregister
+
+end
+
+do
+
+    -- todo: internal is already hashed
+
+    local function setlist(n)
+        local data = structures.lists.getresult(n)
+        if data then
+            referencehash[locatedtag("listitem")] = data
+        end
+    end
+
+    function extras.listitem(di,element,n,fulltag)
+        local data = referencehash[fulltag]
+        if data then
+            extras.addinternal(di,data.references)
+            return true
+        end
+    end
+
+    implement {
+        name      = "settaglist",
+        actions   = setlist,
+        arguments = "integer"
+    }
+
+    structurestags.setlist = setlist
+
+end
+
+do
+
+    local usedpublications = { }
+    local tagsindatasets   = setmetatableindex("table")
+    local serialize        = false
+
+    local function setpublication(dataset,tag,rendering)
+        usedpublications[locatedtag("publication")] = {
+            dataset   = dataset,
+            tag       = tag,
+            rendering = rendering
+        }
+        tagsindatasets[dataset][tag] = true
+        if not serialize then
+            structures.tags.registerextradata("btx",function()
+                local t = { "<btxdata>"}
+                for dataset, used in sortedhash(tagsindatasets) do
+                    t[#t+1] = publications.converttoxml(dataset,true,false,true,false,true,true)
+                end
+                t[#t+1] = "</btxdata>"
+                return concat(t,"\n")
+            end)
+        end
+    end
+
+    function extras.publication(di,element,n,fulltag)
+        local hash = usedpublications[fulltag]
+        if hash then
+            setattribute(di,"dataset",hash.dataset)
+            setattribute(di,"tag",hash.tag)
+        end
+    end
+
+    implement {
+        name      = "settagpublication",
+        actions   = setpublication,
+        arguments = "2 strings"
+    }
+
+    structurestags.setpublication = setpublication
+
+end
+
+do
+
+    local usedparagraphs = { }
+
+    local function setparagraph(align)
+        if align ~= "" then
+            usedparagraphs[locatedtag("paragraph")] = {
+                align = align,
+            }
+        end
+    end
+
+    function extras.paragraph(di,element,n,fulltag)
+        local hash = usedparagraphs[fulltag]
+        if hash then
+            setattribute(di,"align",hash.align)
+        end
+    end
+
+    implement {
+        name      = "settagparagraph",
+        actions   = setparagraph,
+        arguments = "string"
+    }
+
+    structurestags.setparagraph = setparagraph
+
+end
+
+do
+
+    local marginanchors = { }
+    local margincontent = { }
+
+    function checks.margintext(di)
+        local i = marginanchors[di.fulltag]
+        margincontent[i] = di
+    end
+
+    function checks.marginanchor(di)
+        local i = marginanchors[di.fulltag]
+        local d = margincontent[i]
+        --
+        di.attribute = d.attribute
+        di.data      = d.data
+        di.detail    = d.detail
+        di.element   = d.element
+        di.fulltag   = d.fulltag
+        di.nature    = d.nature
+        di.samepar   = true
+        di.tg        = d.tg
+        --
+        d.skip       = "ignore"
+    end
+
+    implement {
+        name      = "settagmargintext",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("margintext")] = n
+        end
+    }
+
+    implement {
+        name      = "settagmarginanchor",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("marginanchor")] = n
+        end
+    }
+
+end
+
+do
+
+    function fixes.linenumber(di,data,i)
+        local ni = data[i+1]
+        if ni then
+            if ni.data then
+                while true do
+                    local d = ni.data[1]
+                    if d then
+                        local e = d.element
+                        if e then
+                            if e == "line" or e == "verbatimline" then
+                                insert(d.data,1,di)
+                                data[i] = false
+                                return
+                            else
+                                ni = d
+                            end
+                        else
+                            return
+                        end
+                    else
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+end
+

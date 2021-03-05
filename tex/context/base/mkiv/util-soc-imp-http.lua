@@ -59,7 +59,7 @@ local function receiveheaders(sock, headers)
         headers = { }
     end
     -- get first line
-    local line, err = sock:receive()
+    local line, err = sock:receive("*l") -- this seems to be wrong!
     if err then
         return nil, err
     end
@@ -72,14 +72,14 @@ local function receiveheaders(sock, headers)
         end
         name = lower(name)
         -- get next line (value might be folded)
-        line, err  = sock:receive()
+        line, err  = sock:receive("*l")
         if err then
             return nil, err
         end
         -- unfold any folded values
         while find(line, "^%s") do
             value = value .. line
-            line  = sock:receive()
+            line  = sock:receive("*l")
             if err then
                 return nil, err
             end
@@ -103,7 +103,7 @@ socket.sourcet["http-chunked"] = function(sock, headers)
             dirty = function() return sock:dirty() end,
         }, {
             __call = function()
-                local line, err = sock:receive()
+                local line, err = sock:receive("*l")
                 if err then
                     return nil, err
                 end
@@ -114,7 +114,7 @@ socket.sourcet["http-chunked"] = function(sock, headers)
                 if size > 0 then
                     local chunk, err, part = sock:receive(size)
                     if chunk then
-                        sock:receive()
+                        sock:receive("*a")
                     end
                     return chunk, err
                 else

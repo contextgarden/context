@@ -1295,7 +1295,7 @@ being an invisible character with maximum dimensions. Variables like \type
 can save variables.
 
 \startbuffer
-\startuseMPgraphic{test 1}
+\startuseMPgraphic{shapetest-1}
   begingroup ;
     save p ; path p ; p := fullcircle scaled 6cm ;
     lmt_parshape [
@@ -1319,7 +1319,7 @@ The second shape is a diamond. This is a rather useless shape, unless the text
 suits the small lines at the top and bottom.
 
 \startbuffer
-\startuseMPgraphic{test 2}
+\startuseMPgraphic{shapetest-2}
   begingroup ;
     save p ; path p ; p := fullsquare rotated 45 scaled 5cm ;
     lmt_parshape [
@@ -1338,7 +1338,7 @@ The third and fourth shape demonstrate that providing a suitable offset is not
 always trivial.
 
 \startbuffer
-\startuseMPgraphic{test 3}
+\startuseMPgraphic{shapetest-3}
   begingroup ;
     save w, h, p ; path p ; w := h := 6cm ;
     p := (.5w,h) -- (   0,  h) -- (0,0) -- (w,0) &
@@ -1360,14 +1360,15 @@ a path, \METAPOST\ is able to calculate the right dimensions and offsets. This i
 needed, since we need these later on.
 
 \startbuffer
-\startuseMPgraphic{test 4}
+\startuseMPgraphic{shapetest-4}
   begingroup ;
-    save d, p, q ; path p, q ; d := BodyFontSize/2;
+    save d, p, q, shape ; path p, q ; d := BodyFontSize/2;
     vardef shape(expr w, h, o) =
         (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
         (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
     enddef ;
-    p := shape(6cm, 6cm, d) ; q := shape(6cm, 6cm, 0) ;
+    p := shape(6cm, 6cm, d) ;
+    q := shape(6cm, 6cm, 0) ;
     lmt_parshape [
         path       = p,
         offsetpath = q,
@@ -1386,10 +1387,10 @@ Since we also want these graphics as backgrounds, we define them as overlays. If
 you don't want to show the graphic, you may omit this step.
 
 \startbuffer
-\defineoverlay[test 1][\useMPgraphic{test 1}]
-\defineoverlay[test 2][\useMPgraphic{test 2}]
-\defineoverlay[test 3][\useMPgraphic{test 3}]
-\defineoverlay[test 4][\useMPgraphic{test 4}]
+\defineoverlay[shapetest-1][\useMPgraphic{shapetest-1}]
+\defineoverlay[shapetest-2][\useMPgraphic{shapetest-2}]
+\defineoverlay[shapetest-3][\useMPgraphic{shapetest-3}]
+\defineoverlay[shapetest-4][\useMPgraphic{shapetest-4}]
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -1399,7 +1400,7 @@ Themas, Questing for the Essence of Mind and Pattern}. Watch how we pass a list
 of shapes.
 
 \startbuffer[text]
-\startshapetext[test 1,test 2,test 3,test 4]
+\startshapetext[shapetest-1,shapetest-2,shapetest-3,shapetest-4]
   \forgetall % as it says
   \setupalign[verytolerant,stretch,normal]%
   \samplefile{douglas}% Douglas R. Hofstadter
@@ -1409,17 +1410,15 @@ of shapes.
 \typebuffer[text]
 
 Finally we combine text and shapes. Since we also want a background, we use \type
-{\framed}. The macros \type {\parwidth} and \type {\parheight} are automatically
-set to the current shape dimensions. The normal result is shown in \in {figure}
-[fig:shapes].
+{\framed}. The normal result is shown in \in {figure} [fig:shapes].
 
 \startbuffer[shapes]
 \startbuffer
 \startcombination[2*2]
-  {\framed[offset=overlay,frame=off,background=test 1]{\getshapetext}} {test 1}
-  {\framed[offset=overlay,frame=off,background=test 2]{\getshapetext}} {test 2}
-  {\framed[offset=overlay,frame=off,background=test 3]{\getshapetext}} {test 3}
-  {\framed[offset=overlay,frame=off,background=test 4]{\getshapetext}} {test 4}
+  {\framed[offset=overlay,frame=off,background=shapetest-1]{\getshapetext}} {shapetest-1}
+  {\framed[offset=overlay,frame=off,background=shapetest-2]{\getshapetext}} {shapetest-2}
+  {\framed[offset=overlay,frame=off,background=shapetest-3]{\getshapetext}} {shapetest-3}
+  {\framed[offset=overlay,frame=off,background=shapetest-4]{\getshapetext}} {shapetest-4}
 \stopcombination
 \stopbuffer
 \stopbuffer

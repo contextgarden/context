@@ -467,11 +467,14 @@
      \letdummyparameter\c!m\normalmonth
      \letdummyparameter\c!y\normalyear
      \getdummyparameters[#1]%
+     \edef\p_d{\directdummyparameter\c!d}%
+     \edef\p_m{\directdummyparameter\c!m}%
+     \edef\p_y{\directdummyparameter\c!y}%
      \normalexpanded
        {\endgroup
-        \normalday  \number\directdummyparameter\c!d\relax
-        \normalmonth\number\directdummyparameter\c!m\relax
-        \normalyear \number\directdummyparameter\c!y\relax}%
+        \ifx\p_d\empty\else\normalday  \number\directdummyparameter\c!d\relax\fi
+        \ifx\p_m\empty\else\normalmonth\number\directdummyparameter\c!m\relax\fi
+        \ifx\p_y\empty\else\normalyear \number\directdummyparameter\c!y\relax\fi}%
    \fi
    \begingroup
    \the\everycurrentdate

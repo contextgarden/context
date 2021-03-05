@@ -271,24 +271,24 @@ function interfaces.setuserinterface(interface,response)
 --                 end
 --             end)
 --         end
-do
-    local list = complete.commands -- forces the load
-    local t    = { }
-    local n    = 0
-    local f    = formatters["\\frozen\\protected\\def\\%s{\\%s}"] -- formatters["\\ui_m{%s}{%s}"]
-    logs.startfilelogging(report,"translated commands")
-    for given, command in sortedhash(list) do
-        command = command[interface] or command.en or given
-        if command ~= given then
-            n = n + 1
-            t[n] = f(command,given)
-            report_command("%-40s: %s",given,command)
+        do
+            local list = complete.commands -- forces the load
+            local t    = { }
+            local n    = 0
+            local f    = formatters["\\frozen\\protected\\def\\%s{\\%s}"] -- formatters["\\ui_m{%s}{%s}"]
+            logs.startfilelogging(report,"translated commands")
+            for given, command in sortedhash(list) do
+                command = command[interface] or command.en or given
+                if command ~= given then
+                    n = n + 1
+                    t[n] = f(command,given)
+                    report_command("%-40s: %s",given,command)
+                end
+                nofcommands = nofcommands + 1
+            end
+            logs.stopfilelogging()
+            contextsprint(prtcatcodes,"\\toksapp\\everydump{"..concat(t).."}")
         end
-        nofcommands = nofcommands + 1
-    end
-    logs.stopfilelogging()
-    contextsprint(prtcatcodes,"\\toksapp\\everydump{"..concat(t).."}")
-end
         do
             local list = complete.messages.formats
             logs.startfilelogging(report,"translated message formats")

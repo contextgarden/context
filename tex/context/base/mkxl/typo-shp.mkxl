@@ -49,7 +49,7 @@
 \aliased\let\stopparagraphshape\relax
 
 \permanent\protected\def\startparagraphshape[#1]#2\stopparagraphshape
-  {\defcsname\??parshapes#1\endcsname{#2}}
+  {\gdefcsname\??parshapes#1\endcsname{#2}} % global
 
 \permanent\protected\def\rawparagraphshape#1%
   {\begincsname\??parshapes#1\endcsname}
@@ -107,20 +107,24 @@
    \dontcomplain
    \global\advance\shapetextindex\plusone
    \scratchcounter\getshapeparameter{lines}\relax
-   \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
-   \scratchheight \getshapeparameter{height}\scaledpoint\relax
-   \setbox\scratchbox\vpack to \scratchheight
-     {\splittopskip\strutheight
-      \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
-      \ifcase\numexpr\getshapeparameter{first}\relax\else
-        \vskip\lineheight
-      \fi
-      \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
-      \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
-   \wd\scratchbox\scratchwidth
-   \ht\scratchbox\scratchheight
-   \dp\scratchbox\zeropoint
-   \box\scratchbox
+   \ifnum\scratchcounter>\zerocount
+     \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
+     \scratchheight \getshapeparameter{height}\scaledpoint\relax
+     \setbox\scratchbox\vpack to \scratchheight
+       {\splittopskip\strutheight
+        \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+        \ifcase\numexpr\getshapeparameter{first}\relax\else
+          \vskip\lineheight
+        \fi
+        \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+        \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
+     \wd\scratchbox\scratchwidth
+     \ht\scratchbox\scratchheight
+     \dp\scratchbox\zeropoint
+     \box\scratchbox
+   \else
+      % what now
+   \fi
    \egroup}
 
 \protect

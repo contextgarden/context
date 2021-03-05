@@ -716,7 +716,7 @@ do
         if s then
             report("start %s: %s",what,s)
         else
-            report("start %s",what)
+            report("start %s",what or "")
         end
         if target == "logfile" then
             newline()
@@ -728,7 +728,7 @@ do
         if target == "logfile" then
             newline()
         end
-        report("stop %s",what)
+        report("stop %s",what or "")
         if target == "logfile" then
             newline()
         end

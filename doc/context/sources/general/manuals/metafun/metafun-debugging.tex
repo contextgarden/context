@@ -375,6 +375,80 @@ When we overlay these three we get. The envelope only returns the outer curve.
 \stopoverlay
 \stoplinecorrection
 
+We show a few nore examples and let it to the user to come up with applications
+for this feature. We start by defining a scaled pen that we apply to a simple
+path that has three point.
+
+\startbuffer
+pen whateverpen ; whateverpen := makepen(fullcircle xyscaled(1/20,1/40));
+
+path p ; p := (origin .. (1,1/2) .. (1,1/4)) scaled 10 ;
+path q ; q := envelope whateverpen of p ;
+
+draw              p withpen pencircle xyscaled(1/2,1/4)
+                    withcolor "darkgreen"   withtransparency (1,.5) ;
+drawpoints        p withpen pencircle scaled 1
+                    withcolor "darkgray"    withtransparency (1,.5) ;
+drawcontrolpoints p withpen pencircle scaled 1/2
+                    withcolor "darkmagenta" withtransparency (1,.5) ;
+
+currentpicture := currentpicture shifted (-20,0) ;
+
+draw              p withpen pencircle xyscaled(1/2,1/4)
+                    withcolor "darkgreen"   withtransparency (1,.5) ;
+draw              q withpen pencircle scaled 1/5
+                    withcolor "darkblue"    withtransparency (1,.5) ;
+drawpoints        q withpen pencircle scaled 1
+                    withcolor "darkgray"    withtransparency (1,.5) ;
+drawcontrolpoints q withpen pencircle scaled 1/2
+                    withcolor "darkyellow"  withtransparency (1,.5) ;
+draw              q withpen pencircle scaled 1/50
+                    withcolor "white" ;
+
+currentpicture := currentpicture ysized 2cm ;
+\stopbuffer
+
+\typebuffer
+
+On the left we see the path drawn with a circular pen. The points and control
+points are also shown. The path is repeated on the right but there it gets the
+envelope overlayed. We show the points and control points of the envelope: they
+nearly overlap but that depends of course on the used pen.
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+In order to illustrate that the envelope is an outline we blow up a piece of
+this image:
+
+\startlinecorrection[blank]
+    \scale[height=3cm]{\clip[nx=10,ny=20,x=9,y=7]{\processMPbuffer}}
+\stoplinecorrection
+
+Without further explanation we let you ponder the results of the following code.
+
+\startbuffer
+drawoptions(withcolor "darkred") ;
+draw (envelope pensquare of (up--left)) ;
+draw (up--left) shifted (4,0) withpen pensquare ;
+draw fullcircle shifted (8,0) ;
+draw (envelope pensquare of fullcircle) shifted (12,0) ;
+draw (fullcircle) shifted (16,0) withpen pensquare ;
+draw (fullcircle) shifted (20,0) withpen pencircle ;
+currentpicture := currentpicture xsized TextWidth ;
+\stopbuffer
+
+\typebuffer
+
+The efficiency of the output of each draw differs a lot because circles are made
+from eight points and because a transformed pen results in two paths. Normally
+that is not something you have to loose sleep over.
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
 \stopsection
 
 \startsection[title=Performance]

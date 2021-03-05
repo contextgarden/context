@@ -242,8 +242,11 @@ end
 -- this will be split into contribute_filter for these 4 so at some point
 -- the check can go away
 
+-- Todo: contrib_head can be any head (kind of) not per se the page one so maybe I will
+-- intercept that in the engine with page_contribute_head or so.
+
 function builders.buildpage_filter(groupcode)
-    local head = texlists.contrib_head
+    local head = texlists.contribute_head
     if head then
         local done = false
         -- called quite often ... maybe time to remove timing
@@ -255,8 +258,8 @@ function builders.buildpage_filter(groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
-        texlists.contrib_head = head or nil -- needs checking
-     -- tex.setlist("contrib_head",head,head and nodes.tail(head))
+        texlists.contribute_head = head or nil -- needs checking
+     -- tex.setlist("contribute_head",head,head and nodes.tail(head))
         return done and head or true -- no return value needed
     else
         -- happens quite often
@@ -302,38 +305,42 @@ local setdirection = nuts.setdirection
 local setlink      = nuts.setlink
 local tonode       = nuts.tonode
 
-local report_hpack = logs.reporter("hpack routine")
-local report_vpack = logs.reporter("vpack routine")
+local list         = { }
+
+local report_quality = logs.reporter("pack quality")
 
 -- overflow|badness w h d dir
 
-local function vpack_quality(how,n,detail,first,last)
+local function vpack_quality(how,n,detail,first,last,filename)
     if last <= 0 then
-        report_vpack("%s vbox",how)
+        report_quality("%s vbox",how)
     elseif first > 0 and first < last then
-        report_vpack("%s vbox at line %i - %i",how,first,last)
+        report_quality("%s vbox at line %i - %i in file %a",how,first,last,filename or "?")
     else
-        report_vpack("%s vbox at line %i",how,last)
+        report_quality("%s vbox at line %i in file %a",how,filename or "?",last)
     end
+    list[#list+1] = { "hbox", how, filename, first, last, how }
 end
 
 trackers.register("builders.vpack.quality",function(v)
-    registercallback("vpack_quality",v and report_vpack_quality or nil,"check vpack quality")
+    registercallback("vpack_quality",v and vpack_quality or nil,"check vpack quality")
 end)
 
-local report, show = false, false
+local report = false
+local show   = false
 
-local function hpack_quality(how,detail,n,first,last)
+local function hpack_quality(how,detail,n,first,last,filename)
     n = tonut(n)
     if report then
         local str = listtoutf(getlist(n),"",true,nil,true)
         if last <= 0 then
-            report_hpack("%s hbox: %s",how,str)
+            report_quality("%s hbox: %s",how,str)
         elseif first > 0 and first < last then
-            report_hpack("%s hbox at line %i - %i: %s",how,first,last,str)
+            report_quality("%s hbox at line %i - %i in file %a: %s",how,first,last,filename or "?",str)
         else
-            report_hpack("%s hbox at line %i: %s",how,last,str)
+            report_quality("%s hbox at line %i in file %a: %s",how,last,filename or "?",str)
         end
+        list[#list+1] = { "hbox", how, filename, first, last, str }
     end
     if show then
         local width     = 2*65536
@@ -375,4 +382,33 @@ end)
 trackers.register("builders.hpack.overflow",function(v)
     show = v
     registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
+end)
+
+statistics.register("quality reports", function()
+    local n = #list
+    if n > 0 then
+        local t = table.setmetatableindex("number")
+        local fw = 0
+        local hw = 0
+        for i=1,n do
+            local f = list[i][1]
+            local h = list[i][2]
+            if #f > fw then
+                fw = #f
+            end
+            if #h > hw then
+                hw = #h
+            end
+            t[h] = t[h] + 1
+        end
+        logs.startfilelogging(report_quality)
+        for i=1,n do
+            local l = list[i]
+            report_quality("%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s",file.basename(l[3]),l[4],l[5],l[2],l[1],l[6])
+        end
+        logs.stopfilelogging()
+        report_quality()
+        report_quality("%i entries added to the log file : %s",n,table.sequenced(t))
+        report_quality()
+    end
 end)

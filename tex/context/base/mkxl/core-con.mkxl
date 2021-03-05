@@ -448,9 +448,9 @@
    \getdummyparameters[#1]%
    \normalexpanded
      {\endgroup
-      \normalday  \number\directdummyparameter\c!d\relax
-      \normalmonth\number\directdummyparameter\c!m\relax
-      \normalyear \number\directdummyparameter\c!y\relax}}
+      \iftok{\directdummyparameter\c!d}\emptytoks\else\normalday  \number\directdummyparameter\c!d\relax\fi
+      \iftok{\directdummyparameter\c!m}\emptytoks\else\normalmonth\number\directdummyparameter\c!m\relax\fi
+      \iftok{\directdummyparameter\c!y}\emptytoks\else\normalyear \number\directdummyparameter\c!y\relax\fi}}
 
 \permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
   {\dontleavehmode

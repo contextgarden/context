@@ -11,7 +11,7 @@ if not modules then modules = { } end modules['mtx-context'] = {
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
-local quote, validstring = string.quote, string.valid
+local quote, validstring, splitstring = string.quote, string.valid, string.split
 local sort, concat, insert, sortedhash, tohash = table.sort, table.concat, table.insert, table.sortedhash, table.tohash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
@@ -1435,6 +1435,67 @@ function scripts.context.touch()
     end
 end
 
+function scripts.context.pages()
+    local filename = environment.files[1]
+    if filename then
+        local u = table.load(file.addsuffix(filename,"tuc"))
+        if u then
+            local p = u.structures.pages.collected
+            local l = u.structures.lists.collected
+            local page = environment.arguments.page
+            local list = environment.arguments.list
+            if type(page) == "string" then
+                page = settings_to_array(page)
+            end
+            if type(list) == "string" then
+                list = settings_to_array(list)
+            end
+            if page or list then
+                if page then
+                    for i=1,#p do
+                        local pi = p[i]
+                        local m = pi.marked
+                        if m then
+                            for j=1,#page do
+                                local n = page[j]
+                                if table.contains(m,n) then
+                                    report("page : %04i %s",i,n)
+                                end
+                            end
+                        end
+                    end
+                end
+                if list then
+                    for i=1,#l do
+                        local li = l[i]
+                        local r = li.references
+                        if r then
+                            local rr = r.reference
+                            if rr then
+                                rr = splitstring(rr,",")
+                                for j=1,#list do
+                                    local n = list[j]
+                                    if table.contains(rr,n) then
+                                        report("list : %04i %s",r.realpage,n)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                for i=1,#p do
+                    local pi = p[i]
+                    local m = pi.marked
+                    if m then
+                        report("page : %04i % t",i,m)
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- modules
 
 local labels = { "title", "comment", "status" }
@@ -1661,6 +1722,8 @@ elseif getargument("version") then
     scripts.context.version()
 elseif getargument("touch") then
     scripts.context.touch()
+elseif getargument("pages") then
+    scripts.context.pages()
 elseif getargument("expert") then
     application.help("expert", "special")
 elseif getargument("showmodules") or getargument("modules") then

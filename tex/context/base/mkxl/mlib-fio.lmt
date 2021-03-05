@@ -73,7 +73,7 @@ local function findmpfile(name,ftype)
     elseif suffix(name) == "" then
         for i=1,#suffixlist do
             fullname = findfile(addsuffix(name,suffixlist[i]),validtyp)
-            if fullname and fulllname ~= "" then
+            if fullname and fullname ~= "" then
                 return fullname
             end
         end

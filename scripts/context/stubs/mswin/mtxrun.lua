@@ -849,7 +849,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11969, stripped down to: 8501
+-- original size: 12566, stripped down to: 8937
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -858,7 +858,7 @@ if not modules then modules={} end modules ['l-package']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local type=type
+local type,unpack=type,unpack
 local gsub,format,find=string.gsub,string.format,string.find
 local insert,remove=table.insert,table.remove
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
@@ -888,6 +888,7 @@ local helpers=package.helpers or {
  },
  methods={},
  sequence={
+  "reset loaded",
   "already loaded",
   "preload table",
   "qualified path",
@@ -904,6 +905,7 @@ local methods=helpers.methods
 local builtin=helpers.builtin
 local extraluapaths={}
 local extralibpaths={}
+local checkedfiles={}
 local luapaths=nil 
 local libpaths=nil 
 local oldluapath=nil
@@ -1037,10 +1039,16 @@ end
 local function loadedaslib(resolved,rawname) 
  local base=gsub(rawname,"%.","_")
  local init="luaopen_"..gsub(base,"%.","_")
+ local data={ resolved,init,"" }
+ checkedfiles[#checkedfiles+1]=data
  if helpers.trace then
   helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
  end
- return package.loadlib(resolved,init)
+ local a,b,c=package.loadlib(resolved,init)
+ if not a and type(b)=="string" then
+  data[3]=string.fullstrip(b or "unknown error")
+ end
+ return a,b,c 
 end
 helpers.loadedaslib=loadedaslib
 local function loadedbypath(name,rawname,paths,islib,what)
@@ -1079,6 +1087,10 @@ local function loadedbyname(name,rawname)
  end
 end
 helpers.loadedbyname=loadedbyname
+methods["reset loaded"]=function(name)
+ checkedfiles={}
+ return false
+end
 methods["already loaded"]=function(name)
  return package.loaded[name]
 end
@@ -1120,6 +1132,9 @@ end
 methods["not loaded"]=function(name)
  if helpers.trace then
   helpers.report("unable to locate '%s'",name or "?")
+  for i=1,#checkedfiles do
+   helpers.report("checked file '%s', initializer '%s', message '%s'",unpack(checkedfiles[i]))
+  end
  end
  return nil
 end
@@ -11800,7 +11815,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-http"] = package.loaded["util-soc-imp-http"] or true
 
--- original size: 12577, stripped down to: 9577
+-- original size: 12624, stripped down to: 9598
 
 
 local tostring,tonumber,setmetatable,next,type=tostring,tonumber,setmetatable,next,type
@@ -11845,7 +11860,7 @@ local function receiveheaders(sock,headers)
  if not headers then
   headers={}
  end
- local line,err=sock:receive()
+ local line,err=sock:receive("*l") 
  if err then
   return nil,err
  end
@@ -11855,13 +11870,13 @@ local function receiveheaders(sock,headers)
    return nil,"malformed reponse headers"
   end
   name=lower(name)
-  line,err=sock:receive()
+  line,err=sock:receive("*l")
   if err then
    return nil,err
   end
   while find(line,"^%s") do
    value=value..line
-   line=sock:receive()
+   line=sock:receive("*l")
    if err then
     return nil,err
    end
@@ -11881,7 +11896,7 @@ socket.sourcet["http-chunked"]=function(sock,headers)
    dirty=function() return sock:dirty() end,
   },{
    __call=function()
-    local line,err=sock:receive()
+    local line,err=sock:receive("*l")
     if err then
      return nil,err
     end
@@ -11892,7 +11907,7 @@ socket.sourcet["http-chunked"]=function(sock,headers)
     if size>0 then
      local chunk,err,part=sock:receive(size)
      if chunk then
-      sock:receive()
+      sock:receive("*a")
      end
      return chunk,err
     else
@@ -25827,8 +25842,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1025303
--- stripped bytes    : 405465
+-- original bytes    : 1025947
+-- stripped bytes    : 405652
 
 -- end library merge
 

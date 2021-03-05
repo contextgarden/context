@@ -101,6 +101,9 @@ run extra imposition pass, given that the style sets up imposition
 .B --noarrange
 ignore imposition specifications in the style
 .TP
+.B --pages
+report pagenumbers of names pages and list references (--page=... or --page=...)
+.TP
 .B --jit
 use luajittex with jit turned off (only use the faster virtual machine)
 .TP

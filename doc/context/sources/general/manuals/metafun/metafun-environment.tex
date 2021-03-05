@@ -342,7 +342,7 @@
 
 \startbuffer[shape-a]
 \startuniqueMPgraphic{meta:hash}{linewidth,linecolor,angle,gap}
-  if unknown context_back : input mp-back ; fi ;
+  loadmodule("back") ;
   some_hash ( OverlayWidth, OverlayHeight ,
               \MPvar{linewidth}, \MPvar{linecolor} ,
               \MPvar{angle}, \MPvar{gap} ) ;
@@ -369,7 +369,7 @@
 
 \startbuffer[symb-a]
 \startuniqueMPgraphic{meta:button}{type,size,linecolor,fillcolor}
-  if unknown context_butt : input mp-butt ; fi ;
+  loadmodule("butt") ;
   some_button ( \MPvar{type},
                 \MPvar{size},
                 \MPvar{linecolor},
