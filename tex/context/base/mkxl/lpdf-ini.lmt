@@ -1069,7 +1069,7 @@ do
             local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
             metadata = {
                 producer            = format("LuaTeX-%s",luatexversion),
-                creator             = format("LuaTeX %s %s + ConTeXt MkIV %s",luatexversion,luatexfunctionality,contextversion),
+                creator             = format("LuaTeX %s %s + ConTeXt LMTX %s",luatexversion,luatexfunctionality,contextversion),
                 luatexversion       = luatexversion,
                 contextversion      = contextversion,
                 luatexfunctionality = luatexfunctionality,

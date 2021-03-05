@@ -1452,20 +1452,29 @@ function scripts.context.pages()
             end
             if page or list then
                 if page then
+                    for i=1,#page do
+                        page[i] = string.topattern(page[i])
+                    end
                     for i=1,#p do
                         local pi = p[i]
                         local m = pi.marked
                         if m then
+                            local ml = #m
                             for j=1,#page do
                                 local n = page[j]
-                                if table.contains(m,n) then
-                                    report("page : %04i %s",i,n)
+                                for k=1,ml do
+                                    if find(m[k],n) then
+                                        report("page : %04i %s",i,m[k])
+                                    end
                                 end
                             end
                         end
                     end
                 end
                 if list then
+                    for i=1,#list do
+                        list[i] = string.topattern(list[i])
+                    end
                     for i=1,#l do
                         local li = l[i]
                         local r = li.references
@@ -1473,10 +1482,13 @@ function scripts.context.pages()
                             local rr = r.reference
                             if rr then
                                 rr = splitstring(rr,",")
+                                local rrl = #rr
                                 for j=1,#list do
                                     local n = list[j]
-                                    if table.contains(rr,n) then
-                                        report("list : %04i %s",r.realpage,n)
+                                    for k=1,rrl do
+                                        if find(rr[k],n) then
+                                            report("list : %04i %s",r.realpage,rr[k])
+                                        end
                                     end
                                 end
                             end

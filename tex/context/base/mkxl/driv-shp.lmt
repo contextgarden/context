@@ -1323,21 +1323,17 @@ do
     local function showdetails(n,l)
         local p = properties[tonut(n)]
         if p then
-            local done = false
             for k, v in sortedhash(p) do
                 local t = type(v)
---                 if done then
---                     flushline("\n")
---                 else
---                     done = true
---                 end
                 if t == "string" then
                     if find(v,"[\n\r]") then
                         v =  "\n" .. stripstring(v) .. "\n"
                     end
+                elseif t == "number" or t == "boolean" then
+                    v = tostring(v)
                 elseif t == "table" then
                     v = sequenced(v)
-                elseif t ~= "number" and t ~= "boolean" then
+                else
                     v = "<" .. tostring(v) .. ">"
                 end
                 flushline(periods[l+1] .. " " .. k .. " = " .. v)
