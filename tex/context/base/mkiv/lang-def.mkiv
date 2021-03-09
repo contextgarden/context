@@ -350,6 +350,21 @@
    \c!rightquotation=\upperrightdoublesixquote,
    \c!date={\v!day,\space,\v!month,\space,\v!year}]
 
+\installlanguage
+  [\s!bg]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\leftguillemot,
+   \c!rightsentence=\rightguillemot,
+   \c!leftsubsentence=\lowerleftdoubleninequote,
+   \c!rightsubsentence=\upperrightdoubleninequote,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
+
 \installlanguage [\s!russian]    [\s!ru]
 \installlanguage [\s!ukrainian]  [\s!ua]
 \installlanguage [\s!belarussian][\s!be]
@@ -357,6 +372,7 @@
 \installlanguage [\s!sr-latn]    [\s!sr]
 \installlanguage [\s!sr-cyrl]    [\s!sr]
 \installlanguage [\s!macedonian] [\s!mk]
+\installlanguage [\s!bulgarian]  [\s!bg]
 
 
 % Uralic Languages: Cheremiss, Estonian, Finnish, Karelian, Laap,
@@ -486,7 +502,7 @@
 \installlanguage [\s!arabic] [\s!ar]
 
 \installlanguage
-  [\s!pe]
+  [\s!farsi]
   [\c!spacing=\v!broad,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -498,9 +514,9 @@
    \c!rightquotation=\rightguillemot,
    \c!date={\v!day,\space,\v!month,\space,\v!year}]
 
-\installlanguage [\s!persian] [\s!pe]
-\installlanguage [\s!fa]      [\s!pe] % these two are redundant but sometimes might
-\installlanguage [\s!farsi]   [\s!fa] % sound more natural .. best set labels to 'pe'
+\installlanguage [\s!fa]      [\s!farsi]
+\installlanguage [\s!persian] [\s!farsi]
+\installlanguage [\s!pe]      [\s!farsi]
 
 % Just aliases to "ar" for now
 
@@ -539,19 +555,22 @@
 
 \installlanguage
   [\s!esperanto]
-  [%\c!spacing=\v!packed,
-   %\c!leftsentence=\emdash,
-   %\c!rightsentence=\emdash,
-   %\c!leftsubsentence=\emdash,
-   %\c!rightsubsentence=\emdash,
-   %\c!leftquote=\lowerleftdoubleninequote,
-   %\c!rightquote=\upperrightdoublesixquote,
-   %\c!leftquotation=\lowerleftdoubleninequote,
-   %\c!rightquotation=\upperrightdoublesixquote,
-   %\c!date={\v!year,~m.,\space,\v!month,\space,\v!day,~d.},
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperleftsinglesixquote,         %U+2018,
+   \c!rightquote=\upperrightsingleninequote,      %U+2019,
+   \c!leftquotation=\upperleftdoublesixquote,     %U+201C,
+   \c!rightquotation=\upperrightdoubleninequote,  %U+201D,
+   \c!date={\v!year,~m.,\space,\v!month,\space,\v!day,~d.},
+   \c!date={\v!day-a\space de\space \v!month\space \v!year},
    \s!patterns=eo,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2]
+
+\installlanguage[\s!eo][\c!default=\s!esperanto]
 
 % Baltic Languages: Lettish/Latvian, Lietuvių/Lithuanian
 

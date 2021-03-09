@@ -1967,7 +1967,7 @@ function xml.kind(e)
                 local tg = d.tg
                 if tg == "@cd@" then
                     return "cdata"
-                elseif tg == "@cm" then
+                elseif tg == "@cm@" then
                     return "comment"
                 elseif tg == "@pi@" then
                     return "instruction"

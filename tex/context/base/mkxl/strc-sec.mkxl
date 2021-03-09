@@ -1272,8 +1272,8 @@
 \permanent\def\namedheadnumber      #1{\getstructurenumber    {\thenamedheadlevel{#1}}}
 \permanent\def\somenamedheadnumber#1#2{\getsomestructurenumber{\thenamedheadlevel{#1}}{#2}}
 
-\permanent\tolerant\protected\def\headnumber[#1]#*[#2]% simple case is just a number
-  {\getsomefullstructurenumber{\ifparameter#1\or\thenamedheadlevel{#1}\fi}{#2}}
+\permanent\tolerant\protected\def\headnumber[#1]#*[#2]%
+  {\getsomefullstructurenumber{\thenamedheadlevel{#1}}{#2}}
 
 \permanent\tolerant\protected\def\someheadnumber[#1]#*[#2]%
   {\dontleavehmode

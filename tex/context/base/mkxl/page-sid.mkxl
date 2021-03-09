@@ -661,7 +661,7 @@
    \page_sides_set_skips
    \page_floats_report_total
    \relax
-   \lefttoright
+  %\lefttoright % not needed in lmtx
    \strc_floats_mark_par_as_free
    \ifcase\c_page_sides_float_type
      % invalid

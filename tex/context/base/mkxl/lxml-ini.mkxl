@@ -305,10 +305,10 @@
 
 \installdirectcommandhandler \??xml {xml}
 
-\letvalue{\??xmldefaults\v!normal}\zerocount
-\letvalue{\??xmldefaults\v!none  }\zerocount
-\letvalue{\??xmldefaults\v!text  }\plusone
-\letvalue{\??xmldefaults\v!hidden}\plustwo
+\letcsname\??xmldefaults\v!normal\endcsname\zerocount
+\letcsname\??xmldefaults\v!none  \endcsname\zerocount
+\letcsname\??xmldefaults\v!text  \endcsname\plusone
+\letcsname\??xmldefaults\v!hidden\endcsname\plustwo
 
 \permanent\protected\def\xmldefaulttotext
   {\ifcase\xmlprocessingmode
@@ -334,7 +334,7 @@
     \doif{\directxmlparameter\c!entities}\v!yes\clf_xmlloadentities
 \to \everysetupxml
 
-\permanent\def\xmlmapvalue    #1#2#3{\setvalue{\??xmlmapvalue#1:#2}{#3}} % keep #3 to grab spaces
+\permanent\def\xmlmapvalue    #1#2#3{\defcsname\??xmlmapvalue#1:#2\endcsname{#3}} % keep #3 to grab spaces
 \permanent\def\xmldoifelsevalue #1#2{\ifcsname\??xmlmapvalue#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 
 \permanent\def\xmlvalue#1#2% #3

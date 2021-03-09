@@ -114,7 +114,8 @@
    \egroup}
 
 \def\page_selectors_filter_a_page#filename#page%
-  {\hpack to \textwidth
+  {%\startpagemakeup
+   \hpack to \textwidth
      {\ifdim\scratchwidth>\zeropoint
         \rightorleftpageaction{\scratchwidth\zeropoint}{\hfill}%
       \fi
@@ -128,8 +129,8 @@
          \fi
          \hss}%
       \wd\scratchbox\zeropoint
-      \box\scratchbox}
-   \page}
+      \box\scratchbox}%
+   \page}%\stoppagemakeup}
 
 \permanent\tolerant\protected\def\copypages[#filename]#spacer[#settings]#spacer[#figuresettings]%
   {\bgroup

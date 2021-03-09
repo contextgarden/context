@@ -80,7 +80,7 @@ updaters.register("backend.update.lpdf",function()
     pdfgetfontname         = lpdf.getfontname
     pdfgetfontobjectnumber = lpdf.getfontobjectnumber
     --
-    pdfgetpagereference    = lpdf.getpagereference
+    pdfgetpagereference    = lpdf.getpagereference -- move code so we don't need this
 end)
 
 local pdf_pages      = pdfconstant("Pages")
@@ -2067,22 +2067,38 @@ do
         return nofobjects
     end
 
+ -- function lpdf.pagereference(n,complete) -- true | false | nil | n [true,false]
+ --     if nofpages == 0 then
+ --         nofpages = structures.pages.nofpages
+ --         if nofpages == 0 then
+ --             nofpages = 1
+ --         end
+ --     end
+ --     if n == true or not n then
+ --         complete = n
+ --         n = texgetcount("realpageno")
+ --     end
+ --     local r = n > nofpages and pdfgetpagereference(nofpages) or pdfgetpagereference(n)
+ --     return complete and pdfreference(r) or r
+ -- end
+
     function lpdf.pagereference(n,complete) -- true | false | nil | n [true,false]
-        if nofpages == 0 then
-            nofpages = structures.pages.nofpages
-            if nofpages == 0 then
-                nofpages = 1
-            end
-        end
         if n == true or not n then
             complete = n
             n = texgetcount("realpageno")
         end
-        local r = n > nofpages and pdfgetpagereference(nofpages) or pdfgetpagereference(n)
+        if n > nofpages then
+            nofpages = n
+        end
+        local r = pdfgetpagereference(n)
         return complete and pdfreference(r) or r
     end
 
-    function lpdf.nofpages()
+    function lpdf.lastreferredpage()
+        return nofpages
+    end
+
+    function lpdf.nofpages() -- this will change: document nofpages
         return structures.pages.nofpages
     end
 
@@ -2973,6 +2989,18 @@ do
                 return string.format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",lpdf.getcompression())
             end)
             --
+            luatex.registerstopactions(function()
+                if pdfname then
+                    local r = lpdf.lastreferredpage() -- somehow referenced
+                    local t = lpdf.nofpages()         -- in tuc file
+                    local s = lpdf.getnofpages()      -- in page tree, saved in file
+                    if r > s then
+                        report()
+                        report("referred pages: %i, saved pages %i, pages from tuc file: %i, possible corrupt file",r,e,t)
+                        report()
+                    end
+                end
+            end)
         end
         converter  = drivers.converters.lmtx
         useddriver = driver
