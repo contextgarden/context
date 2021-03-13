@@ -49,6 +49,8 @@ local cleanpath         = resolvers.cleanpath
 local toppath           = resolvers.toppath
 local resolveprefix     = resolvers.resolve
 
+local currentfile       = luatex.currentfile
+
 local hasscheme         = url.hasscheme
 
 local jobresolvers      = resolvers.jobs
@@ -791,7 +793,8 @@ end
 
 local function autoname(name)
     if name == "*" then
-        name = nameonly(toppath() or name)
+     -- name = nameonly(toppath() or name)
+        name = nameonly(currentfile() or name)
     end
     return name
 end

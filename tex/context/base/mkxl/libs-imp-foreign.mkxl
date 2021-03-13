@@ -1,0 +1,204 @@
+% permitloadlib=true
+
+%D \module
+%D   [       file=libs-imp-foreign,
+%D        version=2021.03.10,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Basic FFI,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module was added as a side track of a user wanting to run a library that is
+%D not (has support) built in. In order to identify issues I wondered if we could
+%D have an additional feature to the already present optional libraries (of course
+%D with the usual loadlib protection. Keep in mind that loading libraries creates a
+%D dependency and an api can change. And in a long term program like any \TEX\
+%D program we don't want that (at least I don't want users to be forced to install
+%D lots of additional source code and dependencies in order to compile \LUAMETATEX\
+%D successfully.
+%D
+%D So, I looked around for alternatives to ffi and ran into the (stable since 5
+%D years) alien module (by Fabio Mascarenhas) that uses the rather portable libffi
+%D but it does have some dependencies. For callbacks you need to set some parameters
+%D normally dealt with when configuring and compiling which does creates a
+%D dependency. So, in the end I just took its keyword driven approach but wrapped it
+%D in alternative code that more matches other modules and assumes \LUA\ 5.4.
+%D
+%D Additional features like arrays and structs will be implemented when we need them
+%D using modern \LUA\ 5.4 features (string packing, toclose, etc). For now I
+%D consider all this an experiment and will pick up the thread when I have an
+%D example.
+%D
+%D So, how far do we go? I think as soon as a library becomes more complex, say with
+%D multi|-|dimensional arrays one should just write a proper interface. So we limit
+%D ourselves here. One problem with more complex datastructures is that it opens the
+%D door to abuse thanks to uncontrolled memory access.
+
+\registerctxluafile{libs-imp-foreign}{autosuffix}
+
+\continueifinputfile{libs-imp-foreign.mkxl}
+
+%D The difference in performance is not that significant because the time spent in
+%D the called function is the bottleneck here.
+
+\usemodule[article-basic] \setupbodyfont[8pt] \noheaderandfooterlines
+
+\starttext
+
+\startluacode
+
+    local NC, BC, NR = context.NC, context.BC, context.NR
+
+    function document.identify(kpse,set_program_name,find_file)
+        context.starttabulate { "|l|lp|" }
+            BC() context.type("kpse")             NC() context.typ(tostring(kpse))             NC() NR()
+            BC() context.type("set_program_name") NC() context.typ(tostring(set_program_name)) NC() NR()
+            BC() context.type("find_file")        NC() context.typ(tostring(find_file))        NC() NR()
+        context.stoptabulate()
+    end
+
+    function document.lookup(find_file,filename,filetype,present,n)
+
+        local c = os.clock()
+        for i=1,n do
+            if find_file(filename,filetype,present) then
+                -- okay
+            end
+        end
+        c = os.clock() - c
+
+        context.starttabulate()
+            BC() context("asked") NC() context.type(filename)                             NC() NR()
+            BC() context("found") NC() context.type(find_file(filename,filetype,present)) NC() NR()
+            if n > 0 then
+                BC() context("times")   NC() context(n)            NC() NR()
+                BC() context("seconds") NC() context(" %0.3f",c)   NC() NR()
+                BC() context("lookup")  NC() context(" %0.6f",c/n) NC() NR()
+            end
+        context.stoptabulate()
+    end
+\stopluacode
+
+\starttitle[title=kpse via foreign]
+
+\startluacode
+
+    local foreign = optional.loaded.foreign
+
+    local kplib = (os.platform == "win64" and "kpathsea*w64")
+               or (os.platform == "win32" and "kpathsea*w32")
+               or "libkpathsea"
+
+    local kpse  = foreign.load(kplib)
+
+    local set_program_name = kpse:register {
+        name      = "kpse_set_program_name",
+        arguments = { "string", "string" }
+    }
+
+    local find_file = kpse:register {
+        name      = "kpse_find_file",
+        arguments = { "string", "int", "int" },
+        result    = "string",
+    }
+    local path_expand = kpse:register {
+        name      = "kpse_path_expand",
+        arguments = { "string" },
+        result    = "string",
+    }
+    local all_path_search = kpse:register {
+        name      = "kpse_all_path_search",
+        arguments = { "string", "string" },
+        result    = "pointer",
+        finalizer = function(p)
+            return foreign.totable(p,"string") -- unknown n, so NULL terminated
+        end
+    }
+
+ -- print(kpse)
+ -- print(set_program_name)
+ -- print(kpse:registered("kpse_set_program_name"))
+ -- print(kpse:available("kpse_set_program_name"))
+ -- print(kpse:available("set_program_name"))
+ -- print(kpse:available("kpse_find_file"))
+
+ -- inspect(kpse:registered ())
+ -- inspect(foreign.types())
+ -- inspect(foreign.abivalues())
+
+    local set_program_name = kpse:registered("kpse_set_program_name")
+    local find_file        = kpse:registered("kpse_find_file")
+
+    set_program_name("luatex","luatex")
+
+    document.lookup(find_file, "libs-imp-foreign.mkxl", 26, 0, 100000)
+    document.lookup(find_file, "oeps.tex",              26, 0,  10000)
+    document.lookup(find_file, "metafun.mp",            16, 0,   5000)
+    document.lookup(find_file, "logo10.afm",             4, 0,   2500)
+
+    document.identify(kpse, set_program_name, find_file)
+
+ -- set_program_name("pdftex","pdftex")
+ --
+ -- local t = path_expand("$TEXINPUTS")
+ -- local p = all_path_search(t,"oeps.tex")
+ --
+ -- inspect(t)
+ -- inspect(p)
+
+\stopluacode
+
+\stoptitle
+
+\registerctxluafile{libs-imp-kpse}{autosuffix}
+
+\starttitle[title=kpse via optional / string]
+
+\startluacode
+
+    local kpse = optional.loaded.kpse
+
+    local set_program_name = kpse.set_program_name
+    local find_file        = kpse.find_file
+
+    kpse.set_program_name("luatex")
+
+    document.lookup(find_file, "libs-imp-foreign.mkxl", "tex", false, 100000)
+    document.lookup(find_file, "oeps.tex",              "tex", false,  10000)
+    document.lookup(find_file, "metafun.mp",            "mp",  false,   5000)
+    document.lookup(find_file, "logo10.afm",            "afm", false,   2500)
+
+    document.identify(kpse, set_program_name, find_file)
+
+\stopluacode
+
+\stoptitle
+
+\starttitle[title=kpse via optional / number]
+
+\startluacode
+
+    local kpse = optional.loaded.kpse
+
+    local set_program_name = kpse.set_program_name
+    local find_file        = kpse.find_file
+
+    kpse.set_program_name("luatex")
+
+    document.lookup(find_file, "libs-imp-foreign.mkxl", 26, false, 100000)
+    document.lookup(find_file, "oeps.tex",              26, false,  10000)
+    document.lookup(find_file, "metafun.mp",            16, false,   5000)
+    document.lookup(find_file, "logo10.afm",             4, false,   2500)
+
+    document.identify(kpse, set_program_name, find_file)
+
+\stopluacode
+
+\stoptitle
+
+\stoptext

@@ -122,7 +122,9 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
         local continue, leaders, done, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
-            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext)) then
+            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext))
+or id == disc_code or id == boundary_code
+            then
                 local aa = getattr(n,attribute)
                 if aa and aa ~= skip then
                     if aa == a then
@@ -164,10 +166,10 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                         setlist(n,(processwords(attribute,data,flush,list,n,aa))) -- watch ()
                     end
                 end
-            elseif id == disc_code or id == boundary_code then
-                if f then
-                    l = n
-                end
+--             elseif id == disc_code or id == boundary_code then
+--                 if f then
+--                     l = n
+--                 end
             elseif id == kern_code and getsubtype(n) == fontkern_code then
                 if f then
                     l = n

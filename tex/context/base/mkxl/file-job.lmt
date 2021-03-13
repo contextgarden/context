@@ -49,6 +49,8 @@ local cleanpath         = resolvers.cleanpath
 local toppath           = resolvers.toppath
 local resolveprefix     = resolvers.resolve
 
+local currentfile       = luatex.currentfile
+
 local hasscheme         = url.hasscheme
 
 local jobresolvers      = resolvers.jobs
@@ -842,14 +844,15 @@ local function gotopreviouslevel(what)
     poptree()
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
-context.endinput() -- does not work
+    context.endinput()
 --     context.signalendofinput(what)
 end
 
 local function autoname()
     local name = scan_delimited(91,93) or scan_delimited(0,32) -- [name] or name<space>
     if name == "*" then
-        name = nameonly(toppath() or name)
+     -- name = nameonly(toppath() or name)
+        name = nameonly(currentfile() or name)
     end
     return name
 end

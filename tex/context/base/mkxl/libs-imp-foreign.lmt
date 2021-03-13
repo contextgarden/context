@@ -1,0 +1,119 @@
+if not modules then modules = { } end modules ['libs-imp-foreign'] = {
+    version   = 1.001,
+    comment   = "companion to luat-imp-foreign.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- See libs-imp-foreign.mkxl for some comments.
+
+local report = logs.reporter("foreign")
+
+local libname  = "foreign"
+----- libfile  = "libffi-7"
+local libfile  = "libffi*"
+----- libfile  = "d:/inkscape/bin/libffi-7.dll" -- libffi*
+
+local libforeign = resolvers.libraries.validoptional(libname)
+
+if package.loaded[libname] then
+    return package.loaded[libname]
+end
+
+local function okay()
+    -- Don't worry, when one overloads this flag the engine will abort with an
+    -- error message anyway, but it's less nice.
+    if not status.permit_loadlib then
+        report()
+        report("opening foreign libraries is not enabled")
+        report()
+        os.exit()
+    elseif libforeign and resolvers.libraries.optionalloaded(libname,libfile) then
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local foreignload = libforeign.load
+
+local foreign = {
+    types     = libforeign.types,
+    abivalues = libforeign.abivalues,
+    totable   = libforeign.totable,
+    load      = function(name)
+       if okay() then
+           local fullname = resolvers.findlib(name)
+           if fullname and fullname ~= "" then
+               return foreignload(fullname)
+           else
+               -- report an error
+           end
+       end
+    end,
+}
+
+-- In due time I'll add the struct and array methods using Lua 5.4 features.
+
+package .loaded[libname] = foreign
+optional.loaded[libname] = foreign
+
+return foreign
+
+-- A simple test:
+
+-- \setupbodyfont[dejavu,10pt]
+--
+-- \starttext
+--
+-- \registerctxluafile{libs-imp-foreign}{autosuffix}
+--
+-- \startluacode
+--
+--     local foreign = optional.loaded.foreign
+--
+--     local kplib = (os.platform == "win64" and "kpathsea*w64")
+--                or (os.platform == "win32" and "kpathsea*w32")
+--                or "libkpathsea"
+--
+--     local kpse  = foreign.load(kplib)
+--
+--     local set_program_name = kpse.kpse_set_program_name
+--     local find_file        = kpse.kpse_find_file
+--
+--     set_program_name:types { "string", "string" }
+--     find_file       :types { ret = "string", "string", "int", "int" }
+--
+--     set_program_name("pdftex","pdftex")
+--
+--     local function lookup(filename,filetype,n)
+--         local c = os.clock()
+--         for i=1,n do
+--             if find_file(filename,filetype,0) then
+--                 -- okay
+--             end
+--         end
+--         c = os.clock() - c
+--
+--         local NC, BC, NR = context.NC, context.BC, context.NR
+--
+--         context.starttabulate()
+--             BC() context("asked") NC() context.type(filename)                       NC() NR()
+--             BC() context("found") NC() context.type(find_file(filename,filetype,0)) NC() NR()
+--             if n > 0 then
+--                 BC() context("times")   NC() context(n)            NC() NR()
+--                 BC() context("seconds") NC() context(" %0.3f",c)   NC() NR()
+--                 BC() context("lookup")  NC() context(" %0.6f",c/n) NC() NR()
+--             end
+--         context.stoptabulate()
+--     end
+--
+--     lookup("oeps.tex",   26,10000)
+--     lookup("metafun.mp", 16, 5000)
+--     lookup("logo10.afm",  4, 2500)
+--
+-- \stopluacode
+--
+-- \stoptext

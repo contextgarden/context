@@ -2992,11 +2992,11 @@ do
             luatex.registerstopactions(function()
                 if pdfname then
                     local r = lpdf.lastreferredpage() -- somehow referenced
-                    local t = lpdf.nofpages()         -- in tuc file
                     local s = lpdf.getnofpages()      -- in page tree, saved in file
+                    local t = lpdf.nofpages()         -- in tuc file
                     if r > s then
                         report()
-                        report("referred pages: %i, saved pages %i, pages from tuc file: %i, possible corrupt file",r,e,t)
+                        report("referred pages: %i, saved pages %i, pages from tuc file: %i, possible corrupt file",r,s,t)
                         report()
                     end
                 end
