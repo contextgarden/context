@@ -484,6 +484,9 @@
    \enforced\let\\\endgraf
    \dowithnextboxcs\syst_boxes_determine_noflines\vbox}
 
+\def\determinednoflines#1%
+  {\localcontrolled{\determinenoflines{#1}}\noflines}
+
 %D \macros
 %D   {doiftextelse, doiftext}
 %D

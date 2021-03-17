@@ -166,70 +166,137 @@
 
 \installcorenamespace {svgfamily}
 
-\setvalue{\??svgfamily      }{serif}
-\setvalue{\??svgfamily serif}{serif}
-\setvalue{\??svgfamily  sans}{sans}
-\setvalue{\??svgfamily  mono}{mono}
-
-%D This can't change because otherwise \type {\scale[width=4cm]{graphic}} fails.
-
-\permanent\protected\def\svgscaled#1%
-  {\fastsxsy{#1}{#1}\svgnormal}
-
-\permanent\protected\def\svgnormal#1#2#3#4% family weight style text
-  {\bgroup
-   \edef\p_family{#1}%
-   \ifempty\p_family\else
-      \edef\p_font{\ifcsname\??svgfamily#1\endcsname\lastnamedcs\else#1\fi-#2-#3}%
-      \predefinedfont[\s!spec:\p_font*\s!default\space @ 10bp]%
-   \fi
-   #4%
-   \egroup}
-
-\permanent\protected\def\svgcolored#1#2#3#4% r g b text
-  {\colored[r=#1,g=#2,b=#3]{#4}}
-
-% \permanent\protected\def\svgplaced#1#2#3#4% dx dy width text
-%   {\doifelsenothing{#3}%
-%      {\hpack}%
-%      {\hpack to #3}%
-%      {\raise#2\onebasepoint\hbox{\kern#1\onebasepoint\relax#4}}}
-
-\permanent\protected\def\svgplaced#1#2#3#4% dx dy width text
-  {\doifelsenothing{#3}%
-     {\hpack}%
-     {\hpack to #3}%
-     {\offsetbox[\c!y=#2]\hbox{\kern#1\relax#4}}}
-
-\newdimen\grph_svg_scratchwidth % maybe \startsvgpos etc
-
-\permanent\protected\def\svgposchar#1#2#3% dx dy char
-  {\setbox\scratchbox\hpack\bgroup
-     \raise#2\onebasepoint\hbox\bgroup
-        \kern\dimexpr#1\onebasepoint-\grph_svg_scratchwidth\relax
-        \char#3\relax
-     \egroup
-   \egroup
-   \advance\grph_svg_scratchwidth\wd\scratchbox
-   \box\scratchbox}
-
-\permanent\protected\def\svgchar#1% char
-  {\char#1\relax}
+\defcsname\??svgfamily      \endcsname{serif}
+\defcsname\??svgfamily serif\endcsname{serif}
+\defcsname\??svgfamily  sans\endcsname{sans}
+\defcsname\??svgfamily  mono\endcsname{mono}
 
 \definelayer[svgmps][\c!method=\v!fit]
 
-\permanent\protected\def\svgstartlayer
+\permanent\protected\def\svghashed#1%
+  {\clf_svghashed#1\relax}
+
+\permanent\protected\def\svg_normal_poscode#1#2#3%
+  {\glyph xoffset #1\onebasepoint yoffset #2\onebasepoint #3\relax}
+
+\permanent\protected\def\svg_normal_poschar#1#2#3%
+  {\glyph xoffset #1\onebasepoint yoffset #2\onebasepoint `#3\relax}
+
+\permanent\protected\def\svg_normal_posspace#1#2%
+  {\space}
+
+\permanent\protected\def\svg_normal_space#1%
+  {\space}
+
+\permanent\protected\def\svg_normal_code#1%
+  {\char#1\relax}
+
+\permanent\protected\def\svg_normal_char#1%
+  {#1\relax}
+
+\permanent\protected\def\svg_normal_startlayer
   {\resetlayer[svgmps]%
    \setlayer[svgmps]\bgroup}
 
-\permanent\protected\def\svgstoplayer
+\permanent\protected\def\svg_normal_stoplayer
   {\egroup
    \flushlayer[svgmps]}
 
-\permanent\protected\def\svgsetlayer#1#2%
-  {\setlayer[svgmps][\c!x=#1\onebasepoint,\c!y=#2\onebasepoint]} % {#3}
+\permanent\protected\def\svg_normal_colored#1#2#3#4%
+  {\colored[r=#1,g=#2,b=#3]{#4}}
 
-\permanent\protected\def\svghashed#1%
-  {\clf_svghashed#1\relax}
+\permanent\protected\def\svg_normal_setlayer#1#2#3%
+  {\setlayer[svgmps]{\hbox xoffset #1\onebasepoint yoffset #2\onebasepoint to 10sp{#3}}}
+
+\permanent\protected\def\svg_normal_scaled#1#2#3#4#5%
+  {\hbox\bgroup
+   \edef\p_family{#2}%
+   \ifempty\p_family\else
+      \edef\p_font{\ifcsname\??svgfamily#2\endcsname\lastnamedcs\else#2\fi-#3-#4}%
+      \predefinedfont[\s!spec:\p_font*\s!default\space @ 10bp]%
+   \fi
+   \glyphscale\numericscale#1\relax % we need a period !
+   #5%
+   \egroup}
+
+\permanent\protected\def\svg_traced_poscode#1#2#3%
+  {\writestatus{SVG TEXT}{....[poscode #1 #2 \Uchar #3]}%
+   \svg_normal_poscode{#1}{#2}{#3}}
+
+\permanent\protected\def\svg_traced_poschar#1#2#3%
+  {\writestatus{SVG TEXT}{....[poschar #1 #2 #3]}%
+   \svg_normal_poschar{#1}{#2}{#3}}
+
+\permanent\protected\def\svg_traced_posspace#1#2%
+  {\writestatus{SVG TEXT}{....[posspace #1 #2]}%
+   \svg_normal_posspace{#1}{#2}}
+
+\permanent\protected\def\svg_traced_code#1%
+  {\writestatus{SVG TEXT}{....[char \Uchar #1]}%
+   \svg_normal_code{#1}}
+
+\permanent\protected\def\svg_traced_char#1%
+  {\writestatus{SVG TEXT}{....[char #1]}%
+   \svg_normal_char{#1}}
+
+\permanent\protected\def\svg_traced_space
+  {\writestatus{SVG TEXT}{....[space]}%
+   \svg_normal_space}
+
+\permanent\protected\def\svg_traced_startlayer
+  {\writestatus{SVG TEXT}{[start layer]}%
+   \svg_normal_startlayer}
+
+\permanent\protected\def\svg_traced_stoplayer
+  {\svg_normal_stoplayer
+   \writestatus{SVG TEXT}{[stop layer]}}
+
+\permanent\protected\def\svg_traced_colored#1#2#3#4%
+  {\writestatus{SVG TEXT}{.[start color #1 #2 #3]}%
+   \svg_normal_colored{#1}{#2}{#3}{#4}%
+   \writestatus{SVG TEXT}{.[stop color]}}
+
+\permanent\protected\def\svg_traced_setlayer#1#2#3%
+  {\writestatus{SVG TEXT}{...[start set layer #1 #2]}%
+   \svg_normal_setlayer{#1}{#2}{#3}%
+   \writestatus{SVG TEXT}{...[stop set setlayer]}}
+
+\permanent\protected\def\svg_traced_scaled#1#2#3#4#5%
+  {\writestatus{SVG TEXT}{..[start scaled font #1 #2 #3 #4]}%
+   \svg_normal_scaled{#1}{#2}{#3}{#4}{#5}%
+   \writestatus{SVG TEXT}{..[stop scaled font]}}
+
+\permanent\protected\def\svg_normal_text
+  {\let\svgposcode   \svg_normal_poscode
+   \let\svgposchar   \svg_normal_poschar
+   \let\svgposspace  \svg_normal_posspace
+   \let\svgcode      \svg_normal_code
+   \let\svgchar      \svg_normal_char
+   \let\svgspace     \svg_normal_space
+   \let\svgstartlayer\svg_normal_startlayer
+   \let\svgstoplayer \svg_normal_stoplayer
+   \let\svgcolored   \svg_normal_colored
+   \let\svgsetlayer  \svg_normal_setlayer
+   \let\svgscaled    \svg_normal_scaled}
+
+\permanent\protected\def\svg_traced_text
+  {\let\svgposcode   \svg_traced_poscode
+   \let\svgposchar   \svg_traced_poschar
+   \let\svgposspace  \svg_traced_posspace
+   \let\svgcode      \svg_traced_code
+   \let\svgchar      \svg_traced_char
+   \let\svgspace     \svg_traced_space
+   \let\svgstartlayer\svg_traced_startlayer
+   \let\svgstoplayer \svg_traced_stoplayer
+   \let\svgcolored   \svg_traced_colored
+   \let\svgsetlayer  \svg_traced_setlayer
+   \let\svgscaled    \svg_traced_scaled}
+
+\installtextracker
+   {svg.text}
+   {\svg_traced_text}
+   {\svg_normal_text}
+
+\svg_normal_text
 
 \protect \endinput

@@ -257,10 +257,10 @@
    \c!background=,
    \c!rulethickness=\linewidth]
 
-\letvalue{\??thinrulealternatives\v!a   }\zerocount
-\letvalue{\??thinrulealternatives\v!b   }\plusone
-\letvalue{\??thinrulealternatives\v!c   }\plustwo
-\letvalue{\??thinrulealternatives\v!none}\zerocount
+\letcsname\??thinrulealternatives\v!a   \endcsname\zerocount
+\letcsname\??thinrulealternatives\v!b   \endcsname\plusone
+\letcsname\??thinrulealternatives\v!c   \endcsname\plustwo
+\letcsname\??thinrulealternatives\v!none\endcsname\zerocount
 
 \newconstant\c_pack_thinrules_type
 
@@ -562,7 +562,7 @@
 %D
 %D \typebuffer \start \getbuffer \stop
 
-\setvalue{\??textrulealternatives\v!top}#1%
+\defcsname\??textrulealternatives\v!top\endcsname#1%
   {\page[\v!preference] % interferes
    \directtextrulesparameter\c!before\relax
    \blank[\v!samepage,\v!nowhite]%
@@ -571,14 +571,14 @@
    \directtextrulesparameter\c!inbetween\relax
    \endgraf}
 
-\setvalue{\??textrulealternatives\v!bottom}#1%
+\defcsname\??textrulealternatives\v!bottom\endcsname#1%
   {\blank[\v!samepage,\v!nowhite]%
    \pack_textrule_following{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!after\relax
    \page[\v!preference]}
 
-\setvalue{\??textrulealternatives\v!middle}#1%
+\defcsname\??textrulealternatives\v!middle\endcsname#1%
   {\blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \pack_textrule_following{#1}%
@@ -697,6 +697,8 @@
 %D
 %D \showsetup{fillinrules}
 %D \showsetup{setupfillinrules}
+%D
+%D I NEED TO UPGRADE THIS!
 
 \installcorenamespace{fillinrules}
 

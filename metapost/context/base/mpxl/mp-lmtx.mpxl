@@ -2108,7 +2108,7 @@ vardef lmt_do_svg =
         w := getparameter "width" ;
         h := getparameter "height" ;
         o := getparameter "offset" ;
-        lua.mp.lmt_svg_include() ;
+        lua.mp.lmt_svg_include() ; % textext runs twice .. maybe force once here
         if getparameter "origin" :
             currentpicture := currentpicture shifted -llcorner currentpicture ;
         fi ;
@@ -2401,3 +2401,4 @@ vardef lmt_do_labtorgb =
         popparameters ;
     )
 enddef ;
+

@@ -3792,7 +3792,23 @@ vardef bymatrix(expr rx, sx, sy, ry, tx, ty) =
     t
 enddef ;
 
-permanent totransform, bymatrix ;
+% vardef bytopdownmatrix(expr rx, sx, sy, ry, tx, ty) =
+%     save t ; transform t ;
+%     xxpart t =  rx ; yypart t =  ry ;
+%     xypart t = -sy ; yxpart t = -sx ;
+%     xpart  t =  tx ; ypart  t =  ty ;
+%     t
+% enddef ;
+
+def closedcurve expr p =
+    p if not cycle p : .. cycle fi
+enddef ;
+
+def closedlines expr p =
+    p if not cycle p : -- cycle fi
+enddef ;
+
+permanent totransform, bymatrix, closedcurve, closedlines ;
 
 let xslanted = slanted ;
 

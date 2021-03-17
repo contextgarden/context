@@ -184,6 +184,19 @@ end
 
 local seed = nil
 
+local default_tolerance = 131/65536.0 -- a little below 0.001 * 0x7FFF/0x4000
+local bend_tolerance    = default_tolerance
+
+----- bend_tolerance = 10/2000
+
+function metapost.setbendtolerance(t)
+    bend_tolerance = t or default_tolerance
+end
+
+function metapost.getbendtolerance()
+    return bend_tolerance
+end
+
 function metapost.load(name,method)
     starttiming(mplib)
     if not seed then
@@ -198,6 +211,7 @@ function metapost.load(name,method)
     local mpx, terminal = new_instance {
 -- noninteractive = true;
 -- ini_version    = true,
+        tolerance      = bend_tolerance,
         math_mode      = method,
         run_script     = metapost.runscript,
         script_error   = metapost.scripterror,

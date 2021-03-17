@@ -601,11 +601,17 @@
 
 %D Internal graphics are handled at the \TEX\ end:
 
+% strut=none also avoids the \noindent! otherwise we're in hmode when
+% blank happens and we get a lineskip
+
 \def\grph_include_process_tex#1%
   {\framed
-     [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
+     [\c!strut=\v!none,\c!align=\v!normal,\c!frame=\v!off,
       \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
-     {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
+     {\blank[\v!disable]%
+      #1\endgraf
+      \removelastskip}} % disable should stay here!
+
 
 % used al lua end:
 

@@ -173,17 +173,17 @@
   {\enforced\let\m_fractions_strut_top\relax
    \enforced\let\m_fractions_strut_bot\relax}
 
-\setvalue{\??mathfractionstrut\v!yes}%
+\defcsname\??mathfractionstrut\v!yes\endcsname
   {\enforced\let\m_fractions_strut_top\mathstrut
    \enforced\let\m_fractions_strut_bot\mathstrut}
 
-\setvalue{\??mathfractionstrut\v!math}%
+\defcsname\??mathfractionstrut\v!math\endcsname
   {\enforced\let\m_fractions_strut_top\mathstrut
    \enforced\let\m_fractions_strut_bot\mathstrut}
 
-\letvalue{\??mathfractionstrut\v!no}\math_frac_no_strut
+\letcsname\??mathfractionstrut\v!no\endcsname\math_frac_no_strut
 
-\setvalue{\??mathfractionstrut\v!tight}%
+\defcsname\??mathfractionstrut\v!tight\endcsname
   {\enforced\let\m_fractions_strut_top\mathbotstrut  % indeed swapped name
    \enforced\let\m_fractions_strut_bot\mathtopstrut} % indeed swapped name
 
@@ -255,21 +255,21 @@
 
 % the denominator is in cramped!
 
-\setvalue{\??mathfractionalternative\v!inner}%
+\defcsname\??mathfractionalternative\v!inner\endcsname
   {\ifcase\d_math_fraction_margin
       \expandafter\math_fraction_inner_normal
    \else
       \expandafter\math_fraction_inner_margin
    \fi}
 
-\setvalue{\??mathfractionalternative\v!outer}%
+\defcsname\??mathfractionalternative\v!outer\endcsname
   {\ifcase\d_math_fraction_margin
       \expandafter\math_fraction_outer_normal
    \else
       \expandafter\math_fraction_outer_margin
    \fi}
 
-\setvalue{\??mathfractionalternative\v!both}%
+\defcsname\??mathfractionalternative\v!both\endcsname
   {\ifcase\d_math_fraction_margin
       \expandafter\math_fraction_both_normal
    \else
@@ -310,7 +310,7 @@
 %    }%
 %    \math_frac_wrapup}
 %
-% \def\math_fraction_inner_margin#1#2%
+% \def  n_inner_margin#1#2%
 %   {\Ustack{%
 %      {%
 %        {\kern\d_math_fraction_margin

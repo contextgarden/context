@@ -427,6 +427,12 @@
 % \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 
 \definefontfeature
+  [collapseitalics]
+  [collapseitalics=yes]
+
+% \definefontfeature[mathextra][collapseitalics]
+
+\definefontfeature
   [mathematics-l2r]
   [mathematics]
   []

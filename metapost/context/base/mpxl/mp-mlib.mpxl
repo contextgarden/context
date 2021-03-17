@@ -1828,3 +1828,10 @@ vardef uniquelist(suffix list) =
 enddef ;
 
 permanent uniquelist ;
+
+% This influences the decision for a curve or path segment; 1/4096 is the default but
+% 10/2048 works quite well.
+
+def withtolerance expr n =
+    withprescript ("tolerance=" & decimal n)
+enddef ;

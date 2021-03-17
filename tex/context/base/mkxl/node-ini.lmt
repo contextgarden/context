@@ -198,3 +198,14 @@ end
 for i=0,#gluecodes do
     texsetintegervalue(gluecodes[i] .. "subtypecode",i,"immutable")
 end
+
+nodes.specialskipcodes = {
+    [gluecodes.leftskip]                             = true,
+    [gluecodes.rightskip]                            = true,
+    [gluecodes.lefthangskip]                         = true,
+    [gluecodes.righthangskip]                        = true,
+    [gluecodes.parfillleftskip  or parfillskip_code] = true,
+    [gluecodes.parfillrightskip or parfillskip_code] = true,
+    [gluecodes.indentskip]                           = true,
+    [gluecodes.correctionskip]                       = true,
+}

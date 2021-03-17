@@ -119,7 +119,7 @@ return {
         --
         "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in",
         --
-        "triplet", "quadruplet", "totransform", "bymatrix",
+        "triplet", "quadruplet", "totransform", "bymatrix", "closedcurve", "closedlines",
         --
         "primitive", "permanent", "immutable", "mutable", "frozen",
         --

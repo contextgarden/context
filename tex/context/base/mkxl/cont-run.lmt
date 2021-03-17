@@ -229,6 +229,16 @@ local function processjob()
 
     if not filename or filename == "" then
         -- skip
+    elseif suffix == "svg" or arguments.forcesvg then
+
+        report_system("processing svg output: %s",filename)
+
+        context.starttext()
+            context.startTEXpage()
+                context.externalfigure ( { filename }, { conversion = "mp" } )
+            context.stopTEXpage()
+        context.stoptext()
+
     elseif suffix == "xml" or arguments.forcexml then
 
         -- Maybe we should move the preamble parsing here as it

@@ -137,8 +137,15 @@ appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.split
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag",                          nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler",                        nil, "nut",    "disabled"  )
 
+
 appendaction("contributers", "normalizers", "nodes.handlers.flattenline",                       nil, "nut",    "disabled"  )
 appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds",                   nil, "nut",    "disabled"  )
+
+if CONTEXTLMTXMODE > 0 then
+
+appendaction("contributers", "normalizers", "nodes.handlers.wipe",                              nil, "nut",    "disabled"  )
+
+end
 
 appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",                   nil, "nut",    "disabled"  )
 ------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )

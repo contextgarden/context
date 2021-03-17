@@ -68,14 +68,9 @@ trackers.register("metapost.forcestroke",function(v)
     force_stroke = v
 end)
 
--- Because in MKiV we always have two passes, we save the objects. When an extra
--- mp run is done (due to for instance texts identifier in the parse pass), we
--- get a new result table and the stored objects are forgotten. Otherwise they
--- are reused.
-
-local function getobjects(result,figure,index)
-    return figure:objects()
-end
+-- local function gettolerance(objects)
+--     return objects:tolerance()
+-- end
 
 function metapost.convert(specification,result)
     local flusher  = specification.flusher
@@ -116,8 +111,6 @@ function pdfflusher.textfigure(font,size,text,width,height,depth) -- we could sa
     context.MPtextext(font,size,text,0,-number.dimenfactors.bp*depth)
 end
 
-local bend_tolerance = 131/65536
-
 local rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
 
 local function pen_characteristics(object)
@@ -131,18 +124,39 @@ local function mpconcat(px, py) -- no tx, ty here / we can move this one inline 
     return (sy*px-ry*py)/divider,(sx*py-rx*px)/divider
 end
 
-local function curved(ith,pth)
+local getbendtolerance = metapost.getbendtolerance
+
+local function curved(ith,pth,tolerance) --- still better than the build in
+ -- if pth.right_x == pth.x_coord then
+ --     if pth.right_y == pth.y_coord then
+ --         if ith.left_x == ith.x_coord then
+ --             if ith.left_y == ith.y_coord then
+ --                 return false
+ --             end
+ --         end
+ --     end
+ -- end
     local d = pth.left_x - ith.right_x
-    if abs(ith.right_x - ith.x_coord - d) <= bend_tolerance and abs(pth.x_coord - pth.left_x - d) <= bend_tolerance then
-        d = pth.left_y - ith.right_y
-        if abs(ith.right_y - ith.y_coord - d) <= bend_tolerance and abs(pth.y_coord - pth.left_y - d) <= bend_tolerance then
-            return false
+    local b = abs(ith.right_x - ith.x_coord - d)
+    if b <= tolerance then
+        b = abs(pth.x_coord - pth.left_x - d)
+        if b <= tolerance then
+            d = pth.left_y - ith.right_y
+            b = abs(ith.right_y - ith.y_coord - d)
+            if b <= tolerance then
+                b = abs(pth.y_coord - pth.left_y - d)
+                if b <= tolerance then
+--                  print(tolerance,ith.curved,pth.curved,false)
+                    return false
+                end
+            end
         end
     end
+--  print(tolerance,ith.curved,pth.curved,true)
     return true
 end
 
-local function flushnormalpath(path, t, open)
+local function flushnormalpath(path, t, open, tolerance)
     local pth, ith, nt
     local length = #path
     if t then
@@ -156,8 +170,8 @@ local function flushnormalpath(path, t, open)
         pth = path[i]
         if not ith then
             t[nt] = f_m(pth.x_coord,pth.y_coord)
---         elseif curved(ith,pth) then
-elseif pth.curved then
+        elseif curved(ith,pth,tolerance) then
+-- elseif pth.curved then
             t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
         else
             t[nt] = f_l(pth.x_coord,pth.y_coord)
@@ -167,8 +181,8 @@ elseif pth.curved then
     if not open then
         nt = nt + 1
         local one = path[1]
---         if curved(pth,one) then
-if one.curved then
+        if curved(pth,one,tolerance) then
+-- if one.curved then
             t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord)
         else
             t[nt] = f_l(one.x_coord,one.y_coord)
@@ -182,7 +196,7 @@ if one.curved then
     return t
 end
 
-local function flushconcatpath(path, t, open)
+local function flushconcatpath(path, t, open, tolerance)
     local pth, ith, nt
     local length = #path
     if t then
@@ -198,8 +212,8 @@ local function flushconcatpath(path, t, open)
         pth = path[i]
         if not ith then
             t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
---         elseif curved(ith,pth) then
-elseif pth.curved then
+        elseif curved(ith,pth,tolerance) then
+-- elseif pth.curved then
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
@@ -211,8 +225,8 @@ elseif pth.curved then
     if not open then
         nt = nt + 1
         local one = path[1]
---         if curved(pth,one) then
-if one.curved then
+        if curved(pth,one,tolerance) then
+-- if one.curved then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(one.x_coord, one.y_coord))
@@ -256,7 +270,10 @@ local function toboundingbox(path)
     end
 end
 
-metapost.flushnormalpath = flushnormalpath
+
+function metapost.flushnormalpath(path, t, open, tolerance)
+    return flushnormalpath(path, t, open, tolerance or getbendtolerance())
+end
 
 -- The flusher is pdf based, if another backend is used, we need to overload the
 -- flusher; this is beta code, the organization will change (already upgraded in
@@ -376,7 +393,8 @@ function metapost.flush(specification,result)
                 local figure     = figures[index]
                 local properties = pushproperties(figure)
                 if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
-                    local objects    = getobjects(result,figure,index)
+                    local objects    = figure:objects()
+                    local tolerance  = figure:tolerance() or getbendtolerance()
                     local result     = { }
                     local miterlimit = -1
                     local linecap    = -1
@@ -424,26 +442,28 @@ function metapost.flush(specification,result)
                                             __index = original
                                         })
                                         local before,
-                                              after      = processplugins(object)
+                                              after,
+                                              options    = processplugins(object)
                                         local evenodd    = false
                                         local collect    = false
                                         local both       = false
                                         local flush      = false
                                         local postscript = object.postscript
-                                        if not object.istext then
-                                            if postscript == "evenodd" then
-                                                evenodd = true
-                                            elseif postscript == "collect" then
-                                                collect = true
-                                            elseif postscript == "flush" then
-                                                flush   = true
-                                            elseif postscript == "both" then
-                                                both = true
-                                            elseif postscript == "eoboth" then
-                                                evenodd = true
-                                                both    = true
-                                            end
+                                        local tolerance  = options and tonumber(options.tolerance) or tolerance
+                                -- if not object.istext then
+                                        if postscript == "evenodd" then
+                                            evenodd = true
+                                        elseif postscript == "collect" then
+                                            collect = true
+                                        elseif postscript == "flush" then
+                                            flush   = true
+                                        elseif postscript == "both" then
+                                            both = true
+                                        elseif postscript == "eoboth" then
+                                            evenodd = true
+                                            both    = true
                                         end
+                                --  end
                                         --
                                         if flush and not savedpath then
                                             -- forget about it
@@ -520,9 +540,9 @@ function metapost.flush(specification,result)
                                                     for i=1,#savedpath do
                                                         local path = savedpath[i]
                                                         if transformed then
-                                                            flushconcatpath(path,result,open)
+                                                            flushconcatpath(path,result,open,tolerance)
                                                         else
-                                                            flushnormalpath(path,result,open)
+                                                            flushnormalpath(path,result,open,tolerance)
                                                         end
                                                     end
                                                     savedpath = nil
@@ -530,9 +550,9 @@ function metapost.flush(specification,result)
                                                 if flush then
                                                     -- ignore this path
                                                 elseif transformed then
-                                                    flushconcatpath(path,result,open)
+                                                    flushconcatpath(path,result,open,tolerance)
                                                 else
-                                                    flushnormalpath(path,result,open)
+                                                    flushnormalpath(path,result,open,tolerance)
                                                 end
                                                 if force_stroke then
                                                     result[#result+1] = open and "S" or "h S"
@@ -560,18 +580,18 @@ function metapost.flush(specification,result)
                                                     for i=1,#savedhtap do
                                                         local path = savedhtap[i]
                                                         if transformed then
-                                                            flushconcatpath(path,result,open)
+                                                            flushconcatpath(path,result,open,tolerance)
                                                         else
-                                                            flushnormalpath(path,result,open)
+                                                            flushnormalpath(path,result,open,tolerance)
                                                         end
                                                     end
                                                     savedhtap = nil
                                                     evenodd   = true
                                                 end
                                                 if transformed then
-                                                    flushconcatpath(path,result,open)
+                                                    flushconcatpath(path,result,open,tolerance)
                                                 else
-                                                    flushnormalpath(path,result,open)
+                                                    flushnormalpath(path,result,open,tolerance)
                                                 end
                                                 if force_stroke then
                                                     result[#result+1] = open and "S" or "h S"
@@ -595,9 +615,10 @@ function metapost.flush(specification,result)
                                             miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         end
                                     elseif objecttype == "start_clip" then
-                                        local evenodd = not object.istext and object.postscript == "evenodd"
+                                     -- local evenodd = not object.istext and object.postscript == "evenodd"
+                                        local evenodd = object.postscript == "evenodd"
                                         result[#result+1] = "q"
-                                        flushnormalpath(object.path,result,false)
+                                        flushnormalpath(object.path,result,false,tolerance)
                                         result[#result+1] = evenodd and "W* n" or "W n"
                                     elseif objecttype == "stop_clip" then
                                         result[#result+1] = "Q"
@@ -715,7 +736,7 @@ function metapost.totable(result,askedfig)
     local figure   = result and result.fig and result.fig[1]
     if figure then
         local results = { }
-        local objects = getobjects(result,figure,askedfig)
+        local objects = figure:objects()
         for o=1,#objects do
             local object = objects[o]
             local result = { }

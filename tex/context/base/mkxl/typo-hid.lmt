@@ -1,0 +1,74 @@
+if not modules then modules = { } end modules ['typo-krn'] = {
+    version   = 1.001,
+    comment   = "companion to typo-krn.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local a_hidecontent = attributes.system("hidecontent")
+local specialskips  = nodes.specialskipcodes
+local glue_code     = nodes.nodecodes.glue
+local nuts          = nodes.nuts
+local getattr       = nuts.getattr
+local getnext       = nuts.getnext
+local setnext       = nuts.setnext
+local getprev       = nuts.getprev
+local setlist       = nuts.setlist
+local setlink       = nuts.setlink
+local nextnode      = nuts.traversers.node
+local flushlist     = nuts.flush_list
+local dimensions    = nuts.rangedimensions
+local hpack         = nuts.hpack
+local setwhd        = nuts.setwhd
+local setattrlist   = nuts.setattrlist
+local enableaction  = nodes.tasks.enableaction
+
+function nodes.handlers.wipe(head,groupcode,line)
+    if getattr(line,a_hidecontent) then
+        flushlist(head)
+        setlist(line)
+    else
+        -- we have normalized lines so always some skip to start with
+        local b, e = nil, nil
+        local function wipe()
+            local h = hpack()
+            local n = getnext(e)
+            setwhd(h,dimensions(line,b,n))
+            setlink(getprev(b),h,n)
+            setattrlist(h,b)
+            setnext(b)
+            flushlist(b)
+            b = nil
+            e = nil
+        end
+        for n, id, subtype in nextnode, head do
+            if id == glue_code and specialskips[subtype] then
+                if b then
+                    wipe()
+                end
+            elseif getattr(n,a_hidecontent) then
+                if not b then
+                    b = n
+                end
+                e = n
+            elseif b then
+                wipe()
+            end
+        end
+        if b then
+            -- can't happen because we had a skip
+            wipe()
+        end
+        setlist(line,head)
+    end
+    return nil
+end
+
+interfaces.implement {
+    name     = "enablehidecontent",
+    onlyonce = true,
+    actions  = function()
+        enableaction("contributers","nodes.handlers.wipe")
+    end,
+}

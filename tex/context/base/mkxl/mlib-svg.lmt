@@ -129,6 +129,9 @@ local trace_fonts  = false  trackers.register("metapost.svg.fonts",  function(v)
 -- This is just an experiment. Todo: reset hash etc. Also implement
 -- an option handler.
 
+local s_draw_image_start = "draw image ("
+local s_draw_image_stop  = ") ;"
+
 local svghash = false  do
 
     local svglast = 0
@@ -477,12 +480,12 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
         whitesmoke      = 0xF5F5F5, yellow            = 0xFFFF00, yellowgreen           = 0x9ACD32,
     }
 
-    local f_rgb      = formatters['withcolor svgcolor(%.3N,%.3N,%.3N)']
-    local f_cmyk     = formatters['withcolor svgcmyk(%.3N,%.3N,%.3N,%.3N)']
-    local f_gray     = formatters['withcolor svggray(%.3N)']
-    local f_rgba     = formatters['withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (1,%.3N)']
-    local f_graya    = formatters['withcolor svggray(%.3N) withtransparency (1,%.3N)']
-    local f_name     = formatters['withcolor "%s"']
+    local f_rgb      = formatters['    withcolor svgcolor(%.3N,%.3N,%.3N)']
+    local f_cmyk     = formatters['    withcolor svgcmyk(%.3N,%.3N,%.3N,%.3N)']
+    local f_gray     = formatters['    withcolor svggray(%.3N)']
+    local f_rgba     = formatters['    withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (2,1-%.3N)']
+    local f_graya    = formatters['    withcolor svggray(%.3N) withtransparency (2,1-%.3N)']
+    local f_name     = formatters['    withcolor "%s"']
     local f_svgrgb   = formatters['svgcolor(%.3N,%.3N,%.3N)']
     local f_svgcmyk  = formatters['svgcmyk(%.3N,%.3N,%.3N,%.3N)']
     local f_svggray  = formatters['svggray(%.3N)']
@@ -1166,104 +1169,129 @@ end
 
 -- todo: viewbox helper
 
-local s_wrapped_start = "draw image ("
+local s_wrapped_start = s_draw_image_start
 local f_wrapped_stop  = formatters[") shifted (0,%N) scaled %N ;"]
 
 local handletransform, handleviewbox  do
 
     local sind = math.sind
 
-    --todo: better lpeg
+ -- local f_rotatedaround   = formatters["svg_p := svg_p rotatedaround((%N,%N),%N) ;"]
+ -- local f_rotated         = formatters["svg_p := svg_p rotated(%N) ;"]
+ -- local f_shifted         = formatters["svg_p := svg_p shifted(%N,%N) ;"]
+ -- local f_slanted_x       = formatters["svg_p := svg_p xslanted(%N) ;"]
+ -- local f_slanted_y       = formatters["svg_p := svg_p yslanted(%N) ;"]
+ -- local f_scaled          = formatters["svg_p := svg_p scaled(%N) ;"]
+ -- local f_xyscaled        = formatters["svg_p := svg_p xyscaled(%N,%N) ;"]
+ -- local f_matrix          = formatters["svg_p := svg_p transformed bymatrix(%N,%N,%N,%N,%N,%N) ;"]
+ -- local s_transform_start = "draw image ( begingroup ; save svg_p ; picture svg_p ; svg_p := image ( "
+ -- local f_transform_stop  = formatters[" ; ) ; %s ; draw svg_p ; endgroup ; ) ; "]
 
-    local f_rotatedaround   = formatters[" rotatedaround((%N,%N),%N)"]
-    local f_rotated         = formatters[" rotated(%N)"]
-    local f_shifted         = formatters[" shifted(%N,%N)"]
-    local f_slanted_x       = formatters[" xslanted(%N)"]
-    local f_slanted_y       = formatters[" yslanted(%N)"]
-    local f_scaled          = formatters[" scaled(%N)"]
-    local f_xyscaled        = formatters[" xyscaled(%N,%N)"]
-    local f_matrix          = formatters[" transformed bymatrix(%N,%N,%N,%N,%N,%N)"]
-
+    local f_rotatedaround   = formatters["rotatedaround((%N,%N),%N) "]
+    local f_rotated         = formatters["rotated(%N) "]
+    local f_shifted         = formatters["shifted(%N,%N) "]
+    local f_slanted_x       = formatters["xslanted(%N) "]
+    local f_slanted_y       = formatters["yslanted(%N) "]
+    local f_scaled          = formatters["scaled(%N) "]
+    local f_xyscaled        = formatters["xyscaled(%N,%N) "]
+    local f_matrix          = formatters["transformed bymatrix(%N,%N,%N,%N,%N,%N) "]
     local s_transform_start = "draw image ( "
-    local f_transform_stop  = formatters[")%s ;"]
+    local f_transform_stop  = formatters[") %s ; "]
+
+    local transforms    = { }
+    local noftransforms = 0
 
     local function rotate(r,x,y)
-        if x then
-            return r and f_rotatedaround(x,-(y or x),-r)
-        elseif r then
-            return f_rotated(-r)
-        else
-            return ""
+        if r then
+            noftransforms = noftransforms + 1
+            if x then
+                transforms[noftransforms] = f_rotatedaround(x,-(y or x),-r)
+            else
+                transforms[noftransforms] = f_rotated(-r)
+            end
         end
     end
 
     local function translate(x,y)
         if y then
-            return f_shifted(x,-y)
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_shifted(x,-y)
         elseif x then
-            return f_shifted(x,0)
-        else
-            return ""
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_shifted(x,0)
         end
     end
 
     local function scale(x,y)
         if y then
-            return f_xyscaled(x,y)
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_xyscaled(x,y)
         elseif x then
-            return f_scaled(x)
-        else
-            return ""
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_scaled(x)
         end
     end
 
     local function skewx(x)
         if x then
-            return f_slanted_x(sind(-x))
-        else
-            return ""
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_slanted_x(sind(-x))
         end
     end
 
     local function skewy(y)
         if y then
-            return f_slanted_y(sind(-y))
-        else
-            return ""
+            noftransforms = noftransforms + 1
+            transforms[noftransforms] = f_slanted_y(sind(-y))
         end
     end
 
     local function matrix(rx,sx,sy,ry,tx,ty)
-        return f_matrix(rx or 1, sx or 0, sy or 0, ry or 1, tx or 0, - (ty or 0))
+        if not ty then
+            ty = 0
+        end
+        if not tx then
+            tx = 0
+        end
+        if not sx then
+            sx = 0
+        end
+        if not sy then
+            sy = 0
+        end
+        if not rx then
+            rx = 1
+        end
+        if not ry then
+            ry = 1
+        end
+        noftransforms = noftransforms + 1
+     -- transforms[noftransforms] = f_matrix(rx, sx, sy, ry, tx, -ty)
+        -- https://en.wikipedia.org/wiki/Rotation_matrix : we're counter clockwise
+        transforms[noftransforms] = f_matrix(rx, -sy, -sx, ry, tx, -ty)
     end
 
-    -- How to deal with units here? Anyway, order seems to matter.
-
-    local p_transform = Cf ( Ct("") * (
-        lpegpatterns.whitespace^0 * Cg(
-            C("translate") * (p_numbers / translate)       -- maybe xy
-          + C("scale")     * (p_numbers / scale)
-          + C("rotate")    * (p_numbers / rotate)
-          + C("matrix")    * (p_numbers / matrix)
-          + C("skewX")     * (p_numbers / skewx)
-          + C("skewY")     * (p_numbers / skewy)
+    local p_transform = (
+            lpegpatterns.whitespace^0 * (
+            P("translate") * (p_numbers / translate)       -- maybe xy
+          + P("scale")     * (p_numbers / scale)
+          + P("rotate")    * (p_numbers / rotate)
+          + P("matrix")    * (p_numbers / matrix)
+          + P("skewX")     * (p_numbers / skewx)
+          + P("skewY")     * (p_numbers / skewy)
         )
-    )^1, rawset)
+    )^1
 
     handletransform = function(at)
         local t = at.transform
         if t then
-            local e = lpegmatch(p_transform,t)
-            if e then
-                e = concat({
-                    e.rotate    or "",
-                    e.skewX     or "",
-                    e.skewY     or "",
-                    e.scale     or "",
-                    e.translate or "",
-                    e.matrix    or "",
-                }, " ")
-                return s_transform_start, f_transform_stop(e), t
+            noftransforms = 0
+            lpegmatch(p_transform,t)
+            if noftransforms > 0 then
+                -- currentpicture
+                local start = s_transform_start
+                local stop  = f_transform_stop(concat(transforms,"",1,noftransforms))
+                return start, stop, t
             end
         end
     end
@@ -1564,15 +1592,15 @@ do
         end
     end
 
-    local s_shade_linear   = ' withshademethod "linear" '
-    local s_shade_circular = ' withshademethod "circular" '
+    local s_shade_linear   = '    withshademethod "linear" '
+    local s_shade_circular = '    withshademethod "circular" '
     local f_shade_step     = formatters['withshadestep ( withshadefraction %N withshadecolors(%s,%s) )']
     local f_shade_one      = formatters['withprescript "sh_center_a=%N %N"']
     local f_shade_two      = formatters['withprescript "sh_center_b=%N %N"']
 
-    local f_color          = formatters['withcolor "%s"']
-    local f_opacity        = formatters['withtransparency (1,%N)']
-    local f_pen            = formatters['withpen pencircle scaled %N']
+    local f_color          = formatters['    withcolor "%s"']
+    local f_opacity        = formatters['    withtransparency (2,%N)']
+    local f_pen            = formatters['    withpen pencircle scaled %N']
 
     -- todo: gradient unfinished
     -- todo: opacity but first we need groups in mp
@@ -1679,7 +1707,7 @@ do
         elseif o then
             o = asnumber_r(o)
             if o and o ~= 1 then
-                o = f_opacity(o)
+                o = f_opacity(1-o)
             else
                 o = nil
             end
@@ -1687,15 +1715,16 @@ do
         return p, d, c, o
     end
 
-    local s_opacity_start = "draw image ("
-    local f_opacity_stop  = formatters["setgroup currentpicture to boundingbox currentpicture withtransparency (1,%N)) ;"]
+    local s_opacity_start   = s_draw_image_start
+    local f_opacity_content = formatters["setgroup currentpicture to boundingbox currentpicture withtransparency (1,%N);"]
+    local s_opacity_stop    = s_draw_image_stop
 
     local function sharedopacity(at)
         local o = at["opacity"]
         if o and o ~= "none" then
             o = asnumber_r(o)
             if o and o ~= 1 then
-                return s_opacity_start, f_opacity_stop(o)
+                return s_opacity_start, f_opacity_content(1-o), s_opacity_stop
             end
         end
     end
@@ -1708,7 +1737,7 @@ do
             if o == 1 then
                 return c
             elseif o then
-                return c, f_opacity(o), o == 0
+                return c, f_opacity(1-o), o == 0
             end
         end
         return c
@@ -1730,11 +1759,11 @@ do
         end
     end
 
-    local s_viewport_start  = "draw image ("
-    local s_viewport_stop   = ") ;"
-    local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%03N,%03N);"]
-    local f_viewport_scale  = formatters["currentpicture := currentpicture xysized (%03N,%03N);"]
-    local f_viewport_clip   = formatters["clip currentpicture to (unitsquare xyscaled (%03N,%03N));"]
+    local s_viewport_start  = s_draw_image_start
+    local s_viewport_stop   = s_draw_image_stop
+    local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%N,%N);"]
+    local f_viewport_scale  = formatters["currentpicture := currentpicture xysized (%N,%N);"]
+    local f_viewport_clip   = formatters["clip currentpicture to (unitsquare xyscaled (%N,%N));"]
 
     local function viewport(x,y,w,h,noclip,scale)
         r = r + 1 ; result[r] = s_viewport_start
@@ -1783,7 +1812,7 @@ do
     end
 
     local uselevel      = 0
-    local bodyfontscale = 1
+ -- local bodyfontscale = 1
 
     function handlers.use(c)
         local at  = c.at
@@ -1829,14 +1858,14 @@ do
         end
     end
 
-    local f_no_draw       = formatters['nodraw (%s)']
-    local f_do_draw       = formatters['draw (%s)']
-    local f_no_fill_c     = formatters['nofill (%s..cycle)']
-    local f_do_fill_c     = formatters['fill (%s..cycle)']
-    local f_eo_fill_c     = formatters['eofill (%s..cycle)']
-    local f_no_fill_l     = formatters['nofill (%s--cycle)']
-    local f_do_fill_l     = formatters['fill (%s--cycle)']
-    local f_eo_fill_l     = formatters['eofill (%s--cycle)']
+    local f_no_draw       = formatters['  nodraw (%s)']
+    local f_do_draw       = formatters['  draw (%s)']
+    local f_no_fill_c     = formatters['  nofill closedcurve(%s)']
+    local f_do_fill_c     = formatters['  fill closedcurve(%s)']
+    local f_eo_fill_c     = formatters['  eofill closedcurve(%s)']
+    local f_no_fill_l     = formatters['  nofill closedlines(%s)']
+    local f_do_fill_l     = formatters['  fill closedlines(%s)']
+    local f_eo_fill_l     = formatters['  eofill closedlines(%s)']
     local f_do_fill       = f_do_fill_c
     local f_eo_fill       = f_eo_fill_c
     local f_no_fill       = f_no_fill_c
@@ -1883,7 +1912,7 @@ do
             r = r + 1 ; result[r] = etransform
         end
 
-        r = r + 1 ; result[r] = ";"
+        r = r + 1 ; result[r] = "  ;"
 
         if cpath then
             local f_done = cpath.evenodd
@@ -1900,9 +1929,9 @@ do
 
         local flush
 
-        local f_linecap    = formatters["interim linecap := %s ;"]
-        local f_linejoin   = formatters["interim linejoin := %s ;"]
-        local f_miterlimit = formatters["interim miterlimit := %s ;"]
+        local f_linecap    = formatters["  interim linecap := %s ;"]
+        local f_linejoin   = formatters["  interim linejoin := %s ;"]
+        local f_miterlimit = formatters["  interim miterlimit := %s ;"]
 
         local s_begingroup = "begingroup;"
         local s_endgroup   = "endgroup;"
@@ -2128,12 +2157,12 @@ do
             local has_stroke = stroke and stroke ~= "none"
             local has_fill   = fill and fill ~= "none"
 
-            local bopacity, eopacity
+            local bopacity, copacity, eopacity
             if has_stroke and has_fill then
-                bopacity, eopacity = sharedopacity(at)
+                bopacity, copacity, eopacity = sharedopacity(at)
             end
 
-            if bopacity then
+            if copacity then
                 r = r + 1 ; result[r] = bopacity
             end
 
@@ -2150,7 +2179,7 @@ do
                 if opacity then
                     r = r + 1 ; result[r] = opacity
                 end
-                r = r + 1 ; result[r] = etransform or ";"
+                r = r + 1 ; result[r] = etransform or "  ;"
             end
 
             if has_stroke then
@@ -2172,7 +2201,7 @@ do
                 if opacity then
                     r = r + 1 ; result[r] = opacity
                 end
-                r = r + 1 ; result[r] = etransform or ";"
+                r = r + 1 ; result[r] = etransform or "  ;"
                 --
                 if list then
                     addmarkers(list,begmarker,midmarker,endmarker,at)
@@ -2183,7 +2212,8 @@ do
                 end
             end
 
-            if eopacity then
+            if copacity then
+                r = r + 1 ; result[r] = copacity
                 r = r + 1 ; result[r] = eopacity
             end
 
@@ -2230,8 +2260,8 @@ do
 
             y      = y - height
 
-            if rx then rx = asnumber(rx) end
-            if ry then ry = asnumber(ry) end
+            if rx then rx = asnumber_x(rx) end
+            if ry then ry = asnumber_y(ry) end
 
             if rx or ry then
                 if not rx then rx = ry end
@@ -2298,8 +2328,8 @@ do
         function handlers.polyline(c) poly(c,       ")") end
         function handlers.polygon (c) poly(c,"--cycle)") end
 
-        local s_image_start = "draw image ("
-        local s_image_stop  = ") ;"
+        local s_image_start = s_draw_image_start
+        local s_image_stop  = s_draw_image_stop
 
         function handlers.path(c)
             local at = c.at
@@ -2339,7 +2369,7 @@ do
                         if opacity then
                             r = r + 1 ; result[r] = opacity
                         end
-                        r = r + 1 ; result[r] = etransform or ";"
+                        r = r + 1 ; result[r] = etransform or "  ;"
                     else
                         r = r + 1 ; result[r] = btransform or s_image_start
                         for i=1,n do
@@ -2354,7 +2384,7 @@ do
                             else
                                 r = r + 1 ; result[r] = f_no_fill(shape[i])
                             end
-                            r = r + 1 ; result[r] = ";"
+                            r = r + 1 ; result[r] = "  ;"
                         end
                         r = r + 1 ; result[r] = etransform or s_image_stop
                     end
@@ -2386,9 +2416,9 @@ do
                         if opacity then
                             r = r + 1 ; result[r] = opacity
                         end
-                        r = r + 1 result[r] = etransform or ";"
+                        r = r + 1 result[r] = etransform or "  ;"
                     else
-                        r = r + 1 result[r] = btransform or "draw image ("
+                        r = r + 1 result[r] = btransform or s_draw_image_start
                         for i=1,n do
                             r = r + 1 result[r] = f_do_draw(shape[i])
                             if pen then
@@ -2403,12 +2433,12 @@ do
                             if opacity then
                                 r = r + 1 ; result[r] = opacity
                             end
-                            r = r + 1 ; result[r] = ";"
+                            r = r + 1 ; result[r] = "  ;"
                         end
                         if list then
                             addmarkers(list,begmarker,midmarker,endmarker,at)
                         end
-                        r = r + 1 ; result[r] = etransform or ") ;"
+                        r = r + 1 ; result[r] = etransform or s_draw_image_stop
                     end
                     if wrapup then
                         wrapup()
@@ -2554,25 +2584,26 @@ do
         -- The size is a bit of an issue. I assume that the specified size relates to the
         -- designsize but we want to be able to use other fonts.
 
+        -- a mix of text and spans and possibly wrap (where xy is to be ignored) ... bah ...
+        -- it's fuzzy when we have a span with positions mixed with text ... basically that
+        -- is a box and we can assume that an editor then has all positioned
+
         do
 
-            local f_styled  = formatters["\\svgstyled{%s}{%s}{%s}{%s}"]
-            local f_colored = formatters["\\svgcolored{%.3N}{%.3N}{%.3N}{"]
---             local f_placed  = formatters["\\svgplaced{%.3N}{%.3N}{}{"]
-local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
-            local f_poschar = formatters["\\svgposchar{%.3N}{%.3N}{%s}"]
-            local f_char    = formatters["\\svgchar{%s}"]
+            local s_startlayer = "\\svgstartlayer "
+            local s_stoplayer  = "\\svgstoplayer "
+            local f_setlayer   = formatters["\\svgsetlayer{%N}{%N}"] -- we need a period
+            local f_colored    = formatters["\\svgcolored{%.3N}{%.3N}{%.3N}{"]
+            local f_poscode    = formatters["\\svgposcode{%N}{%N}{%s}"]
+            local f_poschar    = formatters["\\svgposchar{%N}{%N}{%s}"]
+            local f_posspace   = formatters["\\svgposspace{%N}{%N}"]
+            local f_coder      = formatters["\\svgcode{%s}"]
+            local f_char       = formatters["\\svgchar{%s}"]
+            local s_space      = "\\svgspace "
+            local f_scaled     = formatters["\\svgscaled{%0.6f}{%s}{%s}{%s}"] -- we need a period
+            local f_hashed     = formatters["\\svghashed{%s}"]
 
-            local f_scaled  = formatters["\\svgscaled{%N}{%s}{%s}{%s}"]
-            local f_normal  = formatters["\\svgnormal{%s}{%s}{%s}"]
-            local f_hashed  = formatters["\\svghashed{%s}"]
-
-            -- We move to the outer (x,y) and when we have an inner offset we
-            -- (need to) compensate for that outer offset.
-
-         -- local f_text_scaled_svg = formatters['(svgtext("%s") scaled %N shifted (%N,%N))']
-         -- local f_text_normal_svg = formatters['(svgtext("%s") shifted (%N,%N))']
-         -- local f_text_simple_svg = formatters['svgtext("%s")']
+            local p_texescape  = lpegpatterns.texescape
 
             local anchors = {
                 ["start"]  = "drt",
@@ -2580,11 +2611,10 @@ local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
                 ["middle"] = "d",
             }
 
+            -- we can now just use the lmt maptext feature
+
             local f_text_normal_svg   = formatters['(textext.%s("%s") shifted (%N,%N))']
             local f_text_simple_svg   = formatters['textext.%s("%s")']
-
-            -- or just maptext
-
             local f_mapped_normal_svg = formatters['(svgtext("%s") shifted (%N,%N))']
             local f_mapped_simple_svg = formatters['svgtext("%s")']
 
@@ -2599,8 +2629,6 @@ local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
                 return v
             end)
 
-            local p_texescape = lpegpatterns.texescape
-
             -- For now as I need it for my (some 1500) test files.
 
             local function checkedfamily(name)
@@ -2612,14 +2640,62 @@ local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
 
             -- todo: only escape some chars and handle space
 
+         -- An arbitrary mix of text and spans with x/y is asking for troubles. The fact that the
+         -- description in the (proposed) standard is so complex indicates this (its also looks
+         -- like reveng application specs and doesn't aim at simplicity. Basically we have two
+         -- cases: positioned lines and words and such (text & span with xy), or just stripes of
+         -- text and span. Free flow automatically broken into lines text is kind of strange in
+         -- svg and the fact that glyph placement is dropped is both an indication that svg lost
+         -- part of its purpose and probably also that it never really was a standard (although
+         -- maybe today standards are just short term specifications. Who knows.
+
+         -- text with spans, all with x/y
+         -- text mixed with spans, no xy in inner elements
+         --
+         -- the spec says that nested x/y are absolute
+
             local defaultsize = 10
 
-            local function collect(t,c,x,y,size,scale,family,tx,ty)
+            local sensitive = { -- todo: characters.sensitive
+                ["#"] = true,
+                ["$"] = true,
+                ["%"] = true,
+                ["&"] = true,
+               ["\\"] = true,
+                ["{"] = true,
+                ["|"] = true,
+                ["}"] = true,
+                ["~"] = true,
+            }
+
+            -- messy: in nested spans (they happen) the x/y are not accumulated
+
+            local function validdelta(usedscale,d)
+                if d then
+                    local value, unit = match(d,"^([%A]-)(%a+)")
+                    value = tonumber(value) or 0
+                    if not unit then
+                        return value .. "bp"
+                    elseif unit == "ex" or unit == "em" then
+                        return (usedscale * value) .. unit
+                    else
+                        return value .. "bp"
+                    end
+                else
+                    return "0bp"
+                end
+            end
+
+            local function collect(parent,t,c,x,y,size,scale,family,tx,ty,tdx,tdy)
+                if c.special then
+                    return nil
+                end
+                local dt       = c.dt
+                local nt       = #dt
                 local at       = c.at
+                local tg       = c.tg
                 local ax       = rawget(at,"x")
                 local ay       = rawget(at,"y")
-                local dx       = rawget(at,"dx")
-                local dy       = rawget(at,"dy")
                 local v_fill   = at["fill"]
                 local v_family = at["font-family"]
                 local v_style  = at["font-style"]
@@ -2628,9 +2704,6 @@ local f_placed  = formatters["\\svgplaced{%s}{%s}{}{"]
                 --
                 ax = ax and asnumber_vx(ax) or x
                 ay = ay and asnumber_vy(ay) or y
-                --
-local d_x = dx and asnumber_vx(dx) or 0
-local d_y = dy and asnumber_vy(dy) or 0
                 --
                 if v_family then v_family = cssfamily(v_family) end
                 if v_style  then v_style  = cssstyle (v_style)  end
@@ -2651,63 +2724,27 @@ local d_y = dy and asnumber_vy(dy) or 0
                 ax = ax - x
                 ay = ay - y
                 --
-                local elayered = ax ~= 0 or ay ~= 0 or false
---                 local eplaced  = dx ~= 0 or dy ~= 0 or false
-local eplaced  = d_x ~= 0 or d_y ~= 0 or false
-                local usedsize, usedscaled
-
-                if elayered then
-                    -- we're now at the outer level again so we need to scale
-                    -- back to the outer level values
-                    t[#t+1] = formatters["\\svgsetlayer{%0N}{%0N}{"](ax,-ay)
-                    usedsize  = v_size or defaultsize
-                    usedscale = usedsize / defaultsize
-                else
-                    -- we're nested so we can be scaled
-                    usedsize  = v_size or size
-                    usedscale = (usedsize / defaultsize) / scale
-                end
-usedscale = (10 / bodyfontscale) * usedscale
+                local usedsize  = v_size or defaultsize
+                local usedscale = usedsize / defaultsize
                 --
-                if eplaced then
-if dx then
-    if not find(dx,"%a") then
-        dx = dx .. "bp"
-    elseif find(dx,"e") then
-        dx = formatters["%s\\dimexpr %s\\relax"](usedscale,dx)
-    end
-else
-    dx = "0pt"
-end
-if dy then
-    if not find(dy,"%a") then
-        dy = dy .. "bp"
-    elseif find(dy,"e") then
-        dy = formatters["%s\\dimexpr %s\\relax"](usedscale,dy)
-    end
-else
-    dy = "0pt"
-end
-                    t[#t+1] = f_placed(dx,dy)
-                end
-                --
---                 if usedscale == 1 then
---                     t[#t+1] = f_normal(          v_family,v_weight,v_style)
---                 else
-                    t[#t+1] = f_scaled(usedscale,v_family,v_weight,v_style)
+--                 local useddelta = d_x ~= 0 or d_y ~= 0 or false
+--                 if useddelta then
+--                     dx = validdelta(usedscale,dx)
+--                     dy = validdelta(usedscale,dy)
 --                 end
+                --
+                t[#t+1] = f_scaled(usedscale,v_family,v_weight,v_style)
                 t[#t+1] = "{"
                 --
                 if trace_fonts then
+                    -- we can hash and keep it when no change
                     report("element        : %s",c.tg)
                     report("  font family  : %s",v_family)
                     report("  font weight  : %s",v_weight)
                     report("  font style   : %s",v_style)
                     report("  parent size  : %s",size)
-                    report("  parent scale : %s",scale)
-                    report("  used size    : %s",usedsize)
-                    report("  used scale   : %s",usedscale)
-                    report("  layered      : %l",elayered)
+                 -- report("  parent scale : %s",scale)
+                    report("  used size    : %s",v_size or defaultsize)
                 end
                 --
                 local ecolored = v_fill and v_fill ~= "" or false
@@ -2721,14 +2758,23 @@ end
                     end
                 end
                 --
-                local dt = c.dt
-                local nt = #dt
                 for i=1,nt do
                     local di = dt[i]
                     if type(di) == "table" then
-                        -- can be a tspan (should we pass dx too)
-                        collect(t,di,x,y,usedsize,usedscale,v_family)
+                        -- when x or y then absolute else inline
+                        if #di.dt > 0 then
+                            t[#t+1] = f_setlayer(ax,ay)
+                            t[#t+1] = "{"
+                            local ok = collect(tg,t,di,x,y,usedsize,usedscale,v_family)
+                            if not ok then
+                                t[#t] = nil
+                                t[#t] = nil
+                            else
+                                t[#t+1] = "}"
+                            end
+                        end
                     else
+                        -- check for preserve
                         if i == 1 then
                             di = gsub(di,"^%s+","")
                         end
@@ -2737,14 +2783,25 @@ end
                         end
                         local chars = utfsplit(di)
                         if svghash then
+                            -- dx dy
                             di = f_hashed(svghash[di])
-                        elseif tx then
+                        elseif tx or ty or tdx or tdy then
+                            local txi, tyi, tdxi, tdyi
                             for i=1,#chars do
-                                chars[i] = f_poschar(
-                                    (tx[i] or 0) - x,
-                                    (ty[i] or 0) - y,
-                                    utfbyte(chars[i])
-                                )
+                                txi  = tx  and (tx [i] or txi )
+                                tyi  = ty  and (ty [i] or tyi )
+                                tdxi = tdx and (tdx[i] or tdxi) or 0
+                                tdyi = tdy and (tdy[i] or tdyi) or 0
+                                local dx = (txi and (txi - x) or 0) + tdxi
+                                local dy = (tyi and (tyi - y) or 0) + tdyi
+                                local ci = chars[i]
+                                if ci == " " then
+                                    chars[i] = f_posspace(dx, dy)
+                                elseif sensitive[ci] then
+                                    chars[i] = f_poscode(dx, dy, utfbyte(ci))
+                                else
+                                    chars[i] = f_poschar(dx, dy, ci)
+                                end
                             end
                             di = "{" .. concat(chars) .. "}"
                         else
@@ -2753,7 +2810,14 @@ end
                             -- and don't know what we can expect here
                          -- di = lpegmatch(p_texescape,di) or di
                             for i=1,#chars do
-                                chars[i] = f_char(utfbyte(chars[i]))
+                                local ci = chars[i]
+                                if ci == " " then
+                                    chars[i] = s_space
+                                elseif sensitive[ci] then
+                                    chars[i] = f_code(utfbyte(chars[i]))
+                                else
+                                    chars[i] = f_char(ci)
+                                end
                             end
                             di = concat(chars)
                         end
@@ -2767,87 +2831,89 @@ end
                 --
                 t[#t+1] = "}"
                 --
-                if eplaced then
-                    t[#t+1] = "}"
-                end
-                if elayered then
-                    t[#t+1] = "}"
-                end
-                --
                 return t
             end
 
-            local s_startlayer = "\\svgstartlayer "
-            local s_stoplayer  = "\\svgstoplayer "
+            -- case 1: just text, maybe with spans
+            -- case 2: only positioned spans
+            -- case 3: just text, seen as label
+
+            local textlevel = 0
 
             function handlers.text(c)
+                textlevel = textlevel + 1
+                -- analyze
                 local only = fullstrip(xmltextonly(c))
-             -- if metapost.processing() then
-                    local at = c.at
-                    local x  = rawget(at,"x")
-                    local y  = rawget(at,"y")
+                local at   = c.at
+                local x    = rawget(at,"x")
+                local y    = rawget(at,"y")
 
--- local dx       = rawget(at,"dx")
--- local dy       = rawget(at,"dy")
+                local dx   = rawget(at,"dx")
+                local dy   = rawget(at,"dy")
 
-                    local tx = asnumber_vx_t(x)
-                    local ty = asnumber_vy_t(y)
+                local tx   = asnumber_vx_t(x)
+                local ty   = asnumber_vy_t(y)
 
--- dx = dx and asnumber_vx(dx) or 0
--- dy = dy and asnumber_vy(dy) or 0
+                local tdx  = asnumber_vx_t(dx)
+                local tdy  = asnumber_vy_t(dy)
 
-                    x = tx[1] or 0 -- catch bad x/y spec
-                    y = ty[1] or 0 -- catch bad x/y spec
+                x  = tx[1]  or 0 -- catch bad x/y spec
+                y  = ty[1]  or 0 -- catch bad x/y spec
 
-                    local v_fill = at["fill"]
-                    if not v_fill or v_fill == "none" then
-                        v_fill = "black"
+                dx = tdx[1] or 0 -- catch bad x/y spec
+                dy = tdy[1] or 0 -- catch bad x/y spec
+
+                local v_fill = at["fill"]
+                if not v_fill or v_fill == "none" then
+                    v_fill = "black"
+                end
+                local color, opacity, invisible = fillproperties(v_fill,at)
+                local anchor = anchors[at["text-anchor"] or "start"] or "drt"
+                local remap = metapost.remappedtext(only)
+                -- x = x + dx
+                -- y = y + dy
+                if remap then
+                    if x == 0 and y == 0 then
+                        only = f_mapped_simple_svg(remap.index)
+                    else
+                        only = f_mapped_normal_svg(remap.index,x,y)
                     end
-                    local color, opacity, invisible = fillproperties(v_fill,at)
-                    local anchor = anchors[at["text-anchor"] or "start"] or "drt"
-                    local r = metapost.remappedtext(only)
--- x = x + dx
--- y = y + dy
-                    if r then
-                        if x == 0 and y == 0 then
-                            only = f_mapped_simple_svg(r.index)
-                        else
-                            only = f_mapped_normal_svg(r.index,x,y)
-                        end
-                        flushobject(only,at,color,opacity)
-                        if trace_text then
-                            report("text: %s",only)
-                        end
-                    elseif not invisible then -- can be an option
-                        local scale  = 1
-                        local textid = 0
-                        local result = { }
-                        local nx     = #tx
-                        local ny     = #ty
-                        --
-                        result[#result+1] = s_startlayer
-                        if nx > 1 or ny > 1 then
-                            concat(collect(result,c,x,y,defaultsize,1,"serif",tx,ty))
-                        else
-                            concat(collect(result,c,x,y,defaultsize,1,"serif"))
-                        end
-                        result[#result+1] = s_stoplayer
-                        result = concat(result)
-                        if x == 0 and y == 0 then
-                            result = f_text_simple_svg(anchor,result)
-                        else
-                            result = f_text_normal_svg(anchor,result,x,y)
-                        end
-                        flushobject(result,at,color,opacity)
-                        if trace_text then
-                            report("text: %s",result)
-                        end
-                    elseif trace_text then
-                        report("invisible text: %s",only)
+                    flushobject(only,at,color,opacity)
+                    if trace_text then
+                        report("text: %s",only)
                     end
-             -- elseif trace_text then
-             --     report("ignored text: %s",only)
-             -- end
+                elseif not invisible then -- can be an option
+                    local scale  = 1
+                    local textid = 0
+                    local result = { }
+                    local nx     = #tx
+                    local ny     = #ty
+                    local ndx    = #tdx
+                    local ndy    = #tdy
+                    --
+                    local t = { }
+                    t[#t+1] = s_startlayer
+                    if nx > 1 or ny > 1 or ndx > 1 or ndy > 1 then
+                        collect(tg,t,c,x,y,defaultsize,1,"serif",tx,ty,tdx,tdy)
+                    else
+                        collect(tg,t,c,x,y,defaultsize,1,"serif")
+                    end
+                    t[#t+1] = s_stoplayer
+                    t = concat(t)
+                    if x == 0 and y == 0 then
+                        t = f_text_simple_svg(anchor,t)
+                    else -- dx dy
+                        t = f_text_normal_svg(anchor,t,x,y)
+                    end
+                    flushobject(t,at,color,opacity)
+                    if trace_text then
+                        report("text: %s",result)
+                    end
+                elseif trace_text then
+                    report("invisible text: %s",only)
+                end
+                --
+                textlevel = textlevel - 1
             end
 
             function metapost.reportsvgfonts()
@@ -2892,7 +2958,7 @@ end
 
             local btransform, etransform, transform = handletransform(at)
 
-bodyfontscale = tex.getdimen("bodyfontsize") / 65536
+         -- bodyfontscale = tex.getdimen("bodyfontsize") / 65536
 
             if trace then
                 report("view: %s, xpct %N, ypct %N","before",percentage_x,percentage_y)

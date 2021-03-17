@@ -185,16 +185,20 @@ local name           = (R("AZ","az") + utf8character)^1
 local csname         = (R("AZ","az") + S("@?!_:-*") + utf8character)^1
 local longname       = (longleft/"") * (nolong^1) * (longright/"")
 local variable       = P("#") * Cs(name + longname)
+local bcsname        = P("csname")
+local ecsname        = escape * P("endcsname")
 local escapedname    = escape * csname
-local definer        = escape * (P("def") + S("egx") * P("def"))                  -- tex
+local definer        = escape * (P("u")^-1 * S("egx")^-1 * P("def"))             -- tex
 local setter         = escape * P("set") * (P("u")^-1 * S("egx")^-1) * P("value") -- context specific
 ---                  + escape * P("install") * (1-P("handler"))^1 * P("handler")  -- context specific
+local defcsname      = escape * S("egx")^-1 * P("defcsname")
+                     * (1 - ecsname)^1
+                     * ecsname
 local startcode      = P("\\starttexdefinition")                                  -- context specific
 local stopcode       = P("\\stoptexdefinition")                                   -- context specific
 local anything       = patterns.anything
 local always         = patterns.alwaysmatched
 
-local definer        = escape * (P("u")^-1 * S("egx")^-1 * P("def"))             -- tex
 
 -- The comment nilling can become an option but it nicely compensates the Lua
 -- parsing here with less parsing at the TeX end. We keep lines so the errors
@@ -206,7 +210,6 @@ local definer        = escape * (P("u")^-1 * S("egx")^-1 * P("def"))            
 
 local commenttoken   = P("%")
 local crorlf         = S("\n\r")
------ commentline    = commenttoken * ((Carg(1) * C((1-crorlf)^0))/function(strip,s) return strip and "" or s end)
 local commentline    = commenttoken * ((1-crorlf)^0)
 local leadingcomment = (commentline * crorlf^1)^1
 local furthercomment = (crorlf^1 * commentline)^1
@@ -229,7 +232,6 @@ local grammar = { "converter",
                 * startcode
                 * spaces
                 * (csname * spaces)^1 -- new: multiple, new:csname instead of name
-             -- * (declaration + furthercomment + (1 - newline - space))^0
                 * ((declaration * (space^0/""))^1 + furthercomment + (1 - newline - space))^0 -- accepts #a #b #c
                 * V("texbody")
                 * stopcode
@@ -242,10 +244,12 @@ local grammar = { "converter",
                     + (1 - stopcode)
                   )^0,
     definition  = pushlocal
-                * definer
-                * spaces^0
-                * escapedname
---                 * (declaration + furthercomment + commentline + (1-leftbrace))^0
+                * (definer * spaces^0 * escapedname)
+                * (declaration + furthercomment + commentline + csname_endcsname + (1-leftbrace))^0
+                * V("braced")
+                * poplocal,
+    csnamedef   = pushlocal
+                * defcsname
                 * (declaration + furthercomment + commentline + csname_endcsname + (1-leftbrace))^0
                 * V("braced")
                 * poplocal,
@@ -265,11 +269,11 @@ local grammar = { "converter",
                     + leadingcomment -- new per 2012-05-15 (message on mailing list)
                     + nobrace
                   )^0
-             -- * rightbrace^-1, -- the -1 catches errors
                 * (rightbrace + Cmt(always,matcherror)),
 
     pattern     = leadingcomment
                 + V("definition")
+                + V("csnamedef")
                 + V("setcode")
                 + V("texcode")
                 + furthercomment
