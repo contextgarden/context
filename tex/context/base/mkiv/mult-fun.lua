@@ -72,7 +72,7 @@ return {
      -- "withshading", "withlinearshading", "withcircularshading", "withfromshadecolor", "withtoshadecolor",
         "shadedinto", "withshadecolors",
         "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
-        "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform",
+        "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform", "withshadecenterone", "withshadecentertwo",
         "withshadestep", "withshadefraction", "withshadeorigin", "shownshadevector", "shownshadeorigin",
         "shownshadedirection", "shownshadecenter",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",

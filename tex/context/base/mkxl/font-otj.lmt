@@ -125,7 +125,7 @@ local fontkern           = nuts.pool and nuts.pool.fontkern
 local italickern         = nuts.pool and nuts.pool.italickern
 
 local function somekern(makekern,amount,current)
-    local kern = makekern(leftkern,amount)
+    local kern = makekern(amount)
     setattrlist(kern,current)
     return kern
 end

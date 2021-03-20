@@ -22,6 +22,7 @@
 \bitwiseflip \normalizelinemode \parindentskipcode
 \bitwiseflip \normalizelinemode \normalizelinecode
 \bitwiseflip \normalizelinemode \clipwidthcode
+\bitwiseflip \normalizelinemode \flattendiscretionariescode
 
 \let\v_spac_indentation_current\empty % amount/keyword
 

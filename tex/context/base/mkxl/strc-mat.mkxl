@@ -195,13 +195,17 @@
 
 \protected\def\strc_formulas_store_number#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\settrue\c_strc_formulas_handle_number
+   \edef\xx{\formulaparameter\c!list}%
    \strc_counters_register_component
      {formula}%
      \setupcurrentformula \formulaparameter \detokenizedformulaparameter
      \relax \relax \relax
      [\c!name=\v!formula,\s!counter=\v!formula,%
       \s!hascaption=\v!yes,\s!hastitle=\v!yes,\s!hasnumber=\v!yes,%\s!haslevel=#6,%
-      \c!reference=#1,\c!title=\namedformulaentry,\c!bookmark=]%
+      \c!reference=#1,%
+      \c!title=\namedformulaentry,
+      \c!list=\currentplaceformulalist,
+      \c!bookmark=\currentplaceformulabookmark]%
      [#2]%
    \glet\namedformulaentry\empty % \relax
    \glet#3\m_strc_counters_last_registered_index
@@ -615,14 +619,14 @@
 
 \installcorenamespace{mathdisplayspacemodel}
 
-\setvalue{\??mathdisplayspacemodel\v!before:1}% old
+\defcsname\??mathdisplayspacemodel\v!before:1\endcsname % old
   {\ifx\p_spacebefore\v!none
      % nothing
    \else
      \directvspacing\p_spacebefore
    \fi}
 
-\setvalue{\??mathdisplayspacemodel\v!after:1}% old
+\defcsname\??mathdisplayspacemodel\v!after:1\endcsname % old
   {\prevdepth .5\strutdp
    \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
    \ifx\p_spaceafter\v!none
@@ -631,7 +635,7 @@
      \directvspacing\p_spaceafter
    \fi}
 
-\setvalue{\??mathdisplayspacemodel\v!before:2}% old
+\defcsname\??mathdisplayspacemodel\v!before:2\endcsname % old
   {\ifx\p_spacebefore\v!none
      % nothing
    \else
@@ -639,7 +643,7 @@
    \fi
    \prevdepth-\maxdimen} % texbook pagina 79-80
 
-\setvalue{\??mathdisplayspacemodel\v!after:2}% old
+\defcsname\??mathdisplayspacemodel\v!after:2\endcsname % old
   {\prevdepth\lineheight
    \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
    \ifx\p_spaceafter\v!none
@@ -648,7 +652,7 @@
      \directvspacing\p_spaceafter
    \fi}
 
-\setvalue{\??mathdisplayspacemodel\v!before:3}%
+\defcsname\??mathdisplayspacemodel\v!before:3\endcsname
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
    \let\m_spacebefore\empty
    \ifvmode
@@ -684,7 +688,7 @@
      \fi
    \fi}
 
-\setvalue{\??mathdisplayspacemodel\v!after:3}%
+\defcsname\??mathdisplayspacemodel\v!after:3\endcsname
   {\prevdepth\strutdp % \directvspacing\v!depth
    \ifx\p_spaceafter\v!none
      % nothing
@@ -696,7 +700,7 @@
 
 \newconditional\c_math_model_four_indeed
 
-\setvalue{\??mathdisplayspacemodel\v!before:4}%
+\defcsname\??mathdisplayspacemodel\v!before:4\endcsname
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
    \ifvmode
      \ifinner
@@ -717,7 +721,7 @@
      \csname\??mathdisplayspacemodel\v!before:3\endcsname
   \fi}
 
-\setvalue{\??mathdisplayspacemodel\v!after:4}%
+\defcsname\??mathdisplayspacemodel\v!after:4\endcsname
   {\ifconditional\c_math_model_four_indeed
      \setfalse\c_math_model_four_indeed
      \forcestrutdepth
@@ -785,9 +789,6 @@
    \relax
    \hsize\displaywidth} % new, else overfull in itemize
 
-\protected\def\strc_formulas_start_formula#1%
-  {\dodoubleempty\strc_formulas_start_formula_indeed[#1]}
-
 % \newskip\formulastrutht
 % \newskip\formulastrutdp
 
@@ -798,35 +799,35 @@
 %D
 %D \typebuffer \getbuffer
 
-\setvalue{\??formulaoption\v!packed}%
+\defcsname\??formulaoption\v!packed\endcsname
   {\c_strc_formulas_space_model\zerocount}
 
-\setvalue{\??formulaoption\v!tight}%
+\defcsname\??formulaoption\v!tight\endcsname
   {\settrue\c_strc_formulas_tight}
 
-\setvalue{\??formulaoption\v!middle}%
+\defcsname\??formulaoption\v!middle\endcsname
   {\d_strc_formulas_display_skip_left \zeropoint
    \d_strc_formulas_display_skip_right\zeropoint}
 
-\setvalue{\??formulaoption\v!depth}%
+\defcsname\??formulaoption\v!depth\endcsname
   {\c_strc_formulas_space_model\plusfour}
 
-\setvalue{\??formulaoption\v!line}%
+\defcsname\??formulaoption\v!line\endcsname
   {\ifgridsnapping
      \setformulaparameter\c!grid{\v!math:\v!line}%
    \fi}
 
-\setvalue{\??formulaoption\v!halfline}%
+\defcsname\??formulaoption\v!halfline\endcsname
   {\ifgridsnapping
      \setformulaparameter\c!grid{\v!math:\v!halfline}%
    \fi}
 
-\setvalue{\??formulaoption-\v!line}%
+\defcsname\??formulaoption-\v!line\endcsname
   {\ifgridsnapping
      \setformulaparameter\c!grid{\v!math:-\v!line}%
    \fi}
 
-\setvalue{\??formulaoption-\v!halfline}%
+\defcsname\??formulaoption-\v!halfline\endcsname
   {\ifgridsnapping
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
@@ -885,7 +886,12 @@
     \enforced\let\breakhere\strc_math_break_here
 \to \everymathematics
 
-\protected\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
+% \protected\def\strc_formulas_start_formula#1%
+%   {\strc_formulas_start_formula_indeed[#1]}
+%
+% \tolerant\protected\def\strc_formulas_start_formula[#1]#*[#2]% setting leftskip adaption is slow !
+
+\tolerant\protected\def\strc_formulas_start_formula#1#:#*[#2]% setting leftskip adaption is slow !
   {\ifhmode
      \par
    \fi
@@ -1207,7 +1213,7 @@
      \expandafter\strc_formulas_start_place_nop
    \fi[#1]}
 
-\def\strc_formulas_start_place_yes[#1]%
+\def\strc_formulas_start_place_yes[#1]% todo
   {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
 
 \def\strc_formulas_start_place_nop[#1]%
@@ -1221,13 +1227,20 @@
   %\doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
    \strc_formulas_place_nop}
 
-\def\strc_formulas_start_place_parameters[#1]%
+\mutable\let\currentplaceformulabookmark\empty
+\mutable\let\currentplaceformulalist    \empty
+
+\def\strc_formulas_start_place_parameters[#1]% maybe a dedicated setup handler
   {\letdummyparameter\c!title    \empty
    \letdummyparameter\c!reference\empty
+   \letdummyparameter\c!bookmark \empty
+   \letdummyparameter\c!list     \empty
    \letdummyparameter\c!suffix   \empty
    \getdummyparameters[#1]%
    \edef\currentplaceformulatitle    {\dummyparameter\c!title}%
    \edef\currentplaceformulareference{\dummyparameter\c!reference}%
+   \edef\currentplaceformulabookmark {\dummyparameter\c!bookmark}%
+   \edef\currentplaceformulalist     {\dummyparameter\c!list}%
    \edef\currentplaceformulasuffix   {\dummyparameter\c!suffix}%
    \ifempty\currentplaceformulatitle\else
      \normalexpanded{\setformulalistentry{\currentplaceformulatitle}}%

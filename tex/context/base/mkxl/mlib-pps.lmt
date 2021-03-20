@@ -761,6 +761,10 @@ end
 
 local tx_reset, tx_process  do
 
+    -- The dilemma is that we need to process the text in order to know the
+    -- dimensions but afterwards also need to apply color and such. So, we need
+    -- two passes, one immediately and one when we use it.
+
     local eol      = S("\n\r")^1
     local cleaner  = Cs((P("@@")/"@" + P("@")/"%%" + P(1))^0)
     local splitter = Ct(
@@ -1015,6 +1019,8 @@ local tx_reset, tx_process  do
         end
     end
 
+    local fasttrack = false directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
+
     tx_process = function(object,prescript,before,after)
         local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
         local index = tonumber(prescript.tx_index)
@@ -1040,9 +1046,14 @@ local tx_reset, tx_process  do
             local mp_text = top.texstrings[mp_index]
             local mp_hash = prescript.tx_cache
             local box
+local donebox = fasttrack and top.textexts[mp_index]
             if mp_hash == "no" then
+if donebox then
+    box = copy_list(donebox)
+else
                 texrunlocal("mptexttoks")
                 box = textakebox("mptextbox")
+end
             else
                 local cache = data.texhash
                 if mp_hash then
@@ -1074,8 +1085,12 @@ local tx_reset, tx_process  do
                 if box then
                     box = copy_list(box)
                 else
+if donebox then
+    box = copy_list(donebox)
+else
                     texrunlocal("mptexttoks")
                     box = textakebox("mptextbox")
+end
                     cache[mp_hash] = box
                 end
             end

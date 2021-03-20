@@ -310,7 +310,7 @@ pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7) ;
 pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7) ;
 
 pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff     ;
-pair mfun_laboff.dflt   ; mfun_laboff.dflt   := mfun_laboff.lft ;
+pair mfun_laboff.dlft   ; mfun_laboff.dlft   := mfun_laboff.lft ;
 pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt  ;
 pair mfun_laboff.origin ; mfun_laboff.origin := mfun_laboff     ;
 pair mfun_laboff.raw    ; mfun_laboff.raw    := mfun_laboff     ;
@@ -339,7 +339,7 @@ mfun_labxf.llft     := mfun_labxf.l_b := mfun_labxf.b_l := 1   ;
 mfun_labxf.lrt      := mfun_labxf.r_b := mfun_labxf.b_r := 0   ;
 
 mfun_labxf.d        := mfun_labxf     ;
-mfun_labxf.dflt     := mfun_labxf.lft ;
+mfun_labxf.dlft     := mfun_labxf.lft ;
 mfun_labxf.drt      := mfun_labxf.rt  ;
 mfun_labxf.origin   := 0              ;
 mfun_labxf.raw      := 0              ;
@@ -355,7 +355,7 @@ mfun_labyf.llft     := mfun_labyf.l_b := mfun_labyf.b_l := 1   ;
 mfun_labyf.lrt      := mfun_labyf.r_b := mfun_labyf.b_r := 1   ;
 
 mfun_labyf.d        := mfun_labyf     ;
-mfun_labyf.dflt     := mfun_labyf.lft ;
+mfun_labyf.dlft     := mfun_labyf.lft ;
 mfun_labyf.drt      := mfun_labyf.rt  ;
 mfun_labyf.origin   := 0              ;
 mfun_labyf.raw      := 0              ;
@@ -370,7 +370,7 @@ mfun_labtype.urt    := mfun_labtype.r_t :=  mfun_labtype.t_r :=  6 ;
 mfun_labtype.llft   := mfun_labtype.l_b :=  mfun_labtype.b_l :=  7 ;
 mfun_labtype.lrt    := mfun_labtype.r_b :=  mfun_labtype.b_r :=  8 ;
 mfun_labtype.d                                               := 10 ;
-mfun_labtype.dflt                                            := 11 ;
+mfun_labtype.dlft                                            := 11 ;
 mfun_labtype.drt                                             := 12 ;
 mfun_labtype.origin                                          :=  0 ;
 mfun_labtype.raw                                             :=  0 ;

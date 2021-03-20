@@ -165,7 +165,8 @@ return {
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode",
         --
-        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode", "clipwidthcode",
+        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
+        "clipwidthcode", "flattendiscretionariescode",
         --
         "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
         "noexpansioncode", "noprotrusioncode",

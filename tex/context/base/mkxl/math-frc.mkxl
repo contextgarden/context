@@ -489,9 +489,7 @@
 \appendtoks
     \edef\p_distance{\rootmathfractionparameter\c!distance}%
     \ifempty\p_distance\else
-        \ifcsname\??mathfractiondistance\p_distance\endcsname
-            \lastnamedcs
-        \fi
+        \begincsname\??mathfractiondistance\p_distance\endcsname
     \fi
 \to \everymathematics
 

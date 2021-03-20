@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.03.17 17:43}
+\immutable\edef\contextversion{2021.03.20 01:03}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -522,6 +522,8 @@
 \loadmkxlfile{page-ffl}
 
 \loadmkxlfile{lang-spa} % will become obsolete
+
+\loadmkxlfile{lang-hup}
 
 \loadmkxlfile{typo-ovl} % fuzzy project (tracing) code
 

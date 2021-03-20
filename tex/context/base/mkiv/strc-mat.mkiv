@@ -204,7 +204,10 @@
      \relax \relax \relax
      [\c!name=\v!formula,\s!counter=\v!formula,%
       \s!hascaption=\v!yes,\s!hastitle=\v!yes,\s!hasnumber=\v!yes,%\s!haslevel=#6,%
-      \c!reference=#1,\c!title=\namedformulaentry,\c!bookmark=]%
+      \c!reference=#1,%
+      \c!title=\namedformulaentry,%
+      \c!list=\currentplaceformulalist,%
+      \c!bookmark=\currentplaceformulabookmark]%
      [#2]%
    \glet\namedformulaentry\empty % \relax
    \glet#3\m_strc_counters_last_registered_index
@@ -1227,13 +1230,20 @@
   %\doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
    \strc_formulas_place_nop}
 
+\let\currentplaceformulabookmark\empty
+\let\currentplaceformulalist    \empty
+
 \def\strc_formulas_start_place_parameters[#1]%
   {\letdummyparameter\c!title    \empty
    \letdummyparameter\c!reference\empty
+   \letdummyparameter\c!bookmark \empty
+   \letdummyparameter\c!list     \empty
    \letdummyparameter\c!suffix   \empty
    \getdummyparameters[#1]%
    \edef\currentplaceformulatitle    {\dummyparameter\c!title}%
    \edef\currentplaceformulareference{\dummyparameter\c!reference}%
+   \edef\currentplaceformulareference{\dummyparameter\c!reference}%
+   \edef\currentplaceformulabookmark {\dummyparameter\c!bookmark}%
    \edef\currentplaceformulasuffix   {\dummyparameter\c!suffix}%
    \ifx\currentplaceformulatitle\empty\else
      \normalexpanded{\setformulalistentry{\currentplaceformulatitle}}%

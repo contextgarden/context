@@ -65,81 +65,57 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-nodes                       = nodes or { }
-local nodes                 = nodes
+nodes                      = nodes or { }
+local nodes                = nodes
 
-local nodecodes               = nodes.nodecodes
+local nodecodes            = nodes.nodecodes
 
-nodes.tostring                = node.tostring or tostring
-nodes.copy                    = node.copy
-nodes.copy_node               = node.copy
-nodes.copy_list               = node.copy_list
-nodes.delete                  = node.delete
-nodes.dimensions              = node.dimensions
-nodes.rangedimensions         = node.rangedimensions
-nodes.end_of_math             = node.end_of_math
-nodes.flush                   = node.flush_node
-nodes.flush_node              = node.flush_node
-nodes.flush_list              = node.flush_list
-nodes.free                    = node.free
-nodes.insert_after            = node.insert_after
-nodes.insert_before           = node.insert_before
-nodes.hpack                   = node.hpack
-nodes.new                     = node.new
-nodes.tail                    = node.tail
-nodes.traverse                = node.traverse
-nodes.traverse_id             = node.traverse_id
-nodes.traverse_char           = node.traverse_char
-nodes.traverse_glyph          = node.traverse_glyph
-nodes.traverse_list           = node.traverse_list
-nodes.slide                   = node.slide
-nodes.vpack                   = node.vpack
-nodes.fields                  = node.fields
-nodes.is_node                 = node.is_node
-nodes.setglue                 = node.setglue
-nodes.uses_font               = node.uses_font
+nodes.copy                 = node.copy
+nodes.copy_list            = node.copy_list
+nodes.copy_node            = node.copy
+nodes.current_attributes   = node.current_attributes
+nodes.remove               = node.remove
+nodes.fields               = node.fields
+nodes.flush                = node.flush_node
+nodes.flush_list           = node.flush_list
+nodes.flush_node           = node.flush_node
+nodes.get_attribute        = node.get_attribute
+nodes.has_attribute        = node.has_attribute
+nodes.has_field            = node.has_field
+nodes.insert_after         = node.insert_after
+nodes.insert_before        = node.insert_before
+nodes.is_node              = node.is_node
+nodes.new                  = node.new
+nodes.set_attribute        = node.set_attribute
+nodes.tail                 = node.tail
+nodes.tostring             = node.tostring or tostring
+nodes.traverse             = node.traverse
+nodes.traverse_id          = node.traverse_id
+nodes.unset_attribute      = node.unset_attribute
+nodes.write                = node.write
+nodes.usedlist             = node.usedlist
 
-nodes.first_glyph             = node.first_glyph
-nodes.has_glyph               = node.has_glyph or node.first_glyph
+nodes.get_properties_table = node.get_properties_table
+nodes.getproperty          = node.getproperty
+nodes.setproperty          = node.setproperty
 
-nodes.current_attributes      = node.current_attributes or node.current_attr
-nodes.has_field               = node.has_field
-nodes.last_node               = node.last_node
-nodes.usedlist                = node.usedlist
-nodes.protrusion_skippable    = node.protrusion_skippable
-nodes.check_discretionaries   = node.check_discretionaries
-nodes.write                   = node.write
-nodes.flatten_discretionaries = node.flatten_discretionaries
+-- nodes.usedlist",
+-- nodes.inuse",
+-- nodes.instock",
+-- nodes.type",
+-- nodes.types",
+-- nodes.subtypes",
+-- nodes.values",
+-- nodes.id",
+-- nodes.show",
 
-nodes.count                   = node.count
-nodes.length                  = node.length
-
-nodes.has_attribute           = node.has_attribute
-nodes.set_attribute           = node.set_attribute
-nodes.find_attribute          = node.find_attribute
-nodes.unset_attribute         = node.unset_attribute
-
-nodes.protect_glyph           = node.protect_glyph
-nodes.protect_glyphs          = node.protect_glyphs
-nodes.unprotect_glyph         = node.unprotect_glyph
-nodes.unprotect_glyphs        = node.unprotect_glyphs
-nodes.kerning                 = node.kerning
-nodes.ligaturing              = node.ligaturing
-nodes.hyphenating             = node.hyphenating
-nodes.mlist_to_hlist          = node.mlist_to_hlist
-
-nodes.effective_glue          = node.effective_glue
-nodes.getglue                 = node.getglue
-nodes.setglue                 = node.setglue
-nodes.is_zero_glue            = node.is_zero_glue
-
-nodes.tonode = function(n) return n end
-nodes.tonut  = function(n) return n end
+-- nodes.tonode = function(n) return n end
+-- nodes.tonut  = function(n) return n end
 
 -- These are never used in \CONTEXT, only as a gimmick in node operators
 -- so we keep them around.
 --
--- Fro nwo I keep them in \LMTX\ but they will go away!
+-- Fot now I keep them in \LMTX\ but they will go away!
 
 local n_getfield = node.getfield
 local n_getattr  = node.get_attribute
@@ -322,10 +298,6 @@ function nodes.concat(list) -- consider tail instead of slide
         end
     end
     return head, tail
-end
-
-function nodes.reference(n)
-    return n and tonut(n) or "<none>"
 end
 
 -- Here starts an experiment with metatables. Of course this only works with nodes
@@ -559,29 +531,9 @@ metatable.__unm = function(head)
     return first
 end
 
--- see node-nut.lua for more info on going nuts
+-- also handy n.. do we still need this ... needs an update anyway
 
--- if not gonuts then
---
---     local nuts = { }
---     nodes.nuts = nuts
---
---     local function dummy(f) return f end
---
---     nodes.vianuts  = dummy
---     nodes.vianodes = dummy
---
---     for k, v in next, nodes do
---         if type(v) == "function" then
---             nuts[k] = v
---         end
---     end
---
--- end
-
--- also handy
-
-local tonode       = nodes.tonode
+local tonode       = node.direct.tonode
 local whatsit_code = nodecodes.whatsit
 local getfields    = node.fields
 local sort         = table.sort

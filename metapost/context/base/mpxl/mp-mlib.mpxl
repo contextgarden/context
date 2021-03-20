@@ -123,34 +123,13 @@ def withtransparency(expr a, t) =
     withprescript "tr_transparency=" & decimal t
 enddef ;
 
-% no, not compatible ... maybe only mpiv .. maybe withopacity
+% works reverse from transparency (for svg)
 
-% let opacity = pair ;
-
-% def withtransparency expr t =
-%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
-%     withprescript "tr_transparency=" & decimal ypart t
-% enddef ;
-%
-% withtransparency (1,.5)
-% withtransparency ("normal",.5)
-%
-% withopacity      (1,.5)
-% withopacity      (normaltransparency,.5)
-% withopacity      .5
-
-def withopacity expr t =
-    if pair t :
-        withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
-        withprescript "tr_transparency=" & decimal ypart t
-    else :
-        mfun_with_opacity (transparency_alternative_to_number(t))
+def withopacity expr o =
+    if o <> 1 :
+        withprescript "tr_alternative="  & decimal normaltransparent
+        withprescript "tr_transparency=" & decimal (1 - o)
     fi
-enddef ;
-
-def mfun_with_opacity (expr a) expr t =
-    withprescript "tr_alternative="  & decimal a
-    withprescript "tr_transparency=" & decimal t
 enddef ;
 
 % Provided for downward compability:
@@ -332,7 +311,7 @@ pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7) ;
 pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7) ;
 
 pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff     ;
-pair mfun_laboff.dflt   ; mfun_laboff.dflt   := mfun_laboff.lft ;
+pair mfun_laboff.dlft   ; mfun_laboff.dlft  := mfun_laboff.lft ;
 pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt  ;
 pair mfun_laboff.origin ; mfun_laboff.origin := mfun_laboff     ;
 pair mfun_laboff.raw    ; mfun_laboff.raw    := mfun_laboff     ;
@@ -361,7 +340,7 @@ mfun_labxf.llft     := mfun_labxf.l_b := mfun_labxf.b_l := 1   ;
 mfun_labxf.lrt      := mfun_labxf.r_b := mfun_labxf.b_r := 0   ;
 
 mfun_labxf.d        := mfun_labxf     ;
-mfun_labxf.dflt     := mfun_labxf.lft ;
+mfun_labxf.dlft     := mfun_labxf.lft ;
 mfun_labxf.drt      := mfun_labxf.rt  ;
 mfun_labxf.origin   := 0              ;
 mfun_labxf.raw      := 0              ;
@@ -377,7 +356,7 @@ mfun_labyf.llft     := mfun_labyf.l_b := mfun_labyf.b_l := 1   ;
 mfun_labyf.lrt      := mfun_labyf.r_b := mfun_labyf.b_r := 1   ;
 
 mfun_labyf.d        := mfun_labyf     ;
-mfun_labyf.dflt     := mfun_labyf.lft ;
+mfun_labyf.dlft     := mfun_labyf.lft ;
 mfun_labyf.drt      := mfun_labyf.rt  ;
 mfun_labyf.origin   := 0              ;
 mfun_labyf.raw      := 0              ;
@@ -392,7 +371,7 @@ mfun_labtype.urt    := mfun_labtype.r_t :=  mfun_labtype.t_r :=  6 ;
 mfun_labtype.llft   := mfun_labtype.l_b :=  mfun_labtype.b_l :=  7 ;
 mfun_labtype.lrt    := mfun_labtype.r_b :=  mfun_labtype.b_r :=  8 ;
 mfun_labtype.d                                               := 10 ;
-mfun_labtype.dflt                                            := 11 ;
+mfun_labtype.dlft                                            := 11 ;
 mfun_labtype.drt                                             := 12 ;
 mfun_labtype.origin                                          :=  0 ;
 mfun_labtype.raw                                             :=  0 ;
@@ -696,20 +675,27 @@ numeric mfun_shade_lx, mfun_shade_ly ;
 numeric mfun_shade_nx, mfun_shade_ny ;
 numeric mfun_shade_dx, mfun_shade_dy ;
 numeric mfun_shade_tx, mfun_shade_ty ;
+pair    mfun_shade_center ;
+path    mfun_shade_bbox ;
 
+numeric mfun_shade_height, mfun_shade_width;
 % first
 
 def mfun_with_shade_method_analyze(expr p) =
-    mfun_shade_path := p ;
-    mfun_shade_step := 1 ;
-    mfun_shade_fx   := xpart point 0 of p ;
-    mfun_shade_fy   := ypart point 0 of p ;
-    mfun_shade_lx   := mfun_shade_fx ;
-    mfun_shade_ly   := mfun_shade_fy ;
-    mfun_shade_nx   := 0 ;
-    mfun_shade_ny   := 0 ;
-    mfun_shade_dx   := abs(mfun_shade_fx - mfun_shade_lx) ;
-    mfun_shade_dy   := abs(mfun_shade_fy - mfun_shade_ly) ;
+    mfun_shade_path   := p ;
+    mfun_shade_center := center p;
+    mfun_shade_bbox   := boundingbox p;
+    mfun_shade_width  := bbwidth p;
+    mfun_shade_height := bbheight p;
+    mfun_shade_step   := 1 ;
+    mfun_shade_fx     := xpart point 0 of p ;
+    mfun_shade_fy     := ypart point 0 of p ;
+    mfun_shade_lx     := mfun_shade_fx ;
+    mfun_shade_ly     := mfun_shade_fy ;
+    mfun_shade_nx     := 0 ;
+    mfun_shade_ny     := 0 ;
+    mfun_shade_dx     := abs(mfun_shade_fx - mfun_shade_lx) ;
+    mfun_shade_dy     := abs(mfun_shade_fy - mfun_shade_ly) ;
     for i=1 upto length(p) :
         mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
         mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
@@ -724,6 +710,33 @@ def mfun_with_shade_method_analyze(expr p) =
             mfun_shade_dy := mfun_shade_ty ;
         fi ;
     endfor ;
+enddef ;
+
+% todo: native bbox
+
+vardef mfun_shade_center_fraction_do expr a =
+    ddecimal (
+        (xpart llcorner mfun_shade_bbox) + (xpart a) * mfun_shade_width,
+        (ypart llcorner mfun_shade_bbox) + (ypart a) * mfun_shade_height
+    )
+enddef ;
+
+def withshadecenterfraction expr a =
+    withprescript "sh_center_a=" & mfun_shade_center_fraction_do a
+    withprescript "sh_center_b=" & mfun_shade_center_fraction_do a
+enddef ;
+
+def withshadecenteronefraction expr a =
+    withprescript "sh_center_a=" & mfun_shade_center_fraction_do a
+enddef ;
+
+def withshadecentertwofraction expr a =
+    withprescript "sh_center_b=" & mfun_shade_center_fraction_do a
+enddef ;
+
+def withshaderadiusfraction expr a =
+    withprescript "sh_radius_a=0"
+    withprescript "sh_radius_b=" & decimal (a * sqrt(mfun_shade_width*mfun_shade_width+mfun_shade_height*mfun_shade_height)/2)
 enddef ;
 
 vardef mfun_max_radius(expr p) =
@@ -780,6 +793,14 @@ def withshadeorigin expr a =
     withprescript "sh_center_b=" & ddecimal a
 enddef ;
 
+def withshadecenterone expr a =
+    withprescript "sh_center_a=" & ddecimal a
+enddef ;
+
+def withshadecentertwo expr a =
+    withprescript "sh_center_b=" & ddecimal a
+enddef ;
+
 def withshadevector expr a =
     withprescript "sh_center_a=" & ddecimal (point xpart a of mfun_shade_path)
     withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
@@ -827,6 +848,12 @@ def withshadefraction expr a =
         withprescript "sh_fraction_" & decimal mfun_shade_step & "=" & decimal a
     fi
 enddef ;
+
+% def withshadeopacity expr a =
+%     if mfun_shade_step > 0 :
+%         withprescript "sh_opacity_" & decimal mfun_shade_step & "=" & decimal a
+%     fi
+% enddef ;
 
 def withshadecolors (expr a, b) =
     if mfun_shade_step > 0 :

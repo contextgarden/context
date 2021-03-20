@@ -3800,12 +3800,12 @@ enddef ;
 %     t
 % enddef ;
 
-def closedcurve expr p =
-    p if not cycle p : .. cycle fi
+vardef closedcurve primary p =
+    p if (path p and not cycle p) or (pair p) : .. cycle fi
 enddef ;
 
-def closedlines expr p =
-    p if not cycle p : -- cycle fi
+vardef closedlines primary p =
+    p if (path p and not cycle p) or (pair p) : -- cycle fi
 enddef ;
 
 permanent totransform, bymatrix, closedcurve, closedlines ;

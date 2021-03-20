@@ -168,8 +168,8 @@ registerscript("scrutenized", function()
     local t = { p[1], cycle = p.cycle }
     for i=2,m-1 do
         local pi = p[i]
-        local x2 = r(pi[1])
-        local y2 = r(pi[2])
+        local x2 = round(pi[1])
+        local y2 = round(pi[2])
         if x1 ~= x2 or y1 ~= y2 then
             n = n + 1
             t[n] = p[i]
@@ -177,16 +177,16 @@ registerscript("scrutenized", function()
             y1 = y2
         end
     end
-    local x1 = r(p[1][1])
-    local y1 = r(p[1][2])
-    local x2 = r(p[m][1])
-    local y2 = r(p[m][2])
+    local x1 = round(p[1][1])
+    local y1 = round(p[1][2])
+    local x2 = round(p[m][1])
+    local y2 = round(p[m][2])
     if x1 ~= x2 or y1 ~= y2 then
         n = n + 1
         t[n] = p[m]
     end
-    mp.path(t)
-  -- injectpath(t)
+  -- mp.path(t)
+    injectpath(t)
 end)
 
 -- A goodie, mostly a side effect of updating the metafun manual.

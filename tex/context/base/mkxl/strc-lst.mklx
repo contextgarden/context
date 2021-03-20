@@ -116,17 +116,6 @@
 
 \installcorenamespace {listlocations}
 
-% \permanent\protected\def\doifelseinlistentry#1%
-%   {\ifcsname\??listlocations#1\endcsname
-%      \ifnum\lastnamedcs=\structurelistlocation\relax
-%        \doubleexpandafter\firstoftwoarguments
-%      \else
-%        \doubleexpandafter\secondoftwoarguments
-%      \fi
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
-
 \permanent\protected\def\doifelseinlistentry#1%
   {\unless\ifcsname\??listlocations#1\endcsname
      \expandafter\secondoftwoarguments
@@ -236,6 +225,22 @@
 \tolerant\def\strc_lists_write_to_nop[#settings]#:#first#second%
   {\endgroup} % \strc_lists_inject_nop[][]
 
+% \starttyping
+% \installstructurelistprocessor{chapter:userdata}
+%   {\startlinecorrection[blank]
+%    \hfill \inframed{you really need to look at \structurelistuservariable{pagenumber}}%
+%    \stoplinecorrection}
+%
+% \starttext
+%   \placelist[chapter]
+%   \chapter{one}
+%   \writebetweenlist[chapter][location=here]{\blank page 4\blank}
+%   \writedatatolist[chapter][location=here][pagenumber=4]
+%   \writetolist[chapter]{}{It's a test}
+%   \chapter{two}
+% \stoptext
+% \stoptyping
+
 %D When placing a list either one or a set can be giving. This makes it possible to
 %D flush for instance an nested (or merged) table of contents. Keep in mind that
 %D placing a list is what we do most (think of tables of contents, figures, etc.\
@@ -320,9 +325,9 @@
 
 \permanent\tolerant\protected\def\definecombinedlist[#tag]#spacer[#list]#spacer[#settings]%
   {\definelist[#tag][\c!criterium=\v!local,\c!reference=,\c!alternative=,\c!list={#list},#settings]% inherits from root
-   \frozen\instance\setvalue{\e!setup#tag\e!endsetup}{\setupcombinedlist[#tag]}%
-   \frozen\instance\setvalue{\e!place#tag}{\placecombinedlist[#tag]}%
-   \frozen\instance\setvalue{\e!complete#tag}{\strc_lists_combined_complete[#tag]}}
+   \frozen\instance\defcsname\e!setup#tag\e!endsetup\endcsname{\setupcombinedlist[#tag]}%
+   \frozen\instance\defcsname\e!place#tag\endcsname{\placecombinedlist[#tag]}%
+   \frozen\instance\defcsname\e!complete#tag\endcsname{\strc_lists_combined_complete[#tag]}}
 
 \permanent\tolerant\protected\def\setupcombinedlist[#tag]#spacer[#settings]%
   {\ifarguments\or\or
@@ -352,9 +357,9 @@
 
 \installcorenamespace {listpagenumber}
 
-\setvalue{\??listpagenumber\v!always  }{\settrue\c_lists_show_page\settrue\c_lists_has_page}
-\setvalue{\??listpagenumber\v!yes     }{\settrue\c_lists_show_page}
-\setvalue{\??listpagenumber\s!realpage}{\settrue\c_lists_show_page\settrue\c_lists_show_realpage}
+\defcsname\??listpagenumber\v!always  \endcsname{\settrue\c_lists_show_page\settrue\c_lists_has_page}
+\defcsname\??listpagenumber\v!yes     \endcsname{\settrue\c_lists_show_page}
+\defcsname\??listpagenumber\s!realpage\endcsname{\settrue\c_lists_show_page\settrue\c_lists_show_realpage}
 
 \def\strc_lists_process_pagenumber#1%
   {\begincsname\??listpagenumber#1\endcsname}
@@ -493,7 +498,7 @@
   {\expandafter\normaldef\csname\??structurelistprocessor#tag\endcsname{#meaning}}
 
 \permanent\def\usestructurelistprocessor#tag%
-  {\csname\??structurelistprocessor#tag\endcsname}
+  {\begincsname\??structurelistprocessor#tag\endcsname}
 
 \aliased\let\dotaglistlocation\relax
 
@@ -549,7 +554,7 @@
 
 % example of usage elsewhere:
 %
-% \installstructcurelistprocessor{pubs:userdata}
+% \installstructurelistprocessor{pubs:userdata}
 %   {\clf_listuserdata{\currentlist}\currentlistindex{bibref}}
 
 %D List symbols are used in interactive documents where no numbers are used but
@@ -631,22 +636,22 @@
    \fi
    \endgroup}
 
-\letvalue{\??listsymbollabels\s!unknown}\strc_lists_symbol_default
+\letcsname\??listsymbollabels\s!unknown\endcsname\strc_lists_symbol_default
 
-\setvalue{\??listsymbollabels}% default (empty)
+\defcsname\??listsymbollabels\endcsname % default (empty)
   {\listparameter\c!starter
    \currentlistentrynumber
    \listparameter\c!stopper}
 
-\setvalue{\??listsymbollabels\v!no}% also default
+\defcsname\??listsymbollabels\v!no\endcsname % also default
   {\listparameter\c!starter
    \currentlistentrynumber
    \listparameter\c!stopper}
 
-\setvalue{\??listsymbollabels\v!none}% real minimal (as suggested by WS)
+\defcsname\??listsymbollabels\v!none\endcsname % real minimal (as suggested by WS)
   {\currentlistentrynumber}
 
-\setvalue{\??listsymbollabels\v!yes}% auto (use value stored in tuc file)
+\defcsname\??listsymbollabels\v!yes\endcsname % auto (use value stored in tuc file)
   {\edef\currentlistlabel{\clf_listlabel\currentlistindex{\currentlistlabel}}%
    \leftlabeltext\currentlistlabel
    \listparameter\c!starter
@@ -1418,14 +1423,14 @@
 
 \installcorenamespace{listinteractions}
 
-\letvalue{\??listinteractions\v!number       }\v!number
-\letvalue{\??listinteractions\v!sectionnumber}\v!number
-\letvalue{\??listinteractions\v!text         }\v!text
-\letvalue{\??listinteractions\v!title        }\v!text
-\letvalue{\??listinteractions\v!page         }\v!pagenumber
-\letvalue{\??listinteractions\v!pagenumber   }\v!pagenumber
-\letvalue{\??listinteractions\v!all          }\v!all
-\letvalue{\??listinteractions\v!yes          }\v!all
+\letcsname\??listinteractions\v!number       \endcsname\v!number
+\letcsname\??listinteractions\v!sectionnumber\endcsname\v!number
+\letcsname\??listinteractions\v!text         \endcsname\v!text
+\letcsname\??listinteractions\v!title        \endcsname\v!text
+\letcsname\??listinteractions\v!page         \endcsname\v!pagenumber
+\letcsname\??listinteractions\v!pagenumber   \endcsname\v!pagenumber
+\letcsname\??listinteractions\v!all          \endcsname\v!all
+\letcsname\??listinteractions\v!yes          \endcsname\v!all
 
 \permanent\def\listboxproperties       {\strc_lists_get_reference_attribute}
 \permanent\def\listrenderingsetup      {\the\t_lists_every_renderingtext}

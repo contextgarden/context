@@ -658,7 +658,8 @@
 \setupmathcases
   [\c!distance=\emwidth,
    \c!strut=\v!yes, % new
-   \c!numberdistance=2.5\emwidth,
+  %\c!numberdistance=2.5\emwidth,
+   \c!numberdistance=\zeropoint, % pending an extension wrt placement (Aditya/Hans)
    \c!left={\left\{\mskip\thinmuskip},
    \c!right={\right.}]
 
@@ -667,36 +668,126 @@
     \frozen\instance          \defcsname \e!stop \currentmathcases\endcsname{\math_cases_stop}%
 \to \everydefinemathcases
 
-\permanent\protected\def\math_cases_NC_zero
-  {\math_cases_NC}
-
-\permanent\protected\def\math_cases_MC_zero
-  {\math_cases_NC
-   \ifmmode\else
-     \startimath
-     \enforced\let\math_cases_end_math\stopimath
-   \fi}
-
-\let\math_cases_end_math\relax
-
-\permanent\protected\def\math_cases_NR_zero
-  {\unskip
-   \math_cases_end_math
-   \aligntab
-   \global\enforced\let\math_cases_NC\math_cases_NC_first
-   \dodirectdoubleempty\math_cases_NR}
-
-\permanent\protected\def\math_cases_NC_first
-  {\global\enforced\let\math_cases_NC\math_cases_NC_second}
-
-\permanent\protected\def\math_cases_NC_second
-  {\math_cases_end_math\aligntab}
-
-\let\math_cases_NR\math_align_NR_generic
-
-\installmacrostack\math_cases_NC
+% \permanent\protected\def\math_cases_NC_zero
+%   {\math_cases_NC}
+%
+% \permanent\protected\def\math_cases_MC_zero
+%   {\math_cases_NC
+%    \ifmmode\else
+%      \startimath
+%      \enforced\let\math_cases_end_math\stopimath
+%    \fi}
+%
+% \let\math_cases_end_math\relax
+%
+% \permanent\protected\def\math_cases_NR_zero
+%   {\unskip
+%    \math_cases_end_math
+%    \aligntab
+%    \global\enforced\let\math_cases_NC\math_cases_NC_first
+%    \dodirectdoubleempty\math_cases_NR}
+%
+% \permanent\protected\def\math_cases_NC_first
+%   {\global\enforced\let\math_cases_NC\math_cases_NC_second}
+%
+% \permanent\protected\def\math_cases_NC_second
+%   {\math_cases_end_math\aligntab}
+%
+% \let\math_cases_NR\math_align_NR_generic
+%
+% \installmacrostack\math_cases_NC
+%
+% \let\math_cases_strut\relax
+%
+% \permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
+%   {\begingroup
+%    \edef\currentmathcases{#1}%
+%    \ifarguments\or\or
+%      \setupcurrentmathcases[#2]%
+%    \fi
+%    \edef\p_strut{\mathcasesparameter\c!strut}%
+%    \ifx\p_strut\v!yes
+%      \enforced\let\math_cases_strut\strut
+%    \else
+%      \enforced\let\math_cases_strut\relax
+%    \fi
+%    \mathcasesparameter\c!left
+%    \vcenter\bgroup
+%    \push_macro_math_cases_NC
+%    \enforced\let\MC\math_cases_MC_zero
+%    \enforced\let\NR\math_cases_NR_zero
+%    \enforced\let\TB\math_common_TB
+%    \enforced\glet\math_cases_NC\math_cases_NC_first
+%    \normalbaselines
+%    \mathsurround\zeropoint
+%    \everycr\emptytoks
+%    \tabskip\zeropoint
+%    \global\c_math_eqalign_column\plusone
+%    \halign\bgroup
+%      \startimath
+%      \mathcasesparameter\c!style
+%      \alignmark\alignmark
+%      \stopimath
+%      \hfil
+%      \aligntab
+%      \hskip\mathcasesparameter\c!distance\relax
+%      \pop_macro_math_cases_NC
+%      \math_cases_strut % looks better
+%      \alignmark\alignmark
+%      \hfil
+%      \aligntab
+%      \hskip\mathcasesparameter\c!numberdistance\relax
+%    % \let\formuladistance\!!zeropoint
+%      \span\math_text_in_eqalign{\alignmark\alignmark}%
+%      \crcr} % todo: number
+%
+% % When we have just protected we get an extra row but we can no flag
+% % this as a proper alignment related command which means that uit gets
+% % expanded.
+%
+% \noaligned\permanent\protected\def\math_cases_stop
+%   {\crcr
+%    \egroup
+%    \pop_macro_math_cases_NC
+%    \egroup
+%    \mathcasesparameter\c!right
+%    \endgroup}
 
 \let\math_cases_strut\relax
+
+\newcount\c_math_cases_nc
+
+\def\math_cases_NC_zero
+  {\ifmmode\else\startimath\fi}
+
+\def\math_cases_NC_one
+  {\ifmmode\stopimath\fi
+   \aligntab
+   \ifmmode\else\startimath\fi}
+
+\def\math_cases_NC_two
+  {\ifmmode\stopimath\fi}
+
+\permanent\protected\def\math_cases_NC
+  {\ifcase\c_math_cases_nc
+     \expandafter\math_cases_NC_zero
+   \or
+     \expandafter\math_cases_NC_one
+   \or
+     \expandafter\math_cases_NC_two
+   \else
+     % error
+   \fi
+   \global\advance\c_math_cases_nc\plusone}
+
+\noaligned\tolerant\permanent\protected\def\math_cases_NR[#1]#*[#2]%
+  {\unskip
+   \ifmmode\stopimath\fi
+   \aligntab
+   \global\c_math_cases_nc\zerocount
+   \math_align_NR_generic[#1][#2]}
+
+\installglobalmacrostack\c_math_cases_nc
 
 \permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
   {\begingroup
@@ -710,48 +801,41 @@
    \else
      \enforced\let\math_cases_strut\relax
    \fi
+   \push_macro_c_math_cases_nc
    \mathcasesparameter\c!left
    \vcenter\bgroup
-   \push_macro_math_cases_NC
- % \enforced\let\endmath\relax
-   \enforced\let\NC\math_cases_NC_zero
-   \enforced\let\MC\math_cases_MC_zero
-   \enforced\let\NR\math_cases_NR_zero
+   \enforced\let\MC\math_cases_NC
+   \enforced\let\NC\math_cases_NC
+   \enforced\let\NR\math_cases_NR
    \enforced\let\TB\math_common_TB
-   \global\enforced\let\math_cases_NC\math_cases_NC_first
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
    \global\c_math_eqalign_column\plusone
+   \global\c_math_cases_nc\zerocount
    \halign\bgroup
-     \startimath
+     \ifmmode\else\startimath\fi
      \mathcasesparameter\c!style
      \alignmark\alignmark
-     \stopimath
+     \ifmmode\stopimath\fi
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!distance\relax
-     \pop_macro_math_cases_NC
      \math_cases_strut % looks better
      \alignmark\alignmark
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!numberdistance\relax
-   % \let\formuladistance\!!zeropoint
      \span\math_text_in_eqalign{\alignmark\alignmark}%
      \crcr} % todo: number
-
-% When we have just protected we get an extra row but we can no flag
-% this as a proper alignment related command which means that uit gets
-% expanded.
 
 \noaligned\permanent\protected\def\math_cases_stop
   {\crcr
    \egroup
-   \pop_macro_math_cases_NC
    \egroup
    \mathcasesparameter\c!right
+   \pop_macro_c_math_cases_nc
    \endgroup}
 
 \definemathcases[cases]

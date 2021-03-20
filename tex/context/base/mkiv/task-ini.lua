@@ -131,6 +131,9 @@ appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize", 
 
 end
 
+appendaction("finalizers", "lists", "nodes.handlers.showhyphenation",                           nil, "nut",    "disabled"  )
+appendaction("finalizers", "lists", "nodes.handlers.visualizehyphenation",                      nil, "nut",    "disabled"  )
+
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether",                 nil, "nut",    "disabled"  )
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize", nil, "nonut",  "disabled"  )
