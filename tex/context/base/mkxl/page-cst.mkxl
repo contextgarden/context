@@ -64,8 +64,8 @@
    \c!maxwidth=\makeupwidth]
 
 \appendtoks % could become an option
-    \frozen\instance\setuevalue{\e!start\currentpagegrid}{\startpagegrid[\currentpagegrid]}%
-    \frozen\instance\setuevalue{\e!stop \currentpagegrid}{\stoppagegrid}%
+    \frozen\instance\protected\edefcsname\e!start\currentpagegrid\endcsname{\startpagegrid[\currentpagegrid]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentpagegrid\endcsname{\stoppagegrid}%
     \clf_definecolumnset {
         name {\currentpagegrid}%
     }%
@@ -147,6 +147,8 @@
    \d_page_grd_max_width \pagegridparameter\c!maxwidth\relax
    \d_page_grd_max_height\pagegridparameter\c!maxheight\relax
    \d_page_grd_distance  \pagegridparameter\c!distance\relax
+   %
+   \automigrationmode\zerocount % for now
    %
    \ifcase\c_page_grd_n_of_rows
       \getrawnoflines{\dimexpr\d_page_grd_max_height-\strutheight+\topskip\relax}%

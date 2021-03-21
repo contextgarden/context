@@ -54,7 +54,6 @@ local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 
 local isglyph           = nuts.isglyph
-local findtail          = nuts.tail
 local nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
@@ -1320,11 +1319,16 @@ do
 
     local periods    = utilities.strings.newrepeater(".")
 
-    local function showdetails(n,l)
+    local f_detail_0 = formatters["%s %s = %s"]
+    local f_detail_1 = formatters["%i: %s %s = %s"]
+    local f_detail_2 = formatters["%i:%i: %s %s = %s"]
+
+    local function showdetails(n,l,tlp,l1,l2)
         local p = properties[tonut(n)]
         if p then
             for k, v in sortedhash(p) do
                 local t = type(v)
+                local p = periods[l+1]
                 if t == "string" then
                     if find(v,"[\n\r]") then
                         v =  "\n" .. stripstring(v) .. "\n"
@@ -1336,7 +1340,15 @@ do
                 else
                     v = "<" .. tostring(v) .. ">"
                 end
-                flushline(periods[l+1] .. " " .. k .. " = " .. v)
+                if tlp == 3 then
+                    flushline(f_detail_2(l1,l2,p,k,v))
+                elseif tlp == 2 then
+                    flushline(f_detail_1(l2,p,k,v))
+                elseif tlp == 1 then
+                    flushline(f_detail_1(l1,p,k,v))
+                else
+                    flushline(f_detail_0(p,k,v))
+                end
             end
         end
     end
@@ -1346,12 +1358,16 @@ do
         literal = showdetails,
     }
 
-    callback.register("show_whatsit",function(n,l)
+    callback.register("show_whatsit",function(n,what,l,tlp,l1,l2)
         local s = nodes.whatsitcodes[n.subtype]
-        flush(" [" .. s .. "]")
-        local w = whatsittracers[s]
-        if w then
-            w(n,l)
+        if what == 1 then
+            return s or "unknown"
+     -- elseif what == 2 then
+        else
+            local w = whatsittracers[s]
+            if w then
+                w(n,l,tlp,l1,l2)
+            end
         end
     end)
 

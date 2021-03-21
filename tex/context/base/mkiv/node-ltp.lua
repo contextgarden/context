@@ -267,7 +267,7 @@ local gluecodes               = nodes.gluecodes
 
 local temp_code               = nodecodes.temp
 local glyph_code              = nodecodes.glyph
-local ins_code                = nodecodes.ins
+local insert_code             = nodecodes.insert
 local mark_code               = nodecodes.mark
 local adjust_code             = nodecodes.adjust
 local penalty_code            = nodecodes.penalty
@@ -2624,7 +2624,7 @@ par.head = head
                     par.internal_right_box       = getfield(current,"box_right")
                     par.internal_right_box_width = getfield(current,"box_right_width")
                 elseif trace_unsupported then
-                    if id == mark_code or id == ins_code or id == adjust_code then
+                    if id == mark_code or id == insert_code or id == adjust_code then
                         -- skip
                     else
                         report_parbuilders("node of type %a found in paragraph",type(id))
@@ -3098,7 +3098,7 @@ do
                         total_shrink [shrink_order]  = total_shrink[shrink_order]   + shrink
                         natural = natural + wd
                     end
-                elseif id == ins_code or id == mark_code then
+                elseif id == insert_code or id == mark_code then
                     local prev, next = getboth(current)
                     if adjust_tail then -- todo
                         setlink(prev,next)

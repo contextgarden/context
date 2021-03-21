@@ -33,7 +33,7 @@ local vlist_code          = nodecodes.vlist
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
-local insert_code         = nodecodes.ins
+local insert_code         = nodecodes.insert
 local mark_code           = nodecodes.mark
 local rule_code           = nodecodes.rule
 
@@ -635,6 +635,7 @@ local function preparesplit(specification) -- a rather large function
     end
 
     local function process_list(current,nxt)
+-- print(nuts.getpre(current),nuts.getpost(current))
         local nxtid = nxt and getid(nxt)
         line = line + 1
         local inserts, insertskips, nextskips, inserttotal = nil, 0, 0, 0

@@ -6,8 +6,13 @@ if not modules then modules = { } end modules ['lang-hup'] = {
     license   = "see context related readme files"
 }
 
+local type, next = type, next
 local utfchar = utf.char
 local concat, sortedhash = table.concat, table.sortedhash
+local basename = file.basename
+
+local status        = status
+local nodes         = nodes
 
 local specialskips  = nodes.specialskipcodes
 local nodecodes     = nodes.nodecodes
@@ -20,7 +25,6 @@ local par_code      = nodecodes.par
 local line_code     = nodes.listcodes.line
 local fontkern_code = nodes.kerncodes.fontkern
 local nuts          = nodes.nuts
-local findtail      = nuts.tail
 local getlist       = nuts.getlist
 local getnext       = nuts.getnext
 local getprev       = nuts.getprev
@@ -28,9 +32,10 @@ local getid         = nuts.getid
 local getsubtype    = nuts.getsubtype
 local getreplace    = nuts.getreplace
 local getdiscpart   = nuts.getdiscpart
-local isglyph       = nuts.isglyph
+local isnextglyph   = nuts.isnextglyph
 local nexthlist     = nuts.traversers.list
 local nextglyph     = nuts.traversers.glyph
+local traverse      = nuts.traverse
 
 local setcolor      = nodes.tracers.colors.set
 local setaction     = nodes.tasks.setaction
@@ -40,146 +45,113 @@ local hash          = table.setmetatableindex("number")
 local report        = logs.reporter("hyphenated")
 local trace_detail  = false
 
--- local nexthlist     = nuts.traversers.list
--- local nextglyph     = nuts.traversers.glyph
---
--- local setcolor      = nodes.tracers.colors.set
---
--- function nodes.handlers.showhyphenation(head)
---     for current, id, subtype, list in nexthlist, head do
---         if subtype == line_code then
---             for n in nextglyph, list do
---                 local d = getdiscpart(n)
---                 if d == 0 then
---                     -- nothing
---                 elseif d == 1 then
---                     setcolor(n,"red")   -- pre
---                 elseif d == 2 then
---                     setcolor(n,"blue")  -- post
---                 elseif d == 3 then
---                     setcolor(n,"green") -- replace
---                 end
---             end
---         end
---     end
---     return head
--- end
+local characters    = fonts.hashes.characters
 
-local hash = table.setmetatableindex("number")
+local word = { }
+local w    = 0
 
-local characters = fonts.hashes.characters
-
-local function collect(t,head)
+----- function collect(word,head)
+local function collect(head)
     local last = nil
     while head do
-        local char, id = isglyph(head)
+        local nxt, char, id = isnextglyph(head)
         if char then
             local u = characters[id][char].unicode
-            if u then
-                if type(u) == "table" then
-                    for i=1,#u do
-                        t[#t+1] = utfchar(u[i])
-                    end
-                else
-                    t[#t+1] = utfchar(u)
+            if type(u) == "table" then
+                for i=1,#u do
+                 -- word[#word+1] = utfchar(u[i])
+                    w = w + 1 ; word[w] = utfchar(u[i])
                 end
             else
-                t[#t+1] = utfchar(char)
+             -- word[#word+1] = utfchar(u or char)
+                w = w + 1 ; word[w] = utfchar(u or char)
             end
             last = head
         elseif id == disc_code then
-            collect(t,getreplace(head))
+         -- collect(word,getreplace(head))
+            collect(getreplace(head))
         elseif id == kern_code and getsubtype(head,fontkern_code) then
             -- we're ok
         else
             break
         end
-        head = getnext(head)
+        head = nxt
     end
     return last and getdiscpart(last) == 1
 end
 
 local function getpostpart(current)
-    local first = nil
-    while current do
-        local id = getid(current)
+    for n, id, subtype in traverse(current) do
         if id == glue_code then
-            if not specialskips[getsubtype(current)] then
+            if not specialskips[subtype] then
                 break
             end
         elseif id == glyph_code or id == disc_code then
-            return current
+            return n
         elseif id ~= par_code then
             break
         end
-        current = getnext(current)
     end
 end
 
 local function findprepart(current)
-    local tail = findtail(current)
-    while tail do
-        local id = getid(tail)
+    for n, id, subtype in traverse(current,true,true) do
         if id == glue_code then
-            if not specialskips[getsubtype(tail)] then
+            if not specialskips[subtype] then
                 break
             end
-        elseif id == glyph_code and getdiscpart(tail) == 1 then
-            return tail
+        elseif id == glyph_code and getdiscpart(n) == 1 then
+            return n
         else
             break
         end
-        tail = getprev(tail)
     end
 end
 
 local function getprepart(disc)
-    local back = getprev(disc)
-    local okay = back
-    while okay do
-        local id = getid(okay)
-        if id == glyph_code or id == disc_code or (id == kern_code and getsubtype(okay,fontkern_code)) then
-            back = okay
+    local back = disc
+    for n, id, subtype in traverse(getprev(disc),true) do
+        if id == glyph_code or id == disc_code or (id == kern_code and subtype == fontkern_code) then
+            back = n
         else
-            break
+            return back
         end
-        okay = getprev(okay)
     end
     return back
 end
 
 function nodes.handlers.showhyphenation(head)
-    local current = head
-    local word    = { }
-    while current do
-        if getid(current) == hlist_code and getsubtype(current) == line_code then
-            local list = getlist(current)
-            if list then
-                if #word > 0 then
-                    local after = getpostpart(list)
-                    local more  = collect(word,after)
-                    if more then
-                        goto skip
-                    else
-                        word = concat(word)
-                        if trace_detail then
-                            local r = status.readstate
-                            report("around line %s in file %s: %s",r.linenumber or "-",file.basename(r.filename),word)
-                        end
-                        hash[word] = hash[word] + 1
-                        word = { }
+ -- local word = { }
+    w = 0
+    for current, id, subtype, list in nexthlist, head do
+        if list and subtype == line_code then
+         -- if #word > 0 then
+            if w > 0 then
+                local after = getpostpart(list)
+             -- local more  = collect(word,after)
+                local more  = collect(after)
+                if more then
+                    goto skip
+                else
+                 -- local result = concat(word)
+                    local result = concat(word,"",1,w)
+                    if trace_detail then
+                        local r = status.readstate
+                        report("around line %s in file %s: %s",r.linenumber or "-",basename(r.filename),result)
                     end
+                    hash[result] = hash[result] + 1
+                 -- word = { }
+                    w = 0
                 end
-                local last = findprepart(list)
-                if last then
-                    local before = getprepart(last)
-                    collect(word,before)
-
-                end
-              ::skip::
             end
+            local last = findprepart(list)
+            if last then
+                local before = getprepart(last)
+             -- collect(word,before)
+                collect(before)
+            end
+          ::skip::
         end
-        current = getnext(current)
     end
     return head
 end
@@ -226,7 +198,7 @@ end)
 
 function nodes.handlers.visualizehyphenation(head)
     for current, id, subtype, list in nexthlist, head do
-        if subtype == line_code then
+        if list and subtype == line_code then
             for n in nextglyph, list do
                 local d = getdiscpart(n)
                 if d == 0 then

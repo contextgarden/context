@@ -41,9 +41,6 @@ texconfig.properties_size =    10000
 texconfig.error_line      =      250
 texconfig.half_error_line =      125
 
-texconfig.level_max       =      500
-texconfig.level_chr       =       46 -- period
-
 -- registering bytecode chunks
 
 local bytedata    = lua.bytedata or { }

@@ -393,12 +393,12 @@
 %             \fi
 %             \MMLdoR
 %         } {
-            \edef\mmlapplyaction{\xmlfilter{#1}{/*/name()}}
+            \edef\mmlapplyaction{\xmlfilter{#1}{/*/tag()}}
             \doifelsesetups {mml:apply:mml:\mmlapplyaction} {
                 \xmlsetup{#1}{mml:apply:mml:\mmlapplyaction}
              } {
 %                 \MMLdoL
-                \xmlsetup{#1}{mml:\xmlfilter{#1}{/*/name()}}
+                \xmlsetup{#1}{mml:\mmlapplyaction}
 %                 \MMLdoR
              }
 %         }

@@ -719,6 +719,25 @@ font structure.
 Setting this callback to \type {false} is pointless as it will prevent font
 loading completely but will nevertheless generate errors.
 
+\subsection{\cbk {show+whatsit}}
+
+\topicindex{callbacks+whatsits}
+
+Because we only have a generic whatsit it is up to the macro package to provide
+details when tracing them.
+
+\startfunctioncall
+function(<node> whatsit, <number> indentation,
+    <number> tracinglevel, <number> currentlevel, <number> inputlevel)
+    -- no return value
+end
+\stopfunctioncall
+
+The indentation tells how many periods are to be typeset if you want to be
+compatible with the rest of tracing. The tracinglevels indicates if the current
+level and\|/or input level are shown cf. \lpr {tracinglevels}. Of course one
+is free to show whatever in whatever way suits the whatsit best.
+
 \stopsection
 
 \stopchapter

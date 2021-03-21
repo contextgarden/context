@@ -61,6 +61,7 @@ return {
   "tracingassigns",
   "tracinggroups",
   "tracingifs",
+  "tracinglevels",
   "tracingnesting",
   "unexpanded",
   "unless",

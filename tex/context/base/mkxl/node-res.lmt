@@ -484,6 +484,7 @@ end
 -- housekeeping
 
 local function cleanup(nofboxes) -- todo
+    -- this is bonus, not really needed
     local tracers = nodes.tracers
     if tracers and tracers.steppers then -- to be resolved
         tracers.steppers.reset() -- todo: make a registration subsystem

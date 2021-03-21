@@ -168,8 +168,9 @@ literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
 if not nodecodes.delimiter then
     -- as in luametatex / lmtx
-    nodecodes.delimiter = nodecodes.delim
-    nodecodes[nodecodes.delimiter] = "delimiter"
+    local d = nodecodes.delim
+    nodecodes.delimiter = d
+    nodecodes[d]        = "delimiter"
     nodecodes.delim     = nil
 end
 
@@ -178,6 +179,14 @@ if not nodecodes.par then
     local p = nodecodes.localpar
     nodecodes.par = p
     nodecodes[p]  = "par"
+end
+
+if not nodecodes.insert then
+    -- as in luametatex / lmtx
+    local i = nodecodes.ins
+    nodecodes.insert = i
+    nodecodes[i]     = "insert"
+    nodecodes.ins    = nil
 end
 
 if not gluecodes.indentskip then

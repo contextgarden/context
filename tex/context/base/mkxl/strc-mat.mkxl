@@ -195,7 +195,6 @@
 
 \protected\def\strc_formulas_store_number#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\settrue\c_strc_formulas_handle_number
-   \edef\xx{\formulaparameter\c!list}%
    \strc_counters_register_component
      {formula}%
      \setupcurrentformula \formulaparameter \detokenizedformulaparameter

@@ -46,7 +46,6 @@ local setattributelist   = nuts.setattributelist
 local setprop            = nuts.setprop
 
 local takebox            = nuts.takebox
-local findtail           = nuts.tail
 
 local nextnode           = nuts.traversers.node
 local nexthlist          = nuts.traversers.hlist

@@ -93,8 +93,8 @@
 
 \appendtoks % could become an option
     \ifcstok{\mixedcolumnsparameter\c!define}\v!yes
-      \frozen\instance\setuevalue{\e!start\currentmixedcolumns}{\startmixedcolumns[\currentmixedcolumns]}%
-      \frozen\instance\setuevalue{\e!stop \currentmixedcolumns}{\stopmixedcolumns}%
+      \frozen\instance\protected\edefcsname\e!start\currentmixedcolumns\endcsname{\startmixedcolumns[\currentmixedcolumns]}%
+      \frozen\instance\protected\edefcsname\e!stop \currentmixedcolumns\endcsname{\stopmixedcolumns}%
     \fi
 \to \everydefinemixedcolumns
 
@@ -342,7 +342,7 @@
 \installcorenamespace{mixedcolumnsseparator}
 
 \permanent\protected\def\installmixedcolumnseparator#1#2%
-  {\setvalue{\??mixedcolumnsseparator#1}{#2}}
+  {\defcsname\??mixedcolumnsseparator#1\endcsname{#2}}
 
 \installmixedcolumnseparator\v!rule
   {\vrule
@@ -591,11 +591,13 @@
    \useblankparameter  \mixedcolumnsparameter
    \useprofileparameter\mixedcolumnsparameter % new
    %
+   \automigrationmode\zerocount % for now
+   %
    \nofcolumns\c_page_mix_n_of_columns} % public
 
 %D The otr method related hooks are defined next:
 
-% \setvalue{\??mixedcolumnsbefore\s!otr}%
+% \defcsname\??mixedcolumnsbefore\s!otr\endcsname
 %   {\par
 %    \ifdim\pagetotal=\zeropoint \else
 %      \verticalstrut     % probably no longer needed
@@ -604,7 +606,7 @@
 
 \newcount\c_page_mix_otr_nesting
 
-% \setvalue{\??mixedcolumnsbefore\s!otr}%
+% \defcsname\??mixedcolumnsbefore\s!otr\endcsname
 %   {\par
 %    \global\advance\c_page_mix_otr_nesting\plusone
 %    \ifcase\c_page_mix_otr_nesting\or
@@ -613,7 +615,7 @@
 %      \fi
 %    \fi}
 
-\setvalue{\??mixedcolumnsbefore\s!otr}%
+\defcsname\??mixedcolumnsbefore\s!otr\endcsname
   {\par
    \global\advance\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
@@ -625,7 +627,7 @@
      \fi
    \fi}
 
-\setvalue{\??mixedcolumnsstart\s!otr}%
+\defcsname\??mixedcolumnsstart\s!otr\endcsname
   {\ifcase\c_page_mix_otr_nesting\or
      \scratchwidth\textwidth
      \setupoutputroutine[\s!mixedcolumn]%
@@ -651,14 +653,14 @@
    \usealignparameter\mixedcolumnsparameter
    \usesetupsparameter\mixedcolumnsparameter}
 
-% \setvalue{\??mixedcolumnsstop\s!otr}%
+% \defcsname\??mixedcolumnsstop\s!otr\endcsname
 %   {\par
 %    \ifcase\c_page_mix_otr_nesting\or
 %      \c_page_mix_routine\c_page_mix_routine_balance
 %      \page_otr_trigger_output_routine
 %    \fi}
 
-\setvalue{\??mixedcolumnsstop\s!otr}%
+\defcsname\??mixedcolumnsstop\s!otr\endcsname
   {\par
    \ifcase\c_page_mix_otr_nesting\or
      \doifelse{\mixedcolumnsparameter\c!balance}\v!yes
@@ -671,7 +673,7 @@
      \fi
    \fi}
 
-\setvalue{\??mixedcolumnsafter\s!otr}%
+\defcsname\??mixedcolumnsafter\s!otr\endcsname
   {\ifcase\c_page_mix_otr_nesting\or
      \prevdepth\strutdp
      \page_otr_command_set_vsize
@@ -918,10 +920,10 @@
 
 %D Next we define the hooks:
 
-\letvalue{\??mixedcolumnsbefore\s!box}\donothing
-\letvalue{\??mixedcolumnsafter \s!box}\donothing
+\letcsname\??mixedcolumnsbefore\s!box\endcsname\donothing
+\letcsname\??mixedcolumnsafter \s!box\endcsname\donothing
 
-\setvalue{\??mixedcolumnsstart\s!box}%
+\defcsname\??mixedcolumnsstart\s!box\endcsname
   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
    \setbox\b_page_mix_collected\vbox \bgroup
      \let\currentoutputroutine\s!mixedcolumn % makes \column work
@@ -934,7 +936,7 @@
        \ignorespaces
      \fi}
 
-\setvalue{\??mixedcolumnsstop\s!box}%
+\defcsname\??mixedcolumnsstop\s!box\endcsname
   {\ifx\p_page_mix_strut\v!yes
      \removeunwantedspaces
      \endstrut

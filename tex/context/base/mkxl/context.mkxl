@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.03.20 01:03}
+\immutable\edef\contextversion{2021.03.21 21:05}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -606,12 +606,12 @@
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkxl","\contextbanner")}% can become automatic
 \to \everydump
 
-% some day:
+% maybe some day (but also inhibits):
 %
 % \prependtoks
 %     \overloadmode 255
 % \to \everyjob
 
-\overloadmode   0  % for now
+\overloadmode\zerocount % for now
 
 \errorstopmode \dump \endinput

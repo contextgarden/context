@@ -1316,4 +1316,8 @@
 \permanent\protected\def\newlocaltoks  #1{\setnewlocaltoks  #1\emptytoks }
 \permanent\protected\def\newlocalbox   #1{\setnewlocalbox   #1\emptybox  }
 
+%D Let's be detailed: grouplevel:inputlevel:
+
+\tracinglevels\plusthree
+
 \protect \endinput

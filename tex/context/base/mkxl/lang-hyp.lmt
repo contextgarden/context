@@ -1014,7 +1014,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
  --     [nodecodes.rule]    = true,
  --     [nodecodes.dir]     = true,
  --     [nodecodes.whatsit] = true,
- --     [nodecodes.ins]     = true,
+ --     [nodecodes.insert]  = true,
  --     [nodecodes.adjust]  = true,
  --
  --     [nodecodes.math]    = true,

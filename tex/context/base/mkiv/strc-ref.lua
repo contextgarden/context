@@ -435,9 +435,21 @@ end
 references.synchronizepage = synchronizepage
 
 local function enhancereference(specification)
-    local l = tobesaved[specification.prefix][specification.tag]
-    if l then
-        synchronizepage(l.references)
+    local prefix = specification.prefix
+    if prefix then
+        local entry = tobesaved[prefix]
+        if entry then
+            entry = entry[specification.tag]
+            if entry then
+                synchronizepage(entry.references)
+            else
+                -- normally a bug
+            end
+        else
+            -- normally a bug
+        end
+    else
+        -- normally a bug
     end
 end
 

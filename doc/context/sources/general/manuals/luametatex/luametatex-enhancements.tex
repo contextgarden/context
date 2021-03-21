@@ -1543,6 +1543,11 @@ related primitives.
 If \prm {tracingonline} is larger than~2, the node list display will also print
 the node number of the nodes.
 
+When bit~1 of \lpr {tracinglevels} is set the current level is prepended to
+tracing lines in the log and when bit~2 is set the input level is prepended. You
+can set both bits and get both numbers prepended. In \CONTEXT\ we default to
+the value~3, so you get prefixes like \type {3:4:} followed by a space.
+
 \stopsubsection
 
 % \startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr

@@ -772,6 +772,7 @@ function sections.typesetnumber(entry,kind,...)
                     applyprocessor(starter)
                 end
             end
+-- inspect(entry)
             if prefixlist and (kind == "section" or kind == "prefix" or kind == "direct") then
                 -- find valid set (problem: for sectionnumber we should pass the level)
                 -- no holes
@@ -780,6 +781,8 @@ function sections.typesetnumber(entry,kind,...)
                 local bb = 0
                 local ee = 0
                 -- find last valid number
+-- print("index >>",b,e)
+-- inspect(prefixlist)
                 for k=e,b,-1 do
                     local prefix = prefixlist[k]
                     local index  = sections.getlevel(prefix) or k
