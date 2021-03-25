@@ -64,7 +64,7 @@
    \endgroup}
 
 \permanent\tolerant\protected\def\applypattern[#1]#*[#2]%
-  {\hbox\bgroup
+  {\hpack\bgroup
    \letdummyparameter\c!name  \s!dummy
    \letdummyparameter\c!width \zeropoint
    \letdummyparameter\c!height\zeropoint

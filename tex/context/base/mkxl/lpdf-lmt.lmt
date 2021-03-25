@@ -87,6 +87,7 @@ local pdf_pages      = pdfconstant("Pages")
 local pdf_page       = pdfconstant("Page")
 local pdf_xobject    = pdfconstant("XObject")
 local pdf_form       = pdfconstant("Form")
+local pdf_pattern    = pdfconstant("Pattern")
 
 local fonthashes     = fonts.hashes
 local characters     = fonthashes.characters
@@ -1821,9 +1822,16 @@ local finalize  do
                 wrapper.Matrix = pdfarray { 1, 0, 0, 1, 0, 0 }
             end
 
-            -- todo: additional = resources
+            local patterns = true
 
-            local boxresources   = lpdf.collectedresources { serialize = false }
+            if attributes.Type and attributes.Type == pdf_pattern then
+                patterns = false
+            end
+
+            local boxresources   = lpdf.collectedresources {
+                patterns  = patterns,
+                serialize = false,
+            }
             boxresources.Font    = fonts
             boxresources.XObject = xforms
 

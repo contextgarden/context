@@ -2158,3 +2158,88 @@ implement {
         end
     end
 }
+
+-- for the moment we keep this here:
+
+do
+
+    local stores       = setmetatableindex("table")
+    local defaultwidth = 6553600 -- maybe bp
+
+    function images.resetstore(name)
+        stores[name] = { }
+    end
+
+    local function resetdata(name,n)
+        local store = stores[name]
+        store[n] = false
+    end
+
+    local function storedata(name,data)
+        local store = stores[name]
+        store[#store+1] = data
+        return #store
+    end
+
+    local function fetchdata(name,n)
+        local store = stores[name]
+        return store and store[n]
+    end
+
+    images.storedata = storedata
+    images.fetchdata = fetchdata
+    images.resetdata = resetdata
+
+ -- function images.filetostore(name,kind,filename)
+ --     return storedata(name, {
+ --         data = io.loaddata(filename),
+ --         kind = kind or file.suffix(filename),
+ --     })
+ -- end
+ --
+ -- function images.datatostore(name,kind,data)
+ --     return storedata(name, {
+ --         data = data,
+ --         kind = kind,
+ --     })
+ -- end
+
+ -- local embedimage = images.embed
+ -- local wrapimage  = images.wrap
+
+    function images.embedfromstore(name,n,reset)
+        local blob = fetchdata(name,n)
+        if blob then
+            local kind = blob.kind
+            if kind then
+                local identify = graphics.identifiers[kind]
+                local inject   = backends.codeinjections[kind]
+                if identify and inject then
+                    local info = blob.info or identify(blob.data,"string") -- could already be done
+                    if info then
+                        info.width  = defaultwidth
+                        info.height = (info.ysize /info.xsize) * defaultwidth
+                        local image = blob.image
+                        if not image then
+                            image = inject(info,"string")
+                            blob.image = image
+                        end
+                        image.width  = info.width
+                        image.height = info.height
+                        context(wrapimage(image))
+                     -- if reset then
+                     --     resetdata(name,n)
+                     -- end
+                    end
+                end
+            end
+        end
+    end
+
+    implement {
+        name      = "embedimagefromstore",
+        arguments = { "string", "integer", "boolean" },
+        actions   = images.embedfromstore,
+    }
+
+end

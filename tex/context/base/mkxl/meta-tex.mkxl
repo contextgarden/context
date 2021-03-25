@@ -29,7 +29,7 @@
 \aliased\let\stopTeXtexts\relax
 
 \permanent\tolerant\protected\def\TeXtext[#1]#:#2#3% contrary to mkii we don't process yet but we do expand
-  {\setxvalue{\??graphictextext#2}{\meta_textext_indeed{#1}{#3}}}
+  {\xdefcsname\??graphictextext#2\endcsname{\meta_textext_indeed{#1}{#3}}}
 
 \protected\def\meta_textext_indeed#1#2%
   {\begingroup
@@ -157,6 +157,13 @@
 \definefontsynonym[sans-bold-italic]    [\s!SansBoldItalic]
 \definefontsynonym[sans-bold-oblique]   [\s!SansBoldSlanted]
 
+\definefontsynonym[sansserif-normal-normal]  [\s!Sans]
+\definefontsynonym[sansserif-normal-italic]  [\s!SansItalic]
+\definefontsynonym[sansserif-normal-oblique] [\s!SansSlanted]
+\definefontsynonym[sansserif-bold-normal]    [\s!SansBold]
+\definefontsynonym[sansserif-bold-italic]    [\s!SansBoldItalic]
+\definefontsynonym[sansserif-bold-oblique]   [\s!SansBoldSlanted]
+
 \definefontsynonym[mono-normal-normal]  [\s!Mono]
 \definefontsynonym[mono-normal-italic]  [\s!MonoItalic]
 \definefontsynonym[mono-normal-oblique] [\s!MonoSlanted]
@@ -172,6 +179,11 @@
 \defcsname\??svgfamily  mono\endcsname{mono}
 
 \definelayer[svgmps][\c!method=\v!fit]
+
+\permanent\protected\def\svgembeddedfigure#1%
+  {\clf_embedimagefromstore {svg} #1 true\relax}
+
+% todo: use the independent color and transparency mechanism
 
 \permanent\protected\def\svghashed#1%
   {\clf_svghashed#1\relax}
@@ -202,26 +214,22 @@
   {\egroup
    \flushlayer[svgmps]}
 
-\permanent\protected\def\svg_normal_color#1#2#3#4%
-  {\colored[r=#1,g=#2,b=#3]{#4}}
+\permanent\protected\def\svg_normal_color_c#1#2#3%#4%   % color
+  {\colored[r=#1,g=#2,b=#3]}%{#4}}
+
+\permanent\protected\def\svg_normal_color_o#1%#2%       % opace
+  {\colored[a=1,t=#1]}%{#2}}
+
+\permanent\protected\def\svg_normal_color_b#1#2#3#4%#5% % both
+  {\colored[r=#1,g=#2,b=#3,a=1,t=#4]}% {#5}}
 
 \permanent\protected\def\svg_normal_set#1#2#3%
   {\setlayer[svgmps]{\hbox xoffset #1\onebasepoint yoffset #2\onebasepoint to 10sp{#3}}}
 
-% \permanent\protected\def\svg_normal_font#1#2#3#4#5%
-%   {\hbox\bgroup
-%    \iftok{#2}\emptytoks\else
-%       \edef\p_font{\ifcsname\??svgfamily#2\endcsname\lastnamedcs\else#2\fi-#3-#4}%
-%       \predefinedfont[\s!spec:\p_font*\s!default\space @ 10bp]%
-%    \fi
-%    \glyphscale\numericscale#1\relax % we need a period !
-%    #5%
-%    \egroup}
-
-\permanent\protected\def\svg_normal_font#1#2#3#4#5%
+\permanent\protected\def\svg_normal_font#1#2#3%#4%
   {\hbox\bgroup
    \iftok{#2}\emptytoks\else
-      \edef\p_font{\ifcsname\??svgfamily#2\endcsname\lastnamedcs\else#2\fi-#3-#4}%
+      \edef\p_font{\ifcsname\??svgfamily#1\endcsname\lastnamedcs\else#1\fi-#2-#3}%
       \ifcsname svg:\p_font\endcsname
         \lastnamedcs
       \else
@@ -229,9 +237,16 @@
         \csname svg:\p_font\endcsname
       \fi
    \fi
+   \let\next}
+ % #4%
+ % \egroup}
+
+\permanent\protected\def\svg_normal_size#1%#2%
+  {\hbox\bgroup
    \glyphscale\numericscale#1\relax % we need a period !
-   #5%
-   \egroup}
+   \let\next}
+ % #2%
+ % \egroup}
 
 \permanent\protected\def\svg_traced_pcode#1#2#3%
   {\writestatus{SVG TEXT}{....[poscode #1 #2 \Uchar #3]}%
@@ -265,46 +280,67 @@
   {\svg_normal_stop
    \writestatus{SVG TEXT}{[stop layer]}}
 
-\permanent\protected\def\svg_traced_color#1#2#3#4%
-  {\writestatus{SVG TEXT}{.[start color #1 #2 #3]}%
-   \svg_normal_color{#1}{#2}{#3}{#4}%
-   \writestatus{SVG TEXT}{.[stop color]}}
+\permanent\protected\def\svg_traced_color_c#1#2#3#4%
+  {\writestatus{SVG TEXT}{..[start color #1 #2 #3]}%
+   \svg_normal_color_c{#1}{#2}{#3}{#4}%
+   \writestatus{SVG TEXT}{..[stop color]}}
+
+\permanent\protected\def\svg_traced_color_o#1#2%
+  {\writestatus{SVG TEXT}{..[start opace #1]}%
+   \svg_normal_color_o{#1}{#2}%
+   \writestatus{SVG TEXT}{..[stop opace]}}
+
+\permanent\protected\def\svg_traced_color_b#1#2#3#4#5%
+  {\writestatus{SVG TEXT}{..[start color #1 #2 #3 opace #4]}%
+   \svg_normal_color_b{#1}{#2}{#3}{#4}{#5}%
+   \writestatus{SVG TEXT}{..[stop color opace]}}
 
 \permanent\protected\def\svg_traced_set#1#2#3%
   {\writestatus{SVG TEXT}{...[start set layer #1 #2]}%
    \svg_normal_set{#1}{#2}{#3}%
    \writestatus{SVG TEXT}{...[stop set setlayer]}}
 
-\permanent\protected\def\svg_traced_font#1#2#3#4#5%
-  {\writestatus{SVG TEXT}{..[start scaled font #1 #2 #3 #4]}%
-   \svg_normal_font{#1}{#2}{#3}{#4}{#5}%
-   \writestatus{SVG TEXT}{..[stop scaled font]}}
+\permanent\protected\def\svg_traced_font#1#2#3#4%
+  {\writestatus{SVG TEXT}{.[start font #1 #2 #3]}%
+   \svg_normal_font{#1}{#2}{#3}{#4}%
+   \writestatus{SVG TEXT}{.[stop font]}}
+
+\permanent\protected\def\svg_traced_size#1#2%
+  {\writestatus{SVG TEXT}{.[start size #1]}%
+   \svg_normal_size{#1}{#2}%
+   \writestatus{SVG TEXT}{.[stop size]}}
 
 \permanent\protected\def\svg_normal_text
-  {\let\svgpcode \svg_normal_pcode
-   \let\svgpchar \svg_normal_pchar
-   \let\svgpspace\svg_normal_pspace
-   \let\svgcode  \svg_normal_code
-   \let\svgchar  \svg_normal_char
-   \let\svgspace \svg_normal_space
-   \let\svgstart \svg_normal_start
-   \let\svgstop  \svg_normal_stop
-   \let\svgcolor \svg_normal_color
-   \let\svgset   \svg_normal_set
-   \let\svgfont  \svg_normal_font}
+  {\enforced\let\svgpcode \svg_normal_pcode
+   \enforced\let\svgpchar \svg_normal_pchar
+   \enforced\let\svgpspace\svg_normal_pspace
+   \enforced\let\svgcode  \svg_normal_code
+   \enforced\let\svgchar  \svg_normal_char
+   \enforced\let\svgspace \svg_normal_space
+   \enforced\let\svgstart \svg_normal_start
+   \enforced\let\svgstop  \svg_normal_stop
+   \enforced\let\svgcolorc\svg_normal_color_c
+   \enforced\let\svgcoloro\svg_normal_color_o
+   \enforced\let\svgcolorb\svg_normal_color_b
+   \enforced\let\svgset   \svg_normal_set
+   \enforced\let\svgfont  \svg_normal_font
+   \enforced\let\svgsize  \svg_normal_size}
 
 \permanent\protected\def\svg_traced_text
-  {\let\svgpcode \svg_traced_pcode
-   \let\svgpchar \svg_traced_pchar
-   \let\svgpspace\svg_traced_pspace
-   \let\svgcode  \svg_traced_code
-   \let\svgchar  \svg_traced_char
-   \let\svgspace \svg_traced_space
-   \let\svgstart \svg_traced_start
-   \let\svgstop  \svg_traced_stop
-   \let\svgcolor \svg_traced_color
-   \let\svgset   \svg_traced_set
-   \let\svgfont  \svg_traced_font}
+  {\enforced\let\svgpcode \svg_traced_pcode
+   \enforced\let\svgpchar \svg_traced_pchar
+   \enforced\let\svgpspace\svg_traced_pspace
+   \enforced\let\svgcode  \svg_traced_code
+   \enforced\let\svgchar  \svg_traced_char
+   \enforced\let\svgspace \svg_traced_space
+   \enforced\let\svgstart \svg_traced_start
+   \enforced\let\svgstop  \svg_traced_stop
+   \enforced\let\svgcolorc\svg_traced_color_c
+   \enforced\let\svgcoloro\svg_traced_color_o
+   \enforced\let\svgcolorb\svg_traced_color_b
+   \enforced\let\svgset   \svg_traced_set
+   \enforced\let\svgfont  \svg_traced_font
+   \enforced\let\svgsize  \svg_traced_size}
 
 \installtextracker
    {svg.text}

@@ -233,7 +233,7 @@ do
         end
     end
 
-    function css.size(str,factors)
+    function css.size(str,factors, pct)
         local size, unit
         if type(str) == "table" then
             size, unit = str[1], str[2]
@@ -241,7 +241,9 @@ do
             size, unit = lpegmatch(p_size,lower(str))
         end
         if size and unit then
-            if factors then
+            if unit == "%" and pct then
+                return size * pct
+            elseif factors then
                 return (factors[unit] or 1) * size
             else
                 return size, unit

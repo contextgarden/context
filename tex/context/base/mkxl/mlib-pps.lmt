@@ -8,11 +8,11 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 
 local format, gmatch, match, split, gsub = string.format, string.gmatch, string.match, string.split, string.gsub
 local tonumber, type, unpack, next, select = tonumber, type, unpack, next, select
-local round, sqrt, min, max = math.round, math.sqrt, math.min, math.max
+local round, sqrt, min, max, abs = math.round, math.sqrt, math.min, math.max, math.abs
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
-local formatters = string.formatters
+local formatters, toboolean = string.formatters, string.toboolean
 local exists, savedata = io.exists, io.savedata
 
 local mplib                = mplib
@@ -255,6 +255,8 @@ local function preset(t,k)
     t[k] = v
     return v
 end
+
+-- todo: nested startMPcode .. stopMPcode does weird
 
 local function startjob(plugmode,kind,mpx)
     insert(stack,top)
@@ -1019,7 +1021,7 @@ local tx_reset, tx_process  do
         end
     end
 
-    local fasttrack = false directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
+    local fasttrack = directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
 
     tx_process = function(object,prescript,before,after)
         local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
@@ -1542,21 +1544,25 @@ end
 
 -- groups
 
+local function getcorners(path)
+    local p1 = path[1]
+    local p2 = path[2]
+    local p3 = path[3]
+    local p4 = path[4]
+    return
+        min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
+        min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord),
+        max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
+        max(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+end
+
 local function gr_process(object,prescript,before,after)
     local gr_state = prescript.gr_state
     if not gr_state then
        return
     elseif gr_state == "start" then
         local gr_type = utilities.parsers.settings_to_set(prescript.gr_type)
-        local path = object.path
-        local p1 = path[1]
-        local p2 = path[2]
-        local p3 = path[3]
-        local p4 = path[4]
-        local llx = min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)
-        local lly = min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
-        local urx = max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)
-        local ury = max(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+        local llx, lly, urx, ury = getcorners(object.path)
         before[#before+1] = function()
             context.MPLIBstartgroup(
                 gr_type.isolated and 1 or 0,
@@ -1567,6 +1573,44 @@ local function gr_process(object,prescript,before,after)
     elseif gr_state == "stop" then
         after[#after+1] = function()
             context.MPLIBstopgroup()
+        end
+    end
+    object.path    = false
+    object.color   = false
+    object.grouped = true
+end
+
+-- patterns
+
+local pattern_index = 0
+
+local function pt_process(object,prescript,before,after)
+    local pt_state = prescript.pt_state
+    if not pt_state then
+       return
+    else
+        local pt_action = prescript.pt_action
+        if pt_state == "start" then
+            local float = toboolean(prescript.pt_float) and 1 or 0
+            local llx, lly, urx, ury = getcorners(object.path)
+            if abs(llx) < 0.0001 then llx = 0 end
+            if abs(lly) < 0.0001 then lly = 0 end
+            before[#before+1] = function()
+                if pt_action == "set" then
+                    pattern_index = pattern_index + 1
+                    context.MPLIBstartsetpattern(pattern_index, llx, lly, urx, ury, float)
+                else
+                    context.MPLIBstartgetpattern(pattern_index, llx, lly, urx, ury, float)
+                end
+            end
+        elseif pt_state == "stop" then
+            after[#after+1] = function()
+                if pt_action == "set" then
+                    context.MPLIBstopsetpattern()
+                else
+                    context.MPLIBstopgetpattern()
+                end
+            end
         end
     end
     object.path    = false
@@ -1653,6 +1697,7 @@ installplugin { name = "outline",      reset = ot_reset, process = ot_process }
 installplugin { name = "color",        reset = cl_reset, process = cl_process }
 installplugin { name = "text",         reset = tx_reset, process = tx_process }
 installplugin { name = "group",        reset = gr_reset, process = gr_process }
+installplugin { name = "pattern",      reset = pt_reset, process = pt_process }
 installplugin { name = "graphictext",  reset = gt_reset, process = gt_process }
 installplugin { name = "shade",        reset = sh_reset, process = sh_process }
 installplugin { name = "bitmap",       reset = bm_reset, process = bm_process }

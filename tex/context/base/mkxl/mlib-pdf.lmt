@@ -389,6 +389,10 @@ function metapost.flush(specification,result)
             local textfigure         = flusher.textfigure
          -- local processspecial     = flusher.processspecial or metapost.processspecial
             local tocomment          = flusher.tocomment
+
+            -- patterns: we always use image 1 and then can use patterns for 2..n (or one number)
+            -- we can then do an intermediate flush
+
             for index=1,#figures do
                 local figure     = figures[index]
                 local properties = pushproperties(figure)

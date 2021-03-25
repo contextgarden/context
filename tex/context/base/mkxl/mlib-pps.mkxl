@@ -214,6 +214,48 @@
    \setbox\scratchbox\hpack\bgroup
    \enforced\permanent\protected\def\MPLIBstopgroup{\mlib_stop_group{#1}{#2}{#3}{#4}{#5}{#6}}}
 
+%D Not that much code is needed because we already have a mechanism already. For
+%D some reason there is no option to use the current positions (pattern space mess)
+%D so we need a position. I could delegate this to the backend but patterns are
+%D selsom used.
+
+\permanent\protected\def\MPLIBstartsetpattern#1#2#3#4#5#6%
+  {\normalexpanded{\registerpattern[mp-pattern-#1]\ifnum#6=\zerocount[hoffset=\MPx{mp-pattern-#1},voffset=\MPy{mp-pattern-#1}]\fi}%
+     \bgroup
+        \dowithnextbox{%
+          \boxxoffset\nextbox-#2\onebasepoint
+          \boxyoffset\nextbox-#3\onebasepoint
+          \wd\nextbox\dimexpr#4\onebasepoint-#2\onebasepoint\relax
+          \ht\nextbox\dimexpr#5\onebasepoint-#3\onebasepoint\relax
+          \box\nextbox}%
+        \hpack\bgroup}
+
+\permanent\protected\def\MPLIBstopsetpattern
+  {\egroup
+   \egroup}
+
+\permanent\protected\def\MPLIBstartgetpattern#1#2#3#4#5#6%
+  {\setbox\nextbox\hpack\bgroup
+     \applypattern
+       [\c!name=mp-pattern-#1,
+%       \c!width=2\dimexpr#4\onebasepoint-#2\onebasepoint\relax,
+        \c!width=\dimexpr#4\onebasepoint-#2\onebasepoint\relax,
+%       \c!height=2\dimexpr#5\onebasepoint-#3\onebasepoint\relax]%
+        \c!height=\dimexpr#5\onebasepoint-#3\onebasepoint\relax]%
+    \hss
+   \egroup
+ % \boxyoffset\nextbox -.5\dimexpr#5\onebasepoint-#3\onebasepoint\relax
+   \boxyoffset\nextbox \dimexpr#3\onebasepoint\relax
+ % \boxxoffset\nextbox -.5\dimexpr#4\onebasepoint-#2\onebasepoint\relax
+   \boxxoffset\nextbox \dimexpr#2\onebasepoint\relax
+   \ht\nextbox\zeropoint
+   \wd\nextbox\zeropoint
+   \dp\nextbox\zeropoint
+   \normalexpanded{\ifnum#6=\zerocount\hpos{mp-pattern-#1}\fi}{\box\nextbox}}
+
+\permanent\protected\def\MPLIBstopgetpattern
+  {}
+
 % For now here ... will be cleaned up:
 
 \newtoks\mptexttoks

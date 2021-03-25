@@ -108,11 +108,30 @@
 
         local data       = scripts.interface.editor("data")
         local files      = data and data.common and data.common.filenames or { }
+        local macros     = { }
         local flagged    = 0
         local total      = 0
         local list       = tex.hashtokens()
         local all        = not tex.modes.notmarked
         local everything = tex.modes.everything
+
+        local fmtname = resolvers.locateformat("cont-en.fmt")
+        if fmtname then
+            local logname = file.replacesuffix(fmtname,"log")
+            for filename in string.gmatch(io.loaddata(logname),"fullname=(%S+)") do
+                local s = file.suffix(filename)
+                local b = file.basename(filename)
+                if s ~= "lua" and s ~= "lmt" then
+                    local d = io.loaddata(filename)
+                    for m in string.gmatch(d,"\n[\\a-z]*[exg]*def\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in string.gmatch(d,"\n[\\a-z]*[g]*let\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                end
+            end
+        end
 
         table.sort(list)
 
@@ -137,7 +156,7 @@
                     if everything or ((all or not marked) and not find(k,"^[pvm]_") and not find(k,"^![tT]")) then
                         local parameters = v.parameters
                         local noaligned  = v.noaligned  and "noaligned"
-                        local filename   = files[k]
+                        local filename   = files[k] or macros[k]
                         local csname     = context.escape(k)
                         if undefined then
                             marked = "?"

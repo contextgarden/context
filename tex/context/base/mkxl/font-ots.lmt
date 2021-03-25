@@ -294,9 +294,9 @@ local marks              = false
 local classes            = false
 local currentfont        = false
 local currentdynamic     = false
-local currentscale       = false
-local currentxscale      = false
-local currentyscale      = false
+local currentscale       = 1000 -- false
+local currentxscale      = 1000 -- false
+local currentyscale      = 1000 -- false
 local factor             = 0
 local threshold          = 0
 local checkmarks         = false
@@ -3783,9 +3783,12 @@ do
         if nesting == 1 then
             currentfont    = font
             currentdynamic = dynamic
-            currentscale   = false
-            currentxscale  = false
-            currentyscale  = false
+--             currentscale   = false
+--             currentxscale  = false
+--             currentyscale  = false
+            currentscale   = 1000
+            currentxscale  = 1000
+            currentyscale  = 1000
             tfmdata        = fontdata[font]
             descriptions   = tfmdata.descriptions -- only needed in gref so we could pass node there instead
             characters     = tfmdata.characters   -- but this branch is not entered that often anyway
@@ -4039,9 +4042,12 @@ do
 
         currentfont     = font
         currentdynamic  = false
-        currentscale    = false
-        currentxscale   = false
-        currentyscale   = false
+--         currentscale    = false
+--         currentxscale   = false
+--         currentyscale   = false
+        currentscale    = 1000
+        currentxscale   = 1000
+        currentyscale   = 1000
         tfmdata         = fontdata[font]
         descriptions    = tfmdata.descriptions -- only needed in gref so we could pass node there instead
         characters      = tfmdata.characters   -- but this branch is not entered that often anyway

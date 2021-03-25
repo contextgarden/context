@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
 
 -- todo: svg stripper
 
+-- todo: check clip: what if larger than bbox
+
 -- todo: when opacity is 1 don't flush it
 
 -- Just a few notes:
@@ -96,20 +98,20 @@ local xmltext, xmltextonly = xml.text, xml.textonly
 local css = xml.css or { } -- testing
 
 local function xmlinheritattributes(c,pa)
-    local at = c.at
-    local dt = c.dt
-    if at and dt then
-        if pa then
-            setmetatableindex(at,pa)
-        end
-        for i=1,#dt do
-            local dti = dt[i]
-            if type(dti) == "table" then
-                xmlinheritattributes(dti,at)
+    if not c.special then
+        local at = c.at
+        local dt = c.dt
+        if at and dt then
+            if pa then
+                setmetatableindex(at,pa)
+            end
+            for i=1,#dt do
+                local dti = dt[i]
+                if type(dti) == "table" then
+                    xmlinheritattributes(dti,at)
+                end
             end
         end
-    else
-        -- comment of so
     end
 end
 
@@ -130,11 +132,13 @@ local trace_result = false  trackers.register("metapost.svg.result", function(v)
 local trace_colors = false  trackers.register("metapost.svg.colors", function(v) trace_colors = v end)
 local trace_fonts  = false  trackers.register("metapost.svg.fonts",  function(v) trace_fonts  = v end)
 
--- This is just an experiment. Todo: reset hash etc. Also implement
--- an option handler.
+-- This is just an experiment. Todo: reset hash etc. Also implement an option handler.
 
 local s_draw_image_start = "draw image ("
 local s_draw_image_stop  = ") ;"
+
+
+local ignoredopacity = 1
 
 local svghash = false  do
 
@@ -196,7 +200,7 @@ local a2c  do
 
     a2c = function(x1, y1, rx, ry, angle, large, sweep, x2, y2, f1, f2, cx, cy)
 
-        if (rx == 0 or ry == 0 ) or (x1 == x2 and y1 == y2) then
+        if (rx == 0 or ry == 0) or (x1 == x2 and y1 == y2) then
             return { x1, y1, x2, y2, x2, y2 }
         end
 
@@ -310,6 +314,8 @@ local factors = {
     ["in"] = 90,
     ["em"] = 12 * 1.25,
     ["ex"] =  8 * 1.25,
+    ["%"]  =  0.1,
+    ["bp"] =  1,
 }
 
 metapost.svgfactors = factors
@@ -541,17 +547,18 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
     local hwbtorgb    = colors.hwbtorgb
     local forcedmodel = colors.forcedmodel
 
-    local p_splitcolor =
+    local p_splitcolor = -- offet lowercase ff
         P("#") * C(p_hexdigit*p_hexdigit)^1 / function(r,g,b)
             if not r then
                 return "gray", 0
             elseif not (g and b) then
-                return "gray", tonumber(r or "0", 16) / 255 or 0
+                return "gray",
+                    (r == "00" and 0) or (r == "ff" and 1) or (tonumber(r,16)/255)
             else
                 return "rgb",
-                    tonumber(r or "0", 16) / 255 or 0,
-                    tonumber(g or "0", 16) / 255 or 0,
-                    tonumber(b or "0", 16) / 255 or 0
+                    (r == "00" and 0) or (r == "ff" and 1) or (tonumber(r,16)/255),
+                    (g == "00" and 0) or (g == "ff" and 1) or (tonumber(g,16)/255),
+                    (b == "00" and 0) or (b == "ff" and 1) or (tonumber(b,16)/255)
             end
         end
       + P("rgb") * p_a
@@ -640,19 +647,25 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
                 color = c
             end
         end
-        local what, s1, s2, s3, s4 = registeredcolor(color)
-        if what then
+        if color == "#000000" then
+            return "rgb", 0, 0, 0
+        elseif color == "#ffffff" then
+            return "rgb", 1, 1, 1
+        else
+            local what, s1, s2, s3, s4 = registeredcolor(color)
+            if not what then
+                what, s1, s2, s3, s4 = lpegmatch(p_splitcolor,color)
+                -- we could cache
+                if not what then
+                    local t = triplets[color]
+                    if t then
+                        s1, s2, s3 = t[1], t[2], t[3]
+                        what = "rgb"
+                    end
+                end
+            end
             return what, s1, s2, s3, s4
         end
-        what, s1, s2, s3, s4 = lpegmatch(p_splitcolor,color)
-        if not what then
-            local t = triplets[color]
-            if t then
-                s1, s2, s3 = t[1], t[2], t[3]
-                what = "rgb"
-            end
-        end
-        return what, s1, s2, s3, s4
     end
 
     colorcomponents = function(color)
@@ -730,6 +743,9 @@ local grabpath, grablist  do
 
     local m = { __index = function() return 0 end }
 
+ -- local t      = { }    -- no real saving here if we share
+ -- local n      = 0
+
     grabpath = function(str)
         local p   = lpegmatch(p_path,str) or { }
         local np  = #p
@@ -740,6 +756,7 @@ local grabpath, grablist  do
         setmetatable(p,m)
         local t      = { }    -- no real saving here if we share
         local n      = 0
+     -- n = 0
         local a      = 0
         local i      = 0
         local last   = "M"
@@ -1302,9 +1319,7 @@ local handletransform, handleviewbox  do
             lpegmatch(p_transform,t)
             if noftransforms > 0 then
                 -- currentpicture
-                local start = s_transform_start
-                local stop  = f_transform_stop(concat(transforms,"",1,noftransforms))
-                return start, stop, t
+                return s_transform_start, f_transform_stop(concat(transforms,"",1,noftransforms)), t
             end
         end
     end
@@ -1398,7 +1413,7 @@ do
      -- ["missing-glyph"]      = true,
      -- ["mpath"]              = true,
         ["path"]               = true,
-     -- ["pattern"]            = true,
+        ["pattern"]            = true,
         ["polygon"]            = true,
         ["polyline"]           = true,
         ["radialGradient"]     = true,
@@ -1642,10 +1657,10 @@ do
                     local p = grabpath(d)
                     p.evenodd = ca["clip-rule"] == "evenodd"
                     p.close   = true
-local transform = rawget(ca,"transform")
-if transform then
-    transform = handletransformstring(transform)
-end
+                    local transform = rawget(ca,"transform")
+                    if transform then
+                        transform = handletransformstring(transform)
+                    end
                     return p, clippath, transform
                 else
                     return
@@ -1655,6 +1670,82 @@ end
             end
         end
     end
+
+    -- todo: clip = [ auto | rect(llx,lly,urx,ury) ]
+
+    local s_rotation_start  = "draw image ( "
+    local f_rotation_stop   = formatters[") rotatedaround((0,0),-angle((%N,%N))) ;"]
+    local f_rotation_angle  = formatters[") rotatedaround((0,0),-%N) ;"]
+
+    local handleoffset, handlesize do
+
+        local s_offset_start = "draw image ( "
+        local f_offset_stop  = formatters[") shifted (%N,%N) ;"]
+        local s_size_start   = "draw image ( "
+        local f_size_stop    = formatters[") xysized (%N,%N) ;"]
+
+        handleoffset = function(at)
+            local x = asnumber_vx(rawget(at,"x"))
+            local y = asnumber_vy(rawget(at,"y"))
+            if x ~= 0 or y ~= 0 then
+                return s_offset_start, f_offset_stop(x,y)
+            end
+        end
+
+        handlesize = function(at)
+            local width  = asnumber_x(rawget(at,"width"))
+            local height = asnumber_y(rawget(at,"height"))
+            if width == 0 or height == 0 then
+                -- bad scaling
+            elseif width == 1 and height == 1 then
+                -- no need for scaling
+            else
+                return s_size_start, f_size_stop(width,height)
+            end
+        end
+
+    end
+
+    function handlers.symbol(c)
+        local at  = c.at
+        -- x y refX refY
+        local boffset, eoffset = handleoffset(at)
+        local bsize, esize = handlesize(at)
+        local btransform, etransform, transform = handletransform(at)
+
+        if boffset then
+            r = r + 1 result[r] = boffset
+        end
+        if btransform then
+            r = r + 1 result[r] = btransform
+        end
+        if bsize then
+            r = r + 1 ; result[r] = bsize
+        end
+
+-- local _x = at.x       at.x      = 0
+-- local _y = at.y       at.y      = 0
+-- local _w = at.width   at.width  = 0
+-- local _h = at.height  at.height = 0
+
+        process(c,"/*")
+-- at.x      = _x
+-- at.y      = _y
+-- at.width  = _w
+-- at.height = _h
+
+        if esize then
+            r = r + 1 result[r] = esize
+        end
+        if etransform then
+            r = r + 1 ; result[r] = etransform
+        end
+        if eoffset then
+            r = r + 1 result[r] = eoffset
+        end
+    end
+
+    -- do
 
     local s_shade_linear       =            '    withshademethod "linear" '
     local s_shade_circular     =            '    withshademethod "circular" '
@@ -1685,6 +1776,85 @@ end
     -- spreadMethod = "reflect" : crap
 
     -- stop-opacity = "0"       : strange, just use steps for that
+
+    -- todo: test for kind independently in caller, make a plug instead
+
+    local function pattern(id)
+        local c = definitions[id] -- no locate !
+        if c and c.tg == "pattern" then
+            -- just use result and then prune
+            local _r      = r
+            local _result = result
+            r      = 0
+            result = { }
+            --
+         -- handlers.pattern(spec)
+            --
+            -- inlined because of width
+            --
+            local at  = c.at
+
+            local width  = asnumber_x(rawget(at,"width"))
+            local height = asnumber_y(rawget(at,"height"))
+            if width == 0 or height == 0 then
+                -- bad scaling
+                width  = nil
+                height = nil
+            elseif width == 1 and height == 1 then
+                -- no need for scaling
+                width  = nil
+                height = nil
+            else
+                -- for now only relative
+            end
+
+            local boffset, eoffset = handleoffset(at)
+         -- local bsize, esize = handlesize(at)
+            local btransform, etransform, transform = handletransform(at)
+
+            if boffset then
+                r = r + 1 result[r] = boffset
+            end
+            if btransform then
+                r = r + 1 result[r] = btransform
+            end
+         -- if bsize then
+         --     r = r + 1 ; result[r] = bsize
+         -- end
+
+            local _x = at.x       at.x      = 0
+            local _y = at.y       at.y      = 0
+            local _w = at.width   at.width  = 0
+            local _h = at.height  at.height = 0
+
+            process(c,"/*")
+
+            at.x      = _x
+            at.y      = _y
+            at.width  = _w
+            at.height = _h
+
+         -- if esize then
+         --     r = r + 1 result[r] = esize
+         -- end
+            if etransform then
+                r = r + 1 ; result[r] = etransform
+            end
+            if eoffset then
+                r = r + 1 result[r] = eoffset
+            end
+            --
+            local okay
+            if width and height then
+                okay = formatters["    withpattern image ( % t )\n    withpatternscale(%N,%N)"](result,width,height)
+            else
+                okay = formatters["    withpattern image ( % t )"](result)
+            end
+            r      = _r
+            result = _result
+            return okay
+        end
+    end
 
     local function gradient(id)
         local spec = definitions[id] -- no locate !
@@ -1729,7 +1899,6 @@ end
                     -- todo
                 end
             else
-                report("unknown gradient %a",id)
                 return
             end
          -- local gu = a.gradientUnits
@@ -1752,7 +1921,6 @@ end
                     -- for now
                     fraction = xmlcount(spec,"/stop")/100      -- asnumber_p ?
                 end
-
                 if colora and colorb and colora ~= "" and colorb ~= "" then
                     n = n + 1
                  -- if opacity then
@@ -1761,7 +1929,6 @@ end
                         shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
                  -- end
                 end
-
                 colora = colorb
             end
             return concat(shade,"\n    ")
@@ -1791,8 +1958,9 @@ end
             o = nil
         elseif o then
             o = asnumber_r(o)
---             if o and o ~= 0 then
-            if o then
+            if o == ignoredopacity then
+                o = nil
+            elseif o then
                 o = f_opacity(o)
             else
                 o = nil
@@ -1809,7 +1977,9 @@ end
         local o = at["opacity"]
         if o and o ~= "none" then
             o = asnumber_r(o)
---             if o and o ~= 1 then
+            if o == ignoredopacity then
+                return
+            end
             if o then
                 return s_opacity_start, f_opacity_content(o), s_opacity_stop
             end
@@ -1819,67 +1989,72 @@ end
     -- it looks like none and transparent are both used (mozilla examples)
 
     local function fillproperties(fill,at,opacity)
-        local c = c ~= "none" and (gradient(fill) or withcolor(fill)) or nil
         local o = at["fill-opacity"] or (opacity and at["opacity"])
-        if o and o ~= "none" then
-            o = asnumber_r(o)
---             if o == 1 then
---                 return c
---             else
-            if o then
-                return c, f_opacity(o), o == 0 -- hm this check should be: o == 1
+        local c = nil
+        if c ~= "none" then
+            c = gradient(fill)
+            if not c then
+                c = pattern(fill)
+                if c then
+                    if o and o ~= "none" then
+                        o = asnumber_r(o)
+                        if o ~= ignoredopacity then
+                            return c, f_opacity(o), "pattern"
+                        end
+                    end
+                    return c, false, "pattern"
+                else
+                    c = withcolor(fill)
+                end
             end
-        elseif fill == "transparent" then
-            return nil, f_opacity(1), false --  o == 1 -- hm this check should be: o == 1
+        end
+        if not o and fill == "transparent" then
+            return nil, f_opacity(0), true
+        elseif o and o ~= "none" then
+            o = asnumber_r(o)
+            if o == ignoredopacity then
+                return c
+            end
+            if o then
+                return c, f_opacity(o), (o == 1 and "invisible")
+            end
         end
         return c
     end
 
-    -- todo: clip = [ auto | rect(llx,lly,urx,ury) ]
+    local viewport do
 
-    local s_offset_start    = "draw image ( "
-    local f_offset_stop     = formatters[") shifted (%N,%N) ;"]
-    local s_rotation_start  = "draw image ( "
-    local f_rotation_stop   = formatters[") rotatedaround((0,0),-angle((%N,%N))) ;"]
-    local f_rotation_angle  = formatters[") rotatedaround((0,0),-%N) ;"]
+        local s_viewport_start  = s_draw_image_start
+        local s_viewport_stop   = s_draw_image_stop
+        local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%N,%N);"]
+        local f_viewport_scale  = formatters["currentpicture := currentpicture xysized (%N,%N);"]
+        local f_viewport_clip   = formatters["clip currentpicture to (unitsquare xyscaled (%N,%N));"]
 
-    local function offset(at)
-        local x = asnumber_vx(rawget(at,"x"))
-        local y = asnumber_vy(rawget(at,"y"))
-        if x ~= 0 or y ~= 0 then
-            return s_offset_start, f_offset_stop(x,y)
+        viewport = function(x,y,w,h,noclip,scale)
+            r = r + 1 ; result[r] = s_viewport_start
+            return function()
+                local okay = w ~= 0 and h ~= 0
+                if okay and scale then
+                    r = r + 1 ; result[r] = f_viewport_scale(w,h)
+                end
+                if x ~= 0 or y ~= 0 then
+                    r = r + 1 ; result[r] = f_viewport_shift(-x,y)
+                end
+                if okay and not noclip then
+                    r = r + 1 ; result[r] = f_viewport_clip(w,-h)
+                end
+
+                r = r + 1 ; result[r] = s_viewport_stop
+            end
         end
-    end
 
-    local s_viewport_start  = s_draw_image_start
-    local s_viewport_stop   = s_draw_image_stop
-    local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%N,%N);"]
-    local f_viewport_scale  = formatters["currentpicture := currentpicture xysized (%N,%N);"]
-    local f_viewport_clip   = formatters["clip currentpicture to (unitsquare xyscaled (%N,%N));"]
-
-    local function viewport(x,y,w,h,noclip,scale)
-        r = r + 1 ; result[r] = s_viewport_start
-        return function()
-            local okay = w ~= 0 and h ~= 0
-            if okay and scale then
-                r = r + 1 ; result[r] = f_viewport_scale(w,h)
-            end
-            if x ~= 0 or y ~= 0 then
-                r = r + 1 ; result[r] = f_viewport_shift(-x,y)
-            end
-            if okay and not noclip then
-                r = r + 1 ; result[r] = f_viewport_clip(w,-h)
-            end
-
-            r = r + 1 ; result[r] = s_viewport_stop
-        end
     end
 
     -- maybe forget about defs and just always locate (and then backtrack
-    -- over <g> if needed)
+    -- over <g> if needed) .. so, only store after locating
 
-    function handlers.defs(c)
-        for c in xmlcollected(c,"/*") do
+    function handledefinitions(c)
+        for c in xmlcollected(c,"defs/*") do
             local a = c.at
             if a then
                 local id = rawget(a,"id")
@@ -1889,31 +2064,39 @@ end
                 end
             end
         end
-    end
-
-    function handlers.symbol(c)
-        if uselevel == 0 then
+        for c in xmlcollected(c,"symbol") do
             local id = rawget(c.at,"id")
             if id then
                 definitions["#"     .. id       ] = c
                 definitions["url(#" .. id .. ")"] = c
             end
-        else
-            handlers.g(c)
         end
     end
 
-    local uselevel      = 0
- -- local bodyfontscale = 1
+ --  function handlers.defs(c)
+ --     for c in xmlcollected(c,"/*") do
+ --         local a = c.at
+ --         if a then
+ --             local id = rawget(a,"id")
+ --             if id then
+ --                 definitions["#"     .. id       ] = c
+ --                 definitions["url(#" .. id .. ")"] = c
+ --             end
+ --         end
+ --     end
+ -- end
+
+    -- lots of stuff todo: transform
+
+    local uselevel = 0
 
     function handlers.use(c)
         local at  = c.at
         local id  = rawget(at,"href") or rawget(at,"xlink:href") -- better a rawget
         local res = locate(id,c)
         if res then
-            -- width height ?
             uselevel = uselevel + 1
-            local boffset, eoffset = offset(at)
+            local boffset, eoffset = handleoffset(at)
             local btransform, etransform, transform = handletransform(at)
 
             if boffset then
@@ -1931,12 +2114,14 @@ end
             at["transform"] = false
          -- at["clip-path"] = false
 
+setmetatableindex(res.at,at)
+
             local tg = res.tg
-            if usetags[tg] then
+--             if usetags[tg] then
                 process(res,".")
-            else
-                process(res,"/*")
-            end
+--             else
+--                 process(res,"/*")
+--             end
 
             at["transform"] = _transform
          -- at["clip-path"] = _clippath
@@ -1963,6 +2148,7 @@ end
     local f_no_fill_l     = formatters['  nofill closedlines(%s)']
     local f_do_fill_l     = formatters['  fill closedlines(%s)']
     local f_eo_fill_l     = formatters['  eofill closedlines(%s)']
+    local f_closed_draw   = formatters['  draw closedcurve(%s)']
     local f_do_fill       = f_do_fill_c
     local f_eo_fill       = f_eo_fill_c
     local f_no_fill       = f_no_fill_c
@@ -2258,12 +2444,16 @@ end
             end
 
             if has_fill then
-                local color, opacity = fillproperties(fill,at,not has_stroke)
+                local color, opacity, option = fillproperties(fill,at,not has_stroke)
                 local f_xx_fill = at["fill-rule"] == "evenodd" and f_eo_fill or f_do_fill
                 if btransform then
                     r = r + 1 ; result[r] = btransform
                 end
-                r = r + 1 result[r] = f_xx_fill(shape)
+                if option == "pattern" then
+                    r = r + 1 result[r] = f_closed_draw(shape)
+                else
+                    r = r + 1 result[r] = f_xx_fill(shape)
+                end
                 if color   then
                     r = r + 1 ; result[r] = color
                 end
@@ -2440,9 +2630,11 @@ end
                 -- todo: image (nicer for transform too)
 
                 if fill and fill ~= "none" then
-                    local color, opacity = fillproperties(fill,at)
+                    local color, opacity, option = fillproperties(fill,at)
                     local f_xx_fill = at["fill-rule"] == "evenodd"
-                    if shape.closed then
+                    if option == "pattern" then
+                        f_xx_fill = f_closed_draw
+                    elseif shape.closed then
                         f_xx_fill = f_xx_fill and f_eo_fill   or f_do_fill
                     elseif shape.curve then
                         f_xx_fill = f_xx_fill and f_eo_fill_c or f_do_fill_c
@@ -2556,9 +2748,10 @@ end
         -- inclusion takes from data
         -- specification.data = false
 
-        local f_image = formatters[ [[figure("%s") xysized (%N,%N) shifted (%N,%N)]] ]
+     -- local f_image = formatters[ [[figure("%s") xysized (%N,%N) shifted (%N,%N)]] ]
+        local f_image = formatters[ [[svgembeddedfigure(%i) xysized (%N,%N) shifted (%N,%N)]] ]
 
-        local nofimages = 0
+     -- local nofimages = 0
 
         function handlers.image(c)
             local at = c.at
@@ -2581,12 +2774,15 @@ end
                     h = h and asnumber_y(h)
                     x = x and asnumber_vx(x) or 0
                     y = y and asnumber_vy(y) or 0
-                    nofimages = nofimages + 1
-                    local name = "temp-svg-image-" .. nofimages .. "." .. kind
                     local data = basexx.decode64(data)
-                    io.savedata(name,data)
+                 -- local name  = "temp-svg-image-" .. nofimages .. "." .. kind
+                    local index = images.storedata("svg", {
+                        kind = kind,
+                        data = data,
+                        info = graphics.identifiers[kind](data,"string"),
+                    })
+                 -- io.savedata(name,data)
                     if not w or not h then
-                        local info = graphics.identifiers[kind](data,"string")
                         if info then
                             -- todo: keep aspect ratio attribute
                             local xsize = info.xsize
@@ -2606,9 +2802,9 @@ end
                     -- safeguard:
                     if not w then w = h or 1 end
                     if not h then h = w or 1 end
-                    luatex.registertempfile(name)
-                    -- done:
-                    flushobject(f_image(name,w,h,x,y - h),at)
+                 -- luatex.registertempfile(name)
+                 -- flushobject(f_image(name,w,h,x,y - h),at)
+                    flushobject(f_image(index,w,h,x,y - h),at)
                 else
                     -- nothing done
                 end
@@ -2644,7 +2840,7 @@ end
             at["transform"] = false
             at["clip-path"] = false
 
-            process(c,"/*")
+            process(c,"/!(defs|symbol)") -- /*
 
             at["transform"] = _transform
             at["clip-path"] = _clippath
@@ -2684,14 +2880,17 @@ end
             local s_start     = "\\svgstart "
             local s_stop      = "\\svgstop "
             local f_set       = formatters["\\svgset{%N}{%N}"] -- we need a period
-            local f_colored   = formatters["\\svgcolor{%.3N}{%.3N}{%.3N}{"]
+            local f_color_c   = formatters["\\svgcolorc{%.3N}{%.3N}{%.3N}{"]
+            local f_color_o   = formatters["\\svgcoloro{%.3N}{"]
+            local f_color_b   = formatters["\\svgcolorb{%.3N}{%.3N}{%.3N}{%.3N}{"]
             local f_poscode   = formatters["\\svgpcode{%N}{%N}{%s}"]
             local f_poschar   = formatters["\\svgpchar{%N}{%N}{%s}"]
             local f_posspace  = formatters["\\svgpspace{%N}{%N}"]
             local f_code      = formatters["\\svgcode{%s}"]
             local f_char      = formatters["\\svgchar{%s}"]
             local s_space     = "\\svgspace "
-            local f_scaled    = formatters["\\svgfont{%0.6f}{%s}{%s}{%s}"] -- we need a period
+            local f_size      = formatters["\\svgsize{%0.6f}"]             -- we need a period
+            local f_font      = formatters["\\svgfont{%s}{%s}{%s}"]
             local f_hashed    = formatters["\\svghashed{%s}"]
 
             ----- p_texescape = lpegpatterns.texescape
@@ -2777,6 +2976,12 @@ end
                 end
             end
 
+            local cleanfontname = fonts.names.cleanname
+
+            local x_family = false
+            local x_weight = false
+            local x_style  = false
+
             local function collect(parent,t,c,x,y,size,scale,family,tx,ty,tdx,tdy)
                 if c.special then
                     return nil
@@ -2787,6 +2992,7 @@ end
                 local tg           = c.tg
                 local ax           = rawget(at,"x")
                 local ay           = rawget(at,"y")
+                local v_opacity    = tonumber(at["fill-opacity"])
                 local v_fill       = at["fill"]
                 local v_family     = at["font-family"]
                 local v_style      = at["font-style"]
@@ -2800,14 +3006,14 @@ end
                 if v_family then v_family = cssfamily(v_family) end
                 if v_style  then v_style  = cssstyle (v_style)  end
                 if v_weight then v_weight = cssweight(v_weight) end
-                if v_size   then v_size   = csssize  (v_size,factors) or tonumber(v_size) end
+                if v_size   then v_size   = csssize  (v_size,factors,size/100) or tonumber(v_size) end
                 --
                 if not v_family then v_family = family   end
                 if not v_weight then v_weight = "normal" end
                 if not v_style  then v_style  = "normal" end
                 --
                 if v_family then
-                    v_family = fonts.names.cleanname(v_family)
+                    v_family = cleanfontname(v_family)
                     v_family = checkedfamily(v_family)
                 end
                 --
@@ -2821,22 +3027,24 @@ end
                 local usedsize  = v_size or defaultsize
                 local usedscale = usedsize / defaultsize
                 --
--- todo: rotate            : list of numbers
--- todo: lengthAdjust      : spacing|spacingAndGlyphs
--- todo: textLength        : scale to width
--- toto: font-size-adjust
--- toto: font-stretch
--- letter-spacing
--- word-spacing
--- writing-mode:lr-tb
+                -- todo: rotate            : list of numbers
+                -- todo: lengthAdjust      : spacing|spacingAndGlyphs
+                -- todo: textLength        : scale to width
+                -- toto: font-size-adjust
+                -- toto: font-stretch
+                -- letter-spacing
+                -- word-spacing
+                -- writing-mode:lr-tb
                 --
---                 local useddelta = d_x ~= 0 or d_y ~= 0 or false
---                 if useddelta then
---                     dx = validdelta(usedscale,dx)
---                     dy = validdelta(usedscale,dy)
---                 end
-                --
-                t[#t+1] = f_scaled(usedscale,v_family,v_weight,v_style)
+                local newfont = v_family ~= x_family or v_weight ~= x_weight or v_style ~= x_style
+                if newfont then
+                    x_family = v_family
+                    x_weight = v_weight
+                    x_style  = v_style
+                    t[#t+1] = f_font(v_family,v_weight,v_style)
+                    t[#t+1] = "{"
+                end
+                t[#t+1] = f_size(usedscale)
                 t[#t+1] = "{"
                 --
                 if trace_fonts then
@@ -2850,15 +3058,26 @@ end
                     report("  used size    : %s",v_size or defaultsize)
                 end
                 --
-                local ecolored = v_fill and v_fill ~= "" or false
+                local ecolored = v_fill    ~= ""             and v_fill    or false
+                local opacity  = v_opacity ~= ignoredopacity and v_opacity or false
+                --
+                -- todo cmyk
+                --
                 if ecolored then
-                    -- todo cmyk
                     local r, g, b = colorcomponents(v_fill)
                     if r and g and b then
-                        t[#t+1] = f_colored(r,g,b)
+                        if opacity then
+                            t[#t+1] = f_color_b(r,g,b,opacity)
+                        else
+                            t[#t+1] = f_color_c(r,g,b)
+                        end
+                    elseif opacity then
+                        t[#t+1] = f_color_o(opacity)
                     else
                         ecolored = false
                     end
+                elseif opacity then
+                    t[#t+1] = f_color_o(opacity)
                 end
                 --
                 local hasa = ax ~= 0 or ay ~= 0
@@ -2917,7 +3136,7 @@ end
                                     if ci == " " then
                                         chars[i] = s_space
                                     elseif sensitive[ci] then
-                                        chars[i] = f_code(utfbyte(chars[i]))
+                                        chars[i] = f_code(utfbyte(ci))
                                     else
                                         chars[i] = f_char(ci)
                                      -- chars[i] = ci
@@ -2928,22 +3147,25 @@ end
                             end
                         end
                     end
-                    if hasa then
-                        if t[#t] == "{" then
-                            t[#t] = nil
-                            t[#t] = nil
-                        else
-                            t[#t+1] = "}"
-                        end
+                end
+                if hasa then
+                    if t[#t] == "{" then
+                        t[#t] = nil
+                        t[#t] = nil
+                    else
+                        t[#t+1] = "}"
                     end
-
                 end
                 --
-                if ecolored then
+                if opacity or ecolored then
                     t[#t+1] = "}"
                 end
                 --
                 t[#t+1] = "}"
+                --
+                if newfont then
+                    t[#t+1] = "}"
+                end
                 --
                 return t
             end
@@ -2955,6 +3177,12 @@ end
             local textlevel = 0
 
             function handlers.text(c)
+                if textlevel == 0 then
+                    x_family = v_family
+                    x_weight = v_weight
+                    x_style  = v_style
+                end
+                --
                 textlevel = textlevel + 1
                 -- analyze
                 local only = fullstrip(xmltextonly(c))
@@ -2981,7 +3209,7 @@ end
                 if not v_fill or v_fill == "none" then
                     v_fill = "black"
                 end
-                local color, opacity, invisible = fillproperties(v_fill,at)
+                local color, opacity, option = fillproperties(v_fill,at)
                 local anchor = anchors[at["text-anchor"] or "start"] or "drt"
                 local remap = metapost.remappedtext(only)
                 -- x = x + dx
@@ -2996,7 +3224,11 @@ end
                     if trace_text then
                         report("text: %s",only)
                     end
-                elseif not invisible then -- can be an option
+                elseif option == "invisible" then
+                    if trace_text then
+                        report("invisible text: %s",only)
+                    end
+                else
                     local scale  = 1
                     local textid = 0
                     local result = { }
@@ -3019,12 +3251,11 @@ end
                     else -- dx dy
                         t = f_text_normal_svg(anchor,t,x,y)
                     end
-                    flushobject(t,at,color,opacity)
+                 -- flushobject(t,at,color,opacity) -- otherwise mixup with transparency
+                    flushobject(t,at,false,false)
                     if trace_text then
                         report("text: %s",result)
                     end
-                elseif trace_text then
-                    report("invisible text: %s",only)
                 end
                 --
                 textlevel = textlevel - 1
@@ -3072,8 +3303,6 @@ end
 
             local btransform, etransform, transform = handletransform(at)
 
-         -- bodyfontscale = tex.getdimen("bodyfontsize") / 65536
-
             if trace then
                 report("view: %s, xpct %N, ypct %N","before",percentage_x,percentage_y)
             end
@@ -3120,7 +3349,7 @@ end
             if bhacked then
                 r = r + 1 ; result[r] = bhacked
             end
-            local boffset, eoffset = offset(at)
+            local boffset, eoffset = handleoffset(at)
             if boffset then
                 r = r + 1 result[r] = boffset
             end
@@ -3128,7 +3357,7 @@ end
             at["transform"] = false
             at["viewBox"]   = false
 
-            process(c,"/*")
+            process(c,"/!(defs|symbol)")
 
             at["transform"] = transform
             at["viewBox"]   = viewbox
@@ -3177,6 +3406,7 @@ end
     function metapost.svgtomp(specification,pattern,notransform,normalize)
         local mps = ""
         local svg = specification.data
+        images.resetstore("svg")
         if type(svg) == "string" then
             svg = xmlconvert(svg)
         end
@@ -3196,6 +3426,7 @@ end
                 end
                 handlechains(c)
                 xmlinheritattributes(c) -- put this in handlechains
+                handledefinitions(c)
                 handlers.svg (
                     c,
                     specification.x,

@@ -567,69 +567,6 @@ if not metapost.convert then
 
 end
 
--- This will be redone as we no longer output svg of ps!
-
--- function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
---     local fullname = file.addsuffix(filename,"mp")
---     local data = mpdata or io.loaddata(fullname)
---     if outputformat ~= "svg" then
---         outputformat = "mps"
---     end
---     if not data then
---         report_metapost("unknown file %a",filename)
---     else
---         local mpx = metapost.checkformat(formatname)
---         if not mpx then
---             report_metapost("unknown format %a",formatname)
---         else
---             report_metapost("processing %a",(mpdata and (filename or "data")) or fullname)
---             local result = executempx(mpx,data)
---             if not result then
---                 report_metapost("error: no result object returned")
---             elseif result.status > 0 then
---                 report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
---             else
---                 if metapost.showlog then
---                     metapost.lastlog = metapost.lastlog .. "\n" .. result.term
---                     report_metapost("info: %s",result.term or "no-term")
---                 end
---                 local figures = result.fig
---                 if figures then
---                     local sorted = table.sortedkeys(figures)
---                     if astable then
---                         local result = { }
---                         report_metapost("storing %s figures in table",#sorted)
---                         for k=1,#sorted do
---                             local v = sorted[k]
---                             if outputformat == "mps" then
---                                 result[v] = figures[v]:postscript()
---                             else
---                                 result[v] = figures[v]:svg() -- (3) for prologues
---                             end
---                         end
---                         return result
---                     else
---                         local basename = file.removesuffix(file.basename(filename))
---                         for k=1,#sorted do
---                             local v = sorted[k]
---                             local output
---                             if outputformat == "mps" then
---                                 output = figures[v]:postscript()
---                             else
---                                 output = figures[v]:svg() -- (3) for prologues
---                             end
---                             local outname = formatters["%s-%s.%s"](basename,v,outputformat)
---                             report_metapost("saving %s bytes in %a",#output,outname)
---                             io.savedata(outname,output)
---                         end
---                         return #sorted
---                     end
---                 end
---             end
---         end
---     end
--- end
-
 function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
     report_metapost("producing postscript and svg is no longer supported")
 end

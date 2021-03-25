@@ -150,6 +150,7 @@ scripts.patterns.list = {
  -- { "sa",  "hyph-sa",            "sanskrit" },
     { "sk",  "hyph-sk",            "slovak" },
     { "sl",  "hyph-sl",            "slovenian" },
+    { "sq",  "hyph-sq",            "albanian" },
     { "sr",  "hyph-sr",            "serbian", false, { "hyph-sr-cyrl", "hyph-sr-latn" }, },
  -- { "sr",  "hyph-sr-cyrl",       "serbian", false },
  -- { "sr",  "hyph-sr-latn",       "serbian" },
@@ -186,6 +187,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored, merged)
     local splitpatternsold, splithyphenationsold = { }, { }
     local usedpatterncharactersnew, usedhyphenationcharactersnew = { }, { }
     if merged then
+        -- no version info
         report("using merged txt files %s.[hyp|pat|lic].txt",name)
         for i=1,#merged do
             local fullname = file.join(path,merged[i])
@@ -194,11 +196,13 @@ function scripts.patterns.load(path,name,mnemonic,ignored, merged)
             hyphenations = hyphenations  .. (io.loaddata(addsuffix(fullname,"hyp.txt")) or "") .. "\n\n"
         end
     elseif lfs.isfile(patfile) then
+        -- no version info
         report("using txt files %s.[hyp|pat|lic].txt",name)
         comment      = io.loaddata(licfile) or ""
         patterns     = io.loaddata(patfile) or ""
         hyphenations = io.loaddata(hypfile) or ""
     elseif lfs.isfile(texfile) then
+        -- version info in comment blob
         report("using tex file %s.txt",name)
         local data = io.loaddata(texfile) or ""
         if data ~= "" then

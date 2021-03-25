@@ -94,6 +94,7 @@ return {
         "transparent", "withtransparency", "withopacity",
         "property", "properties", "withproperties",
         "asgroup",
+        "withpattern", "withpatternscale", "withpatternfloat",
         "infont", -- redefined using textext
      -- "set_linear_vector", "set_circular_vector",
      -- "linear_shade", "circular_shade",

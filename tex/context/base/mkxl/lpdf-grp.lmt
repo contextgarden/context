@@ -287,8 +287,9 @@ function lpdf.registerpattern(specification)
         },
     }
 
-    local resources  = lpdf.collectedresources{ patterns = false }
-    local attributes = d()
+ -- local resources  = lpdf.collectedresources{ patterns = false } -- we don't want duplicates, so no serialize here:
+    local resources  = lpdf.collectedresources{ patterns = false, serialize = false }
+    local attributes = d -- () -- we need to check for patterns
     local onlybounds = 1
     local patternobj = saveboxresource(specification.number,attributes,resources,true,onlybounds)
     lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(patternobj ))
