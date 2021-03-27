@@ -1637,19 +1637,16 @@ end
 
 -- todo: we need to do a dummy run
 
-function scripts.context.trackers()
-    environment.files = { resolvers.findfile("m-trackers.mkiv") }
+local function showsetter()
+    environment.files = { resolvers.findfile("mtx-context-setters.tex") }
     multipass_nofruns = 1
     setargument("purgeall",true)
     scripts.context.run()
 end
 
-function scripts.context.directives()
-    environment.files = { resolvers.findfile("m-directives.mkiv") }
-    multipass_nofruns = 1
-    setargument("purgeall",true)
-    scripts.context.run()
-end
+scripts.context.trackers    = showsetter
+scripts.context.directives  = showsetter
+scripts.context.experiments = showsetter
 
 function scripts.context.logcategories()
     environment.files = { resolvers.findfile("m-logcategories.mkiv") }

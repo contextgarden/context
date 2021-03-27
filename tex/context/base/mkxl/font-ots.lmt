@@ -544,9 +544,9 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
         setchar(start,char)
         return head, start
     end
-    if inhibited(start,stop) then
-        return head, start
-    end
+--     if inhibited(start,stop) then
+--         return head, start
+--     end
     local prev = getprev(start)
     local next = getnext(stop)
     local comp = start
@@ -777,7 +777,12 @@ end
 -- simplified. Anyway, it can be way messier: marks that get removed as well as
 -- marks that are kept.
 
+-- Blocking is nasty: (ff\zwj l) vs (ff\zwj l) vs (ffl) vs (f\zwj fl}
+
 function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skiphash)
+if start and has_glyph_option(start,no_right_ligature_code) then
+    return head, start, false, false
+end
     local current = getnext(start)
     if not current then
         return head, start, false, nil
@@ -786,6 +791,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local startchar = getchar(start)
     if skiphash and skiphash[startchar] then
         while current do
+if current and has_glyph_option(current,no_left_ligature_code) then
+    break
+end
             local nxt, char = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
             if char then
                 local lg = ligature[char]
@@ -819,6 +827,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
         local discfound = false
         local hasmarks  = marks[startchar]
         while current do
+if current and has_glyph_option(current,no_left_ligature_code) then
+    break
+end
             local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
             if char then
                 if skiphash and skiphash[char] then
@@ -1475,6 +1486,9 @@ assume rather stupid ligatures (no complex disc nodes).</p>
 -- compare to handlers.gsub_ligature which is more complex ... why
 
 function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+if start and has_glyph_option(start,no_right_ligature_code) then
+    return head, start, false, 0, false
+end
     local mapping = currentlookup.mapping
     if mapping == nil then
         mapping = getmapping(dataset,sequence,currentlookup)
@@ -1493,6 +1507,9 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             local last            = stop
             local nofreplacements = 1
             while current do
+if current and has_glyph_option(current,no_left_ligature_code) then
+    break
+end
                 -- todo: ischar ... can there really be disc nodes here?
 --                 local id = getid(current)
 --                 if id == disc_code then

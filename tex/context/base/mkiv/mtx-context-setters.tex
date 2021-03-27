@@ -1,0 +1,32 @@
+%D \module
+%D   [       file=mtx-context-setters,
+%D        version=0000.00.00,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Show Trackers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=setters [--pattern=] [trackers|directives|experiments]
+%
+% --pattern     : filter by pattern
+% --trackers    : show trackers
+% --directives  : show directives
+% --experiments : show experiments
+%
+% end help
+
+\starttext
+
+\doifdocumentargument {trackers}    { \ctxlua {trackers   .show(environment.arguments.pattern) } }
+\doifdocumentargument {directives}  { \ctxlua {directives .show(environment.arguments.pattern) } }
+\doifdocumentargument {experiments} { \ctxlua {experiments.show(environment.arguments.pattern) } }
+
+\stoptext
+

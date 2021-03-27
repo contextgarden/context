@@ -797,7 +797,7 @@
 
 \startxmlsetups mml:apply:inverse
     \settrue\xmlinversefunction
-    \xmlsetup{#1}{mml:\xmlfilter{#1}{/mml:apply/*[2]/name()}}
+    \xmlsetup{#1}{mml:\xmlfilter{#1}{/mml:apply/*[2]/tag()}}
 \stopxmlsetups
 
 % condition
@@ -1219,7 +1219,7 @@
 \startxmlsetups mml:factorof   \xmlsetup{#1}{mml:relation} \stopxmlsetups
 
 \startxmlsetups mml:relation
-    \edef\mmlapplyaction{\xmlfilter{#1}{/*/name()}}
+    \edef\mmlapplyaction{\xmlfilter{#1}{/*/tag()}}
     \MMLcreset \xmlsetup{#1}{mml:relation:\xmlattdef{#1}{align}{\MMLrelationalign}}
 \stopxmlsetups
 

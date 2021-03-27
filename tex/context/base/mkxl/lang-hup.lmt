@@ -56,7 +56,7 @@ local function collect(head)
     while head do
         local nxt, char, id = isnextglyph(head)
         if char then
-            local u = characters[id][char].unicode
+            local u = characters[id][char].unicode -- we could cache it
             if type(u) == "table" then
                 for i=1,#u do
                  -- word[#word+1] = utfchar(u[i])
@@ -196,19 +196,36 @@ trackers.register("hyphenation.applied.console", function(v)
     end
 end)
 
+-- local c, f = isglyph(current)
+-- local char = chardata[f][c]
+-- if char and type(char.unicode) == "table" then -- hackery test
+
+local ligature_code = 0x8000 + nodes.glyphcodes.ligature
+local ligature_mode = false
+
+local color_n = { "red",     "green",     "blue"     }
+local color_l = { "darkred", "darkgreen", "darkblue" }
+
 function nodes.handlers.visualizehyphenation(head)
     for current, id, subtype, list in nexthlist, head do
         if list and subtype == line_code then
-            for n in nextglyph, list do
-                local d = getdiscpart(n)
-                if d == 0 then
-                    -- nothing
-                elseif d == 1 then
-                    setcolor(n,"red")   -- pre
-                elseif d == 2 then
-                    setcolor(n,"blue")  -- post
-                elseif d == 3 then
-                    setcolor(n,"green") -- replace
+            if ligature_mode then
+                for n in nextglyph, list do
+                    local d = getdiscpart(n)
+                    if d > 0 and d < 4 then
+                        if getsubtype(n) == ligature_code then
+                            setcolor(n,color_l[d])
+                        else
+                            setcolor(n,color_n[d])
+                        end
+                    end
+                end
+            else
+                for n in nextglyph, list do
+                    local d = getdiscpart(n)
+                    if d > 0 and d < 4 then
+                        setcolor(n,color_n[d])
+                    end
                 end
             end
         end
@@ -216,6 +233,7 @@ function nodes.handlers.visualizehyphenation(head)
     return head
 end
 
-trackers.register("hyphenation.applied.visualize", function(v)
+trackers.register("hyphenation.applied.visualize", { true, false, "ligatures" }, function(v)
     setaction("finalizers","nodes.handlers.visualizehyphenation",v)
+    ligature_mode = v == "ligatures"
 end)

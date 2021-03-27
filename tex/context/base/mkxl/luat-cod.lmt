@@ -33,7 +33,7 @@ texconfig.max_print_line  =   100000
 texconfig.max_strings     =   500000
 texconfig.max_pool        = 10000000
 
-texconfig.hash_extra      =   200000
+texconfig.hash_extra      =   250000
 
 texconfig.expand_depth    =    10000
 texconfig.function_size   =    32768

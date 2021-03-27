@@ -889,6 +889,8 @@ local ruledglyph do
     -- have a frozen color anyway or i need a more detailed cache .. below is a more
     -- texie approach
 
+ -- local ligature_code = 0x8000 + nodes.glyphcodes.ligature
+
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
         local wd = getwidth(current)
         if wd ~= 0 then
@@ -905,6 +907,7 @@ local ruledglyph do
                 line   = linewidth,
                 type   = "box",
             },new_kern(-wd))
+         -- if getsubtype(n) == ligature_code then
             local c, f = isglyph(current)
             local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test

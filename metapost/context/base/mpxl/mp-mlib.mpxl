@@ -1447,7 +1447,7 @@ permanent asgroup ;
 pair    mfun_pattern_s ; mfun_pattern_s := origin ; % auto scale to fraction of shape (svg)
 boolean mfun_pattern_f ; mfun_pattern_f := false  ; % anchor or not (normally we do that)
 
-def withpatternscale primary s = hide (mfun_pattern_s := s ;) enddef ;
+def withpatternscale primary s = hide (mfun_pattern_s := paired s ;) enddef ;
 def withpatternfloat primary s = hide (mfun_pattern_f := s ;) enddef ;
 
 primarydef t withpattern p =

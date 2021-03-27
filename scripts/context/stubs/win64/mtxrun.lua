@@ -12809,7 +12809,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13901, stripped down to: 9175
+-- original size: 14562, stripped down to: 9638
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -12952,6 +12952,9 @@ local function register_setter(t,what,...)
    end
    local s=fnc 
    fnc=function(value) set(t,s,value) end
+  elseif typ=="table" then
+   functions.values=fnc
+   fnc=nil
   elseif typ~="function" then
    fnc=nil
   end
@@ -12996,35 +12999,42 @@ local function list_setter(t)
  end
  return user,system
 end
-local function show_setter(t)
+local function show_setter(t,pattern)
  local list=list_setter(t)
  t.report()
  for k=1,#list do
   local name=list[k]
-  local functions=t.data[name]
-  if functions then
-   local value=functions.value
-   local default=functions.default
-   local modules=#functions
-   if default==nil then
-    default="unset"
-   elseif type(default)=="table" then
-    default=concat(default,"|")
-   else
-    default=tostring(default)
+  if not pattern or find(name,pattern) then
+   local functions=t.data[name]
+   if functions then
+    local value=functions.value
+    local default=functions.default
+    local values=functions.values
+    local modules=#functions
+    if default==nil then
+     default="unset"
+    elseif type(default)=="table" then
+     default=concat(default,"|")
+    else
+     default=tostring(default)
+    end
+    if value==nil then
+     value="unset"
+    elseif type(value)=="table" then
+     value=concat(value,"|")
+    else
+     value=tostring(value)
+    end
+    t.report(name)
+    t.report("    modules : %i",modules)
+    t.report("    default : %s",default)
+    t.report("    value   : %s",value)
+   if values then
+    local v={} for i=1,#values do v[i]=tostring(values[i]) end
+    t.report("    values  : % t",v)
    end
-   if value==nil then
-    value="unset"
-   elseif type(value)=="table" then
-    value=concat(value,"|")
-   else
-    value=tostring(value)
+    t.report()
    end
-   t.report(name)
-   t.report("    modules : %i",modules)
-   t.report("    default : %s",default)
-   t.report("    value   : %s",value)
-   t.report()
   end
  end
 end
@@ -13043,6 +13053,10 @@ local function setter_value(setter,name)
  local d=setter.data[name]
  return d and (d.value or d.default)
 end
+local function setter_values(setter,name)
+ local d=setter.data[name]
+ return d and d.values
+end
 local function new_setter(name) 
  local setter 
  setter={
@@ -13057,6 +13071,7 @@ local function new_setter(name)
   show=function(...)   show_setter (setter,...) end,
   default=function(...)  return setter_default (setter,...) end,
   value=function(...)  return setter_value   (setter,...) end,
+  values=function(...)  return setter_values  (setter,...) end,
  }
  data[name]=setter
  return setter
@@ -25842,8 +25857,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1025906
--- stripped bytes    : 405610
+-- original bytes    : 1026567
+-- stripped bytes    : 405808
 
 -- end library merge
 

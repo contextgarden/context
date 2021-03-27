@@ -524,7 +524,7 @@ function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) 
 -- e['user-friendly'] = 'user=friend-ly'
 -- e['exceptionally-friendly'] = 'excep-tionally=friend-ly'
 
-local invalid = { "{", "}", "-" }
+local invalid = { "{", "}", "(", ")", "-", " " }
 
 local function collecthjcodes(data,str)
     local found = data.extras and data.extras.characters or { }
@@ -564,6 +564,15 @@ function languages.setexceptions(tag,str)
     end
 end
 
+local function setwordhandler(tag,action)
+    local data, instance = resolve(tag)
+    if data then
+        instance:setwordhandler(action)
+    end
+end
+
+languages.setwordhandler = setwordhandler
+
 function languages.hyphenate(tag,str)
     -- todo: does this still work?
     local data, instance = resolve(tag)
@@ -572,6 +581,75 @@ function languages.hyphenate(tag,str)
     else
         return str
     end
+end
+
+-- This code is here for some testing (and discussion) but it might end up in its
+-- own module. I wrote it after listening to the end March 2021 live concert of
+-- Mandoki Soulmates: Hungarian Pictures (music is the greatest unifier) with his
+-- usual incredible international lineup. After that, and realizing that we needed
+-- to deal better with some language issues as follow up on a mailing list thread, I
+-- needed only a few loops of relistening the concert to implement it. In
+-- restrospect this was a language feature that should have been there a while ago.
+
+do
+
+    local nuts       = nodes.nuts
+    local nextglyph  = nuts.traversers.glyph
+    local setoptions = nuts.setoptions
+    local glyphoptioncodes = tex.glyphoptioncodes
+
+    local cache = table.setmetatableindex(function(t,k)
+        local v = 0
+        for s in gmatch(k,"%w+") do
+            local o = glyphoptioncodes[s]
+            if o then
+                v = v | o
+            end
+        end
+        t[k] = v
+        return v
+    end)
+
+    local function checkglyphoptions(options)
+        for word, list in next, options do
+            if type(list) == "string" then
+                options[word] = options[list]
+            else
+                for index, option in next, list do
+                    if type(option) == "string" then
+                        list[index] = cache[option]
+                    end
+                end
+            end
+        end
+    end
+
+    function languages.setoptionhandler(tag,options)
+        if type(options) == "table" then
+            checkglyphoptions(options) -- checks in place!
+            setwordhandler(tag,
+                function(n,word,length,first,last)
+                    local o = options[word]
+                    if o then
+                        local index = 0
+                        for g, c in nextglyph, first do
+                            index = index + 1
+                            local t = o[index]
+                            if t then
+                                setoptions(g,t)
+                            end
+                            if g == last then
+                                break
+                            end
+                        end
+                    end
+                    return false
+            end)
+        else
+            setwordhandler(tag)
+        end
+    end
+
 end
 
 -- hyphenation.define        ("zerolanguage")

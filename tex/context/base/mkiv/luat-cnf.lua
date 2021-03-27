@@ -24,7 +24,7 @@ texconfig.expand_depth    =    10000
 texconfig.half_error_line =      125
 texconfig.max_print_line  =   100000
 texconfig.max_strings     =   500000
-texconfig.hash_extra      =   200000
+texconfig.hash_extra      =   250000
 texconfig.function_size   =    32768
 texconfig.properties_size =    10000
 

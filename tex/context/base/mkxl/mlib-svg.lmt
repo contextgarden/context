@@ -1677,12 +1677,13 @@ do
     local f_rotation_stop   = formatters[") rotatedaround((0,0),-angle((%N,%N))) ;"]
     local f_rotation_angle  = formatters[") rotatedaround((0,0),-%N) ;"]
 
+    local s_offset_start    = "draw image ( "
+    local f_offset_stop     = formatters[") shifted (%N,%N) ;"]
+    local s_size_start      = "draw image ( "
+    local f_size_stop       = formatters[") xysized (%N,%N) ;"]
+
     local handleoffset, handlesize do
 
-        local s_offset_start = "draw image ( "
-        local f_offset_stop  = formatters[") shifted (%N,%N) ;"]
-        local s_size_start   = "draw image ( "
-        local f_size_stop    = formatters[") xysized (%N,%N) ;"]
 
         handleoffset = function(at)
             local x = asnumber_vx(rawget(at,"x"))

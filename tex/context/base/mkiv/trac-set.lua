@@ -165,6 +165,9 @@ local function register_setter(t,what,...)
             end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
+        elseif typ == "table" then
+            functions.values = fnc
+            fnc = nil
         elseif typ ~= "function" then
             fnc = nil
         end
@@ -216,35 +219,42 @@ local function list_setter(t) -- pattern
     return user, system
 end
 
-local function show_setter(t)
+local function show_setter(t,pattern)
     local list = list_setter(t)
     t.report()
     for k=1,#list do
         local name = list[k]
-        local functions = t.data[name]
-        if functions then
-            local value   = functions.value
-            local default = functions.default
-            local modules = #functions
-            if default == nil then
-                default = "unset"
-            elseif type(default) == "table" then
-                default = concat(default,"|")
-            else
-                default = tostring(default)
+        if not pattern or find(name,pattern) then
+            local functions = t.data[name]
+            if functions then
+                local value   = functions.value
+                local default = functions.default
+                local values  = functions.values
+                local modules = #functions
+                if default == nil then
+                    default = "unset"
+                elseif type(default) == "table" then
+                    default = concat(default,"|")
+                else
+                    default = tostring(default)
+                end
+                if value == nil then
+                    value = "unset"
+                elseif type(value) == "table" then
+                    value = concat(value,"|")
+                else
+                    value = tostring(value)
+                end
+                t.report(name)
+                t.report("    modules : %i",modules)
+                t.report("    default : %s",default)
+                t.report("    value   : %s",value)
+            if values then
+                local v = { } for i=1,#values do v[i] = tostring(values[i]) end
+                t.report("    values  : % t",v)
             end
-            if value == nil then
-                value = "unset"
-            elseif type(value) == "table" then
-                value = concat(value,"|")
-            else
-                value = tostring(value)
+                t.report()
             end
-            t.report(name)
-            t.report("    modules : %i",modules)
-            t.report("    default : %s",default)
-            t.report("    value   : %s",value)
-            t.report()
         end
     end
 end
@@ -272,6 +282,11 @@ local function setter_value(setter,name)
     return d and (d.value or d.default)
 end
 
+local function setter_values(setter,name)
+    local d = setter.data[name]
+    return d and d.values
+end
+
 local function new_setter(name) -- we could use foo:bar syntax (but not used that often)
     local setter -- we need to access it in setter itself
     setter = {
@@ -286,6 +301,7 @@ local function new_setter(name) -- we could use foo:bar syntax (but not used tha
         show     = function(...)         show_setter    (setter,...) end,
         default  = function(...)  return setter_default (setter,...) end,
         value    = function(...)  return setter_value   (setter,...) end,
+        values   = function(...)  return setter_values  (setter,...) end,
     }
     data[name] = setter
     return setter
