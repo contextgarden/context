@@ -488,5 +488,22 @@ return {
           <polygon points="50 160 55 180 70 180 60 190 65 205 50 195 35 205 40 190 30 180 45 180" stroke="green" fill="transparent" stroke-width="5"/>
           <path d="M20,230 Q40,205 50,230 T90,230" fill="none" stroke="blue" stroke-width="5"/>
         </svg>
-    ]]
+    ]],
+    [[
+        <svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+          <radialGradient id="gradient1" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100" fx="100" fy="100">
+            <stop offset="0%" stop-color="darkblue" />
+            <stop offset="50%" stop-color="skyblue" />
+            <stop offset="100%" stop-color="darkblue" />
+          </radialGradient>
+          <radialGradient id="gradient2" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100" fx="100" fy="100" gradientTransform="skewX(20) translate(-35, 0)">
+            <stop offset="0%" stop-color="darkblue" />
+            <stop offset="50%" stop-color="skyblue" />
+            <stop offset="100%" stop-color="darkblue" />
+          </radialGradient>
+          <rect x="0" y="0" width="200" height="200" fill="url(#gradient1)" />
+          <xrect x="0" y="0" width="200" height="200" fill="url(#gradient2)" style="transform: translateX(220px);" />
+          <rect x="0" y="0" width="200" height="200" fill="url(#gradient2)" transform="translateX(220px)" />
+        </svg>
+    ]],
 }

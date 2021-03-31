@@ -212,12 +212,15 @@ function nodes.handlers.visualizehyphenation(head)
             if ligature_mode then
                 for n in nextglyph, list do
                     local d = getdiscpart(n)
+                    local s = getsubtype(n)
                     if d > 0 and d < 4 then
-                        if getsubtype(n) == ligature_code then
+                        if s == ligature_code then
                             setcolor(n,color_l[d])
                         else
                             setcolor(n,color_n[d])
                         end
+                    elseif s == ligature_code then
+                        setcolor(n,"darkgray")
                     end
                 end
             else

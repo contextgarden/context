@@ -7,7 +7,53 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
     license   = "see context related readme files"
 }
 
--- beware of "too many locals" here
+-- This file is the starting point for PDF related features. Although quite a bit
+-- evolved over time, most of what we do in MkIV and LMTX already was available in
+-- MkII (with e.g. pdfTeX) anyway, but it was implemented in TeX. We're talking of
+-- arbitrary annotations, media like audio and video, widgets (aka forms) with
+-- chains and appearances, comments, attachments, javascript based manipulation of
+-- layers, graphic trickery like shading, color spaces, transparancy, flash stuff,
+-- executing commands, accessing the interface, etc. In that respect there isn't
+-- much really new here, after all MkII was there before the turn of the century,
+-- but it's just more fun to maintain it in Lua than in low level TeX. Also, because
+-- we no longer deal with other engines, there is no need to go low level TeX, which
+-- makes for better code.
+--
+-- However, over the decades PDF evolved and it shows. For instance audio and video
+-- support changed and became worse. Some things were dropped (smil, flash, movies,
+-- audio). Using appearances for widgets became a pain because it sort of assumes
+-- that you construct these forms in acrobat which then leads to bugs becoming
+-- features which means that certain things simply don't work (initializations,
+-- chained widgets, funny dingabt defaults, etc), probably because they never were
+-- tested when viewers evolved.
+--
+-- Attachment are also a fragile bit. And comments that at some point became
+-- dependent on rendering annotations ... it all deserves no beauty price because
+-- reliable simplicity was replaced by unreliable complexity. Something that might
+-- work today often didn't in the past and might fail in the future, if only because
+-- it more relates to the viewer user interface, maybe changing security demands or
+-- whatever. We cannot predict this. A side effect is that we keep adapting and even
+-- worse, have to remove features that originally were expected to stay (media
+-- stuff). To some extend it's a waste of time to get it all supported, also because
+-- the open source viewers lag behind. It makes no sense to keep tons of code
+-- arround that will never be used (again).
+--
+-- Also, I don't think that these PDF features were added with something else than
+-- Acrobat in mind: a flexible system like TeX that actually could inject these low
+-- level features right from the moment that they showed up (and before they were
+-- fully tested) is not mainstream enough to be taken into account. One cannot blame
+-- a commercial product for its own priorities. The evolution of the web might also
+-- have interfered with the agendas.
+--
+-- As a consequence, the code that we use is spread over files and it might change
+-- over time as we try to adapt. But it's easy for the mentioned features to fix one
+-- aspect and break another. Eventually we might see more of these fancy features to
+-- be removed because they make no sense on the long run, than such features being
+-- added. In retrospect maybe many such features were just experiments: anchored in
+-- time for throw away documents (like presentations), never meant to be used on the
+-- long term. In that respect PDF is a disappointment.
+
+-- Comment: beware of "too many locals" problem here.
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch

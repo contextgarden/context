@@ -81,6 +81,14 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
 
 -- One can run into pretty crazy images, like lines that are fills being clipped
 -- to some width. That's the danger of hiding yourself behind an interface I guess.
+--
+-- One would expect official examples to sort of follow the structure guideline,
+-- like putting gradient definitions in a "defs" element but forget about it ...
+-- structure seems not to be important (one can even wonder why "defs" is there at
+-- all). In the end all these systems (tex macro packages included) end up as a
+-- mess simply because conceptually wrong input gets accepted as normal. A side
+-- effect is that one starts to get a disliking. Anyway, at sime point I can just
+-- simplify some code because ugliness is part of the game.
 
 local rawget, rawset, type, tonumber, tostring, next, setmetatable = rawget, rawset, type, tonumber, tostring, next, setmetatable
 
@@ -359,6 +367,7 @@ do
     local c_number_u  = C(p_number) * (p_percent + p_unit)^-1
 
     p_number_n  = c_number_n / convert
+    p_number_u  = c_number_u / convert
     p_number_x  = c_number_u / convert_x
     p_number_vx = c_number_u / convert_vx
     p_number_y  = c_number_u / convert_y
@@ -382,7 +391,8 @@ do
     asnumber_vx_t = function(s) return s and lpegmatch(p_number_vx_t,s) or zerotable end
     asnumber_vy_t = function(s) return s and lpegmatch(p_number_vy_t,s) or zerotable end
 
-    local p_numbersep   = p_number_n + p_separator
+--     local p_numbersep   = p_number_n + p_separator
+    local p_numbersep   = p_number_u + p_separator
           p_numbers     = p_optseparator * P("(") * p_numbersep^0 * p_optseparator * P(")")
           p_fournumbers = p_numbersep^4
           p_path        = Ct ( (
@@ -1243,9 +1253,11 @@ local handletransform, handleviewbox  do
     end
 
     local function translate(x,y)
+        if x == 0 then x = false end
+        if y == 0 then y = false end
         if y then
             noftransforms = noftransforms + 1
-            transforms[noftransforms] = f_shifted(x,-y)
+            transforms[noftransforms] = f_shifted(x or 0,-y)
         elseif x then
             noftransforms = noftransforms + 1
             transforms[noftransforms] = f_shifted(x,0)
@@ -1253,23 +1265,24 @@ local handletransform, handleviewbox  do
     end
 
     local function scale(x,y)
+        if x == 1 then x = false end
+        if y == 1 then y = false end
         if y then
             noftransforms = noftransforms + 1
-            transforms[noftransforms] = f_xyscaled(x,y)
+            transforms[noftransforms] = f_xyscaled(x or 1,y)
         elseif x then
             noftransforms = noftransforms + 1
             transforms[noftransforms] = f_scaled(x)
         end
     end
 
-    local function skewx(x)
+    local function skew(x,y)
+     -- if x = 0 then x = false end
+     -- if y = 0 then y = false end
         if x then
             noftransforms = noftransforms + 1
             transforms[noftransforms] = f_slanted_x(sind(-x))
         end
-    end
-
-    local function skewy(y)
         if y then
             noftransforms = noftransforms + 1
             transforms[noftransforms] = f_slanted_y(sind(-y))
@@ -1303,12 +1316,17 @@ local handletransform, handleviewbox  do
 
     local p_transform = (
             lpegpatterns.whitespace^0 * (
-            P("translate") * (p_numbers / translate)       -- maybe xy
-          + P("scale")     * (p_numbers / scale)
-          + P("rotate")    * (p_numbers / rotate)
-          + P("matrix")    * (p_numbers / matrix)
-          + P("skewX")     * (p_numbers / skewx)
-          + P("skewY")     * (p_numbers / skewy)
+            P("translate")  * (p_numbers / translate)      -- maybe xy
+          + P("scale")      * (p_numbers / scale)
+          + P("rotate")     * (p_numbers / rotate)
+          + P("matrix")     * (p_numbers / matrix)
+          + P("skew")       * (p_numbers / skew)
+          + P("translateX") * (p_numbers / translate)
+          + P("translateY") * (Cc(false) * p_numbers / translate)
+          + P("scaleX")     * (p_numbers / translate)
+          + P("scaleY")     * (Cc(false) * p_numbers / translate)
+          + P("skewX")      * (p_numbers / skew)
+          + P("skewY")      * (Cc(false) * p_numbers / skew)
         )
     )^1
 
@@ -1754,15 +1772,6 @@ do
     local f_opacity            = formatters['    withopacity %N']
     local f_pen                = formatters['    withpen pencircle scaled %N']
 
-    local f_shade_step         = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) )']
-    local f_shade_step_opacity = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) withshadeopacity %N )']
-    local f_shade_radius       = formatters['withshaderadius (%N,%N) ']
-    local f_shade_center_one   = formatters['withshadecenterone (%N,%N)']
-    local f_shade_center_two   = formatters['withshadecentertwo (%N,%N)']
-    local f_shade_center_one_f = formatters['withshadecenteronefraction (%N,%N)']
-    local f_shade_center_two_f = formatters['withshadecentertwofraction (%N,%N)']
-    local f_shade_center_f     = formatters['withshadecenterfraction (%N,%N)']
-    local f_shade_radius_f     = formatters['withshaderadiusfraction %N']
 
     -- todo: gradient unfinished
     -- todo: opacity but first we need groups in mp
@@ -1857,83 +1866,121 @@ do
         end
     end
 
-    local function gradient(id)
-        local spec = definitions[id] -- no locate !
-        if spec then
-            local kind  = spec.tg
-            local shade = nil
-            local n     = 1
-            local a     = spec.at
-            if kind == "linearGradient" then
-                shade = { s_shade_linear }
+    local gradient do
+
+        local f_shade_step         = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) )']
+        local f_shade_step_opacity = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) withshadeopacity %N )']
+        local f_shade_center       = formatters['withshadecenter (%N,%N)']
+        local f_shade_center_f     = formatters['withshadecenterfraction (%N,%N)']
+        local f_shade_radius       = formatters['withshaderadius (%N,%N) ']
+        local f_shade_radius_f     = formatters['withshaderadiusfraction %N']
+        local f_shade_center_one   = formatters['withshadecenterone (%N,%N)']
+        local f_shade_center_two   = formatters['withshadecentertwo (%N,%N)']
+        local f_shade_center_one_f = formatters['withshadecenteronefraction (%N,%N)']
+        local f_shade_center_two_f = formatters['withshadecentertwofraction (%N,%N)']
+
+        gradient = function(id)
+            local spec = definitions[id] -- no locate !
+            if spec then
+                local kind  = spec.tg
+                local shade = nil
+                local n     = 1
+                local a     = spec.at
+                -- bah
+                local gu = rawget(a, "gradientUnits")         -- userSpaceOnUse
+                local gt = rawget(a, "gradientTransform")
+                local sm = rawget(a, "spreadMethod")
                 --
-                local x1 = rawget(a,"x1")
-                local y1 = rawget(a,"y1")
-                local x2 = rawget(a,"x2")
-                local y2 = rawget(a,"y2")
-                if x1 and y1 then
-                    n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(x1),1-asnumber_p(y1))
-                end
-                if x2 and y2 then
-                    n = n + 1 ; shade[n] = f_shade_center_two_f(asnumber_p(x2),1-asnumber_p(y2))
-                end
+                local userspace = gu == "userSpaceOnUse"
                 --
-            elseif kind == "radialGradient" then
-                shade = { s_shade_circular }
-                --
-                local cx = rawget(a,"cx") -- x center
-                local cy = rawget(a,"cy") -- y center
-                local r  = rawget(a,"r" ) -- radius
-                local fx = rawget(a,"fx") -- focal points
-                local fy = rawget(a,"fy") -- focal points
-                --
-                if cx and cy then
-                    n = n + 1 ; shade[n] = f_shade_center_f(asnumber_p(cx),1-asnumber_p(cy))
+                if kind == "linearGradient" then
+                    shade = { s_shade_linear }
+                    --
+                    local x1 = rawget(a,"x1")
+                    local y1 = rawget(a,"y1")
+                    local x2 = rawget(a,"x2")
+                    local y2 = rawget(a,"y2")
+                    if x1 and y1 then
+                        n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(x1),1-asnumber_p(y1))
+                    end
+                    if x2 and y2 then
+                        n = n + 1 ; shade[n] = f_shade_center_two_f(asnumber_p(x2),1-asnumber_p(y2))
+                    end
+                    --
+                elseif kind == "radialGradient" then
+                    shade = { s_shade_circular }
+                    --
+                    local cx = rawget(a,"cx") -- x center
+                    local cy = rawget(a,"cy") -- y center
+                    local r  = rawget(a,"r" ) -- radius
+                    local fx = rawget(a,"fx") -- focal points
+                    local fy = rawget(a,"fy") -- focal points
+                    --
+                    if userspace then
+                        if cx and cy then
+                            n = n + 1 ; shade[n] = f_shade_center(asnumber_p(cx),asnumber_p(cy))
+                        end
+                        if fx and fy then
+                            n = n + 1 ; shade[n] = f_shade_center_one(asnumber_p(fx),-asnumber_p(fy))
+                        end
+                        if r then
+                            n = n + 1 ; shade[n] = f_shade_radius(asnumber_p(r))
+                        end
+                        if fx and fy then
+                            -- todo
+                        end
+                    else
+                        if cx and cy then
+                            n = n + 1 ; shade[n] = f_shade_center_f(asnumber_p(cx),1-asnumber_p(cy))
+                        end
+                        if fx and fy then
+                            n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(fx),1-asnumber_p(fy))
+                        end
+                        if r then
+                            n = n + 1 ; shade[n] = f_shade_radius_f(asnumber_p(r))
+                        end
+                        if fx and fy then
+                            -- todo
+                        end
+                    end
+                else
+                    return
                 end
-                if fx and fy then
-                    n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(fx),1-asnumber_p(fy))
-                end
-                if r then
-                    n = n + 1 ; shade[n] = f_shade_radius_f(asnumber_p(r))
-                end
-                if fx and fy then
-                    -- todo
-                end
-            else
-                return
-            end
-         -- local gu = a.gradientUnits
-         -- local gt = a.gradientTransform
-         -- local sm = a.spreadMethod
-            local colora, colorb
-            -- startcolor ?
-            for c in xmlcollected(spec,"/stop") do
-                local a       = c.at
-                local offset  = rawget(a,"offset")
-                local colorb  = rawget(a,"stop-color")
-             -- local opacity = rawget(a,"stop-opacity") -- not in pdf for steps
-                if not colora then
+                local colora, colorb
+                -- startcolor ?
+                for c in xmlcollected(spec,"/stop") do
+                    local a       = c.at
+                    local offset  = rawget(a,"offset")
+                    local colorb  = rawget(a,"stop-color")
+                 -- local opacity = rawget(a,"stop-opacity") -- not in pdf for steps
+                    if not colora then
+                        colora = colorb
+                    end
+                    -- what if no percentage
+--                     local fraction = offset and asnumber_r(offset) -- asnumber_p ?
+local fraction = offset and asnumber_p(offset)
+                    if not fraction then
+                        -- for now
+                        fraction = xmlcount(spec,"/stop")/100      -- asnumber_p ?
+                    end
+                    if colora and colorb and colora ~= "" and colorb ~= "" then
+                        n = n + 1
+                     -- if opacity then
+                     --     shade[n] = f_shade_step_opacity(fraction,thecolor(colora),thecolor(colorb),asnumber(o))
+                     -- else
+                            if userspace then
+                                shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
+                            else
+                                shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
+                            end
+                     -- end
+                    end
                     colora = colorb
                 end
-                -- what if no percentage
-                local fraction = offset and asnumber_r(offset) -- asnumber_p ?
-                if not fraction then
-                 -- offset = tonumber(offset)
-                    -- for now
-                    fraction = xmlcount(spec,"/stop")/100      -- asnumber_p ?
-                end
-                if colora and colorb and colora ~= "" and colorb ~= "" then
-                    n = n + 1
-                 -- if opacity then
-                 --     shade[n] = f_shade_step_opacity(fraction,thecolor(colora),thecolor(colorb),asnumber(o))
-                 -- else
-                        shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
-                 -- end
-                end
-                colora = colorb
+                return concat(shade,"\n    ")
             end
-            return concat(shade,"\n    ")
         end
+
     end
 
     local function drawproperties(stroke,at,opacity)
@@ -2065,7 +2112,7 @@ do
                 end
             end
         end
-        for c in xmlcollected(c,"symbol") do
+        for c in xmlcollected(c,"(symbol|radialGradient|linearGradient") do
             local id = rawget(c.at,"id")
             if id then
                 definitions["#"     .. id       ] = c

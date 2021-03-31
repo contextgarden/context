@@ -1,0 +1,32 @@
+if not modules then modules = { } end modules ['s-languages-goodies'] = {
+    version   = 1.001,
+    comment   = "companion to s-languages-goodies.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+moduledata.languages         = moduledata.languages         or { }
+moduledata.languages.goodies = moduledata.languages.goodies or { }
+
+function moduledata.languages.goodies.show(specification)
+    specification = interfaces.checkedspecification(specification)
+    local filename = specification.file
+    if filename and filename ~= "" then
+        local list = table.load(resolvers.findfile(filename))
+        if list then
+            list = list.options
+            if list then
+                for i=1,#list do
+                    local l = list[i]
+                    local w = l.words
+                    if w then
+                        context.startsubject { title = table.concat(table.sortedkeys(l.patterns)," ") }
+                            context(languages.strippedgoodiewords(w))
+                        context.stopsubject()
+                    end
+                end
+            end
+        end
+    end
+end

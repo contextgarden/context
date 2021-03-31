@@ -1,5 +1,4 @@
 %D \module
-%D \module
 %D   [       file=strc-flt,
 %D        version=2008.10.20,
 %D          title=\CONTEXT\ Structure Macros,
@@ -263,17 +262,17 @@
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_commands#1#2%
-  {\frozen\instance\setuevalue{\e!place\e!listof#2}{\strc_lists_place[#1]}% call will change
-   \frozen\instance\setuevalue{\e!complete\e!listof#2}{\strc_lists_complete[#1][#2]}% call will change
-   \frozen\instance\setuevalue{\e!place#1}{\placefloat[#1]}%
-   \frozen\instance\setuevalue{\e!start\e!place#1}{\startplacefloat[#1]}%
-   \frozen\instance\setuevalue{\e!stop\e!place#1}{\stopplacefloat}%
-   \frozen\instance\setuevalue{\e!start#1\e!text}{\strc_floats_start_text[#1]}%
-   \frozen\instance\setuevalue{\e!stop#1\e!text}{\strc_floats_stop_text}%
+  {\frozen\protected\instance\edefcsname\e!place   \e!listof#2\endcsname{\strc_lists_place[#1]}% call will change
+   \frozen\protected\instance\edefcsname\e!complete\e!listof#2\endcsname{\strc_lists_complete[#1][#2]}% call will change
+   \frozen\protected\instance\edefcsname\e!place            #1\endcsname{\placefloat[#1]}%
+   \frozen\protected\instance\edefcsname\e!start    \e!place#1\endcsname{\startplacefloat[#1]}%
+   \frozen\protected\instance\edefcsname\e!stop     \e!place#1\endcsname{\stopplacefloat}%
+   \frozen\protected\instance\edefcsname\e!start     #1\e!text\endcsname{\strc_floats_start_text[#1]}%
+   \frozen\protected\instance\edefcsname\e!stop      #1\e!text\endcsname{\strc_floats_stop_text}%
    % these will become obsolete:
-   \frozen\instance\setuevalue{\e!reserve#1}{\strc_floats_reserve[#1]}%
-   \frozen\instance\setuevalue{\e!start\e!reserve#1\e!text}{\strc_floats_start_reserve_text[#1]}%
-   \frozen\instance\setuevalue{\e!stop\e!reserve#1\e!text}{\strc_floats_stop_reserve_text}}
+   \frozen\instance\protected\edefcsname\e!reserve               #1\endcsname{\strc_floats_reserve[#1]}%
+   \frozen\instance\protected\edefcsname\e!start\e!reserve#1\e!text\endcsname{\strc_floats_start_reserve_text[#1]}%
+   \frozen\instance\protected\edefcsname\e!stop \e!reserve#1\e!text\endcsname{\strc_floats_stop_reserve_text}}
 
 %D Fallback float body:
 
@@ -1235,18 +1234,18 @@
 
 \installcorenamespace{floatmovement}
 
-\setvalue{\??floatmovement \v!line}{\strc_floats_move_down_line+}
-\setvalue{\??floatmovement+\v!line}{\strc_floats_move_down_line+}
-\setvalue{\??floatmovement-\v!line}{\strc_floats_move_down_line-}
-\setvalue{\??floatmovement \v!hang}{\strc_floats_move_down_hang\plusone}
-\setvalue{\??floatmovement+\v!hang}{\strc_floats_move_down_hang\plusone}
-\setvalue{\??floatmovement-\v!hang}{\strc_floats_move_down_hang\minusone}
+\defcsname\??floatmovement \v!line\endcsname{\strc_floats_move_down_line+}
+\defcsname\??floatmovement+\v!line\endcsname{\strc_floats_move_down_line+}
+\defcsname\??floatmovement-\v!line\endcsname{\strc_floats_move_down_line-}
+\defcsname\??floatmovement \v!hang\endcsname{\strc_floats_move_down_hang\plusone}
+\defcsname\??floatmovement+\v!hang\endcsname{\strc_floats_move_down_hang\plusone}
+\defcsname\??floatmovement-\v!hang\endcsname{\strc_floats_move_down_hang\minusone}
 
-\setvalue{\??floatmovement-2*\v!line}{\strc_floats_move_down_line{-2}}
-\setvalue{\??floatmovement+2*\v!line}{\strc_floats_move_down_line{2}}
-\setvalue{\??floatmovement 2*\v!line}{\strc_floats_move_down_line{2}}
+\defcsname\??floatmovement-2*\v!line\endcsname{\strc_floats_move_down_line{-2}}
+\defcsname\??floatmovement+2*\v!line\endcsname{\strc_floats_move_down_line{2}}
+\defcsname\??floatmovement 2*\v!line\endcsname{\strc_floats_move_down_line{2}}
 
-\permanent\protected\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
+\permanent\protected\def\installfloatmovement#1#2{\defcsname\??floatmovement#1\endcsname{#2}}
 
 \def\strc_floats_move_down#setting%
   {\begincsname\??floatmovement#setting\endcsname}
@@ -1287,19 +1286,19 @@
 
 \installcorenamespace{extrafloataction}
 
-\setvalue{\??extrafloataction      \v!inner}#1{\strc_floats_set_extra_action\v!left       \v!right}
-\setvalue{\??extrafloataction      \v!outer}#1{\strc_floats_set_extra_action\v!right      \v!left}
-\setvalue{\??extrafloataction\v!innermargin}#1{\strc_floats_set_extra_action\v!leftmargin \v!rightmargin}
-\setvalue{\??extrafloataction\v!outermargin}#1{\strc_floats_set_extra_action\v!rightmargin\v!leftmargin}
-\setvalue{\??extrafloataction  \v!inneredge}#1{\strc_floats_set_extra_action\v!leftedge   \v!rightedge}
-\setvalue{\??extrafloataction  \v!outeredge}#1{\strc_floats_set_extra_action\v!rightedge  \v!leftedge}
-\setvalue{\??extrafloataction  \v!backspace}#1{\strc_floats_set_extra_action\v!backspace  \v!cutspace}
-\setvalue{\??extrafloataction   \v!cutspace}#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
-%setvalue{\??extrafloataction     \v!margin}#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
-\setvalue{\??extrafloataction       \v!left}#1{\strc_floats_set_extra_action\v!left       \v!left}
-\setvalue{\??extrafloataction      \v!right}#1{\strc_floats_set_extra_action\v!right      \v!right}
-\setvalue{\??extrafloataction       \v!line}#1{} % only -n*line is handled (see ***)
-\setvalue{\??extrafloataction    \s!unknown}#1{\movedownsidefloat[#1]}
+\defcsname\??extrafloataction      \v!inner\endcsname#1{\strc_floats_set_extra_action\v!left       \v!right}
+\defcsname\??extrafloataction      \v!outer\endcsname#1{\strc_floats_set_extra_action\v!right      \v!left}
+\defcsname\??extrafloataction\v!innermargin\endcsname#1{\strc_floats_set_extra_action\v!leftmargin \v!rightmargin}
+\defcsname\??extrafloataction\v!outermargin\endcsname#1{\strc_floats_set_extra_action\v!rightmargin\v!leftmargin}
+\defcsname\??extrafloataction  \v!inneredge\endcsname#1{\strc_floats_set_extra_action\v!leftedge   \v!rightedge}
+\defcsname\??extrafloataction  \v!outeredge\endcsname#1{\strc_floats_set_extra_action\v!rightedge  \v!leftedge}
+\defcsname\??extrafloataction  \v!backspace\endcsname#1{\strc_floats_set_extra_action\v!backspace  \v!cutspace}
+\defcsname\??extrafloataction   \v!cutspace\endcsname#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+%defcsname\??extrafloataction     \v!margin\endcsname#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+\defcsname\??extrafloataction       \v!left\endcsname#1{\strc_floats_set_extra_action\v!left       \v!left}
+\defcsname\??extrafloataction      \v!right\endcsname#1{\strc_floats_set_extra_action\v!right      \v!right}
+\defcsname\??extrafloataction       \v!line\endcsname#1{} % only -n*line is handled (see ***)
+\defcsname\??extrafloataction    \s!unknown\endcsname#1{\movedownsidefloat[#1]}
 
 \def\strc_floats_check_extra_actions % less tracingthis way ....
   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
@@ -1617,6 +1616,10 @@
        \strc_floats_prepare_no_caption
        \strc_floats_set_caption_dimensions\voidbox
       %\page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
+\ifx\forcedfloatmethod\v!local
+    % we need \ifinfloatcombination
+    \strc_floats_build_box
+\fi
      \else
        % todo: installable maken, variant/method=auto vs macro
        \strc_floats_prepare_page_caption

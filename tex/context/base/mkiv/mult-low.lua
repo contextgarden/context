@@ -163,7 +163,7 @@ return {
         "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
-        "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode",
+        "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode", "forcehandlerhyphenationmodecode",
         --
         "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
         "clipwidthcode", "flattendiscretionariescode",

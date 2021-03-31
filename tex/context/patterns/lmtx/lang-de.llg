@@ -1,0 +1,589 @@
+-- In ConTeXt we have several mechanisms to deal with compound words, ligatures etc. We have language
+-- features, font features, in-stream replacers etc. At some point Denis Maier played with all of this
+-- and in the process we decided to look at yet another variant. For that we also needed lists of words
+-- and he came with one at:
+--
+--     https://github.com/micoloretan/selnolig/blob/master/selnolig-german-wordlist.tex
+--
+-- I'm not sure where that list originates (to be sorted out) and didn't look into how it is used (as
+-- we already followed different routes when we started with MKIV). We will also extend the list and let
+-- users add stuff. The main reason is to deal with compound words (for which we have multiple
+-- mechanisms) in a more automates way, using modern LMTX features. So this is not for MKIV (at least
+-- not now). This mechanism can and will also deal with some other language issues.
+
+-- Comment : this is a starting point, not de definitve list of words
+-- Todo    : break down this list in more meaningfull categories (like 'matches')
+-- Todo    : maybe make options into a tabel with named option sets (only if needed)
+
+return {
+    name       = "german",
+    version    = "1.00",
+    comment    = "Goodies that complement german.",
+    author     = "Denis Maier & Hans Hagen",
+    copyright  = "ConTeXt development team & whoever made this list",
+    options    = {
+        -- For Denis:
+        {
+            patterns = {
+                ff  = "f|f",
+                fl  = "f|l",
+                fi  = "f|i",
+                ffi = "f|f|i",
+                ffl = "f|f|l",
+                fff = "f|f|f",
+            },
+            matches = { 1 },
+            words   = [[
+                Auflaufform Auflaufformen
+                Ablauffolge Ablauffolgen
+                ablauffähig ablauffähige ablauffähigem ablauffähigen ablauffähiger ablauffähiges Ablauffähigkeit Ablauffähigkeiten
+                Ablaufleitung Ablaufleitungen
+                Ablaufliste Ablauflisten
+                Abruffunktion Abruffunktionen
+                Anruffalle Anruffallen
+                Anruffunktion Anruffunktionen
+                Anzweiflung Anzweiflungen
+                auffahrbar auffahrbare auffahrbarem auffahrbaren auffahrbarer auffahrbares auffahre auffahren auffahrend auffahrende auffahrendem auffahrenden auffahrender auffahrendes auffahrt Auffahrten Auffahrtsweg Auffahrunfall Auffahrunfalls Auffahrunfälle Auffahrunfällen
+                auffalle auffallen auffallend auffallende auffallendem auffallenden auffallender auffallendere auffallenderem auffallenderen auffallenderer auffallenderes auffallenderweise auffallendes auffallendst auffallendste auffallendstem auffallendsten auffallendster auffallendstes auffallt
+                auffaltbar Auffaltungen
+                auffand auffanden auffandest auffandet auffandst
+                auffangbar auffangbare auffangbarem auffangbaren auffangbarer auffangbares auffange auffangen auffangend auffangende auffangendem auffangenden auffangender auffangendes
+                Auffangbecken Auffangbeckens Auffanglager Auffanglagern Auffanglagers Auffangregister Auffangregistern Auffangregisters Auffangt Auffangvorrichtung Auffangvorrichtungen Auffangwanne Auffangwannen Auffangweiche Auffangweichen
+                auffassbar auffassbare auffassbarem auffassbaren auffassbarer auffassbares auffasse auffassen auffassend auffassende auffassendem auffassenden auffassender auffassendes auffassens auffassest auffasst auffasste auffassten auffasstest auffasstet
+                Auffassbarkeit Auffassbarkeiten Auffassung Auffassungen Auffassungsgabe Auffassungsgaben Auffassungsvermögen Auffassungsvermögens
+                auffasst auffasste auffassten auffasstest auffasstet
+                auffaßt auffaßte auffaßten auffaßtest auffaßtet
+                auffiel auffiele auffielen auffielst auffielt
+                auffindbar auffindbare auffindbarem auffindbaren auffindbarer auffindbares Auffindbarkeit Auffindbarkeiten auffinde auffinden auffindend auffindende auffindendem auffindenden auffindender auffindendes auffindens auffindest auffindet Auffindung Auffindungen
+                auffing auffinge auffingen auffingst auffingt
+                auffische auffischen auffischend auffischende auffischendem auffischenden auffischender auffischendes auffischest auffischst auffischt auffischte auffischten auffischtest auffischtet
+                aufflackern Aufflackerns
+                aufflamme aufflammen aufflammend aufflammende aufflammendem aufflammenden aufflammender aufflammendes aufflammst aufflammt aufflammte aufflammten aufflammtest aufflammtet
+                auffliege auffliegen auffliegend auffliegende auffliegendem auffliegenden auffliegender auffliegendes auffliegst auffliegt
+                auffloge aufflogen aufflogest auffloget
+                aufflöge aufflögen aufflögest aufflöget
+                auffordere auffordern auffordernd auffordernde aufforderndem auffordernden auffordernder aufforderndes aufforderns aufforderst auffordert aufforderte aufforderten auffordertest auffordertet Aufforderung Aufforderungen auffordre
+                aufforstbar aufforstbare aufforstbarem aufforstbaren aufforstbarer aufforstbares aufforste aufforsten aufforstend aufforstende aufforstendem aufforstenden aufforstender aufforstendes aufforstens aufforstest aufforstet aufforstete aufforsteten aufforstetest aufforstetet Aufforstung Aufforstungen
+                auffrass auffrassen auffrassest auffrasst
+                auffraß auffraßen auffraßest auffraßt
+                auffresse auffressen auffressend auffressende auffressendem auffressenden auffressender auffressendes
+                auffresst
+                auffreßt
+                auffrischbar auffrischbare auffrischbarem auffrischbaren auffrischbarer auffrischbares auffrische auffrischen auffrischend auffrischende auffrischendem auffrischenden auffrischender auffrischendes auffrischens auffrischest auffrischst auffrischt auffrischte auffrischten auffrischtest auffrischtet Auffrischung Auffrischungen
+                auffrisiere auffrisieren auffrisierend auffrisierende auffrisierendem auffrisierenden auffrisierender auffrisierendes auffrisierst auffrisiert auffrisierte auffrisiertem auffrisierten auffrisierter auffrisiertes auffrisiertest auffrisiertet
+                auffrisst
+                auffrißt
+                auffräse auffräsen auffräsest auffräset
+                auffrässe auffrässen auffrässest auffrässet
+                auffräße auffräßen auffräßest auffräßet
+                auffuhr auffuhren auffuhrst auffuhrt
+                auffächerbar auffächerbare auffächerbarem auffächerbaren auffächerbarer auffächerbares auffächere auffächern auffächernd auffächernde auffächerndem auffächernden auffächernder auffächerndes auffächerns auffächerst auffächert auffächerte auffächerten auffächertest auffächertet Auffächerung Auffächerungen auffächre
+                auffährst auffährt hinauffährt
+                arbeitskampffähig hoffähig Kampffähigkeit kampffähig lauffähig prüffähige straffähig tariffähig Tariffähigkeit Umlauffähigkeit wettkampffähiges
+                auffällig auffällige auffälligem auffälligen auffälliger auffälligere auffälligerem auffälligeren auffälligerer auffälligeres auffälliges auffälligkeit auffälligkeiten auffälligst auffälligste auffälligstem auffälligsten auffälligster auffälligstes auffällst auffällt
+                auffängst auffängt
+                aufführbar aufführbare aufführbarem aufführbaren aufführbarer aufführbares aufführe aufführen aufführend aufführende aufführendem aufführenden aufführender aufführendes aufführens aufführst aufführt aufführte aufführten aufführtest aufführtet Aufführung Aufführungen Aufführungsstatistik Aufführungsstil Aufführungsstile Aufführungsstilen Aufführungsstils
+                auffüllbar auffüllbare auffüllbarem auffüllbaren auffüllbarer auffüllbares auffülle auffüllen auffüllend auffüllende auffüllendem auffüllenden auffüllender auffüllendes auffüllens auffüllst auffüllt auffüllte auffüllten auffülltest auffülltet Auffüllung Auffüllungen
+                aufisst
+                auflache auflachen auflachend auflachende auflachendem auflachenden auflachender auflachendes
+                auflachst
+                auflacht auflachte auflachten auflachtest auflachtet
+                aufladbar aufladbare aufladbarem aufladbaren aufladbarer aufladbares
+                auflade aufladen aufladend aufladende aufladendem aufladenden aufladender aufladendes aufladens Auflader Aufladerin Aufladerinnen Aufladern Aufladers Aufladet Aufladevorgang Aufladevorgangs
+                Aufladung Aufladungen
+                Auflage Auflagefläche Auflageflächen Auflagen Auflagenerhöhung Auflagenerhöhungen Auflagenstark Auflagenstarke Auflagenstarkem Auflagenstarken Auflagenstarker Auflagenstarkes Auflagenstärke Auflagenzahl Auflagenzahlen Auflagenziffer Auflagenziffern
+                auflandig auflandige auflandigem auflandigen auflandiger auflandiges
+                auflasse auflassen auflassend auflassende auflassendem auflassenden auflassender auflassendes auflassens auflasst Auflassung Auflassungen
+                auflauere auflauern auflauernd auflauernde auflauerndem auflauernden auflauernder auflauerndes auflauerst auflauert auflauerte auflauerten auflauertest auflauertet
+                Auflauf auflaufe auflaufen auflaufend auflaufende auflaufendem auflaufenden auflaufender auflaufendes Auflaufs auflauft
+                auflaure
+                auflaßt
+                auflebe aufleben auflebend auflebende auflebendem auflebenden auflebender auflebendes
+                auflebst
+                auflebt auflebte auflebten auflebtest auflebtet
+                auflege auflegen auflegend auflegende auflegendem auflegenden auflegender auflegendes
+                auflegst
+                auflegt auflegte auflegten auflegtest auflegtet
+                auflehne auflehnen auflehnend auflehnende auflehnendem auflehnenden auflehnender auflehnendes auflehnens auflehnst auflehnt auflehnte auflehnten auflehntest auflehntet Auflehnung Auflehnungen
+                auflese auflesen auflesend auflesende auflesendem auflesenden auflesender auflesendes
+                auflest
+                aufleuchte aufleuchten aufleuchtend aufleuchtende aufleuchtendem aufleuchtenden aufleuchtender aufleuchtendes aufleuchtest aufleuchtet aufleuchtete aufleuchteten aufleuchtetest aufleuchtetet
+                aufliege aufliegen aufliegend aufliegende aufliegendem aufliegenden aufliegender aufliegendes Aufliegeschema aufliegst aufliegt
+                aufliesse aufliessen aufliessest aufliesset
+                aufließe aufließen aufließest aufließet
+                auflistbar auflistbare auflistbarem auflistbaren auflistbarer auflistbares
+                aufliste auflisten auflistend auflistende auflistendem auflistenden auflistender auflistendes auflistens auflistest auflistet auflistete auflisteten auflistetest auflistetet Auflistung Auflistungen
+                auflockere auflockern auflockernd auflockernde auflockerndem auflockernden auflockernder auflockerndes auflockerns auflockerst auflockert auflockerte auflockerten auflockertest auflockertet Auflockerung Auflockerungen Auflockerungstendenz Auflockerungstendenzen auflockre
+                auflodere auflodern auflodernd auflodernde aufloderndem auflodernden auflodernder aufloderndes aufloderns aufloderst auflodert aufloderte aufloderten auflodertest auflodertet auflodre
+                auflädst auflädt
+                Aufläufe Aufläufen aufläuft
+                auflösbar auflösbare auflösbarem auflösbaren auflösbarer auflösbares auflöse auflösen auflösend auflösende auflösendem auflösenden auflösender auflösendes auflösens auflösest auflöst auflöste auflösten auflöstest auflöstet Auflösung Auflösungen Auflösungsbeschluss Auflösungsbeschlusses Auflösungsbeschluß Auflösungsbeschlüsse Auflösungsbeschlüssen Auflösungserscheinung Auflösungserscheinungen Auflösungsprozess Auflösungsprozesse Auflösungsprozessen Auflösungsprozeß
+                auflüde auflüden auflüdest auflüdet
+                Autobahnauffahrt
+                Bauauflage Bauauflagen
+                Baustoffindustrie Baustoffindustrien
+                Baustoffingenieur Baustoffingenieure
+                begreiflich begreifliche begreiflichem begreiflichen begreiflicher begreiflichere begreiflicherem begreiflicheren begreiflicherer begreiflicheres begreiflicherweise begreifliches begreiflichst begreiflichste begreiflichstem begreiflichsten begreiflichster begreiflichstes
+                begrifflich begriffliche begrifflichem begrifflichen begrifflicher begriffliches
+                behilflich behilfliche behilflichem behilflichen behilflicher behilfliches
+                beruflich berufliche beruflichem beruflichen beruflicher berufliches
+                Bettauflage Bettauflagen
+                bezweifle bezweiflete bezweifleten
+                Bezweiflung
+                Bildschirmauflösung Bildschirmauflösungen
+                Biohofladen
+                bischöflich bischöfliche bischöflichem bischöflichen bischöflicher bischöfliches
+                Bischoffinger
+                Brieffach
+                Briefform
+                Brieffächer
+                Briefintrige
+                Brieflaufzeiten
+                brieflich briefliche brieflichem brieflichen brieflicher briefliches
+                Büffler Büfflerin Büfflerinnen
+                Chefflugleiter
+                Cheffunktion
+                Chefideologe
+                Dampfleistung
+                Dampflokomotiven
+                darauffolge darauffolgen darauffolgend darauffolgende darauffolgendem darauffolgenden darauffolgender darauffolgendes darauffolgst darauffolgt darauffolgte darauffolgten darauffolgtest darauffolgtet
+                Darstellungsauffassung Darstellungsauffassungen
+                Dauertropfflasche
+                Dorffeuerwehr
+                Dorfladen
+                drauflege drauflegen drauflegend drauflegende drauflegendem drauflegenden drauflegender drauflegendes drauflegst drauflegt drauflegte drauflegten drauflegtest drauflegtet
+                drauflos drauflosgegangen drauflosgegangene drauflosgegangenem drauflosgegangenen drauflosgegangener drauflosgegangenes drauflosgehe drauflosgehen drauflosgehend drauflosgehende drauflosgehendem drauflosgehenden drauflosgehender drauflosgehendes drauflosgehst drauflosgeht drauflosging drauflosginge drauflosgingen drauflosgingst drauflosgingt
+                dörflich dörfliche dörflichem dörflichen dörflicher dörfliches
+                Düsenkampfflugzeug
+                Eingabeaufforderung
+                Einwurffächer
+                Einzelhandelskaufleute Einzelhandelskaufleuten
+                elffach elffache elffachem elffachen elffacher elffaches
+                elffingrig elffingrige
+                Erstaufführung
+                Erstauflage
+                Erstauflagen
+                erzbischöflich erzbischöfliche erzbischöflichem erzbischöflichen erzbischöflicher erzbischöfliches
+                Freiberufler Freiberuflerin Freiberuflerinnen Freiberuflern Freiberuflers
+                freiberuflich freiberufliche freiberuflichem freiberuflichen freiberuflicher freiberufliches
+                Freilichtaufführung Freilichtaufführungen
+                fünffach fünffache fünffachem fünffachen fünffacher fünffaches
+                fünffingerig fünffingerige fünffingerigem fünffingerigen fünffingeriger fünffingeriges
+                Fünflinge Fünflingen
+                Gastspielaufführung
+                Gebirgsauffaltung
+                glimpflich glimpfliche glimpflichem glimpflichen glimpflicher glimpfliches
+                Grafikauflösung Grafikauflösungen Grafikkartenauflösung Grafikkartenauflösungen
+                grifffest grifffeste grifffestem grifffesten grifffester grifffestes
+                Großkaufleute Großkaufleuten % Buddenbrooks
+                Grundauffassung Grundauffassungen
+                Gugelhupfform
+                handgreiflich handgreifliche handgreiflichem handgreiflichen handgreiflicher handgreifliches Handgreiflichkeit Handgreiflichkeiten
+                hauptberuflich hauptberufliche hauptberuflichem hauptberuflichen hauptberuflicher hauptberufliches
+                hilflos hilflose hilflosem hilflosen hilfloser hilflosere hilfloserem hilfloseren hilfloserer hilfloseres hilfloses hilflosest hilfloseste hilflosestem hilflosesten hilflosester hilflosestes
+                hinauffahre hinauffahren hinauffahrend hinauffahrende hinauffahrendem hinauffahrenden hinauffahrender hinauffahrendes hinauffahrt
+                hinauffuhr hinauffuhren hinauffuhrst hinauffuhrt
+                hinaufführe hinaufführen hinaufführend hinaufführende hinaufführendem hinaufführenden hinaufführender hinaufführendes hinaufführst hinaufführt hinaufführte hinaufführten hinaufführtest hinaufführtet
+                hochauflösend hochauflösende hochauflösendem hochauflösenden hochauflösender hochauflösendes
+                hoffähig
+                Hofladen
+                Hoflandwirtschaft
+                Hofleben
+                Hufform
+                Häuflein Häufleins
+                höflich höfliche höflichem höflichen höflicher höflichere höflicherem höflicheren höflicherer höflicheres höfliches höflichkeit höflichkeiten höflichkeitsbesuche höflichkeitsbesuches höflichkeitsformeln höflichst höflichste höflichstem höflichsten höflichster höflichstes
+                Impffolgen
+                Impfforschung
+                Impfflüssigkeit
+                inbegriffleitend
+                Kampfflieger Kampffliegers
+                Kampfflugzeug Kampfflugzeuge Kampfflugzeuges
+                Kampffront
+                kampffähig kampffähige kampffähigem kampffähigen kampffähiger kampffähiges Kampffähigkeit
+                Kampfführung
+                Kampflaune
+                Kampflied Kampflieder Kampfliedern
+                kampflos kampflose kampflosem kampflosen kampfloser kampfloses
+                kampflustig kampflustige kampflustigem kampflustigen kampflustiger kampflustigere kampflustigerem kampflustigeren kampflustigerer kampflustigeres kampflustiges kampflustigst kampflustigste kampflustigstem kampflustigsten kampflustigster kampflustigstes
+                Kauffahrer Kauffahrerin Kauffahrerinnen Kauffahrern Kauffahrers
+                Kauffahrt
+                Kauffrau Kauffrauen
+                Kaufindex Kaufindizes
+                Kaufinteresse Kaufinteressenten
+                Kaufladen Kaufladens
+                Kauflaune
+                Kaufleidenschaft
+                Kaufleitung
+                Kaufleute Kaufleuten
+                Kauflust kauflustig kauflustige kauflustiger kauflustigste kauflustigsten
+                Kaufläden
+                Kettensträfling Kettensträflinge Kettensträflingen Kettensträflings
+                Kleiderstoffindustrie
+                knifflig knifflige kniffligem kniffligen kniffliger kniffligere kniffligerem kniffligeren kniffligerer kniffligeres kniffliges kniffligst kniffligste kniffligstem kniffligsten kniffligster kniffligstes
+                Knopfloch
+                Knopflöcher
+                Knoepffler
+                Kontoauflösung
+                Kopfform Menschenkopfform
+                kopflastig kopflastige kopflastigem kopflastigen kopflastiger kopflastiges
+                Kopfleiste
+                kopflos kopflose kopflosem kopflosen kopfloser kopflosere kopfloserem kopfloseren kopfloserer kopfloseres kopfloses kopflosest kopfloseste kopflosestem kopflosesten kopflosester kopflosestes
+                Kreislauffunktion
+                Kreislaufleiden
+                Kunststoffindustrie
+                käuflich käufliche käuflichem käuflichen käuflicher käufliches Käuflichkeit
+                Köpflein
+                Lagerauffüllung
+                Lagerauflösung
+                Lauffeuer Lauffeuern Lauffeuers
+                Lauffolgen
+                lauffähig lauffähige lauffähigem lauffähigen lauffähiger lauffähiges Lauffähigkeit
+                Laufindex Laufindexe Laufindexen Laufindexes Laufindices
+                Laufleine Laufleinen
+                Lauflernhilfen
+                Lebensauffassung Lebensauffassungen
+                Liebhaberaufführung
+                Löffler
+                markgräflich markgräfliche markgräflichem markgräflichen markgräflicher markgräfliches
+                Mindestreserveauflagen
+                Monitorauflösung Monitorauflösungen
+                nebenberuflich nebenberufliche nebenberuflichem nebenberuflichen nebenberuflicher nebenberufliches
+                Neuauflage Neuauflagen
+                Oberstufler
+                offline
+                Opernaufführung Opernaufführungen
+                Parlamentsauflösung
+                Politikauffassung Politikauffassungen
+                Produktionsauflagen
+                Prüffach
+                Prüffeld
+                Prüffächer
+                Prüfingenieur
+                Prüfling Prüflinge Prüflingen Prüflings
+                Prüfliste Prüflisten
+                rauflustig rauflustige rauflustigem rauflustigen rauflustiger rauflustiges
+                Reichstagsauflösung
+                reiflich reifliche reiflichem reiflichen reiflicher reiflichere reiflicherem reiflicheren reiflicherer reiflicheres reifliches reiflichst reiflichste reiflichstem reiflichsten reiflichster reiflichstes
+                Restauflage Restauflagen
+                Rinderkopffleisch
+                Rohstoffindex Rohstoffindexe Rohstoffindices Rohstoffindustrie
+                Rohstoffingenieur Rohstoffingenieure
+                Schaffell Schaffelle Schaffellen Schaffells
+                Schafleder Schafledern Schafleders
+                Scherflein Scherfleins
+                schieflache schieflachen schieflachend schieflachende schieflachendem schieflachenden schieflachender schieflachendes schieflachst schieflacht schieflachte schieflachten schieflachtest schieflachtet
+                schieflag Schieflage Schieflagen schieflagst schieflagt
+                Schieflaufen
+                schiefliege schiefliegen schiefliegend schiefliegende schiefliegendem schiefliegenden schiefliegender schiefliegendes schiefliegst schiefliegt
+                schiefläuft
+                Schilffeld Schilffelder % Th. Mann's "Tod in Venedig"
+                Schilfinsel Schilfinseln
+                schimpflich schimpfliche schimpflichem schimpflichen schimpflicher schimpfliches
+                Schlafforscher Schlafforschung
+                Schlaffrisur
+                Schlaflied Schlaflieder Schlafliedern Schlafliedes Schlaflieds
+                schlaflos schlaflose schlaflosem schlaflosen schlafloser schlafloses Schlaflosigkeit Schlaflosigkeiten
+                Schlupfloch Schlupfloches Schlupflochs
+                Schlupflöcher Schlupflöchern
+                Schnüffler Schnüfflerin Schnüfflerinnen Schnüfflern Schnüfflers
+                schweflig schweflige schwefligem schwefligen schwefliger schwefliges
+                Schöpflöffel Schöpflöffeln Schöpflöffels
+                selbstauffaltend
+                Selbstauflösung
+                Serienbrieffunktion
+                Sprengstofffallen
+                steckbrieflich
+                Steuerschnüffler Steuerschnüfflern Steuerschnüfflers
+                Straffall Straffalls
+                straffrisch
+                Straffälle straffällig straffällige straffälligem straffälligen straffälliger straffälliges
+                Strafforderung
+                straffähig
+                Straflager Straflagern Straflagers
+                straflos straflose straflosem straflosen strafloser strafloses
+                Streiflicht Streiflichter Streiflichtern Streiflichts
+                sträflich sträfliche sträflichem sträflichen sträflicher sträfliches
+                Sträfling Sträflinge Sträflingen Sträflings
+                Sturzkampfflugzeug Sturzkampfflugzeuge Sturzkampfflugzeugen Sturzkampfflugzeugs
+                Sumpffieber
+                Sumpffliege Sumpffliegen
+                Sumpfland Sumpflandes Sumpflands
+                Sumpflicht Sumpflichter
+                Sumpfländer Sumpfländern
+                Surfladen
+                tariflich tarifliche tariflichem tariflichen tariflicher tarifliches
+                Tariffalle Tariffallen
+                Tarifforderung
+                Tariffront
+                Tariflohn Tariflohns
+                Tariflöhne Tariflöhnen
+                teuflisch teuflische teuflischem teuflischen teuflischer teuflischere teuflischerem teuflischeren teuflischerer teuflischeres teuflisches teuflischst teuflischste teuflischstem teuflischsten teuflischster teuflischstes
+                Theateraufführung Theateraufführungen
+                tieffliege tieffliegen tieffliegend tieffliegende tieffliegendem tieffliegenden tieffliegender tieffliegendes Tiefflieger Tieffliegern Tieffliegers tieffliegst tieffliegt
+                tiefflog tiefflogen tiefflogst tiefflogt
+                Tiefflug Tieffluges Tiefflugs
+                Tiefflüge Tiefflügen
+                tiefladbar tiefladbare tiefladbarem tiefladbaren tiefladbarer tiefladbares tieflade tiefladen Tieflader Tiefladeprogramm
+                Tieflage Tieflagen
+                Tiefland Tieflandes Tieflands
+                tiefliege tiefliegen tiefliegend tiefliegende tiefliegendem tiefliegenden tiefliegender tiefliegendes tiefliegst tiefliegt
+                Tiefländer Tiefländern
+                Tieflöffel Tieflöffelbagger Tieflöffelbaggern tieflöffeln Tieflöffels
+                Torffeuer
+                Totenkopfflagge
+                trefflich treffliche trefflichem trefflichen trefflicher trefflichere trefflicherem trefflicheren trefflicherer trefflicheres treffliches trefflichkeit trefflichst trefflichste trefflichstem trefflichsten trefflichster trefflichstes
+                Täufling Täuflinge Täuflingen Täuflings
+                Tüpflischeißer Tüpflischiesser
+                unauffindbar unauffindbare unauffindbarem unauffindbaren unauffindbarer unauffindbares Unauffindbarkeit Unauffindbarkeiten
+                unauffällig unauffällige unauffälligem unauffälligen unauffälliger unauffälligere unauffälligerem unauffälligeren unauffälligerer unauffälligeres unauffälliges unauffälligkeit unauffälligkeiten unauffälligst unauffälligste unauffälligstem unauffälligsten unauffälligster unauffälligstes
+                unauflösbar unauflösbare unauflösbarem unauflösbaren unauflösbarer unauflösbares
+                unauflöslich unauflösliche unauflöslichem unauflöslichen unauflöslicher unauflösliches
+                unbegreiflich unbegreifliche unbegreiflichem unbegreiflichen unbegreiflicher unbegreiflichere unbegreiflicherem unbegreiflicheren unbegreiflicherer unbegreiflicheres unbegreifliches unbegreiflichkeit unbegreiflichst unbegreiflichste unbegreiflichstem unbegreiflichsten unbegreiflichster unbegreiflichstes
+                unerschöpflich unerschöpfliche unerschöpflichem unerschöpflichen unerschöpflicher unerschöpflichere unerschöpflicherem unerschöpflicheren unerschöpflicherer unerschöpflicheres unerschöpfliches unerschöpflichst unerschöpflichste unerschöpflichstem unerschöpflichsten unerschöpflichster unerschöpflichstes
+                unglimpflich unglimpfliche unglimpflichem unglimpflichen unglimpflicher unglimpfliches
+                unhöflich unhöfliche unhöflichem unhöflichen unhöflicher unhöflichere unhöflicherem unhöflicheren unhöflicherer unhöflicheres unhöfliches unhöflichkeit unhöflichkeiten unhöflichst unhöflichste unhöflichstem unhöflichsten unhöflichster unhöflichstes
+                unverkäuflich unverkäufliche unverkäuflichem unverkäuflichen unverkäuflicher unverkäufliches Unverkäuflichkeit
+                unwiderruflich unwiderrufliche unwiderruflichem unwiderruflichen unwiderruflicher unwiderrufliches
+                unübertrefflich
+                uraufführe uraufführen uraufführend uraufführende uraufführendem uraufführenden uraufführender uraufführendes uraufführst uraufführt uraufführte uraufführten uraufführtest uraufführtet Uraufführung Uraufführungen
+                übertariflich übertarifliche übertariflichem übertariflichen übertariflicher übertarifliches
+                verelffache verelffachen verelffachend verelffachende verelffachendem verelffachenden verelffachender verelffachendes verelffachst verelffacht verelffachte verelffachtem verelffachten verelffachter verelffachtes verelffachtest verelffachtet
+                verfünffache verfünffachen verfünffachend verfünffachende verfünffachendem verfünffachenden verfünffachender verfünffachendes verfünffachst verfünffacht verfünffachte verfünffachtem verfünffachten verfünffachter verfünffachtes verfünffachtest verfünffachtet
+                verkäuflich verkäufliche verkäuflichem verkäuflichen verkäuflicher verkäufliches Verkäuflichkeit
+                verwerflich verwerfliche verwerflichem verwerflichen verwerflicher verwerflichere verwerflicherem verwerflicheren verwerflicherer verwerflicheres verwerfliches verwerflichst verwerflichste verwerflichstem verwerflichsten verwerflichster verwerflichstes
+                Verzweiflung Verzweiflungsschritt Verzweiflungstat
+                verzwölffache verzwölffachen verzwölffachend verzwölffachende verzwölffachendem verzwölffachenden verzwölffachender verzwölffachendes verzwölffachst verzwölffacht verzwölffachte verzwölffachtem verzwölffachten verzwölffachter verzwölffachtes verzwölffachtest verzwölffachtet
+                Voraufführung Voraufführungen
+                vorberuflich vorberufliche vorberuflichem vorberuflichen vorberuflicher vorberufliches
+                Vorlaufindikator Vorlaufindikatoren
+                vortrefflich vortreffliche vortrefflichem vortrefflichen vortrefflicher vortreffliches
+                Wahlkampffieber Wahlkampfflyer Wahlkampfflamme Wahlkampffloskeln
+                Waldorflehrer Waldorflehrerin Waldorflehrerinnen Waldorflehrern Waldorflehrers
+                Wegwerfformat
+                Wettkampffieber Wettkampffläche Wettkampfflair
+                widerruflich widerrufliche widerruflichem widerruflichen widerruflicher widerrufliches
+                wiederaufführung wiederaufführungen
+                wiederaufladbar wiederaufladbare wiederaufladbarem wiederaufladbaren wiederaufladbarer wiederaufladbares
+                wiederauflade wiederaufladen wiederaufladend wiederaufladende wiederaufladendem wiederaufladenden wiederaufladender wiederaufladendes wiederaufladet Wiederaufladung
+                wiederauflebe wiederaufleben wiederauflebend wiederauflebende wiederauflebendem wiederauflebenden wiederauflebender wiederauflebendes wiederauflebst wiederauflebt wiederauflebte wiederauflebten wiederauflebtest wiederauflebtet
+                Wirtschaftsauffassung
+                würflig würflige würfligem würfligen würfliger würfliges
+                Wölflein
+                Wölfling
+                Wurflaune
+                Zahlungsaufforderung Zahlungsaufforderungen
+                Zeitauflösung
+                Zöpflein
+                Zupfinstrument Zupfinstrumente Zupfinstrumenten Zupfinstrumentes Zupfinstruments
+                zweifle
+                Zweifler Zweiflerin Zweiflerinnen Zweiflern Zweiflers
+                Zweitauflage Zweitauflagen
+                zwölffach zwölffache zwölffachem zwölffachen zwölffacher zwölffaches
+                Zwölffingerdarm Zwölffingerdarmes Zwölffingerdarms
+            ]]
+        },
+        {
+            patterns = {
+                ft  = "f|t",
+                fft = "fft",
+            },
+            words = [[
+                Auftakt
+                auftanken auftasten auftat
+                auftauen auftaute
+                auftauchen auftauchte
+                aufteilen Aufteilung Aufteilungen
+                auftischen auftischte auftoupieren
+                auftraben
+                Auftrag auftragen, Auftraggeber
+                auftrat
+                auftreiben
+                auftreten
+                Auftritt
+                Aufträge
+                auftun auftürmen
+                Sauftrottel
+                kauftüchtig
+                Lauftherapie
+                Golftheorie Kampftheorien Auflauftheorien Kreislauftheorie
+                Tauftag Fünftagewoche
+                Treibstofftank
+                fünftausend Fünftausender
+                fünftürig Senftüte
+                Hoftür
+                elftausend zwölftausend Golftasche
+                Ruftaste Vorlauftaste
+                Ruftaxi
+                Wettkampftag Kampftaktik
+                wahlkampftauglich Schnupftabak
+             -- kämpfte schimpfte schrumpfte
+             -- klopfte schöpften
+                Schimpftiraden Mehrkampftitel Stapftiefe
+                Dampftopf Sumpftour
+                Kampftruppe Wettkampftrubel
+                Kopftreffer Zopfträger
+                Kopftuch Schnupftuch
+                Kampftätigkeit Kampftänzer
+                Herzklopftöne Wahlkampftöne
+                Kopftücher Kopftüchlein Schnupftücher
+                Stofftasche Stofftapete Sauerstofftank
+             -- schaffte hoffte klaffte verpuffte
+                Stofftheorie
+                Stofftier Stofftiger Stofftischtuch
+                Auspufftopf Kunststofftonne
+                Stofftradition Stofftrennung
+                Kunststofftube Stoffturnschuhe
+                Stofftäschchen
+                Auspufftöpfe Kunststofftöpfe
+                Kunststofftüten
+                Schlaftablette Schlafteddy Schlaftee Schlaftemperatur
+                Schlaftherapeut Schlaftherapie Schlaftier Schlaftod
+                Schlaftrank schlaftrunken
+                Straftarif Strafteam Straftechnisch Straftendenz
+                Straftermin Straftheologisch Straftilgung
+                Straftor Straftribunal
+             -- bestraft vorbestraft
+                Brieftasche Brieftaube
+                Cheftheoretiker Cheftestpilot Cheftrainer
+                Dorftrottel Dorftratsch Dorftradition Dorftölpel
+                Wurftraining Surftrip Freiwurftreffer
+                Wurftuch Dorftümpel
+                Lauftrainer
+                Eingreiftruppe Nadelstreifträger
+                Pfeifton Zwölftonmusik Rufton
+                Wurftalent Auswurftaste Surftalent
+             -- Hälfte
+                Schifftyp Stofftyp waldorftypisch Dorftyrann Hoftyrann
+                Stieftochter Tiefton
+                Stieftöchter tieftönend
+                fünfte fünfter elfte elfter zwölfte zwölfter
+             -- fünft zu elft zu zwölft
+                zwölftönend
+                Zwölftonmusik Elftonner Golftour
+                Senftopf Senftöpfchen
+                Freiwurftor Surftour Dorftourismus
+            ]]
+        },
+        {
+            patterns = {
+                fb  = "f|b",
+                ffb = "f|f|b",
+            },
+            words = [[
+                abrufbar
+                Anrufbeantworter
+                aufbahren aufbauen aufbegehren aufbereiten aufbessern aufbewahren aufbefördern aufbieten aufblasen aufblicken Aufblick aufblitzen aufblähen aufblühen aufbrauchen aufbrausen aufbrechen aufbringen Aufbruch aufbäumen aufbürden
+                Aufbauspieler
+                Briefbombe Briefbogen
+                Chefberater
+                Dampfbad Dorfbewohner Dorfbevölkerung
+                greifbar angreifbar unangreifbar griffbereit Golfball
+                Griffbrett
+                Briefbeschwerer Hofbräuhaus
+                Kopfbewegung Kopfball Kopfbedeckung Kaufbeleg kampfbetont
+                Laufbahn Laufband Laufbereitschaft Laufbursche
+                Raufbold Rohstoffboom Regenüberlaufbecken
+                Schadstoffbelastung Schlafbedürfnis Scharfblick
+                schiffbar Schiffbau Schiffbruch
+                steifbeinig Stoffbahnen
+                Sauerstoffbedarf Stiefbruder
+                Strafbestimmungen strafbar Strafbefehl
+                Surfbretter
+                Tarifbezirk Tarifbindung
+                Tiefbau tiefbelustigt tiefblau
+                Umlaufbahn überprüfbar
+                (un)widerrufbar
+                Wasserstoffbombe
+                Wiederaufbau
+            ]],
+        },
+        {
+            patterns = {
+                fh  = "f|h",
+                ffh = "f|f|h",
+            },
+            words = [[
+                aufhaben aufhacken aufhalsen aufhalten aufhatte aufheben aufheitern aufheizen aufhelfen aufhellen aufhetzen aufheulen aufholen aufhorchen aufhängen aufhören aufhübschen
+                Chefhändler
+                daraufhin draufhat draufhauen
+                Dorfhaus
+                Eislaufhalle
+                fünfhundert
+                Hofherr
+                Kampfhandlung Kampfhubschrauber Kampfhunde Kampfhähne
+                Kopfhaar Kopfhaltung Kopfhaube Kopfhaut Kopfhörer
+                Kaufhalle Kaufhaus Kaufherr Kaufhold
+                krampfhaft
+                Schafhaltung Schafherde Schafhirte
+                Schilfhütte
+                Steifheit Schlaffheit
+                Strafhaft
+                Strumpfhose Stumpfheit
+                Topfhaarschnitt
+                unaufhaltsam unaufhörlich
+                Wahlkampfhelfer
+                Impfstoffhersteller
+                Luftschiffhafen
+                Pfaffhausen Schaffhausen
+                Riffhai
+                Stoffhändler
+                Werkstoffhof
+            ]],
+        },
+        {
+            patterns = {
+                fj  = "f|j",
+                ffj = "f|f|j",
+            },
+            words = [[
+                aufjagen aufjaulen aufjauchzen aufjohlt
+                Dorfjunge Dorfjustiz Dorfjugend Dorfjäger Dorfjubiläum
+                Fünfjahresplan Fünfjahresfeier Knefjahr Tarifjahr Strafjahr
+                fünfjährig elfjährig zwölfjährig
+                Kopfjäger Kopfjucken Kopfjagd
+                Strafjustiz Strafjurist Chefjurist
+                Laufjunge Laufjahr Laufjacke
+                Wahlkampfjahr Wettkampfjahr Kampfjet
+                Stoffjacke
+                Kampfjagd Kampfjodeln
+                Hofjäger
+                Golfjahr Golfjunge Golfjunioren Golfjuniorinnen
+             -- Sognefjord Dovrefjell Prokofjew
+            ]],
+        },
+        {
+            patterns = {
+                fk  = "f|k",
+                ffk = "f|f|k",
+            },
+            words = [[
+                aufkam aufkaufen aufkeimen aufkehren aufklaffen aufkläffen aufklappen aufklatschen aufklauben aufkleben aufklären aufklingen aufklopfen aufknacken aufknöpfen aufknüpfen aufkochen aufkommen aufkreischen aufkrempeln aufkreuzen aufkriegen aufkurbeln aufkündigen
+                Napfkuchen Stopfkugel Briefkasten Briefkästen Kopfkissen
+                Kehlkopfknoten Kaufkraft
+                Pfeifkonzert Trumpfkarte
+                Tarifkonflikt Tarifkommission
+                Stoffkissen Stoffkatze Treibstoffkosten Kliffkante Auspuffklang
+            ]],
+        },
+        -- For Wolfgang
+        {
+            characters = "ẞ",
+            patterns   = {
+                ["ẞ"] = "SS",
+            },
+        },
+        -- For Hans (an example of a compound word):
+     -- {
+     --     patterns = {
+     --         ffl = "ff=l",
+     --     },
+     --     words = [[
+     --         whatever=whatever
+     --         wafflaw
+     --         wawafflawaw
+     --         wawaffluwuw
+     --         wawufflawuw
+     --     ]],
+     -- },
+    }
+}

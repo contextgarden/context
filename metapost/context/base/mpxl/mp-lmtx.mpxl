@@ -237,7 +237,9 @@ vardef lmt_do_axis =
                                             if d < left : rotated 180 shifted (0,-5) else : shifted (0,5) fi
                                             ysized ts
                                             shifted a
-                                            rotatedaround(a,angle(d)) ;
+                                            if d <> origin :
+                                                rotatedaround(a,angle(d))
+                                            fi ;
                                     endfor ;
                                 fi ;
                             popparameters ;

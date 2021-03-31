@@ -268,6 +268,7 @@
 \setuplanguage
   [\s!default]
   [\s!patterns=,
+   \s!goodies=,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2,
    \s!lefthyphenchar=-1,
@@ -369,6 +370,7 @@
         {\currentlanguage}%
         {\defaultlanguage\currentlanguage}%
         {\languageparameter\s!patterns}%
+        {\languageparameter\s!goodies}%
         {\languageparameter\c!factor}%
       \relax
    \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
@@ -431,10 +433,14 @@
   + \permitgluehyphenationmodecode        % turn glue into kern in \discretionary
   + \permitallhyphenationmodecode         % okay, let's be even more tolerant
   + \permitmathreplacehyphenationmodecode % and again we're more permissive
+  + \forcehandlerhyphenationmodecode      % kick in the handler (could be an option)
 \relax
 
-\permanent\protected\def\dohyphens{\hyphenationmode\completehyphenationmodecode}
-\permanent\protected\def\nohyphens{\hyphenationmode\zerocount}
+% maybe a (un)setter for handlers
+
+\permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationmodecode}
+%permanent\protected\def\nohyphens {\hyphenationmode\zerocount}
+\permanent\protected\def\nohyphens {\hyphenationmode\forcehandlerhyphenationmodecode}
 
 \permanent\protected\def\usehyphensparameter#1%
   {\edef\p_hyphens{#1\c!hyphens}%
@@ -783,5 +789,26 @@
 \permanent\protected\def\noleftligaturing {\bitwiseflip\glyphoptions\noleftligaturecode}
 \permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkerncode}
 \permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligaturecode}
+
+%D Also \LMTX:
+
+% \startlanguageoptions[de]
+%     Zapf|innovation
+% \stoplanguageoptions
+
+\permanent\let\stoplanguageoptions\relax
+
+\permanent\protected\def\startlanguageoptions
+  {\begingroup
+   \catcode`|\othercatcode
+   \lang_startlanguageoptions}
+
+\tolerant\def\lang_startlanguageoptions[#1]#:#2\stoplanguageoptions
+  {\edef\askedlanguage{\reallanguagetag{#1}}%
+   \ifempty\askedlanguage
+     \let\askedlanguage\currentlanguage
+   \fi
+   \clf_setlanguageoptions{\askedlanguage}{#2}%
+   \endgroup}
 
 \protect \endinput
