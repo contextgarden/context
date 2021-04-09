@@ -2233,19 +2233,20 @@ do
         end
     end
 
-    local trace      = false
-    local last       = nil
-    local vmode_code = tex.modelevels.vertical
-    local temp_code  = nodecodes.temp
-    local getnest    = tex.getnest
-    local getlist    = tex.getlist
+    local trace       = false
+    local last        = nil
+    local vmode_code  = tex.modelevels.vertical
+    local temp_code   = nodecodes.temp
+    local texgetnest  = tex.getnest
+    local texgetlist  = tex.getlist
+    local getnodetail = nodes.tail
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
     -- abs : negative is inner
 
     function vspacing.checkstrutdepth(depth)
-        local nest = getnest()
+        local nest = texgetnest()
         if abs(nest.mode) == vmode_code and nest.head then
             local tail = nest.tail
             local id   = tail.id
@@ -2254,10 +2255,10 @@ do
                     tail.depth = depth
                 end
                 nest.prevdepth = depth
-            elseif id == temp_code and getnest("ptr") == 0 then
-                local head = getlist("page_head")
+            elseif id == temp_code and texgetnest("ptr") == 0 then
+                local head = texgetlist("page_head")
                 if head then
-                    tail = nodes.tail(head)
+                    tail = getnodetail(head)
                     if tail and tail.id == hlist_code then
                         if tail.depth < depth then
                             tail.depth = depth

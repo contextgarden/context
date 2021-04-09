@@ -2004,7 +2004,9 @@ local fraction = offset and asnumber_p(offset)
         local o = at["stroke-opacity"] or (opacity and at["opacity"])
         if o == "none" then
             o = nil
-        elseif o then
+        elseif o == "transparent" then
+            o = f_opacity(0)
+        else
             o = asnumber_r(o)
             if o == ignoredopacity then
                 o = nil
@@ -2112,7 +2114,7 @@ local fraction = offset and asnumber_p(offset)
                 end
             end
         end
-        for c in xmlcollected(c,"(symbol|radialGradient|linearGradient") do
+        for c in xmlcollected(c,"(symbol|radialGradient|linearGradient)") do
             local id = rawget(c.at,"id")
             if id then
                 definitions["#"     .. id       ] = c

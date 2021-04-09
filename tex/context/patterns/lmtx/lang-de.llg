@@ -10,6 +10,8 @@
 -- users add stuff. The main reason is to deal with compound words (for which we have multiple
 -- mechanisms) in a more automates way, using modern LMTX features. So this is not for MKIV (at least
 -- not now). This mechanism can and will also deal with some other language issues.
+--
+-- https://typography.guru/journal/whats-a-ligature/
 
 -- Comment : this is a starting point, not de definitve list of words
 -- Todo    : break down this list in more meaningfull categories (like 'matches')
@@ -575,7 +577,7 @@ return {
         -- For Hans (an example of a compound word):
      -- {
      --     patterns = {
-     --         ffl = "ff=l",
+     --         ffl = "ff+l",
      --     },
      --     words = [[
      --         whatever=whatever

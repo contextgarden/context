@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-03-31 18:00
+-- merge date  : 2021-04-09 19:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -28572,254 +28572,32 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
    goto next
   end
   local s=seq.n 
-  local l=ck[5] 
-  local current=start
-  local last=start
   if s==1 then
-   goto next
-  end
-  if l>f then
-   local discfound 
-   local n=f+1
-   last=startnext 
-   while n<=l do
-    if postreplace and not last then
-     last=getnext(sweepnode)
-     sweeptype=nil
-    end
-    if last then
-     local char,id=ischar(last,currentfont)
-     if char then
-      if skiphash and skiphash[char] then
-       skipped=true
-       if trace_skips then
-        show_skip(dataset,sequence,char,ck,classes[char])
-       end
-       last=getnext(last)
-      elseif seq[n][char] then
-       if n<l then
-        last=getnext(last)
-       end
-       n=n+1
-      elseif discfound then
-       notmatchreplace[discfound]=true
-       if notmatchpre[discfound] then
-        goto next
-       else
-        break
-       end
-      else
-       goto next
-      end
-     elseif char==false then
-      if discfound then
-       notmatchreplace[discfound]=true
-       if notmatchpre[discfound] then
-        goto next
-       else
-        break
-       end
-      else
-       goto next
-      end
-     elseif id==disc_code then
-      discseen=true
-      discfound=last
-      notmatchpre[last]=nil
-      notmatchpost[last]=true
-      notmatchreplace[last]=nil
-      local pre,post,replace=getdisc(last)
-      if pre then
-       local n=n
-       while pre do
-        if seq[n][getchar(pre)] then
-         n=n+1
-         if n>l then
-          break
-         end
-         pre=getnext(pre)
-        else
-         notmatchpre[last]=true
-         break
-        end
-       end
-       if n<=l then
-        notmatchpre[last]=true
-       end
-      else
-       notmatchpre[last]=true
-      end
-      if replace then
-       while replace do
-        if seq[n][getchar(replace)] then
-         n=n+1
-         if n>l then
-          break
-         end
-         replace=getnext(replace)
-        else
-         notmatchreplace[last]=true
-         if notmatchpre[last] then
-          goto next
-         else
-          break
-         end
-        end
-       end
-       if notmatchpre[last] then
-        goto next
-       end
-      end
-      last=getnext(last)
-     else
-      goto next
-     end
-    else
-     goto next
-    end
-   end
-  end
-  if f>1 then
-   if startprev then
-    local prev=startprev
-    if prereplace and prev==checkdisc then
-     prev=getprev(sweepnode)
-    end
-    if prev then
-     local discfound 
-     local n=f-1
-     while n>=1 do
-      if prev then
-       local char,id=ischar(prev,currentfont)
-       if char then
-        if skiphash and skiphash[char] then
-         skipped=true
-         if trace_skips then
-          show_skip(dataset,sequence,char,ck,classes[char])
-         end
-         prev=getprev(prev)
-        elseif seq[n][char] then
-         if n>1 then
-          prev=getprev(prev)
-         end
-         n=n-1
-        elseif discfound then
-         notmatchreplace[discfound]=true
-         if notmatchpost[discfound] then
-          goto next
-         else
-          break
-         end
-        else
-         goto next
-        end
-       elseif char==false then
-        if discfound then
-         notmatchreplace[discfound]=true
-         if notmatchpost[discfound] then
-          goto next
-         end
-        else
-         goto next
-        end
-        break
-       elseif id==disc_code then
-        discseen=true
-        discfound=prev
-        notmatchpre[prev]=true
-        notmatchpost[prev]=nil
-        notmatchreplace[prev]=nil
-        local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
-        if pre~=start and post~=start and replace~=start then
-         if post then
-          local n=n
-          while posttail do
-           if seq[n][getchar(posttail)] then
-            n=n-1
-            if posttail==post or n<1 then
-             break
-            else
-             posttail=getprev(posttail)
-            end
-           else
-            notmatchpost[prev]=true
-            break
-           end
-          end
-          if n>=1 then
-           notmatchpost[prev]=true
-          end
-         else
-          notmatchpost[prev]=true
-         end
-         if replace then
-          while replacetail do
-           if seq[n][getchar(replacetail)] then
-            n=n-1
-            if replacetail==replace or n<1 then
-             break
-            else
-             replacetail=getprev(replacetail)
-            end
-           else
-            notmatchreplace[prev]=true
-            if notmatchpost[prev] then
-             goto next
-            else
-             break
-            end
-           end
-          end
-         else
-         end
-        end
-        prev=getprev(prev)
-       elseif id==glue_code then
-        local sn=seq[n]
-        if (sn[32] and spaces[prev]) or sn[0xFFFC] then
-         n=n-1
-         prev=getprev(prev)
-        else
-         goto next
-        end
-       elseif seq[n][0xFFFC] then
-        n=n-1
-        prev=getprev(prev)
-       else
-        goto next
-       end
-      else
-       goto next
-      end
-     end
-    else
-     goto next
-    end
-   else
-    goto next
-   end
-  end
-  if s>l then
-   local current=last and getnext(last)
-   if not current and postreplace then
-    current=getnext(sweepnode)
-   end
-   if current then
+  else
+   local l=ck[5] 
+   local current=start
+   local last=start
+   if l>f then
     local discfound 
-    local n=l+1
-    while n<=s do
-     if current then
-      local char,id=ischar(current,currentfont)
+    local n=f+1
+    last=startnext 
+    while n<=l do
+     if postreplace and not last then
+      last=getnext(sweepnode)
+      sweeptype=nil
+     end
+     if last then
+      local char,id=ischar(last,currentfont)
       if char then
        if skiphash and skiphash[char] then
         skipped=true
         if trace_skips then
          show_skip(dataset,sequence,char,ck,classes[char])
         end
-        current=getnext(current) 
+        last=getnext(last)
        elseif seq[n][char] then
-        if n<s then 
-         current=getnext(current) 
+        if n<l then
+         last=getnext(last)
         end
         n=n+1
        elseif discfound then
@@ -28845,64 +28623,53 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
        end
       elseif id==disc_code then
        discseen=true
-       discfound=current
-       notmatchpre[current]=nil
-       notmatchpost[current]=true
-       notmatchreplace[current]=nil
-       local pre,post,replace=getdisc(current)
+       discfound=last
+       notmatchpre[last]=nil
+       notmatchpost[last]=true
+       notmatchreplace[last]=nil
+       local pre,post,replace=getdisc(last)
        if pre then
         local n=n
         while pre do
          if seq[n][getchar(pre)] then
           n=n+1
-          if n>s then
+          if n>l then
            break
-          else
-           pre=getnext(pre)
           end
+          pre=getnext(pre)
          else
-          notmatchpre[current]=true
+          notmatchpre[last]=true
           break
          end
         end
-        if n<=s then
-         notmatchpre[current]=true
+        if n<=l then
+         notmatchpre[last]=true
         end
        else
-        notmatchpre[current]=true
+        notmatchpre[last]=true
        end
        if replace then
         while replace do
          if seq[n][getchar(replace)] then
           n=n+1
-          if n>s then
+          if n>l then
            break
-          else
-           replace=getnext(replace)
           end
+          replace=getnext(replace)
          else
-          notmatchreplace[current]=true
-          if notmatchpre[current] then
+          notmatchreplace[last]=true
+          if notmatchpre[last] then
            goto next
           else
            break
           end
          end
         end
-       else
+        if notmatchpre[last] then
+         goto next
+        end
        end
-       current=getnext(current)
-      elseif id==glue_code then
-       local sn=seq[n]
-       if (sn[32] and spaces[current]) or sn[0xFFFC] then
-        n=n+1
-        current=getnext(current)
-       else
-        goto next
-       end
-      elseif seq[n][0xFFFC] then
-       n=n+1
-       current=getnext(current)
+       last=getnext(last)
       else
        goto next
       end
@@ -28910,8 +28677,241 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
       goto next
      end
     end
-   else
-    goto next
+   end
+   if f>1 then
+    if startprev then
+     local prev=startprev
+     if prereplace and prev==checkdisc then
+      prev=getprev(sweepnode)
+     end
+     if prev then
+      local discfound 
+      local n=f-1
+      while n>=1 do
+       if prev then
+        local char,id=ischar(prev,currentfont)
+        if char then
+         if skiphash and skiphash[char] then
+          skipped=true
+          if trace_skips then
+           show_skip(dataset,sequence,char,ck,classes[char])
+          end
+          prev=getprev(prev)
+         elseif seq[n][char] then
+          if n>1 then
+           prev=getprev(prev)
+          end
+          n=n-1
+         elseif discfound then
+          notmatchreplace[discfound]=true
+          if notmatchpost[discfound] then
+           goto next
+          else
+           break
+          end
+         else
+          goto next
+         end
+        elseif char==false then
+         if discfound then
+          notmatchreplace[discfound]=true
+          if notmatchpost[discfound] then
+           goto next
+          end
+         else
+          goto next
+         end
+         break
+        elseif id==disc_code then
+         discseen=true
+         discfound=prev
+         notmatchpre[prev]=true
+         notmatchpost[prev]=nil
+         notmatchreplace[prev]=nil
+         local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
+         if pre~=start and post~=start and replace~=start then
+          if post then
+           local n=n
+           while posttail do
+            if seq[n][getchar(posttail)] then
+             n=n-1
+             if posttail==post or n<1 then
+              break
+             else
+              posttail=getprev(posttail)
+             end
+            else
+             notmatchpost[prev]=true
+             break
+            end
+           end
+           if n>=1 then
+            notmatchpost[prev]=true
+           end
+          else
+           notmatchpost[prev]=true
+          end
+          if replace then
+           while replacetail do
+            if seq[n][getchar(replacetail)] then
+             n=n-1
+             if replacetail==replace or n<1 then
+              break
+             else
+              replacetail=getprev(replacetail)
+             end
+            else
+             notmatchreplace[prev]=true
+             if notmatchpost[prev] then
+              goto next
+             else
+              break
+             end
+            end
+           end
+          else
+          end
+         end
+         prev=getprev(prev)
+        elseif id==glue_code then
+         local sn=seq[n]
+         if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+          n=n-1
+          prev=getprev(prev)
+         else
+          goto next
+         end
+        elseif seq[n][0xFFFC] then
+         n=n-1
+         prev=getprev(prev)
+        else
+         goto next
+        end
+       else
+        goto next
+       end
+      end
+     else
+      goto next
+     end
+    else
+     goto next
+    end
+   end
+   if s>l then
+    local current=last and getnext(last)
+    if not current and postreplace then
+     current=getnext(sweepnode)
+    end
+    if current then
+     local discfound 
+     local n=l+1
+     while n<=s do
+      if current then
+       local char,id=ischar(current,currentfont)
+       if char then
+        if skiphash and skiphash[char] then
+         skipped=true
+         if trace_skips then
+          show_skip(dataset,sequence,char,ck,classes[char])
+         end
+         current=getnext(current) 
+        elseif seq[n][char] then
+         if n<s then 
+          current=getnext(current) 
+         end
+         n=n+1
+        elseif discfound then
+         notmatchreplace[discfound]=true
+         if notmatchpre[discfound] then
+          goto next
+         else
+          break
+         end
+        else
+         goto next
+        end
+       elseif char==false then
+        if discfound then
+         notmatchreplace[discfound]=true
+         if notmatchpre[discfound] then
+          goto next
+         else
+          break
+         end
+        else
+         goto next
+        end
+       elseif id==disc_code then
+        discseen=true
+        discfound=current
+        notmatchpre[current]=nil
+        notmatchpost[current]=true
+        notmatchreplace[current]=nil
+        local pre,post,replace=getdisc(current)
+        if pre then
+         local n=n
+         while pre do
+          if seq[n][getchar(pre)] then
+           n=n+1
+           if n>s then
+            break
+           else
+            pre=getnext(pre)
+           end
+          else
+           notmatchpre[current]=true
+           break
+          end
+         end
+         if n<=s then
+          notmatchpre[current]=true
+         end
+        else
+         notmatchpre[current]=true
+        end
+        if replace then
+         while replace do
+          if seq[n][getchar(replace)] then
+           n=n+1
+           if n>s then
+            break
+           else
+            replace=getnext(replace)
+           end
+          else
+           notmatchreplace[current]=true
+           if notmatchpre[current] then
+            goto next
+           else
+            break
+           end
+          end
+         end
+        else
+        end
+        current=getnext(current)
+       elseif id==glue_code then
+        local sn=seq[n]
+        if (sn[32] and spaces[current]) or sn[0xFFFC] then
+         n=n+1
+         current=getnext(current)
+        else
+         goto next
+        end
+       elseif seq[n][0xFFFC] then
+        n=n+1
+        current=getnext(current)
+       else
+        goto next
+       end
+      else
+       goto next
+      end
+     end
+    else
+     goto next
+    end
    end
   end
   if trace_contexts then

@@ -39,6 +39,10 @@
     <example><command>mtxrun --script font --list somename (== --pattern=*somename*)</command></example>
    </subcategory>
    <subcategory>
+    <example><command>mtxrun --script font --list --file filename</command></example>
+    <example><command>mtxrun --script font --list --name --pattern=*somefile*</command></example>
+   </subcategory>
+   <subcategory>
     <example><command>mtxrun --script font --list --name somename</command></example>
     <example><command>mtxrun --script font --list --name --pattern=*somename*</command></example>
    </subcategory>

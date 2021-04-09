@@ -19,10 +19,12 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 -- todo: no foo:bar but foo(bar,...)
 
+-- https://wortschatz.uni-leipzig.de/de/download/German : lots of lists
+
 local type, tonumber, next = type, tonumber, next
 local utfbyte, utflength = utf.byte, utf.length
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
-local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
+local concat, sortedkeys, sortedpairs, keys, insert, tohash = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert, table.tohash
 local setmetatableindex = table.setmetatableindex
 local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
@@ -35,6 +37,7 @@ local settings_to_set   = utilities.parsers.settings_to_set
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 local trace_goodies  = false  trackers.register("languages.goodies",  function(v) trace_goodies  = v end)
+local trace_applied  = false  trackers.register("languages.applied",  function(v) trace_applied  = v end)
 
 local report_initialization = logs.reporter("languages","initialization")
 local report_goodies        = logs.reporter("languages","goodies")
@@ -246,7 +249,7 @@ end
 
 -- 2'2 conflicts with 4' ... and luatex barks on it
 
-local P, S, R, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.S, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+local P, S, R, C, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
 
 local utfsplit = utf.split
 
@@ -558,6 +561,15 @@ function languages.setexceptions(tag,str)
     end
 end
 
+function languages.setpatterns(tag,str)
+    local data, instance = resolve(tag)
+    if data then
+        str = strip(str) -- we need to strip leading spaces
+        collecthjcodes(data,str)
+        instance:patterns(str)
+    end
+end
+
 local function setwordhandler(tag,action)
     local data, instance = resolve(tag)
     if data then
@@ -569,6 +581,8 @@ languages.setwordhandler = setwordhandler
 
 function languages.setoptions(tag,str)
     languages.addgoodiesdata(tag,{ { words = str } })
+    -- for now:
+    languages.setgoodieshandler { tag = tag, goodies = tag }
 end
 
 function languages.hyphenate(tag,str)
@@ -594,6 +608,23 @@ do
     local nuts                  = nodes.nuts
     local nextglyph             = nuts.traversers.glyph
     local setoptions            = nuts.setoptions
+
+    local getnext        = nuts.getnext
+    local getprev        = nuts.getprev
+    local setchar        = nuts.setchar
+    local setnext        = nuts.setnext
+    local setlink        = nuts.setlink
+    local setfield       = nuts.setfield
+    local setdisc        = nuts.setdisc
+    local getprop        = nuts.getprop
+    local setprop        = nuts.setprop
+    local setattrlist    = nuts.setattrlist
+
+    local new_disc       = nuts.pool.disc
+    local new_glyph      = nuts.pool.glyph
+    local copy_node      = nuts.copy
+    local flush_list     = nuts.flush_list
+
     local glyphoptioncodes      = tex.glyphoptioncodes
 
     local lower                 = characters.lower
@@ -602,21 +633,6 @@ do
 
     local report                = logs.reporter("languages","goodies")
 
-local getnext        = nuts.getnext
-local getprev        = nuts.getprev
-local setchar        = nuts.setchar
-local setnext        = nuts.setnext
-local setlink        = nuts.setlink
-local setdisc        = nuts.setdisc
-local getprop        = nuts.getprop
-local setprop        = nuts.setprop
-local setattrlist    = nuts.setattrlist
-
-local new_disc       = nuts.pool.disc
-local new_glyph      = nuts.pool.glyph
-local copy_node      = nuts.copy
-local flush_list     = nuts.flush_list
-
     -- can be shared
 
     local goodiesdata = setmetatableindex(function(t,k)
@@ -624,6 +640,7 @@ local flush_list     = nuts.flush_list
             properties   = { },
             replacements = { },
             characters   = { },
+            exceptions   = { },
         }
         t[k] = v
         return v
@@ -631,11 +648,15 @@ local flush_list     = nuts.flush_list
 
     -- can be a helper
 
-    local function setcompound(current,id)
+    local compound_disc_code = tex.discoptioncodes.preword | tex.discoptioncodes.postword
+
+    local function setcompound(current,id,first,last,lh,rh)
         local prev     = getprev(current)
-        local language = tolang(id)
-        local prechar  = prehyphenchar(language)
-        local postchar = posthyphenchar(language)
+     -- local language = tolang(id)
+     -- local prechar  = prehyphenchar(language)
+     -- local postchar = posthyphenchar(language)
+        local prechar  = prehyphenchar(id)
+        local postchar = posthyphenchar(id)
         local pre      = prechar  and copy_node(current)
         local post     = postchar and copy_node(current)
         local disc     = new_disc()
@@ -649,7 +670,25 @@ local flush_list     = nuts.flush_list
         setoptions(disc,0x3) -- todo foo_code
         setdisc(disc,pre,post)
         setlink(prev,disc,current)
+        if lh then
+            setfield(first,"rhmin",rh)
+        end
+
+        if rh then
+            setfield(current,"lhmin",lh)
+        end
+
     end
+
+    local setcompounds = setmetatableindex(function(t,l)
+        local v = setmetatableindex(function(t,r)
+            local v = function(current,id,first,last) return setcompound(current,id,first,last,l,r) end
+            t[r] = v
+            return v
+        end)
+        t[l] = v
+        return v
+    end)
 
     local function replaceword(first,last,old,new,oldlen)
         local oldlen = utflength(old)
@@ -689,14 +728,22 @@ local flush_list     = nuts.flush_list
         end
     end
 
+ -- local optioncodes = table.copy(glyphoptioncodes)
+ --
+ -- optioncodes.nokerns     = optioncodes.noleftkern     | optioncodes.norightkern
+ -- optioncodes.noligatures = optioncodes.noleftligature | optioncodes.norightligature
+
+    local lh, rh = false, false
+
     local cache = setmetatableindex(function(t,k)
         local v = 0
         if k == "compound" then
-            v = setcompound
+            v = setcompounds[lh][rh]
         else
             v = 0
             for s in gmatch(k,"%w+") do
                 local o = glyphoptioncodes[s]
+             -- local o = optioncodes[s]
                 if o then
                     v = v | o
                 end
@@ -720,18 +767,74 @@ local flush_list     = nuts.flush_list
         end
     end
 
--- statistics.starttiming(languages)
--- statistics.stoptiming(languages)
+    -- statistics.starttiming(languages)
+    -- statistics.stoptiming(languages)
+
+    -- 1: restart 2: exceptions+patterns 3: patterns *: next word
+
+    local sequencers    = utilities.sequencers
+    local newsequencer  = sequencers.new
+    local appendgroup   = sequencers.appendgroup
+    local appendaction  = sequencers.appendaction
+    local enableaction  = sequencers.enableaction
+    local disableaction = sequencers.disableaction
+
+    local template = {
+        arguments    = "s",
+        returnvalues = "r,i",
+        results      = "r,i",
+    }
+
+    local registeredactions = setmetatableindex ( function(t,tag)
+        local actions = newsequencer(template)
+        appendgroup(actions,"user")
+        t[tag] = actions
+        return actions
+    end )
+
+    languages.registeredactions = registeredactions
+
+    function languages.installhandler(tag,func)
+        local todo = not rawget(registeredactions,tag)
+        local actions = registeredactions[tag]
+        appendaction(actions,"user",func)
+        enableaction(actions,func)
+        report("installing handler %a for language %a",func,tag)
+        if todo then
+            setwordhandler(tag,function(n,original,remapped,length,first,last)
+                local runner = actions.runner
+                if runner then
+                    if getprop(first,"replaced") then
+                        -- maybe some deadcycles
+                    else
+                        local r, result = runner(original)
+                        if not r or original == r then
+                            return result or 0
+                        else
+                            setprop(first,"replaced",true)
+                            replaceword(first,last,original,r,length)
+                            return 1
+                        end
+                    end
+                end
+                return 2
+            end)
+        end
+    end
+
+    local appliedoptions     = setmetatableindex("table")
+    languages.appliedoptions = appliedoptions
 
     languages.setgoodieshandler = function(specification) -- will become a table specifier
         if type(specification) == "table" then
             local tag          = specification.tag
             local goodies      = specification.goodies or tag
-            local result       = specification.result or false
+            local result       = specification.result or 2
             local data         = goodiesdata[goodies]
             local properties   = data.properties
             local replacements = data.replacements
             local characters   = data.characters
+            local exceptions   = data.exceptions
             local replacer     = nil
             local d, instance  = resolve(tag)
             local done         = false
@@ -757,54 +860,107 @@ local flush_list     = nuts.flush_list
                 end
                 done = true
             end
+            if type(exceptions) == "table" and next(exceptions) then
+                done = true
+            else
+                exceptions = false
+            end
             if done then
-                setwordhandler(tag,
-                    function(n,original,remapped,length,first,last)
-                        local restart = nil
-                        local o = properties[remapped]
-                        if o then
-                            if trace_goodies then
-                                report("properties: %s %s",original,remapped)
-                            end
-                            local index = 0
-                            for g, c in nextglyph, first do
-                                index = index + 1
-                                local oi = o[index]
-                                if oi == setcompound then
-                                    setcompound(g,n)
-                                    restart = getprev(first)
-                                elseif oi then
-                                    setoptions(g,oi)
+                local registered = registeredactions[tag]
+                local applied    = appliedoptions[tag]
+                setwordhandler(tag,function(n,original,remapped,length,first,last)
+                    local runner = registered.runner
+                    if runner then
+                        if getprop(first,"replaced") then
+                            -- maybe some deadcycles
+                        else
+                            local r, result = runner(original)
+                            if not r then
+                                if trace_goodies then
+                                    report_goodies("kept by runner: %s => %s, result %i",original,remapped, result or 0)
                                 end
-                                if g == last then
-                                    break
-                                end
-                            end
-                        elseif replacer then
-                            -- todo: check lengths so that we can avoid a check
-                            if getprop(first,"replaced") then
-                                -- maybe some deadcycles
-                            else
-                                local r = lpegmatch(replacer,original)
-                                if original == r then
+                                return result or 0
+                            elseif original == r then
+                                if result then
                                     if trace_goodies then
-                                        report_goodies("kept: %s => %s",original,remapped)
+                                        report_goodies("kept by runner: %s => %s, result %i",original,remapped, result)
                                     end
+                                    return result
                                 else
                                     if trace_goodies then
-                                        report_goodies("replaced: %s => %s => %s",original,remapped,r)
+                                        report_goodies("kept by runner: %s => %s, continue",original,remapped)
                                     end
-                                    setprop(first,"replaced",true)
-                                    replaceword(first,last,original,r,length)
-                                    restart = getprev(first)
                                 end
-                            end
-                        else
-                            if trace_goodies then
-                                report_goodies("ignored: %s => %s",original,remapped)
+                            else
+                                if trace_goodies then
+                                    report_goodies("replaced by runner: %s => %s => %s, restart",original,remapped,r)
+                                end
+                                setprop(first,"replaced",true)
+                                replaceword(first,last,original,r,length)
+                                return 1
                             end
                         end
-                        return result, restart
+                    end
+                    local result = 2
+                    local o = properties[remapped]
+                    if o then
+                        if trace_goodies then
+                            report("properties: %s %s",original,remapped)
+                        end
+                        if trace_applied then
+                            applied[original] = (applied[original] or 0) + 1
+                        end
+                        local index = 0
+                        for g, c in nextglyph, first do
+                            index = index + 1
+                            local oi = o[index]
+                            if oi then
+                                if type(oi) == "function" then
+                                    oi(g,n,first,last) -- maybe return value
+                                    result = 1
+                                else
+                                    setoptions(g,oi)
+                                end
+                            end
+                            if g == last then
+                                break
+                            end
+                        end
+                    elseif replacer then
+                        -- todo: check lengths so that we can avoid a check
+                        if getprop(first,"replaced") then
+                            -- maybe some deadcycles
+                        else
+                            local r = lpegmatch(replacer,original)
+                            if original == r then
+                                if trace_goodies then
+                                    report_goodies("kept: %s => %s",original,remapped)
+                                end
+                            else
+                                if trace_goodies then
+                                    report_goodies("replaced: %s => %s => %s",original,remapped,r)
+                                end
+                                setprop(first,"replaced",true)
+                                replaceword(first,last,original,r,length)
+                                result = 1
+                            end
+                        end
+                    elseif exceptions then
+                        local exception = exceptions[original]
+                        if exception then
+                            if trace_goodies then
+                                report_goodies("exception: %s => %s",original,exception)
+                            end
+                            result = exception
+                        else
+                            result = 3
+                        end
+                    else
+                        if trace_goodies then
+                            report_goodies("ignored: %s => %s",original,remapped)
+                        end
+                    end
+                    return result
                 end)
             elseif trace_goodies then
                 report_goodies("nothing useable in %a for %a",goodies,tag)
@@ -814,84 +970,111 @@ local flush_list     = nuts.flush_list
         end
     end
 
- -- local function xreplacer(t,n)
- --     local i = 0
- --     local h = table.tohash(n)
- --     if #h == 0 then
- --         local p = Cs((utfchartabletopattern(t) / t + utf8char)^0)
- --         return function(s)
- --             return lpegmatch(p,s)
- --         end
- --     else
- --         local f = function(k) i = i + 1 if h[i] then return t[k] else return k end end
- --         local p = Cs((utfchartabletopattern(t) / f + utf8char)^0)
- --         return function(s)
- --             i = 0
- --             return lpegmatch(p,s)
- --         end
- --     end
- -- end
+    local norightligature_option = glyphoptioncodes.norightligature
+    local noleftligature_option  = glyphoptioncodes.noleftligature
+    local norightkern_option     = glyphoptioncodes.norightkern
+    local noleftkern_option      = glyphoptioncodes.noleftkern
 
-    local function blockligature(v,n)
-        if n > 0 then
-            local vv = v[n-1]
-            if vv then
-                v[n-1] = vv .. " norightligature"
-            else
-                v[n-1] = "norightligature"
+    local function applyaction(oc,v,n)
+        if oc == "noligature" then
+            if n > 0 then
+                local vv = v[n-1]
+                if vv then
+                    v[n-1] = vv | norightligature_option
+                else
+                    v[n-1] = norightligature_option
+                end
+            end
+            v[n] = noleftligature_option
+        elseif oc == "compound" then
+            if n > 1 then
+             -- v[n] = setcompound
+                v[n] = setcompounds[lh][rh]
+                return true
+            end
+        elseif oc == "nokern" then
+            if n > 0 then
+                local vv = v[n-1]
+                if vv then
+                    v[n-1] = vv | norightkern_option
+                else
+                    v[n-1] = norightkern_option
+                end
+            end
+            v[n] = noleftkern_option
+        elseif oc == "noleftkern" then
+            v[n] = noleftkern_option
+        elseif oc == "norightkern" then
+            if n > 0 then
+                local vv = v[n-1]
+                if vv then
+                    v[n-1] = vv | norightkern_option
+                else
+                    v[n-1] = norightkern_option
+                end
+            end
+        else
+            for s in gmatch(oc,"%w+") do
+                if applyaction(s,v,n) then
+                    return
+                end
             end
         end
-        v[n] = "noleftligature"
     end
 
-    local function analyzed(m,t,k)
+    -- a|b : a:norightligature b:noleftligature
+    -- a=b : a:norightkern     b:noleftkern
+    -- a<b :                   b:noleftkern
+    -- a>b : a:norightkern
+    -- a+b : compound
+
+    local actions = {
+        ["|"] = "noligature",
+        ["="] = "nokern",
+        ["<"] = "noleftkern",
+        [">"] = "norightkern",
+        ["+"] = "compound",
+    }
+
+    local function analyzed(m,a,t,k)
         local v = { }
         local n = 1
         if m == true then
             for c in gmatch(k,".") do
-                if c == "|" then
-                    blockligature(v,n)
-                elseif c == "=" then
-                    v[n] = setcompound
-                else
+                local ac = a[c]
+                if not ac then
                     n = n + 1
+                else
+                    applyaction(ac,v,n)
                 end
             end
         elseif type(m) == "number" then
             local i = 0
             for c in gmatch(k,".") do
-                if c == "|" then
-                    i = i + 1
-                    if i == m then
-                        blockligature(v,n)
-                        break
-                    end
-                elseif c == "=" then
-                    i = i + 1
-                    if i == m then
-                        v[n] = setcompound
-                        break
-                    end
-                else
+                local ac = a[c]
+                if not ac then
                     n = n + 1
+                else
+                    i = i + 1
+                    if i == m then
+                        applyaction(ac,v,n)
+                        break
+                    end
                 end
             end
         elseif type(m) == "table" then
+            -- happens here, otherwise no stable caching key, we could hash these too
+            m = tohash(m)
             local i = 0
-            m = table.tohash(m)
             for c in gmatch(k,".") do
-                if c == "|" then
-                    i = i + 1
-                    if m[i] then
-                        blockligature(v,n)
-                    end
-                elseif c == "=" then
-                    i = i + 1
-                    if m[i] then
-                        v[n] = setcompound
-                    end
-                else
+                local ac = a[c]
+                if not ac then
                     n = n + 1
+                else
+                    i = i + 1
+                    if m[i] then
+                        applyaction(ac,v,n)
+                    end
                 end
             end
         else
@@ -902,25 +1085,86 @@ local flush_list     = nuts.flush_list
     end
 
     local cache = setmetatableindex(function(t,m)
-        local v = setmetatableindex(function(t,k)
-            return analyzed(m,t,k)
+        local v = setmetatableindex(function(t,a)
+            local v = setmetatableindex(function(t,k)
+                return analyzed(m,a,t,k)
+            end)
+            t[m] = v
+            return v
         end)
         t[m] = v
         return v
     end)
 
-    local replace1 = Cs ( ( S("|=")/"" + lpeg.patterns.utf8character    )^0 )
-    local replace2 = Cs ( ( S("|=")    + lpeg.patterns.utf8character/".")^0 )
+    -- maybe also a skip symbol
+
+    local replace1 = Cs ( ( S("|=<>+.0123456789")/"" + lpegpatterns.utf8character    )^0 )
+    local replace2 = Cs ( ( S("|=<>+.0123456789")    + lpegpatterns.utf8character/".")^0 )
 
     local function stripped(str)
-        str = gsub(str,"[%-%%]+[^\n]+\n","")
+        -- todo : lpeg
+        str = gsub(str,"%-%-[^\n]+\n","")
+        str = gsub(str,"%%[^\n]+\n","")
         str = gsub(str,"%s+"," ")
+        str = gsub(str,"^%s+","")
+        str = gsub(str,"%s+$","")
         return str
+    end
+
+    local registerexceptions  do
+
+        local lbrace   = P("{")
+        local rbrace   = P("}")
+        local lbracket = P("[")
+        local rbracket = P("]")
+        local lparent  = P("(")
+        local rparent  = P(")")
+        local hyphen   = P("-")
+
+        local p = Cs ( (
+            lbrace *  ((1-rbrace)^0) * rbrace
+          * lbrace *  ((1-rbrace)^0) * rbrace
+          * lbrace * C((1-rbrace)^0) * rbrace * (lparent * C((1-rparent)^0) * rparent)^0 / function(a,b) return b or a end
+          + (lbracket * (1-rbracket)^0 * rbracket) / ""
+          + hyphen / ""
+          + lpegpatterns.utf8character
+        )^0 )
+
+        registerexceptions = function(target,str)
+            local kind = type(str)
+            if kind == "string" then
+                for v in gmatch(stripped(str),"%S+") do
+                    local k = lpegmatch(p,v)
+                    if k ~= v then
+                        target[k] = v
+                    end
+                end
+            elseif kind == "table" then
+                local n = #str
+                if n > 0 then
+                    for i=1,n do
+                        local v = str[i]
+                        local k = lpegmatch(p,v)
+                        if k ~= v then
+                            target[k] = v
+                        end
+                    end
+                else
+                    -- maybe check for sanity
+                    for k, v in next, str do
+                        target[k] = v
+                    end
+                end
+            end
+        end
+
     end
 
     function languages.strippedgoodiewords(str)
         return lpegmatch(replace1,stripped(str))
     end
+
+    local splitter = lpeg.tsplitat(" ")
 
     local function addgoodies(tag,list,filename)
         local np = 0
@@ -932,25 +1176,44 @@ local flush_list     = nuts.flush_list
         local properties   = data.properties
         local replacements = data.replacements
         local characters   = data.characters
+        local exceptions   = data.exceptions
         if filename then
             if not data.goodies then
                 data.goodies = { }
             end
-            table.insert(data.goodies,filename)
+            insert(data.goodies,filename)
         end
+        --
+        lh = false
+        rh = false
         --
         for i=1,nl do
             local l = list[i]
             if type(l) == "table" then
-                local w = l.words
-                local p = l.patterns
-                local c = l.characters
+                local w  = l.words
+                local p  = l.patterns
+                local c  = l.characters
+                local e  = l.exceptions
+                lh = l.left  or false -- for practical reasons these are semi-global
+                rh = l.right or false -- for practical reasons these are semi-global
                 if c then
                     for v in utfvalues(c) do
                         characters[v] = true
                     end
                 end
                 if w then
+                    local prefixes    = l.prefixes
+                    local nofprefixes = 0
+                    local suffixes    = l.suffixes
+                    local nofsuffixes = 0
+                    if prefixes then
+                        prefixes    = lpegmatch(splitter,lower(stripped(prefixes)))
+                        nofprefixes = #prefixes
+                    end
+                    if suffixes then
+                        suffixes    = lpegmatch(splitter,lower(stripped(suffixes)))
+                        nofsuffixes = #suffixes
+                    end
                     w = lower(stripped(w))
                     if p then
                         local pattern = Cs((utfchartabletopattern(p) / p + 1)^0)
@@ -959,19 +1222,72 @@ local flush_list     = nuts.flush_list
                     else
                         nd = nd + 1
                     end
-                    local cach = cache[l.matches or true]
-                    for s in gmatch(w,"%S+") do
-                        properties[lpegmatch(replace1,s)] = cach[lpegmatch(replace2,s)]
-                        nw = nw + 1
+                    local m = l.matches
+                    if not m then
+                        m = true
+                    end
+                    local a = l.actions
+                    if a then
+                        setmetatableindex(a,actions)
+                    else
+                        a = actions
+                    end
+                    local cach = cache[m][a]
+                    if nofprefixes > 0 then
+                        if nofsuffixes > 0 then
+                            for wrd in gmatch(w,"%S+") do
+                                properties[lpegmatch(replace1,wrd)] = cach[lpegmatch(replace2,wrd)]
+                                nw = nw + 1
+                                for i=1,nofprefixes do
+                                    local tmp = prefixes[i] .. wrd
+                                    for i=1,nofsuffixes do
+                                        local str = tmp .. suffixes[i]
+                                        properties[lpegmatch(replace1,str)] = cach[lpegmatch(replace2,str)]
+                                        nw = nw + 1
+                                    end
+                                end
+                            end
+                        else
+                            for wrd in gmatch(w,"%S+") do
+                                properties[lpegmatch(replace1,wrd)] = cach[lpegmatch(replace2,wrd)]
+                                nw = nw + 1
+                                for i=1,nofprefixes do
+                                    local str = prefixes[i] .. wrd
+                                    properties[lpegmatch(replace1,str)] = cach[lpegmatch(replace2,str)]
+                                    nw = nw + 1
+                                end
+                            end
+                        end
+                    elseif nofsuffixes > 0 then
+                        for wrd in gmatch(w,"%S+") do
+                            properties[lpegmatch(replace1,wrd)] = cach[lpegmatch(replace2,wrd)]
+                            nw = nw + 1
+                            for i=1,nofsuffixes do
+                                local str = wrd .. suffixes[i]
+                                properties[lpegmatch(replace1,str)] = cach[lpegmatch(replace2,str)]
+                                nw = nw + 1
+                            end
+                        end
+                    else
+                        for wrd in gmatch(w,"%S+") do
+                            properties[lpegmatch(replace1,wrd)] = cach[lpegmatch(replace2,wrd)]
+                            nw = nw + 1
+                        end
                     end
                 elseif p then
                     for k, v in next, p do
                         -- todo: warning overload
                         replacements[k] = v
                     end
+                elseif e then
+                    registerexceptions(exceptions,e)
                 end
             end
         end
+
+        lh = false
+        rh = false
+
         return { np = np, nd = nd, nw = nw, nl = nl }
     end
 
@@ -1152,6 +1468,12 @@ implement {
 implement {
     name      = "setlanguageexceptions",
     actions   = languages.setexceptions,
+    arguments = "2 strings"
+}
+
+implement {
+    name      = "setlanguagepatterns",
+    actions   = languages.setpatterns,
     arguments = "2 strings"
 }
 

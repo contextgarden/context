@@ -1,0 +1,453 @@
+-- The starting point of this list is a post at:
+--
+-- https://english.stackexchange.com/a/50957/22099
+-- https://english.stackexchange.com/questions/50660/when-should-i-not-use-a-ligature-in-english-typesetting
+-- mentioned on the ConTeXt mailing list after some discussion
+-- about this mechanism.
+
+return {
+    name       = "english",
+    version    = "1.00",
+    comment    = "English ligature suppression",
+    author     = "Mico Loretan, Dave Jarvis, & Hans Hagen",
+    copyright  = "Public domain",
+    options    = {
+        {
+            patterns = {
+                fi  = "f|i",
+                fl  = "f|l",
+            },
+            words = [[
+                -- f|i
+                deafish
+                dwarfish
+                elfish
+                oafish
+                selfish
+                serfish
+                unselfish
+                wolfish
+
+                -- f|l
+                beefless
+                briefless
+                hoofless
+                leafless
+                roofless
+                selfless
+                turfless
+            ]],
+            suffixes = [[
+                ness
+                ly
+            ]],
+        },
+        {
+            patterns = {
+                fi  = "f|i",
+            },
+            words = [[
+                proofing
+            ]],
+            prefixes = [[
+                air
+                child
+                fire
+                flame
+                moth
+                rust
+                sound
+                water
+                weather
+            ]],
+        },
+        {
+            patterns = {
+                ff  = "f|f",
+                fi  = "f|i",
+                fl  = "f|l",
+                ffi = "f|fi",
+                ffl = "f|fl",
+            },
+            words = [[
+                -- f|f
+                bookshelfful
+                mantelshelfful
+                shelfful
+
+                -- f|i
+                elfin
+
+                chafing
+                leafing
+                loafing
+                sheafing
+                strafing
+                vouchsafing
+                beefing
+                reefing
+                briefing
+                debriefing
+                coifing
+                fifing
+                jackknifing
+                knifing
+                midwifing
+                waifing
+                wifing
+
+                goofing
+                hoofing
+                roofing
+                reroofing
+                spoofing
+                whoofing
+                woofing
+
+                gulfing
+                begulfing
+                engulfing
+                ingulfing
+                golfing
+                gulfing
+                rolfing
+                selfing
+                wolfing
+                barfing
+                bedwarfing
+                dwarfing
+                enserfing
+                kerfing
+                scarfing
+                snarfing
+                surfing
+                windsurfing
+                turfing
+                wharfing
+
+                beefier
+                comfier
+                goofier
+                gulfier
+                leafier
+                surfier
+                turfier
+                beefiest
+                comfiest
+                goofiest
+                gulfiest
+                leafiest
+                surfiest
+                turfiest
+
+                beefily
+                goofily
+                goofiness
+
+                -- f|l
+                aloofly
+                briefly
+                chiefly
+                deafly
+                liefly
+
+                calflike
+                dwarflike
+                elflike
+                gulflike
+                hooflike
+                leaflike
+                rooflike
+                serflike
+                sheaflike
+                shelflike
+                surflike
+                turflike
+                waiflike
+                wolflike
+
+                halflife
+                shelflife
+                halfline
+                roofline
+
+                leaflet
+                leaflets
+                leafleted
+                leafleting
+                leafletting
+                leafletted
+                leafleteer
+
+                pdflatex
+
+                -- f|fi
+                chaffinch
+                wolffish
+
+                -- f|fl
+                safflower
+                safflowers
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+            },
+            words = [[
+                -- ff|i
+                cuffing
+            ]],
+            prefixes = [[
+                hand
+                un
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+            },
+            words = [[
+                -- ff|i
+                feoffing
+            ]],
+            prefixes = [[
+                en
+                in
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+            },
+            words = [[
+                -- ff|i
+                staffing
+                stuffing
+            ]],
+            prefixes = [[
+                re
+                over
+                under
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+            },
+            words = [[
+                -- ff|i
+                ruffing
+            ]],
+            prefixes = [[
+                cross
+                over
+                under
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+                ffl = "ff|l",
+            },
+            words = [[
+                -- ff|i
+                draffish
+                giraffish
+                gruffish
+                offish
+                raffish
+                sniffish
+                standoffish
+                stiffish
+                toffish
+
+                -- ff|l
+                cuffless
+                stuffless
+            ]],
+            suffixes = [[
+                ly
+            ]],
+        },
+        {
+            patterns = {
+                ffl = "ff|l",
+            },
+            words = [[
+                -- ff|l
+                scofflaw
+                cufflink
+                offline
+                offload
+            ]],
+            suffixes = [[
+                s
+                ed
+                ing
+            ]],
+        },
+        {
+            patterns = {
+                ffi = "ff|i",
+                ffl = "ff|l",
+            },
+            words = [[
+                -- ff|i
+                baffing
+                biffing
+                boffing
+                bluffing
+                outbluffing
+                buffing
+                rebuffing
+                chaffing
+                cheffing
+                chuffing
+                coffing
+                coiffing
+                daffing
+                doffing
+                fluffing
+                gaffing
+                gruffing
+                huffing
+                luffing
+                miffing
+                muffing
+                offing
+                piaffing
+                puffing
+                quaffing
+                reffing
+                riffing
+                sclaffing
+                scoffing
+                scuffing
+                shroffing
+                sluffing
+                sniffing
+                snuffing
+                spiffing
+                stiffing
+                stuffing
+                tariffing
+                tiffing
+                waffing
+                whiffing
+                yaffing
+
+                buffier
+                chaffier
+                chuffier
+                cliffier
+                daffier
+                fluffier
+                gruffier
+                huffier
+                iffier
+                miffier
+                puffier
+                scruffier
+                sniffier
+                snuffier
+                spiffier
+                stuffier
+                buffiest
+                chaffiest
+                chuffiest
+                cliffiest
+                daffiest
+                fluffiest
+                gruffiest
+                huffiest
+                iffiest
+                miffiest
+                puffiest
+                scruffiest
+                sniffiest
+                snuffiest
+                spiffiest
+                stuffiest
+
+                daffily
+                fluffily
+                gruffily
+                huffily
+                puffily
+                scruffily
+                sniffily
+                snuffily
+                spiffily
+                stuffily
+
+                fluffiness
+                huffiness
+                iffiness
+                puffiness
+                scruffiness
+                sniffiness
+                spiffiness
+                stuffiness
+
+                baffies
+                biffies
+                jiffies
+                taffies
+                toffies
+
+                waffie
+
+                Pfaffian
+                Wolffian
+                Wulffian
+
+                -- ff|l
+                bluffly
+                gruffly
+                ruffly
+                snuffly
+                stiffly
+
+                rufflike
+                clifflike
+            ]],
+        },
+        {
+            patterns = {
+                ft  = "f|t",
+                fft = "ff|t",
+            },
+            words = [[
+                -- f|t
+                chieftain
+                chieftains
+                chieftaincy
+                chieftainship
+
+                fifteen
+                fifteens
+                fifteenth
+                fifteenths
+                fifth
+                fifthly
+                fifths
+                fifties
+                fiftieth
+                fiftieths
+                fifty
+                fiftyish
+
+                halftime
+                halftone
+
+                rooftop
+                rooftops
+                rooftree
+
+                -- ff|t
+                offtrack
+            ]]
+        }
+    }
+}

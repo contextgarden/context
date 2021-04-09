@@ -443,6 +443,7 @@ return {
   "tolerant",
   "tpack",
   "tracingfonts",
+  "tracinghyphenation",
   "tracingmath",
   "undent",
   "unletfrozen",

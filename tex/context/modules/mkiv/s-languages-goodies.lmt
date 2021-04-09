@@ -21,12 +21,79 @@ function moduledata.languages.goodies.show(specification)
                     local l = list[i]
                     local w = l.words
                     if w then
+                        local pre = l.prefixes
+                        local suf = l.suffixes
                         context.startsubject { title = table.concat(table.sortedkeys(l.patterns)," ") }
                             context(languages.strippedgoodiewords(w))
+                            if pre then
+                                context.blank()
+                                context.bold("prefixes: ")
+                                context(languages.strippedgoodiewords(pre))
+                            end
+                            if suf then
+                                context.blank()
+                                context.bold("suffixes: ")
+                                context(languages.strippedgoodiewords(suf))
+                            end
                         context.stopsubject()
                     end
                 end
             end
         end
     end
+end
+
+local lpegmatch = lpeg.match
+
+moduledata.languages.goodies.ligaturehandlers = { }
+
+function moduledata.languages.goodies.ligatures(specification)
+
+    specification  = interfaces.checkedspecification(specification)
+    local language = specification.language
+    local filename = specification.file
+
+    if not language then
+    elseif moduledata.languages.goodies.ligaturehandlers[language] then
+    else
+        -- fb ff ffb fff ffh ffi ffj ffk ffl fft fi fk fl ft
+        local list    = specification.list or "ff fi fl ffi fff ffl"
+        local hash    = table.tohash(lpeg.split(" ",list)) -- also strip
+        local pattern = (1-lpeg.utfchartabletopattern(hash))^1 * lpeg.P(-1)
+        local checked = { }
+
+        moduledata.languages.goodies.ligaturehandlers[language] = function(original)
+            if not checked[original] and not lpegmatch(pattern,original) then
+                checked[original] = true
+            end
+            return original
+        end
+
+        languages.installhandler(language,"moduledata.languages.goodies.ligaturehandlers." .. language .. "")
+
+        statistics.register(string.formatters["'% t' ligatures checked for language %a"](table.sortedkeys(hash), language), function()
+            return next(checked) and table.concat(table.sortedkeys(checked)," ") or nil
+        end)
+
+        local applied = languages.appliedoptions[language]
+
+        trackers.enable("languages.applied")
+
+        if applied then
+            statistics.register(string.formatters["options applied for language %a"](language), function()
+                return next(applied) and table.concat(table.sortedkeys(applied)," ") or nil
+            end)
+            statistics.register(string.formatters["missed ligatures for language %a"](language), function()
+                for k, v in next, applied do
+                    checked[k] = nil
+                end
+                for k, v in next, hash do
+                    checked[k] = nil
+                end
+                return next(checked) and table.concat(table.sortedkeys(checked)," ") or nil
+            end)
+         end
+
+    end
+
 end

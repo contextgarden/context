@@ -130,30 +130,19 @@ interfaces.implement {
 
 local groupcodes       = { }
 local glyphoptioncodes = { }
+local discoptioncodes  = { }
 local hyphenationcodes = { }
 local frozenparcodes   = { }
 local flagcodes        = { }
 local normalizecodes   = { }
 
-for k, v in next, tex.getgroupvalues() do
-    groupcodes[k] = gsub(v,"[_ ]","")
-end
-for k, v in next, tex.gethyphenationvalues() do
-    hyphenationcodes[k] = gsub(v,"[_ ]","")
-end
-for k, v in next, tex.getglyphoptionvalues() do
-    glyphoptioncodes[k] = gsub(v,"[_ ]","")
-end
-for k, v in next, tex.getfrozenparvalues() do
-    frozenparcodes[k] = gsub(v,"[_ ]","")
-end
-for k, v in next, tex.getflagvalues() do
-    flagcodes[k] = gsub(v,"[_ ]","")
-end
-for k, v in next, tex.getnormalizevalues() do
-    normalizecodes[k] = gsub(v,"[_ ]","")
-end
-
+for k, v in next, tex.getgroupvalues()       do groupcodes[k]       = gsub(v,"[_ ]","") end
+for k, v in next, tex.gethyphenationvalues() do hyphenationcodes[k] = gsub(v,"[_ ]","") end
+for k, v in next, tex.getglyphoptionvalues() do glyphoptioncodes[k] = gsub(v,"[_ ]","") end
+for k, v in next, tex.getdiscoptionvalues()  do discoptioncodes[k]  = gsub(v,"[_ ]","") end
+for k, v in next, tex.getfrozenparvalues()   do frozenparcodes[k]   = gsub(v,"[_ ]","") end
+for k, v in next, tex.getflagvalues()        do flagcodes[k]        = gsub(v,"[_ ]","") end
+for k, v in next, tex.getnormalizevalues()   do normalizecodes[k]   = gsub(v,"[_ ]","") end
 
 if environment.initex then
 
@@ -161,6 +150,7 @@ if environment.initex then
 
     for k, v in next, groupcodes       do texintegerdef(v .. "groupcode",          k,"immutable") end
     for k, v in next, glyphoptioncodes do texintegerdef(v .. "code",               k,"immutable") end
+    for k, v in next, discoptioncodes  do texintegerdef(v .. "code",               k,"immutable") end
     for k, v in next, hyphenationcodes do texintegerdef(v .. "hyphenationmodecode",k,"immutable") end
     for k, v in next, frozenparcodes   do texintegerdef("frozen" .. v .. "code",   k,"immutable") end
     for k, v in next, flagcodes        do texintegerdef(v .. "flagcode",           k,"immutable") end
@@ -170,6 +160,7 @@ end
 
 groupcodes           = utilities.storage.allocate(table.swapped(groupcodes,      groupcodes))
 glyphoptioncodes     = utilities.storage.allocate(table.swapped(glyphoptioncodes,glyphoptioncodes))
+discoptioncodes      = utilities.storage.allocate(table.swapped(discoptioncodes, discoptioncodes))
 hyphenationcodes     = utilities.storage.allocate(table.swapped(hyphenationcodes,hyphenationcodes))
 frozenparcodes       = utilities.storage.allocate(table.swapped(frozenparcodes,  frozenparcodes))
 flagcodes            = utilities.storage.allocate(table.swapped(flagcodes,       flagcodes))
@@ -177,6 +168,7 @@ normalizecodes       = utilities.storage.allocate(table.swapped(normalizecodes, 
 
 tex.groupcodes       = groupcodes
 tex.glyphoptioncodes = glyphoptioncodes
+tex.discoptioncodes  = discoptioncodes
 tex.hyphenationcodes = hyphenationcodes
 tex.frozenparcodes   = frozenparcodes
 tex.flagcodes        = flagcodes

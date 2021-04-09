@@ -15,7 +15,8 @@
 
 \registerctxluafile{s-languages-goodies}{autosuffix}
 
-\installmodulecommandluasingle \showlanguagegoodies {moduledata.languages.goodies.show}
+\installmodulecommandluasingle \showlanguagegoodies   {moduledata.languages.goodies.show}
+\installmodulecommandluasingle \showlanguageligatures {moduledata.languages.goodies.ligatures}
 
 \stopmodule
 
@@ -26,6 +27,7 @@
 % \setupbodyfont[libertine]
 
 \setuplanguage[de][goodies={lang-de.llg}]
+\setuplanguage[en][goodies={lang-en.llg}]
 
 \mainlanguage[de]
 
@@ -35,6 +37,21 @@
 %     Zapf|innovation
 % \stoplanguageoptions
 
+% \tracinghyphenation3 \tracingonline2
+
 \starttext
-    \showlanguagegoodies[file={lang-de.llg}]
+    \showlanguageligatures[language=de,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
+    \showlanguageligatures[language=en,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
+
+    \starttitle[title={DE}]
+        \start \de \showlanguagegoodies [file={lang-de.llg}] \stop
+    \stoptitle
+
+    \starttitle[title={EN}]
+        \start \en \showlanguagegoodies[file={lang-en.llg}] \stop
+    \stoptitle
+
+%     oeps effe
+%     nonexistentffitestcase
+%     nonexistentffltestcase
 \stoptext

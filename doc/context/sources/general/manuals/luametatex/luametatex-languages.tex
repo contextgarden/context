@@ -337,6 +337,7 @@ examples.
 
 \topicindex {main loop}
 \topicindex {hyphenation}
+\topicindex {hyphenation+tracing}
 
 In \LUATEX's main loop, almost all input characters that are to be typeset are
 converted into \nod {glyph} node records with subtype \quote {character}, but
@@ -446,6 +447,18 @@ The usage of these penalties is controlled by the \lpr {hyphenationmode} flags
 \number\automaticpenaltyhyphenationmodecode\space and
 \number\explicitpenaltyhyphenationmodecode\space and when these are not set \prm
 {exhyphenpenalty} is used.
+
+You can use the \lpr {tracinghyphenation} variable to get a bit more information
+about what happens.
+
+\starttabulate[|lT|l|]
+\DB value \BC effect \NC\NR
+\TB
+\NC 1     \NC report redundant pattern (happens by default in \LUATEX) \NC\NR
+\NC 2     \NC report words that reach the hyphenator and got treated \NC\NR
+\NC 3     \NC show the result of a hyphenated word (a node list) \NC\NR
+\LL
+\stoptabulate
 
 \stopsection
 

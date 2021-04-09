@@ -1320,4 +1320,8 @@
 
 \tracinglevels\plusthree
 
+%D We just report duplicate patterns being ignored:
+
+\tracinghyphenation\plusone
+
 \protect \endinput

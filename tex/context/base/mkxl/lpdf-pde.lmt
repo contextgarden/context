@@ -422,7 +422,7 @@ function resolvers.pages(document)
                 __xrefs__[pagedata]      = pagereference
                 __cache__[pagereference] = pagedata
             else
-            report_epdf("missing pagedata for page %i, case %i",pagenumber,1)
+                report_epdf("missing pagedata for page %i, case %i",pagenumber,1)
             end
         else
             report_epdf("missing pagedata for page %i, case %i",pagenumber,2)

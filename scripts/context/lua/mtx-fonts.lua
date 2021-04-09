@@ -60,6 +60,10 @@ local helpinfo = [[
     <example><command>mtxrun --script font --list somename (== --pattern=*somename*)</command></example>
    </subcategory>
    <subcategory>
+    <example><command>mtxrun --script font --list --file filename</command></example>
+    <example><command>mtxrun --script font --list --name --pattern=*somefile*</command></example>
+   </subcategory>
+   <subcategory>
     <example><command>mtxrun --script font --list --name somename</command></example>
     <example><command>mtxrun --script font --list --name --pattern=*somename*</command></example>
    </subcategory>
@@ -406,46 +410,46 @@ function scripts.fonts.list()
 
     if getargument("name") then
         if pattern then
-            --~ mtxrun --script font --list --name --pattern=*somename*
+            -- mtxrun --script font --list --name --pattern=*somename*
             list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
         elseif filter then
             report("not supported: --list --name --filter",name)
         elseif given then
-            --~ mtxrun --script font --list --name somename
+            -- mtxrun --script font --list --name somename
             list_matches(fonts.names.list(given,reload,all),info)
         else
             report("not supported: --list --name <no specification>",name)
         end
     elseif getargument("spec") then
         if pattern then
-            --~ mtxrun --script font --list --spec --pattern=*somename*
+            -- mtxrun --script font --list --spec --pattern=*somename*
             report("not supported: --list --spec --pattern",name)
         elseif filter then
-            --~ mtxrun --script font --list --spec --filter="fontname=somename"
+            -- mtxrun --script font --list --spec --filter="fontname=somename"
             list_specifications(fonts.names.getlookups(filter),info)
         elseif given then
-            --~ mtxrun --script font --list --spec somename
+            -- mtxrun --script font --list --spec somename
             list_specifications(fonts.names.collectspec(given,reload,all),info)
         else
             report("not supported: --list --spec <no specification>",name)
         end
     elseif getargument("file") then
         if pattern then
-            --~ mtxrun --script font --list --file --pattern=*somename*
+            -- mtxrun --script font --list --file --pattern=*somename*
             list_specifications(fonts.names.collectfiles(string.topattern(pattern,true),reload,all),info)
         elseif filter then
             report("not supported: --list --spec",name)
         elseif given then
-            --~ mtxrun --script font --list --file somename
+            -- mtxrun --script font --list --file somename
             list_specifications(fonts.names.collectfiles(given,reload,all),info)
         else
             report("not supported: --list --file <no specification>",name)
         end
     elseif pattern then
-        --~ mtxrun --script font --list --pattern=*somename*
+        -- mtxrun --script font --list --pattern=*somename*
         list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
     elseif given then
-        --~ mtxrun --script font --list somename
+        -- mtxrun --script font --list somename
         list_matches(fonts.names.list(given,reload,all),info)
     elseif all then
         pattern = "*"

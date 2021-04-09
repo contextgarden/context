@@ -740,10 +740,22 @@
    \clf_setlanguageexceptions{\askedlanguage}{#2}%
    \endgroup}
 
+\permanent\let\stoppatterns\relax
+
+\tolerant\permanent\protected\def\startpatterns[#1]#:#2\stoppatterns
+  {\begingroup
+   \edef\askedlanguage{\reallanguagetag{#1}}%
+   \ifempty\askedlanguage
+     \let\askedlanguage\currentlanguage
+   \fi
+   \clf_setlanguagepatterns{\askedlanguage}{#2}%
+   \endgroup}
+
+
 \pushoverloadmode
 
-\permanent\protected\def\hyphenation
-  {\clf_setlanguageexceptions{\currentlanguage}}
+\permanent\protected\def\hyphenation{\clf_setlanguageexceptions{\currentlanguage}}
+\permanent\protected\def\patterns   {\clf_setlanguagepatterns  {\currentlanguage}}
 
 \popoverloadmode
 

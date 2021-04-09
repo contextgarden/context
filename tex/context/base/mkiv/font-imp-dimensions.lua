@@ -42,6 +42,7 @@ local function initialize(tfmdata,key,value)
         local newwidth   = false
         local newheight  = false
         local newdepth   = false
+        local newshift   = false
         if value == "strut" then
             newheight = gettexdimen("strutht")
             newdepth  = gettexdimen("strutdp")
@@ -55,6 +56,7 @@ local function initialize(tfmdata,key,value)
             newwidth  = spec[1]
             newheight = spec[2]
             newdepth  = spec[3]
+            newshift  = spec[4]
             local quad      = parameters.quad      or 0
             local ascender  = parameters.ascender  or 0
             local descender = parameters.descender or 0
@@ -87,6 +89,7 @@ local function initialize(tfmdata,key,value)
                 parameters.x_heigth = (ascender + descender) / 2
             end
         end
+        -- todo: hshift too
         if newwidth or newheight or newdepth then
             for unicode, character in next, characters do
                 local oldwidth  = character.width
@@ -101,7 +104,7 @@ local function initialize(tfmdata,key,value)
                     character.depth  = depth
                     if oldwidth ~= width then
                         local commands = character.commands
-                        local hshift   = rightcommand[(width - oldwidth) / 2]
+                        local hshift   = rightcommand[newshift or ((width - oldwidth) / 2)]
                         if commands then
                             character.commands = prependcommands (
                                 commands,

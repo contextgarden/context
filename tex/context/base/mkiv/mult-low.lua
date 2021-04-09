@@ -174,6 +174,8 @@ return {
         "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode", "mutableflagcode",
         "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
         --
+        "prewordcode", "postwordcode",
+        --
         "continuewhenlmtxmode"
     },
     ["helpers"] = {

@@ -157,7 +157,18 @@ if (numbersystem == "scaled") or (numbersystem == "double") :
   % vardef tand primary x = sind(x)/cosd(x)  enddef ;
   % vardef cotd primary x = cosd(x)/sind(x)  enddef ;
 
-    permanent sin, cos, tan, sinh, cosh, tanh, asin, acos, atan, asinh, acosh, atanh, invsin, invcos, invtan, asind, acosd, atand ;
+else : % decimal
+
+    vardef sin    primary x = sind(x*radian)   enddef ;
+    vardef cos    primary x = cosd(x*radian)   enddef ;
+    vardef tan    primary x = sin(x)/cos(x)    enddef ;
+    vardef asin   primary x = angle((1+-+x,x)) enddef ;
+    vardef acos   primary x = angle((x,1+-+x)) enddef ;
+    vardef atan   primary x = angle(1,x)       enddef ;
+
+    vardef invsin primary x = (asin(x))/radian enddef ;
+    vardef invcos primary x = (acos(x))/radian enddef ;
+    vardef invtan primary x = (atan(x))/radian enddef ;
 
 fi ;
 
@@ -177,7 +188,10 @@ permanent
 
     % sqrt, sind, cosd, % these are primitives
 
-    sqr, log, ln, exp, inv, sin, cos, tan, asin, acos, atan, invsin, invcos, invtan,
-    tand, asind, acosd, atand, tand, cotd
+    sqr, log, ln, exp, inv,
+    sin, cos, tan, asin, acos, atan, invsin, invcos, invtan,
+    tand, cotd,
+    sinh, cosh, tanh, asinh, acosh,
+    atanh, asind, acosd, atand
 ;
 

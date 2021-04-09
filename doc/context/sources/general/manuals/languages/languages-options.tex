@@ -1,0 +1,424 @@
+% language=uk
+
+\startcomponent languages-options
+
+\environment languages-environment
+
+\startchapter[title=Options][color=darkblue]
+
+\startsection[title=Introduction]
+
+Hyphenation of words is controlled by so called patterns. They take a word and
+try to match parts with a pattern that describes where a hyphen can be injected.
+Preferred and discouraged injection points accumulate to a score that in the end
+determine where so called discretionary nodes gets injected in the list of
+glyphs that make a word. The patterns are language specific.
+
+This mechanism is agnostic when it comes to the characters involved: they are
+just numbers. However, when in a next step font features like ligature building
+and kerning are applied we also have to deal with language specific properties
+(and meanings). Often a ligature at the boundary of a composed word can make
+reading confusing and has to be avoided. Some of that can be controlled by the
+font when it implements language specific features but because that approach is
+not based on a dictionary it is more about playing safe and prevention than about
+quality.
+
+In the next sections a mechanism is discussed that also uses patterns. This time
+it is about controlling fonts as well as how hyphenation patterns are applied.
+This process kicks in before hyphenation is applied but it definitely has to be
+seen as part of that same process. It is integrated in hyphenation machinery and
+acts as preprocessor with the possibility to feedback and move forward. The
+implementation is such that when it's not used there is no performance penalty.
+\footnote {There are by now plenty of alternative approaches to these problems
+but after some discussion about the pro's and cons of each this new mechanism was
+made. I admit that the fun factor played a role. It is also one of the things we
+can do in \LUAMETATEX\ without worrying about a possible negative impact on
+\LUATEX\ users other than \CONTEXT .}
+
+There are several predefined operations that are characterized by keywords and
+shortcuts and collected in an option list that is part of a language goodie file.
+Examples can be found in the distribution in files with the suffix \type {llg}
+(\LUA\ language goodie). The framework of such a file is:
+
+\starttyping
+return {
+    name       = "whatever",
+    version    = "1.00",
+    comment    = "Goodies for experiments and demo.",
+    author     = "Hans Hagen",
+    copyright  = "ConTeXt development team",
+    options    = {
+        { ... },
+        ........
+        { ... },
+    }
+}
+\stoptyping
+
+These options will eventually result in patterns that are bound to words,
+think of:
+
+\starttabulate[|T||||]
+\NC effe     \NC \type {foo|bar}   \NC \type {..|..}     \NC inhibit ligature \NC \NR
+\NC foobar   \NC \type {foo=bar}   \NC \type {...=...}   \NC inhibit kerning  \NC \NR
+\NC somemore \NC \type {some+more} \NC \type {....+....} \NC compound word    \NC \NR
+\stoptabulate
+
+The whole repertoire is:
+
+\starttabulate[||T|]
+\NC \type {a|b} \NC a:norightligature, b:noleftligature \NC \NR
+\NC \type {a=b} \NC a:norightkern, b:noleftkern         \NC \NR
+\NC \type {a<b} \NC b:noleftkern                        \NC \NR
+\NC \type {a>b} \NC a:norightkern                       \NC \NR
+\NC \type {a+b} \NC a:compound:b                        \NC \NR
+\stoptabulate
+
+Later we will see how some can be combined. An option can be defined using entries
+in a subtable:
+
+\starttabulate[|T|||]
+\NC patterns   \NC hash            \NC \type {[snippet] = "replacement pattern"} \NC \NR
+\NC words      \NC string          \NC string of words, separated by whitespace \NC \NR
+\NC prefixes   \NC string          \NC snippets that combine with words (at the start) \NC \NR
+\NC suffixes   \NC string          \NC snippets that combine with words (at the end) \NC \NR
+\NC matches    \NC array or number \NC a number or table indicating which match matters \NC \NR
+\NC actions    \NC hash            \NC \type {[character] = "action(s)"} \NC \NR
+\NC characters \NC string          \NC permitted characters (additional hjcodes) \NC \NR
+\NC return     \NC integer         \NC what to do next \NC \NR
+\stoptabulate
+
+The default return value is~2 but there are some more:
+
+\starttabulate[|T||]
+\NC 0 \NC go to the next (valid) word \NC \NR
+\NC 1 \NC restart \NC \NR
+\NC 2 \NC exceptions and after that patterns \NC \NR
+\NC 3 \NC patterns \NC \NR
+\stoptabulate
+
+There are some safeguards built in that force a restart. For instance when a word
+is replaced a restart is enforces unless we skip the word. A restart will not
+permit a second replacement (after all we need to avoid endless loops).
+
+In a multi|-|line word list, lines that start with a comment trigger: \LUA's
+double dash or the usual \TEX\ percent sign.
+
+\stopsection
+
+\startsection[title=Inhibiting]
+
+The next definition replaces \type {ff} by \type {f|f} in the words given and
+eventually block a ligature.
+
+\starttyping
+{
+    patterns = {
+        ff  = "f|f",
+    },
+    words = [[
+        effe
+    ]],
+}
+\stoptyping
+
+Some fonts provide the \type {ij} ligature or do some special kerning between
+these characters (something Dutch). Because it depends on the font logic if a
+dedicated replacement or kerning is used this is an example where we do this:
+
+\starttyping
+{
+    patterns = {
+        ij = "i|j",
+    },
+    actions = {
+        ["|"] = "nokern noligature",
+    },
+    words = [[
+        ijverig
+     -- fijn -- to ligature fi or ij, that's the question
+    ]],
+}
+\stoptyping
+
+A more extensive definition is the following. Here we explicitly define that only
+the first match in a word get treated. Here we not only block ligatures but also
+kerns.
+
+\starttyping
+{
+    patterns = {
+        ff  = "f|f",
+    },
+    matches = { 1 },
+    actions = {
+        ["|"] = "noligature nokern"
+    },
+    words = [[
+        effe
+        effeffe
+    ]],
+}
+\stoptyping
+
+You can also omit the pattern when you inject specifiers yourself:
+
+\starttyping
+{
+    actions = {
+        ["|"] = "noligature nokern"
+    },
+    words = [[
+        ef|fe
+        ef|fef|fe
+    ]],
+}
+\stoptyping
+
+You can also use different shortcuts:
+
+\starttyping
+{
+    actions = {
+        ["1"] = "noligature"
+        ["2"] = "nokern"
+    },
+    words = [[
+        ef1fe
+        ef1fef2fe
+    ]],
+}
+\stoptyping
+
+Although I cannot come up with a nice example, there can be reasons for
+inhibiting kerns. Here we inhibit kerns left of the upcoming character:
+
+\starttyping
+{
+    patterns = {
+        fo = "f<o",
+        rm = "r<m",
+    },
+    words = [[
+        information
+    ]],
+}
+\stoptyping
+
+And here we inhibit kerns left of the previous and upcoming character:
+
+\starttyping
+{
+    patterns = {
+        th = "t=h",
+    },
+    words = [[
+        thrive
+    ]],
+}
+\stoptyping
+
+Just look in the files in the distribution for realistic examples, like
+
+\starttyping
+{
+    patterns = {
+        fi = "f|i",
+    },
+    words = [[
+        deafish dwarfish elfish oafish selfish
+    ]],
+    suffixes = [[
+        ness ly
+    ]]
+}
+\stoptyping
+
+where we block ligatures in 15 words. There's also a \type {prefixes} key.
+
+\stopsection
+
+\startsection[title=Replacements]
+
+Replacements are probably not used that much but here is one for German. Not
+only is the uppercase variant of ß seldom used, many fonts don't provide it
+so we can best replace it:
+
+\starttyping
+{
+    characters = "ẞ", -- uppercase ß, not visible in all verbatim fonts
+    patterns   = {
+        ["ẞ"] = "SS", -- key is uppercase ß
+    },
+}
+\stoptyping
+
+Here we define that character as valid, something that normally is done with the
+patterns but patterns don't have them. If we do not specify it here, the
+hyphenator will skip this word. For the record: this can also be done with a font
+feature that decomposes the character.
+
+\stopsection
+
+\startsection[title=Compound words]
+
+You might want to suppress ligatures and maybe even kerning when compound words
+are involved.
+
+\starttyping
+{
+    patterns = {
+        ff = "f+f",
+    },
+    words = [[
+        aaaaffaaaa
+        bbffbb
+    ]],
+}
+\stoptyping
+
+Again you can also say:
+
+\starttyping
+{
+    words = [[
+        aaaaf|faaaa
+        bbf|fbb
+    ]],
+}
+\stoptyping
+
+But patterns make sense when you have a large list (that might come from some
+other source than yourself).
+
+The next specification will turn two times three \type {bla}'s into a compound
+word but also make sure that we have at least 4 characters left and right of a
+potential break.
+
+\starttyping
+    {
+        left  = 4,
+        right = 4,
+        words = [[
+            blablabla+blablabla
+        ]],
+    }
+\stoptyping
+
+\stopsection
+
+\startsection[title=Performance]
+
+Although these mechanisms introduce overhead, the performance hit in \LMTX\ is
+not that large. This is because the number of words in a document is limited and
+\LUA\ is fast enough.
+
+\stopsection
+
+\startsection[title=Plugins]
+
+{\em This interface is preliminary but for the record I put an example here
+anyway.}
+
+\starttyping
+local n = 0
+function document.myhack(original)
+    n = n + 1
+    print(n,original)
+    return original
+end
+
+languages.installhandler("de","document.myhack")
+\stoptyping
+
+One can manipulate a text as in:
+
+\starttyping
+function document.myhack(original)
+    local t = utf.split(original)
+    local t = table.reverse(t)
+    local f = t[#t]
+    local l = t[1]
+    if characters.upper(f) == f then
+        t[1]  = characters.upper()
+        t[#t] = characters.lower(f)
+    end
+    local original = table.concat(t)
+    return original
+end
+
+languages.installhandler("en","document.myhack")
+\stoptyping
+
+The text will fed again into the hyphenator and treated in the normal way. There
+are some safeguards against the text being processed twice.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+You can also embed definitions in the source file:
+
+\starttyping
+\startlanguageoptions[de]
+    Zapf|innovation
+\stoplanguageoptions
+\stoptyping
+
+\stopsection
+
+\startsection[title=Exceptions]
+
+When you set exceptions in a goodie file, it will use the plugin mechanism to
+check for them. This is a bit more efficient than using the internal checkerm
+which actually also goes via a\LUA\ hash.
+
+\starttyping
+{
+    exceptions = [[
+        a-very{-}{-}{w}eird{1}{2}{3}(w)ord
+    ]],
+}
+\stoptyping
+
+Watch out: when you specify a discretionary replacement three braced valued are
+passed: the pre, post and replace text. The replace text is used in the lookup,
+unless you add a string between parentheses, which then will be used instead. A
+digit between bracket will apply a penalty according to the following logic (in
+the engine): A zero digit results in \type {\hyphenpenalty}, otherwise the
+digits~1 upto~9 will be used as multiplier for \type {\exceptionpenalty} when
+that value is larger than 100000, otherwise \type {\exceptionpenalty} is used.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+The following tracker can be used:
+
+\starttyping
+\enabletrackers[languages.goodies]
+\stoptyping
+
+In addition the style \type {languages-goodies} implements some tracing options.
+You can just run that one to see what it does.
+
+The engine itself has also a tracing option: \type {\tracinghyphenation}. When
+set to zero nothing is shown, when set to one redundant patterns will be
+reported. A value of two reports what words get fed into the hyphenator and if
+they got hyphenated. A value of three gives more detail: when a word gets
+hyphenated the relevant (resulting) part of the node list is shown. You need to
+set \type {\tracingonline} to a value larger than zero to get this reported to
+the console. Expects lots of extra output to the console for large documents but
+it can be revealing.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+%D Musical timestamp: end Match 2021: running into Joe Parrish's amazing
+%D interpretation of Stravinsky's "Rite of Spring" on guitars.
+%D
+%D Also on YT: The Rite of Spring by London Symphony Orchestra (conducted
+%D by Simon Rattle).
