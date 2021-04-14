@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['cldf-lmt'] = {
     license   = "see context related readme files"
 }
 
-local next, load = next, load
+local next, load, tonumber = next, load, tonumber
 local gmatch, gsub, byte = string.gmatch, string.gsub, string.byte
 
 local setmetatableindex    = table.setmetatableindex
@@ -627,7 +627,7 @@ context.luatables = {
 local tables = { }
 local stack  = setmetatableindex("table")
 
-interfaces.implement {
+implement {
     name      = "droptablegroup",
     public    = true,
     actions   = function()
@@ -699,7 +699,7 @@ local function newtable(array)
     if not tables[name] then
         local t = { }
         tables[name] = t
-        interfaces.implement {
+        implement {
             name    = name,
             public  = true,
             usage   = "value",
@@ -886,7 +886,7 @@ implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "bitwise",
     public    = true,
     usage     = "value",
@@ -933,7 +933,7 @@ interfaces.implement {
 
 local escape = function(s) return "\\" .. byte(s) end
 
-interfaces.implement {
+implement {
     name    = "ctxluamatch",
     public  = true,
     usage   = "value",
@@ -947,3 +947,65 @@ interfaces.implement {
         return none_code
     end,
 }
+
+-- yes or no ...
+
+do
+
+    local codes         = { }
+    tex.codes           = codes
+
+    local global_code   = tex.flagcodes.global
+
+    local savelua       = token.save_lua
+    local isdefined     = token.is_defined
+
+    local newsparse     = sparse.new
+    local setsparse     = sparse.set
+    local wipesparse    = sparse.wipe
+    local restoresparse = sparse.restore
+
+    -- local function isglobal(n) -- maybe a general helper
+    --     return n and (tonumber(n) & global_code)
+    -- end
+
+    local registerfunction = context.functions.register
+
+    implement {
+        name      = "codedef",
+        public    = true,
+        protected = true,
+        actions   = function(what)
+            local name = scancsname(true)
+         -- if isdefined(name) then
+         --     wipesparse(codes[name]) -- better make a wipe helper if ever needed
+         -- else
+                local code    = newsparse()
+                local restore = registerfunction(function() restoresparse(code) end)
+                implement {
+                    name      = name,
+                    public    = true,
+                    protected = true,
+                    usage     = "value",
+                    actions   = function(what)
+                        local n = scaninteger()
+                        if what == "value" then
+                            return integer_code, code[n]
+                        else
+                            local v = scaninteger(true)
+                         -- if isglobal(what) then
+                            if what and (tonumber(what) & global_code) then
+                                setsparse(code,"global",n,v)
+                            else
+                                savelua(restore,true) -- only once
+                                setsparse(code,n,v)
+                            end
+                        end
+                    end,
+                }
+                codes[name] = code
+         -- end
+        end,
+    }
+
+end

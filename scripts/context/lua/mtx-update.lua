@@ -266,7 +266,8 @@ update.platforms = {
     ["macosx"]         = "osx-64",
     ["osx"]            = "osx-64",
     ["osx-64"]         = "osx-64",
-    ["osx-arm64"]      = "osx-64",
+    ["osx-arm"]        = "osx-arm64",
+    ["osx-arm64"]      = "osx-arm64",
     --
  -- ["solaris-intel"]  = "solaris-intel",
     --

@@ -15774,7 +15774,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 19496, stripped down to: 10858
+-- original size: 19324, stripped down to: 10821
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15800,19 +15800,12 @@ local getposition=files.getposition
 local band=bit32.band
 local rshift=bit32.rshift
 local lshift=bit32.lshift
-local decompress,expandsize,calculatecrc
- local zlibdecompress=zlib.decompress
- local zlibexpandsize=zlib.expandsize
- local zlibchecksum=zlib.crc32
- decompress=function(source)
-  return zlibdecompress(source,-15) 
- end
- expandsize=zlibexpandsize and function(source,targetsize)
-  return zlibexpandsize(source,targetsize,-15) 
- end or decompress
- calculatecrc=function(buffer,initial)
-  return zlibchecksum(initial or 0,buffer)
- end
+local zlibdecompress=zlib.decompress
+local zlibdecompresssize=zlib.decompresssize
+local zlibchecksum=zlib.crc32
+local decompress=function(source)   return zlibdecompress (source,-15)   end 
+local decompresssize=function(source,targetsize) return zlibdecompresssize(source,targetsize,-15) end 
+local calculatecrc=function(buffer,initial) return zlibchecksum   (initial or 0,buffer)   end
 local zipfiles={}
 utilities.zipfiles=zipfiles
 local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
@@ -15937,8 +15930,8 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
     setposition(handle,position)
     local result=readstring(handle,compressed)
     if data.method==8 then
-     if expandsize then
-      result=expandsize(result,data.uncompressed)
+     if decompresssize then
+      result=decompresssize(result,data.uncompressed)
      else
       result=decompress(result)
      end
@@ -25857,8 +25850,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1026599
--- stripped bytes    : 405840
+-- original bytes    : 1026427
+-- stripped bytes    : 405705
 
 -- end library merge
 

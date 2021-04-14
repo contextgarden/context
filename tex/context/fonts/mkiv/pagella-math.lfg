@@ -1,5 +1,6 @@
 local kern_V   = { bottomright = { { kern = -200 } } }
 local kern_W   = { bottomright = { { kern = -100 } } }
+-- local kern_f   = { bottomright = { { kern = -100 } } }
 local offset_f = { xoffset = "llx" }
 
 -- Beware of updates in ssty slots!
@@ -27,6 +28,7 @@ return {
          -- [0x1D44A]     = kern_W, -- 𝑊
          -- ["1:0x1D44A"] = kern_W, -- needed for compact
          -- ["2:0x1D44A"] = kern_W, -- needed for compact
+--             ["*:0x1D453"] = kern_f,
             ["*:0x1D449"] = kern_V, -- 𝑉
             ["*:0x1D44A"] = kern_W, -- 𝑊
         },

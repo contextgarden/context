@@ -34,32 +34,13 @@ local band          = bit32.band
 local rshift        = bit32.rshift
 local lshift        = bit32.lshift
 
-local decompress, expandsize, calculatecrc
+local zlibdecompress     = zlib.decompress
+local zlibdecompresssize = zlib.decompresssize
+local zlibchecksum       = zlib.crc32
 
--- if flate then
---
---     decompress   = flate.flate_decompress
---     calculatecrc = flate.update_crc32
---
--- else
-
-    local zlibdecompress = zlib.decompress
-    local zlibexpandsize = zlib.expandsize
-    local zlibchecksum   = zlib.crc32
-
-    decompress = function(source)
-        return zlibdecompress(source,-15) -- auto
-    end
-
-    expandsize = zlibexpandsize and function(source,targetsize)
-        return zlibexpandsize(source,targetsize,-15) -- auto
-    end or decompress
-
-    calculatecrc = function(buffer,initial)
-        return zlibchecksum(initial or 0,buffer)
-    end
-
--- end
+local decompress     = function(source)            return zlibdecompress    (source,-15)            end -- auto
+local decompresssize = function(source,targetsize) return zlibdecompresssize(source,targetsize,-15) end -- auto
+local calculatecrc   = function(buffer,initial)    return zlibchecksum      (initial or 0,buffer)   end
 
 local zipfiles      = { }
 utilities.zipfiles  = zipfiles
@@ -201,8 +182,8 @@ local openzipfile, closezipfile, unzipfile, foundzipfile, getziphash, getziplist
                 setposition(handle,position)
                 local result = readstring(handle,compressed)
                 if data.method == 8 then
-                    if expandsize then
-                        result = expandsize(result,data.uncompressed)
+                    if decompresssize then
+                        result = decompresssize(result,data.uncompressed)
                     else
                         result = decompress(result)
                     end

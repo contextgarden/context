@@ -42,9 +42,9 @@ local loaddata = io.loaddata
 
 local bpfactor             = number.dimenfactors.bp
 
--- local md5HEX               = md5.HEX
 local osuuid               = os.uuid
-local zlibcompress         = (xzip or zlib).compress
+local zlibcompress         = xzip.compress
+local zlibcompresssize     = xzip.compresssize
 
 local nuts                 = nodes.nuts
 local tonut                = nodes.tonut
@@ -100,6 +100,19 @@ local report_objects = logs.reporter("backend","objects")
 
 local trace_objects  = false  trackers.register("backend.objects", function(v) trace_objects = v end)
 local trace_details  = false  trackers.register("backend.details", function(v) trace_details = v end)
+
+-- experiment:
+
+local function compressdata(data,size)
+    local guess = ((size // 4096) + 1) * 2048
+    local comp  = zlibcompresssize(data,3,guess)
+ -- if comp then
+ --     report()
+ --     report("size %i, guess %i, result %i => %s / %s",size,guess,#comp,guess>=#comp and "hit" or "miss")
+ --     report()
+ -- end
+    return comp
+end
 
 -- we collect them:
 
@@ -2021,25 +2034,28 @@ local addtocache, flushcache, cache do
             list = concat(list," ")
             data[0] = list
             data = concat(data,"\010",0,d)
+            local size = #data
             local strobj = pdfdictionary {
                 Type  = p_ObjStm,
                 N     = d,
                 First = #list + 1,
             }
             objects[cache] = offset
-            local b = nil
-            local e = s_stream_e
+            local fb
             if compress then
-                local comp = zlibcompress(data,3)
-                if comp and #comp < #data then
+--                 local comp = zlibcompress(data,3)
+                local comp = compressdata(data,size)
+                if comp and #comp < size then
                     data = comp
-                    b = f_stream_b_d_c(cache,strobj(),#data)
+                    fb = f_stream_b_d_c
                 else
-                    b = f_stream_b_d_u(cache,strobj(),#data)
+                    fb = f_stream_b_d_u
                 end
             else
-                b = f_stream_b_d_u(cache,strobj(),#data)
+                fb = f_stream_b_d_u
             end
+            local b = fb(cache,strobj(),size)
+            local e = s_stream_e
             flush(f,b)
             flush(f,data)
             flush(f,e)
@@ -2274,7 +2290,8 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         if nolength then
             b = f_stream_b_d_r(n,dict)
         elseif comp ~= false and compress and size > threshold then
-            local compdata = zlibcompress(data,3)
+--             local compdata = zlibcompress(data,3)
+            local compdata = compressdata(data,size)
             if compdata then
                 local compsize = #compdata
                 if compsize > size - threshold then
@@ -2298,7 +2315,8 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         if nolength then
             data = f_stream_d_r(n,dict,data)
         elseif comp ~= false and compress and size > threshold then
-            local compdata = zlibcompress(data,3)
+--             local compdata = zlibcompress(data,3)
+            local compdata = compressdata(data,size)
             if compdata then
                 local compsize = #compdata
                 if compsize > size - threshold then
@@ -2635,6 +2653,7 @@ local openfile, closefile  do
                 end
                 objects[0] = rep("\0",1+nofbytes+1)
                 local data = concat(objects,"",0,nofobjects)
+                local size = #data
                 local xref = pdfdictionary {
                     Type  = pdfconstant("XRef"),
                     Size  = nofobjects + 1,
@@ -2643,17 +2662,20 @@ local openfile, closefile  do
                     Info  = info,
                     ID    = trailerid and pdfarray { pdfliteral(trailerid,true), pdfliteral(trailerid,true) } or nil,
                 }
+                local fb
                 if compress then
-                    local comp = zlibcompress(data,3)
+--                     local comp = zlibcompress(data,3)
+                    local comp = compressdata(data,size)
                     if comp then
                         data = comp
-                        flush(f,f_stream_b_d_c(nofobjects,xref(),#data))
+                        fb = f_stream_b_d_c
                     else
-                        flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
+                        fb = f_stream_b_d_u
                     end
                 else
-                    flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
+                    fb = f_stream_b_d_u
                 end
+                flush(f,fb(nofobjects,xref(),size))
                 flush(f,data)
                 flush(f,s_stream_e)
                 flush(f,f_startxref(xrefoffset))

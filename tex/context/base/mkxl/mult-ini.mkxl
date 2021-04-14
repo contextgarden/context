@@ -19,8 +19,10 @@
 
 \unprotect
 
-\registerctxluafile{mult-ini}{autosuffix}
-\registerctxluafile{mult-fmt}{initexonly}
+\pushoverloadmode
+    \registerctxluafile{mult-ini}{autosuffix}
+    \registerctxluafile{mult-fmt}{initexonly}
+\popoverloadmode
 
 %D \macros
 %D   [constanten,variabelen,commands]

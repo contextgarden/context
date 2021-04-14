@@ -1,0 +1,136 @@
+% language=us
+
+\startcomponent followingup-memory
+
+\environment followingup-style
+
+\startchapter[title={Memory}]
+
+\startsection[title={Introduction}]
+
+\stopsection
+
+\startsection[title={\LUA}]
+
+When you initialize \LUA\ a proper memory allocator has to be provided. The
+allocator gets an old size and new size passed. When both are zero the allocator
+can \type {free} the blob, when the new size exceeds the old size the blob has to
+be \type {realloc}'s, and otherwise an initial \type {malloc} happens. When used
+with \CONTEXT, \LUAMETATEX\ will do lots of calls to the allocator and often an
+initial allocation is followed by a reallocation, for instance because tables
+start out small but immediately grows a while after.
+
+It is for this reason that early 2021 I decided to look into alternative
+allocators. I can of course code one myself, but where a \LUATEX\ run is a one
+time event, often with growing memory usage due to all kind of accumulating
+resources, using the engine as stand alone interpreter needs a more sophisticated
+approach than just keeping a bunch of bucket pools alive: when the script engine
+runs for months or even years memory should be returned to the operating system
+occasionally. We don't want the same side effects that \HTML\ browsers have:
+during the day you need to restart them occasionally because they use up quite a
+bit of your computers memory (often for no real reason, so it probably has to do
+with keeping memory in store instead of returning it and|/|or it can be a side
+effect of a scattered pool \unknown\ who knows).
+
+Instead of reinventing that wheel I ended up with testing Daan Leijen's \type
+{mimalloc} implementation: a not bloated, not too low level, reasonable sized
+library. Some simple experiments learned that it does make a difference in
+performance. The experiment was done with the native \MICROSOFT\ compiler (msvc).
+One reason for that is that till that moment I preferred the cross compiled
+\MINGW\ versions (for cross compiling I use the \LINUX\ subsystem that comes with
+\MSWINDOWS). Although native binaries compile faster and are smaller, the cross
+compiled ones perform somewhat better (often some 5\%). Interesting is that
+making the format file is always much faster with a native binary, probably
+because the console output is supported better. When the alternative memory
+allocator is plugged into \LUA\ suddenly the native version outperforms the cross
+compiled one (also by some 5\%). The overall gain on a native binary for
+compiling the \LUAMETATEX\ manual is between~5 and~10\% which was reason enough
+to continue this experiment. As a first step the native compiled version will
+default to it, later other platforms might follow.
+
+\stopsection
+
+\startsection[title={\TEX}]
+
+Memory allocation in \TEX\ has always been done by the engine itself. At startup
+a couple of big chunks are allocated and from that smaller blobs are taken. The
+largest chunks are for nodes, tokens and the table of equivalents (including the
+hash where control sequences are mapped onto registers and macros (lists of
+tokens). Smaller chunks are used for nesting states, after group restoration
+stacks, in- and output levels, etc. In modern engines the sizes of the chunks can
+be configured, some only at format generation time. In \LUAMETATEX\ we are more
+dynamic and after an initial (minimal) chunk allocation, when needed more memory
+will be allocated on demand, in steps, until a configured size is reached. That
+size has an upper limit (which if needed can be enlarged at compilation time). A
+side effect is that we (need to) do some more checking.
+
+Node memory is special in the sense that nodes are basically offsets in a large
+array where each node has a number of slots after that offset. This is rather
+efficient in terms of performance and memory. New nodes (of any size) are taken
+from the node chunk and never returned. When freed they are appended to a list
+per size and that list serves as pool before new nodes get taken from the chunk.
+Variable size chunks are done differently, if only because we use them plenty in
+\CONTEXT\ and they can lead to (excessive and) fragmented memory usage otherwise.
+
+Tokens all have the same size so here there is only one list of free tokens.
+Because tokens and (most) nodes make it into linked lists those lists of free
+nodes and tokens are rather natural. And it's also fast. It all means that \TEX\
+itself does hardly any real memory allocation: only a few dozen large chunks. An
+exception is the string pool, where contrary to traditional \TEX\ engines, the
+\LUATEX\ (and \LUAMETATEX) engines allocate strings using \type {malloc}. Those
+strings (used for control sequences) are never freed. In other cases where
+strings are used, like in for instance \type {\csname} construction, temporary
+strings are used. The same is true for some file related operations. None of
+these are real demanding in terms of excessive allocation and freeing. Also, in
+places that matter \LUAMETATEX\ is already quite optimized so using a different
+allocator gives no gain here.
+
+Technically we could allocate nodes by using \type {malloc} but there are a few
+places in the engine that makes this hard. It can be done but then we need to
+make some conceptual changes (with regards to the way inserts are dealt with) and
+the question is if we gain much by breaking away from tradition. I guess there it
+will actually hurt performance if we change this. Another variant is where we
+allocate nodes of the same size from different pools but this doesn't bring us
+any gain either. A stringer argument is that changing the current (and historic)
+memory management of nodes will complicate the code.
+
+A bit of an exception is the flow of information between \LUA\ and \TEX. There we
+do quite some allocation but it depends on how much a macro package demands of
+that.
+
+\stopsection
+
+\startsection[title={\METAPOST}]
+
+When the \METAPOST\ library was written, Taco changed the memory allocation to be
+more dynamic. One reason for this is that the number models (scaled, double,
+decimal, binary) have their own demands. For some objects (like numbers) the
+implementation uses a pool so it sits between the way \TEX\ works and \LUA\ when
+the standard allocator is used. This means that although quite some allocation
+is demanded, often the pool can serve the requests. (We might use a few more
+pools in the future.)
+
+In \LUAMETATEX\ the memory related code has been reorganized a little so that
+(again as experiment) the \type {mimalloc} manager can be used. The performance
+gain is not as impressive as with \LUA, but we'll see how that evolves when more
+demand poses more stress.
+
+\stopsection
+
+\startsection[title={The verdict}]
+
+In \LUAMETATEX\ version 2.09.4 and later the native \MSWINDOWS\ binaries now use
+the alternative \type {mimalloc} allocator. The gain is most noticeable for \LUA\
+and a little for \TEX\ and \METAPOST. The test suite with 2550 files runs in 1200
+seconds which is quite an improvement over the \MINGW\ cross compiled binary that
+needs 1350 seconds. We do occasionally test a binary compiled with \CLANG\ but
+that one is much slower than both others (compilation also takes much more time)
+but that might improve over time. Because of these results, it is likely that
+I'll also check out the other platforms, once the \MSWINDOWS\ binaries have
+proven to be stable (those are the once I use anyway).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
