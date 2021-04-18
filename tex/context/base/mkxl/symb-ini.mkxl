@@ -212,7 +212,7 @@
 \mutable\def\defaultsymbolfactor{10}
 \mutable\def\defaultsymbolheight{1.25ex}
 
-\permanent\tolerant\protected\def\figuresymbol[#1]#*[#2]%
+\permanent\tolerant\protected\def\figuresymbol[#1]#,[#2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,#2]}
 
 \permanent\tolerant\protected\def\definefiguresymbol[#1]#*[#2]#*[#3]%

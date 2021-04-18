@@ -1,0 +1,212 @@
+% language=uk
+
+\environment math-layout
+
+\startbuffer[oldcolor]
+    \disableexperiments[simplegroups]%
+    % when we no longer have it as experiment
+    \unprotect \pushoverloadmode
+    \permanent\protected\def\color[#1]%
+      {\bgroup % \beginsimplegroup
+       \edef\currentcolorname{#1}%
+       \ifempty\currentcolorprefix
+         \colo_helpers_activate_nop
+       \else
+         \colo_helpers_activate_yes
+       \fi
+       \let\nexttoken}%
+    \popoverloadmode \protect
+\stopbuffer
+
+\startbuffer[newcolor]
+    \enableexperiments[simplegroups]%
+\stopbuffer
+
+\startcomponent math-grouping
+
+\startchapter[title=Grouping]
+
+\startsection[title=Some details]
+
+In \TEX\ there are all kind of groups. When you start with a curly brace, you
+often enter a group but when you start a box or table cell you also do that. When
+you enter math a math group is started. Assignments are, unless explicitly done
+global, nearly always local to the group. Here we discuss the following two
+cases:
+
+\starttyping
+{ .... }
+\bgroup .... \egroup
+\begingroup .... \endgroup
+\stoptyping
+
+We say two cases, not three, because the first two are equivalent: the two macros
+in the second line are not primitives but aliases to the curly braces. There is
+however one fundamental difference between them. The verbose \type {\begingroup}
+starts a so called simple group so let's call the other complex. A complex group
+is bounded by equivalents to the two characters (braces) that have catcodes that
+begin and end these groups. So, the following is valid.
+
+\starttyping
+{ .... }
+{ .... \egroup
+\bgroup .... }
+\bgroup .... \egroup
+\stoptyping
+
+This means that a macro like this is okay:
+
+\starttyping
+\def\foo{\bgroup\bf\let\next}  \foo{text}
+\stoptyping
+
+The \type {\foo} will start a complex group, switch font and then pick up the
+brace. The group will be closed by the matching right brace or an equivalent.
+The following two cases are invalid:
+
+\starttyping
+\bgroup .... \endgroup
+\begingroup .... \egroup
+\stoptyping
+
+which means that:
+
+\starttyping
+\def\foo{\begingroup\bf\let\next}  \foo{text}
+\stoptyping
+
+will trigger an error message. This is rather unfortunate because using braces
+to wrap an argument in curly braces is rather convenient. The way out is this:
+
+\starttyping
+\def\foo#1{\begingroup\bf#1\endgroup}  \foo{text}
+\stoptyping
+
+which is perfectly valid apart from the fact that the argument is first picked up
+and then fed back into the input. Apart from a small performance hit and using
+more memory it also adds noise to tracing.
+
+\stopsection
+
+\startsection[title=Side effects]
+
+In math mode matters are complicates by the fact that complex groups (the ones
+started with the curly brace) start a math list. And that has side effects because
+the spacing between math elements depends on what we deal with: math symbol, lists,
+fenced material. The following example shows a whole lot of this:
+
+\startbuffer[example]
+\starttabulate[|j1|j1||]
+    \NC $\sin{\left(xxx\right)}$
+    \NC $f   {\left(xxx\right)}$
+    \NC $x   {\left(xxx\right)}$
+    \NR
+    \NC $\sin\begingroup\left(xxx\right)\endgroup$
+    \NC $f   \begingroup\left(xxx\right)\endgroup$
+    \NC $x   \begingroup\left(xxx\right)\endgroup$
+    \NR
+    \NC $\sin\left(xxx\right)$\par
+    \NC $f   \left(xxx\right)$\par
+    \NC $x   \left(xxx\right)$\par
+    \NR
+    \NC $\sin\color[darkgreen]{(xxx)}$\par
+    \NC $f   \color[darkgreen]{(xxx)}$\par
+    \NC $x   \color[darkgreen]{(xxx)}$\par
+    \NR
+    \NC $\sin\startcolor[darkblue](xxx)\stopcolor$\par
+    \NC $f   \startcolor[darkblue](xxx)\stopcolor$\par
+    \NC $x   \startcolor[darkblue](xxx)\stopcolor$\par
+    \NR
+    \NC $\sin(xxx)$\par
+    \NC $f   (xxx)$\par
+    \NC $x   (xxx)$\par
+    \NR
+    \NC $\sin{\color[darkyellow]{(xxx)}}$\par
+    \NC $f   {\color[darkyellow]{(xxx)}}$\par
+    \NC $x   {\color[darkyellow]{(xxx)}}$\par
+    \NR
+    \NC $\sin\begingroup\color[darkred]{(xxx)}\endgroup$\par
+    \NC $f   \begingroup\color[darkred]{(xxx)}\endgroup$\par
+    \NC $x   \begingroup\color[darkred]{(xxx)}\endgroup$\par
+    \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer[example]
+
+A valid question is why we would want to add curly braces. One reason is that we
+we want to apply something to a few characters, in this case color the argument
+to the sinus. Now, when a color command is defined as the \type {\foo} before, we
+start a complex group and that influences spacing! This is demonstrated in the
+left part of \in {figure} [fig:grouping:sin] (you can zoom in on the table to
+see the details; we also report the kind of spacing applied).
+
+\startplacefigure[reference=fig:grouping:sin,title=Grouping influencing math spacing (list).]
+    \startcombination[nx=2,ny=1,distance=2em,style=bold]
+        \startcontent
+            \showmakeup[math,fontkern,italic]% laps into the margin hence the -2em
+            \getbuffer[oldcolor]%
+            \scale[width=\dimexpr\measure{combination}-2em\relax]{\getbuffer[example]}%
+        \stopcontent
+        \startcaption
+            pseudo grouping
+        \stopcaption
+        \startcontent
+            \showmakeup[math,fontkern,italic]% laps into the margin hence the -2em
+            \getbuffer[newcolor]%
+            \scale[width=\dimexpr\measure{combination}-1em\relax]{\getbuffer[example]}%
+        \stopcontent
+        \startcaption
+            grouping
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+The right variant in that figure uses a different way of grouping, one that is
+equivalent to:
+
+\starttyping
+\def\foo{\beginsimplegroup\bf\let\next}
+\stoptyping
+
+This time we effectively do \type {\begingroup} but permits both \type
+{\endgroup} or a curly brace (or \type {\egroup} to wrap up the group. That means
+that we don't get the side effect of starting a math list.
+
+\startbuffer[example]
+$ x = y \quad x \color[red]{=} y$
+\stopbuffer
+
+This example shows the effect of coloring a single character (the result is shown
+in \in {figure} [fig:grouping:char]):
+
+\typebuffer[example]
+
+\startplacefigure[reference=fig:grouping:char,title=Grouping influencing math spacing (symbol).]
+    \vkern4ex
+    \startcombination[nx=2,ny=1,distance=4em,style=bold]
+        \startcontent
+            \showmakeup[math,fontkern,italic]% laps into the margin hence the -2em
+            \getbuffer[oldcolor]%
+            \scale[width=\dimexpr\measure{combination}-2em\relax]{\getbuffer[example]}%
+        \stopcontent
+        \startcaption
+            pseudo grouping
+        \stopcaption
+        \startcontent
+            \showmakeup[math,fontkern,italic]% laps into the margin hence the -2em
+            \getbuffer[newcolor]%
+            \scale[width=\dimexpr\measure{combination}-2em\relax]{\getbuffer[example]}%
+        \stopcontent
+        \startcaption
+            grouping
+        \stopcaption
+    \stopcombination
+    \vkern2ex
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

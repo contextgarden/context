@@ -22,6 +22,9 @@
 
 \continueifinputfile{s-languages-goodies.mkxl}
 
+% Beware, for now this file is a playground so what gets rendered
+% can differ per upload.
+
 \usemodule[art-01]
 
 % \setupbodyfont[libertine]
@@ -31,7 +34,7 @@
 
 \mainlanguage[de]
 
-\setupalign[stretch,verytolerant,flushleft,nothyphenated] \dontcomplain
+% \setupalign[stretch,verytolerant,flushleft] \dontcomplain
 
 % \startlanguageoptions[de]
 %     Zapf|innovation
@@ -40,18 +43,102 @@
 % \tracinghyphenation3 \tracingonline2
 
 \starttext
-    \showlanguageligatures[language=de,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
-    \showlanguageligatures[language=en,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
 
-    \starttitle[title={DE}]
-        \start \de \showlanguagegoodies [file={lang-de.llg}] \stop
-    \stoptitle
+    \start
+%     \setupalign[stretch,verytolerant,flushleft,nothyphenated] \dontcomplain
 
-    \starttitle[title={EN}]
-        \start \en \showlanguagegoodies[file={lang-en.llg}] \stop
-    \stoptitle
+%     \showlanguageligatures[language=de,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
+%     \showlanguageligatures[language=en,list=ff fi fl fk ft fb ffi ffl fff ffk fft ffb ffh ffj]
 
-%     oeps effe
-%     nonexistentffitestcase
-%     nonexistentffltestcase
+%     \starttitle[title={DE}]
+%         \start \de \showlanguagegoodies [file={lang-de.llg}] \stop
+%     \stoptitle
+
+%     \starttitle[title={EN}]
+%         \start \en \showlanguagegoodies[file={lang-en.llg}] \stop
+%     \stoptitle
+
+    \page
+
+    \stop
+
+    %     oeps effe
+    %     nonexistentffitestcase
+    %     nonexistentffltestcase
+
+    \enabletrackers[languages.goodies,languages.applied]
+
+    \start \de \dontcomplain
+
+% general
+
+% 0 : ignore
+% 1 : invisible           % {}{}{}
+% 2 : no break            % {}{}{}[9]
+% 3 : pre                 % {-}{}{}
+% 4 : pre replace         % {-}{}{-}
+% 5 : post                % {}{-}{}
+% 6 : post replace        % {}{-}{-}
+% 7 : pre post            % {-}{-}{}
+% 8 : pre post replace    % {-}{-}{-}
+
+% \codedef\hccode
+% \codedef\hycode
+
+% \hccode"002D = "2010 \hycode"002D = "0 % hyphen minus
+% \hccode"00AD = "0000 \hycode"00AD = "1 % soft hyphen
+% \hccode"2010 = "2010 \hycode"2010 = "0 % hyphen
+% \hccode"2011 = "2010 \hycode"2011 = "2 % non breaking hyphen
+% \hccode"2012 = "2012 \hycode"2012 = "0 % figure dash
+% \hccode"2013 = "2013 \hycode"2013 = "0 % en dash
+% \hccode"2014 = "2014 \hycode"2014 = "0 % em dash
+
+
+% \permanent\protected\def\cwm{\discretionary preword postword{-}{}{-}}
+% \tracingonline2 \tracinghyphenation2
+
+% One can map to exhyphenchar and use a pre/post for that one but if
+% really needed \hbcode (before=pre) and \hacode (after=post) can be
+% introduced. Maybe only settable runtime via lua.
+
+\hccode"002D = "002D
+\hccode"2010 = "2010
+\hccode"2013 = "2013
+\hccode"2014 = "2014
+
+%     Offline\cwm Anwendungen\par
+%     {\hsize 1mm Offline\cwm Anwendungen\par}
+%                 Offline-Anwendungen\par
+%                 Offline{\char"2010}Anwendungen\par
+%     {\hsize 1mm Offline-Anwendungen\par}
+%     {\hsize 1mm Offline{\char"2010}Anwendungen\par}
+%     {\hsize 1mm Offline{\endash}Anwendungen\par}
+%     {\hsize 1mm Offline{\emdash}Anwendungen\par}
+    {\hsize 3mm \emdash Offline-Anwendungen\emdash\par}
+    {\hsize 3mm \emdash\wordboundary Offline-Anwendungen\wordboundary\emdash\par}
+    {\hsize 3mm \quotation{Offline-Anwendungen}\par}
+    {\hsize 3mm „Offline-Anwendungen“\par}
+    {\hsize 3mm -Offline-Anwendungen-\par}
+
+%                 OfflineAnwendungen\par
+%     {\hsize 1mm OfflineAnwendungen\par}
+%                 Offline\par
+%     {\hsize 1mm Offline\par}
+
+
+%     \hyphenationmode\bitwiseflip\hyphenationmode-\forcehandlerhyphenationmodecode
+
+%     \de \dontcomplain
+
+%     \startexceptions[de]
+%         multi-cul-ti{-}{}{-}word{-}{}{-}boun-daries
+%     \stopexceptions
+
+%     {multiculti-word-boundaries\par}
+%     {multicultiwordboundaries\par}
+%     {\hsize 1mm multicultiwordboundaries\par}
+%     {\hsize 1mm multiculti-word-boundaries\par}
+%     {\hsize 1mm multiwordboundaries\par}
+
+    \stop
 \stoptext

@@ -434,7 +434,14 @@
   + \permitallhyphenationmodecode         % okay, let's be even more tolerant
   + \permitmathreplacehyphenationmodecode % and again we're more permissive
   + \forcehandlerhyphenationmodecode      % kick in the handler (could be an option)
+  + \feedbackcompoundhyphenationmodecode  % feedback compound snippets
+  + \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
 \relax
+
+\hccode"002D "002D
+\hccode"2010 "2010
+\hccode"2013 "2013
+\hccode"2014 "2014
 
 % maybe a (un)setter for handlers
 

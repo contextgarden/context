@@ -85,6 +85,8 @@ local set = CONTEXTLMTXMODE > 0 and
                 return h .. "-"
             elseif s == "spacer" then
                 return h .. "*"
+            elseif s == "keepspacer" then
+                return h .. ","
             elseif s == "pickup" then
                 return h .. ":"
             else

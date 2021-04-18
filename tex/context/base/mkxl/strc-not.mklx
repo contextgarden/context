@@ -1901,7 +1901,7 @@
 
 \mutable\let\lastnotesymbol\empty % todo: per class
 
-\permanent\tolerant\protected\def\notesymbol[#tag]#spacer[#reference]%
+\permanent\tolerant\protected\def\notesymbol[#tag]#keepspacer[#reference]%
   {\ifnotesenabled
      \dontleavehmode
      \begingroup
@@ -1916,7 +1916,7 @@
      \endgroup
    \fi}
 
-\permanent\tolerant\protected\def\note[#tag]#spacer[#reference]%
+\permanent\tolerant\protected\def\note[#tag]#keepspacer[#reference]%
   {\iftok{#reference}\emptytoks
      \notesymbol[\v!footnote][#tag]%
    \else

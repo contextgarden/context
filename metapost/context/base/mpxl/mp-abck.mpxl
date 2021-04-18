@@ -50,7 +50,7 @@ numeric boxfilloffset    ; boxfilloffset    := 0 ;
 numeric boxgriddistance  ; boxgriddistance  := .5cm ;
 numeric boxgridshift     ; boxgridshift     := 0 ;
 
-permanent multipars, multiregs, multibox, multikind, multilocs, nofmultipars ;
+mutable multipars, multiregs, multibox, multikind, multilocs, nofmultipars ;
 
 vardef abck_draw_path(expr p) =
     if (length p > 2) and (bbwidth(p) > 1) and (bbheight(p) > 1) :
@@ -204,6 +204,8 @@ enddef ;
 pair    lxy[], rxy[], cxy[], llxy[], lrxy[], ulxy[], urxy[] ;
 path    pxy[] ;
 numeric hxy[], wxy[], dxy[], nxy[] ;
+
+mutable lxy, rxy, cxy, llxy, lrxy, ulxy, urxy, pxy, hxy, wxy, dxy, nxy ;
 
 def box_found (expr n,x,y,w,h,d) =
     not ((x=0) and (y=0) and (w=0) and (h=0) and (d=0))

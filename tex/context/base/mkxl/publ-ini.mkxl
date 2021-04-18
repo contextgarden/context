@@ -1502,7 +1502,7 @@
 \permanent\protected\def\btxtextcitation  {\publ_citation\v!text}
 \permanent\protected\def\btxalwayscitation{\publ_citation\v!always}
 
-\tolerant\def\publ_citation#1[#2]#*[#3]% could be made more efficient but not now
+\tolerant\def\publ_citation#1[#2]#,[#3]% could be made more efficient but not now
   {\dontleavehmode
    \begingroup
    \let\currentbtxcitemethod#1%

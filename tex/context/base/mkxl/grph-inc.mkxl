@@ -215,7 +215,7 @@
 
 % inclusion
 
-\permanent\tolerant\protected\def\externalfigure[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\externalfigure[#1]#,[#2]#,[#3]%
   {\ifhastok={#2}%
      \grph_include_place[#1][][#2]%
    \else

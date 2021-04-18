@@ -768,13 +768,32 @@
 \def\math_cases_NC_two
   {\ifmmode\stopimath\fi}
 
+\def\math_cases_TC_zero
+  {}
+
+\def\math_cases_TC_one
+  {\ifmmode\stopimath\fi
+   \aligntab}
+
 \permanent\protected\def\math_cases_NC
   {\ifcase\c_math_cases_nc
      \expandafter\math_cases_NC_zero
    \or
      \expandafter\math_cases_NC_one
    \or
-     \expandafter\math_cases_NC_two
+     \expandafter\math_cases_NC_zero
+   \else
+     % error
+   \fi
+   \global\advance\c_math_cases_nc\plusone}
+
+\permanent\protected\def\math_cases_TC
+  {\ifcase\c_math_cases_nc
+     \expandafter\math_cases_TC_zero
+   \or
+     \expandafter\math_cases_TC_one
+   \or
+     \expandafter\math_cases_TC_two
    \else
      % error
    \fi
@@ -807,6 +826,7 @@
    \enforced\let\MC\math_cases_NC
    \enforced\let\NC\math_cases_NC
    \enforced\let\NR\math_cases_NR
+   \enforced\let\TC\math_cases_TC
    \enforced\let\TB\math_common_TB
    \normalbaselines
    \mathsurround\zeropoint

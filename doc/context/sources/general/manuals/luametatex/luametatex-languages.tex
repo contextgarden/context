@@ -316,20 +316,28 @@ a bitset made from the following values, some of which we saw in the previous
 examples.
 
 \starttabulate[|l|p|]
-\NC \number \normalhyphenationmodecode           \NC honour (normal) \prm{discretionary}'s \NC \NR
-\NC \number \automatichyphenationmodecode        \NC turn \type {-} into (automatic) discretionaries \NC \NR
-\NC \number \explicithyphenationmodecode         \NC turn \type {\-} into (explicit) discretionaries \NC \NR
-\NC \number \syllablehyphenationmodecode         \NC hyphenate (syllable) according to language \NC \NR
-\NC \number \uppercasehyphenationmodecode        \NC hyphenate uppercase characters too (replaces \prm {uchyph} \NC \NR
-\NC \number \compoundhyphenationmodecode         \NC permit break at an explicit hyphen (border cases) \NC \NR
-\NC \number \strictstarthyphenationmodecode      \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
-\NC \number \strictendhyphenationmodecode        \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
-\NC \number \automaticpenaltyhyphenationmodecode \NC use \lpr {automatichyphenpenalty} \NC \NR
-\NC \number \explicitpenaltyhyphenationmodecode  \NC use \lpr {explicithyphenpenalty} \NC \NR
-\NC \number \permitgluehyphenationmodecode       \NC turn glue in discretionaries into kerns \NC \NR
-\NC \number \lazyligatureshyphenationmodecode    \NC controls how successive explicit discretionaries are handled in base mode \NC \NR
-\NC \number \forcecheckhyphenationmodecode       \NC treat all discretionaries equal when breaking lines (in all three passes) \NC \NR
+\NC \number \normalhyphenationmodecode            \NC honour (normal) \prm{discretionary}'s \NC \NR
+\NC \number \automatichyphenationmodecode         \NC turn \type {-} into (automatic) discretionaries \NC \NR
+\NC \number \explicithyphenationmodecode          \NC turn \type {\-} into (explicit) discretionaries \NC \NR
+\NC \number \syllablehyphenationmodecode          \NC hyphenate (syllable) according to language \NC \NR
+\NC \number \uppercasehyphenationmodecode         \NC hyphenate uppercase characters too (replaces \prm {uchyph} \NC \NR
+\NC \number \compoundhyphenationmodecode          \NC permit break at an explicit hyphen (border cases) \NC \NR
+\NC \number \strictstarthyphenationmodecode       \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
+\NC \number \strictendhyphenationmodecode         \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
+\NC \number \automaticpenaltyhyphenationmodecode  \NC use \lpr {automatichyphenpenalty} \NC \NR
+\NC \number \explicitpenaltyhyphenationmodecode   \NC use \lpr {explicithyphenpenalty} \NC \NR
+\NC \number \permitgluehyphenationmodecode        \NC turn glue in discretionaries into kerns \NC \NR
+\NC \number \permitallhyphenationmodecode         \NC okay, let's be even more tolerant in discretionaries \NC \NR
+\NC \number \permitmathreplacehyphenationmodecode \NC and again we're more permissive \NC \NR
+\NC \number \lazyligatureshyphenationmodecode     \NC controls how successive explicit discretionaries are handled in base mode \NC \NR
+\NC \number \forcecheckhyphenationmodecode        \NC treat all discretionaries equal when breaking lines (in all three passes) \NC \NR
+\NC \number \forcehandlerhyphenationmodecode      \NC kick in the handler (experiment) \NC \NR
+\NC \number \feedbackcompoundhyphenationmodecode  \NC feedback compound snippets \NC \NR
 \stoptabulate
+
+Some of these options are still experimental, simply because not all aspects and
+side effects have been explored. You can find some experimental use cases in
+\CONTEXT.
 
 \stopsection
 

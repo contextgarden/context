@@ -14,7 +14,6 @@
 
 % \permanent\tolerant\protected\def\xx[#1]#*#;[#2]#:#3% loops .. todo
 
-
 \usemodule[system-tokens]
 
 \environment lowlevel-style
@@ -540,8 +539,29 @@ a use for \type {#<} and \type {#>}. A summary of all this is given here:
 \NC *   \NC ignore spaces \NC \NR
 \NC :   \NC pick up scanning here  \NC \NR
 \NC ;   \NC quit scanning \NC \NR
+\ML
+\NC .   \NC ignore pars and spaces \NC \NR
+\NC ,   \NC push back space when quit \NC \NR
 \LL
 \stoptabulate
+
+The last two have not been discussed and were added later. The period
+directive gobbles space and par tokens and discards them in the
+process. The comma directive is like \type {*} but it pushes back a space
+when the matching quits.
+
+\startbuffer
+\tolerant\def\FooA[#1]#*[#2]{(#1/#2)} % remove spaces
+\tolerant\def\FooB[#1]#,[#2]{(#1/#2)} % push back space
+
+/\FooA/ /\FooA / /\FooA[1]/ /\FooA[!] / /\FooA[1] [2]/ /\FooA[1] [2] /\par
+/\FooB/ /\FooB / /\FooB[1]/ /\FooB[!] / /\FooB[1] [2]/ /\FooB[1] [2] /\par
+\stopbuffer
+
+\typebuffer[example][option=TEX] \startpacked \getbuffer[example] \stoppacked
+
+Gobbling spaces versus pushing back is an interface design decision because it
+has to do with consistency.
 
 \stopsection
 
@@ -638,6 +658,8 @@ macro is a special version of the online variant:
 
 That one is always available and shows a similar list on the console. Again, users
 normally don't want to know such details.
+
+\stopsection
 
 \startsection[title=nesting]
 
@@ -812,10 +834,10 @@ these can easily be fixed. So, it will be used but it will take a while to adapt
 the code base.
 
 One problem with frozen macros is that they don't play nice with for instance
-\type {\futurelet}. Also, there are places in \CONTEXT\ where we actually do
+\typ {\futurelet}. Also, there are places in \CONTEXT\ where we actually do
 redefine some core macro that we also want to protect from redefinition by a
-user. One can of course \type {\unletfrozen} such a command first but as a bonus
-we have a prefix \type {\overloaded} that can be used as prefix. So, one can easily
+user. One can of course \typ {\unletfrozen} such a command first but as a bonus
+we have a prefix \typ {\overloaded} that can be used as prefix. So, one can easily
 redefine a frozen macro but it takes a little effort. After all, this feature is
 mainly meant to protect a user for side effects of definitions, and not as final
 blocker. \footnote {As usual adding features like this takes some experimenting
@@ -824,7 +846,7 @@ The fact that we can apply such features in large macro package like \CONTEXT\
 helps figuring out the needs and best approaches.}
 
 A frozen macro can still be overloaded, so what if we want to prevent that? For
-this we have the \type {\permanent} prefix. Internally we also create primitives
+this we have the \typ {\permanent} prefix. Internally we also create primitives
 but we don't have a prefix for that. But we do have one for a very special case
 which we demonstrate with an example:
 

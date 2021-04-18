@@ -418,7 +418,7 @@
 
 \installcorenamespace{date}
 
-\permanent\tolerant\protected\def\definedate[#1]#*[#2]%
+\permanent\tolerant\protected\def\definedate[#1]#,[#2]%
   {\ifarguments\else\setvalue{\??date#1}{#2}\fi}
 
 \def\syst_converters_check_date_specification#1%
@@ -452,7 +452,7 @@
       \iftok{\directdummyparameter\c!m}\emptytoks\else\normalmonth\number\directdummyparameter\c!m\relax\fi
       \iftok{\directdummyparameter\c!y}\emptytoks\else\normalyear \number\directdummyparameter\c!y\relax\fi}}
 
-\permanent\tolerant\protected\def\date[#1]#*[#2]% sets the date !
+\permanent\tolerant\protected\def\date[#1]#,[#2]% sets the date !
   {\dontleavehmode
    \begingroup
    \setdate[#1]% sets the date !

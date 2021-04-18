@@ -164,6 +164,7 @@ return {
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode", "forcehandlerhyphenationmodecode",
+        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode",
         --
         "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
         "clipwidthcode", "flattendiscretionariescode",

@@ -650,7 +650,7 @@ do
 
     local compound_disc_code = tex.discoptioncodes.preword | tex.discoptioncodes.postword
 
-    local function setcompound(current,id,first,last,lh,rh)
+    local function setcompound(current,id,first,last,lh,rh,hyphen)
         local prev     = getprev(current)
      -- local language = tolang(id)
      -- local prechar  = prehyphenchar(language)
@@ -659,6 +659,7 @@ do
         local postchar = posthyphenchar(id)
         local pre      = prechar  and copy_node(current)
         local post     = postchar and copy_node(current)
+        local replace  = hyphen and prechar and copy_node(current)
         local disc     = new_disc()
         if pre then
             setchar(pre,prechar)
@@ -666,9 +667,12 @@ do
         if post then
             setchar(post,postchar)
         end
+        if replace then
+            setchar(replace,prechar)
+        end
         setattrlist(disc,current)
         setoptions(disc,0x3) -- todo foo_code
-        setdisc(disc,pre,post)
+        setdisc(disc,pre,post,replace)
         setlink(prev,disc,current)
         if lh then
             setfield(first,"rhmin",rh)
@@ -683,6 +687,16 @@ do
     local setcompounds = setmetatableindex(function(t,l)
         local v = setmetatableindex(function(t,r)
             local v = function(current,id,first,last) return setcompound(current,id,first,last,l,r) end
+            t[r] = v
+            return v
+        end)
+        t[l] = v
+        return v
+    end)
+
+    local sethyphens = setmetatableindex(function(t,l)
+        local v = setmetatableindex(function(t,r)
+            local v = function(current,id,first,last) return setcompound(current,id,first,last,l,r,true) end
             t[r] = v
             return v
         end)
@@ -739,6 +753,8 @@ do
         local v = 0
         if k == "compound" then
             v = setcompounds[lh][rh]
+        elseif k == "hyphen" then
+            v = sethyphens[lh][rh]
         else
             v = 0
             for s in gmatch(k,"%w+") do
@@ -992,6 +1008,11 @@ do
                 v[n] = setcompounds[lh][rh]
                 return true
             end
+        elseif oc == "hyphen" then
+            if n > 1 then
+                v[n] = sethyphens[lh][rh]
+                return true
+            end
         elseif oc == "nokern" then
             if n > 0 then
                 local vv = v[n-1]
@@ -1026,6 +1047,7 @@ do
     -- a=b : a:norightkern     b:noleftkern
     -- a<b :                   b:noleftkern
     -- a>b : a:norightkern
+    -- a-b : hyphen
     -- a+b : compound
 
     local actions = {
@@ -1034,6 +1056,7 @@ do
         ["<"] = "noleftkern",
         [">"] = "norightkern",
         ["+"] = "compound",
+        ["-"] = "hyphen",
     }
 
     local function analyzed(m,a,t,k)
@@ -1098,13 +1121,13 @@ do
 
     -- maybe also a skip symbol
 
-    local replace1 = Cs ( ( S("|=<>+.0123456789")/"" + lpegpatterns.utf8character    )^0 )
-    local replace2 = Cs ( ( S("|=<>+.0123456789")    + lpegpatterns.utf8character/".")^0 )
+    local replace1 = Cs ( ( S("|=<>+-.0123456789")/"" + lpegpatterns.utf8character    )^0 )
+    local replace2 = Cs ( ( S("|=<>+-.0123456789")    + lpegpatterns.utf8character/".")^0 )
 
     local function stripped(str)
         -- todo : lpeg
-        str = gsub(str,"%-%-[^\n]+\n","")
-        str = gsub(str,"%%[^\n]+\n","")
+        str = gsub(str,"%-%-[^\n]*\n","")
+        str = gsub(str,"%%[^\n]*\n","")
         str = gsub(str,"%s+"," ")
         str = gsub(str,"^%s+","")
         str = gsub(str,"%s+$","")

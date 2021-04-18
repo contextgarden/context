@@ -2006,7 +2006,7 @@ local fraction = offset and asnumber_p(offset)
             o = nil
         elseif o == "transparent" then
             o = f_opacity(0)
-        else
+        elseif o then
             o = asnumber_r(o)
             if o == ignoredopacity then
                 o = nil

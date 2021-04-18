@@ -125,7 +125,7 @@
 % transparency
 
 \permanent\protected\def\transparent[#1]%
-  {\bgroup
+  {\beginsimplegroup
    \edef\scratchstringone{#1}%
    % the \relax catches a non existent csname
    \ifx\scratchstringone\v!reset
@@ -150,7 +150,7 @@
 % color
 
 \permanent\protected\def\coloronly[#1]%
-  {\bgroup
+  {\beginsimplegroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop_only
@@ -174,7 +174,7 @@
 % color + transparency
 
 \permanent\protected\def\color[#1]%
-  {\bgroup
+  {\beginsimplegroup
    \edef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
@@ -184,7 +184,7 @@
    \let\nexttoken}
 
 \permanent\protected\def\graycolor[#1]%
-  {\bgroup
+  {\beginsimplegroup
    \colo_helpers_set_model\s!gray\colo_helpers_activate{#1}%
    \let\nexttoken}
 
@@ -201,7 +201,7 @@
   {\endgroup}
 
 \permanent\protected\def\colored[#1]%
-  {\bgroup
+  {\beginsimplegroup
    \colo_basics_defined_and_activated{#1}%
    \let\nexttoken}
 
@@ -333,20 +333,38 @@
 
 %D We provide stacking independent of grouping.
 
-\newcount\c_colo_nesting
+% the old one
+%
+% \newcount\c_colo_nesting
+%
+% \permanent\protected\def\pushcolor[#1]%
+%   {\global\advance\c_colo_nesting\plusone
+%    \edefcsname\??colorstack\number\c_colo_nesting\endcsname
+%      {\c_attr_colormodel  \the\c_attr_colormodel
+%       \c_attr_color       \the\c_attr_color
+%       \c_attr_transparency\the\c_attr_transparency
+%       \relax}% stack
+%    \colo_helpers_activate{#1}}
+%
+% \permanent\protected\def\popcolor
+%   {\csname\??colorstack\number\c_colo_nesting\endcsname
+%    \global\advance\c_colo_nesting\minusone}
+%
+% more efficient:
+
+\installmacrostack\m_color_state
 
 \permanent\protected\def\pushcolor[#1]%
-  {\global\advance\c_colo_nesting\plusone
-   \edefcsname\??colorstack\number\c_colo_nesting\endcsname
+  {\edef\m_color_state
      {\c_attr_colormodel  \the\c_attr_colormodel
       \c_attr_color       \the\c_attr_color
-      \c_attr_transparency\the\c_attr_transparency
-      \relax}% stack
+      \c_attr_transparency\the\c_attr_transparency}%
+   \push_macro_m_color_state
    \colo_helpers_activate{#1}}
 
 \permanent\protected\def\popcolor
-  {\csname\??colorstack\number\c_colo_nesting\endcsname
-   \global\advance\c_colo_nesting\minusone}
+  {\pop_macro_m_color_state
+   \m_color_state\relax}
 
 % a simple one: assumes grouping
 

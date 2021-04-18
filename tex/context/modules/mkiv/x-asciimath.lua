@@ -1403,6 +1403,7 @@ local function collapse_stupids(t)
             if type(one) == "table" then
                 one = collapse(one,level)
                 t[m] = current .. "{" .. one .. "}"
+--                 t[m] = current .. "\\begingroup" .. one .. "\\endgroup"
                 i = i + 2
             else
                 t[m] = current

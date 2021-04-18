@@ -444,6 +444,7 @@ local flush_character do
             end
             return 0, 0, 0
         end
+
         if vfcommands then
             vfcommands = data.commands
         end

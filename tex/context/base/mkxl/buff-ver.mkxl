@@ -835,13 +835,25 @@
    \stoppacked
    \typingparameter\c!after\relax}
 
-\permanent\protected\def\typeinlinebuffer
+\permanent\tolerant\protected\def\typeinlinebuffer[#1]#,[#2]%
   {\dontleavehmode
    \begingroup
-   \enforced\let\buff_verbatim_type_buffer_indeed\buff_verbatim_type_buffer_indeed_inline
    \enforced\let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
    \let\currenttype\empty
-   \buff_verbatim_type_buffer}
+   \ifparameters
+     \buff_verbatim_type_buffer_indeed_inline\currenttyping\empty% []
+   \or
+     \ifhastok={#1}%
+       \setupcurrenttyping[#1]%
+       \buff_verbatim_type_buffer_indeed_inline\currenttyping\empty% [settings]
+     \else
+       \processcommalist[#1]{\buff_verbatim_type_buffer_indeed_inline\currenttyping}% [name]
+     \fi
+   \or
+     \setupcurrenttyping[#2]%
+     \processcommalist[#1]{\buff_verbatim_type_buffer_indeed_inline\currenttyping}% [name] [settings]
+   \fi
+   \endgroup}
 
 \protected\def\buff_verbatim_type_buffer_indeed_inline#1#2% category name
   {\edef\currenttype{#1}%

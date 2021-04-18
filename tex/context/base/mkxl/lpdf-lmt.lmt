@@ -430,36 +430,9 @@ do
     local hshift       = false
     local vshift       = false
 
- -- local naturalwidths = setmetatableindex(function(t,font)
- --     local d = descriptions[font]
- --     local c = characters[font]
- --     local f = parameters[font].hfactor or parameters[font].factor
- --     local v = setmetatableindex(function(t,char)
- --         local w
- --         local e = d and d[char]
- --         if e then
- --             w = e.width
- --             if w then
- --                 w =  w * f
- --             end
- --         end
- --         if not w then
- --             e = c and c[char]
- --             if e then
- --                 w = e.width or 0
- --             end
- --         end
- --         if not w then
- --             w = 0
- --         end
- --         t[char] = w
- --         return w
- --     end)
- --     t[font] = v
- --     return v
- -- end)
-
-    -- when changing this, check math: compact-001.tex (rule width)
+    -- The width array uses the original dimensions! This is different from e.g.
+    -- luatex where we have more widths arrays and these reflect the cheated
+    -- widths (goes wrong elsewhere).
 
     local naturalwidths = setmetatableindex(function(t,font)
         local d = descriptions[font]
@@ -467,17 +440,17 @@ do
         local f = parameters[font].hfactor or parameters[font].factor
         local v = setmetatableindex(function(t,char)
             local w
-            local e = c and c[char]
+            local e = d and d[char]
             if e then
-                w = e.width or 0
+                w = e.width
+                if w then
+                    w =  w * f
+                end
             end
             if not w then
-                e = d and d[char]
+                e = c and c[char]
                 if e then
-                    w = e.width
-                    if w then
-                        w =  w * f
-                    end
+                    w = e.width or 0
                 end
             end
             if not w then
@@ -489,6 +462,42 @@ do
         t[font] = v
         return v
     end)
+
+    -- when changing this, check math: compact-001.tex (rule width)
+
+-- this goes wrong with adapted widths in (virtual) fonts so we really
+-- need the above ..
+--
+-- so, what was the failing test? if so, maybe adapt threshold (now 10pt)
+
+--     local xnaturalwidths = setmetatableindex(function(t,font)
+--         local d = descriptions[font]
+--         local c = characters[font]
+--         local f = parameters[font].hfactor or parameters[font].factor
+--         local v = setmetatableindex(function(t,char)
+--             local w
+--             local e = c and c[char]
+--             if e then
+--                 w = e.width or 0
+--             end
+--             if not w then
+--                 e = d and d[char]
+--                 if e then
+--                     w = e.width
+--                     if w then
+--                         w =  w * f
+--                     end
+--                 end
+--             end
+--             if not w then
+--                 w = 0
+--             end
+--             t[char] = w
+--             return w
+--         end)
+--         t[font] = v
+--         return v
+--     end)
 
     local function setup_fontparameters(font,factor,f,e,sx,sy)
         local slant   = fontparameters.slantfactor   or 0
@@ -623,12 +632,12 @@ do
 
         local move = calc_pdfpos(pos_h,pos_v)
 
-     -- if trace_threshold then
-     --        report(
-     --            "font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-     --            font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
-     --        )
-     -- end
+        -- if trace_threshold then
+        --     report(
+        --         "font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
+        --         font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
+        --     )
+        -- end
 
         if move or need_tm then
             if not need_tm then

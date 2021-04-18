@@ -143,6 +143,8 @@ local function finalize(tfmdata,feature,value)
                             if commands then
                                 prependcommands(commands,yoffset,xoffset)
                             else
+-- character.commands = { { "offset", xoffset, yoffset, unicode } }
+-- print(unicode,character.width)
                                 local slot = charcommand[unicode]
                                 if xoffset and yoffset then
                                     character.commands = { xoffset, yoffset, slot }
