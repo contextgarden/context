@@ -541,16 +541,16 @@
 \permanent\protected\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
 \permanent\protected\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
 
-\ifdefined\normaltf \else \permanent\let\normaltf\tf \fi \permanent\protected\def\tf{\ifmmode\mathtf\else\normaltf\fi}
-\ifdefined\normalbf \else \permanent\let\normalbf\bf \fi \permanent\protected\def\bf{\ifmmode\mathbf\else\normalbf\fi}
-\ifdefined\normalit \else \permanent\let\normalit\it \fi \permanent\protected\def\it{\ifmmode\mathit\else\normalit\fi}
-\ifdefined\normalsl \else \permanent\let\normalsl\sl \fi \permanent\protected\def\sl{\ifmmode\mathsl\else\normalsl\fi}
-\ifdefined\normalbi \else \permanent\let\normalbi\bi \fi \permanent\protected\def\bi{\ifmmode\mathbi\else\normalbi\fi}
-\ifdefined\normalbs \else \permanent\let\normalbs\bs \fi \permanent\protected\def\bs{\ifmmode\mathbs\else\normalbs\fi}
+\ifdefined\normaltf \else \permanent\let\normaltf\tf \fi \permanent\protected\def\tf{\ifmmode\expandafter\mathtf\else\expandafter\normaltf\fi}
+\ifdefined\normalbf \else \permanent\let\normalbf\bf \fi \permanent\protected\def\bf{\ifmmode\expandafter\mathbf\else\expandafter\normalbf\fi}
+\ifdefined\normalit \else \permanent\let\normalit\it \fi \permanent\protected\def\it{\ifmmode\expandafter\mathit\else\expandafter\normalit\fi}
+\ifdefined\normalsl \else \permanent\let\normalsl\sl \fi \permanent\protected\def\sl{\ifmmode\expandafter\mathsl\else\expandafter\normalsl\fi}
+\ifdefined\normalbi \else \permanent\let\normalbi\bi \fi \permanent\protected\def\bi{\ifmmode\expandafter\mathbi\else\expandafter\normalbi\fi}
+\ifdefined\normalbs \else \permanent\let\normalbs\bs \fi \permanent\protected\def\bs{\ifmmode\expandafter\mathbs\else\expandafter\normalbs\fi}
 
-\permanent\protected\def\rm{\ifmmode\mathrm\else\normalrm\fi}
-\permanent\protected\def\ss{\ifmmode\mathss\else\normalss\fi}
-\permanent\protected\def\tt{\ifmmode\mathtt\else\normaltt\fi}
+\permanent\protected\def\rm{\ifmmode\expandafter\mathrm\else\expandafter\normalrm\fi}
+\permanent\protected\def\ss{\ifmmode\expandafter\mathss\else\expandafter\normalss\fi}
+\permanent\protected\def\tt{\ifmmode\expandafter\mathtt\else\expandafter\normaltt\fi}
 
 \ifdefined\mr \else \let\mr\relax \fi % hm ... permanent
 \ifdefined\mb \else \let\mb\relax \fi % hm ... permanent
@@ -641,20 +641,20 @@
 \aliased\let\mathnothing\firstofoneunexpanded
 \aliased\let\mathalpha  \firstofoneunexpanded
 
-\setnewconstant\mathordcode     \zerocount  \letvalue{\??mathcodecommand     ord}\mathord
-\setnewconstant\mathopcode      \plusone    \letvalue{\??mathcodecommand      op}\mathop
-\setnewconstant\mathbincode     \plustwo    \letvalue{\??mathcodecommand     bin}\mathbin
-\setnewconstant\mathrelcode     \plusthree  \letvalue{\??mathcodecommand     rel}\mathrel
-\setnewconstant\mathopencode    \plusfour   \letvalue{\??mathcodecommand    open}\mathopen
-\setnewconstant\mathclosecode   \plusfive   \letvalue{\??mathcodecommand   close}\mathclose
-\setnewconstant\mathpunctcode   \plussix    \letvalue{\??mathcodecommand   punct}\mathpunct
-\setnewconstant\mathalphacode   \plusseven  \letvalue{\??mathcodecommand   alpha}\mathalpha
-\setnewconstant\mathinnercode   \zerocount  \letvalue{\??mathcodecommand   inner}\mathinner
-\setnewconstant\mathnothingcode \zerocount  \letvalue{\??mathcodecommand nothing}\mathnothing
-\setnewconstant\mathlimopcode   \plusone    \letvalue{\??mathcodecommand   limop}\mathlimop
-\setnewconstant\mathnolopcode   \plusone    \letvalue{\??mathcodecommand   nolop}\mathnolop
-\setnewconstant\mathboxcode     \zerocount  \letvalue{\??mathcodecommand     box}\mathbox
-\setnewconstant\mathchoicecode  \zerocount  %letvalue{\??mathcodecommand  choice}\mathnothing
+\setnewconstant\mathordcode     \zerocount  \letcsname\??mathcodecommand     ord\endcsname\mathord
+\setnewconstant\mathopcode      \plusone    \letcsname\??mathcodecommand      op\endcsname\mathop
+\setnewconstant\mathbincode     \plustwo    \letcsname\??mathcodecommand     bin\endcsname\mathbin
+\setnewconstant\mathrelcode     \plusthree  \letcsname\??mathcodecommand     rel\endcsname\mathrel
+\setnewconstant\mathopencode    \plusfour   \letcsname\??mathcodecommand    open\endcsname\mathopen
+\setnewconstant\mathclosecode   \plusfive   \letcsname\??mathcodecommand   close\endcsname\mathclose
+\setnewconstant\mathpunctcode   \plussix    \letcsname\??mathcodecommand   punct\endcsname\mathpunct
+\setnewconstant\mathalphacode   \plusseven  \letcsname\??mathcodecommand   alpha\endcsname\mathalpha
+\setnewconstant\mathinnercode   \zerocount  \letcsname\??mathcodecommand   inner\endcsname\mathinner
+\setnewconstant\mathnothingcode \zerocount  \letcsname\??mathcodecommand nothing\endcsname\mathnothing
+\setnewconstant\mathlimopcode   \plusone    \letcsname\??mathcodecommand   limop\endcsname\mathlimop
+\setnewconstant\mathnolopcode   \plusone    \letcsname\??mathcodecommand   nolop\endcsname\mathnolop
+\setnewconstant\mathboxcode     \zerocount  \letcsname\??mathcodecommand     box\endcsname\mathbox
+\setnewconstant\mathchoicecode  \zerocount  %letcsname\??mathcodecommand  choice\endcsname\mathnothing
 
 \setnewconstant\mathaccentcode  \pluseight
 \setnewconstant\mathradicalcode \plusnine
@@ -715,9 +715,15 @@
 %
 % now we need this (kind of inefficient):
 
+% \protected\def\math_strut_htdp#1% nasty!
+%   {\s!height\dimexpr\mathscale#1\fontcharht#1\c_math_strut/\glyphscale\relax
+%    \s!depth \dimexpr\mathscale#1\fontchardp#1\c_math_strut/\glyphscale\relax}
+%
+% this overflows so we use this instead:
+
 \protected\def\math_strut_htdp#1% nasty!
-  {\s!height\dimexpr\mathscale#1\fontcharht#1\c_math_strut/\glyphscale\relax
-   \s!depth \dimexpr\mathscale#1\fontchardp#1\c_math_strut/\glyphscale\relax}
+  {\s!height\dimexpr(\fontcharht#1\c_math_strut/\glyphscale)*\mathscale#1\relax
+   \s!depth \dimexpr(\fontchardp#1\c_math_strut/\glyphscale)*\mathscale#1\relax}
 
 \protected\def\math_strut_normal
   {\vrule
@@ -1395,8 +1401,8 @@
 \def\math_bidi_enable {\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
 \def\math_bidi_disable{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
 
-\letvalue{\??mathbidi\v!yes}\math_bidi_enable
-\letvalue{\??mathbidi\v!no }\math_bidi_disable
+\letcsname\??mathbidi\v!yes\endcsname\math_bidi_enable
+\letcsname\??mathbidi\v!no \endcsname\math_bidi_disable
 
 \appendtoks
     \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
@@ -1425,9 +1431,9 @@
 
 \newconstant\c_math_greek_attribute
 
-\setvalue{\??mathgreek\v!none  }{1}
-\setvalue{\??mathgreek\v!normal}{2}
-\setvalue{\??mathgreek\v!italic}{3}
+\defcsname\??mathgreek\v!none  \endcsname{1}
+\defcsname\??mathgreek\v!normal\endcsname{2}
+\defcsname\??mathgreek\v!italic\endcsname{3}
 
 % \appendtoks
 %     \edef\p_sygreek{\mathematicsparameter\s!sygreek}%
@@ -1481,11 +1487,11 @@
 
 \setnewconstant\c_math_collapsing_attribute\attributeunsetvalue
 
-\letvalue{\??mathcollapsing       1}\plusone              % specials
-\letvalue{\??mathcollapsing       2}\plustwo              % specials + mathlist
-\letvalue{\??mathcollapsing       3}\plusthree            % mathlist + specials
-\letvalue{\??mathcollapsing\v!none }\attributeunsetvalue
-\letvalue{\??mathcollapsing\v!reset}\attributeunsetvalue
+\letcsname\??mathcollapsing       1\endcsname\plusone              % specials
+\letcsname\??mathcollapsing       2\endcsname\plustwo              % specials + mathlist
+\letcsname\??mathcollapsing       3\endcsname\plusthree            % mathlist + specials
+\letcsname\??mathcollapsing\v!none \endcsname\attributeunsetvalue
+\letcsname\??mathcollapsing\v!reset\endcsname\attributeunsetvalue
 
 \def\math_collapsing_initialize
   {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else
@@ -1517,12 +1523,12 @@
 
 \setnewconstant\c_math_italics_attribute\attributeunsetvalue
 
-\letvalue{\??mathitalics       1}\plusone              % fontitalics
-\letvalue{\??mathitalics       2}\plustwo              % fontdata
-\letvalue{\??mathitalics       3}\plusthree            % quad based
-\letvalue{\??mathitalics       4}\plusfour             % combination of 1 and 3
-\letvalue{\??mathitalics\v!none }\attributeunsetvalue
-\letvalue{\??mathitalics\v!reset}\attributeunsetvalue
+\letcsname\??mathitalics       1\endcsname\plusone              % fontitalics
+\letcsname\??mathitalics       2\endcsname\plustwo              % fontdata
+\letcsname\??mathitalics       3\endcsname\plusthree            % quad based
+\letcsname\??mathitalics       4\endcsname\plusfour             % combination of 1 and 3
+\letcsname\??mathitalics\v!none \endcsname\attributeunsetvalue
+\letcsname\??mathitalics\v!reset\endcsname\attributeunsetvalue
 
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
@@ -1706,43 +1712,43 @@
     \catcode\c_math_period   \activecatcode
     \catcode\c_math_semicolon\activecatcode
 
-    \setgvalue{\??mathautopunctuation\v!no}%
+    \gdefcsname\??mathautopunctuation\v!no\endcsname
       {\let,\math_punctuation_nop_comma
        \let.\math_punctuation_nop_period
        \let;\math_punctuation_nop_semicolon}
 
   %  more efficient list:
   %
-  %  \setgvalue{\??mathautopunctuation\v!no}%
+  %  \gdefcsname\??mathautopunctuation\v!no\endcsname
   %    {\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period
   %     \Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
 
-    \setgvalue{\??mathautopunctuation\v!yes}%
+    \gdefcsname\??mathautopunctuation\v!yes\endcsname
       {\let,\math_punctuation_yes_comma
        \let.\math_punctuation_yes_period
        \let;\math_punctuation_nop_semicolon}
 
-    \setgvalue{\??mathautopunctuation\v!all}%
+    \gdefcsname\??mathautopunctuation\v!all\endcsname
       {\let,\math_punctuation_all_comma
        \let.\math_punctuation_all_period
        \let;\math_punctuation_nop_semicolon}
 
-    \setgvalue{\??mathautopunctuation comma}%
+    \gdefcsname\??mathautopunctuation comma\endcsname
       {\let,\math_punctuation_yes_comma
        \let.\math_punctuation_yes_period
        \let;\math_punctuation_nop_semicolon}
 
-    \setgvalue{\??mathautopunctuation\v!yes\string,semicolon}%
+    \gdefcsname\??mathautopunctuation\v!yes\string,semicolon\endcsname
       {\let,\math_punctuation_yes_comma
        \let.\math_punctuation_yes_period
        \let;\math_punctuation_yes_semicolon}
 
-    \setgvalue{\??mathautopunctuation comma\string,semicolon}%
+    \gdefcsname\??mathautopunctuation comma\string,semicolon\endcsname
       {\let,\math_punctuation_yes_comma
        \let.\math_punctuation_yes_period
        \let;\math_punctuation_yes_semicolon}
 
-    \setgvalue{\??mathautopunctuation\v!all\string,semicolon}%
+    \gdefcsname\??mathautopunctuation\v!all\string,semicolon\endcsname
       {\let,\math_punctuation_all_comma
        \let.\math_punctuation_all_period
        \let;\math_punctuation_all_semicolon}
@@ -2322,18 +2328,18 @@
 \def\math_style_collect#1%
   {\csname\??mathstylecommand#1\endcsname}
 
-\setvalue{\??mathstylecommand\s!display     }{\c_math_styles_state_style  \plusone}
-\setvalue{\??mathstylecommand\s!text        }{\c_math_styles_state_style  \plustwo}
-\setvalue{\??mathstylecommand\s!script      }{\c_math_styles_state_style  \plusthree}
-\setvalue{\??mathstylecommand\s!scriptscript}{\c_math_styles_state_style  \plusfour}
+\defcsname\??mathstylecommand\s!display     \endcsname{\c_math_styles_state_style  \plusone}
+\defcsname\??mathstylecommand\s!text        \endcsname{\c_math_styles_state_style  \plustwo}
+\defcsname\??mathstylecommand\s!script      \endcsname{\c_math_styles_state_style  \plusthree}
+\defcsname\??mathstylecommand\s!scriptscript\endcsname{\c_math_styles_state_style  \plusfour}
 
-\setvalue{\??mathstylecommand\s!uncramped   }{\c_math_styles_state_cramped\plusone}
-\setvalue{\??mathstylecommand\s!cramped     }{\c_math_styles_state_cramped\plustwo}
-\setvalue{\??mathstylecommand\v!normal      }{\c_math_styles_state_cramped\plusone}
-\setvalue{\??mathstylecommand\v!packed      }{\c_math_styles_state_cramped\plustwo}
+\defcsname\??mathstylecommand\s!uncramped   \endcsname{\c_math_styles_state_cramped\plusone}
+\defcsname\??mathstylecommand\s!cramped     \endcsname{\c_math_styles_state_cramped\plustwo}
+\defcsname\??mathstylecommand\v!normal      \endcsname{\c_math_styles_state_cramped\plusone}
+\defcsname\??mathstylecommand\v!packed      \endcsname{\c_math_styles_state_cramped\plustwo}
 
-\setvalue{\??mathstylecommand\v!small       }{\c_math_styles_state_size   \plusone}
-\setvalue{\??mathstylecommand\v!big         }{\c_math_styles_state_size   \plustwo}
+\defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size   \plusone}
+\defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size   \plustwo}
 
 \permanent\protected\def\setupmathstyle[#1]%
   {\edef\m_math_style_asked{#1}%
@@ -2386,8 +2392,8 @@
    \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
-\letvalue{\??mathstyle     \??mathstyle     }\math_style_set_mathstyle_mathstyle      % still needed?
-\letvalue{\??mathstylecache\??mathstylecache}\math_style_set_mathstyle_mathstylecache % still needed?
+\letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
+\letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?
 
 %D \startbuffer
 %D $x\begingroup\setupmathstyle[script]x\endgroup x$

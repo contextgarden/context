@@ -494,6 +494,7 @@ local flush_character do
                 flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
             end
         end
+
         return width, height, depth
     end
 

@@ -24,7 +24,7 @@ local nuts             = nodes.nuts
 local getnext          = nuts.getnext
 local getid            = nuts.getid
 local getattr          = nuts.getattr
-local getfont          = nuts.getfont
+local getcharspec      = nuts.getcharspec
 local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local isglyph          = nuts.isglyph
@@ -261,8 +261,8 @@ end
 
 local function randomized(start,attr,lastfont,n,count,where,first)
     local used  = first or start
-    local char  = getchar(used)
-    local font  = getfont(used)
+    local char,
+          font  = getcharfont(used)
     local tfm   = fontchar[font]
     lastfont[n] = false
     local kind  = categories[char]

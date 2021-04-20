@@ -74,7 +74,7 @@ local function withscriptcode(tfmdata,unicode,data,action)
     end
 end
 
-local function finalize(tfmdata,feature,value)
+local function finalize(tfmdata,feature,value,...)
 --     if tfmdata.mathparameters then -- funny, cambria text has this
     local goodies = tfmdata.goodies
     if goodies then
@@ -122,8 +122,8 @@ local function finalize(tfmdata,feature,value)
                         if xoffset == "llx" then
                             local d = descriptions[unicode]
                             if d then
-                                xoffset         = - d.boundingbox[1] * hfactor
-                                character.width = character.width + xoffset
+                                xoffset         = - d.boundingbox[1]
+                                character.width = character.width + xoffset * hfactor
                                 xoffset         = rightcommand[xoffset]
                             else
                                 xoffset = nil

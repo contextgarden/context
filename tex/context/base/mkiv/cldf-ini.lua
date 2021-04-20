@@ -577,6 +577,7 @@ local space         = patterns.spacer
 local spacing       = newline * space^0
 local content       = lpegC((1-spacing)^1)            -- texsprint
 local emptyline     = space^0 * newline^2             -- texprint("")
+                    + newline * space^1
 local endofline     = space^0 * newline * space^0     -- texsprint(" ")
 local simpleline    = endofline * lpegP(-1)           --
 

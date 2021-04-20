@@ -85,7 +85,7 @@ return {
         "bottomlevelgroupcode", "simplegroupcode", "hboxgroupcode", "adjustedhboxgroupcode", "vboxgroupcode",
         "vtopgroupcode", "aligngroupcode", "noaligngroupcode", "outputgroupcode", "mathgroupcode",
         "discretionarygroupcode", "insertgroupcode", "vadjustgroupcode", "vcentergroupcode", "mathabovegroupcode",
-        "mathchoicegroupcode", "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode",
+        "mathchoicegroupcode", "alsosimplegroupcode", "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode",
         "localboxgroupcode", "splitoffgroupcode", "splitkeepgroupcode", "preamblegroupcode",
         "alignsetgroupcode", "finrowgroupcode", "discretionarygroupcode",
         --
@@ -164,7 +164,7 @@ return {
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode", "forcehandlerhyphenationmodecode",
-        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode",
+        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode", "collapsehyphenationmodecode",
         --
         "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
         "clipwidthcode", "flattendiscretionariescode",
@@ -274,7 +274,8 @@ return {
         --
         "groupedcommand", "groupedcommandcs",
         "triggergroupedcommand", "triggergroupedcommandcs",
-        "simplegroupedcommand", "pickupgroupedcommand",
+        "simplegroupedcommand", "simplegroupedcommandcs",
+        "pickupgroupedcommand", "pickupgroupedcommandcs",
         --
         "usedbaselineskip", "usedlineskip", "usedlineskiplimit",
         --

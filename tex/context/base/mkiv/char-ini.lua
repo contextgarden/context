@@ -769,6 +769,10 @@ local is_punctuation = allocate ( tohash {
     "pc", "pd", "ps", "pe", "pi", "pf", "po",
 } )
 
+local is_hyphenator = allocate ( tohash {
+    "pd",
+} )
+
 local is_symbol = allocate ( tohash {
     "sm", "sc", "sk", "so",
 } )
@@ -781,6 +785,7 @@ characters.is_command     = is_command
 characters.is_spacing     = is_spacing
 characters.is_mark        = is_mark
 characters.is_punctuation = is_punctuation
+characters.is_hyphenator  = is_hyphenator
 characters.is_symbol      = is_symbol
 
 local mti = function(t,k)
@@ -797,6 +802,7 @@ setmetatableindex(characters.is_letter,     mti)
 setmetatableindex(characters.is_command,    mti)
 setmetatableindex(characters.is_spacing,    mti)
 setmetatableindex(characters.is_punctuation,mti)
+setmetatableindex(characters.is_hyphenator, mti)
 
 -- todo: also define callers for the above
 

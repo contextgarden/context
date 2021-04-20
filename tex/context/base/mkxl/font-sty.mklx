@@ -231,12 +231,12 @@
    \c!method=\v!command]
 
 \appendtoks
-    \letvalue{\??stylecheck\currentstyle}\relax
+    \letcsname\??stylecheck\currentstyle\endcsname\relax
     \edef\p_method{\styleparameter\c!method}%
     \ifx\p_method\v!command
-        \frozen\instance\setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
-        \frozen\instance\setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
-        \frozen\instance\setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
+        \frozen\instance\protected\edefcsname\e!start\currentstyle\endcsname{\font_styles_apply_start{\currentstyle}}%
+        \frozen\instance\protected\edefcsname\e!stop \currentstyle\endcsname{\font_styles_apply_stop}%
+        \frozen\instance\protected\edefcsname        \currentstyle\endcsname{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
     \fi
 \to \everydefinestyle
 
@@ -248,7 +248,7 @@
   {\endgroup}
 
 \protected\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
-  {\bgroup
+  {\bgroup % \beginsimplegroup
    \def\currentstyle{\font_styles_use_defined{#name}}%
    \afterassignment\currentstyle
    \let\nexttoken}
@@ -281,20 +281,20 @@
      \fi
    \endcsname{#name}}
 
-\setvalue{\??styleargument1}#name%
+\defcsname\??styleargument1\endcsname#name%
   {\expandafter\triggergroupedcommandcs\begincsname#name\endcsname}
 
-\setvalue{\??styleargument2}#name%
+\defcsname\??styleargument2\endcsname#name%
   {\triggergroupedcommand{\font_styles_use_defined{#name}}} % or {\font_styles_apply_grouped{#name}}
 
-\setvalue{\??styleargument3}#specification%
+\defcsname\??styleargument3\endcsname#specification%
   {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
 
-\setvalue{\??styleargument4}#name%
+\defcsname\??styleargument4\endcsname#name%
   {\expandafter\triggergroupedcommandcs\begincsname\??stylehack#name\endcsname}
 
-\setvalue{\??stylehack\s!math}% dirty trick
-  {\groupedcommand\normalstartimath\normalstopimath}
+\defcsname\??stylehack\s!math\endcsname% dirty trick
+  {\groupedcommandcs\normalstartimath\normalstopimath}
 
 % \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
 % \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
@@ -322,13 +322,13 @@
   {\endgroup
    \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
 
-\setvalue{\??styleenvironment1}#name%
+\defcsname\??styleenvironment1\endcsname#name%
   {\csname#name\endcsname}
 
-\setvalue{\??styleenvironment2}#name%
+\defcsname\??styleenvironment2\endcsname#name%
   {\font_styles_use_defined{#name}}
 
-\setvalue{\??styleenvironment3}#specification%
+\defcsname\??styleenvironment3\endcsname#specification%
   {\doifelseassignment{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
 
 \def\font_styles_start_assignment#specification{\font_styles_use_generic{#specification}}

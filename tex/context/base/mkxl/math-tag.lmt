@@ -8,8 +8,10 @@ if not modules then modules = { } end modules ['math-tag'] = {
 
 -- todo: have a local list with local tags that then get appended
 -- todo: use tex.getmathcodes (no table)
-
--- use lpeg matchers
+-- todo: add more spacing details + check text stuff for latest additions
+-- todo: some more font related cleanup + adaption to new scaling
+-- todo: tracing
+-- todo: maybe use lpeg matchers
 
 local find, match = string.find, string.match
 local insert, remove, concat = table.insert, table.remove, table.concat
@@ -20,18 +22,15 @@ local nodes             = nodes
 local nuts              = nodes.nuts
 local tonut             = nuts.tonut
 
-local getnext           = nuts.getnext
-local getid             = nuts.getid
 local getchar           = nuts.getchar
-local getfont           = nuts.getfont
+local getcharspec       = nuts.getcharspec
+local getdata           = nuts.getdata
 local getlist           = nuts.getlist
 local getfield          = nuts.getfield
 local getdisc           = nuts.getdisc
-local getsubtype        = nuts.getsubtype
 local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
------ getcomponents     = nuts.getcomponents -- not really needed
 local getwidth          = nuts.getwidth
 
 local getnucleus        = nuts.getnucleus
@@ -161,17 +160,8 @@ local fencesstack = { }
 
 -- glyph nodes and such can happen in under and over stuff
 
--- local function getunicode(n) -- instead of getchar
---     local char = getchar(n)
---  -- local font = getfontoffamily(getfield(n,"fam"))
---     local font = getfont(n)
---     local data = fontcharacters[font][char]
---     return data.unicode or char
--- end
-
 local function getunicode(n) -- instead of getchar
- -- local char, font = isglyph(n) -- no, we have a mathchar
-    local char, font = getchar(n), getfont(n)
+    local char, font = getcharspec(n)
     local data = fontcharacters[font][char]
     return data.unicode or char -- can be a table but unlikely for math characters
 end
@@ -207,15 +197,13 @@ end
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
-    while start do
-        local id = getid(start)
--- showtag(start,id,true)
+    for start, id, subtype in nextnode, start do -- current
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
             end
             setattr(start,a_tagged,mtexttag)
-        elseif mtexttag and id == kern_code and (getsubtype(start) == fontkern_code or getsubtype(start) == italickern_code) then -- italickern
+        elseif mtexttag and id == kern_code and subtype == fontkern_code or subtype == italickern_code then -- italickern
             setattr(start,a_tagged,mtexttag)
         else
             if mtexttag then
@@ -455,8 +443,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(scriptscript)
                 end
             elseif id == fence_code then
-                local subtype = getsubtype(start)
-                local delim   = getfield(start,"delimiter")
+                local delim = getfield(start,"delimiter")
                 if subtype == leftfence_code then
                     -- left
                     local properties = { }
@@ -530,7 +517,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == accent_code then
-                local subtype    = getsubtype(start)
                 local accent     = getfield(start,"accent")
                 local bot_accent = getfield(start,"bot_accent")
                 if bot_accent then
@@ -578,7 +564,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             end
         end
 -- showtag(start,id,false)
-        start = getnext(start)
     end
     if mtexttag then
         stop_tagged()

@@ -85,8 +85,8 @@ local tonut              = nuts.tonut
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
-local getfont            = nuts.getfont
 local getchar            = nuts.getchar
+local getcharspec        = nuts.getcharspec
 local setchar            = nuts.setchar
 ----- getxoffset         = nuts.getxoffset
 ----- getyoffset         = nuts.getyoffset
@@ -517,8 +517,8 @@ local function dir(n)
 end
 
 local function showchar(n,nested)
-    local char = getchar(n)
-    report_injections("%wfont %s, char %U, glyph %c",nested and 2 or 0,getfont(n),char,char)
+    local char, font = getcharspec(n)
+    report_injections("%wfont %s, char %U, glyph %c",nested and 2 or 0,font,char,char)
 end
 
 local function show(n,what,nested,symbol)
@@ -2426,14 +2426,13 @@ local function injectspaces(head)
 
     for n in nextglue, head do
         local prev, next = getspaceboth(n)
-        local prevchar = prev and ischar(prev)
-        local nextchar = next and ischar(next)
+        local prevchar, prevfont = getcharspec(prev)
+        local nextchar, nextfont = getcharspec(next)
         if nextchar then
-            local font = getfont(next)
-            local trig = triggers[font]
+            local trig = triggers[nextfont]
             if trig then
-                if lastfont ~= font then
-                    updatefont(font,trig)
+                if lastfont ~= nextfont then
+                    updatefont(nextfont,trig)
                 end
                 if rightkerns then
                     rightkern = rightkerns[nextchar]
@@ -2442,11 +2441,10 @@ local function injectspaces(head)
             end
         end
         if prevchar then
-            local font = getfont(prev)
-            local trig = triggers[font]
+            local trig = triggers[prevfont]
             if trig then
-                if lastfont ~= font then
-                    updatefont(font,trig)
+                if lastfont ~= prevfont then
+                    updatefont(prevfont,trig)
                 end
                 if leftkerns then
                     leftkern = leftkerns[prevchar]

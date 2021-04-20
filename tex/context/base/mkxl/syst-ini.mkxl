@@ -634,8 +634,8 @@
 
 \permanent\protected\def\defUmathtopaccent  #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent     "#2 "#3 "#4 }}
 \permanent\protected\def\defUmathbotaccent  #1#2#3#4{\global\immutable\protected\def#1{\Umathbotaccent  "#2 "#3 "#4 }}
-\permanent\protected\def\defUdelimiterover  #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover  "#2 "#3     }}
-\permanent\protected\def\defUdelimiterunder #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder "#2 "#3     }}
+\permanent\protected\def\defUdelimiterover  #1#2#3#4{\writestatus{!}{\string#1}\global\immutable\protected\def#1{\Udelimiterover  "#2 "#3     }}
+\permanent\protected\def\defUdelimiterunder #1#2#3#4{\writestatus{!}{\string#1}\global\immutable\protected\def#1{\Udelimiterunder "#2 "#3     }}
 \permanent\protected\def\defUdelimiter      #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter      "#2 "#3 "#4 }}
 \permanent\protected\def\defUradical          #1#2#3{\global\immutable\protected\def#1{\Uradical        "#2 "#3     }}
 \permanent\protected\def\defUroot             #1#2#3{\global\immutable\protected\def#1{\Uroot           "#2 "#3     }}

@@ -1,6 +1,6 @@
 local kern_V   = { bottomright = { { kern = -200 } } }
 local kern_W   = { bottomright = { { kern = -100 } } }
--- local kern_f   = { bottomright = { { kern = -100 } } }
+----- kern_f   = { bottomright = { { kern = -100 } } }
 local offset_f = { xoffset = "llx" }
 
 -- Beware of updates in ssty slots!

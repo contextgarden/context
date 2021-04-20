@@ -14,12 +14,13 @@ local nuts        = nodes.nuts
 
 local hyphenate   = language.hyphenate
 
+local collapsing  = nuts.collapsing
 local hyphenating = nuts.hyphenating
 local ligaturing  = nuts.ligaturing
 local kerning     = nuts.kerning
 
-function kernel.hyphenation(head)
-    return (hyphenate(head)) -- nodes !
+function kernel.collapsing(head)
+    return (collapsing(head)) -- for now we don't pass the three character numbers
 end
 
 function kernel.hyphenating(head)
@@ -34,6 +35,7 @@ function kernel.kerning(head)
     return (kerning(head))
 end
 
+callbacks.register('collapse'  , false, "normal collapsing routine, called elsewhere")
 callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")
 callbacks.register('ligaturing', false, "normal ligaturing routine, called elsewhere")
 callbacks.register('kerning'   , false, "normal kerning routine, called elsewhere")

@@ -14,6 +14,9 @@ local basename = file.basename
 local status        = status
 local nodes         = nodes
 
+local is_letter     = characters.is_letter
+local is_hyphenator = characters.is_hyphenator
+
 local specialskips  = nodes.specialskipcodes
 local nodecodes     = nodes.nodecodes
 local disc_code     = nodecodes.disc
@@ -59,12 +62,18 @@ local function collect(head)
             local u = characters[id][char].unicode -- we could cache it
             if type(u) == "table" then
                 for i=1,#u do
-                 -- word[#word+1] = utfchar(u[i])
-                    w = w + 1 ; word[w] = utfchar(u[i])
+                    local c = u[i]
+                    if is_letter[c] or is_hyphenator[c] then
+                     -- word[#word+1] = utfchar(c)
+                        w = w + 1 ; word[w] = utfchar(c)
+                    end
                 end
             else
-             -- word[#word+1] = utfchar(u or char)
-                w = w + 1 ; word[w] = utfchar(u or char)
+                local c = u or char
+                if is_letter[c] or is_hyphenator[c] then
+                 -- word[#word+1] = utfchar(c)
+                    w = w + 1 ; word[w] = utfchar(c)
+                end
             end
             last = head
         elseif id == disc_code then
@@ -156,17 +165,30 @@ function nodes.handlers.showhyphenation(head)
     return head
 end
 
-local initialize ; initialize = function()
+local initialize  initialize = function()
     logs.registerfinalactions(function()
         logs.startfilelogging(report,"hyphenated words")
         if hash and next(hash) then
+            local oldname = file.nameonly(tex.jobname) .. "-hyphenated-words-old.txt"
+            local newname = file.nameonly(tex.jobname) .. "-hyphenated-words-new.txt"
+            local old = string.splitlines(string.strip(io.loaddata(oldname) or "")) or { }
+            local hsh = table.tohash(old)
+            local new = { }
             for word, count in sortedhash(hash) do
                 report("%4i : %s",count,word)
+                if not hsh[word] then
+                    new[#new+1] = word
+                end
             end
+            logs.stopfilelogging()
+            report("old word list : %a",oldname)
+            report("new word list : %a",newname)
+            report("to be checked : %a",#new)
+            io.savedata(newname,concat(new,"\n"))
         else
             report("nothing hyphenated")
+            logs.stopfilelogging()
         end
-        logs.stopfilelogging()
     end)
     --
     statistics.register("hyphenation",function()

@@ -3987,18 +3987,18 @@
    \m_syst_helpers_handle_group_b}
 
 \def\syst_helpers_handle_group_nop_b
-  {\bgroup
+  {\beginsimplegroup
    \aftergroup\m_syst_helpers_handle_group_a
    \aftergroup\egroup
    \m_syst_helpers_handle_group_b}
 
 \protected\def\syst_helpers_handle_group_normal
-  {\bgroup
+  {\beginsimplegroup
    \afterassignment\m_syst_helpers_handle_group_normal_before
    \let\next=}
 
 \def\m_syst_helpers_handle_group_normal_before
-  {\bgroup
+  {\beginsimplegroup
    \m_syst_helpers_handle_group_b
    \bgroup
    \aftergroup\m_syst_helpers_handle_group_a
@@ -4006,26 +4006,26 @@
    \aftergroup\egroup}
 
 \protected\def\syst_helpers_handle_group_simple% no inner group (so no kerning interference)
-  {\bgroup
+  {\beginsimplegroup
    \afterassignment\m_syst_helpers_handle_group_simple_before
    \let\next=}
 
 \def\m_syst_helpers_handle_group_simple_before
-  {\bgroup
+  {\beginsimplegroup
    \aftergroup\m_syst_helpers_handle_group_simple_after
    \m_syst_helpers_handle_group_b}
 
 \def\m_syst_helpers_handle_group_simple_after
   {\m_syst_helpers_handle_group_a
-   \egroup}%
+   \egroup}
 
 \protected\def\syst_helpers_handle_group_pickup% no inner group (so no kerning interference)
-  {\bgroup
+  {\beginsimplegroup
    \afterassignment\m_syst_helpers_handle_group_pickup_before
    \let\next=}
 
 \def\m_syst_helpers_handle_group_pickup_before
-  {\bgroup
+  {\beginsimplegroup
    \aftergroup\m_syst_helpers_handle_group_a
    \aftergroup\egroup
    \aftergroup\m_syst_helpers_handle_group_p
@@ -4036,20 +4036,20 @@
      \begingroup
      \aftergroup\endgroup
    \else
-     \bgroup
+     \beginsimplegroup
      \aftergroup\egroup
    \fi
    \m_syst_helpers_handle_group_b}
 
 \protected\def\syst_helpers_handle_group_normal_x
-  {\bgroup
+  {\beginsimplegroup
    \afterassignment\m_syst_helpers_handle_group_normal_before_x
    \let\next=}
 
 \def\m_syst_helpers_handle_group_normal_before_x
-  {\bgroup
-   \m_syst_helpers_handle_group_b
-   \bgroup
+  {\beginsimplegroup
+   \expandafter\m_syst_helpers_handle_group_b
+   \ifmmode\beginsimplegroup\else\bgroup\fi % is this save enough? also the other ones?
    \aftergroup\egroup
    \aftergroup\egroup}
 
@@ -4079,10 +4079,21 @@
    \def\m_syst_helpers_handle_group_a{#2}%
    \futureexpandis\bgroup\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
 
+\permanent\protected\def\simplegroupedcommandcs#1#2%
+  {\let\m_syst_helpers_handle_group_b#1%
+   \let\m_syst_helpers_handle_group_a#2%
+   \futureexpandis\bgroup\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
+
 \permanent\protected\def\pickupgroupedcommand#1#2#3%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \def\m_syst_helpers_handle_group_a{#2}%
    \def\m_syst_helpers_handle_group_p{#3}%
+   \futureexpandis\bgroup\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
+
+\permanent\protected\def\pickupgroupedcommandcs#1#2#3%
+  {\let\m_syst_helpers_handle_group_b#1%
+   \let\m_syst_helpers_handle_group_a#2%
+   \let\m_syst_helpers_handle_group_p#3%
    \futureexpandis\bgroup\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
 
 \permanent\protected\def\triggergroupedcommand#1%

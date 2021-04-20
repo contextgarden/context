@@ -45,6 +45,7 @@ local d_getboth       = direct.getboth
 
 local nuts = {
     check_discretionaries   = direct.check_discretionaries,
+    collapsing              = direct.collapsing,
     copy                    = direct.copy,
     copy_list               = direct.copy_list,
     copy_node               = direct.copy,
@@ -75,6 +76,7 @@ local nuts = {
     getbox                  = direct.getbox,
     getboxglue              = direct.getglue,
     getchar                 = direct.getchar,
+    getcharspec             = direct.getcharspec,
     getcomponents           = direct.getcomponents,
     getdata                 = direct.getdata,
     getdepth                = direct.getdepth,

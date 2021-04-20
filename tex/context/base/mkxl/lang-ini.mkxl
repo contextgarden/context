@@ -436,6 +436,7 @@
   + \forcehandlerhyphenationmodecode      % kick in the handler (could be an option)
   + \feedbackcompoundhyphenationmodecode  % feedback compound snippets
   + \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
+% + \collapsehyphenationmodecode          % collapse -- and ---
 \relax
 
 \hccode"002D "002D

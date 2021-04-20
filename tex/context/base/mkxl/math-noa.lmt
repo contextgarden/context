@@ -116,6 +116,7 @@ local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getfam             = nuts.getfam
+local getcharspec        = nuts.getcharspec
 local getattr            = nuts.getattr
 local getattrs           = nuts.getattrs
 local getlist            = nuts.getlist
@@ -152,6 +153,7 @@ local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 local fontcharacters     = fonthashes.characters
 local fontitalics        = fonthashes.italics
+local fontparameters     = fonthashes.parameters
 
 local variables          = interfaces.variables
 local texsetattribute    = tex.setattribute
@@ -245,9 +247,7 @@ local function process(start,what,n,parent)
             if id == noad_code then
                 report_processing("%w%S, class %a",n*2,nutstring(start),noadcodes[getsubtype(start)])
             elseif id == mathchar_code then
-                local char = getchar(start)
-                local font = getfont(start)
-                local fam  = getfam(start)
+                local char, font, fam = getcharspec(start)
                 report_processing("%w%S, family %a, font %a, char %a, shape %c",n*2,nutstring(start),fam,font,char,char)
             else
                 report_processing("%w%S",n*2,nutstring(start))
@@ -593,15 +593,16 @@ do
                     -- no bold delimiters in unicode
                     a = a - 3
                 end
+                local fam  = getfontoffamily(a)
                 local char = getfield(pointer,"small_char")
-                local okay = fontcharacters[getfontoffamily(a)][char]
+                local okay = fontcharacters[fam][char]
                 if okay then
                     setfield(pointer,"small_fam",a)
                 elseif a > 2 then
                     setfield(pointer,"small_fam",a-3)
                 end
                 local char = getfield(pointer,"large_char")
-                local okay = fontcharacters[getfontoffamily(a)][char]
+                local okay = fontcharacters[fam][char]
                 if okay then
                     setfield(pointer,"large_fam",a)
                 elseif a > 2 then
@@ -672,8 +673,7 @@ do
     end
 
     local function checked(pointer)
-        local char = getchar(pointer)
-        local font = getfont(pointer)
+        local char, font = getcharspec(pointer)
         local data = fontcharacters[font]
         if not data[char] then
             local specials = characters.data[char].specials
@@ -702,8 +702,7 @@ do
      -- local g, a       = getattrs(pointer,a_mathgreek,a_mathalphabet)
      -- if not a then a = 0 end
      -- if not g then g = 0 end
-        local char       = getchar(pointer)
-        local font       = getfont(pointer)
+        local char, font, fam = getcharspec(pointer)
         local characters = fontcharacters[font]
         if a > 0 or g > 0 then
             if a > 0 then
@@ -758,7 +757,6 @@ do
             end
         end
         if not characters[char] then
-            local fam = getfam(pointer)
             local fnt = getfontoffamily(fam,1)
             setchar(pointer,errorchar(font,char))
             if font ~= fnt then
@@ -804,12 +802,11 @@ do
     render[mathchar_code] = function(pointer)
         local attr = getattr(pointer,a_mathrendering)
         if attr and attr > 0 then
-            local char = getchar(pointer)
+            local char, font = getcharspec(pointer)
             local renderset = rendersets[attr]
             if renderset then
                 local newchar = renderset[char]
                 if newchar then
-                    local font       = getfont(pointer)
                     local characters = fontcharacters[font]
                     if characters and characters[newchar] then
                         setchar(pointer,newchar)
@@ -851,29 +848,25 @@ do
                 local size   = a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delimiter")
-                local chr = getchar(delimiter)
-                if chr > 0 then
-                    local fam = getfam(delimiter)
-                    local id  = getfontoffamily(fam)
-                    if id > 0 then
-                        local data = fontdata[id]
-                        local char = mathematics.big(data,chr,size,method)
-                        local ht   = getheight(pointer)
-                        local dp   = getdepth(pointer)
-                        if ht == 1 or dp == 1 then -- 1 scaled point is a signal
-                            local chardata = data.characters[char]
-                            if ht == 1 then
-                                setheight(pointer,chardata.height)
-                            end
-                            if dp == 1 then
-                                setdepth(pointer,chardata.depth)
-                            end
+                local chr, fnt, fam = getcharspec(delimiter)
+                if chr > 0 and fnt > 0 then
+                    local data = fontdata[fnt]
+                    local char = mathematics.big(data,chr,size,method)
+                    local ht   = getheight(pointer)
+                    local dp   = getdepth(pointer)
+                    if ht == 1 or dp == 1 then -- 1 scaled point is a signal
+                        local chardata = data.characters[char]
+                        if ht == 1 then
+                            setheight(pointer,chardata.height)
                         end
-                        if trace_fences then
-                            report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
+                        if dp == 1 then
+                            setdepth(pointer,chardata.depth)
                         end
-                        setchar(delimiter,char)
                     end
+                    if trace_fences then
+                        report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
+                    end
+                    setchar(delimiter,char)
                 end
             end
         end
@@ -899,8 +892,7 @@ do
         local f = new_fence()     -- todo: attr
         if char then
             local sym = getnucleus(char)
-            local chr = getchar(sym)
-            local fam = getfam(sym)
+            local chr, fnt, fam = getcharspec(sym)
             if chr == dummyfencechar then
                 chr = 0
             end
@@ -1515,7 +1507,7 @@ do
                                 if trace_alternates then
                                     local what = attributes[r]
                                     report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
-                                        tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+                                        tostring(what.feature),tostring(what.value),char,alt)
                                 end
                                 setchar(pointer,alt)
                                 break
@@ -1639,8 +1631,7 @@ do
     italics[mathchar_code] = function(pointer,what,n,parent)
         local method = getattr(pointer,a_mathitalics)
         if method and method > 0 and method < 100 then
-            local char = getchar(pointer)
-            local font = getfont(pointer)
+            local char, font = getcharspec(pointer)
             local correction, visual = getcorrection(method,font,char)
             if correction and correction ~= 0 then
                 local next_noad = getnext(parent)
@@ -1767,21 +1758,20 @@ do
 
     kernpairs[mathchar_code] = function(pointer,what,n,parent)
         if getattr(pointer,a_kernpairs) == 1 then
-            local font = getfont(pointer)
-            local list = hash[font]
+            local first, firstfont = getcharspec(pointer)
+            local list = hash[firstfont]
             if list then
-                local first = getchar(pointer)
                 local found = list[first]
                 if found then
                     local next = getnext(parent)
                     if next and getid(next) == noad_code then
                         pointer = getnucleus(next)
                         if pointer then
-                            if getfont(pointer) == font then
-                                local second = getchar(pointer)
-                                local kern   = found[second]
+                            local second, secondfont = getcharspec(pointer)
+                            if secondfont == firstfont then
+                                local kern = found[second]
                                 if kern then
-                                    kern = kern * fonts.hashes.parameters[font].hfactor
+                                    kern = kern * fontparameters[firstfont].hfactor
                                     if trace_kernpairs then
                                         report_kernpairs("adding %p kerning between %C and %C",kern,first,second)
                                     end

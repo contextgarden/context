@@ -26,6 +26,12 @@ local freezecallbacks = callbacks.freeze
 
 ------------("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
 
+if CONTEXTLMTXMODE > 0 then
+
+appendaction("processors",   "normalizers", "builders.kernel.collapsing",                       nil, "nut",    "enabled"   )
+
+end
+
 appendaction("processors",   "normalizers", "typesetters.periodkerns.handler",                  nil, "nut",    "disabled"  )
 appendaction("processors",   "normalizers", "languages.replacements.handler",                   nil, "nut",    "disabled"  )
 appendaction("processors",   "normalizers", "typesetters.wrappers.handler",                     nil, "nut",    "disabled"  )
