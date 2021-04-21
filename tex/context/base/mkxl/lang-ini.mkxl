@@ -436,7 +436,12 @@
   + \forcehandlerhyphenationmodecode      % kick in the handler (could be an option)
   + \feedbackcompoundhyphenationmodecode  % feedback compound snippets
   + \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
-% + \collapsehyphenationmodecode          % collapse -- and ---
+  + \collapsehyphenationmodecode          % collapse -- and ---
+\relax
+
+\permanent \integerdef \partialhyphenationmodecode \numexpr
+    \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
+  + \collapsehyphenationmodecode          % collapse -- and ---
 \relax
 
 \hccode"002D "002D
@@ -448,12 +453,20 @@
 
 \permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationmodecode}
 %permanent\protected\def\nohyphens {\hyphenationmode\zerocount}
-\permanent\protected\def\nohyphens {\hyphenationmode\forcehandlerhyphenationmodecode}
+\permanent\protected\def\nohyphens {\hyphenationmode\partialhyphenationmodecode}
+
+\permanent\protected\def\dohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode \collapsehyphenationmodecode}
+\permanent\protected\def\nohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode-\collapsehyphenationmodecode}
 
 \permanent\protected\def\usehyphensparameter#1%
   {\edef\p_hyphens{#1\c!hyphens}%
    \ifx\p_hyhens\v!no
-     \nohyphens
+     \ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
+       \nohyphens
+     \else
+       \nohyphens
+       \nohyphencollapsing
+     \fi
    \fi}
 
 \dohyphens

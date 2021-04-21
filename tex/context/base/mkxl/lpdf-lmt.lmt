@@ -434,35 +434,6 @@ do
     -- luatex where we have more widths arrays and these reflect the cheated
     -- widths (goes wrong elsewhere).
 
---     local naturalwidths = setmetatableindex(function(t,font)
---         local d = descriptions[font]
---         local c = characters[font]
---         local f = parameters[font].hfactor or parameters[font].factor
---         local v = setmetatableindex(function(t,char)
---             local w
---             local e = d and d[char]
---             if e then
---                 w = e.width
---                 if w then
---                     w =  w * f
---                 end
---             end
---             if not w then
---                 e = c and c[char]
---                 if e then
---                     w = e.width or 0
---                 end
---             end
---             if not w then
---                 w = 0
---             end
---             t[char] = w
---             return w
---         end)
---         t[font] = v
---         return v
---     end)
-
     -- when changing this, check math: compact-001.tex (rule width)
 
     local naturalwidths = setmetatableindex(function(t,font)

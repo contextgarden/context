@@ -159,12 +159,14 @@ return {
         "wildcardsymbol",
         --
         "normalhyphenationmodecode", "automatichyphenationmodecode", "explicithyphenationmodecode",
-        "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "completehyphenationmodecode",
+        "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "collapsehyphenationmodecode",
         "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
         "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
         "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
         "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode", "forcehandlerhyphenationmodecode",
-        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode", "collapsehyphenationmodecode",
+        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode",
+        --
+        "partialhyphenationmodecode", "completehyphenationmodecode",
         --
         "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
         "clipwidthcode", "flattendiscretionariescode",
@@ -514,7 +516,7 @@ return {
         "synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         "dirlre", "dirrle", "dirlro", "dirrlo",
         --
-        "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
+        "lesshyphens", "morehyphens", "nohyphens", "dohyphens", "dohyphencollapsing", "nohyphencollapsing",
         "compounddiscretionary",
         --
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",

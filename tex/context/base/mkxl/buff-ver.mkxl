@@ -40,6 +40,7 @@
     \resetfontfeature
     \resetcharacterspacing
     \resetbreakpoints
+    \nohyphencollapsing
 \to \everyinitializeverbatim
 
 \permanent\protected\def\setverbatimspaceskip % to be checked: must happen after font switch
@@ -53,7 +54,7 @@
 
 \defcsname\??typingspace\v!on        \endcsname{\enforced\let\obeyedspace\specialcontrolspace}
 \defcsname\??typingspace\v!stretch   \endcsname{\enforced\let\obeyedspace\specialstretchedspace}
-\defcsname\??typingspace\v!normal    \endcsname{}
+\letcsname\??typingspace\v!normal    \endcsname\donothing
 \defcsname\??typingspace\v!fixed     \endcsname{\enforced\let\obeyedspace\specialfixedspace}
 
 \defcsname\??typingblank\v!standard  \endcsname{\s_spac_whitespace_parskip}

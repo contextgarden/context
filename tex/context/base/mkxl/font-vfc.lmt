@@ -166,7 +166,7 @@ function helpers.scalecommands(list,hdelta,vdelta)
                     result[i] = { key, cmd[2]*hdelta }
                 elseif key == "down" or key == "up" then
                     result[i] = { key, cmd[2]*vdelta }
-                elseif key == "offset" or key == "rule" then
+                elseif key == "offset" or key == "rule" then -- or key == "compose"
                     result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta }
              -- elseif key == "frame" then
              --     result[i] = cmd -- already scaled, for now

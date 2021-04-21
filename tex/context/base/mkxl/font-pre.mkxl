@@ -67,8 +67,17 @@
 % calt=yes, % maybe too
 % clig=yes, % maybe too
 % rlig=yes, % maybe too
-   tlig=yes,
-   trep=yes] % texligatures=yes,texquotes=yes
+% tlig=yes, % no longer default
+% trep=yes, % no longer default
+  ] % texligatures=yes,texquotes=yes
+
+% if needed users can add this to a local cont-loc.mkxl in texmf-local:
+
+% \definefontfeature
+%   [default]
+%   [default]
+%   [tlig=yes,
+%    trep=yes]
 
 \definefontfeature
   [original] % a clone of default so we can revert

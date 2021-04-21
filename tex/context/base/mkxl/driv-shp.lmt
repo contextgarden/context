@@ -304,7 +304,7 @@ local flush_character do
                     pos_h = ph
                     pos_v = pv
                 end
-            elseif command == "compose" then
+            elseif command == "compose" then -- for now idem
                 local ph = pos_h
                 local pv = pos_v
                 local h = packet[2] or 0
