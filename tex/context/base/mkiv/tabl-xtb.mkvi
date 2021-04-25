@@ -392,11 +392,24 @@
 
 % in text flow: headers and footers get repeated
 
-\setvalue{\??xtableflushsplit\v!repeat}%
+% \setvalue{\??xtableflushsplit\v!repeat}%
+%   {\doloop
+%      {\clf_x_table_flush
+%         method {\v!split}%
+%         height \ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi
+%       \relax
+%       \ifcase\c_tabl_x_state
+%         \exitloop
+%       \else
+%         \page
+%       \fi}}
+
+\defcsname\??xtableflushsplit\v!repeat\endcsname
   {\doloop
-     {\clf_x_table_flush
+     {\testpage[5]% for now hard coded, just as the \lineheight below, see mail end of april 2021
+      \clf_x_table_flush
         method {\v!split}%
-        height \ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi
+        height \ifdim\pagegoal=\maxdimen\textheight\else\dimexpr\pagegoal-\pagetotal-\lineheight\relax\fi
       \relax
       \ifcase\c_tabl_x_state
         \exitloop

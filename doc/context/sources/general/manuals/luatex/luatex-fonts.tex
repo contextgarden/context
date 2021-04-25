@@ -1,4 +1,4 @@
-% language=uk
+% language=uk engine=luatex
 
 \environment luatex-style
 
@@ -881,6 +881,30 @@ The effective values are never negative. The zero mode is the default.
 \NC \type {3} \NC use the height and depth of the glyph, so no offset is applied \NC \NR
 \LL
 \stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={\type {\discretionaryligaturemode}}]
+
+This parameter controls how complex ligatures interact with discretionaries (as
+injected by the hyphenator). The non||zero values prevent the construction of
+so called init and select discretionaries.
+
+\definefontfeature[ligmodetest][default][mode=base]
+\definefont       [ligmodefont][Serif*ligmodetest]
+
+\hyphenation{xx-f-f-i-xx}
+
+\starttabulate[|p|p|p|]
+    \DB 0 \BC 1 \BC 2 \NC \NR
+    \TB
+    \NC \ligmodefont \discretionaryligaturemode0 \hsize1pt xxffixx
+    \NC \ligmodefont \discretionaryligaturemode1 \hsize1pt xxffixx
+    \NC \ligmodefont \discretionaryligaturemode2 \hsize1pt xxffixx \NC \NR
+    \LL
+\stoptabulate
+
+\stopsubsection
 
 \stopsection
 

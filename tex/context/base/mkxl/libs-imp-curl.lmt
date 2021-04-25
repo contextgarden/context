@@ -278,6 +278,8 @@ local function fetch(options)
         else
             report("invalid argument")
         end
+    else
+        report("no curl library loaded")
     end
 end
 

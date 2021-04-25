@@ -353,14 +353,14 @@
 
 % in text flow: headers and footers only once
 
-\setvalue{\??xtableflushsplit\v!yes}%
+\defcsname\??xtableflushsplit\v!yes\endcsname
   {\clf_x_table_flush
      method {\v!split}%
    \relax}
 
 % in text flow: headers and footers only once
 
-\setvalue{\??xtableflushsplit\v!no}%
+\defcsname\??xtableflushsplit\v!no\endcsname
   {% \noindent       % gives extra line after table
    % \noindentation  % messes up the next indentation
    % \dontleavehmode % no leftskip
@@ -373,11 +373,24 @@
 
 % in text flow: headers and footers get repeated
 
-\setvalue{\??xtableflushsplit\v!repeat}%
+% \defcsname\??xtableflushsplit\v!repeat\endcsname
+%   {\doloop
+%      {\clf_x_table_flush
+%         method {\v!split}%
+%         height \ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi
+%       \relax
+%       \ifcase\c_tabl_x_state
+%         \exitloop
+%       \else
+%         \page
+%       \fi}}
+
+\defcsname\??xtableflushsplit\v!repeat\endcsname
   {\doloop
-     {\clf_x_table_flush
+     {\testpage[5]% for now hard coded, just as the \lineheight below, see mail end of april 2021
+      \clf_x_table_flush
         method {\v!split}%
-        height \ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi
+        height \ifdim\pagegoal=\maxdimen\textheight\else\dimexpr\pagegoal-\pagetotal-\lineheight\relax\fi
       \relax
       \ifcase\c_tabl_x_state
         \exitloop
@@ -385,7 +398,7 @@
         \page
       \fi}}
 
-% \setvalue{\??xtableflushsplit\v!setups}%
+% \defcsname\??xtableflushsplit\v!setups\endcsname
 %   {\directsetup{xtable:split:user}}
 %
 % \startsetups[xtable:split:user]

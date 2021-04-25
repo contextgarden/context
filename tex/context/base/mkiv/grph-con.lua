@@ -29,6 +29,7 @@ local variables         = interfaces.variables
 local v_high            = variables.high
 local v_low             = variables.low
 local v_medium          = variables.medium
+local v_yes             = variables.yes
 
 local figures           = figures
 
@@ -47,6 +48,10 @@ do -- eps | ps
 
     local epsconverter = converters.eps
     converters.ps      = epsconverter
+
+    local function gscrop(specification)
+        return (specification and specification.crop == v_yes) and "-dEPSCrop" or ""
+    end
 
     local resolutions = {
         [v_low]    = "screen",
@@ -68,7 +73,7 @@ do -- eps | ps
             -dBATCH
             -dAutoRotatePages=/None
             -dPDFSETTINGS=/%presets%
-            -dEPSCrop
+            %crop%
             -dCompatibilityLevel=%level%
             -sOutputFile=%newname%
             %colorspace%
@@ -81,6 +86,7 @@ do -- eps | ps
             presets    = "string",
             level      = "string",
             colorspace = "string",
+         -- crop       = "string",
         },
     }
 
@@ -119,7 +125,7 @@ do -- eps | ps
         return tmpname
     end
 
-    function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resolution interface might change
+    function epsconverter.pdf(oldname,newname,resolution,colorspace,specification) -- the resolution interface might change
         local presets  = resolutions[resolution or "high"] or resolutions.high
         local level    = codeinjections.getformatoption("pdf_level") or "1.3"
         local tmpname  = oldname
@@ -141,13 +147,14 @@ do -- eps | ps
             presets    = presets,
             level      = tostring(level),
             colorspace = colorspace,
+            crop       = gscrop(specification),
         }
         if tmpname ~= oldname then
             os.remove(tmpname)
         end
     end
 
-    epsconverter["gray.pdf"] = function(oldname,newname,resolution) -- the resolution interface might change
+    epsconverter["gray.pdf"] = function(oldname,newname,resolution,_,specification) -- the resolution interface might change
         epsconverter.pdf(oldname,newname,resolution,"gray")
     end
 
@@ -211,11 +218,16 @@ do -- svg
         return new and "filename" or suffix
     end
 
+    local function inkscapecrop(specification)
+        return (specification and specification.crop == v_yes) and "--export-area-drawing" or ""
+    end
+
     local runner = sandbox.registerrunner {
         name     = "svg to something",
         program  = "inkscape",
         template = longtostring [[
             %oldname%
+            %crop%
             --export-dpi=%resolution%
             --export-%format%=%newname%
         ]],
@@ -226,7 +238,7 @@ do -- svg
             resolution = "string",
         },
         defaults = {
-            format     = format,
+            format     = "pdf",
             resolution = "600",
         }
     }
@@ -235,10 +247,11 @@ do -- svg
         runner = runner,
     }
 
-    function svgconverter.pdf(oldname,newname)
+    function svgconverter.pdf(oldname,newname,resolution,arguments,specification)
         runner {
             format     = inkscapeformat("pdf"),
             resolution = "600",
+            crop       = inkscapecrop(specification),
             newname    = expandfilename(newname),
             oldname    = expandfilename(oldname),
         }
@@ -248,6 +261,7 @@ do -- svg
         runner {
             format     = inkscapeformat("png"),
             resolution = "600",
+            crop       = inkscapecrop(specification),
             newname    = expandfilename(newname),
             oldname    = expandfilename(oldname),
         }

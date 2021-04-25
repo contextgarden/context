@@ -587,6 +587,7 @@ local function new() -- we could use metatables status -> used -> request but it
         controls   = false,
         display    = false,
         mask       = false,
+        crop       = false,
         conversion = false,
         resolution = false,
         color      = false,
@@ -766,18 +767,20 @@ local function register(askedname,specification)
             local conversion = wipe(specification.conversion)
             local resolution = wipe(specification.resolution)
             local arguments  = wipe(specification.arguments)
+            local crop       = wipe(specification.crop)
             local newformat  = conversion
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
             if trace_conversion then
-                report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a, arguments %a",
+                report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a, crop %a, arguments %a",
                     askedname,
                     specification.fullname,
                     format,
                     newformat,
                     conversion or "default",
                     resolution or "default",
+                    crop       or "default",
                     arguments  or ""
                 )
             end
@@ -793,7 +796,7 @@ local function register(askedname,specification)
                 end
             end
             -- end of quick hack
-            local converter = (not remapper) and (newformat ~= format or resolution or arguments) and converters[format]
+            local converter = (not remapper) and (newformat ~= format or resolution or arguments) and converters[format] -- no crop here
             if converter then
                 local okay = converter[newformat]
                 if okay then
@@ -853,6 +856,10 @@ local function register(askedname,specification)
                 if arguments then
                     hash = hash .. "[a:" .. arguments .. "]"
                 end
+                if crop then
+                    hash = hash .. "[c:" .. crop .. "]"
+                end
+                newbase = gsub(newbase,"%.","_") -- nicer to have no suffix in the name
                 if hash ~= "" then
                     newbase = newbase .. "_" .. md5.hex(hash)
                 end
@@ -877,7 +884,7 @@ local function register(askedname,specification)
                     if trace_conversion then
                         report_inclusion("converting %a (%a) from %a to %a",askedname,oldname,format,newformat)
                     end
-                    converter(oldname,newname,resolution or "", arguments or "")
+                    converter(oldname,newname,resolution or "", arguments or "",specification) -- in retrospect a table
                 else
                     if trace_conversion then
                         report_inclusion("no need to convert %a (%a) from %a to %a",askedname,oldname,format,newformat)
@@ -971,13 +978,15 @@ local function locate(request) -- name, format, cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
     local askedarguments  = request.arguments
+    local askedcrop       = request.crop
     local askedhash       = f_hash_part(
         askedname,
         askedconversion or "default",
         askedresolution or "default",
+        askedcrop       or "default",
         askedarguments  or ""
     )
-    local foundname       = figures_found[askedhash]
+    local foundname = figures_found[askedhash]
     if foundname then
         return foundname
     end
@@ -1029,6 +1038,7 @@ local function locate(request) -- name, format, cache
                 cache      = askedcache,
                 conversion = askedconversion,
                 resolution = askedresolution,
+                crop       = askedcrop,
                 arguments  = askedarguments,
             })
         end
@@ -1066,6 +1076,7 @@ local function locate(request) -- name, format, cache
                     conversion = askedconversion,
                     resolution = askedresolution,
                     arguments  = askedarguments,
+                    crop       = askedcrop,
                     internal   = internal,
                 })
             elseif quitscanning then
@@ -1086,6 +1097,7 @@ local function locate(request) -- name, format, cache
                     cache      = askedcache,
                     conversion = askedconversion,
                     resolution = askedresolution,
+                    crop       = askedcrop,
                     arguments  = askedarguments,
                 })
             end
@@ -1105,6 +1117,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        crop       = askedcrop,
                         arguments  = askedarguments,
                     })
                 end
@@ -1119,6 +1132,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        crop       = askedcrop,
                         arguments  = askedarguments,
                     })
                 end
@@ -1143,6 +1157,7 @@ local function locate(request) -- name, format, cache
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
+                        crop       = askedcrop,
                         arguments  = askedarguments,
                     })
                 end
@@ -1178,6 +1193,7 @@ local function locate(request) -- name, format, cache
                                     cache      = askedcache,
                                     conversion = askedconversion,
                                     resolution = askedresolution,
+                                    crop       = askedcrop,
                                     arguments  = askedarguments
                                 })
                             end
@@ -1206,6 +1222,7 @@ local function locate(request) -- name, format, cache
                                 cache      = askedcache,
                                 conversion = askedconversion,
                                 resolution = askedresolution,
+                                crop       = askedcrop,
                                 arguments  = askedarguments,
                             })
                         end
@@ -1231,6 +1248,7 @@ local function locate(request) -- name, format, cache
                             cache      = askedcache,
                             conversion = askedconversion,
                             resolution = askedresolution,
+                            crop       = askedcrop,
                             arguments  = askedarguments,
                         })
                     end
@@ -1241,6 +1259,7 @@ local function locate(request) -- name, format, cache
     return register(askedname, { -- these two are needed for hashing 'found'
         conversion = askedconversion,
         resolution = askedresolution,
+        crop       = askedcrop,
         arguments  = askedarguments,
     })
 end
@@ -1448,13 +1467,14 @@ end
 
 local pagecount = { }
 
-function checkers.generic(data)
+function checkers.generic(data) -- called by checkers.pdf/png/jpg
     local dr, du, ds    = data.request, data.used, data.status
     local name          = du.fullname or "unknown generic"
     local page          = du.page or dr.page
     local size          = dr.size or "crop"
     local color         = dr.color or "natural"
     local mask          = dr.mask or "none"
+    local crop          = dr.crop or "none"
     local conversion    = dr.conversion
     local resolution    = dr.resolution
     local arguments     = dr.arguments
@@ -1476,6 +1496,7 @@ function checkers.generic(data)
         size,
         color,
         mask,
+        crop,
         conversion,
         resolution,
         arguments
@@ -2071,6 +2092,7 @@ implement {
             { "preview" },
             { "display" },
             { "mask" },
+            { "crop" },
             { "conversion" },
             { "resolution" },
             { "color" },

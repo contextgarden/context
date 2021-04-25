@@ -676,20 +676,20 @@ local hlist_out, vlist_out  do
                                 if subtype == gleaders_code then
                                     local save_h = cur_h
                                     if pos_r == righttoleft_code then
-                                        cur_h = ref_h - shipbox_h - cur_h
-                                        cur_h = width * (cur_h / width)
+                                        cur_h = ref_h - shipbox_h + cur_h
+                                        cur_h = width * (cur_h // width)
                                         cur_h = ref_h - shipbox_h - cur_h
                                     else
-                                        cur_h = cur_h + ref_h - shipbox_h
-                                        cur_h = width * (cur_h / width)
-                                        cur_h = cur_h - ref_h - shipbox_h
+                                        cur_h = ref_h - shipbox_h - cur_h
+                                        cur_h = width * (cur_h // width)
+                                        cur_h = ref_h - shipbox_h - cur_h
                                     end
                                     if cur_h < save_h then
                                         cur_h = cur_h + width
                                     end
                                 elseif subtype == leaders_code then
                                     local save_h = cur_h
-                                    cur_h = width * (cur_h / width)
+                                    cur_h = width * (cur_h // width)
                                     if cur_h < save_h then
                                         cur_h = cur_h + width
                                     end
@@ -697,10 +697,10 @@ local hlist_out, vlist_out  do
                                     lq = gluewidth / width
                                     lr = gluewidth % width
                                     if subtype == cleaders_code then
-                                        cur_h = cur_h + lr / 2
+                                        cur_h = cur_h + lr // 2
                                     else
-                                        lx = lr / (lq + 1)
-                                        cur_h = cur_h + (lr - (lq - 1) * lx) / 2
+                                        lx = lr // (lq + 1)
+                                        cur_h = cur_h + (lr - (lq - 1) * lx) // 2
                                     end
                                 end
                                 local shift = getshift(leader)
@@ -1000,14 +1000,14 @@ local hlist_out, vlist_out  do
                                 if subtype == gleaders_code then
                                     save_v = cur_v
                                     cur_v  = ref_v - shipbox_v - cur_v
-                                    cur_v  = total * (cur_v / total)
+                                    cur_v  = total * (cur_v // total)
                                     cur_v  = ref_v - shipbox_v - cur_v
                                     if cur_v < save_v then
                                         cur_v = cur_v + total
                                     end
                                 elseif subtype == leaders_code then -- aleader
                                     save_v = cur_v
-                                    cur_v = top_edge + total * ((cur_v - top_edge) / total)
+                                    cur_v = top_edge + total * ((cur_v - top_edge) // total)
                                     if cur_v < save_v then
                                         cur_v = cur_v + total
                                     end
@@ -1015,10 +1015,10 @@ local hlist_out, vlist_out  do
                                     lq = glueheight / total
                                     lr = glueheight % total
                                     if subtype == cleaders_code then
-                                        cur_v = cur_v + lr / 2
+                                        cur_v = cur_v + lr // 2
                                     else
-                                        ly = lr / (lq + 1)
-                                        cur_v = cur_v + (lr - (lq - 1) * ly) / 2
+                                        ly = lr // (lq + 1)
+                                        cur_v = cur_v + (lr - (lq - 1) * ly) // 2
                                     end
                                 end
                                 local shift = getshift(leader)

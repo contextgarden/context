@@ -2852,4 +2852,10 @@
 \unexpanded\def\usefontpath[#1]%
   {\clf_addfontpath{#1}}
 
+%D NO select discs:
+
+\ifdefined\discretionaryligaturemode
+    \discretionaryligaturemode\plusone
+\fi
+
 \protect \endinput

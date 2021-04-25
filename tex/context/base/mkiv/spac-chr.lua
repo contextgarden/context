@@ -130,7 +130,7 @@ end
 local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     local attr = getattr(current,a_alignstate) or 0
-    if attr >= 1 or attr <= 3 then -- flushright
+    if attr >= 1 and attr <= 3 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)

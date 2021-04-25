@@ -8264,6 +8264,10 @@ return {
    ["pe"]="criterium",
    ["ro"]="criteriu",
   },
+  ["crop"]={
+   ["en"]="crop",
+   ["fr"]="recadre",
+  },
   ["cropoffset"]={
    ["en"]="cropoffset",
    ["fr"]="decalagerecadre",
