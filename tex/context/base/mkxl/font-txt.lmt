@@ -1,0 +1,583 @@
+if not modules then modules = { } end modules ['font-txt'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    original  = "derived from a prototype by Kai Eigner",
+    author    = "Hans Hagen", -- so don't blame KE
+    copyright = "TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- The next code is derived from a snippet handler prototype by Kai Eigner and
+-- resembles the main loop of the Lua font handler but I decided use a more generic
+-- (and pluggable) approach and not hook it into the already present opentype
+-- handler. This is cleaner as it cannot interfere with the Lua font processor
+-- (which does some more things) and is also better performance wise. It also makes
+-- it possible to support other handlers as history has proven that there are no
+-- universal solution in computer land. Most of the disc logic is kept but done
+-- slightly different.
+--
+-- The code is heavily optimized and generalized so there can be errors. As
+-- mentioned, the plug mode can be used for alternative font handlers. A font is
+-- still loaded but the node and base mode handlers are ignored. Plugins are
+-- unlikely to work well in context as they can mess up attribute driven subsystem,
+-- so they are not officially supported. The language and script options are
+-- available in the usual way.
+--
+-- The code collects snippets, either or not with spacing around them and partially
+-- running over disc nodes. The r2l "don't assume disc and collect larger chunks" is
+-- not robust so I got rid of that branch. This is somewhat similar to the Lua font
+-- handler.
+--
+-- An alternative is to run over longer strings with dummy chars (unicode objects) as
+-- markers for whatever is in the list but that becomes tricky with mixed fonts and
+-- reconstruction becomes a bit of a mess then, especially because disc nodes force
+-- us to backtrack and look at several solutions. It also has a larger memory
+-- footprint. Some tests demonstrated that it has no gain and only adds complexity.
+--
+-- This (derived) variant is better suited for context and seems to work ok in the
+-- generic variant. I also added some context specific tracing to the code. This
+-- variant uses the plug model provided in the context font system. So, in context,
+-- using the built in Lua handler is the better alternative, also because it has
+-- extensive tracing features. Context users would loose additional functionality
+-- that has been provided for a decade and therefore plugins are not officially
+-- supported (at least not by me, unless I use them myself).
+--
+-- There is no checking here for already processed characters so best not mix this
+-- variant with code that does similar things. If this code evolves depends on the
+-- useability. Kai's code can now be found on github where it is used with a harfbuzz
+-- library. We add this kind of stuff because occasionally we compare engines and
+-- Kai sends me examples and I then need to check context.
+--
+-- One important difference between Kai's approach and the one used in ConTeXt is
+-- that we use utf-32 instead of utf-8. Once I figured out that clusters were just
+-- indices into the original text that made more sense. The first implementation
+-- used the command line tool (binary), then I went for ffi (library).
+--
+-- Beware: this file only implements the framework for plugins. Plugins themselves
+-- are in other files (e.g. font-phb*.lua). On the todo list is a uniscribe plugin
+-- because that is after all the reference for opentype support, but that interface
+-- needs a bit more work (so it might never happen).
+--
+-- Usage: see m-fonts-plugins.mkiv. As it's a nice test for ffi support that file
+-- migth be added to the distribution somewhere in the middle of 2017 when the ffi
+-- interface has been tested a bit more. Okay, it's 2012 now and we're way past that
+-- date but we never had a reason for adding it to the ConTeXt distribution. It
+-- should still work okay because I occasionally checked it against progress made in
+-- the engines and used newer helpers.
+--
+-- Here is an example of usage:
+--
+-- \starttext
+--     \definefontfeature[test][mode=plug,features=text]
+--     \start
+--         \showfontkerns
+--         \definedfont[Serif*test]
+--         \input tufte \par
+--     \stop
+-- \stoptext
+
+local fonts            = fonts
+local otf              = fonts.handlers.otf
+local nodes            = nodes
+
+local utfchar          = utf.char
+
+local nuts             = nodes.nuts
+
+local getnext          = nuts.getnext
+local setnext          = nuts.setnext
+local getprev          = nuts.getprev
+local setprev          = nuts.setprev
+local getid            = nuts.getid
+local getsubtype       = nuts.getsubtype
+local getfont          = nuts.getfont
+local getchar          = nuts.getchar
+local getdisc          = nuts.getdisc
+local setdisc          = nuts.setdisc
+local getboth          = nuts.getboth
+local getscales        = nuts.getscales
+local setlink          = nuts.setlink
+local getkern          = nuts.getkern
+local getwidth         = nuts.getwidth
+
+local ischar           = nuts.ischar
+local isnextchar       = nuts.isnextchar
+local isglyph          = nuts.isglyph
+local traverse_id      = nuts.traverse_id
+local usesfont         = nuts.uses_font
+
+local copy_node_list   = nuts.copy_list
+local find_node_tail   = nuts.tail
+local flush_list       = nuts.flush_list
+local free_node        = nuts.free
+local end_of_math      = nuts.end_of_math
+local start_of_par     = nuts.start_of_par
+
+local nodecodes        = nodes.nodecodes
+
+local glyph_code       = nodecodes.glyph
+local glue_code        = nodecodes.glue
+local disc_code        = nodecodes.disc
+local kern_code        = nodecodes.kern
+local math_code        = nodecodes.math
+local dir_code         = nodecodes.dir
+local par_code         = nodecodes.par
+
+local righttoleft_code = nodes.dirvalues.righttoleft
+
+local txtdirstate      = otf.helpers.txtdirstate
+local pardirstate      = otf.helpers.pardirstate
+
+local fonthashes       = fonts.hashes
+local fontdata         = fonthashes.identifiers
+
+local function deletedisc(head)
+    local current = head
+    local next    = nil
+    while current do
+        next = getnext(current)
+        if getid(current) == disc_code then
+            local pre, post, replace, pre_tail, post_tail, replace_tail = getdisc(current,true)
+            setdisc(current)
+            if pre then
+                flush_list(pre)
+            end
+            if post then
+                flush_list(post)
+            end
+            local p, n = getboth(current)
+            if replace then
+                if current == head then
+                    head = replace
+                    setprev(replace) -- already nil
+                else
+                    setlink(p,replace)
+                end
+                setlink(replace_tail,n) -- was: setlink(n,replace_tail)
+            elseif current == head then
+                head = n
+                setprev(n)
+            else
+                setlink(p,n)
+            end
+            free_node(current)
+        end
+        current = next
+    end
+    return head
+end
+
+-- As we know that we have the same font we can probably optimize this a bit more.
+-- Although we can have more in disc nodes than characters and kerns we only support
+-- those two types.
+
+local function eqnode(n,m) -- no real improvement in speed
+    local n_char = isglyph(n)
+    if n_char then
+        return n_char == ischar(m,getfont(n))
+    elseif n_id == kern_code then
+        return getkern(n) == getkern(m)
+    end
+end
+
+local function equalnode(n,m)
+    if not n then
+        return not m
+    elseif not m then
+        return false
+    end
+    local n_char, n_id = isglyph(n)
+    if n_char then
+        return n_char == ischar(m,n_id) -- n_id == n_font
+    elseif n_id == whatsit_code then
+        return false
+    elseif n_id == glue_code then
+        return true
+    elseif n_id == kern_code then
+        return getkern(n) == getkern(m)
+    elseif n_id == disc_code then
+        local n_pre, n_post, n_replace = getdisc(n)
+        local m_pre, m_post, m_replace = getdisc(m)
+        while n_pre and m_pre do
+            if not eqnode(n_pre,m_pre) then
+                return false
+            end
+            n_pre = getnext(n_pre)
+            m_pre = getnext(m_pre)
+        end
+        if n_pre or m_pre then
+            return false
+        end
+        while n_post and m_post do
+            if not eqnode(n_post,m_post) then
+                return false
+            end
+            n_post = getnext(n_post)
+            m_post = getnext(m_post)
+        end
+        if n_post or m_post then
+            return false
+        end
+        while n_replace and m_replace do
+            if not eqnode(n_replace,m_replace) then
+                return false
+            end
+            n_replace = getnext(n_replace)
+            m_replace = getnext(m_replace)
+        end
+        if n_replace or m_replace then
+            return false
+        end
+        return true
+    end
+    return false
+end
+
+-- The spacing hackery is not nice. The text can get leading and trailing spaces
+-- and even mid spaces while the start and stop nodes not always are glues then
+-- so the plugin really needs to do some testing there. We could pass more context
+-- but it doesn't become much better.
+--
+-- The attribute gets passed for tracing purposes. We could support it (not that
+-- hard to do) but as we don't test strickly for fonts (in disc nodes) we are not
+-- compatible anyway. It would also mean more testing. So, don't use this mixed
+-- with node and base mode in context.
+--
+-- We don't distinguish between modes in treatment (so no r2l assumptions) and
+-- no cheats for scripts that might not use discretionaries. Such hacks can work
+-- in predictable cases but in context one can use a mix all kind of things and
+-- users do that. On the other hand, we do support longer glyph runs in both modes
+-- so there we gain a bit.
+
+
+do
+
+    local currentscale, currentxscale, currentyscale
+
+    local function texthandler(head,font,dynamic,rlmode,handler,startspacing,stopspacing,nesting)
+        if not head then
+            return
+        end
+        if startspacing == nil then
+            startspacing = false
+        end
+        if stopspacing == nil then
+            stopspacing = false
+        end
+
+        if getid(head) == par_code and start_of_par(head) then
+            rlmode = pardirstate(head)
+        elseif rlmode == righttoleft_code then
+            rlmode = -1
+        else
+            rlmode = 0
+        end
+
+        local dirstack    = { }
+        local rlparmode   = 0
+        local topstack    = 0
+        local text        = { }
+        local size        = 0
+        local current     = head
+        local start       = nil
+        local stop        = nil
+        local startrlmode = rlmode
+
+        local function handle(leading,trailing) -- what gets passed can become configureable: e.g. utf 8
+            local stop = current or start -- hm, what with outer stop
+            if getid(stop) ~= glyph_code then
+                stop = getprev(stop)
+            end
+            head  = handler(head,font,dynamic,rlmode,start,stop,text,leading,trailing) -- handler can adapt text
+            size  = 0
+            text  = { }
+            start = nil
+        end
+
+        -- maybe: isnextchar
+
+        while current do
+         -- local char, id = ischar(current,font,dynamic)
+            local char, id = ischar(current,font,dynamic,currentscale,currentxscale,currentyscale)
+            if char then
+             -- local s, sx, sy = getscales(current)
+             -- if s ~= currentscale or sx ~= currentxscale or sy ~= currentyscale then
+             --     if start and size > 0 then
+             --         handle(startspacing,false)
+             --     end
+             --     startspacing = false
+             --     currentscale, currentxscale, currentyscale = s, sx, sy
+             -- end
+                if not start then
+                    start = current
+                    startrlmode = rlmode
+                end
+                local char = getchar(current)
+                size = size + 1
+                text[size] = char
+                current = getnext(current)
+            elseif char == false then
+                -- so a mixed font
+                if start and size > 0 then
+                    handle(startspacing,false)
+                end
+                startspacing = false
+                local s, sx, sy = getscales(current)
+                if s ~= currentscale or sx ~= currentxscale or sy ~= currentyscale then
+                    if start and size > 0 then
+                        handle(startspacing,false)
+                    end
+                    startspacing = false
+                    currentscale, currentxscale, currentyscale = s, sx, sy
+                    -- todo: safeguard against a loop
+                else
+                    current = getnext(current)
+                    currentscale, currentxscale, currentyscale = false, false, false
+                end
+            elseif id == glue_code then
+                -- making this branch optional i.e. always use the else doesn't really
+                -- make a difference in performance (in hb) .. tricky anyway as we can
+                local width = getwidth(current)
+                if width > 0 then
+                    if start and size > 0 then
+                        handle(startspacing,true)
+                    end
+                    startspacing = true
+                    stopspacing  = false
+                else
+                    if start and size > 0 then
+                        head = handle(startspacing)
+                    end
+                    startspacing = false
+                    stopspacing  = false
+                end
+                current = getnext(current)
+            elseif id == disc_code and usesfont(current,font) then -- foo|-|bar : has hbox
+                -- This looks much like the original code but I don't see a need to optimize
+                -- for e.g. deva or r2l fonts. If there are no disc nodes then we won't see
+                -- this branch anyway and if there are, we should just deal with them.
+                --
+                -- There is still some weird code here ... start/stop and such. When I'm in
+                -- the mood (or see a need) I'll rewrite this bit.
+
+                -- bug: disc in last word moves to end (in practice not an issue as one
+                -- doesn't want a break there)
+
+                local pre         = nil
+                local post        = nil
+                local currentnext = getnext(current)
+                local current_pre, current_post, current_replace = getdisc(current)
+                setdisc(current) -- why, we set it later
+                if start then
+                    pre  = copy_node_list(start,current)
+                    stop = getprev(current)
+                    -- why also current and not:
+                 -- pre  = copy_node_list(start,stop)
+                    if start == head then
+                        head = current
+                    end
+                    setlink(getprev(start),current)
+                    setlink(stop,current_pre)
+                    current_pre = start
+                    setprev(current_pre)
+                    start       = nil
+                    stop        = nil
+                    startrlmode = rlmode
+                end
+                while currentnext do
+                    local char, id = ischar(currentnext,font)
+                    if char or id == disc_code then
+                        stop        = currentnext
+                        currentnext = getnext(currentnext)
+                    elseif id == glue_code then
+                        local width = getwidth(currentnext)
+                        if width and width > 0 then
+                            stopspacing = true
+                        else
+                            stopspacing = false
+                        end
+                        break
+                    else
+                        break
+                    end
+                end
+                if stop then
+                    local currentnext = getnext(current)
+                    local stopnext    = getnext(stop)
+                    post = copy_node_list(currentnext,stopnext)
+                    if current_post then
+                        setlink(find_node_tail(current_post),currentnext)
+                    else
+                        setprev(currentnext)
+                        current_post = currentnext
+                    end
+                    setlink(current,stopnext)
+                    setnext(stop)
+                    stop = nil
+                end
+                if pre then
+                    setlink(find_node_tail(pre),current_replace)
+                    current_replace = pre
+                    pre = nil
+                end
+                if post then
+                    if current_replace then
+                        setlink(find_node_tail(current_replace),post)
+                    else
+                        current_replace = post
+                    end
+                    post = nil
+                end
+                size = 0   -- hm, ok, start is also nil now
+                text = { }
+                if current_pre then
+                    current_pre = texthandler(current_pre,font,dynamic,rlmode,handler,startspacing,false,"pre")
+                end
+                if current_post then
+                    current_post = texthandler(current_post,font,dynamic,rlmode,handler,false,stopspacing,"post")
+                end
+                if current_replace then
+                    current_replace = texthandler(current_replace,font,dynamic,rlmode,handler,startspacing,stopspacing,"replace")
+                end
+                startspacing = false
+                stopspacing  = false
+                local cpost       = current_post and find_node_tail(current_post)
+                local creplace    = current_replace and find_node_tail(current_replace)
+                local cpostnew    = nil
+                local creplacenew = nil
+                local newcurrent  = nil
+                while cpost and equalnode(cpost,creplace) do
+                    cpostnew    = cpost
+                    creplacenew = creplace
+                    if creplace then
+                        creplace = getprev(creplace)
+                    end
+                    cpost = getprev(cpost)
+                end
+                if cpostnew then
+                    if cpostnew == current_post then
+                        current_post = nil
+                    else
+                        setnext(getprev(cpostnew))
+                    end
+                    flush_list(cpostnew)
+                    if creplacenew == current_replace then
+                        current_replace = nil
+                    else
+                        setnext(getprev(creplacenew))
+                    end
+                    local c = getnext(current)
+                    setlink(current,creplacenew)
+                    local creplacenewtail = find_node_tail(creplacenew)
+                    setlink(creplacenewtail,c)
+                    newcurrent = creplacenewtail
+                end
+                current_post      = current_post and deletedisc(current_post)
+                current_replace   = current_replace and deletedisc(current_replace)
+                local cpre        = current_pre
+                local creplace    = current_replace
+                local cprenew     = nil
+                local creplacenew = nil
+                while cpre and equalnode(cpre, creplace) do
+                    cprenew = cpre
+                    creplacenew = creplace
+                    if creplace then
+                        creplace = getnext(creplace)
+                    end
+                    cpre = getnext(cpre)
+                end
+                if cprenew then
+                    cpre = current_pre
+                    current_pre = getnext(cprenew)
+                    if current_pre then
+                        setprev(current_pre)
+                    end
+                    setnext(cprenew)
+                    flush_list(cpre)
+                    creplace = current_replace
+                    current_replace = getnext(creplacenew)
+                    if current_replace then
+                        setprev(current_replace)
+                    end
+                    setlink(getprev(current),creplace)
+                    if current == head then
+                        head = creplace
+                    end
+                    setlink(creplacenew,current)
+                end
+                setdisc(current,current_pre,current_post,current_replace)
+                current = currentnext
+            else
+                if start and size > 0 then
+                    handle(startspacing,stopspacing)
+                end
+                startspacing = false
+                stopspacing  = false
+                if id == math_code then
+                    current = getnext(end_of_math(current))
+                elseif id == dir_code then
+                    startspacing = false
+                    topstack, rlmode = txtdirstate(current,dirstack,topstack,rlparmode)
+                    current = getnext(current)
+             -- elseif id == par_code and start_of_par(current) then
+             --     startspacing = false
+             --     rlparmode, rlmode = pardirstate(current)
+             --     current = getnext(current)
+                else
+                    current = getnext(current)
+                end
+            end
+        end
+        if start and size > 0 then
+            handle(startspacing,stopspacing)
+        end
+        return head, true
+    end
+
+    function fonts.handlers.otf.texthandler(head,font,dynamic,direction,action)
+        currentscale  = false
+        currentxscale = false
+        currentyscale = false
+        if action then
+            return texthandler(head,font,dynamic,direction == righttoleft_code and -1 or 0,action)
+        else
+            return head, false
+        end
+    end
+
+    -- Next comes a tracer plug into context.
+
+    ----- texthandler = fonts.handlers.otf.texthandler
+    local report_text = logs.reporter("otf plugin","text")
+    local nofruns     = 0
+    local nofsnippets = 0
+    local f_unicode   = string.formatters["%U"]
+
+    local function showtext(head,font,dynamic,rlmode,start,stop,list,before,after)
+        if list then
+            nofsnippets = nofsnippets + 1
+            local plus = { }
+            for i=1,#list do
+                local u = list[i]
+                list[i] = utfchar(u)
+                plus[i] = f_unicode(u)
+            end
+            report_text("%03i : [%s] %t [%s]-> % t", nofsnippets, before and "+" or "-", list, after and "+" or "-", plus)
+        else
+            report_text()
+            report_text("invalid list")
+            report_text()
+        end
+        return head, false
+    end
+
+    fonts.handlers.otf.registerplugin("text",function(head,font,dynamic,direction)
+        nofruns     = nofruns + 1
+        nofsnippets = 0
+        report_text("start run %i",nofruns)
+        local h, d = texthandler(head,font,dynamic,direction,showtext)
+        report_text("stop run %i",nofruns)
+        return h, d
+    end)
+
+end

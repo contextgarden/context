@@ -2291,7 +2291,7 @@ local function flushstreamobj(data,n,dict,comp,nolength)
             if done then
                 b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
             else
-                b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_d_r(n,size)
+                b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
             end
         end
         flush(f,b)

@@ -59,6 +59,8 @@
 \registerctxluafile{font-one}{optimize}
 \registerctxluafile{font-afk}{}
 
+\registerctxluafile{font-txt}{autosuffix}
+
 % tfm
 
 \registerctxluafile{font-tpk}{optimize}
@@ -152,5 +154,15 @@
 \permanent          \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
 \permanent          \def\cleanfontname          #1{\clf_cleanfontname{#1}}
 \permanent\protected\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
+
+%D I have to put it someplace, so here:
+%D
+%D \starttyping
+%D     \definefontfeature[test][mode=plug,features=text]
+%D     \definefont[FontA][Serif*test]
+%D     \definefont[FontB][Serif*test]
+%D     {\FontA aaa}{\FontB\glyphscale 1200  bbb}
+%D     {\FontA aaa}{\FontB\glyphscale 1200  bbb}
+%D \stoptyping
 
 \protect \endinput

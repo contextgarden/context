@@ -22,11 +22,65 @@
 %D
 %D I'm not sure if Idris will ever need this but the code has been used for some
 %D articles so that's why it's eventually shipped.
+%D
+%D The library is supposed to be present in
+%D
+%D \starttyping
+%D .../tex/texmf-win64/bin/lib/luatatex/harfbuzz/libharfbuzz-0.dll
+%D .../tex/texmf-win64/bin/lib/luametatex/harfbuzz/libharfbuzz-0.dll
+%D
+%D .../tex/texmf-*/bin/lib/luatatex/harfbuzz/libharfbuzz.so
+%D .../tex/texmf-*/bin/lib/luametatex/harfbuzz/libharfbuzz.so
+%D \stoptyping
+%D
+%D It might be found on the system if paths are set but with libraries that render
+%D (font) stuff it's best to rely on what you explictly installed. When you install
+%D files there make sure to run \type {mtxrun --generate}. Keep in mind that we don't
+%D officially support such dependencies (bug-wise).
+%D
+%D In mkiv we support binary and library, and in lmtx binary and internal where we
+%D default to library or internal as binary is not that fast (more meant as a
+%D playground I guess). You can track loading with:
+%D
+%D \starttyping
+%D \enabletrackers[resolvers.ffilib]
+%D \stoptyping
+%D
+%D This file has always been in the distribution but per end april 2021 the font-txt,
+%D font-phb and font-phb-imp-* files are in the distrinbution too. It's a side effect
+%D of some cleanup of the (luametatex) source tree (where the optional module was not
+%D yet in sync with the other optional ones). This module is mostly for myself and
+%D Idris if only because it is not tested for interferences with all kind of other
+%D font code (and it's unlikely to happen), so don't depend on this!
 
-% \enabletrackers[resolvers.ffilib]
+% \starttext
+%
+%     \definefontfeature [native] [default]
+%       [mode=plug,
+%        features=harfbuzz,
+%        shaper=native]
+%
+%     \definefontfeature [uniscribe] [default]
+%       [mode=plug,
+%        features=harfbuzz,
+%        shaper=uniscribe]
+%
+%     \definefontfeature [binary] [default]
+%       [mode=plug,
+%        method=binary,
+%        features=harfbuzz,
+%        shaper=uniscribe]
+%
+%     % \nohyphens
+%     \definedfont[Serif*default]   fiets \par % \input tufte \par
+%     \definedfont[Serif*native]    fiets \par % \input tufte \par
+%     \definedfont[Serif*uniscribe] fiets \par % \input tufte \par
+%     \definedfont[Serif*binary]    fiets \par % \input tufte \par
+%
+% \stoptext
 
-\registerctxluafile{font-txt}{} % generic text handler
-\registerctxluafile{font-phb}{} % harfbuzz plugin: binary or library (ffi/optional)
+
+\registerctxluafile{font-phb}{autosuffix}
 
 \startluacode
 

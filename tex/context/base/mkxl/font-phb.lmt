@@ -1,0 +1,560 @@
+if not modules then modules = { } end modules ['font-phb'] = {
+    version   = 1.000, -- 2016.10.10,
+    comment   = "companion to font-txt.mkiv",
+    original  = "derived from a prototype by Kai Eigner",
+    author    = "Hans Hagen", -- so don't blame KE
+    copyright = "TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- Some (historic) explanation can be found in the font-phb.lua file. To summarize:
+-- this code kind of old and originates from the times that Idris was making a font
+-- that should work with context and uniscribe. When we started with mkiv there were
+-- no libraries, but at some point Kai Eigner made an ffi interface to the harfbuzz
+-- library that showed up. His code was adapted to ConTeXt so that we could test
+-- Idris fonts (the library could use uniscribe which served as refeence for his
+-- fonts). Some experiences were was wrapped up in articles. Interesting was that
+-- sometimes context, uniscribe and/or native hb could not agree on how to interpret
+-- font features and subtle differences could occur.
+--
+-- This file is made from font-phb.lua and I stripped the components code because
+-- it made no sense. The files were eventually added because I did some cleanup and
+-- didn't want to carry old stuff around without also sort of maintaining it. I can
+-- probably strip away even more code. I might pick up this thread when Idris picks
+-- up his font making.
+--
+-- Todo: use the new (context) advance and offset features.
+
+local next, tonumber, pcall, rawget = next, tonumber, pcall, rawget
+
+local concat        = table.concat
+local sortedhash    = table.sortedhash
+local formatters    = string.formatters
+
+local fonts         = fonts
+local otf           = fonts.handlers.otf
+local texthandler   = otf.texthandler
+
+local fontdata      = fonts.hashes.identifiers
+
+local nuts          = nodes.nuts
+local tonode        = nuts.tonode
+local tonut         = nuts.tonut
+
+local remove_node   = nuts.remove
+
+local getboth       = nuts.getboth
+local getnext       = nuts.getnext
+local setnext       = nuts.setnext
+local getprev       = nuts.getprev
+local setprev       = nuts.setprev
+local getid         = nuts.getid
+local getchar       = nuts.getchar
+local setchar       = nuts.setchar
+local setlink       = nuts.setlink
+local setoffsets    = nuts.setoffsets
+local getwidth      = nuts.getwidth
+local setwidth      = nuts.setwidth
+
+local copy_node     = nuts.copy
+local find_tail     = nuts.tail
+
+local nodepool      = nuts.pool
+local new_kern      = nodepool.fontkern
+local new_glyph     = nodepool.glyph
+
+local nodecodes     = nodes.nodecodes
+local glyph_code    = nodecodes.glyph
+local glue_code     = nodecodes.glue
+
+local skipped = {
+    -- we assume that only valid features are set but maybe we need a list
+    -- of valid hb features as there can be many context specific ones
+    mode     = true,
+    features = true,
+    language = true,
+    script   = true,
+}
+
+local seenspaces = {
+    [0x0020] = true,
+    [0x00A0] = true,
+    [0x0009] = true, -- indeed
+    [0x000A] = true, -- indeed
+    [0x000D] = true, -- indeed
+}
+
+-- helpers
+
+local helpers     = { }
+local methods     = { }
+local initialized = { } -- we don't polute the shared table
+
+local method      = "internal" -- a bit misleading name: it's the optional module
+local shaper      = "native"   -- "uniscribe"
+local report      = logs.reporter("font plugin","hb")
+
+utilities.hb = {
+    methods = methods,
+    helpers = helpers,
+    report  = report,
+}
+
+do
+
+    local toutf8  = string.toutf8
+    local toutf32 = string.toutf32
+
+    function helpers.packtoutf8(text,leading,trailing)
+        if leading then
+            text[0] = 32
+        end
+        if trailing then
+            text[#text+1] = 32
+        end
+        return toutf8(text)
+    end
+
+    function helpers.packtoutf32(text,leading,trailing)
+        if leading then
+            text[0] = 32
+        end
+        if trailing then
+            text[#text+1] = 32
+        end
+        return toutf32(text)
+    end
+
+end
+
+local function initialize(font)
+
+    local tfmdata      = fontdata[font]
+    local resources    = tfmdata.resources
+    local shared       = tfmdata.shared
+    local filename     = resources.filename
+    local features     = shared.features
+    local descriptions = shared.rawdata.descriptions
+    local characters   = tfmdata.characters
+    local featureset   = { }
+    local copytochar   = shared.copytochar -- indextounicode
+    local spacewidth   = nil -- unscaled
+    local factor       = tfmdata.parameters.factor
+    local marks        = resources.marks or { }
+
+    -- could be shared but why care about a few extra tables
+
+    if not copytochar then
+        copytochar = { }
+        -- let's make sure that we have an indexed table and not a hash
+        local max = 0
+        for k, v in next, descriptions do
+            if v.index > max then
+                max = v.index
+            end
+        end
+        for i=0,max do
+            copytochar[i] = i
+        end
+        -- the normal mapper
+        for k, v in next, descriptions do
+            copytochar[v.index] = k
+        end
+        shared.copytochar = copytochar
+    end
+
+    -- independent from loop as we have unordered hashes
+
+    if descriptions[0x0020] then
+        spacewidth = descriptions[0x0020].width
+    elseif descriptions[0x00A0] then
+        spacewidth = descriptions[0x00A0].width
+    end
+
+    for k, v in sortedhash(features) do
+        if #k > 4 then
+            -- unknown ones are ignored anyway but we can assume that the current
+            -- (and future) extra context features use more verbose names
+        elseif skipped[k] then
+            -- we don't want to pass language and such so we block a few features
+            -- explicitly
+        elseif v == "yes" or v == true then
+            featureset[#featureset+1] = k .. "=1"     -- cf command line (false)
+        elseif v == "no" or v == false then
+            featureset[#featureset+1] = k .. "=0"     -- cf command line (true)
+        elseif type(v) == "number" then
+            featureset[#featureset+1] = k .. "=" .. v -- cf command line (alternate)
+        else
+            -- unset
+        end
+    end
+
+    local data = {
+        language   = features.language, -- do we need to uppercase and padd to 4 ?
+        script     = features.script,   -- do we need to uppercase and padd to 4 ?
+        features   = #featureset > 0 and concat(featureset,",") or "", -- hash
+        featureset = #featureset > 0 and featureset or nil,
+        copytochar = copytochar,
+        spacewidth = spacewidth,
+        filename   = filename,
+        marks      = marks,
+        factor     = factor,
+        characters = characters, -- the loaded font (we use its metrics which is more accurate)
+        method     = features.method or method,
+        shaper     = features.shaper or shaper,
+    }
+    initialized[font] = data
+    return data
+end
+
+-- In many cases this gives compatible output but especially with respect to spacing and user
+-- discretionaries that mix fonts there can be different outcomes. We also have no possibility
+-- to tweak and cheat. Of course one can always run a normal node mode pass with specific
+-- features first but then one can as well do all in node mode. So .. after a bit of playing
+-- around I redid this one from scratch and also added tracing.
+
+local trace_colors  = false  trackers.register("fonts.plugins.hb.colors", function(v) trace_colors  = v end)
+local trace_details = false  trackers.register("fonts.plugins.hb.details",function(v) trace_details = v end)
+local check_id      = false
+
+local setcolor      = nodes.tracers.colors.set
+local resetcolor    = nodes.tracers.colors.reset
+
+table.setmetatableindex(methods,function(t,k)
+    local l = "font-phb-imp-" .. k .. ".lmt"
+    report("start loading method %a from %a",k,l)
+    dofile(resolvers.findfile(l))
+    local v = rawget(t,k)
+    if v then
+        report("loading method %a succeeded",k)
+    else
+        report("loading method %a failed",k)
+        v = function() return { } end
+    end
+    t[k] = v
+    return v
+end)
+
+local inandout  do
+
+    local utfbyte = utf.byte
+    local utfchar = utf.char
+    local utf3208 = utf.utf32_to_utf8_le
+
+    inandout = function(text,result,first,last,copytochar)
+        local s = { }
+        local t = { }
+        local r = { }
+        local f = formatters["%05U"]
+        for i=1,#text do
+            local c = text[i]
+         -- t[#t+1] = f(utfbyte(utf3208(c)))
+            s[#s+1] = utfchar(c)
+            t[#t+1] = f(c)
+        end
+        for i=first,last do
+            r[#r+1] = f(copytochar[result[i][1]])
+        end
+        return s, t, r
+    end
+
+end
+
+local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailing)
+    local data = initialized[font]
+
+    if not data then
+        data = initialize(font)
+    end
+
+    if check_id then
+        if getid(start) ~= glyph_code then
+            report("error: start is not a glyph")
+            return head
+        elseif getid(stop) ~= glyph_code then
+            report("error: stop is not a glyph")
+            return head
+        end
+    end
+    local size   = #text -- original text, without spaces
+    local result = methods[data.method](font,data,rlmode,text,leading,trailing)
+    local length = result and #result or 0
+
+    if length == 0 then
+     -- report("warning: no result")
+        return head
+    end
+
+    local factor     = data.factor
+    local marks      = data.marks
+    local spacewidth = data.spacewidth
+    local copytochar = data.copytochar
+    local characters = data.characters
+
+    -- the text analyzer is only partially clever so we must assume that we get
+    -- inconsistent lists
+
+    -- we could check if something has been done (replacement or kern or so) but
+    -- then we pass around more information and need to check a lot and spaces
+    -- are kind of spoiling that game (we need a different table then) .. more
+    -- pain than gain
+
+    -- we could play with 0xFFFE as boundary
+
+    local current  = start
+    local prev     = nil
+    local glyph    = nil
+
+    local first    = 1
+    local last     = length
+    local next     = nil -- todo: keep track of them
+    local prev     = nil -- todo: keep track of them
+
+    if leading then
+        first = first + 1
+    end
+    if trailing then
+        last = last - 1
+    end
+
+    local position = first
+    local cluster  = 0
+    local glyph    = nil
+    local index    = 0
+    local count    = 1
+    local saved    = nil
+
+    if trace_details then
+        report("start run, original size: %i, result index: %i upto %i",size,first,last)
+        local s, t, r = inandout(text,result,first,last,copytochar)
+        report("method : %s",data.method)
+        report("shaper : %s",data.shaper)
+        report("string : %t",s)
+        report("text   : % t",t)
+        report("result : % t",r)
+    end
+
+    -- okay, after some experiments, it became clear that more complex code aimed at
+    -- optimization doesn't pay off as complexity also demands more testing
+
+    for i=first,last do
+        local r = result[i]
+        local unicode = copytochar[r[1]] -- can be private of course
+        --
+        cluster = r[2] + 1 -- starts at zero
+        --
+        if position == cluster then
+            if i == first then
+                index = 1
+                if trace_details then
+                    report("[%i] position: %i, cluster: %i, index: %i, starting",i,position,cluster,index)
+                end
+            else
+                index = index + 1
+                if trace_details then
+                    report("[%i] position: %i, cluster: %i, index: %i, next step",i,position,cluster,index)
+                end
+            end
+        elseif position < cluster then
+            -- a new cluster
+            current  = getnext(current)
+            position = position + 1
+            size     = size - 1
+            for p=position,cluster-1 do
+                head, current = remove_node(head,current,true)
+                if trace_details then
+                    report("[%i] position: %i, cluster: %i, index: -, removing node",i,p,cluster)
+                end
+                size = size - 1
+            end
+            position = cluster
+            index    = 1
+            glyph    = nil
+            if trace_details then
+                report("[%i] position: %i, cluster: %i, index: %i, arriving",i,cluster,position,index)
+            end
+        else -- maybe a space got properties
+            if trace_details then
+                report("position: %i, cluster: %i, index: %i, quitting due to fatal inconsistency",position,cluster,index)
+            end
+            return head
+        end
+        local copied = false
+        if glyph then
+            if trace_details then
+                report("[%i] position: %i, cluster: %i, index: %i, copying glyph, unicode %U",i,position,cluster,index,unicode)
+            end
+            local g = copy_node(glyph)
+            if trace_colors then
+                resetcolor(g)
+            end
+            setlink(current,g,getnext(current)) -- insert_before
+            current = g
+            copied  = true
+        else
+            if trace_details then
+                report("[%i] position: %i, cluster: %i, index: %i, using glyph, unicode %U",i,position,cluster,index,unicode)
+            end
+            glyph = current
+        end
+        --
+        if not current then
+            if trace_details then
+                report("quitting due to unexpected end of node list")
+            end
+            return head
+        end
+        --
+        local id = getid(current)
+        if id ~= glyph_code then
+            if trace_details then
+                report("glyph expected in node list")
+            end
+            return head
+        end
+        --
+        -- really, we can get a tab (9), lf (10), or cr(13) back in cambria .. don't ask me why
+        --
+        local prev, next = getboth(current)
+        --
+        -- assign glyph: first in run
+        --
+        setchar(current,unicode)
+        if trace_colors then
+            count = (count == 8) and 1 or count + 1
+            setcolor(current,"trace:"..count)
+        end
+        --
+        local x_offset  = r[3] -- r.dx
+        local y_offset  = r[4] -- r.dy
+        local x_advance = r[5] -- r.ax
+        ----- y_advance = r[6] -- r.ay
+        local left  = 0
+        local right = 0
+        local dx    = 0
+        local dy    = 0
+        if trace_details then
+            if x_offset ~= 0 or y_offset ~= 0 or x_advance ~= 0 then -- or y_advance ~= 0
+                report("[%i] position: %i, cluster: %i, index: %i, old, xoffset: %p, yoffset: %p, xadvance: %p, width: %p",
+                    i,position,cluster,index,x_offset*factor,y_offset*factor,x_advance*factor,characters[unicode].width)
+            end
+        end
+        if y_offset ~= 0 then
+            dy = y_offset * factor
+        end
+        if rlmode >= 0 then
+            -- l2r marks and rest
+            if x_offset ~= 0 then
+                dx = x_offset * factor
+            end
+            local width = characters[unicode].width
+            local delta = x_advance * factor
+            if delta ~= width then
+             -- right = -(delta - width)
+                right = delta - width
+            end
+        elseif marks[unicode] then -- why not just the next loop
+            -- r2l marks
+            if x_offset ~= 0 then
+                dx = -x_offset * factor
+            end
+        else
+            -- r2l rest
+            local width = characters[unicode].width
+            local delta = (x_advance - x_offset) * factor
+            if delta ~= width then
+                left = delta - width
+            end
+            if x_offset ~= 0 then
+                right = x_offset * factor
+            end
+        end
+        if copied or dx ~= 0 or dy ~= 0 then
+            setoffsets(current,dx,dy)
+        end
+        if left ~= 0 then
+            setlink(prev,new_kern(left),current) -- insertbefore
+            if current == head then
+                head = prev
+            end
+        end
+        if right ~= 0 then
+            local kern = new_kern(right)
+            setlink(current,kern,next)
+            current = kern
+        end
+        if trace_details then
+            if dy ~= 0 or dx ~= 0 or left ~= 0 or right ~= 0 then
+                report("[%i] position: %i, cluster: %i, index: %i, new, xoffset: %p, yoffset: %p, left: %p, right: %p",i,position,cluster,index,dx,dy,left,right)
+            end
+        end
+    end
+    --
+    if trace_details then
+        report("[-] position: %i, cluster: %i, index: -, at end",position,cluster)
+    end
+    if size > 1 then
+        current = getnext(current)
+        for i=1,size-1 do
+            if trace_details then
+                report("[-] position: %i + %i, cluster: -, index: -, removing node",position,i)
+            end
+            head, current = remove_node(head,current,true)
+        end
+    end
+    --
+    -- We see all kind of interesting spaces come back (like tabs in cambria) so we do a bit of
+    -- extra testing here.
+    --
+    if leading then
+        local r = result[1]
+        local unicode = copytochar[r[1]]
+        if seenspaces[unicode] then
+            local x_advance = r[5]
+            local delta     = x_advance - spacewidth
+            if delta ~= 0 then
+                -- nothing to do but jump one slot ahead
+                local prev = getprev(start)
+                if getid(prev) == glue_code then
+                    local dx = delta * factor
+                    setwidth(prev,getwidth(prev) + dx)
+                    if trace_details then
+                        report("compensating leading glue by %p due to codepoint %U",dx,unicode)
+                    end
+                else
+                    report("no valid leading glue node")
+                end
+            end
+        end
+    end
+    --
+    if trailing then
+        local r = result[length]
+        local unicode = copytochar[r[1]]
+        if seenspaces[unicode] then
+            local x_advance = r[5]
+            local delta     = x_advance - spacewidth
+            if delta ~= 0 then
+                local next = getnext(stop)
+                if getid(next) == glue_code then
+                    local dx = delta * factor
+                    setwidth(next,getwidth(next) + dx)
+                    if trace_details then
+                        report("compensating trailing glue by %p due to codepoint %U",dx,unicode)
+                    end
+                else
+                    report("no valid trailing glue node")
+                end
+            end
+        end
+    end
+    --
+    if trace_details then
+        report("run done")
+    end
+    return head
+end
+
+otf.registerplugin("harfbuzz",function(head,font,dynamic,direction)
+    return texthandler(head,font,dynamic,direction,harfbuzz)
+end)

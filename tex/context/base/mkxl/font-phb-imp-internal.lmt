@@ -1,0 +1,160 @@
+if not modules then modules = { } end modules ['font-phb-imp-internal'] = {
+    version   = 1.000, -- 2016.10.10,
+    comment   = "companion to font-txt.mkiv",
+    original  = "derived from font-phb-imp-library",
+    author    = "Hans Hagen",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- The hb library comes in versions and the one I tested in 2016 was part of the inkscape
+-- suite. In principle one can have incompatibilities due to updates but that is the nature
+-- of a library. When a library ie expected one has better use the system version, if only
+-- to make sure that different programs behave the same.
+--
+-- The main reason for testing this approach was that when Idris was working on his fonts,
+-- we wanted to know how different shapers deal with it and the hb command line program
+-- could provide uniscribe output. For the context shaper uniscribe is the reference, also
+-- because Idris started out with Volt a decade ago.
+--
+-- We treat the lib as a black box as it should be. At some point Kai Eigner made an ffi
+-- binding and that one was adapted to the plugin approach of context. It saved me the
+-- trouble of looking at source files to figure it all out. Below is the adapted code.
+--
+-- This is basically the ffi variant but with the hb function calls delegated to a simple
+-- runtime library. That library was a side effect of playing a day with delayed loading
+-- like ffi does in luametatex, which seems to work ok for what we call optional libraries
+-- in lmtx. I didn't really test the next code well (and will probably do that when Idris
+-- needs some comparison with uniscribe etc). There are nowadays probably other ways to do
+-- this but this is what we had and so we can keep the test code that has been around for
+-- a while (which is needed because some old articles need it.)
+--
+-- The following setup doesn't really fit into the way we set up internal libraries
+-- but if isn't used in the same sense anyway so we stick to what we already had in
+-- the ffi variant (also because it uses helpers here and we want to keep the client
+-- variant too). We don't need to be generic as other macro packages follow a different
+-- route.
+--
+-- Last time I checked "fiets" got no ligature with the "ot" shaper but it did get one
+-- with the "uniscribe" shaper ... somewhat puzzling .. but "effe" worked okay. Maybe
+-- there is some built-in heuristic interfering? When Idris an I tested fonts we had
+-- similar differences with arabic so maybe we miss a point here.
+--
+-- native     font plugin > hb > string : fi-
+--            font plugin > hb > text   : U+00066 U+00069 U+0002D
+--            font plugin > hb > result : U+00066 U+00069 U+0002D
+--
+-- uniscribe  font plugin > hb > string : fi-
+--            font plugin > hb > text   : U+00066 U+00069 U+0002D
+--            font plugin > hb > result : U+0FB01 U+0002D
+--
+-- native     font plugin > hb > string : ets
+--            font plugin > hb > text   : U+00065 U+00074 U+00073
+--            font plugin > hb > result : U+00065 U+00074 U+00073
+--
+-- uniscribe  font plugin > hb > string : ets
+--            font plugin > hb > text   : U+00065 U+00074 U+00073
+--            font plugin > hb > result : U+00065 U+00074 U+00073
+--
+-- native     font plugin > hb > string : fiets
+--            font plugin > hb > text   : U+00066 U+00069 U+00065 U+00074 U+00073
+--            font plugin > hb > result : U+00066 U+00069 U+00065 U+00074 U+00073
+--
+-- uniscribe  font plugin > hb > string : fiets
+--            font plugin > hb > text   : U+00066 U+00069 U+00065 U+00074 U+00073
+--            font plugin > hb > result : U+0FB01 U+00065 U+00074 U+00073
+
+local report = utilities.hb.report or print
+
+local hblib  = optional and (optional.hb or optional.test)
+
+if not hblib then
+    report("no hblib found, you can try the ffi variant")
+    return
+end
+
+local hb_initialize  = hblib.initialize
+local hb_getversion  = hblib.getversion
+local hb_getshapers  = hblib.getshapers
+local hb_loadfont    = hblib.loadfont
+local hb_shapestring = hblib.shapestring
+
+if not hb_initialize then
+    report("no functions in hblib found, you can try the ffi variant")
+    return
+end
+
+local loaddata    = io.loaddata
+local findlib     = resolvers.findlib
+local concat      = table.concat
+local utfchar     = utf.char
+local packtoutf8  = utilities.hb.helpers.packtoutf8
+local packtoutf32 = utilities.hb.helpers.packtoutf32
+local report      = utilities.hb.report or print
+local fontdata    = fonts.hashes.identifiers
+local initialized = nil
+local loaded      = { }
+local shared      = { }
+local libname     = os.name == "windows" and "libharfbuzz-0" or "libharfbuzz"
+
+local shapers = {
+    native    = { "ot", "uniscribe", "fallback" },
+    uniscribe = { "uniscribe", "ot", "fallback" },
+ -- uniscribe = { "uniscribe", "fallback" }, -- stalls without fallback when no uniscribe present
+    fallback  = { "fallback" },
+}
+
+local mode = 32
+
+function utilities.hb.methods.internal(font,data,rlmode,text,leading,trailing)
+    if initialized == nil then
+        local filename = findlib(libname)
+        initialized = hb_initialize(filename)
+        if initialized then
+            report("using hb library version %a, supported shapers: %,t",hb_getversion(),hb_getshapers())
+        else
+            report("unable to locate hb library")
+            initialize = false
+        end
+    end
+    if initialized then
+        local instance = loaded[font]
+        if instance == nil then
+            local tfmdata   = fontdata[font]
+            local resources = tfmdata.resources
+            local filename  = resources.filename
+                  instance  = shared[filename]
+            if instance == nil then
+                local wholefont = loaddata(filename)
+                if wholefont then
+                    instance = hb_loadfont(font,wholefont)
+                end
+                if not instance then
+                    instance = false
+                end
+                shared[filename] = instance
+            end
+            loaded[font] = instance
+        end
+        if instance then
+            if mode ==32 then
+                text = packtoutf32(text,leading,trailing)
+            else
+                text = packtoutf8(text,leading,trailing) -- doesn't work ok (no time not to figure it out)
+            end
+            local result = hb_shapestring (
+                instance,
+                data.script          or "dflt",
+                data.language        or "dflt",
+                rlmode < 0 and "rtl" or "ltr",
+                shapers[data.shaper] or shapers.native,
+                data.featureset      or { },
+                text,
+                rlmode < 0,
+                mode
+            )
+         -- inspect(result)
+            return result
+        end
+    end
+end
