@@ -475,13 +475,13 @@
 \installcorenamespace{fontmathsynchronizer}
 \installcorenamespace{fontmathstoredstrategy}
 
-\letvalue{\??fontmathsynchronizer\s!tf }\font_helpers_synchronize_math_family_mr
-\letvalue{\??fontmathsynchronizer\s!sl }\font_helpers_synchronize_math_family_mr
-\letvalue{\??fontmathsynchronizer\s!it }\font_helpers_synchronize_math_family_mr
-\letvalue{\??fontmathsynchronizer\s!bf }\font_helpers_synchronize_math_family_mb
-\letvalue{\??fontmathsynchronizer\s!bs }\font_helpers_synchronize_math_family_mb
-\letvalue{\??fontmathsynchronizer\s!bi }\font_helpers_synchronize_math_family_mb
-\letvalue{\??fontmathsynchronizer\empty}\font_helpers_synchronize_math_family_mr
+\letcsname\??fontmathsynchronizer\s!tf \endcsname\font_helpers_synchronize_math_family_mr
+\letcsname\??fontmathsynchronizer\s!sl \endcsname\font_helpers_synchronize_math_family_mr
+\letcsname\??fontmathsynchronizer\s!it \endcsname\font_helpers_synchronize_math_family_mr
+\letcsname\??fontmathsynchronizer\s!bf \endcsname\font_helpers_synchronize_math_family_mb
+\letcsname\??fontmathsynchronizer\s!bs \endcsname\font_helpers_synchronize_math_family_mb
+\letcsname\??fontmathsynchronizer\s!bi \endcsname\font_helpers_synchronize_math_family_mb
+\letcsname\??fontmathsynchronizer\empty\endcsname\font_helpers_synchronize_math_family_mr
 
 % \def\font_helpers_synchronize_math_family
 %   {\csname\??fontmathsynchronizer\ifcsname\??fontmathsynchronizer\fontalternative\endcsname\fontalternative\fi\endcsname}

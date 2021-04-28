@@ -164,9 +164,21 @@ local flush_character do
 
     -- todo: cache streams
 
-    local default = 16384 * number.dimenfactors.bp -- 65536 // 4
+    local default = 16384 -- * number.dimenfactors.bp -- 65536 // 4
 
     local vfinjectors = fonts.helpers.vfinjectors
+
+    local function flushchar(current,font,char,fnt,chr,f,e)
+        if fnt then
+            local nest = char ~= chr or font ~= fnt
+            if fnt == 0 then
+                fnt = main
+            end
+            return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+        else
+            return 0
+        end
+    end
 
     local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
 
@@ -188,22 +200,19 @@ local flush_character do
         local fonts = data.fonts
         local siz   = (data.parameters.factor or 1)/65536
 
-        local function flushchar(font,char,fnt,chr,f,e)
-            if fnt then
-                local nest = char ~= chr or font ~= fnt
-                if fnt == 0 then
-                    fnt = main
-                end
-                return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
-            else
-                return 0
-            end
-        end
+        -- An alternative where we (here) locally define handlers like this:
+        --
+        -- if not vfinjectors then
+        --     function vfinjectors.char(hpos,vpos,packet)
+        --         -- .... access: font, char, factor, sx, xy
+        --     end
+        -- end
+        --
+        -- doesn't work because accessing the parameters passed to the outer function doesn't
+        -- work as expected (so we end up in a nesting loop). I remember hitting this somewhat
+        -- unexpected feature before.
 
         -- we assume resolved fonts: id mandate but maybe also size
-
-        -- we could map left, right, up, down -> offset
-        -- we could map char, font, slot to -> slot
 
         for i=1,#vfcommands do
             local packet  = vfcommands[i]
@@ -212,24 +221,24 @@ local flush_character do
                 local chr = packet[2]
                 local f   = packet[3]
                 local e   = packet[4]
-                pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
+                pos_h = pos_h + flushchar(current,font,char,fnt,chr,f,e)
             elseif command == "slot" then
                 local index = packet[2]
                 local chr   = packet[3]
                 local f     = packet[4]
                 local e     = packet[5]
                 if index == 0 then
-                    pos_h = pos_h + flushchar(font,char,font,chr,f,e)
+                    pos_h = pos_h + flushchar(current,font,char,font,chr,f,e)
                 else
                     local okay = fonts and fonts[index]
                     if okay then
                         local fnt = okay.id
                         if fnt then
-                            pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
+                            pos_h = pos_h + flushchar(current,font,char,fnt,chr,f,e)
                         end
                     else
                         -- safeguard, we assume the font itself (often index 1)
-                        pos_h = pos_h + flushchar(font,char,font,chr,f,e)
+                        pos_h = pos_h + flushchar(current,font,char,font,chr,f,e)
                     end
                 end
             elseif command == "use" then
@@ -300,7 +309,7 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
                 if c then
-                    flushchar(font,char,fnt,c)
+                    flushchar(current,font,char,fnt,c)
                     pos_h = ph
                     pos_v = pv
                 end
@@ -320,7 +329,7 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
                 if c then
-                    flushchar(font,char,fnt,c)
+                    flushchar(current,font,char,fnt,c)
                     pos_h = ph
                     pos_v = pv
                 end
@@ -336,6 +345,62 @@ local flush_character do
                     pos_v = s[2]
                     level = level - 1
                 end
+            elseif command == "frame" then
+                -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
+                local width  = packet[2]
+                local height = packet[3]
+                local depth  = packet[4]
+                local wd, ht, dp
+                if width == true or height == true or depth == true then
+                    wd, ht, dp = getwhd(current,true)
+                end
+                if width == true then
+                    width = wd
+                elseif not width then
+                    width = 0
+                end
+                if height == true then
+                    height = ht
+                elseif not height then
+                    height = 0
+                end
+                if depth == true then
+                    depth = dp
+                elseif not depth then
+                    depth = 0
+                end
+                local total = height + depth
+                if width > 0 and total > 0 then
+                    if factor ~= 0 then
+                        width = width + width * factor / 1000
+                    end
+                    if width > 0 then
+                        local line    = packet[5] or default
+                        local outline = packet[6]
+                        local advance = packet[7]
+                        if outline == nil then
+                            outline = true
+                        end
+                        if advance == nil then
+                            advance = true
+                        end
+                        local baseline = outline and packet[8]
+                        local color    = packet[9] -- no longer needed probably
+                        if color then
+                            vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
+                        end
+                        width  = width  * sx
+                        height = height * sy
+                        depth  = depth  * sy
+                        flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
+                        if color then
+                            vfinjectors.stopcolor()
+                        end
+                        if advance then
+                            pos_h = pos_h + width
+                        end
+                    end
+                end
             elseif command == "rule" then
                 local size_v = packet[2]
                 local size_h = packet[3]
@@ -350,37 +415,27 @@ local flush_character do
                         pos_h = pos_h + size_h
                     end
                 end
-            elseif command == "frame" then
-                -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
-                local width = packet[2]
-                if width > 0 then
-                    local height = packet[3] or 0
-                    local depth  = packet[4] or 0
-                    local total  = height + depth
-                    if total > 0 then
-                        if factor ~= 0 then
-                            width = width + width * factor / 1000
+            elseif command == "line" then
+                local wd = packet[2] or 0
+                local ht = packet[3] or 0
+                local dp = packet[4] or 0
+                if wd > 0 and ht ~= 0 and dp ~= 0 then
+                    if factor ~= 0 then
+                        wd = wd + wd * factor / 1000
+                    end
+                    if wd > 0 then
+                        wd = wd * sx
+                        ht = ht * sy
+                        dp = dp * sy
+                        local color = packet[5] -- no longer needed probably
+                        if color then
+                            vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
                         end
-                        if width > 0 then
-                            local line     = packet[5] or default
-                            local outline  = not packet[6]
-                            local advance  = not packet[7]
-                            local baseline = outline and packet[8]
-                            local color    = packet[9] -- no longer needed probably
-                            if color then
-                                vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
-                            end
-                            width  = width  * sx
-                            height = height * sy
-                            depth  = depth  * sy
-                            flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
-                            if color then
-                                vfinjectors.stopcolor()
-                            end
-                            if advance then
-                                pos_h = pos_h + width
-                            end
+                        flushsimplerule(pos_h,pos_v-dp,pos_r,wd,ht+dp)
+                        if color then
+                            vfinjectors.stopcolor()
                         end
+                        pos_h = pos_h + wd
                     end
                 end
             elseif command == "font" then
@@ -399,20 +454,25 @@ local flush_character do
                 if kind == "function" then
                     code(font,char,pos_h,pos_v,sx,sy)
                 end
-            elseif command == "node" then -- obsolete
+            elseif command == "node" then
                 local h = packet[2]
                 hlist_out(h,getlist(h))
+         -- elseif command == "pdf" then
+                -- unsupported
+         -- elseif command == "pdfmode" then
+                -- unsupported
+         -- elseif command == "special" then
+                -- unsupported
+         -- elseif command == "nop"     then
+                -- just ignored
+         -- elseif command == "image"   then
+                -- unsupported, use "node"
             else
                 local injector = vfinjectors[command]
                 if injector then
                     injector(pos_h,pos_v,packet)
                 end
             end
-         -- image   : not needed, maybe some day
-         -- pdfmode : not used
-         -- special : makes no sense
-         -- nop     : the official ignore
-         -- scale   : not supported
         end
 
         pos_h = saved_h

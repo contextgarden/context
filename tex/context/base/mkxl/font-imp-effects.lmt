@@ -19,19 +19,6 @@ local registerafmfeature = handlers.afm.features.register
 
 local settings_to_hash   = utilities.parsers.settings_to_hash_colon_too
 
-local helpers            = fonts.helpers
-local prependcommands    = helpers.prependcommands
-local charcommand        = helpers.commands.char
-local leftcommand        = helpers.commands.left
-local rightcommand       = helpers.commands.right
-local upcommand          = helpers.commands.up
-local downcommand        = helpers.commands.down
-local dummycommand       = helpers.commands.dummy
-
------ constructors       = fonts.constructors
------ getmathparameter   = constructors.getmathparameter
------ setmathparameter   = constructors.setmathparameter
-
 local report_effect      = logs.reporter("fonts","effect")
 local report_slant       = logs.reporter("fonts","slant")
 local report_extend      = logs.reporter("fonts","extend")
@@ -222,52 +209,6 @@ local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze
     end
 end
 
-local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
-
-    -- still not the perfect rule
-
-    local function wdpatch(char)
-        if wsnap ~= 0 then
-            char.width  = char.width + wdelta/2
-        end
-    end
-
-    local function htpatch(char)
-        if hsnap ~= 0 then
-            local height = char.height
-            if height then
-                char.height = char.height + 2 * dy
-            end
-        end
-    end
-
-    local character = characters[0x221A]
-
-    if character and character.next then
-        local char = character
-        local next = character.next
-        wdpatch(char)
-        htpatch(char)
-        while next do
-            char = characters[next]
-            wdpatch(char)
-            htpatch(char)
-            next = char.next
-        end
-        if char then
-            local v = char.vert_variants
-            if v then
-                local top = v[#v]
-                if top then
-                    local char = characters[top.glyph]
-                    htpatch(char)
-                end
-            end
-        end
-    end
-
-end
-
 -- local show_effect = { "lua", function(f,c)
 --     report_effect("font id %i, char %C",f,c)
 --     inspect(fonts.hashes.characters[f][c])
@@ -294,44 +235,14 @@ local function manipulateeffect(tfmdata)
         local factor         = (1 + effect.factor)  * factor
         local hfactor        = (1 + effect.hfactor) * hfactor
         local vfactor        = (1 + effect.vfactor) * vfactor
-        vshift = vshift ~= 0 and upcommand[vshift] or false
-        hshift = rightcommand[hshift]
+        parameters.hshift = hshift
+        parameters.vshift = vshift
         for unicode, character in next, characters do
             local oldwidth  = character.width
             local oldheight = character.height
             local olddepth  = character.depth
             if oldwidth and oldwidth > 0 then
                 character.width = oldwidth + wdelta
-                local commands = character.commands
-                if vshift then
-                    if commands then
-                        prependcommands ( commands,
-                         -- show_effect,
-                            hshift,
-                            vshift
-                        )
-                    else
-                        character.commands = {
-                         -- show_effect,
-                            hshift,
-                            vshift,
-                            charcommand[unicode]
-                        }
-                    end
-                else
-                    if commands then
-                      prependcommands ( commands,
-                       -- show_effect,
-                          hshift
-                      )
-                    else
-                        character.commands = {
-                         -- show_effect,
-                            hshift,
-                            charcommand[unicode]
-                      }
-                    end
-                end
             end
             if oldheight and oldheight > 0 then
                character.height = oldheight + hdelta
@@ -342,7 +253,6 @@ local function manipulateeffect(tfmdata)
         end
         if mathparameters then
             setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
-            setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
         end
         parameters.factor  = factor
         parameters.hfactor = hfactor

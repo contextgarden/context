@@ -384,6 +384,7 @@ local function monoslot(font,char,parent,factor)
                 width    = width,
                 height   = character.height,
                 depth    = character.depth,
+                -- { "offset", ... }
                 commands = {
                     rightcommand[(width - character.width or 0)/2],
                     charcommand[char],

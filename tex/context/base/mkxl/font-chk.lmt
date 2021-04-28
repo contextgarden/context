@@ -430,9 +430,11 @@ local function addvisualspace(tfmdata)
     if spacechar and not spacechar.commands then
         local w = spacechar.width
         local h = tfmdata.parameters.xheight
+     -- local h = tfmdata.parameters.xheight / 4 -- could be "visualspace=large" or so
         local c = {
             width    = w,
-            commands = { { "rule", h, w } }
+            commands = { { "rule", h, w } },
+         -- commands = { { "line", w, 5*h, h } },
         }
         local u = addprivate(tfmdata, "visualspace", c)
     end

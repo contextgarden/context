@@ -157,66 +157,6 @@ update.goodies = {
     },
 }
 
--- update.platforms = {
---     ["mswin"]          = "mswin",
---     ["windows"]        = "mswin",
---     ["win32"]          = "mswin",
---     ["win"]            = "mswin",
---  -- ["mswin"]          = "win32",
---  -- ["windows"]        = "win32",
---  -- ["win32"]          = "win32",
---  -- ["win"]            = "win32",
---     --
---  -- ["mswin-64"]       = "mswin-64",
---  -- ["windows-64"]     = "mswin-64",
---  -- ["win64"]          = "mswin-64",
---     ["mswin-64"]       = "win64",
---     ["windows-64"]     = "win64",
---     ["win64"]          = "win64",
---     --
---     ["linux"]          = "linux",
---     ["linux-32"]       = "linux",
---     ["linux32"]        = "linux",
---     --
---     ["linux-64"]       = "linux-64",
---     ["linux64"]        = "linux-64",
---     --
---     ["linuxmusl-64"]   = "linuxmusl-64",
---     --
---     ["linux-armhf"]    = "linux-armhf",
---     --
---     ["freebsd"]        = "freebsd",
---     --
---     ["freebsd-amd64"]  = "freebsd-amd64",
---     --
---     ["kfreebsd"]       = "kfreebsd-i386",
---     ["kfreebsd-i386"]  = "kfreebsd-i386",
---     --
---     ["kfreebsd-amd64"] = "kfreebsd-amd64",
---     --
---     ["linux-ppc"]      = "linux-ppc",
---     ["ppc"]            = "linux-ppc",
---     --
---     ["osx"]            = "osx-intel",
---     ["macosx"]         = "osx-intel",
---     ["osx-intel"]      = "osx-intel",
---     ["osxintel"]       = "osx-intel",
---     --
---     ["osx-ppc"]        = "osx-ppc",
---     ["osx-powerpc"]    = "osx-ppc",
---     ["osxppc"]         = "osx-ppc",
---     ["osxpowerpc"]     = "osx-ppc",
---     --
---     ["osx-64"]         = "osx-64",
---     --
---     ["solaris-intel"]  = "solaris-intel",
---     --
---     ["solaris-sparc"]  = "solaris-sparc",
---     ["solaris"]        = "solaris-sparc",
---     --
---     ["unknown"]        = "unknown",
--- }
-
 update.platforms = {
     ["mswin"]          = "mswin",
     ["windows"]        = "mswin",

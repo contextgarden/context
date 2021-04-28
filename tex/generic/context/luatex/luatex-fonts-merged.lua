@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-04-26 20:39
+-- merge date  : 2021-04-28 18:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -37180,74 +37180,55 @@ local rules={
  "FractionRuleThickness",
  "UnderbarRuleThickness",
 }
-local setmathparameters
-local setmathcharacters
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
- setmathparameters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
-  if delta~=0 then
-   for i=1,#rules do
-    local name=rules[i]
-    local value=mathparameters[name]
-    if value then
-       mathparameters[name]=(squeeze or 1)*(value+dy)
-    end
+local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+ if dy~=0 then
+  for i=1,#rules do
+   local name=rules[i]
+   local value=mathparameters[name]
+   if value then
+      mathparameters[name]=(squeeze or 1)*(value+dy)
    end
   end
  end
- setmathcharacters=function()
- end
-else
- setmathparameters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
-  if delta~=0 then
-   for i=1,#rules do
-    local name=rules[i]
-    local value=mathparameters[name]
-    if value then
-       mathparameters[name]=(squeeze or 1)*(value+dy)
-    end
-   end
+end
+local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
+ local function wdpatch(char)
+  if wsnap~=0 then
+   char.width=char.width+wdelta/2
   end
  end
- setmathcharacters=function(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
-  local function wdpatch(char)
-   if wsnap~=0 then
-    char.width=char.width+wdelta/2
+ local function htpatch(char)
+  if hsnap~=0 then
+   local height=char.height
+   if height then
+    char.height=char.height+2*dy
    end
   end
-  local function htpatch(char)
-   if hsnap~=0 then
-    local height=char.height
-    if height then
-     char.height=char.height+2*dy
-    end
-   end
-  end
-  local character=characters[0x221A]
-  if character and character.next then
-   local char=character
-   local next=character.next
+ end
+ local character=characters[0x221A]
+ if character and character.next then
+  local char=character
+  local next=character.next
+  wdpatch(char)
+  htpatch(char)
+  while next do
+   char=characters[next]
    wdpatch(char)
    htpatch(char)
-   while next do
-    char=characters[next]
-    wdpatch(char)
-    htpatch(char)
-    next=char.next
-   end
-   if char then
-    local v=char.vert_variants
-    if v then
-     local top=v[#v]
-     if top then
-      local char=characters[top.glyph]
-      htpatch(char)
-     end
+   next=char.next
+  end
+  if char then
+   local v=char.vert_variants
+   if v then
+    local top=v[#v]
+    if top then
+     local char=characters[top.glyph]
+     htpatch(char)
     end
    end
   end
  end
 end
-local shiftmode=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0
 local function manipulateeffect(tfmdata)
  local effect=tfmdata.properties.effect
  if effect then
@@ -37269,45 +37250,38 @@ local function manipulateeffect(tfmdata)
   local factor=(1+effect.factor)*factor
   local hfactor=(1+effect.hfactor)*hfactor
   local vfactor=(1+effect.vfactor)*vfactor
-  if shiftmode then
-   parameters.hshift=hshift
-   parameters.vshift=vshift
-  else
-   vshift=vshift~=0 and upcommand[vshift] or false
-   hshift=rightcommand[hshift]
-  end
+  vshift=vshift~=0 and upcommand[vshift] or false
+  hshift=rightcommand[hshift]
   for unicode,character in next,characters do
    local oldwidth=character.width
    local oldheight=character.height
    local olddepth=character.depth
    if oldwidth and oldwidth>0 then
     character.width=oldwidth+wdelta
-    if not shiftmode then
-     local commands=character.commands
-     if vshift then
-      if commands then
-       prependcommands (commands,
-        hshift,
-        vshift
-       )
-      else
-       character.commands={
-        hshift,
-        vshift,
-        charcommand[unicode]
-       }
-      end
+    local commands=character.commands
+    if vshift then
+     if commands then
+      prependcommands (commands,
+       hshift,
+       vshift
+      )
      else
-      if commands then
-        prependcommands (commands,
-         hshift
-        )
-      else
-       character.commands={
-        hshift,
-        charcommand[unicode]
-        }
-      end
+      character.commands={
+       hshift,
+       vshift,
+       charcommand[unicode]
+      }
+     end
+    else
+     if commands then
+       prependcommands (commands,
+        hshift
+       )
+     else
+      character.commands={
+       hshift,
+       charcommand[unicode]
+       }
      end
     end
    end

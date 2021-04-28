@@ -94,7 +94,7 @@ helpers.vfspecials = {
     backgrounds = setmetatableindex(function(t,h)
         local v = setmetatableindex(function(t,d)
             local v = setmetatableindex(function(t,w)
-                local v = { "frame", w, h, d, defaultline, true, true }
+                local v = { "frame", w, h, d, defaultline, false, false }
                 t[w] = v
                 return v
             end)
@@ -108,7 +108,7 @@ helpers.vfspecials = {
     outlines = setmetatableindex(function(t,h)
         local v = setmetatableindex(function(t,d)
             local v = setmetatableindex(function(t,w)
-                local v = { "frame", w, h, d, defaultline, false, true }
+                local v = { "frame", w, h, d, defaultline, true, false }
                 t[w] = v
                 return v
             end)
@@ -168,6 +168,8 @@ function helpers.scalecommands(list,hdelta,vdelta)
                     result[i] = { key, cmd[2]*vdelta }
                 elseif key == "offset" or key == "rule" then -- or key == "compose"
                     result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta }
+                elseif key == "line" then -- or key == "compose"
+                    result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta, cmd[4]*vdelta, cmd[5] }
              -- elseif key == "frame" then
              --     result[i] = cmd -- already scaled, for now
                 else

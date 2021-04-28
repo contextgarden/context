@@ -104,7 +104,7 @@
 \registerctxluafile{font-imp-unicode}{}
 \registerctxluafile{font-imp-math}{autosuffix}
 \registerctxluafile{font-imp-notused}{}
-\registerctxluafile{font-imp-effects}{}
+\registerctxluafile{font-imp-effects}{autosuffix}
 \registerctxluafile{font-imp-quality}{}
 \registerctxluafile{font-imp-italics}{}
 \registerctxluafile{font-imp-dimensions}{}

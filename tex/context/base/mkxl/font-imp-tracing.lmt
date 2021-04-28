@@ -33,6 +33,81 @@ local v_frame            = variables.frame
 local v_empty            = variables.empty
 local v_none             = variables.none
 
+-- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
+
+-- local function initialize(tfmdata,key,value)
+--     if value then
+--         local vfspecials  = fonts.helpers.vfspecials
+--         local vfcommands  = fonts.helpers.commands
+--         local backgrounds = vfspecials.backgrounds
+--         local outlines    = vfspecials.outlines
+--         local characters  = tfmdata.characters
+--         local rulecache   = backgrounds
+--         local showchar    = true
+--         local color       = "palegray"
+--         if type(value) == "string" then
+--             value = settings_to_array(value)
+--             for i=1,#value do
+--                 local v = value[i]
+--                 if v == v_frame then
+--                     rulecache = outlines
+--                 elseif v == v_background then
+--                     rulecache = backgrounds
+--                 elseif v == v_empty then
+--                     showchar = false
+--                 elseif v == v_none then
+--                     color = nil
+--                 else
+--                     color = v
+--                 end
+--             end
+--         end
+--         local gray  = color and { "startcolor", color } or nil
+--         local black = gray  and { "stopcolor" }         or nil
+--         for unicode, character in next, characters do
+--             local width  = character.width  or 0
+--             local height = character.height or 0
+--             local depth  = character.depth  or 0
+--             local rule   = rulecache[height][depth][width]
+--             if showchar then
+--                 local commands = character.commands
+--                 if commands then
+--                     if gray then
+--                         character.commands = prependcommands (
+--                             commands, gray, rule, black
+--                         )
+--                     else
+--                         character.commands = prependcommands (
+--                             commands, rule
+--                         )
+--                     end
+--                 else
+--                     local char = charcommand[unicode]
+--                     if gray then
+--                         character.commands = {
+--                             gray, rule, black, char
+--                         }
+--                      else
+--                         character.commands = {
+--                             rule, char
+--                         }
+--                     end
+--                 end
+--             else
+--                 if gray then
+--                     character.commands = {
+--                         gray, rule, black
+--                     }
+--                 else
+--                     character.commands = {
+--                         rule
+--                     }
+--                 end
+--             end
+--         end
+--     end
+-- end
+
 local function initialize(tfmdata,key,value)
     if value then
         local vfspecials  = fonts.helpers.vfspecials
@@ -40,67 +115,38 @@ local function initialize(tfmdata,key,value)
         local backgrounds = vfspecials.backgrounds
         local outlines    = vfspecials.outlines
         local characters  = tfmdata.characters
-        local rulecache   = backgrounds
+        local rule        = { "frame", true, true, true, false, false, false, false, "palegray" }
         local showchar    = true
-        local color       = "palegray"
         if type(value) == "string" then
             value = settings_to_array(value)
             for i=1,#value do
                 local v = value[i]
                 if v == v_frame then
-                    rulecache = outlines
+                    rule[6] = true
                 elseif v == v_background then
-                    rulecache = backgrounds
+                    rule[6] = false
                 elseif v == v_empty then
                     showchar = false
                 elseif v == v_none then
-                    color = nil
+                    rule[9] = false
                 else
-                    color = v
+                    rule[9] = v
                 end
             end
         end
-        local gray  = color and { "startcolor", color } or nil
-        local black = gray  and { "stopcolor" }         or nil
+        if not showchar then
+            rule = { rule }
+        end
         for unicode, character in next, characters do
-            local width  = character.width  or 0
-            local height = character.height or 0
-            local depth  = character.depth  or 0
-            local rule   = rulecache[height][depth][width]
             if showchar then
                 local commands = character.commands
                 if commands then
-                    if gray then
-                        character.commands = prependcommands (
-                            commands, gray, rule, black
-                        )
-                    else
-                        character.commands = prependcommands (
-                            commands, rule
-                        )
-                    end
+                    character.commands = prependcommands ( commands, rule )
                 else
-                    local char = charcommand[unicode]
-                    if gray then
-                        character.commands = {
-                            gray, rule, black, char
-                        }
-                     else
-                        character.commands = {
-                            rule, char
-                        }
-                    end
+                    character.commands = { rule, charcommand[unicode] }
                 end
             else
-                if gray then
-                    character.commands = {
-                        gray, rule, black
-                    }
-                else
-                    character.commands = {
-                        rule
-                    }
-                end
+                character.commands = rule
             end
         end
     end
