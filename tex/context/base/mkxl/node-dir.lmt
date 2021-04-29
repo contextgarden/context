@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['node-dir'] = {
 local nodes             = nodes
 local nuts              = nodes.nuts
 
+local nodecodes         = nodes.nodecodes
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
 local normaldir_code    = nodes.dircodes.normal
 local line_code         = nodes.listcodes.line
 local lefttoright_code  = nodes.dirvalues.lefttoright
@@ -16,15 +19,17 @@ local lefttoright_code  = nodes.dirvalues.lefttoright
 local getnext           = nuts.getnext
 local getlist           = nuts.getlist
 local getwhd            = nuts.getwhd
+local getwidth          = nuts.getwidth
 local getdirection      = nuts.getdirection
 
 local setlist           = nuts.setlist
 
 local nextdir           = nuts.traversers.dir
-local nexthlist         = nuts.traversers.hlist
+local nextlist          = nuts.traversers.list
 
 local rangedimensions   = nuts.rangedimensions
 local insert_before     = nuts.insert_before
+local insert_after      = nuts.insert_after
 
 local new_rule          = nuts.pool.rule
 local new_kern          = nuts.pool.kern
@@ -32,32 +37,8 @@ local new_kern          = nuts.pool.kern
 local setcolor          = nodes.tracers.colors.set
 local settransparency   = nodes.tracers.transparencies.set
 
--- local function dirdimensions(parent,begindir) -- can be a helper
---     local level   = 1
---     local enddir  = begindir
---     local width   = 0
---     for current, subtype in nextdir, getnext(begindir) do
---         if subtype == normaldir_code then -- todo
---             level = level + 1
---         else
---             level = level - 1
---         end
---         if level == 0 then -- does the type matter
---             enddir = current
---             width  = rangedimensions(parent,begindir,enddir)
---             return width, enddir
---         end
---     end
---     if enddir == begindir then
---         width = rangedimensions(parent,begindir)
---     end
---     return width, enddir
--- end
-
 local function dirdimensions(parent,begindir) -- can be a helper
-    local level   = 1
-    local lastdir = nil
-    local width   = 0
+    local level = 1
     for current, subtype in nextdir, getnext(begindir) do
         if subtype == normaldir_code then -- todo
             level = level + 1
@@ -69,6 +50,7 @@ local function dirdimensions(parent,begindir) -- can be a helper
         end
     end
     return (rangedimensions(parent,begindir)), begindir
+--  return getwidth(parent), begindir
 end
 
 nuts.dirdimensions = dirdimensions
@@ -84,31 +66,32 @@ local function colorit(list,current,dir,w,h,d)
     return list, current
 end
 
-function nodes.tracers.directions(head)
-    for hlist, subtype in nexthlist, head do
-        if subtype == line_code then
-            local list = getlist(hlist)
-            local w, h, d = getwhd(hlist)
-            list = colorit(list,list,getdirection(hlist),w,h,d)
-            for current in nextdir, list do
-                local dir, cancel = getdirection(current)
-                if not cancel then
-                    local width = dirdimensions(hlist,current)
-                    list = colorit(list,current,dir,width,h,d)
+
+local function tracedirections(head)
+    for parent, id, subtype, list in nextlist, head do
+        if list then
+            if subtype == line_code then
+                local w, h, d = getwhd(parent)
+                list = colorit(list,list,getdirection(parent),w,h,d)
+                for current in nextdir, list do
+                    local dir, cancel = getdirection(current)
+                    if not cancel then
+                        local width = dirdimensions(parent,current)
+                        list = colorit(list,current,dir,width,h,d)
+                    end
                 end
             end
-            setlist(hlist,list)
+            tracedirections(list)
         end
     end
     return head
 end
 
-local enabled = false
+nodes.tracers.directions = tracedirections
+
+-- so, not attribute driven, only shipout, so more a document wide tracer, maybe
+-- per page (so keep enabled and delayed disabled
 
 trackers.register("nodes.directions", function(v)
-    if not enabled then
-        enabled = true
-        nodes.tasks.appendaction("finalizers","after","nodes.tracers.directions",nil,"nut","enabled")
-    end
-    nodes.tasks.setaction(v)
+    nodes.tasks.setaction("shipouts","nodes.tracers.directions",v)
 end)

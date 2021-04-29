@@ -4161,49 +4161,60 @@ end
 
 -- so far
 
-local plugins = { }
-otf.plugins   = plugins
+do
 
-local report  = logs.reporter("fonts")
+    local plugins = { }
+    otf.plugins   = plugins
 
-function otf.registerplugin(name,f)
-    if type(name) == "string" and type(f) == "function" then
-        plugins[name] = { name, f }
-        report()
-        report("plugin %a has been loaded, please be aware of possible side effects",name)
-        report()
-        if logs.pushtarget then
-            logs.pushtarget("log")
-        end
-        report("Plugins are not officially supported unless stated otherwise. This is because")
-        report("they bypass the regular font handling and therefore some features in ConTeXt")
-        report("(especially those related to fonts) might not work as expected or might not work")
-        report("at all. Some plugins are for testing and development only and might change")
-        report("whenever we feel the need for it.")
-        report()
-        if logs.poptarget then
-            logs.poptarget()
+    local report  = logs.reporter("fonts")
+    local warned  = false
+    local okay    = { text = true }
+
+    function otf.registerplugin(name,f)
+        if type(name) == "string" and type(f) == "function" then
+            plugins[name] = { name, f }
+            if okay[name] then
+                -- no warning (e.g. the diagnostic text plugin)
+            else
+                report("plugin %a has been loaded, please be aware of possible side effects",name)
+                if not warned then
+                    if logs.pushtarget then
+                        logs.pushtarget("log")
+                    end
+                    report("Plugins are not officially supported unless stated otherwise. This is because")
+                    report("they bypass the regular font handling and therefore some features in ConTeXt")
+                    report("(especially those related to fonts) might not work as expected or might not work")
+                    report("at all. Some plugins are for testing and development only and might change")
+                    report("whenever we feel the need for it.")
+                    report()
+                    if logs.poptarget then
+                        logs.poptarget()
+                    end
+                    warned = true
+                end
+            end
         end
     end
-end
 
-function otf.plugininitializer(tfmdata,value)
-    if type(value) == "string" then
-        tfmdata.shared.plugin = plugins[value]
-    end
-end
-
-function otf.pluginprocessor(head,font,attr,direction) -- n
-    local s = fontdata[font].shared
-    local p = s and s.plugin
-    if p then
-        if trace_plugins then
-            report_process("applying plugin %a",p[1])
+    function otf.plugininitializer(tfmdata,value)
+        if type(value) == "string" then
+            tfmdata.shared.plugin = plugins[value]
         end
-        return p[2](head,font,attr,direction)
-    else
-        return head, false
     end
+
+    function otf.pluginprocessor(head,font,dynamic,direction) -- n
+        local s = fontdata[font].shared
+        local p = s and s.plugin
+        if p then
+            if trace_plugins then
+                report_process("applying plugin %a",p[1])
+            end
+            return p[2](head,font,dynamic,direction)
+        else
+            return head, false
+        end
+    end
+
 end
 
 function otf.featuresinitializer(tfmdata,value)

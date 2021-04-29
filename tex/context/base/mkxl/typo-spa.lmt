@@ -96,10 +96,8 @@ function spacings.handler(head)
                                 local ok = false
                                 local prevprev = getprev(prev)
                                 if alternative == 1 then
-                                    local somespace = somespace(prev,true)
-                                    if somespace then
-                                        local somepenalty = somepenalty(prevprev,10000)
-                                        if somepenalty then
+                                    if somespace(prev,true) then
+                                        if somepenalty(prevprev,10000) then
                                             if trace_spacing then
                                                 report_spacing("removing penalty and space before %C (left)",char)
                                             end
@@ -129,24 +127,19 @@ function spacings.handler(head)
                                 local ok = false
                                 local nextnext = getnext(next)
                                 if alternative == 1 then
-                                    local somepenalty = somepenalty(next,10000)
-                                    if somepenalty then
-                                        local somespace = somespace(nextnext,true)
-                                        if somespace then
+                                    if somepenalty(next,10000) then
+                                        if somespace(nextnext,true) then
                                             if trace_spacing then
                                                 report_spacing("removing penalty and space after %C right",char)
                                             end
                                             head = remove_node(head,next,true)
                                             head = remove_node(head,nextnext,true)
                                         end
-                                    else
-                                        local somespace = somespace(next,true)
-                                        if somespace then
-                                            if trace_spacing then
-                                                report_spacing("removing space after %C (right)", char)
-                                            end
-                                            head = remove_node(head,next,true)
+                                    elseif somespace(next,true) then
+                                        if trace_spacing then
+                                            report_spacing("removing space after %C (right)", char)
                                         end
+                                        head = remove_node(head,next,true)
                                     end
                                     ok = true
                                 else

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.04.28 18:34}
+\immutable\edef\contextversion{2021.04.29 23:04}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -467,7 +467,7 @@
 \loadmklxfile{anch-bck}
 \loadmkxlfile{anch-tab} % overloads tabl-tbl
 \loadmkxlfile{anch-bar}
-%loadmkxlfile{anch-snc} % when needed this one will be redone
+\loadmkxlfile{anch-snc}
 
 \loadmkxlfile{math-ini} % way after font-pre !
 \loadmkxlfile{math-pln}

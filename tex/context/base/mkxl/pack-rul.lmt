@@ -52,8 +52,10 @@ local getdirection      = nuts.getdirection
 local setshift          = nuts.setshift
 local setwidth          = nuts.setwidth
 local getwidth          = nuts.getwidth
-local setboxglue        = nuts.setboxglue
-local getboxglue        = nuts.getboxglue
+-- local setboxglue        = nuts.setboxglue
+-- local getboxglue        = nuts.getboxglue
+local setboxglue        = nuts.setglue
+local getboxglue        = nuts.getglue
 
 local hpack             = nuts.hpack
 local getdimensions     = nuts.dimensions
@@ -135,9 +137,9 @@ local function doreshapeframedbox(n)
                         if list and id == hlist_code then
                             -- called a lot so maybe a simple case is needed
                             if subtype == boxlist_code or subtype == linelist_code then
-                                -- getdirection is irrelevant here so it will go
-                                -- somehow a parfillskip also can get influenced
-                                local p = hpack(list,maxwidth,'exactly',getdirection(h)) -- multiple return value
+                             -- -- getdirection is irrelevant here so it will go
+                             -- local p = hpack(list,maxwidth,'exactly',getdirection(h)) -- multiple return value
+                                local p = hpack(list,maxwidth,'exactly') -- multiple return value
                                 local set, order, sign = getboxglue(p)
                                 setboxglue(h,set,order,sign)
                                 setlist(p)

@@ -157,8 +157,7 @@
     \MPpositiongraphic{mpos:sidebar}{}%
 \stopMPpositionmethod
 
-%D We now reimplement the \MKII\ margin rules handler in a more
-%D modern way.
+%D We now reimplement the \MKII\ margin rules handler in a more modern way.
 %D
 %D \setupmarginrules
 %D   [rulecolor=darkred,

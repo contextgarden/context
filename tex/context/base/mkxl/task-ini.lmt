@@ -26,6 +26,7 @@ local freezecallbacks = callbacks.freeze
 
 ------------("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
 
+appendaction("processors",   "normalizers", "builders.kernel.collapsing",                       nil, "nut",    "enabled"   )
 appendaction("processors",   "normalizers", "typesetters.periodkerns.handler",                  nil, "nut",    "disabled"  )
 appendaction("processors",   "normalizers", "languages.replacements.handler",                   nil, "nut",    "disabled"  )
 appendaction("processors",   "normalizers", "typesetters.wrappers.handler",                     nil, "nut",    "disabled"  )
@@ -65,7 +66,6 @@ appendaction("processors",   "lists",       "typesetters.kerns.handler",        
 appendaction("processors",   "lists",       "typesetters.digits.handler",                       nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.italics.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "languages.visualizediscretionaries",               nil, "nut",    "disabled"  )
-appendaction("processors",   "lists",       "nodes.handlers.migrate",                           nil, "nut",    "disabled"  )
 
 appendaction("processors",   "after",       "typesetters.marksuspects",                         nil, "nut",    "disabled"  )
 
@@ -83,6 +83,7 @@ appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility",     
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
 ------------("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
+appendaction("shipouts",     "normalizers", "nodes.tracers.directions",                         nil, "nut",    "disabled"  )
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.colors.handler",                        nil, "nut",    "disabled"  )
@@ -120,7 +121,6 @@ appendaction("math",         "builders",    "typesetters.directions.processmath"
 appendaction("math",         "builders",    "noads.handlers.makeup",                            nil, "nonut",  "disabled"  )
 appendaction("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 
-appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize",                 nil, "nut",    "enabled"   ) -- "disabled"
 appendaction("finalizers",   "lists",       "nodes.handlers.showhyphenation",                   nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "nodes.handlers.visualizehyphenation",              nil, "nut",    "disabled"  )
 
@@ -133,7 +133,7 @@ appendaction("finalizers",   "lists",       "nodes.linefillers.handler",        
 
 appendaction("contributers", "normalizers", "nodes.handlers.flattenline",                       nil, "nut",    "disabled"  )
 appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds",                   nil, "nut",    "disabled"  )
-
+appendaction("contributers", "normalizers", "nodes.handlers.wipe",                              nil, "nut",    "disabled"  )
 
 appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",                   nil, "nut",    "disabled"  )
 ------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )

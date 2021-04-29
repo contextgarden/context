@@ -1,0 +1,43 @@
+if not modules then modules = { } end modules ['mlib-snc'] = {
+    version   = 1.001,
+    comment   = "companion to anch-snc.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local scanners       = mp.scan
+local injectors      = mp.inject
+
+local scannumeric    = scanners.numeric
+local scaninteger    = scanners.integer
+local scanstring     = scanners.string
+local mpnumeric      = injectors.numeric
+
+local factor         = number.dimenfactors.bp
+
+local synchronizers  = graphics.synchronizers
+local registerscript = metapost.registerscript
+
+-- no need for locals (yet)
+
+registerscript("asnc_collect", function()
+ -- category realpage region
+    mpnumeric(synchronizers.collect(scaninteger(),scaninteger(),scanstring()))
+end)
+
+registerscript("asnc_extend",   function() mpnumeric(synchronizers.extend  ()) end)
+registerscript("asnc_prune",    function() mpnumeric(synchronizers.prune   ()) end)
+registerscript("asnc_collapse", function() mpnumeric(synchronizers.collapse()) end)
+
+registerscript("asnc_getsize",  function() mpnumeric(synchronizers.getsize  ()                      ) end)
+registerscript("asnc_gettop",   function() mpnumeric(synchronizers.gettop   (scaninteger()) * factor) end)
+registerscript("asnc_getbottom",function() mpnumeric(synchronizers.getbottom(scaninteger()) * factor) end)
+registerscript("asnc_getkind",  function() mpnumeric(synchronizers.getkind  (scaninteger())         ) end)
+registerscript("asnc_gettask",  function() mpnumeric(synchronizers.gettask  (scaninteger())         ) end)
+
+registerscript("asnc_getx",     function() mpnumeric(synchronizers.getx() * factor) end)
+registerscript("asnc_gety",     function() mpnumeric(synchronizers.gety() * factor) end)
+registerscript("asnc_getw",     function() mpnumeric(synchronizers.getw() * factor) end)
+registerscript("asnc_geth",     function() mpnumeric(synchronizers.geth() * factor) end)
+registerscript("asnc_getd",     function() mpnumeric(synchronizers.getd() * factor) end)

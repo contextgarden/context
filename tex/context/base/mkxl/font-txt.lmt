@@ -249,7 +249,6 @@ end
 -- users do that. On the other hand, we do support longer glyph runs in both modes
 -- so there we gain a bit.
 
-
 do
 
     local currentscale, currentxscale, currentyscale
@@ -294,20 +293,9 @@ do
             start = nil
         end
 
-        -- maybe: isnextchar
-
         while current do
-         -- local char, id = ischar(current,font,dynamic)
             local char, id = ischar(current,font,dynamic,currentscale,currentxscale,currentyscale)
             if char then
-             -- local s, sx, sy = getscales(current)
-             -- if s ~= currentscale or sx ~= currentxscale or sy ~= currentyscale then
-             --     if start and size > 0 then
-             --         handle(startspacing,false)
-             --     end
-             --     startspacing = false
-             --     currentscale, currentxscale, currentyscale = s, sx, sy
-             -- end
                 if not start then
                     start = current
                     startrlmode = rlmode

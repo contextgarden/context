@@ -6,23 +6,16 @@ if not modules then modules = { } end modules ['anch-snc'] = {
     license   = "see context related readme files"
 }
 
-
--- use factors as in mlib-int.lua
-
 local tonumber, next, setmetatable = tonumber, next, setmetatable
 local concat, sort, remove, copy = table.concat, table.sort, table.remove, table.copy
 local match, find = string.match, string.find
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-
+local setmetatableindex = table.setmetatableindex
 local P, Cc = lpeg.P, lpeg.Cc
 
-local setmetatableindex = table.setmetatableindex
-
-local factor            = number.dimenfactors.bp
-local mpprint           = mp.print
-local mpnumeric         = mp.numeric
-local mppoints          = mp.points
-local texgetdimen       = tex.getdimen
+graphics                = graphics or { }
+local synchronizers     = { }
+graphics.synchronizers  = synchronizers
 
 local p_number = lpegpatterns.cardinal/tonumber
 local p_space  = lpegpatterns.whitespace^0
@@ -30,8 +23,6 @@ local p_tag    = P("syncpos:") * p_number * P(":") * p_number
 local p_option = p_number * ((P(",") * p_space * P("reset") * Cc(true)) + Cc(false)) -- for now
 
 local list     = { }
-local colors   = setmetatableindex("table")
-
 local kinds    = {
     above    = 1,
     continue = 2,
@@ -71,12 +62,12 @@ end)
 
 local lastdone = { }
 
-function mp.sync_collect(category,realpage,useregion)
+function synchronizers.collect(category,realpage,region)
     local all = allentries[category]
     local m   = 0
     local n   = #all
     list = { }
-    if useregion then
+    if region and region ~= "" then
         -- successive can be optimized when we sort by region
         local start = 1
         local done  = false
@@ -85,7 +76,7 @@ function mp.sync_collect(category,realpage,useregion)
             local pos = all[i]
             local p = pos.p
             local r = pos.r
-            if r == useregion then
+            if r == region then
                 if not done then
                     local region = job.positions.collected[r]
                     list.region  = region
@@ -164,15 +155,15 @@ function mp.sync_collect(category,realpage,useregion)
         else
             local l = lastdone[category]
             if l then
-                list = copy(l) -- inefficient, mayb emetatable for region/page
+                list = copy(l) -- inefficient, maybe metatable for region/page
                 m    = 3
             end
         end
     end
-    mpnumeric(m)
+    return m
 end
 
-function mp.sync_extend()
+function synchronizers.extend()
      local n = #list
      if n > 0 then
         for i=1,n do
@@ -189,10 +180,10 @@ function mp.sync_extend()
             end
         end
     end
-    mpnumeric(n)
+    return n
 end
 
-function mp.sync_prune()
+function synchronizers.prune()
      local n = #list
      if n > 0 then
         if list[1].kind == "above" then
@@ -206,10 +197,10 @@ function mp.sync_prune()
         end
         n = #list
     end
-    mpnumeric(n)
+    return n
 end
 
-function mp.sync_collapse()
+function synchronizers.collapse()
     local n = #list
     if n > 0 then
         local m = 0
@@ -230,40 +221,20 @@ function mp.sync_collapse()
         end
         n = m
     end
-    mpnumeric(n)
+    return n
 end
 
-function mp.sync_set_color(category,n,v)
-    colors[category][n] = v
-end
+function synchronizers.getsize  ()  return #list               end
+function synchronizers.gettop   (n) return list[n].top         end
+function synchronizers.getbottom(n) return list[n].bottom      end
+function synchronizers.getkind  (n) return kinds[list[n].kind] end
+function synchronizers.gettask  (n) return list[n].task        end
 
-function mp.sync_get_color(category,n)
-    mpprint(colors[category][n])
-end
-
--- function mp.sync_get_size  ()  mpnumeric(#list) end
--- function mp.sync_get_top   (n) mppoints (list[n].top) end
--- function mp.sync_get_bottom(n) mppoints (list[n].bottom) end
--- function mp.sync_get_kind  (n) mpnumeric(kinds[list[n].kind]) end
--- function mp.sync_get_task  (n) mpnumeric(list[n].task) end
-
--- function mp.sync_get_x() mppoints(list.page.x or 0) end
--- function mp.sync_get_y() mppoints(list.page.y or 0) end
--- function mp.sync_get_w() mppoints(list.page.w or 0) end
--- function mp.sync_get_h() mppoints(list.page.h or 0) end
--- function mp.sync_get_d() mppoints(list.page.d or 0) end
-
-function mp.sync_get_size  ()  mpnumeric(#list) end
-function mp.sync_get_top   (n) mpnumeric(list[n].top * factor) end
-function mp.sync_get_bottom(n) mpnumeric(list[n].bottom * factor) end
-function mp.sync_get_kind  (n) mpnumeric(kinds[list[n].kind]) end
-function mp.sync_get_task  (n) mpnumeric(list[n].task) end
-
-function mp.sync_get_x() mpnumeric((list.page.x or 0)*factor) end
-function mp.sync_get_y() mpnumeric((list.page.y or 0)*factor) end
-function mp.sync_get_w() mpnumeric((list.page.w or 0)*factor) end
-function mp.sync_get_h() mpnumeric((list.page.h or 0)*factor) end
-function mp.sync_get_d() mpnumeric((list.page.d or 0)*factor) end
+function synchronizers.getx() return list.page.x or 0 end
+function synchronizers.gety() return list.page.y or 0 end
+function synchronizers.getw() return list.page.w or 0 end
+function synchronizers.geth() return list.page.h or 0 end
+function synchronizers.getd() return list.page.d or 0 end
 
 -- function mp.xxOverlayRegion()
 --     local r = tokens.getters.macro("m_overlay_region")

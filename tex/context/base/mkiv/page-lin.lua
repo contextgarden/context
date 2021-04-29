@@ -84,7 +84,6 @@ local nextvlist          = nuts.traversers.vlist
 local copy_node          = nuts.copy
 ----- hpack_nodes        = nuts.hpack
 local is_display_math    = nuts.is_display_math
-local leftmarginwidth    = nuts.leftmarginwidth
 
 ----- nodepool           = nuts.pool
 ----- new_kern           = nodepool.kern

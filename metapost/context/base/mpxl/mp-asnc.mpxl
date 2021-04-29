@@ -1,0 +1,131 @@
+%D \module
+%D   [       file=mp-asnc.mpiv,
+%D        version=2012.02.19, % was mp-core: 1999.08.01, anchoring
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=anchored background macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D See anch-snc.mkxl for historic comments.
+
+if known context_asnc : endinput ; fi ;
+
+boolean context_asnc ; context_asnc := true ;
+
+newscriptindex mfid_asnc_collect   ; mfid_asnc_collect   := scriptindex "asnc_collect"  ; def asnc_collect (expr category,realpage,region) = runscript mfid_asnc_collect (category) (realpage) (region)  enddef ;
+
+newscriptindex mfid_asnc_extend    ; mfid_asnc_extend    := scriptindex "asnc_extend"   ; def asnc_extend    = runscript mfid_asnc_extend    enddef ;
+newscriptindex mfid_asnc_prune     ; mfid_asnc_prune     := scriptindex "asnc_prune"    ; def asnc_prune     = runscript mfid_asnc_prune     enddef ;
+newscriptindex mfid_asnc_collapse  ; mfid_asnc_collapse  := scriptindex "asnc_collapse" ; def asnc_collapse  = runscript mfid_asnc_collapse  enddef ;
+newscriptindex mfid_asnc_getsize   ; mfid_asnc_getsize   := scriptindex "asnc_getsize"  ; def asnc_getsize   = runscript mfid_asnc_getsize   enddef ;
+newscriptindex mfid_asnc_getx      ; mfid_asnc_getx      := scriptindex "asnc_getx"     ; def asnc_getx      = runscript mfid_asnc_getx      enddef ;
+newscriptindex mfid_asnc_gety      ; mfid_asnc_gety      := scriptindex "asnc_gety"     ; def asnc_gety      = runscript mfid_asnc_gety      enddef ;
+newscriptindex mfid_asnc_getw      ; mfid_asnc_getw      := scriptindex "asnc_getw"     ; def asnc_getw      = runscript mfid_asnc_getw      enddef ;
+newscriptindex mfid_asnc_geth      ; mfid_asnc_geth      := scriptindex "asnc_geth"     ; def asnc_geth      = runscript mfid_asnc_geth      enddef ;
+newscriptindex mfid_asnc_getd      ; mfid_asnc_getd      := scriptindex "asnc_getd"     ; def asnc_getd      = runscript mfid_asnc_getd      enddef ;
+
+newscriptindex mfid_asnc_gettop    ; mfid_asnc_gettop    := scriptindex "asnc_gettop"   ; def asnc_gettop   (expr n) = (runscript mfid_asnc_gettop    n) enddef ;
+newscriptindex mfid_asnc_getbottom ; mfid_asnc_getbottom := scriptindex "asnc_getbottom"; def asnc_getbottom(expr n) = (runscript mfid_asnc_getbottom n) enddef ;
+newscriptindex mfid_asnc_getkind   ; mfid_asnc_getkind   := scriptindex "asnc_getkind"  ; def asnc_getkind  (expr n) = (runscript mfid_asnc_getkind   n) enddef ;
+newscriptindex mfid_asnc_gettask   ; mfid_asnc_gettask   := scriptindex "asnc_gettask"  ; def asnc_gettask  (expr n) = (runscript mfid_asnc_gettask   n) enddef ;
+
+presetparameters "synchronizer" [
+    color    = "darkgray", % default color
+    colors   = {
+        "darkred"
+        "darkgreen"
+        "darkblue",
+        "darkyellow",
+        "darkmagenta",
+        "darkcyan",
+        "darkgray"
+    },
+    index    = 1,
+    hoffset  = 0,
+    voffset  = 0,
+    region   = "",
+    width    = 1cm,
+    extend   = false,
+    prune    = true,
+    collapse = true,
+    draw     = true,
+    fill     = true,
+    page     = "auto", % yes | clip | auto | no
+] ;
+
+def lmt_synchronizer = applyparameters "synchronizer" "lmt_do_synchronizer" enddef ;
+
+vardef lmt_do_synchronizer =
+    pushparameters "synchronizer" ;
+        begingroup ;
+        save index, dx, dy, width, count, page, region, paths, tasks, kinds ;
+        path paths[] ; numeric tasks[] ; numeric kinds[] ;
+        %
+        numeric index  ; index  := getparameter "index" ;
+        numeric dx     ; dx     := getparameter "hoffset" ;
+        numeric dy     ; dy     := getparameter "voffset" ;
+        numeric width  ; width  := getparameter "width" ;
+        numeric count  ; count  := 0 ;
+        string page    ; page   := getparameter "page" ;
+        string region  ; region := getparameter "region" ;
+        %
+        count := asnc_collect(index,RealPageNumber,region) ;
+        if getparameter "extend" :
+            count := asnc_extend ; % to top of text area
+        fi ;
+        if getparameter "prune" :
+            count := asnc_prune ; % clip top / bottom
+        fi ;
+        if getparameter "collapse" :
+            count := asnc_collapse ;
+        fi ;
+        if count > 0 :
+            save k, t, b, l, r, y ;
+            numeric l ; l := dx ;
+            numeric r ; r := dx + width ;
+            numeric y ; y := asnc_gety + dy ;
+            for i=1 upto count :
+                k := asnc_getkind(i) ;
+                t := asnc_gettop(i) - y ;
+                b := asnc_getbottom(i) - y ;
+                paths[i] = ((l,t) -- (r,t) -- (r,b) -- (l,b) -- cycle) ;
+                tasks[i] = asnc_gettask(i) ;
+                kinds[i] = k ;
+            endfor ;
+            if page = "auto" :
+                page := if region == "" : "clip" else : "no" fi ;
+            fi ;
+            if (page = "clip") or (page = "yes") :
+                StartPage ;
+            fi ;
+            if getparameter "fill" :
+                for i=1 upto count :
+                    fill paths[i]
+                        withcolor getparameterdefault "colors" i (getparameter "color") ;
+                    ;
+                endfor ;
+            fi ;
+            if getparameter "draw" :
+                for i=1 upto count :
+                    draw paths[i]
+                        withcolor getparameterdefault "colors" i (getparameter "color") ;
+                    ;
+                endfor ;
+            fi ;
+            if page = "clip" :
+                clip currentpicture to Page ;
+                setbounds currentpicture to Page ;
+            fi ;
+            if (page = "clip") or (page = "yes") :
+                StopPage ;
+            fi ;
+        fi ;
+        endgroup ;
+    popparameters ;
+enddef ;
+

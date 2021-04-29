@@ -107,7 +107,7 @@ local function tohbox(str,fontid,spacing)
 end
 
 local function tovpack(str,fontid,spacing)
-    -- vpack is just a hack, and a proper implemtation is on the agenda
+    -- vpack is just a hack, and a proper implementation is on the agenda
     -- as it needs more info etc than currently available
     return vpack_node_list(tonodes(str,fontid,spacing))
 end

@@ -2634,9 +2634,9 @@ return {
         },
         {
             patterns = {
-                ffi = "f|f|i",
-                ffl = "f|f|l",
-                fff = "f|f|f",
+                ffi = "ff|i",
+                ffl = "ff|l",
+                fff = "ff|f",
             },
             words = [[
                 Griffleisten

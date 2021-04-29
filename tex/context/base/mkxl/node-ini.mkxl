@@ -26,12 +26,12 @@
 %registerctxluafile{node-ppt}{} % experimental, not used so probably useless
 \registerctxluafile{node-aux}{autosuffix}
 \registerctxluafile{node-gcm}{autosuffix}
-\registerctxluafile{node-tst}{}
+\registerctxluafile{node-tst}{autosuffix}
 \registerctxluafile{node-tra}{autosuffix}
 \registerctxluafile{node-snp}{autosuffix}
-\registerctxluafile{node-tsk}{}
+\registerctxluafile{node-tsk}{autosuffix}
 \registerctxluafile{node-tex}{autosuffix}
-\registerctxluafile{node-dir}{} % experimental, not yet (and maybe never) used
+\registerctxluafile{node-dir}{autosuffix}
 \registerctxluafile{node-pro}{autosuffix}
 \registerctxluafile{node-ser}{autosuffix}
 \registerctxluafile{node-acc}{autosuffix} % experimental

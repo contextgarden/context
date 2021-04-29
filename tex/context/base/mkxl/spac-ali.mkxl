@@ -722,17 +722,17 @@
 \defcsname\??aligncommand\v!stretch        \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_stretch}}
 \defcsname\??aligncommand\v!extremestretch \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
 
-\defcsname\??aligncommand  \v!final\endcsname{\c_spac_align_state_par_fill\plusone}
-\defcsname\??aligncommand1*\v!final\endcsname{\c_spac_align_state_par_fill\plusone}
-\defcsname\??aligncommand2*\v!final\endcsname{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
-\defcsname\??aligncommand3*\v!final\endcsname{\c_spac_align_state_par_fill\plusthree}
-\defcsname\??aligncommand4*\v!final\endcsname{\c_spac_align_state_par_fill\plusfour}
+\defcsname\??aligncommand          \v!final\endcsname{\c_spac_align_state_par_fill\plusone}
+\defcsname\??aligncommand        1*\v!final\endcsname{\c_spac_align_state_par_fill\plusone}
+\defcsname\??aligncommand        2*\v!final\endcsname{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
+\defcsname\??aligncommand        3*\v!final\endcsname{\c_spac_align_state_par_fill\plusthree}
+\defcsname\??aligncommand        4*\v!final\endcsname{\c_spac_align_state_par_fill\plusfour}
 
 % a one shot (only usefull in e.g. framed, also needs tolerance and stretch)
 
-\defcsname\??aligncommand  \v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
-\defcsname\??aligncommand1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
-\defcsname\??aligncommand2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
+\defcsname\??aligncommand          \v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\defcsname\??aligncommand        1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\defcsname\??aligncommand        2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}

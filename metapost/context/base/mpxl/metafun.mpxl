@@ -46,6 +46,7 @@ input "mp-func.mpxl" ;
 input "mp-node.mpxl" ;
 input "mp-apos.mpxl" ;
 input "mp-abck.mpxl" ;
+input "mp-asnc.mpxl" ;
 input "mp-blob.mpxl" ;
 input "mp-lmtx.mpxl" ;
 input "mp-text.mpxl" ;

@@ -11,15 +11,119 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D The original is in the mkii file. It does more at the \TEX\ end and
-%D has some more magic. If we really need that I'll add it. After all,
-%D in mkiv we can do things different.
+%D This is a rather old mechanism that we once needed in an actually nice design.
+%D Those were the times that processing a rather complex xml file with \PDFTEX\ into
+%D a 400 page document took 45 minutes (a few runs) while nowadays with luatex and
+%D \MKIV\ (and \LMTX) we express runtime in seconds.
+%D
+%D In retrospect it was a waste of time (and money) to invest in all these
+%D mechanisms because the publishers we were dealign with were far from ready for
+%D dealing with xml and let alone automatic rendering. But, as the code still worked
+%D well after nearly two decades I decided to revive it .. maybe some curious
+%D \CONTEXT\ user can benefit from it after all.
+%D
+%D The logic is mostly the same as in \MKII\ but some work is now delegated to \LUA\
+%D so that we save memory and gain some runtime. As this was not really a used
+%D module the interface also was upgraded. As we know the bottlenecks in \METAPOST\
+%D we also work around those a bit. It made sense too change the interface to use
+%D the new \LMTX\ mechanisms for passing parameters. The old interface can be found
+%D in the \MKII\ and \MKIV\ files.
 
-%D TODO: bleed : + left , minus right oro check if it touches page ... autobleed
+%D TODO: bleed | autobleed
 
 \writestatus{loading}{ConTeXt Anchoring Macros / Synchronization}
 
 \registerctxluafile{anch-snc}{}
+\registerctxluafile{mlib-snc}{}
+
+%D \stoptyping
+%D \starttext
+%D
+%D \setuplayout[location=middle]
+%D \setupbodyfont[dejavu]
+%D
+%D \definesyncpositions[1]
+%D \definesyncpositions[2]
+%D
+%D % \startuseMPgraphic{sync1}
+%D %     StartPage ;
+%D %         lmt_synchronizer [ ... ] ;
+%D %         clip currentpicture to Page ;
+%D %         setbounds currentpicture to Page ;
+%D %     StopPage ;
+%D % \stopuseMPgraphic
+%D
+%D \startuseMPgraphic{sync1}
+%D     lmt_synchronizer [
+%D       % page       = "yes",
+%D         index      = 1,
+%D         hoffset    = 0,
+%D         width      = BackSpace - LeftMarginDistance,
+%D         extend     = false,
+%D         prune      = true,
+%D         draw       = false,
+%D         fill       = true,
+%D     ] ;
+%D \stopuseMPgraphic
+%D
+%D \startuseMPgraphic{sync2}
+%D     lmt_synchronizer [
+%D         index   = 2,
+%D         region  = OverlayRegion,
+%D         hoffset = -1cm,
+%D         width   = 1cm,
+%D         extend  = true,
+%D         prune   = false,
+%D         draw    = false,
+%D         fill    = true,
+%D     ] ;
+%D     clip currentpicture to OverlayBox leftenlarged 1cm;
+%D     setbounds currentpicture to OverlayBox ;
+%D \stopuseMPgraphic
+%D
+%D \defineoverlay[tempoverlay1][\useMPgraphic{sync1}]
+%D \defineoverlay[tempoverlay2][\useMPgraphic{sync2}]
+%D
+%D \setupbackgrounds[page][background=tempoverlay1]
+%D
+%D \framed[region=yes,background=tempoverlay2,width=14cm,align=normal]{%
+%D     \syncposition[2][1]\samplefile{ward}\endgraf
+%D     \syncposition[2][2]\samplefile{ward}\endgraf
+%D     \syncposition[2][3]\samplefile{ward}\endgraf
+%D }
+%D
+%D \vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=16cm,align=normal]{%
+%D     \syncposition[2][1]\samplefile{ward}\endgraf
+%D     \syncposition[2][2]\samplefile{ward}\endgraf
+%D     \syncposition[2][3]\samplefile{ward}\endgraf
+%D }
+%D
+%D \vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=10cm,align=normal]{%
+%D     \syncposition[2][1]\samplefile{ward}\endgraf
+%D     \syncposition[2][2]\samplefile{ward}\endgraf
+%D     \syncposition[2][3]\samplefile{ward}\endgraf
+%D }
+%D
+%D \dorecurse {100} {
+%D     \startchapter[title={Test #1}]
+%D         \syncposition[1][1,reset]\dorecurse{20}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][2]\dorecurse {4}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][3]\dorecurse {7}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][4]\dorecurse {3}{\samplefile{ward}\endgraf}
+%D     \stopchapter
+%D }
+%D
+%D \dorecurse {100} {
+%D     \startchapter[title={Test #1}]
+%D         \syncposition[1][1]\dorecurse{1}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][2]\dorecurse{1}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][3]\dorecurse{1}{\samplefile{ward}\endgraf}
+%D         \syncposition[1][4]\dorecurse{1}{\samplefile{ward}\endgraf}
+%D     \stopchapter
+%D }
+%D
+%D \stoptext
+%D \stoptyping
 
 \unprotect
 
@@ -46,112 +150,3 @@
    \ignorespaces}
 
 \protect
-
-\continueifinputfile{anch-snc.mkiv}
-
-\starttext
-
-% \setuppapersize[A4][A3]
-
-\setuplayout[location=middle]
-
-\setupbodyfont[dejavu]
-
-\definesyncpositions[1]
-\definesyncpositions[2]
-
-% \enabletrackers[metapost.lua]
-
-\startMPdefinitions
-    input "mp-asnc.mpiv" ;
-
-    SetSyncColor(1,0,"magenta") ;
-    SetSyncColor(1,1,"red") ;
-    SetSyncColor(1,2,"green") ;
-    SetSyncColor(1,3,"blue") ;
-    SetSyncColor(1,4,"yellow") ;
-
-    SetSyncColor(2,0,"magenta") ;
-    SetSyncColor(2,1,"red") ;
-    SetSyncColor(2,2,"green") ;
-    SetSyncColor(2,3,"blue") ;
-    SetSyncColor(2,4,"yellow") ;
-\stopMPdefinitions
-
-\startuseMPgraphic{sync1}
-    StartPage ;
-        StartSync(1) ;
-            SyncHOffset := 0 ;
-            SyncWidth   := BackSpace - LeftMarginDistance;
-            CollectSyncDataPage ;
-         %  ExtendSyncPaths ;  % to top of text area
-            PruneSyncPaths ;   % clip top / bottom
-            CollapseSyncPaths ;
-            MakeSyncPaths ;
-          % DrawSyncPaths ;
-            FillSyncPaths ;
-        StopSync ;
-        clip currentpicture to Page ;
-        setbounds currentpicture to Page ;
-    StopPage ;
-\stopuseMPgraphic
-
-\startuseMPgraphic{sync2}
-    StartSync(2) ;
-        SyncHOffset := -1cm ;
-        SyncWidth   :=  1cm ;
-        CollectSyncDataRegion(OverlayRegion) ;
-        ExtendSyncPaths ;  % to top of text area
-        MakeSyncPaths ;
-        FillSyncPaths ;
-    StopSync ;
-    clip currentpicture to OverlayBox leftenlarged 1cm;
-    setbounds currentpicture to OverlayBox ;
-\stopuseMPgraphic
-
-\defineoverlay[tempoverlay1][\useMPgraphic{sync1}]
-\defineoverlay[tempoverlay2][\useMPgraphic{sync2}]
-
-\setupbackgrounds[page][background=tempoverlay1]
-
-\framed[region=yes,background=tempoverlay2,width=14cm,align=normal]{
-    \syncposition[2][1]\samplefile{ward}\endgraf
-    \syncposition[2][2]\samplefile{ward}\endgraf
-    \syncposition[2][3]\samplefile{ward}\endgraf
-}
-
-
-\vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=16cm,align=normal]{
-    \syncposition[2][1]\samplefile{ward}\endgraf
-    \syncposition[2][2]\samplefile{ward}\endgraf
-    \syncposition[2][3]\samplefile{ward}\endgraf
-}
-
-\vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=10cm,align=normal]{
-    \syncposition[2][1]\samplefile{ward}\endgraf
-    \syncposition[2][2]\samplefile{ward}\endgraf
-    \syncposition[2][3]\samplefile{ward}\endgraf
-}
-
-
-\dorecurse {100} {
-% \dorecurse {1} {
-    \startchapter[title={Test #1}]
-        \syncposition[1][1,reset]\dorecurse{20}{\samplefile{ward}\endgraf}
-        \syncposition[1][2]\dorecurse {4}{\samplefile{ward}\endgraf}
-        \syncposition[1][3]\dorecurse {7}{\samplefile{ward}\endgraf}
-        \syncposition[1][4]\dorecurse {3}{\samplefile{ward}\endgraf}
-    \stopchapter
-}
-
-\dorecurse {100} {
-% \dorecurse {1} {
-    \startchapter[title={Test #1}]
-        \syncposition[1][1]\dorecurse{1}{\samplefile{ward}\endgraf}
-        \syncposition[1][2]\dorecurse{1}{\samplefile{ward}\endgraf}
-        \syncposition[1][3]\dorecurse{1}{\samplefile{ward}\endgraf}
-        \syncposition[1][4]\dorecurse{1}{\samplefile{ward}\endgraf}
-    \stopchapter
-}
-
-\stoptext
