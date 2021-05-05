@@ -31,26 +31,44 @@ numeric par_strut_height,
 nofmultipars     := 0 ;
 par_strut_height := 0 ;
 par_strut_depth  := 0 ;
-par_line_height  := 0 ;
+% par_line_height  := 0 ;
 
-def boxgridoptions = withcolor .8red   enddef ;
-def boxlineoptions = withcolor .8blue  enddef ;
-def boxfilloptions = withcolor .8white enddef ;
+pair    boxgriddirection ; boxgriddirection := up ;   % to be interfaced
+numeric boxgriddistance  ; boxgriddistance  := .5cm ; % to be interfaced
 
-numeric boxgridtype      ; boxgridtype      := 0 ;
-numeric boxlinetype      ; boxlinetype      := 1 ;
-numeric boxfilltype      ; boxfilltype      := 1 ;
-numeric boxdashtype      ; boxdashtype      := 0 ;
-pair    boxgriddirection ; boxgriddirection := up ;
-numeric boxgridwidth     ; boxgridwidth     := 1pt ;
-numeric boxlinewidth     ; boxlinewidth     := 1pt ;
-numeric boxlineradius    ; boxlineradius    := 0 ;
-numeric boxlineoffset    ; boxlineoffset    := 0 ;
-numeric boxfilloffset    ; boxfilloffset    := 0 ;
-numeric boxgriddistance  ; boxgriddistance  := .5cm ;
-numeric boxgridshift     ; boxgridshift     := 0 ;
+def boxgridtype     = (runscript mfid_mpvarn "gridtype"  ) enddef ;
+def boxgridwidth    = (runscript mfid_mpvard "gridwidth" ) enddef ;
+def boxgridshift    = (runscript mfid_mpvard "gridshift" ) enddef ;
+def boxgridcolor    = (runscript mfid_mpvars "gridcolor" ) enddef ;
 
-mutable multipars, multiregs, multibox, multikind, multilocs, nofmultipars ;
+def boxlinetype     = (runscript mfid_mpvarn "linetype"  ) enddef ;
+def boxlinewidth    = (runscript mfid_mpvard "linewidth" ) enddef ;
+def boxlineradius   = (runscript mfid_mpvard "lineradius") enddef ;
+def boxlineoffset   = (runscript mfid_mpvard "lineoffset") enddef ;
+def boxlinecolor    = (runscript mfid_mpvars "linecolor" ) enddef ;
+
+def boxfilltype     = (runscript mfid_mpvarn "filltype"  ) enddef ;
+def boxfilloffset   = (runscript mfid_mpvard "filloffset") enddef ;
+def boxfillcolor    = (runscript mfid_mpvars "fillcolor" ) enddef ;
+
+def boxdashtype     = (runscript mfid_mpvarn "dashtype"  ) enddef ;
+
+def boxalternative  = (runscript mfid_mpvarn "alternative" ) enddef;
+def boxdistance     = (runscript mfid_mpvard "distance"    ) enddef;
+def boxtopoffset    = (runscript mfid_mpvard "topoffset"   ) enddef;
+def boxbottomoffset = (runscript mfid_mpvard "bottomoffset") enddef;
+
+def boxgridoptions  = withcolor boxgridcolor enddef ;
+def boxlineoptions  = withcolor boxlinecolor enddef ;
+def boxfilloptions  = withcolor boxfillcolor enddef ;
+
+mutable
+    multipars, multiregs, multibox, multikind, multilocs, nofmultipars,
+    boxgridtype, boxgridwidth, boxgridshift, boxgridcolor,
+    boxlinetype, boxlinewidth, boxlineradius, boxlineoffset, boxlinecolor,
+    boxfilltype, boxfilloffset, boxfillcolor, boxdashtype,
+    boxalternative, boxdistance, boxtopoffset, boxbottomoffset,
+    boxgridoptions, boxlineoptions, boxfilloptions ;
 
 vardef abck_draw_path(expr p) =
     if (length p > 2) and (bbwidth(p) > 1) and (bbheight(p) > 1) :

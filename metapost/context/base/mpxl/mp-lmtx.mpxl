@@ -2361,11 +2361,19 @@ permanent scrutenized ;
 %
 % permanent mpv_numeric, mpv_dimension, mpv_string ;
 
-newscriptindex mfid_mpvar ; mfid_mpvar := scriptindex "mpvar" ;
+% newscriptindex mfid_mpvar ; mfid_mpvar := scriptindex "mpvar" ;
+%
+% def mpvar = runscript mfid_mpvar enddef ;
 
-def mpvar = runscript mfid_mpvar enddef ;
+% d(imension) n(umber) s(tring) b(oolean) <heuristic>
 
-permanent mpvar ;
+newscriptindex mfid_mpvard ; mfid_mpvard := scriptindex "mpvard" ; def mpvard = runscript mfid_mpvard enddef ; % dimension
+newscriptindex mfid_mpvarn ; mfid_mpvarn := scriptindex "mpvarn" ; def mpvarn = runscript mfid_mpvarn enddef ; % numeric
+newscriptindex mfid_mpvars ; mfid_mpvars := scriptindex "mpvars" ; def mpvars = runscript mfid_mpvars enddef ; % string
+newscriptindex mfid_mpvarb ; mfid_mpvarb := scriptindex "mpvarb" ; def mpvarb = runscript mfid_mpvarb enddef ; % string
+newscriptindex mfid_mpvar  ; mfid_mpvar  := scriptindex "mpvar"  ; def mpvar  = runscript mfid_mpvar  enddef ; % automatic
+
+permanent mpvard, mpvarn, mpvars, mpvarb, mpvar ;
 
 % for old times sake (metafun manual)
 

@@ -1314,6 +1314,13 @@
 
 \permanent\protected\def\forcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
 
+\aliased\let\normalforcecolorhack\forcecolorhack
+
+\installtexexperiment
+  {disablecolorhack}
+  {\pushoverloadmode\enforced\let\forcecolorhack\relax\popoverloadmode}
+  {\pushoverloadmode\enforced\let\forcecolorhack\normalforcecolorhack\popoverloadmode}
+
 %D We default to the colors defined in \type {colo-imp-rgb} and support both \RGB\
 %D and \CMYK\ output. Transparencies are defined here:
 

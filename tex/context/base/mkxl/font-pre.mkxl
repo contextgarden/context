@@ -180,7 +180,7 @@
 \definefontfeature
   [syriac]
   [arabic]
-  [fin2=yes,fin3=yes,med2=yes]
+  [fin2=yes,fin3=yes,med2=yes] % script=syrc
 
 \definefontfeature
   [reordercombining]

@@ -204,7 +204,7 @@ return {
         "newcolor", "newrgbcolor", "newcmykcolor",
         "newnumeric", "newboolean", "newtransform", "newpath", "newpicture", "newstring", "newpair",
         --
-        "mpvar",
+        "mpvard", "mpvarn", "mpvars", "mpvar",
         --
         "withtolerance",
         --

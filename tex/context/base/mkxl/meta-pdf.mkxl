@@ -34,8 +34,6 @@
 %D graphics. The color control flags are also gone as we now integrate into the
 %D regular colorspace handling (i.e.\ no longer independent configurations.)
 
-\permanent\def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi} % obsolete, will go
-
 \mutable\let\MPfilename\empty
 
 \permanent\protected\def\convertMPtoPDF#1#2#3% scaling no longer supported at this level (so #2 & #3 are ignored)

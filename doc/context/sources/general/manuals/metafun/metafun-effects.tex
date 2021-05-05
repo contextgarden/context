@@ -1237,7 +1237,7 @@ definition.
 
 \startbuffer
 \startMPclip{head clip}
- w := \width ; h := \height ;
+ w := OverlayWidth ; h := OverlayHeight ;
  clip currentpicture to
   ((0,h)--(w,h){down}..{left}(0,0)--cycle) ;
 \stopMPclip
@@ -1305,7 +1305,7 @@ We can call up such a buffer as if it were an external figure. \in {Figure}
 \startbuffer[a]
 \startMPclip{text clip}
   clip currentpicture to fullcircle shifted (.5,.5)
-    xscaled \width yscaled \height ;
+    xscaled OverlayWidth yscaled OverlayHeight ;
 \stopMPclip
 \stopbuffer
 
@@ -1373,7 +1373,7 @@ in a similar way, using the predefined path \type {diamond}:
 \starttyping
 \startMPclip{diamond}
   clip currentpicture to unitdiamond
-    xscaled \width yscaled \height ;
+    xscaled OverlayWidth yscaled OverlayHeight ;
 \stopMPclip
 \stoptyping
 
@@ -1384,7 +1384,7 @@ with \CONTEXT.
 \starttyping
 \startMPclip{negellipse}
   clip currentpicture to (unitcircle peepholed unitsquare)
-    xscaled \width yscaled \height ;
+    xscaled OverlayWidth yscaled OverlayHeight ;
 \stopMPclip
 \stoptyping
 

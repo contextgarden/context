@@ -258,7 +258,6 @@ local function getparameters()
         setmetatableindex(parameters,presets)
     end
     namespaces[namespace] = parameters
-    --
 end
 
 local function applyparameters()
@@ -279,8 +278,9 @@ local function applyparameters()
     end
     namespaces[namespace] = parameters
     -- till here
-    mpprint(action)
+ -- mpprint(action)
     namespaces = saved
+    return action
 end
 
 local knownparameters    = { }
@@ -398,11 +398,12 @@ local function getparameter()
         end
         v = vl
     end
-    if v == nil then
-        return injectnumeric(0)
-    else
-        return get(v)
-    end
+--     if v == nil then
+--         return injectnumeric(0)
+--     else
+--         return get(v)
+--     end
+    return v or 0
 end
 
 local function hasparameter()
@@ -423,11 +424,12 @@ local function hasparameter()
         end
         v = vl
     end
-    if v == nil then
-        return injectboolean(false)
-    else
-        return injectboolean(true)
-    end
+ -- if v == nil then
+ --     return injectboolean(false)
+ -- else
+ --     return injectboolean(true)
+ -- end
+    return v ~= nil
 end
 
 local function hasoption()
@@ -439,7 +441,8 @@ local function hasoption()
                 local l = list[i]
                 local vl = v[l]
                 if vl == nil then
-                    return injectboolean(false)
+                 -- return injectboolean(false)
+                    return false
                 end
                 v = vl
             end
@@ -450,18 +453,21 @@ local function hasoption()
             -- no caching .. slow anyway
             local o = list[n]
             if v == o then
-                return injectboolean(true)
+             -- return injectboolean(true)
+                return true
             end
             for vv in gmatch(v,"[^%s,]+") do
                 for oo in gmatch(o,"[^%s,]+") do
                     if vv == oo then
-                        return injectboolean(true)
+                     -- return injectboolean(true)
+                        return true
                     end
                 end
             end
         end
     end
-    return injectboolean(false)
+ -- return injectboolean(false)
+    return false
 end
 
 local function getparameterdefault()
@@ -478,7 +484,8 @@ local function getparameterdefault()
             end
         end
         if vl == nil then
-            return injectnumeric(0)
+         -- return injectnumeric(0)
+            return 0
         else
             if type(vl) == "string" then
                 local td = type(list[n])
@@ -488,7 +495,8 @@ local function getparameterdefault()
                     vl = vl == "true"
                 end
             end
-            return get(vl)
+         -- return get(vl)
+            return vl
         end
     else
         for i=1,n-1 do
@@ -498,7 +506,8 @@ local function getparameterdefault()
                 if type(l) == "number" then
                     vl = v[1]
                     if vl == nil then
-                        return get(list[n])
+                     -- return get(list[n])
+                        return list[n]
                     end
                 else
                     local last = list[n]
@@ -514,26 +523,31 @@ local function getparameterdefault()
                                 local l = list[i]
                                 local vl = v[l]
                                 if vl == nil then
-                                    return injectnumeric(0)
+                                 -- return injectnumeric(0)
+                                    return 0
                                 end
                                 v = vl
                             end
-                            if v == nil then
-                                return injectnumeric(0)
-                            else
-                                return get(v)
-                            end
+                         -- if v == nil then
+                         --     return injectnumeric(0)
+                         -- else
+                         --     return get(v)
+                         -- end
+                            return v or 0
                         end
-                        return injectnumeric(0)
+                     -- return injectnumeric(0)
+                        return 0
                     else
-                        return get(last)
+                     -- return get(last)
+                        return last
                     end
                 end
             end
             v = vl
         end
         if v == nil then
-            return get(list[n])
+         -- return get(list[n])
+            return list[n]
         else
             if type(v) == "string" then
                 local td = type(list[n])
@@ -543,7 +557,8 @@ local function getparameterdefault()
                     v = v == "true"
                 end
             end
-            return get(v)
+         -- return get(v)
+            return v
         end
     end
 end
@@ -557,7 +572,8 @@ local function getparametercount()
             break
         end
     end
-    return injectnumeric(type(v) == "table" and #v or 0)
+ -- return injectnumeric(type(v) == "table" and #v or 0)
+    return type(v) == "table" and #v or 0
 end
 
 local function getmaxparametercount()
@@ -588,7 +604,8 @@ local function getmaxparametercount()
         end
 
     end
-    return injectnumeric(n)
+ -- return injectnumeric(n)
+    return n
 end
 
 local validconnectors = {
@@ -694,22 +711,24 @@ function metapost.scanparameters()
 end
 
 local registerscript = metapost.registerscript
+local registerdirect = metapost.registerdirect
+local registertokens = metapost.registertokens
 
-registerscript("getparameters",       getparameters)
-registerscript("applyparameters",     applyparameters)
-registerscript("presetparameters",    presetparameters)
-registerscript("hasparameter",        hasparameter)
-registerscript("hasoption",           hasoption)
-registerscript("getparameter",        getparameter)
-registerscript("getparameterdefault", getparameterdefault)
-registerscript("getparametercount",   getparametercount)
-registerscript("getmaxparametercount",getmaxparametercount)
-registerscript("getparameterpath",    getparameterpath)
-registerscript("getparameterpen",     getparameterpen)
-registerscript("getparametertext",    getparametertext)
---------------("getparameteroption",  getparameteroption)
-registerscript("pushparameters",      pushparameters)
-registerscript("popparameters",       popparameters)
+registerdirect("getparameters",       getparameters)        -- nothing
+registertokens("applyparameters",     applyparameters)      -- action    : todo "token"
+registerdirect("presetparameters",    presetparameters)     -- nothing
+registerdirect("hasparameter",        hasparameter)         -- boolean
+registerdirect("hasoption",           hasoption)            -- boolean
+registerdirect("getparameter",        getparameter)         -- whatever
+registerdirect("getparameterdefault", getparameterdefault)  -- whatever
+registerdirect("getparametercount",   getparametercount)    -- numeric
+registerdirect("getmaxparametercount",getmaxparametercount) -- numeric
+registerscript("getparameterpath",    getparameterpath)     -- tricky
+registerscript("getparameterpen",     getparameterpen)      -- tricky
+registerscript("getparametertext",    getparametertext)     -- tricky
+--------direct("getparameteroption",  getparameteroption)   -- boolean
+registerdirect("pushparameters",      pushparameters)       -- nothing
+registerdirect("popparameters",       popparameters)        -- nothing
 
 function metapost.getparameter(list)
     local n = #list
@@ -735,7 +754,7 @@ end
 
 -- goodies
 
-registerscript("definecolor", function()
+registerdirect("definecolor", function()
     scantoken() -- we scan the semicolon
     local s = get_parameters()
     attributes.colors.defineprocesscolordirect(s)

@@ -21,6 +21,8 @@ local possiblepath   = sandbox.possiblepath
 local context        = context
 local implement      = interfaces.implement
 
+local texset         = tex.set
+
 local qualified      = { }
 local writeable      = { }
 local readable       = { }
@@ -190,6 +192,21 @@ else
 
 end
 
+local function setoverloadmode(overloadmode)
+    if overloadmode == "warning" then
+        overloadmode = 3 -- 5
+    elseif overloadmode == "error" then
+        overloadmode = 4 -- 6
+    else
+        overloadmode = tonumber(overloadmode)
+    end
+    if overloadmode then
+        texset("overloadmode",overloadmode)
+    end
+end
+
+directives.register("overloadmode", setoverloadmode)
+
 local function processjob()
 
     tokens.setters.macro("processjob","","permanent")
@@ -213,19 +230,7 @@ local function processjob()
         }
     end
 
-    local overloadmode = arguments.overloadmode
-
-    if overloadmode == "warning" then
-        overloadmode = 3 -- 5
-    elseif overloadmode == "error" then
-        overloadmode = 4 -- 6
-    else
-        overloadmode = tonumber(overloadmode)
-    end
-
-    if overloadmode then
-        tex.set("overloadmode",overloadmode)
-    end
+    setoverloadmode(arguments.overloadmode)
 
     if not filename or filename == "" then
         -- skip

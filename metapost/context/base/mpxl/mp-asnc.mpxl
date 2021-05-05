@@ -60,6 +60,8 @@ presetparameters "synchronizer" [
 
 def lmt_synchronizer = applyparameters "synchronizer" "lmt_do_synchronizer" enddef ;
 
+% boxdx boxdy ...
+
 vardef lmt_do_synchronizer =
     pushparameters "synchronizer" ;
         begingroup ;

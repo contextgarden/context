@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Massimiliano Farinella added jiggles (zigzags) to the sidebars.
+
 if known metafun_loaded_apos : endinput ; fi ;
 
 newinternal boolean metafun_loaded_apos ; metafun_loaded_apos := true ; immutable metafun_loaded_apos ;
@@ -68,38 +70,104 @@ enddef ;
 
 % anch-bar:
 
-def anch_sidebars_draw (expr firstpage, lastpage, yfirst, ylast, height, depth,
-        x, y, w, h, alternative, distance, linewidth, linecolor, topoffset, bottomoffset) =
+% When Massimiliano Farinella (aka mf) added the patterns with jiggles the interface got
+% upgraded to lmtx too. So this one is different from the mkiv version! Messed up a little
+% by me to fit in the rest.
+
+vardef anch_sidebars_pattern(expr a, b, pattern, patternlength, patternheight, linewidth) =
+    image (
+        save p, q, s ; pair p, s ; path q ;
+        s := ( (b - a) / arclength (a -- b) ) * patternlength ;
+        q := pattern xscaled patternlength yscaled patternheight rotated (angle(s)) ;
+        p := a ;
+        forever :
+            draw
+                q shifted p
+                withpen pencircle scaled linewidth ;
+            p := p + s ;
+            exitif arclength (a -- p) > arclength (a -- b) ;
+        endfor ;
+        clip currentpicture to
+            (xpart llcorner currentpicture, ypart b) --
+            (xpart lrcorner currentpicture, ypart b) --
+            (xpart urcorner currentpicture, ypart a) --
+            (xpart ulcorner currentpicture, ypart a) -- cycle ;
+    )
+enddef ;
+
+% (performance wise) we can fetch distance and alternative once
+
+def anch_sidebars_draw(expr b_self, e_self, t_anchor) = % even these three can become variables
     % beware, we anchor at (x,y)
     begingroup ;
-    if alternative = 1 :
-        interim linecap := rounded ;
-    else :
-        interim linecap := butt ;
-    fi ;
-    save a, b ; pair a, b ;
-    if firstpage = lastpage :
-        a := (-distance,yfirst+height-y) ;
-        b := (-distance,ylast-depth-y) ;
-    elseif RealPageNumber = firstpage :
-        a := (-distance,yfirst+height-y) ;
-        b := (-distance,0) ;
-    elseif RealPageNumber = lastpage :
-        a := (-distance,h) ;
-        b := (-distance,ylast-depth-y) ;
-    else :
-        a := (-distance,h) ;
-        b := (-distance,0) ;
-    fi ;
-    a := (xpart a, min(ypart a + topoffset,   h)) ;
-    b := (xpart b, max(ypart b - bottomoffset,0)) ;
-    draw
-        a -- b
-        if alternative = 1 :
-            dashed (withdots scaled (linewidth/2))
-        fi
-        withpen pencircle scaled linewidth
-        withcolor linecolor ;
+        interim linecap := if boxalternative = 1 : rounded else : butt fi ;
+        save a, b, lw, by ; pair a, b ; numeric lw, by ;
+        by := getposy(getposregion(b_self)) - getposy(t_anchor) ; % for mf to do: all of them
+        if getpospage(b_self) = getpospage(e_self) :
+            a := (-boxdistance,getposy(b_self) + getposheight(b_self) - getposy(t_anchor)) ;
+            b := (-boxdistance,getposy(e_self) - getposdepth (e_self) - getposy(t_anchor)) ;
+        elseif RealPageNumber = getpospage(b_self) :
+            a := (-boxdistance,getposy(b_self) + getposheight(b_self) - getposy(t_anchor)) ;
+            b := (-boxdistance,by) ;
+        elseif RealPageNumber = getpospage(e_self) :
+            a := (-boxdistance,getposheight(t_anchor)) ;
+            b := (-boxdistance,getposy(e_self) - getposdepth (e_self) - getposy(t_anchor)) ;
+        else :
+            a := (-boxdistance,getposheight(t_anchor)) ;
+            b := (-boxdistance,0) ;
+        fi ;
+        if a == b :
+            message("side bar pattern ignored: a == b") ;
+        else :
+            a := (xpart a, min(ypart a + boxtopoffset,getposheight(t_anchor))) ;
+            b := (xpart b, max(ypart b - boxbottomoffset,0)) ;
+            % DoubleSided should come from an option of \setupsidebar
+            save DoubleSided ; boolean DoubleSided ; DoubleSided := true ;
+            if OnOddPage and DoubleSided :
+                a := (xpart a + HSize + 2 * boxdistance,ypart a) ;
+                b := (xpart b + HSize + 2 * boxdistance,ypart b) ;
+            fi ;
+            lw := boxlinewidth ;
+            draw
+                if boxalternative = 2 :
+                    anch_sidebars_pattern(a, b,
+                        ((0,0)--(0.25,-0.5)--(0.75,0.5)--(1,0)) scaled lw,
+                        2lw, 2lw, lw
+                    )
+                elseif boxalternative = 3 :
+                    anch_sidebars_pattern(a, b,
+                        ((0,0)--(0.25,-0.5)--(0.75,0.5)--(1,0)) scaled lw,
+                        4lw, 1.5lw, lw
+                    )
+                elseif boxalternative = 4 :
+                    anch_sidebars_pattern(a, b,
+                        (((0,0) .. controls (0,0.5) and (0.5,0.5) .. (0.5,0)) -- ((0.5,0) .. controls (0.5,-0.5) and (1,-0.5) .. (1,0))) scaled lw,
+                        6lw, 4lw, lw
+                    )
+                elseif boxalternative = 5 :
+                    anch_sidebars_pattern(a, b,
+                        ((0,0) .. controls (0,1) and (1,1) .. (1,0)) scaled lw,
+                        4lw, 2lw, lw
+                    )
+                elseif boxalternative = 6 :
+                    anch_sidebars_pattern(a, b,
+                        ((0,0.5) .. (1,-0.5)) scaled lw,
+                        4lw, 2lw, lw
+                    )
+                elseif boxalternative = 7 :
+                    anch_sidebars_pattern(a, b,
+                        ((0,-0.5) .. (1,0.5)) scaled lw,
+                        22lw, 5lw, lw
+                    )
+                else :
+                    (a -- b)
+                        if boxalternative = 1 :
+                            dashed (withdots scaled (lw/2))
+                        fi
+                        withpen pencircle scaled lw
+                fi
+                withcolor boxlinecolor ;
+        fi ;
     endgroup ;
 enddef ;
 
@@ -110,3 +178,34 @@ newscriptindex mfid_getmultipars ; mfid_getmultipars := scriptindex "getmultipar
 
 def getposboxes (expr tags, anchor) = runscript mfid_getposboxes  tags anchor ; enddef ;
 def getmultipars(expr tags, anchor) = runscript mfid_getmultipars tags anchor ; enddef ;
+
+newscriptindex mfid_getpospage       ; mfid_getpospage       := scriptindex "getpospage"       ; vardef getpospage      (expr n) = runscript mfid_getpospage       n enddef ;
+newscriptindex mfid_getposparagraph  ; mfid_getposparagraph  := scriptindex "getposparagraph"  ; vardef getposparagraph (expr n) = runscript mfid_getposparagraph  n enddef ;
+newscriptindex mfid_getposcolumn     ; mfid_getposcolumn     := scriptindex "getposcolumn"     ; vardef getposcolumn    (expr n) = runscript mfid_getposcolumn     n enddef ;
+newscriptindex mfid_getposregion     ; mfid_getposregion     := scriptindex "getposregion"     ; vardef getposregion    (expr n) = runscript mfid_getposregion     n enddef ;
+
+newscriptindex mfid_getposx          ; mfid_getposx          := scriptindex "getposx"          ; vardef getposx         (expr n) = runscript mfid_getposx          n enddef ;
+newscriptindex mfid_getposy          ; mfid_getposy          := scriptindex "getposy"          ; vardef getposy         (expr n) = runscript mfid_getposy          n enddef ;
+newscriptindex mfid_getposwidth      ; mfid_getposwidth      := scriptindex "getposwidth"      ; vardef getposwidth     (expr n) = runscript mfid_getposwidth      n enddef ;
+newscriptindex mfid_getposheight     ; mfid_getposheight     := scriptindex "getposheight"     ; vardef getposheight    (expr n) = runscript mfid_getposheight     n enddef ;
+newscriptindex mfid_getposdepth      ; mfid_getposdepth      := scriptindex "getposdepth"      ; vardef getposdepth     (expr n) = runscript mfid_getposdepth      n enddef ;
+
+newscriptindex mfid_getposleftskip   ; mfid_getposleftskip   := scriptindex "getposleftskip"   ; vardef getposleftskip  (expr n) = runscript mfid_getposleftskip   n enddef ;
+newscriptindex mfid_getposrightskip  ; mfid_getposrightskip  := scriptindex "getposrightskip"  ; vardef getposrightskip (expr n) = runscript mfid_getposrightskip  n enddef ;
+newscriptindex mfid_getposhsize      ; mfid_getposhsize      := scriptindex "getposhsize"      ; vardef getposhsize     (expr n) = runscript mfid_getposhsize      n enddef ;
+newscriptindex mfid_getposparindent  ; mfid_getposparindent  := scriptindex "getposparindent"  ; vardef getposparindent (expr n) = runscript mfid_getposparindent  n enddef ;
+newscriptindex mfid_getposhangindent ; mfid_getposhangindent := scriptindex "getposhangindent" ; vardef getposhangindent(expr n) = runscript mfid_getposhangindent n enddef ;
+newscriptindex mfid_getposhangafter  ; mfid_getposhangafter  := scriptindex "getposhangafter"  ; vardef getposhangafter (expr n) = runscript mfid_getposhangafter  n enddef ;
+
+newscriptindex mfid_getposxy         ; mfid_getposxy         := scriptindex "getposxy"         ; vardef getposxy        (expr n) = runscript mfid_getposxy         n enddef ;
+newscriptindex mfid_getposupperleft  ; mfid_getposupperleft  := scriptindex "getposupperleft"  ; vardef getposupperleft (expr n) = runscript mfid_getposupperleft  n enddef ;
+newscriptindex mfid_getposlowerleft  ; mfid_getposlowerleft  := scriptindex "getposlowerleft"  ; vardef getposlowerleft (expr n) = runscript mfid_getposlowerleft  n enddef ;
+newscriptindex mfid_getposupperright ; mfid_getposupperright := scriptindex "getposupperright" ; vardef getposupperright(expr n) = runscript mfid_getposupperright n enddef ;
+newscriptindex mfid_getposlowerright ; mfid_getposlowerright := scriptindex "getposlowerright" ; vardef getposlowerright(expr n) = runscript mfid_getposlowerright n enddef ;
+
+permanent
+    getposboxes, getmultipars,
+    getpospage, getposparagraph, getposcolumn, getposregion,
+    getposx, getposy, getposwidth, getposheight, getposdepth,
+    getposleftskip, getposrightskip, getposhsize, getposparindent, getposhangindent, getposhangafter,
+    getposxy, getposupperleft, getposlowerleft, getposupperright, getposlowerright ;

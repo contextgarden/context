@@ -578,7 +578,7 @@
      {\let#7#3%
       \ifarguments
         \let#3\empty
-        \the#5%
+        \the#4%
       \or
         \let#3\empty
         \mult_interfaces_get_parameters{#1:}[##1]%
@@ -619,11 +619,11 @@
    \installparametersethandler {#1}{#2}%
    \installrootparameterhandler{#1}{#2}}
 
-\permanent\protected\def\installbasicautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\permanent\protected\def\installbasicautosetuphandler#1#2% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}}
 
-\permanent\protected\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\permanent\protected\def\installstylisticautosetuphandler#1#2% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
@@ -1168,5 +1168,72 @@
    \expandafter\let\expandafter#1\csname\??commalistprocessor\p_name\endcsname}
 
 \permanent\protected\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
+
+%D This is a special one, used in \METAPOST\ graphic support. It is english only because
+%D we have no multilingual interface in \METAFUN.
+
+\startinterface english
+    \let\mult_interfaces_install_native_auto_setup_handler\mult_interfaces_install_auto_setup_handler
+    \aliased\let\installbasicnativeautosetuphandler\installbasicsetuphandler
+\stopinterface
+
+\ifdefined\installnativebasicsetuphandler \else
+
+              \let\mult_interfaces_adef_yes\mult_interfaces_adef
+    \protected\def\mult_interfaces_adef_nop#1#2{\defcsname#1#2\endcsname}
+
+    \protected\def\mult_interfaces_install_native_auto_setup_handler#1#2#3#4#5#6#7#8%
+      {\newtoks#4%
+       \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}%
+       \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
+         {\let#7#3%
+          \ifarguments
+            \let#3\empty
+            \the#4%
+          \or
+            \let#3\empty
+            \let\mult_interfaces_adef\mult_interfaces_adef_nop
+            \mult_interfaces_get_parameters{#1:}[##1]%
+            \let\mult_interfaces_adef\mult_interfaces_adef_yes
+            \the#4%
+          \or
+            \def#8####1%
+              {\edef#3{####1}%
+               #6% checks parent and sets if needed
+               \let\mult_interfaces_adef\mult_interfaces_adef_nop
+               \mult_interfaces_get_parameters{#1#3:}[##2]%
+               \let\mult_interfaces_adef\mult_interfaces_adef_yes
+               \the#4}%
+            \processcommalist[##1]#8%
+          \or
+            \def#8####1%
+              {\edef#3{####1}%
+               \defcsname#1#3:\s!parent\endcsname{#1##2}%
+               \let\mult_interfaces_adef\mult_interfaces_adef_nop
+               \mult_interfaces_get_parameters{#1#3:}[##3]% always sets parent
+               \let\mult_interfaces_adef\mult_interfaces_adef_yes
+               \the#4}%
+            \processcommalist[##1]#8%
+          \fi
+          \let#3#7}}
+
+    \permanent\protected\def\installnativeautosetuphandler#1#2%
+      {\mutable\letcsname current#2\endcsname\empty
+       \normalexpanded
+         {\mult_interfaces_install_native_auto_setup_handler
+            {\noexpand#1}% \??aa
+            \expandafter\noexpand\csname setup#2\endcsname
+            \expandafter\noexpand\csname current#2\endcsname
+            \expandafter\noexpand\csname everysetup#2\endcsname
+            \expandafter\noexpand\csname setupcurrent#2\endcsname
+            \expandafter\noexpand\csname check#2parent\endcsname
+            \expandafter\noexpand\csname saved_setup_current#2\endcsname
+            \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+
+    \permanent\protected\def\installbasicnativeautosetuphandler#1#2%
+      {\installbasicparameterhandler {#1}{#2}%
+       \installnativeautosetuphandler{#1}{#2}}
+
+\fi
 
 \protect \endinput

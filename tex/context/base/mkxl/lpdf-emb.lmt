@@ -189,10 +189,10 @@ end
         return blob
     end
 
-    widtharray = function(details,indices,maxindex,units)
+    widtharray = function(details,indices,maxindex,units,correction)
         local widths = pdfarray()
         local length = 0
-        local factor = 10000 / units
+        local factor = 10000 / (units * correction)
         if maxindex > 0 then
             local lastindex = -1
             local sublist   = nil
@@ -799,7 +799,7 @@ do
         --
         local units       = metadata.units
         local basefont    = pdfconstant(basefontname)
-        local widths      = widtharray(details,indices,maxindex,units)
+        local widths      = widtharray(details,indices,maxindex,units,1)
         local object      = details.objectnumber
         local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname,true)
         local tocidset    = tocidsetdictionary(indices,minindex,maxindex)
@@ -1379,10 +1379,16 @@ do
         --
         fontfile = closefontfile(fontfile)
         --
-        local units       = fontheader.units or metadata.units
-
+        local units = fontheader.units or metadata.units
+        if units ~= 1000 then
+            -- maybe only otf
+            -- public sans has 2000 so we need to mess different from e.g. ttf
+            report_fonts("width units in %a are %i, forcing 1000 instead",basefontname,units)
+            units = 1000
+        end
+        --
         local basefont    = pdfconstant(basefontname)
-        local widths      = widtharray(details,indices,maxindex,units * correction)
+        local widths      = widtharray(details,indices,maxindex,units,correction)
         local object      = details.objectnumber
         local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname,true)
         local tocidset    = tocidsetdictionary(indices,minindex,maxindex)

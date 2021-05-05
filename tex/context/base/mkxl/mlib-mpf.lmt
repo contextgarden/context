@@ -77,20 +77,36 @@ do
 
     local runscripts = { }
     local runnames   = { }
+    local runmodes   = { }
     local nofscripts = 0
 
-    function metapost.registerscript(name,f)
+    local function registerscript(name,mode,f)
         nofscripts = nofscripts + 1
+        if not f then
+            f = mode
+            mode = "buffered"
+        end
         if f then
             runscripts[nofscripts] = f
             runnames[name] = nofscripts
         else
             runscripts[nofscripts] = name
         end
+        runmodes[nofscripts] = mode
         if trace_script then
-            report_script("registering script %a as %i",name,nofscripts)
+            report_script("registering %s script %a as %i",mode,name,nofscripts)
         end
         return nofscripts
+    end
+
+    metapost.registerscript = registerscript
+
+    function metapost.registerdirect(name,f)
+        registerscript(name,"direct",f)
+    end
+
+    function metapost.registertokens(name,f)
+        registerscript(name,"tokens",f)
     end
 
     function metapost.scriptindex(name)
@@ -156,6 +172,16 @@ do
                 report_luarun("%i: bad index: %s",nesting,code)
             elseif trace_luarun then
                 report_luarun("%i: index: %i",nesting,code)
+            end
+            local m = runmodes[code]
+            if m == "direct" then
+                result = f()
+                nesting = nesting - 1
+                return result, true -- string and tables as string and objects
+            elseif m == "tokens" then
+                result = f()
+                nesting = nesting - 1
+                return result       -- string and tables as text to be scanned
             end
         else
             if trace_luarun then
@@ -687,11 +713,8 @@ do
 
     -- once bootstrapped ... (needs pushed mpx instances)
 
-    metapost.registerscript("scriptindex",function()
-        local name  = scanstring()
-        local index = scriptindex(name)
-     -- report_script("method %i, name %a, index %i",2,name,index)
-        mpnumeric(index)
+    metapost.registerdirect("scriptindex",function()
+        return scriptindex(scanstring())
     end)
 
 end
@@ -923,6 +946,7 @@ do
     local injectstring   = inject.string
     local injectnumeric  = inject.numeric
 
+    local registerdirect = metapost.registerdirect
     local registerscript = metapost.registerscript
 
     local comma_code     = metapost.codes.comma
@@ -941,10 +965,15 @@ do
 
     -- more helpers
 
-    registerscript("getmacro", function() injectstring (getmacro(scanstring())) end)
-    registerscript("getdimen", function() injectnumeric(getdimen(scanstring())*bpfactor) end)
-    registerscript("getcount", function() injectnumeric(getcount(scanstring())) end)
-    registerscript("gettoks",  function() injectstring (gettoks (scanstring())) end)
+ -- registerscript("getmacro", function() injectstring (getmacro(scanstring())) end)
+ -- registerscript("getcount", function() injectnumeric(getcount(scanstring())) end)
+ -- registerscript("gettoks",  function() injectstring (gettoks (scanstring())) end)
+ -- registerscript("getdimen", function() injectnumeric(getdimen(scanstring()) * bpfactor) end)
+
+    registerdirect("getmacro", function() return getmacro(scanstring()) end)
+    registerdirect("getcount", function() return getcount(scanstring()) end)
+    registerdirect("gettoks",  function() return gettoks (scanstring()) end)
+    registerdirect("getdimen", function() return getdimen(scanstring()) * bpfactor end)
 
     registerscript("setmacro", function() setmacro(scanstring(),scanstring()) end)
     registerscript("setdimen", function() setdimen(scanstring(),scannumeric()/bpfactor) end)
@@ -956,21 +985,22 @@ do
     registerscript("setglobalcount", function() setcount("global",scanstring(),scannumeric()) end)
     registerscript("setglobaltoks",  function() settoks ("global",scanstring(),scanstring()) end)
 
-
     local utfnum = utf.byte
     local utflen = utf.len
     local utfsub = utf.sub
 
-    registerscript("utfnum", function()
-        injectnumeric(utfnum(scanstring()))
-    end)
+ -- registerscript("utfnum", function() injectnumeric(utfnum(scanstring())) end)
+ -- registerscript("utflen", function() injectnumeric(utflen(scanstring())) end)
+ --
+ -- registerscript("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
+ --     injectstring(utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric()))
+ -- end)
 
-    registerscript("utflen", function()
-        injectnumeric(utflen(scanstring()))
-    end)
+    registerdirect("utfnum", function() utfnum(scanstring()) end)
+    registerdirect("utflen", function() utflen(scanstring()) end)
 
-    registerscript("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
-        injectstring(utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric()))
+    registerdirect("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
+        utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric())
     end)
 
 end

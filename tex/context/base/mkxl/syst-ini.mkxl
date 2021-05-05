@@ -681,7 +681,7 @@
    \tracingrestores  \plusone
    \tracinggroups    \plusone
    \tracingifs       \plusone
-   \tracingnesting   \plustwo
+   \tracingnesting   \plusthree
    \tracingassigns   \plustwo
    \tracingmath      \plusone
    \tracingalignments\plusone

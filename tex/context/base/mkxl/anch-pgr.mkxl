@@ -318,16 +318,15 @@
 \aliased\let\stopMPpositiongraphic\relax
 
 \def\anch_positions_meta_graphic_prepare
-  {\ifcsname\??graphicvariable\currentmpvariableclass:self\endcsname \else
-     \letcsname\??graphicvariable\currentmpvariableclass:self\endcsname\currentposition
+  {\iftok{\mpcategoryparameter{self}}\emptytoks
+     \letmpcategoryparameter{self}\currentposition
    \fi
-   \ifcsname\??graphicvariable\currentmpvariableclass:from\endcsname \else
-     \letcsname\??graphicvariable\currentmpvariableclass:from\endcsname\currentposition
+   \iftok{\mpcategoryparameter{from}}\emptytoks
+     \letmpcategoryparameter{from}\currentposition
    \fi}
 
 \def\anch_positions_meta_graphic_use#1#2#3%
   {\begingroup
-   \meta_prepare_variables{#2}%
    \anch_positions_meta_graphic_prepare
    \startMPcode#3\stopMPcode
    \endgroup}
@@ -346,8 +345,8 @@
 
 \def\anch_positions_meta_graphic_direct#1#2#3% what tag setups
   {\begingroup
-   \setupMPvariables[#2][#3]%
-   \edef\currentmpvariableclass{#2}%
+   \edef\currentmpcategory{#2}%
+   \setupcurrentmpcategory[#3]%
    \anch_positions_meta_graphic_prepare
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \enforced\tolerant\protected\def\MPpositiongraphic##=##*##={\anch_positions_meta_graphic_nested{#3}{##1}{##2}}% takes two extra arguments
@@ -360,8 +359,8 @@
 
 \def\anch_positions_meta_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
   {\begingroup
-   \setupMPvariables[#2][#1,#3]%
-   \edef\currentmpvariableclass{#2}%
+   \edef\currentmpcategory{#2}%
+   \setupcurrentmpcategory[#1,#3]%
    \anch_positions_meta_graphic_prepare
    \begincsname\??positiongraphic#2\endcsname
    \endgroup}%

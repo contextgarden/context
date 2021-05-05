@@ -767,6 +767,7 @@
 		<cd:constant name='coupling' value='couplage'/>
 		<cd:constant name='couplingway' value='faconcouplage'/>
 		<cd:constant name='criterium' value='critere'/>
+		<cd:constant name='crop' value='recadre'/>
 		<cd:constant name='cropoffset' value='decalagerecadre'/>
 		<cd:constant name='crossreference' value='renvoi'/>
 		<cd:constant name='cssfile' value='fichiercss'/>

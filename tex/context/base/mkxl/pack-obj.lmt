@@ -89,41 +89,6 @@ jobobjects.get    = getobject
 jobobjects.number = getobjectnumber
 jobobjects.page   = getobjectpage
 
--- implement {
---     name      = "saveobject",
---     actions   = saveobject
--- }
---
--- implement {
---     name      = "setobject",
---     actions   = setobject,
---     arguments = { "string", "integer", "integer" }
--- }
---
--- implement {
---     name      = "objectnumber",
---     actions   = { getobjectnumber, context },
---     arguments = "2 strings",
--- }
---
--- implement {
---     name      = "objectpage",
---     actions   = { getobjectpage, context },
---     arguments = "2 strings",
--- }
---
--- implement {
---     name      = "doifelseobjectreferencefound",
---     actions   = { getobject, commands.doifelse },
---     arguments = "string"
--- }
-
--- if false then
---     -- we can flush the inline ref ourselves now if we want
---     local flush = new_latelua("pdf.flushxform("..index..")")
---     flush.next = list
---     next.prev = flush
--- end
 
 local data = table.setmetatableindex("table")
 
@@ -179,11 +144,11 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
             -- list is a rule
             setlink(list,page)
         end
-        setbox("objectbox",hbox)
-        settexdimen("objectoff",offset or 0)
+        setbox("b_pack_objects",hbox)
+        settexdimen("d_pack_objects_offset",offset or 0)
     else
-        setbox("objectbox",nil)
-        settexdimen("objectoff",0) -- for good old times
+        setbox("b_pack_objects",nil)
+        settexdimen("d_pack_objects_offset",0) -- for good old times
     end
     if trace then
         report("restoring object %a",id)
@@ -287,10 +252,10 @@ implement {
         if object then
             w, h, d, o = codeinjections.boxresourcedimensions(object[1])
         end
-        settexdimen("objectwd",w or 0)
-        settexdimen("objectht",h or 0)
-        settexdimen("objectdp",d or 0)
-        settexdimen("objectoff",o or #objects > 2 and object[2] or 0)
+        settexdimen("d_pack_objects_width", w or 0)
+        settexdimen("d_pack_objects_height",h or 0)
+        settexdimen("d_pack_objects_depth", d or 0)
+        settexdimen("d_pack_objects_offset",o or #objects > 2 and object[2] or 0)
     end
 }
 

@@ -17,8 +17,8 @@
 
 %D This can be done better now ...
 
-%D We will implement a sidebar mechanism using the functionality from
-%D \type {core-pos}.
+%D We will implement a sidebar mechanism using the functionality from \type
+%D {core-pos}.
 %D
 %D \starttyping
 %D \definesidebar[whow][rulecolor=green,distance=0pt]
@@ -109,16 +109,14 @@
      \else
        \advance\d_anch_sidebars_distance\scratchdistance\relax
      \fi
-   \else
-     \ifnum\m_level=\plusone
-       \ifzeropt\scratchdimen
-         \advance\d_anch_sidebars_distance\scratchdistance\relax
-       \else
-         \d_anch_sidebars_distance\scratchdimen
-       \fi
+   \orelse\ifnum\m_level=\plusone
+     \ifzeropt\scratchdimen
+       \advance\d_anch_sidebars_distance\scratchdistance\relax
      \else
-       \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
+       \d_anch_sidebars_distance\scratchdimen
      \fi
+   \else
+     \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
    \fi
    \startpositionoverlay{\v!text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
@@ -146,13 +144,8 @@
 %D one lua call).
 
 \startMPpositionmethod{mpos:sidebar}
-    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance,alternative}%
-        anch_sidebars_draw (
-            \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
-            \MPx{\textanchor},\MPy{\textanchor},\MPw{\textanchor},\MPh{\textanchor},
-            \MPvar{alternative},\MPvar{distance},\MPvar{linewidth},\MPvar{linecolor},
-            \MPvar{topoffset}, \MPvar{bottomoffset}
-        ) ;
+    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance,alternative}
+        anch_sidebars_draw("\MPbself", "\MPeself", "\textanchor") ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:sidebar}{}%
 \stopMPpositionmethod

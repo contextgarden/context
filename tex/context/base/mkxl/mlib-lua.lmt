@@ -71,16 +71,15 @@ scan.transform  = function(t)   if trace then reporti("transform")  end return s
 scan.path       = function(t)   if trace then reporti("path")       end return scan_path      (currentmpx,t)   end
 scan.pen        = function(t)   if trace then reporti("pen")        end return scan_pen       (currentmpx,t)   end
 
-skip.token      = function(t)   return skip_token     (currentmpx,t)   end
-
-get.hashentry   = function(n)   return get_hashentry  (currentmpx,n)   end
+skip.token      = function(t) return skip_token   (currentmpx,t) end
+get.hashentry   = function(n) return get_hashentry(currentmpx,n) end
 
 local solvepath = mplib.solvepath
 local getstatus = mplib.getstatus
+local expandtex = mplib.expandtex
 
-mp.solve = function(...)
-    return solvepath(currentmpx,...)
-end
+mp.solve     = function(...) return solvepath(currentmpx,...) end
+mp.expandtex = function(...) expandtex(currentmpx,...) end
 
 local inject_path      = mplib.inject_path
 local inject_numeric   = mplib.inject_numeric
@@ -92,7 +91,6 @@ local inject_color     = mplib.inject_color
 local inject_cmykcolor = mplib.inject_cmykcolor
 local inject_transform = mplib.inject_transform
 local inject_whatever  = mplib.inject_whatever
-
 
 ------.path      = function(t,cycle,curled)  if trace then reporti("path")      end return inject_path     (currentmpx,t,cycle,curled)  end
 inject.numeric   = function(n)               if trace then reporti("numeric")   end return inject_numeric  (currentmpx,n)               end

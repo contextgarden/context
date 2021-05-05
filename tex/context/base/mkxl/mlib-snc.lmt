@@ -7,37 +7,30 @@ if not modules then modules = { } end modules ['mlib-snc'] = {
 }
 
 local scanners       = mp.scan
-local injectors      = mp.inject
-
-local scannumeric    = scanners.numeric
 local scaninteger    = scanners.integer
 local scanstring     = scanners.string
-local mpnumeric      = injectors.numeric
-
 local factor         = number.dimenfactors.bp
-
 local synchronizers  = graphics.synchronizers
-local registerscript = metapost.registerscript
+local registerdirect = metapost.registerdirect
 
 -- no need for locals (yet)
 
-registerscript("asnc_collect", function()
- -- category realpage region
-    mpnumeric(synchronizers.collect(scaninteger(),scaninteger(),scanstring()))
+registerdirect("asnc_collect", function()
+    return synchronizers.collect(scaninteger(),scaninteger(),scanstring()) -- category realpage region
 end)
 
-registerscript("asnc_extend",   function() mpnumeric(synchronizers.extend  ()) end)
-registerscript("asnc_prune",    function() mpnumeric(synchronizers.prune   ()) end)
-registerscript("asnc_collapse", function() mpnumeric(synchronizers.collapse()) end)
+registerdirect("asnc_extend",   synchronizers.extend  )
+registerdirect("asnc_prune",    synchronizers.prune   )
+registerdirect("asnc_collapse", synchronizers.collapse)
+registerdirect("asnc_getsize",  synchronizers.getsize )
 
-registerscript("asnc_getsize",  function() mpnumeric(synchronizers.getsize  ()                      ) end)
-registerscript("asnc_gettop",   function() mpnumeric(synchronizers.gettop   (scaninteger()) * factor) end)
-registerscript("asnc_getbottom",function() mpnumeric(synchronizers.getbottom(scaninteger()) * factor) end)
-registerscript("asnc_getkind",  function() mpnumeric(synchronizers.getkind  (scaninteger())         ) end)
-registerscript("asnc_gettask",  function() mpnumeric(synchronizers.gettask  (scaninteger())         ) end)
+registerdirect("asnc_gettop",   function() return synchronizers.gettop   (scaninteger()) * factor end)
+registerdirect("asnc_getbottom",function() return synchronizers.getbottom(scaninteger()) * factor end)
+registerdirect("asnc_getkind",  function() return synchronizers.getkind  (scaninteger())          end)
+registerdirect("asnc_gettask",  function() return synchronizers.gettask  (scaninteger())          end)
 
-registerscript("asnc_getx",     function() mpnumeric(synchronizers.getx() * factor) end)
-registerscript("asnc_gety",     function() mpnumeric(synchronizers.gety() * factor) end)
-registerscript("asnc_getw",     function() mpnumeric(synchronizers.getw() * factor) end)
-registerscript("asnc_geth",     function() mpnumeric(synchronizers.geth() * factor) end)
-registerscript("asnc_getd",     function() mpnumeric(synchronizers.getd() * factor) end)
+registerdirect("asnc_getx",     function() return synchronizers.getx() * factor end)
+registerdirect("asnc_gety",     function() return synchronizers.gety() * factor end)
+registerdirect("asnc_getw",     function() return synchronizers.getw() * factor end)
+registerdirect("asnc_geth",     function() return synchronizers.geth() * factor end)
+registerdirect("asnc_getd",     function() return synchronizers.getd() * factor end)

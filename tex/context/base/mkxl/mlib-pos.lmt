@@ -1,0 +1,59 @@
+if not modules then modules = { } end modules ['mlib-pos'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local jobpositions   = job.positions
+local mpnumeric      = mp.inject.numeric
+local mpstring       = mp.inject.string
+local scanstring     = mp.scan.string
+local factor         = number.dimenfactors.bp
+local registerdirect = metapost.registerdirect
+
+local page           = jobpositions.page
+local paragraph      = jobpositions.paragraph
+local column         = jobpositions.column
+local region         = jobpositions.region
+local x              = jobpositions.x
+local y              = jobpositions.y
+local xy             = jobpositions.xy
+local width          = jobpositions.width
+local height         = jobpositions.height
+local depth          = jobpositions.depth
+local leftskip       = jobpositions.leftskip
+local rightskip      = jobpositions.rightskip
+local hsize          = jobpositions.hsize
+local parindent      = jobpositions.parindent
+local hangindent     = jobpositions.hangindent
+local hangafter      = jobpositions.hangafter
+local lowerleft      = jobpositions.lowerleft
+local upperleft      = jobpositions.upperleft
+local lowerright     = jobpositions.lowerright
+local upperright     = jobpositions.upperright
+
+registerdirect("getpospage",       function() return page      (scanstring()) end)
+registerdirect("getposparagraph",  function() return paragraph (scanstring()) end)
+registerdirect("getposcolumn",     function() return column    (scanstring()) end)
+registerdirect("getposregion",     function() return region    (scanstring()) end)
+registerdirect("getposx",          function() return x         (scanstring()) * factor end)
+registerdirect("getposy",          function() return y         (scanstring()) * factor end)
+registerdirect("getposwidth",      function() return width     (scanstring()) * factor end)
+registerdirect("getposheight",     function() return height    (scanstring()) * factor end)
+registerdirect("getposdepth",      function() return depth     (scanstring()) * factor end)
+registerdirect("getposleftskip",   function() return leftskip  (scanstring()) * factor end)
+registerdirect("getposrightskip",  function() return rightskip (scanstring()) * factor end)
+registerdirect("getposhsize",      function() return hsize     (scanstring()) * factor end)
+registerdirect("getposparindent",  function() return parindent (scanstring()) * factor end)
+registerdirect("getposhangindent", function() return hangindent(scanstring()) * factor end)
+registerdirect("getposhangafter",  function() return hangafter (scanstring()) * factor end)
+
+local t = { 0, 0 } -- let's share
+
+registerdirect("getposxy",         function() local x, y = xy        (scanstring()) t[1] = x * factor t[2] = y * factor return t end)
+registerdirect("getposupperleft",  function() local x, y = upperleft (scanstring()) t[1] = x * factor t[2] = y * factor return t end)
+registerdirect("getposlowerleft",  function() local x, y = lowerleft (scanstring()) t[1] = x * factor t[2] = y * factor return t end)
+registerdirect("getposupperright", function() local x, y = upperright(scanstring()) t[1] = x * factor t[2] = y * factor return t end)
+registerdirect("getposlowerright", function() local x, y = lowerright(scanstring()) t[1] = x * factor t[2] = y * factor return t end)

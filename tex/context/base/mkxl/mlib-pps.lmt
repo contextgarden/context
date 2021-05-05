@@ -28,7 +28,7 @@ local mpscannumeric        = scan.numeric
 
 local injecttriplet        = inject.triplet
 
-local registerscript       = metapost.registerscript
+local registerdirect       = metapost.registerdirect
 
 local implement            = interfaces.implement
 local setmacro             = interfaces.setmacro
@@ -568,7 +568,7 @@ local function checkaskedfig(askedfig) -- return askedfig, wrappit
 end
 
 -- This one is called from the \TEX\ end so the specification is different
--- from the specification to metapost,run cum suis! The definitions and
+-- from the specification to metapost.run cum suis! The definitions and
 -- extension used to be handled here but are now delegated to the format
 -- initializers because we need to accumulate them for nested instances (a
 -- side effect of going single pass).
@@ -866,8 +866,8 @@ local tx_reset, tx_process  do
         mf_some_text(index,madetext,catcodes.numbers.ctxcatcodes) -- btex/etex ..
     end
 
-    registerscript("sometextext", function() mf_some_text(mpscannumeric(),mpscanstring(),mpscannumeric()) end)
-    registerscript("madetextext", function() mf_made_text(mpscannumeric()) end)
+    registerdirect("sometextext", function() mf_some_text(mpscannumeric(),mpscanstring(),mpscannumeric()) end)
+    registerdirect("madetextext", function() mf_made_text(mpscannumeric()) end)
 
     -- a label can be anything, also something mp doesn't like in strings
     -- so we return an index instead

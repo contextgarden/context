@@ -656,11 +656,11 @@
    \installparametersethandler {#1}{#2}%
    \installrootparameterhandler{#1}{#2}}
 
-\protected\def\installbasicautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installbasicautosetuphandler#1#2% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}}
 
-\protected\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installstylisticautosetuphandler#1#2% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}

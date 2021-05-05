@@ -140,20 +140,20 @@
 
         save sc, dx, dy, wd, ht, ox, oy, ax, ay ;
 
-        sc = \directdummyparameter\c!factor*\directdummyparameter\c!scale ;
-        dx = \MPdpar\directdummyparameter\c!dx*sc ;
-        dy = \MPdpar\directdummyparameter\c!dy*sc ;
-        wd = \directdummyparameter\c!nx*dx ;
-        ht = \directdummyparameter\c!ny*dy ;
-        ox = \MPdpar\directdummyparameter\c!xoffset\relax ;
-        oy = \MPdpar\directdummyparameter\c!yoffset\relax ;
+        sc := \directdummyparameter\c!factor*\directdummyparameter\c!scale ;
+        dx := \MPdpar\directdummyparameter\c!dx*sc ;
+        dy := \MPdpar\directdummyparameter\c!dy*sc ;
+        wd := \directdummyparameter\c!nx*dx ;
+        ht := \directdummyparameter\c!ny*dy ;
+        ox := \MPdpar\directdummyparameter\c!xoffset\relax ;
+        oy := \MPdpar\directdummyparameter\c!yoffset\relax ;
 
         if "\directdummyparameter\c!align" = "\v!middle" :
-            ax = \MPdpar\directdummyparameter\c!dx/2
-            ay = \MPdpar\directdummyparameter\c!dy/2
+            ax := \MPdpar\directdummyparameter\c!dx/2 ;
+            ay := \MPdpar\directdummyparameter\c!dy/2 ;
         else :
-            ax = 0 ;
-            ay = 0 ;
+            ax := 0 ;
+            ay := 0 ;
         fi ;
 
         draw image (

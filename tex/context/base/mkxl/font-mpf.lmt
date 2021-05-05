@@ -56,31 +56,35 @@ local function setmetaglyphs(category,fontid,unicode,specification)
         local units  = shapes.parameters.units
         local scale  = tfmdata.parameters.size / units
         local shape  = shapes.glyphs[unicode]
-        --
-        local llx, lly, urx, ury = unpack(shape.boundingbox)
-        llx = llx * scale
-        urx = urx * scale
-        lly = lly * scale
-        ury = ury * scale
-        --
-        local newdata = { }
-        characters[unicode] = newdata -- so that we can register commands
-        fonts.dropins.swapone("mps",tfmdata,shape,unicode)
-        --
-        local olddata = characters[unicode]
-        newdata.width   = urx - llx
-        newdata.height  = ury
-        newdata.depth   = -lly
-        newdata.unicode = unicode
-        -- commands = { { "offset", -llx, 0, newdata.commands[1][1], newdata.commands[1][2] } }
-        if llx ~= 0 then
-            newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
+        if shape then
+            --
+            local llx, lly, urx, ury = unpack(shape.boundingbox)
+            llx = llx * scale
+            urx = urx * scale
+            lly = lly * scale
+            ury = ury * scale
+            --
+            local newdata = { }
+            characters[unicode] = newdata -- so that we can register commands
+            fonts.dropins.swapone("mps",tfmdata,shape,unicode)
+            --
+            local olddata = characters[unicode]
+            newdata.width   = urx - llx
+            newdata.height  = ury
+            newdata.depth   = -lly
+            newdata.unicode = unicode
+            -- commands = { { "offset", -llx, 0, newdata.commands[1][1], newdata.commands[1][2] } }
+            if llx ~= 0 then
+                newdata.commands = { { "offset", -llx, 0 }, newdata.commands[1] }
+            end
+            -- pass dimensions to lua
+            characters[unicode] = newdata
+            -- pass dimensions to tex
+            addcharacters(fontid, { characters = { [unicode] = newdata } })
+            return fontid, unicode
+        else
+            logs.report("metaglyph", "bad shape %U in font %i", unicode, fontid)
         end
-        -- pass dimensions to lua
-        characters[unicode] = newdata
-        -- pass dimensions to tex
-        addcharacters(fontid, { characters = { [unicode] = newdata } })
-        return fontid, unicode
     end
 end
 

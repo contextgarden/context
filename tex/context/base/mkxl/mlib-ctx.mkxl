@@ -26,6 +26,7 @@
 \registerctxluafile{mlib-lmp}{autosuffix}
 \registerctxluafile{mlib-int}{autosuffix}
 \registerctxluafile{mlib-lmt}{autosuffix}
+\registerctxluafile{mlib-pos}{autosuffix}
 \registerctxluafile{mlib-cnt}{autosuffix,optimize}
 \registerctxluafile{mlib-svg}{autosuffix,optimize}
 

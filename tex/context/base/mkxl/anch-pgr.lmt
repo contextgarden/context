@@ -33,9 +33,14 @@ local context           = context
 
 local implement         = interfaces.implement
 
+local texgetcount       = tex.getcount
+
 local getmacro          = tokens.getters.macro
+local expandasvalue     = tex.expandasvalue
 local scanmpstring      = mp.scan.string
-local mpgnamespace      = getmacro("??graphicvariable")
+----- mpgnamespace      = getmacro("??graphicvariable")
+
+local string_value      = tokens.values.string
 
 local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
@@ -1195,13 +1200,13 @@ backgrounds.fetchmultipar = fetchmultipar
 local function getwhatever(action)
      local tags   = scanmpstring()
      local anchor = scanmpstring()
-     local page   = nil
+     local page   = texgetcount("realpageno")
      if tags == "self" then
-        tags = getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":self",true) -- Isn't it already edef'd?
+        tags = expandasvalue(string_value,"mpcategoryparameter",true,"self")
      elseif type(tags) == "string" then
         tags = settings_to_array(tags)
         for i=1,#tags do
-            tags[i] = getmacro(mpgnamespace .. getmacro("currentmpvariableclass") .. ":" .. tags[i],true) -- Isn't it already edef'd?
+            tags[i] = expandasvalue(string_value,"mpcategoryparameter",true,tags[i])
         end
      end
      if anchor == "anchor" then
@@ -1211,6 +1216,8 @@ local function getwhatever(action)
         return action(tags,anchor,page)
      end
 end
+
+-- backgrounds.getwhatever = getwhatever -- public for tracing
 
 metapost.registerscript("getmultipars", function()
     return getwhatever(fetchmultipar)

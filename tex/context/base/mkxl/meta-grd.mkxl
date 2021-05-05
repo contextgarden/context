@@ -36,39 +36,39 @@
 \startuseMPgraphic{meta:grd:basegrid}
     begingroup ;
 
-        save sc, dx, dy, wd, ht, ox, oy, ax, ay ;
+        save nx, ny, dx, dy, ox, oy, sx, sy ;
 
-        sc = \directdummyparameter\c!factor*\directdummyparameter\c!scale ;
-        dx = \MPdpar\directdummyparameter\c!dx*sc ;
-        dy = \MPdpar\directdummyparameter\c!dy*sc ;
-        wd = \directdummyparameter\c!nx*dx ;
-        ht = \directdummyparameter\c!ny*dy ;
-        ox = \MPdpar\directdummyparameter\c!xoffset\relax ;
-        oy = \MPdpar\directdummyparameter\c!yoffset\relax ;
+        sc := \directdummyparameter\c!factor*\directdummyparameter\c!scale ;
+        nx := \directdummyparameter\c!nx ;
+        ny := \directdummyparameter\c!ny ;
+        dx := \MPdpar\directdummyparameter\c!dx * sc ;
+        dy := \MPdpar\directdummyparameter\c!dy * sc ;
+        ox := \MPdpar\directdummyparameter\c!xoffset ;
+        oy := \MPdpar\directdummyparameter\c!yoffset ;
+        sx := \directdummyparameter\c!xstep ;
+        sy := \directdummyparameter\c!ystep ;
 
         if "\directdummyparameter\c!align" = "\v!middle" :
-            ax = \MPdpar\directdummyparameter\c!dx/2
-            ay = \MPdpar\directdummyparameter\c!dy/2
+            ax := dx / 2 ;
+            ay := dy / 2 ;
         else :
-            ax = 0 ;
-            ay = 0 ;
+            ax := 0 ;
+            ay := 0 ;
         fi ;
 
-        draw image (
-            for i=0 step dx until wd : draw (i,0) -- (i,ht) ; endfor ;
-            for i=0 step dy until ht : draw (0,i) -- (wd,i) ; endfor ;
-        )
+        draw lmt_grid [ nx = nx, ny = ny, dx = 1, dy = 1 ]
+            xyscaled (dx,dy) shifted (ax, ay)
             withpen pencircle scaled \MPdpar\directdummyparameter\c!rulethickness\space
             withcolor "\directdummyparameter\c!rulecolor" ;
 
         draw image (
-            if \directdummyparameter\c!xstep > 0 :
-                for i=1 step \directdummyparameter\c!xstep until \directdummyparameter\c!nx :
+            if sx > 0 :
+                for i=1 step sx until nx :
                     draw thetextext.bot(decimal i,(i*dx-ax,oy));
                 endfor ;
             fi ;
-            if \directdummyparameter\c!ystep > 0 :
-                for i=1 step \directdummyparameter\c!ystep until \directdummyparameter\c!ny :
+            if sy > 0 :
+                for i=1 step sy until ny :
                     draw thetextext.lft(decimal i,(ox,i*dy-ay)) ;
                 endfor ;
             fi ;

@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['meta-ini'] = {
 
 local tonumber = tonumber
 local format = string.format
-local concat = table.concat
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, Cs, R, S, C, Cc = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc
 
@@ -16,68 +15,68 @@ metapost       = metapost or { }
 local metapost = metapost
 local context  = context
 
-local colorhash = attributes.list[attributes.private('color')]
-local textype   = tex.type
-local MPcolor   = context.MPcolor
-
-do
-
-    local dimenorname  =
-        lpegpatterns.validdimen / function(s)
-            context("\\the\\dimexpr %s",s)
-        end
-      + (C(lpegpatterns.float) + Cc(1)) * lpegpatterns.space^0 * P("\\") * C(lpegpatterns.letter^1) / function(f,s)
-            local t = textype(s)
-            if t == "dimen" then
-                context("\\the\\dimexpr %s\\%s\\relax",f,s)
-            elseif t == "count" then
-                context("\\the\\numexpr \\%s * %s\\relax",s,f) -- <n>\scratchcounter is not permitted
-            end
-        end
-
-    local splitter = lpeg.splitat("::",true)
-
-    interfaces.implement {
-        name      = "prepareMPvariable",
-        arguments = "string",
-        actions   = function(v)
-            if v == "" then
-             -- MPcolor("black")
-                context("black")
-            else
-                local typ, var = lpegmatch(splitter,v)
-                if not var then
-                    -- parse
-                    if colorhash[v] then
-                     -- MPcolor(v)
-                        context("%q",var)
-                    elseif tonumber(v) then
-                        context(v)
-                    elseif not lpegmatch(dimenorname,v) then
-                        context("\\number %s",v) -- 0.4 ...
-                    end
-                elseif typ == "d" then -- to be documented
-                    -- dimension
-                    context("\\the\\dimexpr %s\\relax",var)
-                elseif typ == "n" then -- to be documented
-                    -- number
-                    context("\\the\\numexpr %s\\relax",var)
-                elseif typ == "s" then -- to be documented
-                    -- string
-                 -- context(var)
-                    context("%q",var)
-                elseif typ == "c" then -- to be documented
-                    -- color
-                 -- MPcolor(var)
-                    context("%q",var)
-                else
-                    context(var)
-                end
-            end
-        end
-    }
-
-end
+-- local colorhash = attributes.list[attributes.private('color')]
+-- local textype   = tex.type
+-- local MPcolor   = context.MPcolor
+--
+-- do
+--
+--     local dimenorname  =
+--         lpegpatterns.validdimen / function(s)
+--             context("\\the\\dimexpr %s",s)
+--         end
+--       + (C(lpegpatterns.float) + Cc(1)) * lpegpatterns.space^0 * P("\\") * C(lpegpatterns.letter^1) / function(f,s)
+--             local t = textype(s)
+--             if t == "dimen" then
+--                 context("\\the\\dimexpr %s\\%s\\relax",f,s)
+--             elseif t == "count" then
+--                 context("\\the\\numexpr \\%s * %s\\relax",s,f) -- <n>\scratchcounter is not permitted
+--             end
+--         end
+--
+--     local splitter = lpeg.splitat("::",true)
+--
+--     interfaces.implement {
+--         name      = "prepareMPvariable",
+--         arguments = "string",
+--         actions   = function(v)
+--             if v == "" then
+--              -- MPcolor("black")
+--                 context("black")
+--             else
+--                 local typ, var = lpegmatch(splitter,v)
+--                 if not var then
+--                     -- parse
+--                     if colorhash[v] then
+--                      -- MPcolor(v)
+--                         context("%q",var)
+--                     elseif tonumber(v) then
+--                         context(v)
+--                     elseif not lpegmatch(dimenorname,v) then
+--                         context("\\number %s",v) -- 0.4 ...
+--                     end
+--                 elseif typ == "d" then -- to be documented
+--                     -- dimension
+--                     context("\\the\\dimexpr %s\\relax",var)
+--                 elseif typ == "n" then -- to be documented
+--                     -- number
+--                     context("\\the\\numexpr %s\\relax",var)
+--                 elseif typ == "s" then -- to be documented
+--                     -- string
+--                  -- context(var)
+--                     context("%q",var)
+--                 elseif typ == "c" then -- to be documented
+--                     -- color
+--                  -- MPcolor(var)
+--                     context("%q",var)
+--                 else
+--                     context(var)
+--                 end
+--             end
+--         end
+--     }
+--
+-- end
 
 do
 

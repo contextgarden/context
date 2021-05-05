@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Some lmtx upgrading work needs to be done here.
-%D
 %D For real \METAFUN\ magic see \type {https://art-aleatoire.com/}.
 
 % initializations:
@@ -82,6 +80,7 @@
 \installcorenamespace{mpgraphic}
 \installcorenamespace{mpstaticgraphic}
 \installcorenamespace{mpclip}
+\installcorenamespace{mpcategory}
 
 \newtoks \t_meta_initializations  % tex, each
 
@@ -173,8 +172,7 @@
   {\writestatus\m!metapost{reset will be implemented when needed}}
 
 \def\meta_analyze_graphicname[#1]%
- %{\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}
-  {\normalexpanded{\meta_analyze_graphicname_indeed[#1}::::]}
+  {\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}
 
 \def\meta_show_properties_indeed
   {\writestatus{metapost}{name: \currentMPgraphicname, instance: \currentMPinstance, format: \currentMPformat}}
@@ -292,21 +290,20 @@
 \protected\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
-   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
    \meta_process_graphic_start
      \normalexpanded{\noexpand\clf_mpgraphic
          instance        {\currentMPinstance}%
          format          {\currentMPformat}%
          data            {#1;}%
          initializations {\meta_flush_current_initializations}%
-    \ifx\p_extensions\v!yes
-         extensions      {\clf_getmpextensions{\currentMPinstance}}% goes through tex again
+    \ifcstok{\MPinstanceparameter\s!extensions}\v!yes
+         extensions      {\clf_getmpextensions{\currentMPinstance}}% goes through tex again, can be done better now
     \fi
          inclusions      {\meta_flush_current_inclusions}%
          definitions     {\meta_flush_current_definitions}%
          figure          {\MPaskedfigure}%
          method          {\MPinstanceparameter\c!method}%
-         namespace       {\??graphicvariable\currentmpvariableclass:}%
+         namespace       {\??graphicvariable\currentmpcategory:}%
     \relax}%
    \meta_process_graphic_stop
    \meta_stop_current_graphic}
@@ -409,8 +406,8 @@
 
 \aliased\let\stopMPclip\relax
 
-\mutable\def\width {0 } % left-over
-\mutable\def\height{0 } % left-over
+\mutable\def\width {0 } % left-over, obsolete
+\mutable\def\height{0 } % left-over, obsolete
 
 \mutable\let\currentMPclip\empty
 
@@ -418,8 +415,8 @@
   {\begingroup
    \d_overlay_width #2\relax
    \d_overlay_height#3\relax
-   \edef\width {\the\d_overlay_width \space}% hm
-   \edef\height{\the\d_overlay_height\space}% hm
+   \edef\width {\the\d_overlay_width \space}% obsolete
+   \edef\height{\the\d_overlay_height\space}% obsolete
    \edef\currentMPclip{#1}%
    \ifcsname\??mpclip\currentMPclip\endcsname
      \meta_grab_clip_path_yes
@@ -433,7 +430,7 @@
      \normalexpanded{\noexpand\clf_mpsetclippath
        instance        {\currentMPinstance}%
        format          {\currentMPformat}%
-       data            {\csname\??mpclip\currentMPclip\endcsname}%
+       data            {\begincsname\??mpclip\currentMPclip\endcsname}%
        initializations {\meta_flush_current_initializations}%
        useextensions   {\MPinstanceparameter\s!extensions}%
        inclusions      {\meta_flush_current_inclusions}%
@@ -493,97 +490,57 @@
 %D Currently the inheritance of backgrounds does not work and we might drop it
 %D anyway (too messy)
 
-\newbox\b_meta_variable_box
+\let\m_meta_current_variable\empty
 
-\mutable\let \currentmpvariableclass  \empty % public
+\installbasicnativeautosetuphandler \??mpcategory {mpcategory}
 
-\let \m_meta_current_variable         \empty
-\let \m_meta_current_variable_template\empty
+\permanent\tolerant\protected\def\useMPvariables[#1]#*[#2]{} % no longer needed
 
-% \installcorenamespace{graphicvariable} % already set
+%D The uppercase ones are the official ones:
 
-\def\meta_prepare_variable_default{\MPcolor{black}} % just to be sure we use a color but ...
+\aliased\let\setupMPvariables\setupmpcategory
+\aliased\let\setMPvariables  \setupmpcategory
 
-\permanent\tolerant\protected\def\setupMPvariables[#1]#*[#2]%
-  {\ifarguments
-   \or
-     \getrawparameters[\??graphicvariable:][#1]%
-   \else
-     \getrawparameters[\??graphicvariable#1:][#2]%
-   \fi}
+\def\meta_mpvar_default{\MPcolor{black}\space}
+%def\meta_mpvar_default{0 }
 
-\permanent\tolerant\protected\def\presetMPvariable[#1]#*[#2=#3]%
-  {\ifcsname\??graphicvariable#1:#2\endcsname \else
-     \defcsname\??graphicvariable#1:#2\endcsname{#3}%
-   \fi}
-
-\permanent\def\MPrawvar#1#2% no checking
-  {\begincsname\??graphicvariable#1:#2\endcsname}
-
-\permanent\def\MPvariable#1% todo: could be a framed chain
-  {\begincsname\??graphicvariable\currentmpvariableclass:#1\endcsname}
-
-\permanent\tolerant\protected\def\useMPvariables[#1]#*[#2]%
-  {\edef\currentmpvariableclass{#1}%
-   \meta_prepare_variables{#2}}
-
-\protected\def\meta_prepare_variables#1%
-  {\processcommalist[#1]\meta_prepare_variable}
-
-\protected\def\meta_prepare_variable#1%
-  {\edef\m_meta_current_variable_template
-     {\??graphicvariable\currentmpvariableclass:#1}%
-   \edef\m_meta_current_variable
-     {\begincsname\m_meta_current_variable_template\endcsname}%
+\permanent\def\MPvar#1% todo: could be a framed chain
+  {\beginlocalcontrol
+   \edef\m_meta_current_variable{\mpcategoryparameter{#1}}%
+   \endlocalcontrol
    \ifempty\m_meta_current_variable
-     \expandafter\meta_prepare_variable_nop
-   \else
-     \expandafter\meta_prepare_variable_yes
-   \fi}
-
-\protected\def\meta_prepare_instance_variables
-  {\expandafter\processcommalist\expandafter[\m_meta_instance_variables]\meta_prepare_instance_variable}
-
-\protected\def\meta_prepare_instance_variable#1%
-  {\edef\m_meta_current_variable_template
-     {\??graphicvariable\currentmpvariableclass:#1}%
-   \edef\m_meta_current_variable
-     {\ifcsname\m_meta_current_variable_template\endcsname
-         \lastnamedcs
-      \else
-         \begincsname\??graphicvariable\currentMPgraphicname:#1\endcsname
-      \fi}%
-   \ifempty\m_meta_current_variable
-     \expandafter\meta_prepare_variable_nop
-   \else
-     \expandafter\meta_prepare_variable_yes
-   \fi}
-
-\def\meta_prepare_variable_nop
-  {\expandafter\letcsname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
-
-\def\meta_prepare_variable_color % we use the attribute so we dont' go through namedcolor (why not)
-  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
-
-\def\meta_prepare_variable_number
-  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\number\m_meta_current_variable}}% also accepts 0.number
-
-\def\meta_prepare_variable_dimension
-  {\expandafter\edefcsname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
-
-\def\meta_prepare_variable_yes
-  {\ifchkdim\m_meta_current_variable\or
-     \meta_prepare_variable_dimension
+     \meta_mpvar_default
+   \orelse\ifchkdim\m_meta_current_variable\or
+     \todimension\m_meta_current_variable\space\space
    \orelse\ifchknum\m_meta_current_variable\or
-     \meta_prepare_variable_number
+     \tointeger\m_meta_current_variable\space\space
+   \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
+     \MPcolor\m_meta_current_variable\space
+   \orelse\ifcsname\??colorattribute\m_meta_current_variable\endcsname
+     \MPcolor\m_meta_current_variable\space
    \else
-      \doifelsecolor\m_meta_current_variable
-        \meta_prepare_variable_color
-        \meta_prepare_variable_dimension
+     \m_meta_current_variable
    \fi}
 
-\aliased\let\MPvar         \MPvariable
-\aliased\let\setMPvariables\setupMPvariables
+\permanent\def\MPrawvar#1#2% todo: could be a framed chain
+  {\beginlocalcontrol
+   \edef\m_meta_current_variable{\namedmpcategoryparameter{#1}{#2}}%
+   \endlocalcontrol
+   \ifempty\m_meta_current_variable
+     \meta_mpvar_default
+   \orelse\ifchkdim\m_meta_current_variable\or
+     \todimension\m_meta_current_variable\space\space
+   \orelse\ifchknum\m_meta_current_variable\or
+     \tointeger\m_meta_current_variable\space\space
+   \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
+     \MPcolor\m_meta_current_variable\space
+   \orelse\ifcsname\??colorattribute\m_meta_current_variable\endcsname
+     \MPcolor\m_meta_current_variable\space
+   \else
+     \m_meta_current_variable
+   \fi}
+
+\aliased\let\MPvariable\MPvar
 
 %D \macros
 %D   {startuniqueMPgraphic, uniqueMPgraphic}
@@ -673,7 +630,7 @@
 
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
   {\begingroup                       % when there are that many they're probably not that unique anyway
-   \edef\currentmpvariableclass{#1}%
+   \edef\currentmpcategory{#1}%
    \extendMPoverlaystamp{#2}% incl prepare
    \ifcsname\??mpgraphic\overlaystamp:#1\endcsname
      \lastnamedcs
@@ -701,22 +658,20 @@
 
 \permanent\tolerant\protected\def\uniqueMPgraphic#=#*#=%
   {\meta_begin_graphic_group{#1}%
-   \setupMPvariables[#1][#2]%
+   \checkmpcategoryparent
+   \let\currentmpcategory\currentMPgraphicname
+   \setupcurrentmpcategory[#2]%
    \begincsname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
 
 \def\meta_handle_use_graphic#1#2#3%
   {\begingroup
-   \edef\currentmpvariableclass{#1}%
-   \edef\m_meta_instance_variables{#2}%
-   \ifempty\m_meta_instance_variables \else
-     \meta_prepare_instance_variables
-   \fi
+   \edef\currentmpcategory{#1}%
    \meta_enable_include % redundant
    \meta_process_graphic{#3}%
    \endgroup}
 
-\permanent\protected\def\startuseMPgraphic % todo, modernize
+\permanent\protected\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
 
 \aliased\let\stopuseMPgraphic\relax
@@ -727,7 +682,7 @@
 \protected\def\meta_start_use_graphic_indeed#1#2#3\stopuseMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
-\permanent\protected\def\startusableMPgraphic % redundant but handy % todo, modernize
+\permanent\protected\def\startusableMPgraphic
   {\dodoublegroupempty\meta_start_usable_graphic}
 
 \aliased\let\stopusableMPgraphic\relax
@@ -740,11 +695,7 @@
 
 \def\meta_handle_reusable_graphic#1#2#3%
   {\begingroup
-   \edef\currentmpvariableclass{#1}%
-   \edef\m_meta_instance_variables{#2}%
-   \ifempty\m_meta_instance_variables \else
-     \meta_prepare_instance_variables
-   \fi
+   \edef\currentmpcategory{#1}%
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
    \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
@@ -752,7 +703,7 @@
    \csname\??mpgraphic#1\endcsname\empty
    \endgroup}
 
-\permanent\protected\def\startreusableMPgraphic % todo, modernize
+\permanent\protected\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
 \aliased\let\stopreusableMPgraphic\relax
@@ -763,22 +714,21 @@
 \protected\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
 
-\mutable\let\usedMPgraphicname\empty
-
 \permanent\tolerant\protected\def\useMPgraphic#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname
-     \edef\usedMPgraphicname{#1}%
+     \edef\currentmpcategory{#1}%
    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
-     \let\usedMPgraphicname\currentMPgraphicname
+     \let\currentmpcategory\currentMPgraphicname
    \else
-     \let\usedMPgraphicname\empty
+     \let\currentmpcategory\empty
    \fi
-   \ifempty\usedMPgraphicname
+   \ifempty\currentmpcategory
      % message
    \else
-     \doifsomething{#2}{\setupMPvariables[\usedMPgraphicname][#2]}%
-     \csname\??mpgraphic\usedMPgraphicname\endcsname
+     \checkmpcategoryparent
+     \doifsomething{#2}{\setupcurrentmpcategory[#2]}%
+     \csname\??mpgraphic\currentmpcategory\endcsname
    \fi
    \meta_end_graphic_group}
 
@@ -810,35 +760,22 @@
 \def\meta_start_unique_page_graphic#1%
   {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
 
-\protected\def\meta_start_unique_page_graphic_indeed#1#2#3\stopuniqueMPpagegraphic % inefficient, double storage
-  {\gdefcsname\??mpgraphic o:#1\endcsname{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%       % but these also keep the state
-   \gdefcsname\??mpgraphic e:#1\endcsname{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}       % and meaning will be redefined
+\protected\def\meta_start_unique_page_graphic_indeed#1#2#3\stopuniqueMPpagegraphic    % inefficient, double storage
+  {\gdefcsname\??mpgraphic o:#1\endcsname{\meta_handle_unique_graphic{o:#1}{#2}{#3}}% % but these also keep the state
+   \gdefcsname\??mpgraphic e:#1\endcsname{\meta_handle_unique_graphic{e:#1}{#2}{#3}}} % and meaning will be redefined
 
 \permanent\tolerant\protected\def\uniqueMPpagegraphic#=#=%
   {\meta_begin_graphic_group{#1}%
    \enforced\let\overlaystamp\overlaypagestamp
-   \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
+   \setupmpcategory[\m_meta_page_prefix:#1][#2]% prefix is new here
    \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
    \meta_end_graphic_group}
-
-%D One way of defining a stamp is:
-%D
-%D \starttyping
-%D \def\extendMPoverlaystamp#1%
-%D   {\def\docommand##1%
-%D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
-%D    \processcommalist[#1]\docommand}
-%D \stoptyping
-%D
-%D Since we need to feed \METAPOST\ with expanded dimensions, we introduce a
-%D dedicated expansion engine. We redefine \type {\extendMPoverlaystamp} to
 
 \permanent\protected\def\extendMPoverlaystamp#1%
   {\processcommalist[#1]\meta_extend_overlay_stamp}
 
 \def\meta_extend_overlay_stamp#1%
-  {\meta_prepare_instance_variable{#1}%
-   \enforced\permanent\edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
+  {\enforced\permanent\edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
 
 % \getMPdata % define at the lua end
 % \rawMPdata % define at the lua end
@@ -951,13 +888,10 @@
 
 \aliased\let\stopMPrun\relax
 
-%D The \type {\resetMPenvironment} is a quick way to erase
-%D the token list.
-%D
-%D You should be aware of independencies. For instance, if you use a font
-%D in a graphic that is not used in the main document, you need to load the
-%D typescript at the outer level (either directly or by using the global
-%D option).
+%D The \type {\resetMPenvironment} is a quick way to erase the token list. You
+%D should be aware of independencies. For instance, if you use a font in a graphic
+%D that is not used in the main document, you need to load the typescript at the
+%D outer level (either directly or by using the global option).
 %D
 %D \starttyping
 %D \usetypescript[palatino][texnansi]
@@ -973,8 +907,7 @@
 %D \stopMPpage
 %D \stoptyping
 
-%D Loading specific \METAPOST\ related definitions is
-%D accomplished by:
+%D Loading specific \METAPOST\ related definitions is accomplished by:
 
 \permanent\protected\def\useMPlibrary[#1]{\clf_useMPlibrary{#1}}
 
@@ -1018,29 +951,17 @@
 \appendtoks
     \disablediscretionaries
    %\disablecompoundcharacters
-\to \everyMPgraphic
-
-\appendtoks
+    %
     \baselineskip1\baselineskip
     \lineheight  1\lineheight
     \topskip     1\topskip
-\to \everyMPgraphic
-
-\appendtoks
+    %
     \enforced\let\#\letterhash
     \enforced\let\_\letterunderscore
     \enforced\let\&\letterampersand
     \enforced\let\{\letteropenbrace
     \enforced\let\}\letterclosebrace
 \to \everyMPgraphic
-
-%D \macros
-%D   {PDFMPformoffset}
-%D
-%D In \PDF, forms are clipped and therefore we have to take precautions to get this
-%D right. Since this is related to objects, we use the same offset as used there.
-
-\def\PDFMPformoffset{\objectoffset}
 
 \newtoks\everyinsertMPfile
 
@@ -1305,25 +1226,6 @@
 
 \setupMPgraphics
   [\c!color=\v!local]
-
-% %D This can save some runtime: rename the mpy file from a first run (when stable) to
-% %D another file and reuse it. One can also use the original filename, but a copy is
-% %D often better.
-% %D
-% %D \starttyping
-% %D \setupMPgraphics
-% %D   [mpy=\jobname.mpy]
-% %D \stoptyping
-%
-% \mutable\let\MPdataMPYfile\empty
-%
-% \appendtoks
-%     \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
-%     \ifempty\p_mpy \else
-%       \let\MPdataMPYfile\p_mpy
-%       \clf_registermpyfile{\p_mpy}%
-%     \fi
-% \to \everysetupMPgraphics
 
 %D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
 

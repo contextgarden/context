@@ -1,0 +1,48 @@
+if not modules then modules = { } end modules ['libs-imp-zstd'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- c:/data/develop/tex-context/tex/texmf-win64/bin/lib/luametatex/lua/copies/curl/libzstd.dll
+
+-- require("libs-imp-zstd.lmt") -- only loads
+--
+-- local zstd = require("zstd") -- activates
+--
+-- local data = io.loaddata("t:/sources/char-def.lua")
+-- local comp = zstd.compress  (data)
+-- local back = zstd.decompress(comp)
+--
+-- print(#data,#comp,#back,#back==#data)
+
+local libname = "zstd"
+local libfile = "libzstd"
+
+local zstdlib = resolvers.libraries.validoptional(libname)
+
+if not zstdlib then return end
+
+local zstd_compress   = zstdlib.compress
+local zstd_decompress = zstdlib.decompress
+
+local function okay()
+    if resolvers.libraries.optionalloaded(libname,libfile) then
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local zstd = {
+    compress   = function (s) return okay() and zstd_compress  (s) end,
+    decompress = function (s) return okay() and zstd_decompress(s) end,
+}
+
+package.loaded[libname] = zstd
+
+return zstd
+

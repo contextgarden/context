@@ -88,7 +88,7 @@
 \let\currentPDFresources\empty
 \let\setMPextensions    \relax
 
-\def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi}
+\def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi} % no longer used
 
 \def\resetMPvariables#1#2#3%
   {\glet\MPwidth    \!!zeropoint

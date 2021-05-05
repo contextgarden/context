@@ -119,19 +119,6 @@
      \eposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
    \fi}
 
-% \permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#settings]%
-%   {\begingroup
-%    \advance\c_anch_backgrounds_text_level\plusone
-%    \def\currenttextbackground{#tag}%
-%    \anch_backgrounds_text_initialize_next
-%    \ifparameter#settings\or
-%      \setupcurrenttextbackground[#settings]%
-%    \fi
-%    \doifelse{\textbackgroundparameter\c!state}\v!start
-%      \anch_backgrounds_text_preset_yes
-%      \anch_backgrounds_text_preset_nop
-%    \anch_backgrounds_text_start_indeed}
-
 % ugly hack to register usage
 
 \newcount   \c_anch_backgrounds_text_count
@@ -558,34 +545,13 @@
    gridcolor=red,
    linecolor=blue,
    fillcolor=lightgray,
-   filloffset=\!!zeropoint,
+   filloffset=\zeropoint,
    linewidth=\linewidth,
    gridwidth=\linewidth,
-   gridshift=\!!zeropoint,
+   gridshift=\zeropoint,
    lineradius=.5\bodyfontsize,
-   lineoffset=\!!zeropoint,
+   lineoffset=\zeropoint,
    dashtype=1]
-
-\startuseMPgraphic{mpos:region:setup}
-    boxgridtype   := \MPvar{gridtype} ;
-    boxlinetype   := \MPvar{linetype} ;
-    boxfilltype   := \MPvar{filltype} ;
-    boxdashtype   := \MPvar{dashtype} ;
-    boxfilloffset := \MPvar{filloffset} ;
-    boxlinewidth  := \MPvar{linewidth} ;
-    boxgridwidth  := \MPvar{gridwidth} ;
-    boxgridshift  := \MPvar{gridshift} ;
-    boxlineradius := \MPvar{lineradius} ;
-    boxlineoffset := \MPvar{lineoffset} ;
-    %
-    def boxgridcolor = \MPvar{gridcolor} enddef ;
-    def boxlinecolor = \MPvar{linecolor} enddef ;
-    def boxfillcolor = \MPvar{fillcolor} enddef ;
-    %
-    def boxgridoptions = withcolor boxgridcolor enddef ;
-    def boxlineoptions = withcolor boxlinecolor enddef ;
-    def boxfilloptions = withcolor boxfillcolor enddef ;
-\stopuseMPgraphic
 
 \startuseMPgraphic{mpos:region:extra}
     % user stuff
@@ -598,8 +564,7 @@
 \startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
     \includeMPgraphic{mpos:region:setup} ;
     \includeMPgraphic{mpos:region:extra} ;
-  % \getmultipars("self","anchor") ;
-    \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
+    getmultipars("self", "anchor") ;
     \includeMPgraphic{\MPvar{mp}} ;
     \includeMPgraphic{mpos:region:anchor} ;
 \stopMPpositiongraphic
@@ -670,15 +635,6 @@
    lineoffset=5pt,
    linewidth=1pt]
 
-% \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
-%     getposboxes("self","anchor") ;
-%     if nofposboxes = 1 :
-%         posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
-%         fill posboxes[1] withcolor \MPvar{fillcolor} ;
-%         draw posboxes[1] withpen pencircle scaled \MPvar{linewidth} withcolor \MPvar{linecolor} ;
-%     fi ;
-% \stopMPpositiongraphic
-
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
     getposboxes("self","anchor") ;
     if nofposboxes = 1 :
@@ -693,14 +649,6 @@
   [linecolor=red,
    lineoffset=.25ex,
    linewidth=1pt]
-
-% \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
-%     boxlinewidth  := \MPvar{linewidth} ;
-%     boxlineoffset := \MPvar{lineoffset} ;
-%     def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-%     getposboxes("from,to","anchor") ;
-%     connect_positions ;
-% \stopMPpositiongraphic
 
 \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
     boxlinewidth  := mpvar "linewidth" ;
