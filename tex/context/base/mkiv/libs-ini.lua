@@ -137,7 +137,7 @@ function libraries.optionalloaded(name,libnames)
                 for i=1,#libnames do
                     local libname  = libnames[i]
                     local filename = foundlibraries[libname]
-                    if filename then
+                    if filename and filename ~= "" then
                         libnames[i] = filename
                     else
                         report("unable to locate library %a",libname)

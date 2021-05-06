@@ -1,0 +1,37 @@
+if not modules then modules = { } end modules ['libs-imp-lzo'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- https://packages.msys2.org/package/mingw-w64-x86_64-lzo2?repo=mingw64
+
+local libname = "lzo"
+local libfile = "liblzo"
+
+local lzolib = resolvers.libraries.validoptional(libname)
+
+if not lzolib then return end
+
+local lzo_compress       = lzolib.compress
+local lzo_decompresssize = lzolib.decompresssize
+
+local function okay()
+    if resolvers.libraries.optionalloaded(libname,libfile) then
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local lzo = {
+    compress       = function (...) return okay() and lzo_compress      (...) end,
+    decompresssize = function (...) return okay() and lzo_decompresssize(...) end,
+}
+
+package.loaded[libname] = lzo
+
+return lzo

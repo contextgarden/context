@@ -13,6 +13,8 @@
 
 \registerctxluafile{libs-ini}{} % shared with mkiv
 
+% These are used by the graphic converters:
+
 \registerctxluafile{libs-imp-curl}{autosuffix}
 \registerctxluafile{libs-imp-ghostscript}{autosuffix}
 \registerctxluafile{libs-imp-graphicsmagick}{autosuffix}
@@ -22,11 +24,16 @@
 % \registerctxluafile{libs-imp-mysql}{autosuffix}
 % \registerctxluafile{libs-imp-sqlite}{autosuffix}
 % \registerctxluafile{libs-imp-postgress}{autosuffix}
+
+% \registerctxluafile{libs-imp-lzo}{autosuffix}
+% \registerctxluafile{libs-imp-lz4}{autosuffix}
+% \registerctxluafile{libs-imp-zstd}{autosuffix}
+
 % \registerctxluafile{libs-imp-kpse}{autosuffix}
+% \registerctxluafile{libs-imp-hb}{autosuffix}
 
 \unprotect
 
-% \permanent\protected\def\uselibrary[#1]%
-%   {\clf_uselibrary{#1}}
+% \permanent\protected\def\uselibrary[#1]{\clf_uselibrary{#1}}
 
 \protect \endinput

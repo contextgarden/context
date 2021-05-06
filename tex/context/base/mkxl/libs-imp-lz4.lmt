@@ -1,0 +1,46 @@
+if not modules then modules = { } end modules ['libs-imp-lz4'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- https://packages.msys2.org/package/mingw-w64-x86_64-lz4?repo=mingw64
+
+-- Instead of linking in libs like this we now do them optional. After all, once
+-- we start adding more and more stuff statically we en dup with a mess.
+
+local libname = "lz4"
+local libfile = "liblz4"
+
+local lz4lib = resolvers.libraries.validoptional(libname)
+
+if not lz4lib then return end
+
+local lz4_compress        = lz4lib.compress
+----- lz4_decompress      = lz4lib.decompress
+local lz4_decompresssize  = lz4lib.decompresssize
+local lz4_framecompress   = lz4lib.framecompress
+local lz4_framedecompress = lz4lib.framedecompress
+
+local function okay()
+    if resolvers.libraries.optionalloaded(libname,libfile) then
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local lz4 = {
+    compress        = function (...) return okay() and lz4_compress       (...) end,
+ -- decompress      = function (...) return okay() and lz4_decompress     (...) end,
+    decompresssize  = function (...) return okay() and lz4_decompresssize (...) end,
+    framecompress   = function (...) return okay() and lz4_framecompress  (...) end,
+    framedecompress = function (...) return okay() and lz4_framedecompress(...) end,
+}
+
+package.loaded[libname] = lz4
+
+return lz4

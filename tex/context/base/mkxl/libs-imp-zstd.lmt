@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['libs-imp-zstd'] = {
     license   = "see context related readme files"
 }
 
+-- Instead of linking in libs like this we now do them optional. After all, once
+-- we start adding more and more stuff statically we en dup with a mess. In fact,
+-- this lib was the reason for no longer embedding lzo and lz4.
+
 -- c:/data/develop/tex-context/tex/texmf-win64/bin/lib/luametatex/lua/copies/curl/libzstd.dll
 
 -- require("libs-imp-zstd.lmt") -- only loads
@@ -46,3 +50,49 @@ package.loaded[libname] = zstd
 
 return zstd
 
+-- local foreign   = optional.loaded.foreign
+-- local newbuffer = foreign.newbuffer
+-- local getbuffer = foreign.getbuffer
+--
+-- local zstd = foreign.load("libzstd")
+--
+-- local ZSTD_compressBound = zstd:register {
+--     name      = "ZSTD_compressBound",
+--     result    = "int",
+--     arguments = { "int" },
+-- }
+--
+-- local ZSTD_getFrameContentSize = zstd:register {
+--     name      = "ZSTD_getFrameContentSize",
+--     result    = "int",
+--     arguments = { "pointer", "int" },
+-- }
+--
+-- local ZSTD_compress = zstd:register {
+--     name      = "ZSTD_compress",
+--     result    = "int",
+--     arguments = { "pointer", "int", "string", "int", "int" },
+--     arguments = { "pointer", "int", "pointer", "int", "int" },
+-- }
+--
+-- local ZSTD_decompress = zstd:register {
+--     name      = "ZSTD_decompress",
+--     result    = "int",
+--     arguments = { "pointer", "int", "string", "int" },
+-- }
+--
+-- local function zstd_compress(source,level)
+--     local sourcesize = #source
+--     local targetsize = ZSTD_compressBound(sourcesize)
+--     local target     = newbuffer(targetsize)
+--     local result     = ZSTD_compress(target,targetsize,source,sourcesize,tonumber(level) or 3)
+--     return getbuffer(target,result)
+-- end
+--
+-- local function zstd_decompress(source)
+--     local sourcesize = #source
+--     local targetsize = ZSTD_getFrameContentSize(source,sourcesize)
+--     local target     = newbuffer(targetsize)
+--     local result     = ZSTD_decompress(target,targetsize,source,sourcesize)
+--     return getbuffer(target,result)
+-- end

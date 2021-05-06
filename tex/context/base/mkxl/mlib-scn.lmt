@@ -398,12 +398,11 @@ local function getparameter()
         end
         v = vl
     end
---     if v == nil then
---         return injectnumeric(0)
---     else
---         return get(v)
---     end
-    return v or 0
+    if v == nil then
+        return 0
+    else
+        return v
+    end
 end
 
 local function hasparameter()
