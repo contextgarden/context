@@ -32,7 +32,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Visualization}
 
-\registerctxluafile{trac-vis}{autosuffix,optimize}
+\registerctxluafile{trac-vis}{autosuffix}
 
 \unprotect
 

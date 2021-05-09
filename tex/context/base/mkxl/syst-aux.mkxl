@@ -1069,7 +1069,7 @@
 %    \expandafterspaces\syst_helpers_process_comma_item#2#3\ignorearguments\ignorearguments\ignorearguments
 %    \popmacro\commalistcommand}
 
-\permanent\protected\def\processnextcommalist#1[#2#3]%
+\permanent\protected\def\processnextcommalist#1[#2#3]% watch out: mkiv has two extra initial arguments
   {\pushmacro\commalistcommand
    \def\commalistcommand{#1}%
    \expandafterspaces\syst_helpers_process_comma_item#2#3\ignorearguments\ignorearguments\ignorearguments

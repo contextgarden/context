@@ -251,8 +251,6 @@ interfaces.implement {
 -- optimized already but we can assume a cycle i.e. prune the last point and then
 -- even less code .. we could merge some loops but his is more robust
 
--- use idiv here
-
 local function topairs(t,n)
     local r = { }
     for i=1,n do

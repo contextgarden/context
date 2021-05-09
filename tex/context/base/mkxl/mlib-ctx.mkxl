@@ -27,8 +27,8 @@
 \registerctxluafile{mlib-int}{autosuffix}
 \registerctxluafile{mlib-lmt}{autosuffix}
 \registerctxluafile{mlib-pos}{autosuffix}
-\registerctxluafile{mlib-cnt}{autosuffix,optimize}
-\registerctxluafile{mlib-svg}{autosuffix,optimize}
+\registerctxluafile{mlib-cnt}{autosuffix}
+\registerctxluafile{mlib-svg}{autosuffix}
 
 \unprotect
 

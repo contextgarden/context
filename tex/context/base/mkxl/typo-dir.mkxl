@@ -18,7 +18,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-dir}{optimize}
+\registerctxluafile{typo-dir}{autosuffix}
 \registerctxluafile{typo-dha}{}
 %registerctxluafile{typo-dua}{}
 %registerctxluafile{typo-dub}{}

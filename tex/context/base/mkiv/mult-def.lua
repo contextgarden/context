@@ -15983,6 +15983,9 @@ return {
    ["pe"]="افقی",
    ["ro"]="orizontal",
   },
+  ["collapsed"]={
+   ["en"]="collapsed",
+  },
   ["hyphenated"]={
    ["cs"]="hyphenated",
    ["de"]="hyphenate",
@@ -17238,6 +17241,9 @@ return {
    ["nl"]="niethangend",
    ["pe"]="بدون‌آویزان‌کردن",
    ["ro"]="nothanging",
+  },
+  ["notcollapsed"]={
+   ["en"]="notcollapsed",
   },
   ["nothyphenated"]={
    ["cs"]="nothyphenated",

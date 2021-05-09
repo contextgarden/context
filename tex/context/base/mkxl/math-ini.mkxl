@@ -70,9 +70,9 @@
 \registerctxluafile{math-ext}{}
 \registerctxluafile{math-vfu}{autosuffix}
 \registerctxluafile{math-ttv}{}
-\registerctxluafile{math-map}{optimize}
+\registerctxluafile{math-map}{autosuffix}
 \registerctxluafile{math-ren}{}
-\registerctxluafile{math-noa}{autosuffix,optimize}
+\registerctxluafile{math-noa}{autosuffix}
 \registerctxluafile{math-tag}{autosuffix}
 \registerctxluafile{math-fbk}{}
 \registerctxluafile{math-dir}{}

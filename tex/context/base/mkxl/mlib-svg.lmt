@@ -514,13 +514,11 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
     local f_svggray  = formatters['svggray(%.3N)']
     local f_svgname  = formatters['"%s"']
 
-    local extract = bit32.extract
-
     local triplets = setmetatableindex(function(t,k)
         -- we delay building all these strings
         local v = svgcolors[k]
         if v then
-            v = { extract(v,16,8)/255, extract(v,8,8)/255, extract(v,0,8)/255 }
+            v = { ((v>>16)&0xFF)/0xFF, ((v>>8)&0xFF)/0xFF, ((v>>0)&0xFF)/0xFF }
         else
             v = false
         end

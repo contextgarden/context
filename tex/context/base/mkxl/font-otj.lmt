@@ -132,7 +132,6 @@ end
 
 local useitalickerns     = false
 local useadvance         = false
-local usezwjkerns        = true  -- when useadvance
 
 directives.register("fonts.injections.useitalics", function(v)
     if v then
@@ -1016,14 +1015,8 @@ local function inject_kerns_only_margins(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                if usezwjkerns then
-                                    replace = copynode(current)
-                                    setchar(replace,0x200D) -- zwj
-                                    addxymargins(replace,-leftkern)
-                                else
-                                    replace = somekern(fontkern,xscaled(current,leftkern),current)
-                                end
-                                setdisc(prevdisc,pre,post,replace) -- setreplace
+                                -- prev disc | current
+                                addxymargins(current,-leftkern) -- NEEDS CHECKING
                             end
                         end
                     end
@@ -1711,13 +1704,8 @@ local function inject_positions_only_margins(head,where)
                                 if replace then
                                     -- error, we expect an empty one
                                 else
-                                    if usezwjkerns then
-                                        replace = copynode(current)
-                                        setchar(replace,0x200D) -- zwj
-                                        addxymargins(replace,false,-rightkern)
-                                    else
-                                        replace = somekern(fontkern,xscaled(current,rightkern),current) -- maybe also leftkern
-                                    end
+                                    -- next disc | current
+                                    addxymargins(current,-rightkern) -- NEEDS CHECKING
                                     done = true	--KE
                                 end
                             end
@@ -1748,14 +1736,8 @@ local function inject_positions_only_margins(head,where)
                             -- new .. okay?
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                if usezwjkerns then
-                                    replace = copynode(current)
-                                    setchar(replace,0x200D) -- zwj
-                                    addxymargins(replace,-leftkern)
-                                else
-                                    replace = somekern(fontkern,xscaled(current,leftkern),current)
-                                end
-                                setdisc(prevdisc,pre,post,replace)
+                                -- prev disc | current
+                                addxymargins(current,-leftkern) -- NEEDS CHECKING
                             end
                         end
                     end

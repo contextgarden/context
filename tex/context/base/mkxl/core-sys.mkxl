@@ -233,12 +233,27 @@
 %
 % \ignorestartstop[bagger]
 
+%D When looking at an application of \type {\beginsimplegroup} and \type I wondered
+%D about this one but it doesn't make much sense. One hould define highlights that
+%D have style and color, but on the other hand, we might want to combine a font
+%D style and some other treatment. The overhead of commalists (where we can use
+%D {\aftergrouped} for collecting stop tags) is neglectable but it makes no sense.
+%D Maybe we need a \type {command} or better (as commands can take arguments) a
+%D \type {setups} key, but no one ever asked so \unknown.
+
+% \processnextcommalist\typo_highlights_step ...
+%
+% list  : 10K single: 0.111 / 0.132 with command / 0.134 with setups
+% single: 10K single: 0.075 / 0.098 with command / 0.099 with setups
+
 \installcorenamespace{highlight}
 
 \installcommandhandler \??highlight {highlight} \??highlight % we could do with less
 
 \setuphighlight
   [\c!define=\v!yes]
+%  \c!command=,
+%  \c!setups=]
 
 \appendtoks
     \ifcstok{\highlightparameter\c!define}\v!yes
@@ -253,6 +268,8 @@
      {\def\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
       \usehighlightstyleandcolor\c!style\c!color
+    % \usehighlightstyleandcolor\c!style\c!color
+    % \highlightparameter\c!command
       \dotaghighlight}
      {\dostoptagged}}
 
@@ -264,6 +281,8 @@
    \def\currenthighlight{#1}%
    \dostarttagged\t!highlight\currenthighlight
    \usehighlightstyleandcolor\c!style\c!color
+ % \usehighlightstyleandcolor\c!style\c!color
+ % \highlightparameter\c!command
    \dotaghighlight}
 
 \permanent\protected\def\stophighlight

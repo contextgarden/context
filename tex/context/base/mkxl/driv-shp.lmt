@@ -17,10 +17,8 @@ local sortedhash        = table.sortedhash
 local splitstring       = string.split
 local find              = string.find
 local stripstring       = string.strip
-local idiv              = number.idiv
 local sequenced         = table.sequenced
 local round             = math.round
-local extract           = bit32.extract
 local nuts              = nodes.nuts
 
 local tonut             = nodes.tonut
@@ -168,18 +166,6 @@ local flush_character do
 
     local vfinjectors = fonts.helpers.vfinjectors
 
-    local function flushchar(current,font,char,fnt,chr,f,e)
-        if fnt then
-            local nest = char ~= chr or font ~= fnt
-            if fnt == 0 then
-                fnt = main
-            end
-            return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
-        else
-            return 0
-        end
-    end
-
     local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
 
         if nesting > 100 then
@@ -214,6 +200,18 @@ local flush_character do
 
         -- we assume resolved fonts: id mandate but maybe also size
 
+        local function flushchar(fnt,chr,f,e) -- can't be moved out of the function due to binding locals
+            if fnt then                       -- to the function variables etc etc ... kind of messy
+                local nest = char ~= chr or font ~= fnt
+                if fnt == 0 then
+                    fnt = main
+                end
+                return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+            else
+                return 0
+            end
+        end
+
         for i=1,#vfcommands do
             local packet  = vfcommands[i]
             local command = packet[1]
@@ -221,24 +219,24 @@ local flush_character do
                 local chr = packet[2]
                 local f   = packet[3]
                 local e   = packet[4]
-                pos_h = pos_h + flushchar(current,font,char,fnt,chr,f,e)
+                pos_h = pos_h + flushchar(fnt,chr,f,e)
             elseif command == "slot" then
                 local index = packet[2]
                 local chr   = packet[3]
                 local f     = packet[4]
                 local e     = packet[5]
                 if index == 0 then
-                    pos_h = pos_h + flushchar(current,font,char,font,chr,f,e)
+                    pos_h = pos_h + flushchar(font,chr,f,e)
                 else
                     local okay = fonts and fonts[index]
                     if okay then
                         local fnt = okay.id
                         if fnt then
-                            pos_h = pos_h + flushchar(current,font,char,fnt,chr,f,e)
+                            pos_h = pos_h + flushchar(fnt,chr,f,e)
                         end
                     else
                         -- safeguard, we assume the font itself (often index 1)
-                        pos_h = pos_h + flushchar(current,font,char,font,chr,f,e)
+                        pos_h = pos_h + flushchar(font,chr,f,e)
                     end
                 end
             elseif command == "use" then
@@ -309,7 +307,7 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
                 if c then
-                    flushchar(current,font,char,fnt,c)
+                    flushchar(fnt,c)
                     pos_h = ph
                     pos_v = pv
                 end
@@ -329,7 +327,7 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
                 if c then
-                    flushchar(current,font,char,fnt,c)
+                    flushchar(fnt,c)
                     pos_h = ph
                     pos_v = pv
                 end
@@ -601,10 +599,10 @@ end
 local hlist_out, vlist_out  do
 
     local function applyanchor(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
-        local ot = extract(orientation, 0,4)
-        local ay = extract(orientation, 4,4)
-        local ax = extract(orientation, 8,4)
-        local of = extract(orientation,12,4)
+        local ot = (orientation>> 0) & x0F
+        local ay = (orientation>> 4) & x0F
+        local ax = (orientation>> 8) & x0F
+        local of = (orientation>>12) & x0F
         if ot == 4 then
             ot, ay = 0, 1
         elseif ot == 5 then

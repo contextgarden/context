@@ -716,6 +716,8 @@
 %defcsname\??aligncommand\v!nospacing      \endcsname{\toksapp\t_spac_align_collected{\normalspacing\plusone}}   % not yet
 \defcsname\??aligncommand\v!hyphenated     \endcsname{\toksapp\t_spac_align_collected{\dohyphens}}
 \defcsname\??aligncommand\v!nothyphenated  \endcsname{\toksapp\t_spac_align_collected{\nohyphens}}
+\defcsname\??aligncommand\v!collapsed      \endcsname{\toksapp\t_spac_align_collected{\dohyphencollapsing}}
+\defcsname\??aligncommand\v!notcollapsed   \endcsname{\toksapp\t_spac_align_collected{\nohyphencollapsing}}
 
 \defcsname\??aligncommand\v!tolerant       \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_tolerant}}
 \defcsname\??aligncommand\v!verytolerant   \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_very_tolerant}}

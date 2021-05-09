@@ -17,7 +17,6 @@ local concat, merged = table.concat, table.merged
 local abs = math.abs
 local expandname = file.expandname
 local allocate = utilities.storage.allocate
-local bor, band = bit32.bor, bit32.band
 local isfile = lfs.isfile
 
 local trace_links       = false  trackers.register("figures.links",    function(v) trace_links    = v end)
@@ -548,7 +547,7 @@ local annotationflags = lpdf.flags.annotations
 
 local function copyF(v,lock) -- todo: bxor 24
     if lock then
-        v = bor(v or 0,annotationflags.ReadOnly + annotationflags.Locked + annotationflags.LockedContents)
+        v = (v or 0) | (annotationflags.ReadOnly + annotationflags.Locked + annotationflags.LockedContents)
     end
     if v then
         return pdfcopyinteger(v)
@@ -715,7 +714,7 @@ local function flagstoset(flag,flags)
     local t = { }
     if flags then
         for k, v in next, flags do
-            if band(flag,v) ~= 0 then
+            if (flag & v) ~= 0 then
                 t[k] = true
             end
         end

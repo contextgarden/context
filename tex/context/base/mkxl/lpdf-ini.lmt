@@ -64,7 +64,6 @@ local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 local isboolean = string.is_boolean
-local rshift = bit32.rshift
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -192,27 +191,6 @@ do
 
 end
 
--- we could use a hash of predefined unicodes
-
--- local function tosixteen(str) -- an lpeg might be faster (no table)
---     if not str or str == "" then
---         return "<feff>" -- not () as we want an indication that it's unicode
---     else
---         local r, n = { "<feff" }, 1
---         for b in utfvalues(str) do
---             n = n + 1
---             if b < 0x10000 then
---                 r[n] = format("%04x",b)
---             else
---                 r[n] = format("%04x%04x",rshift(b,10),b%1024+0xDC00)
---             end
---         end
---         n = n + 1
---         r[n] = ">"
---         return concat(r)
---     end
--- end
-
 local tosixteen, fromsixteen, topdfdoc, frompdfdoc, toeight, fromeight
 
 do
@@ -223,8 +201,7 @@ do
             v = format("%04x",v)
         else
             v = v - 0x10000
-            v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00)
-         -- v = format("%04x%04x",rshift(v-0x10000,10)+0xD800,v%1024+0xDC00)
+            v = format("%04x%04x",(v>>10)+0xD800,v%1024+0xDC00)
         end
         t[k] = v
         return v

@@ -106,9 +106,6 @@ local stoptiming          = statistics.stoptiming
 local a_visual            = attributes.private("visual")
 local a_layer             = attributes.private("viewerlayer")
 
-local band  = bit32.band
-local bor   = bit32.bor
-
 local enableaction        = nodes.tasks.enableaction
 
 -- local trace_hbox
@@ -261,13 +258,13 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         if not a or a == 0 or a == unsetvalue then
             a = preset_makeup
         else
-            a = bor(a,preset_makeup)
+            a = a | preset_makeup
         end
     elseif n == "boxes" then
         if not a or a == 0 or a == unsetvalue then
             a = preset_boxes
         else
-            a = bor(a,preset_boxes)
+            a = a | preset_boxes
         end
     elseif n == "all" then
         if what == false then
@@ -275,7 +272,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         elseif not a or a == 0 or a == unsetvalue then
             a = preset_all
         else
-            a = bor(a,preset_all)
+            a = a | preset_all
         end
     else
         for s in gmatch(n,"[a-z]+") do
@@ -285,7 +282,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             elseif not a or a == 0 or a == unsetvalue then
                 a = m
             else
-                a = bor(a,m)
+                a = a | m
             end
         end
     end
@@ -1373,33 +1370,33 @@ do
                     else
                         goto list
                     end
-                else -- dead slow:
+                else -- we need them to be booleans
                  -- cache[a]()
-                    trace_hbox          = band(a,0x0000001) ~= 0
-                    trace_vbox          = band(a,0x0000002) ~= 0
-                    trace_vtop          = band(a,0x0000004) ~= 0
-                    trace_kern          = band(a,0x0000008) ~= 0
-                    trace_glue          = band(a,0x0000010) ~= 0
-                    trace_penalty       = band(a,0x0000020) ~= 0
-                    trace_fontkern      = band(a,0x0000040) ~= 0
-                    trace_strut         = band(a,0x0000080) ~= 0
-                    trace_whatsit       = band(a,0x0000100) ~= 0
-                    trace_glyph         = band(a,0x0000200) ~= 0
-                    trace_simple        = band(a,0x0000400) ~= 0
-                    trace_user          = band(a,0x0000800) ~= 0
-                    trace_math          = band(a,0x0001000) ~= 0
-                    trace_italic        = band(a,0x0002000) ~= 0
-                    trace_origin        = band(a,0x0004000) ~= 0
-                    trace_discretionary = band(a,0x0008000) ~= 0
-                    trace_expansion     = band(a,0x0010000) ~= 0
-                    trace_line          = band(a,0x0020000) ~= 0
-                    trace_space         = band(a,0x0040000) ~= 0
-                    trace_depth         = band(a,0x0080000) ~= 0
-                    trace_marginkern    = band(a,0x0100000) ~= 0
-                    trace_mathlistkern  = band(a,0x0200000) ~= 0
-                    trace_dir           = band(a,0x0400000) ~= 0
-                    trace_par           = band(a,0x0800000) ~= 0
-                    trace_math_glue     = band(a,0x1000000) ~= 0
+                    trace_hbox          = a & 0x0000001 ~= 0
+                    trace_vbox          = a & 0x0000002 ~= 0
+                    trace_vtop          = a & 0x0000004 ~= 0
+                    trace_kern          = a & 0x0000008 ~= 0
+                    trace_glue          = a & 0x0000010 ~= 0
+                    trace_penalty       = a & 0x0000020 ~= 0
+                    trace_fontkern      = a & 0x0000040 ~= 0
+                    trace_strut         = a & 0x0000080 ~= 0
+                    trace_whatsit       = a & 0x0000100 ~= 0
+                    trace_glyph         = a & 0x0000200 ~= 0
+                    trace_simple        = a & 0x0000400 ~= 0
+                    trace_user          = a & 0x0000800 ~= 0
+                    trace_math          = a & 0x0001000 ~= 0
+                    trace_italic        = a & 0x0002000 ~= 0
+                    trace_origin        = a & 0x0004000 ~= 0
+                    trace_discretionary = a & 0x0008000 ~= 0
+                    trace_expansion     = a & 0x0010000 ~= 0
+                    trace_line          = a & 0x0020000 ~= 0
+                    trace_space         = a & 0x0040000 ~= 0
+                    trace_depth         = a & 0x0080000 ~= 0
+                    trace_marginkern    = a & 0x0100000 ~= 0
+                    trace_mathlistkern  = a & 0x0200000 ~= 0
+                    trace_dir           = a & 0x0400000 ~= 0
+                    trace_par           = a & 0x0800000 ~= 0
+                    trace_math_glue     = a & 0x1000000 ~= 0
                 end
             elseif a == unsetvalue then
                 goto list

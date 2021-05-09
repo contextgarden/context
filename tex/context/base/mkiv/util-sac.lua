@@ -377,10 +377,10 @@ if sio and sio.readcardinal2 then
         f[2] = i + 4
         return readfixed4(f[1],i)
     end
-    function streams.read2dot4(f)
+    function streams.read2dot14(f)
         local i = f[2]
         f[2] = i + 2
-        return read2dot4(f[1],i)
+        return read2dot14(f[1],i)
     end
     function streams.readbytes(f,n)
         local i = f[2]

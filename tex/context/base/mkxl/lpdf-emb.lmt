@@ -38,8 +38,6 @@ local format = string.format
 local concat, sortedhash, sort = table.concat, table.sortedhash, table.sort
 local utfchar = utf.char
 local random, round, max, abs, ceiling = math.random, math.round, math.max, math.abs, math.ceiling
-local extract, lshift, rshift, band, bor = bit32.extract, bit32.lshift, bit32.rshift, bit32.band, bit32.bor
-local idiv = number.idiv
 local setmetatableindex = table.setmetatableindex
 
 local pdfnull              = lpdf.null
@@ -85,34 +83,42 @@ local getmapentry = fonts.mappings.getentry
 local tocardinal1 = char
 
 local function tocardinal2(n)
-    return char(extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,8),extract8(n,0))
+    return char((n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tocardinal3(n)
-    return char(extract(n,16,8),extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,16),extract8(n,8),extract8(n,0))
+    return char((n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tocardinal4(n)
-    return char(extract(n,24,8),extract(n,16,8),extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,24),extract8(n,16),extract8(n,8),extract8(n,0))
+    return char((n>>24)&0xFF,(n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tointeger2(n)
-    return char(extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,8),extract8(n,0))
+    return char((n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tointeger3(n)
-    return char(extract(n,16,8),extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,16),extract8(n,8),extract8(n,0))
+    return char((n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tointeger4(n)
-    return char(extract(n,24,8),extract(n,16,8),extract(n,8,8),extract(n,0,8))
+ -- return char(extract8(n,24),extract8(n,16),extract8(n,8),extract8(n,0))
+    return char((n>>24)&0xFF,(n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
 end
 
 local function tocardinal8(n)
-    local l = idiv(n,0x100000000)
+    local l = n // 0x100000000
     local r = n % 0x100000000
-    return char(extract(l,24,8),extract(l,16,8),extract(l,8,8),extract(l,0,8),
-                extract(r,24,8),extract(r,16,8),extract(r,8,8),extract(r,0,8))
+ -- return char(extract8(l,24) & 0xFF,extract8(l,16) & 0xFF,extract8(l,8) & 0xFF,extract8(l,0) & 0xFF,
+ --             extract8(r,24) & 0xFF,extract8(r,16) & 0xFF,extract8(r,8) & 0xFF,extract8(r,0) & 0xFF)
+    return char((l>>24)&0xFF,(l>>16)&0xFF,(l>>8)&0xFF,(l>>0)&0xFF,
+                (r>>24)&0xFF,(r>>16)&0xFF,(r>>8)&0xFF,(r>>0)&0xFF)
 end
 
 -- A couple of shared helpers.
@@ -269,16 +275,16 @@ end
     tocidsetdictionary = function(indices,min,max)
         if includecidset or forcecidset then
             local b = { }
-            local m = idiv(max+7,8)
+            local m = (max + 7) // 8
             for i=0,max do
                 b[i] = 0
             end
-            b[0] = bor(b[0],lshift(1,7)) -- force notdef into the file
+            b[0] = b[0] | (1 << 7) -- force notdef into the file
             for i=min,max do
                 if indices[i] then
-                    local bi = idiv(i,8)
+                    local bi = i // 8
                     local ni = i % 8
-                    b[bi] = bor(b[bi],lshift(1,7-ni))
+                    b[bi] = b[bi] | (1 << (7-ni))
                 end
             end
             b = char(unpack(b,0,#b))
@@ -473,12 +479,12 @@ do
             local i = 1
             local k = 0
             while i <= count do
-                i = lshift(i,1)
+                i = i << 1
                 k = k + 1
             end
-            local searchrange   = lshift(i,3)
+            local searchrange   = i << 3
             local entryselector = k - 1
-            local rangeshift    = lshift(count,4) - lshift(i,3)
+            local rangeshift    = (count  << 4) - (i << 3)
             local index  = {
                 tocardinal4(0x00010000), -- tables.version
                 tocardinal2(count),
@@ -495,7 +501,7 @@ do
                 if data then
                     local csum    = checksum(data)
                     local dlength = #data
-                    local length  = idiv(dlength+3,4) * 4
+                    local length  = ((dlength + 3) // 4) * 4
                     local padding = length - dlength
                     nl = nl + 1 ; list[nl] = data
                     for i=1,padding do
@@ -905,21 +911,21 @@ do
 
             todictinteger = function(n)
                 if not n then
-                    return char(band(139,0xFF))
+                    return char(139 & 0xFF)
                 elseif n >= -107 and n <= 107 then
-                    return char(band(n + 139,0xFF))
+                    return char((n + 139) & 0xFF)
                 elseif n >= 108 and n <= 1131 then
                     n = 0xF700 + n - 108
-                    return char(band(rshift(n,8),0xFF),band(n,0xFF))
+                    return char((n >> 8) & 0xFF, n & 0xFF)
                 elseif n >= -1131 and n <= -108 then
                     n = 0xFB00 - n - 108
-                    return char(band(rshift(n,8),0xFF),band(n,0xFF))
+                    return char((n >> 8) & 0xFF, n & 0xFF)
                 elseif n >= -32768 and n <= 32767 then
-                 -- return int2tag .. tointeger2(n)
-                    return char(28,extract(n,8,8),extract(n,0,8))
+                 -- return char(28,extract8(n,8),extract8(n,0))
+                    return char(28,(n>>8)&0xFF,(n>>0)&0xFF)
                 else
-                 -- return int4tag .. tointeger4(n)
-                    return char(29,extract(n,24,8),extract(n,16,8),extract(n,8,8),extract(n,0,8))
+                 -- return char(29,extract8(n,24&0xFF,extract8(n,16),extract8(n,8),extract8(n,0))
+                    return char(29,(n>>24)&0xFF,(n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
                 end
             end
 
@@ -933,11 +939,11 @@ do
          --     elseif n >= -1131 and n <= 1131 then
          --         return encoder[n]
          --     elseif n >= -32768 and n <= 32767 then
-         --      -- return int2tag .. tointeger2(n)
-         --         return char(28,extract(n,8,8),extract(n,0,8))
+         --      -- return char(28,extract8(n,8),extract8(n,0))
+         --         return char(28,(n>>8)&0xFF,(n>>0)&0xFF)
          --     else
-         --      -- return int4tag .. tointeger4(n)
-         --         return char(29,extract(n,24,8),extract(n,16,8),extract(n,8,8),extract(n,0,8))
+         --      -- return char(29,extract8(n,24),extract8(n,16),extract8(n,8),extract8(n,0))
+         --         return char(29,(n>>24)&0xFF,(n>>16)&0xFF,(n>>8)&0xFF,(n>>0)&0xFF)
          --     end
          -- end
 

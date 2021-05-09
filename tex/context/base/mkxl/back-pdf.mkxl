@@ -17,8 +17,8 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
-\registerctxluafile{lpdf-ini}{autosuffix,optimize}
-\registerctxluafile{lpdf-lmt}{autosuffix,optimize}
+\registerctxluafile{lpdf-ini}{autosuffix}
+\registerctxluafile{lpdf-lmt}{autosuffix}
 \registerctxluafile{lpdf-col}{autosuffix}
 \registerctxluafile{lpdf-xmp}{autosuffix}
 \registerctxluafile{lpdf-ano}{autosuffix}
@@ -34,9 +34,9 @@
 \registerctxluafile{lpdf-tag}{autosuffix}
 \registerctxluafile{lpdf-fmt}{autosuffix}
 \registerctxluafile{lpdf-pde}{autosuffix}
-\registerctxluafile{lpdf-img}{autosuffix,optimize}
+\registerctxluafile{lpdf-img}{autosuffix}
 \registerctxluafile{lpdf-epa}{autosuffix}
-\registerctxluafile{lpdf-emb}{autosuffix,optimize}
+\registerctxluafile{lpdf-emb}{autosuffix}
 \registerctxluafile{lpdf-fnt}{autosuffix}
 \registerctxluafile{lpdf-rul}{autosuffix}
 

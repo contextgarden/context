@@ -1,0 +1,808 @@
+if not modules then modules = { } end modules ['l-unicode'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- See l-unicode.lua for the more generic (also 5.2) versions of the
+-- functions below ... that file evolved over time.
+--
+-- In lua 5.3+ we have:
+--
+-- utf8.char(···)         : concatinated
+-- utf8.charpatt          : "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
+-- utf8.codes(s)          : for p, c in utf8.codes(s) do body end
+-- utf8.codepoint(s [, i [, j]])
+-- utf8.len(s [, i])
+-- utf8.offset(s, n [, i])
+
+utf     = utf or { }
+unicode = nil
+
+local type = type
+local char, byte, format, sub, gmatch, rep = string.char, string.byte, string.format, string.sub, string.gmatch, string.rep
+local concat = table.concat
+local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
+
+local lpegmatch       = lpeg.match
+local patterns        = lpeg.patterns
+local tabletopattern  = lpeg.utfchartabletopattern
+
+local finder          = lpeg.finder
+local replacer        = lpeg.replacer
+
+local p_utftype       = patterns.utftype
+local p_utfstricttype = patterns.utfstricttype
+local p_utfoffset     = patterns.utfoffset
+local p_utf8character = patterns.utf8character
+local p_utf8char      = patterns.utf8char
+local p_utf8byte      = patterns.utf8byte
+local p_utfbom        = patterns.utfbom
+local p_newline       = patterns.newline
+local p_whitespace    = patterns.whitespace
+
+local utfchar         = string.utfcharacter
+local utfbyte         = string.utfvalue
+local utflength       = string.utflength
+local utfcharacters   = string.utfcharacters
+local utfbytepairs    = string.bytepairs
+
+-- string.utfvalues
+-- string.characters
+-- string.characterpairs
+-- string.bytes
+-- string.utflength
+-- string.utfvalues
+
+utf.char       = utfchar
+utf.byte       = utfbyte
+utf.len        = utflength
+utf.length     = utflength
+utf.characters = utfcharacters
+utf.bytepairs  = utfbytepairs
+
+function utf.filetype(data)
+    return data and lpegmatch(p_utftype,data) or "unknown"
+end
+
+do
+
+    local toentities = Cs (
+        (
+            patterns.utf8one
+                + (
+                    patterns.utf8two
+                  + patterns.utf8three
+                  + patterns.utf8four
+                ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+        )^0
+    )
+
+    patterns.toentities = toentities
+
+    function utf.toentities(str)
+        return lpegmatch(toentities,str)
+    end
+
+end
+
+do
+
+    local one  = P(1)
+    local two  = C(1) * C(1)
+    local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
+
+    local pattern =
+        P("\254\255") * Cs( (
+            four  / function(a,b,c,d)
+                        local ab = 0xFF * byte(a) + byte(b)
+                        local cd = 0xFF * byte(c) + byte(d)
+                        return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                    end
+          + two   / function(a,b)
+                        return utfchar(byte(a)*256 + byte(b))
+                    end
+          + one
+        )^1 )
+      + P("\255\254") * Cs( (
+            four  / function(b,a,d,c)
+                        local ab = 0xFF * byte(a) + byte(b)
+                        local cd = 0xFF * byte(c) + byte(d)
+                        return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                    end
+          + two   / function(b,a)
+                        return utfchar(byte(a)*256 + byte(b))
+                    end
+          + one
+        )^1 )
+
+    function string.toutf(s) -- in string namespace
+        return lpegmatch(pattern,s) or s -- todo: utf32
+    end
+
+end
+
+do
+
+    local validatedutf = Cs (
+        (
+            patterns.utf8one
+          + patterns.utf8two
+          + patterns.utf8three
+          + patterns.utf8four
+          + P(1) / "�"
+        )^0
+    )
+
+    patterns.validatedutf = validatedutf
+
+    function utf.is_valid(str)
+        return type(str) == "string" and lpegmatch(validatedutf,str) or false
+    end
+
+end
+
+if not utf.sub then
+
+    -- also negative indices, upto 10 times slower than a c variant
+
+    local b, e, n, first, last = 0, 0, 0, 0, 0
+
+    local function slide_zero(s,p)
+        n = n + 1
+        if n >= last then
+            e = p - 1
+        else
+            return p
+        end
+    end
+
+    local function slide_one(s,p)
+        n = n + 1
+        if n == first then
+            b = p
+        end
+        if n >= last then
+            e = p - 1
+        else
+            return p
+        end
+    end
+
+    local function slide_two(s,p)
+        n = n + 1
+        if n == first then
+            b = p
+        else
+            return true
+        end
+    end
+
+    local pattern_zero  = Cmt(p_utf8character,slide_zero)^0
+    local pattern_one   = Cmt(p_utf8character,slide_one )^0
+    local pattern_two   = Cmt(p_utf8character,slide_two )^0
+
+    local pattern_first = C(p_utf8character)
+
+    function utf.sub(str,start,stop)
+        if not start then
+            return str
+        end
+        if start == 0 then
+            start = 1
+        end
+        if not stop then
+            if start < 0 then
+                local l = utflength(str) -- we can inline this function if needed
+                start = l + start
+            else
+                start = start - 1
+            end
+            b, n, first = 0, 0, start
+            lpegmatch(pattern_two,str)
+            if n >= first then
+                return sub(str,b)
+            else
+                return ""
+            end
+        end
+        if start < 0 or stop < 0 then
+            local l = utf.length(str)
+            if start < 0 then
+                start = l + start
+                if start <= 0 then
+                    start = 1
+                else
+                    start = start + 1
+                end
+            end
+            if stop < 0 then
+                stop = l + stop
+                if stop == 0 then
+                    stop = 1
+                else
+                    stop = stop + 1
+                end
+            end
+        end
+        if start == 1 and stop == 1 then
+            return lpegmatch(pattern_first,str) or ""
+        elseif start > stop then
+            return ""
+        elseif start > 1 then
+            b, e, n, first, last = 0, 0, 0, start - 1, stop
+            lpegmatch(pattern_one,str)
+            if n >= first and e == 0 then
+                e = #str
+            end
+            return sub(str,b,e)
+        else
+            b, e, n, last = 1, 0, 0, stop
+            lpegmatch(pattern_zero,str)
+            if e == 0 then
+                e = #str
+            end
+            return sub(str,b,e)
+        end
+    end
+
+    -- local n = 100000
+    -- local str = string.rep("123456àáâãäå",100)
+    --
+    -- for i=-15,15,1 do
+    --     for j=-15,15,1 do
+    --         if utf.xsub(str,i,j) ~= utf.sub(str,i,j) then
+    --             print("error",i,j,"l>"..utf.xsub(str,i,j),"s>"..utf.sub(str,i,j))
+    --         end
+    --     end
+    --     if utf.xsub(str,i) ~= utf.sub(str,i) then
+    --         print("error",i,"l>"..utf.xsub(str,i),"s>"..utf.sub(str,i))
+    --     end
+    -- end
+
+    -- print(" 1, 7",utf.xsub(str, 1, 7),utf.sub(str, 1, 7))
+    -- print(" 0, 7",utf.xsub(str, 0, 7),utf.sub(str, 0, 7))
+    -- print(" 0, 9",utf.xsub(str, 0, 9),utf.sub(str, 0, 9))
+    -- print(" 4   ",utf.xsub(str, 4   ),utf.sub(str, 4   ))
+    -- print(" 0   ",utf.xsub(str, 0   ),utf.sub(str, 0   ))
+    -- print(" 0, 0",utf.xsub(str, 0, 0),utf.sub(str, 0, 0))
+    -- print(" 4, 4",utf.xsub(str, 4, 4),utf.sub(str, 4, 4))
+    -- print(" 4, 0",utf.xsub(str, 4, 0),utf.sub(str, 4, 0))
+    -- print("-3, 0",utf.xsub(str,-3, 0),utf.sub(str,-3, 0))
+    -- print(" 0,-3",utf.xsub(str, 0,-3),utf.sub(str, 0,-3))
+    -- print(" 5,-3",utf.xsub(str,-5,-3),utf.sub(str,-5,-3))
+    -- print("-3   ",utf.xsub(str,-3   ),utf.sub(str,-3   ))
+
+end
+
+function utf.remapper(mapping,option,action) -- static also returns a pattern
+    local variant = type(mapping)
+    if variant == "table" then
+        action = action or mapping
+        if option == "dynamic" then
+            local pattern = false
+            table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern = false end)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    if not pattern then
+                        pattern = Cs((tabletopattern(mapping)/action + p_utf8character)^0)
+                    end
+                    return lpegmatch(pattern,str)
+                end
+            end
+        elseif option == "pattern" then
+            return Cs((tabletopattern(mapping)/action + p_utf8character)^0)
+     -- elseif option == "static" then
+        else
+            local pattern = Cs((tabletopattern(mapping)/action + p_utf8character)^0)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    return lpegmatch(pattern,str)
+                end
+            end, pattern
+        end
+    elseif variant == "function" then
+        if option == "pattern" then
+            return Cs((p_utf8character/mapping + p_utf8character)^0)
+        else
+            local pattern = Cs((p_utf8character/mapping + p_utf8character)^0)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    return lpegmatch(pattern,str)
+                end
+            end, pattern
+        end
+    else
+        -- is actually an error
+        return function(str)
+            return str or ""
+        end
+    end
+end
+
+-- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
+-- print(remap("abcd 1234 abcd"))
+
+function utf.replacer(t) -- no precheck, always string builder
+    local r = replacer(t,false,false,true)
+    return function(str)
+        return lpegmatch(r,str)
+    end
+end
+
+function utf.subtituter(t) -- with precheck and no building if no match
+    local f = finder  (t)
+    local r = replacer(t,false,false,true)
+    return function(str)
+        local i = lpegmatch(f,str)
+        if not i then
+            return str
+        elseif i > #str then
+            return str
+        else
+         -- return sub(str,1,i-2) .. lpegmatch(r,str,i-1) -- slower
+            return lpegmatch(r,str)
+        end
+    end
+end
+
+-- inspect(utf.split("a b c d"))
+-- inspect(utf.split("a b c d",true))
+
+local utflinesplitter     = p_utfbom^-1 * lpeg.tsplitat(p_newline)
+local utfcharsplitter_ows = p_utfbom^-1 * Ct(C(p_utf8character)^0)
+local utfcharsplitter_iws = p_utfbom^-1 * Ct((p_whitespace^1 + C(p_utf8character))^0)
+local utfcharsplitter_raw = Ct(C(p_utf8character)^0)
+
+patterns.utflinesplitter  = utflinesplitter
+
+function utf.splitlines(str)
+    return lpegmatch(utflinesplitter,str or "")
+end
+
+function utf.split(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+function utf.totable(str) -- keeps bom
+    return lpegmatch(utfcharsplitter_raw,str)
+end
+
+-- 0  EF BB BF      UTF-8
+-- 1  FF FE         UTF-16-little-endian
+-- 2  FE FF         UTF-16-big-endian
+-- 3  FF FE 00 00   UTF-32-little-endian
+-- 4  00 00 FE FF   UTF-32-big-endian
+--
+-- \000 fails in <= 5.0 but is valid in >=5.1 where %z is depricated
+
+-- utf.name = {
+--     [0] = 'utf-8',
+--     [1] = 'utf-16-le',
+--     [2] = 'utf-16-be',
+--     [3] = 'utf-32-le',
+--     [4] = 'utf-32-be'
+-- }
+
+function utf.magic(f) -- not used
+    local str = f:read(4) or ""
+    local off = lpegmatch(p_utfoffset,str)
+    if off < 4 then
+        f:seek('set',off)
+    end
+    return lpegmatch(p_utftype,str)
+end
+
+local utf_16_be_getbom = patterns.utfbom_16_be^-1
+local utf_16_le_getbom = patterns.utfbom_16_le^-1
+local utf_32_be_getbom = patterns.utfbom_32_be^-1
+local utf_32_le_getbom = patterns.utfbom_32_le^-1
+
+local utf_16_be_linesplitter = utf_16_be_getbom * lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter = utf_16_le_getbom * lpeg.tsplitat(patterns.utf_16_le_nl)
+local utf_32_be_linesplitter = utf_32_be_getbom * lpeg.tsplitat(patterns.utf_32_be_nl)
+local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_le_nl)
+
+local more = 0
+
+local p_utf16_to_utf8_be = C(1) * C(1) /function(left,right)
+    local now = 256*byte(left) + byte(right)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+        more = 0
+        return utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+        return "" -- else the c's end up in the stream
+    else
+        return utfchar(now)
+    end
+end
+
+local p_utf16_to_utf8_le = C(1) * C(1) /function(right,left)
+    local now = 256*byte(left) + byte(right)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+        more = 0
+        return utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+        return "" -- else the c's end up in the stream
+    else
+        return utfchar(now)
+    end
+end
+
+local p_utf32_to_utf8_be = C(1) * C(1) * C(1) * C(1) /function(a,b,c,d)
+    return utfchar(256*256*256*byte(a) + 256*256*byte(b) + 256*byte(c) + byte(d))
+end
+
+local p_utf32_to_utf8_le = C(1) * C(1) * C(1) * C(1) /function(a,b,c,d)
+    return utfchar(256*256*256*byte(d) + 256*256*byte(c) + 256*byte(b) + byte(a))
+end
+
+p_utf16_to_utf8_be = P(true) / function() more = 0 end * utf_16_be_getbom * Cs(p_utf16_to_utf8_be^0)
+p_utf16_to_utf8_le = P(true) / function() more = 0 end * utf_16_le_getbom * Cs(p_utf16_to_utf8_le^0)
+p_utf32_to_utf8_be = P(true) / function() more = 0 end * utf_32_be_getbom * Cs(p_utf32_to_utf8_be^0)
+p_utf32_to_utf8_le = P(true) / function() more = 0 end * utf_32_le_getbom * Cs(p_utf32_to_utf8_le^0)
+
+patterns.utf16_to_utf8_be = p_utf16_to_utf8_be
+patterns.utf16_to_utf8_le = p_utf16_to_utf8_le
+patterns.utf32_to_utf8_be = p_utf32_to_utf8_be
+patterns.utf32_to_utf8_le = p_utf32_to_utf8_le
+
+local utf16_to_utf8_be = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf16_to_utf8_be,s)
+    else
+        return s
+    end
+end
+
+local utf16_to_utf8_be_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_16_be_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf16_to_utf8_be,s)
+        end
+    end
+    return t
+end
+
+local utf16_to_utf8_le = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf16_to_utf8_le,s)
+    else
+        return s
+    end
+end
+
+local utf16_to_utf8_le_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_16_le_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf16_to_utf8_le,s)
+        end
+    end
+    return t
+end
+
+local utf32_to_utf8_be = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf32_to_utf8_be,s)
+    else
+        return s
+    end
+end
+
+local utf32_to_utf8_be_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_32_be_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf32_to_utf8_be,s)
+        end
+    end
+    return t
+end
+
+local utf32_to_utf8_le = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf32_to_utf8_le,s)
+    else
+        return s
+    end
+end
+
+local utf32_to_utf8_le_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_32_le_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf32_to_utf8_le,s)
+        end
+    end
+    return t
+end
+
+utf.utf16_to_utf8_le_t = utf16_to_utf8_le_t
+utf.utf16_to_utf8_be_t = utf16_to_utf8_be_t
+utf.utf32_to_utf8_le_t = utf32_to_utf8_le_t
+utf.utf32_to_utf8_be_t = utf32_to_utf8_be_t
+
+utf.utf16_to_utf8_le   = utf16_to_utf8_le
+utf.utf16_to_utf8_be   = utf16_to_utf8_be
+utf.utf32_to_utf8_le   = utf32_to_utf8_le
+utf.utf32_to_utf8_be   = utf32_to_utf8_be
+
+function utf.utf8_to_utf8_t(t)
+    return type(t) == "string" and lpegmatch(utflinesplitter,t) or t
+end
+
+function utf.utf16_to_utf8_t(t,endian)
+    return endian and utf16_to_utf8_be_t(t) or utf16_to_utf8_le_t(t) or t
+end
+
+function utf.utf32_to_utf8_t(t,endian)
+    return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
+end
+
+do
+
+    local function little(b)
+        if b < 0x10000 then
+            return char(b%256,(b>>8))
+        else
+            b = b - 0x10000
+            local b1 = (b>>10) + 0xD800
+            local b2 = b%1024 + 0xDC00
+            return char(b1%256,(b1>>8),b2%256,(b2>>8))
+        end
+    end
+
+    local function big(b)
+        if b < 0x10000 then
+            return char((b>>8),b%256)
+        else
+            b = b - 0x10000
+            local b1 = (b>>10) + 0xD800
+            local b2 = b%1024 + 0xDC00
+            return char((b1>>8),b1%256,(b2>>8),b2%256)
+        end
+    end
+
+    local l_remap = Cs((p_utf8byte/little+P(1)/"")^0)
+    local b_remap = Cs((p_utf8byte/big   +P(1)/"")^0)
+
+    local function utf8_to_utf16_be(str,nobom)
+        if nobom then
+            return lpegmatch(b_remap,str)
+        else
+            return char(254,255) .. lpegmatch(b_remap,str)
+        end
+    end
+
+    local function utf8_to_utf16_le(str,nobom)
+        if nobom then
+            return lpegmatch(l_remap,str)
+        else
+            return char(255,254) .. lpegmatch(l_remap,str)
+        end
+    end
+
+    utf.utf8_to_utf16_be = utf8_to_utf16_be
+    utf.utf8_to_utf16_le = utf8_to_utf16_le
+
+    function utf.utf8_to_utf16(str,littleendian,nobom)
+        if littleendian then
+            return utf8_to_utf16_le(str,nobom)
+        else
+            return utf8_to_utf16_be(str,nobom)
+        end
+    end
+
+end
+
+local pattern = Cs (
+    (p_utf8byte           / function(unicode          ) return format(  "0x%04X",          unicode) end) *
+    (p_utf8byte * Carg(1) / function(unicode,separator) return format("%s0x%04X",separator,unicode) end)^0
+)
+
+function utf.tocodes(str,separator)
+    return lpegmatch(pattern,str,1,separator or " ")
+end
+
+function utf.ustring(s)
+    return format("U+%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+function utf.xstring(s)
+    return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+function utf.toeight(str)
+    if not str or str == "" then
+        return nil
+    end
+    local utftype = lpegmatch(p_utfstricttype,str)
+    if utftype == "utf-8" then
+        return sub(str,4)               -- remove the bom
+    elseif utftype == "utf-16-be" then
+        return utf16_to_utf8_be(str)    -- bom gets removed
+    elseif utftype == "utf-16-le" then
+        return utf16_to_utf8_le(str)    -- bom gets removed
+    else
+        return str
+    end
+end
+
+do
+
+    local p_nany = p_utf8character / ""
+    local cache  = { }
+
+    function utf.count(str,what)
+        if type(what) == "string" then
+            local p = cache[what]
+            if not p then
+                p = Cs((P(what)/" " + p_nany)^0)
+                cache[p] = p
+            end
+            return #lpegmatch(p,str)
+        else -- 4 times slower but still faster than / function
+            return #lpegmatch(Cs((P(what)/" " + p_nany)^0),str)
+        end
+    end
+
+end
+
+utf.values = string.utfvalues
+
+function utf.chrlen(u) -- u is number
+    return
+        (u < 0x80 and 1) or
+        (u < 0xE0 and 2) or
+        (u < 0xF0 and 3) or
+        (u < 0xF8 and 4) or
+        (u < 0xFC and 5) or
+        (u < 0xFE and 6) or 0
+end
+
+-- hashing saves a little but not that much in practice
+--
+-- local utf32 = table.setmetatableindex(function(t,k) local v = toutf32(k) t[k] = v return v end)
+
+do
+
+    local extract = bit32.extract
+    local char    = string.char
+
+    function utf.toutf32string(n)
+        if n <= 0xFF then
+            return
+                char(n) ..
+                "\000\000\000"
+        elseif n <= 0xFFFF then
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                "\000\000"
+        elseif n <= 0xFFFFFF then
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                char(extract(n,16,8)) ..
+                "\000"
+        else
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                char(extract(n,16,8)) ..
+                char(extract(n,24,8))
+        end
+    end
+
+end
+
+-- goodie:
+
+function string.utfpadd(s,n)
+    if n and n ~= 0 then
+        local l = utflength(s)
+        if n > 0 then
+            local d = n - l
+            if d > 0 then
+                return rep(c or " ",d) .. s
+            end
+        else
+            local d = - n - l
+            if d > 0 then
+                return s .. rep(c or " ",d)
+            end
+        end
+    end
+    return s
+end
+
+-- goodies
+
+do
+
+    lpeg.UP = P
+
+    function lpeg.US(str)
+        local p = P(false)
+        for uc in utfcharacters(str) do
+            p = p + P(uc)
+        end
+        return p
+    end
+
+    local range = p_utf8byte * p_utf8byte + Cc(false) -- utf8byte is already a capture
+
+    function lpeg.UR(str,more)
+        local first, last
+        if type(str) == "number" then
+            first = str
+            last = more or first
+        else
+            first, last = lpegmatch(range,str)
+            if not last then
+                return P(str)
+            end
+        end
+        if first == last then
+            return P(str)
+        end
+        if not utfchar then
+            utfchar = utf.char -- maybe delayed
+        end
+        if utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
+            local p = P(false)
+            for i=first,last do
+                p = p + P(utfchar(i))
+            end
+            return p -- nil when invalid range
+        else
+            local f = function(b)
+                return b >= first and b <= last
+            end
+            -- tricky, these nested captures
+            return p_utf8byte / f -- nil when invalid range
+        end
+    end
+
+    -- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
+
+end

@@ -23,9 +23,8 @@
 \registerctxluafile{l-string}  {}
 \registerctxluafile{l-table}   {}
 \registerctxluafile{l-boolean} {}
-\registerctxluafile{l-number}  {}
+\registerctxluafile{l-number}  {autosuffix}
 \registerctxluafile{l-math}    {}
-%registerctxluafile{l-aux}     {}
 \registerctxluafile{l-io}      {}
 \registerctxluafile{l-os}      {}
 \registerctxluafile{l-file}    {}
@@ -33,8 +32,7 @@
 \registerctxluafile{l-md5}     {}
 \registerctxluafile{l-sha}     {}
 \registerctxluafile{l-dir}     {}
-\registerctxluafile{l-unicode} {optimize}
-%registerctxluafile{l-utils}   {}
+\registerctxluafile{l-unicode} {autosuffix}
 \registerctxluafile{l-url}     {}
 \registerctxluafile{l-set}     {}
 

@@ -35,7 +35,6 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 local type, next, unpack, tonumber, rawget = type, next, unpack, tonumber, rawget
 local char, rep, find = string.char, string.rep, string.find
 local formatters, splitupstring = string.formatters, string.splitup
-local band, extract = bit32.band, bit32.extract
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
@@ -1230,11 +1229,11 @@ local flushimage  do
             rx, ry = bpfactor, bpfactor
         end
 
-        if band(transform,7) > 3 then
+        if (transform & 7) > 3 then
             -- mirror
             rx, tx = -rx, -tx
         end
-        local t = band(transform + rotation,3)
+        local t = (transform + rotation) & 3
         if t == 0 then
             -- nothing
         elseif t == 1 then
@@ -1257,11 +1256,11 @@ local flushimage  do
 
         local t = transform + rotation
 
-        if band(transform,7) > 3 then
+        if (transform & 7) > 3 then
             t = t + 1
         end
 
-        t = band(t,3)
+        t = t & 3
 
         if t == 0 then
             -- no transform
@@ -2553,8 +2552,8 @@ local openfile, closefile  do
                             if strm then
                                 o = -o
                             end
-                            c1 = extract(o,8,8)
-                            c2 = extract(o,0,8)
+                            c1 = (o>>8)&0xFF
+                            c2 = (o>>0)&0xFF
                             if strm then
                                 objects[i] = char(2,c1,c2,streams[o][i])
                             else
@@ -2566,8 +2565,8 @@ local openfile, closefile  do
                         for i=nofobjects,1,-1 do
                             local o = objects[i]
                             if not o then
-                                local f1 = extract(lastfree,8,8)
-                                local f2 = extract(lastfree,0,8)
+                                local f1 = (lastfree>>8)&0xFF
+                                local f2 = (lastfree>>0)&0xFF
                                 objects[i] = char(0,f1,f2,0)
                                 lastfree   = i
                             end
@@ -2584,9 +2583,9 @@ local openfile, closefile  do
                             if strm then
                                 o = -o
                             end
-                            c1 = extract(o,16,8)
-                            c2 = extract(o, 8,8)
-                            c3 = extract(o, 0,8)
+                            c1 = (o>>16)&0xFF
+                            c2 = (o>> 8)&0xFF
+                            c3 = (o>> 0)&0xFF
                             if strm then
                                 objects[i] = char(2,c1,c2,c3,streams[o][i])
                             else
@@ -2598,9 +2597,9 @@ local openfile, closefile  do
                         for i=nofobjects,1,-1 do
                             local o = objects[i]
                             if not o then
-                                local f1 = extract(lastfree,16,8)
-                                local f2 = extract(lastfree, 8,8)
-                                local f3 = extract(lastfree, 0,8)
+                                local f1 = (lastfree>>16)&0xFF
+                                local f2 = (lastfree>> 8)&0xFF
+                                local f3 = (lastfree>> 0)&0xFF
                                 objects[i] = char(0,f1,f2,f3,0)
                                 lastfree   = i
                             end
@@ -2617,10 +2616,10 @@ local openfile, closefile  do
                             if strm then
                                 o = -o
                             end
-                            c1 = extract(o,24,8)
-                            c2 = extract(o,16,8)
-                            c3 = extract(o, 8,8)
-                            c4 = extract(o, 0,8)
+                            c1 = (o>>24)&0xFF
+                            c2 = (o>>16)&0xFF
+                            c3 = (o>> 8)&0xFF
+                            c4 = (o>> 0)&0xFF
                             if strm then
                                 objects[i] = char(2,c1,c2,c3,c4,streams[o][i])
                             else
@@ -2632,10 +2631,10 @@ local openfile, closefile  do
                         for i=nofobjects,1,-1 do
                             local o = objects[i]
                             if not o then
-                                local f1 = extract(lastfree,24,8)
-                                local f2 = extract(lastfree,16,8)
-                                local f3 = extract(lastfree, 8,8)
-                                local f4 = extract(lastfree, 0,8)
+                                local f1 = (lastfree>>24)&0xFF
+                                local f2 = (lastfree>>16)&0xFF
+                                local f3 = (lastfree>> 8)&0xFF
+                                local f4 = (lastfree>> 0)&0xFF
                                 objects[i] = char(0,f1,f2,f3,f4,0)
                                 lastfree   = i
                             end

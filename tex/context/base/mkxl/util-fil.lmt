@@ -1,0 +1,163 @@
+if not modules then modules = { } end modules ['util-fil'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- For the old ones, see util-fil.lua.
+
+local byte = string.byte
+local char = string.char
+
+utilities       = utilities or { }
+local files     = { }
+utilities.files = files
+
+local zerobased = { }
+
+function files.open(filename,zb)
+    local f = io.open(filename,"rb")
+    if f then
+        zerobased[f] = zb or false
+    end
+    return f
+end
+
+function files.close(f)
+    zerobased[f] = nil
+    f:close()
+end
+
+function files.size(f)
+    local current = f:seek()
+    local size = f:seek("end")
+    f:seek("set",current)
+    return size
+end
+
+files.getsize = files.size
+
+function files.setposition(f,n)
+    if zerobased[f] then
+        f:seek("set",n)
+    else
+        f:seek("set",n - 1)
+    end
+end
+
+function files.getposition(f)
+    if zerobased[f] then
+        return f:seek()
+    else
+        return f:seek() + 1
+    end
+end
+
+function files.look(f,n,chars)
+    local p = f:seek()
+    local s = f:read(n)
+    f:seek("set",p)
+    if chars then
+        return s
+    else
+        return byte(s,1,#s)
+    end
+end
+
+function files.skip(f,n)
+    if n == 1 then
+        f:read(n)
+    else
+        f:seek("set",f:seek()+n)
+    end
+end
+
+-- readers:
+
+files.readcardinal1     = fio.readcardinal1
+files.readcardinal2     = fio.readcardinal2
+files.readcardinal3     = fio.readcardinal3
+files.readcardinal4     = fio.readcardinal4
+
+files.readcardinal1le   = fio.readcardinal1le or files.readcardinal1le
+files.readcardinal2le   = fio.readcardinal2le or files.readcardinal2le
+files.readcardinal3le   = fio.readcardinal3le or files.readcardinal3le
+files.readcardinal4le   = fio.readcardinal4le or files.readcardinal4le
+
+files.readinteger1      = fio.readinteger1
+files.readinteger2      = fio.readinteger2
+files.readinteger3      = fio.readinteger3
+files.readinteger4      = fio.readinteger4
+
+files.readinteger1le    = fio.readinteger1le or files.readinteger1le
+files.readinteger2le    = fio.readinteger2le or files.readinteger2le
+files.readinteger3le    = fio.readinteger3le or files.readinteger3le
+files.readinteger4le    = fio.readinteger4le or files.readinteger4le
+
+files.readfixed2        = fio.readfixed2
+files.readfixed4        = fio.readfixed4
+files.read2dot14        = fio.read2dot14
+files.setposition       = fio.setposition
+files.getposition       = fio.getposition
+
+files.readbyte          = files.readcardinal1
+files.readsignedbyte    = files.readinteger1
+files.readcardinal      = files.readcardinal1
+files.readinteger       = files.readinteger1
+
+local skipposition      = fio.skipposition
+files.skipposition      = skipposition
+
+files.readbytes         = fio.readbytes
+files.readbytetable     = fio.readbytetable
+files.readcardinaltable = fio.readcardinaltable
+files.readintegertable  = fio.readintegertable
+
+function files.readchar(f)
+    return f:read(1)
+end
+
+function files.readstring(f,n)
+    return f:read(n or 1)
+end
+
+function files.skipshort(f,n)
+    skipposition(f,2*(n or 1))
+end
+
+function files.skiplong(f,n)
+    skipposition(f,4*(n or 1))
+end
+
+-- writers
+
+function files.writestring(f,s)
+    f:write(char(byte(s,1,#s)))
+end
+
+function files.writebyte(f,b)
+    f:write(char(b))
+end
+
+files.writecardinal1   = fio.writecardinal1
+files.writecardinal2   = fio.writecardinal2
+files.writecardinal3   = fio.writecardinal3
+files.writecardinal4   = fio.writecardinal4
+
+files.writecardinal1le = fio.writecardinal1le
+files.writecardinal2le = fio.writecardinal2le
+files.writecardinal3le = fio.writecardinal3le
+files.writecardinal4le = fio.writecardinal4le
+
+files.writeinteger1    = fio.writeinteger1 or fio.writecardinal1
+files.writeinteger2    = fio.writeinteger2 or fio.writecardinal2
+files.writeinteger3    = fio.writeinteger3 or fio.writecardinal3
+files.writeinteger4    = fio.writeinteger4 or fio.writecardinal4
+
+files.writeinteger1le  = files.writeinteger1le or fio.writecardinal1le
+files.writeinteger2le  = files.writeinteger2le or fio.writecardinal2le
+files.writeinteger3le  = files.writeinteger3le or fio.writecardinal3le
+files.writeinteger4le  = files.writeinteger4le or fio.writecardinal4le

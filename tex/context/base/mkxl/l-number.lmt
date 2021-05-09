@@ -1,0 +1,105 @@
+if not modules then modules = { } end modules ['l-number'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- See l-number.lua for the more generic (also 5.2) versions of the
+-- functions below ... that file evolved over time.
+
+local tonumber = tonumber
+local format = string.format
+local concat = table.concat
+local floor = math.floor
+
+number       = number or { }
+local number = number
+
+-- print(number.tobitstring(8))
+-- print(number.tobitstring(14))
+-- print(number.tobitstring(66))
+-- print(number.tobitstring(0x00))
+-- print(number.tobitstring(0xFF))
+-- print(number.tobitstring(46260767936,4))
+
+local t = {
+    "0", "0", "0", "0", "0", "0", "0", "0",
+    "0", "0", "0", "0", "0", "0", "0", "0",
+    "0", "0", "0", "0", "0", "0", "0", "0",
+    "0", "0", "0", "0", "0", "0", "0", "0",
+}
+
+function number.tobitstring(b,m,w)
+    if not w then
+        w = 32
+    end
+    local n = w
+    for i=0,w-1 do
+        local v = (b>>i) & 0x1 -- bextract(b,i)
+        local k = w - i
+        if v == 1 then
+            n = k
+            t[k] = "1"
+        else
+            t[k] = "0"
+        end
+    end
+    if w then
+        return concat(t,"",1,w)
+    elseif m then
+        m = 33 - m * 8
+        if m < 1 then
+            m = 1
+        end
+        return concat(t,"",1,m)
+    elseif n < 8 then
+        return concat(t)
+    elseif n < 16 then
+        return concat(t,"",9)
+    elseif n < 24 then
+        return concat(t,"",17)
+    else
+        return concat(t,"",25)
+    end
+end
+
+function number.valid(str,default)
+    return tonumber(str) or default or nil
+end
+
+function number.toevenhex(n)
+    local s = format("%X",n)
+    if #s % 2 == 0 then
+        return s
+    else
+        return "0" .. s
+    end
+end
+
+function number.bytetodecimal(b)
+    local d = floor(b * 100 / 255 + 0.5)
+    if d > 100 then
+        return 100
+    elseif d < -100 then
+        return -100
+    else
+        return d
+    end
+end
+
+function number.decimaltobyte(d)
+    local b = floor(d * 255 / 100 + 0.5)
+    if b > 255 then
+        return 255
+    elseif b < -255 then
+        return -255
+    else
+        return b
+    end
+end
+
+function number.idiv(i,d)
+    return i // d
+end

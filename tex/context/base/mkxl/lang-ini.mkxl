@@ -445,15 +445,37 @@
 \relax
 
 \hccode"002D "002D
-\hccode"2010 "2010
-\hccode"2013 "2013
-\hccode"2014 "2014
+
+\permanent\protected\def\keephyphensequences
+  {\hccode"2010 \zerocount
+   \hccode"2013 \zerocount
+   \hccode"2014 \zerocount}
+
+\permanent\protected\def\collapsehyphensequences
+  {\hccode"2010 "2010\relax
+   \hccode"2013 "2013\relax
+   \hccode"2014 "2014\relax}
+
+\collapsehyphensequences
 
 % maybe a (un)setter for handlers
 
 \permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationmodecode}
-%permanent\protected\def\nohyphens {\hyphenationmode\zerocount}
 \permanent\protected\def\nohyphens {\hyphenationmode\partialhyphenationmodecode}
+
+% \permanent\protected\def\dohyphens
+%   {\ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
+%      \hyphenationmode\completehyphenationmodecode
+%    \else
+%      \hyphenationmode\numexpr\completehyphenationmodecode-\collapsehyphenationmodecode\relax
+%    \fi}
+
+% \permanent\protected\def\nohyphens
+%   {\ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
+%      \hyphenationmode\partialhyphenationmodecode
+%    \else
+%      \hyphenationmode\numexpr\partialhyphenationmodecode-\collapsehyphenationmodecode\relax
+%    \fi}
 
 \permanent\protected\def\dohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode \collapsehyphenationmodecode}
 \permanent\protected\def\nohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode-\collapsehyphenationmodecode}

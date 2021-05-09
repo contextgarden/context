@@ -28,7 +28,7 @@ if LUAVERSION >= 5.3 and lua.macros then
 
     -- This indirect method makes it possible to use both the functions
     -- and the inline variant (which often looks better). Also, a mixed
-    -- 5,2 and 5.3 source is not possible because the 5.2 doesn't deal
+    -- 5.2 and 5.3 source is not possible because the 5.2 doesn't deal
     -- with the newer 5.3 syntax.
 
     -- We need to check for 64 usage: 0xFFFFFFFFFFFFFFFF (-1)
@@ -44,6 +44,7 @@ lua.macros.resolvestring [[
 #define extract1(a,b)  ((a >> b) & 0x01)
 #define extract2(a,b)  ((a >> b) & 0x03)
 #define extract4(a,b)  ((a >> b) & 0x0F)
+#define extract8(a,b)  ((a >> b) & 0xFF)
 #define lshift(a,b)    (((a)<<(b))&0xFFFFFFFF)
 #define rshift(a,b)    (((a)>>(b))&0xFFFFFFFF)
 #define intdiv(a,b)    ((a)//(b))

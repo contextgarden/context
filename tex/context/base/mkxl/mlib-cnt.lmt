@@ -49,8 +49,6 @@ local next, type, tostring = next, type, tostring
 local round, abs, min, max, floor = math.round, math.abs, math.min, math.max, math.floor
 local concat, move = table.concat, table.move
 
-local bor = bit32.bor -- it's really time to ditch support for luajit
-
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 local resettiming       = statistics.resettiming
@@ -421,7 +419,7 @@ function mp.lmt_contours_start()
                     for j=1,ny do
                         local f = fi[j]
                         if f >= minr and f <= maxr then
-                            di[j] = bor(di[j],bit)
+                            di[j] = di[j] | bit
                         end
                     end
                 end
