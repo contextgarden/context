@@ -22,7 +22,6 @@ local nuts               = nodes.nuts
 
 local setfont            = nuts.setfont
 
------ traverse_char      = nuts.traverse_char
 local nextchar           = nuts.traversers.char
 local getscales          = nuts.getscales
 local setscales          = nuts.setscales

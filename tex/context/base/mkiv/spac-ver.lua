@@ -148,14 +148,15 @@ local setdepth            = nuts.setdepth
 local getdepth            = nuts.getdepth
 
 local find_node_tail      = nuts.tail
-local flush_node          = nuts.flush_node
-local insert_node_after   = nuts.insert_after
-local insert_node_before  = nuts.insert_before
+local flushnode           = nuts.flushnode
+local insertnodeafter     = nuts.insertafter
+local insertnodebefore    = nuts.insertbefore
 local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
 local hpack_node          = nuts.hpack
 local vpack_node          = nuts.vpack
-local start_of_par        = nuts.start_of_par
+
+local startofpar          = nuts.startofpar
 
 local nextnode            = nuts.traversers.node
 local nexthlist           = nuts.traversers.hlist
@@ -293,7 +294,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == par_code and start_of_par(list) then
+        if id == par_code and startofpar(list) then
             list = getnext(list)
             if not next then
                 return nil
@@ -329,7 +330,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == par_code and start_of_par(list) then
+        if id == par_code and startofpar(list) then
             list = getnext(list)
             if not list then
                 return false
@@ -1021,14 +1022,14 @@ do
         if width == 0 then
             -- do nothing
         elseif where == "after" then
-            head, current = insert_node_after(head,current,new_rule(w,h,d))
-            head, current = insert_node_after(head,current,new_kern(width))
-            head, current = insert_node_after(head,current,new_rule(w,h,d))
+            head, current = insertnodeafter(head,current,new_rule(w,h,d))
+            head, current = insertnodeafter(head,current,new_kern(width))
+            head, current = insertnodeafter(head,current,new_rule(w,h,d))
         else
             local c = current
-            head, current = insert_node_before(head,current,new_rule(w,h,d))
-            head, current = insert_node_before(head,current,new_kern(width))
-            head, current = insert_node_before(head,current,new_rule(w,h,d))
+            head, current = insertnodebefore(head,current,new_rule(w,h,d))
+            head, current = insertnodebefore(head,current,new_kern(width))
+            head, current = insertnodebefore(head,current,new_rule(w,h,d))
             current = c
         end
         if trace then
@@ -1203,10 +1204,10 @@ do
             texsetdimen("global","d_spac_overlay",-delta) -- for tracing
             -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
             local k = new_kern(-delta)
-            head = insert_node_before(head,n,k)
+            head = insertnodebefore(head,n,k)
             if n_ht > p_ht then
                 local k = new_kern(n_ht-p_ht)
-                head = insert_node_before(head,p,k)
+                head = insertnodebefore(head,p,k)
             end
             if trace_vspacing then
                 report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,skips,delta)
@@ -1375,13 +1376,13 @@ do
                 if penalty_data >= 10000 then -- or whatever threshold?
                     local prev = getprev(current)
                     if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
-                            -- tricky case: spacing/grid-007.tex: glue penalty glue
-                        head = insert_node_before(head,prev,p)
+                        -- tricky case: spacing/grid-007.tex: glue penalty glue
+                        head = insertnodebefore(head,prev,p)
                     else
-                        head = insert_node_before(head,current,p)
+                        head = insertnodebefore(head,current,p)
                     end
                 else
-                    head = insert_node_before(head,current,p)
+                    head = insertnodebefore(head,current,p)
                 end
              -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
                 local props = properties[p]
@@ -1400,22 +1401,22 @@ do
                         trace_done("flushed due to forced " .. why,glue_data)
                     end
                     head = forced_skip(head,current,getwidth(glue_data,width),"before",trace)
-                    flush_node(glue_data)
+                    flushnode(glue_data)
                 else
                     local width, stretch, shrink = getglue(glue_data)
                     if width ~= 0 then
                         if trace then
                             trace_done("flushed due to non zero " .. why,glue_data)
                         end
-                        head = insert_node_before(head,current,glue_data)
+                        head = insertnodebefore(head,current,glue_data)
                     elseif stretch ~= 0 or shrink ~= 0 then
                         if trace then
                             trace_done("flushed due to stretch/shrink in" .. why,glue_data)
                         end
-                        head = insert_node_before(head,current,glue_data)
+                        head = insertnodebefore(head,current,glue_data)
                     else
                      -- report_vspacing("needs checking (%s): %p",gluecodes[getsubtype(glue_data)],w)
-                        flush_node(glue_data)
+                        flushnode(glue_data)
                     end
                 end
             end
@@ -1545,7 +1546,7 @@ do
                             if trace then
                                 trace_done("flush",glue_data)
                             end
-                            head = insert_node_before(head,current,glue_data)
+                            head = insertnodebefore(head,current,glue_data)
                             if trace then
                                 trace_natural("natural",current)
                             end
@@ -1634,7 +1635,7 @@ do
                             trace_skip("force",sc,so,sp,current)
                         end
                         glue_order = so
-                        flush_node(glue_data)
+                        flushnode(glue_data)
                         head, current, glue_data = remove_node(head,current)
                     elseif glue_order == so then
                         -- is now exclusive, maybe support goback as combi, else why a set
@@ -1645,7 +1646,7 @@ do
                                 if trace then
                                     trace_skip("largest",sc,so,sp,current)
                                 end
-                                flush_node(glue_data)
+                                flushnode(glue_data)
                                 head, current, glue_data = remove_node(head,current)
                             else
                                 if trace then
@@ -1657,7 +1658,7 @@ do
                             if trace then
                                 trace_skip("goback",sc,so,sp,current)
                             end
-                            flush_node(glue_data)
+                            flushnode(glue_data)
                             head, current, glue_data = remove_node(head,current)
                         elseif sc == force then
                             -- last one counts, some day we can provide an accumulator and largest etc
@@ -1665,13 +1666,13 @@ do
                             if trace then
                                 trace_skip("force",sc,so,sp,current)
                             end
-                            flush_node(glue_data)
+                            flushnode(glue_data)
                             head, current, glue_data = remove_node(head,current)
                         elseif sc == penalty then
                             if trace then
                                 trace_skip("penalty",sc,so,sp,current)
                             end
-                            flush_node(glue_data)
+                            flushnode(glue_data)
                             glue_data = nil
                             head, current = remove_node(head,current,true)
                         elseif sc == add then
@@ -1881,7 +1882,7 @@ do
             end
             if force_glue then
                 head, tail = forced_skip(head,tail,getwidth(glue_data),"after",trace)
-                flush_node(glue_data)
+                flushnode(glue_data)
                 glue_data = nil
             elseif tail then
                 setlink(tail,glue_data)

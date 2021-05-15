@@ -137,11 +137,6 @@ scanset = function() -- can be optimized, we now read twice
     end
 end
 
-local function scan_pair     () return scanpair     (true) end
-local function scan_color    () return scancolor    (true) end
-local function scan_cmykcolor() return scancmykcolor(true) end
-local function scan_transform() return scantransform(true) end
-
 tokenscanners = {
     [leftbrace_code] = scanset,
     [numeric_code]   = scannumeric,
@@ -154,10 +149,10 @@ typescanners = {
     [types.numeric]   = scannumeric,
     [types.string]    = scanstring,
     [types.boolean]   = scanboolean,
-    [types.pair]      = scan_pair,
-    [types.color]     = scan_color,
-    [types.cmykcolor] = scan_cmykcolor,
-    [types.transform] = scan_transform,
+    [types.pair]      = function() return scanpair     (true) end,
+    [types.color]     = function() return scancolor    (true) end,
+    [types.cmykcolor] = function() return scancmykcolor(true) end,
+    [types.transform] = function() return scantransform(true) end,
     [types.path]      = scanpath,
     [types.pen]       = scanpen,
 }

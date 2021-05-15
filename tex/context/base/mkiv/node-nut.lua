@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['node-nut'] = {
+    if not modules then modules = { } end modules ['node-nut'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -88,131 +88,106 @@ if not modules then modules = { } end modules ['node-nut'] = {
 
 local type, rawget = type, rawget
 
-local nodes               = nodes
-local direct              = node.direct
+local nodes      = nodes
+local direct     = node.direct
 
-local fastcopy            = table.fastcopy
+local fastcopy   = table.fastcopy
 
-local nodecodes           = nodes.nodecodes
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glyph_code          = nodecodes.glyph
+local nodecodes  = nodes.nodecodes
+local hlist_code = nodecodes.hlist
+local vlist_code = nodecodes.vlist
+local glyph_code = nodecodes.glyph
 
-local nuts                = nodes.nuts or { }
-nodes.nuts                = nuts
+local nuts       = nodes.nuts or { }
+nodes.nuts       = nuts
 
-nodes.is_node             = direct.is_node   or function() return true  end
-nodes.is_direct           = direct.is_direct or function() return false end
-nodes.is_nut              = nodes.is_direct
+nodes.isnode     = direct.isnode   or function() return true  end
+nodes.isdirect   = direct.isdirect or function() return false end
+nodes.isnut      = nodes.isdirect
 
 -- casters
 
-local tonode              = direct.tonode   or function(n) return n end
-local tonut               = direct.todirect or function(n) return n end
+local tonode     = direct.tonode   or function(n) return n end
+local tonut      = direct.todirect or function(n) return n end
 
-nuts.tonode               = tonode
-nuts.tonut                = tonut
+nuts.tonode      = tonode
+nuts.tonut       = tonut
 
-nodes.tonode              = tonode
-nodes.tonut               = tonut
-
--- -- some tracing:
---
--- local hash = table.setmetatableindex("number")
--- local ga = direct.get_attribute
--- function direct.get_attribute(n,a)
---     hash[a] = hash[a] + 1
---     return ga(n,a)
--- end
--- function nuts.reportattr()
---     inspect(hash)
--- end
-
--- local function track(name)
---     local n = 0
---     local f = direct[name]
---     direct[name] = function(...)
---         n = n + 1
---         if n % 1000 == 0 then
---             print(name,n)
---         end
---         return f(...)
---     end
--- end
--- track("getfield")
+nodes.tonode     = tonode
+nodes.tonut      = tonut
 
 -- helpers
 
 local nuts                   = nodes.nuts
 
-nuts.check_discretionaries   = direct.check_discretionaries
+nuts.checkdiscretionaries    = direct.check_discretionaries
 nuts.copy                    = direct.copy
-nuts.copy_node               = direct.copy
-nuts.copy_only               = direct.copy_only or direct.copy
-nuts.copy_list               = direct.copy_list
+nuts.copynode                = direct.copy
+nuts.copyonly                = direct.copy_only or direct.copy
+nuts.copylist                = direct.copy_list
 nuts.count                   = direct.count
-nuts.current_attr            = direct.current_attr
+nuts.currentattribute        = direct.current_attr
+nuts.currentattr             = direct.current_attr
 nuts.delete                  = direct.delete
 nuts.dimensions              = direct.dimensions
-nuts.end_of_math             = direct.end_of_math
-nuts.find_attribute          = direct.find_attribute
-nuts.first_glyph             = direct.first_glyph
-nuts.flatten_discretionaries = direct.flatten_discretionaries
+nuts.endofmath               = direct.end_of_math
+nuts.findattribute           = direct.find_attribute
+nuts.firstglyph              = direct.first_glyph
+nuts.flattendiscretionaries  = direct.flatten_discretionaries
 nuts.flush                   = direct.flush_node
-nuts.flush_list              = direct.flush_list
-nuts.flush_node              = direct.flush_node
+nuts.flushlist               = direct.flush_list
+nuts.flushnode               = direct.flush_node
 nuts.free                    = direct.free
-nuts.get_synctex_fields      = direct.get_synctex_fields
-nuts.has_attribute           = direct.has_attribute
-nuts.has_field               = direct.has_field
-nuts.has_glyph               = direct.has_glyph or direct.first_glyph
+nuts.getsynctexfields        = direct.get_synctex_fields
+nuts.hasattribute            = direct.has_attribute
+nuts.hasfield                = direct.has_field
+nuts.hasglyph                = direct.has_glyph or direct.first_glyph
 nuts.hpack                   = direct.hpack
-nuts.insert_after            = direct.insert_after
-nuts.insert_before           = direct.insert_before
-nuts.is_direct               = direct.is_direct
-nuts.is_node                 = direct.is_node
-nuts.is_nut                  = direct.is_direct
+nuts.insertafter             = direct.insert_after
+nuts.insertbefore            = direct.insert_before
+nuts.isdirect                = direct.is_direct
+nuts.isnode                  = direct.is_node
+nuts.isnut                   = direct.is_direct
 nuts.kerning                 = direct.kerning
 nuts.hyphenating             = direct.hyphenating
-nuts.last_node               = direct.last_node
+nuts.lastnode                = direct.last_node
 nuts.length                  = direct.length
 nuts.ligaturing              = direct.ligaturing
 nuts.new                     = direct.new
-nuts.protect_glyph           = direct.protect_glyph
-nuts.protect_glyphs          = direct.protect_glyphs
-nuts.flush_components        = direct.flush_components
-nuts.protrusion_skippable    = direct.protrusion_skippable
+nuts.protectglyph            = direct.protect_glyph
+nuts.protectglyphs           = direct.protect_glyphs
+nuts.protrusionskippable     = direct.protrusion_skippable
 nuts.rangedimensions         = direct.rangedimensions
-nuts.set_attribute           = direct.set_attribute
-nuts.set_synctex_fields      = direct.set_synctex_fields
+nuts.setattribute            = direct.set_attribute
+nuts.setsynctexfields        = direct.set_synctex_fields
 nuts.slide                   = direct.slide
 nuts.tail                    = direct.tail
 nuts.tostring                = direct.tostring
 nuts.traverse                = direct.traverse
-nuts.traverse_char           = direct.traverse_char
-nuts.traverse_glyph          = direct.traverse_glyph
-nuts.traverse_id             = direct.traverse_id
-nuts.traverse_list           = direct.traverse_list
-nuts.unprotect_glyph         = direct.unprotect_glyph
-nuts.unprotect_glyphs        = direct.unprotect_glyphs
-nuts.unset_attribute         = direct.unset_attribute
-nuts.unset_attribute         = direct.unset_attribute
+nuts.traversechar            = direct.traverse_char
+nuts.traverseglyph           = direct.traverse_glyph
+nuts.traverseid              = direct.traverse_id
+nuts.traverselist            = direct.traverse_list
+nuts.unprotectglyph          = direct.unprotect_glyph
+nuts.unprotectglyphs         = direct.unprotect_glyphs
+nuts.unsetattribute          = direct.unset_attribute
+nuts.unsetattribute          = direct.unset_attribute
 nuts.usedlist                = direct.usedlist
-nuts.uses_font               = direct.uses_font
+nuts.usesfont                = direct.uses_font
 nuts.vpack                   = direct.vpack
 nuts.write                   = direct.write
-nuts.mlist_to_hlist          = direct.mlist_to_hlist
-nuts.has_dimensions          = direct.has_dimensions
-nuts.start_of_par            = direct.start_of_par
+nuts.mlisttohlist            = direct.mlist_to_hlist
+nuts.hasdimensions           = direct.has_dimensions
+nuts.startofpar              = direct.start_of_par
 nuts.migrate                 = direct.migrate
 
-if not nuts.mlist_to_hlist then
+if not nuts.mlisttohlist then
 
-    local n_mlist_to_hlist = node.mlist_to_hlist
+    local n_mlisttohlist = node.mlist_to_hlist
 
-    function nuts.mlist_to_hlist(head,...)
+    function nuts.mlisttohlist(head,...)
         if head then
-            local head = n_mlist_to_hlist(tonode(head),...)
+            local head = n_mlisttohlist(tonode(head),...)
             if head then
                 return tonut(head)
             end
@@ -221,11 +196,11 @@ if not nuts.mlist_to_hlist then
 
 end
 
-if not nuts.has_dimensions then
+if not nuts.hasdimensions then
 
     local getwhd = direct.getwhd
 
-    function nuts.has_dimensions(n)
+    function nuts.hasdimensions(n)
         local wd, ht, dp = getwhd(n)
         return wd ~= 0 or (ht + dp) ~= 0
     end
@@ -246,16 +221,20 @@ nuts.getid            = direct.getid
 nuts.getprev          = direct.getprev
 nuts.setprev          = direct.setprev
 
-local get_attribute   = direct.get_attribute
-local set_attribute   = direct.set_attribute
-local unset_attribute = direct.unset_attribute
+local getattribute    = direct.get_attribute
+local setattribute    = direct.set_attribute
+local unsetattribute  = direct.unset_attribute
 
-nuts.getattr          = get_attribute
-nuts.setattr          = set_attribute
-nuts.takeattr         = unset_attribute -- ?
+nuts.getattr          = getattribute
+nuts.setattr          = setattribute
+nuts.takeattr         = unsetattribute -- ?
 
-nuts.is_zero_glue     = direct.is_zero_glue
-nuts.effective_glue   = direct.effective_glue
+nuts.getattribute     = getattribute
+nuts.setattribute     = setattribute
+nuts.unsetattribute   = unsetattribute -- ?
+
+nuts.iszeroglue       = direct.is_zero_glue
+nuts.effectiveglue    = direct.effective_glue
 
 nuts.getglue          = direct.getglue
 nuts.setglue          = direct.setglue
@@ -302,8 +281,8 @@ nuts.gettotal         = direct.gettotal
 nuts.getorientation   = direct.getorientation or function() end
 nuts.setorientation   = direct.setorientation or function() end
 
-nuts.getglyphdata     = direct.getglyphdata or               get_attribute
-nuts.setglyphdata     = direct.setglyphdata or function(n,d) set_attribute(n,0,d) end
+nuts.getglyphdata     = direct.getglyphdata or               getattribute
+nuts.setglyphdata     = direct.setglyphdata or function(n,d) setattribute(n,0,d) end
 
 nuts.getruledata      = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
 nuts.setruledata      = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end
@@ -381,20 +360,16 @@ nuts.setbox           = direct.setbox
 nuts.ischar           = direct.is_char
 nuts.isglyph          = direct.is_glyph
 
-----.is_char          = nuts.ischar
-----.is_glyph         = nuts.isglyph
-
 local d_remove_node   = direct.remove
-local d_flush_node    = direct.flush_node
+local d_flushnode     = direct.flush_node
 local d_getnext       = direct.getnext
 local d_getprev       = direct.getprev
 local d_getid         = direct.getid
 local d_getlist       = direct.getlist
 local d_find_tail     = direct.tail
-local d_insert_after  = direct.insert_after
-local d_insert_before = direct.insert_before
+local d_insertafter   = direct.insert_after
+local d_insertbefore  = direct.insert_before
 local d_slide         = direct.slide
------ d_copy_node     = direct.copy
 local d_traverse      = direct.traverse
 local d_setlink       = direct.setlink
 local d_setboth       = direct.setboth
@@ -404,7 +379,7 @@ local remove = function(head,current,free_too)
     if current then
         local h, c = d_remove_node(head,current)
         if free_too then
-            d_flush_node(current)
+            d_flushnode(current)
             return h, c
         else
             d_setboth(current)
@@ -416,7 +391,7 @@ end
 
 -- for now
 
-if not nuts.start_of_par then
+if not nuts.startofpar then
 
     local parcodes      = nodes.parcodes
     local hmodepar_code = parcodes.vmode_par
@@ -424,7 +399,7 @@ if not nuts.start_of_par then
 
     local getsubtype    = nuts.getsubtype
 
-    function nuts.start_of_par(n)
+    function nuts.startofpar(n)
         local s = getsubtype(n)
         return s == hmodepar_code or s == vmodepar_code
     end
@@ -507,10 +482,10 @@ function nuts.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        d_flush_node(current)
+        d_flushnode(current)
         return head, new
     else
-        d_flush_node(current)
+        d_flushnode(current)
         return new
     end
 end
@@ -542,14 +517,14 @@ end
 
 function nuts.append(head,current,...)
     for i=1,select("#",...) do
-        head, current = d_insert_after(head,current,(select(i,...)))
+        head, current = d_insertafter(head,current,(select(i,...)))
     end
     return head, current
 end
 
 function nuts.prepend(head,current,...)
     for i=1,select("#",...) do
-        head, current = d_insert_before(head,current,(select(i,...)))
+        head, current = d_insertbefore(head,current,(select(i,...)))
     end
     return head, current
 end
@@ -604,43 +579,7 @@ function nodes.vianodes(f) return function(n,...) return tonut (f(tonode(n),...)
 nuts.vianuts  = nodes.vianuts
 nuts.vianodes = nodes.vianodes
 
--- function nodes.insert_before(h,c,n)
---     if c then
---         if c == h then
---             n_setfield(n,"next",h)
---             n_setfield(n,"prev",nil)
---             n_setfield(h,"prev",n)
---         else
---             local cp = n_getprev(c)
---             n_setfield(n,"next",c)
---             n_setfield(n,"prev",cp)
---             if cp then
---                 n_setfield(cp,"next",n)
---             end
---             n_setfield(c,"prev",n)
---             return h, n
---         end
---     end
---     return n, n
--- end
-
--- function nodes.insert_after(h,c,n)
---     if c then
---         local cn = n_getnext(c)
---         if cn then
---             n_setfield(n,"next",cn)
---             n_setfield(cn,"prev",n)
---         else
---             n_setfield(n,"next",nil)
---         end
---         n_setfield(c,"next",n)
---         n_setfield(n,"prev",c)
---         return h, n
---     end
---     return n, n
--- end
-
-function nodes.insert_list_after(h,c,n)
+function nodes.insertlistafter(h,c,n)
     local t = n_tail(n)
     if c then
         local cn = n_getnext(c)
@@ -658,41 +597,7 @@ function nodes.insert_list_after(h,c,n)
     return n, t
 end
 
--- function nuts.insert_before(h,c,n)
---     if c then
---         if c == h then
---             d_setnext(n,h)
---             d_setprev(n)
---             d_setprev(h,n)
---         else
---             local cp = d_getprev(c)
---             d_setnext(n,c)
---             d_setprev(n,cp)
---             if cp then
---                 d_setnext(cp,n)
---             end
---             d_setprev(c,n)
---             return h, n
---         end
---     end
---     return n, n
--- end
-
--- function nuts.insert_after(h,c,n)
---     if c then
---         local cn = d_getnext(c)
---         if cn then
---             d_setlink(n,cn)
---         else
---             d_setnext(n,nil)
---         end
---         d_setlink(c,n)
---         return h, n
---     end
---     return n, n
--- end
-
-function nuts.insert_list_after(h,c,n)
+function nuts.insertlistafter(h,c,n)
     local t = d_tail(n)
     if c then
         local cn = d_getnext(c)

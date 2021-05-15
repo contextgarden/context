@@ -21,8 +21,6 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
 
-local end_of_math        = nuts.end_of_math
-
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 local kerncodes          = nodes.kerncodes

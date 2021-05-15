@@ -408,6 +408,7 @@ local pdftovirtual  do
 
             scale = scale * (width / (xform.width * bpfactor))
             dy = - depth + dy
+-- png .. no time to figure it out now
 -- dx = 0
 -- dy = 0
             local object = pdf.immediateobj("stream",f_stream(width,scale,scale,dx,dy,c)), width
@@ -558,6 +559,9 @@ local initializesvg  do
     --
     -- Because a generic setup can be flawed we need to catch bad inkscape runs which add a bit of
     -- ugly overhead. Bah.
+    --
+    -- In the long run this method is a dead end because we cannot rely on command line arguments
+    -- etc to be upward compatible (so no real batch tool).
 
     local new = nil
 
@@ -578,7 +582,7 @@ local initializesvg  do
             local nofshapes    = #svgshapes
             local f_svgfile    = formatters["temp-otf-svg-shape-%i.svg"]
             local f_pdffile    = formatters["temp-otf-svg-shape-%i.pdf"]
-            local f_convert    = formatters["%s --export-%s=%s\n"]
+            local f_convert    = formatters[new and "file-open:%s; export-%s:%s; export-do\n" or "%s --export-%s=%s\n"]
             local filterglyph  = otfsvg.filterglyph
             local nofdone      = 0
             local processed    = { }
@@ -695,34 +699,53 @@ end
 
 local initializepng  do
 
-    local otfpng   = otf.png or { }
-    otf.png        = otfpng
-    otf.pngenabled = true
+    -- Alternatively we can create a single pdf file with -adjoin and then pick up pages from
+    -- that file but creating thousands of small files is no fun either.
 
+    local otfpng     = otf.png or { }
+    otf.png          = otfpng
+    otf.pngenabled   = true
     local report_png = logs.reporter("fonts","png conversion")
-
     local loaddata   = io.loaddata
     local savedata   = io.savedata
     local remove     = os.remove
+    local texhack    = [[\startTEXpage\externalfigure[temp-otf-png-shape.png]\stopTEXpage]]
+    local runner     = false
+    local method     = "gm"
 
-    local runner = sandbox and sandbox.registerrunner {
-        name     = "otfpng",
-        program  = "gm",
-        template = "convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log",
-     -- reporter = report_png,
-    }
-
-    if not runner then
-        --
-        -- poor mans variant for generic:
-        --
-        runner = function()
-            return os.execute("gm convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log")
+    local function initialize(v)
+        if v == "lmtx" then
+            report_png("using lmtx converter, slow but okay")
+            runner = sandbox.registerrunner {
+             -- reporter = report_png,
+                name     = "otfpng",
+                program  = "mtxrun --script context",
+                template = "--once --batch --silent temp-otf-png-shape.tex > temp-otf-svg-shape.log",
+            }
+            method = v
+        elseif v == "mutool" then
+            report_png("using lmtx converter, no mask, black background")
+            runner = sandbox.registerrunner {
+             -- reporter = report_png,
+                name     = "otfpng",
+                program  = "mutool",
+                template = "convert -o temp-otf-png-shape.pdf temp-otf-png-shape.png",
+            }
+            method = v
+        else
+            report_png("using lmtx converter, no mask, white background")
+            runner = sandbox.registerrunner {
+             -- reporter = report_png,
+                name     = "otfpng",
+                program  = "gm",
+                template = "convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log",
+            }
+            method = "gm"
         end
+        return runner
     end
 
-    -- Alternatively we can create a single pdf file with -adjoin and then pick up pages from
-    -- that file but creating thousands of small files is no fun either.
+    directives.register("backend.otfpng.method",initialize)
 
     local files       = utilities.files
     local openfile    = files.open
@@ -735,12 +758,19 @@ local initializepng  do
             local pdfshapes  = { }
             local pngfile    = "temp-otf-png-shape.png"
             local pdffile    = "temp-otf-png-shape.pdf"
+            local logfile    = "temp-otf-png-shape.log"
+            local texfile    = "temp-otf-png-shape.tex"
+            local tucfile    = "temp-otf-png-shape.tuc"
             local nofdone    = 0
             local indices    = sortedkeys(pngshapes) -- can be sparse
             local nofindices = #indices
             report_png("processing %i png containers",nofindices)
             statistics.starttiming()
             local filehandle = openfile(filename)
+            savedata(texfile,texhack) -- not always used but who cares
+            if not runner then
+                initialize()
+            end
             for i=1,nofindices do
                 local index  = indices[i]
                 local entry  = pngshapes[index]
@@ -771,6 +801,9 @@ local initializepng  do
             report_png("processing %i pdf results",nofindices)
             remove(pngfile)
             remove(pdffile)
+            remove(logfile)
+            remove(texfile)
+            remove(tucfile)
             statistics.stoptiming()
             if statistics.elapsedseconds then
                 report_png("png conversion time %s",statistics.elapsedseconds() or "-")
@@ -789,7 +822,7 @@ local initializepng  do
             end
             local pdffile   = containers.read(otf.pdfcache,hash)
             local pdfshapes = pdffile and pdffile.pdfshapes
-            if not pdfshapes or pdffile.timestamp ~= timestamp then
+            if not pdfshapes or pdffile.timestamp ~= timestamp or pdffile.timestamp ~= method then
                 local pngfile   = containers.read(otf.pngcache,hash)
                 local filename  = tfmdata.resources.filename
                 local pngshapes = pngfile and pngfile.pngshapes
@@ -797,6 +830,7 @@ local initializepng  do
                 containers.write(otf.pdfcache, hash, {
                     pdfshapes = pdfshapes,
                     timestamp = timestamp,
+                    method    = method,
                 })
             end
             --

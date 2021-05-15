@@ -24,7 +24,7 @@ local implement    = interfaces.implement
 
 local ioflush      = io.flush
 local ioread       = io.read
-local writenl      = texio.write_nl
+local writenl      = texio.writenl
 local write        = texio.write
 
 local runlocal     = tex.runlocal

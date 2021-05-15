@@ -47,8 +47,8 @@ local isglyph              = nuts.isglyph
 local setattr              = nuts.setattr
 local setchar              = nuts.setchar
 
-local insert_node_before   = nuts.insert_before
-local insert_node_after    = nuts.insert_after
+local insertnodebefore     = nuts.insertbefore
+local insertnodeafter      = nuts.insertafter
 local nextglyph            = nuts.traversers.glyph
 local getdimensions        = nuts.dimensions
 
@@ -393,46 +393,46 @@ function characteralign.handler(head,where)
     local new_kern  = trace_split and traced_kern or new_kern
     if b_start then
         if before < maxbefore then
-            head = insert_node_before(head,b_start,new_kern(maxbefore-before))
+            head = insertnodebefore(head,b_start,new_kern(maxbefore-before))
         end
         if not c then
          -- print("[before]")
             if dataset.hasseparator then
                 local width = fontcharacters[getfont(b_start)][separator].width
-                insert_node_after(head,b_stop,new_kern(maxafter+width))
+                insertnodeafter(head,b_stop,new_kern(maxafter+width))
             end
         elseif a_start then
          -- print("[before] [separator] [after]")
             if after < maxafter then
-                insert_node_after(head,a_stop,new_kern(maxafter-after))
+                insertnodeafter(head,a_stop,new_kern(maxafter-after))
             end
         else
          -- print("[before] [separator]")
             if maxafter > 0 then
-                insert_node_after(head,c,new_kern(maxafter))
+                insertnodeafter(head,c,new_kern(maxafter))
             end
         end
     elseif a_start then
         if c then
          -- print("[separator] [after]")
             if maxbefore > 0 then
-                head = insert_node_before(head,c,new_kern(maxbefore))
+                head = insertnodebefore(head,c,new_kern(maxbefore))
             end
         else
          -- print("[after]")
             local width = fontcharacters[getfont(b_stop)][separator].width
-            head = insert_node_before(head,a_start,new_kern(maxbefore+width))
+            head = insertnodebefore(head,a_start,new_kern(maxbefore+width))
         end
         if after < maxafter then
-            insert_node_after(head,a_stop,new_kern(maxafter-after))
+            insertnodeafter(head,a_stop,new_kern(maxafter-after))
         end
     elseif c then
      -- print("[separator]")
         if maxbefore > 0 then
-            head = insert_node_before(head,c,new_kern(maxbefore))
+            head = insertnodebefore(head,c,new_kern(maxbefore))
         end
         if maxafter > 0 then
-            insert_node_after(head,c,new_kern(maxafter))
+            insertnodeafter(head,c,new_kern(maxafter))
         end
     end
     return head

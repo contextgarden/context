@@ -24,8 +24,8 @@ local utfchar = utf.char
 local datetime = os.date
 local openfile = io.open
 
-local write_nl = texio.write_nl
-local write    = texio.write
+local writenl = texio.writeselectornl
+local write   = texio.writeselector
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -120,13 +120,20 @@ do
                 status_nop    = formatters["%-15s :\n"],
             },
             targets = setmetatableindex( {
-                logfile  = "logfile",
-                log      = "logfile",
-                file     = "logfile",
-                console  = "terminal",
-                terminal = "terminal",
-                both     = "terminal_and_logfile",
-            }, function(t,k) t[k] = "terminal_and_logfile" end),
+--                 logfile  = "logfile",
+--                 log      = "logfile",
+--                 file     = "logfile",
+--                 console  = "terminal",
+--                 terminal = "terminal",
+--                 both     = "terminal_and_logfile",
+                logfile  = 2,
+                log      = 2,
+                file     = 2,
+                console  = 1,
+                terminal = 1,
+                both     = 3,
+--             }, function(t,k) local v = "terminal_and_logfile" t[k] = v return v end),
+            }, function(t,k) local v = 3 t[k] = v return v end),
         },
         ansi = {
             formats = {
@@ -145,10 +152,14 @@ do
                 logfile  = false,
                 log      = false,
                 file     = false,
-                console  = "terminal",
-                terminal = "terminal",
-                both     = "terminal",
-            }, function(t,k) t[k] = "terminal" end),
+--                 console  = "terminal",
+--                 terminal = "terminal",
+--                 both     = "terminal",
+                console  = 1,
+                terminal = 1,
+                both     = 1,
+--             }, function(t,k) local v = "terminal" t[k] = v return v end),
+            }, function(t,k) local v = 1 t[k] = v return v end),
         }
     }
 
@@ -161,13 +172,13 @@ do
 
     writer = function(...)
         if target then
-            write_nl(target,...)
+            writenl(target,...)
         end
     end
 
     newline = function()
         if target then
-            write_nl(target,"\n")
+            writenl(target)
         end
     end
 
@@ -175,13 +186,13 @@ do
         if not target then
             -- ignore
         elseif c ~= nil then
-            write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
+            writenl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,report_yes(translations[a],formats[b]))
+            writenl(target,report_yes(translations[a],formats[b]))
         elseif a then
-            write_nl(target,report_nop(translations[a]))
+            writenl(target,report_nop(translations[a]))
         else
-            write_nl(target,"\n")
+            writenl(target)
         end
     end
 
@@ -203,13 +214,13 @@ do
         if not target then
             -- ignore
         elseif c ~= nil then
-            write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
+            writenl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,subreport_yes(translations[a],translations[s],formats[b]))
+            writenl(target,subreport_yes(translations[a],translations[s],formats[b]))
         elseif a then
-            write_nl(target,subreport_nop(translations[a],translations[s]))
+            writenl(target,subreport_nop(translations[a],translations[s]))
         else
-            write_nl(target,"\n")
+            writenl(target)
         end
     end
 
@@ -231,13 +242,13 @@ do
         if not target then
             -- ignore
         elseif c ~= nil then
-            write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
+            writenl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,status_yes(translations[a],formats[b]))
+            writenl(target,status_yes(translations[a],formats[b]))
         elseif a then
-            write_nl(target,status_nop(translations[a]))
+            writenl(target,status_nop(translations[a]))
         else
-            write_nl(target,"\n")
+            writenl(target)
         end
     end
 
@@ -277,8 +288,8 @@ do
     end
 
     setprocessor = function(f)
-        local writeline = write_nl
-        write_nl = function(target,...)
+        local writeline = writenl
+        writenl = function(target,...)
             if target then
                 writeline(target,f(...))
             end

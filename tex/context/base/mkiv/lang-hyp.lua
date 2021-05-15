@@ -656,12 +656,12 @@ if context then
     local setprev            = nuts.setprev
     local setnext            = nuts.setnext
 
-    local insert_before      = nuts.insert_before
-    local insert_after       = nuts.insert_after
+    local insertbefore       = nuts.insertbefore
+    local insertafter        = nuts.insertafter
     local copy_node          = nuts.copy
-    local copy_list          = nuts.copy_list
+    local copylist           = nuts.copylist
     local remove_node        = nuts.remove
-    local end_of_math        = nuts.end_of_math
+    local endofmath          = nuts.endofmath
     local node_tail          = nuts.tail
 
     local nexthlist          = nuts.traversers.hlist
@@ -1087,7 +1087,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                 nuts.setvisual(p,"penalty")
             end
             last = getprev(last)
-            first, last = insert_after(first,last,p)
+            first, last = insertafter(first,last,p)
         end
 
         local function synchronizefeatureset(a)
@@ -1245,7 +1245,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     local glyph = copy_node(stop)
                     setchar(glyph,characters[replacement])
                     if head then
-                        insert_after(current,current,glyph)
+                        insertafter(current,current,glyph)
                     else
                         head = glyph
                     end
@@ -1256,7 +1256,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         local glyph = copy_node(stop)
                         setchar(glyph,characters[list[i]])
                         if head then
-                            insert_after(current,current,glyph)
+                            insertafter(current,current,glyph)
                         else
                             head = glyph
                         end
@@ -1265,7 +1265,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                 end
                 if rightchar then
                     local glyph = copy_node(stop)
-                    insert_after(current,current,glyph)
+                    insertafter(current,current,glyph)
                     setchar(glyph,rightchar)
                 end
                 return head
@@ -1291,7 +1291,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         setattrlist(disc,attrnode)
                     end
                     -- could be a replace as well
-                    insert_before(first,current,disc)
+                    insertbefore(first,current,disc)
                 elseif type(r) == "table" then
                     local disc    = new_disc()
                     local pre     = r[1]
@@ -1325,7 +1325,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
-                    insert_before(first,current,disc)
+                    insertbefore(first,current,disc)
                 else
                     setchar(current,characters[r])
                     if i < rsize then
@@ -1347,7 +1347,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
             if first ~= current then
                 local disc = new_disc()
                 first, current, glyph = remove_node(first,current)
-                first, current = insert_before(first,current,disc)
+                first, current = insertbefore(first,current,disc)
                 if trace_visualize then
                     setcolor(glyph,"darkred")  -- these get checked
                     setcolor(disc,"darkgreen") -- in the colorizer
@@ -1372,7 +1372,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
         local function injectseries(current,last,next,attrnode)
             local disc  = new_disc()
             local start = current
-            first, current = insert_before(first,current,disc)
+            first, current = insertbefore(first,current,disc)
             setprev(start)
             setnext(last)
             if next then
@@ -1380,7 +1380,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
             else
                 setnext(current)
             end
-            local pre     = copy_list(start)
+            local pre     = copylist(start)
             local post    = nil
             local replace = start
             setdisc(disc,pre,post,replace,automaticdisc_code,hyphenpenalty) -- ex ?
@@ -1547,10 +1547,10 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         skipping = true
                     end
              -- elseif strict and strict[id] then
-             --     current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+             --     current = id == math_code and getnext(endofmath(current)) or getnext(current)
              --     size = 0
                 else
-                    current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+                    current = id == math_code and getnext(endofmath(current)) or getnext(current)
                 end
                 if size > 0 then
                     if dictionary and size > charmin and leftmin + rightmin <= size then

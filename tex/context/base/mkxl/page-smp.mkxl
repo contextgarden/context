@@ -30,6 +30,7 @@
   {\bgroup
    \setsimplecolumnshsize[#1]%
    \nopenalties
+   \enforced\permanent\protected\def\column{\vfill\break}% quick hack
    \setbox\scratchbox\vbox\bgroup
    \forgetall} % \blank[\v!disable]
 

@@ -35,8 +35,8 @@ attributes.states       = attributes.states   or { }
 attributes.handlers     = attributes.handlers or { }
 attributes.unsetvalue   = -0x7FFFFFFF
 
-local currentfont       = font.current            -- mabe nicer is attributes.current
-local currentattributes = node.current_attributes -- mabe nicer is fonts     .current
+local currentfont       = font.current
+local currentattributes = nodes and nodes.currentattributes or node.currentattributes or node.current_attr -- no nodes table yet
 
 local names             = attributes.names
 local numbers           = attributes.numbers

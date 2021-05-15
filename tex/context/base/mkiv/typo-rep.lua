@@ -38,6 +38,7 @@ local chardata        = characters.data
 local collected       = false
 
 local a_stripping     = attributes.private("stripping")
+
 local texsetattribute = tex.setattribute
 local unsetvalue      = attributes.unsetvalue
 

@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['node-mig'] = {
     license   = "see context related readme files"
 }
 
--- todo: insert_after
-
 local format = string.format
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)

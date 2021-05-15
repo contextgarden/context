@@ -35,10 +35,10 @@ local setfont          = nuts.setfont
 local setscales        = nuts.setscales
 
 local copy_node        = nuts.copy
-local end_of_math      = nuts.end_of_math
-local insert_after     = nuts.insert_after
-local find_attribute   = nuts.find_attribute
-local unset_attributes = nuts.unset_attributes
+local endofmath        = nuts.endofmath
+local insertafter      = nuts.insertafter
+local findattribute    = nuts.findattribute
+local unsetattributes  = nuts.unsetattributes
 
 local nextglyph        = nuts.traversers.glyph
 
@@ -145,7 +145,7 @@ local function replacer(start,codes)
                 else
                     local g = copy_node(start)
                     setchar(g,chr)
-                    insert_after(start,start,g)
+                    insertafter(start,start,g)
                 end
             end
         elseif ifc[dc] then
@@ -301,7 +301,7 @@ register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
 function cases.handler(head)
-    local _, start = find_attribute(head, a_cases)
+    local _, start = findattribute(head, a_cases)
     if start then
         local lastfont = { }
         local lastattr = nil
@@ -387,7 +387,7 @@ function cases.handler(head)
                 end
             else
                 if id == math_code then
-                    start = end_of_math(start)
+                    start = endofmath(start)
                 end
                 count = 0
             end
@@ -396,7 +396,7 @@ function cases.handler(head)
             end
         end
         if done then
-    --         unset_attributes(a_cases,head)
+    --         unsetattributes(a_cases,head)
         end
     end
     return head

@@ -51,8 +51,8 @@
 
 \startluacode
 
-    local createtoken   = token.create
-    local gobbletoken   = token.gobble
+    local createtoken   = tokens.create
+    local gobbletoken   = tokens.gobble
     local integer_value = tokens.values.integer
 
     local marked = { }

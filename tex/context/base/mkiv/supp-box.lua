@@ -7,8 +7,6 @@ if not modules then modules = { } end modules ['supp-box'] = {
     license   = "see context related readme files"
 }
 
--- this is preliminary code, use insert_before etc
-
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
 local tonumber, next, type = tonumber, next, type
@@ -69,15 +67,15 @@ local setshift      = nuts.setshift
 local setsplit      = nuts.setsplit
 local setattrlist   = nuts.setattrlist
 
-local flush_node    = nuts.flush_node
-local flush_list    = nuts.flush_list
+local flushnode     = nuts.flushnode
+local flushlist     = nuts.flushlist
 local copy_node     = nuts.copy
-local copy_list     = nuts.copy_list
+local copylist      = nuts.copylist
 local find_tail     = nuts.tail
 local getdimensions = nuts.dimensions
 local hpack         = nuts.hpack
 local vpack         = nuts.vpack
-local traverse_id   = nuts.traverse_id
+local traverseid    = nuts.traverseid
 local traverse      = nuts.traverse
 local free          = nuts.free
 local findtail      = nuts.tail
@@ -118,7 +116,7 @@ local function hyphenatedlist(head,usecolor)
                 setlistcolor(post,"darkyellow")
             end
             if replace then
-                flush_list(replace)
+                flushlist(replace)
             end
             setdisc(current)
             if pre then
@@ -152,9 +150,9 @@ implement {
 --     for n in nextdisc, tonut(head) do
 --         local hyphen = getfield(n,"pre")
 --         if hyphen then
---             flush_list(hyphen)
+--             flushlist(hyphen)
 --         end
---         setfield(n,"pre",copy_list(pre))
+--         setfield(n,"pre",copylist(pre))
 --     end
 -- end
 --
@@ -200,7 +198,7 @@ local function applytowords(current,doaction,noaction,nested)
         local id = getid(current)
         if id == glue_code then
             if start then
-                doaction(tonode(copy_list(start,current)))
+                doaction(tonode(copylist(start,current)))
                 start = nil
             end
             noaction(tonode(copy_node(current)))
@@ -214,7 +212,7 @@ local function applytowords(current,doaction,noaction,nested)
         current = getnext(current)
     end
     if start then
-        doaction(tonode(copy_list(start)))
+        doaction(tonode(copylist(start)))
     end
 end
 
@@ -348,7 +346,7 @@ implement {
                     else
                         tail = prev
                     end
-                    flush_node(temp)
+                    flushnode(temp)
                 end
                 -- done
                 setnext(tail)
@@ -430,7 +428,7 @@ local function setboxtonaturalwd(n)
     local old = takebox(n)
     local new = hpack(getlist(old))
     setlist(old,nil)
-    flush_node(old)
+    flushnode(old)
     setbox(n,new)
 end
 
@@ -482,20 +480,20 @@ end
 
 do
 
-    local nuts       = nodes.nuts
-    local tonode     = nuts.tonode
-    local takebox    = nuts.takebox
-    local flush_list = nuts.flush_list
-    local copy_list  = nuts.copy_list
-    local getwhd     = nuts.getwhd
-    local setbox     = nuts.setbox
-    local new_hlist  = nuts.pool.hlist
+    local nuts      = nodes.nuts
+    local tonode    = nuts.tonode
+    local takebox   = nuts.takebox
+    local flushlist = nuts.flushlist
+    local copylist  = nuts.copylist
+    local getwhd    = nuts.getwhd
+    local setbox    = nuts.setbox
+    local new_hlist = nuts.pool.hlist
 
-    local boxes      = { }
-    nodes.boxes      = boxes
-    local cache      = table.setmetatableindex("table")
-    local report     = logs.reporter("boxes","cache")
-    local trace      = false
+    local boxes     = { }
+    nodes.boxes     = boxes
+    local cache     = table.setmetatableindex("table")
+    local report    = logs.reporter("boxes","cache")
+    local trace     = false
 
     trackers.register("nodes.boxes",function(v) trace = v end)
 
@@ -528,7 +526,7 @@ do
         if not b then
             -- do nothing, maybe trace
         elseif copy then
-            b = copy_list(b)
+            b = copylist(b)
         else
             c[name] = false
         end
@@ -545,13 +543,13 @@ do
         local c = cache[category]
         local b = takebox(box)
         if b then
-            flush_list(b)
+            flushlist(b)
         end
         local b = c[name]
         if not b then
             -- do nothing, maybe trace
         elseif copy then
-            b = copy_list(b)
+            b = copylist(b)
         else
             c[name] = false
         end
@@ -577,7 +575,7 @@ do
         if name and name ~= "" then
             local b = c[name]
             if b then
-                flush_list(b)
+                flushlist(b)
                 c[name] = false
             end
             if trace then
@@ -586,7 +584,7 @@ do
         else
             for k, b in next, c do
                 if b then
-                    flush_list(b)
+                    flushlist(b)
                 end
             end
             cache[category] = { }
@@ -697,7 +695,7 @@ local function stripglue(list)
     if first and first ~= list then
         -- we have discardables
         setsplit(getprev(first),first)
-        flush_list(list)
+        flushlist(list)
         list = first
         done = true
     end
@@ -714,7 +712,7 @@ local function stripglue(list)
         end
         if last ~= tail then
             -- we have discardables
-            flush_list(getnext(last))
+            flushlist(getnext(last))
             setnext(last)
             done = true
         end
@@ -767,7 +765,7 @@ local function limitate(t) -- don't pack the result !
         else
             maxleft  = maxleft  - swidth
         end
-        for n in traverse_id(glue_code,list) do
+        for n in traverseid(glue_code,list) do
             local width = getdimensions(list,n)
             if width > maxleft then
                 if not last then
@@ -779,7 +777,7 @@ local function limitate(t) -- don't pack the result !
             end
         end
         if last and maxright > 0 then
-            for n in traverse_id(glue_code,last) do
+            for n in traverseid(glue_code,last) do
                 local width = getdimensions(n)
                 if width < maxright then
                     first = n
@@ -808,7 +806,7 @@ local function limitate(t) -- don't pack the result !
                 end
                 setlink(last,sentinel)
                 setprev(rest)
-                flush_list(rest)
+                flushlist(rest)
             end
         end
     end

@@ -45,6 +45,19 @@
 %D But we wrap this in a more abstract interface:
 
 \installcorenamespace {parshapes}
+\installcorenamespace {shapedparagraph}
+
+\installbasicnativeautosetuphandler \??shapedparagraph {shapedparagraph}
+
+\setupshapedparagraph
+  [\c!method=,
+   \c!list=,
+   \c!lines=\zerocount,
+   \c!mp=,
+   \c!repeat=,
+   \c!hoffset=\zeropoint,
+   \c!voffset=\zeropoint,
+   \c!distance=\zeropoint]
 
 \aliased\let\stopparagraphshape\relax
 
@@ -62,20 +75,103 @@
 \def\spac_shapes_calculate#1% called locally in \LUA
   {\startMPcalculation \includeMPgraphic{#1} \stopMPcalculation}
 
-\permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
-  {\begingroup
-   \getdummyparameters[\c!method=,\c!list=,\c!mp=,\c!repeat=,#1]%
-   \edef\p_mp    {\dummyparameter\c!mp}%
-   \edef\p_repeat{\dummyparameter\c!repeat}%
-   \setlocalhsize
+% \permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
+%   {\begingroup
+%    \let\currentshapedparagraph\empty
+%    \setupshapedparagraph[#1]%
+%    \edef\p_mp    {\shapedparagraphparameter\c!mp}%
+%    \edef\p_repeat{\shapedparagraphparameter\c!repeat}%
+%    \setlocalhsize
+%    \normalexpanded
+%      {\endgroup
+%       \ifempty\p_mp
+%         \setparagraphshape[\shapedparagraphparameter\c!list]%
+%       \else
+%         \setparagraphmetashape[\shapedparagraphparameter\c!mp][\ifx\p_repeat\v!yes repeat\fi]%
+%       \fi
+%       \pushparagraphtweak{\shapedparagraphparameter\c!method}\relax}}
+
+\newbox\b_spac_shapes
+
+\def\spac_shapes_list
+  {\edef\p_mp    {\shapedparagraphparameter\c!mp}%
+   \edef\p_repeat{\shapedparagraphparameter\c!repeat}%
    \normalexpanded
      {\endgroup
       \ifempty\p_mp
-        \setparagraphshape[\dummyparameter\c!list]%
+        \setparagraphshape[\shapedparagraphparameter\c!list]%
       \else
-        \setparagraphmetashape[\dummyparameter\c!mp][\ifx\p_repeat\v!yes repeat\fi]%
+        \setparagraphmetashape[\p_mp][\ifx\p_repeat\v!yes repeat\fi]%
       \fi
-      \pushparagraphtweak{\dummyparameter\c!method}\relax}}
+      \pushparagraphtweak{\shapedparagraphparameter\c!method}\relax}}
+
+\def\spac_shapes_text
+  {\getnoflines{\dimexpr\htdp\b_spac_shapes+\shapedparagraphparameter\c!voffset}%
+   \normalexpanded
+     {\endgroup
+      \clf_setparagraphshape
+          left  \the\dimexpr
+                    \wd\b_spac_shapes+\shapedparagraphparameter\c!distance
+                   +\shapedparagraphparameter\c!hoffset
+                \relax
+          right \zeropoint
+          copy  \the\numexpr
+                   \noflines
+                  +\shapedparagraphparameter\c!lines
+                \relax
+          left  \zeropoint
+          right \zeropoint
+        % inspect
+          done
+      \relax
+      \pushparagraphtweak{shift}%
+      \dontleavehmode
+      \vtop
+         xoffset \the\dimexpr
+          -\shapedparagraphparameter\c!distance
+          -\wd\b_spac_shapes
+         \relax
+         yoffset \the\dimexpr
+           \shapedparagraphparameter\c!voffset
+          +\strutht
+         \relax
+         {\smashbox\b_spac_shapes
+          \box\b_spac_shapes}}}
+
+\def\spac_shapes_lines
+  {\normalexpanded
+     {\endgroup
+      \clf_setparagraphshape
+          left  \shapedparagraphparameter\c!width
+          right \zeropoint
+          copy  \shapedparagraphparameter\c!lines
+          left  \zeropoint
+          right \zeropoint
+        % inspect
+          done
+      \relax
+      \pushparagraphtweak{shift}}}
+
+\permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
+  {\begingroup
+   \let\currentshapedparagraph\empty
+   \setupshapedparagraph[#1]%
+   \setlocalhsize
+   \doifsomething{\shapedparagraphparameter\c!text}
+     {\global\setbox\b_spac_shapes\vpack\bgroup
+      \forgetall
+      \shapedparagraphparameter\c!text
+      \egroup}%
+   \ifvoid\b_spac_shapes
+     \ifnum\shapedparagraphparameter\c!lines>\zerocount
+       \spac_shapes_lines
+     \else
+       \spac_shapes_list
+     \fi
+   \else
+     \spac_shapes_text
+   \fi
+   \ignorespaces}
 
 \permanent\protected\def\stopshapedparagraph
   {\popparagraphtweak}

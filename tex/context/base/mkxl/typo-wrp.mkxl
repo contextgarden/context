@@ -34,7 +34,7 @@
    \ignorespaces}
 
 \protected\def\spac_crlf_placeholder
-  {\strut}
+  {\wordboundary\strut} % or \endstrut
 
 \protected\def\spac_crlf_placeholder_show
   {\wordboundary

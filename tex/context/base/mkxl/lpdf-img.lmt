@@ -18,6 +18,15 @@ if not modules then modules = { } end modules ['lpdf-img'] = {
 -- wanted but best gain a little. The idea is that we collect striped (in stages) so
 -- that we can play with substitutions. We keep this variant commented but not
 -- embedding it saves some 14K bytecode in the format.
+--
+-- We keep the \LUA\ code commented because it is what I started with from the \PNG\
+-- specification. It was one fo the first things needed for dropping the backend so
+-- actually this was part of the first \LUA\ based \PDF\ backend, the one that for a
+-- while was part of \MKIV. That bit of development was not widely advertized and
+-- just for me to make the transition and prove that it could be done. At some point
+-- I decided to not provide a generic backend so that cdoe went away. Reminder:
+-- there ended up some code here that was needed for font related png too (and I'd
+-- already forgotten about: I need to document that).
 
 local type = type
 local concat, move = table.concat, table.move
@@ -198,6 +207,7 @@ do
     local pnginterlace   = pngdecode.interlace
     local pngexpand      = pngdecode.expand
     local pngtocmyk      = pngdecode.tocmyk
+    local pngtomask      = pngdecode.tomask
 
     local filtermask, decodemask, decodestrip, transpose, expand, tocmyk
 
@@ -206,7 +216,7 @@ do
 
     local function newoutput(size)
         if newindex then
-            return newindex(size,0)
+            return newindex(size,char(0))
         end
         local t = newtable and newtable(size,0) or { }
         for i=1,size do
@@ -806,52 +816,65 @@ do
  --     end
  -- end
 
+ -- We had this for a while (the reference now):
+ --
+ -- local function createmask_c(content,palette,transparent,xsize,ysize,colordepth,colorspace)
+ --     if palette then
+ --         local r    = expandvector(transparent)
+ --         local size = xsize*ysize
+ --         local len  = ceil(xsize*colordepth/8)
+ --         local o    = newoutput(size)
+ --         content    = zlibdecompress(content)
+ --         content    = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
+ --         content    = openstring(content)
+ --         for i=0,ysize-1 do
+ --             local t = readbytetable(content,len)
+ --             local k = i * xsize
+ --             if colordepth == 8 then
+ --                 for j=1,len do
+ --                     local v = t[j]
+ --                     k = k + 1 ; o[k] = r[v]
+ --                 end
+ --             elseif colordepth == 4 then
+ --                 for j=1,len do
+ --                     local v = t[j]
+ --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x0F] -- r[extract4(v,4)]
+ --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x0F] -- r[extract4(v,0)]
+ --                 end
+ --             elseif colordepth == 2 then
+ --                 for j=1,len do
+ --                     local v = t[j]
+ --                     k = k + 1 ; o[k] = r[(v >> 6) & 0x03] -- r[extract2(v,6)]
+ --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x03] -- r[extract2(v,4)]
+ --                     k = k + 1 ; o[k] = r[(v >> 2) & 0x03] -- r[extract2(v,2)]
+ --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x03] -- r[extract2(v,0)]
+ --                 end
+ --             else
+ --                 for j=1,len do
+ --                     local v = t[j]
+ --                     k = k + 1 ; o[k] = r[(v >> 7) & 0x01] -- r[extract1(v,7)]
+ --                     k = k + 1 ; o[k] = r[(v >> 6) & 0x01] -- r[extract1(v,6)]
+ --                     k = k + 1 ; o[k] = r[(v >> 5) & 0x01] -- r[extract1(v,5)]
+ --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x01] -- r[extract1(v,4)]
+ --                     k = k + 1 ; o[k] = r[(v >> 3) & 0x01] -- r[extract1(v,3)]
+ --                     k = k + 1 ; o[k] = r[(v >> 2) & 0x01] -- r[extract1(v,2)]
+ --                     k = k + 1 ; o[k] = r[(v >> 1) & 0x01] -- r[extract1(v,1)]
+ --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x01] -- r[extract1(v,0)]
+ --                 end
+ --             end
+ --         end
+ --         return concat(o,"",1,size)
+ --     end
+ -- end
+ --
+ -- But this is nicer for memory usage:
+
     local function createmask_c(content,palette,transparent,xsize,ysize,colordepth,colorspace)
         if palette then
-            local r    = expandvector(transparent)
-            local size = xsize*ysize
-            local len  = ceil(xsize*colordepth/8)
-            local o    = newoutput(size)
-            content    = zlibdecompress(content)
-            content    = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
-            content    = openstring(content)
-            for i=0,ysize-1 do
-                local t = readbytetable(content,len)
-                local k = i * xsize
-                if colordepth == 8 then
-                    for j=1,len do
-                        local v = t[j]
-                        k = k + 1 ; o[k] = r[v]
-                    end
-                elseif colordepth == 4 then
-                    for j=1,len do
-                        local v = t[j]
-                        k = k + 1 ; o[k] = r[(v >> 4) & 0x0F] -- r[extract4(v,4)]
-                        k = k + 1 ; o[k] = r[(v >> 0) & 0x0F] -- r[extract4(v,0)]
-                    end
-                elseif colordepth == 2 then
-                    for j=1,len do
-                        local v = t[j]
-                        k = k + 1 ; o[k] = r[(v >> 6) & 0x03] -- r[extract2(v,6)]
-                        k = k + 1 ; o[k] = r[(v >> 4) & 0x03] -- r[extract2(v,4)]
-                        k = k + 1 ; o[k] = r[(v >> 2) & 0x03] -- r[extract2(v,2)]
-                        k = k + 1 ; o[k] = r[(v >> 0) & 0x03] -- r[extract2(v,0)]
-                    end
-                else
-                    for j=1,len do
-                        local v = t[j]
-                        k = k + 1 ; o[k] = r[(v >> 7) & 0x01] -- r[extract1(v,7)]
-                        k = k + 1 ; o[k] = r[(v >> 6) & 0x01] -- r[extract1(v,6)]
-                        k = k + 1 ; o[k] = r[(v >> 5) & 0x01] -- r[extract1(v,5)]
-                        k = k + 1 ; o[k] = r[(v >> 4) & 0x01] -- r[extract1(v,4)]
-                        k = k + 1 ; o[k] = r[(v >> 3) & 0x01] -- r[extract1(v,3)]
-                        k = k + 1 ; o[k] = r[(v >> 2) & 0x01] -- r[extract1(v,2)]
-                        k = k + 1 ; o[k] = r[(v >> 1) & 0x01] -- r[extract1(v,1)]
-                        k = k + 1 ; o[k] = r[(v >> 0) & 0x01] -- r[extract1(v,0)]
-                    end
-                end
-            end
-            return concat(o,"",1,size)
+            local len = ceil(xsize*colordepth/8)
+            content = zlibdecompress(content)
+            content = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
+            return pngtomask(content,transparent,xsize,ysize,colordepth)
         end
     end
 

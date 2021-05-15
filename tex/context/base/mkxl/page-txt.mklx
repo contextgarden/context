@@ -884,10 +884,6 @@
   \smashbox\b_page_layouts_element
   \box\b_page_layouts_element}
 
-% \ifdefined\page_prepare_backgrounds\else
-%     \let\page_prepare_backgrounds\gobbleoneargument
-% \fi
-
 % only for very special controlled cases or experiments:
 
 \let\page_scale_text_box\gobbleoneargument
@@ -900,7 +896,6 @@
       \page_layouts_swap_margins
       \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
-     %\page_prepare_backgrounds{#2}%
       \hpack to \makeupwidth
         {\begingroup
            \page_layouts_swap_margins

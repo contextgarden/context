@@ -36,8 +36,8 @@ local getattr            = nuts.getattr
 local setchar            = nuts.setchar
 local setlist            = nuts.setlist
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 
 local nodecodes          = nodes.nodecodes
 local enableaction       = nodes.tasks.enableaction
@@ -65,8 +65,8 @@ local function processmath(head)
     local start   = nil
     local stop    = nil
     local function capsulate()
-        head = insert_node_before(head,start,new_direction(lefttoright_code))
-        insert_node_after(head,stop,new_direction(lefttoright_code,true))
+        head = insertnodebefore(head,start,new_direction(lefttoright_code))
+        insertnodeafter(head,stop,new_direction(lefttoright_code,true))
         if trace_directions then
             report_directions("reversed: %s",nodes.listtoutf(start,false,false,stop))
         end

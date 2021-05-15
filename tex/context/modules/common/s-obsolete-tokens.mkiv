@@ -56,15 +56,15 @@ local report          = logs.reporter("tokens","collectors")
 -- flush    : print back to tex
 -- test     : fancy stuff
 
-local get_next     = token.scan_next or token.get_next
-local create_token = token.create
+local get_next_token = tokens.scanners.next
+local create_token   = tokens.create
 
 function collectors.install(tag,end_cs)
     local data, d = { }, 0
     collectordata[tag] = data
     end_cs = gsub(end_cs,"^\\","")
     while true do
-        local t = get_next()
+        local t = get_next_token()
         if t.csname == end_cs then
             context[end_cs]()
             return
@@ -93,20 +93,20 @@ function collectors.show(data)
     local ctx_verbatim = context.verbatim
     local function show(data)
         for i=1,#data do
-            local token = data[i]
-            if type(token) == "table" then
-                show(token)
+            local tok = data[i]
+            if type(tok) == "table" then
+                show(tok)
             else
-                local cmdname = token.cmdname
+                local cmdname = tok.cmdname
                 local simple  = simple[cmdname]
                 ctx_NC()
                 ctx_verbatim(simple or cmdname)
                 ctx_NC()
-                ctx_verbatim(simple and utfchar(token.index) or token.csname)
+                ctx_verbatim(simple and utfchar(tok.index) or tok.csname)
                 ctx_NC()
-                if token.active     then context("active ") end
-                if token.expandable then context("expandable ") end
-                if token.protected  then context("protected ") end
+                if tok.active     then context("active ") end
+                if tok.expandable then context("expandable ") end
+                if tok.protected  then context("protected ") end
                 ctx_NC()
                 ctx_NR()
             end

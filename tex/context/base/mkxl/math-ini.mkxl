@@ -102,12 +102,6 @@
 \permanent\def\Umathtopaccent{\Umathaccent \s!top    }
 \permanent\def\Umathaccents  {\Umathaccent \s!both   } % strange highlighting
 
-\ifdefined\Umathcharclass \else
-    \permanent\def\Umathcharclass{\numexpr\cldcontext{tex.getmathcode(token.scan_int())[1]}\relax}
-    \permanent\def\Umathcharfam  {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[2]}\relax}
-    \permanent\def\Umathcharslot {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[3]}\relax}
-\fi
-
 %D The attributes that we will use (todo: pack some into one but uglier code):
 
 \definesystemattribute[mathalphabet]   [public]

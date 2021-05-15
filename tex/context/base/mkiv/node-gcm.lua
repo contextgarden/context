@@ -8,37 +8,37 @@ if not modules then modules = { } end modules ['node-gmc'] = {
 
 local type, tostring = type, tostring
 
-local nodes          = nodes
-local nodecodes      = nodes.nodecodes
-local ligature_code  = nodes.glyphcodes.ligature
-local nuts           = nodes.nuts
+local nodes         = nodes
+local nodecodes     = nodes.nodecodes
+local ligature_code = nodes.glyphcodes.ligature
+local nuts          = nodes.nuts
 
-local getnext        = nuts.getnext
-local getsubtype     = nuts.getsubtype
-local getprev        = nuts.getprev
-local setlink        = nuts.setlink
-local nextglyph      = nuts.traversers.glyph
-local copy_node      = nuts.copy
-local isglyph        = nuts.isglyph
+local getnext       = nuts.getnext
+local getsubtype    = nuts.getsubtype
+local getprev       = nuts.getprev
+local setlink       = nuts.setlink
+local nextglyph     = nuts.traversers.glyph
+local copynode      = nuts.copy
+local isglyph       = nuts.isglyph
 
-local report_error   = logs.reporter("node-aux:error")
+local report_error  = logs.reporter("node-aux:error")
 
-local get_components = node.direct.getcomponents
-local set_components = node.direct.setcomponents
+local getcomponents = node.direct.getcomponents
+local setcomponents = node.direct.setcomponents
 
-local function copy_no_components(g,copyinjection)
-    local components = get_components(g)
+local function copynocomponents(g,copyinjection)
+    local components = getcomponents(g)
     if components then
-        set_components(g)
-        local n = copy_node(g)
+        setcomponents(g)
+        local n = copynode(g)
         if copyinjection then
             copyinjection(n,g)
         end
-        set_components(g,components)
+        setcomponents(g,components)
         -- maybe also upgrade the subtype but we don't use it anyway
         return n
     else
-        local n = copy_node(g)
+        local n = copynode(g)
         if copyinjection then
             copyinjection(n,g)
         end
@@ -46,11 +46,11 @@ local function copy_no_components(g,copyinjection)
     end
 end
 
-local function copy_only_glyphs(current)
+local function copyonlyglyphs(current)
     local head     = nil
     local previous = nil
     for n in nextglyph, current do
-        n = copy_node(n)
+        n = copynode(n)
         if head then
             setlink(previous,n)
         else
@@ -63,14 +63,14 @@ end
 
 -- start is a mark and we need to keep that one
 
-local function count_components(start,marks)
+local function countcomponents(start,marks)
     local char = isglyph(start)
     if char then
         if getsubtype(start) == ligature_code then
             local n = 0
-            local components = get_components(start)
+            local components = getcomponents(start)
             while components do
-                n = n + count_components(components,marks)
+                n = n + countcomponents(components,marks)
                 components = getnext(components)
             end
             return n
@@ -81,16 +81,18 @@ local function count_components(start,marks)
     return 0
 end
 
-local function flush_components()
+local function flushcomponents()
     -- this is a no-op in mkiv / generic
 end
 
-nuts.set_components     = set_components
-nuts.get_components     = get_components
-nuts.copy_only_glyphs   = copy_only_glyphs
-nuts.copy_no_components = copy_no_components
-nuts.count_components   = count_components
-nuts.flush_components   = flush_components
+nuts.components = {
+    set              = setcomponents,
+    get              = getcomponents,
+    copyonlyglyphs   = copyonlyglyphs,
+    copynocomponents = copynocomponents,
+    count            = countcomponents,
+    flush            = flushcomponents,
+}
 
 nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
 nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end

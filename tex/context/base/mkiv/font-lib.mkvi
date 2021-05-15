@@ -52,9 +52,9 @@
 % \ifcase\directlua{tex.print(callback.list()["provide_charproc_data"] == false and 1 or 0)}\relax
 %     % this is the generic variant that will become luatex-fonts-ocl once we have
 %     % more recent versions of luatex 1.13/1.14 on the garden
-    \registerctxluafile{font-ocl}{}
+%     \registerctxluafile{font-ocl}{}
 % \else
-%     \registerctxluafile{font-ocm}{}
+    \registerctxluafile{font-ocm}{}
 % \fi
 
 % we use otf code for type one

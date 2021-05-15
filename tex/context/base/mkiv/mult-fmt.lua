@@ -11,12 +11,12 @@ local concat, sortedhash = table.concat, table.sortedhash
 local sub, formatters = string.sub, string.formatters
 local utfsplit = utf.split
 
-local prtcatcodes     = catcodes.numbers.prtcatcodes
-local contextsprint   = context.sprint
-local implement       = interfaces.implement
+local prtcatcodes        = catcodes.numbers.prtcatcodes
+local contextsprint      = context.sprint
+local implement          = interfaces.implement
 
-local setmacro        = token.set_macro
-local definedmacro    = token.is_defined
+local setmacro           = token.setmacro  or token.set_macro
+local definedmacro       = token.isdefined or token.is_defined
 
 local report             = logs.reporter("interface")
 local report_interface   = logs.reporter("interface","initialization")

@@ -15,7 +15,7 @@ local nextchar            = nuts.traversers.char
 local getattr             = nuts.getattr
 local setchar             = nuts.setchar
 
-local insert_before       = nuts.insert_before
+local insertbefore        = nuts.insertbefore
 local copy_node           = nuts.copy
 
 local texsetattribute     = tex.setattribute
@@ -97,7 +97,7 @@ function transliteration.handler(head)
                         for i = n-1,1,-1 do
                             local g = copy_node(current)
                             setchar(g,t[i])
-                            head, p = insert_before(head, p, g)
+                            head, p = insertbefore(head, p, g)
                         end
                     end
                 end

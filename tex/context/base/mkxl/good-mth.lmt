@@ -36,7 +36,7 @@ local new_glyph          = nodepool.glyph
 local new_hlist          = nodepool.hlist
 local new_vlist          = nodepool.vlist
 
-local insert_node_after  = nuts.insert_after
+local insertnodeafter    = nuts.insertafter
 
 local helpers            = fonts.helpers
 local upcommand          = helpers.commands.up
@@ -367,7 +367,7 @@ local function mathradicalaction(n,h,v,font,mchar,echar)
     local kern   = new_kern(height-v)
     list = setlink(kern,list)
     local list = new_vlist(kern)
-    insert_node_after(n,n,list)
+    insertnodeafter(n,n,list)
 end
 
 local function mathhruleaction(n,h,v,font,bchar,mchar,echar)
@@ -403,7 +403,7 @@ local function mathhruleaction(n,h,v,font,bchar,mchar,echar)
     local kern   = new_kern(height-v)
     list = setlink(kern,list)
     local list = new_vlist(kern)
-    insert_node_after(n,n,list)
+    insertnodeafter(n,n,list)
 end
 
 local function initialize(tfmdata)

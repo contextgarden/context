@@ -28,8 +28,8 @@ local nextdir           = nuts.traversers.dir
 local nextlist          = nuts.traversers.list
 
 local rangedimensions   = nuts.rangedimensions
-local insert_before     = nuts.insert_before
-local insert_after      = nuts.insert_after
+local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
 
 local new_rule          = nuts.pool.rule
 local new_kern          = nuts.pool.kern
@@ -61,8 +61,8 @@ local function colorit(list,current,dir,w,h,d)
     local color = dir == lefttoright_code and "trace:s" or "trace:o"
     setcolor(rule,color)
     settransparency(rule,color)
-    list, current = insert_before(list,current,kern)
-    list, current = insert_before(list,current,rule)
+    list, current = insertbefore(list,current,kern)
+    list, current = insertbefore(list,current,rule)
     return list, current
 end
 

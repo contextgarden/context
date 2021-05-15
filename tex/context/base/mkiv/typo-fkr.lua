@@ -18,7 +18,7 @@ local glyph_code    = nodecodes.glyph
 local fontdata      = fonts.hashes.identifiers
 local getkernpair   = fonts.handlers.otf.getkern
 
-local insert_before = nuts.insert_before
+local insertbefore  = nuts.insertbefore
 local new_kern      = nuts.pool.fontkern
 
 local enableaction  = nodes.tasks.enableaction
@@ -56,7 +56,7 @@ function typesetters.fontkerns.handler(head)
                             kern = (kern1 + kern2)/2                -- mixed
                         end
                         if kern ~= 0 then
-                            head, current = insert_before(head,current,new_kern(kern))
+                            head, current = insertbefore(head,current,new_kern(kern))
                         end
                         lastdata = data
                     else
@@ -68,7 +68,7 @@ function typesetters.fontkerns.handler(head)
                     end
                     local kern = getkernpair(lastdata,lastchar,char)
                     if kern ~= 0 then
-                        head, current = insert_before(head,current,new_kern(kern))
+                        head, current = insertbefore(head,current,new_kern(kern))
                     end
                 end
                 lastchar = char

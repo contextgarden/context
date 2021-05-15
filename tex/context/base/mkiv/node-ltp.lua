@@ -220,7 +220,7 @@ local getpre                  = nuts.getpre
 local setpre                  = nuts.setpre
 
 local isglyph                 = nuts.isglyph
-local start_of_par            = nuts.start_of_par
+local startofpar              = nuts.startofpar
 
 local setfield                = nuts.setfield
 local setlink                 = nuts.setlink
@@ -240,16 +240,16 @@ local setexpansion            = nuts.setexpansion
 
 local find_tail               = nuts.tail
 local copy_node               = nuts.copy
-local flush_node              = nuts.flush
-local flush_node_list         = nuts.flush_list
+local flushnode               = nuts.flush
+local flushnodelist           = nuts.flushlist
 ----- hpack_nodes             = nuts.hpack
 local xpack_nodes             = nuts.hpack
 local replace_node            = nuts.replace
 local remove_node             = nuts.remove
-local insert_node_after       = nuts.insert_after
-local insert_node_before      = nuts.insert_before
-local is_zero_glue            = nuts.is_zero_glue
-local is_skipable             = nuts.protrusion_skippable
+local insertnodeafter         = nuts.insertafter
+local insertnodebefore        = nuts.insertbefore
+local iszeroglue              = nuts.iszeroglue
+local protrusionskippable     = nuts.protrusionskippable
 local setattributelist        = nuts.setattributelist
 local find_node               = nuts.find_node
 
@@ -386,7 +386,7 @@ local function inject_dirs_at_begin_of_line(stack,current)
         for i=1,n do
             local d = new_direction(stack[i])
             setattributelist(d,current)
-            h, current = insert_node_after(h,current,d)
+            h, current = insertnodeafter(h,current,d)
         end
         stack.n = 0
         return h
@@ -421,14 +421,14 @@ end
         for i=n,1,-1 do
             local d = new_direction(stack[i],true)
             setattributelist(d,start)
-            h, current = insert_node_after(h,current,d)
+            h, current = insertnodeafter(h,current,d)
         end
     end
     stack.n = n
     return current
 end
 
-local ignore_math_skip = node.direct.ignore_math_skip or function(current)
+local ignoremathskip = nuts.ignoremathskip or function(current)
     local mode = texget("mathskipmode")
     if mode == 6 or mode == 7 then
         local b = true
@@ -744,7 +744,7 @@ local function find(head) -- do we really want to recurse into an hlist?
             else
                 return head
             end
-        elseif is_skipable(head) then
+        elseif protrusionskippable(head) then
             head = getnext(head)
         else
             return head
@@ -798,7 +798,7 @@ local function find(head,tail)
             else
                 return tail
             end
-        elseif is_skipable(tail) then
+        elseif protrusionskippable(tail) then
             tail = getprev(tail)
         else
             return tail
@@ -1010,7 +1010,7 @@ do
     end
 
     local function used_skip(s)
-        return s and not is_zero_glue(s) and s
+        return s and not iszeroglue(s) and s
     end
 
     local function initialize_line_break(head,display)
@@ -1357,7 +1357,7 @@ do
                             report_parbuilders('unsupported disc at location %a',3)
                         end
                         if pre then
-                            flush_node_list(pre)
+                            flushnodelist(pre)
                             pre = nil -- signal
                         end
                         if replace then
@@ -1368,13 +1368,13 @@ do
                         setdisc(lastnode,pre,post,replace)
                         local pre, post, replace = getdisc(prevlast)
                         if pre then
-                            flush_node_list(pre)
+                            flushnodelist(pre)
                         end
                         if replace then
-                            flush_node_list(replace)
+                            flushnodelist(replace)
                         end
                         if post then
-                            flush_node_list(post)
+                            flushnodelist(post)
                         end
                         setdisc(prevlast) -- nil,nil,nil
                     elseif subtype == firstdisc_code then
@@ -1387,7 +1387,7 @@ do
                         setpost(lastnode)
                     end
                     if replace then
-                        flush_node_list(replace)
+                        flushnodelist(replace)
                     end
                     if pre then
                         setlink(prevlast,pre)
@@ -1414,7 +1414,7 @@ do
             lastnode = inject_dirs_at_end_of_line(dirstack,lastnode,getnext(head),current_break.cur_break)
             local rightbox = current_break.passive_right_box
             if rightbox then
-                lastnode = insert_node_after(lastnode,lastnode,copy_node(rightbox))
+                lastnode = insertnodeafter(lastnode,lastnode,copy_node(rightbox))
             end
             if not lineend then
                 lineend = lastnode
@@ -1495,8 +1495,8 @@ do
                             -- so we inherit attributes, lineend is new pseudo head
                             local k = new_rightmarginkern(copy_node(last_rightmost_char),-w)
                             setattributelist(k,p)
---                             insert_node_after(c,c,k)
-                            insert_node_after(p,p,k)
+--                             insertnodeafter(c,c,k)
+                            insertnodeafter(p,p,k)
 --                             if c == lineend then
 --                                 lineend = getnext(c)
 --                             end
@@ -1512,7 +1512,7 @@ do
             if not glue_break then
                 local rs = new_rightskip(unpack(rightskip))
                 setattributelist(rs,lineend)
-                start, lineend = insert_node_after(start,lineend,rs)
+                start, lineend = insertnodeafter(start,lineend,rs)
             end
             local rs = lineend
             -- insert leftbox (if needed after parindent)
@@ -1520,9 +1520,9 @@ do
             if leftbox then
                 local first = getnext(start)
                 if first and current_line == (par.first_line + 1) and getid(first) == hlist_code and not getlist(first) then
-                    insert_node_after(start,start,copy_node(leftbox))
+                    insertnodeafter(start,start,copy_node(leftbox))
                 else
-                    start = insert_node_before(start,start,copy_node(leftbox))
+                    start = insertnodebefore(start,start,copy_node(leftbox))
                 end
             end
             if protrude_chars > 0 then
@@ -1534,7 +1534,7 @@ do
                             if last_leftmost_char and w ~= 0 then
                                 local k = new_rightmarginkern(copy_node(last_leftmost_char),-w)
                                 setattributelist(k,p)
-                                start = insert_node_before(start,start,k)
+                                start = insertnodebefore(start,start,k)
                             end
                         end
                     end
@@ -1546,7 +1546,7 @@ do
                             -- so we inherit attributes, start is pseudo head and moves back
                             local k = new_leftmarginkern(copy_node(last_leftmost_char),-w)
                             setattributelist(k,p)
-                            start = insert_node_before(start,start,k)
+                            start = insertnodebefore(start,start,k)
                         end
                     end
                 end
@@ -1556,7 +1556,7 @@ do
                 -- we could check for non zero but we will normalize anyway
                 ls = new_leftskip(unpack(leftskip))
                 setattributelist(ls,start)
-                start = insert_node_before(start,start,ls)
+                start = insertnodebefore(start,start,ls)
             end
             if normalize > 0 then
                 local par       = nil
@@ -1570,7 +1570,7 @@ do
                             indent = n
                         end
                     elseif id == par_code then
-                        if start_of_par(n) then --- maybe subtype check instead
+                        if startofpar(n) then --- maybe subtype check instead
                             par = n
                         elseif noflocals then
                             noflocals = noflocals + 1
@@ -1635,11 +1635,11 @@ do
                 setattributelist(r,start)
                 if normalize > 3 then
                     -- makes most sense
-                    start = insert_node_after(start,ls,l)
-                    start = insert_node_before(start,rs,r)
+                    start = insertnodeafter(start,ls,l)
+                    start = insertnodebefore(start,rs,r)
                 else
-                    start = insert_node_before(start,ls,l)
-                    start = insert_node_after(start,rs,r)
+                    start = insertnodebefore(start,ls,l)
+                    start = insertnodeafter(start,rs,r)
                 end
                 cur_width = hsize
                 cur_indent = 0
@@ -1740,7 +1740,7 @@ do
                 end
                 if current ~= head then
                     setnext(current)
-                    flush_node_list(getnext(head))
+                    flushnodelist(getnext(head))
                     setlink(head,next)
                 end
             end
@@ -1759,7 +1759,7 @@ par.head = head
                     report_parbuilders("no local par node")
                 end
             end
-            flush_node(h)
+            flushnode(h)
             par.head = nil -- needs checking
         end
         current_line = current_line - 1
@@ -1799,7 +1799,7 @@ par.head = head
             if next then
                 setprev(next)
             end
-            flush_node(head)
+            flushnode(head)
         end
         post_line_break(par)
         reset_meta(par)
@@ -2600,7 +2600,7 @@ par.head = head
                     end
                 elseif id == math_code then
                     auto_breaking = getsubtype(current) == endmath_code
-                    if is_zero_glue(current) or ignore_math_skip(current) then
+                    if iszeroglue(current) or ignoremathskip(current) then
                         local v = getnext(current)
                         if auto_breaking and getid(v) == glue_code then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
@@ -3090,7 +3090,7 @@ do
                     end
                     natural = natural + wd
                 elseif id == math_code then
-                    if is_zero_glue(current) or ignore_math_skip(current) then
+                    if iszeroglue(current) or ignoremathskip(current) then
                         natural = natural + getkern(current)
                     else
                         local wd, stretch, shrink, stretch_order, shrink_order = getglue(current)
@@ -3272,7 +3272,7 @@ do
                                 if p and getid(p) == marginkern_code then
                                     found = p
                                 end
-                                insert_node_before(head,found,g)
+                                insertnodebefore(head,found,g)
                             end
                         end
                     end

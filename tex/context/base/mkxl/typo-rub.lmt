@@ -49,7 +49,6 @@ local getwidth        = nuts.getwidth
 local setwidth        = nuts.setwidth
 
 local hpack           = nuts.hpack
-local insert_after    = nuts.insert_after
 local takebox         = nuts.takebox
 
 local nextlist        = nuts.traversers.list

@@ -39,7 +39,7 @@ local setpenalty          = nuts.setpenalty
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 
-local insert_node_after   = nuts.insert_after
+local insertnodeafter     = nuts.insertafter
 local new_penalty         = nuts.pool.penalty
 
 local trace_keeptogether  = false
@@ -129,7 +129,7 @@ local function keeptogether(start,a,specification)
                 if getid(previous) == penalty_code then
                     setpenalty(previous,10000)
                 else
-                    insert_node_after(head,previous,new_penalty(10000))
+                    insertnodeafter(head,previous,new_penalty(10000))
                 end
             else
                 break
@@ -144,7 +144,7 @@ local function keeptogether(start,a,specification)
                 if getid(previous) == penalty_code then
                     setpenalty(previous,10000)
                 else
-                    insert_node_after(head,previous,new_penalty(10000))
+                    insertnodeafter(head,previous,new_penalty(10000))
                 end
             else
                 break
@@ -158,7 +158,7 @@ local function keeptogether(start,a,specification)
                 if getid(previous) == penalty_code then
                     setpenalty(previous,10000)
                 else
-                    insert_node_after(head,previous,new_penalty(10000))
+                    insertnodeafter(head,previous,new_penalty(10000))
                 end
             else
                 break

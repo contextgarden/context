@@ -36,7 +36,7 @@
 
 %D Todo: as in bidi mode we need a way to globally keep the setting.
 
-\registerctxluafile{scrp-ini}{}
+\registerctxluafile{scrp-ini}{autosuffix}
 \registerctxluafile{scrp-cjk}{}
 \registerctxluafile{scrp-eth}{}
 \registerctxluafile{scrp-tha}{}

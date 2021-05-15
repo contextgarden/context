@@ -70,11 +70,11 @@ local setbox           = nuts.setbox
 local setchar          = nuts.setchar
 local setsubtype       = nuts.setsubtype
 
-local copy_node_list   = nuts.copy_list
-local hpack_node_list  = nuts.hpack
-local flush_node_list  = nuts.flush_list
-local protect_glyphs   = nuts.protect_glyphs
-local start_of_par     = nuts.start_of_par
+local copy_node_list   = nuts.copylist
+local hpacknodelist    = nuts.hpack
+local flushnodelist    = nuts.flushlist
+local protectglyphs    = nuts.protectglyphs
+local startofpar       = nuts.startofpar
 
 local nextnode         = nuts.traversers.node
 local nextglyph        = nuts.traversers.glyph
@@ -144,7 +144,7 @@ function step_tracers.reset()
     for i=1,#collection do
         local c = collection[i]
         if c then
-            flush_node_list(c)
+            flushnodelist(c)
         end
     end
     collection, messages = { }, { }
@@ -158,7 +158,7 @@ function step_tracers.glyphs(n,i)
     local c = collection[i]
     if c then
         local c = copy_node_list(c)
-        local b = hpack_node_list(c) -- multiple arguments
+        local b = hpacknodelist(c) -- multiple arguments
         setbox(n,b)
     end
 end
@@ -266,7 +266,7 @@ function step_tracers.codes(i,command,space)
         local char, id = isglyph(c)
         if char then
             showchar(char,id)
-        elseif id == dir_code or (id == par_code and start_of_par(c)) then
+        elseif id == dir_code or (id == par_code and startofpar(c)) then
             context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
@@ -317,7 +317,7 @@ function step_tracers.check(head)
         if l then -- hm, can be false
             n = l
         end
-        protect_glyphs(n)
+        protectglyphs(n)
         collection[1] = n
     end
 end
@@ -333,7 +333,7 @@ function step_tracers.register(head)
             if l then -- hm, can be false
                 n = l
             end
-            protect_glyphs(n)
+            protectglyphs(n)
             collection[nc] = n
         end
     end

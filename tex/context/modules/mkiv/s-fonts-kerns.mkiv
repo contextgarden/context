@@ -30,31 +30,6 @@
     local glyph_code = nodecodes.glyph
     local hlist_code = nodecodes.hlist
 
- -- local function flatten(l)
- --     while l do
- --         local id = l.id
- --         if id == disc_code then
- --             local r = l.replace
- --             if r then
- --                 local p = l.prev
- --                 local n = l.next
- --                 if n and p and n.id == glyph_code and p.id == glyph_code then
- --                     local s = node.slide(r)
- --                     p.next = r
- --                     n.prev = s
- --                     r.prev = p
- --                     s.next= n
- --                     l.replace = nil
- --                     node.free(l)
- --                 end
- --             end
- --         elseif id == hlist_code then
- --             flatten(l.list)
- --         end
- --         l = l.next
- --     end
- -- end
-
     local function mark(l,c)
         while l do
             local id = l.id
@@ -90,7 +65,7 @@
             local id = l.id
             if id == kern_code then
                 i = i + 1
-                node.insert_before(x,l,node.copy(m[i]))
+                nodes.insertbefore(x,l,node.copy(m[i]))
             elseif id == disc_code then
                 i = inject(l.pre,m,i)
                 i = inject(l.post,m,i)

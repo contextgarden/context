@@ -388,7 +388,7 @@ local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailin
             if trace_colors then
                 resetcolor(g)
             end
-            setlink(current,g,getnext(current)) -- insert_before
+            setlink(current,g,getnext(current))
             current = g
             copied  = true
         else

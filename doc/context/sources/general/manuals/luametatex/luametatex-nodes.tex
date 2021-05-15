@@ -350,7 +350,7 @@ suits the \TEX\ internals well so we decided to stick to that naming.
 The effective width of some glue subtypes depends on the stretch or shrink needed
 to make the encapsulating box fit its dimensions. For instance, in a paragraph
 lines normally have glue representing spaces and these stretch or shrink to make
-the content fit in the available space. The \type {effective_glue} function that
+the content fit in the available space. The \type {effectiveglue} function that
 takes a glue node and a parent (hlist or vlist) returns the effective width of
 that glue item. When you pass \type {true} as third argument the value will be
 rounded.
@@ -1027,10 +1027,10 @@ there is no node with that id.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {fields} and \type {has_field}}]
+\startsubsubsection[title={\type {fields} and \type {hasfield}}]
 
 \libindex {fields}
-\libindex {has_field}
+\libindex {hasfield}
 
 This function returns an indexed table with valid field names for a particular
 type of node.
@@ -1043,11 +1043,11 @@ The function accepts a string or number, so \typ {node.fields ("glyph")} returns
 \inlineluavalue { node.fields ("glyph") } and \typ {node.fields (12)} gives
 \inlineluavalue { node.fields (12) }.
 
-The \type {has_field} function returns a boolean that is only true if \type {n}
+The \type {hasfield} function returns a boolean that is only true if \type {n}
 is actually a node, and it has the field.
 
 \startfunctioncall
-<boolean> t = node.has_field(<node> n, <string> field)
+<boolean> t = node.hasfield(<node> n, <string> field)
 \stopfunctioncall
 
 This function probably is not that useful but some nodes don't have a \type
@@ -1090,11 +1090,11 @@ back somehow.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {free}, \type {flush_node} and \type {flush_list}}]
+\startsubsubsection[title={\type {free}, \type {flushnode} and \type {flushlist}}]
 
 \libindex{free}
-\libindex{flush_node}
-\libindex{flush_list}
+\libindex{flushnode}
+\libindex{flushlist}
 
 The next one frees node \type {n} from \TEX's memory. Be careful: no checks are
 done on whether this node is still pointed to from a register or some \type
@@ -1104,11 +1104,11 @@ you used their content for something else you need to set them to nil first.
 
 \startfunctioncall
 <node> next = node.free(<node> n)
-flush_node(<node> n)
+flushnode(<node> n)
 \stopfunctioncall
 
 The \type {free} function returns the next field of the freed node, while the
-\type {flush_node} alternative returns nothing.
+\type {flushnode} alternative returns nothing.
 
 A list starting with node \type {n} can be flushed from \TEX's memory too. Be
 careful: no checks are done on whether any of these nodes is still pointed to
@@ -1116,19 +1116,19 @@ from a register or some \type {next} field: it is up to you to make sure that th
 internal data structures remain correct.
 
 \startfunctioncall
-node.flush_list(<node> n)
+node.flushlist(<node> n)
 \stopfunctioncall
 
-When you free for instance a discretionary node, \type {flush_list} is applied to
+When you free for instance a discretionary node, \type {flushlist} is applied to
 the \type {pre}, \type {post}, \type {replace} so you don't need to do that
 yourself. Assigning them \type {nil} won't free those lists!
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {copy} and \type {copy_list}}]
+\startsubsubsection[title={\type {copy} and \type {copylist}}]
 
 \libindex{copy}
-\libindex{copy_list}
+\libindex{copylist}
 
 This creates a deep copy of node \type {n}, including all nested lists as in the case
 of a hlist or vlist node. Only the \type {next} field is not copied.
@@ -1141,8 +1141,8 @@ A deep copy of the node list that starts at \type {n} can be created too. If
 \type {m} is also given, the copy stops just before node \type {m}.
 
 \startfunctioncall
-<node> m = node.copy_list(<node> n)
-<node> m = node.copy_list(<node> n, <node> m)
+<node> m = node.copylist(<node> n)
+<node> m = node.copylist(<node> n, <node> m)
 \stopfunctioncall
 
 Note that you cannot copy attribute lists this way. However, there is normally no
@@ -1248,12 +1248,12 @@ changed. When the third argument is passed, the node is freed.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {insert_before}}]
+\startsubsubsection[title={\type {insertbefore}}]
 
-\libindex {insert_before}
+\libindex {insertbefore}
 
 \startfunctioncall
-<node> head, new = node.insert_before(<node> head, <node> current, <node> new)
+<node> head, new = node.insertbefore(<node> head, <node> current, <node> new)
 \stopfunctioncall
 
 This function inserts the node \type {new} before \type {current} into the list
@@ -1265,12 +1265,12 @@ will become \type {new}.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {insert_after}}]
+\startsubsubsection[title={\type {insertafter}}]
 
-\libindex {insert_after}
+\libindex {insertafter}
 
 \startfunctioncall
-<node> head, new = node.insert_after(<node> head, <node> current, <node> new)
+<node> head, new = node.insertafter(<node> head, <node> current, <node> new)
 \stopfunctioncall
 
 This function inserts the node \type {new} after \type {current} into the list
@@ -1281,12 +1281,12 @@ field). If \type {head} is initially \type {nil}, it will become \type {new}.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {last_node}}]
+\startsubsubsection[title={\type {lastnode}}]
 
-\libindex {last_node}
+\libindex {lastnode}
 
 \startfunctioncall
-<node> n = node.last_node()
+<node> n = node.lastnode()
 \stopfunctioncall
 
 This function pops the last node from \TEX's \quote{current list}. It returns
@@ -1559,15 +1559,15 @@ glue and the sign.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {is_zero_glue}}]
+\startsubsubsection[title={\type {iszeroglue}}]
 
-\libindex {is_zero_glue}
+\libindex {iszeroglue}
 
 This function returns \type {true} when the width, stretch and shrink properties
 are zero.
 
 \startfunctioncall
-<boolean> isglue = node.is_zero_glue(<node> n)
+<boolean> isglue = node.iszeroglue(<node> n)
 \stopfunctioncall
 
 \stopsubsubsection
@@ -1626,23 +1626,23 @@ and there is no double linked list.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {current_attr}}]
+\startsubsubsection[title={\type {currentattr}}]
 
-\libindex{current_attr}
+\libindex{currentattr}
 
 This returns the currently active list of attributes, if there is one.
 
 \startfunctioncall
-<node> m = node.current_attr()
+<node> m = node.currentattr()
 \stopfunctioncall
 
-The intended usage of \type {current_attr} is as follows:
+The intended usage of \type {currentattr} is as follows:
 
 \starttyping
 local x1 = node.new("glyph")
-x1.attr = node.current_attr()
+x1.attr = node.currentattr()
 local x2 = node.new("glyph")
-x2.attr = node.current_attr()
+x2.attr = node.currentattr()
 \stoptyping
 
 or:
@@ -1650,7 +1650,7 @@ or:
 \starttyping
 local x1 = node.new("glyph")
 local x2 = node.new("glyph")
-local ca = node.current_attr()
+local ca = node.currentattr()
 x1.attr = ca
 x2.attr = ca
 \stoptyping
@@ -1662,13 +1662,13 @@ passed back to \TEX.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {has_attribute}}]
+\startsubsubsection[title={\type {hasattribute}}]
 
-\libindex {has_attribute}
+\libindex {hasattribute}
 
 \startfunctioncall
-<number> v = node.has_attribute(<node> n, <number> id)
-<number> v = node.has_attribute(<node> n, <number> id, <number> val)
+<number> v = node.hasattribute(<node> n, <number> id)
+<number> v = node.hasattribute(<node> n, <number> id, <number> val)
 \stopfunctioncall
 
 Tests if a node has the attribute with number \type {id} set. If \type {val} is
@@ -1677,12 +1677,12 @@ or, if no match is found, \type {nil}.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {get_attribute}}]
+\startsubsubsection[title={\type {getattribute}}]
 
-\libindex {get_attribute}
+\libindex {getattribute}
 
 \startfunctioncall
-<number> v = node.get_attribute(<node> n, <number> id)
+<number> v = node.getattribute(<node> n, <number> id)
 \stopfunctioncall
 
 Tests if a node has an attribute with number \type {id} set. It returns the
@@ -1691,12 +1691,12 @@ zero attributes is assumed.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {find_attribute}}]
+\startsubsubsection[title={\type {findattribute}}]
 
-\libindex {find_attribute}
+\libindex {findattribute}
 
 \startfunctioncall
-<number> v, <node> n = node.find_attribute(<node> n, <number> id)
+<number> v, <node> n = node.findattribute(<node> n, <number> id)
 \stopfunctioncall
 
 Finds the first node that has attribute with number \type {id} set. It returns
@@ -1704,12 +1704,12 @@ the value and the node if there is a match and otherwise nothing.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {set_attribute}}]
+\startsubsubsection[title={\type {setattribute}}]
 
-\libindex {set_attribute}
+\libindex {setattribute}
 
 \startfunctioncall
-node.set_attribute(<node> n, <number> id, <number> val)
+node.setattribute(<node> n, <number> id, <number> val)
 \stopfunctioncall
 
 Sets the attribute with number \type {id} to the value \type {val}. Duplicate
@@ -1717,15 +1717,15 @@ assignments are ignored.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {unset_attribute}}]
+\startsubsubsection[title={\type {unsetattribute}}]
 
-\libindex {unset_attribute}
+\libindex {unsetattribute}
 
 \startfunctioncall
 <number> v =
-    node.unset_attribute(<node> n, <number> id)
+    node.unsetattribute(<node> n, <number> id)
 <number> v =
-    node.unset_attribute(<node> n, <number> id, <number> val)
+    node.unsetattribute(<node> n, <number> id, <number> val)
 \stopfunctioncall
 
 Unsets the attribute with number \type {id}. If \type {val} is also supplied, it
@@ -1741,13 +1741,13 @@ If the attribute was actually deleted, returns its old value. Otherwise, returns
 
 \startsubsection[title={Glyph handling}][library=node]
 
-\startsubsubsection[title={\type {first_glyph}}]
+\startsubsubsection[title={\type {firstglyph}}]
 
-\libindex {first_glyph}
+\libindex {firstglyph}
 
 \startfunctioncall
-<node> n = node.first_glyph(<node> n)
-<node> n = node.first_glyph(<node> n, <node> m)
+<node> n = node.firstglyph(<node> n)
+<node> n = node.firstglyph(<node> n, <node> m)
 \stopfunctioncall
 
 Returns the first node in the list starting at \type {n} that is a glyph node
@@ -1772,14 +1772,14 @@ or not.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {has_glyph}}]
+\startsubsubsection[title={\type {hasglyph}}]
 
-\libindex {has_glyph}
+\libindex {hasglyph}
 
 This function returns the first glyph or disc node in the given list:
 
 \startfunctioncall
-<node> n = node.has_glyph(<node> n)
+<node> n = node.hasglyph(<node> n)
 \stopfunctioncall
 
 \stopsubsubsection
@@ -1815,14 +1815,14 @@ word boundaries are possible).
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {unprotect_glyph[s]}}]
+\startsubsubsection[title={\type {unprotectglyph[s]}}]
 
-\libindex {unprotect_glyphs}
-\libindex {unprotect_glyph}
+\libindex {unprotectglyphs}
+\libindex {unprotectglyph}
 
 \startfunctioncall
-node.unprotect_glyph(<node> n)
-node.unprotect_glyphs(<node> n,[<node> n])
+node.unprotectglyph(<node> n)
+node.unprotectglyphs(<node> n,[<node> n])
 \stopfunctioncall
 
 Subtracts 256 from all glyph node subtypes. This and the next function are
@@ -1831,14 +1831,14 @@ processing. The second argument is optional and indicates the end of a range.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {protect_glyph[s]}}]
+\startsubsubsection[title={\type {protectglyph[s]}}]
 
-\libindex {protect_glyphs}
-\libindex {protect_glyph}
+\libindex {protectglyphs}
+\libindex {protectglyph}
 
 \startfunctioncall
-node.protect_glyph(<node> n)
-node.protect_glyphs(<node> n,[<node> n])
+node.protectglyph(<node> n)
+node.protectglyphs(<node> n,[<node> n])
 \stopfunctioncall
 
 Adds 256 to all glyph node subtypes in the node list starting at \type {n},
@@ -1849,12 +1849,12 @@ optional and indicates the end of a range.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {protrusion_skippable}}]
+\startsubsubsection[title={\type {protrusionskippable}}]
 
-\libindex {protrusion_skippable}
+\libindex {protrusionskippable}
 
 \startfunctioncall
-<boolean> skippable = node.protrusion_skippable(<node> n)
+<boolean> skippable = node.protrusionskippable(<node> n)
 \stopfunctioncall
 
 Returns \type {true} if, for the purpose of line boundary discovery when
@@ -1862,10 +1862,10 @@ character protrusion is active, this node can be skipped.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {check_discretionary}, \type {check_discretionaries}}]
+\startsubsubsection[title={\type {checkdiscretionary}, \type {checkdiscretionaries}}]
 
-\libindex{check_discretionary}
-\libindex{check_discretionaries}
+\libindex{checkdiscretionary}
+\libindex{checkdiscretionaries}
 
 When you fool around with disc nodes you need to be aware of the fact that they
 have a special internal data structure. As long as you reassign the fields when
@@ -1875,8 +1875,8 @@ the linebreak routine kicks in. You can call this function to check the list for
 issues with disc nodes.
 
 \startfunctioncall
-node.check_discretionary(<node> n)
-node.check_discretionaries(<node> head)
+node.checkdiscretionary(<node> n)
+node.checkdiscretionaries(<node> head)
 \stopfunctioncall
 
 The plural variant runs over all disc nodes in a list, the singular variant
@@ -1884,15 +1884,15 @@ checks one node only (it also checks if the node is a disc node).
 
 \stopsubsubsection
 
-\startsubsubsection[title={\type {flatten_discretionaries}}]
+\startsubsubsection[title={\type {flattendiscretionaries}}]
 
-\libindex {flatten_discretionaries}
+\libindex {flattendiscretionaries}
 
 This function will remove the discretionaries in the list and inject the replace
 field when set.
 
 \startfunctioncall
-<node> head, count = node.flatten_discretionaries(<node> n)
+<node> head, count = node.flattendiscretionaries(<node> n)
 \stopfunctioncall
 
 \stopsubsubsection
@@ -2040,18 +2040,18 @@ A simple and somewhat more efficient variant is this:
 
 \startsubsection[title={Math}][library=node]
 
-\startsubsubsection[title={\type {mlist_to_hlist}}]
+\startsubsubsection[title={\type {mlisttohlist}}]
 
-\libindex {mlist_to_hlist}
+\libindex {mlisttohlist}
 
 \startfunctioncall
 <node> h =
-    node.mlist_to_hlist(<node> n, <string> display_type, <boolean> penalties)
+    node.mlisttohlist(<node> n, <string> display_type, <boolean> penalties)
 \stopfunctioncall
 
 This runs the internal mlist to hlist conversion, converting the math list in
 \type {n} into the horizontal list \type {h}. The interface is exactly the same
-as for the callback \cbk {mlist_to_hlist}.
+as for the callback \cbk {mlisttohlist}.
 
 \stopsubsubsection
 
@@ -2204,28 +2204,28 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \starttabulate[|l|c|c|]
 \DB function \BC node \BC direct \NC emulated \NC \NR
 \TB
-\supported {check_discretionaries}   \nop \yes \yes
-\supported {check_discretionary}     \nop \yes \yes
-\supported {copy_list}               \yes \yes \relax
-%supported {copy_only}               \nop \yes \relax
+\supported {checkdiscretionaries}    \nop \yes \yes
+\supported {checkdiscretionary}      \nop \yes \yes
+\supported {copylist}                \yes \yes \relax
+%supported {copyonly}                \nop \yes \relax
 \supported {copy}                    \yes \yes \relax
 \supported {count}                   \nop \yes \yes
-\supported {current_attributes}      \yes \yes \relax
+\supported {currentattributes}       \yes \yes \relax
 \supported {dimensions}              \nop \yes \yes
-\supported {effective_glue}          \nop \yes \yes
-\supported {end_of_math}             \nop \yes \yes
-\supported {find_attribute_range}    \nop \yes \relax
-\supported {find_attribute}          \nop \yes \yes
-\supported {find_node}               \nop \yes \relax
-\supported {first_glyph}             \nop \yes \yes
-\supported {flatten_discretionaries} \nop \yes \yes
-\supported {flush_list}              \yes \yes \relax
-\supported {flush_node}              \yes \yes \relax
+\supported {effectiveglue}           \nop \yes \yes
+\supported {endofmath}               \nop \yes \yes
+\supported {findattributerange}      \nop \yes \relax
+\supported {findattribute}           \nop \yes \yes
+\supported {findnode}                \nop \yes \relax
+\supported {firstglyph}              \nop \yes \yes
+\supported {flattendiscretionaries}  \nop \yes \yes
+\supported {flushlist}               \yes \yes \relax
+\supported {flushnode}               \yes \yes \relax
 \supported {free}                    \yes \yes \relax
-\supported {get_attributes}          \nop \yes \relax
-\supported {get_attribute}           \yes \yes \relax
-\supported {get_properties_table}    \yes \yes \relax
-\supported {get_synctex_fields}      \nop \yes \relax
+\supported {getattributes}           \nop \yes \relax
+\supported {getattribute}            \yes \yes \relax
+\supported {getpropertiestable}      \yes \yes \relax
+\supported {getsynctexfields}        \nop \yes \relax
 \supported {getattributelist}        \nop \yes \relax
 \supported {getboth}                 \nop \yes \relax
 \supported {getbox}                  \nop \yes \relax
@@ -2280,44 +2280,44 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {getxscale}               \nop \yes \relax
 \supported {getxyscale}              \nop \yes \relax
 \supported {getyscale}               \nop \yes \relax
-\supported {has_attribute}           \yes \yes \relax
-\supported {has_dimensions}          \nop \yes \relax
-\supported {has_field}               \yes \yes \relax
-\supported {has_glyph_option}        \nop \yes \yes
-\supported {has_glyph}               \nop \yes \yes
+\supported {hasattribute}            \yes \yes \relax
+\supported {hasdimensions}           \nop \yes \relax
+\supported {hasfield}                \yes \yes \relax
+\supported {hasglyphoption}          \nop \yes \yes
+\supported {hasglyph}                \nop \yes \yes
 \supported {hpack}                   \nop \yes \yes
 \supported {hyphenating}             \nop \yes \yes
-\supported {ignore_math_skip}        \nop \yes \relax
-\supported {insert_after}            \yes \yes \relax
-\supported {insert_before}           \yes \yes \relax
-\supported {is_char}                 \nop \yes \relax
-\supported {is_direct}               \nop \yes \relax
-\supported {is_glyph}                \nop \yes \relax
-\supported {is_next_char}            \nop \yes \relax
-\supported {is_next_glyph}           \nop \yes \relax
-\supported {is_node}                 \yes \yes \relax
-\supported {is_prev_char}            \nop \yes \relax
-\supported {is_prev_glyph}           \nop \yes \relax
-\supported {is_valid}                \nop \yes \relax
-\supported {is_zero_glue}            \nop \yes \yes
+\supported {ignoremathskip}          \nop \yes \relax
+\supported {insertafter}             \yes \yes \relax
+\supported {insertbefore}            \yes \yes \relax
+\supported {ischar}                  \nop \yes \relax
+\supported {isdirect}                \nop \yes \relax
+\supported {isglyph}                 \nop \yes \relax
+\supported {isnextchar}              \nop \yes \relax
+\supported {isnextglyph}             \nop \yes \relax
+\supported {isnode}                  \yes \yes \relax
+\supported {isprevchar}              \nop \yes \relax
+\supported {isprevglyph}             \nop \yes \relax
+\supported {isvalid}                 \nop \yes \relax
+\supported {iszeroglue}              \nop \yes \yes
 \supported {kerning}                 \nop \yes \yes
-\supported {last_node}               \nop \yes \yes
+\supported {lastnode}                \nop \yes \yes
 \supported {length}                  \nop \yes \yes
 \supported {ligaturing}              \nop \yes \yes
-\supported {make_extensible}         \nop \yes \yes
+\supported {makeextensible}          \nop \yes \yes
 \supported {migrate}                 \nop \yes \relax
-\supported {mlist_to_hlist}          \nop \yes \yes
+\supported {mlisttohlist}            \nop \yes \yes
 \supported {naturalwidth}            \nop \yes \yes
 \supported {new}                     \yes \yes \relax
 %supported {prepend_prevdepth}       \nop \yes \yes
-\supported {protect_glyphs}          \nop \yes \yes
-\supported {protect_glyph}           \nop \yes \yes
-\supported {protrusion_skippable}    \nop \yes \yes
+\supported {protectglyphs}           \nop \yes \yes
+\supported {protectglyph}            \nop \yes \yes
+\supported {protrusionskippable}     \nop \yes \yes
 \supported {rangedimensions}         \nop \yes \yes
 \supported {remove}                  \yes \yes \relax
-\supported {set_attributes}          \nop \yes \relax
-\supported {set_attribute}           \yes \yes \relax
-\supported {set_synctex_fields}      \nop \yes \relax
+\supported {setattributes}           \nop \yes \relax
+\supported {setattribute}            \yes \yes \relax
+\supported {setsynctexfields}        \nop \yes \relax
 \supported {setattributelist}        \nop \yes \relax
 \supported {setboth}                 \nop \yes \relax
 \supported {setbox}                  \nop \yes \relax
@@ -2365,7 +2365,7 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {setwhd}                  \nop \yes \relax
 \supported {setwidth}                \nop \yes \relax
 \supported {slide}                   \nop \yes \yes
-\supported {start_of_par}            \nop \yes \relax
+\supported {startofpar}              \nop \yes \relax
 \supported {subtype}                 \nop \nop \relax
 \supported {tail}                    \yes \yes \relax
 \supported {todirect}                \nop \yes \relax
@@ -2380,13 +2380,13 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {traverse_list}           \yes \yes \relax
 \supported {traverse}                \yes \yes \relax
 \supported {type}                    \yes \nop \relax
-\supported {unprotect_glyphs}        \nop \yes \yes
-\supported {unprotect_glyph}         \nop \yes \yes
-\supported {unset_attributes}        \nop \yes \relax
-\supported {unset_attribute}         \yes \yes \relax
+\supported {unprotectglyphs}         \nop \yes \yes
+\supported {unprotectglyph}          \nop \yes \yes
+\supported {unsetattributes}         \nop \yes \relax
+\supported {unsetattribute}          \yes \yes \relax
 \supported {usedlist}                \nop \yes \yes
-\supported {uses_font}               \nop \yes \yes
-\supported {vertical_break}          \nop \yes \relax
+\supported {usesfont}                \nop \yes \yes
+\supported {verticalbreak}           \nop \yes \relax
 \supported {vpack}                   \nop \yes \yes
 \supported {write}                   \yes \yes \relax
 \LL
@@ -2425,9 +2425,9 @@ number, for a glue, kern, hlist, vlist, rule and math nodes as well as glyph
 nodes (although this last one is not used in native \SYNCTEX).
 
 \startfunctioncall
-node.set_synctex_fields(<integer> f, <integer> l)
+node.setsynctexfields(<integer> f, <integer> l)
 <integer> f, <integer> l =
-    node.get_synctex_fields(<node> n)
+    node.getsynctexfields(<node> n)
 \stopfunctioncall
 
 Of course you need to know what you're doing as no checking on sane values takes
@@ -2477,9 +2477,8 @@ This is experimental code and might take a while to become frozen.
 \topicindex {nodes+properties}
 \topicindex {properties}
 
-\libindex{flush_properties_table}
-\libindex{get_properties_table}
-\libindex{set_properties_mode}
+\libindex{getpropertiestable}
+\libindex{setpropertiesmode}
 
 Attributes are a convenient way to relate extra information to a node. You can
 assign them at the \TEX\ end as well as at the \LUA\ end and consult them at the
@@ -2576,8 +2575,7 @@ with \CONTEXT\ uses the \type {injections} subtable and you should not mess with
 that one!
 
 There are a few helper functions that you normally should not touch as user: \typ
-{flush_properties_table} will wipe the table (normally a bad idea), \typ
-{get_properties_table} and will give the table that stores properties (using
+{getpropertiestable} and will give the table that stores properties (using
 direct entries) and you can best not mess too much with that one either because
 \LUATEX\ itself will make sure that entries related to nodes will get wiped when
 nodes get freed, so that the \LUA\ garbage collector can do its job. In fact, the

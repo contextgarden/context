@@ -18,8 +18,8 @@ local formatters      = string.formatters
 
 local a_help          = attributes.private("help")
 
-local copy_node_list  = node.copy_list
-local hpack_node_list = node.hpack
+local copy_node_list  = nodes.copylist
+local hpack_node_list = nodes.hpack
 
 local register_list   = nodes.pool.register
 

@@ -144,6 +144,7 @@
 		<cd:variable name='chemistry' value='chimie'/>
 		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='closed' value='ferme'/>
+		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='couleur'/>
 		<cd:variable name='column' value='colonne'/>
 		<cd:variable name='columns' value='colonnes'/>
@@ -395,6 +396,7 @@
 		<cd:variable name='nostopper' value='sansstoppeur'/>
 		<cd:variable name='not' value='pas'/>
 		<cd:variable name='notation' value='notation'/>
+		<cd:variable name='notcollapsed' value='notcollapsed'/>
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='sanssuspension'/>
 		<cd:variable name='nothyphenated' value='sanscesure'/>

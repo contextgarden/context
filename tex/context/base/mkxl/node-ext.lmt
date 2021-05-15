@@ -18,7 +18,8 @@ local allocate            = utilities.storage.allocate
 
 local formatters          = string.formatters
 
-local get                 = token.get_index -- getters
+local get                 = tokens.accessors.index
+
 local scanners            = tokens.scanners
 local scaninteger         = scanners.integer
 local scanstring          = scanners.string

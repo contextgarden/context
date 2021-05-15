@@ -77,7 +77,7 @@ local function register(where,data,...)
     end
 end
 
-local writenode = node.write
+local writenode = nodes.write
 local flushnode = context.nodes.flush
 
 function commands.deferredproperty(...)

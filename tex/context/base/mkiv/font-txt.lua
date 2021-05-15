@@ -101,15 +101,15 @@ local getwidth         = nuts.getwidth
 
 local ischar           = nuts.ischar
 local isglyph          = nuts.isglyph
-local traverse_id      = nuts.traverse_id
-local usesfont         = nuts.uses_font
+local usesfont         = nuts.usesfont
 
-local copy_node_list   = nuts.copy_list
+local copy_node_list   = nuts.copylist
 local find_node_tail   = nuts.tail
-local flush_list       = nuts.flush_list
-local free_node        = nuts.free
-local end_of_math      = nuts.end_of_math
-local start_of_par     = nuts.start_of_par
+local flushlist        = nuts.flushlist
+local freenode         = nuts.free
+local endofmath        = nuts.endofmath
+
+local startofpar       = nuts.startofpar
 
 local nodecodes        = nodes.nodecodes
 
@@ -138,10 +138,10 @@ local function deletedisc(head)
             local pre, post, replace, pre_tail, post_tail, replace_tail = getdisc(current,true)
             setdisc(current)
             if pre then
-                flush_list(pre)
+                flushlist(pre)
             end
             if post then
-                flush_list(post)
+                flushlist(post)
             end
             local p, n = getboth(current)
             if replace then
@@ -158,7 +158,7 @@ local function deletedisc(head)
             else
                 setlink(p,n)
             end
-            free_node(current)
+            freenode(current)
         end
         current = next
     end
@@ -260,7 +260,7 @@ do
             stopspacing = false
         end
 
-        if getid(head) == par_code and start_of_par(head) then
+        if getid(head) == par_code and startofpar(head) then
             rlmode = pardirstate(head)
         elseif rlmode == righttoleft_code then
             rlmode = -1
@@ -433,7 +433,7 @@ do
                     else
                         setnext(getprev(cpostnew))
                     end
-                    flush_list(cpostnew)
+                    flushlist(cpostnew)
                     if creplacenew == current_replace then
                         current_replace = nil
                     else
@@ -466,7 +466,7 @@ do
                         setprev(current_pre)
                     end
                     setnext(cprenew)
-                    flush_list(cpre)
+                    flushlist(cpre)
                     creplace = current_replace
                     current_replace = getnext(creplacenew)
                     if current_replace then
@@ -487,12 +487,12 @@ do
                 startspacing = false
                 stopspacing  = false
                 if id == math_code then
-                    current = getnext(end_of_math(current))
+                    current = getnext(endofmath(current))
                 elseif id == dir_code then
                     startspacing = false
                     topstack, rlmode = txtdirstate(current,dirstack,topstack,rlparmode)
                     current = getnext(current)
-             -- elseif id == par_code and start_of_par(current) then
+             -- elseif id == par_code and startofpar(current) then
              --     startspacing = false
              --     rlparmode, rlmode = pardirstate(current)
              --     current = getnext(current)

@@ -20,7 +20,8 @@ local utfvalues     = string.utfvalues
 
 local context       = context
 
-local traverse_id   = node.traverse_id
+local traverseid    = nodes.traverseid
+
 local glyph_code    = nodes.nodecodes.glyph
 
 local descriptions  = fonts.hashes.descriptions
@@ -60,7 +61,7 @@ local function emojiglyphs(name)
     if d then
         local e = checkedemoji(name)
         local s = { }
-        for n in traverse_id(glyph_code,e) do
+        for n in traverseid(glyph_code,e) do
             local b = n.char
             if not (b == 0x200D or (b >= 0x1F3FB and b <= 0x1F3FF)) then
                 local t = { }

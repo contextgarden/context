@@ -42,11 +42,9 @@ local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 local remove_node        = nuts.remove
------ traverse_id        = nuts.traverse_id
------ traverse_char      = nuts.traverse_char
 local nextchar           = nuts.traversers.char
 local nextglyph          = nuts.traversers.glyph
 
@@ -95,7 +93,7 @@ local function inject_quad_space(unicode,head,current,fraction)
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
-    return insert_node_after(head,current,glue)
+    return insertnodeafter(head,current,glue)
 end
 
 local function inject_char_space(unicode,head,current,parent)
@@ -105,7 +103,7 @@ local function inject_char_space(unicode,head,current,parent)
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
-    return insert_node_after(head,current,glue)
+    return insertnodeafter(head,current,glue)
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
@@ -114,17 +112,17 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode) -- bombs
-    head, current = insert_node_after(head,current,penalty)
+    head, current = insertnodeafter(head,current,penalty)
     if trace_nbsp then
         local rule    = new_rule(space)
         local kern    = new_kern(-space)
         local penalty = new_penalty(10000)
         setcolor(rule,"orange")
-        head, current = insert_node_after(head,current,rule)
-        head, current = insert_node_after(head,current,kern)
-        head, current = insert_node_after(head,current,penalty)
+        head, current = insertnodeafter(head,current,rule)
+        head, current = insertnodeafter(head,current,kern)
+        head, current = insertnodeafter(head,current,penalty)
     end
-    return insert_node_after(head,current,glue)
+    return insertnodeafter(head,current,glue)
 end
 
 local function nbsp(head,current)
@@ -148,7 +146,7 @@ end
 
 function characters.replacenbspaces(head)
     local wipe = false
-    for current, char, font in nextglyph, head do -- can be anytime so no traverse_char
+    for current, char, font in nextglyph, head do -- can be anytime so no traversechar
         if char == 0x00A0 then
             if wipe then
                 head = remove_node(h,current,true)
@@ -192,7 +190,7 @@ local methods = {
                 head, current = remove_node(head,current,true)
                 if not is_punctuation[char] then
                     local p = fontparameters[font]
-                    head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
+                    head, current = insertnodebefore(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
                 end
             end
         end
@@ -226,7 +224,7 @@ local methods = {
     end,
 
     [0x00AD] = function(head,current) -- softhyphen
-        return insert_node_after(head,current,languages.explicithyphen(current))
+        return insertnodeafter(head,current,languages.explicithyphen(current))
     end,
 
     [0x2000] = function(head,current) -- enquad

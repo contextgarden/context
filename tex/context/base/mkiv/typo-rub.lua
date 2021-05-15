@@ -49,7 +49,6 @@ local getwidth        = nuts.getwidth
 local setwidth        = nuts.setwidth
 
 local hpack           = nuts.hpack
-local insert_after    = nuts.insert_after
 local takebox         = nuts.takebox
 
 local nexthlist       = nuts.traversers.hlist
@@ -368,7 +367,7 @@ local function whatever(current)
     end
 end
 
-attach = function(head) -- traverse_list
+attach = function(head)
     for current in nexthlist, head do
         whatever(current)
     end

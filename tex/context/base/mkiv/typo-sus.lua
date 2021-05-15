@@ -57,9 +57,9 @@ local setattr         = nuts.setattr
 local setlist         = nuts.setlist
 
 local setcolor        = nodes.tracers.colors.set
-local insert_before   = nuts.insert_before
-local insert_after    = nuts.insert_after
-local end_of_math     = nuts.end_of_math
+local insertbefore    = nuts.insertbefore
+local insertafter     = nuts.insertafter
+local endofmath       = nuts.endofmath
 
 local nodepool        = nuts.pool
 
@@ -123,22 +123,22 @@ local function mark(head,current,id,color)
         local width = getwidth(current)
         local rule  = new_rule(width)
         local kern  = new_kern(-width)
-        head = insert_before(head,current,rule)
-        head = insert_before(head,current,kern)
+        head = insertbefore(head,current,rule)
+        head = insertbefore(head,current,kern)
         setcolor(rule,color)
  -- elseif id == kern_code then
  --     local width = getkern(current)
  --     local rule  = new_rule(width)
  --     local kern  = new_kern(-width)
- --     head = insert_before(head,current,rule)
- --     head = insert_before(head,current,kern)
+ --     head = insertbefore(head,current,rule)
+ --     head = insertbefore(head,current,kern)
  --     setcolor(rule,color)
     else
         local width, height, depth = getwhd(current)
         local extra = fonts.hashes.xheights[getfont(current)] / 2
         local rule  = new_rule(width,height+extra,depth+extra)
         local hlist = new_hlist(rule)
-        head = insert_before(head,current,hlist)
+        head = insertbefore(head,current,hlist)
         setcolor(rule,color)
         setcolor(current,"white")
     end
@@ -226,7 +226,7 @@ function typesetters.marksuspects(head)
                 end
                 current = getnext(current)
             elseif id == math_code then
-                current = getnext(end_of_math(current))
+                current = getnext(endofmath(current))
             elseif id == glue_code then
                 local a = getattr(current,a_characters)
                 if a then
@@ -270,7 +270,7 @@ local function showsuspects(head)
                 head, current = mark(head,current,id,colors[a])
             end
         elseif id == math_code then
-            current = end_of_math(current)
+            current = endofmath(current)
         elseif id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then

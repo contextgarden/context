@@ -53,6 +53,8 @@ local report                 = logs.reporter("paragraphs","wrappers")
 -- If needed we can extend this checker for other cases but then we will also
 -- use attributes.
 
+-- we can actually do better in lmtx
+
 local function remove_dangling_crlf(head,tail)
     if head and tail and getid(tail) == glue_code and getsubtype(tail) == parfillskip_code then
         tail = getprev(tail)

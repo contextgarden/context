@@ -14,7 +14,7 @@ local texset       = tex.set
 local texgetcount  = tex.getcount
 local texgetglue   = tex.getglue
 
-local expandmacro  = token.expand_macro
+local expandmacro  = token.expandmacro or token.expand_macro -- todo
 
 local implement    = interfaces.implement
 
@@ -217,6 +217,8 @@ do
                         a = l + r
                         goto AGAIN
                     end
+                elseif key == "inspect" then
+                    inspect(t)
                 else
                     logs.report("system","bad key %a in paragraphshape",key)
                     break

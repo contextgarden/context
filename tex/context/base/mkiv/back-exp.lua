@@ -3020,7 +3020,7 @@ local collectresults  do -- too many locals otherwise
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
 
-    local start_of_par     = nuts.start_of_par
+    local startofpar       = nuts.startofpar
 
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
@@ -3390,7 +3390,7 @@ end
                     last = nil
                     currentparagraph = nil
                 end
-            elseif not paragraph and id == par_code and start_of_par(n) then
+            elseif not paragraph and id == par_code and startofpar(n) then
                 paragraph = getattr(n,a_taggedpar)
             elseif id == disc_code then
                 -- very unlikely because we stripped them

@@ -46,13 +46,13 @@ local setprev            = nuts.setprev
 local setboth            = nuts.setboth
 local setsubtype         = nuts.setsubtype
 
-local copy_node          = nuts.copy_node
-local copy_node_list     = nuts.copy_list
-local flush_node         = nuts.flush_node
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local copy_node          = nuts.copy
+local copy_node_list     = nuts.copylist
+local flushnode          = nuts.flushnode
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 local remove_node        = nuts.remove
-local end_of_math        = nuts.end_of_math
+local endofmath          = nuts.endofmath
 
 local tonodes            = nuts.tonodes
 
@@ -116,15 +116,15 @@ local function insert_break(head,start,stop,before,after,kern)
         local g = new_glue()
         setattrlist(p,start)
         setattrlist(g,start)
-        insert_node_before(head,start,p)
-        insert_node_before(head,start,g)
+        insertnodebefore(head,start,p)
+        insertnodebefore(head,start,g)
     end
     local p = new_penalty(after)
     local g = new_glue()
     setattrlist(p,start)
     setattrlist(g,start)
-    insert_node_after(head,stop,g)
-    insert_node_after(head,stop,p)
+    insertnodeafter(head,stop,g)
+    insertnodeafter(head,stop,p)
 end
 
 methods[1] = function(head,start,stop,settings,kern)
@@ -170,7 +170,7 @@ methods[2] = function(head,start) -- ( => (-
         local hyphen = copy_node(post)
         setchar(hyphen,languages.prehyphenchar(getlanguage(post)))
         setlink(post,hyphen)
-        head, start = insert_node_before(head,start,new_disc(nil,post,replace))
+        head, start = insertnodebefore(head,start,new_disc(nil,post,replace))
         setattrlist(start,replace)
         insert_break(head,start,start,10000,10000)
     end
@@ -186,7 +186,7 @@ methods[3] = function(head,start) -- ) => -)
         local hyphen = copy_node(pre)
         setchar(hyphen,languages.prehyphenchar(getlanguage(pre)))
         setlink(hyphen,pre)
-        head, start = insert_node_before(head,start,new_disc(hyphen,nil,replace)) -- so not pre !
+        head, start = insertnodebefore(head,start,new_disc(hyphen,nil,replace)) -- so not pre !
         setattrlist(start,tmp)
         insert_break(head,start,start,10000,10000)
     end
@@ -198,7 +198,7 @@ methods[4] = function(head,start) -- - => - - -
     if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,new_disc())
+        head, start = insertnodebefore(head,start,new_disc())
         setattrlist(start,tmp)
         setdisc(start,copy_node(tmp),copy_node(tmp),tmp)
         insert_break(head,start,start,10000,10000)
@@ -211,7 +211,7 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
     if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start  = insert_node_before(head,start,new_disc())
+        head, start  = insertnodebefore(head,start,new_disc())
         local attr   = getattrlist(tmp)
         local font   = getfont(tmp)
         local left   = settings.left
@@ -228,7 +228,7 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
         end
         setdisc(start,left,right,middle)
         setattrlist(start,attr)
-        flush_node(tmp)
+        flushnode(tmp)
         insert_break(head,start,start,10000,10000)
     end
     return head, start
@@ -302,7 +302,7 @@ function breakpoints.handler(head)
             end
         elseif id == math_code then
             attr    = nil
-            current = end_of_math(current)
+            current = endofmath(current)
             if current then
                 current = getnext(current)
             end

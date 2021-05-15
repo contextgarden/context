@@ -1514,7 +1514,7 @@ do
         local f_image_w    = formatters["%.6N 0 d0 %s"]
         local f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm /%s Do"]
         local f_stream     = formatters["%.6N 0 d0 %s"]
-        local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"]
+        local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"] -- last four bbox
         local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm %s"]
      -- local f_stream_s   = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
 
@@ -1534,7 +1534,7 @@ do
         -- pk inclusion (not really tested but not really used either)
 
         function methods.pk(filename)
-            local pkfullname  = resolvers.findpk(basedfontname,resolution)
+            local pkfullname  = resolvers.findpk(filename,resolution)
             if not pkfullname or pkfullname == "" then
                 return
             end
@@ -1845,7 +1845,7 @@ do
             if not method then
                 return
             end
-            local glyphs, scalefactor, glyphtopdf, reset, getresources = method(basedfontname,details)
+            local glyphs, scalefactor, glyphtopdf, reset, getresources = method(basefontname,details)
             if not glyphs then
                 return
             end

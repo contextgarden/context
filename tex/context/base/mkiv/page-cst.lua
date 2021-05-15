@@ -37,8 +37,7 @@ local tonode            = nuts.tonode
 local tonut             = nuts.tonut
 
 local vpack             = nuts.vpack
-local flushlist         = nuts.flush_list
------ removenode        = nuts.remove
+local flushlist         = nuts.flushlist
 
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
@@ -62,7 +61,7 @@ local takebox           = nuts.takebox
 local takelist          = nuts.takelist
 local splitbox          = nuts.splitbox
 local getattribute      = nuts.getattribute
-local copylist          = nuts.copy_list
+local copylist          = nuts.copylist
 
 local getbox            = nuts.getbox
 local getcount          = tex.getcount

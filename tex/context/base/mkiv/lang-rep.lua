@@ -62,11 +62,11 @@ local setprev            = nuts.setprev
 local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 
-local insert_node_before = nuts.insert_before
+local insertbefore       = nuts.insertbefore
+local insertafter        = nuts.insertafter
 local remove_node        = nuts.remove
 local copy_node          = nuts.copy
-local flush_list         = nuts.flush_list
-local insert_after       = nuts.insert_after
+local flushlist          = nuts.flushlist
 
 local nodepool           = nuts.pool
 local new_disc           = nodepool.disc
@@ -170,7 +170,7 @@ local function tonodes(list,template)
         local new = copy_node(template)
         setchar(new,list[i])
         if head then
-            head, current = insert_after(head,current,new)
+            head, current = insertafter(head,current,new)
         else
             head, current = new, new
         end
@@ -230,7 +230,7 @@ local function replace(head,first,last,final,hasspace,overload)
                     -- todo: also set attr
                     local new = new_disc(pre,post,replace)
                     setattrlist(new,first)
-                    head, current = insert_after(head,current,new)
+                    head, current = insertafter(head,current,new)
                 elseif method == "noligature" then
                     -- not that efficient to copy but ok for testing
                     local list = codes[2]
@@ -239,12 +239,12 @@ local function replace(head,first,last,final,hasspace,overload)
                             local new = copy_node(first)
                             setchar(new,list[i])
                             setattr(new,a_noligature,1)
-                            head, current = insert_after(head,current,new)
+                            head, current = insertafter(head,current,new)
                         end
                     else
                         local new = copy_node(first)
                         setchar(new,zwnj)
-                        head, current = insert_after(head,current,new)
+                        head, current = insertafter(head,current,new)
                     end
                 else
                     report_replacement("unknown method %a",method or "?")
@@ -252,11 +252,11 @@ local function replace(head,first,last,final,hasspace,overload)
             else
                 local new = copy_node(first)
                 setchar(new,codes)
-                head, current = insert_after(head,current,new)
+                head, current = insertafter(head,current,new)
             end
             i = i + 1
         end
-        flush_list(list)
+        flushlist(list)
     elseif newlength == 0 then
         -- we overload
     elseif oldlength == newlength then
@@ -271,7 +271,7 @@ local function replace(head,first,last,final,hasspace,overload)
         for i=1,newlength-oldlength do
             local n = copy_node(current)
             setchar(n,newcodes[i])
-            head, current = insert_node_before(head,current,n)
+            head, current = insertbefore(head,current,n)
             current = getnext(current)
         end
         for i=newlength-oldlength+1,newlength do

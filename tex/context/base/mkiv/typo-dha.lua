@@ -62,11 +62,12 @@ local setprop            = nuts.setprop
 local setstate           = nuts.setstate
 local setchar            = nuts.setchar
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 local remove_node        = nuts.remove
-local end_of_math        = nuts.end_of_math
-local start_of_par       = nuts.start_of_par
+local endofmath          = nuts.endofmath
+
+local startofpar         = nuts.startofpar
 
 local nodepool           = nuts.pool
 
@@ -160,7 +161,7 @@ local function process(start)
         local id   = getid(current)
         local next = getnext(current)
         if id == math_code then
-            current = getnext(end_of_math(next))
+            current = getnext(endofmath(next))
         elseif getprop(current,"direction") then
             -- this handles unhbox etc
             current = next
@@ -332,7 +333,7 @@ local function process(start)
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
-            elseif id == par_code and start_of_par(current) then
+            elseif id == par_code and startofpar(current) then
                 local direction = getdirection(current)
                 if direction == righttoleft_code then
                     autodir = -1
@@ -376,13 +377,13 @@ local function process(start)
         local id = getid(current)
         if id == math_code then
             -- todo: this might be tricky nesting
-            current = getnext(end_of_math(getnext(current)))
+            current = getnext(endofmath(getnext(current)))
         else
             local cp = getprop(current,"direction")
             if cp == "n" then
                 local swap = state == "r"
                 if swap then
-                    head = insert_node_before(head,current,startdir(lefttoright_code))
+                    head = insertnodebefore(head,current,startdir(lefttoright_code))
                 end
                 setprop(current,"direction",true)
                 while true do
@@ -395,14 +396,14 @@ local function process(start)
                     end
                 end
                 if swap then
-                    head, current = insert_node_after(head,current,stopdir(lefttoright_code))
+                    head, current = insertnodeafter(head,current,stopdir(lefttoright_code))
                 end
             elseif cp == "l" then
                 if state ~= "l" then
                     if state == "r" then
-                        head = insert_node_before(head,last or current,stopdir(righttoleft_code))
+                        head = insertnodebefore(head,last or current,stopdir(righttoleft_code))
                     end
-                    head  = insert_node_before(head,current,startdir(lefttoright_code))
+                    head  = insertnodebefore(head,current,startdir(lefttoright_code))
                     state = "l"
                     done  = true
                 end
@@ -410,9 +411,9 @@ local function process(start)
             elseif cp == "r" then
                 if state ~= "r" then
                     if state == "l" then
-                        head = insert_node_before(head,last or current,stopdir(lefttoright_code))
+                        head = insertnodebefore(head,last or current,stopdir(lefttoright_code))
                     end
-                    head  = insert_node_before(head,current,startdir(righttoleft_code))
+                    head  = insertnodebefore(head,current,startdir(righttoleft_code))
                     state = "r"
                     done  = true
                 end
@@ -425,9 +426,9 @@ local function process(start)
                 end
             else
                 if state == "r" then
-                    head = insert_node_before(head,current,stopdir(righttoleft_code))
+                    head = insertnodebefore(head,current,stopdir(righttoleft_code))
                 elseif state == "l" then
-                    head = insert_node_before(head,current,stopdir(lefttoright_code))
+                    head = insertnodebefore(head,current,stopdir(lefttoright_code))
                 end
                 state = false
                 last  = false
@@ -441,9 +442,9 @@ local function process(start)
             local sd = (state == "r" and stopdir(righttoleft_code)) or (state == "l" and stopdir(lefttoright_code))
             if sd then
                 if id == glue_code and getsubtype(current) == parfillskip_code then
-                    head = insert_node_before(head,current,sd)
+                    head = insertnodebefore(head,current,sd)
                 else
-                    head = insert_node_after(head,current,sd)
+                    head = insertnodeafter(head,current,sd)
                 end
             end
             break

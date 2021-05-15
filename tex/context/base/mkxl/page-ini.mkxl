@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Initializations}
 
-\registerctxluafile{page-ini}{}
+\registerctxluafile{page-ini}{autosuffix}
 
 %D The \type {\processpage} command has become obsolete. It's original
 %D purpose was to flush only parts of a document but nowadays we have
@@ -336,11 +336,18 @@
 
 % todo: just define at the lua end ... less hassle
 
-\permanent\tolerant\protected\def\markpage  [#1]#*[#2]{\clf_markpage      {#1}{#2}}
-\permanent                   \def\markedpages     [#1]{\clf_markedpages       {#1}} % expandable
-\permanent\protected         \def\doifelsemarkedpage#1{\clf_doifelsemarkedpage{#1}}
-\permanent\protected         \def\startmarkpages  [#1]{\clf_startmarkpages    {#1}}
-\permanent\protected         \def\stopmarkpages       {\clf_stopmarkpages         }
+\permanent\tolerant\protected\def\markpage  [#1]#*[#2]#*[#3]{\clf_markpage{#1}{#2}{#3}}
+\permanent\tolerant\protected\def\startmarkpages  [#1]#*[#2]{\clf_startmarkpages{#1}{#2}}
+%permanent         \protected\def\stopmarkpages             {\clf_stopmarkpages}
+\permanent                   \def\markedpages           [#1]{\clf_markedpages{#1}} % expandable
+%permanent         \protected\def\doifmarkedpage          #1{\clf_doifmarkedpage{#1}}
+%permanent         \protected\def\doifelsemarkedpage      #1{\clf_doifelsemarkedpage{#1}}
+%                            \def\markedpageparameter   #1#2{\clf_markedpageparameter{#1}{#2}}
+%permanent         \protected\def\checkmarkedpages          {\clf_checkmarkedpages}
+
+\appendtoks
+    \checkmarkedpages % defined at lua end
+\to \everyaftershipout
 
 %D Experimental:
 

@@ -24,8 +24,8 @@ local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local slide_node_list   = nuts.slide
 local write_node        = nuts.write
-local flush_node        = nuts.flush
-local copy_node_list    = nuts.copy_list
+local flushnode         = nuts.flush
+local copy_node_list    = nuts.copylist
 local vpack_node_list   = nuts.vpack
 
 local getbox            = nuts.getbox
@@ -146,7 +146,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
                 if di then
                     write_node(getlist(di)) -- list, will be option
                     setlist(di)
-                    flush_node(di)
+                    flushnode(di)
                 end
             end
         end
@@ -237,7 +237,7 @@ function streams.synchronize(list) -- this is an experiment !
                             end
                             dana[m] = vpack_node_list(getlist(vbox))
                             setlist(vbox)
-                            flush_node(vbox)
+                            flushnode(vbox)
                             if trace_flushing then
                                 report_streams("slot %s:%s with delta (%p,%p) is compensated by %s lines",m,i,delta_height,delta_depth,n)
                             end

@@ -2,9 +2,9 @@
 
 \environment luametatex-style
 
-\startcomponent luametatex-preamble
+\startcomponent luametatex-internals
 
-\startchapter[reference=preamble,title={The internals}]
+\startchapter[reference=internals,title={The internals}]
 
 \topicindex{nodes}
 \topicindex{boxes}
@@ -66,9 +66,10 @@ indent box:
 
 Each character becomes a so called glyph node, a record with properties like the
 current font, the character code and the current language. Spaces become glue
-nodes. There are many node types that we will discuss later. Each node points
-back to a previous node or next node, given that these exist. Sometimes
-multiple characters are represented by one glyphs, so one can also get:
+nodes. There are many node types and nodes can have many properties but that will
+be discussed later. Each node points back to a previous node or next node, given
+that these exist. Sometimes multiple characters are represented by one glyph
+(shape), so one can also get:
 
 \starttyping
 [par] <=> [hlist] <=> H <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
@@ -101,6 +102,59 @@ take the list so far. Constructing the actual page is not part of \TEX\ but done
 using primitives that permit manipulation of boxes. The result is handled back to
 \TEX\ and flushed to a (often \PDF) file.
 
+\starttyping
+\setbox\scratchbox\vbox\bgroup
+    line 1\par line 2
+\egroup
+
+\showbox\scratchbox
+\stoptyping
+
+The above code produces the next log lines that reveal how the engines sees a
+paragraph (wrapped in a \type {\vbox}):
+
+\starttyping[style=small]
+1:4: > \box257=
+1:4: \vbox[normal][16=1,17=1,47=1], width 483.69687, height 27.58083, depth 0.1416, direction l2r
+1:4: .\list
+1:4: ..\hbox[line][16=1,17=1,47=1], width 483.69687, height 7.59766, depth 0.1416, glue 455.40097fil, direction l2r
+1:4: ...\list
+1:4: ....\glue[left hang][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[left][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[parfillleft][16=1,17=1,47=1] 0.0pt
+1:4: ....\par[newgraf][16=1,17=1,47=1], hangafter 1, hsize 483.69687, pretolerance 100, tolerance 3000, adjdemerits 10000, linepenalty 10, doublehyphendemerits 10000, finalhyphendemerits 5000, clubpenalty 2000, widowpenalty 2000, brokenpenalty 100, emergencystretch 12.0, parfillskip 0.0pt plus 1.0fil, hyphenationmode 499519
+1:4: ....\glue[indent][16=1,17=1,47=1] 0.0pt
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006C l
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000069 i
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006E n
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000065 e
+1:4: ....\glue[space][16=1,17=1,47=1] 3.17871pt plus 1.58936pt minus 1.05957pt, font 30
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000031 1
+1:4: ....\penalty[line][16=1,17=1,47=1] 10000
+1:4: ....\glue[parfill][16=1,17=1,47=1] 0.0pt plus 1.0fil
+1:4: ....\glue[right][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[right hang][16=1,17=1,47=1] 0.0pt
+1:4: ..\glue[par][16=1,17=1,47=1] 5.44995pt plus 1.81665pt minus 1.81665pt
+1:4: ..\glue[baseline][16=1,17=1,47=1] 6.79396pt
+1:4: ..\hbox[line][16=1,17=1,47=1], width 483.69687, height 7.59766, depth 0.1416, glue 455.40097fil, direction l2r
+1:4: ...\list
+1:4: ....\glue[left hang][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[left][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[parfillleft][16=1,17=1,47=1] 0.0pt
+1:4: ....\par[newgraf][16=1,17=1,47=1], hangafter 1, hsize 483.69687, pretolerance 100, tolerance 3000, adjdemerits 10000, linepenalty 10, doublehyphendemerits 10000, finalhyphendemerits 5000, clubpenalty 2000, widowpenalty 2000, brokenpenalty 100, emergencystretch 12.0, parfillskip 0.0pt plus 1.0fil, hyphenationmode 499519
+1:4: ....\glue[indent][16=1,17=1,47=1] 0.0pt
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006C l
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000069 i
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006E n
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000065 e
+1:4: ....\glue[space][16=1,17=1,47=1] 3.17871pt plus 1.58936pt minus 1.05957pt, font 30
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000032 2
+1:4: ....\penalty[line][16=1,17=1,47=1] 10000
+1:4: ....\glue[parfill][16=1,17=1,47=1] 0.0pt plus 1.0fil
+1:4: ....\glue[right][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[right hang][16=1,17=1,47=1] 0.0pt
+\stoptyping
+
 The \LUATEX\ engine provides hooks for \LUA\ code at nearly every reasonable
 point in the process: collecting content, hyphenating, applying font features,
 breaking into lines, etc. This means that you can overload \TEX's natural
@@ -110,14 +164,14 @@ kick in much \LUA\ code, you will notices that performance drops. Don't blame an
 bother the authors with performance issues. In \CONTEXT\ over 50\% of the time
 can be spent in \LUA, but so far we didn't get many complaints about efficiency.
 Adding more callbacks makes no sense, also because at some point the performance
-hit gets too large. There are plenty ways to achieve one goals. For that reason:
+hit gets too large. There are plenty of ways to achieve goals. For that reason:
 take remarks about \LUATEX, features, potential, performance etc.\ with a natural
 grain of salt.
 
 Where plain \TEX\ is basically a basic framework for writing a specific style,
 macro packages like \CONTEXT\ and \LATEX\ provide the user a whole lot of
 additional tools to make documents look good. They hide the dirty details of font
-management, language demands, turning structure into typeset results, wrapping
+management, language support, turning structure into typeset results, wrapping
 pages, including images, and so on. You should be aware of the fact that when you
 hook in your own code to manipulate lists, this can interfere with the macro
 package that you use. Each successive step expects a certain result and if you
@@ -151,7 +205,7 @@ specifies what that command is supposed to do. In addition to an interface to
 nodes, there is an interface to tokens, as later chapters will demonstrate.
 
 Text (interspersed with macros) comes from an input medium. This can be a file,
-token list, macro body cq.\ arguments, \ some internal quantity (like a number),
+token list, macro body cq.\ arguments, some internal quantity (like a number),
 \LUA, etc. Macros get expanded. In the process \TEX\ can enter a group. Inside
 the group, changes to registers get saved on a stack, and restored after leaving
 the group. When conditionals are encountered, another kind of nesting happens,
@@ -161,17 +215,18 @@ use \TEX\ a lot. You have access to most of the internals and when not, at least
 it is possible to query some state we're in or level we're at.
 
 When we talk about pack(ag)ing it can mean two things. When \TEX\ has consumed
-some tokens that represent text. When the text is put into a so called \type
-{\hbox} it (normally) first gets hyphenated (even in an horizontal list), next
-ligatures are build, and finally kerns are added. Each of these stages can be
-overloaded using \LUA\ code. When these three stages are finished, the dimension
-of the content is calculated and the box gets its width, height and depth. What
-happens with the box depends on what macros do with it.
+some tokens that represent text they are added to the current list. When the text
+is put into a so called \type {\hbox} (for instance a line in a paragraph) it
+(normally) first gets hyphenated, next ligatures are build, and finally kerns are
+added. Each of these stages can be overloaded using \LUA\ code. When these three
+stages are finished, the dimension of the content is calculated and the box gets
+its width, height and depth. What happens with the box depends on what macros do
+with it.
 
 The other thing that can happen is that the text starts a new paragraph. In that
 case some information is stored in a leading \type {par} node. Then indentation
 is appended and the paragraph ends with some glue. Again the three stages are
-applied but this time, afterwards, the long line is broken into lines and the
+applied but this time afterwards, the long line is broken into lines and the
 result is either added to the content of a box or to the main vertical list (the
 running text so to say). This is called par building. At some point \TEX\ decides
 that enough is enough and it will trigger the page builder. So, building is

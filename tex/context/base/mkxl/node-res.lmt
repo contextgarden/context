@@ -78,7 +78,7 @@ local setdata      = nuts.setdata
 local setruledata  = nuts.setruledata
 local setvalue     = nuts.setvalue
 
-local copy_nut     = nuts.copy_only or nuts.copy
+local copy_nut     = nuts.copyonly
 local new_nut      = nuts.new
 local flush_nut    = nuts.flush
 
@@ -542,22 +542,22 @@ lua.registerfinalizer(cleanup, "cleanup reserved nodes")
 
 do
 
-    local glyph       = glyph
-    local traverse_id = nuts.traverse_id
+    local glyph      = glyph
+    local traverseid = nuts.traverseid
 
-    local traversers  = table.setmetatableindex(function(t,k)
-        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
+    local traversers = table.setmetatableindex(function(t,k)
+        local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph)
         t[k] = v
         return v
     end)
 
     -- these are special:
 
-    traversers.node    = nuts.traverse        (glyph)
-    traversers.char    = nuts.traverse_char   (glyph)
-    traversers.glyph   = nuts.traverse_glyph  (glyph)
-    traversers.list    = nuts.traverse_list   (glyph)
-    traversers.content = nuts.traverse_content(glyph)
+    traversers.node    = nuts.traverse       (glyph)
+    traversers.char    = nuts.traversechar   (glyph)
+    traversers.glyph   = nuts.traverseglyph  (glyph)
+    traversers.list    = nuts.traverselist   (glyph)
+    traversers.content = nuts.traversecontent(glyph)
 
     nuts.traversers = traversers
 

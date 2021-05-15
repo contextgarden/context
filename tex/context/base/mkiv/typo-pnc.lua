@@ -21,7 +21,7 @@ local glue_code       = nodecodes.glue
 local spaceskip_code  = gluecodes.spaceskip
 
 local new_kern        = nuts.pool.kern
-local insert_after    = nuts.insert_after
+local insertafter     = nuts.insertafter
 
 local nextglyph       = nuts.traversers.glyph
 
@@ -89,7 +89,7 @@ function periodkerns.handler(head)
                                     if factor ~= 0 then
                                         fontspace = parameters[getfont(current)].space -- can be sped up
                                         inserted  = factor * fontspace
-                                        insert_after(head,current,new_kern(inserted))
+                                        insertafter(head,current,new_kern(inserted))
                                         if trace then
                                             report("inserting space at %C . [%p] %C .",pchar,inserted,nchar)
                                         end

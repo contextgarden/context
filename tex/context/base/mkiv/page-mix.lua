@@ -61,7 +61,7 @@ local getid               = nuts.getid
 local getlist             = nuts.getlist
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
-local getattribute        = nuts.getattribute
+local getattr             = nuts.getattr
 local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
@@ -589,7 +589,7 @@ local function preparesplit(specification) -- a rather large function
         if penalty == 0 then
             unlock(2,penalty)
         elseif penalty == forcedbreak then
-            local needed  = getattribute(current,a_checkedbreak)
+            local needed  = getattr(current,a_checkedbreak)
             local proceed = not needed or needed == 0
             if not proceed then
                 local available = target - height

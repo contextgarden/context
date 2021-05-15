@@ -64,7 +64,7 @@ local implement            = interfaces.implement
 local glyph_code           = nodes.nodecodes.glyph
 
 local new_special          = nodes.pool.special -- todo: literal
-local hpack_node           = node.hpack
+local hpack_node           = nodes.hpack
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
@@ -75,7 +75,7 @@ local setchar              = nuts.setchar
 local nextglyph            = nuts.traversers.glyph
 
 local remove_node          = nuts.remove
-local insert_node_after    = nuts.insert_after
+local insertnodeafter      = nuts.insertafter
 
 -- maybe in fonts namespace
 -- deletion can be option
@@ -324,7 +324,7 @@ function checkers.missing(head)
             local char, font = isglyph(node)
             local kind, char = placeholder(font,char)
             if kind == "node" then
-                insert_node_after(head,node,tonut(char))
+                insertnodeafter(head,node,tonut(char))
                 head = remove_node(head,node,true)
             elseif kind == "char" then
                 setchar(node,char)

@@ -55,15 +55,15 @@ local getruledata        = nuts.getruledata
 
 local isglyph            = nuts.isglyph
 
-local flushlist          = nuts.flush_list
-local effective_glue     = nuts.effective_glue
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
+local flushlist          = nuts.flushlist
+local effectiveglue      = nuts.effectiveglue
+local insertnodeafter    = nuts.insertafter
+local insertnodebefore   = nuts.insertbefore
 local find_tail          = nuts.tail
 local setglue            = nuts.setglue
 local getrangedimensions = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
-local copy_list          = nuts.copy_list
+local copylist           = nuts.copylist
 
 local nextlist           = nuts.traversers.list
 local nextglue           = nuts.traversers.glue
@@ -312,7 +312,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             setattr(r,a_viewerlayer,layer)
         end
         if empty then
-            head = insert_node_before(head,f,r)
+            head = insertnodebefore(head,f,r)
             setlink(r,getnext(l))
             setprev(f)
             setnext(l)
@@ -320,12 +320,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         else
             local k = new_kern(-wd)
             if foreground then
-                insert_node_after(head,l,k)
-                insert_node_after(head,k,r)
+                insertnodeafter(head,l,k)
+                insertnodeafter(head,k,r)
                 l = r
             else
-                head = insert_node_before(head,f,r)
-                insert_node_after(head,r,k)
+                head = insertnodebefore(head,f,r)
+                insertnodeafter(head,r,k)
             end
         end
         if trace_ruled then
@@ -352,7 +352,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     else
         local tx = d.text
         if tx then
-            local l = copy_list(tx)
+            local l = copylist(tx)
             if d["repeat"] == v_yes then
                 l = new_leader(wd,l)
                 setattrlist(l,tx)
@@ -560,7 +560,7 @@ function linefillers.handler(head)
                         if location == v_left or location == v_both then
                             local indentation = is and getwidth(is) or 0
                             local leftfixed   = ls and getwidth(ls) or 0
-                            local lefttotal   = ls and effective_glue(ls,current) or 0
+                            local lefttotal   = ls and effectiveglue(ls,current) or 0
                             local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
                             if width > threshold then
                                 if is then
@@ -568,17 +568,17 @@ function linefillers.handler(head)
                                 end
                                 setglue(ls,leftlocal and getwidth(ls) or nil)
                                 if distance > 0 then
-                                    insert_node_after(list,ls,new_kern(distance))
+                                    insertnodeafter(list,ls,new_kern(distance))
                                 end
-                                insert_node_after(list,ls,linefiller(current,data,width,"left"))
+                                insertnodeafter(list,ls,linefiller(current,data,width,"left"))
                             end
                         end
                         --
                         if location == v_right or location == v_both then
                             local rightfixed = rs and getwidth(rs) or 0
-                            local righttotal = rs and effective_glue(rs,current) or 0
+                            local righttotal = rs and effectiveglue(rs,current) or 0
                             local parfixed   = pr and getwidth(pr) or 0
-                            local partotal   = pr and effective_glue(pr,current) or 0
+                            local partotal   = pr and effectiveglue(pr,current) or 0
                             local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
                             if width > threshold then
                                 if pr then
@@ -586,9 +586,9 @@ function linefillers.handler(head)
                                 end
                                 setglue(rs,rightlocal and getwidth(rs) or nil)
                                 if distance > 0 then
-                                    insert_node_before(list,rs,new_kern(distance))
+                                    insertnodebefore(list,rs,new_kern(distance))
                                 end
-                                insert_node_before(list,rs,linefiller(current,data,width,"right"))
+                                insertnodebefore(list,rs,linefiller(current,data,width,"right"))
                             end
                         end
                     else

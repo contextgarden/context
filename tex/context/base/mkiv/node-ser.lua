@@ -17,14 +17,11 @@ local allocate = utilities.storage.allocate
 
 local context     = context
 local nodes       = nodes
-local node        = node
 
-local is_node     = nodes.is_node
-
+local isnode      = nodes.isnode
 local nodecodes   = nodes.nodecodes
 local subtcodes   = nodes.codes
 local getfields   = nodes.fields
-
 local tonode      = nodes.tonode
 local tonut       = nodes.tonut
 
@@ -130,7 +127,7 @@ end
 
 nodes.astable = astable
 
-setinspector("node",function(v) if is_node(v) then printtable(astable(v),tostring(v)) return true end end)
+setinspector("node",function(v) if isnode(v) then printtable(astable(v),tostring(v)) return true end end)
 
 -- under construction:
 

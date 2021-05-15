@@ -1637,61 +1637,35 @@ debugging and the (relative state) numbers can change with the implementation.
 
 \stopsubsection
 
-\startsubsection[title={Randomizers}]
-
-\libindex{lua_math_random}
-\libindex{lua_math_randomseed}
-\libindex{init_rand}
-\libindex{normal_rand}
-\libindex{uniform_rand}
-\libindex{uniformdeviate}
-
-For practical reasons \LUATEX\ has its own random number generator. The original
-\LUA\ random function is available as \typ {tex.lua_math_random}. You can
-initialize with a new seed with \type {init_rand} (\typ {lua_math_randomseed} is
-equivalent to this one).
-
-There are three generators: \type {normal_rand} (no argument is used), \type
-{uniform_rand} (takes a number that will get rounded before being used) and \type
-{uniformdeviate} which behaves like the primitive and expects a scaled integer, so
-
-\startfunctioncall
-tex.print(tex.uniformdeviate(65536)/65536)
-\stopfunctioncall
-
-will give a random number between zero and one.
-
-\stopsubsection
-
 \startsubsection[reference=synctex,title={Functions related to synctex}]
 
 \topicindex {synctex}
 
-\libindex{set_synctex_mode}      \libindex{get_synctex_mode}
-\libindex{set_synctex_no_files}
-\libindex{set_synctex_tag}       \libindex{get_synctex_tag}   \libindex{force_synctex_tag}
-\libindex{set_synctex_line}      \libindex{get_synctex_line}  \libindex{force_synctex_line}
+\libindex{setsynctexmode}      \libindex{getsynctexmode}
+\libindex{setsynctexnofiles}
+\libindex{setsynctextag}       \libindex{getsynctextag}   \libindex{forcesynctextag}
+\libindex{setsynctexline}      \libindex{getsynctexline}  \libindex{forcesynctexline}
 
 The next helpers only make sense when you implement your own synctex logic. Keep in
 mind that the library used in editors assumes a certain logic and is geared for
 plain and \LATEX, so after a decade users expect a certain behaviour.
 
 \starttabulate[|l|p|]
-\DB name                        \BC explanation \NC \NR
+\DB name                     \BC explanation \NC \NR
 \TB
-\NC \type{set_synctex_mode}     \NC \type {0} is the default and used normal synctex
-                                    logic, \type {1} uses the values set by the next
-                                    helpers while \type {2} also sets these for glyph
-                                    nodes; \type{3} sets glyphs and glue and \type {4}
-                                    sets only glyphs \NC \NR
-\NC \type{set_synctex_tag}      \NC set the current tag (file) value (obeys save stack) \NC \NR
-\NC \type{set_synctex_line}     \NC set the current line value (obeys save stack) \NC \NR
-\NC \type{set_synctex_no_files} \NC disable synctex file logging \NC \NR
-\NC \type{get_synctex_mode}     \NC returns the current mode (for values see above) \NC \NR
-\NC \type{get_synctex_tag}      \NC get the currently set value of tag (file) \NC \NR
-\NC \type{get_synctex_line}     \NC get the currently set value of line \NC \NR
-\NC \type{force_synctex_tag}    \NC overload the tag (file) value (\type {0} resets) \NC \NR
-\NC \type{force_synctex_line}   \NC overload the line value  (\type {0} resets) \NC \NR
+\NC \type{setsynctexmode}    \NC \type {0} is the default and used normal synctex
+                                 logic, \type {1} uses the values set by the next
+                                 helpers while \type {2} also sets these for glyph
+                                 nodes; \type{3} sets glyphs and glue and \type {4}
+                                 sets only glyphs \NC \NR
+\NC \type{setsynctextag}     \NC set the current tag (file) value (obeys save stack) \NC \NR
+\NC \type{setsynctexline}    \NC set the current line value (obeys save stack) \NC \NR
+\NC \type{setsynctexnofiles} \NC disable synctex file logging \NC \NR
+\NC \type{getsynctexmode}    \NC returns the current mode (for values see above) \NC \NR
+\NC \type{getsynctextag}     \NC get the currently set value of tag (file) \NC \NR
+\NC \type{getsynctexline}    \NC get the currently set value of line \NC \NR
+\NC \type{forcesynctextag}   \NC overload the tag (file) value (\type {0} resets) \NC \NR
+\NC \type{forcesynctexline}  \NC overload the line value  (\type {0} resets) \NC \NR
 \LL
 \stoptabulate
 
@@ -1746,13 +1720,15 @@ be tested first instead of simply quitting.
 This library takes care of the low|-|level I/O interface: writing to the log file
 and|/|or console.
 
-\startsubsection[title={\type {write}}]
+\startsubsection[title={\type {write} and \type {writeselector}}]
 
 \libindex{write}
+\libindex{writeselector}
 
 \startfunctioncall
 texio.write(<string> target, <string> s, ...)
 texio.write(<string> s, ...)
+texio.writeselector(<string> s, ...)
 \stopfunctioncall
 
 Without the \type {target} argument, writes all given strings to the same
@@ -1767,18 +1743,23 @@ prevent \LUA\ from interpreting the first string as the target.
 
 \stopsubsection
 
-\startsubsection[title={\type {write_nl}}]
+\startsubsection[title={\type {writenl} and \type {writeselectornl}}]
 
-\libindex{write_nl}
+\libindex{writenl}
+\libindex{writeselectornl}
 
 \startfunctioncall
-texio.write_nl(<string> target, <string> s, ...)
-texio.write_nl(<string> s, ...)
+texio.writenl(<string> target, <string> s, ...)
+texio.writenl(<string> s, ...)
+texio.writeselectornl(<string> target, ...)
 \stopfunctioncall
 
 This function behaves like \type {texio.write}, but makes sure that the given
 strings will appear at the beginning of a new line. You can pass a single empty
 string if you only want to move to the next line.
+
+The selector variants always expect a selector, so there is no misunderstanding
+if \type {logfile} is a string or selector.
 
 \stopsubsection
 
@@ -1812,20 +1793,20 @@ to know what you're doing (or more precise: what \TEX\ is doing with input).
 \topicindex{libraries+\type{token}}
 \topicindex{tokens}
 
-\libindex{scan_keyword}
-\libindex{scan_keywordcs}
-\libindex{scan_int}
-\libindex{scan_real}
-\libindex{scan_float}
-\libindex{scan_dimen}
-\libindex{scan_glue}
-\libindex{scan_toks}
-\libindex{scan_code}
-\libindex{scan_string}
-\libindex{scan_argument}
-\libindex{scan_word}
-\libindex{scan_csname}
-\libindex{scan_list}
+\libindex{scankeyword}
+\libindex{scankeywordcs}
+\libindex{scanint}
+\libindex{scanreal}
+\libindex{scanfloat}
+\libindex{scandimen}
+\libindex{scanglue}
+\libindex{scantoks}
+\libindex{scancode}
+\libindex{scanstring}
+\libindex{scanargument}
+\libindex{scanword}
+\libindex{scancsname}
+\libindex{scanlist}
 
 The token library provides means to intercept the input and deal with it at the
 \LUA\ level. The library provides a basic scanner infrastructure that can be used
@@ -1837,26 +1818,26 @@ minimal set of tools and no solutions. The scanner functions are probably the
 most intriguing.
 
 \starttabulate[|l|l|p|]
-\DB function              \BC argument           \BC result \NC \NR
+\DB function             \BC argument           \BC result \NC \NR
 \TB
-\NC \type{scan_keyword}   \NC string             \NC returns true if the given keyword is gobbled; as with
-                                                     the regular \TEX\ keyword scanner this is case insensitive
-                                                     (and \ASCII\ based) \NC \NR
-\NC \type{scan_keywordcs} \NC string             \NC returns true if the given keyword is gobbled; this variant
-                                                     is case sensitive and also suitable for \UTF8 \NC \NR
-\NC \type{scan_int}       \NC                    \NC returns an integer \NC \NR
-\NC \type{scan_real}      \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1} with optional collapsed signs \NC \NR
-\NC \type{scan_float}     \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1}, \type {1.1E10}, , \type {.1e-10} with optional collapsed signs \NC \NR
-\NC \type{scan_dimen}     \NC infinity, mu-units \NC returns a number representing a dimension or two numbers being the filler and order \NC \NR
-\NC \type{scan_glue}      \NC mu-units           \NC returns a glue spec node \NC \NR
-\NC \type{scan_toks}      \NC definer, expand    \NC returns a table of tokens \NC \NR
-\NC \type{scan_code}      \NC bitset             \NC returns a character if its category is in the given bitset (representing catcodes) \NC \NR
-\NC \type{scan_string}    \NC                    \NC returns a string given between \type {{}}, as \type {\macro} or as sequence of characters with catcode 11 or 12 \NC \NR
-\NC \type{scan_argument}  \NC                    \NC this one is simular to \type {scanstring} but also accepts a \type {\cs}
-                                                     (which then get expanded) \NC \NR
-\NC \type{scan_word}      \NC                    \NC returns a sequence of characters with catcode 11 or 12 as string \NC \NR
-\NC \type{scan_csname}    \NC                    \NC returns \type {foo} after scanning \type {\foo} \NC \NR
-\NC \type{scan_list}      \NC                    \NC picks up a box specification and returns a \type {[h|v]list} node \NC \NR
+\NC \type{scankeyword}   \NC string             \NC returns true if the given keyword is gobbled; as with
+                                                    the regular \TEX\ keyword scanner this is case insensitive
+                                                    (and \ASCII\ based) \NC \NR
+\NC \type{scankeywordcs} \NC string             \NC returns true if the given keyword is gobbled; this variant
+                                                    is case sensitive and also suitable for \UTF8 \NC \NR
+\NC \type{scanint}       \NC                    \NC returns an integer \NC \NR
+\NC \type{scanreal}      \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1} with optional collapsed signs \NC \NR
+\NC \type{scanfloat}     \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1}, \type {1.1E10}, , \type {.1e-10} with optional collapsed signs \NC \NR
+\NC \type{scandimen}     \NC infinity, mu-units \NC returns a number representing a dimension or two numbers being the filler and order \NC \NR
+\NC \type{scanglue}      \NC mu-units           \NC returns a glue spec node \NC \NR
+\NC \type{scantoks}      \NC definer, expand    \NC returns a table of tokens \NC \NR
+\NC \type{scancode}      \NC bitset             \NC returns a character if its category is in the given bitset (representing catcodes) \NC \NR
+\NC \type{scanstring}    \NC                    \NC returns a string given between \type {{}}, as \type {\macro} or as sequence of characters with catcode 11 or 12 \NC \NR
+\NC \type{scanargument}  \NC                    \NC this one is simular to \type {scanstring} but also accepts a \type {\cs}
+                                                    (which then get expanded) \NC \NR
+\NC \type{scanword}      \NC                    \NC returns a sequence of characters with catcode 11 or 12 as string \NC \NR
+\NC \type{scancsname}    \NC                    \NC returns \type {foo} after scanning \type {\foo} \NC \NR
+\NC \type{scanlist}      \NC                    \NC picks up a box specification and returns a \type {[h|v]list} node \NC \NR
 \LL
 \stoptabulate
 
@@ -1864,7 +1845,7 @@ The integer, dimension and glue scanners take an extra optional argument that
 signals that en optional equal is permitted.
 
 The scanners can be considered stable apart from the one scanning for a token.
-The \type {scan_code} function takes an optional number, the \type {scan_keyword}
+The \type {scancode} function takes an optional number, the \type {scankeyword}
 function a normal \LUA\ string. The \type {infinity} boolean signals that we also
 permit \type {fill} as dimension and the \type {mu-units} flags the scanner that
 we expect math units. When scanning tokens we can indicate that we are defining a
@@ -1872,7 +1853,7 @@ macro, in which case the result will also provide information about what
 arguments are expected and in the result this is separated from the meaning by a
 separator token. The \type {expand} flag determines if the list will be expanded.
 
-The \type {scan_argument} function expands the given argument. When a braced
+The \type {scanargument} function expands the given argument. When a braced
 argument is scanned, expansion can be prohibited by passing \type {false}
 (default is \type {true}). In case of a control sequence passing \type {false}
 will result in a one|-|level expansion (the meaning of the macro).
@@ -1894,9 +1875,9 @@ we get:
 \starttabulate[|l|Tl|l|]
 \DB name \BC result \NC \NR
 \TB
-\NC \type {\directlua{token.scan_string()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")} {foo} \NC full expansion \NC \NR
-\NC \type {\directlua{token.scan_string()}foo}   \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")} foo   \NC letters and others \NC \NR
-\NC \type {\directlua{token.scan_string()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scan_string().."}}")}\foo   \NC meaning \NC \NR
+\NC \type {\directlua{token.scanstring()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} {foo} \NC full expansion \NC \NR
+\NC \type {\directlua{token.scanstring()}foo}   \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} foo   \NC letters and others \NC \NR
+\NC \type {\directlua{token.scanstring()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")}\foo   \NC meaning \NC \NR
 \LL
 \stoptabulate
 
@@ -1905,13 +1886,13 @@ expanded definition (\prm {edef}'d). In the case of the braced variant one can o
 course use the \prm {detokenize} and \prm {unexpanded} primitives since there we
 do expand.
 
-The \type {scan_word} scanner can be used to implement for instance a number
+The \type {scanword} scanner can be used to implement for instance a number
 scanner. An optional boolean argument can signal that a trailing space or \type
 {\relax} should be gobbled:
 
 \starttyping
-function token.scan_number(base)
-    return tonumber(token.scan_word(),base)
+function token.scannumber(base)
+    return tonumber(token.scanword(),base)
 end
 \stoptyping
 
@@ -1942,7 +1923,7 @@ You can also do this:
 \starttyping
 \directlua {
     function mymacro()
-        local d = token.scan_dimen()
+        local d = token.scandimen()
         ...
     end
 }
@@ -1975,19 +1956,19 @@ a bit but for passing strings conversion to and from tokens has to be done anywa
 
 \startsubsection[title={Picking up one token}]
 
-\libindex {scan_next}
-\libindex {scan_next_expanded}
-\libindex {skip_next}
-\libindex {skip_next_expanded}
-\libindex {peek_next}
-\libindex {peek_next_expanded}
-\libindex {scan_token}
+\libindex {scannext}
+\libindex {scannextexpanded}
+\libindex {skipnext}
+\libindex {skipnextexpanded}
+\libindex {peeknext}
+\libindex {peeknextexpanded}
+\libindex {scantoken}
 \libindex {expand}
 
 The scanners look for a sequence. When you want to pick up one token from the
-input you use \type {scan_next}. This creates a token with the (low level)
+input you use \type {scannext}. This creates a token with the (low level)
 properties as discussed next. This token is just the next one. If you want to
-enforce expansion first you can use \type {scan_token} or the \type {_expanded}
+enforce expansion first you can use \type {scantoken} or the \type {_expanded}
 variants. Internally tokens are characterized by a number that packs a lot of
 information. In order to access the bits of information a token is wrapped in a
 userdata object.
@@ -1998,14 +1979,14 @@ enough about \TEX\ not to be too worried about that. It basically is a call to
 the internal expand related function.
 
 \starttabulate[|lT|p|]
-\DB name \BC explanation \NC \NR
+\DB name             \BC explanation \NC \NR
 \TB
-\NC scan_next          \NC get the next token \NC \NR
-\NC scan_next_expanded \NC get the next expanded token \NC \NR
-\NC skip_next          \NC skip the next token \NC \NR
-\NC skip_next_expanded \NC skip the next expanded token \NC \NR
-\NC peek_next          \NC get the next token and put it back in the input \NC \NR
-\NC peek_next_expanded \NC get the next expanded token and put it back in the input \NC \NR
+\NC scannext         \NC get the next token \NC \NR
+\NC scannextexpanded \NC get the next expanded token \NC \NR
+\NC skipnext         \NC skip the next token \NC \NR
+\NC skipnextexpanded \NC skip the next expanded token \NC \NR
+\NC peeknext         \NC get the next token and put it back in the input \NC \NR
+\NC peeknextexpanded \NC get the next expanded token and put it back in the input \NC \NR
 \LL
 \stoptabulate
 
@@ -2026,20 +2007,20 @@ alike.
 \libindex{commands}
 \libindex{command_id}
 
-\libindex{get_command}
-\libindex{get_cmdname}
-\libindex{get_csname}
-\libindex{get_id}
-\libindex{get_active}
-\libindex{get_expandable}
-\libindex{get_protected}
-\libindex{get_mode}
-\libindex{get_index}
-\libindex{get_tok}
-\libindex{get_frozen}
-\libindex{get_user}
+\libindex{getcommand}
+\libindex{getcmdname}
+\libindex{getcsname}
+\libindex{getid}
+\libindex{getactive}
+\libindex{getexpandable}
+\libindex{getprotected}
+\libindex{getmode}
+\libindex{getindex}
+\libindex{gettok}
+\libindex{getfrozen}
+\libindex{getuser}
 
-\libindex{scan_next}
+\libindex{scannext}
 
 The creator function can be used as follows:
 
@@ -2069,7 +2050,7 @@ primitive. The possible properties of tokens are:
 \LL
 \stoptabulate
 
-Alternatively you can use a getter \type {get_<fieldname>} to access a property
+Alternatively you can use a getter \type {get<fieldname>} to access a property
 of a token.
 
 The numbers that represent a catcode are the same as in \TEX\ itself, so using
@@ -2124,14 +2105,14 @@ need to know that boundary condition.
 
 \topicindex {macros}
 
-\libindex{set_macro}
-\libindex{get_macro}
-\libindex{get_meaning}
-\libindex{set_char}
-\libindex{set_lua}
-\libindex{get_functions_table}
-\libindex{push_macro}
-\libindex{pop_macro}
+\libindex{setmacro}
+\libindex{getmacro}
+\libindex{getmeaning}
+\libindex{setchar}
+\libindex{setlua}
+\libindex{getfunctionstable}
+\libindex{pushmacro}
+\libindex{popmacro}
 
 The \type {set_macro} function can get upto 4 arguments:
 
@@ -2157,8 +2138,8 @@ The results are like:
  \def\csname{}
 \stoptyping
 
-The \type {get_macro} function can be used to get the content of a macro while
-the \type {get_meaning} function gives the meaning including the argument
+The \type {getmacro} function can be used to get the content of a macro while
+the \type {getmeaning} function gives the meaning including the argument
 specification (as usual in \TEX\ separated by \type {->}).
 
 The \type {set_char} function can be used to do a \prm {chardef} at the
@@ -2177,11 +2158,11 @@ set_lua("mycode",id,"global","protected")
 \stoptyping
 
 This creates a token that refers to a \LUA\ function with an entry in the table
-that you can access with \type {lua.get_functions_table}. It is the companion
+that you can access with \type {lua.getfunctions_table}. It is the companion
 to \lpr {luadef}. When the first (and only) argument is true the size will preset
 to the value of \type {texconfig.function_size}.
 
-The \type {push_macro} and \type {pop_macro} function are very experimental and
+The \type {pushmacro} and \type {popmacro} function are very experimental and
 can be used to get and set an existing macro. The push call returns a user data
 object and the pop takes such a userdata object. These object have no accessors
 and are to be seen as abstractions.
@@ -2190,20 +2171,20 @@ and are to be seen as abstractions.
 
 \startsubsection[title={Pushing back}]
 
-\libindex{scan_next}
-\libindex{put_next}
+\libindex{scannext}
+\libindex{putnext}
 
 There is a (for now) experimental putter:
 
 \starttyping
-local t1 = token.scan_next()
-local t2 = token.scan_next()
-local t3 = token.scan_next()
-local t4 = token.scan_next()
+local t1 = token.scannext()
+local t2 = token.scannext()
+local t3 = token.scannext()
+local t4 = token.scannext()
 -- watch out, we flush in sequence
-token.put_next { t1, t2 }
+token.putnext { t1, t2 }
 -- but this one gets pushed in front
-token.put_next ( t3, t4 )
+token.putnext ( t3, t4 )
 \stoptyping
 
 When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a
@@ -2218,11 +2199,11 @@ works out okay:
 
 \directlua {
     local list = { 101, 102, 103, token.create("foo"), "{abracadabra}" }
-    token.put_next("(the)")
-    token.put_next(list)
-    token.put_next("(order)")
-    token.put_next(unpack(list))
-    token.put_next("(is reversed)")
+    token.putnext("(the)")
+    token.putnext(list)
+    token.putnext("(order)")
+    token.putnext(unpack(list))
+    token.putnext("(is reversed)")
 }
 \stopbuffer
 
@@ -2259,9 +2240,9 @@ create a hash entry and when later it gets defined that entry will be reused. So
 \type {\oof} really exists but can be in an undefined state.
 
 \startbuffer[demo]
-oof        : \directlua{tex.print(token.scan_csname())}\oof
-foo        : \directlua{tex.print(token.scan_csname())}\foo
-myfirstoof : \directlua{tex.print(token.scan_csname())}\myfirstoof
+oof        : \directlua{tex.print(token.scancsname())}\oof
+foo        : \directlua{tex.print(token.scancsname())}\foo
+myfirstoof : \directlua{tex.print(token.scancsname())}\myfirstoof
 \stopbuffer
 
 \startlines
@@ -2307,9 +2288,9 @@ When scanning from \LUA\ we are not in a mode that defines (undefined) macros at
 all. There we just get the real primitive undefined macro token.
 
 \startbuffer
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\myfirstoof
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mysecondoof
-\directlua{local t = token.scan_next() tex.print(t.id.." "..t.tok)}\mythirdoof
+\directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\myfirstoof
+\directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\mysecondoof
+\directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\mythirdoof
 \stopbuffer
 
 \startlines

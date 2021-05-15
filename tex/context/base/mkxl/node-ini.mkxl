@@ -39,6 +39,7 @@
 \registerctxluafile{node-scn}{autosuffix}
 \registerctxluafile{node-syn}{autosuffix}
 \registerctxluafile{node-par}{autosuffix}
+\registerctxluafile{node-bwc}{autosuffix} % for a while
 
 %D This might go away (needs checking anyway, very old code):
 

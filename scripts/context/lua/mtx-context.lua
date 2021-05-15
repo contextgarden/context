@@ -855,7 +855,7 @@ function scripts.context.run(ctxdata,filename)
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
                 --
                 local engine = analysis.engine or "luametatex"
-                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) then
+                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
                     mainfile = "" -- we don't need that
                 end
                 --

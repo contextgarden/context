@@ -55,9 +55,9 @@ local isglyph           = nuts.isglyph
 local nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
------ rangedimensions   = node.direct.rangedimensions -- nuts ?
-local effectiveglue     = nuts.effective_glue
-local start_of_par      = nuts.start_of_par
+----- rangedimensions   = nuts.rangedimensions
+local effectiveglue     = nuts.effectiveglue
+----- startofpar        = nuts.startofpar
 local dirdimensions     = nuts.dirdimensions
 
 local texget            = tex.get
@@ -212,6 +212,8 @@ local flush_character do
             end
         end
 
+        local refactored = 1000000
+
         for i=1,#vfcommands do
             local packet  = vfcommands[i]
             local command = packet[1]
@@ -269,7 +271,7 @@ local flush_character do
                 local h = packet[2] -- already scaled
                 if h ~= 0 then
                     if factor ~= 0 then
-                        h = h + h * factor / 1000 -- expansion
+                        h = h + h * factor / refactored -- expansion
                     end
                     pos_h = pos_h + h * sx
                 end
@@ -277,7 +279,7 @@ local flush_character do
                 local h = packet[2] -- already scaled
                 if h ~= 0 then
                     if factor ~= 0 then
-                        h = h + h * factor / 1000 -- expansion
+                        h = h + h * factor / refactored -- expansion
                     end
                     pos_h = pos_h - h * sx
                 end
@@ -299,7 +301,7 @@ local flush_character do
                 local c = packet[4]
                 if h ~= 0 then
                     if factor ~= 0 then
-                        h = h + h * factor / 1000 -- expansion
+                        h = h + h * factor / refactored -- expansion
                     end
                     pos_h = pos_h + h * sx
                 end
@@ -319,7 +321,7 @@ local flush_character do
                 local c = packet[4]
                 if h ~= 0 then
                     if factor ~= 0 then
-                        h = h + h * factor / 1000 -- expansion
+                        h = h + h * factor / refactored -- expansion
                     end
                     pos_h = pos_h + h * sx
                 end
@@ -370,7 +372,7 @@ local flush_character do
                 local total = height + depth
                 if width > 0 and total > 0 then
                     if factor ~= 0 then
-                        width = width + width * factor / 1000
+                        width = width + width * factor / refactored
                     end
                     if width > 0 then
                         local line    = packet[5] or default
@@ -404,7 +406,7 @@ local flush_character do
                 local size_h = packet[3]
                 if size_h > 0 and size_v > 0 then
                     if factor ~= 0 then
-                        size_h = size_h + size_h * factor / 1000
+                        size_h = size_h + size_h * factor / refactored
                     end
                     if size_h > 0 then
                         size_h = size_h * sx
@@ -419,7 +421,7 @@ local flush_character do
                 local dp = packet[4] or 0
                 if wd > 0 and ht ~= 0 and dp ~= 0 then
                     if factor ~= 0 then
-                        wd = wd + wd * factor / 1000
+                        wd = wd + wd * factor / refactored
                     end
                     if wd > 0 then
                         wd = wd * sx
@@ -599,10 +601,10 @@ end
 local hlist_out, vlist_out  do
 
     local function applyanchor(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
-        local ot = (orientation>> 0) & x0F
-        local ay = (orientation>> 4) & x0F
-        local ax = (orientation>> 8) & x0F
-        local of = (orientation>>12) & x0F
+        local ot = (orientation>> 0) & 0x0F
+        local ay = (orientation>> 4) & 0x0F
+        local ax = (orientation>> 8) & 0x0F
+        local of = (orientation>>12) & 0x0F
         if ot == 4 then
             ot, ay = 0, 1
         elseif ot == 5 then
@@ -975,7 +977,7 @@ local hlist_out, vlist_out  do
                     setlink(current,replace)
                     setreplace(current)
                 end
-         -- elseif id == par_code and start_of_par(current) then
+         -- elseif id == par_code and startofpar(current) then
          --     local pardir = getdirection(current) or lefttoright_code
          --     if pardir == righttoleft_code then
          --     end
@@ -1375,7 +1377,7 @@ do
     ----- tonut      = nodes.tonut
     local properties = nodes.properties.data
     local flush      = texio.write
-    local flushline  = texio.write_nl
+    local flushline  = texio.writenl
 
     local periods    = utilities.strings.newrepeater(".")
 
@@ -1429,6 +1431,12 @@ do
                 w(n,l,tlp,l1,l2)
             end
         end
+    end)
+
+    local names = attributes.names
+
+    callback.register("get_attribute",function(k,v)
+        return attributes.names[k], nil -- we show the name and number
     end)
 
 end

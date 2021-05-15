@@ -333,10 +333,10 @@
 \installcorenamespace{markedpage}
 
 \unexpanded\def\markpage
-  {\dodoubleempty\page_mark}
+  {\dotripleempty\page_mark}
 
-\def\page_mark[#1][#2]%
-  {\clf_markpage{#1}{#2}}
+\def\page_mark[#1][#2][#3]%
+  {\clf_markpage{#1}{#2}{#3}}
 
 \def\markedpages[#1]% expandable
   {\clf_markedpages{#1}}
@@ -344,11 +344,27 @@
 \unexpanded\def\doifelsemarkedpage#1%
   {\clf_doifelsemarkedpage{#1}}
 
-\unexpanded\def\startmarkpages[#1]%
-  {\clf_startmarkpages{#1}}
+\unexpanded\def\doifmarkedpage#1%
+  {\clf_doifmarkedpage{#1}}
+
+\unexpanded\def\startmarkpages
+  {\dodoubleempty\page_start_marked}
+
+\def\page_start_marked[#1][#2]%
+  {\clf_startmarkpages{#1}{#2}}
 
 \unexpanded\def\stopmarkpages
   {\clf_stopmarkpages}
+
+\unexpanded\def\checkmarkedpages
+  {\clf_checkmarkedpages}
+
+\def\markedpageparameter#1#2%
+  {\clf_markedpageparameter{#1}{#2}}
+
+\appendtoks
+    \checkmarkedpages
+\to \everyaftershipout
 
 %D Experimental:
 

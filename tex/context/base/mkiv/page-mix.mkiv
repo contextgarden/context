@@ -31,10 +31,6 @@
 % offsets (inner ones, so we change the hsize  ... needed with backgrounds
 % when no content we currently loose the page
 
-% luatex buglet:
-%
-% \ctxlua{tex.setbox("global",0,node.hpack(nodes.pool.glyph("a",font.current())))}\box0
-
 \registerctxluafile{page-mix}{}
 
 \unprotect

@@ -26,8 +26,8 @@ local setmacro             = interfaces.setmacro
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox -- or: nodes.takebox
 local texrunlocal          = tex.runlocal
-local copy_list            = node.copy_list
-local flush_list           = node.flush_list
+local copylist             = nodes.copylist
+local flushlist            = nodes.flushlist
 local setmetatableindex    = table.setmetatableindex
 local sortedhash           = table.sortedhash
 
@@ -271,7 +271,7 @@ local function stopjob()
     if top then
         for slot, content in next, top.textexts do
             if content then
-                flush_list(content)
+                flushlist(content)
                 if trace_textexts then
                     report_textexts("freeing text %s",slot)
                 end
@@ -1078,7 +1078,7 @@ local tx_reset, tx_process  do
                 end
                 box = cache[mp_hash]
                 if box then
-                    box = copy_list(box)
+                    box = copylist(box)
                 else
                     texrunlocal("mptexttoks")
                     box = textakebox("mptextbox")

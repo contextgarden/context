@@ -6,8 +6,11 @@
 
 \startchapter[reference=differences,title={Differences with \LUATEX}]
 
-As \LUAMETATEX\ is a leaner and meaner \LUATEX, this chapter will discuss
-what is gone. We start with the primitives that were dropped.
+As \LUAMETATEX\ is a leaner and meaner \LUATEX. This means that substantial parts and
+dependencies are gone: quite some font code, all backend code with related frontend
+code and of course image and font inclusion. There is also new functionality which
+makes for less lean but in the end we still have less, also in terms of dependencies.
+This chapter will discuss what is gone. We start with the primitives that were dropped.
 
 \starttabulate[|l|pl|]
 \BC fonts       \NC \type {\letterspacefont}
@@ -97,6 +100,9 @@ as macros that (via \LUA) inject nodes in the input that suit the macro package
 and backend. The three||letter direction primitives are gone and the numeric
 variants are now leading. There is no need for page and body related directions
 and they don't work well in \LUATEX\ anyway. We only have two directions left.
+Because we can hook in \LUA\ functions that get information about what is expected
+(consumer or provider) there are plenty possibilities for adding functionality
+using this scripting langauge.
 
 The primitive related extensions were not that useful and reliable so they have
 been removed. There are some new variants that will be discussed later. The \type
@@ -178,6 +184,13 @@ Because we use a more generic whatsit model, there is a new callback:
 show_whatsit
 \stoptyping
 
+Because tracing boxes now reports a lot more information, we have a plug in for
+detail:
+
+\starttyping
+get_attribute
+\stoptyping
+
 Being the core of extensibility, the typesetting callbacks of course stayed. This
 is what we ended up with:
 
@@ -195,12 +208,13 @@ define_font
 There are all kinds of subtle differences in the implementation, for instance we
 no longer intercept \type {*} and \type {&} as these were already replaced long
 ago in \TEX\ engines by command line options. Talking of options, only a few are
-left. All input goes via \LUA, even the console.
+left. All input goes via \LUA, even the console. One can program a terminal if
+needed.
 
 We took our time for reaching a stable state in \LUATEX. Among the reasons is the
-fact that most was experimented with in \CONTEXT. It took many years of work to
-decide what to keep and how to do things. Of course there are places when things
-can be improved and it might happen in \LUAMETATEX. Contrary to what is sometimes
+fact that most was experimented with in \CONTEXT. It took many years to decide
+what to keep and how to do things. Of course there are places when things can be
+improved and it might happen in \LUAMETATEX. Contrary to what is sometimes
 suggested, the \LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions)
 has been quite stable. It made no sense otherwise. Most \CONTEXT\ functionality
 didn't change much at the user level. Of course there have been issues, as is
@@ -214,11 +228,13 @@ before a long term stable is defined. The good news is that, the source code
 being part of the \CONTEXT\ distribution, there is always a properly working,
 more or less long term stable, snapshot.
 
-The error reporting subsystem has been redone a little but is still fundamentally
-the same. We don't really assume interactive usage but if someone uses it, it
-might be noticed that it is not possible to backtrack or inject something. Of
-course it is no big deal to implement all that in \LUA\ if needed. It removes a
-system dependency and makes for a bit cleaner code.
+The error reporting subsystem has been redone quite a bit but is still
+fundamentally the same. We don't really assume interactive usage but if someone
+uses it, it might be noticed that it is not possible to backtrack or inject
+something. Of course it is no big deal to implement all that in \LUA\ if needed.
+It removes a system dependency and makes for a bit cleaner code.  In \CONTEXT\
+we quit on an error simply because one has to fix source anyway and runs are
+fast enough.
 
 There are new primitives as well as some extensions to existing primitive
 functionality. These are described in following chapters but there might be
@@ -258,6 +274,7 @@ if luatex and luametatex then
     context("The following primitives are available in \\LUATEX\\ but not in \\LUAMETATEX.  ")
     context("Some of these are emulated in \\CONTEXT.")
 
+    context.blank()
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luatex) do
             if not luametatex[k] then
@@ -266,13 +283,14 @@ if luatex and luametatex then
             end
         end
     context.stopcolumns()
-
+    context.blank()
 
  -- context.page()
 
     context("The following primitives are available in \\LUAMETATEX\\ only. ")
     context("At some point in time some might be added to \\LUATEX.")
 
+    context.blank()
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luametatex) do
             if not luatex[k] then
@@ -281,10 +299,72 @@ if luatex and luametatex then
             end
         end
     context.stopcolumns()
+    context.blank()
 
 end
 
 \stopluacode
+
+As part of a bit more consistency some function names also changed. Names with an
+\type {_} got that removed (as that was the minority). It's easy to provide a
+back mapping if needed (just alias the functions).
+
+{\em Todo: only mention the \LUATEX\ ones.}
+
+\starttabulate[|l|l|l|l|]
+\DB library  \BC old name          \BC new name         \BC comment \NC \NR
+\TB
+\NC language \NC clear_patterns    \NC clearpatterns    \NC \NR
+\NC          \NC clear_hyphenation \NC clearhyphenation \NC \NR
+\NC mplib    \NC italcor           \NC italic           \NC \NR
+\NC          \NC pen_info          \NC peninfo          \NC \NR
+\NC          \NC solve_path        \NC solvepath        \NC \NR
+\NC texio    \NC write_nl          \NC writenl          \NC old name stays \NC \NR
+\NC node     \NC protect_glyph     \NC protectglyph     \NC \NR
+\NC          \NC protect_glyphs    \NC protectglyphs    \NC \NR
+\NC          \NC unprotect_glyph   \NC unprotectglyph   \NC \NR
+\NC          \NC unprotect_glyphs  \NC unprotectglyphs  \NC \NR
+\NC          \NC end_of_math       \NC endofmath        \NC \NR
+\NC          \NC mlist_to_hlist    \NC mlisttohlist     \NC \NR
+\NC          \NC effective_glue    \NC effectiveglue    \NC \NR
+\NC          \NC has_glyph         \NC hasglyph         \NC \NR
+\NC          \NC first_glyph       \NC firstglyph       \NC \NR
+\NC          \NC has_field         \NC hasfield         \NC \NR
+\NC          \NC copy_list         \NC copylist         \NC \NR
+\NC          \NC flush_node        \NC flushnode        \NC \NR
+\NC          \NC flush_list        \NC flushlist        \NC \NR
+\NC          \NC insert_before     \NC insertbefore     \NC \NR
+\NC          \NC insert_after      \NC insertafter      \NC \NR
+\NC          \NC last_node         \NC lastnode         \NC \NR
+\NC          \NC is_zero_glue      \NC iszeroglue       \NC \NR
+\NC          \NC make_extensible   \NC makeextensible   \NC \NR
+\NC          \NC uses_font         \NC usesfont         \NC \NR
+\NC          \NC is_char           \NC ischar           \NC \NR
+\NC          \NC is_direct         \NC isdirect         \NC \NR
+\NC          \NC is_glyph          \NC isglyph          \NC \NR
+\NC          \NC is_node           \NC isnode           \NC \NR
+\NC token    \NC scan_keyword      \NC scankeyword      \NC \NR
+\NC          \NC scan_keywordcs    \NC scankeywordcs    \NC \NR
+\NC          \NC scan_int          \NC scanint          \NC \NR
+\NC          \NC scan_real         \NC scanreal         \NC \NR
+\NC          \NC scan_float        \NC scanfloat        \NC \NR
+\NC          \NC scan_dimen        \NC scandimen        \NC \NR
+\NC          \NC scan_glue         \NC scanglue         \NC \NR
+\NC          \NC scan_toks         \NC scantoks         \NC \NR
+\NC          \NC scan_code         \NC scancode         \NC \NR
+\NC          \NC scan_string       \NC scanstring       \NC \NR
+\NC          \NC scan_argument     \NC scanargument     \NC \NR
+\NC          \NC scan_word         \NC scanword         \NC \NR
+\NC          \NC scan_csname       \NC scancsname       \NC \NR
+\NC          \NC scan_list         \NC scanlist         \NC \NR
+\NC          \NC scan_box          \NC scanbox          \NC \NR
+\LL
+\stoptabulate
+
+It's all part of trying to make the code base consistent but it is sometimes a
+bit annoying. However, that's why we develop this engine independent of the
+\LUATEX\ code base. It's anyway a change that has been on my todo list for quite
+a while because those inconsistencies annoyed me.
 
 \stopchapter
 

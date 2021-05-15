@@ -111,6 +111,103 @@
 %
 % we can also have bottom notes on top of bottom insertions
 
+% \protected\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+%   {\bgroup
+%    \strc_notes_check_if_bottom_present
+%    \d_page_one_natural_depth\dp#2\relax
+%    % we need to set the height as otherwise the shrink will not kick in so the following
+%    % no longer applies:
+%    %
+%    % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
+%    %
+%    \setbox\b_page_one_contents\vbox to \textheight % probably no pack
+%      {\page_otr_command_flush_top_insertions
+%       % this is messy ... we will provide a more tight area (no big deal as we can
+%       % do that at the lua end)
+% % \parfillskip\zeropoint
+%       \page_one_registered_text_area_a#1#2% \unvbox <box>
+%       %
+%       \ifgridsnapping
+%         \unskip % new per 2019-06-18, otherwise weird bottom floats
+%         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+%         \prevdepth\openstrutdepth
+%         \page_otr_command_flush_bottom_insertions
+%         \vfil
+%       \orelse\ifcase\bottomraggednessmode
+%         % ragged (default)
+%         \unskip % new per 2019-06-18, otherwise weird bottom floats
+%         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+%         \prevdepth\openstrutdepth
+%         % these have whitespace before but we can have some more options
+%         % like a \vfill or so
+%         \page_otr_command_flush_bottom_insertions
+%         \vfil
+%       \or
+%         % align (normal)
+%         \page_otr_command_flush_bottom_insertions
+%       \or
+%         % baseline
+%         \unskip % new per 2019-06-18, otherwise weird bottom floats
+%         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+%         \page_otr_command_flush_bottom_insertions
+%       \fi
+%       \fakepagenotes}%
+%    \page_one_command_package_show_state
+%    \ifconditional\c_notes_bottom_present
+%      \ifgridsnapping
+%        \ifcase\layoutlines
+%          \getrawnoflines\textheight
+%        \else
+%          \noflines\layoutlines
+%        \fi
+%        \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
+%      \else
+%        \scratchoffset\ht\b_page_one_contents
+%      \fi
+%      \setbox\b_page_one_bottom_notes\hpack
+%        {\lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}% kerns makes notes sit on bottom % pack ?
+%      \smashbox\b_page_one_bottom_notes
+%      \ht\b_page_one_contents\zeropoint
+%      \page_one_registered_text_area_b
+%        {\vpack to \textheight
+%           {\box\b_page_one_contents
+%            \box\b_page_one_bottom_notes}}%
+%    \else
+%      \ht\b_page_one_contents\textheight
+%      \page_one_registered_text_area_b
+%        {\box\b_page_one_contents}%
+%    \fi
+%    \egroup}
+
+%D \starttyping
+%D \setuplayout[height=middle] \showframe
+%D
+%D % \markpages[stretch][lines=2] % current page
+%D
+%D \starttext
+%D     \brokenpenalty 10000 \clubpenalty 20000 \widowpenalty 20000
+%D     \dorecurse{10}{\samplefile{tufte}\par} \page
+%D     \startmarkpages[stretch][lines=2]
+%D         \dorecurse{10}{\samplefile{tufte}\par} \page
+%D     \stopmarkpages
+%D     \dorecurse{10}{\samplefile{tufte}\par} \page
+%D \stoptext
+%D \stoptyping
+
+\newcount\c_page_one_stretch % we use marked pages which actually slow down a little
+
+\def\page_one_check_stretch_contents
+  {\ifdim\dimexpr\textheight-\ht\b_page_one_contents\relax<\c_page_one_stretch\lineheight
+     \setbox\b_page_one_contents\vpack\bgroup
+       % no need to speed up low level
+       \scale[\c!height=\textheight,\c!width=\textwidth]{\box\b_page_one_contents}%
+     \egroup
+   \fi}
+
+\def\page_one_check_stretch_lines
+  {\edef\m_lines{\markedpageparameter\v!stretch\v!lines}%
+   \ifempty\m_lines\else\c_page_one_stretch\m_lines\fi}
+
 \protected\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \strc_notes_check_if_bottom_present
@@ -120,11 +217,14 @@
    %
    % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
    %
-   \setbox\b_page_one_contents\vbox to \textheight % probably no pack
+   \ifconditional\c_notes_bottom_present\else
+      \doifmarkedpage\v!stretch\page_one_check_stretch_lines
+   \fi
+   \setbox\b_page_one_contents\vbox \ifcase\c_page_one_stretch to \textheight\fi % probably no pack
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
-% \parfillskip\zeropoint
+    % \parfillskip\zeropoint
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
@@ -173,6 +273,9 @@
           {\box\b_page_one_contents
            \box\b_page_one_bottom_notes}}%
    \else
+     \ifcase\c_page_one_stretch\else
+        \page_one_check_stretch_contents
+     \fi
      \ht\b_page_one_contents\textheight
      \page_one_registered_text_area_b
        {\box\b_page_one_contents}%

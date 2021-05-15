@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['typo-krn'] = {
+    if not modules then modules = { } end modules ['typo-krn'] = {
     version   = 1.001,
     comment   = "companion to typo-krn.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -24,10 +24,9 @@ local nodepool           = nuts.pool
 -- check what is used
 
 local find_node_tail     = nuts.tail
-local flush_node         = nuts.flush_node
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local end_of_math        = nuts.end_of_math
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
+local endofmath          = nuts.endofmath
 local copy_node          = nuts.copy
 
 local getnext            = nuts.getnext
@@ -129,7 +128,7 @@ local factors = kerns.factors
 -- make sure it runs after all others
 -- there will be a width adaptor field in nodes so this will change
 -- todo: interchar kerns / disc nodes / can be made faster
--- todo: use insert_before etc
+-- todo: use insertbefore etc
 
 local gluefactor = 4 -- assumes quad = .5 enspace
 
@@ -331,7 +330,7 @@ local function process_list(head,keeptogether,krn,font,okay)
                      -- if kerns then
                      --     print("it happens indeed, basemode kerns not yet injected")
                      -- end
-                        insert_node_before(head,start,new_kern((kerns and kerns[char] or 0) + kern))
+                        insertnodebefore(head,start,new_kern((kerns and kerns[char] or 0) + kern))
                         okay = true
                     end
                 end
@@ -412,7 +411,7 @@ function kerns.handler(head)
                                     setattr(n,a_kerns,attr) -- we took away the attr
                                 end
                                 setchar(n,unicode[i])
-                                insert_node_after(head,s,n)
+                                insertnodeafter(head,s,n)
                                 s = n
                             end
                         end
@@ -444,10 +443,10 @@ function kerns.handler(head)
                             local data  = chardata[font][prevchar]
                             local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                            insert_node_before(head,start,kern_injector(fillup,kern))
+                            insertnodebefore(head,start,kern_injector(fillup,kern))
                         end
                     else
-                        insert_node_before(head,start,kern_injector(fillup,quaddata[font]*krn))
+                        insertnodebefore(head,start,kern_injector(fillup,quaddata[font]*krn))
                     end
                 end
                 prev     = start
@@ -557,16 +556,16 @@ function kerns.handler(head)
                     -- special case
                     local b, f = closest_bound(start,getprev)
                     if b then
-                        insert_node_before(head,start,kern_injector(fillup,quaddata[f]*krn))
+                        insertnodebefore(head,start,kern_injector(fillup,quaddata[f]*krn))
                     end
                     local b, f = closest_bound(start,getnext)
                     if b then
-                        insert_node_after(head,start,kern_injector(fillup,quaddata[f]*krn))
+                        insertnodeafter(head,start,kern_injector(fillup,quaddata[f]*krn))
                     end
                 end
                 bound = false
             elseif id == math_code then
-                start = end_of_math(start)
+                start = endofmath(start)
                 bound = false
             end
             if start then

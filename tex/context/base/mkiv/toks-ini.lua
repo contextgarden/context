@@ -22,49 +22,49 @@ local commands  = token.commands()
 tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
 tokens.values   = { }
 
-local scan_toks        = token.scan_toks
-local scan_string      = token.scan_string
-local scan_argument    = token.scan_argument
-local scan_delimited   = token.scan_delimited
-local scan_tokenlist   = token.scan_tokenlist or scan_string
-local scan_integer     = token.scan_integer or token.scan_int
-local scan_cardinal    = token.scan_cardinal
-local scan_code        = token.scan_code
-local scan_token_code  = token.scan_token_code
-local scan_dimen       = token.scan_dimen
-local scan_glue        = token.scan_glue
-local scan_skip        = token.scan_skip
-local scan_keyword     = token.scan_keyword
-local scan_keyword_cs  = token.scan_keyword_cs or scan_keyword
-local scan_token       = token.scan_token
-local scan_box         = token.scan_box
-local scan_word        = token.scan_word
-local scan_letters     = token.scan_letters or scan_word -- lmtx
-local scan_key         = token.scan_key
-local scan_value       = token.scan_value
-local scan_char        = token.scan_char
-local scan_number      = token.scan_number -- not defined
-local scan_csname      = token.scan_csname
-local scan_real        = token.scan_real
-local scan_float       = token.scan_float
-local scan_luanumber   = token.scan_luanumber   or scan_float    -- only lmtx
-local scan_luainteger  = token.scan_luainteger  or scan_integer  -- only lmtx
-local scan_luacardinal = token.scan_luacardinal or scan_cardinal -- only lmtx
+local scantoks        = token.scan_toks
+local scanstring      = token.scan_string
+local scanargument    = token.scan_argument
+local scandelimited   = token.scan_delimited
+local scantokenlist   = token.scan_tokenlist or scanstring
+local scaninteger     = token.scan_integer or token.scan_int
+local scancardinal    = token.scan_cardinal
+local scancode        = token.scan_code
+local scantokencode   = token.scan_token_code
+local scandimen       = token.scan_dimen
+local scanglue        = token.scan_glue
+local scanskip        = token.scan_skip
+local scankeyword     = token.scan_keyword
+local scankeywordcs   = token.scan_keyword_cs or scankeyword
+local scantoken       = token.scan_token
+local scanbox         = token.scan_box
+local scanword        = token.scan_word
+local scanletters     = token.scan_letters or scanword -- lmtx
+local scankey         = token.scan_key
+local scanvalue       = token.scan_value
+local scanchar        = token.scan_char
+local scannumber      = token.scan_number -- not defined
+local scancsname      = token.scan_csname
+local scanreal        = token.scan_real
+local scanfloat       = token.scan_float
+local scanluanumber   = token.scan_luanumber   or scanfloat    -- only lmtx
+local scanluainteger  = token.scan_luainteger  or scaninteger  -- only lmtx
+local scanluacardinal = token.scan_luacardinal or scancardinal -- only lmtx
 
-local set_macro        = token.set_macro
-local set_char         = token.set_char
-local set_lua          = token.set_lua
+local setmacro        = token.set_macro
+local setchar         = token.set_char
+local setlua          = token.set_lua
 
-local create_token     = token.create
-local new_token        = token.new
-local is_defined       = token.is_defined
-local is_token         = token.is_token
+local createtoken     = token.create
+local newtoken        = token.new
+local isdefined       = token.is_defined
+local istoken         = token.is_token
 
-tokens.new             = new_token
-tokens.create          = create_token
-tokens.istoken         = is_token
-tokens.isdefined       = is_defined
-tokens.defined         = is_defined
+tokens.new            = newtoken
+tokens.create         = createtoken
+tokens.istoken        = istoken
+tokens.isdefined      = isdefined
+tokens.defined        = isdefined
 
 local bits = {
     escape      = 0x00000001, -- 2^00
@@ -98,10 +98,10 @@ tokens.bits = bits
 -- words are space or \relax terminated and the trailing space is gobbled; a word
 -- can contain any non-space letter/other (see archive for implementation in lua)
 
-if not scan_number then
+if not scannumber then
 
-    scan_number = function(base)
-        local s = scan_word()
+    scannumber = function(base)
+        local s = scanword()
         if not s then
             return nil
         elseif base then
@@ -113,8 +113,8 @@ if not scan_number then
 
 end
 
-local function scan_boolean()
-    local kw = scan_word()
+local function scanboolean()
+    local kw = scanword()
     if kw == "true" then
         return true
     elseif kw == "false" then
@@ -124,64 +124,64 @@ local function scan_boolean()
     end
 end
 
-local function scan_verbatim()
-    return scan_argument(false)
+local function scanverbatim()
+    return scanargument(false)
 end
 
-if not scan_box then
+if not scanbox then
 
-    local scan_list = token.scan_list
-    local put_next  = token.put_next
+    local scanlist = token.scan_list
+    local putnext  = token.put_next
 
-    scan_box = function(s)
+    scanbox = function(s)
         if s == "hbox" or s == "vbox" or s == "vtop" then
-            put_next(create_token(s))
+            putnext(createtoken(s))
         end
-        return scan_list()
+        return scanlist()
     end
 
-    token.scan_box = scan_box
+    token.scanbox = scanbox
 
 end
 
 tokens.scanners = { -- these expand
-    token          = scan_token,
-    toks           = scan_toks,
-    tokens         = scan_toks,
-    box            = scan_box,
-    hbox           = function() return scan_box("hbox") end,
-    vbox           = function() return scan_box("vbox") end,
-    vtop           = function() return scan_box("vtop") end,
-    dimen          = scan_dimen,
-    dimension      = scan_dimen,
-    glue           = scan_glue,
-    gluevalues     = function() return scan_glue(false,false,true) end,
-    gluespec       = scan_skip,
-    integer        = scan_integer,
-    cardinal       = scan_cardinal,
-    real           = scan_real,
-    float          = scan_float,
-    luanumber      = scan_luanumber,
-    luainteger     = scan_luainteger,
-    luacardinal    = scan_luacardinal,
-    count          = scan_integer,
-    string         = scan_string,
-    argument       = scan_argument,
-    delimited      = scan_delimited,
-    tokenlist      = scan_tokenlist,
-    verbatim       = scan_verbatim, -- detokenize
-    code           = scan_code,
-    tokencode      = scan_token_code,
-    word           = scan_word,
-    letters        = scan_letters,
-    key            = scan_key,
-    value          = scan_value,
-    char           = scan_char,
-    number         = scan_number,
-    boolean        = scan_boolean,
-    keyword        = scan_keyword,
-    keywordcs      = scan_keyword_cs,
-    csname         = scan_csname,
+    token          = scantoken,
+    toks           = scantoks,
+    tokens         = scantoks,
+    box            = scanbox,
+    hbox           = function() return scanbox("hbox") end,
+    vbox           = function() return scanbox("vbox") end,
+    vtop           = function() return scanbox("vtop") end,
+    dimen          = scandimen,
+    dimension      = scandimen,
+    glue           = scanglue,
+    gluevalues     = function() return scanglue(false,false,true) end,
+    gluespec       = scanskip,
+    integer        = scaninteger,
+    cardinal       = scancardinal,
+    real           = scanreal,
+    float          = scanfloat,
+    luanumber      = scanluanumber,
+    luainteger     = scanluainteger,
+    luacardinal    = scanluacardinal,
+    count          = scaninteger,
+    string         = scanstring,
+    argument       = scanargument,
+    delimited      = scandelimited,
+    tokenlist      = scantokenlist,
+    verbatim       = scanverbatim, -- detokenize
+    code           = scancode,
+    tokencode      = scantokencode,
+    word           = scanword,
+    letters        = scanletters,
+    key            = scankey,
+    value          = scanvalue,
+    char           = scanchar,
+    number         = scannumber,
+    boolean        = scanboolean,
+    keyword        = scankeyword,
+    keywordcs      = scankeywordcs,
+    csname         = scancsname,
 
     next           = token.scan_next,
     nextexpanded   = token.scan_next_expanded,
@@ -214,9 +214,9 @@ tokens.getters = { -- these don't expand
 }
 
 tokens.setters = {
-    macro = set_macro,
-    char  = set_char,
-    lua   = set_lua,
+    macro = setmacro,
+    char  = setchar,
+    lua   = setlua,
     count = tex.setcount,
     dimen = tex.setdimen,
     skip  = tex.setglue,
@@ -226,7 +226,7 @@ tokens.setters = {
     box   = tex.setbox,
 }
 
-token.accessors = {
+tokens.accessors = {
     command    = token.get_command,
     cmd        = token.get_command,
     cmdname    = token.get_cmdname,
@@ -243,33 +243,12 @@ token.accessors = {
     range      = token.get_range,
 }
 
--- static int run_scan_token(lua_State * L)
--- {
---     saved_tex_scanner texstate;
---     save_tex_scanner(texstate);
---     get_x_token();
---     make_new_token(L, cur_cmd, cur_chr, cur_cs);
---     unsave_tex_scanner(texstate);
---     return 1;
--- }
---
--- static int run_get_future(lua_State * L)
--- {
---  /* saved_tex_scanner texstate; */
---  /* save_tex_scanner(texstate); */
---     get_token();
---     make_new_token(L, cur_cmd, cur_chr, cur_cs);
---     back_input();
---  /* unsave_tex_scanner(texstate); */
---     return 1;
--- }
-
 if setinspector then
 
     local simple = { letter = "letter", other_char = "other" }
 
     local astable = function(t)
-        if t and is_token(t) then
+        if t and istoken(t) then
             local cmdname = t.cmdname
             local simple  = simple[cmdname]
             if simple then
@@ -304,10 +283,10 @@ if setinspector then
 end
 
 tokens.cache = table.setmetatableindex(function(t,k)
-    if not is_defined(k) then
-        set_macro(k,"","global")
+    if not isdefined(k) then
+        setmacro(k,"","global")
     end
-    local v = create_token(k)
+    local v = createtoken(k)
     t[k] = v
     return v
 end)

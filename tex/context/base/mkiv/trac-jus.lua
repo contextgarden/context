@@ -28,7 +28,7 @@ local findtail        = nuts.tail
 local nexthlist       = nuts.traversers.hlist
 
 local getdimensions   = nuts.dimensions
-local copy_list       = nuts.copy_list
+local copylist        = nuts.copylist
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
 
@@ -100,7 +100,7 @@ function checkers.handler(head)
                             setlist(current,rule)
                         elseif alignstate == 2 then
                             local lrule = new_hlist(tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy"))
-                            local rrule = copy_list(lrule)
+                            local rrule = copylist(lrule)
                             setlink(lrule,list)
                             setlink(findtail(list),new_kern(delta/2),rrule)
                             setlist(current,lrule)

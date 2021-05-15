@@ -91,7 +91,7 @@ function lua.registercode(filename,options)
                 lua.lastbytecode = n
             end
         elseif environment.initex then
-            texio.write_nl(format("\nerror loading file: %s (aborting)",filename))
+            texio.writenl(format("\nerror loading file: %s (aborting)",filename))
             os.exit()
         end
     end
@@ -298,7 +298,7 @@ callback.register("trace_memory", function(what,success)
         logs.report("tex memory","bumping category %a %s, details: %s",
             what,success,table.sequenced(status["get"..what.."state"]()))
     elseif texio then
-        texio.write_nl(format("bumping tex '%s' memory %s",
+        texio.writenl(format("bumping tex '%s' memory %s",
             what,success))
     end
  -- os.exit()

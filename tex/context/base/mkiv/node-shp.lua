@@ -121,7 +121,7 @@ local removables   = {
 --
 -- handlers.cleanuppage = cleanup_redundant -- nut
 
-handlers.cleanuppage = nuts.flatten_discretionaries
+handlers.cleanuppage = nuts.flattendiscretionaries
 
 local function cleanup_flushed(head) -- rough
     local start = head

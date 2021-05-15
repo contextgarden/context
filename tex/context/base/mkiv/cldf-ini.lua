@@ -98,16 +98,21 @@ local texsprint         = tex.sprint    -- just appended (no space,eol treatment
 local texprint          = tex.print     -- each arg a separate line (not last in directlua)
 ----- texwrite          = tex.write     -- all 'space' and 'character'
 
-local isnode            = node.is_node
+-- In this stage we don't yet have nodes populated so we access the library directly ...
+
+local isnode            = node.isnode   or node.is_node
+local copynodelist      = node.copylist or node.copy_list
 local writenode         = node.write
-local copynodelist      = node.copy_list
 local tonut             = node.direct.todirect
 local tonode            = node.direct.tonode
 
-local istoken           = token.is_token
 local newtoken          = token.new
 local createtoken       = token.create
-local setluatoken       = token.set_lua
+
+local istoken           = token.istoken or token.is_token
+local setluatoken       = token.setlua  or token.set_lua
+
+-- ... till here.
 
 local isprintable       = tex.isprintable or function(n)
     return n and (type(n) == "string" or isnode(n) or istoken(n))

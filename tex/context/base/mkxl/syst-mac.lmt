@@ -17,21 +17,21 @@ if not modules then modules = { } end modules ['syst-mac'] = {
 
 local insert, remove = table.insert, table.remove
 
-local push_macro   = token.push_macro
-local pop_macro    = token.pop_macro
-local scan_csname  = token.scan_csname
-local create_token = token.create
-local gobble_token = token.gobble
+local pushmacrotoken = token.pushmacro
+local popmacrotoken  = token.popmacro
+local scancsname     = token.scancsname
+local createtoken    = token.create
+local gobbletoken    = token.gobble
 
-local context      = context
-local implement    = interfaces.implement
+local context        = context
+local implement      = interfaces.implement
 
-local report       = logs.reporter("system","macrostack")
+local report         = logs.reporter("system","macrostack")
 
-local stack        = table.setmetatableindex("table")
+local stack          = table.setmetatableindex("table")
 
 local function pushmacro(name,global)
-    local s = push_macro(name,global)
+    local s = pushmacrotoken(name,global)
     if s then
         insert(stack[name],s)
     else
@@ -43,7 +43,7 @@ end
 local function popmacro(name)
     local s = remove(stack[name])
     if s then
-        pop_macro(s)
+        popmacrotoken(s)
     else
         report("no macro %a to pop",name)
     end
@@ -57,7 +57,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        pushmacro(scan_csname())
+        pushmacro(scancsname())
     end
 }
 
@@ -66,7 +66,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        pushmacro(scan_csname(),true)
+        pushmacro(scancsname(),true)
     end
 }
 
@@ -75,7 +75,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        popmacro(scan_csname())
+        popmacro(scancsname())
     end
 }
 
@@ -84,7 +84,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        popmacro(scan_csname())
+        popmacro(scancsname())
     end
 }
 
@@ -93,7 +93,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        local n = scan_csname()
+        local n = scancsname()
         local s = stack[n]
         local m = #s
         report("%s : %i stack slots used",n,m)
@@ -109,7 +109,7 @@ implement {
     protected = true,
     arguments = "3 strings",
     actions   = function(start,stop,command)
-        gobble_token(create_token(start),create_token(stop))
+        gobbletoken(createtoken(start),createtoken(stop))
         if command then
             context[command]()
         end

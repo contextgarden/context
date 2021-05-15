@@ -70,14 +70,14 @@ local isglyph             = nuts.isglyph
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
-local copy_list           = nuts.copy_list
-local copy_node           = nuts.copy_node
-local flush_node_list     = nuts.flush_list
-local insert_node_before  = nuts.insert_before
-local insert_node_after   = nuts.insert_after
+local copylist            = nuts.copylist
+local copy_node           = nuts.copy
+local insertnodebefore    = nuts.insertbefore
+local insertnodeafter     = nuts.insertafter
 local apply_to_nodes      = nuts.apply
 local find_tail           = nuts.tail
-local effectiveglue       = nuts.effective_glue
+local effectiveglue       = nuts.effectiveglue
+local flushnodelist       = nuts.flushlist
 
 local hpack_string        = nuts.typesetters.tohpack
 
@@ -500,7 +500,7 @@ local fontkern, italickern, marginkern, mathlistkern do
             setattr(info,a_layer,layer)
             f_cache[kern] = info
         end
-        head = insert_node_before(head,current,copy_list(info))
+        head = insertnodebefore(head,current,copylist(info))
         return head, current
     end
 
@@ -548,7 +548,7 @@ local glyphexpansion do
                 setattr(info,a_layer,l_expansion)
                 f_cache[extra] = info
             end
-            head = insert_node_before(head,current,copy_list(info))
+            head = insertnodebefore(head,current,copylist(info))
             return head, current
         end
         return head, current
@@ -584,7 +584,7 @@ local kernexpansion do
                 setattr(info,a_layer,l_expansion)
                 f_cache[extra] = info
             end
-            head = insert_node_before(head,current,copy_list(info))
+            head = insertnodebefore(head,current,copylist(info))
             return head, current
         end
         return head, current
@@ -621,7 +621,7 @@ local whatsit do
             setattr(info,a_layer,l_whatsit)
             w_cache[what] = info
         end
-        head, current = insert_node_after(head,current,copy_list(info))
+        head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
 
@@ -694,7 +694,7 @@ local user do
             setattr(info,a_layer,l_user)
             u_cache[what] = info
         end
-        head, current = insert_node_after(head,current,copy_list(info))
+        head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
 
@@ -733,7 +733,7 @@ local math do
             setattr(info,a_layer,l_math)
             m_cache[tag][skip] = info
         end
-        head, current = insert_node_after(head,current,copy_list(info))
+        head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
 
@@ -791,7 +791,7 @@ local ruledbox do
             end
             -- we need to trigger the right mode (else sometimes no whatits)
             local info = setlink(
-                this and copy_list(this) or nil,
+                this and copylist(this) or nil,
                 (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                     width  = wd,
                     height = ht,
@@ -812,7 +812,7 @@ local ruledbox do
                 elseif trace_origin then
                     local size   = 2*size
                     local origin = o_cache[size]
-                    origin = copy_list(origin)
+                    origin = copylist(origin)
                     if getid(parent) == vlist_code then
                         setshift(origin,-shift)
                         info = setlink(current,new_kern(-size),origin,new_kern(-size-dp),info)
@@ -832,7 +832,7 @@ local ruledbox do
                 elseif trace_origin then
                     local size   = 2*size
                     local origin = o_cache[size]
-                    origin = copy_list(origin)
+                    origin = copylist(origin)
                     if getid(parent) == vlist_code then
                         info = setlink(current,new_kern(-wd-size-shift),origin,new_kern(-size+shift),info)
                     else
@@ -1012,11 +1012,11 @@ local ruledglue do
             end
             (vertical and g_cache_v or g_cache_h)[amount] = info
         end
-        info = copy_list(info)
+        info = copylist(info)
         if vertical then
             info = vpack_nodes(info)
         end
-        head, current = insert_node_before(head,current,info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1032,8 +1032,8 @@ local ruledglue do
  --             info = sometext(amount,l_glue,c_space)
  --             g_cache_h[amount] = info
  --         end
- --         info = copy_list(info)
- --         head, current = insert_node_before(head,current,info)
+ --         info = copylist(info)
+ --         head, current = insertnodebefore(head,current,info)
  --         return head, getnext(current)
  --     else
  --         return head, current
@@ -1061,8 +1061,8 @@ local ruledglue do
                     g_cache_x[width] = info
                 end
             end
-            info = copy_list(info)
-            head, current = insert_node_before(head,current,info)
+            info = copylist(info)
+            head, current = insertnodebefore(head,current,info)
             return head, getnext(current)
         else
             return head, current
@@ -1091,11 +1091,11 @@ local ruledkern do
             end
             cache[kern] = info
         end
-        info = copy_list(info)
+        info = copylist(info)
         if vertical then
             info = vpack_nodes(info)
         end
-        head, current = insert_node_before(head,current,info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1119,8 +1119,8 @@ local ruleditalic do
             end
             i_cache[kern] = info
         end
-        info = copy_list(info)
-        head, current = insert_node_before(head,current,info)
+        info = copylist(info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1144,8 +1144,8 @@ local ruledmarginkern do
             end
             m_cache[kern] = info
         end
-        info = copy_list(info)
-        head, current = insert_node_before(head,current,info)
+        info = copylist(info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1169,8 +1169,8 @@ local ruledmathlistkern do
             end
             l_cache[kern] = info
         end
-        info = copy_list(info)
-        head, current = insert_node_before(head,current,info)
+        info = copylist(info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1192,7 +1192,7 @@ local ruleddiscretionary do
             d = new_hlist(kern)
             d_cache[true] = d
         end
-        insert_node_after(head,current,copy_list(d))
+        insertnodeafter(head,current,copylist(d))
         return head, current
     end
 
@@ -1223,13 +1223,13 @@ local ruledpenalty do
             end
             (vertical and p_cache_v or p_cache_h)[penalty] = info
         end
-        info = copy_list(info)
+        info = copylist(info)
         if vertical then
             info = vpack_nodes(info)
         elseif raisepenalties then
             setshift(info,-65536*4)
         end
-        head, current = insert_node_before(head,current,info)
+        head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
     end
 
@@ -1503,7 +1503,7 @@ do
     local function cleanup()
         for tag, cache in next, caches do
             for k, v in next, cache do
-                flush_node_list(v)
+                flushnodelist(v)
             end
         end
         cleanup = function()

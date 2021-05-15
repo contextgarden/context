@@ -276,6 +276,8 @@ end
 
 implement {
     name      = "checkmarkedpages",
+    protected = true,
+    public    = true,
     actions   = autopageaction,
 }
 
@@ -287,19 +289,24 @@ implement {
 
 implement {
     name      = "doifelsemarkedpage",
-    arguments = "string",
+    arguments = "argument",
+    protected = true,
+    public    = true,
     actions   = { marked, ctx_doifelse }
 }
 
 implement {
     name      = "doifmarkedpage",
-    arguments = "string",
+    arguments = "argument",
+    protected = true,
+    public    = true,
     actions   = { marked, ctx_doif }
 }
 
 implement {
     name      = "markedpageparameter",
-    arguments = "strings",
+    arguments = "2 arguments",
+    public    = true,
     actions   = function(name,key)
         local value = markedparameter(name,key)
         if value then
@@ -326,17 +333,15 @@ implement {
 }
 
 implement {
-    name    = "stopmarkpages",
-    actions = stopmarked,
+    name      = "stopmarkpages",
+    protected = true,
+    public    = true,
+    actions   = stopmarked,
 }
 
-local tonut    = nodes.tonut
-local nextlist = nodes.nuts.traversers.list
-local texlists = tex.lists
-
 implement {
-    name    = "doifelsependingpagecontent",
-    actions = function()
+    name      = "doifelsependingpagecontent",
+    actions   = function()
         local h = texlists.contrib_head
      -- local t = texlists.contrib_tail
         local p = false

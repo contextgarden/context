@@ -78,9 +78,10 @@ local resolveprefix     = resolvers.resolve
 local texgetbox         = tex.getbox
 local texsetbox         = tex.setbox
 
-local hpack             = node.hpack
+local hpack             = nodes.hpack
 
 local new_latelua       = nodes.pool.latelua
+local new_hlist         = nodes.pool.hlist
 
 local context           = context
 
@@ -1392,7 +1393,7 @@ end
 function figures.dummy(data)
     data = data or callstack[#callstack] or lastfiguredata
     local dr, du, nr = data.request, data.used, figures.boxnumber
-    local box  = hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
+    local box  = hpack(new_hlist()) -- we need to set the dir (luatex 0.60 buglet)
     du.width   = du.width  or figures.defaultwidth
     du.height  = du.height or figures.defaultheight
     du.depth   = du.depth  or figures.defaultdepth

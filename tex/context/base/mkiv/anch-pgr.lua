@@ -24,6 +24,7 @@ local lpegmatch = lpeg.match
 local jobpositions      = job.positions
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
+local settings_to_array = utilities.parsers.settings_to_array
 
 local enableaction      = nodes.tasks.enableaction
 
@@ -32,6 +33,7 @@ local context           = context
 
 local implement         = interfaces.implement
 
+local texgetcount       = tex.getcount
 local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
 local report_free       = logs.reporter("backgrounds","free")
@@ -78,9 +80,10 @@ local getdepth          = nuts.getdepth
 local nodecodes         = nodes.nodecodes
 local par_code          = nodecodes.par
 
-local start_of_par      = nuts.start_of_par
-local insert_before     = nuts.insert_before
-local insert_after      = nuts.insert_after
+local startofpar        = nuts.startofpar
+
+local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
 
 local processranges     = nuts.processranges
 
@@ -165,12 +168,12 @@ local function flush(head,f,l,a,parent,depth)
             ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
             rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
         end
-        if getid(f) == par_code and start_of_par(f) then -- we need to clean this mess
-            insert_after(head,f,ln)
+        if getid(f) == par_code and startofpar(f) then -- we need to clean this mess
+            insertafter(head,f,ln)
         else
-            head, f = insert_before(head,f,ln)
+            head, f = insertbefore(head,f,ln)
         end
-        insert_after(head,l,rn)
+        insertafter(head,l,rn)
     end
     return head, true
 end
@@ -222,7 +225,8 @@ end
 
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
-    index = index + 1
+    index    = index + 1
+    realpage = texgetcount("realpageno")
     return processranges(a_textbackground,flush,head,parent)
 end
 
@@ -234,8 +238,6 @@ interfaces.implement {
 
 -- optimized already but we can assume a cycle i.e. prune the last point and then
 -- even less code .. we could merge some loops but his is more robust
-
--- use idiv here
 
 local function topairs(t,n)
     local r = { }
@@ -1213,7 +1215,7 @@ implement {
     actions   = function(tags,anchor,page)  -- no caching (yet) / page
         local collected = jobpositions.collected
         if type(tags) == "string" then
-            tags = utilities.parsers.settings_to_array(tags)
+            tags = settings_to_array(tags)
         end
         local list     = { }
         local nofboxes = 0

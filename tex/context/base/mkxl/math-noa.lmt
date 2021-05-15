@@ -135,12 +135,12 @@ local setsup             = nuts.setsup
 local setsubpre          = nuts.setsubpre
 local setsuppre          = nuts.setsuppre
 
-local flush_node         = nuts.flush
+local flushnode          = nuts.flush
 local copy_node          = nuts.copy
 local slide_nodes        = nuts.slide
 local set_visual         = nuts.setvisual
 
-local mlist_to_hlist     = nuts.mlist_to_hlist
+local mlisttohlist       = nuts.mlisttohlist
 
 local new_kern           = nodepool.kern
 local new_submlist       = nodepool.submlist
@@ -897,7 +897,7 @@ do
             end
             setchar(d,chr)
             setfam(d,fam)
-            flush_node(sym)
+            flushnode(sym)
         end
         setattrlist(d,char)
         setattrlist(f,char)
@@ -943,7 +943,7 @@ do
                 if midl then
                     local fence = makefence(middlefence_code,current)
                     setnucleus(current)
-                    flush_node(current)
+                    flushnode(current)
                     middle[current] = nil
                     -- replace_node
                     setlink(prev,fence,next)
@@ -969,7 +969,7 @@ do
             local f_c = makefence(rightfence_code,close)
             makelist(middle,open,f_o,o_next,c_prev,f_c)
             setnucleus(close)
-            flush_node(close)
+            flushnode(close)
             -- open is now a list
             setlink(open,c_next)
             return open
@@ -1894,7 +1894,7 @@ do
                 end
                 while c ~= l do
                     local n = getnext(c)
-                    flush_node(c)
+                    flushnode(c)
                     c = n
                 end
                 setlink(parent,l)
@@ -2108,7 +2108,7 @@ do
                     end
                     setprev(next,pointer)
                     setnext(parent,getnext(next))
-                    flush_node(next)
+                    flushnode(next)
                 end
             end
         end
@@ -2361,12 +2361,12 @@ do
  --     force_penalties = v
  -- end)
 
-    function builders.kernel.mlist_to_hlist(head,style,penalties)
-        return mlist_to_hlist(head,style,force_penalties or penalties)
+    function builders.kernel.mlisttohlist(head,style,penalties)
+        return mlisttohlist(head,style,force_penalties or penalties)
     end
 
- -- function builders.kernel.mlist_to_hlist(head,style,penalties)
- --     local h = mlist_to_hlist(head,style,force_penalties or penalties)
+ -- function builders.kernel.mlisttohlist(head,style,penalties)
+ --     local h = mlisttohlist(head,style,force_penalties or penalties)
  --     inspect(nodes.totree(h,true,true,true))
  --     return h
  -- end
@@ -2385,14 +2385,14 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function processors.mlist_to_hlist(head,style,penalties)
+function processors.mlisttohlist(head,style,penalties)
     starttiming(noads)
     head = actions(head,style,penalties)
     stoptiming(noads)
     return head
 end
 
-callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing math list")
+callbacks.register('mlisttohlist',processors.mlisttohlist,"preprocessing math list")
 
 -- tracing
 

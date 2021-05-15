@@ -9,47 +9,47 @@ if not modules then modules = { } end modules ['s-languages-hyphenation'] = {
 moduledata.languages             = moduledata.languages             or { }
 moduledata.languages.hyphenation = moduledata.languages.hyphenation or { }
 
-local a_colormodel      = attributes.private('colormodel')
+local a_colormodel    = attributes.private('colormodel')
 
-local tex               = tex
-local context           = context
+local tex             = tex
+local context         = context
 
-local nodecodes         = nodes.nodecodes
-local nuts              = nodes.nuts
-local nodepool          = nuts.pool
+local nodecodes       = nodes.nodecodes
+local nuts            = nodes.nuts
+local nodepool        = nuts.pool
 
-local disc_code         = nodecodes.disc
-local glyph_code        = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local glyph_code      = nodecodes.glyph
 
-local emwidths          = fonts.hashes.emwidths
-local exheights         = fonts.hashes.exheights
+local emwidths        = fonts.hashes.emwidths
+local exheights       = fonts.hashes.exheights
 
-local newkern           = nodepool.kern
-local newrule           = nodepool.rule
-local newglue           = nodepool.glue
+local newkern         = nodepool.kern
+local newrule         = nodepool.rule
+local newglue         = nodepool.glue
 
-local insert_node_after = nuts.insert_after
+local insertnodeafter = nuts.insertafter
 
-local nextglyph         = nuts.traversers.glyph
+local nextglyph       = nuts.traversers.glyph
 
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
-local getid             = nuts.getid
-local getnext           = nuts.getnext
-local getdisc           = nuts.getdisc
-local getattr           = nuts.getattr
-local getfont           = nuts.getfont
-local getfield          = nuts.getfield
-local getlanguage       = nuts.getlanguage
-local setlanguage       = nuts.setlanguage
-local setlink           = nuts.setlink
-local setdisc           = nuts.setdisc
-local setfield          = nuts.setfield
-local free_node         = nuts.free
+local tonut           = nodes.tonut
+local tonode          = nodes.tonode
+local getid           = nuts.getid
+local getnext         = nuts.getnext
+local getdisc         = nuts.getdisc
+local getattr         = nuts.getattr
+local getfont         = nuts.getfont
+local getfield        = nuts.getfield
+local getlanguage     = nuts.getlanguage
+local setlanguage     = nuts.setlanguage
+local setlink         = nuts.setlink
+local setdisc         = nuts.setdisc
+local setfield        = nuts.setfield
+local free_node       = nuts.free
 
-local tracers           = nodes.tracers
-local colortracers      = tracers and tracers.colors
-local setnodecolor      = colortracers.set
+local tracers         = nodes.tracers
+local colortracers    = tracers and tracers.colors
+local setnodecolor    = colortracers.set
 
 -- maybe this will become code code
 
@@ -122,10 +122,10 @@ local function mark(head,marked,w,h,d,how)
         local ex      = exheights[font]
         local width   = w*em
         local rule    = newrule(width,h*ex,d*ex)
-        head, current = insert_node_after(head,current,newkern(-width/2))
-        head, current = insert_node_after(head,current,rule)
-        head, current = insert_node_after(head,current,newkern(-width/2))
-        head, current = insert_node_after(head,current,newglue(0))
+        head, current = insertnodeafter(head,current,newkern(-width/2))
+        head, current = insertnodeafter(head,current,rule)
+        head, current = insertnodeafter(head,current,newkern(-width/2))
+        head, current = insertnodeafter(head,current,newglue(0))
         setnodecolor(rule,how) -- ,getattr(current,a_colormodel))
     end
 end

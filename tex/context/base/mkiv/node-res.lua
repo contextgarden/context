@@ -99,7 +99,7 @@ local setdata      = nuts.setdata
 local setruledata  = nuts.setruledata
 local setvalue     = nuts.setvalue
 
-local copy_nut     = nuts.copy_only or nuts.copy
+local copy_nut     = nuts.copy
 local new_nut      = nuts.new
 local flush_nut    = nuts.flush
 
@@ -617,19 +617,19 @@ lua.registerfinalizer(cleanup, "cleanup reserved nodes")
 
 do
 
-    local glyph       = tonode(glyph)
-    local traverse_id = nodes.traverse_id
+    local glyph      = tonode(glyph)
+    local traverseid = nodes.traverseid
 
-    local traversers  = table.setmetatableindex(function(t,k)
-        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
+    local traversers = table.setmetatableindex(function(t,k)
+        local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph)
         t[k] = v
         return v
     end)
 
-                                 traversers.node  = nodes.traverse      (glyph)
-                                 traversers.char  = nodes.traverse_char (glyph)
-    if nodes.traverse_glyph then traversers.glyph = nodes.traverse_glyph(glyph) end
-    if nodes.traverse_list  then traversers.list  = nodes.traverse_list (glyph) end
+                                traversers.node  = nodes.traverse     (glyph)
+                                traversers.char  = nodes.traversechar (glyph)
+    if nodes.traverseglyph then traversers.glyph = nodes.traverseglyph(glyph) end
+    if nodes.traverselist  then traversers.list  = nodes.traverselist (glyph) end
 
     nodes.traversers = traversers
 
@@ -637,20 +637,20 @@ end
 
 do
 
-    local glyph       = glyph
-    local traverse_id = nuts.traverse_id
+    local glyph      = glyph
+    local traverseid = nuts.traverseid
 
-    local traversers  = table.setmetatableindex(function(t,k)
-        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
+    local traversers = table.setmetatableindex(function(t,k)
+        local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph)
         t[k] = v
         return v
     end)
 
-                                  traversers.node    = nuts.traverse        (glyph)
-                                  traversers.char    = nuts.traverse_char   (glyph)
-    if nuts.traverse_glyph   then traversers.glyph   = nuts.traverse_glyph  (glyph) end
-    if nuts.traverse_list    then traversers.list    = nuts.traverse_list   (glyph) end
-    if nuts.traverse_content then traversers.content = nuts.traverse_content(glyph) end
+                                 traversers.node    = nuts.traverse       (glyph)
+                                 traversers.char    = nuts.traversechar   (glyph)
+    if nuts.traverseglyph   then traversers.glyph   = nuts.traverseglyph  (glyph) end
+    if nuts.traverselist    then traversers.list    = nuts.traverselist   (glyph) end
+    if nuts.traversecontent then traversers.content = nuts.traversecontent(glyph) end
 
     nuts.traversers = traversers
 

@@ -26,52 +26,57 @@ local glyph_code      = nodecodes.glyph
 local tonode          = direct.tonode
 local tonut           = direct.todirect
 
-local is_node         = direct.is_node
-local is_nut          = direct.is_direct
+local isnode          = direct.isnode
+local isnut           = direct.isdirect
+local isdirect        = direct.isdirect
 
 local d_remove_node   = direct.remove
-local d_flush_node    = direct.flush_node
+local d_flushnode     = direct.flushnode
 local d_getnext       = direct.getnext
 local d_getprev       = direct.getprev
 local d_getid         = direct.getid
 local d_getlist       = direct.getlist
 local d_find_tail     = direct.tail
-local d_insert_after  = direct.insert_after
-local d_insert_before = direct.insert_before
+local d_insertafter   = direct.insertafter
+local d_insertbefore  = direct.insertbefore
 local d_slide         = direct.slide
 local d_traverse      = direct.traverse
 local d_setlink       = direct.setlink
 local d_getboth       = direct.getboth
 
 local nuts = {
-    check_discretionaries   = direct.check_discretionaries,
+    addmargins              = direct.addmargins,
+    addxoffset              = direct.addxoffset,
+    addxymargins            = direct.addxymargins,
+    addyoffset              = direct.addyoffset,
+    append                  = direct.append,
+    checkdiscretionaries    = direct.checkdiscretionaries,
     collapsing              = direct.collapsing,
     copy                    = direct.copy,
-    copy_list               = direct.copy_list,
-    copy_node               = direct.copy,
-    copy_only               = direct.copy_only or direct.copy,
+    copynode                = direct.copy,
+    copylist                = direct.copylist,
+    copyonly                = direct.copyonly,
     count                   = direct.count,
-    current_attributes      = direct.current_attributes,
+    currentattributes       = direct.currentattributes,
     delete                  = direct.delete,
     dimensions              = direct.dimensions,
-    naturalhsize            = direct.naturalhsize,
-    naturalwidth            = direct.naturalwidth,
-    effective_glue          = direct.effective_glue,
-    end_of_math             = direct.end_of_math,
+    effectiveglue           = direct.effectiveglue,
+    endofmath               = direct.endofmath,
     exchange                = direct.exchange,
-    find_attribute          = direct.find_attribute,
-    first_glyph             = direct.first_glyph,
-    flatten_discretionaries = direct.flatten_discretionaries,
-    flush                   = d_flush_node,
-    flush_components        = direct.flush_components,
-    flush_list              = direct.flush_list,
-    flush_node              = direct.flush_node,
+    findattribute           = direct.findattribute,
+    findnode                = direct.findnode,
+    firstglyph              = direct.firstglyph,
+    flattendiscretionaries  = direct.flattendiscretionaries,
+    flush                   = d_flushnode,
+    flushlist               = direct.flushlist,
+    flushnode               = d_flushnode,
     free                    = direct.free,
-    getsynctexfields        = direct.get_synctex_fields,
-    getattr                 = direct.get_attribute,
-    getattrs                = direct.get_attributes,
+    getattr                 = direct.getattribute,
+    getattribute            = direct.getattribute,
     getattributelist        = direct.getattributelist,
+    getattributes           = direct.getattributes,
     getattrlist             = direct.getattributelist,
+    getattrs                = direct.getattributes,
     getboth                 = d_getboth,
     getbox                  = direct.getbox,
     getboxglue              = direct.getglue,
@@ -83,17 +88,19 @@ local nuts = {
     getdir                  = direct.getdir,
     getdirection            = direct.getdirection,
     getdisc                 = direct.getdisc,
-    getdiscretionary        = direct.getdisc,
     getdiscpart             = direct.getdiscpart,
+    getdiscretionary        = direct.getdisc,
     getexpansion            = direct.getexpansion,
     getfam                  = direct.getfam,
     getfield                = direct.getfield,
     getfont                 = direct.getfont,
     getglue                 = direct.getglue,
     getglyphdata            = direct.getglyphdata,
+    getglyphdimensions      = direct.getglyphdimensions,
     getheight               = direct.getheight,
     getid                   = d_getid,
     getkern                 = direct.getkern,
+    getkerndimension        = direct.getkerndimension,
     getlang                 = direct.getlanguage,-- will become obsolete
     getlanguage             = direct.getlanguage,
     getleader               = direct.getleader,
@@ -102,22 +109,16 @@ local nuts = {
     getnormalizedline       = direct.getnormalizedline,
     getnucleus              = direct.getnucleus,
     getoffsets              = direct.getoffsets,
- -- getxyoffsets            = direct.getxyoffsets,
-    getscale                = direct.getscale,
-    getscales               = direct.getscales,
-    getxscale               = direct.getxscale,
-    getyscale               = direct.getyscale,
-    xscaled                 = direct.xscaled,
-    yscaled                 = direct.yscaled,
-    getxyscales             = direct.getxyscales,
-    getorientation          = direct.getorientation,
     getoptions              = direct.getoptions,
+    getorientation          = direct.getorientation,
     getpenalty              = direct.getpenalty,
     getpost                 = direct.getpost,
     getpre                  = direct.getpre,
     getprev                 = d_getprev,
     getreplace              = direct.getreplace,
     getruledata             = direct.getdata, -- obsolete when we have the split
+    getscale                = direct.getscale,
+    getscales               = direct.getscales,
     getscript               = direct.setscript,
     getshift                = direct.getshift,
     getstate                = direct.getstate,
@@ -127,50 +128,56 @@ local nuts = {
     getsup                  = direct.getsup,
     getsuppre               = direct.getsuppre,
     getsurround             = direct.getkern,
+    getsynctexfields        = direct.getsynctexfields,
     gettotal                = direct.gettotal,
     getvalue                = direct.getdata, -- obsolete
     getwhd                  = direct.getwhd,
     getwidth                = direct.getwidth,
-    has_attribute           = direct.has_attribute,
-    has_dimensions          = direct.has_dimensions,
-    has_field               = direct.has_field,
-    has_glyph               = direct.has_glyph or direct.first_glyph,
+    getxscale               = direct.getxscale,
+    getxyscales             = direct.getxyscales,
+    getyscale               = direct.getyscale,
+    hasattribute            = direct.hasattribute,
+    hasdimensions           = direct.hasdimensions,
+    hasfield                = direct.hasfield,
+    hasglyph                = direct.hasglyph,
+    hasglyphoption          = direct.hasglyphoption,
     hpack                   = direct.hpack,
     hyphenating             = direct.hyphenating,
-    insert_after            = d_insert_after,
-    insert_before           = d_insert_before,
-    is_direct               = is_direct,
-    is_node                 = is_node,
-    is_nut                  = direct.is_direct,
-    is_zero_glue            = direct.is_zero_glue,
-    ischar                  = direct.is_char,
-    isprevchar              = direct.is_prev_char,
-    isnextchar              = direct.is_next_char,
-    isprevglyph             = direct.is_prev_glyph,
-    isnextglyph             = direct.is_next_glyph,
-    isglyph                 = direct.is_glyph,
+    ignoremathskip          = direct.ignoremathskip,
+    insertafter             = d_insertafter,
+    insertbefore            = d_insertbefore,
+    isdirect                = isdirect,
+    isnode                  = isnode,
+    isnut                   = isdirect,
+    ischar                  = direct.ischar,
+    isglyph                 = direct.isglyph,
+    isnextchar              = direct.isnextchar,
+    isnextglyph             = direct.isnextglyph,
+    isprevchar              = direct.isprevchar,
+    isprevglyph             = direct.isprevglyph,
+    iszeroglue              = direct.iszeroglue,
     kerning                 = direct.kerning,
-    last_node               = direct.last_node,
+    lastnode                = direct.lastnode,
     length                  = direct.length,
     ligaturing              = direct.ligaturing,
+    makextensible           = direct.makextensible,
     migrate                 = direct.migrate,
-    mlist_to_hlist          = direct.mlist_to_hlist,
+    mlisttohlist            = direct.mlisttohlist,
+    naturalhsize            = direct.naturalhsize,
+    naturalwidth            = direct.naturalwidth,
     new                     = direct.new,
-    protect_glyph           = direct.protect_glyph,
-    protect_glyphs          = direct.protect_glyphs,
-    protrusion_skippable    = direct.protrusion_skippable,
+    protectglyph            = direct.protectglyph,
+    protectglyphs           = direct.protectglyphs,
+    protrusionskippable     = direct.protrusionskippable,
     rangedimensions         = direct.rangedimensions,
-    getglyphdimensions      = direct.getglyphdimensions,
-    getkerndimension        = direct.getkerndimension,
     remove                  = d_remove_node,
     reverse                 = direct.reverse,
-    set_attribute           = direct.set_attribute,
-    addmargins              = direct.addmargins,
-    addxymargins            = direct.addxymargins,
-    setattr                 = direct.set_attribute,
-    setattrs                = direct.set_attributes,
+    setattr                 = direct.setattribute,
+    setattr                 = direct.setattribute,
+    setattribute            = direct.setattribute,
     setattributelist        = direct.setattributelist,
     setattrlist             = direct.setattributelist,
+    setattrs                = direct.setattributes,
     setboth                 = direct.setboth,
     setbox                  = direct.setbox,
     setboxglue              = direct.setglue,
@@ -181,8 +188,8 @@ local nuts = {
     setdir                  = direct.setdir,
     setdirection            = direct.setdirection,
     setdisc                 = direct.setdisc,
-    setdiscretionary        = direct.setdisc,
     setdiscpart             = direct.setdiscpart,
+    setdiscretionary        = direct.setdisc,
     setexpansion            = direct.setexpansion,
     setfam                  = direct.setfam,
     setfield                = direct.setfield,
@@ -198,19 +205,17 @@ local nuts = {
     setlist                 = direct.setlist,
     setnext                 = direct.setnext,
     setnucleus              = direct.setnucleus,
-    setscale                = direct.setscale or direct.setscales,
-    setscales               = direct.setscales,
     setoffsets              = direct.setoffsets,
-    addxoffset              = direct.addxoffset,
-    addyoffset              = direct.addyoffset,
-    setorientation          = direct.setorientation,
     setoptions              = direct.setoptions,
+    setorientation          = direct.setorientation,
     setpenalty              = direct.setpenalty,
     setpost                 = direct.setpost,
     setpre                  = direct.setpre,
     setprev                 = direct.setprev,
     setreplace              = direct.setreplace,
     setruledata             = direct.setdata, -- obsolete when we have the split
+    setscale                = direct.setscale or direct.setscales,
+    setscales               = direct.setscales,
     setscript               = direct.getscript,
     setshift                = direct.setshift,
     setsplit                = direct.setsplit,
@@ -221,44 +226,46 @@ local nuts = {
     setsup                  = direct.setsup,
     setsuppre               = direct.setsuppre,
     setsurround             = direct.setkern,
-    setsynctexfields        = direct.set_synctex_fields,
+    setsynctexfields        = direct.setsynctexfields,
     setvalue                = direct.setdata, -- obsolete
     setwhd                  = direct.setwhd,
     setwidth                = direct.setwidth,
+    show                    = direct.show,
     slide                   = d_slide,
-    start_of_par            = direct.start_of_par,
+    startofpar              = direct.startofpar,
     tail                    = d_find_tail,
-    takeattr                = direct.unset_attribute, -- ?
+    takeattr                = direct.unsetattribute, -- ?
     tonode                  = tonode,
     tonut                   = tonut,
     tostring                = direct.tostring,
     traverse                = d_traverse,
-    traverse_char           = direct.traverse_char,
-    traverse_glyph          = direct.traverse_glyph,
-    traverse_id             = direct.traverse_id,
-    traverse_list           = direct.traverse_list,
-    traverse_content        = direct.traverse_content,
-    unprotect_glyph         = direct.unprotect_glyph,
-    unprotect_glyphs        = direct.unprotect_glyphs,
-    unset_attribute         = direct.unset_attribute,
-    unset_attributes        = direct.unset_attributes,
+    traversechar            = direct.traversechar,
+    traversecontent         = direct.traversecontent,
+    traverseglyph           = direct.traverseglyph,
+    traverseid              = direct.traverseid,
+    traverselist            = direct.traverselist,
+    unprotectglyph          = direct.unprotectglyph,
+    unprotectglyphs         = direct.unprotectglyphs,
+    unsetattribute          = direct.unsetattribute,
+    unsetattributes         = direct.unsetattributes,
     usedlist                = direct.usedlist,
-    uses_font               = direct.uses_font,
+    usesfont                = direct.usesfont,
+    verticalbreak           = direct.verticalbreak,
     vpack                   = direct.vpack,
     write                   = direct.write,
-    append                  = direct.append,
-    has_glyph_option        = direct.has_glyph_option,
-    show                    = direct.show,
+    xscaled                 = direct.xscaled,
+    yscaled                 = direct.yscaled,
+ -- getxyoffsets            = direct.getxyoffsets,
 }
 
-nodes.nuts      = nuts
+nodes.nuts     = nuts
 
-nodes.is_node   = is_node
-nodes.is_direct = is_nut
-nodes.is_nut    = is_nut
+nodes.isnode   = isnode
+nodes.isdirect = isnut
+nodes.isnut    = isnut
 
-nodes.tonode    = tonode
-nodes.tonut     = tonut
+nodes.tonode   = tonode
+nodes.tonut    = tonut
 
 function nuts.delete(head,current)
     return d_remove_node(head,current,true)
@@ -276,10 +283,10 @@ function nuts.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        d_flush_node(current)
+        d_flushnode(current)
         return head, new
     else
-        d_flush_node(current)
+        d_flushnode(current)
         return new
     end
 end
@@ -311,14 +318,14 @@ end
 
 function nuts.append(head,current,...)
     for i=1,select("#",...) do
-        head, current = d_insert_after(head,current,(select(i,...)))
+        head, current = d_insertafter(head,current,(select(i,...)))
     end
     return head, current
 end
 
 function nuts.prepend(head,current,...)
     for i=1,select("#",...) do
-        head, current = d_insert_before(head,current,(select(i,...)))
+        head, current = d_insertbefore(head,current,(select(i,...)))
     end
     return head, current
 end
@@ -365,7 +372,7 @@ function nuts.vianodes(f) return function(n,...) return tonut (f(tonode(n),...))
 nodes.vianuts  = nuts.vianuts
 nodes.vianodes = nuts.vianodes
 
-function nodes.insert_list_after(h,c,n)
+function nodes.insertlistafter(h,c,n)
     local t = n_tail(n)
     if c then
         local cn = n_getnext(c)
@@ -383,7 +390,7 @@ function nodes.insert_list_after(h,c,n)
     return n, t
 end
 
-function nuts.insert_list_after(h,c,n)
+function nuts.insertlistafter(h,c,n)
     local t = d_tail(n)
     if c then
         local cn = d_getnext(c)
@@ -509,7 +516,7 @@ nuts.nestedtracedslide = nestedtracedslide
 
 -- this might move
 
-local propertydata = direct.get_properties_table(true)
+local propertydata = direct.getpropertiestable(true)
 
 local getattr = nuts.getattr
 local setattr = nuts.setattr

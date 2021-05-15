@@ -36,8 +36,7 @@ local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
-local flush_list         = nuts.flush_list
-local flush_node         = nuts.flush_node
+----- flushnode          = nuts.flushnode
 
 local nextdisc           = nuts.traversers.disc
 
@@ -124,12 +123,12 @@ end
 
 local wiped = 0
 
-local flatten_discretionaries = nuts.flatten_discretionaries -- todo in nodes
+local flattendiscretionaries = nuts.flattendiscretionaries -- todo in nodes
 
--- if flatten_discretionaries then
+-- if flattendiscretionaries then
 
     function languages.flatten(head)
-        local h, n = flatten_discretionaries(head)
+        local h, n = flattendiscretionaries(head)
         wiped = wiped + n
         return h, n > 0
     end
@@ -152,7 +151,7 @@ local flatten_discretionaries = nuts.flatten_discretionaries -- todo in nodes
 --             head = h
 --         end
 --         wiped = wiped + 1
---         flush_node(delayed)
+--         flushnode(delayed)
 --         return head
 --     end
 --
@@ -202,7 +201,7 @@ function languages.explicithyphen(template)
     local pre, post
     local disc = new_disc()
     if template then
-        local langdata = getlanguagedata(getlang(template))
+        local langdata = getlanguagedata(getlanguage(template))
         local instance = langdata and langdata.instance
         if instance then
             local prechr  = prehyphenchar(instance)

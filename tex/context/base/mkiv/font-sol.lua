@@ -75,14 +75,14 @@ local setnext            = nuts.setnext
 local setlist            = nuts.setlist
 
 local find_node_tail     = nuts.tail
-local flush_node         = nuts.flush_node
-local flush_node_list    = nuts.flush_list
-local copy_node_list     = nuts.copy_list
+local flushnode          = nuts.flushnode
+local flushnodelist      = nuts.flushlist
+local copy_node_list     = nuts.copylist
 local hpack_nodes        = nuts.hpack
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local protect_glyphs     = nuts.protect_glyphs
-local start_of_par       = nuts.start_of_par
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
+local protectglyphs      = nuts.protectglyphs
+local startofpar         = nuts.startofpar
 
 local nextnode           = nuts.traversers.next
 local nexthlist          = nuts.traversers.hlist
@@ -92,7 +92,7 @@ local repack_hlist       = nuts.repackhlist
 
 local nodes_to_utf       = nodes.listtoutf
 
------ protect_glyphs     = nodes.handlers.protectglyphs
+----- protectglyphs      = nodes.handlers.protectglyphs
 
 local setnodecolor       = nodes.tracers.colors.set
 
@@ -367,8 +367,8 @@ function splitters.split(head) -- best also pass the direction
         if encapsulate then
             local user_one = new_usernode(splitter_one,n)
             local user_two = new_usernode(splitter_two,n)
-            head, start = insert_node_before(head,start,user_one)
-            insert_node_after(head,stop,user_two)
+            head, start = insertnodebefore(head,start,user_one)
+            insertnodeafter(head,stop,user_two)
         else
             local current = start
             while true do
@@ -437,7 +437,7 @@ function splitters.split(head) -- best also pass the direction
             end
             local direction, pop = getdirection(current)
             r2l = not pop and direction == righttoleft_code
-        elseif id == par_code and start_of_par(current) then
+        elseif id == par_code and startofpar(current) then
             if start then
                 flush() -- very unlikely as this starts a paragraph
             end
@@ -636,7 +636,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 if getid(first) == whatsit_code then
                     local temp = first
                     first = getnext(first)
-                    flush_node(temp)
+                    flushnode(temp)
                 end
                 local last = find_node_tail(first)
                 -- replace [u]h->t by [u]first->last
@@ -660,14 +660,14 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                         setnext(t)
                     end
                     setnext(last)
-                    flush_node_list(first)
+                    flushnodelist(first)
                 else
                     if trace_optimize then
                         report_optimizers("line %a, set %a, badness before: %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"continue")
                     end
                     -- free old h->t
                     setnext(t)
-                    flush_node_list(h) -- somehow fails
+                    flushnodelist(h) -- somehow fails
                     if not encapsulate then
                         word[2] = first
                         word[3] = last
@@ -784,7 +784,7 @@ function splitters.optimize(head)
         if not encapsulate and getid(list) == glyph_code then
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
             -- is this assignment ok ? .. needs checking
-            list = insert_node_before(list,list,new_leftskip(0)) -- new_glue(0)
+            list = insertnodebefore(list,list,new_leftskip(0)) -- new_glue(0)
             setlist(current,list)
         end
         local temp, badness = repack_hlist(list,width,"exactly",direction) -- it would be nice if the badness was stored in the node
@@ -813,7 +813,7 @@ function splitters.optimize(head)
                     local bb, base
                     for i=1,max do
                         if base then
-                            flush_node_list(base)
+                            flushnodelist(base)
                         end
                         base = copy_node_list(list)
                         local words = collect_words(base) -- beware: words is adapted
@@ -841,7 +841,7 @@ function splitters.optimize(head)
                             break
                         end
                     end
-                    flush_node_list(base)
+                    flushnodelist(base)
                 end
                 local words = collect_words(list)
                 for best=lastbest or 1,max do
@@ -852,7 +852,7 @@ function splitters.optimize(head)
                     end
                     if done then
                         if b <= criterium then -- was == 0
-                            protect_glyphs(list)
+                            protectglyphs(list)
                             break
                         end
                     end
@@ -869,7 +869,7 @@ function splitters.optimize(head)
     end
     for i=1,nc do
         local ci = cache[i]
-        flush_node_list(ci.original)
+        flushnodelist(ci.original)
     end
     cache = { }
     tex.hbadness = tex_hbadness

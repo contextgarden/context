@@ -97,7 +97,7 @@ local pdfcolor                = lpdf.color
 local pdfcolorvalues          = lpdf.colorvalues
 local pdflayerreference       = lpdf.layerreference
 
-local hpack_node              = node.hpack
+local hpack_node              = nodes.hpack
 
 local submitoutputformat      = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 

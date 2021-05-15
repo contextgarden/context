@@ -57,15 +57,15 @@ local getruledata        = nuts.getruledata
 
 local isglyph            = nuts.isglyph
 
-local flushlist          = nuts.flush_list
-local effective_glue     = nuts.effective_glue
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
+local flushlist          = nuts.flushlist
+local effectiveglue      = nuts.effectiveglue
+local insertnodeafter    = nuts.insertafter
+local insertnodebefore   = nuts.insertbefore
 local find_tail          = nuts.tail
 local setglue            = nuts.setglue
 local getrangedimensions = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
-local copy_list          = nuts.copy_list
+local copylist           = nuts.copylist
 
 local nexthlist          = nuts.traversers.hlist
 
@@ -317,7 +317,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             setattr(r,a_viewerlayer,layer)
         end
         if empty then
-            head = insert_node_before(head,f,r)
+            head = insertnodebefore(head,f,r)
             setlink(r,getnext(l))
             setprev(f)
             setnext(l)
@@ -325,12 +325,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         else
             local k = new_kern(-wd)
             if foreground then
-                insert_node_after(head,l,k)
-                insert_node_after(head,k,r)
+                insertnodeafter(head,l,k)
+                insertnodeafter(head,k,r)
                 l = r
             else
-                head = insert_node_before(head,f,r)
-                insert_node_after(head,r,k)
+                head = insertnodebefore(head,f,r)
+                insertnodeafter(head,r,k)
             end
         end
         if trace_ruled then
@@ -356,7 +356,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     else
         local tx = d.text
         if tx then
-            local l = copy_list(tx)
+            local l = copylist(tx)
             if d["repeat"] == v_yes then
                 l = new_leader(wd,l)
                 setattrlist(l,tx)
@@ -603,7 +603,7 @@ function linefillers.handler(head)
                         if head then
                             local indentation = iskip and getwidth(iskip) or 0
                             local leftfixed   = lskip and getwidth(lskip) or 0
-                            local lefttotal   = lskip and effective_glue(lskip,current) or 0
+                            local lefttotal   = lskip and effectiveglue(lskip,current) or 0
                             local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
                             if width > threshold then
                                 if iskip then
@@ -612,13 +612,13 @@ function linefillers.handler(head)
                                 if lskip then
                                     setglue(lskip,leftlocal and getwidth(lskip) or nil)
                                     if distance > 0 then
-                                        insert_node_after(list,lskip,new_kern(distance))
+                                        insertnodeafter(list,lskip,new_kern(distance))
                                     end
-                                    insert_node_after(list,lskip,linefiller(current,data,width,"left"))
+                                    insertnodeafter(list,lskip,linefiller(current,data,width,"left"))
                                 else
-                                    insert_node_before(list,head,linefiller(current,data,width,"left"))
+                                    insertnodebefore(list,head,linefiller(current,data,width,"left"))
                                     if distance > 0 then
-                                        insert_node_before(list,head,new_kern(distance))
+                                        insertnodebefore(list,head,new_kern(distance))
                                     end
                                 end
                             end
@@ -642,9 +642,9 @@ function linefillers.handler(head)
                         end
                         if tail then
                             local rightfixed = rskip and getwidth(rskip) or 0
-                            local righttotal = rskip and effective_glue(rskip,current) or 0
+                            local righttotal = rskip and effectiveglue(rskip,current) or 0
                             local parfixed   = pskip and getwidth(pskip) or 0
-                            local partotal   = pskip and effective_glue(pskip,current) or 0
+                            local partotal   = pskip and effectiveglue(pskip,current) or 0
                             local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
                             if width > threshold then
                                 if pskip then
@@ -653,13 +653,13 @@ function linefillers.handler(head)
                                 if rskip then
                                     setglue(rskip,rightlocal and getwidth(rskip) or nil)
                                     if distance > 0 then
-                                        insert_node_before(list,rskip,new_kern(distance))
+                                        insertnodebefore(list,rskip,new_kern(distance))
                                     end
-                                    insert_node_before(list,rskip,linefiller(current,data,width,"right"))
+                                    insertnodebefore(list,rskip,linefiller(current,data,width,"right"))
                                 else
-                                    insert_node_after(list,tail,linefiller(current,data,width,"right"))
+                                    insertnodeafter(list,tail,linefiller(current,data,width,"right"))
                                     if distance > 0 then
-                                        insert_node_after(list,tail,new_kern(distance))
+                                        insertnodeafter(list,tail,new_kern(distance))
                                     end
                                 end
                             end

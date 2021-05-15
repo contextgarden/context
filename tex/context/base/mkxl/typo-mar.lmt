@@ -61,9 +61,9 @@ local v_line             = variables.line
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
 
-local hpack_nodes        = nuts.hpack
-local traverse_id        = nuts.traverse_id
-local flush_node_list    = nuts.flush_list
+local hpacknodes         = nuts.hpack
+local traverseid         = nuts.traverseid
+local flushnodelist      = nuts.flushlist
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -251,7 +251,7 @@ function margins.save(t)
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)
-                    flush_node_list(s.box)
+                    flushnodelist(s.box)
                 end
             end
         else
@@ -259,7 +259,7 @@ function margins.save(t)
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)
-                    flush_node_list(s.box)
+                    flushnodelist(s.box)
                 end
             end
         end
@@ -492,9 +492,9 @@ local function markovershoot(current) -- todo: alleen als offset > line
     v_anchors = v_anchors + 1
     cache[v_anchors] = fastcopy(stacked)
     local anchor = setanchor(v_anchors)
- -- local list = hpack_nodes(setlink(anchor,getlist(current))) -- not ok, we need to retain width
+ -- local list = hpacknodes(setlink(anchor,getlist(current))) -- not ok, we need to retain width
  -- local list = setlink(anchor,getlist(current)) -- why not this ... better play safe
-    local list = hpack_nodes(setlink(anchor,getlist(current)),getwidth(current),"exactly")--
+    local list = hpacknodes(setlink(anchor,getlist(current)),getwidth(current),"exactly")--
     if trace_marginstack then
         report_margindata("marking anchor %a",v_anchors)
     end
@@ -790,7 +790,7 @@ local function flushed(scope,parent) -- current is hlist
     if done then
         local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
         if false then
-            local l = hpack_nodes(head,getwidth(parent),"exactly")
+            local l = hpacknodes(head,getwidth(parent),"exactly")
             setlist(parent,l)
             if a then
                 setattr(l,a_linenumber,a)
@@ -905,7 +905,7 @@ end
 local function finalhandler(head)
     if nofdelayed > 0 then
         local current = head
-        while current and nofdelayed > 0 do -- traverse_list
+        while current and nofdelayed > 0 do
             local id = getid(current)
             if id == hlist_code then -- only lines?
                 local a = getprop(current,"margindata")

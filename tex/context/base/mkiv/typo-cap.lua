@@ -36,9 +36,9 @@ local setchar         = nuts.setchar
 local setfont         = nuts.setfont
 
 local copy_node       = nuts.copy
-local end_of_math     = nuts.end_of_math
-local insert_after    = nuts.insert_after
-local find_attribute  = nuts.find_attribute
+local endofmath       = nuts.endofmath
+local insertafter     = nuts.insertafter
+local findattribute   = nuts.findattribute
 
 local nextglyph       = nuts.traversers.glyph
 
@@ -132,7 +132,7 @@ local function replacer(start,codes)
                 else
                     local g = copy_node(start)
                     setchar(g,chr)
-                    insert_after(start,start,g)
+                    insertafter(start,start,g)
                 end
             end
         elseif ifc[dc] then
@@ -237,7 +237,7 @@ local function mixed(start,attr,lastfont,n,count,where,first)
             if fp ~= fc then
                 local k = fonts.getkern(fontdata[fp],getchar(p),c)
                 if k ~= 0 then
-                    insert_after(p,p,newkern(k))
+                    insertafter(p,p,newkern(k))
                 end
             end
         else
@@ -410,7 +410,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                 count = count + 1
             end
         elseif id == math_code then
-            start = end_of_math(start)
+            start = endofmath(start)
             count = 0
         elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
             -- still inside a word ...normally kerns are added later
@@ -427,7 +427,7 @@ function cases.handler(head) -- not real fast but also not used on much data
 end
 
 -- function cases.handler(head) -- not real fast but also not used on much data
---     local attr, start = find_attribute(head,a_cases)
+--     local attr, start = findattribute(head,a_cases)
 --     if not start then
 --         return head, false
 --     end
@@ -520,7 +520,7 @@ end
 --                     count = count + 1
 --                 end
 --             elseif id == math_code then
---                 start = end_of_math(start)
+--                 start = endofmath(start)
 --                 count = 0
 --             elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
 --                 -- still inside a word ...normally kerns are added later
@@ -536,7 +536,7 @@ end
 --             end
 --         end
 --         if start then
---             attr, start = find_attribute(start,a_cases)
+--             attr, start = findattribute(start,a_cases)
 --         end
 --     end
 --     return head

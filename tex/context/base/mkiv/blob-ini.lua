@@ -25,28 +25,26 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 local type, tostring = type, tostring
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local report_blobs    = logs.reporter("blobs")
+local report_blobs  = logs.reporter("blobs")
 
-local flush_node_list = node.flush_list
-local hpack_node_list = node.hpack
------ vpack_node_list = node.vpack
-local write_node      = node.write
+local flushnodelist = nodes.flushlist
+local hpacknodelist = nodes.hpack
 
-local typesetters     = nodes.typesetters
-local tonodes         = typesetters.tonodes
-local tohpack         = typesetters.tohpack
-local tovpack         = typesetters.tovpack
+local typesetters   = nodes.typesetters
+local tonodes       = typesetters.tonodes
+local tohpack       = typesetters.tohpack
+local tovpack       = typesetters.tovpack
 
-local implement       = interfaces.implement
+local context       = context
 
--- provide copies here (nicer for manuals)
+local implement     = interfaces.implement
 
-blobs             = blobs or  { }
-local blobs       = blobs
+blobs               = blobs or  { }
+local blobs         = blobs
 
-blobs.tonodes     = tonodes
-blobs.tohpack     = tohpack
-blobs.tovpack     = tovpack
+blobs.tonodes       = tonodes
+blobs.tohpack       = tohpack
+blobs.tovpack       = tovpack
 
 -- end of helpers
 
@@ -68,7 +66,7 @@ function blobs.dispose(t)
         local li = list[i]
         local pack = li.pack
         if pack then
-            flush_node_list(pack)
+            flushnodelist(pack)
             li.pack = nil
         end
     end
@@ -96,14 +94,14 @@ function blobs.pack(t,how)
     for i=1,#list do
         local pack = list[i].pack
         if pack then
-            flush_node_list(node.pack)
+            flushnodelist(pack)
         end
         if how == "vertical" then
             -- we need to prepend a local par node
             -- list[i].pack = vpack_node_list(list[i].head,"exactly")
             report_blobs("vpack not yet supported")
         else
-            list[i].pack = hpack_node_list(list[i].head,"exactly")
+            list[i].pack = hpacknodelist(list[i].head,"exactly")
         end
     end
 end
@@ -114,8 +112,8 @@ function blobs.write(t)
         local li = list[i]
         local pack = li.pack
         if pack then
-            write_node(pack)
-            flush_node_list(pack)
+            context(pack)
+            flushnodelist(pack)
             li.pack = nil
         end
     end
@@ -158,28 +156,28 @@ end
 local function strwd(str)
     local l = tohpack(str)
     local w = l.width
-    flush_node_list(l)
+    flushnodelist(l)
     return w
 end
 
 local function strht(str)
     local l = tohpack(str)
     local h = l.height
-    flush_node_list(l)
+    flushnodelist(l)
     return h
 end
 
 local function strdp(str)
     local l = tohpack(str)
     local d = l.depth
-    flush_node_list(l)
+    flushnodelist(l)
     return d
 end
 
 local function strhd(str)
     local l = tohpack(str)
     local s = l.height + l.depth
-    flush_node_list(l)
+    flushnodelist(l)
     return s
 end
 
@@ -192,7 +190,7 @@ blobs.strhd = strhd
 
 local scan_hbox = tokens.scanners.hbox
 
-implement { name = "strwd", actions = function() local l = scan_hbox() context(l.width)            flush_node_list(l) end }
-implement { name = "strht", actions = function() local l = scan_hbox() context(l.height)           flush_node_list(l) end }
-implement { name = "strdp", actions = function() local l = scan_hbox() context(l.depth)            flush_node_list(l) end }
-implement { name = "strhd", actions = function() local l = scan_hbox() context(l.height + l.depth) flush_node_list(l) end }
+implement { name = "strwd", actions = function() local l = scan_hbox() context(l.width)            flushnodelist(l) end }
+implement { name = "strht", actions = function() local l = scan_hbox() context(l.height)           flushnodelist(l) end }
+implement { name = "strdp", actions = function() local l = scan_hbox() context(l.depth)            flushnodelist(l) end }
+implement { name = "strhd", actions = function() local l = scan_hbox() context(l.height + l.depth) flushnodelist(l) end }

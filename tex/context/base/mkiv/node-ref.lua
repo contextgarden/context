@@ -78,7 +78,8 @@ local getdimensions        = nuts.dimensions
 local getrangedimensions   = nuts.rangedimensions
 local traverse             = nuts.traverse
 local find_node_tail       = nuts.tail
-local start_of_par         = nuts.start_of_par
+
+local startofpar           = nuts.startofpar
 
 local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
@@ -107,7 +108,7 @@ local new_rule             = nodepool.rule
 local new_kern             = nodepool.kern
 local new_hlist            = nodepool.hlist
 
-local flush_node           = nuts.flush
+local flushnode            = nuts.flush
 
 local tosequence           = nodes.tosequence
 
@@ -135,7 +136,7 @@ local function vlist_dimensions(start,stop) -- also needs the stretch and so
     local v = vpack_list(start)
     local w, h, d = getwhd(v)
     setlist(v) -- not needed
-    flush_node(v)
+    flushnode(v)
     if temp then
         setnext(stop,temp)
     end
@@ -421,7 +422,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             local direction, pop = getdirection(current)
             txtdir = not pop and direction -- we might need a stack
         elseif id == par_code then
-            if start_of_par(current) then
+            if startofpar(current) then
                 pardir = getdirection(current)
             end
         elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?

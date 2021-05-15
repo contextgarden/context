@@ -279,7 +279,7 @@ local getdepth        = nuts.getdepth
 local getexpansion    = nuts.getexpansion
 local isglyph         = nuts.isglyph
 
-local effective_glue  = nuts.effective_glue
+local effectiveglue   = nuts.effectiveglue
 
 local characters      = fonts.hashes.characters
 local parameters      = fonts.hashes.parameters
@@ -362,7 +362,7 @@ function fonts.metapost.boxtomp(n,kind)
             elseif id == kern_code then
                 dx = dx + getkern(current) * fc
             elseif id == glue_code then
-                dx = dx + effective_glue(current,parent) * fc
+                dx = dx + effectiveglue(current,parent) * fc
             elseif id == hlist_code then
                 local list = getlist(current)
                 if list then
@@ -420,7 +420,7 @@ function fonts.metapost.boxtomp(n,kind)
             elseif id == kern_code then
                 dy = dy - getkern(current) * fc
             elseif id == glue_code then
-                dy = dy - effective_glue(current,parent) * fc
+                dy = dy - effectiveglue(current,parent) * fc
             elseif id == rule_code then
                 local wd, ht, dp = getwhd(current)
                 local hd = (ht + dp) * fc

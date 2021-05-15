@@ -43,6 +43,8 @@ local context                  = context
 
 local texgetcount              = tex.getcount
 
+local hpacknode                = nodes.hpack
+
 local nodeinjections           = backends.pdf.nodeinjections
 local codeinjections           = backends.pdf.codeinjections
 local registrations            = backends.pdf.registrations
@@ -85,10 +87,6 @@ updaters.register("backend.update.lpdf",function()
     pdfpagereference         = lpdf.pagereference
     pdfshareobjectreference  = lpdf.shareobjectreference
 end)
-
-
-local hpack_node               = node.hpack
-local write_node               = node.write -- test context(...) instead
 
 -- symbols
 
@@ -464,7 +462,7 @@ function nodeinjections.attachfile(specification)
             local width  = specification.width  or 0
             local height = specification.height or 0
             local depth  = specification.depth  or 0
-            local box    = hpack_node(nodeinjections.annotation(width,height,depth,d()))
+            local box    = hpacknode(nodeinjections.annotation(width,height,depth,d()))
             box.width    = width
             box.height   = height
             box.depth    = depth
@@ -565,12 +563,12 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
-        box = hpack_node(
+        box = hpacknode(
             nodeinjections.annotation(0,0,0,d(),nd),
             nodeinjections.annotation(width,height,depth,c(),nc)
         )
     else
-        box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
+        box = hpacknode(nodeinjections.annotation(width,height,depth,d()))
     end
     box.width  = width  -- redundant
     box.height = height -- redundant
@@ -663,7 +661,7 @@ local function insertrenderingwindow(specification)
     if height == 0 or width == 0 then
         -- todo: sound needs no window
     end
-    write_node(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
+    context(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 

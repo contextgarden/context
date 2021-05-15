@@ -62,7 +62,7 @@
 
         local find     = string.find
         local gsub     = string.gsub
-        local create   = token.create
+        local create   = tokens.create
 
         local crap     = "[$>%|%&%#" .. string.char(0xEF) .. "]"
 
@@ -244,7 +244,7 @@
 
         local find     = string.find
         local gsub     = string.gsub
-        local create   = token.create
+        local create   = tokens.create
 
         context.starttitle { title = "\\METAFUN\\ commands" }
 

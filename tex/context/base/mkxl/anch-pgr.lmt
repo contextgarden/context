@@ -94,9 +94,9 @@ local getdepth          = nuts.getdepth
 local nodecodes         = nodes.nodecodes
 local par_code          = nodecodes.par
 
-local start_of_par      = nuts.start_of_par
-local insert_before     = nuts.insert_before
-local insert_after      = nuts.insert_after
+local startofpar        = nuts.startofpar
+local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
 
 local processranges     = nuts.processranges
 
@@ -115,6 +115,7 @@ local enabled           = false
 -- many pages but for an arbitrary background shape that is not so common.
 
 local function check(specification)
+    --
     local a     = specification.attribute
     local index = specification.index
     local depth = specification.depth
@@ -181,12 +182,12 @@ local function flush(head,f,l,a,parent,depth)
             ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
             rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
         end
-        if getid(f) == par_code and start_of_par(f) then -- we need to clean this mess
-            insert_after(head,f,ln)
+        if getid(f) == par_code and startofpar(f) then -- we need to clean this mess
+            insertafter(head,f,ln)
         else
-            head, f = insert_before(head,f,ln)
+            head, f = insertbefore(head,f,ln)
         end
-        insert_after(head,l,rn)
+        insertafter(head,l,rn)
     end
     return head, true
 end
@@ -221,24 +222,10 @@ local function registerbackground(name)
     end
 end
 
--- local function collectbackgrounds(r,n)
---     if enabled then
---         local parent = getbox(n)
---         local head   = getlist(parent)
---         realpage     = r
---         processranges(a_textbackground,flush,head) -- ,parent)
---     end
--- end
---
--- interfaces.implement {
---     name      = "collectbackgrounds",
---     actions   = collectbackgrounds,
---     arguments = { "integer", "integer" }
--- }
-
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
-    index = index + 1
+    index    = index + 1
+    realpage = texgetcount("realpageno")
     return processranges(a_textbackground,flush,head,parent)
 end
 

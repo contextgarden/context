@@ -46,7 +46,7 @@ if LUATEXVERSION < 1.005 then -- not loaded any more
                 local char = isglyph(pre)
                 if char and char <= 0 then
                     done = true
-                    flush_list(pre)
+                    flushlist(pre)
                     pre = nil
                 end
             end
@@ -54,7 +54,7 @@ if LUATEXVERSION < 1.005 then -- not loaded any more
                 local char = isglyph(post)
                 if char and char <= 0 then
                     done = true
-                    flush_list(post)
+                    flushlist(post)
                     post = nil
                 end
             end
@@ -179,7 +179,7 @@ languages.expanders = expanders
 --     expanded = function(head)
 --         local done = hyphenate(head)
 --         if done then
---             for d in traverse_id(disc_code,head) do
+--             for d in traverseid(disc_code,head) do
 --                 local s = getsubtype(d)
 --                 if s ~= discretionary_code then
 --                     expanders[s](d,template)

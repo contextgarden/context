@@ -20,6 +20,9 @@
 The \METAPOST\ library interface registers itself in the table \type {mplib}. It
 is based on \MPLIB\ version \ctxlua {context(mplib.version())}.
 
+Not all functionality is described here. Once we're out of the experimental stage
+some more information will be added.
+
 \subsection{\type {new}}
 
 \libindex{new}
@@ -219,15 +222,13 @@ you can call:
                                          \type {prologues} \NC \NR
 \NC \type{objects}      \NC function \NC returns the actual array of graphic objects in
                                          this \type {fig} \NC \NR
-\NC \type{copy_objects} \NC function \NC returns a deep copy of the array of graphic
-                                         objects in this \type {fig} \NC \NR
 \NC \type{filename}     \NC function \NC the filename this \type {fig}'s \POSTSCRIPT\
                                          output would have written to in stand alone
                                          mode \NC \NR
 \NC \type{width}        \NC function \NC the \type {fontcharwd} value \NC \NR
 \NC \type{height}       \NC function \NC the \type {fontcharht} value \NC \NR
 \NC \type{depth}        \NC function \NC the \type {fontchardp} value \NC \NR
-\NC \type{italcorr}     \NC function \NC the \type {fontcharit} value \NC \NR
+\NC \type{italic}       \NC function \NC the \type {fontcharit} value \NC \NR
 \NC \type{charcode}     \NC function \NC the (rounded) \type {charcode} value \NC \NR
 \LL
 \stoptabulate
@@ -409,11 +410,11 @@ and \quote {off}, values, and \type {offset} is the phase of the pattern.
 \LL
 \stoptabulate
 
-\subsection{Pens and \type {pen_info}}
+\subsection{Pens and \type {peninfo}}
 
-\libindex{pen_info}
+\libindex{peninfo}
 
-There is helper function (\type {pen_info(obj)}) that returns a table containing
+There is helper function (\type {peninfo(obj)}) that returns a table containing
 a bunch of vital characteristics of the used pen (all values are floats):
 
 \starttabulate[|l|l|p|]
@@ -457,20 +458,20 @@ still preliminary and mostly provided as reminder.
 \starttabulate[|l|l|p|]
 \DB scanner \BC argument \BC returns \NC \NR
 \TB
-\NC \type{scan_next}       \NC instance, keep         \NC token, mode, type \NC \NR
-\NC \type{scan_expression} \NC instance, keep         \NC type \NC \NR
-\NC \type{scan_token}      \NC instance, keep         \NC token, mode, kind \NC \NR
-\NC \type{scan_symbol}     \NC instance, keep, expand \NC string \NC \NR
-\NC \type{scan_numeric}    \NC instance, type         \NC number \NC \NR
-\NC \type{scan_integer}    \NC instance, type         \NC integer \NC \NR
-\NC \type{scan_boolean}    \NC instance, type         \NC boolean \NC \NR
-\NC \type{scan_string}     \NC instance, type         \NC string \NC \NR
-\NC \type{scan_pair}       \NC instance, hashed, type \NC table or two numbers \NC \NR
-\NC \type{scan_color}      \NC instance, hashed, type \NC table or three numbers \NC \NR
-\NC \type{scan_cmykcolor}  \NC instance, hashed, type \NC table or four numbers \NC \NR
-\NC \type{scan_transform}  \NC instance, hashed, type \NC table or six numbers \NC \NR
-\NC \type{scan_path}       \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
-\NC \type{scan_pen}        \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
+\NC \type{scannext}       \NC instance, keep         \NC token, mode, type \NC \NR
+\NC \type{scanexpression} \NC instance, keep         \NC type \NC \NR
+\NC \type{scantoken}      \NC instance, keep         \NC token, mode, kind \NC \NR
+\NC \type{scansymbol}     \NC instance, keep, expand \NC string \NC \NR
+\NC \type{scannumeric}    \NC instance, type         \NC number \NC \NR
+\NC \type{scaninteger}    \NC instance, type         \NC integer \NC \NR
+\NC \type{scanboolean}    \NC instance, type         \NC boolean \NC \NR
+\NC \type{scanstring}     \NC instance, type         \NC string \NC \NR
+\NC \type{scanpair}       \NC instance, hashed, type \NC table or two numbers \NC \NR
+\NC \type{scancolor}      \NC instance, hashed, type \NC table or three numbers \NC \NR
+\NC \type{scancmykcolor}  \NC instance, hashed, type \NC table or four numbers \NC \NR
+\NC \type{scantransform}  \NC instance, hashed, type \NC table or six numbers \NC \NR
+\NC \type{scanpath}       \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
+\NC \type{scanpen}        \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
 \LL
 \stoptabulate
 
@@ -521,15 +522,15 @@ optimized. The other data structures were then added for completeness.}
 \starttabulate[|l|l|]
 \DB scanner \BC argument \NC \NR
 \TB
-\NC \type{inject_numeric}   \NC instance, number \NC \NR
-\NC \type{inject_integer}   \NC instance, number \NC \NR
-\NC \type{inject_boolean}   \NC instance, boolean \NC \NR
-\NC \type{inject_string}    \NC instance, string \NC \NR
-\NC \type{inject_pair}      \NC instance, (table with) two numbers \NC \NR
-\NC \type{inject_color}     \NC instance, (table with) three numbers \NC \NR
-\NC \type{inject_cmykcolor} \NC instance, (table with) four numbers \NC \NR
-\NC \type{inject_transform} \NC instance, (table with) six numbers \NC \NR
-\NC \type{inject_path}      \NC instance, table with hashes or arrays, cycle, variant \NC \NR
+\NC \type{injectnumeric}   \NC instance, number \NC \NR
+\NC \type{injectinteger}   \NC instance, number \NC \NR
+\NC \type{injectboolean}   \NC instance, boolean \NC \NR
+\NC \type{injectstring}    \NC instance, string \NC \NR
+\NC \type{injectpair}      \NC instance, (table with) two numbers \NC \NR
+\NC \type{injectcolor}     \NC instance, (table with) three numbers \NC \NR
+\NC \type{injectcmykcolor} \NC instance, (table with) four numbers \NC \NR
+\NC \type{injecttransform} \NC instance, (table with) six numbers \NC \NR
+\NC \type{injectpath}      \NC instance, table with hashes or arrays, cycle, variant \NC \NR
 \LL
 \stoptabulate
 

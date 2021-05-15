@@ -25,58 +25,59 @@ values.count    = values.integer
 tokens.values   = utilities.storage.allocate(table.swapped(values, values))
 tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
 
-local scan_toks        = token.scan_toks
-local scan_string      = token.scan_string
-local scan_argument    = token.scan_argument
-local scan_delimited   = token.scan_delimited
-local scan_tokenlist   = token.scan_tokenlist or scan_string
-local scan_integer     = token.scan_integer or token.scan_int
-local scan_cardinal    = token.scan_cardinal
-local scan_code        = token.scan_code
-local scan_token_code  = token.scan_token_code
-local scan_dimen       = token.scan_dimen
-local scan_glue        = token.scan_glue
-local scan_skip        = token.scan_skip
-local scan_keyword     = token.scan_keyword
-local scan_keyword_cs  = token.scan_keyword_cs or scan_keyword
-local scan_token       = token.scan_token
-local scan_box         = token.scan_box
-local scan_word        = token.scan_word
-local scan_letters     = token.scan_letters or scan_word -- lmtx
-local scan_key         = token.scan_key
-local scan_value       = token.scan_value
-local scan_char        = token.scan_char
-local scan_number      = token.scan_number -- not defined
-local scan_csname      = token.scan_csname
-local scan_real        = token.scan_real
-local scan_float       = token.scan_float
-local scan_luanumber   = token.scan_luanumber   or scan_float    -- only lmtx
-local scan_luainteger  = token.scan_luainteger  or scan_integer  -- only lmtx
-local scan_luacardinal = token.scan_luacardinal or scan_cardinal -- only lmtx
+local scantoks            = token.scantoks
+local scanstring          = token.scanstring
+local scanargument        = token.scanargument
+local scandelimited       = token.scandelimited
+local scantokenlist       = token.scantokenlist
+local scaninteger         = token.scaninteger
+local scancardinal        = token.scancardinal
+local scancode            = token.scancode
+local scantokencode       = token.scantokencode
+local scandimen           = token.scandimen
+local scanglue            = token.scanglue
+local scanskip            = token.scanskip
+local scankeyword         = token.scankeyword
+local scankeywordcs       = token.scankeywordcs
+local scantoken           = token.scantoken
+local scanbox             = token.scanbox
+local scanword            = token.scanword
+local scanletters         = token.scanletters
+local scankey             = token.scankey
+local scanvalue           = token.scanvalue
+local scanchar            = token.scanchar
+local scancsname          = token.scancsname
+local scannextchar        = token.scannextchar
+local scanreal            = token.scanreal
+local scanfloat           = token.scanfloat
+local scanluanumber       = token.scanluanumber
+local scanluainteger      = token.scanluainteger
+local scanluacardinal     = token.scanluacardinal
+local scanintegerargument = token.scanintegerargument
+local scandimenargument   = token.scandimenargument
 
-local scan_integer_argument = token.scan_integer_argument
-local scan_dimen_argument   = token.scan_dimen_argument
+local scannumber          = token.scannumber
+local scanboolean         = token.scanboolean
 
--- todo: gobble_integer   -- might go away
--- todo: gobble_dimension -- might go away
+local setmacro     = token.setmacro
+local setchar      = token.setchar
+local setlua       = token.setlua
 
-local set_macro        = token.set_macro
-local set_char         = token.set_char
-local set_lua          = token.set_lua
+local createtoken  = token.create
+local newtoken     = token.new
+local isdefined    = token.isdefined
+local istoken      = token.istoken
 
-local create_token     = token.create
-local new_token        = token.new
-local is_defined       = token.is_defined
-local is_token         = token.is_token
+tokens.new         = newtoken
+tokens.create      = createtoken
+tokens.istoken     = istoken
+tokens.isdefined   = isdefined
+tokens.defined     = isdefined
 
-tokens.new             = new_token
-tokens.create          = create_token
-tokens.istoken         = is_token
-tokens.isdefined       = is_defined
-tokens.defined         = is_defined
+tokens.gobble      = token.gobble
 
-tokens.getinteger      = token.get_integer
-tokens.setinteger      = token.set_integer
+tokens.getinteger  = token.getinteger
+tokens.setinteger  = token.setinteger
 
 local bits = {
     escape      = 0x00000001, -- 2^00
@@ -110,10 +111,10 @@ tokens.bits = bits
 -- words are space or \relax terminated and the trailing space is gobbled; a word
 -- can contain any non-space letter/other (see archive for implementation in lua)
 
-if not scan_number then
+if not scannumber then -- we do have float and real .. this is actually scanluanumber
 
-    scan_number = function(base)
-        local s = scan_word()
+    scannumber = function(base)
+        local s = scanword()
         if not s then
             return nil
         elseif base then
@@ -125,100 +126,89 @@ if not scan_number then
 
 end
 
-local function scan_boolean()
-    local kw = scan_word()
-    if kw == "true" then
-        return true
-    elseif kw == "false" then
-        return false
-    else
-        return nil
-    end
-end
+if not scanboolean then
 
-local function scan_verbatim()
-    return scan_argument(false)
-end
-
-if not scan_box then
-
-    local scan_list = token.scan_list
-    local put_next  = token.put_next
-
-    scan_box = function(s)
-        if s == "hbox" or s == "vbox" or s == "vtop" then
-            put_next(create_token(s))
+    scanboolean = function()
+        local kw = scanword()
+        if kw == "true" then
+            return true
+        elseif kw == "false" then
+            return false
+        else
+            return nil
         end
-        return scan_list()
     end
 
-    token.scan_box = scan_box
+end
 
+local function scanverbatim() -- check
+    return scanargument(false)
 end
 
 tokens.scanners = { -- these expand
-    token           = scan_token,
-    toks            = scan_toks,
-    tokens          = scan_toks,
-    box             = scan_box,
-    hbox            = function() return scan_box("hbox") end,
-    vbox            = function() return scan_box("vbox") end,
-    vtop            = function() return scan_box("vtop") end,
-    dimen           = scan_dimen,
-    dimension       = scan_dimen,
-    glue            = scan_glue,
-    gluevalues      = function() return scan_glue(false,false,true) end,
-    gluespec        = scan_skip,
-    integer         = scan_integer,
-    cardinal        = scan_cardinal,
-    real            = scan_real,
-    float           = scan_float,
-    luanumber       = scan_luanumber,
-    luainteger      = scan_luainteger,
-    luacardinal     = scan_luacardinal,
-    count           = scan_integer,
-    string          = scan_string,
-    argument        = scan_argument,
-    delimited       = scan_delimited,
-    tokenlist       = scan_tokenlist,
-    verbatim        = scan_verbatim, -- detokenize
-    code            = scan_code,
-    tokencode       = scan_token_code,
-    word            = scan_word,
-    letters         = scan_letters,
-    key             = scan_key,
-    value           = scan_value,
-    char            = scan_char,
-    number          = scan_number,
-    boolean         = scan_boolean,
-    keyword         = scan_keyword,
-    keywordcs       = scan_keyword_cs,
-    csname          = scan_csname,
+    token           = scantoken,
+    toks            = scantoks,
+    tokens          = scantoks,
+    box             = scanbox,
+    hbox            = function() return scanbox("hbox") end,
+    vbox            = function() return scanbox("vbox") end,
+    vtop            = function() return scanbox("vtop") end,
+    dimen           = scandimen,
+    dimension       = scandimen,
+    glue            = scanglue,
+    gluevalues      = function() return scanglue(false,false,true) end,
+    gluespec        = scanskip,
+    integer         = scaninteger,
+    cardinal        = scancardinal,
+    real            = scanreal,
+    float           = scanfloat,
+    luanumber       = scanluanumber,
+    luainteger      = scanluainteger,
+    luacardinal     = scanluacardinal,
+    count           = scaninteger,
+    string          = scanstring,
+    argument        = scanargument,
+    delimited       = scandelimited,
+    tokenlist       = scantokenlist,
+    verbatim        = scanverbatim, -- detokenize
+    code            = scancode,
+    tokencode       = scantokencode,
+    word            = scanword,
+    letters         = scanletters,
+    key             = scankey,
+    value           = scanvalue,
+    char            = scanchar,
+    number          = scannumber,
+    boolean         = scanboolean,
+    keyword         = scankeyword,
+    keywordcs       = scankeywordcs,
+    csname          = scancsname,
+    nextchar        = scannextchar,
 
-    next            = token.scan_next,
-    nextexpanded    = token.scan_next_expanded,
+    next            = token.scannext,
+    nextexpanded    = token.scannextexpanded,
 
-    peek            = token.peek_next,
-    peekexpanded    = token.peek_next_expanded,
-    peekchar        = token.peek_next_char,
+    peek            = token.peeknext,
+    peekexpanded    = token.peeknextexpanded,
+    peekchar        = token.peeknextchar,
 
-    skip            = token.skip_next,
-    skipexpanded    = token.skip_next_expanded,
+    skip            = token.skipnext,
+    skipexpanded    = token.skipnextexpanded,
 
-    cmdchr          = token.scan_cmdchr,
-    cmdchrexpanded  = token.scan_cmdchr_expanded,
+    cmdchr          = token.scancmdchr,
+    cmdchrexpanded  = token.scancmdchrexpanded,
 
-    ischar          = token.is_next_char,
+    ischar          = token.isnextchar,
 
-    integerargument = scan_integer_argument,
-    dimenargument   = scan_dimen_argument,
+    integerargument = scanintegerargument,
+    dimenargument   = scandimenargument,
 }
 
 tokens.getters = { -- these don't expand
-    meaning = token.get_meaning,
-    macro   = token.get_macro,
-    token   = token.scan_next or token.get_next, -- not here, use scanners.next or token
-    cstoken = token.get_cstoken,
+    meaning = token.getmeaning,
+    macro   = token.getmacro,
+    token   = token.scannext,
+    cstoken = token.getcstoken,
     count   = tex.getcount,
     dimen   = tex.getdimen,
     skip    = tex.getglue,
@@ -229,9 +219,9 @@ tokens.getters = { -- these don't expand
 }
 
 tokens.setters = {
-    macro = set_macro,
-    char  = set_char,
-    lua   = set_lua,
+    macro = setmacro,
+    char  = setchar,
+    lua   = setlua,
     count = tex.setcount,
     dimen = tex.setdimen,
     skip  = tex.setglue,
@@ -241,50 +231,29 @@ tokens.setters = {
     box   = tex.setbox,
 }
 
-token.accessors = {
-    command    = token.get_command,
-    cmd        = token.get_command,
-    cmdname    = token.get_cmdname,
-    name       = token.get_cmdname,
-    csname     = token.get_csname,
-    index      = token.get_index,
-    active     = token.get_active,
-    frozen     = token.get_frozen,
-    protected  = token.get_protected,
-    expandable = token.get_protected,
-    user       = token.get_user,
-    cmdchrcs   = token.get_cmdchrcs,
-    active     = token.get_active,
-    range      = token.get_range,
+tokens.accessors = {
+    command    = token.getcommand,
+    cmd        = token.getcommand,
+    cmdname    = token.getcmdname,
+    name       = token.getcmdname,
+    csname     = token.getcsname,
+    index      = token.getindex,
+    active     = token.getactive,
+    frozen     = token.getfrozen,
+    protected  = token.getprotected,
+    expandable = token.getprotected,
+    user       = token.getuser,
+    cmdchrcs   = token.getcmdchrcs,
+    active     = token.getactive,
+    range      = token.getrange,
 }
 
--- static int run_scan_token(lua_State * L)
--- {
---     saved_tex_scanner texstate;
---     save_tex_scanner(texstate);
---     get_x_token();
---     make_new_token(L, cur_cmd, cur_chr, cur_cs);
---     unsave_tex_scanner(texstate);
---     return 1;
--- }
---
--- static int run_get_future(lua_State * L)
--- {
---  /* saved_tex_scanner texstate; */
---  /* save_tex_scanner(texstate); */
---     get_token();
---     make_new_token(L, cur_cmd, cur_chr, cur_cs);
---     back_input();
---  /* unsave_tex_scanner(texstate); */
---     return 1;
--- }
-
-if setinspector then
+if setinspector then -- can best be true
 
     local simple = { letter = "letter", other_char = "other" }
 
     local astable = function(t)
-        if t and is_token(t) then
+        if t and istoken(t) then
             local cmdname = t.cmdname
             local simple  = simple[cmdname]
             if simple then
@@ -323,10 +292,98 @@ if setinspector then
 end
 
 tokens.cache = table.setmetatableindex(function(t,k)
-    if not is_defined(k) then
-        set_macro(k,"","global")
+    if not isdefined(k) then
+        setmacro(k,"","global")
     end
-    local v = create_token(k)
+    local v = createtoken(k)
     t[k] = v
     return v
 end)
+
+-- This will go, although ... we use some old names in styles. Check what we
+-- actually use.
+
+token.is_token              = token.istoken
+token.is_defined            = token.isdefined
+token.scan_next             = token.scannext
+token.scan_next_expanded    = token.scannextexpanded
+token.scan_next_char        = token.scannextchar
+token.skip_next             = token.skipnext
+token.skip_next_expanded    = token.skipnextexpanded
+token.peek_next             = token.peeknext
+token.peek_next_expanded    = token.peeknextexpanded
+token.peek_next_char        = token.peeknextchar
+token.scan_cmdchr           = token.scancmdchr
+token.scan_cmdchr_expanded  = token.scancmdchrexpanded
+token.scan_keyword          = token.scankeyword
+token.scan_keyword_cs       = token.scankeywordcs
+token.scan_integer          = token.scaninteger
+token.scan_integer_argument = token.scanintegerargument
+token.scan_dimen_argument   = token.scandimenargument
+token.scan_cardinal         = token.scancardinal
+token.scan_float            = token.scanfloat
+token.scan_real             = token.scanreal
+token.scan_luanumber        = token.scanluanumber
+token.scan_luainteger       = token.scanluainteger
+token.scan_luacardinal      = token.scanluacardinal
+token.scan_scale            = token.scanscale
+token.scan_dimen            = token.scandimen
+token.scan_skip             = token.scanskip
+token.scan_glue             = token.scanglue
+token.scan_toks             = token.scantoks
+token.scan_tokenlist        = token.scantokenlist
+token.scan_code             = token.scancode
+token.scan_token_code       = token.scantokencode
+token.scan_string           = token.scanstring
+token.scan_argument         = token.scanargument
+token.scan_delimited        = token.scandelimited
+token.scan_word             = token.scanword
+token.scan_letters          = token.scanletters
+token.scan_key              = token.scankey
+token.scan_value            = token.scanvalue
+token.scan_char             = token.scanchar
+token.scan_csname           = token.scancsname
+token.scan_token            = token.scantoken
+token.scan_box              = token.scanbox
+token.is_next_char          = token.isnextchar
+token.put_next              = token.putnext
+token.put_back              = token.putback
+token.get_command           = token.getcommand
+token.get_index             = token.getindex
+token.get_range             = token.getrange
+token.get_cmdname           = token.getcmdname
+token.get_csname            = token.getcsname
+token.get_id                = token.getid
+token.get_tok               = token.gettok
+token.get_active            = token.getactive
+token.get_expandable        = token.getexpandable
+token.get_protected         = token.getprotected
+token.get_frozen            = token.getfrozen
+token.get_tolerant          = token.gettolerant
+token.get_noaligned         = token.getnoaligned
+token.get_primitive         = token.getprimitive
+token.get_permanent         = token.getpermanent
+token.get_immutable         = token.getimmutable
+token.get_instance          = token.getinstance
+token.get_flags             = token.getflags
+token.get_parameters        = token.getparameters
+token.get_macro             = token.getmacro
+token.get_meaning           = token.getmeaning
+token.get_cmdchrcs          = token.getcmdchrcs
+token.get_cstoken           = token.getcstoken
+token.get_fields            = token.getfields
+token.set_macro             = token.setmacro
+token.undefine_macro        = token.undefinemacro
+token.expand_macro          = token.expandmacro
+token.set_char              = token.setchar
+token.set_lua               = token.setlua
+token.set_integer           = token.setinteger
+token.get_integer           = token.getinteger
+token.set_dimension         = token.setdimension
+token.get_dimension         = token.getdimension
+token.gobble_integer        = token.gobbleinteger
+token.gobble_dimen          = token.gobbledimen
+token.future_expand         = token.futureexpand
+token.push_macro            = token.pushmacro
+token.pop_macro             = token.popmacro
+token.save_lua              = token.savelua

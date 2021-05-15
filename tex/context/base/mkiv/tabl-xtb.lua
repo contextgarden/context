@@ -73,9 +73,9 @@ local setlink             = nuts.setlink
 local setdirection        = nuts.setdirection
 local setshift            = nuts.setshift
 
-local copy_node_list      = nuts.copy_list
-local hpack_node_list     = nuts.hpack
-local flush_node_list     = nuts.flush_list
+local copynodelist        = nuts.copylist
+local hpacknodelist       = nuts.hpack
+local flushnodelist       = nuts.flushlist
 local takebox             = nuts.takebox
 
 local nodepool            = nuts.pool
@@ -273,7 +273,7 @@ function xtables.set_reflow_width()
     local tb = getbox("b_tabl_x")
     local drc = row[c]
     --
-    drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copy_node_list(tb))
+    drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copynodelist(tb))
     --
     local width, height, depth = getwhd(tb)
     --
@@ -561,7 +561,7 @@ function xtables.reflow_width()
         for c=1,nofcolumns do
             local drc = row[c]
             if drc.list then
-             -- flush_node_list(drc.list)
+             -- flushnodelist(drc.list)
                 drc.list = false
             end
         end
@@ -853,7 +853,7 @@ function xtables.construct()
             if list then
                 local w, h, d = getwhd(list)
                 setshift(list,h+d)
-             -- list = hpack_node_list(list) -- is somehow needed
+             -- list = hpacknodelist(list) -- is somehow needed
              -- setwhd(list,0,0,0)
                 -- faster:
                 local h = new_hlist(list)
@@ -900,9 +900,9 @@ function xtables.construct()
                 end
                 nofr = nofr + 1
                 local rp = rowproperties[r]
-                -- we have a direction issue here but hpack_node_list(list,0,"exactly") cannot be used
+                -- we have a direction issue here but hpacknodelist(list,0,"exactly") cannot be used
                 -- due to the fact that we need the width
-                local hbox = hpack_node_list(list)
+                local hbox = hpacknodelist(list)
                 setdirection(hbox,lefttoright_code)
                 result[nofr] = {
                     hbox,
@@ -949,7 +949,7 @@ end
 local function inject(row,copy,package)
     local list = row[1]
     if copy then
-        row[1] = copy_node_list(list)
+        row[1] = copynodelist(list)
     end
     if package then
         ctx_beginvbox()
@@ -1186,7 +1186,7 @@ end
 function xtables.cleanup()
     for mode, result in next, data.results do
         for _, r in next, result do
-            flush_node_list(r[1])
+            flushnodelist(r[1])
         end
     end
 

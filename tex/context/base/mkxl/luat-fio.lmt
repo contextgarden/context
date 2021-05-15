@@ -32,7 +32,7 @@ if not resolvers.initialized() then
 
         local ioflush     = io.flush
         local ioread      = io.read
-        local writenl     = texio.write_nl
+        local writenl     = texio.writenl
 
         local function terminal()
             writenl("\ntex console > ")

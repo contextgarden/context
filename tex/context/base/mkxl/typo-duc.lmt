@@ -76,9 +76,10 @@ local setattrlist          = nuts.setattrlist
 local properties           = nodes.properties.data
 
 local remove_node          = nuts.remove
-local insert_node_after    = nuts.insert_after
-local insert_node_before   = nuts.insert_before
-local start_of_par         = nuts.start_of_par
+local insertnodeafter      = nuts.insertafter
+local insertnodebefore     = nuts.insertbefore
+
+local startofpar           = nuts.startofpar
 
 local nodepool             = nuts.pool
 local new_direction        = nodepool.direction
@@ -426,7 +427,7 @@ end
 local function get_baselevel(head,list,size,direction)
     if direction == lefttoright_code or direction == righttoleft_code then
         return direction, true
-    elseif getid(head) == par_code and start_of_par(head) then
+    elseif getid(head) == par_code and startofpar(head) then
         direction = getdirection(head)
         if direction == lefttoright_code or direction == righttoleft_code then
             return direction, true
@@ -969,18 +970,18 @@ local function apply_to_list(list,size,head,pardir)
                     c = p
                 end
                 -- there is always a par nodes so head will stay
-                head = insert_node_before(head,c,new_direction(enddir,true))
+                head = insertnodebefore(head,c,new_direction(enddir,true))
                 enddir = false
             end
         elseif begindir then
-            if id == par_code and start_of_par(current) then
+            if id == par_code and startofpar(current) then
                 -- par should always be the 1st node
-                head, current = insert_node_after(head,current,new_direction(begindir))
+                head, current = insertnodeafter(head,current,new_direction(begindir))
                 begindir = nil
             end
         end
         if begindir then
-            head = insert_node_before(head,current,new_direction(begindir))
+            head = insertnodebefore(head,current,new_direction(begindir))
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -995,7 +996,7 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            head, current = insert_node_after(head,current,new_direction(enddir,true))
+            head, current = insertnodeafter(head,current,new_direction(enddir,true))
         end
         if not entry.remove then
             current = getnext(current)

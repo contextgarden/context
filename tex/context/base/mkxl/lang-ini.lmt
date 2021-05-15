@@ -15,8 +15,6 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 -- 2011 : nonbreakable hyphen
 -- 2013 : endash (compound hyphen)
 
---~ language:hyphenation(string) string = language:hyphenation() language:clear_hyphenation()
-
 -- todo: no foo:bar but foo(bar,...)
 
 -- https://wortschatz.uni-leipzig.de/de/download/German : lots of lists
@@ -363,8 +361,8 @@ local function loaddefinitions(tag,specification)
                 if trace_patterns then
                     report_initialization("clearing patterns for language %a",tag)
                 end
-                instance:clear_patterns()
-                instance:clear_hyphenation()
+                instance:clearpatterns()
+                instance:clearhyphenation()
                 ploaded = { }
                 eloaded = { }
             elseif not dataused[definition] then
@@ -405,12 +403,12 @@ local function loaddefinitions(tag,specification)
         end
         if #ploaded > 0 then
             -- why not always clear
-            instance:clear_patterns()
+            instance:clearpatterns()
             instance:patterns(unique(tag,requested,ploaded))
         end
         if #eloaded > 0 then
             -- why not always clear
-            instance:clear_hyphenation()
+            instance:clearhyphenation()
             instance:hyphenation(concat(eloaded," "))
         end
         if type(shared) == "string" then
@@ -623,7 +621,7 @@ do
     local new_disc       = nuts.pool.disc
     local new_glyph      = nuts.pool.glyph
     local copy_node      = nuts.copy
-    local flush_list     = nuts.flush_list
+    local flushlist      = nuts.flushlist
 
     local glyphoptioncodes      = tex.glyphoptioncodes
 
@@ -720,7 +718,7 @@ do
                 local before = getprev(first)
                 setnext(last)
                 setlink(before,after)
-                flush_list(first)
+                flushlist(first)
             end
         else
             local i = 0

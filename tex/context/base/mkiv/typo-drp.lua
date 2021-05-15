@@ -59,10 +59,11 @@ local nodecodes         = nodes.nodecodes
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
 
-local insert_before     = nuts.insert_before
-local insert_after      = nuts.insert_after
+local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
 local remove_node       = nuts.remove
-local start_of_par      = nuts.start_of_par
+
+local startofpar        = nuts.startofpar
 
 local nextnode          = nuts.traversers.node
 local nextglyph         = nuts.traversers.glyph
@@ -325,7 +326,7 @@ actions[v_default] = function(head,setting)
             texset("hangindent",hangindent)
         end
         if indent then
-            insert_after(first,first,new_kern(-parindent))
+            insertafter(first,first,new_kern(-parindent))
         end
     end
     return head
@@ -334,7 +335,7 @@ end
 -- we can count ... when all done, we can disable ...
 
 function initials.handler(head)
-    if getid(head) == par_code and start_of_par(head) then
+    if getid(head) == par_code and startofpar(head) then
         local settings = getprop(head,a_initial)
         if settings then
             disableaction("processors","typesetters.initials.handler")

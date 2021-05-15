@@ -50,8 +50,6 @@ local getglue         = nuts.getglue
 local isglyph         = nuts.isglyph
 local getdirection    = nuts.getdirection
 local getwidth        = nuts.getwidth
-
-local flush_list      = nuts.flush_list
 local count_nodes     = nuts.countall
 local used_nodes      = nuts.usedlist
 
@@ -83,7 +81,7 @@ local whatsit_code    = nodecodes.whatsit
 local dimenfactors    = number.dimenfactors
 local formatters      = string.formatters
 
-local start_of_par    = nuts.start_of_par
+local startofpar      = nuts.startofpar
 
 -- this will be reorganized:
 
@@ -154,7 +152,7 @@ local function tosequence(start,stop,compact)
             elseif id == dir_code then
                 local d, p = getdirection(start)
                 n = n + 1 ; t[n] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
-            elseif id == par_code and start_of_par(current) then
+            elseif id == par_code and startofpar(current) then
                 n = n + 1 ; t[n] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
                 n = n + 1 ; t[n] = "[]"

@@ -221,9 +221,9 @@ local getsubtype      = nuts.getsubtype
 local setlink         = nuts.setlink
 local setlist         = nuts.setlist
 local getnext         = nuts.getnext
-local flatten_list    = nuts.flatten_discretionaries
+local flatten_list    = nuts.flattendiscretionaries
 local remove_node     = nuts.remove
-local flush_node      = nuts.flush
+local flushnode       = nuts.flush
 
 local addblob         = mp.mf_blob_add
 local newblob         = mp.mf_blob_new
@@ -276,7 +276,7 @@ local function initialize(category,box)
             end
             setlist(wrap,head)
         end
-        flush_node(wrap)
+        flushnode(wrap)
     end
 end
 

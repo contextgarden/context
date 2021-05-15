@@ -32,12 +32,9 @@ local new_glue          = nodepool.glue
 
 local utfvalues         = utf.values
 
-local currentfont       = font.current            -- mabe nicer is fonts     .current
-local currentattributes = node.current_attributes -- mabe nicer is attributes.current
-
+local currentfont       = font.current
+local currentattributes = nodes.currentattributes
 local fontparameters    = fonts.hashes.parameters
-
-if not currentattributes then currentattributes = node.current_attr end -- CONTEXTLMTXMODE == 0
 
 -- when attrid == true then take from glyph or current else use the given value
 
@@ -133,9 +130,9 @@ typesetters.hpack    = typesetters.tohpack  -- obsolete
 typesetters.hbox     = typesetters.tohbox   -- obsolete
 typesetters.vpack    = typesetters.tovpack  -- obsolete
 
--- node.write(nodes.typesetters.tohpack("Hello World!"))
--- node.write(nodes.typesetters.tohbox ("Hello World!"))
--- node.write(nodes.typesetters.tohpack("Hello World!",1,100*1024*10))
--- node.write(nodes.typesetters.tohbox ("Hello World!",1,100*1024*10))
+-- context(nodes.typesetters.tohpack("Hello World!"))
+-- context(nodes.typesetters.tohbox ("Hello World!"))
+-- context(nodes.typesetters.tohpack("Hello World!",1,100*1024*10))
+-- context(nodes.typesetters.tohbox ("Hello World!",1,100*1024*10))
 
 string.tonodes = function(...) return tonode(tonodes(...)) end  -- quite convenient

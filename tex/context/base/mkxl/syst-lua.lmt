@@ -15,13 +15,10 @@ local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpe
 local xmath                    = xmath    or math
 local xcomplex                 = xcomplex or { }
 
-local scan_next                = token.scan_next or token.get_next
-local scan_cmdchr              = token.scan_cmdchr_expanded
-local scan_token               = token.scan_token
-
-local get_csname               = token.get_csname
------ get_macro                = token.get_macro
------ put_next                 = token.put_next
+local scannext                 = token.scannext
+local scancmdchr               = token.scancmdchrexpanded
+local scantoken                = token.scantoken
+local getcsname                = token.getcsname
 
 local cmd                      = tokens.commands
 local letter_code              = cmd.letter
@@ -224,7 +221,7 @@ do
         local w = 0
         local r = 1
         while true do
-        local n, i = scan_cmdchr()
+        local n, i = scancmdchr()
             if n == letter_code then
                 w = w + 1 ; word[w] = utfchar(i)
             else
@@ -262,7 +259,7 @@ do
                 elseif n == char_given_code or n == math_given_code or n == xmath_given_code then
                     r = r + 1 ; result[r] = i
                 elseif n == some_item_code then
-                    local n = get_csname(t)
+                    local n = getcsname(t)
                     if n then
                         local s = gettex(n)
                         if s then
@@ -274,7 +271,7 @@ do
                         unexpected(c)
                     end
              -- elseif n == call_code then
-             --     local n = get_csname(t)
+             --     local n = getcsname(t)
              --     if n then
              --         local s = get_macro(n)
              --         if s then
@@ -287,7 +284,7 @@ do
              --     end
              -- elseif n == the_code or n == convert_code or n == lua_expandable_call_code then
              --     put_next(t)
-             --     scan_token() -- expands
+             --     scantoken() -- expands
                 else
                     unexpected(c)
                 end

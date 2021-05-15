@@ -16,7 +16,6 @@ local pdfconstant        = lpdf.constant
 local pdfdictionary      = lpdf.dictionary
 local pdfarray           = lpdf.array
 local pdfborder          = lpdf.border
-local write_node         = node.write
 
 function nodeinjections.insertmovie(specification)
     -- managed in figure inclusion: width, height, factor, repeat, controls, preview, label, foundname
@@ -41,7 +40,7 @@ function nodeinjections.insertmovie(specification)
         Movie   = moviedict,
         A       = controldict,
     }
-    write_node(nodeinjections.annotation(width,height,0,action())) -- test: context(...)
+    context(nodeinjections.annotation(width,height,0,action())) -- test: context(...)
 end
 
 function nodeinjections.insertsound(specification)
@@ -63,6 +62,6 @@ function nodeinjections.insertsound(specification)
             Movie   = sounddict,
             A       = controldict,
         }
-        write_node(nodeinjections.annotation(0,0,0,action())) -- test: context(...)
+        context(nodeinjections.annotation(0,0,0,action())) -- test: context(...)
     end
 end

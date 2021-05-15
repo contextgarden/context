@@ -6,7 +6,7 @@
 
 \startchapter[title=Introduction]
 
-Around 2005 we started the \LUATEX\ projects and it took about a decade to reach
+Around 2005 we started the \LUATEX\ project and it took about a decade to reach
 a state where we could consider the experiments to have reached a stable state.
 Pretty soon \LUATEX\ could be used in production, even if some of the interfaces
 evolved, but \CONTEXT\ was kept in sync so that was not really a problem. In 2018
@@ -16,17 +16,17 @@ reasonable feature complete. Among the reasons is that this engine is now used
 outside \CONTEXT\ too which means that we cannot simply change much without
 affecting other macro packages.
 
-However, in reaching that state some decisions were delayed because they didn't
-go well with a current stable version. This is why at the 2018 \CONTEXT\ meeting
-those present agreed that we could move on with a follow up tagged \METATEX, a
-name we already had in mind for a while, but as \LUA\ is an important component,
-it got expanded to \LUAMETATEX. This follow up is a lightweight companion to
-\LUATEX\ that will be maintained alongside. More about the reasons for this
-follow up as well as the philosophy behind it can be found in the document(s)
-describing the development. During \LUATEX\ development I kept track of what
-happened in a series of documents, parts of which were published as articles in
-user group journals, but all are in the \CONTEXT\ distribution. I did the same
-with the development of \LUAMETATEX.
+In reaching that state some decisions were delayed because they didn't go well
+with a current stable version. This is why at the 2018 \CONTEXT\ meeting those
+present agreed that we could move on with a follow up tagged \METATEX, a name we
+already had in mind for a while, but as \LUA\ is an important component, it got
+expanded to \LUAMETATEX. This follow up is a lightweight companion to \LUATEX\
+that will be maintained alongside. More about the reasons for this follow up as
+well as the philosophy behind it can be found in the document(s) describing the
+development. During \LUATEX\ development I kept track of what happened in a
+series of documents, parts of which were published as articles in user group
+journals, but all are in the \CONTEXT\ distribution. I did the same with the
+development of \LUAMETATEX.
 
 The \LUAMETATEX\ engine is, as said, a follow up on \LUATEX. Just as we have
 \CONTEXT\ \MKII\ for \PDFTEX\ and \XETEX, we have \MKIV\ for \LUATEX. For
@@ -42,18 +42,19 @@ ported back to \LUATEX, but only when there are good reasons for doing so and
 when no compatibility issues are involved.
 
 By now the code of these two related engines differs a lot so in retrospect it
-makes less sense to waste time on backporting anyway. When considering this
-follow up one consideration was that a lean and mean version with an extension
-mechanism is a bit closer to original \TEX. Of course, because we also have new
-primitives, this is not entirely true. The basic algorithms remain the same but
-code got reshuffled and because we expose internals names of variables and such
-are sometimes changed, something that is noticeable in the token and node
-interfaces. Delegating tasks to \LUA\ already meant that some aspects, especially
-system dependent ones, no longer made sense and therefore had consequences for
-the interface at the system level. In \LUAMETATEX\ more got delegated, like all
-file related operations. The penalty of moving more responsibility to \LUA\ has
+makes less sense to waste time on porting back. When considering this follow up
+one consideration was that a lean and mean version with an extension mechanism is
+a bit closer to original \TEX. Of course, because we also have new primitives,
+this is not entirely true. The basic algorithms remain the same but code got
+reshuffled and because we expose internal names of variables and such that is
+reflected in the code base (like more granularity in nodes and token commands).
+Delegating tasks to \LUA\ already meant that some aspects, especially system
+dependent ones, no longer made sense and therefore had consequences for the
+interface at the system level. In \LUAMETATEX\ more got delegated, like all file
+related operations. The penalty of moving even more responsibility to \LUA\ has
 been compensated by (hopefully) harmless optimization of code in the engine and
-some more core functionality.
+some more core functionality. In the process system dependencies have been
+minimalized.
 
 This manual started as an adaptation of the \LUATEX\ manual and therefore looks
 similar. Some chapters are removed, others were added and the rest has been (and
@@ -70,11 +71,11 @@ mentioned, the \CONTEXT\ variant for this engine is tagged \LMTX. The pair can b
 used in production, just as with \LUATEX\ and \MKIV. In fact, most users will
 probably not really notice the difference. In some cases there will be a drop in
 performance, due to more work being delegated to \LUA, but on the average
-performance will be better, also due to some changes below the hood of the
-engine. Memory consumption is also less. The timeline of development is roughly:
-from 2018 upto 2020 engine development, 2019 upto 2021 the stepwise code split
-between \MKIV\ and \LMTX, while in 2020 we will (mostly) freeze \MKIV\ and \LMTX\
-will be the default.
+performance is much be better, due to some changes below the hood of the engine.
+Memory consumption is also less. The timeline of development is roughly: from
+2018 upto 2020 engine development, 2019 upto 2021 the stepwise code split between
+\MKIV\ and \LMTX, while in 2021 and 2022 we will (mostly) freeze \MKIV\ and
+\LMTX\ will be the default.
 
 As this follow up is closely related to \CONTEXT\ development, and because we
 expect stock \LUATEX\ to be used outside the \CONTEXT\ proper, there will be no
@@ -94,7 +95,7 @@ you can always consider contacting the developers.
 % this 'always need to be present' negative remark (nagging) about the program,
 % documentation, development, support, etc. present, probably to put the writer on
 % a higher stand, or maybe to compensate some other personal shortcoming ... who
-% knows. This 'i need to make my stupid point' behaviour seems to come with the
+% knows. This 'I need to make my stupid point' behaviour seems to come with the
 % internet and it also seems to increase, but that doesn't mean that I want to deal
 % with those unpleasant people for the sake of the larger "tex good". Therefore, I'm
 % quite happy in the nearly always positive and motivating ConTeXt bubble. It's also
@@ -136,14 +137,14 @@ real problem as there's not much demand for that anyway.
 
 {\bf remark:} Most \CONTEXT\ users seem always willing to keep up with the latest
 versions which means that \LMTX\ is tested well. We can therefore safely claim
-that end of 2019 the code has become quite stable. There are no complaints about
-performance (on my 2013 laptop this manual compiles at 24.5 pps with \LMTX\
-versus 20.7 pps for the \LUATEX\ manual with \MKIV). After updating some of the
-\CONTEXT\ code to use recently added features by the end of 2020 I could do more
-than 25.5 pps but don't expect spectacular bumps in performance (I need a new
-machine for that to happen). Probably no one notices it, but memory consumption
-stepwise got reduced too. And \unknown\ the binary is still below 3~MegaBytes on
-all platforms.
+that end of 2019 the code has become quite stable, although after that in some
+areas there were substantial additions. There are no complaints about performance
+(on my 2013 laptop this manual compiles at 24.5 pps with \LMTX\ versus 20.7 pps
+for the \LUATEX\ manual with \MKIV). After updating some of the \CONTEXT\ code to
+use recently added features by the end of 2020 I could do more than 25.5 pps but
+don't expect spectacular bumps in performance (I need a new machine for that to
+happen). Probably no one notices it, but memory consumption stepwise got reduced
+too. And \unknown\ the binary is still below 3~MegaBytes on all platforms.
 
 \stopchapter
 

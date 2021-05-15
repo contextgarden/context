@@ -64,7 +64,7 @@ local implement            = interfaces.implement
 
 local glyph_code           = nodes.nodecodes.glyph
 
-local hpack_node           = node.hpack
+local hpack_node           = nodes.hpack
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
@@ -75,8 +75,8 @@ local setchar              = nuts.setchar
 local nextglyph            = nuts.traversers.glyph
 
 local remove_node          = nuts.remove
-local insert_node_after    = nuts.insert_after
-local insert_node_before   = nuts.insert_before
+local insertnodeafter      = nuts.insertafter
+local insertnodebefore     = nuts.insertbefore
 local copy_node            = nuts.copy
 
 local actions = false
@@ -208,7 +208,7 @@ function checkers.missing(head)
                                     onetimemessage(font,char,"missing (decomposed)")
                                     setchar(n,s[l])
                                     for i=l-1,2,-1 do
-                                        head, o = insert_node_before(head,o,copy_node(n))
+                                        head, o = insertnodebefore(head,o,copy_node(n))
                                         setchar(o,s[i])
                                     end
                                     goto DONE

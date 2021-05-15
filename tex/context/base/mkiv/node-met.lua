@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['node-MET'] = {
+    if not modules then modules = { } end modules ['node-MET'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['node-MET'] = {
 -- the regular code is proven stable. No support otherwise.
 
 -- luatex: todo: copylist should return h, t
--- todo: see if using insert_before and insert_after makes sense here
+-- todo: see if using insertbefore and insertafter makes sense here
 
 -- This file is a side effect of the \LUATEX\ speed optimization project of Luigi
 -- Scarso and me. As \CONTEXT\ spends over half its time in \LUA, we though that
@@ -65,73 +65,75 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-nodes                       = nodes or { }
-local nodes                 = nodes
+nodes                        = nodes or { }
+local nodes                  = nodes
 
-local nodecodes               = nodes.nodecodes
+local nodecodes              = nodes.nodecodes
 
-nodes.tostring                = node.tostring or tostring
-nodes.copy                    = node.copy
-nodes.copy_node               = node.copy
-nodes.copy_list               = node.copy_list
-nodes.delete                  = node.delete
-nodes.dimensions              = node.dimensions
-nodes.rangedimensions         = node.rangedimensions
-nodes.end_of_math             = node.end_of_math
-nodes.flush                   = node.flush_node
-nodes.flush_node              = node.flush_node
-nodes.flush_list              = node.flush_list
-nodes.free                    = node.free
-nodes.insert_after            = node.insert_after
-nodes.insert_before           = node.insert_before
-nodes.hpack                   = node.hpack
-nodes.new                     = node.new
-nodes.tail                    = node.tail
-nodes.traverse                = node.traverse
-nodes.traverse_id             = node.traverse_id
-nodes.traverse_char           = node.traverse_char
-nodes.traverse_glyph          = node.traverse_glyph
-nodes.traverse_list           = node.traverse_list
-nodes.slide                   = node.slide
-nodes.vpack                   = node.vpack
-nodes.fields                  = node.fields
-nodes.is_node                 = node.is_node
-nodes.setglue                 = node.setglue
-nodes.uses_font               = node.uses_font
+nodes.tostring               = node.tostring or tostring
+nodes.copy                   = node.copy
+nodes.copynode               = node.copy
+nodes.copylist               = node.copy_list
+nodes.delete                 = node.delete
+nodes.dimensions             = node.dimensions
+nodes.rangedimensions        = node.rangedimensions
+nodes.endofmath              = node.end_of_math
+nodes.flush                  = node.flush_node
+nodes.flushnode              = node.flush_node
+nodes.flushlist              = node.flush_list
+nodes.free                   = node.free
+nodes.insertafter            = node.insert_after
+nodes.insertbefore           = node.insert_before
+nodes.hpack                  = node.hpack
+nodes.new                    = node.new
+nodes.tail                   = node.tail
+nodes.traverse               = node.traverse
+nodes.traverseid             = node.traverse_id
+nodes.traversechar           = node.traverse_char
+nodes.traverseglyph          = node.traverse_glyph
+nodes.traverselist           = node.traverse_list
+nodes.slide                  = node.slide
+nodes.vpack                  = node.vpack
+nodes.fields                 = node.fields
+nodes.isnode                 = node.is_node
+nodes.isdirect               = node.is_direct
+nodes.isnut                  = node.is_direct
+nodes.setglue                = node.setglue
+nodes.usesfont               = node.uses_font
 
-nodes.first_glyph             = node.first_glyph
-nodes.has_glyph               = node.has_glyph or node.first_glyph
+nodes.firstglyph             = node.first_glyph
+nodes.hasglyph               = node.has_glyph
 
-nodes.current_attributes      = node.current_attributes or node.current_attr
-nodes.has_field               = node.has_field
-nodes.last_node               = node.last_node
-nodes.usedlist                = node.usedlist
-nodes.protrusion_skippable    = node.protrusion_skippable
-nodes.check_discretionaries   = node.check_discretionaries
-nodes.write                   = node.write
-nodes.flatten_discretionaries = node.flatten_discretionaries
+nodes.currentattributes      = node.current_attributes or node.current_attr
+nodes.hasfield               = node.has_field
+nodes.last_node              = node.last_node
+nodes.usedlist               = node.usedlist
+nodes.protrusionskippable    = node.protrusion_skippable
+nodes.checkdiscretionaries   = node.check_discretionaries
+nodes.write                  = node.write
+nodes.flattendiscretionaries = node.flatten_discretionaries
 
-nodes.count                   = node.count
-nodes.length                  = node.length
+nodes.count                  = node.count
+nodes.length                 = node.length
 
-nodes.has_attribute           = node.has_attribute
-nodes.set_attribute           = node.set_attribute
-nodes.find_attribute          = node.find_attribute
-nodes.unset_attribute         = node.unset_attribute
+nodes.hasattribute           = node.has_attribute
+nodes.setattribute           = node.set_attribute
+nodes.findattribute          = node.find_attribute
+nodes.unsetattribute         = node.unset_attribute
 
-nodes.protect_glyph           = node.protect_glyph
-nodes.protect_glyphs          = node.protect_glyphs
-nodes.unprotect_glyph         = node.unprotect_glyph
-nodes.unprotect_glyphs        = node.unprotect_glyphs
-nodes.kerning                 = node.kerning
-nodes.ligaturing              = node.ligaturing
-nodes.hyphenating             = node.hyphenating
-nodes.mlist_to_hlist          = node.mlist_to_hlist
+nodes.protectglyph           = node.protect_glyph
+nodes.protectglyphs          = node.protect_glyphs
+nodes.unprotectglyph         = node.unprotect_glyph
+nodes.unprotectglyphs        = node.unprotect_glyphs
+nodes.kerning                = node.kerning
+nodes.ligaturing             = node.ligaturing
+nodes.hyphenating            = node.hyphenating
+nodes.mlisttohlist           = node.mlist_to_hlist
 
-nodes.effective_glue          = node.effective_glue
-nodes.getglue                 = node.getglue
-nodes.setglue                 = node.setglue
-nodes.is_zero_glue            = node.is_zero_glue
+nodes.effectiveglue          = node.effective_glue
+nodes.getglue                = node.getglue
+nodes.setglue                = node.setglue
+nodes.iszeroglue             = node.iszeroglue
 
 nodes.tonode = function(n) return n end
 nodes.tonut  = function(n) return n end
@@ -149,7 +151,7 @@ nodes.getfield = n_getfield
 nodes.setfield = n_setfield
 nodes.getattr  = n_getattr
 nodes.setattr  = n_setattr
-nodes.takeattr = nodes.unset_attribute
+nodes.takeattr = nodes.unsetattribute
 
 local function n_getid     (n) return n_getfield(n,"id")      end
 local function n_getsubtype(n) return n_getfield(n,"subtype") end
@@ -213,13 +215,13 @@ nodes.setlink = n_setlink
 nodes.getbox  = node.getbox or tex.getbox
 nodes.setbox  = node.setbox or tex.setbox
 
-local n_flush_node    = nodes.flush
-local n_copy_node     = nodes.copy
-local n_copy_list     = nodes.copy_list
-local n_find_tail     = nodes.tail
-local n_insert_after  = nodes.insert_after
-local n_insert_before = nodes.insert_before
-local n_slide         = nodes.slide
+local n_flushnode    = nodes.flush
+local n_copynode     = nodes.copy
+local n_copylist     = nodes.copylist
+local n_findtail     = nodes.tail
+local n_insertafter  = nodes.insertafter
+local n_insertbefore = nodes.insertbefore
+local n_slide        = nodes.slide
 
 local n_remove_node   = node.remove -- not yet nodes.remove
 
@@ -229,7 +231,7 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        n_flush_node(t)
+        n_flushnode(t)
         t = nil
     else
         n_setboth(t)
@@ -266,10 +268,10 @@ function nodes.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        n_flush_node(current)
+        n_flushnode(current)
         return head, new
     else
-        n_flush_node(current)
+        n_flushnode(current)
         return new
     end
 end
@@ -278,14 +280,14 @@ end
 
 function nodes.append(head,current,...)
     for i=1,select("#",...) do
-        head, current = n_insert_after(head,current,(select(i,...)))
+        head, current = n_insertafter(head,current,(select(i,...)))
     end
     return head, current
 end
 
 function nodes.prepend(head,current,...)
     for i=1,select("#",...) do
-        head, current = n_insert_before(head,current,(select(i,...)))
+        head, current = n_insertbefore(head,current,(select(i,...)))
     end
     return head, current
 end
@@ -300,7 +302,7 @@ function nodes.linked(...)
             else
                 head = next
             end
-            last = n_find_tail(next) -- we could skip the last one
+            last = n_findtail(next) -- we could skip the last one
         end
     end
     return head
@@ -391,7 +393,7 @@ metatable.__concat = function(n1,n2) -- todo: accept nut on one end
         -- or abort
         return n2 -- or n2 * 2
     else
-        local tail = n_find_tail(n1)
+        local tail = n_findtail(n1)
         n_setlink(tail,n2)
         return n1
     end
@@ -406,19 +408,19 @@ metatable.__mul = function(n,multiplier)
     elseif n_getnext(n) then
         local head
         for i=2,multiplier do
-            local h = n_copy_list(n)
+            local h = n_copylist(n)
             if head then
-                local t = n_find_tail(h)
+                local t = n_findtail(h)
                 n_setlink(t,head)
             end
             head = h
         end
-        local t = n_find_tail(n)
+        local t = n_findtail(n)
         n_setlink(t,head)
     else
         local head
         for i=2,multiplier do
-            local c = n_copy_node(n)
+            local c = n_copynode(n)
             if head then
                 n_setlink(c,head)
             end
@@ -431,10 +433,10 @@ end
 
 metatable.__sub = function(first,second)
     if type(second) == "number" then
-        local tail = n_find_tail(first)
+        local tail = n_findtail(first)
         for i=1,second do
             local prev = n_getprev(tail)
-            n_flush_node(tail) -- can become flushlist/flushnode
+            n_flushnode(tail) -- can become flushlist/flushnode
             if prev then
                 tail = prev
             else
@@ -449,15 +451,15 @@ metatable.__sub = function(first,second)
         end
     else
        -- aaaaa - bbb => aaaabbba
-        local firsttail = n_find_tail(first)
+        local firsttail = n_findtail(first)
         local prev = n_getprev(firsttail)
         if prev then
-            local secondtail = n_find_tail(second)
+            local secondtail = n_findtail(second)
             n_setlink(secondtail,firsttail)
             n_setlink(prev,second)
             return first
         else
-            local secondtail = n_find_tail(second)
+            local secondtail = n_findtail(second)
             n_setlink(secondtail,first)
             return second
         end
@@ -469,7 +471,7 @@ metatable.__add = function(first,second)
         local head = second
         for i=1,first do
             local second = n_getnext(head)
-            n_flush_node(head) -- can become flushlist/flushnode
+            n_flushnode(head) -- can become flushlist/flushnode
             if second then
                 head = second
             else
@@ -486,7 +488,7 @@ metatable.__add = function(first,second)
        -- aaaaa + bbb => abbbaaaa
         local next = n_getnext(first)
         if next then
-            local secondtail = n_find_tail(second)
+            local secondtail = n_findtail(second)
             n_setlink(first,second)
             n_setlink(secondtail,next)
         else
@@ -514,12 +516,12 @@ metatable.__pow = function(n,multiplier)
     local head = nil
     if n_getnext(n) then
         if multiplier == 1 then
-            head = n_copy_list(n)
+            head = n_copylist(n)
         else
             for i=1,multiplier do
-                local h = n_copy_list(n)
+                local h = n_copylist(n)
                 if head then
-                    local t = n_find_tail(h)
+                    local t = n_findtail(h)
                     n_setlink(t,head)
                 end
                 head = h
@@ -527,10 +529,10 @@ metatable.__pow = function(n,multiplier)
         end
     else
         if multiplier == 1 then
-            head = n_copy_node(n)
+            head = n_copynode(n)
         else
             for i=2,multiplier do
-                local c = n_copy_node(n)
+                local c = n_copynode(n)
                 if head then
                     n_setlink(head,c)
                 end

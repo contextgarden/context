@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['node-MET'] = {
 -- the regular code is proven stable. No support otherwise.
 
 -- luatex: todo: copylist should return h, t
--- todo: see if using insert_before and insert_after makes sense here
+-- todo: see if using insertbefore and insertafter makes sense here
 
 -- This file is a side effect of the \LUATEX\ speed optimization project of Luigi
 -- Scarso and me. As \CONTEXT\ spends over half its time in \LUA, we though that
@@ -65,39 +65,41 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-nodes                      = nodes or { }
-local nodes                = nodes
+nodes                    = nodes or { }
+local nodes              = nodes
 
-local nodecodes            = nodes.nodecodes
+local nodecodes          = nodes.nodecodes
 
-nodes.copy                 = node.copy
-nodes.copy_list            = node.copy_list
-nodes.copy_node            = node.copy
-nodes.current_attributes   = node.current_attributes
-nodes.remove               = node.remove
-nodes.fields               = node.fields
-nodes.flush                = node.flush_node
-nodes.flush_list           = node.flush_list
-nodes.flush_node           = node.flush_node
-nodes.get_attribute        = node.get_attribute
-nodes.has_attribute        = node.has_attribute
-nodes.has_field            = node.has_field
-nodes.insert_after         = node.insert_after
-nodes.insert_before        = node.insert_before
-nodes.is_node              = node.is_node
-nodes.new                  = node.new
-nodes.set_attribute        = node.set_attribute
-nodes.tail                 = node.tail
-nodes.tostring             = node.tostring or tostring
-nodes.traverse             = node.traverse
-nodes.traverse_id          = node.traverse_id
-nodes.unset_attribute      = node.unset_attribute
-nodes.write                = node.write
-nodes.usedlist             = node.usedlist
+nodes.copy               = node.copy
+nodes.copylist           = node.copylist
+nodes.copy_node          = node.copy
+nodes.currentattributes  = node.currentattributes
+nodes.remove             = node.remove
+nodes.fields             = node.fields
+nodes.flush              = node.flushnode
+nodes.flushlist          = node.flushlist
+nodes.flushnode          = node.flushnode
+nodes.getattribute       = node.getattribute
+nodes.hasattribute       = node.hasattribute
+nodes.hasfield           = node.hasfield
+nodes.insertafter        = node.insertafter
+nodes.insertbefore       = node.insertbefore
+nodes.isnode             = node.isnode
+nodes.isdirect           = node.isdirect
+nodes.isnut              = node.isdirect
+nodes.new                = node.new
+nodes.setattribute       = node.setattribute
+nodes.tail               = node.tail
+nodes.tostring           = node.tostring or tostring
+nodes.traverse           = node.traverse
+nodes.traverseid         = node.traverseid
+nodes.unsetattribute     = node.unsetattribute
+nodes.write              = node.write
+nodes.usedlist           = node.usedlist
 
-nodes.get_properties_table = node.get_properties_table
-nodes.getproperty          = node.getproperty
-nodes.setproperty          = node.setproperty
+nodes.getpropertiestable = node.get_properties_table
+nodes.getproperty        = node.getproperty
+nodes.setproperty        = node.setproperty
 
 -- nodes.usedlist",
 -- nodes.inuse",
@@ -118,7 +120,7 @@ nodes.setproperty          = node.setproperty
 -- Fot now I keep them in \LMTX\ but they will go away!
 
 local n_getfield = node.getfield
-local n_getattr  = node.get_attribute
+local n_getattr  = node.getattribute
 
 local n_setfield = node.setfield
 local n_setattr  = n_setfield
@@ -127,7 +129,7 @@ nodes.getfield = n_getfield
 nodes.setfield = n_setfield
 nodes.getattr  = n_getattr
 nodes.setattr  = n_setattr
-nodes.takeattr = nodes.unset_attribute
+nodes.takeattr = nodes.unsetattribute
 
 local function n_getid     (n) return n_getfield(n,"id")      end
 local function n_getsubtype(n) return n_getfield(n,"subtype") end
@@ -191,12 +193,12 @@ nodes.setlink = n_setlink
 nodes.getbox  = node.getbox or tex.getbox
 nodes.setbox  = node.setbox or tex.setbox
 
-local n_flush_node    = nodes.flush
+local n_flushnode     = nodes.flushnode
 local n_copy_node     = nodes.copy
-local n_copy_list     = nodes.copy_list
+local n_copy_list     = nodes.copylist
 local n_find_tail     = nodes.tail
-local n_insert_after  = nodes.insert_after
-local n_insert_before = nodes.insert_before
+local n_insertafter   = nodes.insertafter
+local n_insertbefore  = nodes.insertbefore
 local n_slide         = nodes.slide
 
 local n_remove_node   = node.remove -- not yet nodes.remove
@@ -207,7 +209,7 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        n_flush_node(t)
+        n_flushnode(t)
         t = nil
     else
         n_setboth(t)
@@ -244,10 +246,10 @@ function nodes.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        n_flush_node(current)
+        n_flushnode(current)
         return head, new
     else
-        n_flush_node(current)
+        n_flushnode(current)
         return new
     end
 end
@@ -256,14 +258,14 @@ end
 
 function nodes.append(head,current,...)
     for i=1,select("#",...) do
-        head, current = n_insert_after(head,current,(select(i,...)))
+        head, current = n_insertafter(head,current,(select(i,...)))
     end
     return head, current
 end
 
 function nodes.prepend(head,current,...)
     for i=1,select("#",...) do
-        head, current = n_insert_before(head,current,(select(i,...)))
+        head, current = n_insertbefore(head,current,(select(i,...)))
     end
     return head, current
 end
@@ -408,7 +410,7 @@ metatable.__sub = function(first,second)
         local tail = n_find_tail(first)
         for i=1,second do
             local prev = n_getprev(tail)
-            n_flush_node(tail) -- can become flushlist/flushnode
+            n_flushnode(tail) -- can become flushlist/flushnode
             if prev then
                 tail = prev
             else
@@ -443,7 +445,7 @@ metatable.__add = function(first,second)
         local head = second
         for i=1,first do
             local second = n_getnext(head)
-            n_flush_node(head) -- can become flushlist/flushnode
+            n_flushnode(head) -- can become flushlist/flushnode
             if second then
                 head = second
             else

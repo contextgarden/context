@@ -75,47 +75,42 @@ function node.kerning(first,last)
     end
  end
 
-local protect_glyph    = direct.protect_glyph
-local unprotect_glyph  = direct.unprotect_glyph
-local protect_glyphs   = direct.protect_glyphs
-local unprotect_glyphs = direct.unprotect_glyphs
+local protectglyph    = direct.protectglyph
+local unprotectglyph  = direct.unprotectglyph
+local protectglyphs   = direct.protectglyphs
+local unprotectglyphs = direct.unprotectglyphs
 
-function node.protect_glyphs(first,last)
-    protect_glyphs(todirect(first), last and todirect(last) or nil)
+function node.protectglyphs(first,last)
+    protectglyphs(todirect(first), last and todirect(last) or nil)
 end
 
-function node.unprotect_glyphs(first,last)
-    unprotect_glyphs(todirect(first), last and todirect(last) or nil)
+function node.unprotectglyphs(first,last)
+    unprotectglyphs(todirect(first), last and todirect(last) or nil)
 end
 
-function node.protect_glyph(first)
-    protect_glyph(todirect(first))
+function node.protectglyph(first)
+    protectglyph(todirect(first))
 end
 
-function node.unprotect_glyph(first)
-    unprotect_glyph(todirect(first))
+function node.unprotectglyph(first)
+    unprotectglyph(todirect(first))
 end
 
-local flatten_discretionaries = direct.flatten_discretionaries
-local check_discretionaries   = direct.check_discretionaries
-local check_discretionary     = direct.check_discretionary
+local flattendiscretionaries = direct.flattendiscretionaries
+local checkdiscretionaries   = direct.checkdiscretionaries
+local checkdiscretionary     = direct.checkdiscretionary
 
-function node.flatten_discretionaries(first)
-    local h, count = flatten_discretionaries(todirect(first))
+function node.flattendiscretionaries(first)
+    local h, count = flattendiscretionaries(todirect(first))
     return tonode(h), count
 end
 
-function node.check_discretionaries(n)
-    check_discretionaries(todirect(n))
-end
+function node.checkdiscretionaries(n) checkdiscretionaries(todirect(n)) end
+function node.checkdiscretionary  (n) checkdiscretionary  (todirect(n)) end
 
-function node.check_discretionary(n)
-    check_discretionary(todirect(n))
-end
-
-local hpack         = direct.hpack
-local vpack         = direct.vpack
-local list_to_hlist = direct.mlist_to_hlist
+local hpack        = direct.hpack
+local vpack        = direct.vpack
+local mlisttohlist = direct.mlisttohlist
 
 function node.hpack(head,...)
     local h, badness = hpack(head and todirect(head) or nil,...)
@@ -127,17 +122,17 @@ function node.vpack(head,...)
     return tonode(h), badness
 end
 
-function node.mlist_to_hlist(head,...)
-    return tonode(mlist_to_hlist(head and todirect(head) or nil,...))
+function node.mlisttohlist(head,...)
+    return tonode(mlisttohlist(head and todirect(head) or nil,...))
 end
 
-local end_of_math    = direct.end_of_math
-local find_attribute = direct.find_attribute
-local first_glyph    = direct.first_glyph
+local endofmath      = direct.endofmath
+local findattribute  = direct.findattribute
+local firstglyph     = direct.firstglyph
 
-function node.end_of_math(n)
+function node.endofmath(n)
     if n then
-        n = end_of_math(todirect(n))
+        n = endofmath(todirect(n))
         if n then
             return tonode(n)
         end
@@ -145,9 +140,9 @@ function node.end_of_math(n)
     return nil
 end
 
-function node.find_attribute(n,a)
+function node.findattribute(n,a)
     if n then
-        local v, n = find_attribute(todirect(n),a)
+        local v, n = findattribute(todirect(n),a)
         if n then
             return v, tonode(n)
         end
@@ -155,14 +150,14 @@ function node.find_attribute(n,a)
     return nil
 end
 
-function node.first_glyph(first,last)
-    local n = first_glyph(todirect(first), last and todirect(last) or nil)
+function node.firstglyph(first,last)
+    local n = firstglyph(todirect(first), last and todirect(last) or nil)
     return n and tonode(n) or nil
 end
 
 local dimensions      = direct.dimensions
 local rangedimensions = direct.rangedimensions
-local effective_glue  = direct.effective_glue
+local effectiveglue   = direct.effectiveglue
 
 function node.dimensions(a,b,c,d,e)
     if type(a) == "userdata" then
@@ -185,53 +180,34 @@ function node.rangedimensions(parent,first,last)
     return rangedimenensions(todirect(parent),todirect(first),last and todirect(last))
 end
 
-function node.effective_glue(list,parent)
-    return effective_glue(list and todirect(list) or nil,parent and todirect(parent) or nil)
+function node.effectiveglue(list,parent)
+    return effectiveglue(list and todirect(list) or nil,parent and todirect(parent) or nil)
 end
 
-local uses_font            = direct.uses_font
-local has_glyph            = direct.has_glyph
-local protrusion_skippable = direct.protrusion_skippable
-local make_extensible      = direct.make_extensible
+local usesfont            = direct.usesfont
+local hasglyph            = direct.hasglyph
+local protrusionskippable = direct.protrusionskippable
 
-function node.uses_font(n,f)
-    return uses_font(todirect(n),f)
-end
+function node.usesfont           (n,f) return usesfont(todirect(n),f)          end
+function node.hasglyph           (n)   return hasglyph(todirect(n))            end
+function node.protrusionskippable(n)   return protrusionskippable(todirect(n)) end
 
-function node.has_glyph(n)
-    return has_glyph(todirect(n))
-end
+local makeextensible = direct.make_extensible
+local lastnode       = direct.lastnode
 
-function node.protrusion_skippable(n)
-    return protrusion_skippable(todirect(n))
-end
+function node.makeextensible(...) local n = makeextensible(...) return n and tonode(n) or nil end
+function node.lastnode      ()    local n = lastnode()          return n and tonode(n) or nil end
 
-function node.make_extensible(...)
-    local n = make_extensible(...)
-    return n and tonode(n) or nil
-end
+local iszeroglue = direct.iszeroglue
+local getglue    = direct.getglue
+local setglue    = direct.setglue
 
-local last_node = direct.last_node
+function node.iszeroglue(n) return iszeroglue(todirect(n)) end
+function node.getglue   (n) return getglue   (todirect(n)) end
+function node.setglue   (n) return setglue   (todirect(n)) end
 
-function node.last_node()
-    local n = last_node()
-    return n and tonode(n) or nil
-end
+node.family_font               = tex.getfontoffamily
 
-local is_zero_glue = direct.is_zero_glue
-local getglue      = direct.getglue
-local setglue      = direct.setglue
+-- node.get_glue                  = node.getglue
+-- node.set_glue                  = node.setglue
 
-function node.is_zero_glue(n)
-    return is_zero_glue(todirect(n))
-end
-
-function node.get_glue(n)
-    return get_glue(todirect(n))
-end
-
-function node.set_glue(n)
-    return set_glue(todirect(n))
-end
-
-node.family_font = tex.getfontoffamily

@@ -10,6 +10,8 @@ local max = math.max
 local formatters, gsub, char = string.formatters, string.gsub, string.char
 local concat = table.concat
 
+-- todo : locals from scanners
+
 local function flags(t)
     if type(t) == "string" then
         t = token.create(t)
@@ -37,27 +39,27 @@ interfaces.implement {
         local f0 = formatters["%s: %s"]
         local nl = logs.newline
         local wr = logs.writer
-        local t  = token.peek_next() -- local t = token.scan_next() token.put_back(t)
+        local t  = token.peeknext() -- local t = token.scannext() token.putback(t)
         local n  = ""
         local w  = ""
         local c  = t.cmdname
         if c == "left_brace" then
             w = "given token list"
-            t = token.scan_toks(false)
+            t = token.scantoks(false)
         elseif c == "register_toks" then
-            token.scan_next()
+            token.scannext()
             w = "token register"
             n = t.csname or t.index
             t = tex.gettoks(n,true)
         elseif c == "internal_toks" then
-            token.scan_next()
+            token.scannext()
             w = "internal token variable"
             n = t.csname or t.index
             t = tex.gettoks(n,true)
         else
-            n = token.scan_csname()
+            n = token.scancsname()
             local r = flags(t)
-            local m = token.get_meaning(n,true)
+            local m = token.getmeaning(n,true)
             r[#r+1] = "control sequence"
             if type(m) == "table" then
                 t = m

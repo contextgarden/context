@@ -814,9 +814,9 @@ language.hyphenation(<language> l, <string> n)
 When no string is given (the first example) a string with all exceptions is
 returned.
 
-\subsection {\type {clear_hyphenation} and \type {clean}}
+\subsection {\type {clearhyphenation} and \type {clean}}
 
-\libindex {clear_hyphenation}
+\libindex {clearhyphenation}
 \libindex {clean}
 
 This either returns the current hyphenation exceptions for this language, or adds
@@ -824,7 +824,7 @@ new ones. The syntax of the string is explained in~\in {section}
 [patternsexceptions].
 
 \startfunctioncall
-language.clear_hyphenation(<language> l)
+language.clearhyphenation(<language> l)
 \stopfunctioncall
 
 This call clears the exception dictionary (string) for this language.
@@ -839,10 +839,10 @@ syntax of the argument string is explained in \in {section} [patternsexceptions]
 This function is useful if you want to do something else based on the words in a
 dictionary file, like spell|-|checking.
 
-\subsection {\type {patterns} and \type {clear_patterns}}
+\subsection {\type {patterns} and \type {clearpatterns}}
 
 \libindex {patterns}
-\libindex {clear_patterns}
+\libindex {clearpatterns}
 
 \startfunctioncall
 <string> n = language.patterns(<language> l)
@@ -854,7 +854,7 @@ set. The syntax of this string is explained in \in {section}
 [patternsexceptions].
 
 \startfunctioncall
-language.clear_patterns(<language> l)
+language.clearpatterns(<language> l)
 \stopfunctioncall
 
 This can be used to clear the pattern dictionary for a language.

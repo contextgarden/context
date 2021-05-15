@@ -602,12 +602,12 @@ do
 
         local move = calc_pdfpos(pos_h,pos_v)
 
-if trace_threshold then
+        if trace_threshold then
             report(
-                 "before: font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                 font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
-             )
-end
+                "before: font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
+                font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
+            )
+        end
 
         if move or need_tm then
             if not need_tm then
@@ -647,12 +647,13 @@ end
             end
         end
 
-if trace_threshold then
+        if trace_threshold then
             report(
                  "after : font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
                  font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
              )
-end
+        end
+
         if mode == "chararray" then
             begin_charmode()
         end
@@ -971,7 +972,7 @@ local flushimage  do
     local getprop           = nuts.getprop
 
     local getwhd            = nuts.getwhd
-    local flushlist         = nuts.flush_list
+    local flushlist         = nuts.flushlist
     local getdata           = nuts.getdata
 
     local normalrule_code   = rulecodes.normal

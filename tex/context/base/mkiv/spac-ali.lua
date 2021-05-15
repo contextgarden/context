@@ -68,7 +68,7 @@ local nofrealigned     = 0
 -- raggedright     0           0         fil
 -- raggedcenter    0 +         0 +        -
 
-local function handler(head,leftpage,realpageno) -- traverse_list
+local function handler(head,leftpage,realpageno) -- traverselist
     local current = head
     while current do
         local id = getid(current)

@@ -57,7 +57,7 @@ local getboxglue        = nuts.getboxglue
 
 local hpack             = nuts.hpack
 local getdimensions     = nuts.dimensions
-local flush_node        = nuts.flush
+local flushnode         = nuts.flush
 
 local traversers        = nuts.traversers
 local nexthlist         = traversers.hlist
@@ -131,7 +131,7 @@ local function doreshapeframedbox(n)
                                 local set, order, sign = getboxglue(p)
                                 setboxglue(h,set,order,sign)
                                 setlist(p)
-                                flush_node(p)
+                                flushnode(p)
                             elseif checkformath and subtype == equationlist_code then
                              -- display formulas use a shift
                                 if nofnonzero == 1 then
@@ -165,7 +165,7 @@ local function doreshapeframedbox(n)
     texsetdimen("global","framedaveragewidth",averagewidth)
 end
 
-local function doanalyzeframedbox(n) -- traverse_list
+local function doanalyzeframedbox(n)
     local box         = getbox(n)
     local noflines    = 0
     local firstheight = nil

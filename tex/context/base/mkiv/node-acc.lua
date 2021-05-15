@@ -32,8 +32,8 @@ local nextglyph          = nuts.traversers.glyph
 local nextnode           = nuts.traversers.node
 
 ----- copy_node          = nuts.copy
-local insert_after       = nuts.insert_after
-local copy_no_components = nuts.copy_no_components
+local insertafter        = nuts.insertafter
+local copynocomponents   = nuts.components.copynocomponents
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
@@ -71,7 +71,7 @@ local function injectspaces(head)
                 if s == spaceskip_code or s == xspaceskip_code then
                     -- unless we don't care about the little bit of overhead
                     -- we can just: local g = copy_node(g)
-                    local g = copy_no_components(p)
+                    local g = copynocomponents(p)
                     local a = getattr(n,a_characters)
                     setchar(g,slot)
                     setlink(p,g,n)
@@ -163,8 +163,8 @@ end)
 --                 local str = codes[a]
 --                 local b = pageliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
 --                 local e = pageliteral("EMC")
---                 insert_before(head,n,b)
---                 insert_after(head,n,e)
+--                 insertbefore(head,n,b)
+--                 insertafter(head,n,e)
 --                 done = true
 --             end
 --         elseif id == hlist_code or id == vlist_code then

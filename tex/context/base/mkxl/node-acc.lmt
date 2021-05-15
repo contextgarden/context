@@ -34,7 +34,6 @@ local nextglyph          = nuts.traversers.glyph
 local nextnode           = nuts.traversers.node
 
 local copy_node          = nuts.copy
-local insert_after       = nuts.insert_after
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes

@@ -14,8 +14,8 @@ local nuts          = nodes.nuts
 
 local getnext       = nuts.getnext
 local getsubtype    = nuts.getsubtype
-local copy_node     = nuts.copy
-local flush_list    = nuts.flush_list
+local copynode      = nuts.copy
+local flushlist     = nuts.flushlist
 local count         = nuts.count
 local isglyph       = nuts.isglyph
 local getprop       = nuts.getprop
@@ -25,7 +25,7 @@ local fastcopy      = table.fastcopy
 
 local report_error  = logs.reporter("node-aux:error")
 
-local function set_components(base,list)
+local function setcomponents(base,list)
     local t = { }
     local n = 0
     local l = list
@@ -39,35 +39,35 @@ local function set_components(base,list)
     end
     -- not yet as we need them
     --
-    -- flush_list(l)
+    -- flushlist(l)
     --
     setprop(base,"components",n > 0 and t or false)
 end
 
-local function get_components(base)
+local function getcomponents(base)
     return getprop(base,"components")
 end
 
-local function copy_no_components(base)
-    local copy = copy_node(base)
+local function copynocomponents(base)
+    local copy = copynode(base)
     setprop(copy,"components",false) -- no metatable lookup!
     return copy
 end
 
-local function copy_only_glyphs(base)
+local function copyonlyglyphs(base)
     local t = getprop(base,"components") -- also metatable
     if t then
         return fastcopy(t)
     end
 end
 
-local function do_count(t,marks)
+local function docount(t,marks)
     local n = 0
     if t then
         for i=1,#t do
             local c = t[i]
             if type(c) == "table" then
-                n = n + do_count(t,marks)
+                n = n + docount(t,marks)
             elseif not marks[c] then
                 n = n + 1
             else
@@ -82,19 +82,19 @@ end
 
 local done = false
 
-local function count_components(base,marks)
+local function countcomponents(base,marks)
     local char = isglyph(base)
     if char then
         if getsubtype(base) == ligature_code then
             if not done then
                 logs.report("fonts","!")
-                logs.report("fonts","! check count_components with mkiv !")
+                logs.report("fonts","! check countcomponents with mkiv !")
                 logs.report("fonts","!")
                 done = true
             end
             local t = getprop(base,"components")
             if t then
-                return do_count(t,marks)
+                return docount(t,marks)
             end
         elseif not marks[char] then
             return 1
@@ -103,12 +103,14 @@ local function count_components(base,marks)
     return 0
 end
 
-nuts.set_components     = set_components
-nuts.get_components     = get_components
-nuts.copy_only_glyphs   = copy_only_glyphs
-nuts.copy_no_components = copy_no_components
-nuts.count_components   = count_components
-nuts.flush_components   = flush_list
+nuts.components = {
+    set              = setcomponents,
+    get              = getcomponents,
+    copyonlyglyphs   = copyonlyglyphs,
+    copynocomponents = copynocomponents,
+    count            = countcomponents,
+    flush            = flushlist,
+}
 
 nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
 nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end

@@ -17,18 +17,15 @@ local xcomplex     = xcomplex or { }
 
 local cmd          = tokens.commands
 
-local scan_next    = token.scan_next or token.get_next
-local scan_cmdchr  = token.scan_cmdchr_expanded
+local scannext     = token.scan_next or token.get_next
 
-local get_command  = token.get_command
-local get_mode     = token.get_mode
-local get_index    = token.get_index
-local get_csname   = token.get_csname
-local get_macro    = token.get_macro
-
-local put_next     = token.put_next
-
-local scan_token   = token.scan_token or token.get_token
+local getcommand   = token.get_command
+local getmode      = token.get_mode
+local getindex     = token.get_index
+local getcsname    = token.get_csname
+local getmacro     = token.get_macro
+local putnext      = token.put_next
+local scantoken    = token.scan_token or token.get_token
 
 local getdimen     = tex.getdimen
 local getglue      = tex.getglue
@@ -209,12 +206,12 @@ do
         local w = 0
         local r = 1
         while true do
-            local t = scan_next()
-            local n = get_command(t)
+            local t = scannext()
+            local n = getcommand(t)
             local c = cmd[n]
             -- todo, helper: returns number
             if c == "letter"  then
-                w = w + 1 ; word[w] = utfchar(get_mode(t))
+                w = w + 1 ; word[w] = utfchar(getmode(t))
             else
                 if w > 0 then
                     local s = concat(word,"",1,w)
@@ -233,23 +230,23 @@ do
                     w = 0
                 end
                 if     c == "other_char" then
-                    r = r + 1 ; result[r] = utfchar(get_mode(t))
+                    r = r + 1 ; result[r] = utfchar(getmode(t))
                 elseif c == "spacer" then
                  -- r = r + 1 ; result[r] = " "
                 elseif c == "relax" then
                     break
                 elseif c == "assign_int" then
-                    r = r + 1 ; result[r] = getcount(get_index(t))
+                    r = r + 1 ; result[r] = getcount(getindex(t))
                 elseif c == "assign_dimen" then
-                    r = r + 1 ; result[r] = getdimen(get_index(t))
+                    r = r + 1 ; result[r] = getdimen(getindex(t))
                 elseif c == "assign_glue" then
-                    r = r + 1 ; result[r] = getglue(get_index(t))
+                    r = r + 1 ; result[r] = getglue(getindex(t))
                 elseif c == "assign_toks" then
-                    r = r + 1 ; result[r] = gettoks(get_index(t))
+                    r = r + 1 ; result[r] = gettoks(getindex(t))
                 elseif c == "char_given" or c == "math_given" or c == "xmath_given" then
-                    r = r + 1 ; result[r] = get_mode(t)
+                    r = r + 1 ; result[r] = getmode(t)
                 elseif c == "last_item" then
-                    local n = get_csname(t)
+                    local n = getcsname(t)
                     if n then
                         local s = gettex(n)
                         if s then
@@ -261,9 +258,9 @@ do
                         unexpected(c)
                     end
                 elseif c == "call" then
-                    local n = get_csname(t)
+                    local n = getcsname(t)
                     if n then
-                        local s = get_macro(n)
+                        local s = getmacro(n)
                         if s then
                             r = r + 1 ; result[r] = s
                         else
@@ -273,8 +270,8 @@ do
                         unexpected(c)
                     end
                 elseif c == "the" or c == "convert" or c == "lua_expandable_call" then
-                    put_next(t)
-                    scan_token() -- expands
+                    putnext(t)
+                    scantoken() -- expands
                 else
                     unexpected(c)
                 end

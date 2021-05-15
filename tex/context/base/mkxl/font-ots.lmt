@@ -213,29 +213,31 @@ local getscales          = nuts.getscales
 -- their positions because some complex ligatures might need that. For the moment we
 -- use an x_ prefix because for now generic follows the other approach.
 
-local copy_no_components = nuts.copy_no_components
-local copy_only_glyphs   = nuts.copy_only_glyphs
-local count_components   = nuts.count_components
-local set_components     = nuts.set_components
-local get_components     = nuts.get_components
-local flush_components   = nuts.flush_components
+local components         = nuts.components
+local copynocomponents   = components.copynocomponents
+local copyonlyglyphs     = components.copyonlyglyphs
+local countcomponents    = components.count
+local setcomponents      = components.set
+local getcomponents      = components.get
+local flushcomponents    = components.flush
 
 ---------------------------------------------------------------------------------------
 
 local ischar             = nuts.ischar
 local isnextchar         = nuts.isnextchar -- only makes sense when we know we need next
 local isprevchar         = nuts.isprevchar -- only makes sense when we know we need prev
-local usesfont           = nuts.uses_font
+local usesfont           = nuts.usesfont
 
-local insert_node_after  = nuts.insert_after
-local copy_node          = nuts.copy
-local copy_node_list     = nuts.copy_list
-local remove_node        = nuts.remove
-local find_node_tail     = nuts.tail
-local flush_node_list    = nuts.flush_list
-local flush_node         = nuts.flush_node
-local end_of_math        = nuts.end_of_math
-local start_of_par       = nuts.start_of_par
+local insertnodeafter    = nuts.insertafter
+local copynode           = nuts.copy
+local copynodelist       = nuts.copylist
+local removenode         = nuts.remove
+local findnodetail       = nuts.tail
+local flushnodelist      = nuts.flushlist
+local flushnode          = nuts.flushnode
+local endofmath          = nuts.endofmath
+
+local startofpar         = nuts.startofpar
 
 local setmetatable       = setmetatable
 local setmetatableindex  = table.setmetatableindex
@@ -319,13 +321,6 @@ local getthreshold       = injections.getthreshold
 local checkstep          = (tracers and tracers.steppers.check)    or function() end
 local registerstep       = (tracers and tracers.steppers.register) or function() end
 local registermessage    = (tracers and tracers.steppers.message)  or function() end
-
--- local function checkdisccontent(d)
---     local pre, post, replace = getdisc(d)
---     if pre     then for n in traverse_id(glue_code,pre)     do report("pre: %s",nodes.idstostring(pre))     break end end
---     if post    then for n in traverse_id(glue_code,post)    do report("pos: %s",nodes.idstostring(post))    break end end
---     if replace then for n in traverse_id(glue_code,replace) do report("rep: %s",nodes.idstostring(replace)) break end end
--- end
 
 local function logprocess(...)
     if trace_steps then
@@ -426,12 +421,12 @@ local function flattendisk(head,disc)
     local prev, next = getboth(disc)
     local ishead = head == disc
     setdisc(disc)
-    flush_node(disc)
+    flushnode(disc)
     if pre then
-        flush_node_list(pre)
+        flushnodelist(pre)
     end
     if post then
-        flush_node_list(post)
+        flushnodelist(post)
     end
     if ishead then
         if replace then
@@ -461,7 +456,7 @@ end
 local function appenddisc(disc,list)
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local posthead    = list
-    local replacehead = copy_node_list(list)
+    local replacehead = copynodelist(list)
     if post then
         setlink(posttail,posthead)
     else
@@ -483,16 +478,16 @@ local function markstoligature(head,start,stop,char)
         local next = getnext(stop)
         setprev(start)
         setnext(stop)
-        local base = copy_no_components(start,copyinjection)
+        local base = copynocomponents(start,copyinjection)
         if head == start then
             head = base
         end
         resetinjection(base)
         setchar(base,char)
         setsubtype(base,ligatureglyph_code)
-        set_components(base,start)
+        setcomponents(base,start)
         setlink(prev,base,next)
-        flush_components(start)
+        flushcomponents(start)
         return head, base
     end
 end
@@ -514,7 +509,7 @@ local no_right_ligature_code = glyphoptioncodes.norightligature
 local no_left_kern_code      = glyphoptioncodes.noleftkern
 local no_right_kern_code     = glyphoptioncodes.norightkern
 
-local has_glyph_option       = nuts.has_glyph_option
+local hasglyphoption         = nuts.hasglyphoption
 
 -- in lmtx we need to check the components and can be slightly more clever
 
@@ -522,18 +517,18 @@ local function inhibited(start,stop)
     for n in nextnode, start do
         -- we asume glyph nodes
         if n == start then
-            if has_glyph_option(n,no_right_ligature_code) then
+            if hasglyphoption(n,no_right_ligature_code) then
                 return true
             end
         elseif n == stop then
-            if has_glyph_option(n,no_left_ligature_code) then
+            if hasglyphoption(n,no_left_ligature_code) then
                 return true
             else
                 return false
             end
-        elseif has_glyph_option(n,no_left_ligature_code) then
+        elseif hasglyphoption(n,no_left_ligature_code) then
             return true
-        elseif has_glyph_option(n,no_right_ligature_code) then
+        elseif hasglyphoption(n,no_right_ligature_code) then
             return true
         end
     end
@@ -554,7 +549,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     local comp = start
     setprev(start)
     setnext(stop)
-    local base = copy_no_components(start,copyinjection)
+    local base = copynocomponents(start,copyinjection)
     if start == head then
         head = base
     end
@@ -562,7 +557,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     setchar(base,char)
     setoptions(base,getoptions(start) | getoptions(stop)) -- maybe only lig options
     setsubtype(base,ligatureglyph_code)
-    set_components(base,comp)
+    setcomponents(base,comp)
     setlink(prev,base,next)
     if not discfound then
         local deletemarks = not skiphash or hasmarks
@@ -576,7 +571,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
             local char = getchar(start)
             if not marks[char] then
                 baseindex = baseindex + componentindex
-                componentindex = count_components(start,marks)
+                componentindex = countcomponents(start,marks)
              -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
              -- and such:
             elseif not deletemarks then
@@ -585,9 +580,9 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 if trace_marks then
                     logwarning("%s: keep ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
                 end
-                local n = copy_node(start)
+                local n = copynode(start)
                 copyinjection(n,start) -- is this ok ? we position later anyway
-                head, current = insert_node_after(head,current,n) -- unlikely that mark has components
+                head, current = insertnodeafter(head,current,n) -- unlikely that mark has components
             elseif trace_marks then
                 logwarning("%s: delete ligature mark %s",pref(dataset,sequence),gref(char))
             end
@@ -612,7 +607,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 break
             end
         end
-        flush_components(components)
+        flushcomponents(components)
     else
         -- discfound ... forget about marks .. probably no scripts that hyphenate and have marks
         local discprev, discnext = getboth(discfound)
@@ -624,8 +619,8 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
             if not replace then
                 -- looks like we never come here as it's not okay
                 local prev = getprev(base)
-             -- local comp = get_components(base) -- already set
-                local copied = copy_only_glyphs(comp)
+             -- local comp = getcomponents(base) -- already set
+                local copied = copyonlyglyphs(comp)
                 if pre then
                     setlink(discprev,pre)
                 else
@@ -642,7 +637,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 setlink(prev,discfound,next)
                 setboth(base)
                 -- here components have a pointer so we can't free it!
-                set_components(base,copied)
+                setcomponents(base,copied)
                 replace = base
                 if forcediscretionaries then
                     setdisc(discfound,pre,post,replace,discretionarydisc_code)
@@ -669,10 +664,10 @@ local function multiple_glyphs(head,start,multiple,skiphash,what,stop) -- what t
              -- while ignoremarks and marks[getchar(sn)] then
              --     local sn = getnext(sn)
              -- end
-                local n = copy_node(start) -- ignore components
+                local n = copynode(start) -- ignore components
                 resetinjection(n)
                 setchar(n,multiple[k])
-                insert_node_after(head,start,n)
+                insertnodeafter(head,start,n)
                 start = n
             end
             if what == true then
@@ -680,10 +675,10 @@ local function multiple_glyphs(head,start,multiple,skiphash,what,stop) -- what t
             elseif what > 1 then
                 local m = multiple[nofmultiples]
                 for i=2,what do
-                    local n = copy_node(start) -- ignore components
+                    local n = copynode(start) -- ignore components
                     resetinjection(n)
                     setchar(n,m)
-                    insert_node_after(head,start,n)
+                    insertnodeafter(head,start,n)
                     start = n
                 end
             end
@@ -782,7 +777,7 @@ end
 -- Blocking is nasty: (ff\zwj l) vs (ff\zwj l) vs (ffl) vs (f\zwj fl}
 
 function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skiphash)
-    if start and has_glyph_option(start,no_right_ligature_code) then
+    if start and hasglyphoption(start,no_right_ligature_code) then
         return head, start, false, nil
     end
     local current = getnext(start)
@@ -794,7 +789,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     if skiphash and skiphash[startchar] then
         while current do
             local nxt, char = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
-            if char and not has_glyph_option(current,no_left_ligature_code) then
+            if char and not hasglyphoption(current,no_left_ligature_code) then
                 local lg = ligature[char]
                 if lg then
                     stop     = current
@@ -830,7 +825,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             if char then
                 if skiphash and skiphash[char] then
                     current = nxt
-                elseif has_glyph_option(current,no_left_ligature_code) then
+                elseif hasglyphoption(current,no_left_ligature_code) then
                     break
                 else
                     local lg = ligature[char]
@@ -868,13 +863,13 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             local match
             if replace then
                 local nxt, char = isnextchar(replace,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
-                if char and ligature[char] and not has_glyph_option(replace,no_left_ligature_code) then
+                if char and ligature[char] and not hasglyphoption(replace,no_left_ligature_code) then
                     match = true
                 end
             end
             if not match and pre then
                 local nxt, char = isnextchar(pre,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
-                if char and ligature[char] and not has_glyph_option(pre,no_left_ligature_code) then
+                if char and ligature[char] and not hasglyphoption(pre,no_left_ligature_code) then
                     match = true
                 end
             end
@@ -882,7 +877,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             if not match and not pre or not replace then
                 local ndf = getnext(discfound)
                 local nxt, char = isnextchar(ndf,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
-                if char and ligature[char] and not has_glyph_option(ndf,no_left_ligature_code) then
+                if char and ligature[char] and not hasglyphoption(ndf,no_left_ligature_code) then
                     match = true
                 end
             end
@@ -892,9 +887,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 local prev   = getprev(start)
                 if stop then
                     setnext(stop)
-                    local copy = copy_node_list(start)
+                    local copy = copynodelist(start)
                     local tail = stop -- was: getprev(stop) -- Kai: needs checking on your samples
-                    local liat = find_node_tail(copy)
+                    local liat = findnodetail(copy)
                     if pre then
                         setlink(liat,pre)
                     end
@@ -905,7 +900,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                     replace = start
                 else
                     setnext(start)
-                    local copy = copy_node(start)
+                    local copy = copynode(start)
                     if pre then
                         setlink(copy,pre)
                     end
@@ -957,7 +952,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
 end
 
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
-    if has_glyph_option(start,no_right_kern_code) then
+    if hasglyphoption(start,no_right_kern_code) then
         return head, start, false
     else
         local startchar = getchar(start)
@@ -978,7 +973,7 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,
 end
 
 function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
-    if has_glyph_option(start,no_right_kern_code) then
+    if hasglyphoption(start,no_right_kern_code) then
         return head, start, false
     else
         local snext = getnext(start)
@@ -1357,7 +1352,7 @@ function chainprocs.gsub_remove(head,start,stop,dataset,sequence,currentlookup,r
     if trace_chains then
         logprocess("%s: removing character %s",cref(dataset,sequence,chainindex),gref(getchar(start)))
     end
-    head, start = remove_node(head,start,true)
+    head, start = removenode(head,start,true)
     return head, getprev(start), true
 end
 
@@ -1486,7 +1481,7 @@ assume rather stupid ligatures (no complex disc nodes).</p>
 -- compare to handlers.gsub_ligature which is more complex ... why
 
 function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
-    if start and has_glyph_option(start,no_right_ligature_code) then
+    if start and hasglyphoption(start,no_right_ligature_code) then
         return head, start, false, 0, false
     end
     local mapping = currentlookup.mapping
@@ -1509,7 +1504,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             while current do
                 local nxt, schar, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                 if schar then
-if current and has_glyph_option(current,no_left_ligature_code) then
+if current and hasglyphoption(current,no_left_ligature_code) then
     break
 end
                     if skiphash and skiphash[schar] then -- marks
@@ -1577,7 +1572,7 @@ end
 
 function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
     -- we actually should check no_left_kern_code with next
-    if not has_glyph_option(start,no_right_kern_code) then
+    if not hasglyphoption(start,no_right_kern_code) then
         local mapping = currentlookup.mapping
         if mapping == nil then
             mapping = getmapping(dataset,sequence,currentlookup)
@@ -1607,7 +1602,7 @@ end
 
 function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex) -- todo: injections ?
     -- we actually should check no_left_kern_code with next
-    if not has_glyph_option(start,no_right_kern_code) then
+    if not hasglyphoption(start,no_right_kern_code) then
         local mapping = currentlookup.mapping
         if mapping == nil then
             mapping = getmapping(dataset,sequence,currentlookup)
@@ -1959,7 +1954,7 @@ do if not userkern then -- generic
     local setkern = nuts.setkern       -- not injections.setkern
 
     userkern = function(k)
-        local n = copy_node(thekern)
+        local n = copynode(thekern)
         setkern(n,k)
         return n
     end
@@ -1976,13 +1971,13 @@ local function checked(head)
                 if next then
                     setlink(kern,next)
                 end
-                flush_node(current)
+                flushnode(current)
                 head    = kern
                 current = next
             else
                 local prev, next = getboth(current)
                 setlink(prev,kern,next)
-                flush_node(current)
+                flushnode(current)
                 current = next
             end
         else
@@ -2216,7 +2211,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                 tail = prev
                 setprev(current,sweepnode)
             else
-                tail = find_node_tail(head)
+                tail = findnodetail(head)
             end
             setnext(sweepnode,current)
             setprev(head)
@@ -2334,13 +2329,13 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             head = lookaheaddisc
         end
         local pre, post, replace = getdisc(lookaheaddisc)
-        local new  = copy_node_list(cf) -- br, how often does that happen
+        local new  = copynodelist(cf) -- br, how often does that happen
         local cnew = new
         if pre then
-            setlink(find_node_tail(cf),pre)
+            setlink(findnodetail(cf),pre)
         end
         if replace then
-            local tail = find_node_tail(new)
+            local tail = findnodetail(new)
             setlink(tail,replace)
         end
         for i=1,insertedmarks do
@@ -2396,8 +2391,8 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         setprev(cf)
         setnext(cl)
         local pre, post, replace, pretail, posttail, replacetail = getdisc(backtrackdisc,true)
-        local new  = copy_node_list(cf)
-        local cnew = find_node_tail(new)
+        local new  = copynodelist(cf)
+        local cnew = findnodetail(new)
         for i=1,insertedmarks do
             cnew = getprev(cnew)
         end
@@ -3297,7 +3292,7 @@ local function testrun(disc,t_run,c_run,...)
             next = getnext(tail)
             setnext(tail)
             setprev(head)
-            local new  = copy_node_list(head)
+            local new  = copynodelist(head)
             if posttail then
                 setlink(posttail,head)
             else
@@ -3794,7 +3789,7 @@ do
 
         local initialrl = 0
 
-        if getid(head) == par_code and start_of_par(head) then
+        if getid(head) == par_code and startofpar(head) then
             initialrl = pardirstate(head)
         elseif direction == righttoleft_code then
             initialrl = -1
@@ -3839,7 +3834,7 @@ do
                 -- the before and after lists in the loader. But first I need to see a font that uses multiple
                 -- matches.
                 --
-                local start  = find_node_tail(head)
+                local start  = findnodetail(head)
                 local rlmode = 0 -- how important is this .. do we need to check for dir?
                 local merged = steps.merged
                 while start do
@@ -3917,11 +3912,11 @@ do
                                 start = nxt
                             end
                         elseif id == math_code then
-                            start = getnext(end_of_math(start))
+                            start = getnext(endofmath(start))
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                             start = nxt
-                     -- elseif id == par_code and start_of_par(start) then
+                     -- elseif id == par_code and startofpar(start) then
                      --     rlparmode, rlmode = pardirstate(start)
                          -- start = nxt
                         else
@@ -3984,11 +3979,11 @@ do
                                 start = nxt
                             end
                         elseif id == math_code then
-                            start = getnext(end_of_math(start))
+                            start = getnext(endofmath(start))
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                             start = nxt
-                     -- elseif id == par_code and start_of_par(start) then
+                     -- elseif id == par_code and startofpar(start) then
                      --     rlparmode, rlmode = pardirstate(start)
                      --     start = nxt
                         else
@@ -4103,11 +4098,11 @@ do
                 -- a different font|state or glue (happens often)
                 start = nxt
             elseif id == math_code then
-                start = getnext(end_of_math(start))
+                start = getnext(endofmath(start))
             elseif id == dir_code then
                 topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                 start = nxt
-         -- elseif id == par_code and start_of_par(start) then
+         -- elseif id == par_code and startofpar(start) then
          --     rlparmode, rlmode = pardirstate(start)
              -- start = nxt
             else

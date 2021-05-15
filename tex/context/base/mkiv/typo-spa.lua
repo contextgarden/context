@@ -29,10 +29,10 @@ local getprev            = nuts.getprev
 local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 local remove_node        = nuts.remove
-local end_of_math        = nuts.end_of_math
+local endofmath          = nuts.endofmath
 
 local nodepool           = nuts.pool
 local new_penalty        = nodepool.penalty
@@ -116,8 +116,8 @@ function spacings.handler(head)
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space before %C (left)",char)
                                 end
-                                insert_node_before(head,start,new_penalty(10000))
-                                insert_node_before(head,start,new_glue(left*quad))
+                                insertnodebefore(head,start,new_penalty(10000))
+                                insertnodebefore(head,start,new_glue(left*quad))
                             end
                         end
                         local next = getnext(start)
@@ -152,15 +152,15 @@ function spacings.handler(head)
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space after %C (right)",char)
                                 end
-                                insert_node_after(head,start,new_glue(right*quad))
-                                insert_node_after(head,start,new_penalty(10000))
+                                insertnodeafter(head,start,new_glue(right*quad))
+                                insertnodeafter(head,start,new_penalty(10000))
                             end
                         end
                     end
                 end
             end
         elseif id == math_code then
-            start = end_of_math(start) -- weird, can return nil .. no math end?
+            start = endofmath(start) -- weird, can return nil .. no math end?
         end
         if start then
             start = getnext(start)

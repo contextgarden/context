@@ -41,7 +41,7 @@ local scankeyword       = scanners.keyword
 local peekchar          = scanners.peekchar
 local skipnext          = scanners.skip
 
-local getindex          = token.get_index
+local getindex          = tokens.accessors.index
 
 local texsetdimen       = tex.setdimen
 local texsetcount       = tex.setcount
@@ -957,8 +957,8 @@ do
 
     local global_code   = tex.flagcodes.global
 
-    local savelua       = token.save_lua
-    local isdefined     = token.is_defined
+    local savelua       = token.savelua
+    local isdefined     = token.isdefined
 
     local newsparse     = sparse.new
     local setsparse     = sparse.set

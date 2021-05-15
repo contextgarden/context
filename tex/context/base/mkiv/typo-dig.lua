@@ -33,10 +33,9 @@ local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 
-local hpack_node         = nuts.hpack
-local traverse_id        = nuts.traverse_id
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
+local hpacknode          = nuts.hpack
+local insertnodebefore   = nuts.insertbefore
+local insertnodeafter    = nuts.insertafter
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -73,16 +72,16 @@ local a_digits           = attributes.private("digits")
 
 function nodes.aligned(head,start,stop,width,how)
     if how == "flushright" or how == "middle" then
-        head, start = insert_node_before(head,start,new_glue(0,65536,65536))
+        head, start = insertnodebefore(head,start,new_glue(0,65536,65536))
     end
     if how == "flushleft" or how == "middle" then
-        head, stop = insert_node_after(head,stop,new_glue(0,65536,65536))
+        head, stop = insertnodeafter(head,stop,new_glue(0,65536,65536))
     end
     local prv = getprev(start)
     local nxt = getnext(stop)
     setprev(start)
     setnext(stop)
-    local packed = hpack_node(start,width,"exactly") -- no directional mess here, just lr
+    local packed = hpacknode(start,width,"exactly") -- no directional mess here, just lr
     if prv then
         setlink(prv,packed)
     end

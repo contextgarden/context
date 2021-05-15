@@ -19,7 +19,7 @@ local context              = context
 local ctxcore              = context.core
 
 local texgetcount          = tex.getcount
-local texgetintegervalue   = token.get_integer -- todo: in tex namespace
+local texgetintegervalue   = token.getinteger -- todo
 
 local allocate             = utilities.storage.allocate
 local setmetatableindex    = table.setmetatableindex

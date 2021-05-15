@@ -38,14 +38,12 @@ local scaninteger       = scanners.integer
 local scanboolean       = scanners.boolean
 local scancode          = scanners.code
 local scantokencode     = scanners.tokencode
------ scantoken         = scanners.token
 
 local getters           = tokens.getters
 local gettoken          = getters.token
 
-local getcommand        = token.get_command
------ getcsname         = token.get_csname
-local getnextchar       = token.scan_next_char or token.get_next_char
+local getcommand        = tokens.accessors.command
+local getnextchar       = tokens.scanners.nextchar
 
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array

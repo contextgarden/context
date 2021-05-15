@@ -53,11 +53,11 @@ local traversers         = nuts.traversers
 local nextnode           = traversers.node
 local nextglyph          = traversers.glyph
 
-local flush_node         = nuts.flush
-local flush_list         = nuts.flush_list
+local flushnode          = nuts.flush
+local flushlist          = nuts.flushlist
 local hpack_nodes        = nuts.hpack
-local unset_attribute    = nuts.unset_attribute
-local first_glyph        = nuts.first_glyph
+local unsetattribute     = nuts.unsetattribute
+local firstglyph         = nuts.firstglyph
 local copy_node          = nuts.copy
 local find_tail          = nuts.tail
 local getbox             = nuts.getbox
@@ -85,7 +85,7 @@ local report_error       = logs.reporter("node-aux:error")
 -- function tex.takebox(id)
 --     local box = tex.getbox(id)
 --     if box then
---         local copy = node.copy(box)
+--         local copy = nodes.copy(box)
 --         local list = box.list
 --         copy.list = list
 --         box.list = nil
@@ -129,7 +129,7 @@ end
 function nuts.takelist(n)
     local l = getlist(n)
     setlist(n)
-    flush_node(n)
+    flushnode(n)
     return l
 end
 
@@ -142,7 +142,7 @@ local function repackhlist(list,...)
     local temp, b = hpack_nodes(list,...)
     list = getlist(temp)
     setlist(temp)
-    flush_node(temp)
+    flushnode(temp)
     return list, b
 end
 
@@ -153,50 +153,59 @@ function nodes.repackhlist(list,...)
     return tonode(list), b
 end
 
-local function set_attributes(head,attr,value)
-    for n, id in nextnode, head do
-        setattr(n,attr,value)
-        if id == hlist_node or id == vlist_node then
-            set_attributes(getlist(n),attr,value)
-        end
-    end
-end
+if not nuts.setattributes then
 
-local function set_unset_attributes(head,attr,value)
-    for n, id in nextnode, head do
-        if not getattr(n,attr) then
+    local function setattributes(head,attr,value)
+        for n, id in nextnode, head do
             setattr(n,attr,value)
-        end
-        if id == hlist_code or id == vlist_code then
-            set_unset_attributes(getlist(n),attr,value)
-        end
-    end
-end
-
-local function unset_attributes(head,attr)
-    for n, id in nextnode, head do
-        setattr(n,attr,unsetvalue)
-        if id == hlist_code or id == vlist_code then
-            unset_attributes(getlist(n),attr)
+            if id == hlist_node or id == vlist_node then
+                setattributes(getlist(n),attr,value)
+            end
         end
     end
+
+    nuts .setattributes = setattributes
+    nodes.setattributes = vianuts(setattributes)
+
 end
 
--- for old times sake
+if not nuts.setunsetattributes then
 
-nuts.setattribute        = nuts.setattr                      nodes.setattribute       = nodes.setattr
-nuts.getattribute        = nuts.getattr                      nodes.getattribute       = nodes.getattr
-nuts.unsetattribute      = nuts.unset_attribute              nodes.unsetattribute     = nodes.unset_attribute
-nuts.has_attribute       = nuts.has_attribute                nodes.has_attribute      = nodes.has_attribute
-nuts.firstglyph          = nuts.first_glyph                  nodes.firstglyph         = nodes.first_glyph
+    local function setunsetattributes(head,attr,value)
+        for n, id in nextnode, head do
+            if not getattr(n,attr) then
+                setattr(n,attr,value)
+            end
+            if id == hlist_code or id == vlist_code then
+                setunsetattributes(getlist(n),attr,value)
+            end
+        end
+    end
 
-nuts.setattributes       = set_attributes                    nodes.setattributes      = vianuts(set_attributes)
-nuts.setunsetattributes  = set_unset_attributes              nodes.setunsetattributes = vianuts(set_unset_attributes)
-nuts.unsetattributes     = unset_attributes                  nodes.unsetattributes    = vianuts(unset_attributes)
+    nuts .setunsetattributes = setunsetattributes
+    nodes.setunsetattributes = vianuts(setunsetattributes)
+
+end
+
+if not nuts.unsetattributes then
+
+    local function unsetattributes(head,attr)
+        for n, id in nextnode, head do
+            setattr(n,attr,unsetvalue)
+            if id == hlist_code or id == vlist_code then
+                unsetattributes(getlist(n),attr)
+            end
+        end
+    end
+
+    nuts .unsetattributes = unsetattributes
+    nodes.unsetattributes = vianuts(unsetattributes)
+
+end
 
 function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
-        return first_glyph(n)
+        return firstglyph(n)
     else
         for g in nextglyph ,n do
             return g
@@ -370,7 +379,7 @@ local function rehpack(n,width)
     local set, order, sign = getboxglue(temp)
     setboxglue(n,set,order,sign)
     setlist(temp)
-    flush_node(temp)
+    flushnode(temp)
     return n
 end
 
@@ -406,7 +415,7 @@ do
 
     local getsubtype = nodes.getsubtype
 
-    function nodes.start_of_par(n)
+    function nodes.startofpar(n)
         local s = getsubtype(n)
         return s == hmodepar_code or s == vmodepar_code
     end
@@ -423,8 +432,6 @@ if not nuts.getnormalizedline then
     local getlist            = nuts.getlist
     local getwidth           = nuts.getwidth
 
-    local direct             = node.direct
-
     local nodecodes          = nodes.nodecodes
     local skipcodes          = nodes.skipcodes
 
@@ -438,7 +445,7 @@ if not nuts.getnormalizedline then
     local indentskip_code    = skipcodes.indentskip
     local parfillskip_code   = skipcodes.parfillskip
 
-    local find_node = direct.find_node or function(h,t,s)
+    nuts.findnode = node.direct.find_node or function(h,t,s)
         if h then
             if s then
                 for node, subtype in traversers[t] do
@@ -454,7 +461,6 @@ if not nuts.getnormalizedline then
         end
     end
 
-    nuts.find_node = find_node
 
     function nuts.getnormalizedline(h)
         if getid(h) == hlist_code and getsubtype(h) == line_code then

@@ -907,6 +907,69 @@ keyword in the next code. The result is shown in \in {figure} [fig:shape:skips].
 \stopcombination
 \stopplacefigure
 
+The shape mechanism has a few more tricks but these are really meant for usage
+in specific situations, where one knows what one deals with. The following
+examples are visualized in \in {figure} [fig:flow].
+
+\startbuffer[jano]
+\useMPlibrary[dum]
+\usemodule[article-basics]
+
+\startbuffer
+    \externalfigure[dummy][width=6cm]
+\stopbuffer
+
+\startshapedparagraph[text=\getbuffer]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+
+\page
+
+\startshapedparagraph[text=\getbuffer,distance=1em]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+
+\page
+
+\startshapedparagraph[text=\getbuffer,distance=1em,
+        hoffset=-2em]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+
+\page
+
+\startshapedparagraph[text=\getbuffer,distance=1em,
+        voffset=-2ex,hoffset=-2em]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+
+\page
+
+\startshapedparagraph[text=\getbuffer,distance=1em,
+        voffset=-2ex,hoffset=-2em,lines=1]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+
+\page
+
+\startshapedparagraph[width=4cm,lines=4]
+    \dorecurse{3}{\samplefile{ward}\par}
+\stopshapedparagraph
+\stopbuffer
+
+\typebuffer[jano]
+
+\startplacefigure[title={Flow around something},reference=fig:flow]
+    \startcombination[nx=3,ny=2]
+        {\typesetbuffer[jano][page=1,frame=on,width=\measure{combination}]}{}
+        {\typesetbuffer[jano][page=2,frame=on,width=\measure{combination}]}{}
+        {\typesetbuffer[jano][page=3,frame=on,width=\measure{combination}]}{}
+        {\typesetbuffer[jano][page=4,frame=on,width=\measure{combination}]}{}
+        {\typesetbuffer[jano][page=5,frame=on,width=\measure{combination}]}{}
+        {\typesetbuffer[jano][page=6,frame=on,width=\measure{combination}]}{}
+    \stopcombination
+\stopplacefigure
+
 \stopsection
 
 % \startsection[title=Linebreaks]
@@ -936,6 +999,18 @@ keyword in the next code. The result is shown in \in {figure} [fig:shape:skips].
 \snapshotpar
 \wrapuppar
 
+% \starttext
+%     \tracingoutput1 \tracingonline1
+%     \pretolerance9000 test \pretolerance8000 test \par
+%     \pretolerance9000 test \pretolerance7000 \updateparagraphproperties test \par
+%     \pretolerance9000 test \pretolerance6000 \snapshotpar\frozentolerancecode test \par
+%     \pretolerance9000 test {\pretolerance5000 \snapshotpar\frozentolerancecode}test \par
+% \stoptext
+
+% \par[newgraf][16=1,17=1], .... pretolerance 9000, ....
+% \par[newgraf][16=1,17=1], .... pretolerance 7000, ....
+% \par[newgraf][16=1,17=1], .... pretolerance 6000, ....
+
 % \parfillleftskip
 
 % I rewarded myself after writing a section by watching the video "Final Thing On
@@ -946,3 +1021,5 @@ keyword in the next code. The result is shown in \in {figure} [fig:shape:skips].
 % Gavin Harrison: Soundcheck, Drummerworld Jan 27, 2021 ... I wish I could make
 % something called a check into pefect solo. Okay, another section and I'll check
 % out the latest Simon Phillips and other favourite dummer uploads.
+
+

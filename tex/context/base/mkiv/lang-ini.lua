@@ -36,19 +36,20 @@ local trace_patterns = false  trackers.register("languages.patterns", function(v
 local report_initialization = logs.reporter("languages","initialization")
 
 local lang             = lang
+language               = lang -- we use that in lmtx
 
-local prehyphenchar    = lang.prehyphenchar    -- global per language
-local posthyphenchar   = lang.posthyphenchar   -- global per language
-local preexhyphenchar  = lang.preexhyphenchar  -- global per language
-local postexhyphenchar = lang.postexhyphenchar -- global per language
------ lefthyphenmin    = lang.lefthyphenmin
------ righthyphenmin   = lang.righthyphenmin
-local sethjcode        = lang.sethjcode
+local prehyphenchar    = language.prehyphenchar    -- global per language
+local posthyphenchar   = language.posthyphenchar   -- global per language
+local preexhyphenchar  = language.preexhyphenchar  -- global per language
+local postexhyphenchar = language.postexhyphenchar -- global per language
+----- lefthyphenmin    = language.lefthyphenmin
+----- righthyphenmin   = language.righthyphenmin
+local sethjcode        = language.sethjcode
 
 local uccodes          = characters.uccodes
 local lccodes          = characters.lccodes
 
-local new_language     = lang.new
+local new_language     = language.new
 
 languages              = languages or {}
 local languages        = languages

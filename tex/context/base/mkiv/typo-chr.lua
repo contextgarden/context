@@ -99,8 +99,8 @@ local wordboundary_code = boundarycodes.word
 local texgetnest        = tex.getnest -- to be used
 local texsetcount       = tex.setcount
 
-local flush_node        = nodes.flush_node
-local flush_list        = nodes.flush_list
+local flushnode         = nodes.flushnode
+local flushlist         = nodes.flushlist
 
 local settexattribute   = tex.setattribute
 local punctuation       = characters.is_punctuation
@@ -140,7 +140,7 @@ local actions = {
     remove = function(specification)
         local n = pickup()
         if n then
-            flush_node(n)
+            flushnode(n)
         end
     end,
     push = function(specification)
@@ -175,7 +175,7 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                if prev.id == par_code then -- and start_of_par(prev)
+                if prev.id == par_code then -- and startofpar(prev)
                     break
                 else
                     first = prev
@@ -212,7 +212,7 @@ local actions = {
                     list.tail  = prev
                     prev.next  = nil
                 end
-                flush_list(first)
+                flushlist(first)
             end
         end
     end,

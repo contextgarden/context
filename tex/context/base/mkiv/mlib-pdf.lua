@@ -23,9 +23,6 @@ local context         = context
 
 local allocate        = utilities.storage.allocate
 
-local copy_node       = node.copy
-local write_node      = node.write
-
 local pen_info        = mplib.pen_info
 local getfields       = mplib.getfields or mplib.fields -- todo: in lmtx get them once and then use gettype
 
@@ -91,7 +88,7 @@ end
 
 function metapost.flushliteral(d)
     if savedliterals then
-        write_node(mpsliteral(savedliterals[d]))
+        context(mpsliteral(savedliterals[d]))
     else
         report_metapost("problem flushing literal %a",d)
     end
