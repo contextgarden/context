@@ -65,86 +65,107 @@ do
 
 end
 
-processors.enabled = true -- this will become a proper state (like trackers)
+-- do
+--
+--     local count_nodes = nodes.countall
+--     local texget      = tex.get
+--     local tracer      = processors.tracer
+--
+--     local function pre_linebreak_filter(head,groupcode)
+--         if trace_callbacks then
+--             local before = count_nodes(head,true)
+--             head = actions(head,groupcode)
+--             local after = count_nodes(head,true)
+--             tracer("pre_linebreak",head,groupcode,before,after,true)
+--         else
+--             head = actions(head,groupcode)
+--         end
+--         return head
+--     end
+--
+--     local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
+--         if not direction then
+--             direction = texget("textdir")
+--         end
+--         --
+--         if trace_callbacks then
+--             local before = count_nodes(head,true)
+--             head = actions(head,groupcode,size,packtype,direction,attributes)
+--             local after = count_nodes(head,true)
+--             tracer("hpack",head,groupcode,before,after,true)
+--         else
+--             head = actions(head,groupcode,size,packtype,direction,attributes)
+--         end
+--         return head
+--     end
+--
+--     processors.pre_linebreak_filter = pre_linebreak_filter
+--     processors.hpack_filter         = hpack_filter
+--
+--     do
+--
+--         local hpack = nodes.hpack
+--
+--         function nodes.fullhpack(head,...)
+--             return hpack((hpack_filter(head)),...)
+--         end
+--
+--     end
+--
+--     do
+--
+--         local hpack = nuts.hpack
+--
+--         function nuts.fullhpack(head,...)
+--             return hpack(tonut(hpack_filter(tonode(head))),...)
+--         end
+--
+--     end
+--
+--     callbacks.register('pre_linebreak_filter', pre_linebreak_filter, "horizontal manipulations (before par break)")
+--     callbacks.register('hpack_filter'        , hpack_filter,         "horizontal manipulations (before hbox creation)")
+--
+-- end
 
 do
 
     local count_nodes = nodes.countall
-
     local texget      = tex.get
-
     local tracer      = processors.tracer
+    local hbox_code   = tex.groupcodes.hbox
 
-    -- We've set \hlistcallbackmode=1 so glyph checking happens at the other end!
-
-    local function pre_linebreak_filter(head,groupcode)
-     -- local found = force_processors or hasglyph(head)
-     -- if found then
-            if trace_callbacks then
-                local before = count_nodes(head,true)
-                head = actions(head,groupcode)
-                local after = count_nodes(head,true)
-                tracer("pre_linebreak",head,groupcode,before,after,true)
-            else
-                head = actions(head,groupcode)
-            end
-     -- elseif trace_callbacks then
-     --     local n = count_nodes(head,false)
-     --     tracer("pre_linebreak",head,groupcode,n,n)
-     -- end
+    local function glyph_run(head,groupcode,direction)
+        if not groupcode then
+            groupcode = hbox_code
+        end
+        if trace_callbacks then
+            local before = count_nodes(head,true)
+            head = actions(head,groupcode,direction)
+            local after = count_nodes(head,true)
+            tracer("glyph_run",head,groupcode,before,after,true)
+        else
+            head = actions(head,groupcode)
+        end
         return head
     end
 
-    local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
-     -- local found = force_processors or hasglyph(head)
-     -- if found then
-            --
-            -- yes or no or maybe an option
-            --
-            if not direction then
-                direction = texget("textdir")
-            end
-            --
-            if trace_callbacks then
-                local before = count_nodes(head,true)
-                head = actions(head,groupcode,size,packtype,direction,attributes)
-                local after = count_nodes(head,true)
-                tracer("hpack",head,groupcode,before,after,true)
-            else
-                head = actions(head,groupcode,size,packtype,direction,attributes)
-            end
-     -- elseif trace_callbacks then
-     --     local n = count_nodes(head,false)
-     --     tracer("hpack",head,groupcode,n,n)
-     -- end
-        return head
-    end
-
-    processors.pre_linebreak_filter = pre_linebreak_filter
-    processors.hpack_filter         = hpack_filter
+    processors.glyph_run = glyph_run
 
     do
-
         local hpack = nodes.hpack
-
         function nodes.fullhpack(head,...)
-            return hpack((hpack_filter(head)),...)
+            return hpack((glyph_run(head)),...)
         end
-
     end
 
     do
-
         local hpack = nuts.hpack
-
         function nuts.fullhpack(head,...)
-            return hpack(tonut(hpack_filter(tonode(head))),...)
+            return hpack(tonut(glyph_run(tonode(head))),...)
         end
-
     end
 
-    callbacks.register('pre_linebreak_filter', pre_linebreak_filter, "horizontal manipulations (before par break)")
-    callbacks.register('hpack_filter'        , hpack_filter,         "horizontal manipulations (before hbox creation)")
+    callbacks.register("glyph_run", glyph_run, "glyph processing")
 
 end
 

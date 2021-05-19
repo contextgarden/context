@@ -9,11 +9,6 @@ if not modules then modules = { } end modules ['luat-fio'] = {
 local format = string.format
 local concat = table.concat
 
-texconfig.kpse_init      = false  -- can go away
-texconfig.shell_escape   = 't'    -- can go away
-texconfig.max_print_line = 100000 -- can go away
-texconfig.max_in_open    = 1000   -- can go away
-
 if not resolvers.initialized() then
 
     resolvers.reset()

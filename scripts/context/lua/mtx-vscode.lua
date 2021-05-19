@@ -62,7 +62,9 @@ if not modules then modules = { } end modules ['mtx-vscode'] = {
 -- me (too many different folders with source code, documentation etc). It's kind of
 -- strange because simple runners are provided by many editors. I don't want to program
 -- a lot to get such simple things done so, awaiting global tasks I stick to using the
--- terminal. But we're prepared.
+-- terminal. Also, having .vscode folderd in every place where a file sits makes no
+-- sense and clutters my disk too much. There is not much progress in this area but we
+-- are prepared.
 
 -- Another showstopper is the fact that we cannot disable utf8 for languages (like pdf,
 -- which is just bytes). I couldn't figure out how to set it in the extension.
@@ -138,6 +140,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="generate"><short>generate extension in sync with current version</short></flag>
+    <flag name="program"><short>use the given binary (e.g. codium, default: code)</short></flag>
     <flag name="start"><short>start vscode with extension context</short></flag>
    </subcategory>
   </category>
@@ -149,6 +152,7 @@ local helpinfo = [[
     <example><command>mtxrun --script vscode --generate e:/vscode/extensions</command></example>
     <example><command>mtxrun --script vscode --generate</command></example>
     <example><command>mtxrun --script vscode --start</command></example>
+    <example><command>mtxrun --script vscode --program=codium --start</command></example>
    </subcategory>
   </category>
  </examples>
@@ -414,42 +418,69 @@ function scripts.vscode.generate(targetpath)
             tippanel  = "#444444",
             right     = "#0000FF",
             wrong     = "#FF0000",
+            default   = "#000000",
+            reverse   = "#FFFFFF",
+
+            -- some day a dark:
+
+--     red       = "#CC4444",
+--     green     = "#44CC44",
+--     blue      = "#4444FF",
+--     cyan      = "#55BBBB",
+--     magenta   = "#BB55BB",
+--     yellow    = "#BBBB55",
+--     orange    = "#B07F00",
+--     white     = "#FFFFFF",
+--     light     = "#CFCFCF",
+--     grey      = "#808080",
+--     dark      = "#4F4F4F",
+--     black     = "#000000",
+--     selection = "#F7F7F7",
+--     logpanel  = "#E7E7E7",
+--     textpanel = "#1E1E1E", -- VS "#101010",
+--     linepanel = "#A7A7A7",
+--     tippanel  = "#444444",
+--     right     = "#0000FF",
+--     wrong     = "#FF0000",
+--     default   = "#D4D4D4",
+--     reverse   = "#000000",
+
         }
 
         local colors = {
             ["editor.background"]               = mycolors.textpanel,
-            ["editor.foreground"]               = mycolors.black,
-            ["editorLineNumber.foreground"]     = mycolors.black,
+            ["editor.foreground"]               = mycolors.default,
+            ["editorLineNumber.foreground"]     = mycolors.default,
             ["editorIndentGuide.background"]    = mycolors.textpanel,
             ["editorBracketMatch.background"]   = mycolors.textpanel,
             ["editorBracketMatch.border"]       = mycolors.orange,
             ["editor.lineHighlightBackground"]  = mycolors.textpanel,
-            ["focusBorder"]                     = mycolors.black,
+            ["focusBorder"]                     = mycolors.default,
 
-            ["activityBar.background"]          = mycolors.black,
+            ["activityBar.background"]          = mycolors.default,
 
-            ["sideBar.background"]              = mycolors.linepanel,
-            ["sideBar.foreground"]              = mycolors.black,
-            ["sideBar.border"]                  = mycolors.white,
-            ["sideBarTitle.foreground"]         = mycolors.black,
+            ["editorGutter.background"]         = mycolors.linepanel,
+            ["editorGutter.foreground"]         = mycolors.default,
+            ["editorGutter.border"]             = mycolors.reverse,
+            ["sideBarTitle.foreground"]         = mycolors.default,
             ["sideBarSectionHeader.background"] = mycolors.linepanel,
-            ["sideBarSectionHeader.foreground"] = mycolors.black,
+            ["sideBarSectionHeader.foreground"] = mycolors.default,
 
-            ["statusBar.foreground"]            = mycolors.black,
+            ["statusBar.foreground"]            = mycolors.default,
             ["statusBar.background"]            = mycolors.linepanel,
-            ["statusBar.border"]                = mycolors.white,
-            ["statusBar.noFolderForeground"]    = mycolors.black,
+            ["statusBar.border"]                = mycolors.reverse,
+            ["statusBar.noFolderForeground"]    = mycolors.default,
             ["statusBar.noFolderBackground"]    = mycolors.linepanel,
-            ["statusBar.debuggingForeground"]   = mycolors.black,
+            ["statusBar.debuggingForeground"]   = mycolors.default,
             ["statusBar.debuggingBackground"]   = mycolors.linepanel,
 
-            ["notification.background"]         = mycolors.black,
+            ["notification.background"]         = mycolors.default,
         }
 
         local styles = {
 
             { scope = "context.whitespace",              settings = { } },
-            { scope = "context.default",                 settings = { foreground = mycolors.black } },
+            { scope = "context.default",                 settings = { foreground = mycolors.default } },
             { scope = "context.number",                  settings = { foreground = mycolors.cyan } },
             { scope = "context.comment",                 settings = { foreground = mycolors.yellow } },
             { scope = "context.keyword",                 settings = { foreground = mycolors.blue, fontStyle = "bold" } },
@@ -457,30 +488,30 @@ function scripts.vscode.generate(targetpath)
             { scope = "context.error",                   settings = { foreground = mycolors.red } },
             { scope = "context.label",                   settings = { foreground = mycolors.red, fontStyle = "bold"  } },
             { scope = "context.nothing",                 settings = { } },
-            { scope = "context.class",                   settings = { foreground = mycolors.black, fontStyle = "bold" } },
-            { scope = "context.function",                settings = { foreground = mycolors.black, fontStyle = "bold" } },
+            { scope = "context.class",                   settings = { foreground = mycolors.default, fontStyle = "bold" } },
+            { scope = "context.function",                settings = { foreground = mycolors.default, fontStyle = "bold" } },
             { scope = "context.constant",                settings = { foreground = mycolors.cyan, fontStyle = "bold" } },
             { scope = "context.operator",                settings = { foreground = mycolors.blue } },
             { scope = "context.regex",                   settings = { foreground = mycolors.magenta } },
             { scope = "context.preprocessor",            settings = { foreground = mycolors.yellow, fontStyle = "bold" } },
             { scope = "context.tag",                     settings = { foreground = mycolors.cyan } },
             { scope = "context.type",                    settings = { foreground = mycolors.blue } },
-            { scope = "context.variable",                settings = { foreground = mycolors.black } },
+            { scope = "context.variable",                settings = { foreground = mycolors.default } },
             { scope = "context.identifier",              settings = { } },
             { scope = "context.linenumber",              settings = { background = mycolors.linepanel } },
             { scope = "context.bracelight",              settings = { foreground = mycolors.orange, fontStyle = "bold" } },
             { scope = "context.bracebad",                settings = { foreground = mycolors.orange, fontStyle = "bold" } },
             { scope = "context.controlchar",             settings = { } },
-            { scope = "context.indentguide",             settings = { foreground = mycolors.linepanel, back = colors.white } },
-            { scope = "context.calltip",                 settings = { foreground = mycolors.white, back = colors.tippanel } },
+            { scope = "context.indentguide",             settings = { foreground = mycolors.linepanel, back = colors.reverse } },
+            { scope = "context.calltip",                 settings = { foreground = mycolors.reverse, back = colors.tippanel } },
             { scope = "context.invisible",               settings = { background = mycolors.orange } },
             { scope = "context.quote",                   settings = { foreground = mycolors.blue, fontStyle = "bold" } },
             { scope = "context.special",                 settings = { foreground = mycolors.blue } },
             { scope = "context.extra",                   settings = { foreground = mycolors.yellow } },
-            { scope = "context.embedded",                settings = { foreground = mycolors.black, fontStyle = "bold" } },
+            { scope = "context.embedded",                settings = { foreground = mycolors.default, fontStyle = "bold" } },
             { scope = "context.char",                    settings = { foreground = mycolors.magenta } },
             { scope = "context.reserved",                settings = { foreground = mycolors.magenta, fontStyle = "bold" } },
-            { scope = "context.definition",              settings = { foreground = mycolors.black, fontStyle = "bold" } },
+            { scope = "context.definition",              settings = { foreground = mycolors.default, fontStyle = "bold" } },
             { scope = "context.okay",                    settings = { foreground = mycolors.dark } },
             { scope = "context.warning",                 settings = { foreground = mycolors.orange } },
             { scope = "context.standout",                settings = { foreground = mycolors.orange, fontStyle = "bold" } },
@@ -492,12 +523,12 @@ function scripts.vscode.generate(targetpath)
             { scope = "context.plain",                   settings = { foreground = mycolors.dark, fontStyle = "bold" } },
             { scope = "context.user",                    settings = { foreground = mycolors.green } },
             { scope = "context.data",                    settings = { foreground = mycolors.cyan, fontStyle = "bold" } },
-            { scope = "context.text",                    settings = { foreground = mycolors.black } },
+            { scope = "context.text",                    settings = { foreground = mycolors.default } },
 
             { scope = { "emphasis" }, settings = { fontStyle = "italic" } },
             { scope = { "strong"   }, settings = { fontStyle = "bold"   } },
 
-            { scope = { "comment"  }, settings = { foreground = mycolors.black  } },
+            { scope = { "comment"  }, settings = { foreground = mycolors.default  } },
             { scope = { "string"   }, settings = { foreground = mycolors.magenta } },
 
             {
@@ -541,7 +572,7 @@ function scripts.vscode.generate(targetpath)
                     "entity.name.function.shell"
                 },
                 settings = {
-                    foreground = mycolors.black,
+                    foreground = mycolors.default,
                 }
             },
 
@@ -550,7 +581,7 @@ function scripts.vscode.generate(targetpath)
                     "entity.name.tag",
                 },
                 settings = {
-                    foreground = mycolors.black,
+                    foreground = mycolors.default,
                 }
             },
 
@@ -576,41 +607,43 @@ function scripts.vscode.generate(targetpath)
             clear            = true,
         }
 
+        -- chcp 65001 ; ...
+
         local tasks = {
             {
                 group   = "build",
                 label   = "process tex file",
                 type    = "shell",
-                command =                          "context     --autogenerate --autopdf ${file}",
-                windows = { command = "chcp 65001 ; context.exe --autogenerate --autopdf ${file}" },
+                command =             "context     --autogenerate --autopdf ${file}",
+                windows = { command = "context.exe --autogenerate --autopdf ${file}" },
             },
             {
                 group   = "build",
                 label   = "check tex file",
                 type    = "shell",
-                command =                          "mtxrun     --autogenerate --script check ${file}",
-                windows = { command = "chcp 65001 ; mtxrun.exe --autogenerate --script check ${file}" },
+                command =             "mtxrun     --autogenerate --script check ${file}",
+                windows = { command = "mtxrun.exe --autogenerate --script check ${file}" },
             },
             {
                 group   = "build",
                 label   = "identify fonts",
                 type    = "shell",
-                command =                          "mtxrun     --script fonts --reload --force",
-                windows = { command = "chcp 65001 ; mtxrun.exe --script fonts --reload --force" },
+                command =             "mtxrun     --script fonts --reload --force",
+                windows = { command = "mtxrun.exe --script fonts --reload --force" },
             },
             {
                 group   = "build",
                 label   = "process lua file",
                 type    = "shell",
-                command =                          "mtxrun     --script ${file}",
-                windows = { command = "chcp 65001 ; mtxrun.exe --script ${file}" },
+                command =             "mtxrun     --script ${file}",
+                windows = { command = "mtxrun.exe --script ${file}" },
             },
         }
 
         for i=1,#tasks do
             local task = tasks[i]
             if not task.windows then
-                task.windows = {  command = "chcp 65001 ; " .. task.command }
+                task.windows = {  command = task.command }
             end
             if not task.presentation then
                 task.presentation = presentation
@@ -975,7 +1008,7 @@ function scripts.vscode.generate(targetpath)
 
                 comment = {
                     name  = style("context.comment", "comment"),
-                    match = texcomment,
+                    match = comment,
                 },
 
                 constant = {
@@ -1642,7 +1675,7 @@ function scripts.vscode.generate(targetpath)
 
             category    = "cld",
             description = "ConTeXt CLD",
-            suffixes    = { "lua", "luc", "cld", "tuc", "luj", "lum", "tma", "lfg", "luv", "lui" },
+            suffixes    = { "lmt", "lua", "luc", "cld", "tuc", "luj", "lum", "tma", "lfg", "luv", "lui" },
             version     = lualexer.version,
             setup       = lualexer.setup,
 
@@ -3160,7 +3193,9 @@ end
 function scripts.vscode.start()
     local path = locate()
     if path then
-        local command = 'start "vs code context" code --reuse-window --ignore-gpu-blacklist --extensions-dir "' .. path .. '" --install-extension context'
+        local codecmd = environment.arguments.program or "code" -- can be codium
+     -- local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --ignore-gpu-blacklist --extensions-dir "' .. path .. '" --install-extension context'
+        local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --extensions-dir "' .. path .. '" --install-extension context'
         report("running command: %s",command)
         os.execute(command)
     end

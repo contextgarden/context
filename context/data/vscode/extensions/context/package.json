@@ -99,7 +99,7 @@
    {
     "aliases" : [ "ConTeXt CLD" ],
     "configuration" : "./settings/context-settings-cld.json",
-    "extensions" : [ ".cld", ".lfg", ".lua", ".luc", ".lui", ".luj", ".lum", ".luv", ".tma", ".tuc" ],
+    "extensions" : [ ".cld", ".lfg", ".lmt", ".lua", ".luc", ".lui", ".luj", ".lum", ".luv", ".tma", ".tuc" ],
     "id" : "context.cld"
    },
    {

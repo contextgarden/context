@@ -428,7 +428,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,groupcode,size,packtype,direction,attributes)
+return function(head,groupcode,direction)
     local nuthead = tonut(head)
 
 %actions%
@@ -437,23 +437,78 @@ end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)))
+    nuthead = tonut((%action%(tonode(nuthead),groupcode,direction)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode,size,packtype,direction,attributes)
+    nuthead = %action%(nuthead,groupcode,direction)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)
+    %action%(tonode(nuthead),groupcode,direction)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode,size,packtype,direction,attributes)
+    %action%(nuthead,groupcode,direction)
 ]],
 
     }
 }
+
+-- -- hpackers -- --
+
+-- tasks.new {
+--     name      = "processors",
+--     processor = nodeprocessor,
+--     sequence  = {
+--         "before",      -- for users
+--         "normalizers",
+--         "characters",
+--         "words",
+--         "fonts",
+--         "lists",
+--         "after",       -- for users
+--     },
+--     templates = {
+--
+-- default = [[
+-- return function(head)
+--     return head
+-- end
+-- ]],
+--
+-- process = [[
+-- local tonut  = nodes.tonut
+-- local tonode = nodes.nuts.tonode
+--
+-- %localize%
+--
+-- return function(head,groupcode,size,packtype,direction,attributes)
+--     local nuthead = tonut(head)
+--
+-- %actions%
+--     return tonode(nuthead)
+-- end
+-- ]],
+--
+-- step = [[
+--     nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)))
+-- ]],
+--
+-- nut  = [[
+--     nuthead = %action%(nuthead,groupcode,size,packtype,direction,attributes)
+-- ]],
+--
+-- nohead = [[
+--     %action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)
+-- ]],
+--
+-- nonut = [[
+--     %action%(nuthead,groupcode,size,packtype,direction,attributes)
+-- ]],
+--
+--     }
+-- }
 
 tasks.new {
     name      = "finalizers",

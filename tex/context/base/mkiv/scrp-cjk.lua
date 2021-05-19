@@ -19,8 +19,6 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 
 local nuts              = nodes.nuts
 
-local insertnodeafter  = nuts.insertafter
-local insertnodebefore = nuts.insertbefore
 local copy_node        = nuts.copy
 local remove_node      = nuts.remove
 local nextglyph        = nuts.traversers.glyph
@@ -69,6 +67,10 @@ local report_details   = logs.reporter("scripts","detail")
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
 -- nodelist but better is to use veryraggedleft
+
+local insertnodeafter  = scripts.helpers.insertnodeafter
+local insertnodebefore = scripts.helpers.insertnodebefore
+
 
 local inter_char_shrink          = 0
 local inter_char_stretch         = 0

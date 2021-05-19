@@ -12,7 +12,8 @@ if not modules then modules = { } end modules ['font-chk'] = {
 -- instead we just keep the method we use but slightly adapted to the backend
 -- of lmtx.
 
-local next = next
+local type, next = type, next
+local find, lower, gmatch = string.find, string.lower, string.gmatch
 local floor = math.floor
 
 local context              = context
@@ -22,11 +23,14 @@ local bpfactor             = number.dimenfactors.bp
 local fastcopy             = table.fastcopy
 local sortedkeys           = table.sortedkeys
 local sortedhash           = table.sortedhash
+local contains             = table.contains
 
 local report               = logs.reporter("fonts")
 local report_checking      = logs.reporter("fonts","checking")
 
 local allocate             = utilities.storage.allocate
+
+local getmacro             = tokens.getters.macro
 
 local fonts                = fonts
 
@@ -40,6 +44,7 @@ local fontcharacters       = fonthashes.characters
 local currentfont          = font.current
 local addcharacters        = font.addcharacters
 
+local definers             = fonts.definers
 local helpers              = fonts.helpers
 
 local addprivate           = helpers.addprivate
@@ -452,3 +457,97 @@ local visualspace_specification = {
 
 registerotffeature(visualspace_specification)
 registerafmfeature(visualspace_specification)
+
+do
+
+
+    local reference = 88 -- string.byte("X")
+    local mapping   = { ss = "sans", rm = "serif", tt = "mono" }
+    local order     = {      "sans",      "serif",      "mono" }
+    local fallbacks = {       sans = { },  serif = { },  mono = { } }
+
+    local function locate(fallbacks,n,f,c)
+        for i=1,#fallbacks do
+            local id = fallbacks[i]
+            if type(id) == "string" then
+                id = definers.define { name = id }
+                fallbacks[i] = id
+            end
+            if type(id) == "number" then
+                local cid = fontcharacters[id]
+                if cid[c] then
+                    local fc = fontcharacters[f]
+                    local sc = (fc[reference].height / cid[reference].height) * (n.scale or 1000)
+                    return { id, sc }
+                end
+            end
+        end
+        return false
+    end
+
+    local cache = table.setmetatableindex("table")
+
+    callback.register("missing_character", function(n,f,c)
+        local cached = cache[f]
+        local found  = cached[c]
+        if found == nil then
+            local metadata = fontdata[f].shared
+            if metadata then
+                metadata = metadata.rawdata
+                if metadata then
+                    metadata = metadata.metadata
+                    if metadata then
+                        if metadata.monospaced then
+                            found = locate(fallbacks.mono,n,f,c)
+                            if found then
+                                cached[c] = found
+                                goto done
+                            end
+                        end
+                        local fn = lower(metadata.fullname)
+                        for i=1,3 do
+                            local o = order[i]
+                            if find(fn,o) then
+                                found = locate(fallbacks[o],n,f,c)
+                                if found then
+                                    cached[c] = found
+                                    goto done
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            found = locate(fallbacks[mapping[getmacro("fontstyle")] or "mono"],n,f,c)
+            if found then
+                cached[c] = found
+                goto done
+            end
+        end
+      ::done::
+        if found then
+            n.font  = found[1]
+            n.scale = found[2]
+        end
+    end)
+
+    function definers.registerfallbackfont(style,list)
+        local l = fallbacks[style]
+        if l then
+            for s in gmatch(list,"%S+") do
+                if not contains(l,s) then
+                    l[#l+1] = s
+                end
+            end
+        end
+    end
+
+    implement {
+        name      = "registerfallbackfont",
+        public    = true,
+        protected = true,
+        arguments = { "optional", "optional" },
+        actions   = definers.registerfallbackfont,
+    }
+
+end

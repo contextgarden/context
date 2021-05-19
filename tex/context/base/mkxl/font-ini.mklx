@@ -2690,4 +2690,32 @@
 \permanent\protected\def\usefontpath[#1]%
   {\clf_addfontpath{#1}}
 
+%D Experiment (one can use a list):
+%D
+%D \starttyping
+%D \setupfonts
+%D   [serif=dejavuserif*default,
+%D     sans=dejavusans*default,
+%D     mono=dejavusansmono*none]
+%D
+%D {\rm A \char1234\ B \char1236\ C}
+%D {\ss A \char1234\ B \char1236\ C}
+%D {\ss A \char1234\ B \char1236\ C}
+%D \stoptyping
+
+\appendtoks
+    \edef\m_list{\fontsparameter\s!serif}%
+    \ifempty\m_list\else
+        \registerfallbackfont[\s!serif][\m_list]%
+    \fi
+    \edef\m_list{\fontsparameter\s!sans}%
+    \ifempty\m_list\else
+        \registerfallbackfont[\s!sans][\m_list]%
+    \fi
+    \edef\m_list{\fontsparameter\s!mono}%
+    \ifempty\m_list\else
+        \registerfallbackfont[\s!mono][\m_list]%
+    \fi
+\to \everysetupfonts
+
 \protect \endinput

@@ -210,8 +210,8 @@ function statistics.memused() -- no math.round yet -)
     local luastate = status.getluastate()
     return format("%s MB, ctx: %s MB, max: %s MB",
         round(collectgarbage("count")//1024),
-        round(luastate.state_bytes//1048576),
-        luastate.state_bytes_max and round(luastate.state_bytes_max//1048576) or "unknown"
+        round(luastate.statebytes//1048576),
+        luastate.statebytesmax and round(luastate.statebytesmax//1048576) or "unknown"
     )
 end
 
@@ -264,7 +264,51 @@ status.iocodes = setmetatableindex(tex.getiovalues(), function() return "unknown
 
 local report = logs.reporter("system")
 
+local list   = {
+    "string", "pool", "hash", "lookup", "node", "token", "extra", "sparse", "buffer",
+    "input", "file", "nest", "parameter", "save", "font", "language", "mark",
+}
+
+local function show(data,fields)
+    local line    = rep("-",3+11*#list)
+    local columns = rep("%11s",#list)
+    report("")
+    report("%w%s",2,line)
+    report("%w"..columns,5,unpack(list))
+    report("%w%s",2,line)
+    for i=1,#fields do
+        local f = fields[i]
+        if f then
+            local t = { }
+            for i=1,#list do
+                local n = data[list[i].."state"][f]
+                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
+            end
+            report("  %3s"..columns,f,unpack(t))
+        else
+            report("")
+        end
+    end
+    report("%w%s",2,line)
+    report("")
+end
+
+function statistics.showmemory(when)
+    report("")
+    report("memory configuration")
+    show(status.list(), { "max", "min", "set", "stp" })
+end
+
+local registered = false
+local enabled    = false
+local finished   = false
+
 function statistics.showusage(when)
+    if finished and when == "finish" then
+        return
+    else
+        finished = true
+    end
     local s = status.list()
     local c = status.getcallbackstate() -- status.callbacks
     local m = mplib.getcallbackstate()
@@ -287,40 +331,7 @@ function statistics.showusage(when)
     else
         report("status after shipping out page %s",tex.getcount("realpageno"))
     end
-    report("")
-    local list   = {
-        "stringstate", "poolstate", "hashstate", "lookupstate",
-        "nodestate", "extrastate", "tokenstate",
-        "bufferstate", "inputstate", "filestate",
-        "neststate", "parameterstate", "savestate",
-        "fontstate", "languagestate", "markstate", "sparsestate",
-    }
-    local fields = { "max", "min", "set", "stp", false, "mem", "all", false, "ini", "ptr", "top" }
-    local line   = rep("-",190)
-    do
-        local t = { }
-        for i=1,#list do
-            t[i] = gsub(list[i],"state","")
-        end
-        report("%w%s",2,line)
-        report("%w%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",5,unpack(t))
-        report("%w%s",2,line)
-    end
-    for i=1,#fields do
-        local f = fields[i]
-        if f then
-            local t = { }
-            for i=1,#list do
-                local n = s[list[i]][f]
-                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
-            end
-            report("  %3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",f,unpack(t))
-        else
-            report("")
-        end
-    end
-    report("%w%s",2,line)
-    report("")
+    show(s, { "max", "min", "set", "stp", false, "mem", "all", false, "ini", "ptr", "top" })
     report("  current input type    : %s", iocode)
     if iocode == "file" then
         report("  current file name     : %s", rstatus.filename or "")
@@ -332,9 +343,9 @@ function statistics.showusage(when)
     report("  expansion depth       : min: %s, max: %s, set: %s, top: %s", estatus.min, estatus.max, estatus.set, estatus.top)
     report("")
     report("  luabytecode registers : %s", lstatus.bytecodes)
-    report("  luabytecode bytes     : %s (%s MB)", lstatus.bytecode_bytes, lstatus.bytecode_bytes // 1048576)
-    report("  luastate bytes now    : %s (%s MB)", lstatus.state_bytes, lstatus.state_bytes // 1048576)
-    report("  luastate bytes max    : %s (%s MB)", lstatus.state_bytes_max, lstatus.state_bytes_max // 1048576)
+    report("  luabytecode bytes     : %s (%s MB)", lstatus.bytecodebytes, lstatus.bytecodebytes // 1048576)
+    report("  luastate bytes now    : %s (%s MB)", lstatus.statebytes,    lstatus.statebytes    // 1048576)
+    report("  luastate bytes max    : %s (%s MB)", lstatus.statebytesmax, lstatus.statebytesmax // 1048576)
     report("")
     report("  file callbacks        : %s", c.file)
     report("  saved callbacks       : %s", c.saved)
@@ -355,54 +366,12 @@ function statistics.showusage(when)
     report("  mp total callbacks    : %s", m.count)
     report("  backend callbacks     : %s", b.count)
     report("")
-    report("  page numbers          : realpage %s, userpage %s, subpage %s",pstatus.page.real,pstatus.page.user,pstatus.page.sub)
-    report("  page timing           : total %0.03f, page %0.03f, average %0.03f",pstatus.time.elapsed,pstatus.time.page,pstatus.time.average)
-    report("")
-end
-
-function statistics.showmemory(when)
-    local s = status.list()
-    --
-    report("")
-    report("memory configuration")
-    report("")
-    local list   = {
-        "stringstate", "poolstate", "hashstate", "lookupstate",
-        "nodestate", "tokenstate",
-        "bufferstate", "inputstate", "filestate",
-        "neststate", "parameterstate", "savestate",
-        "fontstate", "languagestate", "markstate",
-    }
-    local fields = { "max", "min", "set", "stp" }
-    local line   = rep("-",168)
-    do
-        local t = { }
-        for i=1,#list do
-            t[i] = gsub(list[i],"state","")
-        end
-        report("%w%s",2,line)
-        report("%w%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",5,unpack(t))
-        report("%w%s",2,line)
+    if pstatus then
+        report("  page numbers          : realpage %s, userpage %s, subpage %s",pstatus.page.real,pstatus.page.user,pstatus.page.sub)
+        report("  page timing           : total %0.03f, page %0.03f, average %0.03f",pstatus.time.elapsed,pstatus.time.page,pstatus.time.average)
+        report("")
     end
-    for i=1,#fields do
-        local f = fields[i]
-        if f then
-            local t = { }
-            for i=1,#list do
-                local n = s[list[i]][f]
-                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
-            end
-            report("  %3s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s",f,unpack(t))
-        else
-            report("")
-        end
-    end
-    report("%w%s",2,line)
-    report("")
 end
-
-local registered = false
-local enabled    = false
 
 trackers.register("system.usage", function(v)
     if v and not registered then
@@ -423,3 +392,13 @@ trackers.register("system.usage", function(v)
     end
     enabled = v
 end)
+
+-- can't be done here:
+--
+-- luatex.registerstopactions(function()
+--     if not enabled then
+--         logs.push("logfile")
+--         statistics.showusage("finish")
+--         logs.pop()
+--     end
+-- end)

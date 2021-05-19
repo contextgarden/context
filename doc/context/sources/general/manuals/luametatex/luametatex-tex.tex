@@ -1685,30 +1685,45 @@ that overhead. Passing a value of 1 disables registering.
 
 This is a table that is created empty. A startup \LUA\ script could fill this
 table with a number of settings that are read out by the executable after loading
-and executing the startup file.
+and executing the startup file. Watch out: some keys are different from \LUATEX,
+which is a side effect of a more granular and dynamic memory management.
 
-\starttabulate[|l|l|l|]
-\DB key                    \BC type   \BC default \NC \NR
+\starttabulate[|l|l|l|l|]
+\DB key                      \BC type         \BC default  \BC comment \NC \NR
 \TB
-\NC \type{max_strings}     \NC number \NC 100000  \NC \NR
-\NC \type{strings_free}    \NC number \NC    100  \NC \NR
-\NC \type{nest_size}       \NC number \NC     50  \NC \NR
-\NC \type{max_in_open}     \NC number \NC    100  \NC \NR
-\NC \type{param_size}      \NC number \NC     60  \NC \NR
-\NC \type{save_size}       \NC number \NC   5000  \NC \NR
-\NC \type{stack_size}      \NC number \NC    500  \NC \NR
-\NC \type{expand_depth}    \NC number \NC   1000  \NC \NR
-\NC \type{function_size}   \NC number \NC      0  \NC \NR
-\NC \type{error_line}      \NC number \NC     79  \NC \NR
-\NC \type{half_error_line} \NC number \NC     50  \NC \NR
-\NC \type{hash_extra}      \NC number \NC      0  \NC \NR
-\NC \type{formatname}      \NC string \NC         \NC \NR
-\NC \type{jobname}         \NC string \NC         \NC \NR
+\NC \type{buffersize}        \NC number/table \NC  1000000 \NC input buffer bytes \NC \NR
+\NC \type{filesize}          \NC number/table \NC     1000 \NC max number of open files \NC \NR
+\NC \type{fontsize}          \NC number/table \NC      250 \NC number of permitted fonts \NC \NR
+\NC \type{hashsize}          \NC number/table \NC   150000 \NC number of hash entries \NC \NR
+\NC \type{inputsize}         \NC number/table \NC    10000 \NC maximum input stack \NC \NR
+\NC \type{languagesize}      \NC number/table \NC      250 \NC number of permitted languages \NC \NR
+\NC \type{marksize}          \NC number/table \NC       50 \NC number of mark classes \NC \NR
+\NC \type{nestsize}          \NC number/table \NC     1000 \NC max depth of nesting \NC \NR
+\NC \type{nodesize}          \NC number/table \NC  1000000 \NC max node memory (various size) \NC \NR
+\NC \type{parametersize}     \NC number/table \NC    20000 \NC max size of parameter stack \NC \NR
+\NC \type{poolsize}          \NC number/table \NC 10000000 \NC max number of string bytes \NC \NR
+\NC \type{savesize}          \NC number/table \NC   100000 \NC mas size of save stack \NC \NR
+\NC \type{stringsize}        \NC number/table \NC   150000 \NC max number of strings \NC \NR
+\NC \type{tokensize}         \NC number/table \NC  1000000 \NC max token memory \NC \NR
+\ML
+\NC \type{expandsize}        \NC number/table \NC    10000 \NC max expansion nesting \NC \NR
+\NC \type{propertiessize}    \NC number       \NC        0 \NC initial size of node properties table \NC \NR
+\NC \type{functionsize}      \NC number       \NC        0 \NC initial size of \LUA\ functions table \NC \NR
+\NC \type{errorlinesize}     \NC number       \NC       79 \NC how much or an error is shown \NC \NR
+\NC \type{halferrorlinesize} \NC number       \NC       50 \NC idem \NC \NR
+\ML
+\NC \type{formatname}        \NC string       \NC          \NC \NC \NR
+\NC \type{jobname}           \NC string       \NC          \NC \NC \NR
 \LL
 \stoptabulate
 
 If no format name or jobname is given on the command line, the related keys will
-be tested first instead of simply quitting.
+be tested first instead of simply quitting. The statistics library has methods for
+tracking down how much memory is available and has been configured. The size parameters
+take a number (for the maximum allocated size) or a table with three possible keys:
+\type {size}, \type {plus} (for extra size) and step for the increment when more memory
+is needed. They all start out with a hard coded minimum and also have an hard coded maximum,
+the the configured size sits somewhere between these.
 
 \stopsection
 

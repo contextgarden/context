@@ -359,6 +359,26 @@ end
 
 This callback does not replace any internal code.
 
+\subsection{\cbk {glyph_run}}
+
+\topicindex{callbacks+fonts}
+
+When set this callback is triggered when \TEX\ normally handles the ligaturing
+and kerning. In \LUATEX\ you use the \typ {hpack_filter} and \typ
+{per_linebreak_filter} callbacks for that (where each passes different
+arguments). This callback doesn't get triggered when there are no glyphs (in
+\LUATEX\ this optimization is controlled by a a variable).
+
+\startfunctioncall
+function(<node> head, <string> groupcode, <number> direction])
+    return <node> newhead
+end
+\stopfunctioncall
+
+The traditional \TEX\ font processing is bypassed so you need to take care of that
+with the helpers. (For the moment we keep the ligaturing and kerning callbacks but
+they are kind of obsolete.)
+
 \subsection{\cbk {hpack_filter}}
 
 \topicindex{callbacks+packing}
@@ -368,7 +388,7 @@ material. Math items and line boxes are ignored at the moment.
 
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size,
-         <string> packtype [, <string> direction] [, <node> attributelist])
+         <string> packtype [, <number> direction] [, <node> attributelist])
     return <node> newhead
 end
 \stopfunctioncall
@@ -377,9 +397,6 @@ The \type {packtype} is either \type {additional} or \type {exactly}. If \type
 {additional}, then the \type {size} is a \type {\hbox spread ...} argument. If
 \type {exactly}, then the \type {size} is a \type {\hbox to ...}. In both cases,
 the number is in scaled points.
-
-The \type {direction} is either one of the three-letter direction specifier
-strings, or \type {nil}.
 
 This callback does not replace any internal code.
 
@@ -396,7 +413,7 @@ that it is called at different moments, there is an extra variable that matches
 
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size, <string> packtype,
-        <number> maxdepth [, <string> direction] [, <node> attributelist]))
+        <number> maxdepth [, <number> direction] [, <node> attributelist]))
     return <node> newhead
 end
 \stopfunctioncall
@@ -461,7 +478,7 @@ This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
 
 \startfunctioncall
 function(<node> head, <string> groupcode, <number> size, <string> packtype,
-        <number> maxdepth [, <string> direction])
+        <number> maxdepth [, <number> direction])
     return <node> newhead
 end
 \stopfunctioncall

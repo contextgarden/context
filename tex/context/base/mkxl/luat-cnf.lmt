@@ -1,56 +1,23 @@
 if not modules then modules = { } end modules ['luat-cnf'] = {
     version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
+    comment   = "companion to luat-lib.mkxl",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber =  type, next, tostring, tonumber
-local format, concat, find, lower, gsub = string.format, table.concat, string.find, string.lower, string.gsub
+local type = type
+local format, concat = string.format, table.concat
 
 local report = logs.reporter("system")
-
-local allocate = utilities.storage.allocate
-
-texconfig.kpse_init    = false
-texconfig.shell_escape = 't'
 
 luatex       = luatex or { }
 local luatex = luatex
 
-texconfig.error_line      =      250
-texconfig.expand_depth    =    10000
-texconfig.half_error_line =      125
-texconfig.max_print_line  =   100000
-texconfig.max_strings     =   500000
-texconfig.hash_extra      =   250000
-texconfig.function_size   =    32768
-texconfig.properties_size =    10000
-texconfig.max_in_open     =     1000
-texconfig.nest_size       =     1000
-texconfig.param_size      =    25000
-texconfig.save_size       =   100000
-texconfig.stack_size      =    10000
-texconfig.buf_size        = 10000000
-texconfig.fix_mem_init    =  1000000
+texconfig.functionsize   = 32768
+texconfig.propertiessize = 10000
 
-local variablenames = {
-    error_line      = false,
-    half_error_line = false,
-    max_print_line  = false,
-    max_in_open     = false,
-    expand_depth    = true,
-    hash_extra      = true,
-    nest_size       = true,
-    max_strings     = true,
-    param_size      = true,
-    save_size       = true,
-    stack_size      = true,
-    function_size   = true,
-    properties_size = true,
-    fix_mem_init    = true,
-}
+-- These lists need updating! If we decide to keep them at all.
 
 local stub = [[
 
@@ -59,13 +26,10 @@ local stub = [[
 storage = storage or { }
 luatex  = luatex  or { }
 
--- we provide our own file handling
-
-texconfig.kpse_init    = false
-texconfig.shell_escape = 't'
----------.start_time   = tonumber(os.getenv("SOURCE_DATE_EPOCH")) -- not used in context
-
 -- as soon as possible
+
+texconfig.functionsize   = 32768
+texconfig.propertiessize = 10000
 
 luatex.starttime = os.gettimeofday()
 
@@ -209,7 +173,7 @@ function texconfig.init()
 
 end
 
-CONTEXTLMTXMODE = %s
+CONTEXTLMTXMODE = 1
 
 -- we provide a qualified path
 
@@ -221,44 +185,43 @@ end)
 -- done, from now on input and callbacks are internal
 ]]
 
+local keys = {
+    "buffersize", "expandsize", "filesize", "fontsize", "hashsize", "inputsize",
+    "languagesize", "marksize", "nestsize", "nodesize", "parametersize", "poolsize",
+    "savesize", "stringsize", "tokensize", "errorlinesize", "halferrorlinesize",
+}
+
 local function makestub()
     name = name or (environment.jobname .. ".lui")
     report("creating stub file %a using directives:",name)
     report()
     firsttable = firsttable or lua.firstbytecode
     local t = {
-        "-- this file is generated, don't change it\n",
-        "-- configuration (can be overloaded later)\n"
+        "-- This file is generated, don't change it!\n"
     }
-    for v, permitted in table.sortedhash(variablenames) do
-        local d = "luatex." .. gsub(lower(v),"[^%a]","")
-        local dv = directives.value(d)
-        local tv = texconfig[v]
-        if dv then
-            if not tv then
-                report("  %s = %s (%s)",d,dv,"configured")
-                tv = dv
-            elseif not permitted then
-                report("  %s = %s (%s)",d,tv,"frozen")
-            elseif tonumber(dv) >= tonumber(tv) then
-                report("  %s = %s (%s)",d,dv,"overloaded")
-                tv = dv
-            else
-                report("  %s = %s (%s)",d,tv,"preset kept")
-            end
-        elseif tv then
-            report("  %s = %s (%s)",d,tv,permitted and "preset" or "frozen")
-        else
-            report("  %s = <unset>",d)
+    for i=1,#keys do
+        local target = keys[i]
+        local key = "luametatex." .. target
+        local val = directives.value(key)
+        if type(val) == "number" then
+            val = { size = val }
         end
-        if tv then
-            t[#t+1] = format("texconfig.%s=%s",v,tv)
+        if type(val) == "table" then
+            local s = { }
+            local v = val.size if v then s[#s+1] = format("size = %10i",v) end
+            local v = val.plus if v then s[#s+1] = format("plus = %10i",v) end
+            local v = val.step if v then s[#s+1] = format("step = %10i",v) end
+            if #s > 0 then
+                s = format("%-17s = { %s }",target,concat(s,", "))
+                report("  %s",s)
+                t[#t+1] = "texconfig." .. s
+            end
         end
     end
     t[#t+1] = ""
-    t[#t+1] = format(stub,firsttable,tostring(CONTEXTLMTXMODE or 0))
+    t[#t+1] = format(stub,firsttable)
     io.savedata(name,concat(t,"\n"))
-    logs.newline()
+    report()
 end
 
 lua.registerfinalizer(makestub,"create stub file")

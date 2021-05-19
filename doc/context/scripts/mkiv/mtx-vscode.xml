@@ -9,6 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="generate"><short>generate extension in sync with current version</short></flag>
+    <flag name="program"><short>use the given binary (e.g. codium, default: code)</short></flag>
     <flag name="start"><short>start vscode with extension context</short></flag>
    </subcategory>
   </category>
@@ -20,6 +21,7 @@
     <example><command>mtxrun --script vscode --generate e:/vscode/extensions</command></example>
     <example><command>mtxrun --script vscode --generate</command></example>
     <example><command>mtxrun --script vscode --start</command></example>
+    <example><command>mtxrun --script vscode --program=codium --start</command></example>
    </subcategory>
   </category>
  </examples>

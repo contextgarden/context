@@ -14,6 +14,9 @@
 .B --generate
 generate extension in sync with current version
 .TP
+.B --program
+use the given binary (e.g. codium, default: code)
+.TP
 .B --start
 start vscode with extension context
 .SH AUTHOR

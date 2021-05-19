@@ -23,11 +23,11 @@
 \registerctxluafile{util-fmt}{}
 \registerctxluafile{util-dim}{}
 
-\registerctxluafile{trac-set}{}
+\registerctxluafile{trac-set}{autosuffix}
 \registerctxluafile{luat-log}{autosuffix}
 \registerctxluafile{trac-inf}{autosuffix}
 \registerctxluafile{util-lua}{}
-\registerctxluafile{util-deb}{} % could also be done in trac-deb.mkiv
+\registerctxluafile{util-deb}{autosuffix}
 
 \registerctxluafile{util-tpl}{} % needs tracker
 \registerctxluafile{util-seq}{}
@@ -72,9 +72,9 @@
 \registerctxluafile{data-aux}{}
 
 \registerctxluafile{luat-cbk}{autosuffix}
-\registerctxluafile{luat-run}{}
+\registerctxluafile{luat-run}{autosuffix}
 \registerctxluafile{luat-fio}{autosuffix}
-\registerctxluafile{luat-cnf}{}
+\registerctxluafile{luat-cnf}{autosuffix}
 \registerctxluafile{luat-lua}{}
 \registerctxluafile{luat-sto}{}
 \registerctxluafile{luat-ini}{autosuffix}

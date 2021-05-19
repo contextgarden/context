@@ -409,21 +409,29 @@ if texconfig then
     -- this happens too late in ini mode but that is no problem
 
     local function set(k,v)
-        local v = tonumber(v)
         if v then
             texconfig[k] = v
         end
     end
 
-    directives.register("luatex.expanddepth",  function(v) set("expand_depth",v)   end)
-    directives.register("luatex.hashextra",    function(v) set("hash_extra",v)     end)
-    directives.register("luatex.nestsize",     function(v) set("nest_size",v)      end)
-    directives.register("luatex.maxinopen",    function(v) set("max_in_open",v)    end)
-    directives.register("luatex.maxprintline", function(v) set("max_print_line",v) end)
-    directives.register("luatex.maxstrings",   function(v) set("max_strings",v)    end)
-    directives.register("luatex.paramsize",    function(v) set("param_size",v)     end)
-    directives.register("luatex.savesize",     function(v) set("save_size",v)      end)
-    directives.register("luatex.stacksize",    function(v) set("stack_size",v)     end)
+    directives.register("luametatex.memory.expand",    function(v) set("expand_depth",v)   end)
+    directives.register("luametatex.memory.hash",      function(v) set("hash_extra",v)     end)
+    directives.register("luametatex.memory.nest",      function(v) set("nest_size",v)      end)
+    directives.register("luametatex.memory.file",      function(v) set("max_in_open",v)    end)
+    directives.register("luametatex.memory.string",    function(v) set("max_strings",v)    end)
+    directives.register("luametatex.memory.parameter", function(v) set("param_size",v)     end)
+    directives.register("luametatex.memory.save",      function(v) set("save_size",v)      end)
+    directives.register("luametatex.memory.stack",     function(v) set("stack_size",v)     end)
+
+    -- poolstate
+    -- lookupstate
+    -- nodestate
+    -- tokenstate
+    -- bufferstate
+    -- fontstate
+    -- languagestate
+    -- markstate
+    -- sparsestate
 
 end
 

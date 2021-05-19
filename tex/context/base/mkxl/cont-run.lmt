@@ -230,6 +230,12 @@ local function processjob()
         }
     end
 
+    logs.registerfinalactions(function()
+        logs.pushtarget("log")
+        statistics.showusage("finish")
+        logs.poptarget()
+    end)
+
     setoverloadmode(arguments.overloadmode)
 
     if not filename or filename == "" then

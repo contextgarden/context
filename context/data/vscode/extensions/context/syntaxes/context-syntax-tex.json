@@ -65,6 +65,7 @@
    "name" : "context.command.commands.context.tex"
   },
   "comment" : {
+   "match" : "%.*$\u005Cn?",
    "name" : "context.comment.comment.tex"
   },
   "constant" : {

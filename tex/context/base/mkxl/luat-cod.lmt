@@ -17,29 +17,31 @@ local texconfig, lua = texconfig, lua
 
 -- some basic housekeeping
 
-texconfig.kpse_init       = false     -- not needed in lmtx
-texconfig.shell_escape    = 't'       -- not needed in lmtx
+---------.kpse_init       = false     -- not needed in lmtx
+---------.shell_escape    = 't'       -- not needed in lmtx
 
-texconfig.max_in_open     =     2000
-texconfig.nest_size       =    10000
-texconfig.param_size      =   100000
-texconfig.save_size       =   500000
-texconfig.stack_size      =   100000
-texconfig.buffer_size     = 10000000
-texconfig.token_size      = 10000000
-texconfig.node_size       = 50000000
+-- texconfig.max_in_open     =     2000
+-- texconfig.nest_size       =    10000
+-- texconfig.param_size      =   100000
+-- texconfig.save_size       =   500000
+-- texconfig.stack_size      =   100000
+-- texconfig.buffer_size     = 10000000
+-- texconfig.token_size      = 10000000
+-- texconfig.token_size      = { size = 10000000, step = 2000000 }
+-- texconfig.node_size       = 50000000
 
-texconfig.max_print_line  =   100000
-texconfig.max_strings     =   500000
-texconfig.max_pool        = 10000000
+---------.max_print_line  =   100000
+-- texconfig.max_strings     =   500000
+-- texconfig.max_strings     = { size = 600000, step = 200000 }
+-- texconfig.max_pool        = 10000000
+-- texconfig.hash_extra      =   250000
+-- texconfig.expand_depth    =    10000
 
-texconfig.hash_extra      =   250000
+-- texconfig.error_line      =      250
+-- texconfig.half_error_line =      125
 
-texconfig.expand_depth    =    10000
-texconfig.function_size   =    32768
-texconfig.properties_size =    10000
-texconfig.error_line      =      250
-texconfig.half_error_line =      125
+texconfig.functionsize   = 32768
+texconfig.propertiessize = 10000
 
 -- registering bytecode chunks
 

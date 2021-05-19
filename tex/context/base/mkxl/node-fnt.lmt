@@ -252,7 +252,7 @@ do
         end
     end
 
-    function handlers.characters(head,groupcode,size,packtype,direction)
+    function handlers.characters(head,groupcode,direction)
         -- either next or not, but definitely no already processed list
         starttiming(nodes)
 

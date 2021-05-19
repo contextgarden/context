@@ -65,8 +65,6 @@ do
 
 end
 
-processors.enabled = true -- this will become a proper state (like trackers)
-
 do
 
     local hasglyph    = nodes.hasglyph

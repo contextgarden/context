@@ -125,7 +125,7 @@ if not modules then modules = { } end modules ['node-syn'] = {
 local type, rawset = type, rawset
 local concat = table.concat
 local formatters = string.formatters
-local replacesuffix, suffixonly, nameonly = file.replacesuffix, file.suffix, file.nameonly
+local replacesuffix, suffixonly, nameonly, collapsepath = file.replacesuffix, file.suffix, file.nameonly, file.collapsepath
 local openfile, renamefile, removefile = io.open, os.rename, os.remove
 
 local report_system = logs.reporter("system")
@@ -232,6 +232,7 @@ local blockedsuffixes    = {
 }
 
 local sttags = table.setmetatableindex(function(t,name)
+    name = collapsepath(name)
     if blockedsuffixes[suffixonly(name)] then
         -- Just so that I don't get the ones on my development tree.
         nofblocked = nofblocked + 1

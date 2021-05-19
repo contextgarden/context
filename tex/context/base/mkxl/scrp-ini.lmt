@@ -57,9 +57,6 @@ local setglyphdata      = nuts.setglyphdata
 
 local isglyph           = nuts.isglyph
 
-local insertnodeafter   = nuts.insertafter
-local insertnodebefore  = nuts.insertbefore
-
 local firstglyph        = nuts.firstglyph
 
 local nextglyph         = nuts.traversers.glyph
@@ -87,6 +84,32 @@ scripts.injectors       = handlers
 
 local splitters         = allocate()
 scripts.splitters       = splitters
+
+local helpers          = allocate()
+scripts.helpers        = helpers
+
+local insertnodebefore, insertnodeafter  do
+
+    local insertafter      = nuts.insertnodeafter
+    local insertbefore     = nuts.insertnodebefore
+    local setattributelist = nuts.setattributelist
+
+    local function insertnodebefore(head,current,what) -- todo : lmtx
+        head, current = insertbefore(head,current,what)
+        setattributelist(what,current)
+        return head, current
+    end
+
+    local function insertnodeafter(head,current,what) -- todo : lmtx
+        head, current = insertafter(head,current,what)
+        setattributelist(what,current)
+        return head, current
+    end
+
+    helpers.insertnodebefore = insertnodebefore
+    helpers.insertnodeafter  = insertnodeafter
+
+end
 
 local hash = { -- we could put these presets in char-def.lua
     --
