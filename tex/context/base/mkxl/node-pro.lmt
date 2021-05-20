@@ -26,27 +26,10 @@ local actions = tasks.actions("processors")
 
 do
 
-    local isglyph = nuts.isglyph
-    local getnext = nuts.getnext
-
-    local utfchar = utf.char
-    local concat  = table.concat
-
     local n = 0
 
-    local function reconstruct(head) -- we probably have a better one
-        local t, n, h = { }, 0, head
-        while h do
-            n = n + 1
-            local char, id = isglyph(h)
-            if char then -- todo: disc etc
-                t[n] = utfchar(char)
-            else
-                t[n] = "[]"
-            end
-            h = getnext(h)
-        end
-        return concat(t)
+    local function reconstruct(head)
+        return nodes.listtoutf(head,"",false,nil,true)
     end
 
     function processors.tracer(what,head,groupcode,before,after,show)
@@ -144,7 +127,7 @@ do
             local after = count_nodes(head,true)
             tracer("glyph_run",head,groupcode,before,after,true)
         else
-            head = actions(head,groupcode)
+            head = actions(head,groupcode,direction)
         end
         return head
     end

@@ -35,7 +35,7 @@ local f_uchexnumber  = formatters["%X"]
 local f_lchexnumbers = formatters["%02x"]
 local f_uchexnumbers = formatters["%02X"]
 local f_octnumber    = formatters["%03o"]
-local   nicenumber   = formatters["%0.6F"]
+local   nicenumber   = formatters["%0.6F"] -- or N
 
 local lchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_lchexnumber (n) end
 local uchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_uchexnumber (n) end

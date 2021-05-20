@@ -814,8 +814,8 @@ nuts.getstate = getstate
 local getscript = direct.getscript or function(n,v) end -- elsewhere
 local setscript = direct.setscript or function(n,v) end -- elsewhere
 
-nuts.setscript = getscript
-nuts.getscript = setscript
+nuts.setscript = setscript
+nuts.getscript = getscript
 
 function nuts.isdone(n,k)
     local p = propertydata[n]

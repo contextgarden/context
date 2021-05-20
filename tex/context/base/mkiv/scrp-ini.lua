@@ -118,8 +118,8 @@ end
 
 local insertnodebefore, insertnodeafter  do
 
-    local insertafter      = nuts.insertnodeafter
-    local insertbefore     = nuts.insertnodebefore
+    local insertafter      = nuts.insertafter
+    local insertbefore     = nuts.insertbefore
     local setattributelist = nuts.setattributelist
 
     local function insertnodebefore(head,current,what) -- todo : lmtx

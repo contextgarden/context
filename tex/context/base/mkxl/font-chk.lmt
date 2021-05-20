@@ -470,14 +470,17 @@ do
         for i=1,#fallbacks do
             local id = fallbacks[i]
             if type(id) == "string" then
-                id = definers.define { name = id }
-                fallbacks[i] = id
+                local fid = definers.define { name = id }
+                report("using fallback font %!font:name! (id: %i)",fid,fid)
+                fallbacks[i] = fid
+                id = fid
             end
             if type(id) == "number" then
                 local cid = fontcharacters[id]
                 if cid[c] then
                     local fc = fontcharacters[f]
                     local sc = (fc[reference].height / cid[reference].height) * (n.scale or 1000)
+                    report("character %C in font %!font:name! (id: %i) is taken from fallback font %!font:name! (id: %i)",c,f,f,id,id)
                     return { id, sc }
                 end
             end
@@ -491,6 +494,7 @@ do
         local cached = cache[f]
         local found  = cached[c]
         if found == nil then
+            -- we can use fonts.helpers.name(f) but we need the monospace flag anyway so:
             local metadata = fontdata[f].shared
             if metadata then
                 metadata = metadata.rawdata

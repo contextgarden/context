@@ -85,13 +85,13 @@ scripts.injectors       = handlers
 local splitters         = allocate()
 scripts.splitters       = splitters
 
-local helpers          = allocate()
-scripts.helpers        = helpers
+local helpers           = allocate()
+scripts.helpers         = helpers
 
 local insertnodebefore, insertnodeafter  do
 
-    local insertafter      = nuts.insertnodeafter
-    local insertbefore     = nuts.insertnodebefore
+    local insertafter      = nuts.insertafter
+    local insertbefore     = nuts.insertbefore
     local setattributelist = nuts.setattributelist
 
     local function insertnodebefore(head,current,what) -- todo : lmtx
@@ -515,7 +515,6 @@ function scripts.injectors.handler(head)
         while start do
             local char, id = isglyph(start)
             if char then
-             -- local a = getinjector(start)
                 local a = getscript(start)
                 if a then
                     if a ~= last_a then
@@ -534,11 +533,13 @@ function scripts.injectors.handler(head)
                             first, last = nil, nil
                         end
                         last_a = a
-                     -- normal_process = a
-                        normal_process = getinjector(start)
+                     -- normal_process = getinjector(start)
+                        normal_process = numbertohandler[a]
+                        if normal_process then
+                            normal_process = normal_process.injector
+                        end
                     end
                     if normal_process then
-                        -- id == font
                         if id ~= lastfont then
                             originals = fontdata[id].resources
                             if resources then
