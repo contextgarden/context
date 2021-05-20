@@ -99,6 +99,8 @@ local yscaled            = nuts.yscaled
 local getboth            = nuts.getboth
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local getreplace         = nuts.getreplace
+local setreplace         = nuts.setreplace
 local setoffsets         = nuts.setoffsets
 local addxoffset         = nuts.addxoffset
 local addyoffset         = nuts.addyoffset
@@ -1473,19 +1475,17 @@ local function inject_positions_only_kerns(head,where)
                             insertnodeafter(head,current,somekern(fontkern,rightkern,current))
                         end
                     end
-                else
+                elseif next then
                     local i = p.emptyinjections
                     if i then
                         -- glyph|disc|glyph (special case)
                         local rightkern = i.rightkern
-                        if rightkern and rightkern ~= 0 then
-                            if next and getid(next) == disc_code then
-                                if replace then
-                                    -- error, we expect an empty one
-                                else
-                                    replace = somekern(fontkern,xscaled(current,rightkern),current) -- maybe also leftkern
-                                    done    = true	--KE
-                                end
+                        if rightkern and rightkern ~= 0 and getid(next) == disc_code then
+                            local replace = getreplace(next)
+                            if replace then
+                                -- can't happen
+                            else
+                                setreplace(next,somekern(fontkern,xscaled(current,rightkern),current))
                             end
                         end
                     end
@@ -1694,20 +1694,17 @@ local function inject_positions_only_margins(head,where)
                     if leftkern ~= 0 or rightkern ~= 0 or yoffset ~= 0 then
                         addxymargins(n,-leftkern,-rightkern,yoffset) -- also scales
                     end
-                else
+                elseif next then
                     local i = p.emptyinjections
                     if i then
                         -- glyph|disc|glyph (special case)
                         local rightkern = i.rightkern
-                        if rightkern and rightkern ~= 0 then
-                            if next and getid(next) == disc_code then
-                                if replace then
-                                    -- error, we expect an empty one
-                                else
-                                    -- next disc | current
-                                    addxymargins(current,-rightkern) -- NEEDS CHECKING
-                                    done = true	--KE
-                                end
+                        if rightkern and rightkern ~= 0 and getid(next) == disc_code then
+                            local replace = getreplace(next)
+                            if replace then
+                                -- can't happen
+                            else
+                                setreplace(next,somekern(fontkern,xscaled(current,rightkern),current))
                             end
                         end
                     end
@@ -2067,19 +2064,17 @@ local function inject_everything(head,where)
                             end
                         end
                     end
-                else
+                elseif next then
                     local i = p.emptyinjections
                     if i then
                         -- glyph|disc|glyph (special case)
                         local rightkern = i.rightkern
-                        if rightkern and rightkern ~= 0 then
-                            if next and getid(next) == disc_code then
-                                if replace then
-                                    -- error, we expect an empty one
-                                else
-                                    replace = somekern(fontkern,xscaled(current,rightkern),current)
-                                    done    = true
-                                end
+                        if rightkern and rightkern ~= 0 and getid(next) == disc_code then
+                            local replace = getreplace(next)
+                            if replace then
+                                -- can't happen
+                            else
+                                setreplace(next,somekern(fontkern,xscaled(current,rightkern),current))
                             end
                         end
                     end

@@ -122,13 +122,13 @@ local insertnodebefore, insertnodeafter  do
     local insertbefore     = nuts.insertbefore
     local setattributelist = nuts.setattributelist
 
-    local function insertnodebefore(head,current,what) -- todo : lmtx
+    insertnodebefore = function (head,current,what)
         head, current = insertbefore(head,current,what)
         setattributelist(what,current)
         return head, current
     end
 
-    local function insertnodeafter(head,current,what) -- todo : lmtx
+    insertnodeafter = function(head,current,what)
         head, current = insertafter(head,current,what)
         setattributelist(what,current)
         return head, current

@@ -2148,3 +2148,9 @@ local function field(n) return context(osdate("*t")[n]) end
 implement { name = "actualday",   public = true, actions = function() field("day")   end }
 implement { name = "actualmonth", public = true, actions = function() field("month") end }
 implement { name = "actualyear",  public = true, actions = function() field("year")  end }
+
+implement {
+    name    = "uuid",
+    public  = true,
+    actions = { os.uuid, context },
+}

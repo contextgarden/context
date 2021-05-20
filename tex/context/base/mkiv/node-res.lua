@@ -173,19 +173,10 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
-if CONTEXTLMTXMODE == 0 then
-    setfield(user_node,"type",usercodes.number)
-end
+setfield(user_node,"type",usercodes.number)
 
-local left_margin_kern, right_margin_kern
-
-if CONTEXTLMTXMODE > 0 then
-    left_margin_kern  = register_nut(new_nut(kern_code,kerncodes.leftmargincode))
-    right_margin_kern = register_nut(new_nut(kern_code,kerncodes.rightmargincode))
-else
-    left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
-    right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
-end
+local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
+local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
 
 local lineskip          = register_nut(new_nut(glue_code,gluecodes.lineskip))
 local baselineskip      = register_nut(new_nut(glue_code,gluecodes.baselineskip))
@@ -429,27 +420,15 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-if CONTEXTLMTXMODE == 0 then
-
-    function nutpool.latelua(code)
-        local n = copy_nut(latelua)
-        if type(code) == "table" then
-            local action        = code.action
-            local specification = code.specification or code
-            code = function() action(specification) end
-        end
-        setdata(n,code)
-        return n
+function nutpool.latelua(code)
+    local n = copy_nut(latelua)
+    if type(code) == "table" then
+        local action        = code.action
+        local specification = code.specification or code
+        code = function() action(specification) end
     end
-
-else
-
-    function nutpool.latelua(code)
-        local n = copy_nut(latelua)
-        nodeproperties[n] = { data = code }
-        return n
-    end
-
+    setdata(n,code)
+    return n
 end
 
 function nutpool.leftmarginkern(glyph,width)
@@ -575,7 +554,7 @@ local function cleanup(nofboxes) -- todo
     return nr, nl, nofboxes -- can be nil
 end
 
-local usage = CONTEXTLMTXMODE > 0 and node.inuse or function()
+local function usage()
     local t = { }
     for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
         t[tag] = tonumber(n) or 0
@@ -583,7 +562,7 @@ local usage = CONTEXTLMTXMODE > 0 and node.inuse or function()
     return t
 end
 
-local stock = CONTEXTLMTXMODE > 0 and node.instock or { }
+local stock = { }
 
 nutpool .cleanup = cleanup
 nodepool.cleanup = cleanup

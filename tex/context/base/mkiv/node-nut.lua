@@ -442,9 +442,9 @@ if not nuts.getpre then
     function nuts.getpost   (n) local _, h, _, _, t, _ = d_getdisc(n,true) return h, t end
     function nuts.getreplace(n) local _, _, h, _, _, t = d_getdisc(n,true) return h, t end
 
-    function nuts.setpre    (n,h) d_setfield(d,"pre",    h) end
-    function nuts.setpost   (n,h) d_setfield(d,"post",   h) end
-    function nuts.setreplace(n,h) d_setfield(d,"replace",h) end
+    function nuts.setpre    (n,h) d_setfield(n,"pre",    h) end
+    function nuts.setpost   (n,h) d_setfield(n,"post",   h) end
+    function nuts.setreplace(n,h) d_setfield(n,"replace",h) end
 
 end
 

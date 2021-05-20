@@ -66,9 +66,9 @@ implement {
 }
 
 implement {
-    name    = "installtextracker",
+    name      = "installtextracker",
     arguments = "3 strings",
-    actions = function(tag,enable,disable)
+    actions   = function(tag,enable,disable)
         install(textrackers,trackers.register,tag,enable,disable)
     end,
 }

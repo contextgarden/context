@@ -71,7 +71,6 @@ local report_details   = logs.reporter("scripts","detail")
 local insertnodeafter  = scripts.helpers.insertnodeafter
 local insertnodebefore = scripts.helpers.insertnodebefore
 
-
 local inter_char_shrink          = 0
 local inter_char_stretch         = 0
 local inter_char_half_shrink     = 0

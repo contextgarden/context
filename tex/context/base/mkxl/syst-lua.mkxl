@@ -52,18 +52,21 @@
 \popoverloadmode
 
 %D We can omit the tex.ctxcatcodes here as nowadays we seldom change the regime at
-%D the \TEX\ end:
+%D the \TEX\ end. Beware: the expression is compiled each time so it is not that
+%D efficient.
 
-%def\luaexpr#1{\ctxlua{context  (tostring(#1))}} % more efficient:
-\permanent\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
+%                   \def\luaexpr      #1{\ctxlua    {context  (tostring(#1))}} % more efficient:
+%         \permanent\def\luaexpr      #1{\ctxlua    {tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
+\tolerant\permanent\edef\luaexpr[#1]#:#2{\noexpand\cldcontext{\noexpand\iftok{#1}\noexpand\emptytoks\noexpand\else"\letterpercent #1",\noexpand\fi#2}}
 
 %D But as we only use write 16 we could as well do all in \LUA\ and ignore the rest.
 %D Okay, we still can do writes here but only when not blocked.
 
 \aliased\let\syst_write_execute\clf_execute % always {...}
 
-%D There is a probably rather useless \type {\expression} command that can mix \LUA\ numeric
-%D expressions with \TEX\ commands (for as far that makes sense) that works like this:
+%D There is a probably rather useless \type {\expression} command that can mix \LUA\
+%D numeric expressions with \TEX\ commands (for as far that makes sense) that works
+%D like this:
 %D
 %D \starttyping
 %D \mathchardef\foooo   1234

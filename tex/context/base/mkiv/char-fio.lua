@@ -38,8 +38,8 @@ disableaction(textfileactions,         "characters.filters.utf.decompose")
 local report    = logs.reporter("unicode filter")
 local reporting = "no"
 
--- this is messy as for performance reasons i don't want this to happen
--- per line by default
+-- This is messy as for performance reasons i don't want this to happen per line by
+-- default.
 
 local enforced = {
     ["characters.filters.utf.collapse"]  = true,
