@@ -48,7 +48,7 @@ local userskip_code    = gluecodes.userskip
 local spaceskip_code   = gluecodes.spaceskip
 local xspaceskip_code  = gluecodes.xspaceskip
 
-local hash             = scripts.hash
+local hash             = characters.scripthash
 
 local getscriptstatus  = scripts.getstatus
 local getscriptdata    = scripts.getdata

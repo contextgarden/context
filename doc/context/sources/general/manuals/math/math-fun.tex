@@ -1,0 +1,116 @@
+\environment math-layout
+
+\startcomponent math-fun
+
+\usemodule[mathfun]
+
+\startchapter[title=Fun stuff] % As is watching the funplex DVD.
+
+% \startsection[title=How it started]
+
+When I decided to add the \type {\uuid} macro (a trivial task because there was
+already a \LUA\ function for it in \CONTEXT) I wondered about other functions
+that could be added, like those for sine and cosine. There is no real need
+for that because we can already do this:
+
+\startbuffer[a]
+\luaexpr{math.sin(math.pi/4)}
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+\luaexpr[.4N]{math.sin(math.pi/4)}
+\stopbuffer
+
+which gives us \inlinebuffer[a]\ as result, but still one can ponder the
+usability of additional macros. When seeing this, one of the first things that
+probably comes to mind is how to get less digits, and indeed that can be
+achieved, as \inlinebuffer[b]\ demonstrates.
+
+\typebuffer[b]
+
+The optional argument between square brackets is a template as we know from other
+\CONTEXT\ commands without the leading percentage sign. But what if we don't want
+this expression and explicit math function call?
+
+\startbuffer
+$ \sin (x) = \the\sin{pi/8} $
+\stopbuffer
+
+\typebuffer
+
+This gives us a normal rendered sin function symbol at the left hand and a
+numeric result at the right hand: \inlinebuffer. The nice thing about it is that
+we don't need to come up with new macro names. \footnote {At some point \CONTEXT\
+might introduce a namespace mechanism to deal with possible conflicts between
+environments.} In a similar fashion we can do this:
+
+\startbuffer
+$ \sind(x) = \luaexpr[.4N]{math.sind(120)} = \the\sind[.4N]{120} $
+\stopbuffer
+
+\typebuffer
+
+Both calls give the same result: \inlinebuffer\ and in case you wonder why we
+have only three digits: the \type {N} formatter removes trailing zeros. However,
+the \type {\the} prefix is still not that nice, apart from the fact that we abuse
+a feature of the \LUA\ interface meant for other purposes (read: we cheat). So,
+in a next step in exploring this I cooked up:
+
+\startbuffer
+$ \sqrt(x) = \the\sqrt[.3N]     {2} $
+$ \sqrt(x) = \compute\sqrt[.3N] {2} $
+\stopbuffer
+
+\typebuffer
+
+There is still a prefix but \type {\compute} looks more natural. It is not an
+alias for \type {\the} but a shortcut for a prefix feature that can drive all
+kind of interpretations of in this case \type {\sin}, and that is probably where
+the real fun will start. Instead of functions we can also have constants:
+
+\startbuffer
+$ \pi = \compute\pi[.4N] $
+\stopbuffer
+
+In case you wonder how extensible this mechanism is, here is what happens in the
+\type {mathfun} module that needs to be loaded in the usual way. There you find:
+
+\pushoverloadmode
+    \ifdefined\normalpi \else\let\normalpi\pi \fi
+
+    \registermathfunction[sind,cosd,tand,sin,cos,tan]
+    \registermathfunction[sqrt]
+    \registermathfunction[pi][constant]
+\popoverloadmode
+
+The module also provides a few more expression variants (these can end up in the
+core if really needed much):
+
+\startbuffer
+$ \pi = \mathexpr[.40N]{pi}            $
+$ \pi = \mathexpr[.80N]{sqrt(11)}      $
+$ \pi = \decimalexpr[.80N]{sqrt(11)}   $
+$ \pi = \decimalexpr{sqrt(11)}         $
+$ c = \complexexpr{123 + new(456,789)} $
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlines
+    \getbuffer
+\stoplines
+
+The question is: do we need this and if so, what more do we need? Feel free to bing it up on
+the \CONTEXT\ mailing list. It anyway is a nice dmonstration of what can be done with the
+mix of languages.
+
+% \stopsection
+
+\stopchapter
+
+\stopcomponent
+

@@ -1,0 +1,231 @@
+%D \module
+%D   [       file=m-mathfun,
+%D        version=2021.02.20,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Wried Math Stuff,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Occasionaly some experiment results in some weird feature. It doesn't make sense
+%D to make this core functionality but if also makes no sense to throw it away. By
+%D making it a module the user can decide. It's actually an example of abusing a
+%D \LUA\ interfacing mechanism that is meant for something else.
+
+\ifdefined\compute \else
+    \permanent\protected\def\compute{\thewithproperty\plusone}
+\fi
+
+%D At some point this will move to \type {m-mathfun.lmt}:
+
+\startluacode
+    local type, load = type, load
+    local gmatch = string.gmatch
+
+    local xmath         = xmath
+    local xcomplex      = xcomplex
+    local xdecimal      = xdecimal
+
+    local context       = context
+    local ctx_mfunction = context.mfunction
+
+    local scanoptional  = tokens.scanners.optional
+    local scanargument  = tokens.scanners.argument
+
+    local createtoken   = tokens.create
+    local defined       = tokens.defined
+
+    local implement     = interfaces.implement
+
+    local compute_code  = 1
+
+    local function smart(what,name,kind)
+        if what == "value" or what == compute_code then
+            local temp = scanoptional()
+            if temp and temp ~= "" then
+                temp = "%" .. temp
+            else
+                temp = "%.6N"
+            end
+            if kind == "constant" then
+                context(temp,math[name])
+            else
+                local code = scanargument()
+                local func = load("return "..name.."("..code..")","mathfunction","t",math)
+                if type(func) == "function" then
+                    context(temp,func())
+                else
+                    context(code)
+                end
+            end
+        elseif kind == "constant" then
+          -- context[name]() -- recursion
+            name = "normal"..name
+            if defined(name) then
+                context(createtoken(name))
+            else
+                context(name)
+            end
+        else
+            ctx_mfunction(name)
+        end
+    end
+
+    local template = { name = false, usage = "value", public = true, protected = true, actions = false, overload = true }
+
+    local function install(str,kind)
+        for name in gmatch(str,"[^ ,]+") do
+            template.name    = name
+            template.actions = function(what) smart(what,name,kind) end
+            implement(template)
+        end
+    end
+
+    local function mathexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"mathexpr","t",xmath)
+        if type(func) == "function" then
+            if temp and temp ~= "" then
+                temp = "%" .. temp
+            else
+                temp = "%.6N"
+            end
+            context(temp,func())
+        else
+            context(code)
+        end
+    end
+
+    local tostring    = xdecimal.tostring
+    local toengstring = xdecimal.toengstring -- todo
+
+    local function decimalexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"decimalexpr","t",xdecimal)
+        if type(func) == "function" then
+            local result = tostring(func())
+            if temp and temp ~= "" then
+                context("%"..temp,result)
+            else
+                context(result)
+            end
+        else
+            context(code)
+        end
+    end
+
+    local topair = xcomplex.topair
+
+    local function complexexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"complexexpr","t",xcomplex)
+        if type(func) == "function" then
+         -- local result = tostring(func())
+         -- if temp and temp ~= "" then
+         --     context("%"..temp,result)
+         -- else
+         --     context(result)
+         -- end
+            if temp and temp ~= "" then
+                temp = "%" .. temp
+            else
+                temp = "%.6N + %.6Ni"
+            end
+            local result = func()
+            context(temp,topair(result))
+        else
+            context(code)
+        end
+    end
+
+    implement {
+        name      = "registermathfunction",
+        public    = true,
+        protected = true,
+        actions   = install,
+        arguments = { "optional", "optional" },
+    }
+
+    implement {
+        name    = "mathexpr",
+        public  = true,
+        actions = mathexpr,
+    }
+
+    implement {
+        name    = "decimalexpr",
+        public  = true,
+        actions = decimalexpr,
+    }
+
+    implement {
+        name    = "complexexpr",
+        public  = true,
+        actions = complexexpr,
+    }
+
+ -- install("sind cosd tand sin cos tan")
+ -- install("sqrt")
+\stopluacode
+
+\pushoverloadmode
+
+    \ifdefined\normalpi \else\let\normalpi\pi \fi
+
+    \registermathfunction[sind,cosd,tand,sin,cos,tan]
+    \registermathfunction[sqrt]
+    \registermathfunction[pi][constant]
+
+\popoverloadmode
+
+\continueifinputfile{m-mathfun.mkxl}
+
+% \pushoverloadmode
+% \let\normalpi\pi
+% \registermathfunction[sind,cosd,tand,sin,cos,tan]
+% \registermathfunction[sqrt]
+% \registermathfunction[pi][constant]
+% \popoverloadmode
+
+\usemodule[scite] \setupbodyfont[dejavu] \setuplayout[tight] \setuppapersize[A5]
+
+\starttext
+
+\startbuffer
+$ \sin (x) = \luaexpr       {math.sin(math.pi/2)} $
+$ \sin (x) = \luaexpr [.4N] {math.sin(math.pi/2)} $
+$ \sin (x) = \the\sin                     {pi/2}  $
+$ \sind(x) = \luaexpr [.4N] {math.sind(120)}      $
+$ \sind(x) = \the\sind[.4N]           {120}       $
+$ \sqrt(x) = \luaexpr       {math.sqrt(2)}        $
+$ \sqrt(x) = \luaexpr [.6N] {math.sqrt(2)}        $
+$ \sqrt(x) = \the\sqrt                {2}         $
+$ \sqrt(x) = \the\sqrt[.3N]           {2}         $
+$ \sqrt(x) = \compute\sqrt[.3N]       {2}         $
+$ \sind(x) = \luaexpr [.4N] {math.pi}             $
+$ \pi = \compute\pi[.4N]                          $
+$ \pi = \mathexpr[.40N]{pi}                       $
+$ \pi = \mathexpr[.80N]{sqrt(11)}                 $
+$ \pi = \decimalexpr[.80N]{sqrt(11)}              $
+$ \pi = \decimalexpr{sqrt(11)}                    $
+$ c = \complexexpr{123 + new(456,789)}            $
+\stopbuffer
+
+Take your choice:
+
+\typebuffer[option=TEX]
+
+And get:
+
+\startlines
+    \getbuffer
+\stoplines
+
+\stoptext
