@@ -482,7 +482,7 @@
 
 \permanent\protected\def\usehyphensparameter#1%
   {\edef\p_hyphens{#1\c!hyphens}%
-   \ifx\p_hyhens\v!no
+   \ifx\p_hyphens\v!no
      \ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
        \nohyphens
      \else

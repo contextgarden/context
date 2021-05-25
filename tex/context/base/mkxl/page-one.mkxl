@@ -405,14 +405,15 @@
    \page_one_command_set_bottom_insertions_indeed}
 
 \protected\def\page_one_command_flush_top_insertions
-  {\ifvoid\namedinsertionnumber\s!topfloat\else
+%   {\ifvoid\namedinsertionnumber\s!topfloat\else
+  {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
 
 \def\page_one_command_flush_top_insertions_indeed
   {\ifgridsnapping
-     \box\namedinsertionnumber\s!topfloat
+     \page_inserts_get_boxed\namedinsertionnumber\s!topfloat
      \vkern-\topskip
      \vkern\strutheight % [xx] new: see icare topbleed
    \else
@@ -423,11 +424,12 @@
        \vskip-\topskip % skip !
        \vkern\strutheight
      \fi
-     \unvbox\namedinsertionnumber\s!topfloat
+     \page_inserts_get_unboxed\namedinsertionnumber\s!topfloat
    \fi}
 
 \protected\def\page_one_command_flush_bottom_insertions
-  {\ifvoid\namedinsertionnumber\s!bottomfloat\else
+%   {\ifvoid\namedinsertionnumber\s!bottomfloat\else
+  {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!bottomfloat\else
      \page_one_command_flush_bottom_insertions_indeed
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint
@@ -436,11 +438,11 @@
 \def\page_one_command_flush_bottom_insertions_indeed
   {\ifgridsnapping
    % \floatparameter\c!bottombefore
-     \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
+     \snaptogrid\hbox{\page_inserts_get_boxed\namedinsertionnumber\s!bottomfloat}%
    % \floatparameter\c!bottomafter
    \else
      \floatparameter\c!bottombefore
-     \unvbox\namedinsertionnumber\s!bottomfloat
+     \page_inserts_get_unboxed\namedinsertionnumber\s!bottomfloat
      \floatparameter\c!bottomafter
    \fi}
 

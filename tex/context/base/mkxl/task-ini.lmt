@@ -130,7 +130,6 @@ appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.split
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag",                          nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler",                        nil, "nut",    "disabled"  )
 
-
 appendaction("contributers", "normalizers", "nodes.handlers.flattenline",                       nil, "nut",    "disabled"  )
 appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds",                   nil, "nut",    "disabled"  )
 appendaction("contributers", "normalizers", "nodes.handlers.wipe",                              nil, "nut",    "disabled"  )

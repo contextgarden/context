@@ -772,6 +772,8 @@ local tex_element
 
 if tokenizedxmlw then
 
+-- local expandmacro = token.expandmacro
+
     tex_element = function(e,handlers)
         if setfilename then
             syncfilename(e,"element")
@@ -793,6 +795,10 @@ if tokenizedxmlw then
                         addindex(rootname,false,true)
                         ix = e.ix
                     end
+-- lmtx only, same performance, a bit more immediate:
+--
+-- expandmacro(tokenizedxmlw,ctxcatcodes,true,command,true,rootname.."::"..ix)
+--
                     contextsprint(ctxcatcodes,tokenizedxmlw,"{",command,"}{",rootname,"::",ix,"}")
                 else
                     report_lxml("fatal error: no index for %a",command)

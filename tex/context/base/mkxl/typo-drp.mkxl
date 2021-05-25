@@ -76,6 +76,9 @@
 \permanent\tolerant\protected\def\setinitial[#1]#*[#2]%
   {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
+\permanent\tolerant\protected\def\flushinitial % when used inside a mechanism that forgets
+  {\typo_initial_handle}
+
 \protected\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup

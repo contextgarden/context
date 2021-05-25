@@ -1078,8 +1078,10 @@
         \btxlabeltext{In}
         \btxspace
         \doifnot {\btxfoundname{author}} {editor} {
-            \texdefinition{btx:apa:author-or-editor} {ineditor}
-            \btxcomma
+            \btxdoif {ineditor} {
+                \texdefinition{btx:apa:author-or-editor} {ineditor}
+                \btxcomma
+            }
         }
         \texdefinition{btx:apa:composed-title}{booktitle}
         \btxperiod

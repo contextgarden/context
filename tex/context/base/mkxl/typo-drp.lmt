@@ -250,7 +250,7 @@ actions[v_default] = function(head,setting)
                 if dynamic > 0 then
                     setglyphdata(current,dynamic)
                 end
-                setcoloring(ma,ca,ta)
+                setcoloring(current,ma,ca,ta)
             end
             if current == last then
                 break
@@ -270,8 +270,7 @@ actions[v_default] = function(head,setting)
         local width, height, depth = getwhd(dropper)
         setwhd(dropper,0,0,0)
         --
-        setlink(prev,dropper)
-        setlink(dropper,next)
+        setlink(prev,dropper,next)
         --
         if next then
             local current = next
@@ -323,7 +322,7 @@ end
 
 -- we can count ... when all done, we can disable ...
 
-function initials.handler(head)
+function initials.handler(head,groupcode)
     if getid(head) == par_code and startofpar(head) then
         local settings = getprop(head,a_initial)
         if settings then

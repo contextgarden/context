@@ -114,27 +114,28 @@ most still comes from original Knuthian \TEX. But we divert a bit.
 
 \startitem
     Because the backend is not built|-|in, the magnification (\prm {mag})
-    primitive is not doing nothing. A \type {shipout} just discards the content
-    of the given box. The write related primitives have to be implemented in the
-    used macro package using \LUA. None of the \PDFTEX\ derived primitives is
-    present.
-\stopitem
-
-\startitem
-    There is more control over some (formerly hard|-|coded) math properties. In fact,
-    there is a whole extra bit of math related code because we need to deal with
-    \OPENTYPE\ fonts.
-\stopitem
-
-\startitem
-    The \type {\outer} and \type {\long} prefixed are silently ignored. It is
-    permitted to use \type {\par} in math.
+    primitive is gone. A \type {shipout} just discards the content of the given
+    box. The write related primitives have to be implemented in the used macro
+    package using \LUA. None of the \PDFTEX\ derived primitives is present.
 \stopitem
 
 \startitem
     Because there is no font loader, a \LUA\ variant is free to either support or
     not the \OMEGA\ \type {ofm} file format. As there are hardly any such fonts
-    it probably makes no sense.
+    it probably makes no sense. There is plenty of control over the way glyphs
+    get treated and scaling of fonts and glyphs is also more dynamic.
+\stopitem
+
+\startitem
+    There is more control over some (formerly hard|-|coded) math properties. In
+    fact, there is a whole extra bit of math related code because we need to deal
+    with \OPENTYPE\ fonts. The math processing has been adapted to the new
+    (dynamic) font and glyph scaling features.
+\stopitem
+
+\startitem
+    The \type {\outer} and \type {\long} prefixed are silently ignored. It is
+    permitted to use \type {\par} in math.
 \stopitem
 
 \startitem
@@ -210,6 +211,11 @@ features, but with a few small adaptations.
 \startitem
     The \prm {readline} primitive has to be implemented in \LUA. This is a side
     effect of delegating all file \IO.
+\stopitem
+
+\startitem
+    Most of the code is rewritten but the original primitives are still tagged as
+    coming from \ETEX.
 \stopitem
 
 \stopitemize

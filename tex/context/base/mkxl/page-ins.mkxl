@@ -73,13 +73,6 @@
 \protected\def\page_inserts_synchronize_registers
   {\currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname}
 
-% for practical reasons we still set these elsewhere but that might change in the future
-%
-% \global\count\currentinsertionnumber\numexpr\insertionparameter\c!factor/\insertionparameter\c!n\relax
-% \global\skip \currentinsertionnumber\insertionparameter\c!distance \relax
-% \global\dimen\currentinsertionnumber\insertionparameter\c!maxheight\relax}
-% \floatingpenalty\zerocount
-
 \appendtoks
     \ifempty\currentinsertionparent \else
         \page_inserts_synchronize_registers
@@ -124,6 +117,50 @@
 % pass pass them explicitly. Actually, when we see an insertion node at that end,
 % we already know the number.
 
+% \insertmode\plustwo
+
+% once we made the switch we will use \ifinsert instead of the ht test
+
+\ifnum\insertmode=\plustwo
+
+    \c_syst_min_allocated_insert     =   1 %   128
+    \c_syst_max_allocated_insert     = 255 %   254
+    \c_syst_last_allocated_insertion =   1 %
+
+    \protected\def\page_inserts_set_limit     {\insertlimit}
+    \protected\def\page_inserts_set_distance  {\insertdistance}
+    \protected\def\page_inserts_set_multiplier{\insertmultiplier}
+
+    \protected\def\page_inserts_get_limit     {\insertlimit}
+    \protected\def\page_inserts_get_distance  {\insertdistance}
+    \protected\def\page_inserts_get_multiplier{\insertmultiplier}
+
+    \protected\def\page_inserts_get_boxed     {\insertbox}
+    \protected\def\page_inserts_get_copied    {\insertcopy}
+    \protected\def\page_inserts_get_unboxed   {\insertunbox}
+    \protected\def\page_inserts_get_uncopied  {\insertuncopy}
+
+    \protected\def\page_inserts_get_height    {\insertheight}
+
+\else
+
+    \protected\def\page_inserts_set_limit     {\global\dimen}
+    \protected\def\page_inserts_set_distance  {\global\skip }
+    \protected\def\page_inserts_set_multiplier{\global\count}
+
+    \protected\def\page_inserts_get_limit     {\dimen}
+    \protected\def\page_inserts_get_distance  {\skip }
+    \protected\def\page_inserts_get_multiplier{\count}
+
+    \protected\def\page_inserts_get_boxed     {\box}
+    \protected\def\page_inserts_get_copied    {\copy}
+    \protected\def\page_inserts_get_unboxed   {\unvbox}
+    \protected\def\page_inserts_get_uncopied  {\unvcopy}
+
+    \protected\def\page_inserts_get_height    {\ht}
+
+\fi
+
 \appendtoks
     \ifempty\currentinsertionparent
         \ifcsname\??insertionnumber\currentinsertion\endcsname
@@ -140,9 +177,9 @@
           \t_page_inserts_list\expandafter\expandafter\expandafter
             {\expandafter\the\expandafter\t_page_inserts_list
              \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
-          \count\currentinsertionnumber\plusthousand
-          \skip \currentinsertionnumber\zeropoint
-          \dimen\currentinsertionnumber\maxdimen
+          \page_inserts_set_multiplier\currentinsertionnumber\plusthousand
+          \page_inserts_set_distance  \currentinsertionnumber\zeropoint
+          \page_inserts_set_limit     \currentinsertionnumber\maxdimen
        \fi
     \else
       \letcsname\??insertionnumber\currentinsertion\expandafter\endcsname
@@ -169,41 +206,10 @@
 \def\page_insert_insertion_height#1%
   {\dimexpr\expandafter\page_insert_insertion_height_indeed\csname\??insertionnumber#1\endcsname\relax}
 
+% \def\page_insert_insertion_height_indeed#1%
+%   {\ifvoid#1\zeropoint\else1\page_inserts_get_distance#1+\ht#1\fi}
+
 \def\page_insert_insertion_height_indeed#1%
-  {\ifvoid#1\zeropoint\else1\skip#1+\ht#1\fi}
-
-%D Obsolete:
-
-% \installcorenamespace{insertionbackup}
-%
-% \protected\def\installbackupinsertion#1%
-%   {\ifcsname\??insertionbackup\string#1\endcsname \else
-%      \expandafter\newinsert\csname\??insertionbackup\string#1\endcsname
-%      \count\csname\??insertionbackup\string#1\endcsname\zerocount
-%      \skip \csname\??insertionbackup\string#1\endcsname\zeropoint
-%      \dimen\csname\??insertionbackup\string#1\endcsname\maxdimen
-%    \fi}
-%
-% \protected\def\saveinsertionbox#1% hm, actually unknown
-%   {\global\setbox\csname\??insertionbackup\string#1\endcsname
-%      \ifdim\ht#1>\zeropoint\box#1\else\emptybox\fi}
-%
-% \protected\def\restoreinsertionbox#1%
-%   {\ifvoid\backupinsertion#1\else % if void, we keep the content
-%      \global\setbox#1\box\csname\??insertionbackup\string#1\endcsname
-%    \fi}
-%
-% \protected\def\eraseinsertionbackup#1%
-%   {\global\setbox\csname\??insertionbackup\string#1\endcsname\emptybox}
-%
-% \protected\def\saveinsertiondata#1%
-%   {\global\skip \csname\??insertionbackup\string#1\endcsname\skip #1%
-%    \global\count\csname\??insertionbackup\string#1\endcsname\count#1%
-%    \global\dimen\csname\??insertionbackup\string#1\endcsname\dimen#1}
-%
-% \protected\def\restoreinsertiondata#1%
-%   {\global\skip #1\skip \csname\??insertionbackup\string#1\endcsname
-%    \global\count#1\count\csname\??insertionbackup\string#1\endcsname
-%    \global\dimen#1\dimen\csname\??insertionbackup\string#1\endcsname}
+  {\ifzeropt\page_inserts_get_height#1\zeropoint\else\dimexpr\page_inserts_get_distance#1\relax+\page_inserts_get_height#1\fi}
 
 \protect \endinput

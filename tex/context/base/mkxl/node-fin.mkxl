@@ -21,58 +21,53 @@
 \permanent\protected\def\finalizeobjectbox #1{\clf_finalizebox#1\relax}
 \permanent\protected\def\finalizeshipoutbox#1{\clf_finalizebox#1\relax}
 
-% Experimental (for Aditya), not in mkxl, if we need it, it has to be more
-% clever.
-
-% \permanent\protected\def\cleanupbox#1{\clf_cleanupbox#1\relax}
-
-% Tricky stuff: this might become obsolete. It is about time to check this out
-% now (after more than a decade)! The few times that we need this we can better
-% copy some of the sensitive attributes (mostly color).
-
-\definesystemattribute[trigger][public]
-
-\newcount\c_syst_attr_trigger
-
-\permanent\edef\startinheritattributes{\c_attr_trigger\plusone}
-\permanent\edef\stopinheritattributes {\c_attr_trigger\attributeunsetvalue}
-
-\permanent\def\syst_attr_trigger_copy_yes{\afterassignment\syst_attr_trigger_copy_indeed\c_syst_attr_trigger}
-\permanent\def\syst_attr_trigger_dump_yes{\afterassignment\syst_attr_trigger_dump_indeed\c_syst_attr_trigger}
-
-\def\syst_attr_trigger_copy_indeed
-  {\ifvbox\c_syst_attr_trigger
-     \vpack attr \triggerattribute \plusone {\unvcopy\c_syst_attr_trigger}%
-   \else
-     \hpack attr \triggerattribute \plusone {\unhcopy\c_syst_attr_trigger}%
-   \fi}
-
-\def\syst_attr_trigger_dump_indeed
-  {\ifvbox\c_syst_attr_trigger
-     \vpack attr \triggerattribute \plusone {\unvbox\c_syst_attr_trigger}%
-   \else
-     \hpack attr \triggerattribute \plusone {\unhbox\c_syst_attr_trigger}%
-   \fi}
-
-\permanent\protected\def\enableattributeinheritance
-  {\clf_enablestatetriggering
-   \enforced\let\attributedcopy\syst_attr_trigger_copy_yes
-   \enforced\let\attributedbox \syst_attr_trigger_dump_yes}
-
-\permanent\protected\def\disableattributeinheritance
-  {\clf_disablestatetriggering
-   \enforced\let\attributedcopy\copy
-   \enforced\let\attributedbox \box}
-
-\disableattributeinheritance
-
-\installtexdirective
-  {attributes.inheritance}
-  {\enableattributeinheritance}
-  {\disableattributeinheritance}
-
-% \appendtoks
-%     \enableattributeinheritance % might become default
-% \to\everyjob
+% % Tricky stuff: this might become obsolete. It is about time to check this out
+% % now (after more than a decade)! The few times that we need this we can better
+% % copy some of the sensitive attributes (mostly color).
+%
+% \definesystemattribute[trigger][public]
+%
+% \newcount\c_syst_attr_trigger
+%
+% \permanent\edef\startinheritattributes{\c_attr_trigger\plusone}
+% \permanent\edef\stopinheritattributes {\c_attr_trigger\attributeunsetvalue}
+%
+% \permanent\def\syst_attr_trigger_copy_yes{\afterassignment\syst_attr_trigger_copy_indeed\c_syst_attr_trigger}
+% \permanent\def\syst_attr_trigger_dump_yes{\afterassignment\syst_attr_trigger_dump_indeed\c_syst_attr_trigger}
+%
+% \def\syst_attr_trigger_copy_indeed
+%   {\ifvbox\c_syst_attr_trigger
+%      \vpack attr \triggerattribute \plusone {\unvcopy\c_syst_attr_trigger}%
+%    \else
+%      \hpack attr \triggerattribute \plusone {\unhcopy\c_syst_attr_trigger}%
+%    \fi}
+%
+% \def\syst_attr_trigger_dump_indeed
+%   {\ifvbox\c_syst_attr_trigger
+%      \vpack attr \triggerattribute \plusone {\unvbox\c_syst_attr_trigger}%
+%    \else
+%      \hpack attr \triggerattribute \plusone {\unhbox\c_syst_attr_trigger}%
+%    \fi}
+%
+% \permanent\protected\def\enableattributeinheritance
+%   {\clf_enablestatetriggering
+%    \enforced\let\attributedcopy\syst_attr_trigger_copy_yes
+%    \enforced\let\attributedbox \syst_attr_trigger_dump_yes}
+%
+% \permanent\protected\def\disableattributeinheritance
+%   {\clf_disablestatetriggering
+%    \enforced\let\attributedcopy\copy
+%    \enforced\let\attributedbox \box}
+%
+% \disableattributeinheritance
+%
+% \installtexdirective
+%   {attributes.inheritance}
+%   {\enableattributeinheritance}
+%   {\disableattributeinheritance}
+%
+% % \appendtoks
+% %     \enableattributeinheritance % might become default
+% % \to\everyjob
 
 \protect \endinput

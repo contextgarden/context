@@ -36,9 +36,10 @@ local setlist          = nuts.setlist
 local setleader        = nuts.setleader
 
 local copy_node        = nuts.copy
-local find_tail        = nuts.tail
+----- find_tail        = nuts.tail
 local insertnodebefore = nuts.insertbefore
 local insertnodeafter  = nuts.insertafter
+local appendaftertail  = nuts.appendaftertail
 
 local nextnode         = nuts.traversers.node
 local nextcontent      = nuts.traversers.content
@@ -64,8 +65,8 @@ local texgetnest       = tex.getnest
 
 local states           = attributes.states
 local numbers          = attributes.numbers
-local a_trigger        = attributes.private('trigger')
-local triggering       = false
+----- a_trigger        = attributes.private('trigger')
+----- triggering       = false
 
 local implement        = interfaces.implement
 
@@ -139,7 +140,7 @@ end
 
 -- the injectors
 
-local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
+local nsdata, nsnone, nslistwise, nsforced, nsselector -- , nstrigger
 local current, current_selector = 0, 0 -- nb, stack has a local current !
 local nsbegin, nsend, nsreset
 
@@ -149,7 +150,7 @@ function states.initialize(namespace,attribute,head)
     nsforced         = namespace.forced
     nsselector       = namespace.selector
     nslistwise       = namespace.listwise
-    nstrigger        = triggering and namespace.triggering and a_trigger
+ -- nstrigger        = triggering and namespace.triggering and a_trigger
     current          = 0
     current_selector = 0
     nsstep           = namespace.resolve_step
@@ -168,15 +169,15 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
         if id == hlist_code or id == vlist_code then
             local content = getlist(head)
             if content then
---                 local list = insertnodebefore(content,content,copy_node(nsnone)) -- two return values
-                local list = insertnodeafter(content,find_tail(content),copy_node(nsnone)) -- two return values
-                if list ~= content then
-                    setlist(head,list)
-                end
+--                 local list = insertnodeafter(content,find_tail(content),copy_node(nsnone)) -- two return values
+--                 if list ~= content then
+--                     setlist(head,list)
+--                 end
+                appendaftertail(content,copy_node(nsnone))
             end
         else
---             head = insertnodebefore(head,head,copy_node(nsnone))
-            head = insertnodeafter(find_tail(head),head,copy_node(nsnone))
+--             head = insertnodeafter(find_tail(head),head,copy_node(nsnone))
+            appendaftertail(head,copy_node(nsnone))
         end
         return head, true
     end
@@ -198,8 +199,8 @@ local function process(attribute,head,inheritance,default) -- one attribute
             -- tricky checking
             local outer
             if subtype == container_code then
-                check = true
-current = 0
+                check   = true
+                current = 0
             end
             if getorientation(stack) then
                 outer = getattr(stack,attribute)
@@ -224,19 +225,22 @@ current = 0
                 end
             end
             -- begin nested --
-            local list
-            if nstrigger and getattr(stack,nstrigger) then
-                if not outer then
-                    outer = getattr(stack,attribute)
-                end
-                if outer ~= inheritance then
-                    list = process(attribute,content,inheritance,outer)
-                else
-                    list = process(attribute,content,inheritance,default)
-                end
-            else
-                list = process(attribute,content,inheritance,default)
-            end
+         --
+         -- local list
+         -- if nstrigger and getattr(stack,nstrigger) then
+         --     if not outer then
+         --         outer = getattr(stack,attribute)
+         --     end
+         --     if outer ~= inheritance then
+         --         list = process(attribute,content,inheritance,outer)
+         --     else
+         --         list = process(attribute,content,inheritance,default)
+         --     end
+         -- else
+         --     list = process(attribute,content,inheritance,default)
+         -- end
+         --
+            local list = process(attribute,content,inheritance,default)
             if content ~= list then
                 setlist(stack,list)
             end
@@ -267,17 +271,20 @@ current = 0
                         current = 0
                     end
                     -- begin nested --
-                    local list
-                    if nstrigger and getattr(stack,nstrigger) then
-                        local outer = getattr(stack,attribute)
-                        if outer ~= inheritance then
-                            list = process(attribute,leader,inheritance,outer)
-                        else
-                            list = process(attribute,leader,inheritance,default)
-                        end
-                    else
-                        list = process(attribute,leader,inheritance,default)
-                    end
+                 --
+                 -- local list
+                 -- if nstrigger and getattr(stack,nstrigger) then
+                 --     local outer = getattr(stack,attribute)
+                 --     if outer ~= inheritance then
+                 --         list = process(attribute,leader,inheritance,outer)
+                 --     else
+                 --         list = process(attribute,leader,inheritance,default)
+                 --     end
+                 -- else
+                 --     list = process(attribute,leader,inheritance,default)
+                 -- end
+                 --
+                    local list = process(attribute,leader,inheritance,default)
                     if leader ~= list then
                         setleader(stack,list)
                     end
@@ -552,19 +559,22 @@ current = 0
                 end
             end
             -- begin nested
-            local list
-            if nstrigger and getattr(stack,nstrigger) then
-                if not outer then
-                    outer = getattr(stack,attribute)
-                end
-                if outer ~= inheritance then
-                    list = selective(attribute,content,inheritance,outer)
-                else
-                    list = selective(attribute,content,inheritance,default)
-                end
-            else
-                list = selective(attribute,content,inheritance,default)
-            end
+         --
+         -- local list
+         -- if nstrigger and getattr(stack,nstrigger) then
+         --     if not outer then
+         --         outer = getattr(stack,attribute)
+         --     end
+         --     if outer ~= inheritance then
+         --         list = selective(attribute,content,inheritance,outer)
+         --     else
+         --         list = selective(attribute,content,inheritance,default)
+         --     end
+         -- else
+         --     list = selective(attribute,content,inheritance,default)
+         -- end
+         --
+            local list = selective(attribute,content,inheritance,default)
             if content ~= list then
                 setlist(stack,list)
             end
@@ -594,17 +604,20 @@ current = 0
                 end
                 if leader then
                     -- begin nested
-                    local list
-                    if nstrigger and getattr(stack,nstrigger) then
-                        local outer = getattr(stack,attribute)
-                        if outer ~= inheritance then
-                            list = selective(attribute,leader,inheritance,outer)
-                        else
-                            list = selective(attribute,leader,inheritance,default)
-                        end
-                    else
-                        list = selective(attribute,leader,inheritance,default)
-                    end
+                 --
+                 -- local list
+                 -- if nstrigger and getattr(stack,nstrigger) then
+                 --     local outer = getattr(stack,attribute)
+                 --     if outer ~= inheritance then
+                 --         list = selective(attribute,leader,inheritance,outer)
+                 --     else
+                 --         list = selective(attribute,leader,inheritance,default)
+                 --     end
+                 -- else
+                 --     list = selective(attribute,leader,inheritance,default)
+                 -- end
+                 --
+                    local list = selective(attribute,leader,inheritance,default)
                     if leader ~= list then
                         setleader(stack,list)
                     end

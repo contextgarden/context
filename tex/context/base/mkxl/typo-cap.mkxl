@@ -162,7 +162,7 @@
 
 \def\typo_capitals_set_real#1%
   {\edef\currentcapitals{#1}%
-   \sc
+   \sc % \smallcaps
    \clf_setcharactercasing\currentcapitals}
 
 \permanent\protected\def\pseudosmallcapped{\triggergroupedcommandcs\font_style_pseudosmallcapped}
@@ -249,7 +249,8 @@
 
 \definefont
   [MixedCaps]
-  [CurrentFont*default cp 1.2\exheight]
+% [CurrentFont*default cp 1.2\exheight]
+  [CurrentFont*default sa .8] % better adaptation to slanted
 
 \setupcapitals
   [\v!mixed]

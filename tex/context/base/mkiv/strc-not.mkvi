@@ -24,9 +24,6 @@
 \ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
 \ifdefined\dotagsetnotation   \else \let\dotagsetnotation  \relax \fi
 
-\unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
-\unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often
-
 %D \LMTX\ testcase:
 %D
 %D \starttyping
@@ -1507,7 +1504,12 @@
         {\starthboxestohbox
            \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
          \stophboxestohbox}}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
+     {\iftrialtypesetting
+        \ifvmode\unvcopy\else\copy\fi
+      \else
+        \ifvmode\unvbox \else\box \fi
+      \fi
+      \currentnoteinsertionnumber}%
    \endgroup}
 
 %D Supporting end notes is surprisingly easy. Even better, we can combine this

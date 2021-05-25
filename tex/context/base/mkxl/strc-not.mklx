@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Note Handling}
 
-\registerctxluafile{strc-not}{}
+\registerctxluafile{strc-not}{autosuffix}
 
 \unprotect
 
@@ -23,9 +23,6 @@
 
 \ifdefined\dotagsetnotesymbol \else \aliased\let\dotagsetnotesymbol\relax \fi
 \ifdefined\dotagsetnotation   \else \aliased\let\dotagsetnotation  \relax \fi
-
-\permanent\protected\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
-\permanent\protected\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often
 
 %D \LMTX\ testcase:
 %D
@@ -925,7 +922,7 @@
    \ifempty\p_factor \else
      \ifnum\p_factor<\zerocount \else
 %        \global
-       \count\currentnoteinsertionnumber\p_factor % new: global
+       \page_inserts_set_multiplier\currentnoteinsertionnumber\p_factor % new: global
      \fi
    \fi}
 
@@ -1053,10 +1050,10 @@
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
-   \global\count\currentnoteinsertionnumber\numexpr(\plusthousand/\c_strc_notes_columns)*\nofmulticolumns\relax
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \page_inserts_set_location  \currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
+   \page_inserts_set_multiplier\currentnoteinsertionnumber\numexpr(\plusthousand/\c_strc_notes_columns)*\nofmulticolumns\relax
+   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_columns
   {\setfalse\c_strc_notes_delayed
@@ -1066,19 +1063,19 @@
    \ifnum\nofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
-   \page_inserts_set_location\currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
-   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \page_inserts_set_location  \currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
+   \page_inserts_set_multiplier\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_somecolumn#whatcolumn%
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location\currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
-   \global\count\currentnoteinsertionnumber\plusthousand
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \page_inserts_set_location  \currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
+   \page_inserts_set_multiplier\currentnoteinsertionnumber\plusthousand
+   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
+   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_firstcolumn{\strc_notes_set_location_somecolumn\v!firstcolumn}
 \def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
@@ -1086,10 +1083,10 @@
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
    \clf_setnotestate{\currentnote}{store}%
-   \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
-   \global\count\currentnoteinsertionnumber\zerocount
-   \global\dimen\currentnoteinsertionnumber\maxdimen
-   \global\skip \currentnoteinsertionnumber\zeropoint}
+   \page_inserts_set_location  \currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
+   \page_inserts_set_multiplier\currentnoteinsertionnumber\zerocount
+   \page_inserts_set_limit     \currentnoteinsertionnumber\maxdimen
+   \page_inserts_set_distance  \currentnoteinsertionnumber\zeropoint}
 
 \let\strc_notes_set_location_none\strc_notes_set_location_text
 
@@ -1112,8 +1109,13 @@
 
 \newconditional\c_notes_bottom_present
 
+% \def\strc_notes_check_if_bottom_present_indeed % in otr !
+%   {\ifvoid\currentnoteinsertionnumber\else
+%      \strc_notes_set_position
+%    \fi}
+
 \def\strc_notes_check_if_bottom_present_indeed % in otr !
-  {\ifvoid\currentnoteinsertionnumber\else
+  {\ifzeropt\page_inserts_get_height\currentnoteinsertionnumber\else
      \strc_notes_set_position
    \fi}
 
@@ -1375,7 +1377,8 @@
 \def\strc_notes_place_inserts
   {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
    \ifconditional\c_strc_notes_delayed \else
-     \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
+%      \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
+     \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
        \strc_notes_place_inserts_indeed
        \settrue\c_strc_notes_first_placed
      \fi
@@ -1383,7 +1386,8 @@
 
 \def\strc_notes_place_inserts_indeed
   {\relax
-   \ifdim\ht\currentnoteinsertionnumber>\zeropoint
+%    \ifdim\ht\currentnoteinsertionnumber>\zeropoint
+   \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
      \endgraf
      \ifvmode
        \whitespace
@@ -1461,9 +1465,19 @@
    \doifelse{\noteparameter\c!paragraph}\v!yes
      {\leftorrightvbox % cf mail from ws to list
         {\starthboxestohbox
-           \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
+           \iftrialtypesetting
+             \page_inserts_get_uncopied
+           \else
+             \page_inserts_get_unboxed
+           \fi
+           \currentnoteinsertionnumber
          \stophboxestohbox}}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
+     {\iftrialtypesetting
+        \ifvmode\page_inserts_get_uncopied\else\page_inserts_get_copied\fi
+      \else
+        \ifvmode\page_inserts_get_unboxed \else\page_inserts_get_boxed \fi
+      \fi
+      \currentnoteinsertionnumber}%
    \endgroup}
 
 %D Supporting end notes is surprisingly easy. Even better, we can combine this
@@ -1741,7 +1755,8 @@
    \strc_notes_process\strc_notes_check_presence}
 
 \def\strc_notes_check_presence
-  {\ifdim\ht\currentnoteinsertionnumber>\zeropoint
+%   {\ifdim\page_inserts_get_height\currentnoteinsertionnumber>\zeropoint % not reliable
+  {\ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
      \notespresenttrue
    \fi}
 
@@ -1770,14 +1785,13 @@
 
     \permanent\protected\def\additionaltotalnoteheight#insert% temp hacks anyway
       {\dimexpr
-         \ifdim\ht#insert>\zeropoint
-           \ifcase\count#insert %
-             \zeropoint
-           \else % todo: divide by count
-             \ht#insert+\skip#insert% hm, no stretch but a dimen anyway
-           \fi
-         \else
+         \ifnum\page_inserts_get_height#insert=\zeropoint
            \zeropoint
+         \orelse\ifnum\page_inserts_get_multiplier#insert=\zeropoint
+           \zeropoint
+         \else % todo: divide by count
+           \page_inserts_get_height  #insert
+          +\page_inserts_get_distance#insert% hm, no stretch but a dimen anyway
          \fi
       \relax}
 

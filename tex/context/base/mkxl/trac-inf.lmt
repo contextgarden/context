@@ -266,7 +266,7 @@ local report = logs.reporter("system")
 
 local list   = {
     "string", "pool", "hash", "lookup", "node", "token", "extra", "sparse", "buffer",
-    "input", "file", "nest", "parameter", "save", "font", "language", "mark",
+    "input", "file", "nest", "parameter", "save", "font", "language", "mark", "insert",
 }
 
 local function show(data,fields)

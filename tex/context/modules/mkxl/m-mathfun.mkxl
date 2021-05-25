@@ -31,7 +31,7 @@
     local xdecimal      = xdecimal
 
     local context       = context
-    local ctx_mfunction = context.mfunction
+    local ctx_mfunction = context.mfunctionlabeltext
 
     local scanoptional  = tokens.scanners.optional
     local scanargument  = tokens.scanners.argument
@@ -195,6 +195,8 @@
 % \popoverloadmode
 
 \usemodule[scite] \setupbodyfont[dejavu] \setuplayout[tight] \setuppapersize[A5]
+
+% \mainlanguage[es]
 
 \starttext
 

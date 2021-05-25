@@ -196,12 +196,12 @@
 
 \protected\def\page_col_command_side_float_output
   {% % %
-   \ifvoid\namedinsertionnumber\s!topfloat\else
-     \scratchwidth\wd\namedinsertionnumber\s!topfloat
+   \ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
+     \scratchwidth\page_inserts_get_width\namedinsertionnumber\s!topfloat\relax
      \ifdim\scratchwidth>\d_page_col_top_width
        \global\d_page_col_top_width \scratchwidth
      \fi
-     \global\d_page_col_top_height\ht\namedinsertionnumber\s!topfloat
+     \global\d_page_col_top_height\page_inserts_get_height\namedinsertionnumber\s!topfloat\relax
    \fi
    % % %
    \setbox\scratchbox\vbox\bgroup

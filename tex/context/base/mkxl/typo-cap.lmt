@@ -94,7 +94,7 @@ local function set(tag,font)
             + (tag  <<  8)
             + (run  <<  0)
     blocked[a] = false
-    -- it makes sense to fetch them all at once
+    -- it makes sense to fetch them all at once ut it doesn't happen often: tex.getglyphscales() scale xscale yscale data [script]  [state]
     fontstate[a] = {
         texgetcount("glyphscale"),
         texgetcount("glyphxscale"),
@@ -319,9 +319,9 @@ function cases.handler(head)
                         count    = count + 1
                     end
                     local n, id, m = get(attr)
-                    if lastfont[n] == nil then
+--                     if lastfont[n] == nil then
                         lastfont[n] = id
-                    end
+--                     end
                     local action = actions[n] -- map back to low number
                     if action then
                         local quit
@@ -342,9 +342,9 @@ function cases.handler(head)
                         count    = 0
                     end
                     local n, id, m = get(attr)
-                    if lastfont[n] == nil then
+--                     if lastfont[n] == nil then
                         lastfont[n] = id
-                    end
+--                     end
                     local action = actions[n] -- map back to low number
                     if action then
                         local pre, post, replace = getdisc(start)

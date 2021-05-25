@@ -19,164 +19,76 @@ local tonut        = nodes.tonut
 nodes.processors   = nodes.processors or { }
 local processors   = nodes.processors
 
--- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
--- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional
+local tasks        = nodes.tasks
 
-local actions = tasks.actions("processors")
+local report_nodes = logs.reporter("nodes","processors")
+
+local countnodes   = nuts.countall
 
 do
-
-    local n = 0
 
     local function reconstruct(head)
-        return nodes.listtoutf(head,"",false,nil,true)
+        return ",stream : " .. nodes.listtoutf(head,"",false,nil,true)
     end
 
-    function processors.tracer(what,head,groupcode,before,after,show)
-        if not groupcode then
-            groupcode = "unknown"
-        elseif groupcode == "" then
-            groupcode = "mvl"
-        end
-        n = n + 1
-        if show then
-            report_nodes("%s: location %a, group %a, # before %a, # after %s, stream: %s",what,n,groupcode,before,after,reconstruct(head))
-        else
-            report_nodes("%s: location %a, group %a, # before %a, # after %s",what,n,groupcode,before,after)
-        end
+    local before = nil
+    local count  = 0
+    local show   = false
+
+    function processors.trace_glyph_run_b(head,groupcode)
+        count  = count + 1
+        before = countnodes(head)
     end
+
+    function processors.trace_glyph_run_a(head,groupcode)
+        report_nodes("processors: run %i, group %a, # before %a, # after %s%s",
+            count,groupcode,before,countnodes(head),
+            show and reconstruct(head) or ""
+        )
+        before = false
+    end
+
+    trackers.register("nodes.callbacks", function(v)
+        if not v then
+            disableaction("processors","nodes.processors.trace_glyph_run_b")
+            disableaction("processors","nodes.processors.trace_glyph_run_a")
+        elseif before == nil then
+            prependaction("processors","before","nodes.processors.trace_glyph_run_b",nil,"nonut","enabled")
+            appendaction ("processors","after", "nodes.processors.trace_glyph_run_a",nil,"nonut","enabled")
+            before = false
+        else
+            enableaction("processors","nodes.processors.trace_glyph_run_b")
+            enableaction("processors","nodes.processors.trace_glyph_run_a")
+            show = v == "detail"
+        end
+    end)
 
 end
 
--- do
---
---     local count_nodes = nodes.countall
---     local texget      = tex.get
---     local tracer      = processors.tracer
---
---     local function pre_linebreak_filter(head,groupcode)
---         if trace_callbacks then
---             local before = count_nodes(head,true)
---             head = actions(head,groupcode)
---             local after = count_nodes(head,true)
---             tracer("pre_linebreak",head,groupcode,before,after,true)
---         else
---             head = actions(head,groupcode)
---         end
---         return head
---     end
---
---     local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
---         if not direction then
---             direction = texget("textdir")
---         end
---         --
---         if trace_callbacks then
---             local before = count_nodes(head,true)
---             head = actions(head,groupcode,size,packtype,direction,attributes)
---             local after = count_nodes(head,true)
---             tracer("hpack",head,groupcode,before,after,true)
---         else
---             head = actions(head,groupcode,size,packtype,direction,attributes)
---         end
---         return head
---     end
---
---     processors.pre_linebreak_filter = pre_linebreak_filter
---     processors.hpack_filter         = hpack_filter
---
---     do
---
---         local hpack = nodes.hpack
---
---         function nodes.fullhpack(head,...)
---             return hpack((hpack_filter(head)),...)
---         end
---
---     end
---
---     do
---
---         local hpack = nuts.hpack
---
---         function nuts.fullhpack(head,...)
---             return hpack(tonut(hpack_filter(tonode(head))),...)
---         end
---
---     end
---
---     callbacks.register('pre_linebreak_filter', pre_linebreak_filter, "horizontal manipulations (before par break)")
---     callbacks.register('hpack_filter'        , hpack_filter,         "horizontal manipulations (before hbox creation)")
---
--- end
+local glyph_run             = tasks.actions("processors")
+local pre_linebreak_filter  = tasks.actions("paragraphs")
+local post_linebreak_filter = tasks.actions("finalizers")
+
+processors.glyph_run             = glyph_run
+processors.pre_linebreak_filter  = pre_linebreak_filter
+processors.post_linebreak_filter = post_linebreak_filter
+
+callbacks.register("glyph_run",            glyph_run,            "glyph processing")
+callbacks.register("pre_linebreak_filter", pre_linebreak_filter, "horizontal manipulations (before par break)")
+callbacks.register("post_linebreak_filter",post_linebreak_filter,"horizontal manipulations (after par break)")
 
 do
+    local hpack = nodes.hpack
 
-    local count_nodes = nodes.countall
-    local texget      = tex.get
-    local tracer      = processors.tracer
-    local hbox_code   = tex.groupcodes.hbox
-
-    local function glyph_run(head,groupcode,direction)
-        if not groupcode then
-            groupcode = hbox_code
-        end
-        if trace_callbacks then
-            local before = count_nodes(head,true)
-            head = actions(head,groupcode,direction)
-            local after = count_nodes(head,true)
-            tracer("glyph_run",head,groupcode,before,after,true)
-        else
-            head = actions(head,groupcode,direction)
-        end
-        return head
+    function nodes.fullhpack(head,...)
+        return hpack((glyph_run(head)),...)
     end
 
-    processors.glyph_run = glyph_run
+    local hpack = nuts.hpack
 
-    do
-        local hpack = nodes.hpack
-        function nodes.fullhpack(head,...)
-            return hpack((glyph_run(head)),...)
-        end
+    function nuts.fullhpack(head,...)
+        return hpack(tonut(glyph_run(tonode(head))),...)
     end
-
-    do
-        local hpack = nuts.hpack
-        function nuts.fullhpack(head,...)
-            return hpack(tonut(glyph_run(tonode(head))),...)
-        end
-    end
-
-    callbacks.register("glyph_run", glyph_run, "glyph processing")
-
-end
-
-do
-    -- Beware, these are packaged boxes so no firstglyph test needed. Maybe some day I'll add a hash
-    -- with valid groupcodes. Watch out, much can pass twice, for instance vadjust passes two times,
-
-    local actions     = tasks.actions("finalizers") -- head, where
-    local count_nodes = nodes.countall
-
-    local tracer      = processors.tracer
-
-    local function post_linebreak_filter(head,groupcode)
-        if trace_callbacks then
-            local before = count_nodes(head,true)
-            head = actions(head,groupcode)
-            local after = count_nodes(head,true)
-            tracer("post_linebreak",head,groupcode,before,after,true)
-        else
-            head = actions(head,groupcode)
-        end
-        return head
-    end
-
-    processors.post_linebreak_filter = post_linebreak_filter
-
-    callbacks.register("post_linebreak_filter", post_linebreak_filter,"horizontal manipulations (after par break)")
-
 end
 
 do

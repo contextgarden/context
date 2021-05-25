@@ -139,9 +139,10 @@ return {
             ["luametatex.nestsize"]          = { size =    10000, step =    1000 }, -- max =     10000
             ["luametatex.parametersize"]     = { size =   100000, step =   10000 }, -- max =    100000
             ["luametatex.savesize"]          = { size =   500000, step =   10000 }, -- max =    500000
-            ["luametatex.fontsize"]          = { size =      250, step =     250 }, -- max =    100000
+            ["luametatex.fontsize"]          = { size =   100000, step =     250 }, -- max =    100000
             ["luametatex.languagesize"]      = { size =      250, step =     250 }, -- max =     10000
-            ["luametatex.marksize"]          = { size =       50, step =      50 }, -- max =     10000
+            ["luametatex.marksize"]          = { size =      250, step =      50 }, -- max =     10000
+            ["luametatex.insertsize"]        = { size =      250, step =      25 }, -- max =       250
 
             -- These are for luatex:
 

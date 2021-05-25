@@ -62,13 +62,27 @@
 \installcorenamespace{hyphenation}
 \installcorenamespace{hyphenationfeatures}
 
-\installparameterhandler \??hyphenation {hyphenation}
-\installsetuphandler     \??hyphenation {hyphenation}
+\installparameterhandler     \??hyphenation {hyphenation}
+\installrootparameterhandler \??hyphenation {hyphenation}
+\installsetuphandler         \??hyphenation {hyphenation}
+
+% \installbasicsetuphandler  \??hyphenation {hyphenation}
 
 \setuphyphenation
   [\c!method=\s!default,
+   \c!hyphens=\v!yes,
    \s!righthyphenchar=0, % number tzt g: etc
    \s!lefthyphenchar=0]  % number
+
+\appendtoks
+ % \edef\p_hyphens{\roothyphenationparameter\c!hyphens}%
+   \edef\p_hyphens{\hyphenationparameter\c!hyphens}%
+   \ifx\p_hyphens\v!no
+     \nohyphencollapsing
+   \else
+     \dohyphencollapsing
+   \fi
+\to \everysetuphyphenation
 
 \appendtoks
     \clf_sethyphenationmethod{\hyphenationparameter\c!method}%

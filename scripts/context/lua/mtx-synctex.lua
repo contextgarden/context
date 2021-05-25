@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mtx-synctex'] = {
 -- InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
 
 local tonumber = tonumber
-local find, match, gsub = string.find, string.match, string.gsub
+local find, match, gsub, formatters = string.find, string.match, string.gsub, string.formatters
 local isfile = lfs.isfile
 local longtostring = string.longtostring
 
@@ -20,15 +20,16 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-synctex</entry>
   <entry name="detail">SyncTeX Checker</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.01</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
     <flag name="edit"><short>open file at line: --line=.. --editor=.. sourcefile</short></flag>
-    <flag name="list"><short>show blob: synctexfile</short></flag>
+    <flag name="list"><short>show all areas: synctexfile</short></flag>
     <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. --editor=.. synctexfile</short></flag>
-    <flag name="report"><short>show file and line: --page=.. --x=.. --y=.. --console synctexfile</short></flag>
+    <flag name="report"><short>show (tex) file and line: [--direct] --page=.. --x=.. --y=.. --console synctexfile</short></flag>
+    <flag name="find"><short>find (pdf) page and box: [--direct] --file=.. --line=.. synctexfile</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -37,11 +38,18 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-synctex",
-    banner   = "ConTeXt SyncTeX Checker 1.00",
+    banner   = "ConTeXt SyncTeX Checker 1.01",
     helpinfo = helpinfo,
 }
 
 local report = application.report
+
+local template_show = "page=%i llx=%r lly=%r urx=%r ury=%r"
+local template_goto = "filename=%a linenumber=%a"
+
+local function reportdirect(template,...)
+    print(formatters[template](...))
+end
 
 local editors = {
     console = function(specification)
@@ -184,18 +192,23 @@ local function findlocation(filename,page,xpos,ypos)
     end
 end
 
-local function showlocation(filename)
+local function showlocation(filename,sourcename,linenumber,direct)
     if not validfile(filename) then
         return
     end
     local files = { }
     local found = false
     local page  = 0
+    if sourcename then
+        sourcename = file.collapsepath(sourcename)
+    end
     for line in io.lines(filename) do
         if found then
             if find(line,"^}") then
                 found = false
-                report("end page: %i",page)
+                if not sourcename then
+                    report("end page: %i",page)
+                end
             else
                 local f, l, x, y, w, h, d = match(line,"^h(.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
                 if f then
@@ -206,15 +219,22 @@ local function showlocation(filename)
                     local urx = factor * ( x + tonumber(w) )
                     local ury = factor * ( y + tonumber(h) )
                     f = files[f]
-                    if f then
+                    if not f then
+                        --
+                    elseif not sourcename then
                         report("  [% 4r % 4r % 4r % 4r] : % 5i : %s",llx,lly,urx,ury,l,f)
+                    elseif f == sourcename and l == linenumber then
+                        (direct and reportdirect or report)(template_show,page,llx,lly,urx,ury)
+                        return
                     end
                 end
             end
         elseif find(line,"^{(%d+)") then
             page  = tonumber(match(line,"^{(%d+)"))
             found = true
-            report("begin page: %i",page)
+            if not sourcename then
+                report("begin page: %i",page)
+            end
         elseif find(line,"^Input:") then
             local id, name = match(line,"^Input:(.-):(.-)$")
             if id then
@@ -224,14 +244,14 @@ local function showlocation(filename)
     end
 end
 
-local function gotolocation(filename,page,xpos,ypos,editor)
+local function gotolocation(filename,page,xpos,ypos,editor,direct)
     if filename then
         local target, line = findlocation(filename,tonumber(page),tonumber(xpos),tonumber(ypos))
         if target and line then
             if editor then
                 editfile(target,line,editor)
             else
-                report("filename=%a linenumber=%a",target,line)
+                (direct and reportdirect or report)(template_goto,target,line)
             end
         end
     end
@@ -248,11 +268,13 @@ local filename = environment.files[1]
 if argument("edit") then
     editfile(filename,argument("line"),argument("editor"))
 elseif argument("goto") then
-    gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"))
+    gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"),argument("direct"))
 elseif argument("report") then
-    gotolocation(filename,argument("page"),argument("x"),argument("y"),"console")
+    gotolocation(filename,argument("page"),argument("x"),argument("y"),"console",argument("direct"))
 elseif argument("list") then
     showlocation(filename)
+elseif argument("find") then
+    showlocation(filename,argument("file"),argument("line"),argument("direct"))
 elseif argument("exporthelp") then
     application.export(argument("exporthelp"),filename)
 else

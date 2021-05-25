@@ -59,7 +59,7 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
-local getsubtype          = nuts.getsubtype
+local getindex            = nuts.getindex
 local getbox              = nuts.getbox
 local getattr             = nuts.getattr
 local getwhd              = nuts.getwhd
@@ -121,7 +121,7 @@ local function collectinserts(result,nxt,nxtid)
             i = i + 1
             result.i = i
             inserttotal = inserttotal + getheight(nxt) -- height includes depth (hm, still? needs checking)
-            local s = getsubtype(nxt)
+            local s = getindex(nxt)
             local c = inserts[s]
             if trace_details then
                 report_state("insert of class %s found",s)
@@ -987,7 +987,8 @@ local function getsplit(result,n)
             setdepth(list[i],0)
         end
         local b = vpack(l)    -- multiple arguments, todo: fastvpack
-        setbox("global",c,b)  -- when we wrap in a box
+--         setbox("global",c,b)  -- when we wrap in a box
+        tex.setinsertcontent(c,tonode(b))  -- when we wrap in a box
         r.inserts[c] = nil
     end
 
