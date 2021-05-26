@@ -2375,7 +2375,7 @@ function processors.mlisttohlist(head,style,penalties)
     return head
 end
 
-callbacks.register('mlisttohlist',processors.mlisttohlist,"preprocessing math list")
+callbacks.register('mlist_to_hlist',processors.mlisttohlist,"preprocessing math list")
 
 -- tracing
 

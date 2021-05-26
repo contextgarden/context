@@ -141,6 +141,8 @@
     \protected\def\page_inserts_get_uncopied  {\insertuncopy}
 
     \protected\def\page_inserts_get_height    {\insertheight}
+    \protected\def\page_inserts_get_depth     {\insertdepth}
+    \protected\def\page_inserts_get_width     {\insertwidth}
 
 \else
 
@@ -158,6 +160,8 @@
     \protected\def\page_inserts_get_uncopied  {\unvcopy}
 
     \protected\def\page_inserts_get_height    {\ht}
+    \protected\def\page_inserts_get_depth     {\dp}
+    \protected\def\page_inserts_get_width     {\wd}
 
 \fi
 

@@ -238,7 +238,7 @@ actions[v_line] = function(head,setting)
             setglyphdata(start,dynamic)
         end
         setfont(start,font)
-        setcoloring(ma,ca,ta)
+        setcoloring(start,ma,ca,ta)
     end
 
     for i=1,noflines do
@@ -335,7 +335,7 @@ actions[v_word] = function(head,setting)
                 words = words + 1
                 ok = true
             end
-            setcoloring(ma,ca,ta)
+            setcoloring(start,ma,ca,ta)
             if dynamic > 0 then
                 setglyphdata(start,dynamic)
             end
