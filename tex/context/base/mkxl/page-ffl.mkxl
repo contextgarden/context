@@ -109,7 +109,7 @@
 \permanent\protected\def\strc_floats_facing_flush_indeed
   {\global\advance\c_strc_floats_facing_flushed\plusone
    \floatingpenalty\zerocount
-   \insert\namedinsertionnumber\s!topfloat\bgroup
+   \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
      \forgetall
      \ifconditional\c_page_one_top_of_insert
        \ifconditional\c_page_one_correct_top_insert

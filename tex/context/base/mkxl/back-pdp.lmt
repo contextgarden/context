@@ -12,43 +12,33 @@ if not modules then modules = { } end modules ['back-pdp'] = {
 local context = context
 local lpdf    = lpdf
 
-local pdfreserveobject
-local pdfcompresslevel
-local pdfobject
-local pdfpagereference
-local pdfgetxformname
-local pdfminorversion
-local pdfmajorversion
+local pdfreserveobject = lpdf.reserveobject
+local pdfcompresslevel = lpdf.compresslevel
+local pdfobject        = lpdf.object
+local pdfpagereference = lpdf.pagereference
+local pdfgetxformname  = lpdf.getxformname
+local pdfminorversion  = lpdf.minorversion
+local pdfmajorversion  = lpdf.majorversion
 
-updaters.register("backend.update.lpdf",function()
-    pdfreserveobject = lpdf.reserveobject
-    pdfcompresslevel = lpdf.compresslevel
-    pdfobject        = lpdf.object
-    pdfpagereference = lpdf.pagereference
-    pdfgetxformname  = lpdf.getxformname
-    pdfminorversion  = lpdf.minorversion
-    pdfmajorversion  = lpdf.majorversion
-end)
+local tokenscanners    = tokens.scanners
+local scanword         = tokenscanners.word
+local scankeyword      = tokenscanners.keyword
+local scanstring       = tokenscanners.string
+local scaninteger      = tokenscanners.integer
+local scanwhd          = tokenscanners.whd
 
-local tokenscanners     = tokens.scanners
-local scanword          = tokenscanners.word
-local scankeyword       = tokenscanners.keyword
-local scanstring        = tokenscanners.string
-local scaninteger       = tokenscanners.integer
-local scanwhd           = tokenscanners.whd
+local trace            = false  trackers.register("backend", function(v) trace = v end)
+local report           = logs.reporter("backend")
 
-local trace             = false  trackers.register("backend", function(v) trace = v end)
-local report            = logs.reporter("backend")
+local nodepool         = nodes.pool
+local newliteral       = nodepool.literal
+local newsave          = nodepool.save
+local newrestore       = nodepool.restore
+local newsetmatrix     = nodepool.setmatrix
 
-local nodepool          = nodes.pool
-local newliteral        = nodepool.literal
-local newsave           = nodepool.save
-local newrestore        = nodepool.restore
-local newsetmatrix      = nodepool.setmatrix
-
-local implement         = interfaces.implement
-local constants         = interfaces.constants
-local variables         = interfaces.variables
+local implement        = interfaces.implement
+local constants        = interfaces.constants
+local variables        = interfaces.variables
 
 -- literals
 

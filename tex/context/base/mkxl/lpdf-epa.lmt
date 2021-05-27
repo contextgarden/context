@@ -41,15 +41,8 @@ local pdfarray          = lpdf.array
 local pdfdictionary     = lpdf.dictionary
 local pdfconstant       = lpdf.constant
 local pdfreference      = lpdf.reference
-
-local pdfreserveobject
-local pdfgetpos
-
-updaters.register("backend.update.lpdf",function()
-    pdfreserveobject = lpdf.reserveobject
-    pdfgetpos        = lpdf.getpos
-end)
-
+local pdfreserveobject  = lpdf.reserveobject
+local pdfgetpos         = lpdf.getpos
 local pdfcopyboolean    = lpdf.copyboolean
 local pdfcopyunicode    = lpdf.copyunicode
 local pdfcopyarray      = lpdf.copyarray

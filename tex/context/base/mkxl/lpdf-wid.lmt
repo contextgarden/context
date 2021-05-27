@@ -72,21 +72,28 @@ local pdfborder                = lpdf.border
 local pdftransparencyvalue     = lpdf.transparencyvalue
 local pdfcolorvalues           = lpdf.colorvalues
 
-local pdfflushobject
-local pdfflushstreamobject
-local pdfflushstreamfileobject
-local pdfreserveobject
-local pdfpagereference
-local pdfshareobjectreference
+local pdfflushobject           = lpdf.flushobject
+local pdfflushstreamobject     = lpdf.flushstreamobject
+local pdfflushstreamfileobject = lpdf.flushstreamfileobject
+local pdfreserveobject         = lpdf.reserveobject
+local pdfpagereference         = lpdf.pagereference
+local pdfshareobjectreference  = lpdf.shareobjectreference
 
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject           = lpdf.flushobject
-    pdfflushstreamobject     = lpdf.flushstreamobject
-    pdfflushstreamfileobject = lpdf.flushstreamfileobject
-    pdfreserveobject         = lpdf.reserveobject
-    pdfpagereference         = lpdf.pagereference
-    pdfshareobjectreference  = lpdf.shareobjectreference
-end)
+-- local pdfflushobject
+-- local pdfflushstreamobject
+-- local pdfflushstreamfileobject
+-- local pdfreserveobject
+-- local pdfpagereference
+-- local pdfshareobjectreference
+--
+-- updaters.register("backend.update.lpdf",function()
+--     pdfflushobject           = lpdf.flushobject
+--     pdfflushstreamobject     = lpdf.flushstreamobject
+--     pdfflushstreamfileobject = lpdf.flushstreamfileobject
+--     pdfreserveobject         = lpdf.reserveobject
+--     pdfpagereference         = lpdf.pagereference
+--     pdfshareobjectreference  = lpdf.shareobjectreference
+-- end)
 
 -- symbols
 

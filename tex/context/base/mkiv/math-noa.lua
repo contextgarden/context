@@ -55,7 +55,7 @@ local trace_processing   = false  registertracker("math.processing",  function(v
 local trace_analyzing    = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing  = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
 local trace_collapsing   = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_foxing      = v end)
+local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_fixing      = v end)
 local trace_patching     = false  registertracker("math.patching",    function(v) trace_patching    = v end)
 local trace_goodies      = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants     = false  registertracker("math.variants",    function(v) trace_variants    = v end)
@@ -1930,8 +1930,6 @@ do
 
     mathematics.virtualize(movesub)
 
-    local options_supported = tokens.defined("Unosuperscript")
-
     local function fixsupscript(parent,current,current_char,new_char)
         if new_char ~= current_char and new_char ~= true then
             setchar(current,new_char)
@@ -1943,9 +1941,7 @@ do
                 report_fixing("fixing subscript, superscript %U",current_char)
             end
         end
-        if options_supported then
-            setfield(parent,"options",0x08+0x22)
-        end
+        setfield(parent,"options",0x08+0x22)
     end
 
  -- local function movesubscript(parent,current_nucleus,oldchar,newchar)

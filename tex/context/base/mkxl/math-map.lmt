@@ -190,7 +190,7 @@ local regular_tf = {
     },
     symbols   = {
         [0x2202]=0x2202, [0x2207]=0x2207,
-        [0x0027]=0x2032,  -- prime
+        [0x0027]=0x2032, -- prime
     },
 }
 

@@ -27,12 +27,7 @@ local pdfarray       = lpdf.array
 local pdfconstant    = lpdf.constant
 local pdfboolean     = lpdf.boolean
 local pdfreference   = lpdf.reference
-
-local pdfflushobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject = lpdf.flushobject
-end)
+local pdfflushobject = lpdf.flushobject
 
 local createimage    = images.create
 local wrapimage      = images.wrap

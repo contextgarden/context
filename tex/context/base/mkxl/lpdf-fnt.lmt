@@ -13,12 +13,7 @@ local tonumber, rawget = tonumber, rawget
 
 local pdfe             = lpdf.epdf
 local pdfreference     = lpdf.reference
-
-local pdfreserveobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfreserveobject = lpdf.reserveobject
-end)
+local pdfreserveobject = lpdf.reserveobject
 
 local tobemerged   = { }
 local trace_merge  = false  trackers.register("graphics.fonts",function(v) trace_merge = v end)

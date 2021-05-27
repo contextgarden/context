@@ -85,21 +85,15 @@ local pdfaddtonames           = lpdf.addtonames
 local pdfaddtopageattributes  = lpdf.addtopageattributes
 local pdfrectangle            = lpdf.rectangle
 
-local pdfflushobject
-local pdfshareobjectreference
-local pdfreserveobject
-local pdfpagereference
-local pdfdelayedobject
-local pdfregisterannotation
+local pdfflushobject          = lpdf.flushobject
+local pdfshareobjectreference = lpdf.shareobjectreference
+local pdfreserveobject        = lpdf.reserveobject
+local pdfpagereference        = lpdf.pagereference
+local pdfdelayedobject        = lpdf.delayedobject
 
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject          = lpdf.flushobject
-    pdfshareobjectreference = lpdf.shareobjectreference
-    pdfreserveobject        = lpdf.reserveobject
-    pdfpagereference        = lpdf.pagereference
-    pdfdelayedobject        = lpdf.delayedobject
-    pdfregisterannotation   = lpdf.registerannotation
-end)
+-- defined later on:
+
+local pdfregisterannotation
 
 -- todo: 3dview
 
@@ -868,7 +862,7 @@ end
 
 local annotations = nil
 
-function lpdf.registerannotation(n)
+pdfregisterannotation = function(n)
     if annotations then
         annotations[#annotations+1] = pdfreference(n)
     else
@@ -876,7 +870,7 @@ function lpdf.registerannotation(n)
     end
 end
 
-pdfregisterannotation = lpdf.registerannotation
+lpdf.registerannotation = pdfregisterannotation
 
 function lpdf.annotationspecification()
     if annotations then

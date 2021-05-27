@@ -40,15 +40,8 @@ local pdfconstant         = lpdf.constant
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
 local pdfreference        = lpdf.reference
-
-local pdfflushobject
-local pdfreserveobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject   = lpdf.flushobject
-    pdfreserveobject = lpdf.reserveobject
-end)
-
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
 local addtopageattributes = lpdf.addtopageattributes
 local addtopageresources  = lpdf.addtopageresources
 local addtocatalog        = lpdf.addtocatalog

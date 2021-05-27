@@ -44,24 +44,15 @@ local pdfunicode           = lpdf.unicode
 local pdfverbose           = lpdf.verbose
 local pdfstring            = lpdf.string
 local pdfaction            = lpdf.action
-
-local pdfflushobject
-local pdfflushstreamobject
-local pdfminorversion
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject       = lpdf.flushobject
-    pdfflushstreamobject = lpdf.flushstreamobject
-    pdfminorversion      = lpdf.minorversion
-end)
-
+local pdfflushobject       = lpdf.flushobject
+local pdfflushstreamobject = lpdf.flushstreamobject
+local pdfminorversion      = lpdf.minorversion
 local formattedtimestamp   = lpdf.pdftimestamp
 local adddocumentextgstate = lpdf.adddocumentextgstate
 local addtocatalog         = lpdf.addtocatalog
 local addtoinfo            = lpdf.addtoinfo
 local addtopageattributes  = lpdf.addtopageattributes
 local addtonames           = lpdf.addtonames
-
 local pdfgetmetadata       = lpdf.getmetadata
 
 local texset               = tex.set

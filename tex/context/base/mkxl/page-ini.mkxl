@@ -323,7 +323,7 @@
 %
 % \def\flushatthispage
 %   {\bgroup
-%    \dowithnextbox{\insert\thispageinsert{\box\nextbox}\egroup}%
+%    \dowithnextbox{\page_inserts_inject\thispageinsert{\box\nextbox}\egroup}%
 %    \hbox}
 %
 % \appendtoks

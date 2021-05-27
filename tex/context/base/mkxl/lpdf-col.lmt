@@ -31,17 +31,22 @@ local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference
 local pdfverbose              = lpdf.verbose
 
-local pdfflushobject
-local pdfdelayedobject
-local pdfflushstreamobject
-local pdfshareobjectreference
+local pdfflushobject          = lpdf.flushobject
+local pdfdelayedobject        = lpdf.delayedobject
+local pdfflushstreamobject    = lpdf.flushstreamobject
+local pdfshareobjectreference = lpdf.shareobjectreference
 
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject          = lpdf.flushobject
-    pdfdelayedobject        = lpdf.delayedobject
-    pdfflushstreamobject    = lpdf.flushstreamobject
-    pdfshareobjectreference = lpdf.shareobjectreference
-end)
+-- local pdfflushobject
+-- local pdfdelayedobject
+-- local pdfflushstreamobject
+-- local pdfshareobjectreference
+--
+-- updaters.register("backend.update.lpdf",function()
+--     pdfflushobject          = lpdf.flushobject
+--     pdfdelayedobject        = lpdf.delayedobject
+--     pdfflushstreamobject    = lpdf.flushstreamobject
+--     pdfshareobjectreference = lpdf.shareobjectreference
+-- end)
 
 local addtopageattributes     = lpdf.addtopageattributes
 local adddocumentcolorspace   = lpdf.adddocumentcolorspace
@@ -818,8 +823,8 @@ do
     local colors    = attributes.colors
     local rgbtocmyk = colors.rgbtocmyk
 
-    local f_cmyk = formatters["%.3N %.3f %.3N %.3N k"]
-    local f_rgb  = formatters["%.3N %.3f %.3N rg"]
+    local f_cmyk = formatters["%.3N %.3N %.3N %.3N k"]
+    local f_rgb  = formatters["%.3N %.3N %.3N rg"]
     local f_gray = formatters["%.3N g"]
 
     fonts.color_direct = function(r,g,b)

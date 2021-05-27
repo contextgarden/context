@@ -80,12 +80,10 @@ local getversion        = pdfe.getversion
 local getbox            = pdfe.getbox
 local getstatus         = pdfe.getstatus
 local unencrypt         = pdfe.unencrypt
-
 local dictionarytotable = pdfe.dictionarytotable
 local arraytotable      = pdfe.arraytotable
 local pagestotable      = pdfe.pagestotable
 local readwholestream   = pdfe.readwholestream
-
 local getfromreference  = pdfe.getfromreference
 
 local report_epdf       = logs.reporter("epdf")
@@ -841,17 +839,10 @@ if images then do
     local pdfnull              = lpdf.null
     local pdfliteral           = lpdf.literal
 
-    local pdfreserveobject
-    local shareobjectreference
-    local pdfflushobject
-    local pdfflushstreamobject
-
-    updaters.register("backend.update.lpdf",function()
-        pdfreserveobject     = lpdf.reserveobject
-        shareobjectreference = lpdf.shareobjectreference
-        pdfflushobject       = lpdf.flushobject
-        pdfflushstreamobject = lpdf.flushstreamobject
-    end)
+    local pdfreserveobject     = lpdf.reserveobject
+    local shareobjectreference = lpdf.shareobjectreference
+    local pdfflushobject       = lpdf.flushobject
+    local pdfflushstreamobject = lpdf.flushstreamobject
 
     local report               = logs.reporter("backend","xobjects")
 

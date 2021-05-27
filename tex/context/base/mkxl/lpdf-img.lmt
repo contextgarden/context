@@ -55,16 +55,9 @@ local pdfconstant          = lpdf.constant
 local pdfstring            = lpdf.string
 local pdfreference         = lpdf.reference
 local pdfverbose           = lpdf.verbose
-
-local pdfflushstreamobject
-local pdfmajorversion
-local pdfminorversion
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushstreamobject = lpdf.flushstreamobject
-    pdfmajorversion      = lpdf.majorversion
-    pdfminorversion      = lpdf.minorversion
-end)
+local pdfflushstreamobject = lpdf.flushstreamobject
+local pdfmajorversion      = lpdf.majorversion
+local pdfminorversion      = lpdf.minorversion
 
 local createimage          = images.create
 

@@ -32,14 +32,8 @@ local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
 local pdfnull                  = lpdf.null
 local pdfreference             = lpdf.reference
-
-local pdfflushstreamobject
-local pdfflushstreamfileobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushstreamobject     = lpdf.flushstreamobject
-    pdfflushstreamfileobject = lpdf.flushstreamfileobject
-end)
+local pdfflushstreamobject     = lpdf.flushstreamobject
+local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
 local checkedkey               = lpdf.checkedkey
 local limited                  = lpdf.limited

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lpdf-rul'] = {
     license   = "see context related readme files"
 }
 
+-- todo: split backend and pdf
+
 local tonumber, next, type = tonumber, next, type
 local concat = table.concat
 
@@ -34,8 +36,6 @@ local formatters       = string.formatters
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 
 local pdfprint ; pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
-
--- updaters.register("backend.update",function() pdfprint = lpdf.print end)
 
 do
 
@@ -381,8 +381,4 @@ h %s]]
     end)
 
 end
-
-
-    ruleactions.mp     = unsupported
-
 

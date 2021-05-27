@@ -26,14 +26,8 @@ local codeinjections       = backends.pdf.codeinjections -- normally it is regis
 local pdfdictionary        = lpdf.dictionary
 local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
-
 local pdfgetmetadata       = lpdf.getmetadata
-
-local pdfflushstreamobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushstreamobject = lpdf.flushstreamobject
-end)
+local pdfflushstreamobject = lpdf.flushstreamobject
 
 -- The XMP packet wrapper is kind of fixed, see page 10 of XMPSpecificationsPart1.pdf from
 -- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.

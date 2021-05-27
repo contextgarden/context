@@ -134,11 +134,11 @@
 
 \setupbodyfont[cows]
 
-\input tufte
+% \input tufte
 
-\stoptext
+% \stoptext
 
-\starttext
+% \starttext
 
 \loadtypescriptfile[cowotf]
 
@@ -147,16 +147,16 @@
 \definecolor[cowblue]  [b=.50]
 \definecolor[cowyellow][y=.25]
 
+\definefontcolorpalette[cows][cowgreen,cowyellow,cowblue,cowred]
+
 \startluacode
-    fonts.handlers.otf.registerpalette("demo", {
-        { g = .50 },
-        { y = .25 },
-        { b = .50 },
-        { r = .50 },
+    fonts.handlers.otf.registerpalette("cows", {
+        { g = .5 },
+        { r = .75, g = .75 },
+        { b = .5 },
+        { r = .5 },
     })
 \stopluacode
-
-\definefontcolorpalette[cows][cowgreen,cowyellow,cowblue,cowred]
 
 \adaptfontfeature[cowscolored] [colr=cows]
 

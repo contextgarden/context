@@ -903,12 +903,6 @@ function codeinjections.setformat(s)
                     majorversion,minorversion)
             end
             --
-            -- cid sets can always omitted now, but those validators still complain so let's
-            -- for a while keep it (for luigi):
-            --
-            lpdf.setomitcidset (formatspecification.include_cidsets  == false and 1 or 0) -- why a number
-            lpdf.setomitcharset(formatspecification.include_charsets == false and 1 or 0) -- why a number
-            --
             -- maybe block by pdf version
             --
             codeinjections.settaggingsupport(formatspecification.tagging)

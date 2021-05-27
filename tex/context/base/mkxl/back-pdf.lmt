@@ -12,13 +12,8 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 local setmetatableindex = table.setmetatableindex
 
-local pdfsetcompression
-local pdfimmediateobject
-
-updaters.register("backend.update.lpdf",function()
-    pdfsetcompression  = lpdf.setcompression
-    pdfimmediateobject = lpdf.immediateobject
-end)
+local pdfsetcompression  = lpdf.setcompression
+local pdfimmediateobject = lpdf.immediateobject
 
 interfaces.implement {
     name      = "setpdfcompression",

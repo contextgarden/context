@@ -146,7 +146,8 @@
 %definefilesynonym [set-13]       [setups-proofing]
 %definefilesynonym [set-15]       [setups-generate]
 
-\definefilesynonym [ecmascript] [libs-imp-mujs]
-\definefilesynonym [zint]       [libs-imp-zint]
+\definefilesynonym [ecmascript]   [libs-imp-mujs]
+\definefilesynonym [zint]         [libs-imp-zint]
+\definefilesynonym [barcode]      [libs-imp-zint]
 
 \endinput

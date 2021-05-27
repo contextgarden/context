@@ -15,6 +15,13 @@
 %D {\pdf*} ones completely. For the moment I keep them commented but even that will
 %D go away.
 
+%D Todo: a few delayed binding left:
+
+% ./lpdf-ini.lmt : reserve | immediate | positions | matrix | pos | fontobject
+% ./lpdf-lmt.lmt : fontname | object | boxresources
+% ./lpdf-rul.lmt : mp stuff
+% ./back-res.lmt : boxresources
+
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 \registerctxluafile{lpdf-ini}{autosuffix}

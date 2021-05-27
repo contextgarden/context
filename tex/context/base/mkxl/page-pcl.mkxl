@@ -221,7 +221,7 @@
        \ifdim\dimexpr\d_page_col_top_width>\d_page_col_sofar\relax
          \begingroup
          \floatingpenalty\zerocount
-         \insert\namedinsertionnumber\s!topfloat\bgroup
+         \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
            \vbox to \d_page_col_top_height{\vss}
              % can be an option
              \page_col_command_flush_top_insertions

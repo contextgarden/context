@@ -305,7 +305,7 @@
 
 \def\page_one_insert_top_float % maybe remember last beforeskip
   {\floatingpenalty\zerocount
-   \insert\namedinsertionnumber\s!topfloat\bgroup
+   \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
      \forgetall
      \ifconditional\c_page_one_top_of_insert
        \ifconditional\c_page_one_correct_top_insert
@@ -380,7 +380,7 @@
      \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
        \floatingpenalty\zerocount
-       \insert\namedinsertionnumber\s!bottomfloat\bgroup
+       \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
          \forgetall
          \blank[\rootfloatparameter\c!spacebefore]%
          \page_otr_command_flush_float_box
@@ -740,7 +740,7 @@
 \def\page_one_place_float_bottom_indeed
   {\global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
    \floatingpenalty\zerocount
-   \insert\namedinsertionnumber\s!bottomfloat\bgroup
+   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall
      \blank[\rootfloatparameter\c!spacebefore]%
      \page_otr_command_flush_float_box

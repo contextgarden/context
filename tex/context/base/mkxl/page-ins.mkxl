@@ -93,7 +93,7 @@
 
 \protected\def\page_inserts_synchronize#1% yes or no
   {\ifvoid#1\else
-     \insert#1{\unvbox#1}%
+     \page_inserts_inject#1{\unvbox#1}%
    \fi}
 
 \permanent\protected\def\doifelseinsertion#1%
@@ -106,7 +106,7 @@
 \aliased\let\doifinsertionelse\doifelseinsertion
 
 % \protected\def\startinsertion[#1]%
-%   {\insert\csname\??insertionnumber#1\endcsname\bgroup}
+%   {\page_inserts_inject\csname\??insertionnumber#1\endcsname\bgroup}
 %
 % \protected\def\stopinsertion
 %   {\egroup}
@@ -127,6 +127,8 @@
     \c_syst_max_allocated_insert     = 255 %   254
     \c_syst_last_allocated_insertion =   1 %
 
+    \protected\def\page_inserts_inject        {\insert}
+
     \protected\def\page_inserts_set_limit     {\insertlimit}
     \protected\def\page_inserts_set_distance  {\insertdistance}
     \protected\def\page_inserts_set_multiplier{\insertmultiplier}
@@ -145,6 +147,8 @@
     \protected\def\page_inserts_get_width     {\insertwidth}
 
 \else
+
+    \protected\def\page_inserts_inject        {\insert}
 
     \protected\def\page_inserts_set_limit     {\global\dimen}
     \protected\def\page_inserts_set_distance  {\global\skip }

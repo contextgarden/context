@@ -47,15 +47,19 @@ local pdfconstant          = lpdf.constant
 local pdfstring            = lpdf.string
 local pdfreference         = lpdf.reference
 
-local pdfreserveobject
-local pdfflushobject
-local pdfflushstreamobject
+local pdfreserveobject     = lpdf.reserveobject
+local pdfflushobject       = lpdf.flushobject
+local pdfflushstreamobject = lpdf.flushstreamobject
 
-updaters.register("backend.update.lpdf",function()
-    pdfreserveobject     = lpdf.reserveobject
-    pdfflushobject       = lpdf.flushobject
-    pdfflushstreamobject = lpdf.flushstreamobject
-end)
+-- local pdfreserveobject
+-- local pdfflushobject
+-- local pdfflushstreamobject
+--
+-- updaters.register("backend.update.lpdf",function()
+--     pdfreserveobject     = lpdf.reserveobject
+--     pdfflushobject       = lpdf.flushobject
+--     pdfflushstreamobject = lpdf.flushstreamobject
+-- end)
 
 local report_fonts         = logs.reporter("backend","fonts")
 
@@ -1793,6 +1797,39 @@ do
             end
         end
 
+        local function registercolors(hash)
+            local kind     = hash.kind
+            local data     = hash.data
+            local direct   = lpdf.fonts.color_direct
+            local indirect = lpdf.fonts.color_indirect
+            if kind == "font" then
+                return setmetatableindex(function(t,k)
+                    local h = data[k]
+                    local v = direct(h[1]/255,h[2]/255,h[3]/255)
+                    t[k] = v
+                    return v
+                end)
+            elseif kind == "user" then
+                return setmetatableindex(function(t,k)
+                    local list = data[k]
+                    local kind = list.kind
+                    local v
+                    if kind == "values" then
+                        local d = list.data
+                        v = direct(d.r or 0,d.g or 0,d.b or 0)
+                    elseif kind == "attributes" then
+                        v = indirect(list.color,list.transparency)
+                    else
+                        v = false -- textcolor
+                    end
+                    t[k] = v
+                    return v
+                end)
+            else
+                return { }
+            end
+        end
+
         function methods.color(filename,details)
             local colrshapes = details.properties.indexdata[1]
             local colrvalues = details.properties.indexdata[2]
@@ -1805,19 +1842,24 @@ do
                     local dropid       = dropdata.properties.id
                     local dropunits    = dropdata.parameters.units -- shared
                     local descriptions = dropdata.descriptions
+                    local directcolors = registercolors(colrvalues)
                     usedfonts[dropid]  = dropid
                     local w = description.width or 0
                     local s = #colorlist
-                    local l = nil
+                    local l = false
                     local t = { f_width(w) }
                     local n = 1
-                    local d = colrvalues[#colrvalues]
+                    local d = #colrvalues
                     for i=1,s do
                         local entry = colorlist[i]
-                        local v = colrvalues[entry.class] or d
-                        if v and l ~= v then
-                            n = n + 1 ; t[n] = v
-                            l = v
+                        local class = entry.class or d
+                        if class then
+                            -- false is textcolor (we should actually go back)
+                            local c = directcolors[class]
+                            if c and l ~= c then
+                                n = n + 1 ; t[n] = c
+                                l = c
+                            end
                         end
                         local e = descriptions[entry.slot]
                         if e then
@@ -2218,15 +2260,6 @@ end)
 
 -- this is temporary
 
-function lpdf.setomitcidset(v)
-    -- dummy: no longer needed
-    includecidset = not toboolean(v)
-end
-
-function lpdf.setomitcharset(v)
-    -- dummy
-end
-
 function lpdf.getfontobjectnumber(k)
     return objects[k]
 end
@@ -2235,11 +2268,4 @@ function lpdf.getfontname(k)
     return names[k]
 end
 
--- local done = false -- todo:
-
--- updaters.register("backend.update",function()
---     if not done then
-        lpdf.registerdocumentfinalizer(lpdf.flushfonts,1,"wrapping up fonts")
---         done = true
---     end
--- end)
+lpdf.registerdocumentfinalizer(lpdf.flushfonts,1,"wrapping up fonts")

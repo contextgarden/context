@@ -11,16 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Using \type {zint} seems to be the easiest way to generate
-%D (PDF417) barcodes so therefore we now have this module. There
-%D are proper (also windows) binaries at:
+%D Using \type {zint} seems to be the easiest way to generate (PDF417) barcodes so
+%D therefore we now have this module. There are proper (also windows) binaries at:
 %D
 %D \starttyping
 %D http://www.zint.org.uk
 %D \stoptyping
 %D
-%D There is a bit more code than needed as we want to be able to
-%D feed names.
+%D There is a bit more code than needed as we want to be able to feed names.
+%D
+%D % e:\tex-context\tex\texmf-win64\bin\lib\luametatex\zint\libzint.dll
 
 \registerctxluafile{libs-imp-zint}{autosuffix}
 
@@ -38,7 +38,7 @@
      {\clf_zint
          code {\dummyparameter\c!alternative}
          text {\dummyparameter\c!text}
-      \relax}
+      \relax}%
    \egroup}
 
 \protect
@@ -56,6 +56,11 @@
         \barcode[alternative=ISBN,text=9789490688011]%
         \blank
         \barcode[alternative=isbn,text=9789490688011,width=3cm]%
+        \blank
+        \dontleavehmode
+        \barcode[alternative=qr code,text={This is ConTeXt MKIV}]
+        \barcode[alternative=qr code,text={This is ConTeXt LMTX}]
+        \barcode[alternative=qr code,text={\cldloadfile{tufte}},width=3cm]
     \stopTEXpage
 % }
 

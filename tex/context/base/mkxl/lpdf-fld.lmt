@@ -86,23 +86,12 @@ local pdfunicode              = lpdf.unicode
 local pdfstring               = lpdf.string
 local pdfconstant             = lpdf.constant
 local pdfaction               = lpdf.action
-
-local pdfflushobject
-local pdfshareobjectreference
-local pdfshareobject
-local pdfreserveobject
-local pdfpagereference
-local pdfmajorversion
-
-updaters.register("backend.update.lpdf",function()
-    pdfflushobject          = lpdf.flushobject
-    pdfshareobjectreference = lpdf.shareobjectreference
-    pdfshareobject          = lpdf.shareobject
-    pdfreserveobject        = lpdf.reserveobject
-    pdfpagereference        = lpdf.pagereference
-    pdfmajorversion         = lpdf.majorversion
-end)
-
+local pdfflushobject          = lpdf.flushobject
+local pdfshareobjectreference = lpdf.shareobjectreference
+local pdfshareobject          = lpdf.shareobject
+local pdfreserveobject        = lpdf.reserveobject
+local pdfpagereference        = lpdf.pagereference
+local pdfmajorversion         = lpdf.majorversion
 local pdfcolor                = lpdf.color
 local pdfcolorvalues          = lpdf.colorvalues
 local pdflayerreference       = lpdf.layerreference

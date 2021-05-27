@@ -54,7 +54,7 @@ local trace_processing   = false  registertracker("math.processing",  function(v
 local trace_analyzing    = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing  = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
 local trace_collapsing   = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_foxing      = v end)
+local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_fixing      = v end)
 local trace_patching     = false  registertracker("math.patching",    function(v) trace_patching    = v end)
 local trace_goodies      = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants     = false  registertracker("math.variants",    function(v) trace_variants    = v end)
@@ -1941,7 +1941,7 @@ do
 
     mathematics.virtualize(movesub)
 
-    local options_supported = tokens.defined("Unosuperscript")
+    local nosuperscript_code = tex.mathoptioncodes.nosuperscript
 
     local function fixsupscript(parent,current,current_char,new_char)
         if new_char ~= current_char and new_char ~= true then
@@ -1954,36 +1954,8 @@ do
                 report_fixing("fixing subscript, superscript %U",current_char)
             end
         end
-        if options_supported then
-            setfield(parent,"options",0x08+0x22)
-        end
+        setfield(parent,"options",nosuperscript_code)
     end
-
- -- local function movesubscript(parent,current_nucleus,oldchar,newchar)
- --     local prev = getprev(parent)
- --     if prev and getid(prev) == noad_code then
- --         local psup = getsup(prev)
- --         local psub = getsub(prev)
- --         if not psup and not psub then
- --             fixsupscript(prev,current_nucleus,oldchar,newchar)
- --             local nucleus = getnucleus(parent)
- --             local sub     = getsub(parent)
- --             setsup(prev,nucleus)
- --             setsub(prev,sub)
- --             local dummy = copy_node(nucleus)
- --             setchar(dummy,0)
- --             setnucleus(parent,dummy)
- --             setsub(parent)
- --         elseif not psup then
- --             fixsupscript(prev,current_nucleus,oldchar,newchar)
- --             local nucleus = getnucleus(parent)
- --             setsup(prev,nucleus)
- --             local dummy = copy_node(nucleus)
- --             setchar(dummy,0)
- --             setnucleus(parent,dummy)
- --         end
- --     end
- -- end
 
     local function move_none_none(parent,prev,nuc,oldchar,newchar)
         fixsupscript(prev,nuc,oldchar,newchar)
