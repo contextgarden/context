@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.05.27 14:12}
+\immutable\edef\contextversion{2021.05.31 14:09}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -559,6 +559,8 @@
 % now we hook in backend code (needs checking)
 
 \loadmkxlfile{driv-shp}
+
+\loadmkxlfile{anch-loc} % for now here (after driver)
 
 \loadmkxlfile{back-exp}
 \loadmkxlfile{back-pdf}

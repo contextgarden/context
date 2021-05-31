@@ -472,41 +472,41 @@
 
 \startxmlsetups mmc:fn
     \begingroup
-    \edef\mmlnoffn{\xmlcount{#1}{/*}}
-    \ifnum\mmlnoffn>\plustwo
-      \def\MMCfnleft {\left(}
-      \def\MMCfnright{\right)}
-    \else
-      \let\MMCfnleft \relax
-      \let\MMCfnright\relax
-    \fi
-    \xmldoifelse {#1} {/mml:ci} { % first
-        \edef\mmlfnci{\xmltext{#1}{/mml:ci}}%  was xmlcontent
-        \doifelsesetups{mmc:fn:\mmlfnci} { % was mmc:fn:...
-            \xmlsetup{#1}{mmc:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
-        } {
-            \MMLcreset
-            \mmlfirst{#1}
-        }
-    } {
-        \xmldoifelse {#1} {/mml:apply} { % first
-            \xmldoifelse {#1} {/(mml:plus\string|mml:minus)} {
-                \left(\mmlfirst{#1}\right)
+        \edef\mmlnoffn{\xmlcount{#1}{/*}}
+        \ifnum\mmlnoffn>\plustwo
+          \def\MMCfnleft {\left(}
+          \def\MMCfnright{\right)}
+        \else
+          \let\MMCfnleft \relax
+          \let\MMCfnright\relax
+        \fi
+        \xmldoifelse {#1} {/mml:ci} { % first
+            \edef\mmlfnci{\xmltext{#1}{/mml:ci}}%  was xmlcontent
+            \doifelsesetups{mmc:fn:\mmlfnci} { % was mmc:fn:...
+                \xmlsetup{#1}{mmc:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
             } {
+                \MMLcreset
                 \mmlfirst{#1}
             }
-            \ifnum\mmlnoffn>\plusone
-                \left(\xmlall{#1}{/!mml:apply}\right)
-            \fi
         } {
-            \MMLcreset
-            \negthinspace
-            \MMCfnleft
-            \ifnum\mmlnoffn=\plustwo,\fi
-            \xmlconcat{#1}{/*}{2}{}{\MMLseparator,}
-            \MMCfnright
+            \xmldoifelse {#1} {/mml:apply} { % first
+                \xmldoifelse {#1} {/(mml:plus\string|mml:minus)} {
+                    \left(\mmlfirst{#1}\right)
+                } {
+                    \mmlfirst{#1}
+                }
+                \ifnum\mmlnoffn>\plusone
+                    \left(\xmlall{#1}{/!mml:apply}\right)
+                \fi
+            } {
+                \MMLcreset
+                \negthinspace
+                \MMCfnleft
+                \ifnum\mmlnoffn=\plustwo,\fi
+                \xmlconcat{#1}{/*}{2}{}{\MMLseparator,}
+                \MMCfnright
+            }
         }
-    }
     \endgroup
 \stopxmlsetups
 
@@ -1879,6 +1879,14 @@
     \fi
 \stoptexdefinition
 
+\starttexdefinition setmmlmathcolor #1
+    \edef\mmlmathcolor{\xmlatt{#1}{mathcolor}}
+    \ifx \mmlmathcolor \empty
+    \else
+        \directcolor[\mmlmathcolor]
+    \fi
+\stoptexdefinition
+
 % todo: textbackgrounds
 
 \starttexdefinition applymmlmathbackground #1#2
@@ -1922,16 +1930,20 @@
 
 \startxmlsetups mml:mi % todo: mathsize (unlikely) mathcolor (easy) mathbackground (easy)
     \begingroup
-        \pushmathstyle
+        \pushmathstyle % still needed ?
+        \setmmlmathcolor{#1}
         \setmmlmathstyle{#1}
         \setmmlscriptlevel{#1}
         \ctxmodulemathml{mi("#1")}
-        \popmathstyle
+        \popmathstyle % still needed ?
     \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:mn
-    \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
+    \begingroup
+        \setmmlmathcolor{#1}
+        \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
+    \endgroup
 \stopxmlsetups
 
 % <m:mo>-</m:mo><m:mn>2</m:mn> and <m:mn>1</m:mn><m:mo>-</m:mo><m:mn>2</m:mn>
@@ -1939,25 +1951,28 @@
 % spacing between - and 2 is taken care of by tex itself
 
 \startxmlsetups mml:mo
-    \edef\mmlattvalue{\xmlatt{#1}{maxsize}}
-    \ifx\mmlattvalue\mmlconstantone
-        \settrue\mmlignoredelimiter
-    \else
-        \edef\mmlattvalue{\xmlatt{#1}{stretchy}}
-        \ifx\mmlattvalue\mmlconstantfalse
+    \begingroup
+        \setmmlmathcolor{#1}
+        \edef\mmlattvalue{\xmlatt{#1}{maxsize}}
+        \ifx\mmlattvalue\mmlconstantone
             \settrue\mmlignoredelimiter
+        \else
+            \edef\mmlattvalue{\xmlatt{#1}{stretchy}}
+            \ifx\mmlattvalue\mmlconstantfalse
+                \settrue\mmlignoredelimiter
+            \fi
         \fi
-    \fi
-    \edef\mmlattvalue{\xmlatt{#1}{lspace}}
-    \ifx\mmlattvalue\empty\else
-        \hskip\mmlattvalue\relax % todo: check for dimension
-    \fi
-    \ctxmodulemathml{mo("#1")}
-    \edef\mmlattvalue{\xmlatt{#1}{rspace}}
-    \ifx\mmlattvalue\empty\else
-        \hskip\mmlattvalue\relax % todo: check for dimension
-    \fi
-    \setfalse\mmlignoredelimiter
+        \edef\mmlattvalue{\xmlatt{#1}{lspace}}
+        \ifx\mmlattvalue\empty\else
+            \hskip\mmlattvalue\relax % todo: check for dimension
+        \fi
+        \ctxmodulemathml{mo("#1")}
+        \edef\mmlattvalue{\xmlatt{#1}{rspace}}
+        \ifx\mmlattvalue\empty\else
+            \hskip\mmlattvalue\relax % todo: check for dimension
+        \fi
+      % \setfalse\mmlignoredelimiter
+    \endgroup
 \stopxmlsetups
 
 
@@ -2486,34 +2501,65 @@
 
 \setupMMLappearance[mspace][\c!option=] % \v!test
 
+% \startxmlsetups mml:mspace
+%     \begingroup
+%     \edef\mmlspacetext{\xmlatt{#1}{spacing}}
+%     \ifx\mmlspacetext\empty
+%         \scratchwidth \xmlattdef{#1}{width} \!!zeropoint % must be string
+%         \scratchheight\xmlattdef{#1}{height}\!!zeropoint
+%         \scratchdepth \xmlattdef{#1}{depth} \!!zeropoint
+%         \ifdim\scratchheight=\zeropoint
+%             \ifdim\scratchdepth=\zeropoint\else
+%                 \hbox{\vrule\s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint}%
+%             \fi
+%         \else
+%             \hbox{\vrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint}%
+%         \fi
+%         \ifdim\scratchwidth=\zeropoint\else
+%             \ifx\MMLmspaceoption\v!test
+%                 \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}
+%             \else
+%                 \hskip\scratchwidth
+%             \fi
+%         \fi
+%     \else
+%         \ifx\MMLmspaceoption\v!test
+%             \hbox{\showstruts\strut\phantom{\triggermathstyle\normalmathstyle\mmlspacetext}\strut}
+%         \else
+%             \phantom{\triggermathstyle\normalmathstyle\mmlspacetext}
+%         \fi
+%     \fi
+%     \endgroup
+% \stopxmlsetups
+
 \startxmlsetups mml:mspace
     \begingroup
-    \edef\mmlspacetext{\xmlatt{#1}{spacing}}
-    \ifx\mmlspacetext\empty
-        \scratchwidth \xmlattdef{#1}{width} \!!zeropoint % must be string
-        \scratchheight\xmlattdef{#1}{height}\!!zeropoint
-        \scratchdepth \xmlattdef{#1}{depth} \!!zeropoint
-        \ifdim\scratchheight=\zeropoint
-            \ifdim\scratchdepth=\zeropoint\else
-                \hbox{\vrule\s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint}%
-            \fi
-        \else
-            \hbox{\vrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint}%
-        \fi
-        \ifdim\scratchwidth=\zeropoint\else
-            \ifx\MMLmspaceoption\v!test
-                \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}
+        \edef\mmlspacetext{\xmlatt{#1}{spacing}}
+        \ifx\mmlspacetext\empty
+            \scratchwidth \xmlattdef{#1}{width} \!!zeropoint % must be string
+            \scratchheight\xmlattdef{#1}{height}\!!zeropoint
+            \scratchdepth \xmlattdef{#1}{depth} \!!zeropoint
+            \ifdim\scratchheight=\zeropoint
+                \ifdim\scratchdepth=\zeropoint\else
+                    \novrule\s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint
+                \fi
             \else
-                \hskip\scratchwidth
+                \novrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint
+            \fi
+            \ifdim\scratchwidth=\zeropoint\else
+                \ifx\MMLmspaceoption\v!test
+                    \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}
+                \else
+                    \hskip\scratchwidth
+                \fi
+            \fi
+        \else
+            \ifx\MMLmspaceoption\v!test
+                \hbox{\showstruts\strut\phantom{\triggermathstyle\normalmathstyle\mmlspacetext}\strut}
+            \else
+                \phantom{\triggermathstyle\normalmathstyle\mmlspacetext}
             \fi
         \fi
-    \else
-        \ifx\MMLmspaceoption\v!test
-            \hbox{\showstruts\strut\phantom{\triggermathstyle\normalmathstyle\mmlspacetext}\strut}
-        \else
-            \phantom{\triggermathstyle\normalmathstyle\mmlspacetext}
-        \fi
-    \fi
     \endgroup
 \stopxmlsetups
 

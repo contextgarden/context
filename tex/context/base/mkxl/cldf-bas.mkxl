@@ -13,7 +13,19 @@
 
 \writestatus{loading}{ConTeXt Lua Documents / Basics}
 
-\registerctxluafile{cldf-bas}{}
+\unprotect
+
+\permanent\protected\def\syst_new_dimen #1{\expandafter\newdimen \csname#1\endcsname}
+\permanent\protected\def\syst_new_skip  #1{\expandafter\newskip  \csname#1\endcsname}
+\permanent\protected\def\syst_new_count #1{\expandafter\newcount \csname#1\endcsname}
+\permanent\protected\def\syst_new_muskip#1{\expandafter\newmuskip\csname#1\endcsname}
+\permanent\protected\def\syst_new_toks  #1{\expandafter\newtoks  \csname#1\endcsname}
+\permanent\protected\def\syst_new_box   #1{\expandafter\newbox   \csname#1\endcsname}
+\permanent\protected\def\syst_new_char  #1{\expandafter\chardef  \csname#1\endcsname}
+
+\protect
+
+\registerctxluafile{cldf-bas}{autosuffix}
 \registerctxluafile{cldf-prs}{}
 
 \endinput

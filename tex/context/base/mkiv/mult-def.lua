@@ -11961,6 +11961,9 @@ return {
    ["en"]="surnamesep",
    ["fr"]="seprenom",
   },
+  ["synchronize"]={
+   ["en"]="synchronize",
+  },
   ["svgstyle"]={
    ["en"]="svgstyle",
    ["fr"]="stylesvg",

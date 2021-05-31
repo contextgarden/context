@@ -317,21 +317,6 @@
 
 \aliased\let\doiftopofpageelse\doifelsetopofpage
 
-% %D Idea:
-%
-% \newinsert\thispageinsert % <- installinsertion
-%
-% \def\flushatthispage
-%   {\bgroup
-%    \dowithnextbox{\page_inserts_inject\thispageinsert{\box\nextbox}\egroup}%
-%    \hbox}
-%
-% \appendtoks
-%     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
-% \to \everyshipout
-
-% not yet in i-* file
-
 \installcorenamespace{markedpage}
 
 % todo: just define at the lua end ... less hassle

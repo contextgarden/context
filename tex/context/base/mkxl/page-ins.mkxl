@@ -117,15 +117,9 @@
 % pass pass them explicitly. Actually, when we see an insertion node at that end,
 % we already know the number.
 
-% \insertmode\plustwo
+\insertmode\plustwo
 
-% once we made the switch we will use \ifinsert instead of the ht test
-
-\ifnum\insertmode=\plustwo
-
-    \c_syst_min_allocated_insert     =   1 %   128
-    \c_syst_max_allocated_insert     = 255 %   254
-    \c_syst_last_allocated_insertion =   1 %
+% \ifnum\insertmode=\plustwo
 
     \protected\def\page_inserts_inject        {\insert}
 
@@ -146,35 +140,39 @@
     \protected\def\page_inserts_get_depth     {\insertdepth}
     \protected\def\page_inserts_get_width     {\insertwidth}
 
-\else
+% \else
+%
+%     \protected\def\page_inserts_inject        {\insert}
+%
+%     \protected\def\page_inserts_set_limit     {\global\dimen}
+%     \protected\def\page_inserts_set_distance  {\global\skip }
+%     \protected\def\page_inserts_set_multiplier{\global\count}
+%
+%     \protected\def\page_inserts_get_limit     {\dimen}
+%     \protected\def\page_inserts_get_distance  {\skip }
+%     \protected\def\page_inserts_get_multiplier{\count}
+%
+%     \protected\def\page_inserts_get_boxed     {\box}
+%     \protected\def\page_inserts_get_copied    {\copy}
+%     \protected\def\page_inserts_get_unboxed   {\unvbox}
+%     \protected\def\page_inserts_get_uncopied  {\unvcopy}
+%
+%     \protected\def\page_inserts_get_height    {\ht}
+%     \protected\def\page_inserts_get_depth     {\dp}
+%     \protected\def\page_inserts_get_width     {\wd}
+%
+% \fi
 
-    \protected\def\page_inserts_inject        {\insert}
-
-    \protected\def\page_inserts_set_limit     {\global\dimen}
-    \protected\def\page_inserts_set_distance  {\global\skip }
-    \protected\def\page_inserts_set_multiplier{\global\count}
-
-    \protected\def\page_inserts_get_limit     {\dimen}
-    \protected\def\page_inserts_get_distance  {\skip }
-    \protected\def\page_inserts_get_multiplier{\count}
-
-    \protected\def\page_inserts_get_boxed     {\box}
-    \protected\def\page_inserts_get_copied    {\copy}
-    \protected\def\page_inserts_get_unboxed   {\unvbox}
-    \protected\def\page_inserts_get_uncopied  {\unvcopy}
-
-    \protected\def\page_inserts_get_height    {\ht}
-    \protected\def\page_inserts_get_depth     {\dp}
-    \protected\def\page_inserts_get_width     {\wd}
-
-\fi
+\newcount\c_page_inserts_last_allocated
 
 \appendtoks
     \ifempty\currentinsertionparent
         \ifcsname\??insertionnumber\currentinsertion\endcsname
           % bad news
         \else
-          \expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
+          %expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
+          \global\advance\c_page_inserts_last_allocated\plusone
+          \global\expandafter\integerdef\csname\??insertionnumber\currentinsertion\endcsname\c_page_inserts_last_allocated
           \page_inserts_synchronize_registers
           \clf_defineinsertion
             {\currentinsertion}%

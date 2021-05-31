@@ -144,6 +144,7 @@
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='closed' value='closed'/>
+		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='رنگ'/>
 		<cd:variable name='column' value='ستون'/>
 		<cd:variable name='columns' value='ستونها'/>
@@ -395,6 +396,7 @@
 		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='بدون'/>
 		<cd:variable name='notation' value='notation'/>
+		<cd:variable name='notcollapsed' value='notcollapsed'/>
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='بدون‌آویزان‌کردن'/>
 		<cd:variable name='nothyphenated' value='بدون‌شکست'/>
@@ -1269,6 +1271,7 @@
 		<cd:constant name='symbolset' value='مجموعه‌نماد'/>
 		<cd:constant name='symcolor' value='رنگ‌نماد'/>
 		<cd:constant name='symstyle' value='سبک‌نماد'/>
+		<cd:constant name='synchronize' value='synchronize'/>
 		<cd:constant name='synonym' value='مترادف'/>
 		<cd:constant name='synonymcolor' value='رنگ‌مترادف'/>
 		<cd:constant name='synonymcommand' value='synonymcommand'/>

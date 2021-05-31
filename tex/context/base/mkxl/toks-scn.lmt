@@ -60,7 +60,7 @@ local close               = tokenbits.close
 local function scanopen()
     while true do
         local c = scancode(open)
-        if c == 123 then
+        if c == 123 then -- {
             return true
      -- elseif c ~= 32 then
         elseif not c then
@@ -72,7 +72,7 @@ end
 local function scanclose()
     while true do
         local c = scancode(close)
-        if c == 125 then
+        if c == 125 then -- }
             return true
      -- elseif c ~= 32 then
         elseif not c then

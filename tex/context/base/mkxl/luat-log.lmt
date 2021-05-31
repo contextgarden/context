@@ -25,6 +25,7 @@ local datetime = os.date
 local openfile = io.open
 
 local writenl = texio.writeselectornl
+local writelf = texio.writeselectorlf
 local write   = texio.writeselector
 
 local setmetatableindex = table.setmetatableindex
@@ -178,7 +179,8 @@ do
 
     newline = function()
         if target then
-            writenl(target)
+            writelf(target)
+         -- writenl(target,"")
         end
     end
 

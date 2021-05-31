@@ -14,7 +14,6 @@ local formatters        = string.formatters
 local concat            = table.concat
 local keys              = table.keys
 local sortedhash        = table.sortedhash
-local splitstring       = string.split
 local find              = string.find
 local stripstring       = string.strip
 local sequenced         = table.sequenced
@@ -28,7 +27,6 @@ local getdirection      = nuts.getdirection
 local getlist           = nuts.getlist
 local getoffsets        = nuts.getoffsets
 local getorientation    = nuts.getorientation
-local getfield          = nuts.getfield
 local getwhd            = nuts.getwhd
 local getkern           = nuts.getkern
 local getheight         = nuts.getheight
@@ -40,27 +38,20 @@ local getid             = nuts.getid
 local getleader         = nuts.getleader
 ----- getglue           = nuts.getglue
 local getshift          = nuts.getshift
-local getdata           = nuts.getdata
------ getexpansion      = nuts.getexpansion
 local getreplace        = nuts.getreplace
 local setreplace        = nuts.setreplace
 local getfont           = nuts.getfont
 local getkerndimension  = nuts.getkerndimension
 
 local setdirection      = nuts.setdirection
-local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 
 local isglyph           = nuts.isglyph
-local nextdir           = nuts.traversers.dir
+----- nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
------ rangedimensions   = nuts.rangedimensions
 local effectiveglue     = nuts.effectiveglue
------ startofpar        = nuts.startofpar
 local dirdimensions     = nuts.dirdimensions
-
-local texget            = tex.get
 
 local fonthashes        = fonts.hashes
 local fontdata          = fonthashes.identifiers
@@ -70,7 +61,6 @@ local parameters        = fonthashes.parameters
 local nodecodes         = nodes.nodecodes
 local whatsitcodes      = nodes.whatsitcodes
 local gluecodes         = nodes.gluecodes
-local dircodes          = nodes.dircodes
 local dirvalues         = nodes.dirvalues
 local subtypes          = nodes.subtypes
 
@@ -87,8 +77,6 @@ local disc_code         = nodecodes.disc
 local math_code         = nodecodes.math
 local rule_code         = nodecodes.rule
 local whatsit_code      = nodecodes.whatsit
------ penalty_code      = nodecodes.penalty
------ boundary_code     = nodecodes.boundary
 
 local leaders_code      = gluecodes.leaders
 local cleaders_code     = gluecodes.cleaders
@@ -99,10 +87,9 @@ local spaceskip_code    = gluecodes.spaceskip
 
 local getpagedimensions = layouts.getpagedimensions
 
-local drivers   = drivers
-local instances = drivers.instances
+local drivers           = drivers
 
-local report    = logs.reporter("drivers")
+local report            = logs.reporter("drivers")
 
 ---------------------------------------------------------------------------------------
 
@@ -110,7 +97,6 @@ local lastfont       = nil
 local fontcharacters = nil
 
 local magicconstants = tex.magicconstants
-local trueinch       = magicconstants.trueinch
 local maxdimen       = magicconstants.maxdimen
 local running        = magicconstants.running
 
@@ -119,15 +105,10 @@ local pos_v          = 0
 local pos_r          = lefttoright_code
 local shippingmode   = "none"
 
-local abs_max_v      = 0
-local abs_max_h      = 0
-
 local shipbox_h      = 0
 local shipbox_v      = 0
 local page_size_h    = 0
 local page_size_v    = 0
------ page_h_origin  = 0 -- trueinch
------ page_v_origin  = 0 -- trueinch
 
 local initialize
 local finalize
@@ -571,8 +552,6 @@ local function reset_state()
     shippingmode  = "none"
     page_size_h   = 0
     page_size_v   = 0
- -- page_h_origin = 0 -- trueinch
- -- page_v_origin = 0 -- trueinch
 end
 
 -- local function dirstackentry(t,k)
@@ -642,6 +621,8 @@ local hlist_out, vlist_out  do
         return ot, x + xoffset, y - yoffset
     end
 
+    drivers.applyanchor = applyanchor
+
     -- to be checked: begin- or enddir kan nil zijn, weird
 
  -- local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
@@ -678,7 +659,7 @@ local hlist_out, vlist_out  do
               boxdepth = getwhd(this_box)
 
         local cur_h = 0
-        local cur_v = 0
+     -- local cur_v = 0
 
      -- if not current then
      --     current = getlist(this_box)
@@ -696,13 +677,14 @@ local hlist_out, vlist_out  do
                     else
                         pos_h = ref_h + (cur_h + x_offset)
                     end
-                    pos_v = ref_v - (cur_v - y_offset)
+                 -- pos_v = ref_v - (cur_v - y_offset)
+                    pos_v = ref_v + y_offset
                     -- synced
                 end
                 pos_v = pos_v + raise
                 pos_h = pos_h - left
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
-                cur_h = cur_h + wd - right
+                cur_h = cur_h + wd - right -- hm, no left here?
             elseif id == glue_code then
                 local gluewidth = effectiveglue(current,this_box)
                 if gluewidth ~= 0 then
@@ -862,7 +844,8 @@ local hlist_out, vlist_out  do
                         else
                             pos_h = ref_h + (cur_h + basepoint_h)
                         end
-                        pos_v = ref_v - (cur_v + basepoint_v)
+                     -- pos_v = ref_v - (cur_v + basepoint_v)
+                        pos_v = ref_v - basepoint_v
                         -- synced
                         pushorientation(orientation,pos_h,pos_v,pos_r)
                         if id == vlist_code then
@@ -913,6 +896,7 @@ local hlist_out, vlist_out  do
                         flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
                     end
                 end
+                -- move into above if
                 cur_h = cur_h + width
             elseif id == math_code then
              -- local kern = getkern(current)
@@ -932,7 +916,7 @@ local hlist_out, vlist_out  do
                         ref_h = ds.ref_h
                         ref_v = ds.ref_v
                         cur_h = ds.cur_h
-                        cur_v = ds.cur_v
+                     -- cur_v = ds.cur_v
                     else
                         -- pardir
                     end
@@ -946,7 +930,7 @@ local hlist_out, vlist_out  do
                     if enddir ~= current then
                         dirstack[enddir] = {
                             cur_h = new_h,
-                            cur_v = cur_v,
+                         -- cur_v = cur_v,
                             ref_h = ref_h,
                             ref_v = ref_v,
                         }
@@ -957,12 +941,13 @@ local hlist_out, vlist_out  do
                     else
                         pos_h = ref_h + cur_h
                     end
-                    pos_v = ref_v - cur_v
+                 -- pos_v = ref_v - cur_v
+                    pos_v = ref_v
                     -- synced
                     ref_h = pos_h
                     ref_v = pos_v
                     cur_h = 0
-                    cur_v = 0
+                 -- cur_v = 0
                     pos_r = dir
                     goto synced
                 end
@@ -993,7 +978,8 @@ local hlist_out, vlist_out  do
             else
                 pos_h = ref_h + cur_h
             end
-            pos_v = ref_v - cur_v
+         -- pos_v = ref_v - cur_v
+            pos_v = ref_v
             ::synced::
         end
         pos_h = ref_h
@@ -1011,15 +997,16 @@ local hlist_out, vlist_out  do
               boxheight,
               boxdepth = getwhd(this_box)
 
-        local cur_h    = 0
+        local cur_h    = 0 -- needs checking .. needed ?
         local cur_v    = - boxheight
         local top_edge = cur_v
 
-        if pos_r == righttoleft_code then
-            pos_h = ref_h - cur_h
-        else
-            pos_h = ref_h + cur_h
-        end
+     -- if pos_r == righttoleft_code then
+     --     pos_h = ref_h - cur_h
+     -- else
+     --     pos_h = ref_h + cur_h
+     -- end
+        pos_h = ref_h
         pos_v = ref_v - cur_v
         -- synced
 
@@ -1274,26 +1261,8 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
 
     local total = height + depth
 
-    ----- v_offset_par    = 0
-    ----- h_offset_par    = 0
-
-    local max_v = total -- + v_offset_par
-    local max_h = width -- + h_offset_par
-
-    if height > maxdimen or depth > maxdimen or width > maxdimen then
+    if height > maxdimen or depth > maxdimen or width > maxdimen or total > maxdimen then
         goto DONE
-    end
-
-    if max_v > maxdimen then
-        goto DONE
-    elseif max_v > abs_max_v then
-        abs_max_v = max_v
-    end
-
-    if max_h > maxdimen then
-        goto DONE
-    elseif max_h > abs_max_h then
-        abs_max_h = max_h
     end
 
     if shippingmode == "page" then
@@ -1332,11 +1301,11 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
 
     else
 
-        page_size_h   = width
-        page_size_v   = total
-        pos_r         = getdirection(box)
-        pos_v         = depth
-        pos_h         = pos_r == righttoleft_code and width or 0
+        page_size_h = width
+        page_size_v = total
+        pos_r       = getdirection(box)
+        pos_v       = depth
+        pos_h       = pos_r == righttoleft_code and width or 0
 
     end
 

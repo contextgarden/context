@@ -73,8 +73,11 @@ directives.register("framed.checkmath",function(v) checkformath = v end) -- expe
 
 -- beware: dir nodes and pseudostruts can end up on lines of their own
 
-local function doreshapeframedbox(n)
-    local box            = getbox(n)
+local function doreshapeframedbox(n,resync)
+    if resync then
+        resync = drivers.converters.resyncbox
+    end
+    local box            = resync and resync(n) or getbox(n)
     local noflines       = 0
     local nofnonzero     = 0
     local firstheight    = nil
@@ -209,6 +212,7 @@ local function doanalyzeframedbox(n)
 end
 
 implement { name = "doreshapeframedbox", actions = doreshapeframedbox, arguments = "integer" }
+implement { name = "doresyncframedbox",  actions = doreshapeframedbox, arguments = { "integer", true } }
 implement { name = "doanalyzeframedbox", actions = doanalyzeframedbox, arguments = "integer" }
 
 local function maxboxwidth(box)

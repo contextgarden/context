@@ -2328,6 +2328,8 @@ do
         end
     end
 
+    xml.checkedempty = checkedempty
+
     function lxml.doifempty    (id,pattern) doif    (checkedempty(id,pattern)) end
     function lxml.doifnotempty (id,pattern) doifnot (checkedempty(id,pattern)) end
     function lxml.doifelseempty(id,pattern) doifelse(checkedempty(id,pattern)) end
@@ -2732,6 +2734,8 @@ do
     end
 
 end
+
+-- hm, maybe to ini to, these implements
 
 implement {
     name      = "xmlsetinjectors",

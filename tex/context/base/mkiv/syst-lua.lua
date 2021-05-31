@@ -191,7 +191,9 @@ implement {
 
 do
 
-    local result = { "return " }
+    local result = CONTEXTLMTXMODE > 0 and
+        { "local xmath = xmath local xcomplex = xcomplex return " }
+     or { "local xmath =  math local xcomplex = { }      return " }
     local word   = { }
     local r      = 1
     local w      = 0

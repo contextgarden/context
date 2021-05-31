@@ -1,0 +1,108 @@
+%D \module
+%D   [       file=anch-loc,
+%D        version=2021.05.27,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Local Positioning Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Local Positioning}
+
+%D This is a typical \LMTX\ feature that could have been provided in \MKIV\ but I
+%D never finished it there. In \LMTX\ we have already a bit better infrastructure
+%D for it.
+%D
+%D When watching the brilliant positive yt videos of Yoyoka Soma (よよか) drum
+%D performances one realizes that a covers can improve the original. Let's see if
+%D this module can improve some of the position related mechanisms. (Btw, quite
+%D often covers impress me more than originals I'd never list too anyway.)
+
+% todo:
+%
+% - make box fit and inject glue
+% - set height / depth or just insert something between
+
+\registerctxluafile{anch-loc}{autosuffix}
+
+\unprotect
+
+\aliased\let\syncanchor \gobblethreearguments
+\aliased\let\alignanchor\gobblefourarguments
+\aliased\let\markanchor \gobblethreearguments
+
+\permanent\protected\def\anch_local_withanchor_s  #1#2#3{\leftboundary\setlocalsyncanchor {#1} #2 #3\rightboundary}
+\permanent\protected\def\anch_local_withanchor_a#1#2#3#4{\leftboundary\setlocalalignanchor{#1} #2 #3{#4}\rightboundary}
+\permanent\protected\def\anch_local_withanchor_m  #1#2#3{\leftboundary\setlocalmarkanchor {#1} #2 #3\rightboundary}
+
+\permanent\protected\def\setlocalanchoring
+  {\enforced\let\syncanchor \anch_local_withanchor_s
+   \enforced\let\alignanchor\anch_local_withanchor_a
+   \enforced\let\markanchor \anch_local_withanchor_m}
+
+\aliased\let\stopanchoring\relax
+
+\permanent\protected\def\startanchoring#1\stopanchoring % todo: boundary
+  {\begingroup
+   \pushlocalanchors
+   \setlocalanchoring
+   \setbox\scratchbox\vbox{\settrialtypesetting#1}%
+   \analyzelocalanchors\scratchbox
+   \vbox{#1}%
+   \poplocalanchors
+   \endgroup}
+
+\aliased\let\stopsynchronizing\relax
+
+\permanent\protected\def\startsynchronizing#1\stopsynchronizing % todo: boundary
+  {\begingroup
+   \pushlocalanchors
+   \setlocalanchoring
+   \setbox\scratchbox\vbox{#1}%
+   \synchronizelocalanchors\scratchbox
+   \unvbox\scratchbox
+   \poplocalanchors
+   \endgroup}
+
+% variant on \sync (defined at the lua end)
+
+\permanent\protected\def\autosync#1#2{\leftboundary\sync{#1}{#2}\rightboundary}
+
+% \startsynchronizing
+%     $a            = a            + a        $\par
+%     $a \mathsnc{1}= a            + a        $\par
+%     $  \mordsnc{1}= a            + a + a    $\par
+%     $  \mordsnc{1}= a \mathsnc{2}+ a + a + a$\par
+%     $  \mordsnc{1}    \mordsnc{2}+ a + a + a$
+% \stopsynchronizing
+
+\permanent\protected\def\mathsync#1{\sync{m}{#1}}
+\permanent\protected\def\mordsync#1{\mathord{}\sync{m}{#1}}
+\permanent\protected\def\mrelsync#1{\mathrel{}\sync{m}{#1}}
+\permanent\protected\def\mbinsync#1{\mathbin{}\sync{m}{#1}}
+
+\setlocalanchoring
+
+%D These are defined at the \LUA\ end.
+%D
+%D \starttyping
+%D \pushlocalanchors
+%D \poplocalanchors
+%D \analyzelocalanchors
+%D \synchronizelocalanchors
+%D \setlocalsyncanchor  {name} x y | {name} {x} {y}
+%D \setlocalmarkanchor  {name} x y | {name} {x} {y}
+%D \localanchorx        {name} x y | {name} {x} {y}
+%D \localanchory        {name} x y | {name} {x} {y}
+%D \sync                {name} x   | {name} {x}
+%D \stoptyping
+
+% \permanent\def\anchorxy#1#2#3{(\todimension\localanchorx{#1} #2 #3,\todimension\localanchory{#1} #2 #3)}
+
+\protect \endinput
+
+% Musical timestamp: Nightwish Decades bluray in loop mode.

@@ -157,6 +157,7 @@
   %\c!anchoring=,
    \c!autowidth=\v!yes,
   %\c!setups=,
+   \c!synchronize=,
    \c!loffset=\zeropoint,
    \c!roffset=\zeropoint,
    \c!toffset=\zeropoint,
@@ -209,6 +210,7 @@
 \let\p_framed_location        \empty
 \let\p_framed_orientation     \empty
 \let\p_framed_anchoring       \empty
+\let\p_framed_synchronize     \empty
 \let\p_framed_autowidth       \empty
 \let\p_framed_franalyze       \empty
 \let\p_framed_backgroundcorner\empty
@@ -224,6 +226,7 @@
 \let\p_framed_rulethickness   \empty
 \let\p_framed_foregroundcolor \empty
 \let\p_framed_setups          \empty
+\let\p_framed_synchronize     \empty
 
 %D We don't have to stick to a \TEX\ drawn rule, but also can use rounded
 %D or even fancier shapes, as we will see later on.
@@ -555,7 +558,10 @@
   {\anch_mark_tagged_box\b_framed_normal\m_overlay_region}
 
 \def\pack_framed_add_background
-  {\setbox\b_framed_normal\hpack % was vbox % see also *1*
+  {\ifconditional\c_pack_reanchor
+      \analyzelocalanchors\b_framed_normal
+   \fi
+   \setbox\b_framed_normal\hpack % was vbox % see also *1*
      {%\pack_framed_forgetall % can be relaxed
       \boxmaxdepth\maxdimen
       \framedbackgroundoffset\d_framed_backgroundoffset
@@ -596,9 +602,9 @@
 %D
 %D We predefine two already familiar backgrounds:
 
-%letvalue{\??overlaybuiltin\v!screen    }\pack_framed_background_box_gray
-\letvalue{\??overlaybuiltin\v!color     }\pack_framed_background_box_color
-\letvalue{\??overlaybuiltin\v!foreground}\pack_framed_background_box_content % replaces: \defineoverlay[\v!foreground][\foregroundbox]
+%letcsname\??overlaybuiltin\v!screen    \endcsname\pack_framed_background_box_gray
+\letcsname\??overlaybuiltin\v!color     \endcsname\pack_framed_background_box_color
+\letcsname\??overlaybuiltin\v!foreground\endcsname\pack_framed_background_box_content % replaces: \defineoverlay[\v!foreground][\foregroundbox]
 
 %D We can specify overlays as a comma separated list of overlays, a sometimes
 %D handy feature.
@@ -676,21 +682,21 @@
 \def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\s!width\d_framed_linewidth}
 \def\pack_framed_l_rule{\vrule\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
-\letvalue{\??framedtop   \v!on \v!on}\pack_framed_t_rule
-\letvalue{\??framedtop   \v!off\v!on}\pack_framed_t_rule
-\letvalue{\??framedtop   \v!on      }\pack_framed_t_rule
+\letcsname\??framedtop   \v!on \v!on\endcsname\pack_framed_t_rule
+\letcsname\??framedtop   \v!off\v!on\endcsname\pack_framed_t_rule
+\letcsname\??framedtop   \v!on      \endcsname\pack_framed_t_rule
 
-\letvalue{\??framedbottom\v!on \v!on}\pack_framed_b_rule
-\letvalue{\??framedbottom\v!off\v!on}\pack_framed_b_rule
-\letvalue{\??framedbottom\v!on      }\pack_framed_b_rule
+\letcsname\??framedbottom\v!on \v!on\endcsname\pack_framed_b_rule
+\letcsname\??framedbottom\v!off\v!on\endcsname\pack_framed_b_rule
+\letcsname\??framedbottom\v!on      \endcsname\pack_framed_b_rule
 
-\letvalue{\??framedleft  \v!on \v!on}\pack_framed_l_rule
-\letvalue{\??framedleft  \v!off\v!on}\pack_framed_l_rule
-\letvalue{\??framedleft  \v!on      }\pack_framed_l_rule
+\letcsname\??framedleft  \v!on \v!on\endcsname\pack_framed_l_rule
+\letcsname\??framedleft  \v!off\v!on\endcsname\pack_framed_l_rule
+\letcsname\??framedleft  \v!on      \endcsname\pack_framed_l_rule
 
-\letvalue{\??framedright \v!on \v!on}\pack_framed_r_rule
-\letvalue{\??framedright \v!off\v!on}\pack_framed_r_rule
-\letvalue{\??framedright \v!on      }\pack_framed_r_rule
+\letcsname\??framedright \v!on \v!on\endcsname\pack_framed_r_rule
+\letcsname\??framedright \v!off\v!on\endcsname\pack_framed_r_rule
+\letcsname\??framedright \v!on      \endcsname\pack_framed_r_rule
 
 % no overlapping rules
 
@@ -699,21 +705,21 @@
 \def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
 \def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
-\letvalue{\??framedtop   \v!small\v!small}\pack_framed_t_rules
-\letvalue{\??framedtop   \v!off  \v!small}\pack_framed_t_rules
-\letvalue{\??framedtop   \v!small        }\pack_framed_t_rules
+\letcsname\??framedtop   \v!small\v!small\endcsname\pack_framed_t_rules
+\letcsname\??framedtop   \v!off  \v!small\endcsname\pack_framed_t_rules
+\letcsname\??framedtop   \v!small        \endcsname\pack_framed_t_rules
 
-\letvalue{\??framedbottom\v!small\v!small}\pack_framed_b_rules
-\letvalue{\??framedbottom\v!off  \v!small}\pack_framed_b_rules
-\letvalue{\??framedbottom\v!small        }\pack_framed_b_rules
+\letcsname\??framedbottom\v!small\v!small\endcsname\pack_framed_b_rules
+\letcsname\??framedbottom\v!off  \v!small\endcsname\pack_framed_b_rules
+\letcsname\??framedbottom\v!small        \endcsname\pack_framed_b_rules
 
-\letvalue{\??framedleft  \v!small\v!small}\pack_framed_l_rules
-\letvalue{\??framedleft  \v!off  \v!small}\pack_framed_l_rules
-\letvalue{\??framedleft  \v!small        }\pack_framed_l_rules
+\letcsname\??framedleft  \v!small\v!small\endcsname\pack_framed_l_rules
+\letcsname\??framedleft  \v!off  \v!small\endcsname\pack_framed_l_rules
+\letcsname\??framedleft  \v!small        \endcsname\pack_framed_l_rules
 
-\letvalue{\??framedright \v!small\v!small}\pack_framed_r_rules
-\letvalue{\??framedright \v!off  \v!small}\pack_framed_r_rules
-\letvalue{\??framedright \v!small        }\pack_framed_r_rules
+\letcsname\??framedright \v!small\v!small\endcsname\pack_framed_r_rules
+\letcsname\??framedright \v!off  \v!small\endcsname\pack_framed_r_rules
+\letcsname\??framedright \v!small        \endcsname\pack_framed_r_rules
 
 % \framed
 %   [width=4cm,height=3cm,rulethickness=3mm,
@@ -1007,6 +1013,33 @@
 \aliased\let\localendstrut\relax
 \aliased\let\localstrut   \relax
 
+% better a constant:
+
+\newconditional\c_pack_resync
+\newconditional\c_pack_reanchor
+
+% \let\spac_framed_pop_local_anchors\relax
+
+\def\spac_framed_push_local_anchors
+  {\ifx\p_framed_synchronize\v!yes
+     \settrue\c_pack_resync
+     \settrue\c_pack_reanchor
+     \pushlocalanchors
+   % \aftergrouped{\aftergrouped{\poplocalanchors}}%
+     \aftergroup\poplocalanchors
+   \orelse\ifx\p_framed_synchronize\v!text
+     \settrue\c_pack_resync
+     \pushlocalanchors
+     \aftergroup\poplocalanchors
+   \orelse\ifx\p_framed_synchronize\v!background
+     \settrue\c_pack_reanchor
+     \pushlocalanchors
+     \aftergroup\poplocalanchors
+   \else
+     \setfalse\c_pack_resync
+     \setfalse\c_pack_reanchor
+   \fi}
+
 \protected\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
@@ -1037,9 +1070,18 @@
    \edef\p_framed_location   {\framedparameter\c!location}%
    \edef\p_framed_orientation{\framedparameter\c!orientation}%
    \edef\p_framed_anchoring  {\framedparameter\c!anchoring}%
+   \edef\p_framed_synchronize{\framedparameter\c!synchronize}%
    %
    \edef\p_framed_autowidth  {\framedparameter\c!autowidth}%
    \edef\p_framed_franalyze  {\framedparameter\c!fr!analyze}% experimental option
+   %
+   \ifempty\p_framed_synchronize
+     \setfalse\c_pack_resync
+     \setfalse\c_pack_reanchor
+%      \let\spac_framed_pop_local_anchors\relax
+   \else
+     \spac_framed_push_local_anchors
+   \fi
    %
    \ifx\p_framed_frame\v!overlay   % no frame, no offset, no framewidth
      \setfalse\c_framed_has_frame
@@ -1203,7 +1245,7 @@
 
 % widths
 
-\setvalue{\??framedwidthalternative\empty}%
+\defcsname\??framedwidthalternative\empty\endcsname
   {\ifconditional\c_framed_has_format
      \settrue\c_framed_has_width
      \d_framed_width\hsize
@@ -1212,7 +1254,7 @@
      \d_framed_width\zeropoint
    \fi}
 
-\setvalue{\??framedwidthalternative\v!fit}%
+\defcsname\??framedwidthalternative\v!fit\endcsname
   {\ifconditional\c_framed_has_format
      \settrue\c_framed_has_width
      \d_framed_width\hsize
@@ -1221,7 +1263,7 @@
      \d_framed_width\zeropoint
    \fi}
 
-\setvalue{\??framedwidthalternative\v!fixed}% equals \v!fit but no shapebox
+\defcsname\??framedwidthalternative\v!fixed\endcsname % equals \v!fit but no shapebox
   {\ifconditional\c_framed_has_format
      \settrue\c_framed_has_width
      \d_framed_width\hsize
@@ -1230,20 +1272,20 @@
      \d_framed_width\zeropoint
    \fi}
 
-\setvalue{\??framedwidthalternative\v!broad}%
+\defcsname\??framedwidthalternative\v!broad\endcsname
   {\settrue\c_framed_has_width
    \d_framed_width\hsize}
 
-\setvalue{\??framedwidthalternative\v!max}% idem broad
+\defcsname\??framedwidthalternative\v!max\endcsname % idem broad
   {\settrue\c_framed_has_width
    \d_framed_width\hsize}
 
-\setvalue{\??framedwidthalternative\v!local}%
+\defcsname\??framedwidthalternative\v!local\endcsname
   {\settrue\c_framed_has_width
    %\setlocalhsize
    \d_framed_width\localhsize}
 
-\setvalue{\??framedwidthalternative\s!unknown}%
+\defcsname\??framedwidthalternative\s!unknown\endcsname
   {\settrue\c_framed_has_width
    \d_framed_width\localwidth}
 
@@ -1253,23 +1295,23 @@
 
 % heights
 
-\setvalue{\??framedheightalternative\empty}%
+\defcsname\??framedheightalternative\empty\endcsname
   {\setfalse\c_framed_has_height
    \d_framed_height\zeropoint}
 
-\setvalue{\??framedheightalternative\v!fit}%
+\defcsname\??framedheightalternative\v!fit\endcsname
   {\setfalse\c_framed_has_height
    \d_framed_height\zeropoint}
 
-\setvalue{\??framedheightalternative\v!broad}%
+\defcsname\??framedheightalternative\v!broad\endcsname
   {\setfalse\c_framed_has_height
    \d_framed_height\zeropoint}
 
-\setvalue{\??framedheightalternative\v!max}%
+\defcsname\??framedheightalternative\v!max\endcsname
   {\settrue\c_framed_has_height
    \d_framed_height\vsize}
 
-\setvalue{\??framedheightalternative\s!unknown}%
+\defcsname\??framedheightalternative\s!unknown\endcsname
   {\settrue\c_framed_has_height
    \d_framed_height\localheight}
 
@@ -1279,49 +1321,49 @@
 
 % struts (use let instead?)
 
-\setvalue{\??framedstrutalternative\v!no}%
+\defcsname\??framedstrutalternative\v!no\endcsname
   {\c_framed_has_strut\plusone}
 
-\setvalue{\??framedstrutalternative\v!global}%
+\defcsname\??framedstrutalternative\v!global\endcsname
   {\setstrut}
 
-\setvalue{\??framedstrutalternative\v!local}%
+\defcsname\??framedstrutalternative\v!local\endcsname
   {\setfontstrut}
 
-\setvalue{\??framedstrutalternative\v!yes}%
+\defcsname\??framedstrutalternative\v!yes\endcsname
   {\setstrut}
 
-\setvalue{\??framedstrutalternative\s!unknown}%
+\defcsname\??framedstrutalternative\s!unknown\endcsname
   {\setstrut}
 
 \def\framed_strut_alternative_unknown
   {\setstrut}
 
-\setvalue{\??framedstrutalternative\v!none}% not even pseudo struts
+\defcsname\??framedstrutalternative\v!none\endcsname % not even pseudo struts
   {\c_framed_has_strut\zerocount}
 
 % offsets
 
-\setvalue{\??framedoffsetalternative\v!none}%
+\defcsname\??framedoffsetalternative\v!none\endcsname
   {\setfalse\c_framed_has_offset
    \c_framed_has_strut\plusone
    \setfalse\c_framed_is_overlaid
    \d_framed_local_offset\d_framed_linewidth}
 
-\setvalue{\??framedoffsetalternative\v!overlay}%
+\defcsname\??framedoffsetalternative\v!overlay\endcsname
   {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
    \setfalse\c_framed_has_offset
    \c_framed_has_strut\plusone
    \settrue\c_framed_is_overlaid
    \d_framed_local_offset\zeropoint}
 
-% \setvalue{\??framedoffsetalternative\v!strut}%
+% \defcsname\??framedoffsetalternative\v!strut\endcsname
 %   {\setfalse\c_framed_has_offset
 %    \c_framed_has_strut\plustwo
 %    \settrue\c_framed_is_overlaid
 %    \d_framed_local_offset\zeropoint}
 
-\setvalue{\??framedoffsetalternative\v!default}% new per 2-6-2000
+\defcsname\??framedoffsetalternative\v!default\endcsname % new per 2-6-2000
   {\settrue \c_framed_has_offset
    \c_framed_has_strut\plustwo
    \setfalse\c_framed_is_overlaid
@@ -1336,7 +1378,7 @@
    \let\defaultframeoffset\localoffset
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
-\letvalue{\??framedoffsetalternative\s!unknown}\framed_offset_alternative_unknown
+\letcsname\??framedoffsetalternative\s!unknown\endcsname\framed_offset_alternative_unknown
 
 % so far for alternatives
 
@@ -1412,6 +1454,19 @@
 % options (btw, beware of location settings of derived functionality that bleed
 % into this
 
+\def\pack_framed_profile_box
+  {\profilegivenbox\p_profile\b_framed_normal
+   \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}}
+
+\def\pack_framed_reverse_box
+  {\ifvbox\b_framed_normal
+     \edef\p_linedirection{\framedparameter\c!linedirection}%
+     \ifx\p_linedirection\v!reverse
+       \reversevboxcontent\b_framed_normal
+       \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}%
+     \fi
+   \fi}
+
 \def\pack_framed_finish_a
   {\ifreshapeframebox
      \pack_framed_reshape_process
@@ -1437,29 +1492,9 @@
      \pack_framed_reshape_reset
    \fi}
 
-\def\pack_framed_profile_box
-  {\profilegivenbox\p_profile\b_framed_normal
-   \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}}
-
-\def\pack_framed_reverse_box
-  {\ifvbox\b_framed_normal
-     \edef\p_linedirection{\framedparameter\c!linedirection}%
-     \ifx\p_linedirection\v!reverse
-       \reversevboxcontent\b_framed_normal
-       \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}%
-     \fi
-   \fi}
-
 \protected\def\pack_framed_finish
-  {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down
-   \pack_framed_locator_before\p_framed_location
+  {\pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
-    %\ifconditional\c_framed_has_height \else
-    %  \edef\p_profile{\framedparameter\c!profile}%
-    %  \ifempty\p_profile\else
-    %    \pack_framed_profile_box
-    %  \fi
-    %\fi
      \ifempty\p_framed_anchoring\else
        \pack_framed_reverse_box
      \fi
@@ -1496,10 +1531,8 @@
      \ht\b_framed_normal\d_framed_height
    \else
      \edef\p_framed_minheight{\framedparameter\c!minheight}%
-     \ifempty\p_framed_minheight \else
-       \ifdim\ht\b_framed_normal<\p_framed_minheight
-         \ht\b_framed_normal\p_framed_minheight
-       \fi
+     \ifempty\p_framed_minheight \orelse \ifdim\ht\b_framed_normal<\p_framed_minheight
+       \ht\b_framed_normal\p_framed_minheight
      \fi
    \fi
    \edef\p_framed_empty{\framedparameter\c!empty}%
@@ -1527,11 +1560,9 @@
    \fi
    \ifconditional\c_framed_has_extra_offset
      \pack_framed_apply_extra_offsets % includes \d_framed_applied_offset
+   \orelse\ifzeropt\d_framed_applied_offset
    \else
-     \ifzeropt\d_framed_applied_offset
-     \else
-       \pack_framed_widen_box
-     \fi
+     \pack_framed_widen_box
    \fi
    %
    \ifrelax\postprocessframebox \else
@@ -1551,11 +1582,10 @@
        \pack_framed_add_background
      \fi
    \fi
+%    \pack_framed_pop_local_anchors
    \pack_framed_locator_after\p_framed_location
-   \iftrialtypesetting \else
-     \ifempty\m_overlay_region\else
-       \pack_framed_add_region
-     \fi
+   \iftrialtypesetting \orelse \ifempty\m_overlay_region \else
+     \pack_framed_add_region
    \fi
    \box\b_framed_normal
    \global\frameddimensionstate % global so to be used directly afterwards !
@@ -2318,8 +2348,23 @@
    \framedmaxwidth    \zeropoint
    \framedaveragewidth\zeropoint}
 
-\def\pack_framed_reshape_process{\ifvbox\b_framed_normal\clf_doreshapeframedbox\b_framed_normal\relax\fi}
-\def\pack_framed_reshape_analyze{\ifvbox\b_framed_normal\clf_doanalyzeframedbox\b_framed_normal\relax\fi}
+\def\pack_framed_reshape_process
+  {\ifvbox\b_framed_normal
+     \ifconditional\c_pack_resync
+       \clf_doresyncframedbox
+     \else
+       \clf_doreshapeframedbox
+     \fi\b_framed_normal\relax
+   \fi}
+
+\def\pack_framed_reshape_analyze
+  {\ifvbox\b_framed_normal
+     \ifconditional\c_pack_resync
+       \clf_doresyncframedbox
+     \else
+       \clf_doanalyzeframedbox
+     \fi\b_framed_normal\relax
+   \fi}
 
 % torture test / strange case (much depth) / method 2 needed
 %
@@ -2629,18 +2674,22 @@
     \frozen\instance\protected\edefcsname        \currentframedtext\endcsname{\pack_framed_text_direct[\currentframedtext]}%
 \to \everydefineframedtext
 
-\setvalue{\??framedtextlocation\v!left  }{\letframedtextparameter\c!left \relax
-                                          \letframedtextparameter\c!right\hfill}
+\defcsname\??framedtextlocation\v!left\endcsname
+  {\letframedtextparameter\c!left \relax
+   \letframedtextparameter\c!right\hfill}
 
-\setvalue{\??framedtextlocation\v!right }{\letframedtextparameter\c!left \hfill
-                                          \letframedtextparameter\c!right\relax}
+\defcsname\??framedtextlocation\v!right\endcsname
+  {\letframedtextparameter\c!left \hfill
+   \letframedtextparameter\c!right\relax}
 
-\setvalue{\??framedtextlocation\v!middle}{\letframedtextparameter\c!left \hfill
-                                          \letframedtextparameter\c!right\hfill}
+\defcsname\??framedtextlocation\v!middle\endcsname
+  {\letframedtextparameter\c!left \hfill
+   \letframedtextparameter\c!right\hfill}
 
-\setvalue{\??framedtextlocation\v!none  }{\letframedtextparameter\c!left \relax
-                                          \letframedtextparameter\c!right\relax
-                                          \settrue\c_framed_text_location_none}
+\defcsname\??framedtextlocation\v!none\endcsname
+  {\letframedtextparameter\c!left \relax
+   \letframedtextparameter\c!right\relax
+   \settrue\c_framed_text_location_none}
 
 \tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup

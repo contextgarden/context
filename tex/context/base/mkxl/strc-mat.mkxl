@@ -1129,7 +1129,9 @@
    \scratchcounter\zerocount
    #2% preroll
    \hbox to \displaywidth \bgroup
-     \divide\displaywidth\scratchcounter
+     \ifcase\scratchcounter\else
+       \divide\displaywidth\scratchcounter
+     \fi
      \hss
      \enforced\let\startformula\strc_formulas_nested_formula_start
      \enforced\let\stopformula \strc_formulas_nested_formula_stop

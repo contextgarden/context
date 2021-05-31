@@ -37,6 +37,8 @@ return {
         "pushparameters",
         "popparameters",
         "definecolor",
+        --
+        "anchorxy", "anchorx", "anchory",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",

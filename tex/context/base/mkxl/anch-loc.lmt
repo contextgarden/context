@@ -1,0 +1,372 @@
+if not modules then modules = { } end modules ['anch-loc'] = {
+    version   = 1.001,
+    comment   = "companion to anch-loc.lmtx",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local next, type = next, type
+local setmetatableindex, sortedhash, insert, remove = table.setmetatableindex, table.sortedhash, table.insert, table.remove
+
+local context          = context
+
+local nuts             = nodes.nuts
+local nodepool         = nodes.pool
+local whatever         = nodepool.userids["localanchor"]
+local new_usernode     = nodepool.usernode
+local new_kern         = nuts.pool.kern
+local getbox           = nuts.getbox
+local getwidth         = nuts.getwidth
+local setwidth         = nuts.setwidth
+local getprop          = nuts.getprop
+local insertbefore     = nuts.insertbefore
+local insertafter      = nuts.insertafter
+local setattributelist = nuts.setattributelist
+
+local texgetbox        = tex.getbox
+
+local implement        = interfaces.implement
+
+local analyze          = drivers.converters.analyze
+
+local dimension_value  = tokens.values.dimension
+
+local v_left           = interfaces.variables.left
+local v_middle         = interfaces.variables.middle
+
+local positionsstack   = setmetatableindex("table")
+
+local function allocate2(t,k)
+    local v = { min = false, max = false }
+    t[k] = v
+    return v
+end
+
+local function allocate1(t,k)
+    local v = setmetatableindex({ cnt = { }, min = false, max = false }, allocate2)
+    t[k] = v
+    return v
+end
+
+local positions = setmetatableindex(allocate1)
+
+-- The basics:
+
+local function pushpositions()
+    insert(positionsstack,positions)
+    positions = setmetatableindex(allocate1)
+end
+
+local function poppositions()
+    positions = remove(positionsstack) or { }
+end
+
+local function initializepositions(driver,specification)
+ -- positions.width  = specification.boundingbox[3]
+ -- positions.height = specification.boundingbox[4]
+end
+
+-- local function finalizepositions(...)
+-- end
+
+local function collectpositions(current,pos_h,pos_v)
+    -- beware, we actually can have a copy due to setting trialrun so we cannot
+    -- fetch the nodetable directly but go via the metatable ... fast enough
+    local data = getprop(current,"data")
+    local hash = positions[data.name]
+    local x    = data.x
+    local y    = data.y
+    if not hash.min then
+        hash.min = x
+        hash.max = x
+    elseif x > hash.max then
+        hash.max = x
+    end
+    hash = hash[x]
+    if not hash.min then
+        hash.min = y
+        hash.max = y
+    elseif y > hash.max then
+        hash.max = y
+    end
+    hash[y] = { pos_h, pos_v, data, current, 0, false }
+end
+
+local function valid(name,x,y)
+    if positions then
+        local xlist = positions[name]
+        if xlist then
+            xlist = xlist[x]
+            return xlist and  xlist[y]
+        end
+    end
+end
+
+local function anchorx(name,x,y)
+    local v = valid(name,x,y)
+    return v and v[1] or 0
+end
+
+local function anchory(name,x,y)
+    local v = valid(name,x,y)
+    return v and v[2] or 0
+end
+
+local function anchorxy(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[1], v[2]
+    else
+        return 0, 0
+    end
+end
+
+local driver = {
+    actions = {
+        initialize = initializepositions,
+     -- finalize   = finalizepositions,
+    },
+    flushers = {
+        userdefined = {
+            [whatever] = collectpositions,
+        }
+    }
+}
+
+function drivers.converters.resyncbox(n)
+    local b = getbox(n)
+    analyze(driver,b)
+    for name, position in next, positions do
+        local xlast = { }
+        local aligned = false
+        for c=position.min,position.max do
+            local column = position[c]
+            if column then
+                local min = column.min
+                if min then
+                    local max = column.max
+                    local xlimit = 0
+                    for r=min,max do
+                        local cell = column[r]
+                        if cell and cell[3].kind == "sync" then
+                            local x = cell[1]
+                            local l = xlast[r]
+                            if l and l ~= 0 then
+                                x = x + l
+                                cell[1] = x
+                            end
+                            if x > xlimit then
+                                xlimit = x
+                            end
+                            if not aligned then
+                                aligned = cell[3].align
+                            end
+                        end
+                    end
+                    for r=min,max do
+                        local cell = column[r]
+                        if cell and cell[3].kind == "sync" then
+                            local progress = xlimit - cell[1]
+                            if aligned or progress ~= 0 then
+                                local kern = new_kern(progress)
+                                local current = cell[4]
+                                setattributelist(kern,current)
+                                insertafter(current,current,kern) -- why does before not work
+                                cell[5] = progress
+                                cell[6] = kern
+                                xlast[r] = (xlast[r] or 0) + progress
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if aligned then
+            local min = position.min
+            local max = position.max
+            local previous = { }
+            for c=min,max do
+                local column = position[c]
+                if column then
+                    local min = column.min
+                    if min then
+                        local max = column.max
+                        for r=min,max do
+                            local cell = column[r]
+                            if cell then
+                                local prev = previous[r]
+                                if prev then
+                                    local align = prev[3].align
+                                    if align then
+                                        local p = prev[6]
+                                        local n = cell[6]
+                                        local d = cell[5]
+                                        if align == "r" or align == v_right then
+                                            setwidth(p,getwidth(p)+d)
+                                            setwidth(n,getwidth(n)-d)
+                                        elseif align == "c" or align == "m" or align == v_middle then
+                                            setwidth(p,getwidth(p)+d/2)
+                                            setwidth(n,getwidth(n)-d/2)
+                                        end
+                                    end
+                                end
+                                previous[r] = cell
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+    end
+    return b
+end
+
+-- The ConTeXt interface (at that end we call them localanchors):
+
+implement {
+    name      = "pushlocalanchors",
+    public    = true,
+    protected = true,
+    actions   = pushpositions,
+}
+
+implement {
+    name      = "poplocalanchors",
+    public    = true,
+    protected = true,
+    actions   = poppositions,
+}
+
+implement {
+    name      = "analyzelocalanchors",
+    arguments = { "integerargument" },
+    public    = true,
+    protected = true,
+    actions   = function(n)
+        analyze(driver,texgetbox(n))
+    end
+}
+
+implement {
+    name      = "synchronizelocalanchors",
+    arguments = { "integerargument" },
+    public    = true,
+    protected = true,
+    actions   = drivers.converters.resyncbox,
+}
+
+implement {
+    name      = "setlocalsyncanchor",
+    arguments = { "argument", "integerargument", "integerargument" },
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function(name,x,y)
+        -- value node ... only hlist or vlist or whatsit but we need trialmode so:
+        context(new_usernode(whatever,{ name = name, kind = "sync", x = x, y = y }))
+    end
+}
+implement {
+    name      = "setlocalalignanchor",
+    arguments = { "argument", "integerargument", "integerargument", "argument" },
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function(name,x,y,align)
+        -- value node ... only hlist or vlist or whatsit but we need trialmode so:
+        context(new_usernode(whatever,{ name = name, kind = "sync", x = x, y = y, align = align }))
+    end
+}
+
+implement {
+    name      = "setlocalmarkanchor",
+    arguments = { "argument", "integerargument", "integerargument" },
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function(name,x,y)
+        context(new_usernode(whatever,{ name = name, kind = "mark", x = x, y = y }))
+    end
+}
+
+implement {
+    name      = "localanchorx",
+    arguments = { "argument", "integerargument", "integerargument" },
+    public    = true,
+    usage     = "value",
+    actions   = function(name,x,y)
+        return dimension_value, anchorx(name,x,y)
+    end
+}
+
+implement {
+    name      = "localanchory",
+    arguments = { "argument", "integerargument", "integerargument" },
+    public    = true,
+    usage     = "value",
+    actions   = function(name,x,y)
+        return dimension_value, anchory(name,x,y)
+    end
+}
+
+interfaces.implement {
+    name      = "sync",
+    arguments = { "argument", "integerargument" },
+    protected = true,
+    public    = true,
+    actions   = function(name,x)
+        local t = positions[name].cnt
+        local y = (t[x] or 0) + 1
+        t[x] = y
+        context(new_usernode(whatever,{ name = name, kind = "sync", x = x, y = y }))
+    end,
+}
+
+interfaces.implement {
+    name      = "async",
+    arguments = { "argument", "integerargument", "argument" },
+    protected = true,
+    public    = true,
+    actions   = function(name,x,align)
+        local t = positions[name].cnt
+        local y = (t[x] or 0) + 1
+        t[x] = y
+        context(new_usernode(whatever,{ name = name, kind = "sync", x = x, y = y, align = align }))
+    end,
+}
+
+-- The MetaFun interface:
+
+do
+
+    local injectors     = mp.inject
+    local scanners      = mp.scan
+
+    local injectnumeric = injectors.numeric
+    local injectpair    = injectors.pair
+
+    local scaninteger   = scanners.integer
+    local scanstring    = scanners.string
+
+    local bpfactor      = number.dimenfactors.bp
+
+    local registerscript = metapost.registerscript
+    local registerdirect = metapost.registerdirect
+
+    registerscript("anchorxy", function()
+        x, y = anchorxy(scanstring(),scaninteger(),scaninteger())
+        return injectpair(x*bpfactor, y*bpfactor)
+    end)
+
+    registerdirect("anchorx",  function()
+        return anchorx(scanstring(),scaninteger(),scaninteger()) * bpfactor
+    end)
+
+    registerdirect("anchory",  function()
+        return anchory(scanstring(),scaninteger(),scaninteger()) * bpfactor
+    end)
+
+end

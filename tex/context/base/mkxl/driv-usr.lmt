@@ -1,0 +1,393 @@
+if not modules then modules = { } end modules ['driv-shp'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to driv-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nuts               = nodes.nuts
+local tonut              = nodes.tonut
+
+local getdirection       = nuts.getdirection
+local getlist            = nuts.getlist
+local getoffsets         = nuts.getoffsets
+local getorientation     = nuts.getorientation
+local getwhd             = nuts.getwhd
+local getkern            = nuts.getkern
+local getwidth           = nuts.getwidth
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
+local getnext            = nuts.getnext
+local getid              = nuts.getid
+local getshift           = nuts.getshift
+local getprop            = nuts.getprop
+local getreplace         = nuts.getreplace
+local setreplace         = nuts.setreplace
+----- getkerndimension   = nuts.getkerndimension
+----- getglyphdimensions = nuts.getglyphdimensions
+
+local setdirection       = nuts.setdirection
+local setlink            = nuts.setlink
+
+local nextnode           = nuts.traversers.node
+
+local effectiveglue      = nuts.effectiveglue
+local dirdimensions      = nuts.dirdimensions
+
+local nodecodes          = nodes.nodecodes
+local whatsitcodes       = nodes.whatsitcodes
+local dirvalues          = nodes.dirvalues
+
+local lefttoright_code   = dirvalues.lefttoright
+local righttoleft_code   = dirvalues.righttoleft
+
+local glyph_code         = nodecodes.glyph
+local kern_code          = nodecodes.kern
+local glue_code          = nodecodes.glue
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local dir_code           = nodecodes.dir
+local disc_code          = nodecodes.disc
+local math_code          = nodecodes.math
+local rule_code          = nodecodes.rule
+local whatsit_code       = nodecodes.whatsit
+
+local userdefined_code   = nodes.whatsitcodes.userdefined
+
+local drivers            = drivers
+
+local report             = logs.reporter("drivers")
+
+local magicconstants     = tex.magicconstants
+local maxdimen           = magicconstants.maxdimen
+
+local pos_h              = 0
+local pos_v              = 0
+local pos_r              = lefttoright_code
+
+local applyanchor        = drivers.applyanchor
+
+local initialize
+local finalize
+local userdefined
+
+local function reset_state()
+    pos_h = 0
+    pos_v = 0
+    pos_r = lefttoright_code
+end
+
+local dirstack = { }
+
+local function reset_dir_stack()
+    dirstack = { }
+end
+
+local function handlewhatsit(current,pos_h,pos_v)
+    local action = userdefined[getprop(current,"id")]
+    if action then
+        action(current,pos_h,pos_v)
+    end
+end
+
+local hlist_out, vlist_out -- todo: some can be combined
+
+hlist_out = function(this_box,current)
+    local ref_h = pos_h
+    local ref_v = pos_v
+    local ref_r = pos_r
+          pos_r = getdirection(this_box)
+    local cur_h = 0
+
+    for current, id, subtype in nextnode, current do
+        if id == glyph_code then -- or id == kern_code
+            local width, factor = getwidth(current,true)
+            if width ~= 0 then
+                if factor ~= 0 then
+                    cur_h = cur_h + (1.0 + factor/1000000.0) * width
+                else
+                    cur_h = cur_h + width
+                end
+            end
+        elseif id == glue_code then
+            cur_h = cur_h + effectiveglue(current,this_box)
+        elseif id == hlist_code or id == vlist_code then
+            local width, height, depth = getwhd(current)
+            local list = getlist(current)
+            if list then
+                local boxdir = getdirection(current) or lefttoright_code
+                local shift, orientation = getshift(current)
+                if not orientation then
+                    local basepoint_h = boxdir ~= pos_r and width or 0
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - (cur_h + basepoint_h)
+                    else
+                        pos_h = ref_h + (cur_h + basepoint_h)
+                    end
+                    pos_v = ref_v - shift
+                elseif orientation == 0x1000 then
+                    local orientation, xoffset, yoffset = getorientation(current)
+                    local basepoint_h = boxdir ~= pos_r and width or 0
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - (cur_h + basepoint_h + xoffset)
+                    else
+                        pos_h = ref_h + (cur_h + basepoint_h + xoffset)
+                    end
+                    pos_v = ref_v - (shift - yoffset)
+                else
+                    local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
+                    local orientation, basepoint_h, basepoint_v = applyanchor(orientation,0,shift,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
+                    if orientation == 1 then
+                        basepoint_h = basepoint_h + doffset
+                        if boxdir == pos_r then
+                            basepoint_v = basepoint_v - height
+                        end
+                    elseif orientation == 2 then
+                        if boxdir == pos_r then
+                            basepoint_h = basepoint_h + width
+                        end
+                    elseif orientation == 3 then
+                        basepoint_h = basepoint_h + hoffset
+                        if boxdir ~= pos_r then
+                            basepoint_v = basepoint_v - height
+                        end
+                    end
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - (cur_h + basepoint_h)
+                    else
+                        pos_h = ref_h + (cur_h + basepoint_h)
+                    end
+                    pos_v = ref_v - basepoint_v
+                end
+                if id == vlist_code then
+                    vlist_out(current,list)
+                else
+                    hlist_out(current,list)
+                end
+            end
+            cur_h = cur_h + width
+        elseif id == kern_code then
+            local kern, factor = getkern(current,true)
+            if kern ~= 0 then
+                if factor ~= 0 then
+                    cur_h = cur_h + (1.0 + factor/1000000.0) * kern
+                else
+                    cur_h = cur_h + kern
+                end
+            end
+        elseif id == rule_code then
+            cur_h = cur_h + getwidth(current)
+        elseif id == math_code then
+            cur_h = cur_h + effectiveglue(current,this_box)
+        elseif id == dir_code then
+            local dir, cancel = getdirection(current)
+            if cancel then
+                local ds = dirstack[current]
+                if ds then
+                    ref_h = ds.ref_h
+                    ref_v = ds.ref_v
+                    cur_h = ds.cur_h
+                end
+                pos_r = dir
+            else
+                local width, enddir = dirdimensions(this_box,current)
+                local new_h = cur_h + width
+                if dir ~= pos_r then
+                    cur_h = new_h
+                end
+                if enddir ~= current then
+                    dirstack[enddir] = {
+                        cur_h = new_h,
+                        ref_h = ref_h,
+                        ref_v = ref_v,
+                    }
+                    setdirection(enddir,pos_r)
+                end
+                if pos_r == righttoleft_code then
+                    pos_h = ref_h - cur_h
+                else
+                    pos_h = ref_h + cur_h
+                end
+                pos_v = ref_v
+                ref_h = pos_h
+                ref_v = pos_v
+                cur_h = 0
+                pos_r = dir
+                goto synced
+            end
+        elseif id == whatsit_code then
+            if subtype == userdefined_code then
+                local action = userdefined[getprop(current,"id")]
+                if action then
+                    action(current,pos_h,pos_v)
+                end
+            end
+        elseif id == disc_code then
+            local replace, tail = getreplace(current)
+            if replace then
+                setlink(tail,getnext(current))
+                setlink(current,replace)
+                setreplace(current)
+            end
+        else
+            goto synced
+        end
+        if pos_r == righttoleft_code then
+            pos_h = ref_h - cur_h
+        else
+            pos_h = ref_h + cur_h
+        end
+        pos_v = ref_v
+        ::synced::
+    end
+    pos_h = ref_h
+    pos_v = ref_v
+    pos_r = ref_r
+end
+
+vlist_out = function(this_box,current)
+    local ref_h    = pos_h
+    local ref_v    = pos_v
+    local ref_r    = pos_r
+          pos_r    = getdirection(this_box)
+    local cur_v    = - getheight(this_box)
+    local top_edge = cur_v
+          pos_h    = ref_h
+          pos_v    = ref_v - cur_v
+
+    for current, id, subtype in nextnode, current do
+        if id == glue_code then
+            cur_v = cur_v + effectiveglue(current,this_box)
+        elseif id == hlist_code or id == vlist_code then
+            local width, height, depth = getwhd(current)
+            local list = getlist(current)
+            if list then
+                local boxdir = getdirection(current) or lefttoright_code
+                local shift, orientation = getshift(current)
+                if not orientation then
+                    if boxdir ~= pos_r then
+                        shift = shift + width
+                    end
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - shift
+                    else
+                        pos_h = ref_h + shift
+                    end
+                    pos_v = ref_v - (cur_v + height)
+                elseif orientation == 0x1000 then
+                    local orientation, xoffset, yoffset = getorientation(current)
+                    if boxdir ~= pos_r then
+                        shift = shift + width
+                    end
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - (shift + xoffset)
+                    else
+                        pos_h = ref_h + (shift + xoffset)
+                    end
+                    pos_v = ref_v - (cur_v + height - yoffset)
+                else
+                    local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
+                    local orientation, basepoint_h, basepoint_v = applyanchor(orientation,shift,height,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
+                    if orientation == 1 then
+                        basepoint_h = basepoint_h + width - height
+                        basepoint_v = basepoint_v - height
+                    elseif orientation == 2 then
+                        basepoint_h = basepoint_h + width
+                        basepoint_v = basepoint_v + depth - height
+                    elseif orientation == 3 then -- weird
+                        basepoint_h = basepoint_h + height
+                    end
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - basepoint_h
+                    else
+                        pos_h = ref_h + basepoint_h
+                    end
+                    pos_v = ref_v - (cur_v + basepoint_v)
+                end
+                if id == vlist_code then
+                    vlist_out(current,list)
+                else
+                    hlist_out(current,list)
+                end
+            end
+            cur_v = cur_v + height + depth
+        elseif id == kern_code then
+            cur_v = cur_v + getkern(current)
+        elseif id == rule_code then
+            local width, height, depth = getwhd(current)
+            cur_v = cur_v + height + depth
+        elseif id == whatsit_code then
+            if subtype == userdefined_code then
+                local action = userdefined[getprop(current,"id")]
+                if action then
+                    action(current,pos_h,pos_v)
+                end
+            end
+        else
+            goto synced
+        end
+        pos_h = ref_h
+        ::synced::
+    end
+    pos_h = ref_h
+    pos_v = ref_v
+    pos_r = ref_r
+end
+
+function drivers.converters.analyze(driver,box)
+
+    if not driver then
+        report("error in converter, no driver")
+        return
+    elseif box then
+        box = tonut(box)
+    else
+        report("error in converter, no box")
+        return
+    end
+
+    local width, height, depth = getwhd(box)
+    local total = height + depth
+
+    if height > maxdimen or depth > maxdimen or width > maxdimen or total > maxdimen then
+        report("error in converter, overflow")
+        return
+    end
+
+    local actions   = driver.actions
+    local flushers  = driver.flushers
+
+    initialize      = actions.initialize
+    finalize        = actions.finalize
+
+    userdefined     = flushers.userdefined
+
+    reset_dir_stack()
+    reset_state()
+
+    pos_r = getdirection(box)
+    pos_v = depth
+    pos_h = pos_r == righttoleft_code and width or 0
+
+    local details = {
+        boundingbox = { 0, 0, width, total },
+    }
+
+    if initialize then
+        initialize(driver,details)
+    end
+
+    if getid(box) == vlist_code then
+        vlist_out(box,getlist(box))
+    else
+        hlist_out(box,getlist(box))
+    end
+
+    if finalize then
+        finalize(driver,details)
+    end
+
+end
+

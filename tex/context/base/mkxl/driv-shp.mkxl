@@ -12,6 +12,7 @@
 %C details.
 
 \registerctxluafile{driv-shp}{autosuffix}
+\registerctxluafile{driv-usr}{autosuffix}
 
 \unprotect
 

@@ -317,3 +317,9 @@ vardef textextanchor(expr p) =
 enddef ;
 
 permanent textextanchor ;
+
+newscriptindex mfid_anchorxy ; mfid_anchorxy := scriptindex "anchorxy" ; def anchorxy(expr name, x, y) = runscript mfid_anchorxy name x y enddef ;
+newscriptindex mfid_anchorx  ; mfid_anchorx  := scriptindex "anchorx"  ; def anchorx (expr name, x, y) = runscript mfid_anchorx  name x y enddef ;
+newscriptindex mfid_anchory  ; mfid_anchory  := scriptindex "anchory"  ; def anchory (expr name, x, y) = runscript mfid_anchory  name x y enddef ;
+
+permanent anchorxy, anchorx, anchory ;
