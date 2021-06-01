@@ -39,6 +39,8 @@ return {
         "definecolor",
         --
         "anchorxy", "anchorx", "anchory",
+        "anchorht", "anchordp",
+        "anchorll", "anchorur", "anchorbox",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",

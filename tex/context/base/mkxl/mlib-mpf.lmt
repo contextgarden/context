@@ -943,8 +943,8 @@ do
     local scannumeric    = scan.numeric
     local skiptoken      = skip.token
 
-    local injectstring   = inject.string
-    local injectnumeric  = inject.numeric
+    ----- injectstring   = inject.string
+    ----- injectnumeric  = inject.numeric
 
     local registerdirect = metapost.registerdirect
     local registerscript = metapost.registerscript

@@ -113,3 +113,53 @@ statistics.register("node frequencies", function()
         return format("saved in %q",filename)
     end
 end)
+
+do -- for the moment:
+
+    local whatsitcodes = nodes.whatsitcodes
+    local whatsit_code = nodecodes.whatsit
+
+    local removables   = {
+        [whatsitcodes.open]    = true,
+        [whatsitcodes.close]   = true,
+        [whatsitcodes.write]   = true,
+        [whatsitcodes.savepos] = true,
+        [whatsitcodes.latelua] = true,
+    }
+
+    local setlist = nuts.setlist
+    local getlist = nuts.getlist
+    local remove  = nuts.remove
+
+    local function cleanup(head)
+        for current, id, subtype in nextnode, head do
+            if id == whatsit_code then
+                if removables[subtype] then
+                    head = remove(head,current,true)
+                end
+            elseif id == hlist_code or id == vlist_code then
+                local sl = getlist(current)
+                if sl then
+                    local rl = cleanup(sl)
+                    if rl ~= sl then
+                        setlist(current,rl)
+                    end
+                end
+            end
+        end
+        return head
+    end
+
+    function handlers.cleanupbox(box)
+        cleanup(getbox(box))
+    end
+
+    implement {
+        name      = "cleanupbox",
+        public    = true,
+        protected = true,
+        actions   = handlers.cleanupbox,
+        arguments = "integerargument"
+    }
+
+end

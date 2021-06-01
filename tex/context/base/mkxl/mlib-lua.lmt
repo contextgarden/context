@@ -125,27 +125,57 @@ end
 -- local p = mp.scan.path()
 -- mp.inject.path(p,true,true)
 
+-- function inject.path(p,close,connector)
+--     local curled = false
+--     local n = #p
+--     if p.close or p.cycle then
+--         close = true
+--     end
+--     if p.curled then
+--         curled = true
+--     end
+--     if n > 1 then
+--         -- [ ../true | --/false | nil/auto ]
+--         if connector == nil or connector == "auto" then
+--             connector = #p[1] > 2
+--         end
+--         if connector == false or connector == "--" then
+--             curled = true
+--         elseif connector == true or connector == ".." then
+--             if close and not same(p,n) then
+--                 p[n+1] = p[1]
+--             end
+--         end
+--     end
+--     if trace then reporti("path") end
+--     return injectpath(currentmpx,p,close,curled)
+-- end
+
 function inject.path(p,close,connector)
+    local closed = false
     local curled = false
     local n = #p
-    if p.close or p.cycle then
-        close = true
+    if close == nil then
+        closed = (p.close or p.cycle or p.closed) and true or false
+    else
+        closed = close
     end
-    if n > 1 then
-        -- [ ../true | --/false | nil/auto ]
-        if connector == nil or connector == "auto" then
+    if connector then
+        if connector == "auto" then
             connector = #p[1] > 2
         end
         if connector == false or connector == "--" then
             curled = true
-        elseif connector == true or connector == ".." then
-            if close and not same(p,n) then
-                p[n+1] = p[1]
-            end
+     -- elseif connector == true or connector == ".." then
+     --     if close and not same(p,n) then
+     --         p[n+1] = p[1]
+     --     end
         end
+    elseif p.curled then
+        curled = true
     end
     if trace then reporti("path") end
-    return injectpath(currentmpx,p,close,curled)
+    return injectpath(currentmpx,p,closed,curled)
 end
 
 -- bonus:

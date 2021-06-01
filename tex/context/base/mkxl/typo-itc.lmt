@@ -43,6 +43,7 @@ local isglyph             = nuts.isglyph
 local setkern             = nuts.setkern
 local getkern             = nuts.getkern
 local getheight           = nuts.getheight
+local getoptions          = nuts.getoptions
 
 local insertnodeafter     = nuts.insertafter
 local remove_node         = nuts.remove
@@ -57,6 +58,8 @@ local unsetvalue          = attributes.unsetvalue
 
 local new_correction_kern = nodepool.italickern
 local new_correction_glue = nodepool.glue
+
+local no_correction_code  = tex.glyphoptioncodes.noitaliccorrection
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
@@ -116,36 +119,46 @@ end
 
 -- todo: clear attribute
 
+local function correction_okay(n)
+    return not (getoptions(n) & no_correction_code)
+end
+
 local function okay(data,current,font,prevchar,previtalic,char,what)
-    if data then
+    if getoptions(current) & no_correction_code then
         if trace_italics then
-            report_italics("ignoring %p between %s italic %C and italic %C",previtalic,what,prevchar,char)
+            report_italics("ignoring %p between %s italic %C and italic %C, %s",previtalic,what,prevchar,char,"disabled")
         end
         return false
-    end
-    if threshold then
-     -- if getid(current) == glyph_code then
-        while current and getid(current) ~= glyph_code do
-            current = getprev(current)
+    elseif data then
+        if trace_italics then
+            report_italics("ignoring %p between %s italic %C and italic %C, %s",previtalic,what,prevchar,char,"no data")
         end
-        if current then
-            local ht = getheight(current)
-            local ex = exheights[font]
-            local th = threshold * ex
-            if ht <= th then
-                if trace_italics then
-                    report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
-                end
-                return false
+        return false
+    else
+        if threshold then
+         -- if getid(current) == glyph_code then
+            while current and getid(current) ~= glyph_code do
+                current = getprev(current)
             end
-        else
-            -- maybe backtrack to glyph
+            if current then
+                local ht = getheight(current)
+                local ex = exheights[font]
+                local th = threshold * ex
+                if ht <= th then
+                    if trace_italics then
+                        report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+                    end
+                    return false
+                end
+            else
+                -- maybe backtrack to glyph
+            end
         end
+        if trace_italics then
+            report_italics("inserting %p between %s italic %C and regular %C",previtalic,what,prevchar,char)
+        end
+        return true
     end
-    if trace_italics then
-        report_italics("inserting %p between %s italic %C and regular %C",previtalic,what,prevchar,char)
-    end
-    return true
 end
 
 -- maybe: with_attributes(current,n) :
@@ -188,7 +201,7 @@ local function domath(head,current)
     local next = getnext(current)
     if next then
         local char, id = isglyph(next)
-        if char then
+        if char and correction_okay(next) then
             -- we can have an old font where italic correction has been applied
             -- or a new one where it hasn't been done
             local kern = getprev(current)
@@ -393,35 +406,39 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = id
-                        if font ~= lastfont then
-                            local data = italicsdata[font]
-                            if data then
-                                local attr = forcedvariant or getattr(current,a_italics)
-                                if attr and attr > 0 then
-                                    local cd = data[char]
-                                    if not cd then
-                                        -- this really can happen
-                                        replaceitalic = 0
-                                    else
-                                        replaceitalic = cd.italic
-                                        if not replaceitalic then
-                                            replaceitalic = setitalicinfont(font,char) -- calculated once
-                                         -- replaceitalic = 0
-                                        end
-                                        if replaceitalic ~= 0 then
-                                            lastfont    = font
-                                            lastattr    = attr
-                                            replacechar = char
-                                            replacehead = replace
-                                            updated     = true
+                        if correction_okay(current) then
+                            local font = id
+                            if font ~= lastfont then
+                                local data = italicsdata[font]
+                                if data then
+                                    local attr = forcedvariant or getattr(current,a_italics)
+                                    if attr and attr > 0 then
+                                        local cd = data[char]
+                                        if not cd then
+                                            -- this really can happen
+                                            replaceitalic = 0
+                                        else
+                                            replaceitalic = cd.italic
+                                            if not replaceitalic then
+                                                replaceitalic = setitalicinfont(font,char) -- calculated once
+                                             -- replaceitalic = 0
+                                            end
+                                            if replaceitalic ~= 0 then
+                                                lastfont    = font
+                                                lastattr    = attr
+                                                replacechar = char
+                                                replacehead = replace
+                                                updated     = true
+                                            end
                                         end
                                     end
                                 end
+                                replacefont = font
                             end
-                            replacefont = font
+                            break
+                        else
+                            current = getprev(current)
                         end
-                        break
                     else
                         current = getprev(current)
                     end
@@ -432,35 +449,39 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = id
-                        if font ~= lastfont then
-                            local data = italicsdata[font]
-                            if data then
-                                local attr = forcedvariant or getattr(current,a_italics)
-                                if attr and attr > 0 then
-                                    local cd = data[char]
-                                    if not cd then
-                                        -- this really can happen
-                                        -- postitalic = 0
-                                    else
-                                        postitalic = cd.italic
-                                        if not postitalic then
-                                            postitalic = setitalicinfont(font,char) -- calculated once
-                                         -- postitalic = 0
-                                        end
-                                        if postitalic ~= 0 then
-                                            lastfont = font
-                                            lastattr = attr
-                                            postchar = char
-                                            posthead = post
-                                            updated  = true
+                        if correction_okay(current) then
+                            local font = id
+                            if font ~= lastfont then
+                                local data = italicsdata[font]
+                                if data then
+                                    local attr = forcedvariant or getattr(current,a_italics)
+                                    if attr and attr > 0 then
+                                        local cd = data[char]
+                                        if not cd then
+                                            -- this really can happen
+                                            -- postitalic = 0
+                                        else
+                                            postitalic = cd.italic
+                                            if not postitalic then
+                                                postitalic = setitalicinfont(font,char) -- calculated once
+                                             -- postitalic = 0
+                                            end
+                                            if postitalic ~= 0 then
+                                                lastfont = font
+                                                lastattr = attr
+                                                postchar = char
+                                                posthead = post
+                                                updated  = true
+                                            end
                                         end
                                     end
                                 end
+                                postfont = font
                             end
-                            postfont = font
+                            break
+                        else
+                            current = getprev(current)
                         end
-                        break
                     else
                         current = getprev(current)
                     end
@@ -518,43 +539,41 @@ local function texthandler(head)
             else
                 current = endofmath(current)
             end
+        elseif previtalic ~= 0 then
+            if trace_italics then
+                report_italics("inserting %p between %s italic %C and whatever",previtalic,"glyph",prevchar)
+            end
+            insertnodeafter(prevhead,prev,correction_kern(previtalic,current))
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
         else
-            if previtalic ~= 0 then
+            if replaceitalic ~= 0 then
                 if trace_italics then
-                    report_italics("inserting %p between %s italic %C and whatever",previtalic,"glyph",prevchar)
+                    report_italics("inserting %p between %s italic %C and whatever",replaceitalic,"replace",replacechar)
                 end
-                insertnodeafter(prevhead,prev,correction_kern(previtalic,current))
+                insertnodeafter(replacehead,replace,correction_kern(replaceitalic,current))
                 previnserted    = nil
                 previtalic      = 0
                 replaceinserted = nil
                 replaceitalic   = 0
                 postinserted    = nil
                 postitalic      = 0
-            else
-                if replaceitalic ~= 0 then
-                    if trace_italics then
-                        report_italics("inserting %p between %s italic %C and whatever",replaceitalic,"replace",replacechar)
-                    end
-                    insertnodeafter(replacehead,replace,correction_kern(replaceitalic,current))
-                    previnserted    = nil
-                    previtalic      = 0
-                    replaceinserted = nil
-                    replaceitalic   = 0
-                    postinserted    = nil
-                    postitalic      = 0
+            end
+            if postitalic ~= 0 then
+                if trace_italics then
+                    report_italics("inserting %p between %s italic %C and whatever",postitalic,"post",postchar)
                 end
-                if postitalic ~= 0 then
-                    if trace_italics then
-                        report_italics("inserting %p between %s italic %C and whatever",postitalic,"post",postchar)
-                    end
-                    insertnodeafter(posthead,post,correction_kern(postitalic,current))
-                    previnserted    = nil
-                    previtalic      = 0
-                    replaceinserted = nil
-                    replaceitalic   = 0
-                    postinserted    = nil
-                    postitalic      = 0
-                end
+                insertnodeafter(posthead,post,correction_kern(postitalic,current))
+                previnserted    = nil
+                previtalic      = 0
+                replaceinserted = nil
+                replaceitalic   = 0
+                postinserted    = nil
+                postitalic      = 0
             end
         end
         current = getnext(current)

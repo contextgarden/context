@@ -845,6 +845,10 @@
 \permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkerncode}
 \permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligaturecode}
 
+% This is not really language related but let's define it here:
+
+\permanent\protected\def\noitaliccorrection{\bitwiseflip\glyphoptions\noitaliccorrectioncode}
+
 %D Also \LMTX:
 
 % \startlanguageoptions[de]

@@ -70,7 +70,7 @@ end
 -- local function finalizepositions(...)
 -- end
 
-local function collectpositions(current,pos_h,pos_v)
+local function collectpositions(current,pos_h,pos_v,cur_b)
     -- beware, we actually can have a copy due to setting trialrun so we cannot
     -- fetch the nodetable directly but go via the metatable ... fast enough
     local data = getprop(current,"data")
@@ -90,7 +90,7 @@ local function collectpositions(current,pos_h,pos_v)
     elseif y > hash.max then
         hash.max = y
     end
-    hash[y] = { pos_h, pos_v, data, current, 0, false }
+    hash[y] = { pos_h, pos_v, data, current, 0, false, cur_b }
 end
 
 local function valid(name,x,y)
@@ -111,6 +111,42 @@ end
 local function anchory(name,x,y)
     local v = valid(name,x,y)
     return v and v[2] or 0
+end
+
+local function anchorht(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[7][2]
+    else
+        return 0
+    end
+end
+
+local function anchordp(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[7][3]
+    else
+        return 0
+    end
+end
+
+local function anchorur(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[1], v[2] + v[7][2]
+    else
+        return 0, 0
+    end
+end
+
+local function anchorll(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[1], v[2] - v[7][3]
+    else
+        return 0, 0
+    end
 end
 
 local function anchorxy(name,x,y)
@@ -347,6 +383,7 @@ do
 
     local injectnumeric = injectors.numeric
     local injectpair    = injectors.pair
+    local injectpath    = injectors.path
 
     local scaninteger   = scanners.integer
     local scanstring    = scanners.string
@@ -357,16 +394,85 @@ do
     local registerdirect = metapost.registerdirect
 
     registerscript("anchorxy", function()
-        x, y = anchorxy(scanstring(),scaninteger(),scaninteger())
-        return injectpair(x*bpfactor, y*bpfactor)
+        local x, y = anchorxy(scanstring(),scaninteger(),scaninteger())
+        return injectpair(x*bpfactor,y*bpfactor)
     end)
 
-    registerdirect("anchorx",  function()
+    registerdirect("anchorx", function()
         return anchorx(scanstring(),scaninteger(),scaninteger()) * bpfactor
     end)
 
-    registerdirect("anchory",  function()
+    registerdirect("anchory", function()
         return anchory(scanstring(),scaninteger(),scaninteger()) * bpfactor
+    end)
+
+    registerdirect("anchorht", function()
+        return anchorht(scanstring(),scaninteger(),scaninteger()) * bpfactor
+    end)
+
+    registerdirect("anchordp", function()
+        return anchordp(scanstring(),scaninteger(),scaninteger()) * bpfactor
+    end)
+
+    registerdirect("anchorur", function()
+        local x, y = anchorur(scanstring(),scaninteger(),scaninteger())
+        return injectpair(x*bpfactor,y*bpfactor)
+    end)
+
+    registerdirect("anchorll", function()
+        local x, y = anchorll(scanstring(),scaninteger(),scaninteger())
+        return injectpair(x*bpfactor,y*bpfactor)
+    end)
+
+    registerscript("anchorbox", function()
+        local l = valid(scanstring(),scaninteger(),scaninteger())
+        local r = valid(scanstring(),scaninteger(),scaninteger())
+        local llx, lly, urx, ury, llb, urb
+        if l and r then
+            llx = l[1]
+            lly = l[2]
+            urx = r[1]
+            ury = r[2]
+            llb = l[7]
+            urb = r[7]
+            if llx > urx then
+                llx, urx = urx, llx
+            end
+            if lly > ury then
+                lly, ury = ury, lly
+                lly = lly - urb[3]
+                ury = ury + llb[2]
+            else
+                lly = lly - llb[3]
+                ury = ury + urb[2]
+            end
+            llx = llx * bpfactor
+            lly = lly * bpfactor
+            urx = urx * bpfactor
+            ury = ury * bpfactor
+        else
+            llx = 0
+            lly = 0
+            urx = 0
+            ury = 0
+        end
+        local p = {
+            cycle  = true,
+            curled = true,
+            { llx, lly },
+            { urx, lly },
+            { urx, ury },
+            { llx, ury }
+        }
+     -- local p = {
+     --     cycle  = true,
+     --  -- curled = true,
+     --     { x_coord = llx, y_coord = lly },
+     --     { x_coord = urx, y_coord = lly },
+     --     { x_coord = urx, y_coord = ury },
+     --     { x_coord = llx, y_coord = ury }
+     -- }
+        injectpath(p)
     end)
 
 end

@@ -100,6 +100,7 @@ hlist_out = function(this_box,current)
     local ref_r = pos_r
           pos_r = getdirection(this_box)
     local cur_h = 0
+    local cur_b
 
     for current, id, subtype in nextnode, current do
         if id == glyph_code then -- or id == kern_code
@@ -221,7 +222,11 @@ hlist_out = function(this_box,current)
             if subtype == userdefined_code then
                 local action = userdefined[getprop(current,"id")]
                 if action then
-                    action(current,pos_h,pos_v)
+                    if not cur_b then
+                        local wd, ht, dp = getwhd(this_box)
+                        cur_b = { wd, ht, dp, ref_h, ref_v, ref_r }
+                    end
+                    action(current, pos_h,pos_v, cur_b)
                 end
             end
         elseif id == disc_code then
@@ -256,6 +261,7 @@ vlist_out = function(this_box,current)
     local top_edge = cur_v
           pos_h    = ref_h
           pos_v    = ref_v - cur_v
+    local cur_b
 
     for current, id, subtype in nextnode, current do
         if id == glue_code then
@@ -322,6 +328,10 @@ vlist_out = function(this_box,current)
             if subtype == userdefined_code then
                 local action = userdefined[getprop(current,"id")]
                 if action then
+                    if not cur_b then
+                        local wd, ht, dp = getwhd(this_box)
+                        cur_b = { wd, ht, dp, ref_h, ref_v, ref_r }
+                    end
                     action(current,pos_h,pos_v)
                 end
             end

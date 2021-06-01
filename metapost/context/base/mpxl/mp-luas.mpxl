@@ -310,7 +310,7 @@ permanent showproperty, showhashentry ;
 
 newscriptindex mfid_textextanchor ; mfid_textextanchor := scriptindex("textextanchor") ;
 
-def textextanchor = runscript mfid_textextanchor enddef ;
+% def textextanchor = runscript mfid_textextanchor enddef ;
 
 vardef textextanchor(expr p) =
     runscript mfid_textextanchor (prescriptpart p)
@@ -318,8 +318,24 @@ enddef ;
 
 permanent textextanchor ;
 
-newscriptindex mfid_anchorxy ; mfid_anchorxy := scriptindex "anchorxy" ; def anchorxy(expr name, x, y) = runscript mfid_anchorxy name x y enddef ;
-newscriptindex mfid_anchorx  ; mfid_anchorx  := scriptindex "anchorx"  ; def anchorx (expr name, x, y) = runscript mfid_anchorx  name x y enddef ;
-newscriptindex mfid_anchory  ; mfid_anchory  := scriptindex "anchory"  ; def anchory (expr name, x, y) = runscript mfid_anchory  name x y enddef ;
+newscriptindex mfid_anchorxy  ; mfid_anchorxy  := scriptindex "anchorxy"  ; def anchorxy (expr name, x, y) = runscript mfid_anchorxy  name x y enddef ;
+newscriptindex mfid_anchorx   ; mfid_anchorx   := scriptindex "anchorx"   ; def anchorx  (expr name, x, y) = runscript mfid_anchorx   name x y enddef ;
+newscriptindex mfid_anchory   ; mfid_anchory   := scriptindex "anchory"   ; def anchory  (expr name, x, y) = runscript mfid_anchory   name x y enddef ;
+newscriptindex mfid_anchorht  ; mfid_anchorht  := scriptindex "anchorht"  ; def anchorht (expr name, x, y) = runscript mfid_anchorht  name x y enddef ;
+newscriptindex mfid_anchordp  ; mfid_anchordp  := scriptindex "anchordp"  ; def anchordp (expr name, x, y) = runscript mfid_anchordp  name x y enddef ;
+newscriptindex mfid_anchorll  ; mfid_anchorll  := scriptindex "anchorll"  ; def anchorll (expr name, x, y) = runscript mfid_anchorll  name x y enddef ;
+newscriptindex mfid_anchorur  ; mfid_anchorur  := scriptindex "anchorur"  ; def anchorur (expr name, x, y) = runscript mfid_anchorur  name x y enddef ;
+newscriptindex mfid_anchorbox ; mfid_anchorbox := scriptindex "anchorbox" ;
 
-permanent anchorxy, anchorx, anchory ;
+vardef anchorbox(expr lname, lx, ly, rname, rx, ry) =
+    (runscript mfid_anchorbox lname lx ly rname rx ry)
+enddef ;
+
+vardef matrixbox (expr fx, fy, tx, ty) =
+    anchorbox ("matrix", fx, fy) ("matrix", tx + 1, ty)
+enddef ;
+
+permanent
+    anchorxy, anchorx, anchory,
+    anchorht, anchordp,
+    anchorll, anchorur, anchorbox ;

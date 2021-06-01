@@ -271,6 +271,7 @@
 %D Here we implement the user interface part. We start with basic math alignments:
 
 \newcount      \c_math_eqalign_column
+\newcount      \c_math_eqalign_row
 \newconditional\c_math_eqalign_first
 
 \newtoks \everymathalignment
@@ -374,6 +375,7 @@
    \fi
    \math_alignment_snap_start
    \the\everymathalignment
+   \c_math_eqalign_row   \zerocount
    \c_math_eqalign_column\zerocount
    \edef\p_math_alignment_number{\mathalignmentparameter\c!number}%
    \processcommacommand
@@ -463,6 +465,7 @@
 
 \def\math_first_in_eqalign
   {\global\c_math_eqalign_column\plusone
+   \global\advance\c_math_eqalign_row\plusone
    \dostarttagged\t!mtablerow \empty
    \dostarttagged\t!mtablecell\empty}
 
@@ -507,10 +510,10 @@
   {\expandafter\chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\expandafter\expandafter\endcsname
      \ifcsname\??mathalignmentvariant#1\endcsname\lastnamedcs\else\zerocount\fi\relax}
 
-\letvalue{\??mathalignmentvariant\v!normal}\zerocount
-\letvalue{\??mathalignmentvariant\v!left  }\plusone
-\letvalue{\??mathalignmentvariant\v!right }\plustwo
-\letvalue{\??mathalignmentvariant\v!middle}\plusthree
+\letcsname\??mathalignmentvariant\v!normal\endcsname\zerocount
+\letcsname\??mathalignmentvariant\v!left  \endcsname\plusone
+\letcsname\??mathalignmentvariant\v!right \endcsname\plustwo
+\letcsname\??mathalignmentvariant\v!middle\endcsname\plusthree
 
 \permanent\protected\def\math_align_NR_generic[#1][#2]%
   {\strc_formulas_place_number_nested{#1}{#2}\crcr}
@@ -833,6 +836,7 @@
    \everycr\emptytoks
    \tabskip\zeropoint
    \global\c_math_eqalign_column\plusone
+   \global\c_math_eqalign_row\plusone
    \global\c_math_cases_nc\zerocount
    \halign\bgroup
      \ifmmode\else\startimath\fi
@@ -928,6 +932,7 @@
 
 \def\math_matrix_start_table
   {\global\c_math_eqalign_column\zerocount
+   \global\c_math_eqalign_row\zerocount
    \dostarttagged\t!math\empty
    \dostarttagged\t!mtable\empty}
 
@@ -945,6 +950,7 @@
 \def\math_matrix_start_row
   {\beginlocalcontrol
    \global\c_math_eqalign_column\zerocount
+   \global\advance\c_math_eqalign_row\plusone
    \dostarttagged\t!mtablerow\empty
    \endlocalcontrol}
 
@@ -971,15 +977,67 @@
 % We could construct a preamble with alignment and such embedded but the number
 % of matrices with many rows is normally so low that it doesn't pay of at all.
 
+\newconditional\c_math_matrix_first
+\newconstant   \c_math_matrix_anchor_mode
+
+% enabled    : 1
+% left/both  : 2
+% right/both : 4
+
+% \c_math_matrix_anchor_mode3
+
+\permanent\protected\def\setmathmatrixanchoring[#1]%
+  {\c_math_matrix_anchor_mode\zerocount
+   \processaction
+     [#1]
+     [    \v!left=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo\relax,
+         \v!right=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plusfour\relax,
+          \v!both=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo+\plusfour\relax,
+           \v!yes=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone]}
+
+\def\math_matrix_anchor
+  {\ifbitwiseand\c_math_matrix_anchor_mode\plusone
+     \markanchor{matrix}{\numexpr\c_math_eqalign_column+1\relax}\c_math_eqalign_row
+   \fi}
+
 \protected\def\math_matrix_distance
   {\relax
    \ifdim\d_math_eqalign_distance>\zeropoint
-     \hskip\d_math_eqalign_distance
+     \hskip.5\d_math_eqalign_distance
+   \fi
+   \math_matrix_anchor
+   \ifdim\d_math_eqalign_distance>\zeropoint
+     \hskip.5\d_math_eqalign_distance
+   \fi
+   \relax}
+
+\protected\def\math_matrix_distance_first
+  {\relax
+   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+     \math_matrix_anchor
+   \fi
+   \ifdim\d_math_eqalign_distance>\zeropoint
+     \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
+       \hskip.5\d_math_eqalign_distance
+     \fi
+   \fi
+   \relax}
+
+\protected\def\math_matrix_distance_last
+  {\relax
+   \ifdim\d_math_eqalign_distance>\zeropoint
+     \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
+       \hskip.5\d_math_eqalign_distance
+     \fi
+   \fi
+   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+     \math_matrix_anchor
    \fi
    \relax}
 
 \def\math_matrix_preamble
   {\math_matrix_strut
+   \math_matrix_distance_first
    \global\advance\c_math_eqalign_column\plusone
    \math_matrix_start_cell
      \alignmark\alignmark
@@ -992,10 +1050,9 @@
      \alignmark\alignmark
    \math_matrix_stop_cell}
 
-\newconditional\c_math_matrix_first
-
 \permanent\protected\def\math_matrix_NR
   {\aligntab\omit
+   \math_matrix_distance_last
    \math_matrix_stop_row
    \math_matrix_pickup
    \crcr
@@ -1123,6 +1180,7 @@
    \rawprocesscommacommand[\mathmatrixparameter\c!align]\math_matrix_set_columns_step}
 
 \newcount\c_math_eqalign_column_saved
+\newcount\c_math_eqalign_row_saved
 
 % \installglobalmacrostack\c_math_matrix_first
 
@@ -1130,6 +1188,7 @@
   {\begingroup
    \globalpushmacro\c_math_matrix_first % hm, does that work?
    \c_math_eqalign_column_saved\c_math_eqalign_column
+   \c_math_eqalign_row_saved\c_math_eqalign_row
    \globalpushmacro\c_math_eqalign_first
    \edef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
@@ -1142,6 +1201,7 @@
   {\math_matrix_stop_processing
    \globalpushmacro\c_math_eqalign_first
    \global\c_math_eqalign_column\c_math_eqalign_column_saved
+   \global\c_math_eqalign_row\c_math_eqalign_row_saved
    \globalpopmacro\c_math_matrix_first
    \endgroup}
 
@@ -1157,13 +1217,13 @@
 \mutable\let\mathmatrixleft \empty % experimental hook
 \mutable\let\mathmatrixright\empty % experimental hook
 
-\setvalue{\??mathmatrixalignlocation\v!top   }{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
-\setvalue{\??mathmatrixalignlocation\v!high  }{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
-\setvalue{\??mathmatrixalignlocation\v!center}{\relax}
-\setvalue{\??mathmatrixalignlocation\v!lohi}  {\relax}
-\setvalue{\??mathmatrixalignlocation\v!normal}{\relax}
-\setvalue{\??mathmatrixalignlocation\v!bottom}{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
-\setvalue{\??mathmatrixalignlocation\v!low   }{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
+\defcsname\??mathmatrixalignlocation\v!top   \endcsname{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
+\defcsname\??mathmatrixalignlocation\v!high  \endcsname{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
+\defcsname\??mathmatrixalignlocation\v!center\endcsname{\relax}
+\defcsname\??mathmatrixalignlocation\v!lohi  \endcsname{\relax}
+\defcsname\??mathmatrixalignlocation\v!normal\endcsname{\relax}
+\defcsname\??mathmatrixalignlocation\v!bottom\endcsname{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
+\defcsname\??mathmatrixalignlocation\v!low   \endcsname{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 
 \def\math_matrix_finish_nextbox
   {\begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
@@ -1314,9 +1374,8 @@
   {\math_matrix_stop
    \endgroup}
 
-%D The following code is derived from Aditya's simplematrix prototype but
-%D adapted to regular mathmatrices (which saves some code so it can go into
-%D the core):
+%D The following code is derived from Aditya's simplematrix prototype but adapted to
+%D regular mathmatrices:
 
 \def\math_matrix_simple_row#1%
   {\rawprocesscommalist[#1]\math_matrix_simple_col
@@ -1590,7 +1649,7 @@
 
 \newdimen\d_strc_math_framed_width
 
-\setvalue{\??formulaoption\v!frame}%
+\defcsname\??formulaoption\v!frame\endcsname
   {\edef\p_frame{\formulaparameter\c!frame}%
    \ifx\p_frame\v!number
      \c_strc_formulas_frame_mode\plustwo % inside frame

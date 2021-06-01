@@ -172,7 +172,7 @@ return {
         "clipwidthcode", "flattendiscretionariescode",
         --
         "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
-        "noexpansioncode", "noprotrusioncode",
+        "noexpansioncode", "noprotrusioncode", "noitaliccorrectioncode",
         --
         "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode", "mutableflagcode",
         "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
@@ -555,7 +555,7 @@ return {
         "prelistbox", "postlistbox", "prelistcopy", "postlistcopy", "setprelistbox", "setpostlistbox",
         --
         "noligaturing", "nokerning", "noexpansion", "noprotrusion",
-        "noleftkerning", "noleftligaturing", "norightkerning", "norightligaturing",
+        "noleftkerning", "noleftligaturing", "norightkerning", "norightligaturing", "noitaliccorrection",
          --
         "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
         --
