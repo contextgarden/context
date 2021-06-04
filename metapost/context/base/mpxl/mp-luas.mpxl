@@ -318,24 +318,50 @@ enddef ;
 
 permanent textextanchor ;
 
-newscriptindex mfid_anchorxy  ; mfid_anchorxy  := scriptindex "anchorxy"  ; def anchorxy (expr name, x, y) = runscript mfid_anchorxy  name x y enddef ;
-newscriptindex mfid_anchorx   ; mfid_anchorx   := scriptindex "anchorx"   ; def anchorx  (expr name, x, y) = runscript mfid_anchorx   name x y enddef ;
-newscriptindex mfid_anchory   ; mfid_anchory   := scriptindex "anchory"   ; def anchory  (expr name, x, y) = runscript mfid_anchory   name x y enddef ;
-newscriptindex mfid_anchorht  ; mfid_anchorht  := scriptindex "anchorht"  ; def anchorht (expr name, x, y) = runscript mfid_anchorht  name x y enddef ;
-newscriptindex mfid_anchordp  ; mfid_anchordp  := scriptindex "anchordp"  ; def anchordp (expr name, x, y) = runscript mfid_anchordp  name x y enddef ;
-newscriptindex mfid_anchorll  ; mfid_anchorll  := scriptindex "anchorll"  ; def anchorll (expr name, x, y) = runscript mfid_anchorll  name x y enddef ;
-newscriptindex mfid_anchorur  ; mfid_anchorur  := scriptindex "anchorur"  ; def anchorur (expr name, x, y) = runscript mfid_anchorur  name x y enddef ;
-newscriptindex mfid_anchorbox ; mfid_anchorbox := scriptindex "anchorbox" ;
+newscriptindex mfid_anchorxy   ; mfid_anchorxy   := scriptindex "anchorxy"   ;
+newscriptindex mfid_anchorx    ; mfid_anchorx    := scriptindex "anchorx"    ;
+newscriptindex mfid_anchory    ; mfid_anchory    := scriptindex "anchory"    ;
+newscriptindex mfid_anchorht   ; mfid_anchorht   := scriptindex "anchorht"   ;
+newscriptindex mfid_anchordp   ; mfid_anchordp   := scriptindex "anchordp"   ;
+newscriptindex mfid_anchorul   ; mfid_anchorul   := scriptindex "anchorul"   ;
+newscriptindex mfid_anchorll   ; mfid_anchorll   := scriptindex "anchorll"   ;
+newscriptindex mfid_anchorlr   ; mfid_anchorlr   := scriptindex "anchorlr"   ;
+newscriptindex mfid_anchorur   ; mfid_anchorur   := scriptindex "anchorur"   ;
+newscriptindex mfid_anchorbox  ; mfid_anchorbox  := scriptindex "anchorbox"  ;
+newscriptindex mfid_anchorspan ; mfid_anchorspan := scriptindex "anchorspan" ;
 
-vardef anchorbox(expr lname, lx, ly, rname, rx, ry) =
-    (runscript mfid_anchorbox lname lx ly rname rx ry)
-enddef ;
+def anchorxy (expr name, x, y) = runscript mfid_anchorxy  name x y enddef ;
+def anchorx  (expr name, x, y) = runscript mfid_anchorx   name x y enddef ;
+def anchory  (expr name, x, y) = runscript mfid_anchory   name x y enddef ;
+def anchorht (expr name, x, y) = runscript mfid_anchorht  name x y enddef ;
+def anchordp (expr name, x, y) = runscript mfid_anchordp  name x y enddef ;
+def anchorul (expr name, x, y) = runscript mfid_anchorul  name x y enddef ;
+def anchorll (expr name, x, y) = runscript mfid_anchorll  name x y enddef ;
+def anchorlr (expr name, x, y) = runscript mfid_anchorlr  name x y enddef ;
+def anchorur (expr name, x, y) = runscript mfid_anchorur  name x y enddef ;
 
-vardef matrixbox (expr fx, fy, tx, ty) =
-    anchorbox ("matrix", fx, fy) ("matrix", tx + 1, ty)
-enddef ;
+% todo: matrix =
+
+string mfun_local_anchor_tag ; mfun_local_anchor_tag := "matrix" ; % todo: push pop
+
+
+vardef localanchorbox (expr lname, fx, fy, rname, tx, ty) = (runscript mfid_anchorbox  lname fx fy rname tx ty) enddef ;
+vardef localanchorspan(expr lname, fx, fy, rname, tx, ty) = (runscript mfid_anchorspan lname fx fy rname tx ty) enddef ;
+vardef localanchorcell(expr  name,  x,  y               ) = (runscript mfid_anchorspan  name  x  y  name  x  y) enddef ;
+
+vardef anchorbox (expr fx, fy, tx, ty) = (runscript mfid_anchorbox  mfun_local_anchor_tag fx fy mfun_local_anchor_tag tx ty) enddef ;
+vardef anchorspan(expr fx, fy, tx, ty) = (runscript mfid_anchorspan mfun_local_anchor_tag fx fy mfun_local_anchor_tag tx ty) enddef ;
+vardef anchorcell(expr  x,  y        ) = (runscript mfid_anchorspan mfun_local_anchor_tag  x  y mfun_local_anchor_tag  x  y) enddef ;
+
+vardef matrixbox (expr fx, fy, tx, ty) = (runscript mfid_anchorbox  mfun_local_anchor_tag fx fy mfun_local_anchor_tag (tx+1) ty) enddef ;
+vardef matrixspan(expr fx, fy, tx, ty) = (runscript mfid_anchorspan mfun_local_anchor_tag fx fy mfun_local_anchor_tag (tx+1) ty) enddef ;
+vardef matrixcell(expr  x,  y        ) = (runscript mfid_anchorbox  mfun_local_anchor_tag  x  y mfun_local_anchor_tag ( x+1)  y) enddef ;
 
 permanent
     anchorxy, anchorx, anchory,
     anchorht, anchordp,
-    anchorll, anchorur, anchorbox ;
+    anchorul, anchorll, anchorlr, anchorur, anchorbox,
+    anchorspan ;
+
+permanent
+    matrixbox, matrixspan, matrixcell

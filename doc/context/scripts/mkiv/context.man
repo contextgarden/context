@@ -171,6 +171,9 @@ generate timing and statistics overview
 .B --keeptuc
 keep previous tuc files (jobname-tuc-[run].tmp)
 .TP
+.B --keeppdf
+keep previous pdf files (jobname-pdf-keep.tmp)
+.TP
 .B --keeplog
 keep previous log files (jobname-log-[run].tmp)
 .TP

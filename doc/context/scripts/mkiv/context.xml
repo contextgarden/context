@@ -202,6 +202,9 @@
                 <flag name="keeptuc">
                     <short>keep previous tuc files (jobname-tuc-[run].tmp)</short>
                 </flag>
+                <flag name="keeppdf">
+                    <short>keep previous pdf files (jobname-pdf-keep.tmp)</short>
+                </flag>
                 <flag name="keeplog">
                     <short>keep previous log files (jobname-log-[run].tmp)</short>
                 </flag>

@@ -24,6 +24,21 @@
 %D but we're prestine and have no macros defined yet. Abstraction also makes it
 %D possible to avoid the \type {^^} in the input.
 
+% cheatsheet
+%
+% # : 0--9
+% * : ignore spaces
+% + : keep the braces
+% - : discard and don't count the argument
+% . : ignore pars and spaces
+% , : push back space when no match
+% / : remove leading and trailing spaces and pars
+% : : pick up scanning here
+% ; : quit scanning
+% = : braces are mandate
+% ^ : keep leading spaces
+% _ : braces are mandate and kept
+
 \immutable\integerdef\escapecatcode             0
 \immutable\integerdef\begingroupcatcode         1
 \immutable\integerdef\endgroupcatcode           2

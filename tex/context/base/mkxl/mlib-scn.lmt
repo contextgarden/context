@@ -230,10 +230,13 @@ local function get_parameters(nested)
                 data[s] = (typescanners[kind] or scanexpression)()
             elseif kind == leftbracket_code then
                 data[s] = get_parameters(true)
+            elseif kind == comma_code then
+                goto again
             else
                 data[s] = tokenscanners[kind]()
             end
         end
+      ::again::
     end
     return data
 end
@@ -305,7 +308,7 @@ local function collectnames()
         local t = scantoken(true)
         -- (1) not really needed
         if t == numeric_code then
-            n = n + 1 l[n] = scaninteger(1)
+            n = n + 1 l[n] = scannumeric(1)
         elseif t == string_code then
             n = n + 1 l[n] = scanstring(1)
         elseif t == nullary_code then
@@ -522,16 +525,16 @@ local function getparameterdefault()
                                 end
                                 v = vl
                             end
-                         -- if v == nil then
-                         --     return injectnumeric(0)
-                         -- else
-                         --     return get(v)
-                         -- end
-                            return v or 0
+                            if v == nil then
+                                return 0
+                            else
+                                return v
+                            end
                         end
                      -- return injectnumeric(0)
                         return 0
                     else
+                    print("LAST",last)
                      -- return get(last)
                         return last
                     end

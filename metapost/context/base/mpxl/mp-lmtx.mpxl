@@ -2412,3 +2412,136 @@ vardef lmt_do_labtorgb =
     )
 enddef ;
 
+% For now we collect all lmt namespace extensions here, so also this one:
+
+presetparameters "matrix" [
+  % cell    = (1, 1),
+  % from    = (1, 1),
+  % to      = (1, 1),
+  % shape   = { "circle", "square" },
+    connect = { "center", "center" },
+  % text    = "",
+] ;
+
+def lmt_matrix = applyparameters "matrix" "lmt_do_matrix" enddef ;
+
+vardef mfun_lmt_matrix_cell (expr p) =
+  % anchorbox ("matrix", xpart p, ypart p) ("matrix", xpart p + 1, ypart p)
+    matrixcell (xpart p, ypart p)
+enddef ;
+
+% todo: lft rt etc but then we need to push/pop the linewidth too
+
+def mfun_lmt_matrix_connect (expr h, p, r, l, u, d, gap) =
+    if     h == "right"  : center rightboundary   (p enlarged gap) { r }
+    elseif h == "left"   : center leftboundary    (p enlarged gap) { l }
+    elseif h == "top"    : center topboundary     (p enlarged gap) { u }
+    elseif h == "bottom" : center bottomboundary  (p enlarged gap) { d }
+    else                 : center                 (p enlarged gap)
+    fi
+enddef ;
+
+def mfun_lmt_matrix_source (expr p, h, gap) =
+    mfun_lmt_matrix_connect(h, p, right, left, up, down, gap)
+enddef ;
+
+def mfun_lmt_matrix_target (expr p, h, gap) =
+    mfun_lmt_matrix_connect(h, p, left, right, down, up, gap)
+enddef ;
+
+vardef mfun_lmt_matrix_enhance (expr p, h) =
+    if h = "circle" :
+        fullcircle xysized (bbwidth p, bbheight p) shifted center p
+    elseif h = "round" :
+        (p smoothed getparameterdefault "radius" ExHeight) xysized (bbwidth p, bbheight p)
+    elseif h = "path" :
+        (getparameterpath "path") shifted center p
+    elseif h = "scaledpath" :
+        (getparameterpath "path") xysized (bbwidth p, bbheight p) shifted center p
+    else :
+        p
+    fi
+enddef ;
+
+vardef lmt_do_matrix =
+    image (
+        pushparameters "matrix" ;
+        draw image (
+            save a, b, c, o, g ; path a, b, c ; numeric o, g ;
+            if (hasparameter "arrowoffset") :
+                g := getparameter "arrowoffset" ;
+            elseif (hasparameter "linewidth") :
+                g := getparameter "linewidth" ;
+            else :
+                g := 0;
+            fi ;
+            if (hasparameter "from") and (hasparameter "to") :
+                a := mfun_lmt_matrix_cell(getparameter "from") ;
+                b := mfun_lmt_matrix_cell(getparameter "to") ;
+                if hasparameter "offset" :
+                    o := getparameter "offset" ;
+                    a := a enlarged o ;
+                    b := b enlarged o ;
+                fi ;
+                if hasparameter "shapes" :
+                    a := mfun_lmt_matrix_enhance(a, getparameter "shapes" 1) ;
+                    b := mfun_lmt_matrix_enhance(b, getparameter "shapes" 2) ;
+                fi ;
+                draw a
+                    if (hasparameter "colors") :
+                        withcolor (getparameter "colors" 1)
+                    elseif (hasparameter "color") :
+                        withcolor (getparameter "color")
+                    fi
+                ;
+                draw b
+                    if (hasparameter "colors") :
+                        withcolor (getparameter "colors" 2)
+                    elseif (hasparameter "color") :
+                        withcolor (getparameter "color")
+                    fi
+                ;
+                c :=
+                    mfun_lmt_matrix_source(a, getparameter "connect" 1, g) ..
+                    mfun_lmt_matrix_target(b, getparameter "connect" 2, g) ;
+                drawarrow c
+                    if (hasparameter "arrowcolor") :
+                        withcolor (getparameter "arrowcolor")
+                    elseif (hasparameter "color") :
+                        withcolor (getparameter "color")
+                    fi
+                ;
+                if hasparameter "label" :
+                    pushparameters "label" ;
+                    draw lmt_text [
+                        text     = getparameter "text",
+                        position = point (getparameterdefault "fraction" 1/2) of c,
+                        offset   = if hasparameter "offset" : getparameter "offset" fi,
+                        color    = if hasparameter "color"  : getparameter "color"  fi,
+                        anchor   = if hasparameter "anchor" : getparameter "anchor" fi,
+                      % strut style format background backgroundcolor
+                    ] ;
+                    popparameters ;
+                fi ;
+            elseif (hasparameter "cell") :
+                a := mfun_lmt_matrix_cell(getparameter "cell") ;
+                if hasparameter "offset" :
+                    o := getparameter "offset" ;
+                    a := a enlarged o ;
+                fi ;
+                if hasparameter "shape" :
+                    a := mfun_lmt_matrix_enhance(a, getparameter "shape") ;
+                fi ;
+                draw a
+                    if (hasparameter "color") :
+                        withcolor (getparameter "color")
+                    fi
+                ;
+            fi;
+        )
+        if (hasparameter "linewidth") :
+            withpen pencircle scaled (getparameter "linewidth")
+        fi
+        popparameters
+    )
+enddef ;

@@ -1271,6 +1271,7 @@
 		<cd:constant name='symbolset' value='setsimbol'/>
 		<cd:constant name='symcolor' value='culoaresimbol'/>
 		<cd:constant name='symstyle' value='stilsimbol'/>
+		<cd:constant name='synchronize' value='synchronize'/>
 		<cd:constant name='synonym' value='sinonim'/>
 		<cd:constant name='synonymcolor' value='culoaresinonim'/>
 		<cd:constant name='synonymcommand' value='synonymcommand'/>

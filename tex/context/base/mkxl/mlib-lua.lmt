@@ -55,21 +55,21 @@ local skiptoken      = mplib.skiptoken
 
 local gethashentry   = mplib.gethashentry
 
-scan.next       = function(k)   if trace then reporti("next")       end return scannext      (currentmpx,k)   end
-scan.expression = function(k)   if trace then reporti("expression") end return scanexpression(currentmpx,k)   end
-scan.token      = function(k)   if trace then reporti("token")      end return scantoken     (currentmpx,k)   end
-scan.symbol     = function(k,e) if trace then reporti("symbol")     end return scansymbol    (currentmpx,k,e) end
-scan.property   = function(k)   if trace then reporti("property")   end return scanproperty  (currentmpx,k)   end
-scan.numeric    = function()    if trace then reporti("numeric")    end return scannumeric   (currentmpx)     end
-scan.integer    = function()    if trace then reporti("integer")    end return scaninteger   (currentmpx)     end
-scan.boolean    = function()    if trace then reporti("boolean")    end return scanboolean   (currentmpx)     end
-scan.string     = function()    if trace then reporti("string")     end return scanstring    (currentmpx)     end
-scan.pair       = function(t)   if trace then reporti("pair")       end return scanpair      (currentmpx,t)   end
-scan.color      = function(t)   if trace then reporti("color")      end return scancolor     (currentmpx,t)   end
-scan.cmykcolor  = function(t)   if trace then reporti("cmykcolor")  end return scancmykcolor (currentmpx,t)   end
-scan.transform  = function(t)   if trace then reporti("transform")  end return scantransform (currentmpx,t)   end
-scan.path       = function(t)   if trace then reporti("path")       end return scanpath      (currentmpx,t)   end
-scan.pen        = function(t)   if trace then reporti("pen")        end return scanpen       (currentmpx,t)   end
+scan.next       = function(k)     if trace then reporti("next")       end return scannext      (currentmpx,k)     end
+scan.expression = function(k)     if trace then reporti("expression") end return scanexpression(currentmpx,k)     end
+scan.token      = function(k)     if trace then reporti("token")      end return scantoken     (currentmpx,k)     end
+scan.symbol     = function(k,e)   if trace then reporti("symbol")     end return scansymbol    (currentmpx,k,e)   end
+scan.property   = function(k)     if trace then reporti("property")   end return scanproperty  (currentmpx,k)     end
+scan.numeric    = function()      if trace then reporti("numeric")    end return scannumeric   (currentmpx)       end
+scan.integer    = function()      if trace then reporti("integer")    end return scaninteger   (currentmpx)       end
+scan.boolean    = function()      if trace then reporti("boolean")    end return scanboolean   (currentmpx)       end
+scan.string     = function()      if trace then reporti("string")     end return scanstring    (currentmpx)       end
+scan.pair       = function(t)     if trace then reporti("pair")       end return scanpair      (currentmpx,t)     end
+scan.color      = function(t)     if trace then reporti("color")      end return scancolor     (currentmpx,t)     end
+scan.cmykcolor  = function(t)     if trace then reporti("cmykcolor")  end return scancmykcolor (currentmpx,t)     end
+scan.transform  = function(t)     if trace then reporti("transform")  end return scantransform (currentmpx,t)     end
+scan.path       = function(t,k,c) if trace then reporti("path")       end return scanpath      (currentmpx,t,k,c) end -- compact kind (prim) check
+scan.pen        = function(t)     if trace then reporti("pen")        end return scanpen       (currentmpx,t)     end
 
 skip.token      = function(t) return skiptoken   (currentmpx,t) end
 get.hashentry   = function(n) return gethashentry(currentmpx,n) end

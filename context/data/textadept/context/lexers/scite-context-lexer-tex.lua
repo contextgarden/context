@@ -435,7 +435,7 @@ local stopluacode            = #stoplua * token("embedded", stoplua)
 
 local luacall                = P("clf_") * R("az","__","AZ")^1
 
-local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("use") + P("reuse") ) * ("MPgraphic")
+local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("use") + P("reuse") + P("overlay") ) * ("MPgraphic")
                              + P("uniqueMPpagegraphic")
                              + P("MPpositiongraphic")
 

@@ -222,8 +222,15 @@ def OverlayBox =
     (unitsquare xyscaled (OverlayWidth,OverlayHeight))
 enddef ;
 
+def BoundToOverlayBox =
+    setbounds currentpicture to OverlayBox;
+enddef ;
+
 immutable % permanent
     OverlayBox ;
+
+permanent
+    BoundToOverlayBox ;
 
 % handy
 

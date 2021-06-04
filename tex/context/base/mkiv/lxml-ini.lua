@@ -162,6 +162,8 @@ if CONTEXTLMTXMODE > 0 then
     local found        = xml.found
     local empty        = xml.empty
     local checkedempty = xml.checkedempty
+    local ifatt        = lxml.ifatt
+    local ifattempty   = lxml.ifattempty
 
     implement {
         name      = "ifxml",
@@ -182,6 +184,27 @@ if CONTEXTLMTXMODE > 0 then
             return boolean_code, not empty(getid(id),pattern) and true
         end
     }
+
+    implement {
+        name      = "ifxmlatt",
+        public    = true,
+        usage     = "condition",
+        arguments = "3 arguments",
+        actions   = function(id,name,value)
+            return boolean_code, ifatt(getid(id),name,value)
+        end
+    }
+
+    implement {
+        name      = "ifxmlattempty",
+        public    = true,
+        usage     = "condition",
+        arguments = "2 arguments",
+        actions   = function(id,name)
+            return boolean_code, ifattempty(getid(id),name)
+        end
+    }
+
 
     implement {
         name      = "ifxmlempty",

@@ -205,6 +205,52 @@
 \newconstant    \c_tabl_ntb_foot
 \newconditional \c_tabl_ntb_okay
 
+%D For local anchoring:
+
+
+\installcorenamespace{naturaltableanchor}
+
+\let\tabl_ntb_anchor_start  \gobbletwoarguments
+\let\tabl_ntb_anchor_stop   \relax
+\let\tabl_ntb_anchor_process\gobbleoneargument
+
+\let\m_tabl_ntb_anchor_background\empty
+
+\let\xanchor\!!zerocount
+\let\yanchor\!!zerocount
+
+\def\tabl_ntb_anchor_start_normal#1#2%
+  {\hpack\bgroup
+   \edef\xanchor{\number#2}%
+   \edef\yanchor{\number#1}%
+   \markanchor{matrix}{#1}{#2}}
+
+\def\tabl_ntb_anchor_start_traced#1#2%
+  {\hpack\bgroup
+   \edef\xanchor{\number#2}%
+   \edef\yanchor{\number#1}%
+   \markanchor{matrix}{#2}{#1}%
+   \smash[whd]{\smallinfofont#2-#1}}
+
+\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_normal
+\let\tabl_ntb_anchor_stop_indeed \egroup
+
+\def\tabl_ntb_anchor_process_indeed#1%
+  {\localframed[\??naturaltableanchor]{\box#1}}
+
+\installtextracker
+  {localanchor}
+  {\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_traced}
+  {\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_normal}
+
+\definesimplifiedframed
+  [\??naturaltableanchor]
+
+\setupframed
+  [\??naturaltableanchor]
+  [\c!synchronize=\v!background,
+   \c!background=\m_tabl_ntb_anchor_background]
+
 %D We have already prepared the previous macros for nesting, so we only have to pop
 %D in the right ones:
 
@@ -273,11 +319,11 @@
 \installcorenamespace{naturaltablesqueeze}
 \installcorenamespace{naturaltabletok}
 
-\letvalue{\??naturaltablesqueeze        }\donefalse
-\letvalue{\??naturaltablesqueeze\v!fit  }\donetrue
-\letvalue{\??naturaltablesqueeze\v!fixed}\donetrue
-\letvalue{\??naturaltablesqueeze\v!broad}\donetrue
-\letvalue{\??naturaltablesqueeze\v!local}\donetrue
+\letcsname\??naturaltablesqueeze        \endcsname\donefalse
+\letcsname\??naturaltablesqueeze\v!fit  \endcsname\donetrue
+\letcsname\??naturaltablesqueeze\v!fixed\endcsname\donetrue
+\letcsname\??naturaltablesqueeze\v!broad\endcsname\donetrue
+\letcsname\??naturaltablesqueeze\v!local\endcsname\donetrue
 
 \def\tabl_ntb_let_gal{\gletcsname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 \def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
@@ -444,18 +490,18 @@
 \def\tabl_ntb_setup_three[#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
 \def\tabl_ntb_setup_two  [#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
 
-\setvalue{\??naturaltablesetupthree    \v!row}[#1]{\tabl_ntb_setup_xy  [\c!y]}
-\setvalue{\??naturaltablesetupthree \v!column}[#1]{\tabl_ntb_setup_xy  [\c!x]}
-\setvalue{\??naturaltablesetupthree  \v!start}[#1]{\tabl_ntb_setup_xy  [\v!start]}
-\setvalue{\??naturaltablesetupthree \v!header}[#1]{\tabl_ntb_setup_xy  [\v!header]}
+\defcsname\??naturaltablesetupthree    \v!row\endcsname[#1]{\tabl_ntb_setup_xy  [\c!y]}
+\defcsname\??naturaltablesetupthree \v!column\endcsname[#1]{\tabl_ntb_setup_xy  [\c!x]}
+\defcsname\??naturaltablesetupthree  \v!start\endcsname[#1]{\tabl_ntb_setup_xy  [\v!start]}
+\defcsname\??naturaltablesetupthree \v!header\endcsname[#1]{\tabl_ntb_setup_xy  [\v!header]}
 
-\setvalue{\??naturaltablesetuptwo      \v!row}[#1]{\tabl_ntb_setup_each[\c!y]}
-\setvalue{\??naturaltablesetuptwo   \v!column}[#1]{\tabl_ntb_setup_each[\c!x]}
-\setvalue{\??naturaltablesetuptwo    \v!start}[#1]{\tabl_ntb_setup_each[\v!start]}
-\setvalue{\??naturaltablesetuptwo   \v!header}[#1]{\tabl_ntb_setup_each[\v!header]}
+\defcsname\??naturaltablesetuptwo      \v!row\endcsname[#1]{\tabl_ntb_setup_each[\c!y]}
+\defcsname\??naturaltablesetuptwo   \v!column\endcsname[#1]{\tabl_ntb_setup_each[\c!x]}
+\defcsname\??naturaltablesetuptwo    \v!start\endcsname[#1]{\tabl_ntb_setup_each[\v!start]}
+\defcsname\??naturaltablesetuptwo   \v!header\endcsname[#1]{\tabl_ntb_setup_each[\v!header]}
 
-\letvalue{\??naturaltablesetupthree\s!unknown}\tabl_ntb_setup_un
-\letvalue{\??naturaltablesetuptwo  \s!unknown}\tabl_ntb_setup_ux
+\letcsname\??naturaltablesetupthree\s!unknown\endcsname\tabl_ntb_setup_un
+\letcsname\??naturaltablesetuptwo  \s!unknown\endcsname\tabl_ntb_setup_ux
 
 \letcsnamecsname\csname\??naturaltablesetupthree r\endcsname\csname\??naturaltablesetupthree   \v!row\endcsname
 \letcsnamecsname\csname\??naturaltablesetupthree c\endcsname\csname\??naturaltablesetupthree\v!column\endcsname
@@ -694,13 +740,14 @@
    %
    \ifempty\m_tabl_ntb_n
      \global\advance\c_tabl_ntb_spn\c_tabl_ntb_nx\relax
-   \orelse\ifnum\m_tabl_ntb_n=\c_tabl_ntb_running_col\else
+   \orelse\ifnum\m_tabl_ntb_n=\c_tabl_ntb_running_col
+   \else
      \tabl_ntb_td_pass_n{#1}%
    \fi
-   \ifempty\m_tabl_ntb_m \else
-     \ifnum\m_tabl_ntb_m=\c_tabl_ntb_running_col\else
-       \tabl_ntb_td_pass_m{#1}%
-     \fi
+   \ifempty\m_tabl_ntb_m
+   \orelse\ifnum\m_tabl_ntb_m=\c_tabl_ntb_running_col
+   \else
+     \tabl_ntb_td_pass_m{#1}%
    \fi
    \doloop % skip over columns that result from earlier span
      {\advance\c_tabl_ntb_running_col\plusone
@@ -926,15 +973,33 @@
    \resetcharacteralign % new
    \setupcurrentnaturaltablelocal[\c!align={\v!right,\v!broad,\v!high},#1]%
    %
+   \ifcstok{\naturaltablelocalparameter\c!synchronize}\v!background
+     \let\tabl_ntb_anchor_start  \tabl_ntb_anchor_start_indeed
+     \let\tabl_ntb_anchor_stop    \tabl_ntb_anchor_stop_indeed
+     \let\tabl_ntb_anchor_process \tabl_ntb_anchor_process_indeed
+     \edef\m_tabl_ntb_anchor_background{\naturaltablelocalparameter\c!background}%
+     \resetnaturaltablelocalparameter\c!background
+   \else
+     \let\m_tabl_ntb_anchor_background\empty
+     \let\tabl_ntb_anchor_start       \gobbletwoarguments
+     \let\tabl_ntb_anchor_stop        \relax
+     \let\tabl_ntb_anchor_process     \gobbleoneargument
+   \fi
+   \resetnaturaltablelocalparameter\c!synchronize
+   %
    \d_tabl_ntb_leftmargindistance \naturaltablelocalparameter\c!leftmargindistance\relax
    \d_tabl_ntb_rightmargindistance\naturaltablelocalparameter\c!rightmargindistance\relax
    \d_tabl_ntb_columndistance     \naturaltablelocalparameter\c!columndistance\relax
    \d_tabl_ntb_maxwidth           \naturaltablelocalparameter\c!maxwidth\relax
    %
    \usesetupsparameter\naturaltablelocalparameter
-   \doifelse{\naturaltablelocalparameter\c!textwidth}\v!local
-     {\hsize\availablehsize}
-     {\hsize\naturaltablelocalparameter\c!textwidth}%
+   \hsize
+     \ifcstok{\naturaltablelocalparameter\c!textwidth}\v!local
+       \availablehsize
+     \else
+       \naturaltablelocalparameter\c!textwidth
+     \fi
+   \relax
    \enableTBLbreakfalse
    \multipleTBLheadsfalse
    \autoTBLspreadfalse
@@ -1524,7 +1589,7 @@
 \def\tabl_ntb_table_get_max_width
   {\scratchdimen\wd\scratchbox\relax}
 
-% enable dper 2018-02-22
+% enabled per 2018-02-22
 
 \def\tabl_ntb_table_get_max_width_step
   {\advance\scratchdimen\tabl_ntb_get_wid\fastloopindex
@@ -1657,6 +1722,7 @@
 \def\tabl_ntb_split_nop
   {\setbox\b_tabl_ntb_final\vbox{\tabl_ntb_flush_content}%
    \postprocessTABLEbox\b_tabl_ntb_final
+   \tabl_ntb_anchor_process\b_tabl_ntb_final
    \beforeTABLEbox
  % packaging prevents max hsized box
  % \hbox{\registerparoptions\box\b_tabl_ntb_final}% (*) better here
@@ -1749,12 +1815,10 @@
           \advance\scratchcounterone \plusone
         \orelse\ifdim\scratchdimen>\zeropoint\relax
           \advance\scratchdimenone -\scratchdimen
-        \else
+        \orelse\ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
           % eigenlijk moet dit alleen als de kolom wordt overspannen door een
           % vorige, maw extra dubbele loop en status var
-          \ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
             \advance\scratchcounterone \plusone % setting maxwidth to a large value also works
-          \fi
         \fi
       \fi}%
    \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths M#1\fi
@@ -1911,7 +1975,7 @@
    \fi}
 
 \protected\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
-  {\bgroup
+  {\begingroup
    \letnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]%
@@ -1968,31 +2032,33 @@
    \ht\scratchboxone\ht\scratchbox
    \dp\scratchboxone\dp\scratchbox
    \box\scratchboxone
-   \egroup}
+   \endgroup}
 
 \protected\def\tabl_ntb_cell_process_b_c#1#2#3[#4]#5%
-  {\setbox\scratchbox\hbox
+  {\begingroup
+   \setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
       \setupcurrentnaturaltablelocal[#4,#1]%
       \letnaturaltablelocalparameter\c!background\empty
       \letnaturaltablelocalparameter\c!frame\v!off
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start#5\tabl_ntb_cell_stop}}%
-   \setbox2\emptyhbox % todo: \scratchboxtwo
-   \wd2\wd\scratchbox
-   \ht2\ht\scratchbox
-   \dp2\dp\scratchbox
+   \setbox\scratchboxone\emptyhbox
+   \wd\scratchboxone\wd\scratchbox
+   \ht\scratchboxone\ht\scratchbox
+   \dp\scratchboxone\dp\scratchbox
    \ifautoTBLrowspan
      \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
      \ifcsname\tabl_ntb_row_pattern\scratchcounter\c_tabl_ntb_col\endcsname
        \scratchdimen\tabl_ntb_get_hei\scratchcounter\relax
        \ifnum\tabl_ntb_get_row\scratchcounter\c_tabl_ntb_col>\plusone
          \ifdim\ht\scratchbox>\scratchdimen
-           \ht2\dimexpr-\scratchdimen-\ht\scratchbox\relax
+           \ht\scratchboxone\dimexpr-\scratchdimen-\ht\scratchbox\relax
          \fi
        \fi
      \fi
    \fi
-   \box2 }
+   \box\scratchboxone
+   \endgroup}
 
 \protected\def\tabl_ntb_cell_process_b#1#2[#3]#4%
    {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
@@ -2022,24 +2088,27 @@
    \egroup}
 
 \protected\def\tabl_ntb_cell_process_e#1#2[#3]#4%
-  {\tabl_ntb_setup_cell{#1}{#2}%
+  {\begingroup
+   \tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]% to get the color right, the way we
-   \color % handle color here prevents interference due to whatsit nodes
-     [\naturaltablelocalparameter\c!color] % as well as permits local colors to take precedence
-     {\letnaturaltablelocalparameter\c!color\empty
-      \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
-      \ifzeropt\d_tabl_ntb_height % case: nc=maxcolumns
-      \else
-        \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%
-      \fi
-      \ifcase\c_anch_backgrounds_text_count\else
-        \edef\p_region{\naturaltablelocalparameter\c!region}%
-        \ifempty\p_region\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
-          \letnaturaltablelocalparameter\c!region\v!yes
-        \fi\fi
-      \fi
-      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
-   \hskip\tabl_ntb_get_dis{#2}}
+   \directcolor[\naturaltablelocalparameter\c!color]%
+   \letnaturaltablelocalparameter\c!color\empty
+   \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
+   \ifzeropt\d_tabl_ntb_height % case: nc=maxcolumns
+   \else
+     \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%
+   \fi
+   \ifcase\c_anch_backgrounds_text_count\else
+     \edef\p_region{\naturaltablelocalparameter\c!region}%
+     \ifempty\p_region\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
+       \letnaturaltablelocalparameter\c!region\v!yes
+     \fi\fi
+   \fi
+   \tabl_ntb_anchor_start{#1}{#2}%
+   \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
+   \tabl_ntb_anchor_stop
+   \hskip\tabl_ntb_get_dis{#2}%
+   \endgroup}
 
 \newtoks\everyresetTABLEyes
 \newtoks\everyresetTABLEnop

@@ -400,8 +400,15 @@
 
 \appendtoks
     \frozen\instance\setuevalue{\e!start\currentmathalignment}{\math_alignment_start[\currentmathalignment]}%
-    \frozen\instance\setvalue  {\e!stop \currentmathalignment}{\math_alignment_stop}%
+    \frozen\instance\setvalue  {\e!stop \currentmathalignment}{\math_alignment_stop}% can this be protected now?
 \to \everydefinemathalignment
+
+% to be tested
+%
+% \appendtoks
+%               \frozen\instance\protected\defcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
+%     \noaligned\frozen\instance\protected\defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}%
+% \to \everydefinemathalignment
 
 \setupmathalignment
   [\c!n=2,

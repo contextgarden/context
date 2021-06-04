@@ -735,6 +735,55 @@
 \aliased\let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
 \aliased\let\reusableMPgraphic\reuseMPgraphic % we can save a setup here if needed
 
+%D Saves an overlaydefinition:
+
+\permanent\protected\def\startoverlayMPgraphic
+  {\dodoublegroupempty\meta_start_overlay_graphic}
+
+\aliased\let\stopoverlayMPgraphic\relax
+
+\def\meta_start_overlay_graphic#1%
+  {\normalexpanded{%
+     \pack_overlay_define{#1}{\useMPgraphic{#1}}%
+     \meta_start_overlay_graphic_indeed{#1}}%
+   }
+
+\protected\def\meta_start_overlay_graphic_indeed#1#2#3\stopoverlayMPgraphic
+  {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_overlay_graphic{#1}{#2}{#3}}}
+
+\def\meta_handle_overlay_graphic#1#2#3%
+  {\begingroup
+   \edef\currentmpcategory{#1}%
+   \meta_process_graphic{#3;BoundToOverlayBox;}%
+   \endgroup}
+
+%D New in \LMTX:
+
+\newtoks\MPoverlaydata
+
+\aliased\let\stopMPoverlaydata\relax
+
+\permanent\protected\def\startMPoverlaydata
+  {\iftrialtypesetting
+     \expandafter\startMPoverlaydata_nop
+   \else
+     \expandafter\startMPoverlaydata_yes
+   \fi}
+
+\permanent\protected\def\startMPoverlaydata_nop#0\stopMPoverlaydata
+  {}
+
+\permanent\protected\def\startMPoverlaydata_yes#1\stopMPoverlaydata
+  {\xtoksapp\MPoverlaydata{#1;}}
+
+\def\includeMPoverlaydata % expandable
+  {\the\MPoverlaydata
+   \resetMPoverlaydata}
+
+\def\resetMPoverlaydata % expandable
+  {\localcontrolled{\global\MPoverlaydata\emptytoks}}
+
+
 %D \macros
 %D   {startuniqueMPpagegraphic,uniqueMPpagegraphic}
 %D

@@ -127,7 +127,7 @@
 \def\font_helpers_set_math_family_set_scales_compact
   {% these are used when no font setting is there, the settings come before setting the parameters
    % and are stored with the family
-   \glyphtextscale         \plusthousand
+   \glyphtextscale                 \plusthousand
    \glyphscriptscale       \numexpr\plusthousand*\dimexpr\scriptface      \relax/\dimexpr\textface\relax\relax
    \glyphscriptscriptscale \numexpr\plusthousand*\dimexpr\scriptscriptface\relax/\dimexpr\textface\relax\relax}
 
@@ -186,8 +186,8 @@
    \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
-                                       \scriptfont      #mbfam\scriptfont      #mrfam% reuses
-                                       \scriptscriptfont#mbfam\scriptscriptfont#mrfam% reuses
+                                       \scriptfont      #mbfam\textfont#mbfam% reuses
+                                       \scriptscriptfont#mbfam\textfont#mbfam% reuses
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
@@ -254,36 +254,6 @@
 %D This is why we need the check. At the cost of some extra checking we gain a
 %D little in restoring global states and, what's more important, we get rid of large
 %D math parameter push/pop in tracingall when not needed.
-
-% \def\font_helpers_preset_math_family_indeed#fam#familytag%
-%   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
-%    \ifrelax\v_font_math_one
-%      \font_helpers_preset_math_family_warning
-%    \orelse\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
-%      \font_helpers_preset_math_family_indeed_changed#fam#familytag%
-%    \fi}
-
-% \def\font_helpers_preset_math_family_warning
-%   {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
-
-% \def\font_helpers_preset_math_family_indeed_changed_normal#fam#familytag%
-%   {\font_helpers_set_math_family_set_scales_normal
-%    \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
-%    \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
-%    \textfont        #fam\v_font_math_one}
-
-% \def\font_helpers_preset_math_family_indeed_changed_compact#fam#familytag%
-%   {\font_helpers_set_math_family_set_scales_compact
-%    \scriptscriptfont#fam\v_font_math_one
-%    \scriptfont      #fam\v_font_math_one
-%    \textfont        #fam\v_font_math_one}
-
-% \def\font_helpers_preset_math_family_indeed_changed
-%   {\ifconditional\c_font_compact
-%      \expandafter\font_helpers_preset_math_family_indeed_changed_compact
-%    \else
-%      \expandafter\font_helpers_preset_math_family_indeed_changed_normal
-%    \fi}
 
 \def\font_helpers_preset_math_family_indeed_normal#fam#familytag%
   {\expandafter\let\expandafter\font_math_last_font\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname

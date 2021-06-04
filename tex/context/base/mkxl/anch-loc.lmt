@@ -131,7 +131,25 @@ local function anchordp(name,x,y)
     end
 end
 
+local function anchorlr(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[1] + v[7][1], v[2] - v[7][3]
+    else
+        return 0, 0
+    end
+end
+
 local function anchorur(name,x,y)
+    local v = valid(name,x,y)
+    if v then
+        return v[1] + v[7][1], v[2] + v[7][2]
+    else
+        return 0, 0
+    end
+end
+
+local function anchorul(name,x,y)
     local v = valid(name,x,y)
     if v then
         return v[1], v[2] + v[7][2]
@@ -398,31 +416,21 @@ do
         return injectpair(x*bpfactor,y*bpfactor)
     end)
 
-    registerdirect("anchorx", function()
-        return anchorx(scanstring(),scaninteger(),scaninteger()) * bpfactor
-    end)
+    registerdirect("anchorx", function() return anchorx(scanstring(),scaninteger(),scaninteger()) * bpfactor end)
+    registerdirect("anchory", function() return anchory(scanstring(),scaninteger(),scaninteger()) * bpfactor end)
 
-    registerdirect("anchory", function()
-        return anchory(scanstring(),scaninteger(),scaninteger()) * bpfactor
-    end)
+    registerdirect("anchorht", function() return anchorht(scanstring(),scaninteger(),scaninteger()) * bpfactor end)
+    registerdirect("anchordp", function() return anchordp(scanstring(),scaninteger(),scaninteger()) * bpfactor end)
 
-    registerdirect("anchorht", function()
-        return anchorht(scanstring(),scaninteger(),scaninteger()) * bpfactor
-    end)
-
-    registerdirect("anchordp", function()
-        return anchordp(scanstring(),scaninteger(),scaninteger()) * bpfactor
-    end)
-
-    registerdirect("anchorur", function()
-        local x, y = anchorur(scanstring(),scaninteger(),scaninteger())
+    local function corner(f)
+        local x, y = f(scanstring(),scaninteger(),scaninteger())
         return injectpair(x*bpfactor,y*bpfactor)
-    end)
+    end
 
-    registerdirect("anchorll", function()
-        local x, y = anchorll(scanstring(),scaninteger(),scaninteger())
-        return injectpair(x*bpfactor,y*bpfactor)
-    end)
+    registerdirect("anchorlr", function() return corner(anchorlr) end)
+    registerdirect("anchorur", function() return corner(anchorur) end)
+    registerdirect("anchorul", function() return corner(anchorul) end)
+    registerdirect("anchorll", function() return corner(anchorll) end)
 
     registerscript("anchorbox", function()
         local l = valid(scanstring(),scaninteger(),scaninteger())
@@ -464,14 +472,42 @@ do
             { urx, ury },
             { llx, ury }
         }
-     -- local p = {
-     --     cycle  = true,
-     --  -- curled = true,
-     --     { x_coord = llx, y_coord = lly },
-     --     { x_coord = urx, y_coord = lly },
-     --     { x_coord = urx, y_coord = ury },
-     --     { x_coord = llx, y_coord = ury }
-     -- }
+        injectpath(p)
+    end)
+
+ -- boundingbox (
+ --     anchorul(lname, lx, ly) --
+ --     anchorlr(rname, rx, ry)
+ -- )
+
+    local min = math.min
+    local max = math.max
+
+    registerscript("anchorspan", function()
+        local l = valid(scanstring(),scaninteger(),scaninteger())
+        local r = valid(scanstring(),scaninteger(),scaninteger())
+        local llx, lly, urx, ury, lb, ub
+        if l and r then
+            lb  = l[7]
+            rb  = r[7]
+            llx = min((l[1]        ),(r[1]        )) * bpfactor
+            lly = min((l[2] - lb[3]),(r[2] - rb[3])) * bpfactor
+            urx = max((l[1] + lb[1]),(r[1] + rb[1])) * bpfactor
+            ury = max((l[2] + lb[2]),(r[2] + rb[2])) * bpfactor
+        else
+            llx = 0
+            lly = 0
+            urx = 0
+            ury = 0
+        end
+        local p = {
+            cycle  = true,
+--             curled = true,
+            { llx, lly },
+            { urx, lly },
+            { urx, ury },
+            { llx, ury }
+        }
         injectpath(p)
     end)
 

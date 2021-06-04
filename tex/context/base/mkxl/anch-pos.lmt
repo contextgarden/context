@@ -477,25 +477,29 @@ implement {
 local function b_region(specification)
     local tag  = specification.tag or specification
     local last = tobesaved[tag]
-    local x, y = getpos()
-    last.x = x ~= 0 and x or nil
-    last.y = y ~= 0 and y or nil
-    last.p = texgetcount("realpageno")
-    insert(regions,tag) -- todo: fast stack
-    region = tag
+    if last then
+        local x, y = getpos()
+        last.x = x ~= 0 and x or nil
+        last.y = y ~= 0 and y or nil
+        last.p = texgetcount("realpageno")
+        insert(regions,tag) -- todo: fast stack
+        region = tag
+    end
 end
 
 local function e_region(specification)
     local last = tobesaved[region]
-    local y = getvpos()
-    local x, y = getpos()
-    if specification.correct then
-        local h = (last.y or 0) - y
-        last.h = h ~= 0 and h or nil
+    if last then
+        local y = getvpos()
+        local x, y = getpos()
+        if specification.correct then
+            local h = (last.y or 0) - y
+            last.h = h ~= 0 and h or nil
+        end
+        last.y = y ~= 0 and y or nil
+        remove(regions) -- todo: fast stack
+        region = regions[#regions]
     end
-    last.y = y ~= 0 and y or nil
-    remove(regions) -- todo: fast stack
-    region = regions[#regions]
 end
 
 jobpositions.b_region = b_region

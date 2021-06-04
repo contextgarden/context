@@ -47,9 +47,9 @@ loaded!</p>
 
 -- todo: in 'char-def.lua' assume defaults:
 --
--- directtions = l
--- cjkwd       = a
--- linebreak   = al
+-- directions = l
+-- cjkwd      = a
+-- linebreak  = al
 
 characters       = characters or { }
 local characters = characters
@@ -66,9 +66,17 @@ end
 Extending the table.
 --ldx]]--
 
-if context and not characters.private then
+if context then
 
-    require("char-prv")
+    if not characters.private then
+
+        require("char-prv")
+
+        if storage then
+            storage.register("characters/private", characters.private, "characters.private")
+        end
+
+    end
 
     for unicode, d in next, characters.private do
         data[unicode] = d
@@ -932,7 +940,7 @@ if not characters.fallbacks then
 
 end
 
-if storage then
+if storage then -- in case we extend
     storage.register("characters/fallbacks", characters.fallbacks, "characters.fallbacks") -- accents and such
 end
 

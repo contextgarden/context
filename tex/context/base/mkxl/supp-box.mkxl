@@ -224,11 +224,13 @@
 
 \installcorenamespace {smashoptions}
 
-\setvalue{\??smashoptions w}{\wd\nextbox\zeropoint}
-\setvalue{\??smashoptions h}{\ht\nextbox\zeropoint}
-\setvalue{\??smashoptions d}{\dp\nextbox\zeropoint}
-\setvalue{\??smashoptions t}{\ht\nextbox\zeropoint}
-\setvalue{\??smashoptions b}{\dp\nextbox\zeropoint}
+\defcsname\??smashoptions   w\endcsname{\wd\nextbox\zeropoint}
+\defcsname\??smashoptions   h\endcsname{\ht\nextbox\zeropoint}
+\defcsname\??smashoptions   d\endcsname{\dp\nextbox\zeropoint}
+\defcsname\??smashoptions   t\endcsname{\ht\nextbox\zeropoint}
+\defcsname\??smashoptions   b\endcsname{\dp\nextbox\zeropoint}
+\defcsname\??smashoptions  hd\endcsname{\ht\nextbox\zeropoint\dp\nextbox\zeropoint}
+\defcsname\??smashoptions whd\endcsname{\wd\nextbox\zeropoint\ht\nextbox\zeropoint\dp\nextbox\zeropoint}
 
 \def\syst_boxes_smash_process_option#1%
   {\ifx#1\relax\else

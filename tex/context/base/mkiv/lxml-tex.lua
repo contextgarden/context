@@ -2070,6 +2070,28 @@ do
         end
     end
 
+    function lxml.ifatt(id,a,value)
+        local e = getid(id)
+        if e then
+            local at = e.at
+            att = at and at[a] or ""
+        else
+            att = ""
+        end
+        return att == value
+    end
+
+    function lxml.ifattempty(id,a)
+        local e = getid(id)
+        if e then
+            local at = e.at
+            if at and at[a] ~= "" then
+                return true
+            end
+        end
+        return false
+    end
+
     function lxml.refatt(id,a)
         local e = getid(id)
         if e then

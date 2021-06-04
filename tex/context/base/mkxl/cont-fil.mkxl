@@ -150,4 +150,6 @@
 \definefilesynonym [zint]         [libs-imp-zint]
 \definefilesynonym [barcode]      [libs-imp-zint]
 
+\definefilesynonym [newmml]       [mathml]
+
 \endinput

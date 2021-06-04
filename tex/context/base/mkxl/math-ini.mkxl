@@ -64,7 +64,7 @@
 % test  [[\char948 \cldcontext{utf.char(948)}]]
 % test $[[\char948 \cldcontext{utf.char(948)}]]$
 
-\registerctxluafile{math-ini}{}
+\registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{}
 \registerctxluafile{math-act}{autosuffix}
 \registerctxluafile{math-ext}{}
@@ -138,7 +138,7 @@
 
 \defaultmathfamily \zerocount % 255
 
-\permanent\protected\def\resetmathattributes{\clf_resetmathattributes}
+% defined at lua end \permanent\protected\def\resetmathattributes{\resetmathattributes}
 
 % handy
 
@@ -193,9 +193,9 @@
 \permanent\protected\def\rawmathematics#1% slow but only for tracing
   {\begingroup
    \ifmmode
-     \clf_resetmathattributes#1%
+     \resetmathattributes#1%
    \else
-     \startimath\clf_resetmathattributes#1\stopimath
+     \startimath\resetmathattributes#1\stopimath
    \fi
    \endgroup}
 
@@ -601,22 +601,22 @@
 \permanent\protected\def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
 
-%D Helpers
+%D Helpers (defined at the \LUA\ end):
 
-\permanent\def\utfmathclass  #1{\clf_utfmathclass  {#1}}
-\permanent\def\utfmathstretch#1{\clf_utfmathstretch{#1}}
-\permanent\def\utfmathcommand#1{\clf_utfmathcommand{#1}}
-\permanent\def\utfmathfiller #1{\clf_utfmathfiller {#1}}
-
-\permanent\def\utfmathcommandabove #1{\clf_utfmathcommandabove {#1}}
-\permanent\def\utfmathcommandbelow #1{\clf_utfmathcommandbelow {#1}}
-\permanent\def\utfmathcommandfiller#1{\clf_utfmathcommandfiller{#1}}
-
-\permanent\protected\def\doifelseutfmathaccent#1{\clf_doifelseutfmathaccent{#1}}
-\permanent\protected\def\doifelseutfmathabove #1{\clf_doifelseutfmathabove {#1}}
-\permanent\protected\def\doifelseutfmathbelow #1{\clf_doifelseutfmathbelow {#1}}
-\permanent\protected\def\doifelseutfmathfiller#1{\clf_doifelseutfmathfiller{#1}}
-\permanent\protected\def\doifelseutfmathlimop #1{\clf_doifelseutfmathlimop {#1}}
+% \utfmathclass          #1
+% \utfmathstretch        #1
+% \utfmathcommand        #1
+% \utfmathfiller         #1
+%
+% \utfmathcommandabove   #1..
+% \utfmathcommandbelow   #1..
+% \utfmathcommandfiller  #1..
+%
+% \doifelseutfmathaccent #1#2#3
+% \doifelseutfmathabove  #1#2#3
+% \doifelseutfmathbelow  #1#2#3
+% \doifelseutfmathfiller #1#2#3
+% \doifelseutfmathlimop  #1#2#3
 
 \aliased\let\doifutfmathaccentelse \doifelseutfmathaccent
 \aliased\let\doifutfmathaboveelse  \doifelseutfmathabove

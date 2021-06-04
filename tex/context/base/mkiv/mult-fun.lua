@@ -40,7 +40,10 @@ return {
         --
         "anchorxy", "anchorx", "anchory",
         "anchorht", "anchordp",
-        "anchorll", "anchorur", "anchorbox",
+        "anchorul", "anchorll", "anchorlr", "anchorur",
+        "localanchorbox", "localanchorcell", "localanchorspan",
+        "anchorbox", "anchorcell", "anchorspan",
+        "matrixbox", "matrixcell", "matrixspan",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",

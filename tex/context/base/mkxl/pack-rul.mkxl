@@ -455,8 +455,12 @@
     \vsize\d_overlay_height
 \to \everyoverlay
 
+\protected\def\pack_overlay_define#1#2%
+  {\defcsname\??overlay#1\endcsname{\executedefinedoverlay{#1}{#2}}}
+
 \permanent\tolerant\protected\def\defineoverlay[#1]#*[#2]% wil be overloaded
-  {\def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\executedefinedoverlay{##1}{#2}}}%
+% {\def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\executedefinedoverlay{##1}{#2}}}%
+  {\def\pack_framed_define_overlay_indeed##1{\pack_overlay_define{##1}{#2}}%
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
 
 \permanent\protected\def\executedefinedoverlay#1#2% we can share the definitions
@@ -915,7 +919,11 @@
 %D can better be correct.
 
 \protected\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
-  {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
+  {%
+  %\setbox\b_framed_normal\box#2%
+  %\def\b_framed_normal{#2}% protected against overload
+   \enforced\let\b_framed_normal#2%
+   %
    \edef\m_overlay_region{\framedparameter\c!region}%
    \ifempty\m_overlay_region\else
      \pack_framed_set_region

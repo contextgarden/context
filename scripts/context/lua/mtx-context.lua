@@ -361,20 +361,29 @@ local function multipass_changed(oldhash, newhash)
     return false
 end
 
-local f_tempfile = formatters["%s-%s-%02d.tmp"]
+local f_tempfile_i = formatters["%s-%s-%02d.tmp"]
+local f_tempfile_s = formatters["%s-%s-keep.%s"]
 
 local function backup(jobname,run,kind,filename)
-    if run == 1 then
-        for i=1,10 do
-            local tmpname = f_tempfile(jobname,kind,i)
-            if validfile(tmpname) then
-                removefile(tmpname)
-                report("removing %a",tmpname)
+    if run then
+        if run == 1 then
+            for i=1,10 do
+                local tmpname = f_tempfile_i(jobname,kind,i)
+                if validfile(tmpname) then
+                    removefile(tmpname)
+                    report("removing %a",tmpname)
+                end
             end
         end
-    end
-    if validfile(filename) then
-        local tmpname = f_tempfile(jobname,kind,run or 1)
+        if validfile(filename) then
+            local tmpname = f_tempfile(jobname,kind,run or 1)
+            report("copying %a into %a",filename,tmpname)
+            file.copy(filename,tmpname)
+        else
+            report("no file %a, nothing kept",filename)
+        end
+    elseif validfile(filename) then
+        local tmpname = f_tempfile_s(jobname,kind,kind)
         report("copying %a into %a",filename,tmpname)
         file.copy(filename,tmpname)
     else
@@ -392,6 +401,14 @@ local function multipass_copyluafile(jobname,run)
         end
         removefile(tucname)
         renamefile(tuaname,tucname)
+    end
+end
+
+local function multipass_copypdffile(jobname,run)
+    local pdfname = jobname..".pdf"
+    if validfile(pdfname) then
+        backup(jobname,false,"pdf",pdfname)
+        report()
     end
 end
 
@@ -673,6 +690,7 @@ function scripts.context.run(ctxdata,filename)
     local a_texformat     = getargument("texformat")
     local a_keeptuc       = getargument("keeptuc")
     local a_keeplog       = getargument("keeplog")
+    local a_keeppdf       = getargument("keeppdf")
     local a_export        = getargument("export")
     local a_nodates       = getargument("nodates")
     local a_trailerid     = getargument("trailerid")
@@ -890,6 +908,7 @@ function scripts.context.run(ctxdata,filename)
                     elseif returncode == 0 then
                         multipass_copyluafile(jobname,a_keeptuc and currentrun)
                         multipass_copylogfile(jobname,a_keeplog and currentrun)
+                        multipass_copypdffile(jobname,a_keeppdf and currentrun)
                         if not multipass_forcedruns then
                             newhash = multipass_hashfiles(jobname)
                             if multipass_changed(oldhash,newhash) then
