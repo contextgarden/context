@@ -316,7 +316,7 @@ do
     local filename = nil
 
     drivers.install {
-        name     = "default",
+        name     = "default", -- "pdf"
         actions  = {
             convert        = drivers.converters.engine,
             outputfilename = function(driver)

@@ -681,8 +681,8 @@
 
 \permanent\protected\def\tracingall
   {\tracingonline    \plusone
-   \tracingcommands  \plusthree
-   \tracingmacros    \plustwo
+   \tracingcommands  \plusfour  % > 3: show mode change independent
+   \tracingmacros    \plusthree % > 2: obey \untraced
    \tracingoutput    \plusone
    \tracingpages     \plusone
    \tracingparagraphs\plusone

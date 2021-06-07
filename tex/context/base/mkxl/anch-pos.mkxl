@@ -406,7 +406,7 @@
 
 \permanent\let\disableparpositions\relax
 
-\aliased\let\registerparoptions\relax
+\permanent\lettonothing\registerparoptions % hooks into everypar
 
 \permanent\protected\def\doregisterparoptions
   {\iftrialtypesetting \orelse\ifinpagebody \orelse\ifmmode \orelse\ifinformula \else

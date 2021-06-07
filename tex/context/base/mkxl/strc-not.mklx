@@ -1287,8 +1287,8 @@
    \fi}
 
 \appendtoks
-   \enforced\let\flushnotes   \relax
-   \enforced\let\postponenotes\relax
+   \enforced\lettonothing\flushnotes
+   \enforced\lettonothing\postponenotes
    \forgetall
    \resetallattributes   % new, we don't want color bleed into notes
    \inheritmaintextcolor % but we do want to obey the textcolor
@@ -1517,7 +1517,7 @@
      \fi
    \fi}
 
-\aliased\let\flushnotes\relax
+\permanent\lettonothing\flushnotes
 
 % also \ifcase\insertionmigrationmode here, needs testing:
 
@@ -1534,8 +1534,8 @@
 \permanent\protected\def\doflushnotes
   {\ifconditional\postponingnotes
      \begingroup
-     \enforced\let\flushnotes   \relax
-     \enforced\let\postponenotes\relax
+     \enforced\lettonothing\flushnotes
+     \enforced\lettonothing\postponenotes
      \ifconditional\postponednote
        \ifhmode
          % needed for tagging ... otherwise we get some weird node free error
@@ -1545,7 +1545,7 @@
      \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
-     \enforced\glet\flushnotes\relax
+     \enforced\glettonothing\flushnotes
      \endgroup
    \fi}
 
@@ -1563,8 +1563,8 @@
 \newtoks\everyplacelocalnotes
 
 \appendtoks
-    \enforced\let\flushnotes   \relax
-    \enforced\let\postponenotes\relax
+    \enforced\lettonothing\flushnotes
+    \enforced\lettonothing\postponenotes
 \to \everyplacelocalnotes
 
 \newconditional\inlocalnotes

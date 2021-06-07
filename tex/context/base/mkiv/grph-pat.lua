@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['grph-pat'] = {
 -- This is just a proof of concept. Viewers behave different (offsets) and Acrobat doesn't
 -- show xform based patterns.
 --
--- This module will be cleaned up and use codeinjections and such.
+-- This module will be cleaned up and use codeinjections and such. It should be in the lpdf
+-- namespace.
 
 local texsetbox   = tex.setbox
 local texgetbox   = tex.getbox

@@ -405,17 +405,19 @@ local function multipass_copyluafile(jobname,run)
 end
 
 local function multipass_copypdffile(jobname,run)
-    local pdfname = jobname..".pdf"
-    if validfile(pdfname) then
-        backup(jobname,false,"pdf",pdfname)
-        report()
+    if run then
+        local pdfname = jobname..".pdf"
+        if validfile(pdfname) then
+            backup(jobname,false,"pdf",pdfname)
+            report()
+        end
     end
 end
 
 local function multipass_copylogfile(jobname,run)
-    local logname = jobname..".log"
-    if validfile(logname) then
-        if run then
+    if run then
+        local logname = jobname..".log"
+        if validfile(logname) then
             backup(jobname,run,"log",logname)
             report()
         end
@@ -751,8 +753,8 @@ function scripts.context.run(ctxdata,filename)
                     return flag or plus -- flag wins
                 end
             end
-            local a_trackers    = analysis.trackers
-            local a_experiments = analysis.experiments
+            ----- a_trackers    = analysis.trackers
+            ----- a_experiments = analysis.experiments
             local directives    = combine("directives")
             local trackers      = combine("trackers")
             local experiments   = combine("experiments")
@@ -877,6 +879,10 @@ function scripts.context.run(ctxdata,filename)
                     mainfile = "" -- we don't need that
                 end
                 --
+                -- can be used to include pages from a previous run, --keeppdf or "% keeppdf" on first-line
+                --
+                multipass_copypdffile(jobname,a_keeppdf or analysis.keeppdf)
+                --
                 for currentrun=1,maxnofruns do
                     --
                     c_flags.final      = false
@@ -908,7 +914,6 @@ function scripts.context.run(ctxdata,filename)
                     elseif returncode == 0 then
                         multipass_copyluafile(jobname,a_keeptuc and currentrun)
                         multipass_copylogfile(jobname,a_keeplog and currentrun)
-                        multipass_copypdffile(jobname,a_keeppdf and currentrun)
                         if not multipass_forcedruns then
                             newhash = multipass_hashfiles(jobname)
                             if multipass_changed(oldhash,newhash) then

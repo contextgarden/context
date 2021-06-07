@@ -100,7 +100,9 @@ local dir_code             = nodecodes.dir
 local par_code             = nodecodes.par
 
 local leftskip_code        = gluecodes.leftskip
+local lefthang_code        = gluecodes.lefthangskip
 local rightskip_code       = gluecodes.rightskip
+local righthang_code       = gluecodes.righthangskip
 local parfillleftskip_code = gluecodes.parfillleftskip
 local parfillskip_code     = gluecodes.parfillskip
 
@@ -359,9 +361,9 @@ local inject_areas do
                 goto NEXT
             elseif id == glue_code then
                 local subtype = getsubtype(current)
-                if subtype == leftskip_code or subtype == parfillleftskip_code then
+                if subtype == leftskip_code or subtype == lefthang_code or subtype == parfillleftskip_code then
                     goto NEXT
-                elseif subtype == rightskip_code or subtype == parfillskip_code then
+                elseif subtype == rightskip_code or subtype == righthang_code or subtype == parfillskip_code then
                     if reference and (done[reference] or 0) == 0 then
                         head, current = inject_range(head,first,last,reference,parent,pardir,firstdir)
                         reference = nil

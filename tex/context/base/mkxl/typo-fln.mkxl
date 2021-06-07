@@ -88,9 +88,9 @@
 %    \kern\zeropoint % we need a node
 %    \hskip\zeropoint\s!plus\emwidth\relax % can be an option
    \endgroup
-   \glet\typo_firstline_handle\relax}
+   \glettonothing\typo_firstline_handle}
 
-\let\typo_firstline_handle\relax
+\lettonothing\typo_firstline_handle
 
 % goodie, question on list
 %

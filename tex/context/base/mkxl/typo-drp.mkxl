@@ -71,10 +71,10 @@
 \permanent\tolerant\protected\def\placeinitial[#1]% old command
   {\par
    \namedinitialparameter{#1}\c!before
-   \edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{}}}
+   \enforced\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{}}}
 
 \permanent\tolerant\protected\def\setinitial[#1]#*[#2]%
-  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
+  {\enforced\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
 \permanent\tolerant\protected\def\flushinitial % when used inside a mechanism that forgets
   {\typo_initial_handle}
@@ -110,9 +110,9 @@
    \c_attr_initial\plusone
    \initialparameter\c!text
    \endgroup
-   \glet\typo_initial_handle\relax}
+   \enforced\glettonothing\typo_initial_handle}
 
-\let\typo_initial_handle\relax
+\lettonothing\typo_initial_handle % hook into everypar
 
 % \setupbodyfont[dejavu,9pt]
 %

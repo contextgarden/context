@@ -1356,10 +1356,10 @@
 
 \newcount\c_spac_keep_lines_together
 
-\aliased\let\restoreinterlinepenalty\relax
+\permanent\lettonothing\restoreinterlinepenalty
 
 \protected\def\spac_penalties_restore
-  {\global\enforced\let\restoreinterlinepenalty\relax
+  {\enforced\glettonothing\restoreinterlinepenalty
    \overloaded\global\resetpenalties\interlinepenalties
    \global\c_spac_keep_lines_together\zerocount}
 

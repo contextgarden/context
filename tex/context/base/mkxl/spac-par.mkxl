@@ -104,7 +104,7 @@
 \installcorenamespace {parwrapafter}
 \installcorenamespace {parwrapcount}
 
-\let\spac_paragraph_wrap\relax
+\lettonothing\spac_paragraph_wrap
 
 \newcount\c_spac_paragraph_group_level
 
@@ -147,7 +147,7 @@
                                          \clf_setparwrapper{#3}#4}%
    #2\csname\??parwrapafter #3\endcsname{#5}%
    \clf_newparwrapper{#3}%
-   \enforced\let\spac_paragraph_wrap\spac_paragraph_update}
+   \let\spac_paragraph_wrap\spac_paragraph_update}
 
 \def\spac_register_par_wrapper_nop#1#2#3#4#5%
   {\ifcsname\??parwrapcount#3\endcsname \else
@@ -212,7 +212,7 @@
 
 \setparagraphfreezing
 
-\appendtoks\enforced\let\spac_paragraph_wrap\relax\to\everyforgetall
+\appendtoks\lettonothing\spac_paragraph_wrap\to\everyforgetall
 
 %D In due time, the code below will be upgraded using the above mechanisms.
 
@@ -250,8 +250,6 @@
 
 \installcorenamespace{paragraphintro}
 
-\let\spac_paragraphs_flush_intro\relax % hook into everypar
-
 \newtoks\t_spac_paragraphs_intro_first
 \newtoks\t_spac_paragraphs_intro_next
 \newtoks\t_spac_paragraphs_intro_each
@@ -260,8 +258,8 @@
 \newconditional\c_spac_paragraphs_intro_next
 \newconditional\c_spac_paragraphs_intro_each
 
-\let\spac_paragraphs_flush_intro\relax
-\let\spac_paragraphs_intro_step \relax
+\lettonothing\spac_paragraphs_flush_intro
+\lettonothing\spac_paragraphs_intro_step
 
 \permanent\protected\tolerant\def\setupparagraphintro[#1]#*[#2]%
   {\def\spac_paragraphs_intro_step##1%
@@ -277,7 +275,7 @@
    \global\t_spac_paragraphs_intro_first\emptytoks
    \global\t_spac_paragraphs_intro_next \emptytoks
    \global\t_spac_paragraphs_intro_each \emptytoks
-   \glet\spac_paragraphs_flush_intro\relax}
+   \glettonothing\spac_paragraphs_flush_intro}
 
 \defcsname\??paragraphintro\v!first\endcsname#1%
   {\global\settrue\c_spac_paragraphs_intro_first
@@ -372,7 +370,7 @@
        \the\t_spac_paragraphs_intro_next
        \the\t_spac_paragraphs_intro_each
      \else
-       \glet\spac_paragraphs_flush_intro\relax
+       \glettonothing\spac_paragraphs_flush_intro
        \the\t_spac_paragraphs_intro_next
      \fi}}
 
@@ -385,7 +383,7 @@
 %D This macro collects data that will be flushed at the next paragraph. By using
 %D this macro you can avoid interfering nodes (writes, etc).
 
-\aliased\let\flushpostponednodedata\relax % hook into everypar
+\lettonothing\flushpostponednodedata % hook into everypar
 
 \newbox  \b_spac_postponed_data
 %newcount\c_spac_postponed_data
@@ -453,7 +451,7 @@
      \ifvoid\b_spac_postponed_data\else
        \hpack{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
      \fi
-     \enforced\glet\flushpostponednodedata\relax
+     \enforced\glettonothing\flushpostponednodedata
    }%\fi}
 
 \permanent\protected\def\doflushatpar % might be renamed

@@ -216,7 +216,17 @@
 
 %D Reserved macros for tests:
 
-\aliased\let\donothing\empty
+%D A \type \type {\let} is more efficient than a \type {\def} so we often let something
+%D to relax or do nothing. However, we then loose the name in tracing. For that we now
+%D have \type {\lettonothing \foo} which is efficient but also keeps the name. Of course
+%D this is no solution for commands that take arguments but at least it helps tracing a
+%D bit. We keep of course \type {\donothing}.
+
+%D Maybe even nicer is a let that aliases but keeps the name.
+
+%          \aliased\let\donothing\empty
+         \immutable\def\donothing        {} % better in tracing
+%untraced\immutable\def\untraceddonothing{}
 
 \let\m_syst_string_one  \empty
 \let\m_syst_string_two  \empty

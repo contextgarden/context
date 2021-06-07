@@ -8,8 +8,13 @@ if not modules then modules = { } end modules ['font-fmp'] = {
 
 -- We only need to pick up the filename and optionally the enc file as we only use
 -- them for old school virtual math fonts. We might as well drop this completely.
--- This used to be a backend module but the code is rather generic so we just put it
--- here now.
+-- This used to be a backend module but the code is rather generic so for now we
+-- just put it here.
+--
+-- As Type 1 is kind of obsolete I don't expect usage of those fonts in ways that
+-- are not yet covered. Actually, we don't need map files at all because we read the
+-- afm files. Maybe for math but there at some point we'll ditch the virtual old
+-- school variants because afaik ConTeXt users are not using these any longer.
 
 local find, match, splitlines = string.find, string.match, string.splitlines
 
@@ -99,7 +104,10 @@ function mappings.loadline(how,line)
 end
 
 function mappings.reset()
-    lpdf.setmapfile("") -- tricky ... backend related
+    local setmapfile = lpdf and lpdf.setmapfile
+    if setmapfile then
+        setmapfile("") -- tricky ... backend related
+    end
 end
 
 mappings.getentry = getentry

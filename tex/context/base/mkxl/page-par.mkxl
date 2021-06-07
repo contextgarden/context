@@ -22,7 +22,7 @@
 
 \definecounter[\v!paragraph]
 
-\permanent\let\showparagraphnumber\relax
+\permanent\lettonothing\showparagraphnumber
 
 \appendtoks
     \page_par_check_state
@@ -36,16 +36,16 @@
      \lastnamedcs
    \fi}
 
-\setvalue{\??paragraphnumberingvariants\v!start}%
+\defcsname\??paragraphnumberingvariants\v!start\endcsname
   {\enforced\let\showparagraphnumber\page_par_show_number_normal}
 
-\setvalue{\??paragraphnumberingvariants\v!stop}%
-  {\enforced\let\showparagraphnumber\relax}
+\defcsname\??paragraphnumberingvariants\v!stop\endcsname
+  {\enforced\lettonothing\showparagraphnumber}
 
-\setvalue{\??paragraphnumberingvariants\v!line}%
+\defcsname\??paragraphnumberingvariants\v!line\endcsname
   {\enforced\let\showparagraphnumber\page_par_show_number_lines}
 
-\setvalue{\??paragraphnumberingvariants\v!reset}%
+\defcsname\??paragraphnumberingvariants\v!reset\endcsname
   {\strc_counters_reset\v!paragraph
    \enforced\let\showparagraphnumber\page_par_show_number_normal}
 

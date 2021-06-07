@@ -249,8 +249,9 @@
 
 \definefont
   [MixedCaps]
-% [CurrentFont*default cp 1.2\exheight]
-  [CurrentFont*default sa .8] % better adaptation to slanted
+  [CurrentFont*default cp 1.2\exheight]
+% [CurrentFont*default at 1.5\exheight] % better adaptation to slanted but still not nice
+% [CurrentFont*default ht 1.2\exheight] % maybe this is better indeed
 
 \setupcapitals
   [\v!mixed]

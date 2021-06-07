@@ -379,9 +379,9 @@
 
 \appendtoks
     \expandafter\newcount\csname\??delimitedtextlevel\currentdelimitedtext\endcsname
-    \frozen\instance\setuevalue{\currentdelimitedtext        }{\delimitedtext[\currentdelimitedtext]}%
-    \frozen\instance\setuevalue{\e!start\currentdelimitedtext}{\startdelimitedtext[\currentdelimitedtext]}%
-    \frozen\instance\setuevalue{\e!stop \currentdelimitedtext}{\stopdelimitedtext}%
+    \frozen\instance\protected\edefcsname\currentdelimitedtext        \endcsname{\delimitedtext[\currentdelimitedtext]}%
+    \frozen\instance\protected\edefcsname\e!start\currentdelimitedtext\endcsname{\startdelimitedtext[\currentdelimitedtext]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentdelimitedtext\endcsname{\stopdelimitedtext}%
 \to \everydefinedelimitedtext
 
 \setupdelimitedtext
@@ -407,7 +407,7 @@
      \typo_delimited_handle_middle\c!middle
    \fi}
 
-\let\typo_delimited_repeat\relax
+\lettonothing\typo_delimited_repeat
 
 \permanent\tolerant\protected\def\startdelimitedtext[#1]#*[#2]%
   {\begingroup
@@ -437,7 +437,7 @@
    \ifx\p_delimited_repeat\v!yes
      \let\typo_delimited_repeat\typo_delimited_repeat_indeed
    \else
-     \let\typo_delimited_repeat\relax
+     \lettonothing\typo_delimited_repeat
    \fi
    \setfalse\c_typo_delimited_repeating
    \edef\p_delimited_location{\delimitedtextparameter\c!location}%
@@ -847,7 +847,8 @@
   {\dontleavehmode
    \begingroup
    \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-   \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
+ % \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
+   \usedlanguageparameter{\c!left\currentparentdelimitedtextparent}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
    \bgroup
@@ -856,7 +857,8 @@
 
 \def\typo_delimited_fontdriven_e
   {\typo_delimited_stop_content
-   \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
+ % \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
+   \usedlanguageparameter{\c!right\currendelimitedtextparent}% was: \currentdelimitedtext
    \dostoptagged
    \typo_delimited_pop
    \endgroup}
