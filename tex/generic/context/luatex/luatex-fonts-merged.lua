@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-06-07 14:39
+-- merge date  : 2021-06-07 20:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -20842,7 +20842,7 @@ if not modules then modules={} end modules ['font-otl']={
 local lower=string.lower
 local type,next,tonumber,tostring,unpack=type,next,tonumber,tostring,unpack
 local abs=math.abs
-local derivetable=table.derive
+local derivetable,sortedhash=table.derive,table.sortedhash
 local formatters=string.formatters
 local setmetatableindex=table.setmetatableindex
 local allocate=utilities.storage.allocate
@@ -20858,7 +20858,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.116 
+otf.version=3.117 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -21231,7 +21231,21 @@ local function copytotfm(data,cache_id)
   properties.name=filename or fullname
   properties.subfont=subfont
 if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
-  properties.encodingbytes=2
+ properties.encodingbytes=2
+elseif CONTEXTLMTXMODE then
+ local duplicates=resources and resources.duplicates
+ if duplicates then
+  local maxindex=data.nofglyphs or metadata.nofglyphs
+  if maxindex then
+   for u,d in sortedhash(duplicates) do
+    for uu in sortedhash(d) do
+     maxindex=maxindex+1
+     descriptions[uu].dupindex=descriptions[u].index
+     descriptions[uu].index=maxindex
+    end
+   end
+  end
+ end
 end
   properties.private=properties.private or data.private or privateoffset
   return {
@@ -23523,9 +23537,13 @@ local f_character_y=formatters["%C"]
 local f_character_n=formatters["[ %C ]"]
 local check_duplicates=true 
 local check_soft_hyphen=true 
-directives.register("otf.checksofthyphen",function(v)
- check_soft_hyphen=v
-end)
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ check_soft_hyphen=false 
+else
+ directives.register("otf.checksofthyphen",function(v)
+  check_soft_hyphen=v
+ end)
+end
 local function replaced(list,index,replacement)
  if type(list)=="number" then
   return replacement
@@ -24199,6 +24217,7 @@ local function unifyglyphs(fontdata,usenames)
  local resources=fontdata.resources
  local zero=glyphs[0]
  local zerocode=zero.unicode
+ local nofglyphs=#glyphs
  if not zerocode then
   zerocode=private
   zero.unicode=zerocode
@@ -24213,7 +24232,7 @@ local function unifyglyphs(fontdata,usenames)
   indices[0]=zerocode
  end
  if names then
-  for index=1,#glyphs do
+  for index=1,nofglyphs do
    local glyph=glyphs[index]
    local unicode=glyph.unicode 
    if not unicode then
@@ -24246,7 +24265,7 @@ local function unifyglyphs(fontdata,usenames)
    descriptions[unicode]=glyph
   end
  elseif trace_unicodes then
-  for index=1,#glyphs do
+  for index=1,nofglyphs do
    local glyph=glyphs[index]
    local unicode=glyph.unicode 
    if not unicode then
@@ -24287,7 +24306,7 @@ local function unifyglyphs(fontdata,usenames)
    descriptions[unicode]=glyph
   end
  else
-  for index=1,#glyphs do
+  for index=1,nofglyphs do
    local glyph=glyphs[index]
    local unicode=glyph.unicode 
    if not unicode then
@@ -24313,7 +24332,7 @@ local function unifyglyphs(fontdata,usenames)
    descriptions[unicode]=glyph
   end
  end
- for index=1,#glyphs do
+ for index=1,nofglyphs do
   local math=glyphs[index].math
   if math then
    local list=math.vparts
@@ -24336,7 +24355,7 @@ local function unifyglyphs(fontdata,usenames)
  end
  local colorpalettes=resources.colorpalettes
  if colorpalettes then
-  for index=1,#glyphs do
+  for index=1,nofglyphs do
    local colors=glyphs[index].colors
    if colors then
     for i=1,#colors do
@@ -24351,6 +24370,7 @@ local function unifyglyphs(fontdata,usenames)
  fontdata.names=names
  fontdata.descriptions=descriptions
  fontdata.hashmethod=hashmethod
+ fontdata.nofglyphs=nofglyphs
  return indices,names
 end
 local p_crappyname  do

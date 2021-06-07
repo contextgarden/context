@@ -37,12 +37,16 @@ local f_index              = formatters["I%05X"]
 local f_character_y        = formatters["%C"]
 local f_character_n        = formatters["[ %C ]"]
 
-local check_duplicates     = true -- can become an option (pseudo feature) / aways needed anyway
+local check_duplicates     = true -- can become an option (pseudo feature) / always needed anyway
 local check_soft_hyphen    = true -- can become an option (pseudo feature) / needed for tagging
 
-directives.register("otf.checksofthyphen",function(v)
-    check_soft_hyphen = v
-end)
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+    check_soft_hyphen = false -- solved better elsewhere
+else
+    directives.register("otf.checksofthyphen",function(v)
+        check_soft_hyphen = v
+    end)
+end
 
 local function replaced(list,index,replacement)
     if type(list) == "number" then
@@ -454,7 +458,7 @@ local function copyduplicates(fontdata)
         local duplicates   = resources.duplicates
         if check_soft_hyphen then
             -- ebgaramond has a zero width empty soft hyphen
-            -- antykwatorunsks lacks a soft hyphen
+            -- antykwatorunska lacks a soft hyphen
             local ds = descriptions[0xAD]
             if not ds or ds.width == 0 then
                 if ds then
@@ -759,6 +763,7 @@ local function unifyglyphs(fontdata,usenames)
     local resources    = fontdata.resources
     local zero         = glyphs[0]
     local zerocode     = zero.unicode
+    local nofglyphs    = #glyphs
     if not zerocode then
         zerocode       = private
         zero.unicode   = zerocode
@@ -775,7 +780,7 @@ local function unifyglyphs(fontdata,usenames)
     --
     if names then
         -- seldom uses, we don't issue message ... this branch might even go away
-        for index=1,#glyphs do
+        for index=1,nofglyphs do
             local glyph   = glyphs[index]
             local unicode = glyph.unicode -- this is the primary one
             if not unicode then
@@ -808,7 +813,7 @@ local function unifyglyphs(fontdata,usenames)
             descriptions[unicode] = glyph
         end
     elseif trace_unicodes then
-        for index=1,#glyphs do
+        for index=1,nofglyphs do
             local glyph   = glyphs[index]
             local unicode = glyph.unicode -- this is the primary one
             if not unicode then
@@ -849,7 +854,7 @@ local function unifyglyphs(fontdata,usenames)
             descriptions[unicode] = glyph
         end
     else
-        for index=1,#glyphs do
+        for index=1,nofglyphs do
             local glyph   = glyphs[index]
             local unicode = glyph.unicode -- this is the primary one
             if not unicode then
@@ -876,8 +881,8 @@ local function unifyglyphs(fontdata,usenames)
         end
     end
     --
-    for index=1,#glyphs do
-        local math  = glyphs[index].math
+    for index=1,nofglyphs do
+        local math = glyphs[index].math
         if math then
             local list = math.vparts
             if list then
@@ -902,7 +907,7 @@ local function unifyglyphs(fontdata,usenames)
     --
     local colorpalettes = resources.colorpalettes
     if colorpalettes then
-        for index=1,#glyphs do
+        for index=1,nofglyphs do
             local colors = glyphs[index].colors
             if colors then
                 for i=1,#colors do
@@ -918,6 +923,7 @@ local function unifyglyphs(fontdata,usenames)
     fontdata.names        = names
     fontdata.descriptions = descriptions
     fontdata.hashmethod   = hashmethod
+    fontdata.nofglyphs    = nofglyphs
     --
     return indices, names
 end

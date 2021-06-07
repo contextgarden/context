@@ -186,7 +186,7 @@ end
                     if unicode then
                         unicode = tounicode(unicode)
                     else
-                        unicode = "FFFD"
+                        unicode = "FFFD" -- wide only
                     end
                     mapping[length] = f_mapping(index,unicode)
                 end
@@ -236,10 +236,11 @@ end
         return widths
     end
 
-    collectindices = function(descriptions,indices)
+    collectindices = function(descriptions,indices,used)
         local minindex = 0xFFFF
         local maxindex = 0
         local reverse  = { }
+        local copies   = { }
         -- todo: already at definition time trigger copying streams
         -- and add extra indices ... first i need a good example of
         -- a clash
@@ -252,7 +253,11 @@ end
      --     end
      -- end
         for unicode, data in next, descriptions do
-            reverse[data.index or unicode] = data
+            local index = data.index
+            reverse[index or unicode] = data
+            if used[index] and data.dupindex then
+                copies[index] = data.dupindex
+            end
         end
         for index in next, indices do
             if index > maxindex then
@@ -266,7 +271,10 @@ end
         if minindex > maxindex then
             minindex = maxindex
         end
-        return indices, minindex, maxindex
+        if next(copies) then
+            inspect(copies)
+        end
+        return indices, copies, minindex, maxindex
     end
 
     includecidset = false
@@ -704,8 +712,9 @@ do
         local indices          = details.indices
         local metabbox         = { fontheader.xmin, fontheader.ymin, fontheader.xmax, fontheader.ymax }
         local indices,
+              copies,
               minindex,
-              maxindex         = collectindices(descriptions,indices)
+              maxindex         = collectindices(descriptions,indices,details.used)
         local glyphstreams     = tablecreators.glyf(fontfile)
         local locations        = tablecreators.loca(fontfile)
         local horizontals      = tablecreators.hmtx(fontfile)
@@ -751,6 +760,12 @@ do
             local data = indices[index]
             if data then
                 local blob = blobs[index] -- we assume padding
+                if not blob then
+                    local copy = copies[index]
+                    if copy then
+                        blob = blobs[copy]
+                    end
+                end
                 if blob and #blob > 0 then
                     g = g + 1 ; glyphstreams[g] = blob
                     h = h + 1 ; horizontals [h] = tocardinal2(data.width or 0)
@@ -1346,8 +1361,9 @@ do
         --
 
         local indices,
+              copies,
               minindex,
-              maxindex       = collectindices(descriptions,indices)
+              maxindex       = collectindices(descriptions,indices,details.used)
         local streamoffset   = 0
         local glyphstreams,
               charmappings   = tablecreators.cff(fontfile)
@@ -1369,7 +1385,16 @@ do
         end
         for index=minindex,maxindex do
             if indices[index] then
-                local blob              = blobs[index] or "\14"
+                local blob = blobs[index]
+                if not blob then
+                    local copy = copies[index]
+                    if copy then
+                        blob = blobs[copy]
+                    end
+                end
+                if not blob then
+                    blob = "\14"
+                end
                 sparsemax               = sparsemax + 1
                 glyphstreams[sparsemax] = blob
                 charmappings[sparsemax] = tocardinal2(index)
@@ -1896,8 +1921,9 @@ do
             local factor      = parameters.factor -- normally 1
             local fontmatrix  = pdfarray { scalefactor, 0, 0, scalefactor, 0, 0 }
             local indices,
+                  copies,
                   minindex,
-                  maxindex    = collectindices(details.fontdata.characters,details.indices)
+                  maxindex    = collectindices(details.fontdata.characters,details.indices,details.used)
             local widths      = pdfarray()
             local differences = pdfarray()
             local charprocs   = pdfdictionary()
@@ -2091,6 +2117,7 @@ function lpdf.flushfonts()
                         fontdata     = fontdata,
                         filename     = resources.filename or properties.filename or "unset",
                         indices      = { },
+                        used         = used,
                         rawdata      = rawdata,
                         properties   = properties, -- we assume consistency
                         parameters   = parameters, -- we assume consistency

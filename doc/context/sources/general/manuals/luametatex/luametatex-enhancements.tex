@@ -821,6 +821,21 @@ This can be a bit nicer than using the uppercase tricks (using the property of
 
 \stopsubsection
 
+\startsubsection[title={\lpr {lettonothing} and \lpr {glettonothing}}]
+
+This primitive is equivalent to:
+
+\starttyping
+\protected\def\lettonothing#1{\def#1{}}
+\stoptyping
+
+and although it might feel faster (only measurable with millions of calls) it's
+mostly there because it is easier on tracing (less clutter). An advantage over
+letting to an empty predefined macro is also that in tracing we keep seeing the
+name (relaxing would show the relax equivalent).
+
+\stopsubsection
+
 \startsubsection[title={\lpr {glet}}]
 
 This primitive is similar to:
@@ -1541,12 +1556,41 @@ related primitives.
 \topicindex {tracing}
 
 If \prm {tracingonline} is larger than~2, the node list display will also print
-the node number of the nodes.
+the node number of the nodes as well as set attributes (these can be made verbose
+by a callback). We have only a generic whatsit but again a callback can be used
+to provide detail. So, when a box is shown in \CONTEXT\ you will see quite a lot
+more than in other engines. Because nodes have more fields, more is shown anyway,
+and for nodes that have sublists (like discretionaries) these are also shown. All
+that could have been delegated to \LUA\ but it felt wrong to not made that a core
+engine feature.
 
 When bit~1 of \lpr {tracinglevels} is set the current level is prepended to
 tracing lines in the log and when bit~2 is set the input level is prepended. You
 can set both bits and get both numbers prepended. In \CONTEXT\ we default to
 the value~3, so you get prefixes like \type {3:4:} followed by a space.
+
+When \type {\tracingcommands} is larger than 3 the mode switch will be not be
+prefixed to the \type {{command}} but get its own \type {[line]}.
+
+When \type {\tracinglevels} variable is set to 3 the group and input level are
+shown, a value of 1 or 2 shows only one of them (in \CONTEXT\ we default to 3).
+
+When \type {\tracinghyphenation} is set to 1 duplicate patterns are reported (in
+\CONTEXT\ we default to that) and higher values will also show details about the
+\LUA\ hyphenation (exception) feedback loop discussed elsewhere.
+
+When set to 1 the \type {\tracingmath} variable triggers the reporting of the
+mode (inline or display) an mlist is processed.
+
+Because in \LUATEX\ the saving and restoring of locally redefined macros and set
+variables is optimized a bit in order to prevent redundant stack usage, there
+will be less tracing visible.
+
+Also, because we have a more extensive macro argument parser, a fast path (and
+less storage demands) for macros with no arguments, and flags that can be set for
+macros the way macros are traced can be different in details (we therefore have
+for instance \type {\meaningfull} and \type {\meaningless} as variants of \type
+{\meaning}).
 
 \stopsubsection
 
@@ -2071,6 +2115,9 @@ more parsing options:
 \NC 0   \NC discard but count the argument \NC \NR
 \ML
 \NC *   \NC ignore spaces \NC \NR
+\NC .   \NC ignore pars and spaces \NC \NR
+\NC ,   \NC push back space when no match \NC \NR
+\ML
 \NC :   \NC pick up scanning here  \NC \NR
 \NC ;   \NC quit scanning \NC \NR
 \LL
@@ -2222,7 +2269,7 @@ users redefine instances but there a warning or error is kind of welcome.
 
 \stopsection
 
-\startsection[title=Constants]
+\startsection[title={Constants with \lpr{integerdef} and \lpr {dimendef}}]
 
 It is rather common to store constant values in a register or character
 definition.
@@ -2247,6 +2294,27 @@ valid number or dimension when needed.
 Experiments with constant strings made the engine source more complex than I
 wanted so that features was rejected. Of course we can use the prefixes mentioned
 in a previous section.
+
+\stopsection
+
+\startsection[title={Serialization with \lpr {todimension}, \lpr {toscaled} and \lpr {tointeger}}]
+
+These three serializers take a verbose or symbolic quantity:
+
+\starttyping
+\todimension 10pt   \todimension \scratchdimen    % with unit
+\toscaled    10pt   \toscaled    \scratchdimen    % without unit
+\tointeger   10     \tointeger   \scratchcounter
+\stoptyping
+
+This is particularly handy in cases where you don't know what you deal with, for instance
+when a value is stored in a macro. Using \type {\the} could fail there while:
+
+\starttyping
+\the\dimexpr10pt\relax
+\stoptyping
+
+is often overkill and gives more noise in a trace.
 
 \stopsection
 

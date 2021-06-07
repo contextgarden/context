@@ -18,6 +18,8 @@ local registerotffeature = fonts.handlers.otf.features.register
 local extraprivates      = helpers.extraprivates
 local addprivate         = helpers.addprivate
 
+local tounicode          = fonts.mappings.tounicode
+
 local function initialize(tfmdata)
     for i=1,#extraprivates do
         local e = extraprivates[i]
@@ -37,8 +39,6 @@ constructors.newfeatures.otf.register {
         node = initialize,
     }
 }
-
-local tounicode = fonts.mappings.tounicode
 
 local function initialize(tfmdata,key,value)
     if value == "ligatures" then
@@ -75,6 +75,28 @@ end
 registerotffeature {
     name         = "forceunicodes",
     description  = "forceunicodes",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+local function initialize(tfmdata,key,value)
+    if value then
+--         local c = tfmdata.characters[0x002D]
+--         if c then
+--             c.tounicode = tounicode(0x002D)
+--         end
+        local c = tfmdata.descriptions[0x002D]
+        if c then
+            c.tounicode = tounicode(0x002D)
+        end
+    end
+end
+
+registerotffeature {
+    name         = "hardhyphen",
+    description  = "hardhyphen",
     manipulators = {
         base = initialize,
         node = initialize,
