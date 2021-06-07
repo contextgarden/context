@@ -914,15 +914,22 @@
 
 \pushoverloadmode
 
-\let\infofont         \relax
-\let\infofontbold     \relax
-\let\smallinfofont    \relax
-\let\smallinfofontbold\relax
+% \let\infofont         \relax
+% \let\infofontbold     \relax
+% \let\smallinfofont    \relax
+% \let\smallinfofontbold\relax
+%
+% \definefont[infofont]         [file:dejavusansmono*none      at 6pt]
+% \definefont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]
+% \definefont[smallinfofont]    [file:dejavusansmono*none      at 3pt]
+% \definefont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]
+%
+% after testing for quite a while moved from cont-loc.mkxl
 
-\definefont[infofont]         [file:dejavusansmono*none      at 6pt]
-\definefont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]
-\definefont[smallinfofont]    [file:dejavusansmono*none      at 3pt]
-\definefont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]
+\protected\def\infofont         {\definefrozenfont[infofont]         [file:dejavusansmono*none      at 6pt]\infofont}
+\protected\def\infofontbold     {\definefrozenfont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]\infofontbold}
+\protected\def\smallinfofont    {\definefrozenfont[smallinfofont]    [file:dejavusansmono*none      at 3pt]\smallinfofont}
+\protected\def\smallinfofontbold{\definefrozenfont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]\smallinfofontbold}
 
 %D Optimization (later we overload in math). Also needed in order to get \type {\ss}
 %D properly defined.

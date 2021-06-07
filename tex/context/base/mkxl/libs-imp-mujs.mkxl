@@ -31,7 +31,6 @@
 
 \protected\def\startecmacode % \stopecmacode
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \luat_start_ecma_code_indeed}
 

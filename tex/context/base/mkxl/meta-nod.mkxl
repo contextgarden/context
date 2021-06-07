@@ -108,7 +108,7 @@
 
 \newcount\c_meta_nodes_n
 
-\aliased\let\stopnodes\relax
+\permanent\protected\lettonothing\stopnodes
 
 \permanent\tolerant\protected\def\startnodes[#1]#:#2\stopnodes
   {\hpack\bgroup
@@ -156,7 +156,7 @@
    }}%
    \advance\c_meta_nodes_n\plusone}
 
-\aliased\let\placenode\relax
+\permanent\protected\lettonothing\placenode
 
 \appendtoks
    \enforced\let\placenode\grph_nodes_node
@@ -165,23 +165,23 @@
 \permanent\tolerant\protected\def\grph_nodes_fromto[#1]#*[#2]%
   {\grph_nodes_fromto_indeed[#1][#2]}% get rid of {n,m} % todo: we can use #_ or so
 
-\letvalue{\??metanodesposition            }\empty
-\setvalue{\??metanodesposition         top}{.top}
-\setvalue{\??metanodesposition      bottom}{.bot}
-\setvalue{\??metanodesposition        left}{.lft}
-\setvalue{\??metanodesposition       right}{.rt}
-\setvalue{\??metanodesposition   upperleft}{.ulft}
-\setvalue{\??metanodesposition     topleft}{.ulft}
-\setvalue{\??metanodesposition     lefttop}{.ulft}
-\setvalue{\??metanodesposition  upperright}{.urt}
-\setvalue{\??metanodesposition    topright}{.urt}
-\setvalue{\??metanodesposition    righttop}{.urt}
-\setvalue{\??metanodesposition   lowerleft}{.llft}
-\setvalue{\??metanodesposition  bottomleft}{.llft}
-\setvalue{\??metanodesposition  leftbottom}{.llft}
-\setvalue{\??metanodesposition  lowerright}{.lrt}
-\setvalue{\??metanodesposition bottomright}{.lrt}
-\setvalue{\??metanodesposition rightbottom}{.lrt}
+\letcsname\??metanodesposition            \endcsname\empty
+\defcsname\??metanodesposition         top\endcsname{.top}
+\defcsname\??metanodesposition      bottom\endcsname{.bot}
+\defcsname\??metanodesposition        left\endcsname{.lft}
+\defcsname\??metanodesposition       right\endcsname{.rt}
+\defcsname\??metanodesposition   upperleft\endcsname{.ulft}
+\defcsname\??metanodesposition     topleft\endcsname{.ulft}
+\defcsname\??metanodesposition     lefttop\endcsname{.ulft}
+\defcsname\??metanodesposition  upperright\endcsname{.urt}
+\defcsname\??metanodesposition    topright\endcsname{.urt}
+\defcsname\??metanodesposition    righttop\endcsname{.urt}
+\defcsname\??metanodesposition   lowerleft\endcsname{.llft}
+\defcsname\??metanodesposition  bottomleft\endcsname{.llft}
+\defcsname\??metanodesposition  leftbottom\endcsname{.llft}
+\defcsname\??metanodesposition  lowerright\endcsname{.lrt}
+\defcsname\??metanodesposition bottomright\endcsname{.lrt}
+\defcsname\??metanodesposition rightbottom\endcsname{.lrt}
 
 \def\grph_nodes_fromto_indeed[#1,#2][#3]% we can't group because etoksapp doesn't like that
   {\begingroup
@@ -219,16 +219,18 @@
      ;%
    }}}
 
-\setvalue{\??metanodesalternative             }{draw}
-\setvalue{\??metanodesalternative        arrow}{drawarrow}
-\setvalue{\??metanodesalternative  doublearrow}{drawdblarrow}
-\setvalue{\??metanodesalternative doublearrows}{drawdoublearrows}
+\defcsname\??metanodesalternative             \endcsname{draw}
+\defcsname\??metanodesalternative        arrow\endcsname{drawarrow}
+\defcsname\??metanodesalternative  doublearrow\endcsname{drawdblarrow}
+\defcsname\??metanodesalternative doublearrows\endcsname{drawdoublearrows}
 
-\setvalue{\??metanodesoption                  }{}
-\setvalue{\??metanodesoption            dashed}{dashed evenly}
-\setvalue{\??metanodesoption            dotted}{dashed withdots scaled .5}
+\defcsname\??metanodesoption                  \endcsname{}
+\defcsname\??metanodesoption            dashed\endcsname{dashed evenly}
+\defcsname\??metanodesoption            dotted\endcsname{dashed withdots scaled .5}
 
-\aliased\let\connectnodes\relax
+\permanent\protected\lettonothing\connectnodes
+\permanent\protected\lettonothing\mpcode
+\permanent\protected\lettonothing\nodeMPcode
 
 \appendtoks
    \enforced\let\connectnodes\grph_nodes_fromto
@@ -236,9 +238,6 @@
 
 \permanent\protected\def\grph_nodes_code#1%
   {\etoksapp\t_meta_nodes{#1}}
-
-\aliased\let\mpcode    \relax
-\aliased\let\nodeMPcode\relax
 
 \appendtoks
    \enforced\let\nodeMPcode\grph_nodes_code

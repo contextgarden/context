@@ -76,15 +76,24 @@
 
 \aliased\let\MPLIBsettextX\MPLIBsetNtextX
 
+% \permanent\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
+%   {\clf_mpgettext\MPtextbox #1%
+%    \vpack to \zeropoint
+%      {\vss
+%      %\hpack to \zeropoint \s!container
+%       \hcontainer to \zeropoint
+%         {\scale
+%           [\c!sx=#2,\c!sy=#3]%
+%           {\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
+
 \permanent\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\clf_mpgettext\MPtextbox #1%
    \vpack to \zeropoint
      {\vss
-     %\hpack to \zeropoint \s!container
       \hcontainer to \zeropoint
         {\scale
           [\c!sx=#2,\c!sy=#3]%
-          {\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
+          {\raise\dp\MPtextbox\box\MPtextbox}\hss}}}
 
 \let\mlib_sx\!!zerocount % set at the lua end
 \let\mlib_sy\!!zerocount % set at the lua end
@@ -99,24 +108,37 @@
 
 % horrible (we could inline scale and matrix code):
 
+% \permanent\protected\def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
+%   {\clf_mpgettext\MPtextbox #1%
+%    \setbox\MPbox\hpack\bgroup
+%      \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
+%        \vpack to \zeropoint\bgroup
+%           \vss
+%          %\hpack to \zeropoint \s!container \bgroup
+%           \hcontainer to \zeropoint \bgroup
+%            % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
+%            % \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
+%              \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
+%              % This gives: LuaTeX warning: Misplaced \pdfrestore .. don't ask me why.
+%              % but I'll retry it some day soon.
+%              % \dostartscaling{#8}{#9}%
+%              %   \raise\dp\MPtextbox\box\MPtextbox
+%              % \dostopscaling
+%              \forcecolorhack % can go away ... already in the scale macro
+%              \hss
+%          \egroup
+%        \egroup
+%    \egroup
+%    \smashbox\MPbox
+%    \box\MPbox}
+
 \permanent\protected\def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
   {\clf_mpgettext\MPtextbox #1%
    \setbox\MPbox\hpack\bgroup
      \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
        \vpack to \zeropoint\bgroup
-          \vss
-         %\hpack to \zeropoint \s!container \bgroup
-          \hcontainer to \zeropoint \bgroup
-           % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
-           % \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
-             \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
-             % This gives: LuaTeX warning: Misplaced \pdfrestore .. don't ask me why.
-             % but I'll retry it some day soon.
-             % \dostartscaling{#8}{#9}%
-             %   \raise\dp\MPtextbox\box\MPtextbox
-             % \dostopscaling
-             \forcecolorhack % can go away ... already in the scale macro
-             \hss
+          \vss \hcontainer to \zeropoint \bgroup
+             \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}\hss
          \egroup
        \egroup
    \egroup
@@ -207,7 +229,7 @@
    \box\scratchbox
    \endgroup}
 
-\aliased\let\MPLIBstopgroup\relax
+\permanent\protected\lettonothing\MPLIBstopgroup
 
 \permanent\protected\def\MPLIBstartgroup#1#2#3#4#5#6% isolated 0/1, knockout 0/1 llx lly urx ury
   {\begingroup
@@ -253,8 +275,7 @@
    \dp\nextbox\zeropoint
    \normalexpanded{\ifnum#6=\zerocount\hpos{mp-pattern-#1}\fi}{\box\nextbox}}
 
-\permanent\protected\def\MPLIBstopgetpattern
-  {}
+\permanent\protected\lettonothing\MPLIBstopgetpattern
 
 % For now here ... will be cleaned up:
 

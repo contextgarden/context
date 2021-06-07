@@ -100,17 +100,17 @@
    \gtoksapp\t_meta_definitions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
-\aliased\let\stopMPdefinitions\relax
+\permanent\protected\lettonothing\stopMPdefinitions
 
 \permanent\tolerant\protected\def\startMPextensions#=#:#2\stopMPextensions % we could use buffers instead
   {\clf_setmpextensions{#1}{#2}}
 
-\aliased\let\stopMPextensions\relax
+\permanent\protected\lettonothing\stopMPextensions
 
 \permanent\protected\def\startMPinitializations#1\stopMPinitializations % for all instances, when enabled
   {\gtoksapp\t_meta_initializations{#1}}
 
-\aliased\let\stopMPinitializations\relax
+\permanent\protected\lettonothing\stopMPinitializations
 
 \permanent\tolerant\protected\def\startMPinclusions[#1]#*#=#:#3\stopMPinclusions
   {\let\m_meta_saved_instance\currentMPinstance % \pushmacro
@@ -124,7 +124,7 @@
    \gtoksapp\t_meta_inclusions{#3}%
    \let\currentMPinstance\m_meta_saved_instance} % \popmacro
 
-\aliased\let\stopMPinclusions\relax
+\permanent\protected\lettonothing\stopMPinclusions
 
 % The next was broken since we added instances so it will go away!
 
@@ -392,7 +392,7 @@
      {\xdef\MPdrawingdata{\MPdrawingdata#2}}%
    \egroup}
 
-\aliased\let\stopMPdrawing\relax
+\permanent\protected\lettonothing\stopMPdrawing
 
 \permanent\def\MPdrawing#1%
   {\relax
@@ -404,7 +404,7 @@
 \permanent\protected\def\startMPclip#1#2\stopMPclip % todo: store at the lua end or just store less
   {\gdefcsname\??mpclip#1\endcsname{#2}}
 
-\aliased\let\stopMPclip\relax
+\permanent\protected\lettonothing\stopMPclip
 
 \mutable\def\width {0 } % left-over, obsolete
 \mutable\def\height{0 } % left-over, obsolete
@@ -621,9 +621,13 @@
   {\meta_relocate_box
    \box\b_meta_graphic}
 
+% \protected\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
+%   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
+%    \hpack container{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
+
 \protected\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
-   \hpack container{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
+   \hpack container{\getobject{MP}{#1}}}
 
 \protected\def\meta_use_box
   {\setunreferencedobject{MP}}
@@ -648,7 +652,7 @@
 \permanent\protected\def\startuniqueMPgraphic
   {\dodoublegroupempty\meta_start_unique_graphic}
 
-\aliased\let\stopuniqueMPgraphic\relax
+\permanent\protected\lettonothing\stopuniqueMPgraphic
 
 \def\meta_start_unique_graphic#1%
   {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
@@ -674,7 +678,7 @@
 \permanent\protected\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
 
-\aliased\let\stopuseMPgraphic\relax
+\permanent\protected\lettonothing\stopuseMPgraphic
 
 \def\meta_start_use_graphic#1%
   {\normalexpanded{\meta_start_use_graphic_indeed{#1}}}
@@ -685,7 +689,7 @@
 \permanent\protected\def\startusableMPgraphic
   {\dodoublegroupempty\meta_start_usable_graphic}
 
-\aliased\let\stopusableMPgraphic\relax
+\permanent\protected\lettonothing\stopusableMPgraphic
 
 \def\meta_start_usable_graphic#1%
   {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
@@ -706,7 +710,7 @@
 \permanent\protected\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
-\aliased\let\stopreusableMPgraphic\relax
+\permanent\protected\lettonothing\stopreusableMPgraphic
 
 \def\meta_start_reusable_graphic#1%
   {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
@@ -740,7 +744,7 @@
 \permanent\protected\def\startoverlayMPgraphic
   {\dodoublegroupempty\meta_start_overlay_graphic}
 
-\aliased\let\stopoverlayMPgraphic\relax
+\permanent\protected\lettonothing\stopoverlayMPgraphic
 
 \def\meta_start_overlay_graphic#1%
   {\normalexpanded{%
@@ -761,7 +765,7 @@
 
 \newtoks\MPoverlaydata
 
-\aliased\let\stopMPoverlaydata\relax
+\permanent\protected\lettonothing\stopMPoverlaydata
 
 \permanent\protected\def\startMPoverlaydata
   {\iftrialtypesetting
@@ -804,7 +808,7 @@
 \permanent\tolerant\protected\def\startuniqueMPpagegraphic % todo the modern way
   {\dodoublegroupempty\meta_start_unique_page_graphic}
 
-\aliased\let\stopuniqueMPpagegraphic\relax
+\permanent\protected\lettonothing\stopuniqueMPpagegraphic
 
 \def\meta_start_unique_page_graphic#1%
   {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
@@ -865,7 +869,7 @@
    \fi
    \clf_mptexset{\detokenize{#2}}}
 
-\aliased\let\stopMPenvironment\relax
+\permanent\protected\lettonothing\stopMPenvironment
 
 \permanent\protected\def\resetMPenvironment
   {\clf_mptexreset}
@@ -899,7 +903,7 @@
    \meta_process_graphic{#2}%
    \endgroup}
 
-\aliased\let\stopMPcode\relax
+\permanent\protected\lettonothing\stopMPcode
 
 %D This one is not optimized because it's only used for small snippets, if it
 %D is used at all.
@@ -935,7 +939,7 @@
 \permanent\tolerant\protected\def\startMPrun#=#:#2\stopMPrun
   {\normalexpanded{\startuseMPgraphic{\iftok{#1}\emptytoks mprun\else#1\fi}}#2\stopuseMPgraphic}
 
-\aliased\let\stopMPrun\relax
+\permanent\protected\lettonothing\stopMPrun
 
 %D The \type {\resetMPenvironment} is a quick way to erase the token list. You
 %D should be aware of independencies. For instance, if you use a font in a graphic
@@ -1141,8 +1145,8 @@
 \permanent\tolerant\protected\def\startstaticMPgraphic#=#:#=#:#3\stopstaticMPgraphic
   {\startreusableMPgraphic{\??mpstaticgraphic#1}{#2}#3\stopreusableMPgraphic}
 
-\aliased\let\stopstaticMPfigure \relax
-\aliased\let\stopstaticMPgraphic\relax
+\permanent\protected\lettonothing\stopstaticMPfigure
+\permanent\protected\lettonothing\stopstaticMPgraphic
 
 \permanent\tolerant\protected\def\usestaticMPfigure[#1]#*[#2]%
   {\ifarguments\or
@@ -1254,7 +1258,7 @@
    \egroup
    \endgroup}
 
-\aliased\let\stopMPcalculation\relax
+\permanent\protected\lettonothing\stopMPcalculation
 
 %D \macros
 %D   {setupMPgraphics}

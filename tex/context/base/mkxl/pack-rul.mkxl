@@ -1003,23 +1003,22 @@
 
 \defineinterfaceconstant {fr!analyze} {fr:analyze} % private option
 
-\aliased\let\delayedbegstrut\relax
-\aliased\let\delayedendstrut\relax
-\aliased\let\delayedstrut   \relax
+\permanent\protected\lettonothing\delayedbegstrut
+\permanent\protected\lettonothing\delayedendstrut
+\permanent\protected\lettonothing\delayedstrut
 
-\mutable\let\localoffset\empty
-\mutable\let\localwidth \empty
-\mutable\let\localheight\empty
-\mutable\let\localformat\empty
-\mutable\let\localstrut \empty
+\permanent\protected\lettonothing\localbegstrut
+\permanent\protected\lettonothing\localendstrut
+\permanent\protected\lettonothing\localstrut
+
+\mutable\let\localoffset \empty
+\mutable\let\localwidth  \empty
+\mutable\let\localheight \empty
+\mutable\let\localformat \empty
 
 \mutable\let\framedwidth \empty
 \mutable\let\framedheight\empty
 \mutable\let\framedoffset\empty
-
-\aliased\let\localbegstrut\relax
-\aliased\let\localendstrut\relax
-\aliased\let\localstrut   \relax
 
 % better a constant:
 
@@ -1166,9 +1165,9 @@
    \fi
    % the next check could move to strutalternative
    \ifcase\c_framed_has_strut % none (not even noindent)
-     \enforced\let\localbegstrut\relax
-     \enforced\let\localendstrut\relax
-     \enforced\let\localstrut   \relax
+     \enforced\lettonothing\localbegstrut
+     \enforced\lettonothing\localendstrut
+     \enforced\lettonothing\localstrut
    \or % no / overlay
      \enforced\let\localbegstrut\pseudobegstrut
      \enforced\let\localendstrut\pseudoendstrut
@@ -1179,16 +1178,16 @@
      \enforced\let\localstrut   \strut
    \fi
    \ifx\p_framed_autostrut\v!yes
-     \enforced\let\delayedbegstrut\relax
-     \enforced\let\delayedendstrut\relax
-     \enforced\let\delayedstrut   \relax
+     \enforced\lettonothing\delayedbegstrut
+     \enforced\lettonothing\delayedendstrut
+     \enforced\lettonothing\delayedstrut
    \else
-     \enforced\let\delayedbegstrut\localbegstrut
-     \enforced\let\delayedendstrut\localendstrut
-     \enforced\let\delayedstrut   \localstrut
-     \enforced\let\localbegstrut  \relax
-     \enforced\let\localendstrut  \relax
-     \enforced\let\localstrut     \relax
+     \enforced\let          \delayedbegstrut\localbegstrut
+     \enforced\let          \delayedendstrut\localendstrut
+     \enforced\let          \delayedstrut   \localstrut
+     \enforced\lettonothing\localbegstrut
+     \enforced\lettonothing\localendstrut
+     \enforced\lettonothing\localstrut
    \fi
    \ifconditional\c_framed_has_height
      \enforced\let\\\pack_framed_vboxed_newline

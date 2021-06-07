@@ -1943,7 +1943,7 @@
    \enforced\aliased\let\stopoverlay\egroup
    \processboxes\syst_boxes_overlay_process}
 
-\aliased\let\stopoverlay\relax
+\permanent\protected\lettonothing\stopoverlay
 
 %D \macros
 %D   {fakebox}

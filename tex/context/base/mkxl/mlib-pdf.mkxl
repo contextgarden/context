@@ -46,7 +46,7 @@
    \global\MPurx   \zeropoint
    \global\MPury   \zeropoint}
 
-\aliased\let\popMPboundingbox\relax
+\permanent\protected\lettonothing\popMPboundingbox
 
 \permanent\protected\def\pushMPboundingbox
   {\enforced\permanent\protected\edef\popMPboundingbox
@@ -88,14 +88,23 @@
 
 % MPLIB specific:
 
+% \permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
+%   {\meta_process_graphic_figure_start
+%    \dostarttagged\t!mpgraphic\empty
+%    \naturalhpack attr \imageattribute \plusone \bgroup
+%    \dousecolorparameter\s!black\forcecolorhack
+%    \setMPboundingbox{#1}{#2}{#3}{#4}%
+%    \setbox\MPbox\vpack\bgroup
+%  % \forgetall % already done elsewhere
+%    \noindent} % forces the proper cm in the backend
+
 \permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
    \dostarttagged\t!mpgraphic\empty
    \naturalhpack attr \imageattribute \plusone \bgroup
-   \dousecolorparameter\s!black\forcecolorhack
+   \dousecolorparameter\s!black
    \setMPboundingbox{#1}{#2}{#3}{#4}%
    \setbox\MPbox\vpack\bgroup
- % \forgetall % already done elsewhere
    \noindent} % forces the proper cm in the backend
 
 \permanent\protected\def\stopMPLIBtoPDF

@@ -47,7 +47,7 @@
    \fi
    \toksapp\lastnamedcs{#2}}
 
-\aliased\let\stoptokenlist\relax
+\permanent\protected\lettonothing\stoptokenlist
 
 \permanent\def\gettokenlist[#1]%
   {\ifcsname\??tokenlist#1\endcsname

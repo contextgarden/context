@@ -59,7 +59,7 @@
    \c!voffset=\zeropoint,
    \c!distance=\zeropoint]
 
-\aliased\let\stopparagraphshape\relax
+\permanent\protected\lettonothing\stopparagraphshape
 
 \permanent\protected\def\startparagraphshape[#1]#2\stopparagraphshape
   {\gdefcsname\??parshapes#1\endcsname{#2}} % global

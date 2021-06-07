@@ -44,7 +44,7 @@
    \enforced\let\alignanchor\anch_local_withanchor_a
    \enforced\let\markanchor \anch_local_withanchor_m}
 
-\aliased\let\stopanchoring\relax
+\permanent\protected\lettonothing\stopanchoring
 
 \permanent\protected\def\startanchoring#1\stopanchoring % todo: boundary
   {\begingroup
@@ -56,7 +56,7 @@
    \poplocalanchors
    \endgroup}
 
-\aliased\let\stopsynchronizing\relax
+\permanent\protected\lettonothing\stopsynchronizing
 
 \permanent\protected\def\startsynchronizing#1\stopsynchronizing % todo: boundary
   {\begingroup

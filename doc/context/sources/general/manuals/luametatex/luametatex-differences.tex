@@ -110,15 +110,15 @@ been removed. There are some new variants that will be discussed later. The \typ
 nowadays and them becoming dummies opened the way to something new: control
 sequence properties that permit protection against as well as controlled
 overloading of definitions. I don't think that (\CONTEXT) users will notice these
-prefixed being gone. The definition and parsing related \type {\suppress..}
+prefixes being gone. The definition and parsing related \type {\suppress..}
 features are now default and can't be changed so related primitives are gone.
 
 The \type {\shipout} primitive does no ship out but just erases the content of
-the box, if that hasn't happened already in another way. A macropackage should
-implement its own backend and related shipout. Talking of backend, the extension
-primitives that relate to backends can be implemented as part of a backend design
-using generic whatsits. There is only one type of whatsit now. In fact we're now
-closer to original \TEX\ with respect to the extensions.
+the box unless of course that has happened already in another way. A macro
+package should implement its own backend and related shipout. Talking of backend,
+the extension primitives that relate to backends can be implemented as part of a
+backend design using generic whatsits. There is only one type of whatsit now. In
+fact we're now closer to original \TEX\ with respect to the extensions.
 
 The \type {img} library has been removed as it's rather bound to the backend. The
 \type {slunicode} library is also gone. There are some helpers in the string
@@ -131,7 +131,8 @@ helpers and variables that relate to the backend. The \LUAMETATEX\ engine is in
 principle \DVI\ and \PDF\ unaware. There are, as mentioned, only generic whatsit
 nodes that can be used for some management related tasks. For instance you can
 use them to implement user nodes. More extensive status information is provided
-in the overhauled status library.
+in the overhauled status library. All libraries have additional functionality and
+names of functions have been normalized (for as far as possible).
 
 The margin kern nodes are gone and we now use regular kern nodes for them. As a
 consequence there are two extra subtypes indicating the injected left or right
@@ -212,29 +213,32 @@ left. All input goes via \LUA, even the console. One can program a terminal if
 needed.
 
 We took our time for reaching a stable state in \LUATEX. Among the reasons is the
-fact that most was experimented with in \CONTEXT. It took many years to decide
-what to keep and how to do things. Of course there are places when things can be
-improved and it might happen in \LUAMETATEX. Contrary to what is sometimes
-suggested, the \LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions)
-has been quite stable. It made no sense otherwise. Most \CONTEXT\ functionality
-didn't change much at the user level. Of course there have been issues, as is
-natural with everything new and beta, but we have a fast update cycle.
+fact that most was experimented with in \CONTEXT, which we can adapt to the
+engine as we go. It took many years to decide what to keep and how to do things.
+Of course there are places when things can be improved but that most likely only
+happens in \LUAMETATEX. Contrary to what is sometimes suggested, the
+\LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions) has been quite
+stable. It made no sense otherwise. Most \CONTEXT\ functionality didn't change
+much at the user level. Of course there have been issues, as is natural with
+everything new and beta, but we have a fast update cycle.
 
 The same is true for \LUAMETATEX\ and \CONTEXT\ \LMTX: it can be used for
 production as usual and in practice \CONTEXT\ users tend to use the beta
 releases, which proves this. Of course, if you use low level features that are
 experimental you're on your own. Also, as with \LUATEX\ it might take many years
-before a long term stable is defined. The good news is that, the source code
-being part of the \CONTEXT\ distribution, there is always a properly working,
-more or less long term stable, snapshot.
+before a long term stable is defined. The good news is that, when the source code
+has become part of the \CONTEXT\ distribution, there is always a properly
+working, more or less long term stable, snapshot.
 
 The error reporting subsystem has been redone quite a bit but is still
 fundamentally the same. We don't really assume interactive usage but if someone
 uses it, it might be noticed that it is not possible to backtrack or inject
 something. Of course it is no big deal to implement all that in \LUA\ if needed.
-It removes a system dependency and makes for a bit cleaner code.  In \CONTEXT\
-we quit on an error simply because one has to fix source anyway and runs are
-fast enough.
+It removes a system dependency and makes for a bit cleaner code. In \CONTEXT\ we
+quit on an error simply because one has to fix source anyway and runs are fast
+enough. Logging provides more detail and new primitives can be used to prevent
+clutter in tracing (the more complex a macro package becomes, the more extreme
+tracing becomes).
 
 There are new primitives as well as some extensions to existing primitive
 functionality. These are described in following chapters but there might be

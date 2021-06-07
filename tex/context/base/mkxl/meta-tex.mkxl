@@ -15,9 +15,8 @@
 
 \unprotect
 
-% Ok, we support this in MkIV because Mojca kept the pressure on. It
-% looks a bit like a hack. But in fact this method is obsolete and
-% eventually might go away.
+%D Ok, we support this in MkIV because Mojca kept the pressure on. It looks a bit
+%D like a hack. But in fact this method is obsolete and eventually might go away.
 
 \installcorenamespace{graphictextext}
 \installcorenamespace{graphictexdepth}
@@ -26,7 +25,7 @@
 \permanent\protected\def\startTeXtexts#1\stopTeXtexts
   {#1}
 
-\aliased\let\stopTeXtexts\relax
+\permanent\protected\lettonothing\stopTeXtexts
 
 \permanent\tolerant\protected\def\TeXtext[#1]#:#2#3% contrary to mkii we don't process yet but we do expand
   {\xdefcsname\??graphictextext#2\endcsname{\meta_textext_indeed{#1}{#3}}}

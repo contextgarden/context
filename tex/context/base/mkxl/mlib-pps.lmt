@@ -1021,7 +1021,9 @@ local tx_reset, tx_process  do
         end
     end
 
-    local fasttrack = directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
+    local fasttrack = true
+
+    directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
 
     tx_process = function(object,prescript,before,after)
         local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
@@ -1048,14 +1050,14 @@ local tx_reset, tx_process  do
             local mp_text = top.texstrings[mp_index]
             local mp_hash = prescript.tx_cache
             local box
-local donebox = fasttrack and top.textexts[mp_index]
+            local donebox = fasttrack and top.textexts[mp_index]
             if mp_hash == "no" then
-if donebox then
-    box = copylist(donebox)
-else
-                texrunlocal("mptexttoks")
-                box = textakebox("mptextbox")
-end
+                if donebox then
+                    box = copylist(donebox)
+                else
+                    texrunlocal("mptexttoks")
+                    box = textakebox("mptextbox")
+                end
             else
                 local cache = data.texhash
                 if mp_hash then
@@ -1087,12 +1089,12 @@ end
                 if box then
                     box = copylist(box)
                 else
-if donebox then
-    box = copylist(donebox)
-else
-                    texrunlocal("mptexttoks")
-                    box = textakebox("mptextbox")
-end
+                    if donebox then
+                        box = copylist(donebox)
+                    else
+                        texrunlocal("mptexttoks")
+                        box = textakebox("mptextbox")
+                    end
                     cache[mp_hash] = box
                 end
             end

@@ -66,10 +66,10 @@
 
 %D We're definitely in \LMTX\ mode here.
 
-\aliased  \let\startlmtxmode\relax
-\aliased  \let\stoplmtxmode \relax
-\permanent\def\startmkivmode#-\stopmkivmode{}
-\permanent\let\stopmkivmode \relax
+\permanent\protected\lettonothing\startlmtxmode
+\permanent\protected\lettonothing\stoplmtxmode
+\permanent                   \def\startmkivmode#-\stopmkivmode{}
+\permanent\protected\lettonothing\stopmkivmode
 
 %D As we don't have namespace definers yet, we use a special one. Later we will
 %D do a better job.
@@ -175,7 +175,7 @@
 \permanent\protected\def\startexpanded#1\stopexpanded
   {\xdef\m_syst_helpers_expanded{#1}\m_syst_helpers_expanded}
 
-\aliased\let\stopexpanded\relax
+\permanent\protected\lettonothing\stopexpanded
 
 %D Recent \TEX\ engines have a primitive \type {\expanded} and we will use that when
 %D possible. After all, we can make not expandable macros now. The name clash is an
@@ -924,8 +924,8 @@
   {\def\syst_helpers_comma_list_step##1{\def\currentcommalistitem{##1}#2}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_comma_list_step}
 
-\aliased\let\stopprocesscommalist   \relax
-\aliased\let\stopprocesscommacommand\relax
+\permanent\protected\lettonothing\stopprocesscommalist
+\permanent\protected\lettonothing\stopprocesscommacommand
 
 %D \macros
 %D   {processaction,
@@ -1660,13 +1660,13 @@
   {\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \processassignmentlist[#1]\currentassignmentlistcommand}
 
-\aliased\let\stopprocessassignmentlist\relax
+\permanent\protected\lettonothing\stopprocessassignmentlist
 
 \permanent\protected\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
   {\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \normalexpanded{\processassignmentlist[#1]}\currentassignmentlistcommand}
 
-\aliased\let\stopprocessassignmentcommand\relax
+\permanent\protected\lettonothing\stopprocessassignmentcommand
 
 %D \macros
 %D   {currentvalue}
@@ -2972,7 +2972,7 @@
   {\catcode\endoflineasciicode\ignorecatcode%
    \clf_texdefinition_one{#1}}
 
-\aliased\glet\stoptexdefinition\relax
+\permanent\protected\glettonothing\stoptexdefinition
 
 \permanent\gdef\dostarttexdefinition#1\stoptexdefinition%
   {\egroup%
@@ -4452,8 +4452,8 @@
 
 \newtoks \collectingtoks
 
-\aliased\let\stopcollect        \relax
-\aliased\let\stopexpandedcollect\relax
+\permanent\protected\lettonothing\stopcollect
+\permanent\protected\lettonothing\stopexpandedcollect
 
 \permanent\protected\def\startcollect        #1\stopcollect        {\toksapp \collectingtoks{#1}}
 \permanent\protected\def\startexpandedcollect#1\stopexpandedcollect{\etoksapp\collectingtoks{#1}}

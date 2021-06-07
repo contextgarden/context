@@ -51,8 +51,8 @@
 
 \newcount\tagparcounter
 
-\aliased\let\dotagsetparcounter\relax
-\aliased\let\doresetparcounter \relax
+\permanent\protected\lettonothing\dotagsetparcounter
+\permanent\protected\lettonothing\doresetparcounter
 
 \appendtoks
     \doresetparcounter

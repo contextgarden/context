@@ -877,17 +877,23 @@ end
 implement {
     name      = "synctexblockfilename",
     arguments = "string",
+    protected = true,
+    public    = true,
     actions   = synctex.blockfilename,
 }
 
 implement {
     name      = "synctexsetfilename",
     arguments = "string",
+    protected = true,
+    public    = true,
     actions   = synctex.setfilename,
 }
 
 implement {
     name      = "synctexresetfilename",
+    protected = true,
+    public    = true,
     actions   = synctex.resetfilename,
 }
 

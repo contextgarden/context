@@ -1356,10 +1356,10 @@
 
 \newcount\c_spac_keep_lines_together
 
-\permanent\lettonothing\restoreinterlinepenalty
+\permanent\protected\lettonothing\restoreinterlinepenalty
 
 \protected\def\spac_penalties_restore
-  {\enforced\glettonothing\restoreinterlinepenalty
+  {\enforced\protected\glettonothing\restoreinterlinepenalty
    \overloaded\global\resetpenalties\interlinepenalties
    \global\c_spac_keep_lines_together\zerocount}
 
@@ -2303,7 +2303,7 @@
 
 \installcorenamespace{fixedalternatives}
 
-\aliased\let\stopfixed\relax
+\permanent\protected\lettonothing\stopfixed
 
 \permanent\protected\def\startfixed
   {\bgroup

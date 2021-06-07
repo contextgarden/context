@@ -1640,13 +1640,15 @@
 %D (grouped) if needed. The rather complicated definition below is due to the fact
 %D that the stopcondition is interface language dependant.
 
+%D This is so old ... adapting it to use tolerant might break something:
+
 \let\tabl_table_head\empty % needs checking
 \let\tabl_table_tail\empty % needs checking
 
-\letvalue{\e!start\v!tablehead}\relax % todo: frozen, but we use a grabber
-\letvalue{\e!stop \v!tablehead}\relax % todo: frozen, but we use a grabber
-\letvalue{\e!start\v!tabletail}\relax % todo: frozen, but we use a grabber
-\letvalue{\e!stop \v!tabletail}\relax % todo: frozen, but we use a grabber
+\letcsname\e!start\v!tablehead\endcsname\relax % todo: frozen, but we use a grabber
+\letcsname\e!stop \v!tablehead\endcsname\relax % todo: frozen, but we use a grabber
+\letcsname\e!start\v!tabletail\endcsname\relax % todo: frozen, but we use a grabber
+\letcsname\e!stop \v!tabletail\endcsname\relax % todo: frozen, but we use a grabber
 
 %D The second argument is a dummy one, by scanning for it, we get rid of
 %D interfering spaces.

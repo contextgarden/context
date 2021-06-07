@@ -1588,7 +1588,7 @@
      \expandafter\strc_references_start_goto_nop
    \fi}
 
-\aliased\let\stopgoto\relax
+\permanent\protected\lettonothing\stopgoto
 
 \permanent\protected\def\strc_references_start_goto_nop
   {\enforced\let\stopgoto\strc_references_stop_goto_nop}

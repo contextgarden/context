@@ -44,8 +44,8 @@
   {\strc_sectionblock_define_normal[#1][#3]%
   %\expandafter\newif\csname if#2\endcsname % obsolete
    \strc_sectionblock_set_environment{#1}\empty
-   \frozen\setuvalue{\e!start#2}{\startsectionblock[#1]}%
-   \frozen\setuvalue{\e!stop #2}{\stopsectionblock}}
+   \frozen\protected\defcsname\e!start#2\endcsname{\startsectionblock[#1]}%
+   \frozen\protected\defcsname\e!stop #2\endcsname{\stopsectionblock}}
 
 \ifdefined \resetallstructuremarks \else
     \let\resetallstructuremarks\relax
@@ -123,7 +123,7 @@
 \installcorenamespace{sectionblockenvironment}
 
 \protected\def\strc_sectionblock_set_environment#1#2%
-  {\setvalue{\??sectionblockenvironment#1}{#2}}
+  {\defcsname\??sectionblockenvironment#1\endcsname{#2}}
 
 \protected\def\strc_sectionblock_get_environment#1%
   {\csname\??sectionblockenvironment#1\endcsname}
@@ -131,7 +131,6 @@
 \permanent\tolerant\protected\setvalue{\e!start\v!sectionblockenvironment}[#1]% evt \pushendofline \popendofline
   {\grabuntil{\e!stop\v!sectionblockenvironment}{\strc_sectionblock_set_environment{#1}}}
 
-\aliased\letvalue{\e!stop\v!sectionblockenvironment}\relax
-
+\permanent\protected\expandafter\lettonothing\csname\e!stop\v!sectionblockenvironment\endcsname
 
 \protect \endinput

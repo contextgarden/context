@@ -22,14 +22,14 @@
 
 \unprotect
 
-\permanent\let\synctexsetfilename  \clf_synctexsetfilename   % can be public implementors
-\permanent\let\synctexresetfilename\clf_synctexresetfilename % idem
-\permanent\let\synctexblockfilename\clf_synctexblockfilename % idem
+% \synctexsetfilename   % defined at lua end
+% \synctexresetfilename % idem
+% \synctexblockfilename % idem
 
-\aliased\let\synctexpause   \donothing
-\aliased\let\synctexresume  \donothing
-\aliased\let\synctexpushline\donothing
-\aliased\let\synctexpopline \donothing
+\permanent\protected\lettonothing\synctexpause
+\permanent\protected\lettonothing\synctexresume
+\permanent\protected\lettonothing\synctexpushline
+\permanent\protected\lettonothing\synctexpopline
 
 \appendtoks\synctexpause \to\everybeforeoutput
 \appendtoks\synctexresume\to\everyafteroutput
@@ -54,6 +54,6 @@
 \permanent\protected\def\blocksynctexfile[#1]%
   {\processcommacommand{#1}\synctexblockfilename}
 
-\aliased\let\continuewhenlmtxmode\relax
+\permanent\protected\lettonothing\continuewhenlmtxmode
 
 \protect \endinput

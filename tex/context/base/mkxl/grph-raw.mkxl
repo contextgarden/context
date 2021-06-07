@@ -59,6 +59,6 @@
 \permanent\protected\def\startbitmapimage[#1]#2\stopbitmapimage
   {\bitmapimage[#1]{#2}}
 
-\aliased\let\stopbitmapimage\relax
+\permanent\protected\lettonothing\stopbitmapimage
 
 \protect \endinput

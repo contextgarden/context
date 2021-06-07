@@ -814,7 +814,7 @@
 \aliased\let\newconditional\setfalse
 \aliased\let\ifconditional \ifcase
 
-\aliased\let\then\relax % so that we can say: \ifnum1>2\then -)
+\permanent\protected\lettonothing\then % so that we can say: \ifnum1>2\then -)
 
 \permanent\def\truecondition {\iftrue}
 \permanent\def\falsecondition{\iffalse}

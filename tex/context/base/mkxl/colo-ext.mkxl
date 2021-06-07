@@ -73,8 +73,8 @@
 \aliased\let\stopoverprint\stopcolorintent
 \aliased\let\stopknockout \stopcolorintent
 
-\aliased\let\starttextcolorintent\relax
-\aliased\let\stoptextcolorintent \relax
+\permanent\protected\lettonothing\starttextcolorintent
+\permanent\protected\lettonothing\stoptextcolorintent
 
 \appendtoks
     \colo_intents_set_text

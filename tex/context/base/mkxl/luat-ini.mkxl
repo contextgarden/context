@@ -21,21 +21,18 @@
 %D will keep code outside \TEX\ files as much as possible. The solutions evolved
 %D with the engine but one can find some history in the \MKIV\ files and articles.
 
-%ifdefined\setnaturalcatcodes \else \let\setnaturalcatcodes\relax \fi
-\ifdefined\obeylualines       \else \let\obeylualines      \relax \fi
-\ifdefined\obeyluatokens      \else \let\obeyluatokens     \relax \fi
+\ifdefined\obeyluatokens \else \let\obeyluatokens\relax \fi
 
 %D A few more goodies:
 
-\aliased\let\stoplua    \relax % tex catcodes
-\aliased\let\stopluacode\relax % lua catcodes
+\permanent\protected\lettonothing\stoplua     % tex catcodes
+\permanent\protected\lettonothing\stopluacode % lua catcodes
 
-%D In the meantime the \LUATEX\ interface has become stable but we still
-%D see traces of old here (needs checking).
+%D In the meantime the \LUATEX\ interface has become stable but we still see traces
+%D of old here (needs checking).
 
 \permanent\protected\def\startlua % \stoplua
   {\begingroup
-   \obeylualines
    \luat_start_lua_indeed}
 
 \def\luat_start_lua_indeed#1\stoplua
@@ -43,7 +40,6 @@
 
 \permanent\protected\def\startluacode % \stopluacode
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \luat_start_lua_code_indeed}
 
@@ -57,8 +53,6 @@
 \ifdefined\obeyedline  \else \let\obeyedline  \relax \fi
 \ifdefined\obeyspaces  \else \let\obeyspaces  \relax \fi
 \ifdefined\obeyedspace \else \let\obeyedspace \relax \fi
-
-\aliased\let\obeylualines\relax % not used, will go away
 
 \newtoks\everyluacode
 
@@ -168,7 +162,6 @@
 
 \permanent\protected\def\startluaparameterset[#1]% \stopluaparameterset
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \luat_start_lua_parameter_set{#1}}
 
@@ -176,7 +169,7 @@
   {\ctxlua{parametersets["#1"]={#2}}%
    \endgroup}
 
-\aliased\let\stopluaparameterset\relax
+\permanent\protected\lettonothing\stopluaparameterset
 
 \permanent\def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} context("#1")}}
 
@@ -207,7 +200,6 @@
 
 \permanent\protected\def\ctxluacode
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \catcode\leftbraceasciicode \plusone
    \catcode\rightbraceasciicode\plustwo
@@ -237,7 +229,7 @@
 \installsystemnamespace{ctxfunction}
 
 \permanent\protected\def\startctxfunctiondefinition #1 % \stopctxfunctiondefinition
-  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_definition_indeed{#1}}
+  {\begingroup \obeyluatokens \luat_start_lua_function_definition_indeed{#1}}
 
 \installsystemnamespace{luafunction}
 
@@ -250,15 +242,15 @@
   {\expandafter\chardef\csname\??luafunction#1\endcsname#2\relax
    \edefcsname#1\endcsname{\noexpand\luafunction\csname\??luafunction#1\endcsname}}
 
-\aliased\let\stopctxfunctiondefinition\relax
+\permanent\protected\lettonothing\stopctxfunctiondefinition
 
 \permanent\protected\def\startctxfunction #1 % \stopctxfunction
-  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_indeed{#1}}
+  {\begingroup \obeyluatokens \luat_start_lua_function_indeed{#1}}
 
 \def\luat_start_lua_function_indeed#1#2\stopctxfunction
   {\endgroup\edefcsname\??ctxfunction#1\endcsname{\noexpand\luafunction\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax}}
 
-\aliased\let\stopctxfunction\relax
+\permanent\protected\lettonothing\stopctxfunction
 
 \permanent\def\ctxfunction#1%
   {\begincsname\??ctxfunction#1\endcsname}

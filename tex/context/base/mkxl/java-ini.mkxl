@@ -100,7 +100,6 @@
 
 \permanent\protected\def\startJScode
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \enforced\let\u\m_java_escape_u
    \java_start_code}
@@ -108,11 +107,10 @@
 \def\java_start_code#1\stopJScode
   {\normalexpanded{\endgroup\clf_storejavascriptcode{#1}}}
 
-\aliased\let\stopJScode\relax
+\permanent\protected\lettonothing\stopJScode
 
 \permanent\protected\def\startJSpreamble
   {\begingroup
-   \obeylualines
    \obeyluatokens
    \enforced\let\u\m_java_escape_u
    \java_start_preamble}
@@ -120,7 +118,7 @@
 \def\java_start_preamble#1\stopJSpreamble
   {\normalexpanded{\endgroup\clf_storejavascriptpreamble{#1}}}
 
-\aliased\let\stopJSpreamble\relax
+\permanent\protected\lettonothing\stopJSpreamble
 
 \permanent\protected\def\setJSpreamble  #1#2{\clf_setjavascriptpreamble  {#1}{#2}}
 \permanent\protected\def\addtoJSpreamble#1#2{\clf_addtojavascriptpreamble{#1}{#2}}

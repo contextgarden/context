@@ -177,7 +177,7 @@
    \setvalue{\??externalfigureinstance#1}%
      {\grph_steps_place_figure{#1}{#2}{#3}{#4}}}
 
-\aliased\let\stopfigure\relax
+\permanent\protected\lettonothing\stopfigure
 
 \ifdefined\referring \else \let\referring\relax \fi
 \ifdefined\marking   \else \let\marking  \relax \fi

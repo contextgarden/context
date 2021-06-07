@@ -315,7 +315,7 @@
 \permanent\tolerant\protected\def\startMPpositiongraphic#=#*#=#:#3\stopMPpositiongraphic % tag list mpcode
   {\gdefcsname\??positiongraphic#1\endcsname{\anch_positions_meta_graphic_use{#1}{#2}{#3}}}
 
-\aliased\let\stopMPpositiongraphic\relax
+\permanent\protected\lettonothing\stopMPpositiongraphic
 
 \def\anch_positions_meta_graphic_prepare
   {\iftok{\mpcategoryparameter{self}}\emptytoks
@@ -368,7 +368,7 @@
 \permanent\def\startMPpositionmethod#1#2\stopMPpositionmethod
   {\gdefcsname\??positionmethod#1\endcsname{#2}} % todo: var list here
 
-\aliased\let\stopMPpositionmethod\relax
+\permanent\protected\lettonothing\stopMPpositionmethod
 
 %D Simple one position graphics.
 

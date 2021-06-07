@@ -99,7 +99,7 @@
   {\endgroup % (3 & 4 & 5 & 6)
    \begincsname#1\endcsname}
 
-\aliased\let\endbuffer\relax
+\permanent\protected\lettonothing\endbuffer
 
 \permanent\tolerant\protected\def\setbuffer[#1]#:#2\endbuffer % seldom used so we just pass #2
   {\clf_assignbuffer{#1}{\detokenize{#2}}\catcodetable\relax}

@@ -731,13 +731,13 @@
 
 \def\v_colo_dummy_name{c_o_l_o_r}
 
-\letvalue{\??colorattribute       \v_colo_dummy_name}\empty
-\letvalue{\??transparencyattribute\v_colo_dummy_name}\empty
-\letvalue{\??colorsetter          \v_colo_dummy_name}\empty
-\letvalue{\??transparencysetter   \v_colo_dummy_name}\empty
+\letcsname\??colorattribute       \v_colo_dummy_name\endcsname\empty
+\letcsname\??transparencyattribute\v_colo_dummy_name\endcsname\empty
+\letcsname\??colorsetter          \v_colo_dummy_name\endcsname\empty
+\letcsname\??transparencysetter   \v_colo_dummy_name\endcsname\empty
 
-\letvalue{\??colorsetter       -}\empty % used?
-\letvalue{\??transparencysetter-}\empty % used?
+\letcsname\??colorsetter                           -\endcsname\empty % used?
+\letcsname\??transparencysetter                    -\endcsname\empty % used?
 
 % new: expandable (see tbl preamble)
 
@@ -1111,7 +1111,7 @@
 \permanent\protected\def\starttextcolor[#1]%
   {\doifsomething{#1}{\colo_helpers_switch_to_maintextcolor{#1}}}
 
-\aliased\let\stoptextcolor\relax
+\permanent\protected\lettonothing\stoptextcolor
 
 \let\p_colo_textcolor\empty
 
@@ -1126,8 +1126,8 @@
 \appendtoks \colo_helpers_initialize_maintextcolor \to \everyjob
 \appendtoks \colo_helpers_initialize_maintextcolor \to \everysetupcolors
 
-\letvalue{\??colorsetter       }\empty \letvalue{\??colorattribute       }\!!zerocount
-\letvalue{\??transparencysetter}\empty \letvalue{\??transparencyattribute}\!!zerocount
+\letcsname\??colorsetter       \endcsname\empty \letcsname\??colorattribute       \endcsname\!!zerocount
+\letcsname\??transparencysetter\endcsname\empty \letcsname\??transparencyattribute\endcsname\!!zerocount
 
 \def\colo_helpers_inherited_direct_cs#1{\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
 \def\colo_helpers_inherited_direct_ca#1{\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
@@ -1177,8 +1177,8 @@
    \colo_defcsname\??transparencysetter   #1:#2\colo_endcsname{\colo_helpers_inherited_direct_ts{\??colorpalet#1:#2}}%
    \colo_defcsname\??transparencyattribute#1:#2\colo_endcsname{\colo_helpers_inherited_direct_ta{\??colorpalet#1:#2}}}
 
-\setvalue{\??colorattribute        currentcolor}{\the\c_attr_color}        % for mpcolor
-\setvalue{\??transparencyattribute currentcolor}{\the\c_attr_transparency} % for mpcolor
+\defcsname\??colorattribute        currentcolor\endcsname{\the\c_attr_color}        % for mpcolor
+\defcsname\??transparencyattribute currentcolor\endcsname{\the\c_attr_transparency} % for mpcolor
 
 \def\colo_helpers_inherited_current_ca#1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
 \def\colo_helpers_inherited_current_cs#1{\ifcsname\??colorsetter          \currentcolorprefix#1\endcsname\lastnamedcs\orelse\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
@@ -1312,14 +1312,16 @@
 %
 % I really need to sort this out!
 
-\permanent\protected\def\forcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
+% \permanent\protected\def\normalforcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
+%
+% \installtexexperiment
+%   {disablecolorhack}
+%   {\pushoverloadmode\enforced\permanent\protected\lettonothing\forcecolorhack\popoverloadmode}
+%   {\pushoverloadmode\enforced\let\forcecolorhack\normalforcecolorhack\popoverloadmode}
+%
+% use \hpack container{...}
 
-\aliased\let\normalforcecolorhack\forcecolorhack
-
-\installtexexperiment
-  {disablecolorhack}
-  {\pushoverloadmode\enforced\let\forcecolorhack\relax\popoverloadmode}
-  {\pushoverloadmode\enforced\let\forcecolorhack\normalforcecolorhack\popoverloadmode}
+\permanent\protected\lettonothing\forcecolorhack
 
 %D We default to the colors defined in \type {colo-imp-rgb} and support both \RGB\
 %D and \CMYK\ output. Transparencies are defined here:

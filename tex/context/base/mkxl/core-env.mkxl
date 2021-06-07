@@ -308,43 +308,12 @@
 
 \installmacrostack\c_syst_modes_set_done
 
-% \permanent\protected\def\startmodeset
-%   {\push_macro_c_syst_modes_set_done
-%    \setfalse\c_syst_modes_set_done
-%    \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
-%
-% \aliased\let\stopmodeset\relax
-%
-% \def\syst_modes_set_start[#1]%
-%   {\edef\m_mode_case{#1}%
-%    \unless\ifx\m_mode_case\s!default
-%      \expandafter\syst_modes_set_check
-%    \orelse\ifconditional\c_syst_modes_set_done
-%      \expandafter\syst_modes_set_quit
-%    \else
-%      \expandafter\syst_modes_set_yes
-%    \fi}
-%
-% \def\syst_modes_set_check
-%   {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
-%
-% \def\syst_modes_set_yes#1%
-%   {\settrue\c_syst_modes_set_done
-%    #1%
-%    \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
-%
-% \def\syst_modes_set_nop#1%
-%   {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
-%
-% \def\syst_modes_set_quit#-\stopmodeset
-%   {\pop_macro_c_syst_modes_set_done}
-
 \permanent\protected\def\startmodeset
   {\push_macro_c_syst_modes_set_done
    \setfalse\c_syst_modes_set_done
    \syst_modes_set_start}
 
-\aliased\let\stopmodeset\relax
+\permanent\protected\lettonothing\stopmodeset
 
 \tolerant\def\syst_modes_set_start#.[#1]% skip spaces and pars
   {\edef\m_mode_case{#1}%
@@ -393,7 +362,7 @@
 \permanent\protected\tolerant\def\setups[#1]#;#2{\processcommacommand[#1#2]\syst_setups} % {..} or [..]
 \permanent\protected\tolerant\def\setup [#1]#;#2{\syst_setups{#1#2}} % {..} or [..]
 
-\letvalue{\??setup:\??empty}\gobbleoneargument
+\letcsname\??setup:\??empty\endcsname\gobbleoneargument
 
 \permanent\def\syst_setups#1% the grid option will be extended to other main modes
   {\csname\??setup
@@ -538,17 +507,16 @@
 \to \t_syst_setups_xml
 
 \newtoks\t_syst_setups_lua \appendtoks
-    \obeylualines
     \obeyluatokens
 \to \t_syst_setups_lua
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
-\permanent\protected\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_yes\syst_setups_start_lua_nop} \aliased\let\stopluasetups  \relax
-\permanent\protected\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_yes\syst_setups_start_xml_nop} \aliased\let\stopxmlsetups  \relax
-\permanent\protected\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_yes\syst_setups_start_raw_nop} \aliased\let\stoprawsetups  \relax
-\permanent\protected\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_yes\syst_setups_start_loc_nop} \aliased\let\stoplocalsetups\relax
-\permanent\protected\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_yes\syst_setups_start_tex_nop} \aliased\let\stopsetups     \relax
+\permanent\protected\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_yes\syst_setups_start_lua_nop} \permanent\protected\lettonothing\stopluasetups
+\permanent\protected\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_yes\syst_setups_start_xml_nop} \permanent\protected\lettonothing\stopxmlsetups
+\permanent\protected\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_yes\syst_setups_start_raw_nop} \permanent\protected\lettonothing\stoprawsetups
+\permanent\protected\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_yes\syst_setups_start_loc_nop} \permanent\protected\lettonothing\stoplocalsetups
+\permanent\protected\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_yes\syst_setups_start_tex_nop} \permanent\protected\lettonothing\stopsetups
 
 \def\syst_setups_start_lua_two#1#2#+\stopluasetups  {\endgroup\dodoglobal\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
 \def\syst_setups_start_xml_two#1#2#+\stopxmlsetups  {\endgroup\dodoglobal\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
@@ -718,7 +686,7 @@
 %D A few more (we could use a public test variable so that we only need to expand
 %D once, assuming expandable variables):
 
-\letvalue{\??variables:}\empty
+\letcsname\??variables:\endcsname\empty
 
 \permanent\protected\def\doifelseemptyvariable#1#2%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
@@ -786,13 +754,6 @@
 
 \permanent\tolerant\protected\def\defineselector[#1]#*[#2]{\getparameters[\??selector#1][\c!max=\plusone,\c!n=\plusone,#2]}
 \permanent\tolerant\protected\def\setupselector [#1]#*[#2]{\getparameters[\??selector#1][#2]}
-
-% \def\directselect#1% expandable
-%   {\filterfromnext % maybe add an \expanded
-%      {\csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\endcsname}%
-%      {\csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}}
-%
-% this is more efficient when the arguments are used a few times (or passed along):
 
 \permanent\def\directselect#1% expandable
   {\expandafter\filterfromnext

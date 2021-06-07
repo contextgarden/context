@@ -404,9 +404,9 @@
   {\enforced\aliased\glet\registerparoptions\doregisterparoptions
    \global\positioningtrue}
 
-\permanent\let\disableparpositions\relax
+\permanent\protected\lettonothing\disableparpositions
 
-\permanent\lettonothing\registerparoptions % hooks into everypar
+\permanent\protected\lettonothing\registerparoptions % hooks into everypar
 
 \permanent\protected\def\doregisterparoptions
   {\iftrialtypesetting \orelse\ifinpagebody \orelse\ifmmode \orelse\ifinformula \else

@@ -64,20 +64,15 @@
 \protect
 
 %D \macros
-%D   {uncatcodespecials,setnaturalcatcodes,setnormalcatcodes,
-%D    uncatcodecharacters,uncatcodeallcharacters,
-%D    uncatcodespacetokens}
+%D   {setnormalcatcodes,uncatcodespacetokens}
 %D
 %D The following macros are more or less replaced by switching to a catcode table
 %D (which we simulate in \MKII) but we keep them for convenience and compatibility.
 %D Some old engine code has been removed. A few ar still used a few times so I need
 %D to clean that up.
 
-%permanent\protected\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
-%permanent\protected\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
-\permanent\protected\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
-%permanent\protected\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
-%permanent\protected\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
+\permanent\protected\def\setnormalcatcodes
+  {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
 
 \permanent\protected\def\uncatcodespacetokens
   {\catcode\spaceasciicode    \spacecatcode

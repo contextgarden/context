@@ -256,7 +256,7 @@
    \doinitializeverbatim
    \beginofverbatimlines}
 
-\aliased\let\stopxmldisplayverbatim\relax
+\permanent\protected\lettonothing\stopxmldisplayverbatim
 
 \permanent\tolerant\protected\def\startxmlinlineverbatim[#1]%
   {\begingroup
@@ -269,7 +269,7 @@
    \enforced\let\stopxmlinlineverbatim\endgroup
    \doinitializeverbatim}
 
-\aliased\let\stopxmlinlineverbatim\relax
+\permanent\protected\lettonothing\stopxmlinlineverbatim
 
 % processing instructions
 

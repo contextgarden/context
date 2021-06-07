@@ -27,19 +27,19 @@
     \clf_initializetexexperiments
 \to \everyjob
 
-\pushoverloadmode
-
-\let\syst_beginsimplegroup_yes\beginsimplegroup
-\let\syst_beginsimplegroup_nop\bgroup
-
-\let\beginsimplegroup\syst_beginsimplegroup_nop
-
-\installtexexperiment
-  {simplegroups}
-  {\enforced\let\beginsimplegroup\syst_beginsimplegroup_yes}
-  {\enforced\let\beginsimplegroup\syst_beginsimplegroup_nop}
-
-\popoverloadmode
+% \pushoverloadmode
+%
+% \let\syst_beginsimplegroup_yes\beginsimplegroup
+% \let\syst_beginsimplegroup_nop\bgroup
+%
+% \let\beginsimplegroup\syst_beginsimplegroup_nop
+%
+% \installtexexperiment
+%   {simplegroups}
+%   {\enforced\let\beginsimplegroup\syst_beginsimplegroup_yes}
+%   {\enforced\let\beginsimplegroup\syst_beginsimplegroup_nop}
+%
+% \popoverloadmode
 
 \protect \endinput
 

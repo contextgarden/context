@@ -169,7 +169,7 @@
 
 % \permanent\protected\aliased\startxtable\tabl_x_start_table
 
-\aliased\permanent\let\stopxtable\relax
+\permanent\protected\lettonothing\stopxtable
 
 % These direct buffers can be somewhat faster but it's probably neglectable.
 % Anyway, no nesting is supported as we then need to catch (e.g.) rows and keep
@@ -204,7 +204,7 @@
    \edef\tabl_x_current_buffer{embedded_x_table}%
    \tabl_x_process}
 
-\aliased\permanent\let\stopembeddedxtable\relax
+\permanent\protected\lettonothing\stopembeddedxtable
 
 %D We can also define xtables.
 

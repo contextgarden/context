@@ -60,7 +60,6 @@
      %
      \frozen\instance\protected\xdefcsname\s!start#1\s!code\endcsname
        {\begingroup
-        \obeylualines
         \obeyluatokens
         \csname\??luacode#1\endcsname}%
      %

@@ -212,7 +212,8 @@
    \resetcharacteralign
    \egroup}
 
-\aliased\let\stopcharacteralign \relax
+\permanent\protected\lettonothing\stopcharacteralign
+
 \aliased\let\checkcharacteralign\gobbleoneargument
 
 \permanent\protected\def\setfirstpasscharacteralign {\enforced\let\checkcharacteralign\gobbleoneargument}

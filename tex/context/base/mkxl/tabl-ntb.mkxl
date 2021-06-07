@@ -444,9 +444,9 @@
 
 \protected\def\tabl_ntb_cell_process#1#2[#3]{}
 
-\permanent\protected\def\bTC#1\eTC{\bTD#1\eTD} \aliased\let\eTC\relax
-\permanent\protected\def\bTX#1\eTX{\bTD#1\eTD} \aliased\let\eTX\relax
-\permanent\protected\def\bTY#1\eTY{\bTR#1\eTR} \aliased\let\eTY\relax
+\permanent\protected\def\bTC#1\eTC{\bTD#1\eTD} \permanent\protected\lettonothing\eTC
+\permanent\protected\def\bTX#1\eTX{\bTD#1\eTD} \permanent\protected\lettonothing\eTX
+\permanent\protected\def\bTY#1\eTY{\bTR#1\eTR} \permanent\protected\lettonothing\eTY
 
 \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
 
@@ -940,10 +940,10 @@
 
 % to be done: head <raw> foot, dus state var
 
-\aliased\let\eTABLEhead\relax
-\aliased\let\eTABLEnext\relax
-\aliased\let\eTABLEbody\relax
-\aliased\let\eTABLEfoot\relax
+\permanent\protected\lettonothing\eTABLEhead
+\permanent\protected\lettonothing\eTABLEnext
+\permanent\protected\lettonothing\eTABLEbody
+\permanent\protected\lettonothing\eTABLEfoot
 
 \permanent\tolerant\protected\def\bTABLEhead[#1]#:#2\eTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
 \permanent\tolerant\protected\def\bTABLEnext[#1]#:#2\eTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
