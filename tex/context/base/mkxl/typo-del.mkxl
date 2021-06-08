@@ -28,11 +28,11 @@
   {\getdummyparameters[#1]%
    \expandnamespaceparameter\??hyphenmarksign\dummyparameter\c!sign\v!normal}
 
-\setvalue{\??hyphenmarksign\v!normal}%
+\defcsname\??hyphenmarksign\v!normal\endcsname
   {\enforced\let\textmodehyphen\normalhyphen
    \enforced\let\textmodehyphendiscretionary\normalhyphendiscretionary}
 
-\setvalue{\??hyphenmarksign\v!wide}%
+\defcsname\??hyphenmarksign\v!wide\endcsname
   {\enforced\let\textmodehyphen\composedhyphen
    \enforced\let\textmodehyphendiscretionary\composedhyphendiscretionary}
 
@@ -416,6 +416,8 @@
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\v!font
      \expandafter\typo_delimited_start_font
+   \orelse\ifx\p_delimited_method\v!paragraph
+     \expandafter\typo_delimited_start_font
    \else
      \expandafter\typo_delimited_start_other
    \fi}
@@ -566,6 +568,8 @@
    \typo_delimited_push{#1}{#2}%
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\v!font
+     \expandafter\typo_delimited_fontdriven
+   \orelse\ifx\p_delimited_method\v!text
      \expandafter\typo_delimited_fontdriven
    \else
      \expandafter\typo_delimited_other

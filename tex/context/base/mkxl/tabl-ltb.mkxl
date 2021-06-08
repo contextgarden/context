@@ -261,8 +261,7 @@
    \egroup}
 
 \def\tabl_lines_wrap_up
-  {\edef\p_background{\linetablecparameter\c!background}%
-   \ifx\p_background\v!color
+  {\ifcstok{\linetablecparameter\c!background}\v!color
      \ifconditional\linetableautoheight
        \tabl_lines_wrap_up_auto
      \else
@@ -325,16 +324,12 @@
    \else
      \vbox
        {\ifvoid\b_tabl_lines_current\c_tabl_lines_part\else\unvbox\b_tabl_lines_current\c_tabl_lines_part\fi
-        \edef\p_background{\linetablerparameter\c!background}%
-        \ifx\p_background\v!color
+        \ifcstok{\linetablerparameter\c!background}\v!color
           \backgroundline[\linetablerparameter\c!backgroundcolor]{\box\scratchbox}%
+        \orelse\iftok{\linetablerparameter\c!type}\emptytoks
+          \box\scratchbox
         \else
-          \edef\p_type{\linetablerparameter\c!type}%
-          \ifempty\p_type
-            \box\scratchbox
-          \else
-            \tabl_lines_wrap_up_auto_r
-          \fi
+          \tabl_lines_wrap_up_auto_r
         \fi
         \endgraf
         \linetablerparameter\c!after}%
@@ -396,14 +391,12 @@
      \unskip \unskip % remove last intercolumn skip (distance+fill)
    \fi
    \egroup
-   \ifconditional\c_tabl_lines_preroll \else
-     \ifcase\c_tabl_lines_part
-       % we're collecting the repeater
-     \else
-       \ifdim\dimexpr\hsize-\wd\scratchbox\relax>\linetableparameter\c!stretch\else
-         \setbox\scratchbox\hpack to \hsize{\unhbox\scratchbox}%
-       \fi
-     \fi
+   \ifconditional\c_tabl_lines_preroll
+   \orelse\ifcase\c_tabl_lines_part
+     % we're collecting the repeater
+   \orelse\ifdim\dimexpr\hsize-\wd\scratchbox\relax>\linetableparameter\c!stretch
+   \else
+     \setbox\scratchbox\hpack to \hsize{\unhbox\scratchbox}%
    \fi}
 
 \def\tabl_lines_check_part
@@ -414,26 +407,23 @@
    %\message{\the\c_tabl_lines_column,\the\c_tabl_lines_subcol}\wait
    % from now on the column counter is already incremented
    \ifcase\c_tabl_lines_split_state
-     \ifconditional\c_tabl_lines_preroll \else
+     \ifconditional\c_tabl_lines_preroll
+     \else
        \box\b_tabl_lines_cell
        % the columncounter is one ahead !
        \hskip\scratchskip
      \fi
      %%%
      \donefalse
-     \ifcase\c_tabl_lines_repeat\else
-       % calculate ahead
-       \ifnum\c_tabl_lines_repeat=\numexpr\c_tabl_lines_column-\plustwo\relax
-         \donetrue % collecting repeater
-       \fi
+     \ifcase\c_tabl_lines_repeat
+     \orelse\ifnum\c_tabl_lines_repeat=\numexpr\c_tabl_lines_column-\plustwo\relax % calculate ahead
+       \donetrue % collecting repeater
      \fi
      %%%%
      \ifdone
        % collecting repeater
-     \else
-       \ifnum\c_tabl_lines_column>\csname\??linetablepart\number\c_tabl_lines_part\endcsname\relax
-         \donetrue
-       \fi
+     \orelse\ifnum\c_tabl_lines_column>\csname\??linetablepart\number\c_tabl_lines_part\endcsname\relax
+       \donetrue
      \fi
      \ifdone
        \tabl_lines_stop_part
@@ -486,7 +476,8 @@
        \tabl_lines_start_part
        \ifscratchconditionone \orelse \ifcase\c_tabl_lines_repeat \else
          % check for left/right page
-         \ifcase\c_tabl_lines_page\donetrue\or\donetrue\or\donefalse\fi\ifdone
+         \ifcase\c_tabl_lines_page\donetrue\or\donetrue\or\donefalse\fi
+         \ifdone
            % insert repeater
            \global\advance\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
            \ifconditional\c_tabl_lines_preroll\kern\wd\else\unhcopy\fi\b_tabl_lines_current\zerocount
@@ -636,8 +627,9 @@
 \def\tabl_lines_check_page
   {\global\c_tabl_lines_page\zerocount
    \ifcase\c_tabl_lines_repeat\orelse\ifcase\c_tabl_lines_page
-     \doif{\linetableparameter\c!repeat}\v!no
-       {\global\c_tabl_lines_page\doifelseoddpage\plusone\plustwo}%
+     \iftok{\linetableparameter\c!repeat}\v!no
+       \global\c_tabl_lines_page\doifelseoddpage\plusone\plustwo
+     \fi
    \fi}
 
 \def\tabl_lines_flush_head
@@ -694,7 +686,7 @@
 
 % todo: store in box instead of macro
 
-\aliased\let\stoplinetablehead\relax
+\permanent\protected\lettonothing\stoplinetablehead
 
 \permanent\protected\def\startlinetablehead#1\stoplinetablehead
   {\ifconditional\c_tabl_lines_in_table

@@ -125,7 +125,7 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- Some generic (more clever code) has been removed as I don't see things change
 -- that much.
 
-local type, rawset = type, rawset
+local type, rawset, rawget = type, rawset, rawget
 local concat = table.concat
 local formatters = string.formatters
 local replacesuffix, suffixonly, nameonly, collapsepath = file.replacesuffix, file.suffix, file.nameonly, file.collapsepath
@@ -227,8 +227,8 @@ local blockedsuffixes    = {
  -- lfg  = true,
 }
 
-local sttags = table.setmetatableindex(function(t,name)
-    name = collapsepath(name)
+local sttags = table.setmetatableindex(function(t,fullname)
+    local name = collapsepath(fullname)
     if blockedsuffixes[suffixonly(name)] then
         -- Just so that I don't get the ones on my development tree.
         nofblocked = nofblocked + 1
@@ -244,6 +244,9 @@ local sttags = table.setmetatableindex(function(t,name)
     else
         noftags = noftags + 1
         t[name] = noftags
+        if name ~= fullname then
+            t[fullname] = noftags
+        end
         stnums[noftags] = name
         return noftags
     end
@@ -476,85 +479,44 @@ local function inject(head,first,last,tag,line)
     return head
 end
 
--- local function collect_min(head)
---     local current = head
---     while current do
---         local id = getid(current)
---         if id == glyph_code then
---             local first = current
---             local last  = current
---             local tag   = 0
---             local line  = 0
---             while true do
---                 if id == glyph_code then
---                     local tc, lc = getsynctexfields(current)
---                     if tc and tc > 0 then
---                         tag  = tc
---                         line = lc
---                     end
---                     last = current
---                 elseif id == disc_code or (id == kern_code and getsubtype(current) == fontkern_code) then
---                     last = current
---                 else
---                     if tag > 0 then
---                         head = inject(head,first,last,tag,line)
---                     end
---                     break
---                 end
---                 current = getnext(current)
---                 if current then
---                     id = getid(current)
---                 else
---                     if tag > 0 then
---                         head = inject(head,first,last,tag,line)
---                     end
---                     return head
---                 end
---             end
---         end
---         -- pick up (as id can have changed)
---         if id == hlist_code or id == vlist_code then
---             local list = getlist(current)
---             if list then
---                 local l = collect(list)
---                 if l ~= list then
---                     setlist(current,l)
---                 end
---             end
---         end
---         current = getnext(current)
---     end
---     return head
--- end
-
 local function collect_min(head)
-    local first = false
-    local last  = false
-    local tag   = 0
-    local line  = 0
-    for current, id, subtype in nextnode, head do
+    local current = head
+    while current do
+        local id = getid(current)
         if id == glyph_code then
-            local tc, lc = getsynctexfields(current)
-            if tc and tc > 0 then
-                if tag == 0 then
-                    first = current
+            local first = current
+            local last  = current
+            local tag   = 0
+            local line  = 0
+            while true do
+                if id == glyph_code then
+                    local tc, lc = getsynctexfields(current)
+                    if tc and tc > 0 then
+                        tag  = tc
+                        line = lc
+                    end
+                    last = current
+                elseif id == disc_code or (id == kern_code and getsubtype(current) == fontkern_code) then
+                    last = current
+                else
+                    if tag > 0 then
+                        head = inject(head,first,last,tag,line)
+                    end
+                    break
                 end
-                tag  = tc
-                line = lc
-                last = current
-            elseif tag > 0 then
-                head = inject(head,first,last,tag,line)
-                tag  = 0
+                current = getnext(current)
+                if current then
+                    id = getid(current)
+                else
+                    if tag > 0 then
+                        head = inject(head,first,last,tag,line)
+                    end
+                    return head
+                end
             end
-        elseif id == disc_code then
-            last = current
-        elseif id == kern_code and subtype == fontkern_code then
-            last = current
-        elseif id == hlist_code or id == vlist_code then
-            if tag > 0 then
-                head = inject(head,first,last,tag,line)
-                tag  = 0
-            end
+        end
+        -- pick up (as id can have changed)
+        if id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then
                 local l = collect(list)
@@ -562,16 +524,57 @@ local function collect_min(head)
                     setlist(current,l)
                 end
             end
-        elseif tag > 0 then
-            head = inject(head,first,last,tag,line)
-            tag  = 0
         end
-    end
-    if tag > 0 then
-        head = inject(head,first,last,tag,line)
+        current = getnext(current)
     end
     return head
 end
+
+-- local function collect_min(head)
+--     local first = false
+--     local last  = false
+--     local tag   = 0
+--     local line  = 0
+--     for current, id, subtype in nextnode, head do
+--         if id == glyph_code then
+--             local tc, lc = getsynctexfields(current)
+--             if tc and tc > 0 then
+--                 if tag == 0 then
+--                     first = current
+--                 end
+--                 tag  = tc
+--                 line = lc
+--                 last = current
+--             elseif tag > 0 then
+--                 head = inject(head,first,last,tag,line)
+--                 tag  = 0
+--             end
+--         elseif id == disc_code then
+--             last = current
+--         elseif id == kern_code and subtype == fontkern_code then
+--             last = current
+--         elseif id == hlist_code or id == vlist_code then
+--             if tag > 0 then
+--                 head = inject(head,first,last,tag,line)
+--                 tag  = 0
+--             end
+--             local list = getlist(current)
+--             if list then
+--                 local l = collect(list)
+--                 if l ~= list then
+--                     setlist(current,l)
+--                 end
+--             end
+--         elseif tag > 0 then
+--             head = inject(head,first,last,tag,line)
+--             tag  = 0
+--         end
+--     end
+--     if tag > 0 then
+--         head = inject(head,first,last,tag,line)
+--     end
+--     return head
+-- end
 
 local function inject(parent,head,first,last,tag,line)
     local w, h, d = getrangedimensions(parent,first,getnext(last))
@@ -589,153 +592,93 @@ local function inject(parent,head,first,last,tag,line)
     return head
 end
 
--- local function collect_max(head,parent)
---     local current = head
---     while current do
---         local id = getid(current)
---         if id == glyph_code then
---             local first = current
---             local last  = current
---             local tag   = 0
---             local line  = 0
---             while true do
---                 if id == glyph_code then
---                     local tc, lc = getsynctexfields(current)
---                     if tc and tc > 0 then
---                         if tag > 0 and (tag ~= tc or line ~= lc) then
---                             head  = inject(parent,head,first,last,tag,line)
---                             first = current
---                         end
---                         tag  = tc
---                         line = lc
---                         last = current
---                     else
---                         if tag > 0 then
---                             head = inject(parent,head,first,last,tag,line)
---                             tag  = 0
---                         end
---                         first = nil
---                         last  = nil
---                     end
---                 elseif id == disc_code then
---                     if not first then
---                         first = current
---                     end
---                     last = current
---                 elseif id == kern_code and getsubtype(current) == fontkern_code then
---                     if first then
---                         last = current
---                     end
---                 elseif id == glue_code then
---                     if tag > 0 then
---                         local tc, lc = getsynctexfields(current)
---                         if tc and tc > 0 then
---                             if tag ~= tc or line ~= lc then
---                                 head = inject(parent,head,first,last,tag,line)
---                                 tag  = 0
---                                 break
---                             end
---                         else
---                             head = inject(parent,head,first,last,tag,line)
---                             tag  = 0
---                             break
---                         end
---                     else
---                         tag = 0
---                         break
---                     end
---                     id = nil -- so no test later on
---                 elseif id == penalty_code then
---                     -- go on (and be nice for math)
---                 else
---                     if tag > 0 then
---                         head = inject(parent,head,first,last,tag,line)
---                         tag  = 0
---                     end
---                     break
---                 end
---                 current = getnext(current)
---                 if current then
---                     id = getid(current)
---                 else
---                     if tag > 0 then
---                         head = inject(parent,head,first,last,tag,line)
---                     end
---                     return head
---                 end
---             end
---         end
---         -- pick up (as id can have changed)
---         if id == hlist_code or id == vlist_code then
---             local list = getlist(current)
---             if list then
---                 local l = collect(list,current)
---                 if l and l ~= list then
---                     setlist(current,l)
---                 end
---             end
---         end
---         current = getnext(current)
---     end
---     return head
--- end
-
 local function collect_max(head,parent)
-    local first = false
-    local last  = false
-    local tag   = 0
-    local line  = 0
-    for current, id, subtype in nextnode, head do
+    local current = head
+    while current do
+        local id = getid(current)
         if id == glyph_code then
-            local tc, lc = getsynctexfields(current)
-            if tc and tc > 0 then
-                if tag == 0 then
-                    first = current
-                end
-                tag  = tc
-                line = lc
-                last = current
-            elseif tag > 0 then
-                head = inject(parent,head,first,last,tag,line)
-                tag  = 0
-            end
-        elseif id == disc_code then
-            last = current
-        elseif id == kern_code and subtype == fontkern_code then
-            last = current
-        elseif id == glue_code then -- in addition to min
-            if tag > 0 then
-                local tc, lc = getsynctexfields(current)
-                if tc and tc > 0 then
-                    if tag == 0 then
+            local first = current
+            local last  = current
+            local tag   = 0
+            local line  = 0
+            while true do
+                if id == glyph_code then
+                    local tc, lc = getsynctexfields(current)
+                    if tc and tc > 0 then
+                        if tag > 0 and (tag ~= tc or line ~= lc) then
+                            head  = inject(parent,head,first,last,tag,line)
+                            first = current
+                        end
+                        tag  = tc
+                        line = lc
+                        last = current
+                    else
+                        if tag > 0 then
+                            head = inject(parent,head,first,last,tag,line)
+                            tag  = 0
+                        end
+                        first = nil
+                        last  = nil
+                    end
+                elseif id == disc_code then
+                    if not first then
                         first = current
                     end
-                    tag  = tc
-                    line = lc
                     last = current
+                elseif id == kern_code and getsubtype(current) == fontkern_code then
+                    if first then
+                        last = current
+                    end
+                elseif id == glue_code then
+                    if tag > 0 then
+                        local tc, lc = getsynctexfields(current)
+                        if tc and tc > 0 then
+                            if tag ~= tc or line ~= lc then
+                                head = inject(parent,head,first,last,tag,line)
+                                tag  = 0
+                                break
+                            end
+                        else
+                            head = inject(parent,head,first,last,tag,line)
+                            tag  = 0
+                            break
+                        end
+                    else
+                        tag = 0
+                        break
+                    end
+                    id = nil -- so no test later on
+                elseif id == penalty_code then
+                    -- go on (and be nice for math)
                 else
-                    head = inject(parent,head,first,last,tag,line)
-                    tag  = 0
+                    if tag > 0 then
+                        head = inject(parent,head,first,last,tag,line)
+                        tag  = 0
+                    end
+                    break
+                end
+                current = getnext(current)
+                if current then
+                    id = getid(current)
+                else
+                    if tag > 0 then
+                        head = inject(parent,head,first,last,tag,line)
+                    end
+                    return head
                 end
             end
-        elseif id == penalty_code then -- in addition to min
-            -- go on (and be nice for math)
-        elseif id == hlist_code or id == vlist_code then
-            if tag > 0 then
-                head = inject(parent,head,first,last,tag,line)
-                tag  = 0
-            end
+        end
+        -- pick up (as id can have changed)
+        if id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then
-                local l = collect(list)
-                if l ~= list then
+                local l = collect(list,current)
+                if l and l ~= list then
                     setlist(current,l)
                 end
             end
-        elseif tag > 0 then
-            head = inject(parent,head,first,last,tag,line)
-            tag  = 0
         end
+        current = getnext(current)
     end
     return head
 end

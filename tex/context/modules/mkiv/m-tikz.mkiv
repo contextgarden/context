@@ -72,4 +72,45 @@
 
 \fi
 
+% \input t-pgf.tex
+
+\ifx\pgfdefined\undefined
+
+    \let\pgfdefined\relax
+
+   % \input t-pgfcor.tex
+
+    \ifx\pgfcoredefined\undefined
+
+        \let\pgfcoredefined=\relax
+
+        \input t-pgfsys.tex
+
+        \edef\pgfcoreatcode     {\the\catcode`\@}
+        \edef\pgfcorebarcode    {\the\catcode`\|}
+        \edef\pgfcoreexclaimcode{\the\catcode`\!}
+
+        \catcode`\@=11
+        \catcode`\|=12
+        \catcode`\!=12
+
+        \input pgfcore.code.tex
+
+        \catcode`\@=\pgfcoreatcode
+        \catcode`\|=\pgfcorebarcode
+        \catcode`\!=\pgfcoreexclaimcode
+
+        \let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
+        \let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
+        \let\startpgflowlevelscope       \pgflowlevelscope        \let\stoppgflowlevelscope      \endpgflowlevelscope
+        \let\startpgfinterruptpath       \pgfinterruptpath        \let\stoppgfinterruptpath      \endpgfinterruptpath
+        \let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
+        \let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
+
+    \fi
+
+    \usepgfmodule[shapes,plot]
+
+\fi
+
 \stopmodule

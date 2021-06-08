@@ -96,12 +96,12 @@
      \ifodd\c_strc_floats_facing_flushed
        \ifodd\realpageno
          \strc_floats_facing_flush_indeed
-         \doifelsependingpagecontent\relax{\null\page}%
+         \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
        \fi
      \else
        \ifodd\realpageno\else
          \strc_floats_facing_flush_indeed
-         \doifelsependingpagecontent\relax{\null\page}%
+         \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
        \fi
      \fi
    \fi}
@@ -230,6 +230,7 @@
    \else
      \begingroup
      \setbox\scratchbox\vsplit#1 upto \textheight
+     \setsplitlisthtdp\scratchbox\strutht\strutdp
      \setbox\scratchbox\hpack\bgroup
        \edef\currentfacingfloat{\currentfacingfloat:#2}%
        \inheritedfacingfloatframed{\box\scratchbox}%

@@ -336,7 +336,7 @@
 % \startinterface english
     \protected\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
       {\frozen\protected\def#3##1{\defcsname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
-       \frozen\protected\def#4##1{\edefcsname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \frozen\protected\def#4##1{\edefcsname#1#2:##1\endcsname}%       ##1 {##2} (braces are mandate)
        \frozen\protected\def#5##1{\letcsname#1#2:##1\endcsname}%        ##1 ##2
        \frozen\protected\def#6##1{\letcsname#1#2:##1\endcsname\empty}}% ##1
 % \stopinterface

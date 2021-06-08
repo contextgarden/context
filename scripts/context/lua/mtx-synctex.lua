@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['mtx-synctex'] = {
 local tonumber = tonumber
 local find, match, gsub, formatters = string.find, string.match, string.gsub, string.formatters
 local isfile = lfs.isfile
+local max = math.max
 local longtostring = string.longtostring
 
 local helpinfo = [[
@@ -27,8 +28,8 @@ local helpinfo = [[
    <subcategory>
     <flag name="edit"><short>open file at line: --line=.. --editor=.. sourcefile</short></flag>
     <flag name="list"><short>show all areas: synctexfile</short></flag>
-    <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. --editor=.. synctexfile</short></flag>
-    <flag name="report"><short>show (tex) file and line: [--direct] --page=.. --x=.. --y=.. --console synctexfile</short></flag>
+    <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. [--tolerance=] --editor=.. synctexfile</short></flag>
+    <flag name="report"><short>show (tex) file and line: [--direct] --page=.. --x=.. --y=.. [--tolerance=] --console synctexfile</short></flag>
     <flag name="find"><short>find (pdf) page and box: [--direct] --file=.. --line=.. synctexfile</short></flag>
    </subcategory>
   </category>
@@ -45,7 +46,7 @@ local application = logs.application {
 local report = application.report
 
 local template_show = "page=%i llx=%r lly=%r urx=%r ury=%r"
-local template_goto = "filename=%a linenumber=%a"
+local template_goto = "filename=%a linenumber=%a tolerance=%a"
 
 local function reportdirect(template,...)
     print(formatters[template](...))
@@ -53,7 +54,7 @@ end
 
 local editors = {
     console = function(specification)
-        print(string.formatters["%q %i"](specification.filename,specification.linenumber or 1))
+        print(string.formatters["%q %i %i"](specification.filename,specification.linenumber or 1,specification.tolerance))
     end,
     scite = sandbox.registerrunner {
         name     = "scite",
@@ -77,7 +78,7 @@ local function validfile(filename)
     end
 end
 
-local function editfile(filename,line,editor)
+local function editfile(filename,line,tolerance,editor)
     if not validfile(filename) then
         return
     end
@@ -85,6 +86,7 @@ local function editfile(filename,line,editor)
     runner {
         filename   = filename,
         linenumber = tonumber(line) or 1,
+        tolerance  = tolerance,
     }
 end
 
@@ -192,6 +194,125 @@ local function findlocation(filename,page,xpos,ypos)
     end
 end
 
+local function findlocation(filename,page,xpos,ypos,tolerance)
+    if not validfile(filename) then
+        return
+    elseif not page then
+        page = 1
+    elseif not xpos or not ypos then
+        report("provide x and y coordinates (unit: basepoints)")
+        return
+    end
+    local files = { }
+    local found = false
+    local skip  = false
+    local fi    = 0
+    local ln    = 0
+    local tl    = 0
+    local lines = { }
+    for line in io.lines(filename) do
+        if found then
+            if find(line,"^}") then
+                local function locate(x,y)
+                    local dx = false
+                    local dy = false
+                    local px = (xpos + x) / factor
+                    local py = (ypos + y) / factor
+                    for i=1,#lines do
+                        local line = lines[i]
+                        -- we only look at positive cases
+                        local f, l, x, y, w, h, d = match(line,"^h(.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
+                        if f and f ~= 0 then
+-- print(x,y,f)
+                            x = tonumber(x)
+                            if px >= x then
+                                w = tonumber(w)
+                                if px <= x + w then
+                                    y = tonumber(y)
+                                    d = tonumber(d)
+                                    if py >= y - d then
+                                        h = tonumber(h)
+                                        if py <= y + h then
+                                            if quit then
+                                                -- we have no overlapping boxes
+                                                fi = f
+                                                ln = l
+                                                return
+                                            else
+                                                local lx = px - x
+                                                local rx = x + w - px
+                                                local by = py - y + d
+                                                local ty = y + h - py
+                                                mx = lx < rx and lx or rx
+                                                my = by < ty and by or ty
+                                                if not dx then
+                                                    dx = mx
+                                                    dy = my
+                                                    fi = f
+                                                    ln = l
+                                                else
+                                                    if mx < dx then
+                                                        dx = mx
+                                                        di = f
+                                                        ln = l
+                                                    end
+                                                    if my < dy then
+                                                        dy = my
+                                                        fi = f
+                                                        ln = l
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                locate(0,0)
+                if fi ~= 0 then
+                    return files[fi], ln, 0
+                end
+                if not tolerance then
+                    tolerance = 10
+                end
+                for s=1,tolerance,max(tolerance//10,1) do
+                    locate( s, 0) if fi ~= 0 then tl = s ; goto done end
+                    locate(-s, 0) if fi ~= 0 then tl = s ; goto done end
+                    locate( s, s) if fi ~= 0 then tl = s ; goto done end
+                    locate( s,-s) if fi ~= 0 then tl = s ; goto done end
+                    locate(-s, s) if fi ~= 0 then tl = s ; goto done end
+                    locate(-s,-s) if fi ~= 0 then tl = s ; goto done end
+                end
+                break
+            else
+                lines[#lines+1] = line
+            end
+        elseif skip then
+            if find(line,"^}") then
+                skip = false
+            end
+        elseif find(line,"^{(%d+)") then
+            local p = tonumber(match(line,"^{(%d+)"))
+            if p == page then
+                found = true
+            else
+                skip = true
+            end
+        elseif find(line,"^Input:") then
+            local id, name = match(line,"^Input:(.-):(.-)$")
+            if id then
+                files[id] = name
+            end
+        end
+    end
+ ::done::
+    if fi ~= 0 then
+        return files[fi], ln, tl
+    end
+end
+
 local function showlocation(filename,sourcename,linenumber,direct)
     if not validfile(filename) then
         return
@@ -244,14 +365,14 @@ local function showlocation(filename,sourcename,linenumber,direct)
     end
 end
 
-local function gotolocation(filename,page,xpos,ypos,editor,direct)
+local function gotolocation(filename,page,xpos,ypos,editor,direct,tolerance)
     if filename then
-        local target, line = findlocation(filename,tonumber(page),tonumber(xpos),tonumber(ypos))
+        local target, line, t = findlocation(filename,tonumber(page),tonumber(xpos),tonumber(ypos),tonumber(tolerance))
         if target and line then
             if editor then
-                editfile(target,line,editor)
+                editfile(target,line,t,editor)
             else
-                (direct and reportdirect or report)(template_goto,target,line)
+                (direct and reportdirect or report)(template_goto,target,line,t)
             end
         end
     end
@@ -268,9 +389,9 @@ local filename = environment.files[1]
 if argument("edit") then
     editfile(filename,argument("line"),argument("editor"))
 elseif argument("goto") then
-    gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"),argument("direct"))
+    gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"),argument("direct"),argument("tolerance"))
 elseif argument("report") then
-    gotolocation(filename,argument("page"),argument("x"),argument("y"),"console",argument("direct"))
+    gotolocation(filename,argument("page"),argument("x"),argument("y"),"console",argument("direct"),argument("tolerance"))
 elseif argument("list") then
     showlocation(filename)
 elseif argument("find") then

@@ -180,7 +180,7 @@ function texconfig.init()
          -- local b = callbytecode(i)
             local e, b = pcall(callbytecode,i)
             if not e then
-                print(string.format("\nfatal error : unable to load bytecode register %%i, maybe wipe the cache first\n",i))
+                print(string.format("fatal error : unable to load bytecode register %%i, maybe wipe the cache first\n",i))
                 os.exit()
             end
             if b then

@@ -803,7 +803,7 @@
      % the lmtx raw processor handles {} like the normal one so we need to prune
      \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
    \fi
-     \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
+   \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
    \ifcase\c_tabl_tabulate_modus\relax
      \tabl_tabulate_set_width_normal
    \or % fixed width

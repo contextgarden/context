@@ -186,41 +186,44 @@
 \permanent\protected\def\page_marks_set#1%
   {\begincsname\??layoutmarking#1\endcsname}
 
+\def\page_marks_setup_layout
+  {\setfalse\c_page_marks_add_page_lines
+   \setfalse\c_page_marks_add_more_color
+   \setfalse\c_page_marks_add_more_marking
+   \setfalse\c_page_marks_add_more_lines
+   \setfalse\c_page_marks_add_more_number
+   \global\c_page_marks_max\maxcount
+   \rawprocesscommacommand[\layoutparameter\c!marking]\page_marks_set
+   \ifnum\c_page_marks_max<\maxcount
+     \ifconditional\c_page_marks_add_page_lines  \orelse
+     \ifconditional\c_page_marks_add_more_color  \orelse
+     \ifconditional\c_page_marks_add_more_marking\orelse
+     \ifconditional\c_page_marks_add_more_lines  \orelse
+     \ifconditional\c_page_marks_add_more_number \else
+       \settrue\c_page_marks_add_page_lines
+       \settrue\c_page_marks_add_more_number
+     \fi
+   \fi
+   \ifconditional\c_page_marks_add_page_lines
+     \let\page_marks_add_page\page_marks_add_page_indeed
+   \else
+     \let\page_marks_add_page\gobbleoneargument
+   \fi
+   % we can get a double set of (overlayed) lines .. needs to be redone (too many objects anyway)
+   \ifconditional\c_page_marks_add_more_lines
+     \let\page_marks_add_more\page_marks_add_more_indeed
+   \orelse\ifconditional\c_page_marks_add_more_color
+     \let\page_marks_add_more\page_marks_add_more_indeed
+   \orelse\ifconditional\c_page_marks_add_more_marking
+     \let\page_marks_add_more\page_marks_add_more_indeed
+   \orelse\ifconditional\c_page_marks_add_more_number
+     \let\page_marks_add_more\page_marks_add_more_indeed
+   \else
+     \let\page_marks_add_more\gobbleoneargument
+   \fi}
+
 \appendtoks
-    \setfalse\c_page_marks_add_page_lines
-    \setfalse\c_page_marks_add_more_color
-    \setfalse\c_page_marks_add_more_marking
-    \setfalse\c_page_marks_add_more_lines
-    \setfalse\c_page_marks_add_more_number
-    \global\c_page_marks_max\maxcount
-    \rawprocesscommacommand[\layoutparameter\c!marking]\page_marks_set
-    \ifnum\c_page_marks_max<\maxcount
-      \ifconditional\c_page_marks_add_page_lines  \orelse
-      \ifconditional\c_page_marks_add_more_color  \orelse
-      \ifconditional\c_page_marks_add_more_marking\orelse
-      \ifconditional\c_page_marks_add_more_lines  \orelse
-      \ifconditional\c_page_marks_add_more_number \else
-        \settrue\c_page_marks_add_page_lines
-        \settrue\c_page_marks_add_more_number
-      \fi
-    \fi
-    \ifconditional\c_page_marks_add_page_lines
-      \let\page_marks_add_page\page_marks_add_page_indeed
-    \else
-      \let\page_marks_add_page\gobbleoneargument
-    \fi
-    % we can get a double set of (overlayed) lines .. needs to be redone (too many objects anyway)
-    \ifconditional\c_page_marks_add_more_lines
-      \let\page_marks_add_more\page_marks_add_more_indeed
-    \orelse\ifconditional\c_page_marks_add_more_color
-      \let\page_marks_add_more\page_marks_add_more_indeed
-    \orelse\ifconditional\c_page_marks_add_more_marking
-      \let\page_marks_add_more\page_marks_add_more_indeed
-    \orelse\ifconditional\c_page_marks_add_more_number
-      \let\page_marks_add_more\page_marks_add_more_indeed
-    \else
-      \let\page_marks_add_more\gobbleoneargument
-    \fi
+    \page_marks_setup_layout
 \to \everysetuplayout
 
 \setuplayout

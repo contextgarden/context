@@ -30,6 +30,8 @@ local glyph_code    = nodecodes.glyph
 local par_code      = nodecodes.par
 
 local indent_code   = nodes.listcodes.indent
+local topskip_code  = nodes.gluecodes.topskip
+local line_code     = nodes.listcodes.line
 
 local hmode_code    = tex.modelevels.horizontal
 
@@ -1391,3 +1393,45 @@ do
     }
 
 end
+
+do
+
+    function setsplitlisthtdp(n,ht,dp)
+        local box = getbox(n)
+        if box then
+            local head = getlist(box)
+            if head then
+                local tail = findtail(head)
+                local id = getid(head)
+                if id == glue_code and getsubtype(head) == topskip_code then
+                    head = getnext(head)
+                    id   = head and getid(head)
+                    ht   = ht - getwidth(head)
+                end
+                if id == hlist_code and getsubtype(head) == line_code and getheight(head) < ht then
+-- print("set height",ht)
+                    setheight(head,ht)
+                end
+                local id = getid(tail)
+                if id == glue_code then
+                    tail = getprev(tail)
+                    id   = tail and getid(tail)
+                    dp   = dp - getwidth(tail)
+                end
+                if id == hlist_code and getsubtype(tail) == line_code and getdepth(tail) < dp then
+                    setdepth(dept,dp)
+-- print("set depth",dp)
+                end
+            end
+        end
+    end
+
+    implement {
+        name      = "setsplitlisthtdp",
+        public    = true,
+        protected = true,
+        arguments = { "integer", "dimen", "dimen" },
+        actions   = setsplitlisthtdp,
+    }
+end
+

@@ -2872,6 +2872,10 @@
 %D \setpostlistbox <box> <hbox|vbox|vtop|somebox>
 %D \stoptyping
 
+%D Defined in lua:
+%D
+%D setsplitlisthtdp\scratchbox\struthp\strutdp
+
 \protect \endinput
 
 % a bit of test code:

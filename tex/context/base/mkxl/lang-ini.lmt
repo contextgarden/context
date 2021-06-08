@@ -22,7 +22,7 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 local type, tonumber, next = type, tonumber, next
 local utfbyte, utflength = utf.byte, utf.length
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
-local concat, sortedkeys, sortedpairs, keys, insert, tohash = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert, table.tohash
+local concat, sortedkeys, sortedhash, keys, insert, tohash = table.concat, table.sortedkeys, table.sortedhash, table.keys, table.insert, table.tohash
 local setmetatableindex = table.setmetatableindex
 local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
@@ -768,11 +768,12 @@ do
     end)
 
     local function checkglyphproperties(options)
-        for word, list in next, options do
+        -- we sort, just to be sure
+        for word, list in sortedhash(options) do
             if type(list) == "string" then
                 options[word] = options[list]
             else
-                for index, option in next, list do
+                for index, option in sortedhash(list) do
                     if type(option) == "string" then
                         list[index] = cache[option]
                     end
@@ -1425,7 +1426,7 @@ languages.logger = languages.logger or { }
 
 function languages.logger.report()
     local result, r = { }, 0
-    for tag, l in sortedpairs(registered) do
+    for tag, l in sortedhash(registered) do
         if l.loaded then
             r = r + 1
             result[r] = format("%s:%s:%s",tag,l.parent,l.number)
