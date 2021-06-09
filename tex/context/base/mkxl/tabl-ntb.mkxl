@@ -207,7 +207,6 @@
 
 %D For local anchoring:
 
-
 \installcorenamespace{naturaltableanchor}
 
 \let\tabl_ntb_anchor_start  \gobbletwoarguments
@@ -219,29 +218,16 @@
 \let\xanchor\!!zerocount
 \let\yanchor\!!zerocount
 
-\def\tabl_ntb_anchor_start_normal#1#2%
+\def\tabl_ntb_anchor_start_indeed#1#2%
   {\hpack\bgroup
    \edef\xanchor{\number#2}%
    \edef\yanchor{\number#1}%
    \markanchor{matrix}{#1}{#2}}
 
-\def\tabl_ntb_anchor_start_traced#1#2%
-  {\hpack\bgroup
-   \edef\xanchor{\number#2}%
-   \edef\yanchor{\number#1}%
-   \markanchor{matrix}{#2}{#1}%
-   \smash[whd]{\smallinfofont#2-#1}}
-
-\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_normal
-\let\tabl_ntb_anchor_stop_indeed \egroup
+\let\tabl_ntb_anchor_stop_indeed\egroup
 
 \def\tabl_ntb_anchor_process_indeed#1%
   {\localframed[\??naturaltableanchor]{\box#1}}
-
-\installtextracker
-  {localanchor}
-  {\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_traced}
-  {\let\tabl_ntb_anchor_start_indeed\tabl_ntb_anchor_start_normal}
 
 \definesimplifiedframed
   [\??naturaltableanchor]
@@ -250,6 +236,22 @@
   [\??naturaltableanchor]
   [\c!synchronize=\v!background,
    \c!background=\m_tabl_ntb_anchor_background]
+
+\def\tabl_ntb_anchor_setup
+  {\ifcstok{\naturaltablelocalparameter\c!synchronize}\v!background
+     \let\tabl_ntb_anchor_start   \tabl_ntb_anchor_start_indeed
+     \let\tabl_ntb_anchor_stop    \tabl_ntb_anchor_stop_indeed
+     \let\tabl_ntb_anchor_process \tabl_ntb_anchor_process_indeed
+     \edef\m_tabl_ntb_anchor_background{\naturaltablelocalparameter\c!background}%
+     \resetnaturaltablelocalparameter\c!background
+     \setlocalanchoring
+   \else
+     \let\m_tabl_ntb_anchor_background\empty
+     \let\tabl_ntb_anchor_start       \gobbletwoarguments
+     \let\tabl_ntb_anchor_stop        \relax
+     \let\tabl_ntb_anchor_process     \gobbleoneargument
+   \fi
+   \resetnaturaltablelocalparameter\c!synchronize}
 
 %D We have already prepared the previous macros for nesting, so we only have to pop
 %D in the right ones:
@@ -973,19 +975,7 @@
    \resetcharacteralign % new
    \setupcurrentnaturaltablelocal[\c!align={\v!right,\v!broad,\v!high},#1]%
    %
-   \ifcstok{\naturaltablelocalparameter\c!synchronize}\v!background
-     \let\tabl_ntb_anchor_start  \tabl_ntb_anchor_start_indeed
-     \let\tabl_ntb_anchor_stop    \tabl_ntb_anchor_stop_indeed
-     \let\tabl_ntb_anchor_process \tabl_ntb_anchor_process_indeed
-     \edef\m_tabl_ntb_anchor_background{\naturaltablelocalparameter\c!background}%
-     \resetnaturaltablelocalparameter\c!background
-   \else
-     \let\m_tabl_ntb_anchor_background\empty
-     \let\tabl_ntb_anchor_start       \gobbletwoarguments
-     \let\tabl_ntb_anchor_stop        \relax
-     \let\tabl_ntb_anchor_process     \gobbleoneargument
-   \fi
-   \resetnaturaltablelocalparameter\c!synchronize
+   \tabl_ntb_anchor_setup
    %
    \d_tabl_ntb_leftmargindistance \naturaltablelocalparameter\c!leftmargindistance\relax
    \d_tabl_ntb_rightmargindistance\naturaltablelocalparameter\c!rightmargindistance\relax

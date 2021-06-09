@@ -229,17 +229,25 @@
      % todo
    \else
      \begingroup
-     \setbox\scratchbox\vsplit#1 upto \textheight
+     \setbox\scratchboxone\hpack\bgroup
+       \edef\currentfacingfloat{\currentfacingfloat:#2}%
+       \inheritedfacingfloatframed{\strut}%
+     \egroup
+     \scratchdimenone\dimexpr\textheight-\htdp\scratchboxone+\lineheight\relax
+     \dontcomplain
+     \splittopskip\zeropoint
+     \setbox\scratchbox\vsplit#1 upto \scratchdimenone
      \setsplitlisthtdp\scratchbox\strutht\strutdp
      \setbox\scratchbox\hpack\bgroup
        \edef\currentfacingfloat{\currentfacingfloat:#2}%
        \inheritedfacingfloatframed{\box\scratchbox}%
      \egroup
-     \ifdim\ht\scratchbox<\dimexpr\textheight-\scratchdimen\relax
-        \setbox\scratchbox\vbox{\box\scratchbox\directvspacing\p_spaceinbetween}%
-     \else
-        \setbox\scratchbox\vbox to \textheight{\box\scratchbox\vss}%
-     \fi
+     \setbox\scratchbox\vbox
+       \ifdim\ht\scratchbox<\dimexpr\textheight-\scratchdimen\relax
+         {\box\scratchbox\directvspacing\p_spaceinbetween}%
+       \else
+         to \textheight{\box\scratchbox\vss}%
+       \fi
      \global\advance\c_strc_floats_facing_saved\plusone
      \putboxincache{\currentfacingfloat}{\number\c_strc_floats_facing_saved}\scratchbox
      \endgroup

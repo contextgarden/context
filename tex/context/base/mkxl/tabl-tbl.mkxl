@@ -421,7 +421,6 @@
 
 \let\tabl_tabulate_hook_b\donothing
 \let\tabl_tabulate_hook_e\donothing
-
 \let\tabl_tabulate_hook_g\donothing
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
@@ -440,6 +439,7 @@
         \global\c_tabl_tabulate_colorspan\zerocount
         \global\c_tabl_tabulate_column\constantnumber\c_tabl_tabulate_columns
         \tabl_tabulate_hook_g
+        \tabl_tabulate_anchor % new
         \tabl_tabulate_setups_check % unexpandable
         \tabl_tabulate_hook_check   % unexpandable
         \ifzeropt\d_tabl_tabulate_width
@@ -1120,10 +1120,10 @@
 \let\m_tabl_tabulate_data\empty
 
 \def\tabl_tabulate_start_head_yes[#1]%
-  {\processcontent{\e!stop\v!tabulatehead}\m_tabl_tabulate_data{\letvalue{\??tabulatehead#1}\m_tabl_tabulate_data}}
+  {\processcontent{\e!stop\v!tabulatehead}\m_tabl_tabulate_data{\letcsname\??tabulatehead#1\endcsname\m_tabl_tabulate_data}}
 
 \def\tabl_tabulate_start_foot_yes[#1]%
-  {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letvalue{\??tabulatefoot#1}\m_tabl_tabulate_data}}
+  {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letcsname\??tabulatefoot#1\endcsname\m_tabl_tabulate_data}}
 
 \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
 \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
@@ -1132,7 +1132,7 @@
   {\bgroup
    \edef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
-   \iftok{\tabulationparameter\c!format}{\v!none}%
+   \ifcstok{\tabulationparameter\c!format}\v!none
      % this is special case: we need to define the generic english
      % \starttabulate in other interfaces as well
      \lettabulationparameter\c!format\tabl_default_format
@@ -1158,29 +1158,10 @@
 
 \def\tabl_default_format{|l|p|} % actually format is always set
 
-\permanent\protected\setuvalue{\e!start\v!tabulate}%
+\permanent\protected\defcsname\e!start\v!tabulate\endcsname
   {\bgroup % whole thing
    \let\currenttabulationparent\empty
    \tabl_start_regular}
-
-% \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
-%   {\let\currenttabulation\currenttabulationparent
-%    \iftok{#1}\emptytoks
-%      \ifhastok={#2}\relax
-%        \setupcurrenttabulation[#2]%
-%      \fi
-%    \orelse\ifhastok={#1}\relax
-%      \iftok{#2}\emptytoks\else
-%         \settabulationparameter\c!format{#2}%
-%      \fi
-%      \setupcurrenttabulation[#1]%
-%    \else
-%      \settabulationparameter\c!format{#1}%
-%      \ifhastok={#2}\relax
-%        \setupcurrenttabulation[#2]%
-%      \fi
-%    \fi
-%    \tabl_tabulate_start_building}
 
 \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
   {\let\currenttabulation\currenttabulationparent
@@ -1212,7 +1193,7 @@
    \expandafter\gobbleuntil\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
 
 \appendtoks
-    \enforced\letvalue{\e!start\v!tabulate}\tabl_tabulate_start_ignore % only the main one
+    \enforced\letcsname\e!start\v!tabulate\endcsname\tabl_tabulate_start_ignore % only the main one
 \to \everytabulate
 
 \defcsname\??tabulatesplit\v!yes   \endcsname{\settrue\c_tabl_tabulate_split}
@@ -1536,12 +1517,11 @@
    \global\d_tabl_tabulate_vrulethickness\zeropoint} % nils second one
 
 \protected\def\tabl_tabulate_column_vrule_inject_second
-  {\ifcase\d_tabl_tabulate_vrulethickness\else
-     \ifempty\m_tabl_tabulate_vrule_color
-       \tabl_tabulate_column_vruled_normal
-     \else
-       \tabl_tabulate_column_vruled_colored
-     \fi
+  {\ifcase\d_tabl_tabulate_vrulethickness
+   \orelse\ifempty\m_tabl_tabulate_vrule_color
+     \tabl_tabulate_column_vruled_normal
+   \else
+     \tabl_tabulate_column_vruled_colored
    \fi
    \global\d_tabl_tabulate_vrulethickness\zeropoint} % nils second one
 
@@ -2182,6 +2162,28 @@
 % \ruledvbox{\starttabulate[|k8|]    \NC xxx \NC         \NR   \stoptabulate}
 % \ruledvbox{\starttabulate[|l|l|]   \NC xxx \NC xxx \NC \NR   \stoptabulate}
 
+\protected\def\tabl_tabulate_anchor_indeed
+  {\edef\xanchor{\number\c_tabl_tabulate_column}%
+   \edef\yanchor{\number\c_tabl_tabulate_nofrealrows}%
+   \markanchor{matrix}{\c_tabl_tabulate_column}{\c_tabl_tabulate_nofrealrows}}
+
+\def\tabl_tabulate_anchor_setup % a bit of a cheat but good enough for a lightweight experiment
+  {\edef\p_synchronize{\tabulationparameter\c!synchronize}%
+   \ifx\p_synchronize\v!background
+     \edef\currentframedcontent{\tabulationparameter\c!frame}%
+     \ifx\currentframedcontent\v!off
+       \lettabulationparameter\c!frame\empty
+       \let\currentframedcontent\empty
+       \letframedcontentparameter\c!frame\v!off
+     \fi
+     \letframedcontentparameter\c!synchronize\p_synchronize
+     \setframedcontentparameter\c!background {\tabulationparameter\c!background}%
+     \enforced\let\tabl_tabulate_anchor\tabl_tabulate_anchor_indeed
+     \setlocalanchoring
+   \fi}
+
+\permanent\protected\lettonothing\tabl_tabulate_anchor
+
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
@@ -2318,6 +2320,7 @@
      \ifinsidesplitfloat
         \global\setbox\b_tabl_tabulate\vbox \bgroup
       \else
+        \tabl_tabulate_anchor_setup
         \startframedcontent[\tabulationparameter\c!frame]%
       \fi
    \else
@@ -2903,19 +2906,15 @@
 
 \permanent\protected\def\tabl_tabulate_NA_first
   {\tabl_tabulate_column_normal\zerocount\zerocount\relax
-   \iftrialtypesetting\else
-     \ifcase\c_tabl_tabulate_column\or
-       \tabl_tabulate_A_first
-     \fi
+   \iftrialtypesetting\orelse\ifcase\c_tabl_tabulate_column\or
+     \tabl_tabulate_A_first
    \fi
    \ignorespaces}
 
 \permanent\protected\def\tabl_tabulate_BA_first
   {\tabl_tabulate_column_normal\plusone\zerocount\relax
-   \iftrialtypesetting\else
-     \ifcase\c_tabl_tabulate_column\or
-       \tabl_tabulate_A_first
-     \fi
+   \iftrialtypesetting\orelse\ifcase\c_tabl_tabulate_column\or
+     \tabl_tabulate_A_first
    \fi
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \ignorespaces}

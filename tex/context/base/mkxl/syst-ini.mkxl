@@ -543,15 +543,25 @@
 \aliased\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
 %D \macros
-%D   {dontcomplain}
+%D   {dontcomplain,lessboxtracing}
 %D
-%D We need this one soon:
+%D We need this one soon. The second one shows less box details (because that actually
+%D slows down noticeably due to the more extensive details in node content.
+
+% With \showboxdepth\maxcount and \showboxbreadth\maxcount the second one is way slower:
+%
+% \testfeatureonce{10}{\setbox\scratchbox\vbox        {\samplefile{tufte}}} \elapsedtime\par
+% \testfeatureonce{10}{\setbox\scratchbox\vbox to 10cm{\samplefile{tufte}}} \elapsedtime\par
 
 \permanent\protected\def\dontcomplain
   {\hbadness\plustenthousand
    \vbadness\plustenthousand
    \hfuzz   \maxdimen
    \vfuzz   \maxdimen}
+
+\permanent\protected\def\lessboxtracing
+  {\showboxdepth  \plusthree
+   \showboxbreadth\plusfive}
 
 %D Some expected plain variants follow. We don't reuse registers because we
 %D don't want clashes.
@@ -701,8 +711,8 @@
    \tracingonline    \zerocount}
 
 \permanent\protected\def\tracingnone
-  {\showboxdepth     \plusthree
-   \showboxbreadth   \plusfive
+  {\showboxdepth     \maxcount % \plusthree
+   \showboxbreadth   \plusten  % \plusfive
    \tracingalignments\zerocount
    \tracingmath      \zerocount
    \tracingassigns   \zerocount
@@ -719,8 +729,11 @@
 
 %D When we want to see a box we can as well show all of it.
 
-\showboxdepth  \maxdimen
-\showboxbreadth\maxdimen
+% \showboxdepth  \maxcount
+% \showboxbreadth\maxcount
+
+\showboxdepth  \maxcount
+\showboxbreadth\plusten
 
 %D Just for tracing purposes we set:
 

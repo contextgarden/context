@@ -2611,8 +2611,8 @@
 \permanent\protected\def\shownextbox % seldom used
   {\dowithnextbox
      {\bgroup
-      \showboxbreadth\maxdimen
-      \showboxdepth  \maxdimen
+      \showboxbreadth\maxcount
+      \showboxdepth  \maxcount
       \scratchcounter\interactionmode
       \batchmode
       \showbox\nextbox
@@ -2641,10 +2641,8 @@
    \fi
    \egroup}
 
-% Why not ...
-
-\showboxbreadth\plusthousand
-\showboxdepth  \plusthousand
+% \showboxbreadth\plusthousand
+% \showboxdepth  \plusthousand
 
 %D Moved from cont-new:
 %D

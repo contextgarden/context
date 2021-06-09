@@ -37,12 +37,19 @@
 
 \permanent\protected\def\anch_local_withanchor_s  #1#2#3{\leftboundary\setlocalsyncanchor {#1} #2 #3\rightboundary}
 \permanent\protected\def\anch_local_withanchor_a#1#2#3#4{\leftboundary\setlocalalignanchor{#1} #2 #3{#4}\rightboundary}
-\permanent\protected\def\anch_local_withanchor_m  #1#2#3{\leftboundary\setlocalmarkanchor {#1} #2 #3\rightboundary}
+\permanent\protected\def\anch_local_withanchor_n  #1#2#3{\leftboundary\setlocalmarkanchor {#1} #2 #3\rightboundary}
+\permanent\protected\def\anch_local_withanchor_t  #1#2#3{\anch_local_withanchor_n{#1}{#2}{#3}\smash[whd]{\smallinfofont\number#2-\number#3}}
 
 \permanent\protected\def\setlocalanchoring
   {\enforced\let\syncanchor \anch_local_withanchor_s
    \enforced\let\alignanchor\anch_local_withanchor_a
    \enforced\let\markanchor \anch_local_withanchor_m}
+
+\let\anch_local_withanchor_m\anch_local_withanchor_n
+
+\installtextracker{localanchor}
+  {\let\anch_local_withanchor_m\anch_local_withanchor_t}
+  {\let\anch_local_withanchor_m\anch_local_withanchor_n}
 
 \permanent\protected\lettonothing\stopanchoring
 

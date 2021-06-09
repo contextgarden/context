@@ -57,8 +57,8 @@
 \pretolerance          =   100
 \relpenalty            =   500
 \righthyphenmin        =     3
-\showboxbreadth        =     5
-\showboxdepth          =     3
+%showboxbreadth        =     5
+%showboxdepth          =     3
 %time                  =     0
 \tolerance             =   200
 %tracingcommands       =     0

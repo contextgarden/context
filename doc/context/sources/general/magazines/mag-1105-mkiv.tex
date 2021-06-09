@@ -192,3 +192,25 @@ The result is:
 \stoplinecorrection
 
 \stopdocument
+
+% \protected\def\guessbestwidth#1#2#3%
+%   {\beginlocalcontrol
+%    \begingroup
+%    \hsize#1\relax
+%    \setbox\scratchboxone\hbox\bgroup#3\egroup
+%    \doloop {%
+%       \setbox\scratchboxtwo\vbox\bgroup\unhcopy\scratchboxone\egroup
+%       \scratchcounter\boxlines\scratchboxtwo
+%       \ifdim\boxlinenw\scratchboxtwo\scratchcounter<\boxlinewd\scratchboxtwo\scratchcounter
+%         \advance\hsize-#2\relax
+%       \else
+%         \exitloop
+%       \fi
+%    }%
+%    \normalexpanded{\endgroup\endlocalcontrol\dimexpr\the\hsize\relax}}
+%
+% \hsize \guessbestwidth{10cm}{1mm}{\input{ward}}
+%
+% \input{ward}
+%
+% \the\guessbestwidth{10cm}{1mm}{\input{ward}}

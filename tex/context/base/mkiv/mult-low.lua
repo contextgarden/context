@@ -227,7 +227,7 @@ return {
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --
-        "donothing", "untraceddonothing", "dontcomplain", "forgetall",
+        "donothing", "untraceddonothing", "dontcomplain", "lessboxtracing", "forgetall",
         --
         "donetrue", "donefalse", "foundtrue", "foundfalse",
         --
