@@ -180,12 +180,7 @@
 %D
 %D The last part of this module is dedicated to converting dates. Because we want to
 %D use as meaningful commands as possible, and because \TEX\ already uses up some of
-%D those, we save the original meanings.
-
-% \savenormalmeaning\time
-% \savenormalmeaning\year
-% \savenormalmeaning\month
-% \savenormalmeaning\day
+%D those, we save the original meanings. The above are defined already.
 
 %D \macros
 %D   {month,MONTH}

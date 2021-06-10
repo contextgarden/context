@@ -1,0 +1,93 @@
+%D \module
+%D   [       file=type-imp-newcomputermodern,
+%D        version=2021.06.08,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=NewComputerModern,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D There is something fishy with the books fonts. The otf files are twice as large
+%D as the normal ones but the tma's we filter from it are pretty close (mostly
+%D boundingbox differences). The streams are also of similar size so there must be
+%D something extra in there.
+
+% \definefontfallback[Serif]    [file:notoserif-regular.ttf] [0x0000-0xFFFF] [check=yes,rscale=1.02]
+% \definefontfallback[SerifBold][file:notoserif-bold.ttf]    [0x0000-0xFFFF] [check=yes,rscale=1.02]
+
+\starttypescriptcollection[newcomputermodern]
+
+    \doifunknownfontfeature {newcomputermodern-math-bold} {\definefontfeature[newcomputermodern-math-bold][boldened]}
+
+    \starttypescript [\s!serif] [newcomputermodern] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:newcm10-regular.otf]    [\s!features=\s!default,\s!fallbacks=\s!Serif]
+        \definefontsynonym [\s!SerifBold]       [\s!file:newcm10-bold.otf]       [\s!features=\s!default,\s!fallbacks=\s!SerifBold]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:newcm10-italic.otf]     [\s!features=\s!default,\s!fallbacks=\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:newcm10-bolditalic.otf] [\s!features=\s!default,\s!fallbacks=\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [newcomputermodern] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:newcmsans10-regular.otf]     [\s!features=\s!default,\s!fallbacks=\s!Sans]
+        \definefontsynonym [\s!SansBold]       [\s!file:newcmsans10-bold.otf]        [\s!features=\s!default,\s!fallbacks=\s!SansBold]
+        \definefontsynonym [\s!SansItalic]     [\s!file:newcmsans10-oblique.otf]     [\s!features=\s!default,\s!fallbacks=\s!SansItalic]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:newcmsans10-boldoblique.otf] [\s!features=\s!default,\s!fallbacks=\s!SansBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [newcomputermodern] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!file:newcmmono10-regular.otf]    [\s!features=\s!none,\s!fallbacks=\s!Mono]
+        \definefontsynonym [\s!MonoBold]       [\s!file:newcmmono10-bold.otf]       [\s!features=\s!none,\s!fallbacks=\s!MonoBold]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:newcmmono10-italic.otf]     [\s!features=\s!none,\s!fallbacks=\s!MonoItalic]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:newcmmono10-bolditalic.otf] [\s!features=\s!none,\s!fallbacks=\s!MonoBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math][newcomputermodern] [\s!name]
+      % \loadfontgoodies[newcomputermodern-math] ,\s!goodies=newcomputermodern-math
+        \definefontsynonym[\s!MathRoman]    [\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,newcomputermodern-math-bold,mathextra}]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [newcomputermodern-book] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:newcm10-book.otf]       [\s!features=\s!default,\s!fallbacks=\s!Serif]
+        \definefontsynonym [\s!SerifBold]       [\s!file:newcm10-bold.otf]       [\s!features=\s!default,\s!fallbacks=\s!SerifBold]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:newcm10-bookitalic.otf] [\s!features=\s!default,\s!fallbacks=\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:newcm10-bolditalic.otf] [\s!features=\s!default,\s!fallbacks=\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [newcomputermodern-book] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:newcmsans10-book.otf]        [\s!features=\s!default,\s!fallbacks=\s!Sans]
+        \definefontsynonym [\s!SansBold]       [\s!file:newcmsans10-bold.otf]        [\s!features=\s!default,\s!fallbacks=\s!SansBold]
+        \definefontsynonym [\s!SansItalic]     [\s!file:newcmsans10-bookoblique.otf] [\s!features=\s!default,\s!fallbacks=\s!SansItalic]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:newcmsans10-boldoblique.otf] [\s!features=\s!default,\s!fallbacks=\s!SansBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [newcomputermodern-book] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!file:newcmmono10-book.otf]       [\s!features=\s!none,\s!fallbacks=\s!Mono]
+        \definefontsynonym [\s!MonoBold]       [\s!file:newcmmono10-bold.otf]       [\s!features=\s!none,\s!fallbacks=\s!MonoBold]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:newcmmono10-bookitalic.otf] [\s!features=\s!none,\s!fallbacks=\s!MonoItalic]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:newcmmono10-bolditalic.otf] [\s!features=\s!none,\s!fallbacks=\s!MonoBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math][newcomputermodern-book] [\s!name]
+      % \loadfontgoodies[newcomputermodern-math] ,\s!goodies=newcomputermodern-math
+        \definefontsynonym[\s!MathRoman]    [\s!file:newcmmath-book][\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][\s!file:newcmmath-book][\s!features={\s!math\mathsizesuffix,newcomputermodern-math-bold,mathextra}]
+    \stoptypescript
+
+    \starttypescript[newcomputermodern,newcomputermodern-book]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

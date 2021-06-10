@@ -274,12 +274,28 @@
      \frozen\instance\protected\defcsname\e!complete\e!listof#2\endcsname{\completelistofsynonyms[#1]}%
    \fi}
 
-\permanent\tolerant\protected\def\definesynonym[#1]#*[#2]#*[#3]%
+% \abbreviation[XXX][321]{321}{Three, Two, One} : optional sort key
+
+\permanent\tolerant\protected\def\definesynonym[#1]#*[#2]#*[#3]#*[#4]% [yes][abbreviation][FOO]{foo}{foo me}
   {\begingroup
    \edef\currentsynonymoption{#1}%
    \edef\currentsynonym{#2}%
    \edef\currentsynonymtag{#3}%
+   \edef\currentsynonymsortkey{#4}%
    \strc_synonyms_define_entry}
+
+% \installcorenamespace {synonymentry}
+%
+% \installsetuponlycommandhandler \??synonymentry {synonymentry}
+%
+% \permanent\tolerant\protected\def\setsynonym[#1]#*[#2]%
+%   {\begingroup
+%    \setupsynonymentry[#2]%
+%    \edef\currentsynonym       {#1}%
+%    \edef\currentsynonymoption {\synonymentryparameter\c!option}%
+%    \edef\currentsynonymtag    {\synonymentryparameter\c!tag}%
+%    \edef\currentsynonymsortkey{\synonymentryparameter\c!sortkey}%
+%    \strc_synonyms_define_entry{\synonymentryparameter\c!text}{\synonymentryparameter\c!meaning}}
 
 \def\strc_synonyms_define_entry#1#2%
   {\let\currentsimplelist\currentsynonym
@@ -305,6 +321,7 @@
             }%
             definition {%
                 tag     {\currentsynonymtag}%
+                sortkey {\currentsynonymsortkey}%
                 synonym {\m_synonyms_text}%
                 meaning {\m_synonyms_meaning}%
               % used    false

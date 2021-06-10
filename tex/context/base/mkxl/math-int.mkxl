@@ -57,11 +57,11 @@
      % none
    \fi}
 
-\letvalue{\??mathintegral      nolimits}\zerocount
-\letvalue{\??mathintegral displaylimits}\plusone
-\letvalue{\??mathintegral        limits}\plustwo
-\letvalue{\??mathintegral    autolimits}\plusthree
-\letvalue{\??mathintegral          none}\plusfour
+\letcsname\??mathintegral      nolimits\endcsname\zerocount
+\letcsname\??mathintegral displaylimits\endcsname\plusone
+\letcsname\??mathintegral        limits\endcsname\plustwo
+\letcsname\??mathintegral    autolimits\endcsname\plusthree
+\letcsname\??mathintegral          none\endcsname\plusfour
 
 \appendtoks
     \mathintlimitmode\executeifdefined{\??mathintegral\mathematicsparameter\s!integral}\zerocount

@@ -85,11 +85,12 @@
 
 \appendtoks
     \ifcstok{\mathdelimiterparameter\c!define}\v!yes
+        % we can intercept auto here
         \frozen\instance\setuevalue\currentmathdelimiter{\mathdelimiter[\currentmathdelimiter]}%
     \fi
 \to \everydefinemathdelimiter
 
-\permanent\tolerant\protected\def\mathdelimiter[#1]#*[#2]%
+\permanent\tolerant\protected\def\mathdelimiter[#1]#*[#2]% so not really used (for now)
   {\mathop
      {\edef\currentmathdelimiter{#1}%
       \iftok{#2}\emptytoks
@@ -118,7 +119,9 @@
         \mskip\p_rightoffset
       \fi}}
 
-\definemathdelimiter[integral][\c!symbol="222B]
+% \definemathdelimiter[integral][\c!symbol="222B]
+
+\permanent\protected\def\integral{\int\Umathadaptsize}
 
 % \setupmathdelimiter[integral][rightoffset=-3mu,exact=yes,factor=2]
 %

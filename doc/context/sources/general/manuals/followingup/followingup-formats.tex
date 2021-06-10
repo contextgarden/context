@@ -1,0 +1,272 @@
+% language=us
+
+\environment followingup-style
+
+\startcomponent  followingup-format
+
+\startchapter[title={The format file}]
+
+It is interesting when someone compares macro package and uses parameters like
+the size of a format file, the output of \type {\tracingall}, or startup time to
+make some point. The point I want to make here is that unless you know exactly
+what goes in a run that involves a real document, which can itself involve
+multiple runs, such a comparison is rather pointless.
+
+For instance, when you load few fonts, typeset one page and don't do anything
+that demands any processing or multiple runs, you basically don't measure
+anything. More interesting are the differences between 10 or 500 pages, a few
+font calls or tens of thousands, no color of extensive usage of color and other
+properties, interfacing, including inheritance of document constructs, etc. And
+even then, when comparing macro packages, it is kind of tricky to deduce much
+from what you observe. You really need to know what is going on inside and also
+how that relates to for instance adaptive font scaling. You can have a fast start
+up but if a users needs one tikz picture, loading that package alone will make
+you forget the initial startup time. You always pay a price for advanced features
+and integration. And we didn't even talk about the operating system caching
+files, running on a network share, sharing processors among virtual machines,
+etc.
+
+Pointless comparing is also true for looking at the log file when enabling \type
+{\tracingall}. When a macro package loads stuff at startup you can be sure that
+the log file is larger. When the first a font or language is loaded the first
+time, or maybe when math is set up there can be plenty of lines dumped. And, when
+a box is shown the configured depth and breadth really matter, and it might also
+be that the engine provides much more (verbose) detail. So, a comparison is again
+pointless.
+
+That brings us to the format file. When you make a \CONTEXT\ format with the
+English user interface, with interfacing being a feature that itself introduces
+overhead, the \LUATEX\ engine will show this at the end:
+
+\starttyping
+Beginning to dump on file cont-en.fmt
+ (format=cont-en 2021.6.9)
+48605 strings using 784307 bytes
+1050637 memory locations dumped; current usage is 414&523763
+44974 multiletter control sequences
+\font\nullfont=nullfont
+0 preloaded fonts
+\stoptyping
+
+The file itself is quite large: 11,129,903 bytes. However, it is actually much
+larger because the format file is compressed! The real size is 19.399.216. Not
+taking that into account when comparing the size of format files is kind of bad
+because compression directly relates to what resources a format uses and how
+usage is distributed over the available memory blobs. The \LUATEX\ engine does
+some optimizations and saves the data sparse but the more holes you create, the
+worse it gets. For instance, the large character vectors are compartmentalized in
+order to handle \UNICODE\ efficiently so the used memory relates to what you
+define: do you set up all catcodes or just a subset. Maybe you delay some
+initialization to after the format is loaded, in which case a smaller format file
+gets compensated by more memory usage and initializaton time afterwards. Maybe
+your temporary macros create holes in the token array. The memory that is
+configured in the configuration files also matter. Some memory blobs are saved at
+their configured size, others dismiss the top part that is not used when saving
+the format but allocate the lot when the format is loaded. That means that memory
+usage in for instance \LUATEX\ can be much larger than a format file suggests
+(keep in mind that a format file is basically a memory dump).
+
+Now, how does \LUAMETATEX\ compare to \LUATEX. Again we will look at the size of
+the format file, but you need to keep in mind that for various reasons the \LMTX\
+macros are somewhat more efficient than the \MKIV\ ones, in the meantime some new
+mechanism were added, which adds more \TEX\ and \LUA\ code, but I still expect
+(at least for now) a smaller format file. However when we create the format we
+see this (reformatted):
+
+\starttyping
+Dumping format 'cont-en.fmt 2021.6.9' in file 'cont-en.fmt':
+tokenlist compacted from 489733 to 488204 entries,
+1437 potentially aliased lua call/value entries,
+max string length 69, 16 fingerprint
++ 16 engine + 28 preamble
++ 836326 stringpool
++ 10655 nodes + 3905660 tokens
++ 705300 equivalents
++ 23072 math codes + 493024 text codes
++ 38132 primitives + 497352 hashtable
++ 4 fonts + 10272 math + 1008 language + 180 insert
++ 10305643 bytecodes
++ 12 housekeeping = 16826700 total.
+\stoptyping
+
+This looks quite different from the \LUATEX\ output. Here we report more detail:
+for each blob we mention the number of bytes used. The final result is a file
+that takes 16.826.700 bytes. That number should be compared with the 19.399.216
+for \LUATEX. So, we need less indeed. But, when we compress the \LUAMETATEX\
+format we get this: 5,913,932 which is much less than the 11,129,903 compressed
+size that the \LUATEX\ engine makes of it. One reason for using level 3 zip
+compression compression in \LUATEX\ is that (definitely when we started) it loads
+faster. It adds to creating the dump but doesn't really influence loading,
+although that depends a bit on the compiler used. It is not easy to see from
+these numbers what goes on, but when you consider the fact that we mostly store
+32 bit numbers it will also be clear that many can be zero or have two or three
+zero bytes. There's a lot of repetition involved!
+
+So let's look at some of these numbers. The mentioning of token list compaction
+relates to getting rid of holes in memory. Each token takes 8 bytes, 4 for the
+token identifier, internally called a cmd and chr, and 4 for a value like an
+integer or dimension value, or a glue pointer, or a pointer to a next token, etc.
+In our case compaction doesn't save that much.
+
+The mentioning of potentially aliased \LUA\ call|/|value entries is more a warning.
+Because the \LUA\ engine starts fresh each run, you cannot store its \quote
+{pointers} and because hashes are randomized this means that you need to delay
+initialization to startup time, definitely for function tokens.
+
+Strings in \TEX\ can be pretty long but in practice they aren't. In \CONTEXT\ the
+maximum string length is 69. This makes it possible to use one byte for
+registering the string length instead of four which saves quite a bit. Of course
+one large string will spoil this game.
+
+The fingerprint, engine, preamble and later housekeeping bytes can be neglected
+but the string pool not. These are the bytes that make up the strings. The bytes
+are stored in format but when loaded become dynamically allocated. The \LUATEX\
+engine and its successor don't really have a pool.
+
+Now comes a confusing number. There are not tens of thousands of nodes allocated.
+A node is just a pointer into a large array so actually node references are just
+indices. Their size varies from 2 slots to 25; the largest are par nodes, while
+shape nodes are allocated dynamically. So what gets reported are the number of
+bytes that a node takes. each node slot takes 8 bytes, so a glyph node of 12
+bytes takes 96 bytes, while a glue spec node (think skip registers) takes 5 slots
+or 40 bytes. These are amounts of memory that were not realistic when \TEX\ was
+written. For the record: in \LUATEX\ glue spec nodes are not shared, so we have
+many more.
+
+The majority of \TEX\ related dump data is for tokens, and here we need 3905660
+which means 488K tokens (each reported value also includes some overhead). The
+memory used for the table of equivalents makes for some 88K of them. This table
+relates to macros (their names and content). Keep in mind that (math) character
+references are also macros.
+
+The next sections that get loaded are math and text codes. These are the
+mentioned compartimized character properties. The number of math codes is not
+that large (because we delay much of math) but the text codes are plenty, think
+of lc, uc, sf, hj, catcodes, etc. Compared to \LUATEX\ we have more categories
+but use less space because we have an more granular storage model. Optimizing
+that bit really payed off.
+
+The way primitives and macro names get resolved is pretty much the same in all
+engines but by using the fact that we operate in 32 bit I could actually get rid
+of some parallel tables that handle saving and restore. Some optimizations relate
+to the fact that the register ranges are part of the game so basically we have
+some holes in there when they are not used. I guess this is why \ETEX\ uses a
+sparse model for the registers above 255. What also saved a lot is that we don't
+need to store font names, because these are available in another way; even in
+\LUATEX\ that takes a large, basically useless, chunk. The memory that a macro
+without parameters consumes is 8 bytes smaller and in \CONTEXT\ we have lots of
+these.
+We don't really store fonts, so that section is small, but we do store the math
+parameters, and there is not much we can save there. We also have more such
+parameters in \LUAMETATEX\ so there we might actually use more storage. The
+information related to languages is also minimal because patterns and exceptions
+are loaded at runtime. A new category (compared to \LUATEX) is inserts because in
+\LUAMETATEX\ we can use an alternative (not register based) variant. As you can
+see from the 180 bytes uses, indeed \CONTEXT\ uses that variant.
+
+That leaves a large block of more than 10 million bytes that relates to \LUA\
+bytecode. A large part of that is the huge \LUA\ character table that \CONTEXT\
+uses. The implementation of font handling also takes quite a bit and we're not
+even talking of all the auxiliary \LUA\ modules, \XML\ processing, etc. When
+\CONTEXT\ would load that on demand which is nearly always the format file would
+be much smaller but one would pay for it later. Loading the (some 600) \LUA\ byte
+code chunks takes of course some time as does initialization but not much.
+
+All that said, the reason why we have a large format file can be understood well
+if one considers what goes in there. The \CONTEXT\ format files for \PDFTEX\ and
+\XETEX\ are 3.3 and 4.7 MB each which is smaller but not that much when you
+consider the fact that there is no \LUA\ code stored and that there are less
+character tables and an \ETEX\ register model used. But a format file is not the
+whole story. Runtime memory usage also comes at a price.
+
+The current memory settings of \CONTEXT\ are as follows; these values get
+reported when a format has been generated and can be queried at runtime an any
+moment:
+
+\starttabulate[|l|r|r|r|r|]
+\BC           \BC       max \BC      min \BC      set \BC     stp \BC \NR
+\HL
+\BC string    \NC   2097152 \NC   150000 \NC   500000 \NC  100000 \NC \NR
+\BC pool      \NC 100000000 \NC 10000000 \NC 20000000 \NC 1000000 \NC \NR
+\BC hash      \NC   2097152 \NC   150000 \NC   250000 \NC  100000 \NC \NR
+\BC lookup    \NC   2097152 \NC   150000 \NC   250000 \NC  100000 \NC \NR
+\BC node      \NC  50000000 \NC  1000000 \NC  5000000 \NC  500000 \NC \NR
+\BC token     \NC  10000000 \NC  1000000 \NC 10000000 \NC  250000 \NC \NR
+\BC buffer    \NC 100000000 \NC  1000000 \NC 10000000 \NC 1000000 \NC \NR
+\BC input     \NC    100000 \NC    10000 \NC   100000 \NC   10000 \NC \NR
+\BC file      \NC      2000 \NC      500 \NC     2000 \NC     250 \NC \NR
+\BC nest      \NC     10000 \NC     1000 \NC    10000 \NC    1000 \NC \NR
+\BC parameter \NC    100000 \NC    20000 \NC   100000 \NC   10000 \NC \NR
+\BC save      \NC    500000 \NC   100000 \NC   500000 \NC   10000 \NC \NR
+\BC font      \NC    100000 \NC      250 \NC      250 \NC     250 \NC \NR
+\BC language  \NC     10000 \NC      250 \NC      250 \NC     250 \NC \NR
+\BC mark      \NC     10000 \NC       50 \NC       50 \NC      50 \NC \NR
+\BC insert    \NC       500 \NC       10 \NC       10 \NC      10 \NC \NR
+\stoptabulate
+
+The maxima is what can be used at most. Apart from the magic number 2097152 all
+these maxima can be bumped at compile time but if you need more, you might wonder
+of your approach to rendering makes sense. The minima are what always gets
+allocated, and again these are hard coded defaults. The size can be configured
+and is normally the same as the minima but we use larger values in \CONTEXT. The
+step is how much an initial memory blob will grow when more is needed than is
+currently available. The last four entries show that we don't start out with many
+fonts (especially when we use the \CONTEXT\ compact font model not that many are
+needed) and because \CONTEXT\ implements marks in a different way we actually
+don't need them. We do use the new insert properties storage model and for now
+the set sizes are enough for what we need.
+
+In practice a \LUAMETATEX\ run uses less memory than a \LUATEX\ one, not only
+because memory allocation is more dynamic, but also because of other
+optimizations. When the compact font model is used (something \CONTEXT) even less
+memory is needed. Even this claim should me made with care. Whenever I discuss
+the use of resources one needs to limit the conclusions to \CONTEXT. I can't
+speak for other macro packages simply because I don't know the internals and the
+design decisions made and their impact on the statistics. As a teaser I show the
+impact of some definitions:
+
+\starttyping
+\chardef     \MyFooA1234
+\Umathchardef\MyFooB"1 "0 "1234
+\Umathcode   1 2 3 4
+\def         \MyFooC{ABC}
+\def         \MyFooD#1{A#1C}
+\def         \MyFooE{\directlua{print("some lua")}}
+\stoptyping
+
+The stringpool grows because we store the names (here they are oq equal length).
+Only symbolic definitions bump the hashtable and equivalents. And with
+definitions that have text inside the number of bytes taken by tokens grows fast
+because every character in that linked list takes 8 bytes, 4 for the character
+with its catcode state and 4 for the link to the next token.
+
+\starttabulate[|l||||||]
+\BC                       \BC stringpool \BC tokens  \BC equivalents \BC hashtable \BC total    \NC \NR
+\HL
+\NC                       \NC 836408     \NC 3906124 \NC 705316      \NC 497396    \NC 16828987 \NC \NR
+\NC \type {\chardef}      \NC 836415     \NC 3906116 \NC 705324      \NC 497408    \NC 16829006 \NC \NR
+\NC \type {\Umathchardef} \NC 836422     \NC 3906116 \NC 705324      \NC 497420    \NC 16829025 \NC \NR
+\NC \type {\Umathcode}    \NC 836422     \NC 3906124 \NC 705324      \NC 497420    \NC 16829033 \NC \NR
+\NC \type {\def} (no arg) \NC 836429     \NC 3906148 \NC 705332      \NC 497428    \NC 16829080 \NC \NR
+\NC \type {\def} (arg)    \NC 836436     \NC 3906196 \NC 705340      \NC 497440    \NC 16829155 \NC \NR
+\NC \type {\def} (text)   \NC 836443     \NC 3906372 \NC 705348      \NC 497452    \NC 16829358 \NC \NR
+\stoptabulate
+
+So, every time a user wants some feature (some extra checking, a warning, color
+or font support for some element) that results in a trivial extension to the
+core, it can bump the size fo the format file more than you think. Of course when
+it leads to some overhaul sharing code can actually make the format shrink too. I
+hope it is clear now that there really is not much to deduce from the bare
+numbers. Just try to imagine what:
+
+\starttyping
+\definefilesynonym
+  [type-imp-newcomputermodern-book.mkiv]
+  [type-imp-newcomputermodern.mkiv]
+\stoptyping
+
+adds to the format. Convenience has a price.
+
+\stopchapter
+
+\stopcomponent

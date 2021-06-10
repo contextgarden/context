@@ -44,7 +44,7 @@
         \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none,\s!fallbacks=\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!math][dejavu][\s!name]
+    \starttypescript [\s!math][dejavu] [\s!name]
         \loadfontgoodies[dejavu-math]
         \definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=dejavu-math]
         \definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,dejavu-math-bold,mathextra},\s!goodies=dejavu-math]
@@ -83,10 +83,6 @@
 
     \starttypescript [\s!mono] [dejavu-condensed] [\s!name]
         \setups[\s!font:\s!fallback:\s!mono]
-      % \definefontsynonym [\s!Mono]           [\s!name:dejavusansmonocondensed]            [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonoboldcondensed]        [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonoobliquecondensed]     [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldobliquecondensed] [\s!features=\s!none]
         \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=dejavu-condensed-mono]
         \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=dejavu-condensed-mono]
         \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=dejavu-condensed-mono]
@@ -105,7 +101,6 @@
         \definetypeface [dejavu-condensed] [\s!rm] [\s!serif] [dejavu-condensed] [\s!default]
         \definetypeface [dejavu-condensed] [\s!ss] [\s!sans]  [dejavu-condensed] [\s!default]
         \definetypeface [dejavu-condensed] [\s!tt] [\s!mono]  [dejavu-condensed] [\s!default]
-      % \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [xits]             [\s!default] [\s!rscale=1.2]
         \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [dejavu]           [\s!default]
     \stoptypescript
 

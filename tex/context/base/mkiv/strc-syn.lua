@@ -193,9 +193,12 @@ function synonyms.prepare(data)
             local entry      = result[i]
             local definition = entry.definition
             if definition then
-                local tag = definition.tag
-                local key = tag ~= "" and tag or definition.synonym
-                entry.split = splitter(strip(key))
+                local srt = definition.sortkey or ""
+                local tag = definition.tag or ""
+                local key = (srt ~= "" and srt) or (tag ~= "" and tag) or definition.synonym
+                if key then
+                    entry.split = splitter(strip(key))
+                end
             end
         end
     end
@@ -310,6 +313,7 @@ implement {
                     { "tag" },
                     { "synonym" },
                     { "meaning" },
+                    { "sortkey" },
                     { "used", "boolean" }
                 }
             }

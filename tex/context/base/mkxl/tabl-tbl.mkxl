@@ -2162,6 +2162,23 @@
 % \ruledvbox{\starttabulate[|k8|]    \NC xxx \NC         \NR   \stoptabulate}
 % \ruledvbox{\starttabulate[|l|l|]   \NC xxx \NC xxx \NC \NR   \stoptabulate}
 
+% \enabletrackers[localanchor]
+%
+% \startoverlayMPgraphic{mp:whatever-6}
+%     draw anchorcell (1,1)       withpen pencircle scaled 1pt withcolor "blue" ;
+%     fill anchorspan (2,2) (3,5) withpen pencircle scaled 1pt withcolor "yellow" ;
+%     draw anchorcell (2,2)       withpen pencircle scaled 1pt withcolor "green" ;
+%     draw anchorcell (3,3)       withpen pencircle scaled 1pt withcolor "red" ;
+% \stopoverlayMPgraphic
+%
+% \starttabulate[synchronize=background,background=mp:whatever-6,format={|l|c|r|}]
+%     \NC test      \NC test      \NC test      \NC \NR
+%     \NC test      \NC test test \NC test      \NC \NR
+%     \NC test test \NC test      \NC test      \NC \NR
+%     \NC test      \NC test      \NC test      \NC \NR
+%     \NC test      \NC test      \NC test test \NC \NR
+% \stoptabulate
+
 \protected\def\tabl_tabulate_anchor_indeed
   {\edef\xanchor{\number\c_tabl_tabulate_column}%
    \edef\yanchor{\number\c_tabl_tabulate_nofrealrows}%

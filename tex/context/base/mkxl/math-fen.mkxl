@@ -15,6 +15,10 @@
 
 \unprotect
 
+% ignore missign right message, so we can have left extensibles (int or so)
+%
+% \mathdelimitersmode"20 (todo: flipbit)
+
 % maybe always "method=auto" for:
 %
 % \switchtobodyfont[cambria]
@@ -87,10 +91,10 @@
 
 \installcorenamespace {mathfencesize}
 
-\setvalue{\??mathfencesize  big}{1}
-\setvalue{\??mathfencesize  Big}{2}
-\setvalue{\??mathfencesize bigg}{3}
-\setvalue{\??mathfencesize Bigg}{4}
+\defcsname\??mathfencesize  big\endcsname{1}
+\defcsname\??mathfencesize  Big\endcsname{2}
+\defcsname\??mathfencesize bigg\endcsname{3}
+\defcsname\??mathfencesize Bigg\endcsname{4}
 
 \def\math_fenced_force_size#1#2%
   {\c_attr_mathsize\numexpr
@@ -268,6 +272,25 @@
     \enforced\let\fenced\math_fenced_fenced
 \to \everymathematics
 
+% integral experiment (but no scripts)
+%
+% \protected\def\math_fenced_fenced_simple#1%
+%   {\pushmacro\currentmathfence
+%    \edef\currentmathfence{#1}%
+%    \math_fenced_fenced_common
+%    \math_fenced_left
+%    \popmacro\currentmathfence
+%    \stopusemathstyleparameter}
+%
+% \immutable\protected\def\integral   {\math_fenced_fenced_simple{integral}}
+%
+% let's keep this weird hack:
+%
+% \mathdelimitersmode"20
+% \startformula
+%     x = \integral {\vrule height 20mm depth 18mm width 5mm}^^{2\,}__{2\,}
+% \stopformula
+
 % todo: | in mathmode letter
 %
 % \appendtoks
@@ -399,20 +422,20 @@
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
 \permanent\protected\def\installmathfencepair#1#2#3#4%
-  {\letcsname\??mathleft \normalmeaning#1\endcsname#2%
-   \letcsname\??mathright\normalmeaning#3\endcsname#4}
+  {\letcsname\??mathleft \normalmeaningless#1\endcsname#2%
+   \letcsname\??mathright\normalmeaningless#3\endcsname#4}
 
 \def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
 \def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
 \def\math_unknown_middle{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
 
-\letvalue{\??mathleft  \s!unknown}\math_unknown_left
-\letvalue{\??mathright \s!unknown}\math_unknown_right
-\letvalue{\??mathmiddle\s!unknown}\math_unknown_middle
+\letcsname\??mathleft  \s!unknown\endcsname\math_unknown_left
+\letcsname\??mathright \s!unknown\endcsname\math_unknown_right
+\letcsname\??mathmiddle\s!unknown\endcsname\math_unknown_middle
 
 \def\math_left
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -420,7 +443,7 @@
 
 \def\math_right
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -428,7 +451,7 @@
 
 \def\math_middle
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle
@@ -437,7 +460,7 @@
 \permanent\protected\def\lfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -446,7 +469,7 @@
 \permanent\protected\def\rfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -455,7 +478,7 @@
 \permanent\protected\def\mfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle
@@ -623,10 +646,10 @@
 
 \installcorenamespace{mathbig}
 
-\setvalue{\??mathbig1}{0.85}
-\setvalue{\??mathbig2}{1.15}
-\setvalue{\??mathbig3}{1.45}
-\setvalue{\??mathbig4}{1.75}
+\defcsname\??mathbig1\endcsname{0.85}
+\defcsname\??mathbig2\endcsname{1.15}
+\defcsname\??mathbig3\endcsname{1.45}
+\defcsname\??mathbig4\endcsname{1.75}
 
 \permanent\protected\def\choosemathbig#1#2% so we accept \big{||} as well
   {{\naturalhbox\bgroup
