@@ -11,15 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\enabletrackers[pages.timing]
+
+\enableexperiments[fonts.compact]
+
 \usemodule[s][math-characters]
 
-% context --jit --global --bodyfont=lucidaot --result=math-repertoire-lucidaot s-math-repertoire.mkiv
-% context --jit --global --bodyfont=cambria  --result=math-repertoire-cambria  s-math-repertoire.mkiv
-% context --jit --global --bodyfont=xits     --result=math-repertoire-xits     s-math-repertoire.mkiv
-% context --jit --global --bodyfont=modern   --result=math-repertoire-modern   s-math-repertoire.mkiv
-% context --jit --global --bodyfont=pagella  --result=math-repertoire-pagella  s-math-repertoire.mkiv
-% context --jit --global --bodyfont=termes   --result=math-repertoire-termes   s-math-repertoire.mkiv
-% context --jit --global --bodyfont=bonum    --result=math-repertoire-bonum    s-math-repertoire.mkiv
+% context --global --bodyfont=lucidaot --result=math-repertoire-lucidaot s-math-repertoire.mkiv
+% context --global --bodyfont=cambria  --result=math-repertoire-cambria  s-math-repertoire.mkiv
+% context --global --bodyfont=xits     --result=math-repertoire-xits     s-math-repertoire.mkiv
+% context --global --bodyfont=modern   --result=math-repertoire-modern   s-math-repertoire.mkiv
+% context --global --bodyfont=pagella  --result=math-repertoire-pagella  s-math-repertoire.mkiv
+% context --global --bodyfont=termes   --result=math-repertoire-termes   s-math-repertoire.mkiv
+% context --global --bodyfont=bonum    --result=math-repertoire-bonum    s-math-repertoire.mkiv
 
 \startmodule[math-repertoire]
 
@@ -232,12 +236,12 @@
           \setbox\scratchbox\hbox to \scratchdimen{\hss\charactercolor\char#2}%
           \backgroundline[backgroundcolorx]{\box\scratchbox}%
         \else
-          \setbox\scratchbox\hbox to 1em{\hss\charactercolor\char#2}%
+          \setbox\scratchbox\hbox to \emwidth{\hss\charactercolor\char#2}%
           \scratchdimen\wd\scratchbox
           \backgroundline[backgroundcolory]{\box\scratchbox}%
         \fi\fi
         \hskip-\scratchdimen
-        \baselinecolor\vrule width \scratchdimen height .05ex depth .05ex
+        \baselinecolor\vrule width \scratchdimen height .05\exheight depth .05\exheight
         \endgroup}%
    \fi}
 
@@ -265,7 +269,8 @@
 
 \unexpanded\def\showmathcharacterssetbodyfonts#1%
   {\edef\showmathcharactersbodyfonts{#1}%
-   \def\doshowmathcharacterssetbodyfonts##1{\setupbodyfont[##1,12pt]}% \usebodyfont[##1,12pt]%
+%    \def\doshowmathcharacterssetbodyfonts##1{\setupbodyfont[##1,12pt]}% \usebodyfont[##1,12pt]%
+   \def\doshowmathcharacterssetbodyfonts##1{\usebodyfont[##1,12pt]}%
    \processcommacommand[\showmathcharactersbodyfonts]\doshowmathcharacterssetbodyfonts}
 
 \unexpanded\def\showmathcharactersbodyfontschars#1%
@@ -278,7 +283,8 @@
    \startstandardmakeup % we use baselinecolor so that we have a transparency on page 1
      \setupalign[middle]
      \vfil
-     \dontleavehmode \scale[height=.3\textheight]{\strut\color[textcolor]{\fontclass}}
+%      \dontleavehmode \scale[height=.3\textheight]{\strut\color[textcolor]{\fontclass}}
+     \dontleavehmode \scale[width=.75\textwidth]{\strut\color[textcolor]{\fontclass}}
      \vfil
      \dontleavehmode \scale[height=.1\textheight]{\strut\color[baselinecolor]{\currentdate}}
      \vfil
@@ -326,10 +332,10 @@
      [page]
      [preset=leftbottom,offset=5mm]
      {\somedata[align=normal,width=5cm]
-        {\strut width \hfill \the\dimexpr#1sp\par
-         \strut height\hfill \the\dimexpr#2sp\par
-         \strut depth \hfill \the\dimexpr#3sp\par
-         \strut italic\hfill \the\dimexpr#4sp}}}
+        {\strut width \hfill \the\dimexpr#1\scaledpoint\par
+         \strut height\hfill \the\dimexpr#2\scaledpoint\par
+         \strut depth \hfill \the\dimexpr#3\scaledpoint\par
+         \strut italic\hfill \the\dimexpr#4\scaledpoint}}}
 
 \unexpanded\def\showmathcharactersentryresource#1%
   {} % {virtual: #1\par}
@@ -346,13 +352,13 @@
   {\egroup\egroup}
 
 \unexpanded\def\showmathcharactersnextentry#1#2#3%
-  {\ifnum#1>1 \vskip1ex \fi
+  {\ifnum#1>1 \vskip\exheight \fi
    \dontleavehmode\somedata
      [align=normal,width=4cm]
      {\strut\showmathcharacterstxt{#2}\hfill\showmathcharacterschr{2}{#3}}\par}
 
 \unexpanded\def\showmathcharactersnextcycle#1%
-  {\ifnum#1>1 \vskip1ex \fi
+  {\ifnum#1>1 \vskip\exheight \fi
    \dontleavehmode\somedata
      [align=normal,width=4cm]
      {\strut\showmathcharacterstxt{cycle}}\par}
@@ -372,13 +378,13 @@
      \bgroup\hbox\bgroup}
 
 \unexpanded\def\showmathcharactersvvariantsentry#1#2#3%
-  {\ifnum#1>1 \vskip1ex \fi
+  {\ifnum#1>1 \vskip\exheight \fi
    \dontleavehmode\somedata
      [align=middle,width=4cm]
      {\strut\showmathcharacterstxt{#2}\hfilll\showmathcharacterschr{2}{#3}}}
 
 \unexpanded\def\showmathcharactershvariantsentry#1#2#3%
-  {\ifnum#1>1 \hskip1ex \else \dontleavehmode \fi
+  {\ifnum#1>1 \hskip\exheight \else \dontleavehmode \fi
    \somedata
      [align={none,middle},height=2cm]
      {\strut\showmathcharacterstxt{#2}\vfilll\showmathcharacterschr{2}{#3}}}
@@ -428,7 +434,7 @@
   {\egroup\egroup}
 
 \unexpanded\def\showmathcharacterslookupvariant#1#2#3#4%
-  {\ifnum#1>1 \vskip1ex \fi
+  {\ifnum#1>1 \vskip\exheight \fi
    \somedata
      [align=normal,width=7cm]
      {\showmathcharacterstxt{#4:} \showmathcharacterstxt{#2}\hfill\showmathcharacterschr{4}{#3}}}
@@ -453,28 +459,31 @@
 
 \continueifinputfile{s-math-repertoire.mkiv}
 
-\showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+% \showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+% \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+\showmathcharacterssetbodyfonts{newcomputermodern-book,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
 
 \starttext
 
     \doifelse {\getdocumentargument{bodyfont}} {} {
 
-      % \setupbodyfont[cambria,   12pt]
-      % \setupbodyfont[modern,    12pt]
-      % \setupbodyfont[lmvirtual, 12pt]
-      % \setupbodyfont[pxvirtual, 12pt]
-      % \setupbodyfont[txvirtual, 12pt]
-      % \setupbodyfont[palatino,  10pt]
-      % \setupbodyfont[mathtimes, 12pt]
-      % \setupbodyfont[stix,      12pt]
-      % \setupbodyfont[xits,      12pt]
-      % \setupbodyfont[lucida,    12pt]
-      % \setupbodyfont[lucidaot,  12pt]
-      % \setupbodyfont[pagella,   12pt]
-      % \setupbodyfont[bonum,     12pt]
-      % \setupbodyfont[schola,    12pt]
-      % \setupbodyfont[dejavu,    12pt]
-        \setupbodyfont[lucidaot,  12pt]
+      % \setupbodyfont[cambria,                12pt]
+      % \setupbodyfont[modern,                 12pt]
+      % \setupbodyfont[lmvirtual,              12pt]
+      % \setupbodyfont[pxvirtual,              12pt]
+      % \setupbodyfont[txvirtual,              12pt]
+      % \setupbodyfont[palatino,               10pt]
+      % \setupbodyfont[mathtimes,              12pt]
+      % \setupbodyfont[stix,                   12pt]
+      % \setupbodyfont[xits,                   12pt]
+      % \setupbodyfont[lucida,                 12pt]
+      % \setupbodyfont[lucidaot,               12pt]
+      % \setupbodyfont[pagella,                12pt]
+      % \setupbodyfont[bonum,                  12pt]
+      % \setupbodyfont[schola,                 12pt]
+      % \setupbodyfont[dejavu,                 12pt]
+      % \setupbodyfont[lucidaot,               12pt]
+        \setupbodyfont[newcomputermodern-book, 12pt]
 
     } {
 

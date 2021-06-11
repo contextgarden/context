@@ -121,7 +121,9 @@
 
 % \definemathdelimiter[integral][\c!symbol="222B]
 
-\permanent\protected\def\integral{\int\Umathadaptsize}
+\permanent\protected\def\integral{\int\Umathadapttoright}
+
+\aliased\let\Umathadaptsize\Umathadapttoright
 
 % \setupmathdelimiter[integral][rightoffset=-3mu,exact=yes,factor=2]
 %

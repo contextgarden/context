@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-06-10 23:09
+-- merge date  : 2021-06-11 17:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -15215,8 +15215,8 @@ local function mergecomposites(glyphs,shapes)
       local y=p[2]
       nofpoints=nofpoints+1
       points[nofpoints]={
-       xscale*x+xrotate*y+xoffset,
-       yscale*y+yrotate*x+yoffset,
+       xscale*x+yrotate*y+xoffset,
+       xrotate*x+yscale*y+yoffset,
        p[3]
       }
      end

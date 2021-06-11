@@ -136,8 +136,10 @@ local function mergecomposites(glyphs,shapes)
                         local y = p[2]
                         nofpoints = nofpoints + 1
                         points[nofpoints] = {
-                            xscale * x + xrotate * y + xoffset,
-                            yscale * y + yrotate * x + yoffset,
+--                             xscale * x + xrotate * y + xoffset,
+--                             yscale * y + yrotate * x + yoffset,
+                            xscale * x + yrotate * y + xoffset,
+                            xrotate * x + yscale * y + yoffset,
                             p[3]
                         }
                     end

@@ -1,0 +1,50 @@
+if not modules then modules = { } end modules ['math-fnt'] = {
+    version   = 1.001,
+    comment   = "companion to math-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nuts       = nodes.nuts
+local tonut      = nodes.tonut
+local tonode     = nodes.tonode
+local nodepool   = nuts.pool
+
+local vlist_code = nodes.nodecodes.vlist
+
+local new_hlist  = nodepool.hlist
+local new_vlist  = nodepool.vlist
+local new_glyph  = nodepool.glyph
+
+local getattrlst = nuts.getattributelist
+local setattrlst = nuts.setattributelist
+local setwhd     = nuts.setwhd
+local getwhd     = nuts.getwhd
+local getid      = nuts.getid
+
+local chardata   = fonts.hashes.characters
+
+local function register_extensible(font,char,style,box)
+    local bx = tonut(box)
+    nodes.handlers.finalizelist(bx)
+    local id = getid(bx)
+    local al = getattrlst(bx)
+    local wd, ht, dp = getwhd(bx)
+    local private = fonts.helpers.setboxdirectly(font,chardata[font][char].unicode or char,box)
+    local g = new_glyph(font,private)
+    setattrlst(g,al)
+    local n = new_hlist(g)
+    setwhd(n,wd,ht,dp)
+    setattrlst(n,al)
+    if id == vlist_code then
+        h = new_vlist(n)
+        setwhd(n,wd,ht,dp)
+        setattrlst(n,al)
+    end
+    return tonode(n)
+end
+
+experiments.register("math.extensibles", function(v)
+    callback.register("register_extensible", v and register_extensible or nil)
+end)

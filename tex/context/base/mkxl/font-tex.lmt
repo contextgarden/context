@@ -84,6 +84,30 @@ local function setboxglyph(specification)
     end
 end
 
+function fonts.helpers.setboxdirectly(font,unicode,box) -- hash based on wd/ht/dp
+    if box then
+        local tfmdata      = fontdata[font]
+        local glyphboxes   = (tfmdata.glyphboxes or 0) + 1
+        tfmdata.glyphboxes = glyphboxes
+        local private      = newprivateslot(formatters["BG:%05X"](glyphboxes))
+        local newdata      = {
+            width   = box.width  or 0,
+            height  = box.height or 0,
+            depth   = box.depth  or 0,
+            unicode = unicode,
+            objnum  = tex.saveboxresource(box,nil,nil,true),
+        }
+        local specification = {
+            code = newdata
+        }
+        tfmdata.characters[private] = newdata
+        addcharacters(font, { characters = { [private] = newdata } })
+        fonts.dropins.swapone("box",tfmdata,specification,private)
+        checkenabled()
+        return private
+    end
+end
+
 local boxes = table.setmetatableindex("table")
 
 function fonts.helpers.registerglyphbox(specification)

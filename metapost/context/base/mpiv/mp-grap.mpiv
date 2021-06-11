@@ -36,7 +36,7 @@ fi ;
 % Macros for drawing graphs
 
 % begingraph(width,height)       begin a new graph
-% setcoords(xtype,ytype)         sets up a new coordinate system (log,-linear..)
+% setcoords(xtype,ytype)         sets up a new coordinate system (logarithmic,-linear..)
 % setrange(lo,hi)                set coord ranges (numeric and string args OK)
 % gdraw <file or path> [with...] draw a line in current coord system
 % gfill <file or path> [with...] fill a region using current coord system
@@ -221,7 +221,7 @@ enddef ;
 %   an offset to graph_modified_lower and graph_modified_higher to ease computing exponents
 % Some additional variables function as constants.  Most can be modified by the
 % user to alter the behavior of these macros.
-% Not very modifiable :  log, linear,
+% Not very modifiable :  logarithmic, linear,
 %                        graph_frame_pair_a, graph_frame_pair_b, graph_margin_pair
 % Modifiable :           graph_template.suffix,
 %                        graph_log_marks[], graph_lin_marks, graph_exp_marks,
@@ -229,8 +229,8 @@ enddef ;
 %                        graph_log_minimum, Autoform
 
 
-newinternal log, linear ;        % coordinate system codes
-log :=1 ; linear :=2;
+newinternal logarithmic, linear ;        % coordinate system codes
+logarithmic :=1 ; linear :=2;
 
 % note that mp-tool.mpiv defines log as log10.
 
@@ -240,10 +240,10 @@ log :=1 ; linear :=2;
 % to setcoords.
 % `Internal graph coordinates' are used for graph_current_graph, graph_current_bb, Z_.low, Z_.high.
 % Their meaning depends on the appropriate component of Z_.graph_coordinate_type :
-%     log means internal graph coords =  mlog(user graph coords)
-%    -log means internal graph coords = -mlog(user graph coords)
-%  linear means internal graph coords =      (user graph coords)
-% -linear means internal graph coords =     -(user graph coords)
+%  logarithmic means internal graph coords =  mlog(user graph coords)
+% -logarithmic means internal graph coords = -mlog(user graph coords)
+%  linear      means internal graph coords =      (user graph coords)
+% -linear      means internal graph coords =     -(user graph coords)
 
 
 vardef graph_set_default_bounds =         % Set default Z_.low, Z_.high
@@ -396,23 +396,23 @@ vardef graph_set_bounds@#(expr l, h) =
      @#low  = if unknown l :
                 whatever
               else :
-                if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
+                if abs @#graph_coordinate_type=logarithmic : graph_mlog fi if string l : scantokens fi l
               fi ;
      @#high = if unknown h :
                 whatever
               else :
-                if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
+                if abs @#graph_coordinate_type=logarithmic : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
     -@#high = if unknown l :
                 whatever
               else :
-                if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
+                if abs @#graph_coordinate_type=logarithmic : graph_mlog fi if string l : scantokens fi l
               fi ;
     -@#low  = if unknown h :
                 whatever
               else :
-                if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
+                if abs @#graph_coordinate_type=logarithmic : graph_mlog fi if string h : scantokens fi h
               fi ;
   fi
 enddef ;
@@ -451,8 +451,8 @@ vardef graph_convert_user_path_to_internal primary p =
   if known p :
     graph_scan_path(p,
       (abs X_.graph_coordinate_type<>linear) or (abs Y_.graph_coordinate_type<>linear),
-      if abs X_.graph_coordinate_type=log : graph_mlog fi,
-      if abs Y_.graph_coordinate_type=log : graph_mlog fi)
+      if abs X_.graph_coordinate_type=logarithmic : graph_mlog fi,
+      if abs Y_.graph_coordinate_type=logarithmic : graph_mlog fi)
       transformed  (identity
         if X_.graph_coordinate_type<0 : xscaled -1 fi
         if Y_.graph_coordinate_type<0 : yscaled -1 fi)
@@ -928,7 +928,7 @@ Ten_to3 =  1000 ;
 Ten_to4 = 10000 ;
 
 % Determine the X_ or Y_ bounds on the range to be covered by automatic grid
-% marks.  Suffix @# is X_ or Y_.  The result is log or linear to specify the
+% marks.  Suffix @# is X_ or Y_.  The result is logarithmic or linear to specify the
 % type of grid spacing to use.  Bounds are returned in variables local to
 % begingraph..endgraph : pairs graph_modified_lower and graph_modified_higher
 %  are upper and lower bounds in
@@ -940,10 +940,10 @@ vardef graph_bounds@# =
   save l, h ;
   graph_set_default_bounds ;
   if @#graph_coordinate_type>0 : (l,h) else : -(h,l) fi = (@#low, @#high) ;
-  if abs @#graph_coordinate_type=log :
+  if abs @#graph_coordinate_type=logarithmic :
     graph_modified_lower  := graph_Meform(l)+graph_modified_bias ;
     graph_modified_higher := graph_Meform(h)+graph_modified_bias ;
-    if h-l >= graph_log_minimum : log else : linear fi
+    if h-l >= graph_log_minimum : logarithmic else : linear fi
   else :
     graph_modified_lower  := graph_Feform(l)+graph_modified_bias ;
     graph_modified_higher := graph_Feform(h)+graph_modified_bias ;
@@ -1072,7 +1072,7 @@ enddef ;
 
 def auto suffix $ =
   hide(def graph_comma= hide(def graph_comma=,enddef) enddef)
-  if graph_bounds.graph_suffix($)=log :
+  if graph_bounds.graph_suffix($)=logarithmic :
     if graph_select_exponent_mark.graph_exponent :
       graph_generate_exponents(graph_exponent,
         graph_comma graph_factor_and_exponent_to_string(1,e))

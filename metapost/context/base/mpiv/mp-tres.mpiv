@@ -106,9 +106,7 @@ vardef projection primary t =
      fi)
 enddef ;
 
-%D This overloads the plain macro \type {abs} (being \type {length}):
-
-vardef abs primary p =
+vardef Abs primary p =
     if triplet p :
         sqrt((Xpart p)**2+(Ypart p)**2+(Zpart p)**2)
     else :

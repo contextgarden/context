@@ -77,6 +77,7 @@
 \registerctxluafile{math-fbk}{}
 \registerctxluafile{math-dir}{}
 \registerctxluafile{math-spa}{}
+\registerctxluafile{math-fnt}{autosuffix}
 
 %D A starter:
 %D

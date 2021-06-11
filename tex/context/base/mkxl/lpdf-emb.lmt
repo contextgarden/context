@@ -271,9 +271,9 @@ end
         if minindex > maxindex then
             minindex = maxindex
         end
-        if next(copies) then
-            inspect(copies)
-        end
+     -- if next(copies) then
+     --     inspect(copies)
+     -- end
         return indices, copies, minindex, maxindex
     end
 

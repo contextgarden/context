@@ -42,7 +42,6 @@ local fontdata             = fonthashes.identifiers
 local fontcharacters       = fonthashes.characters
 
 local currentfont          = font.current
-local addcharacters        = font.addcharacters
 
 local definers             = fonts.definers
 local helpers              = fonts.helpers

@@ -30,6 +30,8 @@ local implement    = interfaces.implement
 
 local actions = tasks.actions("shipouts")
 
+handlers.finalizelist = actions
+
 function handlers.finalizebox(box)
     actions(getbox(box)) -- nut
 end
