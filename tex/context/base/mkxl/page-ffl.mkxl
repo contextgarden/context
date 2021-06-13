@@ -71,10 +71,10 @@
 \setupfacingfloat
   [\c!spaceinbetween=\v!big,
    \c!inbetween={\blank[\v!big]},
-   \c!width=\v!fit,
+  %\c!page=\v!left, % not used
   %\c!style,
   %\c!color,
-   \c!page=\v!left]
+   \c!width=\v!fit]
 
 \appendtoks
     \ifempty\currentfacingfloatparent
@@ -91,44 +91,88 @@
 
 \let\m_strc_floats_state\relax
 
-\permanent\protected\def\strc_floats_facing_flush
+% \permanent\protected\def\strc_floats_facing_flush
+%   {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
+%      \ifodd\c_strc_floats_facing_flushed
+%        \ifodd\realpageno
+%          \strc_floats_facing_flush_indeed
+%          \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
+%        \fi
+%      \else
+%        \ifodd\realpageno\else
+%          \strc_floats_facing_flush_indeed
+%          \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
+%        \fi
+%      \fi
+%    \fi}
+%
+% \permanent\protected\def\strc_floats_facing_flush_indeed
+%   {\global\advance\c_strc_floats_facing_flushed\plusone
+%    \floatingpenalty\zerocount
+%    \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
+%      \forgetall
+%      \ifconditional\c_page_one_top_of_insert
+%        \ifconditional\c_page_one_correct_top_insert
+%          \topskipcorrection % [xx] new: see icare topbleed
+%          \kern-\lineskip
+%          \par
+%          \prevdepth\maxdimen
+%        \fi
+%      \fi
+%      \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
+%      \vkern\s_page_one_between_top_insert
+%    \egroup
+%    \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
+%      \global\c_strc_floats_facing_saved  \zerocount
+%      \global\c_strc_floats_facing_flushed\zerocount
+%      \resetboxesincache{\currentfacingfloat}%
+%    \fi}
+%
+% \aliased\let\flushfacingfloats\strc_floats_facing_flush
+
+
+% \let\page_check_weird_page\relax
+
+\def\page_check_weird_page_indeed % for now only when facing floats
+  {\ifdim\vsize>\zeropoint\else
+      %\showmessage\m!layouts9{}%
+      \writestatus\m!layouts{forcing zero height page}%
+      \emptyhbox\page
+   \fi}
+
+\permanent\protected\def\flushfacingfloats
   {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
-     \ifodd\c_strc_floats_facing_flushed
-       \ifodd\realpageno
-         \strc_floats_facing_flush_indeed
-         \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
-       \fi
-     \else
-       \ifodd\realpageno\else
-         \strc_floats_facing_flush_indeed
-         \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
-       \fi
-     \fi
+      \strc_floats_facing_flush_indeed
    \fi}
 
 \permanent\protected\def\strc_floats_facing_flush_indeed
-  {\global\advance\c_strc_floats_facing_flushed\plusone
-   \floatingpenalty\zerocount
-   \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
-     \forgetall
-     \ifconditional\c_page_one_top_of_insert
-       \ifconditional\c_page_one_correct_top_insert
-         \topskipcorrection % [xx] new: see icare topbleed
-         \kern-\lineskip
-         \par
-         \prevdepth\maxdimen
-       \fi
-     \fi
-     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
-     \vkern\s_page_one_between_top_insert
-   \egroup
-   \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
-     \global\c_strc_floats_facing_saved  \zerocount
-     \global\c_strc_floats_facing_flushed\zerocount
-     \resetboxesincache{\currentfacingfloat}%
-   \fi}
+  {\begingroup
+   \glet\page_check_weird_page\page_check_weird_page_indeed % for now only when facing floats
+   \dorecurse\c_strc_floats_facing_saved
+     {\scratchdimen\getboxhtfromcache{\currentfacingfloat}{\recurselevel}\relax
+      \advance\scratchdimen\lineheight % this will become configurable, maybe some criterium
+      \normalexpanded{\adaptlayout[\the\numexpr\realpageno+\recurselevel\relax][\c!top=\the\scratchdimen]}}%
+   \glet\page_otr_flush_top_content\page_otr_flush_top_content_waiting % not at current page
+   \endgroup}
 
-\aliased\let\flushfacingfloats\strc_floats_facing_flush
+\let\page_otr_flush_top_content\relax
+
+\def\page_otr_flush_top_content_waiting
+  {\glet\page_otr_flush_top_content\page_otr_flush_top_content_inject} % but in next page
+
+\def\page_otr_flush_top_content_inject
+  {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
+     \global\advance\c_strc_floats_facing_flushed\plusone
+     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
+     \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
+       \global\c_strc_floats_facing_saved  \zerocount
+       \global\c_strc_floats_facing_flushed\zerocount
+       \resetboxesincache{\currentfacingfloat}%
+       \glet\page_otr_flush_top_content\relax % till we're done
+     \fi
+     \nointerlineskip
+     \par
+   \fi}
 
 \protected\def\strc_floats_facing_setup
   {\edef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%
@@ -178,12 +222,6 @@
 
 \permanent\protected\def\startfacingfloat[#1]%
   {\begingroup
-   % todo: \usepageparameter
-%    \edef\p_page{\facingfloatparameter\c!page}%
-%    \ifempty\p_page\else
-%      \page[\p_page]%
-%    \fi
-   %
    \edef\currentfacingfloat{#1}%
    \edef\p_width{\facingfloatparameter\c!width}%
    \letfacingfloatparameter\c!width\v!fit

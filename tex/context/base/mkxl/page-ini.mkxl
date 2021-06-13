@@ -148,6 +148,8 @@
 %
 % \stoptext
 
+\ifdefined\page_check_weird_page \else \let\page_check_weird_page\relax \fi
+
 \def\page_otr_construct_and_shipout#1#2#3%
   {\forgetall
    \page_boxes_shipout{\page_boxes_constructed_page#1#2}% \hbox removed
@@ -162,7 +164,6 @@
    \strc_pagenumbers_increment_counters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
-   \page_otr_command_flush_facing_floats
    \page_floats_flush_page_floats % before postponed blocks
    \page_spread_flush % defined later
    \ifnum#3=\plusone
@@ -174,7 +175,8 @@
      \fi
    \else
      \page_postponed_blocks_flush
-   \fi}
+   \fi
+   \page_check_weird_page}
 
 % Can't we get rid of this hackery? It's used in some widgets
 % stuff so probably not.

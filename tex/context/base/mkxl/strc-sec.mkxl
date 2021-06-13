@@ -981,14 +981,12 @@
    \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
-   \ifempty\currentstructureplaceholder
-      \ifconditional\headisdisplay
-        \doubleexpandafter\ignorespaces
-      \else
-        \doubleexpandafter\ignorepars
-      \fi
+   \unless\ifempty\currentstructureplaceholder
+     \expandafter\strc_sectioning_placeholder
+   \orelse\ifconditional\headisdisplay
+     \expandafter\ignorespaces
    \else
-      \expandafter\strc_sectioning_placeholder
+     \expandafter\ignorepars
    \fi}
 
 %D \starttyping

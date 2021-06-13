@@ -989,10 +989,12 @@
 
 \installsetuponlycommandhandler \??adaptlayout {adaptlayout}
 
-\newdimen\d_page_adepts_pushed_text_height
-\newdimen\d_page_adepts_pushed_footer_height
-\newdimen\d_page_adepts_height
+\newdimen\d_page_adapts_pushed_text_height
+\newdimen\d_page_adapts_pushed_footer_height
+\newdimen\d_page_adapts_height
 \newdimen\d_page_adapts_delta
+
+\appendtoks \global\d_page_adapts_delta\zeropoint \to \everyshipout
 
 \permanent\protected\tolerant\def\adaptlayout[#1]#*[#2]%
   {\ifparameter#2\or
@@ -1008,34 +1010,37 @@
 \let\p_adapts_height\zeropoint
 \let\p_adapts_lines \zerocount
 
-\def\page_adapts_layout_indeed#1%
-  {\setupcurrentadaptlayout[\c!height=\zeropoint,\c!lines=\zerocount,#1]%
-   \page_adepts_push
+\def\page_adapts_layout_indeed#1% called often
+  {\setupcurrentadaptlayout[\c!height=\zeropoint,\c!lines=\zerocount,\c!top=\zeropoint,#1]%
+   \page_adapts_push
    \edef\p_adapts_height{\adaptlayoutparameter\c!height}%
    \edef\p_adapts_lines {\adaptlayoutparameter\c!lines}%
    \ifx\p_adapts_height\v!max
-     \global\d_page_adepts_height\footerheight
+     \global\d_page_adapts_height\footerheight
    \else
-     \global\d_page_adepts_height\dimexpr
+     \global\d_page_adapts_height\dimexpr
         \ifnum\p_adapts_lines=\zerocount
           \p_adapts_height
         \else
           \p_adapts_lines\openlineheight
         \fi
       \relax
-      \ifdim\d_page_adepts_height>\footerheight
-        \global\d_page_adepts_height\footerheight
+      \ifdim\d_page_adapts_height>\footerheight
+        \global\d_page_adapts_height\footerheight
       \fi
    \fi
-   \global\advance\textheight   \d_page_adepts_height
-   \global\advance\footerheight-\d_page_adepts_height
-   \showmessage\m!layouts1{\the\d_page_adepts_height,\the\realpageno}%
+%
+   \global\d_page_adapts_delta-\dimexpr\adaptlayoutparameter\c!top\relax
+%
+   \global\advance\textheight   \d_page_adapts_height
+   \global\advance\footerheight-\d_page_adapts_height
+   \showmessage\m!layouts1{\the\dimexpr\d_page_adapts_height,\the\realpageno}%
    % this will become a better one (do we need insert correction?)
    \page_otr_command_set_vsize
    %
    \page_backgrounds_recalculate
-   \glet\page_adepts_push\relax
-   \glet\page_adepts_pop\page_adepts_pop_indeed}
+   \glet\page_adapts_push\relax
+   \glet\page_adapts_pop\page_adapts_pop_indeed}
 
 % \def\page_adapts_check
 %   {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
@@ -1053,30 +1058,30 @@
      \gletcsname\??pageadaptations\the\realpageno\endcsname\relax
    \fi}
 
-\def\page_adepts_push_indeed
-  {\global\d_page_adepts_pushed_text_height  \textheight
-   \global\d_page_adepts_pushed_footer_height\footerheight}
+\def\page_adapts_push_indeed
+  {\global\d_page_adapts_pushed_text_height  \textheight
+   \global\d_page_adapts_pushed_footer_height\footerheight}
 
-\def\page_adepts_pop_indeed
-  {\global\textheight  \d_page_adepts_pushed_text_height
-   \global\footerheight\d_page_adepts_pushed_footer_height
+\def\page_adapts_pop_indeed
+  {\global\textheight  \d_page_adapts_pushed_text_height
+   \global\footerheight\d_page_adapts_pushed_footer_height
    \page_layouts_synchronize
-   \glet\page_adepts_push\page_adepts_push_indeed
-   \glet\page_adepts_pop\relax}
+   \glet\page_adapts_push\page_adapts_push_indeed
+   \glet\page_adapts_pop\relax}
 
 \appendtoks \page_adapts_check \to \everystarttext
 \appendtoks \page_adapts_reset \to \everyshipout
 
-\let\page_adepts_pop \relax
-\let\page_adepts_push\page_adepts_push_indeed
+\let\page_adapts_pop \relax
+\let\page_adapts_push\page_adapts_push_indeed
 
 \protected\def\page_adapts_synchronize % used elsewhere
-  {\page_adepts_pop
+  {\page_adapts_pop
    \page_adapts_check}
 
 \def\page_adapts_status_info % used elsewhere
-  {\ifrelax\page_adepts_pop \else
-     \space(adept: \the\d_page_adepts_height)\space
+  {\ifrelax\page_adapts_pop \else
+     \space(adept: \the\d_page_adapts_height)\space
    \fi
    \the\realpageno}
 

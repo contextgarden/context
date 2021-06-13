@@ -272,16 +272,27 @@
 
 \installcorenamespace{headplacementcheckhang}
 
-\setvalue{\??headplacementcheckhang\v!line   }{\strc_rendering_check_hang
-                                               \n_strc_rendering_hang_lines\zerocount}
-\setvalue{\??headplacementcheckhang\v!broad  }{\strc_rendering_check_hang
-                                               \getnoflines\d_strc_rendering_hang_height}
-\setvalue{\??headplacementcheckhang\v!fit    }{\strc_rendering_check_hang
-                                               \getrawnoflines\d_strc_rendering_hang_height}
-\setvalue{\??headplacementcheckhang\v!none   }{\n_strc_rendering_hang_lines\zerocount}
-\setvalue{\??headplacementcheckhang          }{\n_strc_rendering_hang_lines\zerocount}
-\setvalue{\??headplacementcheckhang\s!unknown}{\strc_rendering_check_hang
-                                               \n_strc_rendering_hang_lines\numexpr\headparameter\c!hang-\plusone\relax}
+\defcsname\??headplacementcheckhang\v!line\endcsname
+  {\strc_rendering_check_hang
+   \n_strc_rendering_hang_lines\zerocount}
+
+\defcsname\??headplacementcheckhang\v!broad\endcsname
+  {\strc_rendering_check_hang
+   \getnoflines\d_strc_rendering_hang_height}
+
+\defcsname\??headplacementcheckhang\v!fit\endcsname
+  {\strc_rendering_check_hang
+   \getrawnoflines\d_strc_rendering_hang_height}
+
+\defcsname\??headplacementcheckhang\v!none\endcsname
+  {\n_strc_rendering_hang_lines\zerocount}
+
+\defcsname\??headplacementcheckhang\endcsname
+  {\n_strc_rendering_hang_lines\zerocount}
+
+\defcsname\??headplacementcheckhang\s!unknown\endcsname
+  {\strc_rendering_check_hang
+   \n_strc_rendering_hang_lines\numexpr\headparameter\c!hang-\plusone\relax}
 
 \def\strc_rendering_initialize_line_hang
    {\ifconditional\headisdisplay
@@ -433,11 +444,11 @@
 
 \def\strc_rendering_define_placement_yes[#1][#2]%
   {\defineheadalternative[#1][\c!alternative=#2,\c!renderingsetup=\??headrenderings:\v!command]%
-   \setuvalue{\??headplacementalternative#1}##1##2}
+   \protected\defcsname\??headplacementalternative#1\endcsname##1##2}
 
 \def\strc_rendering_define_placement_nop[#1][#2]%
   {\defineheadalternative[#1][\c!alternative=#2,\c!renderingsetup=\??headrenderings:\v!command]%
-   \setuvalue{\??headplacementalternative#1}}
+   \protected\defcsname\??headplacementalternative#1\endcsname}
 
 % these can be used in setups:
 %
@@ -536,8 +547,7 @@
 %   {\hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}}
 
 \permanent\protected\def\fakeheadnumbercontent
-  {\edef\p_hidenumber{\headparameter\c!hidenumber}%
-   \ifx\p_hidenumber\v!yes\else
+  {\ifcstok{\headparameter\c!hidenumber}\v!yes\else
      \hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}%
    \fi}
 

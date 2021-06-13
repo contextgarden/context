@@ -937,6 +937,8 @@
 %D overload the the stored version .. eventually i will clear up the experimental
 %D mess.
 
+\ifdefined\page_otr_flush_top_content\else \let\page_otr_flush_top_content\relax \fi
+
 \protected\def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
   {\setbox#1\hpack to \makeupwidth
      {\hss                     % so don't change this
@@ -946,6 +948,7 @@
          \freezetextwidth
          \hsize\textwidth      % local variant of \sethsize  <<< in columns?
          \boxmaxdepth\maxdepth
+         \page_otr_flush_top_content
          \noindent             % content can be < \hsize
          \page_otr_command_package_contents#2#3}% this will vbox
       \hss}%

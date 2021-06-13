@@ -29,6 +29,7 @@
          \freezetextwidth
          \hsize\textwidth   % local variant of \sethsize
          \boxmaxdepth\maxdepth
+         \page_otr_flush_top_content
          \noindent          % content can be < \hsize
          \page_otr_command_package_contents#2#3}}%
    \dp#1\zeropoint

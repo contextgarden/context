@@ -294,7 +294,6 @@
 \definesystemconstant{page_otr_command_flush_all_floats}
 \definesystemconstant{page_otr_command_flush_margin_blocks}
 \definesystemconstant{page_otr_command_test_column}
-\definesystemconstant{page_otr_command_flush_facing_floats}
 
 \definesystemconstant{singlecolumn}
 \definesystemconstant{multicolumn}   % will move
@@ -323,8 +322,7 @@
    \s!page_otr_command_flush_saved_floats,
    \s!page_otr_command_flush_all_floats,
    \s!page_otr_command_flush_margin_blocks,
-   \s!page_otr_command_test_column,
-   \s!page_otr_command_flush_facing_floats]
+   \s!page_otr_command_test_column]
 
 \appendtoks
     \setupoutputroutine[\s!singlecolumn]%

@@ -515,7 +515,7 @@ end
 scripts.installmethod {
     name     = "hangul",
     injector = process,
-    datasets = { -- todo: metatables
+    datasets = { -- todo: metatables and maybe some stretch and shrink factor
         default = {
             inter_char_shrink_factor          = 0.50, -- of quad
             inter_char_stretch_factor         = 0.50, -- of quad
@@ -523,6 +523,15 @@ scripts.installmethod {
             inter_char_half_stretch_factor    = 0.50, -- of quad
             inter_char_quarter_shrink_factor  = 0.50, -- of quad
             inter_char_quarter_stretch_factor = 0.50, -- of quad
+            inter_char_hangul_penalty         =   50,
+        },
+        tight = {
+            inter_char_shrink_factor          = 0.10, -- of quad
+            inter_char_stretch_factor         = 0.10, -- of quad
+            inter_char_half_shrink_factor     = 0.10, -- of quad
+            inter_char_half_stretch_factor    = 0.10, -- of quad
+            inter_char_quarter_shrink_factor  = 0.10, -- of quad
+            inter_char_quarter_stretch_factor = 0.10, -- of quad
             inter_char_hangul_penalty         =   50,
         },
     },
