@@ -144,6 +144,7 @@
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='closed' value='closed'/>
+		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='colore'/>
 		<cd:variable name='column' value='colonna'/>
 		<cd:variable name='columns' value='colonne'/>
@@ -395,6 +396,7 @@
 		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='non'/>
 		<cd:variable name='notation' value='notation'/>
+		<cd:variable name='notcollapsed' value='notcollapsed'/>
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='nonsospeso'/>
 		<cd:variable name='nothyphenated' value='nonsillabato'/>
@@ -767,6 +769,7 @@
 		<cd:constant name='coupling' value='accoppiamento'/>
 		<cd:constant name='couplingway' value='modoaccoppiamento'/>
 		<cd:constant name='criterium' value='criterio'/>
+		<cd:constant name='crop' value='crop'/>
 		<cd:constant name='cropoffset' value='cropoffset'/>
 		<cd:constant name='crossreference' value='crossreference'/>
 		<cd:constant name='cssfile' value='cssfile'/>
@@ -1268,6 +1271,7 @@
 		<cd:constant name='symbolset' value='setsimboli'/>
 		<cd:constant name='symcolor' value='coloresimbolo'/>
 		<cd:constant name='symstyle' value='stilesimbolo'/>
+		<cd:constant name='synchronize' value='synchronize'/>
 		<cd:constant name='synonym' value='sinonimo'/>
 		<cd:constant name='synonymcolor' value='coloresinonimi'/>
 		<cd:constant name='synonymcommand' value='synonymcommand'/>

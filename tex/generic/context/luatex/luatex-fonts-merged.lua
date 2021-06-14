@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-06-13 19:18
+-- merge date  : 2021-06-14 17:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -15215,8 +15215,8 @@ local function mergecomposites(glyphs,shapes)
       local y=p[2]
       nofpoints=nofpoints+1
       points[nofpoints]={
-       xscale*x+yrotate*y+xoffset,
-       xrotate*x+yscale*y+yoffset,
+       xscale*x+xrotate*y+xoffset,
+       yscale*y+yrotate*x+yoffset,
        p[3]
       }
      end
@@ -36489,7 +36489,7 @@ local function getstreamhash(fontid)
  local fontdata=identifiers[fontid]
  if fontdata then
   local properties=fontdata.properties
-  return makehash(properties.filename,properties.subfont,properties.instance)
+  return makehash(properties.filename,properties.subfont,properties.instance),fontdata
  end
 end
 local function loadstreamdata(fontdata)

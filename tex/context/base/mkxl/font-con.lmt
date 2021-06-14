@@ -557,6 +557,9 @@ function constructors.scale(tfmdata,specification)
     --
     for unicode, character in next, characters do
         local chr, description, index
+
+        -- todo: add description entry to char entry instead of index ... saves elsewhere too
+
         if changed then
             local c = changed[unicode]
             if c and c ~= unicode then

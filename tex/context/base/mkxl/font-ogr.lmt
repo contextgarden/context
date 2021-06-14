@@ -38,7 +38,7 @@ otf.pngenabled    = true
 
 do
 
-    -- This is a prelude to something better but I'm still experimenting.
+    -- This is a prelude to something better but I'm still experimenting. We should delay more.
 
     local dropins     = { }
     fonts.dropins     = dropins
@@ -121,46 +121,6 @@ do
             -- error
         end
     end
-
---     function dropins.swap(method,tfmdata,shapes,...) -- by unicode
---         if method and shapes then
---             local characters   = tfmdata.characters
---             local descriptions = tfmdata.descriptions
---             local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
---             local idx  = 255
---             local slot = 0
---             -- we can have a variant where shaped are by unicode and not by index
---             for k, v in next, characters do
---                 local description = descriptions[k]
---                 if description then
---                     local shape = shapes[k]
---                     if shape then
---                         if idx >= 255 then
---                             idx = 1
---                             colrshapes = setmetatableindex({ },shapes)
---                             slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
---                             dropchars = tfmdrop.characters
---                             dropdescs = tfmdrop.descriptions
---                         else
---                             idx = idx + 1
---                         end
---                         colrshapes[idx] = shape -- so not: description
---                         -- todo: prepend
---                         v.commands = { { "slot", slot, idx } }
---                         -- hack to prevent that type 3 also gets 'use' flags .. todo
---                         local c = { commands = false, index = idx, dropin = tfmdrop }
---                         local d = { } -- index = idx, dropin = tfmdrop }
---                         setmetatableindex(c,v)
---                         setmetatableindex(d,description)
---                         dropchars[idx] = c
---                         dropdescs[idx] = d -- not needed
---                     end
---                 end
---             end
---         else
---             -- error
---         end
---     end
 
     function dropins.swap(method,tfmdata,shapes) -- by unicode
         if method and shapes then

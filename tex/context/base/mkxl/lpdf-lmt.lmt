@@ -7,17 +7,17 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
     license   = "see context related readme files"
 }
 
--- The code below was originally in back-lpd.lua but it makes more sense in
--- this namespace. I will rename variables.
---
--- There is no way that a lua based backend can compete with the original one
--- for relative simple text runs. And we're talking seconds here on say 500
--- pages with paragraphs alternativng between three fonts and colors. But such
+-- The code below was originally in back-lpd.lua but it makes more sense in this
+-- namespace. I will rename variables.
+
+-- There is no way that a lua based backend can compete performance wise with the
+-- original one for relative simple text runs. And we're talking seconds here on say
+-- 500 pages with paragraphs alternativng between three fonts and colors. But such
 -- documents are rare so in practice we are quite okay, especially because in
--- ConTeXt we can gain quite a bit elsewhere. So, when we loose 30% on such
--- simple documents, we break even on for instance the manual, and gain 30% on
--- Thomas's turture test (also for other reasons). But .. who knows what magic
--- I can cook up in due time.
+-- ConTeXt we can gain quite a bit elsewhere. So, when we loose 30% on such simple
+-- documents, we break even on for instance the manual, and gain 30% on Thomas's
+-- turture test (also for other reasons). But .. who knows what magic I can cook up
+-- in due time.
 
 -- If you consider this complex, watch:
 --
@@ -87,9 +87,11 @@ local properties     = fonthashes.properties
 
 local report         = logs.reporter("backend")
 local report_objects = logs.reporter("backend","objects")
+local report_fonts   = logs.reporter("backend","fonts")
 
-local trace_objects  = false  trackers.register("backend.objects", function(v) trace_objects = v end)
-local trace_details  = false  trackers.register("backend.details", function(v) trace_details = v end)
+local trace_objects  = false  trackers.register("backend.objects",       function(v) trace_objects = v end)
+local trace_details  = false  trackers.register("backend.details",       function(v) trace_details = v end)
+local trace_indices  = false  trackers.register("backend.fonts.details", function(v) trace_indices = v end)
 
 -- experiment:
 
@@ -186,16 +188,51 @@ local fontcharacters
 local fontdescriptions
 local fontparameters
 local fontproperties
-local usedcharacters = setmetatableindex("table")
 local pdfcharacters
+
+local getstreamhash = fonts.handlers.otf.getstreamhash
+
+local usedfontstreams = { }
+
+local usedindices = setmetatableindex(function(t,k)
+    local n = 0
+    local v = setmetatableindex(function(tt,kk)
+        if n >= 0xFFFF then
+            report_fonts("registering character index: overflow in hash %a, todo: use overflow font")
+        else
+            n = n + 1
+        end
+        if trace_indices then
+            report_fonts("registering character index: hash %a, charindex 0x%05X, slotindex 0x%04X",k,kk,n)
+        end
+        local vv = n
+        tt[kk] = vv
+        return vv
+    end)
+    t[k] = v
+    return v
+end)
+
+local usedcharacters = setmetatableindex(function(t,k)
+    local h, d = getstreamhash(k)
+    if trace_indices then
+        report_fonts("registering index table: hash %a, fontid %i",h,k)
+    end
+    usedfontstreams[h] = d
+    local v = usedindices[h]
+    t[k] = v
+    return v
+end)
+
+lpdf.usedfontstreams = usedfontstreams -- [streamhash]        -> fontdata
+lpdf.usedcharacters  = usedcharacters  -- [fontid]            -> indices
+lpdf.usedindices     = usedindices     -- [streamhash][index] -> realindex (can also be dupindex)
 
 local horizontalmode = true
 local scalefactor    = 1
 local threshold      = 655360
 local thresfactor    = 100
 local tjfactor       = 100 / 65536
-
-lpdf.usedcharacters = usedcharacters
 
 function flushers.updatefontstate(font)
     fontcharacters   = characters[font]
@@ -651,22 +688,15 @@ do
 
         cw = cw + naturalwidth[char] * tmef * f_x_scale
 
-        local index = data.index or char
+        local slot = pdfcharacters[data.index or char] -- registers usage
 
-        b = b + 1 ; buffer[b] = font > 0 and h_hex_4[index] or h_hex_2[index]
-
-        if not pdfcharacters[index] then
-            pdfcharacters[index] = true
-        end
+        b = b + 1 ; buffer[b] = font > 0 and h_hex_4[slot] or h_hex_2[slot]
 
     end
 
     flushers.fontchar = function(font,char,data)
         local dummy = usedfonts[font]
-        local index = data.index or char
-        if not pdfcharacters[index] then
-            pdfcharacters[index] = true
-        end
+        local slot  = pdfcharacters[data.index or char] -- registers usage
         return dummy
     end
 

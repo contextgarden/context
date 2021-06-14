@@ -70,7 +70,8 @@ local dimenfactors  = number.dimenfactors
 local bpfactor      = dimenfactors.bp
 local ptfactor      = dimenfactors.pt
 
-trackers.register("backend.pdf.fonts",function(v) trace_fonts = v end)
+trackers.register("backend.fonts",        function(v) trace_fonts   = v end)
+trackers.register("backend.fonts.details",function(v) trace_details = v end)
 
 local readers = fonts.handlers.otf.readers
 local getinfo = readers.getinfo
@@ -236,22 +237,19 @@ end
         return widths
     end
 
-    collectindices = function(descriptions,indices,used)
+    -- we need to go through indices because descriptions can be different (take
+    -- basemode remappings)
+
+    collectindices = function(descriptions,indices,used,hash)
         local minindex = 0xFFFF
         local maxindex = 0
         local reverse  = { }
         local copies   = { }
-        -- todo: already at definition time trigger copying streams
-        -- and add extra indices ... first i need a good example of
-        -- a clash
-     -- for unicode, data in next, descriptions do
-     --     local i = data.index or unicode
-     --     if reverse[i] then
-     --         print("CLASH")
-     --     else
-     --         reverse[i] = data
-     --     end
-     -- end
+        local include  = { }
+        local resolved = { }
+
+        setmetatable(used,nil) -- prevent more index allocations
+
         for unicode, data in next, descriptions do
             local index = data.index
             reverse[index or unicode] = data
@@ -259,22 +257,31 @@ end
                 copies[index] = data.dupindex
             end
         end
-        for index in next, indices do
-            if index > maxindex then
-                maxindex = index
+        for index, usedindex in next, indices do
+            if usedindex > maxindex then
+                maxindex = usedindex
             end
-            if index < minindex then
-                minindex = index
+            if usedindex < minindex then
+                minindex = usedindex
             end
-            indices[index] = reverse[index]
+            include[usedindex]  = copies[index] or index
+            resolved[usedindex] = reverse[index]
         end
         if minindex > maxindex then
             minindex = maxindex
         end
-     -- if next(copies) then
-     --     inspect(copies)
-     -- end
-        return indices, copies, minindex, maxindex
+        if trace_details then
+            report_fonts("embedded: hash %a, minindex %i, maxindex %i",hash,minindex,maxindex)
+            for k, v in sortedhash(include) do
+                local d = resolved[k]
+                if d.dupindex then
+                    report_fonts("  0x%04X : 0x%04X (duplicate 0x%05X)",k,v,d.index)
+                else
+                    report_fonts("  0x%04X : 0x%04X",k,v)
+                end
+            end
+        end
+        return resolved, include, minindex, maxindex
     end
 
     includecidset = false
@@ -712,9 +719,9 @@ do
         local indices          = details.indices
         local metabbox         = { fontheader.xmin, fontheader.ymin, fontheader.xmax, fontheader.ymax }
         local indices,
-              copies,
+              include,
               minindex,
-              maxindex         = collectindices(descriptions,indices,details.used)
+              maxindex         = collectindices(descriptions,indices,details.used,details.hash)
         local glyphstreams     = tablecreators.glyf(fontfile)
         local locations        = tablecreators.loca(fontfile)
         local horizontals      = tablecreators.hmtx(fontfile)
@@ -747,7 +754,7 @@ do
                 report_fonts("missing .notdef in font %a",basefontname)
             end
             -- todo: use a rep for h/v
-            for index=1,minindex-1 do
+            for index=1,minindex-1 do -- no needed in new low range
                 locations[index] = lastoffset
                 h = h + 1 ; horizontals[h] = zero4
                 if vertical then
@@ -755,17 +762,12 @@ do
                 end
             end
         end
+
         for index=minindex,maxindex do
             locations[index] = lastoffset
             local data = indices[index]
             if data then
-                local blob = blobs[index] -- we assume padding
-                if not blob then
-                    local copy = copies[index]
-                    if copy then
-                        blob = blobs[copy]
-                    end
-                end
+                local blob = blobs[include[index]] -- we assume padding
                 if blob and #blob > 0 then
                     g = g + 1 ; glyphstreams[g] = blob
                     h = h + 1 ; horizontals [h] = tocardinal2(data.width or 0)
@@ -790,6 +792,7 @@ do
                 end
             end
         end
+
         locations[maxindex+1] = lastoffset -- cf spec
         --
         local nofglyphs             = maxindex + 1 -- include zero
@@ -878,7 +881,7 @@ do
             StemV       = scale(stemv),
             XHeight     = scale(xheight),
             FontFile2   = pdfreference(pdfflushstreamobject(fontdata)),
-            CIDSet      = tocidset,
+--             CIDSet      = tocidset,
             Metadata    = fontmeta and pdfreference(pdfflushstreamobject(fontmeta)) or nil,
         }
         local parent = pdfdictionary {
@@ -1278,7 +1281,7 @@ do
              .. tocardinal2(0) -- first gid
              .. tocardinal1(0) -- fd index
              -- entry 2
---              .. tocardinal2(fontfile.sparsemax-1) -- sentinel
+          -- .. tocardinal2(fontfile.sparsemax-1) -- sentinel
              .. tocardinal2(fontfile.sparsemax) -- sentinel
             --
             fdselectoffset = todictoffset(offset)
@@ -1338,7 +1341,7 @@ do
         local blobs          = streams.streams
         local fontheader     = streams.fontheader
         local maximumprofile = streams.maximumprofile
-        local names          = streams.names
+        local names          = streams.names -- not used
         local descriptions   = details.rawdata.descriptions
         local metadata       = details.rawdata.metadata
         local indices        = details.indices
@@ -1357,13 +1360,12 @@ do
             correction   = correction * bpfactor / ptfactor
             metadata     = { }
         end
-
         --
-
         local indices,
-              copies,
+              include,
               minindex,
-              maxindex       = collectindices(descriptions,indices,details.used)
+              maxindex       = collectindices(descriptions,indices,details.used,details.hash)
+
         local streamoffset   = 0
         local glyphstreams,
               charmappings   = tablecreators.cff(fontfile)
@@ -1383,15 +1385,11 @@ do
         if minindex == 0 then
             minindex = 1
         end
+        --
         for index=minindex,maxindex do
-            if indices[index] then
-                local blob = blobs[index]
-                if not blob then
-                    local copy = copies[index]
-                    if copy then
-                        blob = blobs[copy]
-                    end
-                end
+            local idx = include[index]
+            if idx then
+                local blob = blobs[idx]
                 if not blob then
                     blob = "\14"
                 end
@@ -1437,7 +1435,7 @@ do
         if stemv then
             stemv = (stemv/65)^2 + 50
         else
--- stemv = 2
+         -- stemv = 2
         end
         --
         local function scale(n)
@@ -1855,6 +1853,10 @@ do
             end
         end
 
+        -- we register way too much ... we can delay the t3 definition
+
+        local usedcharacters = lpdf.usedcharacters
+
         function methods.color(filename,details)
             local colrshapes = details.properties.indexdata[1]
             local colrvalues = details.properties.indexdata[2]
@@ -1868,6 +1870,7 @@ do
                     local dropunits    = dropdata.parameters.units -- shared
                     local descriptions = dropdata.descriptions
                     local directcolors = registercolors(colrvalues)
+                    local fontslots    = usedcharacters[dropid]
                     usedfonts[dropid]  = dropid
                     local w = description.width or 0
                     local s = #colorlist
@@ -1888,10 +1891,14 @@ do
                         end
                         local e = descriptions[entry.slot]
                         if e then
-                            n = n + 1 ; t[n] = f_char(dropid,e.index)
+                            n = n + 1 ; t[n] = f_char(dropid,fontslots[e.index])
                         end
                     end
-                    return concat(t," "), w / dropunits
+                    -- we're not going to hash this ... could be done if needed (but who mixes different
+                    -- color schemes ...)
+                    t = concat(t," ")
+                 -- print(t)
+                    return t, w / dropunits
                 end
             end
             local function getresources()
@@ -1921,9 +1928,9 @@ do
             local factor      = parameters.factor -- normally 1
             local fontmatrix  = pdfarray { scalefactor, 0, 0, scalefactor, 0, 0 }
             local indices,
-                  copies,
+                  include,
                   minindex,
-                  maxindex    = collectindices(details.fontdata.characters,details.indices,details.used)
+                  maxindex    = collectindices(details.fontdata.characters,details.indices,details.used,details.hash)
             local widths      = pdfarray()
             local differences = pdfarray()
             local charprocs   = pdfdictionary()
@@ -1953,7 +1960,7 @@ do
 
             for index, data in sortedhash(indices) do
                 local name  = f_index(index)
-                local glyph = glyphs[index]
+                local glyph = glyphs[include[index]]
                 if glyph then
                     local stream, width = glyphtopdf(glyph,data)
                     if stream then
@@ -2078,6 +2085,12 @@ function lpdf.flushfonts()
 
     statistics.starttiming(objects)
 
+    -- We loop over used characters (old approach, when we wanted to be equivalent wrt
+    -- indices with luatex) but can also decide to use usedindices. However, we then
+    -- don't have the id.
+
+    -- we can combine the two for loops .. todo
+
     for fontid, used in sortedhash(lpdf.usedcharacters) do
 
      -- for a bitmap we need a different hash unless we stick to a fixed high
@@ -2132,8 +2145,8 @@ function lpdf.flushfonts()
             end
             if parent then
                 local indices = parent.indices
-                for k in next, used do
-                    indices[k] = true
+                for k, v in next, used do
+                    indices[k] = v
                 end
             end
         end
