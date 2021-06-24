@@ -183,26 +183,6 @@ end
 
 -- end of environment hack
 
-local execute = os.execute
-local iopopen = io.popen
-
-local function resultof(command)
-    local handle = iopopen(command,"rb") -- already has flush, b is new !
-    if handle then
-        local result = handle:read("*all") or ""
-        handle:close()
-        return result
-    else
-        return ""
-    end
-end
-
-os.resultof = resultof
-
-function os.pipeto(command)
-    return iopopen(command,"w") -- already has flush
-end
-
 if not io.fileseparator then
     if find(os.getenv("PATH"),";",1,true) then
         io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "windows"
@@ -219,6 +199,29 @@ if os.type == "windows" then
 else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
+
+local execute = os.execute
+local iopopen = io.popen
+local ostype  = os.type
+
+local function resultof(command)
+    -- already has flush, b is new and we need it to pipe xz output
+    local handle = iopopen(command,ostype == "windows" and "rb" or "r")
+    if handle then
+        local result = handle:read("*all") or ""
+        handle:close()
+        return result
+    else
+        return ""
+    end
+end
+
+os.resultof = resultof
+
+function os.pipeto(command)
+    return iopopen(command,"w") -- already has flush
+end
+
 
 local launchers = {
     windows = "start %s",

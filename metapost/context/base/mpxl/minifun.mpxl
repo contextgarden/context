@@ -24,7 +24,7 @@ permanent permanent, immutable, mutable, primitive, frozen ; % we reserve frozen
 
 newinternal boolean contextlmtxmode ; contextlmtxmode := true ; immutable contextlmtxmode ;
 
-input "mp-base.mpiv" ;
+input "mp-base.mpxl" ;
 input "mp-tool.mpxl" ;
 input "mp-luas.mpxl" ;
 input "mp-mlib.mpxl" ;

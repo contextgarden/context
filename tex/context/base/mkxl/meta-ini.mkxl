@@ -634,9 +634,9 @@
 
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
   {\begingroup                       % when there are that many they're probably not that unique anyway
-   \edef\currentmpcategory{#1}%
-   \extendMPoverlaystamp{#2}% incl prepare
-   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname
+ % \currentmpcategory already set
+   \extendMPoverlaystamp{#2}% incl prepare (maybe move to lua)
+   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname % todo: is now per instance !
      \lastnamedcs
    \else
      \meta_enable_include % redundant
@@ -670,7 +670,7 @@
 
 \def\meta_handle_use_graphic#1#2#3%
   {\begingroup
-   \edef\currentmpcategory{#1}%
+ % \currentmpcategory already set
    \meta_enable_include % redundant
    \meta_process_graphic{#3}%
    \endgroup}
@@ -699,7 +699,7 @@
 
 \def\meta_handle_reusable_graphic#1#2#3%
   {\begingroup
-   \edef\currentmpcategory{#1}%
+ % \currentmpcategory already set
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
    \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox

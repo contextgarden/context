@@ -156,7 +156,8 @@ or
 -- this will move elsewhere ...
 
 local function getfontname(tfmdata)
-    return basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
+    local p = type(tfmdata) == "number" and properties[tfmdata] or tfmdata.properties
+    return basename((p and (p.name or p.fullname or p.fontname)) or "unknown")
 end
 
 helpers.name = getfontname

@@ -540,7 +540,7 @@ do
     function definers.registerfallbackfont(style,list)
         local l = fallbacks[style]
         if l then
-            for s in gmatch(list,"%S+") do
+            for s in gmatch(list,"[^, ]+") do
                 if not contains(l,s) then
                     l[#l+1] = s
                 end

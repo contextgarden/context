@@ -79,7 +79,7 @@ local getstatus = mplib.getstatus
 local expandtex = mplib.expandtex
 
 mp.solve     = function(...) return solvepath(currentmpx,...) end
-mp.expandtex = function(...) expandtex(currentmpx,...) end
+mp.expandtex = function(...) return expandtex(currentmpx,...) end
 
 local injectpath      = mplib.injectpath
 local injectnumeric   = mplib.injectnumeric

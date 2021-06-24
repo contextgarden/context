@@ -103,8 +103,12 @@ end)
 -- registerscript("mpvar", function() return getmacro(mpgnamespace .. getmacro("currentmpcategory") .. ":" .. scanmpstring(), true) end) -- Isn't it already edef'd?
 -- registerscript("mpvar", function() return getmacro(metapost.namespace .. scanmpstring(), true) end) -- Isn't it already edef'd?
 
-local scanstring  = mp.scan.string
-local expandtex   = mp.expandtex
+local scanstring      = mp.scan.string
+local expandtex       = mp.expandtex
+
+local injectnumeric   = mp.inject.numeric
+local injectstring    = mp.inject.string
+local injectboolean   = mp.inject.boolean
 
 local tokenvalues     = tokens.values
 local dimension_value = tokenvalues.dimension
@@ -113,8 +117,32 @@ local boolean_value   = tokenvalues.boolean
 local string_value    = tokenvalues.string
 local unknown_value   = tokenvalues.none
 
-registerdirect("mpvard", function() expandtex(dimension_value,"mpcategoryparameter",true,scanstring()) end)
-registerdirect("mpvarn", function() expandtex(integer_value,  "mpcategoryparameter",true,scanstring()) end)
-registerdirect("mpvars", function() expandtex(string_value,   "mpcategoryparameter",true,scanstring()) end)
-registerdirect("mpvarb", function() expandtex(boolean_value,  "mpcategoryparameter",true,scanstring()) end)
-registerdirect("mpvar",  function() expandtex(unknown_value,  "mpcategoryparameter",true,scanstring()) end)
+registerdirect("mpvard", function()
+    if not expandtex(dimension_value,"mpcategoryparameter",true,scanstring()) then
+        injectnumeric(0)
+    end
+end)
+
+registerdirect("mpvarn", function()
+    if not expandtex(integer_value,  "mpcategoryparameter",true,scanstring(),0) then
+        injectnumeric(0)
+    end
+end)
+
+registerdirect("mpvars", function()
+    if not expandtex(string_value,   "mpcategoryparameter",true,scanstring(),"") then
+        injectstring("")
+    end
+end)
+
+registerdirect("mpvarb", function()
+    if not expandtex(boolean_value,  "mpcategoryparameter",true,scanstring(),false) then
+        injectboolean(false)
+    end
+end)
+
+registerdirect("mpvar", function()
+    if not expandtex(unknown_value,  "mpcategoryparameter",true,scanstring(),0) then
+        injectnumeric(0)
+    end
+end)
