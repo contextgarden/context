@@ -407,7 +407,7 @@
 
 \permanent\def\autosetups#1{\clf_autosetups{#1}} % todo: public implementor
 
-\permanent\edef\setupwithargument#1% saves a few expansions
+\permanent\edef\setupwithargument#1% saves a few expansions and is faster
   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
 
 \permanent\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)

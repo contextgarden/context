@@ -3824,7 +3824,7 @@ do
                 -- This permits injection, watch the different arguments. Watch out, the arguments passed
                 -- are not frozen as we might extend or change this. Is this used at all apart from some
                 -- experiments?
-                local h, ok = handler(head,dataset,sequence,initialrl,font,dynamic) -- less arguments now
+                local h = handler(head,dataset,sequence,initialrl,font,dynamic) -- less arguments now
                 if h and h ~= head then
                     head = h
                 end

@@ -558,7 +558,9 @@ end
 lpdf.color = lpdfcolor
 
 interfaces.implement {
-    name      = "lpdf_color",
+    name      = "pdfcolor",
+    public    = true,
+    untraced  = true,
     actions   = { lpdfcolor, context },
     arguments = "integer"
 }

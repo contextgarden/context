@@ -872,7 +872,7 @@ function xml.is_element(e,name)
     return type(e) == "table" and (not name or e.tg == name)
 end
 
-function mathml.cpolar_a(root)
+function mathml.cpolar(root)
     root = getid(root)
     local dt = root.dt
     ctx_mathopnolimits("Polar")

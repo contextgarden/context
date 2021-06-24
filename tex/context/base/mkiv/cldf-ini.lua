@@ -400,19 +400,22 @@ local registerscanner if CONTEXTLMTXMODE > 0 then
 
     -- always permanent but we can consider to obey permanent==false
 
+    -- todo: make bitset instead of keys (nil is skipped anyway)
+
     local function toflags(specification)
-        local protected = specification.protected and "protected" -- or ""
+        local protected = specification.protected and "protected"
+        local untraced  = specification.untraced  and "untraced"
         local usage     = specification.usage
         if usage == "value" then
-            return "global", "value", "permanent", protected
+            return "global", "value", "permanent", "untraced", protected
         elseif usage == "condition" then
-            return "global", "conditional", "permanent", protected
+            return "global", "conditional", "permanent", "untraced", protected
         elseif specification.frozen then
-            return "global", "frozen", protected
+            return "global", "frozen", untraced, protected
         elseif specification.permanent == false or specification.onlyonce then -- for now onlyonce here
-            return "global", protected
+            return "global", untraced, protected
         else
-            return "global", "permanent", protected
+            return "global", "permanent", untraced, protected
         end
     end
 
@@ -422,6 +425,7 @@ local registerscanner if CONTEXTLMTXMODE > 0 then
         storedscanners[name] = n
         namesofscanners[n] = name
         name = specification.public and name or (privatenamespace .. name)
+     -- print(name,n,toflags(specification))
         setluatoken(name,n,toflags(specification))
     end
 

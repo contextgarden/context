@@ -2874,6 +2874,17 @@
 %D
 %D setsplitlisthtdp\scratchbox\struthp\strutdp
 
+%D Handy but I'll probably forget it:
+%D
+%D \starttyping
+%D \setbox0\hbox{!!!!!}
+%D \permanent\protected\def\showboxhere{\showbox nolevels content online }
+%D \showbox     0
+%D \showboxhere 0 % always on console, less clutter
+%D \stoptyping
+
+\permanent\protected\def\showboxhere{\showbox nolevels content online }
+
 \protect \endinput
 
 % a bit of test code:

@@ -642,10 +642,48 @@
       \box\b_framed_normal
       \box\b_framed_extra}}
 
+%D A probably unknown feature:
+%D
+%D \startbuffer
+%D \hpack\bgroup
+%D     \framed[framecolor=MyColor,frame=on]    {!!!!!!!!}
+%D     \framed[framecolor=MyColor,frame=closed]{!!!!!!!!}
+%D     \framed[framecolor=MyColor,frame=small] {!!!!!!!!}
+%D \egroup
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+% \def\pack_framed_stroked_box_normal_opened
+%   {\setbox\scratchbox\vpack \bgroup
+%      \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
+%      \nointerlineskip % new (needed for fences)
+%      \hpack \bgroup
+%        \csname\??framedleft\p_framed_frame\framedparameter\c!leftframe\endcsname
+%        \novrule
+%          \s!width \d_framed_target_wd
+%          \s!height\d_framed_target_ht
+%          \s!depth \d_framed_target_dp
+%        \csname\??framedright\p_framed_frame\framedparameter\c!rightframe\endcsname
+%      \egroup
+%      \nointerlineskip % new (needed for fences)
+%      \csname\??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
+%    \egroup
+%    \wd\scratchbox\d_framed_target_wd
+%    \ht\scratchbox\d_framed_target_ht
+%    \dp\scratchbox\d_framed_target_dp
+%    \box\scratchbox}
+
+% less logging:
+
 \def\pack_framed_stroked_box_normal_opened
   {\setbox\scratchbox\vpack \bgroup
+   % \normaloffinterlineskip % sets baselineskip, lineskip and lineskiplimit
+     \baselineskip-\thousandpoint
+     \lineskip     \zeropoint
+     \lineskiplimit\maxdimen
      \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
-     \nointerlineskip % new (needed for fences)
+   % \nointerlineskip % new (needed for fences)
      \hpack \bgroup
        \csname\??framedleft\p_framed_frame\framedparameter\c!leftframe\endcsname
        \novrule
@@ -654,7 +692,7 @@
          \s!depth \d_framed_target_dp
        \csname\??framedright\p_framed_frame\framedparameter\c!rightframe\endcsname
      \egroup
-     \nointerlineskip % new (needed for fences)
+   % \nointerlineskip % new (needed for fences)
      \csname\??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
    \egroup
    \wd\scratchbox\d_framed_target_wd
@@ -704,10 +742,27 @@
 
 % no overlapping rules
 
-\def\pack_framed_t_rules{\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
-\def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}}
-\def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
-\def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
+% \def\pack_framed_t_rules{\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
+% \def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}}
+% \def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
+% \def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
+%
+% see above, less tracing
+%
+% \def\pack_framed_t_rules{\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}\kern-\d_framed_linewidth}
+% \def\pack_framed_b_rules{\kern-\d_framed_linewidth\hpack{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}}
+% \def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
+% \def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
+%
+% more modern:
+
+\def\pack_framed_rules_hrule{\hrule\s!height\d_framed_linewidth\s!left\d_framed_linewidth\s!right \d_framed_linewidth}
+\def\pack_framed_rules_vrule{\vrule\s!width \d_framed_linewidth\s!top \d_framed_linewidth\s!bottom\d_framed_linewidth\s!yoffset-\d_framed_linewidth}
+
+\def\pack_framed_t_rules{\pack_framed_rules_hrule\kern-\d_framed_linewidth}
+\def\pack_framed_b_rules{\kern-\d_framed_linewidth\pack_framed_rules_hrule}
+\def\pack_framed_r_rules{\kern-\d_framed_linewidth\pack_framed_rules_vrule}
+\def\pack_framed_l_rules{\pack_framed_rules_vrule\kern-\d_framed_linewidth}
 
 \letcsname\??framedtop   \v!small\v!small\endcsname\pack_framed_t_rules
 \letcsname\??framedtop   \v!off  \v!small\endcsname\pack_framed_t_rules

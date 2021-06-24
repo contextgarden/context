@@ -224,4 +224,4 @@ local function makestub()
     report()
 end
 
-lua.registerfinalizer(makestub,"create stub file")
+lua.registerinitexfinalizer(makestub,"create stub file")

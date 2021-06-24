@@ -29,6 +29,9 @@ generate jedit interface files
 .B --textpad
 generate textpad interface files
 .TP
+.B --vim
+generate vim interface files
+.TP
 .B --text
 create text files for commands and environments
 .TP

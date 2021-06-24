@@ -106,7 +106,7 @@ local function pre_dump_actions()
     for i=1,#dumpactions do
         dumpactions[i]()
     end
-    lua.finalize(trace_lua_dump and report_lua or nil)
+    lua.finalizeinitex(trace_lua_dump and report_lua or nil)
 end
 
 local function wrapup_synctex()

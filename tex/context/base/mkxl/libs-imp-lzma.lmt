@@ -1,0 +1,52 @@
+if not modules then modules = { } end modules ['libs-imp-lzma'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Instead of linking in libs like this we now do them optional. After all, once
+-- we start adding more and more stuff statically we en dup with a mess.
+
+local libname = "lzma"
+local libfile = "liblzma"
+
+local lzmalib = resolvers.libraries.validoptional(libname)
+
+if not lzmalib then return end
+
+local lzma_compress   = lzmalib.compress
+local lzma_decompress = lzmalib.decompress
+
+local function okay()
+    if resolvers.libraries.optionalloaded(libname,libfile) then
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local lzma = {
+    compress   = function (...) return okay() and lzma_compress       (...) end,
+    decompress = function (...) return okay() and lzma_decompress     (...) end,
+}
+
+package.loaded[libname] = lzma
+
+-- local raw = io.loaddata("e:/luatex/luametatex-source.tar")
+-- local old = io.loaddata("e:/luatex/luametatex-source.tar.xz")
+-- local new = lzma.decompress(old)
+-- local xz1 = lzma.compress(raw,9)
+-- local xz2 = lzma.decompress(xz1)
+
+-- print("raw",raw and #raw)
+-- print("old",old and #old)
+-- print("new",new and #new)
+-- print("chk",new == raw)
+-- print("xz1",xz1 and #xz1)
+-- print("xz2",xz2 and #xz2)
+-- print("chk",xz2 == raw)
+
+return lzma

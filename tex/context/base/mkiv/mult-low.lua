@@ -97,6 +97,12 @@ return {
         "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
         "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
         --
+        "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode",  "fractionrulemathcontrolcode",
+        "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "accentitalickernmathcontrolcode",
+        "delimiteritalickernmathcontrolcode", "orditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
+        "charitalicnoreboxmathcontrolcode", "boxednoitalickernmathcontrolcode", "nostaircasekernmathcontrolcode",
+        "textitalickernmathcontrolcode",
+        --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
         "mathexheight", "mathemwidth",
@@ -176,6 +182,8 @@ return {
         --
         "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode", "mutableflagcode",
         "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
+        --
+        "ordflattencode", "binflattencode", "relflattencode", "punctflattencode", "innerflattencode",
         --
         "prewordcode", "postwordcode",
         --
@@ -562,6 +570,8 @@ return {
         "pushoverloadmode", "popoverloadmode", "pushrunstate", "poprunstate",
         --
         "suggestedalias",
+        --
+        "showboxhere",
         --
         "newlocalcount", "newlocaldimen", "newlocalskip", "newlocalmuskip", "newlocaltoks", "newlocalbox",
         "newlocalwrite", "newlocalread",

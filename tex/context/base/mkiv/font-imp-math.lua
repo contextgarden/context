@@ -108,7 +108,8 @@ function fonts.helpers.mathscriptslots(tfmdata,textcode)
         end
     end
 end
-local function initialize(tfmdata,key,value)
+
+local function initialize(tfmdata,value)
     if value then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources

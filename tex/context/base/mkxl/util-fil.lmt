@@ -116,6 +116,9 @@ files.readbytetable     = fio.readbytetable
 files.readcardinaltable = fio.readcardinaltable
 files.readintegertable  = fio.readintegertable
 
+files.readcstring       = fio.readcstring
+files.readcline         = fio.readcline
+
 function files.readchar(f)
     return f:read(1)
 end

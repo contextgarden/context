@@ -604,7 +604,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:a
-    \mathml_cpolar_a{#1}
+    \mathml_cpolar{#1}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:b
@@ -2358,6 +2358,7 @@
                 \novrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint
             \fi
             \ifdim\scratchwidth=\zeropoint
+                % maybe we need to do it anyway
             \orelse\ifx\MMLmspaceoption\v!test
                 \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}
             \else

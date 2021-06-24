@@ -90,7 +90,7 @@ if environment.initex then
         storage.max = max
     end
 
-    lua.registerfinalizer(dump,"dump storage")
+    lua.registerinitexfinalizer(dump,"dump storage")
 
 end
 

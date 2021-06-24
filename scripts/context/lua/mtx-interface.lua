@@ -7,9 +7,9 @@ if not modules then modules = { } end modules ['mtx-cache'] = {
 }
 
 local concat, sort, insert = table.concat, table.sort, table.insert
-local gsub, format, gmatch, find = string.gsub, string.format, string.gmatch, string.find
+local gsub, format, gmatch, find, upper = string.gsub, string.format, string.gmatch, string.find, string.upper
 local utfchar, utfgsub = utf.char, utf.gsub
-local sortedkeys = table.sortedkeys
+local sortedkeys, sortedhash, serialize = table.sortedkeys, table.sortedhash, table.serialize
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -32,6 +32,7 @@ local helpinfo = [[
     <flag name="bbedit"><short>generate bbedit interface files</short></flag>
     <flag name="jedit"><short>generate jedit interface files</short></flag>
     <flag name="textpad"><short>generate textpad interface files</short></flag>
+    <flag name="vim"><short>generate vim interface files</short></flag>
     <flag name="text"><short>create text files for commands and environments</short></flag>
     <flag name="raw"><short>report commands to the console</short></flag>
     <flag name="check"><short>generate check file</short></flag>
@@ -71,19 +72,19 @@ local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 
 local function collect(filename,class,data)
     if data then
-        local result = { }
-        for name, list in table.sortedhash(data) do
-            result[#result+1] = format("keywordclass.%s.%s=\\\n",class,name)
+        local result, r = { }, 0
+        for name, list in sortedhash(data) do
+            r = r + 1 ; result[r] = format("keywordclass.%s.%s=\\\n",class,name)
             for i=1,#list do
                 if i%5 == 0 then
-                    result[#result+1] = "\\\n"
+                    r = r + 1 ; result[r] = "\\\n"
                 end
-                result[#result+1] = format("%s ",list[i])
+                r = r + 1 ; result[r] = format("%s ",list[i])
             end
-            result[#result+1] = "\n\n"
+            r = r + 1 ; result[r] = "\n\n"
         end
         io.savedata(file.addsuffix(filename,"properties"),concat(result))
-        io.savedata(file.addsuffix(filename,"lua"),       table.serialize(data,true))
+        io.savedata(file.addsuffix(filename,"lua"),serialize(data,true))
     else
         os.remove(filename)
     end
@@ -127,18 +128,18 @@ function flushers.jedit(collected)
     for interface, whatever in next, collected do
         local commands     = whatever.commands
         local environments = whatever.environments
-        local result = { }
-        result[#result+1] = "<?xml version='1.0'?>"
-        result[#result+1] = "<!DOCTYPE MODE SYSTEM 'xmode.dtd'>\n"
-        result[#result+1] = "<MODE>"
-        result[#result+1] = "\t<RULES>"
-        result[#result+1] = "\t\t<KEYWORDS>"
+        local result, r = { }, 0
+        r = r + 1 ; result[r] = "<?xml version='1.0'?>"
+        r = r + 1 ; result[r] = "<!DOCTYPE MODE SYSTEM 'xmode.dtd'>\n"
+        r = r + 1 ; result[r] = "<MODE>"
+        r = r + 1 ; result[r] = "\t<RULES>"
+        r = r + 1 ; result[r] = "\t\t<KEYWORDS>"
         for i=1,#commands do
-            result[#result+1] = format("\t\t\t<KEYWORD2>%s</KEYWORD2>",commands[i])
+            r = r + 1 ; result[r] = format("\t\t\t<KEYWORD2>%s</KEYWORD2>",commands[i])
         end
-        result[#result+1] = "\t\t</KEYWORDS>"
-        result[#result+1] = "\t</RULES>"
-        result[#result+1] = "</MODE>"
+        r = r + 1 ; result[r] = "\t\t</KEYWORDS>"
+        r = r + 1 ; result[r] = "\t</RULES>"
+        r = r + 1 ; result[r] = "</MODE>"
         io.savedata(format("context-jedit-%s.xml",interface), concat(result),"\n")
     end
 end
@@ -147,16 +148,98 @@ function flushers.bbedit(collected)
     for interface, whatever in next, collected do
         local commands     = whatever.commands
         local environments = whatever.environments
-        local result = {}
-        result[#result+1] = "<?xml version='1.0'?>"
-        result[#result+1] = "<key>BBLMKeywordList</key>"
-        result[#result+1] = "<array>"
+        local result, r = { }, 0
+        r = r + 1 ; result[r] = "<?xml version='1.0'?>"
+        r = r + 1 ; result[r] = "<key>BBLMKeywordList</key>"
+        r = r + 1 ; result[r] = "<array>"
         for i=1,#commands do
-            result[#result+1]  = format("\t<string>\\%s</string>",commands[i])
+            r = r + 1 ; result[r] = format("\t<string>\\%s</string>",commands[i])
         end
-        result[#result+1] = "</array>"
+        r = r + 1 ; result[r] = "</array>"
         io.savedata(format("context-bbedit-%s.xml",interface), concat(result),"\n")
     end
+end
+
+-- The Vim export is maintained by Nicola Vitacolonna:
+
+local function vimcollect(filename,class,data)
+    if data then
+        local result, r = { }, 0
+        local endline = " contained\n"
+        if find(class,"^meta") then
+            endline = "\n"
+        end
+        r = r + 1 ; result[r] = "vim9script\n\n"
+        r = r + 1 ; result[r] = "# Vim syntax file\n"
+        r = r + 1 ; result[r] = "# Language: ConTeXt\n"
+        r = r + 1 ; result[r] = format("# Automatically generated by mtx-interface (%s)\n\n", os.date())
+        local n = 5 -- number of keywords per row
+        for name, list in sortedhash(data) do
+            local i = 1
+            while i <= #list do
+                r = r + 1 ; result[r] = format("syn keyword %s%s", class, (gsub(name,"^%l",upper))) -- upper is fragile
+                local j = 0
+--                 while i+j <= #list and j < n do
+--                     if list[i+j] == "transparent" then -- this is a Vim keyword
+--                         r = r + 1 ; result[r] = format(" %s[]",list[i+j])
+--                     else
+--                         r = r + 1 ; result[r] = format(" %s",list[i+j])
+--                     end
+--                     j = j + 1
+--                 end
+                while j < n do
+                    local lij = list[i + j]
+                    if not lij then
+                        break
+                    elseif lij == "transparent" then -- this is a Vim keyword
+                        r = r + 1 ; result[r] = format(" %s[]",lij)
+                    else
+                        r = r + 1 ; result[r] = format(" %s",lij)
+                    end
+                    j = j + 1
+                end
+                r = r + 1 ; result[r] = endline
+                i = i + n
+            end
+        end
+        io.savedata(file.addsuffix(filename,"vim"),concat(result))
+    else
+        os.remove(filename)
+    end
+end
+
+function flushers.vim(collected)
+    local data = { }
+ -- for interface, whatever in next, collected do
+ --     data[interface] = whatever.commands
+ -- end
+    local function add(target,origin,field)
+        if origin then
+            local list = origin[field]
+            if list then
+                for i=1,#list do
+                    target[list[i]] = true
+                end
+            end
+        end
+    end
+    --
+    for interface, whatever in next, collected do
+        local combined = { }
+        add(combined,whatever,"commands")
+        add(combined,whatever,"environments")
+        if interface == "common" then
+            add(combined,whatever,"textnames")
+            add(combined,whatever,"mathnames")
+        end
+        data[interface] = sortedkeys(combined)
+    end
+    --
+    vimcollect("context-data-interfaces", "context",  data)
+ -- vimcollect("context-data-metapost",   "metapost", dofile(resolvers.findfile("mult-mps.lua")))
+    vimcollect("context-data-metafun",    "metafun",  dofile(resolvers.findfile("mult-fun.lua")))
+    vimcollect("context-data-context",    "context",  dofile(resolvers.findfile("mult-low.lua")))
+    vimcollect("context-data-tex",        "tex",      dofile(resolvers.findfile("mult-prm.lua")))
 end
 
 function flushers.raw(collected)
@@ -749,7 +832,7 @@ elseif ea("bidi") then
     scripts.interface.bidi()
 elseif ea("check") then
     scripts.interface.check()
-elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text") or ea("raw") then
+elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("vim") or ea("text") or ea("raw") then
     if ea("scite") then
         scripts.interface.editor("scite")
     end
@@ -761,6 +844,9 @@ elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text")
     end
     if ea("textpad") then
         scripts.interface.editor("textpad",true, { "en" })
+    end
+    if ea("vim") then
+        scripts.interface.editor("vim",true, { "en" })
     end
     if ea("text") then
         scripts.interface.editor("text")

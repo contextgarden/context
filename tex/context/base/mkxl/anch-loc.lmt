@@ -284,6 +284,7 @@ implement {
     name      = "pushlocalanchors",
     public    = true,
     protected = true,
+    untraced  = true,
     actions   = pushpositions,
 }
 
@@ -291,6 +292,7 @@ implement {
     name      = "poplocalanchors",
     public    = true,
     protected = true,
+    untraced  = true,
     actions   = poppositions,
 }
 
@@ -299,6 +301,7 @@ implement {
     arguments = { "integerargument" },
     public    = true,
     protected = true,
+    untraced  = true,
     actions   = function(n)
         analyze(driver,texgetbox(n))
     end
@@ -309,6 +312,7 @@ implement {
     arguments = { "integerargument" },
     public    = true,
     protected = true,
+    untraced  = true,
     actions   = drivers.converters.resyncbox,
 }
 
@@ -383,6 +387,7 @@ interfaces.implement {
     name      = "async",
     arguments = { "argument", "integerargument", "argument" },
     protected = true,
+    untraced  = true,
     public    = true,
     actions   = function(name,x,align)
         local t = positions[name].cnt

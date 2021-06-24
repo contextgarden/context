@@ -5,9 +5,9 @@ if not modules then modules = { } end modules ['toks-aux'] = {
     license   = "see context related readme files"
 }
 
-local type, tostring = type, tostring
+local type, tostring, next = type, tostring, next
 local max = math.max
-local formatters, gsub, char = string.formatters, string.gsub, string.char
+local formatters, gsub, char, gmatch = string.formatters, string.gsub, string.char, string.gmatch
 local concat = table.concat
 
 -- todo : locals from scanners
@@ -130,54 +130,53 @@ interfaces.implement {
 -- For the moment here, will move to initex only (also see node-ini.lua); we need
 -- to actually store these.
 
-local groupcodes       = { }
-local glyphoptioncodes = { }
-local discoptioncodes  = { }
-local mathoptioncodes  = { }
-local hyphenationcodes = { }
-local frozenparcodes   = { }
-local flagcodes        = { }
-local normalizecodes   = { }
------ parcontextcodes  = { }
------ parbegincodes    = { }
-
-for k, v in next, tex.getgroupvalues()       do groupcodes[k]       = gsub(v,"[_ ]","") end
-for k, v in next, tex.gethyphenationvalues() do hyphenationcodes[k] = gsub(v,"[_ ]","") end
-for k, v in next, tex.getglyphoptionvalues() do glyphoptioncodes[k] = gsub(v,"[_ ]","") end
-for k, v in next, tex.getdiscoptionvalues()  do discoptioncodes[k]  = gsub(v,"[_ ]","") end
-for k, v in next, tex.getmathoptionvalues()  do mathoptioncodes[k]  = gsub(v,"[_ ]","") end
-for k, v in next, tex.getfrozenparvalues()   do frozenparcodes[k]   = gsub(v,"[_ ]","") end
-for k, v in next, tex.getflagvalues()        do flagcodes[k]        = gsub(v,"[_ ]","") end
-for k, v in next, tex.getnormalizevalues()   do normalizecodes[k]   = gsub(v,"[_ ]","") end
-
-if environment.initex then
-
-    local texintegerdef = tex.integerdef
-
-    for k, v in next, groupcodes       do texintegerdef(v .. "groupcode",          k,"immutable") end
-    for k, v in next, glyphoptioncodes do texintegerdef(v .. "code",               k,"immutable") end
-    for k, v in next, discoptioncodes  do texintegerdef(v .. "code",               k,"immutable") end
-    for k, v in next, hyphenationcodes do texintegerdef(v .. "hyphenationmodecode",k,"immutable") end
-    for k, v in next, frozenparcodes   do texintegerdef("frozen" .. v .. "code",   k,"immutable") end
-    for k, v in next, flagcodes        do texintegerdef(v .. "flagcode",           k,"immutable") end
-    for k, v in next, normalizecodes   do texintegerdef(v .. "code",               k,"immutable") end
-
+local function getthem(getter,pre,post)
+    local codes = { }
+    if getter then
+        local texintegerdef = tex.integerdef
+        for k, v in next, getter() do
+            codes[k] = gsub(v,"[_ ]","")
+        end
+        if post ~= "" and environment.initex then
+            for k, v in next, codes do
+                texintegerdef(pre .. v .. post,k,"immutable")
+            end
+        end
+    end
+    return utilities.storage.allocate(table.swapped(codes,codes))
 end
 
-groupcodes           = utilities.storage.allocate(table.swapped(groupcodes,      groupcodes))
-glyphoptioncodes     = utilities.storage.allocate(table.swapped(glyphoptioncodes,glyphoptioncodes))
-discoptioncodes      = utilities.storage.allocate(table.swapped(discoptioncodes, discoptioncodes))
-mathoptioncodes      = utilities.storage.allocate(table.swapped(mathoptioncodes, mathoptioncodes))
-hyphenationcodes     = utilities.storage.allocate(table.swapped(hyphenationcodes,hyphenationcodes))
-frozenparcodes       = utilities.storage.allocate(table.swapped(frozenparcodes,  frozenparcodes))
-flagcodes            = utilities.storage.allocate(table.swapped(flagcodes,       flagcodes))
-normalizecodes       = utilities.storage.allocate(table.swapped(normalizecodes,  normalizecodes))
+tex.groupcodes       = getthem(tex.getgroupvalues,       "",       "groupcode")
+tex.glyphoptioncodes = getthem(tex.getglyphoptionvalues, "",       "code")
+tex.discoptioncodes  = getthem(tex.getdiscoptionvalues,  "",       "code")
+tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "",       "")
+tex.mathcontrolcodes = getthem(tex.getmathcontrolvalues, "",       "mathcontrolcode")
+tex.mathflattencodes = getthem(tex.getmathflattenvalues, "",       "flattencode")
+tex.hyphenationcodes = getthem(tex.gethyphenationvalues, "",       "hyphenationmodecode")
+tex.frozenparcodes   = getthem(tex.getfrozenparvalues,   "frozen", "code")
+tex.flagcodes        = getthem(tex.getflagvalues,        "",       "flagcode" )
+tex.normalizecodes   = getthem(tex.getnormalizevalues,   "",       "code")
 
-tex.groupcodes       = groupcodes
-tex.glyphoptioncodes = glyphoptioncodes
-tex.discoptioncodes  = discoptioncodes
-tex.mathoptioncodes  = mathoptioncodes
-tex.hyphenationcodes = hyphenationcodes
-tex.frozenparcodes   = frozenparcodes
-tex.flagcodes        = flagcodes
-tex.normalizecodes   = normalizecodes
+function tex.stringtocodesbitmap(str,codes)
+    local bitmap = 0
+    if codes then
+        if not str or str == "" then
+            -- zero
+        elseif str == "all" then
+            for k in next, codes do
+                if type(k) == "number" then
+                    bitmap = bitmap | k
+                end
+            end
+        else
+            str = gsub(str,"[_ ]","")
+            for s in gmatch(str,"[^%,]+") do
+                local b = codes[s]
+                if b then
+                    bitmap = bitmap | b
+                end
+            end
+        end
+    end
+    return bitmap
+end

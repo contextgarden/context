@@ -1129,10 +1129,10 @@
 \letcsname\??colorsetter       \endcsname\empty \letcsname\??colorattribute       \endcsname\!!zerocount
 \letcsname\??transparencysetter\endcsname\empty \letcsname\??transparencyattribute\endcsname\!!zerocount
 
-\def\colo_helpers_inherited_direct_cs#1{\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
-\def\colo_helpers_inherited_direct_ca#1{\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
-\def\colo_helpers_inherited_direct_ts#1{\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
-\def\colo_helpers_inherited_direct_ta#1{\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_direct_cs#1{\begincsname\??colorsetter          #1\endcsname}
+\def\colo_helpers_inherited_direct_ca#1{\ifcsname   \??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_direct_ts#1{\begincsname\??transparencysetter   #1\endcsname}
+\def\colo_helpers_inherited_direct_ta#1{\ifcsname   \??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
 
 \let\colo_defcsname\defcsname
 \let\colo_endcsname\endcsname

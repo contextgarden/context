@@ -16,7 +16,7 @@ local round = math.round
 local concat = table.concat
 local suffixonly = file.suffix
 
-local newreader         = io.newreader
+local newreader         = io.newreader               -- needs checking 0/1 based
 local setmetatableindex = table.setmetatableindex
 local setmetatablecall  = table.setmetatablecall
 

@@ -187,6 +187,7 @@ implement {
     name      = "newarray",
     public    = true,
     protected = true,
+    untraced  = true,
     arguments = { {
         { "name", "string"  },
         { "nx",   "integer" },
@@ -335,6 +336,7 @@ implement {
     name      = "showarray",
     public    = true,
     protected = true,
+    untraced  = true,
     actions   = function()
         local name = scanstring()
         if name then
@@ -358,9 +360,10 @@ end)
 table.makeweak(cache)
 
 implement {
-    name    = "luaexpression",
-    public  = true,
-    actions = function()
+    name     = "luaexpression",
+    public   = true,
+    untraced = true,
+    actions  = function()
         local how  = scanword()
         local code = cache[scanargument()]
         if code then
@@ -544,6 +547,7 @@ end
 implement {
     name      = "newluatable",
     protected = true,
+    untraced  = true,
     arguments = "csname",
     actions   = newluatable,
 }
@@ -551,6 +555,7 @@ implement {
 implement {
     name      = "useluatable",
     protected = true,
+    untraced  = true,
     arguments = { "csname", true },
     actions   = newluatable,
 }
@@ -558,6 +563,7 @@ implement {
 implement {
     name      = "disposeluatable",
     protected = true,
+    untraced  = true,
     public    = true,
     arguments = "csname",
     actions   = disposeluatable,
@@ -566,6 +572,7 @@ implement {
 implement {
     name      = "inspectluatable",
     protected = true,
+    untraced  = true,
     public    = true,
     arguments = "csname",
     actions   = inspectluatable,
@@ -574,6 +581,7 @@ implement {
 implement {
     name      = "showluatables",
     protected = true,
+    untraced  = true,
     public    = true,
     actions   = showluatables,
 }
@@ -581,6 +589,7 @@ implement {
 implement {
     name      = "setluatable",
     protected = true,
+    untraced  = true,
     public    = true,
     arguments = { "csname", "argument" },
     actions   = function(name,data)
@@ -597,6 +606,7 @@ implement {
 implement {
     name      = "getfromluatable",
     protected = false,
+    untraced  = true,
     public    = true,
     arguments = { "csname", "argument" },
     actions   = getfromluatable,
@@ -605,6 +615,7 @@ implement {
 implement {
     name      = "idxfromluatable",
     protected = false,
+    untraced  = true,
     public    = true,
     arguments = { "csname", "integer" },
     actions   = idxfromluatable,
@@ -628,9 +639,10 @@ local tables = { }
 local stack  = setmetatableindex("table")
 
 implement {
-    name      = "droptablegroup",
-    public    = true,
-    actions   = function()
+    name     = "droptablegroup",
+    public   = true,
+    untraced = true,
+    actions  = function()
         local g = texget("currentgrouplevel") -- todo: tex.getgrouplevel()
         local s = stack[g]
         if s then
@@ -715,6 +727,7 @@ end
 implement {
     name      = "newhashedtable",
     protected = true,
+    untraced  = true,
     public    = true,
     actions   = newtable,
 }
@@ -722,6 +735,7 @@ implement {
 implement {
     name      = "newindexedtable",
     protected = true,
+    untraced  = true,
     public    = true,
     actions   = function() newtable(true) end,
 }
@@ -974,6 +988,7 @@ do
     implement {
         name      = "codedef",
         public    = true,
+        untraced  = true,
         protected = true,
         actions   = function(what)
             local name = scancsname(true)

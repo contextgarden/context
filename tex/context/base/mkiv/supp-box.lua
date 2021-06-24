@@ -171,7 +171,7 @@ implement {
     arguments = "integer",
     actions   = function(n)
         -- we just hyphenate (as we pass a hpack) .. a bit too much casting but ...
-        local l = languages.hyphenators.handler(tonode(checkedlist(n)))
+        local l = languages.hyphenators.handler(checkedlist(n))
         report_hyphenation("show: %s",listtoutf(l,false,true))
     end
 }

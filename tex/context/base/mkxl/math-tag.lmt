@@ -555,8 +555,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     processsubsup(start)
                 end
             elseif id == glue_code then
-             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getwidth(start) }))
-                setattr(start,a_tagged,start_tagged("mspace"))
+                -- before processing, so other intermathglue is not tagged
+                local em = fonts.hashes.emwidths[nuts.getfont(start)]
+                local wd = getwidth(start)
+                if em and wd then
+                    setattr(start,a_tagged,start_tagged("mspace",{ emfactor = wd/em }))
+                end
                 stop_tagged()
             else
                 setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[i] }))

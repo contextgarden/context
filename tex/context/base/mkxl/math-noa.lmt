@@ -182,20 +182,17 @@ local nodecodes          = nodes.nodecodes
 local noadcodes          = nodes.noadcodes
 local fencecodes         = nodes.fencecodes
 
-local ordnoad_code             = noadcodes.ord
-local opdisplaylimitsnoad_code = noadcodes.opdisplaylimits
-local oplimitsnoad_code        = noadcodes.oplimits
-local opnolimitsnoad_code      = noadcodes.opnolimits
-local binnoad_code             = noadcodes.bin
-local relnode_code             = noadcodes.rel
-local opennoad_code            = noadcodes.open
-local closenoad_code           = noadcodes.close
-local punctnoad_code           = noadcodes.punct
-local innernoad_code           = noadcodes.inner
-local undernoad_code           = noadcodes.under
-local overnoad_code            = noadcodes.over
-local vcenternoad_code         = noadcodes.vcenter
-local ordlimitsnoad_code       = noadcodes.ordlimits or oplimitsnoad_code
+local ordnoad_code       = noadcodes.ord
+local opnoad_code        = noadcodes.op
+local binnoad_code       = noadcodes.bin
+local relnode_code       = noadcodes.rel
+local opennoad_code      = noadcodes.open
+local closenoad_code     = noadcodes.close
+local punctnoad_code     = noadcodes.punct
+local innernoad_code     = noadcodes.inner
+local undernoad_code     = noadcodes.under
+local overnoad_code      = noadcodes.over
+local vcenternoad_code   = noadcodes.vcenter
 
 local noad_code          = nodecodes.noad           -- attr nucleus sub sup
 local accent_code        = nodecodes.accent         -- attr nucleus sub sup accent
@@ -1801,20 +1798,17 @@ do
     local collapse         = { }
     local mathlists        = characters.mathlists
     local validpair        = {
-        [ordnoad_code]             = true,
-        [opdisplaylimitsnoad_code] = true,
-        [oplimitsnoad_code]        = true,
-        [opnolimitsnoad_code]      = true,
-        [binnoad_code]             = true, -- new
-        [relnode_code]             = true,
-        [opennoad_code]            = true, -- new
-        [closenoad_code]           = true, -- new
-        [punctnoad_code]           = true, -- new
-        [innernoad_code]           = false,
-        [undernoad_code]           = false,
-        [overnoad_code]            = false,
-        [vcenternoad_code]         = false,
-        [ordlimitsnoad_code]       = true,
+        [ordnoad_code]     = true,
+        [opnoad_code]      = true,
+        [binnoad_code]     = true, -- new
+        [relnode_code]     = true,
+        [opennoad_code]    = true, -- new
+        [closenoad_code]   = true, -- new
+        [punctnoad_code]   = true, -- new
+        [innernoad_code]   = false,
+        [undernoad_code]   = false,
+        [overnoad_code]    = false,
+        [vcenternoad_code] = false,
     }
 
     local reported = setmetatableindex("table")
@@ -2099,20 +2093,17 @@ do
 
     local classes = { }
     local colors  = {
-        [relnode_code]             = "trace:dr",
-        [ordnoad_code]             = "trace:db",
-        [binnoad_code]             = "trace:dg",
-        [opennoad_code]            = "trace:dm",
-        [closenoad_code]           = "trace:dm",
-        [punctnoad_code]           = "trace:dc",
-     -- [opdisplaylimitsnoad_code] = "",
-     -- [oplimitsnoad_code]        = "",
-     -- [opnolimitsnoad_code]      = "",
-     -- [ordlimitsnoad_code]       = "",
-     -- [innernoad_code            = "",
-     -- [undernoad_code]           = "",
-     -- [overnoad_code]            = "",
-     -- [vcenternoad_code]         = "",
+        [relnode_code]     = "trace:dr",
+        [ordnoad_code]     = "trace:db",
+        [binnoad_code]     = "trace:dg",
+        [opennoad_code]    = "trace:dm",
+        [closenoad_code]   = "trace:dm",
+        [punctnoad_code]   = "trace:dc",
+     -- [opnoad_code]      = "",
+     -- [innernoad_code    = "",
+     -- [undernoad_code]   = "",
+     -- [overnoad_code]    = "",
+     -- [vcenternoad_code] = "",
     }
 
     local setcolor   = colortracers.set
@@ -2325,33 +2316,25 @@ end
 
 -- the normal builder
 
-do
+-- do
+--
+--     local force_penalties = false
+--
+--     function builders.kernel.mlisttohlist(head,style,penalties)
+--         return mlisttohlist(head,style,force_penalties or penalties)
+--     end
+--
+--     implement {
+--         name      = "setmathpenalties",
+--         arguments = "integer",
+--         actions   = function(p)
+--             force_penalties = p > 0
+--         end,
+--     }
+--
+-- end
 
-    local force_penalties = false
-
- -- registertracker("math.penalties",function(v)
- --     force_penalties = v
- -- end)
-
-    function builders.kernel.mlisttohlist(head,style,penalties)
-        return mlisttohlist(head,style,force_penalties or penalties)
-    end
-
- -- function builders.kernel.mlisttohlist(head,style,penalties)
- --     local h = mlisttohlist(head,style,force_penalties or penalties)
- --     inspect(nodes.totree(h,true,true,true))
- --     return h
- -- end
-
-    implement {
-        name      = "setmathpenalties",
-        arguments = "integer",
-        actions   = function(p)
-            force_penalties = p > 0
-        end,
-    }
-
-end
+builders.kernel.mlisttohlist = mlisttohlist
 
 local actions = tasks.actions("math") -- head, style, penalties
 

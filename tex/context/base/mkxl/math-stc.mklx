@@ -116,7 +116,7 @@
 % $\Umathaccent   0 0 "2190{x}$ \par $\Umathaccent   0 0 "27F8{x}$\par
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
 
-\setvalue{\??mathextensiblefallbacks}%
+\defcsname\??mathextensiblefallbacks\endcsname
   {\hpack{\vrule\s!width\scratchwidth\s!height.1\mathexheight\s!depth\zeropoint}}
 
 % \def\math_stackers_with_fallback#codepoint%
@@ -201,12 +201,12 @@
 \installcorenamespace {mathstackerslocation}
 \installcorenamespace {mathstackersalternative}
 
-\letvalue{\??mathstackerslocation\v!top    }\plusone   % on top of baseline
-\letvalue{\??mathstackerslocation\v!high   }\plustwo   % 25 % down
-\letvalue{\??mathstackerslocation\v!middle }\plusthree % centered
-\letvalue{\??mathstackerslocation\v!low    }\plusfour  % 75 % down
-\letvalue{\??mathstackerslocation\v!bottom }\plusfive  % below baseline
-\letvalue{\??mathstackerslocation          }\zerocount
+\letcsname\??mathstackerslocation\v!top    \endcsname\plusone   % on top of baseline
+\letcsname\??mathstackerslocation\v!high   \endcsname\plustwo   % 25 % down
+\letcsname\??mathstackerslocation\v!middle \endcsname\plusthree % centered
+\letcsname\??mathstackerslocation\v!low    \endcsname\plusfour  % 75 % down
+\letcsname\??mathstackerslocation\v!bottom \endcsname\plusfive  % below baseline
+\letcsname\??mathstackerslocation          \endcsname\zerocount
 
 %D First we implement the helper that deals with an extensible in the middle and
 %D top and|/|or bottom texts:
@@ -242,8 +242,8 @@
 
 % no checking, we assume sane use
 
-\letvalue{\??mathstackersalternative\v!normal }\math_stackers_content
-\letvalue{\??mathstackersalternative\v!default}\math_stackers_content
+\letcsname\??mathstackersalternative\v!normal \endcsname\math_stackers_content
+\letcsname\??mathstackersalternative\v!default\endcsname\math_stackers_content
 
 \setupmathstackers
   [\c!mp=math:stacker:\number\scratchunicode,
@@ -251,7 +251,7 @@
    \c!mpdepth=\mathchardp\scratchunicode,
    \c!mpoffset=.25\mathexheight]
 
-\setvalue{\??mathstackersalternative\v!mp}%
+\defcsname\??mathstackersalternative\v!mp\endcsname
   {\normalexpanded{\math_stackers_mp_box
      {\the\dimexpr\mathstackersparameter\c!mpheight}%
      {\the\dimexpr\mathstackersparameter\c!mpdepth}%
@@ -526,9 +526,9 @@
 
 \installcorenamespace {mathclasses}
 
-\letvalue{\??mathclasses    }\mathord
-\letvalue{\??mathclasses rel}\mathrel
-\letvalue{\??mathclasses ord}\mathord
+\letcsname\??mathclasses    \endcsname\mathord
+\letcsname\??mathclasses rel\endcsname\mathrel
+\letcsname\??mathclasses ord\endcsname\mathord
 
 \def\math_class_by_parameter#1%
   {\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}

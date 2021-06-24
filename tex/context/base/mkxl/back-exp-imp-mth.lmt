@@ -21,6 +21,10 @@ local extras         = backend.extras
 local checks         = backend.checks
 local finalizers     = backend.finalizers
 
+----- bpfactor       = number.dimenfactors.bp
+----- f_points       = string.formatters["%p"]
+local f_em           = string.formatters["%.6Nem"]
+
 local implement      = interfaces.implement
 
 do
@@ -155,6 +159,7 @@ do
         mi       = true,
         mo       = true,
         mn       = true,
+        mspace   = true,
     }
 
     local function checkmath(root) -- we can provide utf.toentities as an option
@@ -394,6 +399,17 @@ do
                     elseif tg == "break" then
                         di.skip = "comment"
                         i = i + 1
+                    elseif tg == "mspace" then
+                     -- di.empty = true
+                        local s = specifications[di.fulltag]
+                        local e = s and s.emfactor
+                        if e and e ~= 0 then
+                            di.element = "mspace"
+                            di.attributes = {
+                                width = f_em(e),
+                            }
+                        end
+                        i = i + 1
                     elseif tg == "mtext" then
                         -- this is only needed for unboxed mtexts ... all kind of special
                         -- tex border cases and optimizations ... trial and error
@@ -519,6 +535,8 @@ do
             local tg = di.tg
             if tg == "mtext" or tg == "ms" then
                 return di
+            elseif tg == "mspace" then
+                return di
             else
                 local data = di.data
                 local ndata = #data
@@ -530,38 +548,43 @@ do
                     end
                     if d then
                         local content = d.content
-                        if not content then
+                        if d.tg == "mspace" then
+                            n = n + 1
+                            data[n] = d
+                            d.data = { }
+                        elseif not content then
+--                      if not content then
                             n = n + 1
                             d.__i__ = n
                             data[n] = d
-                        elseif content == " " or content == "" then
-                            if di.tg == "mspace" then
-                                -- we append or prepend a space to a preceding or following mtext
-                                local parent = di.__p__
-                                local index  = di.__i__ -- == i
-                                local data   = parent.data
-                                if index > 1 then
-                                    local d = data[index-1]
-                                    if d.tg == "mtext" then
-                                        local dd = d.data
-                                        local dn = dd[#dd]
-                                        local dc = dn.content
-                                        if dc then
-                                            dn.content = dc .. content
-                                        end
-                                    end
-                                elseif index < ndata then
-                                    local d = data[index+1]
-                                    if d.tg == "mtext" then
-                                        local dd = d.data
-                                        local dn = dd[1]
-                                        local dc = dn.content
-                                        if dc then
-                                            dn.content = content .. dc
-                                        end
-                                    end
-                                end
-                            end
+--                        elseif content == " " or content == "" then
+--                            if d.tg == "mspace" then
+--                             -- we append or prepend a space to a preceding or following mtext
+--                                local parent = di.__p__
+--                                local index  = di.__i__ -- == i
+--                                local data   = parent.data
+--                                if index > 1 then
+--                                    local d = data[index-1]
+--                                    if d.tg == "mtext" then
+--                                        local dd = d.data
+--                                        local dn = dd[#dd]
+--                                        local dc = dn.content
+--                                        if dc then
+--                                            dn.content = dc .. content
+--                                        end
+--                                    end
+--                                elseif index < ndata then
+--                                    local d = data[index+1]
+--                                    if d.tg == "mtext" then
+--                                        local dd = d.data
+--                                        local dn = dd[1]
+--                                        local dc = dn.content
+--                                        if dc then
+--                                            dn.content = content .. dc
+--                                        end
+--                                    end
+--                                end
+--                            end
                         else
                             n = n + 1
                             data[n] = d

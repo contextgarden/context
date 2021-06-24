@@ -164,7 +164,7 @@ implement {
     arguments = "integer",
     actions   = function(n)
         -- we just hyphenate (as we pass a hpack) .. a bit too much casting but ...
-        local l = languages.hyphenators.handler(tonode(checkedlist(n)))
+        local l = languages.hyphenators.handler(checkedlist(n))
         report_hyphenation("show: %s",listtoutf(l,false,true))
     end
 }
@@ -496,6 +496,7 @@ do
 
     local values          = tokens.values
     local dimension_value = values.dimension
+    local cardinal_value  = values.cardinal
 
     local boxes           = { }
     nodes.boxes           = boxes
@@ -510,6 +511,9 @@ do
         local b = takebox(b)
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"save",b and "content" or "empty")
+        end
+        if name == "+" then
+            name = #cache[category] + 1
         end
         cache[category][name] = b or false
     end
@@ -527,10 +531,19 @@ do
         return cache[category][name] and true or false
     end
 
+    function boxes.count(category)
+        return #cache[category]
+    end
+
     function boxes.direct(category,name,copy)
         name = tonumber(name) or name
         local c = cache[category]
         local b = c[name]
+-- if name == "+" then
+--         b = remove(c, 1)
+-- else
+--         b = c[name]
+-- end
         if not b then
             -- do nothing, maybe trace
         elseif copy then
@@ -604,6 +617,11 @@ do
         end
     end
 
+    function boxes.dispose(category)
+        boxes.reset(category)
+        cache[category] = nil -- or false (for tracing)
+    end
+
     implement {
         name      = "putboxincache",
         public    = true,
@@ -662,7 +680,26 @@ do
         actions   = boxes.reset,
     }
 
+    implement {
+        name      = "disposeboxesincache",
+        public    = true,
+        protected = true,
+        arguments = "string",
+        actions   = boxes.dispose,
+    }
+
     -- we can share this ...
+
+    implement {
+        name      = "getboxcountfromcache",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(category)
+            return cardinal_value, #cache[category]
+        end,
+    }
 
     implement {
         name      = "getboxwdfromcache",

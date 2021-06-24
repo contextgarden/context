@@ -70,10 +70,10 @@ if zipfiles then
     local readstring  = streams.readstring
     local streamsize  = streams.size
 
-    local metatable = {
+    local metatable = { -- irrelevant as the streams proivide the methods .. a leftover?
         close = streams.close,
         read  = function(stream,n)
-            readstring(stream,n == "*a" and streamsize(stream) or n)
+            readstring(stream,n == "*a" and streamsize(stream) or n) -- no return ?
         end
     }
 

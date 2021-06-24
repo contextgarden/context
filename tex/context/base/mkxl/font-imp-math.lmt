@@ -99,7 +99,7 @@ function fonts.helpers.mathscriptslots(tfmdata,textcode)
     end
 end
 
-local function manipulate(tfmdata,key,value)
+local function manipulate(tfmdata,value)
     if texconditionals["c_font_compact"] then
         local rawdata           = tfmdata.shared.rawdata
         local rawresources      = rawdata and rawdata.resources
@@ -140,7 +140,7 @@ local function manipulate(tfmdata,key,value)
     end
 end
 
-local function initialize(tfmdata,key,value)
+local function initialize(tfmdata,value)
     if texconditionals["c_font_compact"] then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources
@@ -199,7 +199,7 @@ registerotffeature(specification)
 --     end
 -- end
 
-local function initialize(tfmdata,key,value)
+local function initialize(tfmdata,value)
     if value then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources
@@ -217,6 +217,30 @@ local specification = {
  --     base = manipulate,
  --     node = manipulate,
  -- },
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)
+
+local function initialize(tfmdata,value)
+    if type(value) == "string" then
+        local rawdata       = tfmdata.shared.rawdata
+        local rawresources  = rawdata and rawdata.resources
+        local mathconstants = rawresources.mathconstants
+        if mathconstants then
+            local bitmap = tex.stringtocodesbitmap(value,tex.mathcontrolcodes)
+         -- logs.report("mathfont","setting math control to %08X",bitmap)
+            tfmdata.properties.mathcontrol = bitmap
+        end
+    end
+end
+
+local specification = {
+    name         = "mathcontrol",
+    description  = "control specific old/new math handling",
     initializers = {
         base = initialize,
         node = initialize,

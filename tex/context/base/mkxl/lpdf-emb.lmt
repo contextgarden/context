@@ -85,6 +85,8 @@ local getmapentry = fonts.mappings.getentry
 
 -- needs checking: signed vs unsigned
 
+-- todo: use streams.tocardinal4 etc
+
 local tocardinal1 = char
 
 local function tocardinal2(n)

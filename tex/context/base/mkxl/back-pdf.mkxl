@@ -61,35 +61,40 @@
 %D Because we do a lot in \LUA\ and don't want interferences, we nil most of the
 %D \PDFTEX\ primitives. Of course one can always use the \type {\pdfvariable},
 %D \type {\pdfextension} and \type {\pdffeedback} primitives but it will probably
-%D have bad side effects.
+%D have bad side effects. We fake them as primitives which is why they are
+%D defined as untraced.
 
-\permanent\protected\def\pdfextension{\clf_pdfextension}
-\permanent          \def\pdffeedback {\clf_pdffeedback}
-\permanent          \def\pdfvariable {\clf_pdfvariable}
+% \pdfextension % defined in lua
+% \pdffeedback  % idem
+% \pdfvariable  % idem
+% \pdfliteral   % idem
+% \pdfobj       % idem
+% \pdflastobj   % idem
+% \pdfrefobj    % idem
 
-%D For the moment we keep this for tikz but hopefully it will at some point use
-%D the proper ones. Consider them obsolete:
+\untraced\permanent\protected\def\pdfrestore  {\pdfextension restore}
+\untraced\permanent\protected\def\pdfsave     {\pdfextension save}
+\untraced\permanent\protected\def\pdfsetmatrix{\pdfextension setmatrix}
 
-\permanent\protected\def\pdfliteral  {\clf_pdfliteral}
-\permanent\protected\def\pdfobj      {\clf_pdfobj}%
-\permanent\protected\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}
-\permanent\protected\def\pdfrefobj   {\clf_pdfrefobj}
+\untraced\permanent\def\pdfxform              {\saveboxresource}
+\untraced\permanent\def\pdflastxform          {\lastsavedboxresourceindex}
+\untraced\permanent\def\pdfrefxform           {\useboxresource}
 
-\permanent\protected\def\pdfrestore  {\pdfextension restore}
-\permanent\protected\def\pdfsave     {\pdfextension save}
-\permanent\protected\def\pdfsetmatrix{\pdfextension setmatrix}
+%D This is also needed for tikz:
 
-\permanent\let\pdfxform    \saveboxresource
-\permanent\let\pdflastxform\lastsavedboxresourceindex
-\permanent\let\pdfrefxform \useboxresource
+\ifdefined\pdfsavepos\else
+    \untraced\permanent\def\pdfsavepos {\savepos }
+    \untraced\permanent\def\pdflastxpos{\lastxpos}
+    \untraced\permanent\def\pdflastypos{\lastypos}
+\fi
 
 %D Here are quick and dirty compression flippers, mostly used when testing something
 %D as one can best stick to the defaults that also adapt to specific standards.
 
-\permanent\protected\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
-\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
-\permanent\protected\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
-\permanent\protected\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
+\untraced\permanent\protected\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
+\untraced\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
+\untraced\permanent\protected\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
+\untraced\permanent\protected\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
 
 %D PDF/X (maybe combine the two lua calls)
 
@@ -119,23 +124,23 @@
 %D These are the only official methods to add stuff to the resources. If more is
 %D needed for third party low level code, it can be added.
 
-\permanent\protected\def\pdfbackendsetcatalog       #1#2{\clf_lpdf_addtocatalog{#1}{#2}}
-\permanent\protected\def\pdfbackendsetinfo          #1#2{\clf_lpdf_addtoinfo{#1}{#2}}
-\permanent\protected\def\pdfbackendsetname          #1#2{\clf_lpdf_addtonames{#1}{#2}}
+% \pdfbackendsetcatalog       #1#2 % defined in lua
+% \pdfbackendsetinfo          #1#2 % idem
+% \pdfbackendsetname          #1#2 % idem
+%
+% \pdfbackendsetpageattribute #1#2 % idem
+% \pdfbackendsetpagesattribute#1#2 % idem
+% \pdfbackendsetpageresource  #1#2 % idem
+%
+% \pdfbackendsetextgstate     #1#2 % idem
+% \pdfbackendsetcolorspace    #1#2 % idem
+% \pdfbackendsetpattern       #1#2 % idem
+% \pdfbackendsetshade         #1#2 % idem
+%
+% \pdfbackendcurrentresources      %  idem, expandable
+% \pdfcolor                     #1 %  idem, expandable
 
-\permanent\protected\def\pdfbackendsetpageattribute #1#2{\clf_lpdf_addtopageattributes{#1}{#2}}
-\permanent\protected\def\pdfbackendsetpagesattribute#1#2{\clf_lpdf_addtopagesattributes{#1}{#2}}
-\permanent\protected\def\pdfbackendsetpageresource  #1#2{\clf_lpdf_addtopageresources{#1}{#2}}
-
-\permanent\protected\def\pdfbackendsetextgstate     #1#2{\clf_lpdf_adddocumentextgstate{#1}{#2}}
-\permanent\protected\def\pdfbackendsetcolorspace    #1#2{\clf_lpdf_adddocumentcolorspace{#1}{#2}}
-\permanent\protected\def\pdfbackendsetpattern       #1#2{\clf_lpdf_adddocumentpattern{#1}{#2}}
-\permanent\protected\def\pdfbackendsetshade         #1#2{\clf_lpdf_adddocumentshade{#1}{#2}}
-
-\permanent          \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
-\permanent          \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\rawcolorattribute{#1}\relax}
-
-%D This is a temporary hack mthat will be removed, improved or somehow can become
+%D This is a temporary hack that will be removed, improved or somehow can become
 %D default.
 
 \permanent\def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
@@ -146,19 +151,11 @@
 %D text \pdfbackendactualtext{Meier}{Müller} text
 %D \stoptyping
 
-\permanent\protected\def\pdfbackendactualtext#1#2% not interfaced
+\untraced\permanent\protected\def\pdfbackendactualtext#1#2% not interfaced
   {\clf_startactualtext{#2}%
    #1%
    \clf_stopactualtext}
 
 \aliased\let\pdfactualtext\pdfbackendactualtext
-
-%D Bah, this is also needed for tikz:
-
-\ifdefined\pdfsavepos\else
-    \permanent\let\pdfsavepos \savepos
-    \permanent\let\pdflastxpos\lastxpos
-    \permanent\let\pdflastypos\lastypos
-\fi
 
 \protect \endinput

@@ -501,6 +501,26 @@
 %   [boldened]
 %   [extend=1.2]
 
+%D Tweaks:
+%D
+%D \starttyping
+%D \setupbodyfont[dejavu]
+%D
+%D \starttext
+%D     \startTEXpage[align={tolerant,stretch},offset=1ex]
+%D         {\addff{camelcasing} \samplefile{tufte}\par}
+%D         {\addff{uppercasing} \samplefile{tufte}\par}
+%D         {\addff{lowercasing} \samplefile{tufte}\par}
+%D         {\addff{primes} 123'345''\par}
+%D     \stopTEXpage
+%D \stoptext
+%D \stoptyping
+
+\definefontfeature[primes]     [primes=yes]
+\definefontfeature[uppercasing][uppercasing=yes]
+\definefontfeature[lowercasing][lowercasing=yes]
+\definefontfeature[camelcasing][camelcasing=yes]
+
 %D Neat:
 
 % By eye:

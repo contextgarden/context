@@ -187,7 +187,7 @@ local execute = os.execute
 local iopopen = io.popen
 
 local function resultof(command)
-    local handle = iopopen(command,"r") -- already has flush
+    local handle = iopopen(command,"rb") -- already has flush, b is new !
     if handle then
         local result = handle:read("*all") or ""
         handle:close()

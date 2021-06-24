@@ -2085,11 +2085,11 @@ do
         local e = getid(id)
         if e then
             local at = e.at
-            if at and at[a] ~= "" then
-                return true
-            end
+            att = at and at[a] or ""
+        else
+            att = ""
         end
-        return false
+        return att == ""
     end
 
     function lxml.refatt(id,a)

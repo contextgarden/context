@@ -984,6 +984,8 @@
 %D \macros
 %D   {adaptlayout}
 
+% this will move to lua
+
 \installcorenamespace{adaptlayout}
 \installcorenamespace{pageadaptations}
 

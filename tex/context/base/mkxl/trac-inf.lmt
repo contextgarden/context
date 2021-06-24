@@ -265,8 +265,9 @@ status.iocodes = setmetatableindex(tex.getiovalues(), function() return "unknown
 local report = logs.reporter("system")
 
 local list   = {
-    "string", "pool", "hash", "lookup", "node", "token", "extra", "sparse", "buffer",
-    "input", "file", "nest", "parameter", "save", "font", "language", "mark", "insert",
+    "string", "pool", "hash", "lookup", "node", "token",
+    "buffer", "input", "file", "nest", "parameter", "save", "font", "language", "mark", "insert",
+ -- "extra", "sparse",
 }
 
 local function show(data,fields)

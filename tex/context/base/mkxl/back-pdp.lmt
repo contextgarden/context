@@ -27,6 +27,12 @@ local scanstring       = tokenscanners.string
 local scaninteger      = tokenscanners.integer
 local scanwhd          = tokenscanners.whd
 
+local values           = tokens.values
+local dimension_value  = values.dimension
+local cardinal_value   = values.cardinal
+
+local immediate_code   = tex.flagcodes.immediate
+
 local trace            = false  trackers.register("backend", function(v) trace = v end)
 local report           = logs.reporter("backend")
 
@@ -50,14 +56,14 @@ end
 
 local lastobjnum = 0
 
-local function pdf_obj()
+local function pdf_obj(prefix)
     if scankeyword("reserveobjnum") then
         lastobjnum = pdfreserveobject()
         if trace then
             report("\\pdfobj reserveobjnum: object %i",lastobjnum)
         end
     else
-        local immediate    = true
+        local immediate    = prefix and (prefix & immediate_code) ~= 0 -- was just "true"
         local objnum       = scankeyword("useobjnum") and scaninteger() or pdfreserveobject()
         local uncompress   = scankeyword("uncompressed") or pdfcompresslevel() == 0
         local streamobject = scankeyword("stream")
@@ -90,10 +96,14 @@ local function pdf_obj()
 end
 
 local function pdf_lastobj()
-    context("%i",lastobjnum)
     if trace then
         report("\\lastobj: object %i",lastobjnum)
     end
+    return cardinal_value, lastobjnum
+end
+
+local function pdf_pagereference()
+    return cardinal_value, pdfpagereference()
 end
 
 local function pdf_refobj()
@@ -218,9 +228,9 @@ end
 -- lastlink lastobj pageref retval revision version xformname
 
 local feedbacks = {
-    lastobj    = pdf_lastobj,
-    pageref    = function() context(pdfpagereference()) end,
-    xformname  = function() context(pdfgetxformname ()) end,
+    lastobj   = pdf_lastobj,
+    pageref   = pdf_pagereference,
+    xformname = function() context(pdfgetxformname ()) end,
 }
 
 local function pdf_feedback()
@@ -262,20 +272,18 @@ local function pdf_variable()
     end
 end
 
--- kept:
+-- kept (also because tikz needs including the pdftex primitives):
 
-implement { name = "pdfextension", actions = pdf_extension }
-implement { name = "pdffeedback",  actions = pdf_feedback }
-implement { name = "pdfvariable",  actions = pdf_variable }
+implement { name = "pdfextension", actions = pdf_extension, public = true, untraced = true, protected = true }
+implement { name = "pdffeedback",  actions = pdf_feedback,  public = true, untraced = true } -- expandable / todo : value
+implement { name = "pdfvariable",  actions = pdf_variable,  public = true, untraced = true } -- expandable / todo : value
+implement { name = "pdfliteral",   actions = pdf_literal,   public = true, untraced = true, protected = true }
+implement { name = "pdfobj",       actions = pdf_obj,       public = true, usage = "value", protected = true }
+implement { name = "pdflastobj",   actions = pdf_lastobj,   public = true, usage = "value", protected = true }
+implement { name = "pdfrefobj",    actions = pdf_refobj,    public = true, untraced = true, protected = true }
 
--- for the moment (tikz)
-
-implement { name = "pdfliteral",    actions = pdf_literal }
-implement { name = "pdfobj",        actions = pdf_obj }
-implement { name = "pdflastobj",    actions = pdf_lastobj }
-implement { name = "pdfrefobj",     actions = pdf_refobj }
---------- { name = "pdfannot",      actions = pdf_annot }
---------- { name = "pdfdest",       actions = pdf_dest }
---------- { name = "pdfsave",       actions = pdf_save }
---------- { name = "pdfrestore",    actions = pdf_restore }
---------- { name = "pdfsetmatrix",  actions = pdf_setmatrix }
+--------- { name = "pdfannot",     actions = pdf_annot }
+--------- { name = "pdfdest",      actions = pdf_dest }
+--------- { name = "pdfsave",      actions = pdf_save }
+--------- { name = "pdfrestore",   actions = pdf_restore }
+--------- { name = "pdfsetmatrix", actions = pdf_setmatrix }

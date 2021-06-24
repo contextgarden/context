@@ -90,28 +90,6 @@ function lua.registercode(filename,options)
     end
 end
 
-local finalizers = { }
-
-function lua.registerfinalizer(f,comment)
-    comment = comment or "unknown"
-    if type(f) == "function" then
-        finalizers[#finalizers+1] = { action = f, comment = comment }
-    else
-        print(format("\nfatal error: invalid finalizer, action: %s\n",comment))
-        os.exit()
-    end
-end
-
-function lua.finalize(logger)
-    for i=1,#finalizers do
-        local finalizer = finalizers[i]
-        finalizer.action()
-        if logger then
-            logger("finalize action: %s",finalizer.comment)
-        end
-    end
-end
-
 -- A first start with environments. This will be overloaded later.
 
 environment       = environment or { }
@@ -167,6 +145,38 @@ environment.luatexfunctionality = LUATEXFUNCTIONALITY
 environment.jitsupported        = JITSUPPORTED
 environment.initex              = INITEXMODE
 environment.initexmode          = INITEXMODE
+
+if INITEXMODE then
+
+    local finalizers = { }
+
+    function lua.registerinitexfinalizer(f,comment)
+        comment = comment or "unknown"
+        if type(f) == "function" then
+            finalizers[#finalizers+1] = { action = f, comment = comment }
+        else
+            print(format("\nfatal error: invalid finalizer, action: %s\n",comment))
+            os.exit()
+        end
+    end
+
+    function lua.finalizeinitex(logger)
+        for i=1,#finalizers do
+            local finalizer = finalizers[i]
+            finalizer.action()
+            if logger then
+                logger("finalize action: %s",finalizer.comment)
+            end
+        end
+    end
+
+else
+
+    function lua.registerinitexfinalizer() end
+    function lua.finalizeinitex         () end
+
+end
+
 
 if not environment.luafilechunk then
 

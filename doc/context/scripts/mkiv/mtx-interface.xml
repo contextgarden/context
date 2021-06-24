@@ -18,6 +18,7 @@
     <flag name="bbedit"><short>generate bbedit interface files</short></flag>
     <flag name="jedit"><short>generate jedit interface files</short></flag>
     <flag name="textpad"><short>generate textpad interface files</short></flag>
+    <flag name="vim"><short>generate vim interface files</short></flag>
     <flag name="text"><short>create text files for commands and environments</short></flag>
     <flag name="raw"><short>report commands to the console</short></flag>
     <flag name="check"><short>generate check file</short></flag>

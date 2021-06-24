@@ -314,7 +314,7 @@ local function copytotfm(data,cache_id)
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
         local goodies        = derivetable(data.goodies)
-        local characters     = { }
+        local characters     = { } -- newtable if we knwo how many
         local parameters     = { }
         local mathparameters = { }
         --

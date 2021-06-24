@@ -630,12 +630,13 @@ local dir, par do
             setattr(info,a_layer,l_dir)
             d_cache[what] = info
         end
+        head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
 
     dir = function(head,current)
         local what = getsubtype(current)
-        if what == cancelcode then
+        if what == cancel_code then
             what = "cancel"
         elseif getdirection(current) == r2l_code then
             what = "r2l"
@@ -650,6 +651,7 @@ local dir, par do
             setattr(info,a_layer,l_dir)
             d_cache[what] = info
         end
+        head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
 

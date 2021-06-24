@@ -1640,7 +1640,7 @@ do
                             d.__i__ = n
                             data[n] = d
                         elseif content == " " or content == "" then
-                            if di.tg == "mspace" then
+                            if d.tg == "mspace" then
                                 -- we append or prepend a space to a preceding or following mtext
                                 local parent = di.__p__
                                 local index  = di.__i__ -- == i

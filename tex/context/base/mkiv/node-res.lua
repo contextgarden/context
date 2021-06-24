@@ -590,7 +590,7 @@ statistics.register("node memory usage", function() -- comes after cleanup !
     end
 end)
 
-lua.registerfinalizer(cleanup, "cleanup reserved nodes")
+lua.registerinitexfinalizer(cleanup, "cleanup reserved nodes")
 
 -- experiment
 

@@ -53,11 +53,11 @@
    \endgroup}
 
 \permanent\protected\def\setbreakpoints[#1]%
-  {\exhyphenchar\minusone % we use a different order than base tex, so we really need this
+  {%\exhyphenchar\minusone % we now use collapsing so ...
    \clf_setbreakpoints{#1}}
 
 \permanent\protected\def\resetbreakpoints
-  {\exhyphenchar\hyphenasciicode % 2020.03.05
+  {%\exhyphenchar\hyphenasciicode % 2020.03.05 / we now use collapsing so ...
    \c_attr_breakpoint\attributeunsetvalue}
 
 \definebreakpoints[compound]

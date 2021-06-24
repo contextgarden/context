@@ -1263,7 +1263,7 @@
 
 \pushoverloadmode
 
-\overloaded\permanent\protected\def\offinterlineskip
+\overloaded\permanent\protected\def\offinterlineskip % later we will overload this with a push pop
   {\baselineskip-\thousandpoint
    \lineskip     \zeropoint
    \lineskiplimit\maxdimen

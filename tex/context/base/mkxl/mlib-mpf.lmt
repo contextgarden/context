@@ -941,6 +941,7 @@ do
 
     local scanstring     = scan.string
     local scannumeric    = scan.numeric
+    local scaninteger    = scan.integer
     local skiptoken      = skip.token
 
     ----- injectstring   = inject.string
@@ -982,7 +983,7 @@ do
 
     registerscript("setglobalmacro", function() setmacro(scanstring(),scanstring(),"global") end)
     registerscript("setglobaldimen", function() setdimen("global",scanstring(),scannumeric()/bpfactor) end)
-    registerscript("setglobalcount", function() setcount("global",scanstring(),scannumeric()) end)
+    registerscript("setglobalcount", function() setcount("global",scanstring(),scaninteger()) end)
     registerscript("setglobaltoks",  function() settoks ("global",scanstring(),scanstring()) end)
 
     local utfnum = utf.byte

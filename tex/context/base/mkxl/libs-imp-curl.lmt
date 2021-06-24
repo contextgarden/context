@@ -19,6 +19,7 @@ if not curllib then return end
 
 local next, type = next, type
 local lower, gsub = string.lower, string.gsub
+local dirname = file.dirname
 
 local mapping = {
     ["acceptencoding"]          = 102,
@@ -272,6 +273,9 @@ local function fetch(options)
                     o[index] = value
                 end
             end
+         -- if o.capath == true then
+         --     o.capath = libpath
+         -- end
             return curl_fetch(o)
         elseif t == "string" then
             return curl_fetch { [mapping.url] = options }
@@ -288,10 +292,19 @@ local curl = {
     escape     = function (s) return okay() and curl_escape    (s) end,
     unescape   = function (s) return okay() and curl_unescape  (s) end,
     fetch      = fetch,
+    libfile    = libfile,
+    libpath    = dirname(libfile),
 }
 
 -- inspect(curl.fetch("http://www.pragma-ade.com/index.html"))
 -- inspect(curl.fetch { url = "http://www.pragma-ade.com/index.html" })
+--
+-- inspect(curl.fetch {
+--     url           = "https://www.ctan.org/json/2.0/packages",
+--     sslverifyhost = 0,
+--     sslverifypeer = 0,
+--  -- capath        = true
+-- } )
 
 package.loaded[libname] = curl
 

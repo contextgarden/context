@@ -231,8 +231,8 @@ local blockedsuffixes    = {
  -- lfg  = true,
 }
 
-local sttags = table.setmetatableindex(function(t,name)
-    name = collapsepath(name)
+local sttags = table.setmetatableindex(function(t,fullname)
+    local name = collapsepath(fullname)
     if blockedsuffixes[suffixonly(name)] then
         -- Just so that I don't get the ones on my development tree.
         nofblocked = nofblocked + 1
@@ -248,6 +248,9 @@ local sttags = table.setmetatableindex(function(t,name)
     else
         noftags = noftags + 1
         t[name] = noftags
+        if name ~= fullname then
+            t[fullname] = noftags
+        end
         stnums[noftags] = name
         return noftags
     end

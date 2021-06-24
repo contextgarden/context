@@ -958,30 +958,46 @@ local function apply_to_list(list,size,head,pardir)
             setdirection(current,pardir) -- is this really needed?
         elseif id == glue_code then
             -- Maybe I should also fix dua and dub but on the other hand ... why?
-            if enddir and getsubtype(current) == parfillskip_code then
-                -- insert the last enddir before \parfillskip glue
-                local c = current
-                local p = getprev(c)
-                if p and getid(p) == glue_code and getsubtype(p) == parfillleftskip_code then
-                    c = p
-                    p = getprev(c)
-                end
-                if p and getid(p) == penalty_code then -- linepenalty
-                    c = p
-                end
-                -- there is always a par nodes so head will stay
-                head = insertnodebefore(head,c,new_direction(enddir,true))
+--             if enddir and getsubtype(current) == parfillskip_code then
+--                 -- insert the last enddir before \parfillskip glue
+--                 local c = current
+--                 local p = getprev(c)
+--                 if p and getid(p) == glue_code and getsubtype(p) == parfillleftskip_code then
+--                     c = p
+--                     p = getprev(c)
+--                 end
+--                 while p and getid(p) == glue_code do
+--                     c = p
+--                     p = getprev(c)
+--                 end
+--                 if p and getid(p) == penalty_code then -- linepenalty
+--                     c = p
+--                 end
+--                 -- there is always a par nodes so head will stay
+--                 local d = new_direction(enddir,true)
+--                 setattrlist(d,current)
+--                 head = insertnodebefore(head,c,d)
+--                 enddir = false
+--             end
+            if enddir then
+                local d = new_direction(enddir,true)
+                setattrlist(d,current)
+                head = insertnodebefore(head,current,d)
                 enddir = false
             end
         elseif begindir then
             if id == par_code and startofpar(current) then
                 -- par should always be the 1st node
-                head, current = insertnodeafter(head,current,new_direction(begindir))
+                local d = new_direction(begindir)
+                setattrlist(d,current)
+                head, current = insertnodeafter(head,current,d)
                 begindir = nil
             end
         end
         if begindir then
-            head = insertnodebefore(head,current,new_direction(begindir))
+            local d = new_direction(begindir)
+            setattrlist(d,current)
+            head = insertnodebefore(head,current,d)
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -996,7 +1012,9 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            head, current = insertnodeafter(head,current,new_direction(enddir,true))
+            local d = new_direction(enddir,true)
+            setattrlist(d,current)
+            head, current = insertnodeafter(head,current,d)
         end
         if not entry.remove then
             current = getnext(current)

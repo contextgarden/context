@@ -1021,7 +1021,7 @@ local tx_reset, tx_process  do
         end
     end
 
-    local fasttrack = true
+    local fasttrack = false -- we loose colors done with withcolor when true
 
     directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
 

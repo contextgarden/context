@@ -122,10 +122,16 @@
 
 \definesystemattribute[displaymath]    [public]
 
-\mathflattenmode 31
+\mathflattenmode\numexpr
+    \ordflattencode
+   +\binflattencode
+   +\relflattencode
+   +\punctflattencode
+   +\innerflattencode
+\relax
 
 \ifdefined\ordlimits\else
-    \let\ordlimits\limits
+    \let\ordlimits\Umathlimits % downward compatible
 \fi
 
 \appendtoks
@@ -3002,6 +3008,38 @@
 %D \typebuffer \getbuffer
 
 \normalsupmarkmode\plusone % 2 also disable ^[^+] in text mode
+
+\permanent\protected\tolerant\def\supscr[#1]#:#2%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\fi
+   \Usuperscript{#2}}
+
+\permanent\protected\tolerant\def\subscr[#1]#:#2%
+  {\ifchkdim#1\or\Umathopenupdepth #1\relax\fi
+   \Usubscript{#2}}
+
+\permanent\protected\tolerant\def\supsubscr[#1]#:#2#3%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+   \Usuperscript{#2}\Usubscript{#3}}
+
+\permanent\protected\tolerant\def\subsupscr[#1]#:#*#2#3%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+   \Usubscript{#2}\Usuperscript{#3}}
+
+\permanent\protected\tolerant\def\supprescr[#1]#:#2%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\fi
+   \Usuperprescript{#2}}
+
+\permanent\protected\tolerant\def\subprescr[#1]#:#2%
+  {\ifchkdim#1\or\Umathopenupdepth #1\relax\fi
+   \Usubprescript{#2}}
+
+\permanent\protected\tolerant\def\supsubprescr[#1]#:#2#3%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+   \Usuperprescript{#2}\Usubprescript{#3}}
+
+\permanent\protected\tolerant\def\subsupprescr[#1]#:#*#2#3%
+  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+   \Usubprescript{#2}\Usuperprescript{#3}}
 
 \protect \endinput
 

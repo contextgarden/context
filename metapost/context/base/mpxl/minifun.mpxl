@@ -26,8 +26,8 @@ newinternal boolean contextlmtxmode ; contextlmtxmode := true ; immutable contex
 
 input "mp-base.mpiv" ;
 input "mp-tool.mpxl" ;
-input "mp-mlib.mpxl" ;
 input "mp-luas.mpxl" ;
+input "mp-mlib.mpxl" ;
 input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
 input "mp-page.mpxl" ;

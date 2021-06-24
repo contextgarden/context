@@ -342,10 +342,10 @@ do
     local l = 0
 
     implement {
-        name      = "openin",
-        public    = true,
-        usage     = "value",
-        actions   = function()
+        name    = "openin",
+        public  = true,
+        usage   = "value",
+        actions = function()
             local n = scaninteger()
                       scankeyword("=")
             local s = scanstring(true)
@@ -365,10 +365,10 @@ do
     }
 
     implement {
-        name      = "closein",
-        public    = true,
-        usage     = "value",
-        actions   = function()
+        name    = "closein",
+        public  = true,
+        usage   = "value",
+        actions = function()
             local n = scaninteger()
             local c = channels[n]
             if c then
@@ -388,10 +388,10 @@ do
     end
 
     interfaces.implement {
-        name      = "read",
-        public    = true,
-        usage     = "value",
-        actions   = function(prefix)
+        name    = "read",
+        public  = true,
+        usage   = "value",
+        actions = function(prefix)
             local n = scaninteger()
             local c = channels[n]
             if scankeyword("line") and c then

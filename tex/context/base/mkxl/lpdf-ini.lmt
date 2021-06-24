@@ -1278,19 +1278,20 @@ do
 
 end
 
--- interface
+-- Bah, tikz uses \immediate for some reason which is probably a bug, so the usage
+-- will deal with that. However, we will not provide the serialization.
 
-implement { name = "lpdf_collectedresources",                             actions = { lpdf.collectedresources, context } }
-implement { name = "lpdf_addtocatalog",          arguments = "2 strings", actions = lpdf.addtocatalog }
-implement { name = "lpdf_addtoinfo",             arguments = "2 strings", actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
-implement { name = "lpdf_addtonames",            arguments = "2 strings", actions = lpdf.addtonames }
-implement { name = "lpdf_addtopageattributes",   arguments = "2 strings", actions = lpdf.addtopageattributes }
-implement { name = "lpdf_addtopagesattributes",  arguments = "2 strings", actions = lpdf.addtopagesattributes }
-implement { name = "lpdf_addtopageresources",    arguments = "2 strings", actions = lpdf.addtopageresources }
-implement { name = "lpdf_adddocumentextgstate",  arguments = "2 strings", actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentcolorspace", arguments = "2 strings", actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentpattern",    arguments = "2 strings", actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentshade",      arguments = "2 strings", actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
+implement { name = "pdfbackendcurrentresources",                   public = true, untraced  = true,                            actions = { lpdf.collectedresources, context } }
+implement { name = "pdfbackendsetcatalog",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtocatalog }
+implement { name = "pdfbackendsetinfo",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
+implement { name = "pdfbackendsetname",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtonames }
+implement { name = "pdfbackendsetpageattribute",  usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageattributes }
+implement { name = "pdfbackendsetpagesattribute", usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopagesattributes }
+implement { name = "pdfbackendsetpageresource",   usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageresources }
+implement { name = "pdfbackendsetextgstate",      usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
+implement { name = "pdfbackendsetcolorspace",     usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
+implement { name = "pdfbackendsetpattern",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
+implement { name = "pdfbackendsetshade",          usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
 
 -- more helpers: copy from lepd to lpdf
 

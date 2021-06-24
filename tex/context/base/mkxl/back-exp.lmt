@@ -921,7 +921,9 @@ do
                     local element = di.element
                     if not element then
                         -- skip
-                    elseif element == "break" then -- or element == "pagebreak"
+                    elseif element == "break" then -- or element == "pagebreak" -- todo: use empty flag
+                        emptytag(result,element,nature,di)
+                    elseif element == "mspace" then -- todo: use empty flag
                         emptytag(result,element,nature,di)
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
@@ -941,6 +943,11 @@ do
                             flushtree(result,di.after,nature)
                         end
                     end
+                else
+--                     local element = di.element
+--                     if element == "mspace" then -- todo: use empty flag
+--                         emptytag(result,element,nature,di)
+--                     end
                 end
             end
         end
@@ -961,8 +968,8 @@ do
                     -- skip
                 elseif di.skip == "ignore" then
                     -- skip (new)
-elseif di.tg == "ignore" then
-    -- skip (new)
+                elseif di.tg == "ignore" then
+                    -- skip (new)
                 elseif di.content then
                     if di.samepar then
                         prevparnumber = false
@@ -1046,12 +1053,22 @@ elseif di.tg == "ignore" then
     -- also tabulaterow reconstruction .. maybe better as a checker
     -- i.e cell attribute
 
+    local function showtree(data,when,where)
+        if data then
+            for i=1,#data do
+                local d = data[i]
+                if type(d) == "table" and d.element then
+                    print(when,where,i,d.element,d.parnumber or 0)
+                end
+            end
+        end
+    end
+
     local function collapsetree(tree)
---         for tag, trees in sortedhash(treehash) do
+     -- showtree(data,"before","collapse")
+     -- for tag, trees in sortedhash(treehash) do
         for tag, trees in next, treehash do
             local d = trees[1].data
--- print("!!!!!!!!",tag)
--- inspect(trees)
             if d then
                 local nd = #d
                 if nd > 0 then
@@ -1097,30 +1114,22 @@ elseif di.tg == "ignore" then
                 end
             end
         end
+     -- showtree(data,"after","collapse")
     end
 
     local function finalizetree(tree)
+     -- showtree(data,"before","finalize")
         for _, finalizer in next, finalizers do
             finalizer(tree)
         end
+     -- showtree(data,"after","finalize")
     end
-
- -- local function showtree(data,when,where)
- --     if data then
- --         for i=1,#data do
- --             local d = data[i]
- --             if type(d) == "table" and d.element then
- --                 print(when,where,i,d.element,d.parnumber or 0)
- --             end
- --         end
- --     end
- -- end
 
     local function indextree(tree)
         local data = tree.data
         if data then
-            local n, new = 0, { }
          -- showtree(data,"before","index")
+            local n, new = 0, { }
             for i=1,#data do
                 local d = data[i]
                 if not d then
@@ -1148,9 +1157,12 @@ elseif di.tg == "ignore" then
             for i=1,#data do
                 local d = data[i]
                 if type(d) == "table" then
-                    local check = checks[d.tg]
-                    if check then
-                        check(d,data,i)
+                    local tg = d.tg
+                    if tg then
+                        local check = checks[tg]
+                        if check then
+                            check(d,data,i)
+                        end
                     end
                     checktree(d) -- so parts can pass twice
                 end
@@ -1166,9 +1178,12 @@ elseif di.tg == "ignore" then
             for i=1,#data do
                 local d = data[i]
                 if type(d) == "table" then
-                    local fix = fixes[d.tg]
-                    if fix then
-                        fix(d,data,i)
+                    local tg = d.tg
+                    if tg then
+                        local fix = fixes[tg]
+                        if fix then
+                            fix(d,data,i)
+                        end
                     end
                     fixtree(d) -- so parts can pass twice
                 end
@@ -1406,29 +1421,30 @@ end
 
 local collectresults  do -- too many locals otherwise
 
-    local nodecodes        = nodes.nodecodes
-    local gluecodes        = nodes.gluecodes
-    local listcodes        = nodes.listcodes
-    local whatsitcodes     = nodes.whatsitcodes
+    local nodecodes          = nodes.nodecodes
+    local gluecodes          = nodes.gluecodes
+    local listcodes          = nodes.listcodes
+    local whatsitcodes       = nodes.whatsitcodes
 
-    local subtypes         = nodes.subtypes
+    local subtypes           = nodes.subtypes
 
-    local hlist_code       = nodecodes.hlist
-    local vlist_code       = nodecodes.vlist
-    local glyph_code       = nodecodes.glyph
-    local glue_code        = nodecodes.glue
-    local kern_code        = nodecodes.kern
-    local disc_code        = nodecodes.disc
-    local whatsit_code     = nodecodes.whatsit
-    local par_code         = nodecodes.par
+    local hlist_code         = nodecodes.hlist
+    local vlist_code         = nodecodes.vlist
+    local glyph_code         = nodecodes.glyph
+    local glue_code          = nodecodes.glue
+    local kern_code          = nodecodes.kern
+    local disc_code          = nodecodes.disc
+    local whatsit_code       = nodecodes.whatsit
+    local par_code           = nodecodes.par
 
-    local userskip_code    = gluecodes.userskip
-    local rightskip_code   = gluecodes.rightskip
-    local parfillskip_code = gluecodes.parfillskip
-    local spaceskip_code   = gluecodes.spaceskip
-    local xspaceskip_code  = gluecodes.xspaceskip
+    local userskip_code      = gluecodes.userskip
+    local rightskip_code     = gluecodes.rightskip
+    local parfillskip_code   = gluecodes.parfillskip
+    local spaceskip_code     = gluecodes.spaceskip
+    local xspaceskip_code    = gluecodes.xspaceskip
+    local intermathskip_code = gluecodes.intermathskip
 
-    local linelist_code    = listcodes.line
+    local linelist_code      = listcodes.line
 
     local userdefinedwhatsit_code  = whatsitcodes.userdefined
 
@@ -1654,6 +1670,21 @@ local collectresults  do -- too many locals otherwise
                         currentcontent[nofcurrentcontent] = c
                     end
                 elseif subtype == userskip_code then
+-- local at = getattr(n,a_tagged)
+-- local tl = taglist[at]
+-- if tl and structurestags.strip(tl.taglist[#tl.taglist]) == "mspace" then
+--     if nofcurrentcontent > 0 then
+--         pushcontent()
+--         pushentry(currentnesting) -- ??
+--     end
+--     -- in the past we'd push a space here ... check mkiv : otherwise no threshold with mspace
+--     pushentry(tl)
+--     if trace_export then
+--         report_export("%w<!-- processing mspace tagged %a",currentdepth,at)
+--     end
+--     last = nil
+--     currentparagraph = nil
+-- else
                     if getwidth(n) > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
@@ -1681,6 +1712,7 @@ local collectresults  do -- too many locals otherwise
                             end
                         end
                     end
+-- end
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
                         local a = getattr(n,a_tagged) or pat
@@ -1703,6 +1735,8 @@ local collectresults  do -- too many locals otherwise
                             currentattribute = last
                         end
                     end
+                elseif subtype == intermathskip_code then
+                    -- put this as attribute when it differs, maybe more ... check mathml
                 elseif subtype == rightskip_code then
                     -- a line
                     if nofcurrentcontent > 0 then
@@ -1769,49 +1803,50 @@ local collectresults  do -- too many locals otherwise
             elseif id == kern_code then
                 local kern = getkern(n)
                 if kern > 0 then
-local a = getattr(n,a_tagged) or pat
-local t = taglist[a]
-if not t or t.tagname ~= "ignore" then -- maybe earlier on top)
-                    local limit = threshold
-                    if p then
-                        local c, f = isglyph(p)
-                        if c then
-                            limit = fontquads[f] / 4
+                    local a = getattr(n,a_tagged) or pat
+                    local t = taglist[a]
+                    if not t or t.tagname ~= "ignore" then -- maybe earlier on top)
+                        local limit = threshold
+                        if p then
+                            local c, f = isglyph(p)
+                            if c then
+                                limit = fontquads[f] / 4
+                            end
                         end
-                    end
-                    if kern > limit then
-                        if last and not somespace[currentcontent[nofcurrentcontent]] then
---                             local a = getattr(n,a_tagged) or pat
-                            if a == last then
-                                if not somespace[currentcontent[nofcurrentcontent]] then
+                        if kern > limit then
+                            if last and not somespace[currentcontent[nofcurrentcontent]] then
+                             -- local a = getattr(n,a_tagged) or pat
+                                if a == last then
+                                    if not somespace[currentcontent[nofcurrentcontent]] then
+                                        if trace_export then
+                                            report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                        end
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = " "
+                                    end
+                                elseif a then
+                                    -- e.g LOGO<space>LOGO
                                     if trace_export then
-                                        report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                        report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
+                                    end
+                                    last = a
+                                    pushcontent()
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
                                     end
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = " "
+                                 -- currentnesting = taglist[last]
+                                    currentnesting = t
+                                    pushentry(currentnesting)
+                                    currentattribute = last
                                 end
-                            elseif a then
-                                -- e.g LOGO<space>LOGO
-                                if trace_export then
-                                    report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
-                                end
-                                last = a
-                                pushcontent()
-                                if trace_export then
-                                    report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
-                                end
-                                nofcurrentcontent = nofcurrentcontent + 1
-                                currentcontent[nofcurrentcontent] = " "
---                                 currentnesting = taglist[last]
-currentnesting = t
-                                pushentry(currentnesting)
-                                currentattribute = last
                             end
                         end
                     end
-end
                 end
             elseif id == whatsit_code then
+                -- todo (lmtx)
                 if subtype == userdefinedwhatsit_code then
                     -- similar to images, see above
                     local at = getattr(n,a_tagged)

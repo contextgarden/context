@@ -261,4 +261,4 @@ local function makestub()
     logs.newline()
 end
 
-lua.registerfinalizer(makestub,"create stub file")
+lua.registerinitexfinalizer(makestub,"create stub file")

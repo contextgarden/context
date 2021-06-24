@@ -846,12 +846,12 @@
      \global\c_strc_math_vertical\zerocount
    \fi
    \ifcase\c_strc_math_vertical
-   % \mathpenaltiesmode \zerocount
-     \clf_setmathpenalties\zerocount
+   % \clf_setmathpenalties\zerocount
+     \mathpenaltiesmode \zerocount
      \clf_resetmathhang
    \else
-   % \mathpenaltiesmode \plusone
-     \clf_setmathpenalties\plusone
+   % \clf_setmathpenalties\plusone
+     \mathpenaltiesmode \plusone
      \edef\p_hang{\formulaparameter\c!hang}%
      \ifx\p_hang\v!none
        \global\setfalse\c_strc_math_indent

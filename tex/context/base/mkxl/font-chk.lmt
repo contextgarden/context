@@ -168,6 +168,9 @@ function checkers.placeholder(font,char)
     local scale    = units/1000
     local rawdata  = tfmdata.shared and tfmdata.shared.rawdata
     local weight   = (rawdata and rawdata.metadata and rawdata.metadata.pfmweight or 400)/400
+--     if slant then
+--         slant = 0.2
+--     end
     local specification = {
         code      = "MissingGlyph",
         scale     = scale,

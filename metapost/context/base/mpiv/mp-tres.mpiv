@@ -114,6 +114,10 @@ vardef Abs primary p =
     fi
 enddef ;
 
+vardef Unitvector primary z =
+    z/Abs z
+enddef ;
+
 primarydef p dotproduct q =
     ((Xpart p)*(Xpart q) + (Ypart p)*(Ypart q) + (Zpart p)*(Zpart q))
 enddef ;

@@ -82,14 +82,14 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,banner) -- tex
             functionality = LUATEXFUNCTIONALITY,
         }
         io.savedata(luvname,table.serialize(luvdata,true))
-        lua.registerfinalizer(function()
+        lua.registerinitexfinalizer(function()
             if jit then
                 logs.report("format banner","%s  lua: %s jit",banner,LUAVERSION)
             else
                 logs.report("format banner","%s  lua: %s",banner,LUAVERSION)
             end
             logs.newline()
-        end)
+        end, "show banner")
     end
 end
 

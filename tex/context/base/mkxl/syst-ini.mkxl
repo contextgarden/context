@@ -156,7 +156,7 @@
     function tex.enableprimitives() end % so we kind of protect what's there
 }
 
-\permanent\let\undefined\undefined
+\untraced\permanent\let\undefined\undefined
 
 \immutable\def\space{ }
 \immutable\def\empty{}
@@ -1021,8 +1021,7 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
-%D Sometimes kerns make more sense than glue but we need to be in the
-%D right mode:
+%D Sometimes kerns make more sense than glue but we need to be in the right mode:
 
 \permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}
 \permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}
@@ -1030,8 +1029,8 @@
 \permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty}
 \permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty}
 
-%D Again a few kind-of-extensions the core. These come from plain \TEX\ but
-%D are probably not used in \CONTEXT.
+%D Again a few kind-of-extensions the core. These come from plain \TEX\ but are
+%D probably not used in \CONTEXT.
 
 \newskip \hideskip   \hideskip  = -1000pt plus 1fill
 \newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
@@ -1138,12 +1137,12 @@
 
 \glyphoptions"80 % replaces \glyphdimensionsmode=1
 
-%D Just in case users use this:
+%D Just in case users use this (or some styles still have it):
 
-\aliased\let\immediateassign  \immediate
-\aliased\let\immediateassigned\localcontrolled
+\aliased\let\immediateassignment\immediate
+\aliased\let\immediateassigned  \localcontrolled
 
-%D Needed:
+%D Needed (maybe no longer the multiple next ones):
 
 \mutable\let\nexttoken   \relax
 \mutable\let\next        \relax

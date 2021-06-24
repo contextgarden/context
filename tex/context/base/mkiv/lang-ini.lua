@@ -158,11 +158,16 @@ local function sethjcodes(instance,loaded,what,factor)
             loaded.codehash = h
         end
         --
-        local function setcode(l)
-            local u = uccodes[l]
+        local function setcode(code)
+            local l = lccodes[code] -- just in case we get a mixture
+            local u = uccodes[code] -- just in case we get a mixture
             local s = l
+            if type(s) ~= "number" then
+                l = code
+                s = code
+            end
             if hjcounts then
-                local c = hjcounts[l]
+                local c = hjcounts[s]
                 if c then
                     c = c.count
                     if not c then
@@ -183,14 +188,14 @@ local function sethjcodes(instance,loaded,what,factor)
             h[l] = s
             if u ~= l and type(u) == "number" then
                 sethjcode(instance,u,s)
-                h[u] = lccodes[l]
+                h[u] = s
             end
         end
         --
         local s = tex.savinghyphcodes
         tex.savinghyphcodes = 0
         if type(c) == "table" then
-            for l in next, c do
+            for l in sortedhash(c) do
                 setcode(utfbyte(l))
             end
         else

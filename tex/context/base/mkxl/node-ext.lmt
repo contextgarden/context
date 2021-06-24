@@ -51,7 +51,8 @@ local whatsitcodes        = allocate { }
 nodes.whatsitcodes        = whatsitcodes
 local lastwhatsit         = 0
 
-nodes.subtypes.whatsit    = whatsitcodes
+nodes.subtypes.whatsit       = whatsitcodes
+nodes.subtypes[whatsit_code] = whatsitcodes
 
 local function registerwhatsit(name)
     lastwhatsit = lastwhatsit + 1
@@ -165,6 +166,7 @@ do
         name      = "latelua",
         public    = true,
         protected = true,
+        untraced  = true,
         actions   = function()
             local node = copynut(lateluanode)
             local name = "latelua"

@@ -205,7 +205,6 @@ if CONTEXTLMTXMODE > 0 then
         end
     }
 
-
     implement {
         name      = "ifxmlempty",
         public    = true,

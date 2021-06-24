@@ -262,12 +262,11 @@ function streams.readfixed2(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
-    local a, b = byte(f[1],i,j)
-    if a >= 0x80 then
-        return tonumber((a - 0x100) .. "." .. b) or 0
-    else
-        return tonumber((a        ) .. "." .. b) or 0
+    local n1, n2 = byte(f[1],i,j)
+    if n1 >= 0x80 then
+        n1 = n1 - 0x100
     end
+    return n1 + n2/0xFF
 end
 
 function streams.readfixed4(f)
@@ -275,11 +274,12 @@ function streams.readfixed4(f)
     local j = i + 3
     f[2] = j + 1
     local a, b, c, d = byte(f[1],i,j)
-    if a >= 0x80 then
-        return tonumber((0x100 * a + b - 0x10000) .. "." .. (0x100 * c + d)) or 0
-    else
-        return tonumber((0x100 * a + b          ) .. "." .. (0x100 * c + d)) or 0
+    local n1 = 0x100 * a + b
+    local n2 = 0x100 * c + d
+    if n1 >= 0x8000 then
+        n1 = n1 - 0x10000
     end
+    return n1 + n2/0xFFFF
 end
 
 if bit32 then
@@ -507,10 +507,10 @@ do
         function io.newreader(str,method)
             local f, m
             if method == "string" then
-                f = openstring(str)
+                f = openstring(str,true)
                 m = streams
             elseif method == "stream" then
-                f = openstream(str)
+                f = openstream(str,true)
                 m = streams
             else
                 f = openfile(str,"rb")
@@ -522,6 +522,7 @@ do
                     __index = function(t,k)
                         local r = m[k]
                         if k == "close" then
+                            -- maybe use __toclose
                             if f then
                                 m.close(f)
                                 f = nil

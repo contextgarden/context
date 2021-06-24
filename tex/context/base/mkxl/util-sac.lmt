@@ -126,10 +126,10 @@ end
 function streams.skipshort(f,n) f[2] = f[2] + 2*(n or 1) end
 function streams.skiplong (f,n) f[2] = f[2] + 4*(n or 1) end
 
-local readcardinal1   = sio.readcardinal1
-local readcardinal2   = sio.readcardinal2
-local readcardinal3   = sio.readcardinal3
-local readcardinal4   = sio.readcardinal4
+local readcardinal1 = sio.readcardinal1
+local readcardinal2 = sio.readcardinal2
+local readcardinal3 = sio.readcardinal3
+local readcardinal4 = sio.readcardinal4
 
 function streams.readcardinal1(f) local i = f[2] f[2] = i + 1 return readcardinal1(f[1],i) end
 function streams.readcardinal2(f) local i = f[2] f[2] = i + 2 return readcardinal2(f[1],i) end
@@ -146,33 +146,48 @@ function streams.readcardinal2le(f) local i = f[2] f[2] = i + 2 return readcardi
 function streams.readcardinal3le(f) local i = f[2] f[2] = i + 3 return readcardinal3le(f[1],i) end
 function streams.readcardinal4le(f) local i = f[2] f[2] = i + 4 return readcardinal4le(f[1],i) end
 
-local readinteger1    = sio.readinteger1
-local readinteger2    = sio.readinteger2
-local readinteger3    = sio.readinteger3
-local readinteger4    = sio.readinteger4
+local readinteger1 = sio.readinteger1
+local readinteger2 = sio.readinteger2
+local readinteger3 = sio.readinteger3
+local readinteger4 = sio.readinteger4
 
 function streams.readinteger1(f) local i = f[2] f[2] = i + 1 return readinteger1(f[1],i) end
 function streams.readinteger2(f) local i = f[2] f[2] = i + 2 return readinteger2(f[1],i) end
 function streams.readinteger3(f) local i = f[2] f[2] = i + 3 return readinteger3(f[1],i) end
 function streams.readinteger4(f) local i = f[2] f[2] = i + 4 return readinteger4(f[1],i) end
 
-local readinteger1le  = sio.readinteger1le
-local readinteger2le  = sio.readinteger2le
-local readinteger3le  = sio.readinteger3le
-local readinteger4le  = sio.readinteger4le
+local readinteger1le = sio.readinteger1le
+local readinteger2le = sio.readinteger2le
+local readinteger3le = sio.readinteger3le
+local readinteger4le = sio.readinteger4le
 
 function streams.readinteger1le(f) local i = f[2] f[2] = i + 1 return readinteger1le(f[1],i) end
 function streams.readinteger2le(f) local i = f[2] f[2] = i + 2 return readinteger2le(f[1],i) end
 function streams.readinteger3le(f) local i = f[2] f[2] = i + 3 return readinteger3le(f[1],i) end
 function streams.readinteger4le(f) local i = f[2] f[2] = i + 4 return readinteger4le(f[1],i) end
 
-local readfixed2      = sio.readfixed2
-local readfixed4      = sio.readfixed4
-local read2dot14      = sio.read2dot14
+local readfixed2 = sio.readfixed2
+local readfixed4 = sio.readfixed4
+local read2dot14 = sio.read2dot14
 
 function streams.readfixed2(f) local i = f[2] f[2] = i + 2 return readfixed2(f[1],i) end
 function streams.readfixed4(f) local i = f[2] f[2] = i + 4 return readfixed4(f[1],i) end
 function streams.read2dot14(f) local i = f[2] f[2] = i + 2 return read2dot14(f[1],i) end
+
+local readcstring = sio.readcstring
+local readcline   = sio.readcline
+
+function streams.readcstring(f)
+    local s, p = readcstring(f[1],f[2])
+    f[2] = p
+    return s
+end
+
+function streams.readcline(f,n)
+    local s, p = readcline(f[1],f[2])
+    f[2] = p
+    return s
+end
 
 local readbytes     = sio.readbytes
 local readbytetable = sio.readbytetable
@@ -249,10 +264,10 @@ if files then
     function io.newreader(str,method)
         local f, m
         if method == "string" then
-            f = openstring(str)
+            f = openstring(str,true)
             m = streams
         elseif method == "stream" then
-            f = openstream(str)
+            f = openstream(str,true)
             m = streams
         else
             f = openfile(str,"rb")
@@ -283,3 +298,13 @@ if files then
     end
 
 end
+
+streams.tocardinal1   = sio.tocardinal1
+streams.tocardinal2   = sio.tocardinal2
+streams.tocardinal3   = sio.tocardinal3
+streams.tocardinal4   = sio.tocardinal4
+
+streams.tocardinal1le = sio.tocardinal1le
+streams.tocardinal2le = sio.tocardinal2le
+streams.tocardinal3le = sio.tocardinal3le
+streams.tocardinal4le = sio.tocardinal4le

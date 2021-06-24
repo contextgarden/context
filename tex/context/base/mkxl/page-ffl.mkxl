@@ -51,12 +51,92 @@
 %D     \startcontent \dorecurse{10}{\samplefile{ward}  } \stopcontent
 %D \stopfacingfloat
 %D
+%D \flushfacingfloats[whatever]
+%D
 %D \dorecurse{10}{\samplefile{sapolsky} }
+%D
+%D \flushpendingtopcontent
+%D
 %D \stoptyping
 %D
 %D The idea is to flush related floats more or less in parallel.
 
 \unprotect
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \starttext
+%
+% \registertopcontent[3]\vbox{\framed[align=normal,width=\textwidth]{\samplefile{ward}}}
+% \registertopcontent[3]\vbox{\framed[align=normal,width=\textwidth]{\samplefile{davis}}}
+% \registertopcontent[5]\vbox{\framed[align=normal,width=\textwidth]{\samplefile{ward}}}
+%
+% \dorecurse{20}{\samplefile{tufte}\par}
+%
+% \stoptext
+
+\newdimen\d_page_adapts_preroll
+\newcount\c_page_adapts_pushed
+
+% this assumes a constant textheight and no adaptations otherwise so we
+% should block these for already set pages in adaptheight .. or we can
+% make these independent (so not use adaptheight)
+
+\def\page_adapts_layout_preroll#1%
+  {\begingroup
+   \global\d_page_adapts_preroll\zeropoint
+   \def\page_adapts_layout_indeed##1%
+     {\setupcurrentadaptlayout[\c!top=\zeropoint,##1]%
+      \global\d_page_adapts_preroll\dimexpr\adaptlayoutparameter\c!top\relax}
+   \begincsname\??pageadaptations\number#1\endcsname
+   \endgroup}
+
+\permanent\protected\def\registertopcontent[#1]%
+  {\begingroup
+   \dowithnextbox
+     {\page_adapts_layout_preroll{#1}%
+      \scratchdimen\dimexpr
+        \htdp\nextbox+\d_page_adapts_preroll
+        \ifzeropt\d_page_adapts_preroll
+          +\lineheight
+        \fi
+      \relax
+      \putboxincache{\v!page:\number#1}{+}\nextbox
+      \normalexpanded{\adaptlayout[\number#1][\c!top=\the\scratchdimen]}%
+      \global\advance\c_page_adapts_pushed\plusone
+      \endgroup}}
+
+\def\page_otr_flush_top_content
+  {\scratchcounter\getboxcountfromcache{\v!page:\number\realpageno}\relax
+   \ifcase\scratchcounter\else
+      \dorecurse\scratchcounter
+        {\directboxfromcache{\v!page:\number\realpageno}\recurselevel
+         \nointerlineskip
+         \par}%
+      \disposeboxesincache{\v!page:\number\realpageno}%
+      \global\advance\c_page_adapts_pushed\minusone
+      \nointerlineskip
+   \fi}
+
+\permanent\protected\def\flushpendingtopcontent
+  {\ifcase\c_page_adapts_pushed\else
+     \null
+     \page
+     \expandafter\flushpendingtopcontent
+  \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \let\page_check_weird_page\relax
+
+\def\page_check_weird_page_indeed % for now only when facing floats
+  {\ifdim\vsize>\zeropoint\else
+      %\showmessage\m!layouts9{}%
+      \writestatus\m!layouts{forcing zero height page}%
+      \emptyhbox\page
+   \fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % width:
 %
@@ -76,11 +156,17 @@
   %\c!color,
    \c!width=\v!fit]
 
+\newcount\c_defining_facing_float
+
 \appendtoks
-    \ifempty\currentfacingfloatparent
-        \normalexpanded{\definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]}%
-        \normalexpanded{\definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]}%
+  \advance\c_defining_facing_float\plusone
+  \ifcase\c_defining_facing_float\or
+      \expanded{
+        \definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]%
+        \definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]%
+      }%
     \fi
+  \advance\c_defining_facing_float\minusone
 \to \everydefinefacingfloat
 
 \newcount\c_strc_floats_facing_saved
@@ -91,88 +177,79 @@
 
 \let\m_strc_floats_state\relax
 
-% \permanent\protected\def\strc_floats_facing_flush
-%   {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
-%      \ifodd\c_strc_floats_facing_flushed
-%        \ifodd\realpageno
-%          \strc_floats_facing_flush_indeed
-%          \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
-%        \fi
-%      \else
-%        \ifodd\realpageno\else
-%          \strc_floats_facing_flush_indeed
-%          \doifelsependingpagecontent\relax{\kern\zeropoint\page}%
-%        \fi
-%      \fi
-%    \fi}
-%
-% \permanent\protected\def\strc_floats_facing_flush_indeed
-%   {\global\advance\c_strc_floats_facing_flushed\plusone
-%    \floatingpenalty\zerocount
-%    \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
-%      \forgetall
-%      \ifconditional\c_page_one_top_of_insert
-%        \ifconditional\c_page_one_correct_top_insert
-%          \topskipcorrection % [xx] new: see icare topbleed
-%          \kern-\lineskip
-%          \par
-%          \prevdepth\maxdimen
-%        \fi
-%      \fi
-%      \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
-%      \vkern\s_page_one_between_top_insert
-%    \egroup
-%    \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
-%      \global\c_strc_floats_facing_saved  \zerocount
-%      \global\c_strc_floats_facing_flushed\zerocount
-%      \resetboxesincache{\currentfacingfloat}%
-%    \fi}
-%
-% \aliased\let\flushfacingfloats\strc_floats_facing_flush
+\installcorenamespace {facingfloatflusher}
 
-
-% \let\page_check_weird_page\relax
-
-\def\page_check_weird_page_indeed % for now only when facing floats
-  {\ifdim\vsize>\zeropoint\else
-      %\showmessage\m!layouts9{}%
-      \writestatus\m!layouts{forcing zero height page}%
-      \emptyhbox\page
+\def\strc_floats_facing_flush_indeed_step#1#2#3%
+  {\ifnum#2<#3\relax
+     \advance#2\plusone
+     \donetrue
+     \writestatus
+       {facing}
+       {page: \the\scratchcounterone, location: #1, blob: \the#2, max: \the#3}%
+     \registertopcontent
+       [\scratchcounterone]
+       \hbox{\directboxfromcache{\currentfacingfloat:#1}{\the#2}}%
    \fi}
 
-\permanent\protected\def\flushfacingfloats
-  {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
-      \strc_floats_facing_flush_indeed
-   \fi}
-
-\permanent\protected\def\strc_floats_facing_flush_indeed
+\def\strc_floats_facing_flush_indeed#1%
   {\begingroup
+   \edef\currentfacingfloat{#1}%
    \glet\page_check_weird_page\page_check_weird_page_indeed % for now only when facing floats
-   \dorecurse\c_strc_floats_facing_saved
-     {\scratchdimen\getboxhtfromcache{\currentfacingfloat}{\recurselevel}\relax
-      \advance\scratchdimen\lineheight % this will become configurable, maybe some criterium
-      \normalexpanded{\adaptlayout[\the\numexpr\realpageno+\recurselevel\relax][\c!top=\the\scratchdimen]}}%
-   \glet\page_otr_flush_top_content\page_otr_flush_top_content_waiting % not at current page
+   \scratchcounterone  \realpageno
+   \scratchcounterthree\getboxcountfromcache{\currentfacingfloat:\v!left }\relax
+   \scratchcounterfour \getboxcountfromcache{\currentfacingfloat:\v!right}\relax
+   \scratchcounterfive \zerocount
+   \scratchcountersix  \zerocount
+   % find first empty spread i.e. odd (left) and even (right) empty
+   \ifdim\pagetotal>\zeropoint
+     \advance\scratchcounterone\plusone
+   \fi
+   \ifodd\scratchcounterone
+     \advance\scratchcounterone\plusone
+   \fi
+   \writestatus
+     {facing}
+     {page: \the\scratchcounterone, start checking}%
+   \doloop{%
+       \page_adapts_layout_preroll\scratchcounterone
+       \ifzeropt\d_page_adapts_preroll
+         % left empty
+         \advance\scratchcounterone\plusone
+         \page_adapts_layout_preroll\scratchcounterone
+         \ifzeropt\d_page_adapts_preroll
+           % right empty
+           \advance\scratchcounterone\minusone
+           \exitloop
+         \fi
+       \else
+         \advance\scratchcounterone\plustwo
+       \fi
+   }
+   \writestatus
+     {facing}
+     {page: \the\scratchcounterone, start flushing}%
+   \doloop{%
+     \ifodd\scratchcounterone
+       \strc_floats_facing_flush_indeed_step\v!right\scratchcountersix \scratchcounterfour
+     \else
+       \strc_floats_facing_flush_indeed_step\v!left \scratchcounterfive\scratchcounterthree
+     \fi
+     \ifnum\scratchcountersix<\scratchcounterfour
+        % more
+     \orelse\ifnum\scratchcounterfive<\scratchcounterthree
+        % more
+     \else
+       \exitloop
+     \fi
+     \advance\scratchcounterone\plusone
+   }
+   \disposeboxesincache{\currentfacingfloat:\v!right}%
+   \disposeboxesincache{\currentfacingfloat:\v!left}%
+   \page_check_weird_page_indeed
    \endgroup}
 
-\let\page_otr_flush_top_content\relax
-
-\def\page_otr_flush_top_content_waiting
-  {\glet\page_otr_flush_top_content\page_otr_flush_top_content_inject} % but in next page
-
-\def\page_otr_flush_top_content_inject
-  {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
-     \global\advance\c_strc_floats_facing_flushed\plusone
-     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
-     \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
-       \global\c_strc_floats_facing_saved  \zerocount
-       \global\c_strc_floats_facing_flushed\zerocount
-       \resetboxesincache{\currentfacingfloat}%
-       \glet\page_otr_flush_top_content\relax % till we're done
-     \fi
-     \nointerlineskip
-     \par
-   \fi}
+\permanent\protected\tolerant\def\flushfacingfloats[#1]%
+  {\processcommalist[#1]\strc_floats_facing_flush_indeed}
 
 \protected\def\strc_floats_facing_setup
   {\edef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%
@@ -258,6 +335,7 @@
    \doloop{%
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_l\v!left
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_r\v!right
+     \global\advance\c_strc_floats_facing_saved\plusone
      \ifvoid\b_strc_floats_facing_l\relax\ifvoid\b_strc_floats_facing_r\relax
        \exitloop
      \fi\fi}}
@@ -286,8 +364,7 @@
        \else
          to \textheight{\box\scratchbox\vss}%
        \fi
-     \global\advance\c_strc_floats_facing_saved\plusone
-     \putboxincache{\currentfacingfloat}{\number\c_strc_floats_facing_saved}\scratchbox
+     \putboxincache{\currentfacingfloat:#2}{+}\scratchbox
      \endgroup
    \fi}
 
