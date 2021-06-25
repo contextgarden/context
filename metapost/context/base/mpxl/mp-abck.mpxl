@@ -36,26 +36,26 @@ par_strut_depth  := 0 ;
 pair    boxgriddirection ; boxgriddirection := up ;   % to be interfaced
 numeric boxgriddistance  ; boxgriddistance  := .5cm ; % to be interfaced
 
-def boxgridtype     = (runscript mfid_mpvarn "gridtype"  ) enddef ;
-def boxgridwidth    = (runscript mfid_mpvard "gridwidth" ) enddef ;
-def boxgridshift    = (runscript mfid_mpvard "gridshift" ) enddef ;
-def boxgridcolor    = (runscript mfid_mpvars "gridcolor" ) enddef ;
+def boxgridtype     = (runscript mfid_mpvarn "gridtype") enddef ;
+def boxgridwidth    = (runscript mfid_mpvard "gridwidth") enddef ;
+def boxgridshift    = (runscript mfid_mpvard "gridshift") enddef ;
+def boxgridcolor    = (runscript mfid_mpvars "gridcolor") enddef ;
 
-def boxlinetype     = (runscript mfid_mpvarn "linetype"  ) enddef ;
-def boxlinewidth    = (runscript mfid_mpvard "linewidth" ) enddef ;
+def boxlinetype     = (runscript mfid_mpvarn "linetype") enddef ;
+def boxlinewidth    = (runscript mfid_mpvard "linewidth") enddef ;
 def boxlineradius   = (runscript mfid_mpvard "lineradius") enddef ;
 def boxlineoffset   = (runscript mfid_mpvard "lineoffset") enddef ;
-def boxlinecolor    = (runscript mfid_mpvars "linecolor" ) enddef ;
+def boxlinecolor    = (runscript mfid_mpvars "linecolor") enddef ;
 
-def boxfilltype     = (runscript mfid_mpvarn "filltype"  ) enddef ;
+def boxfilltype     = (runscript mfid_mpvarn "filltype") enddef ;
 def boxfilloffset   = (runscript mfid_mpvard "filloffset") enddef ;
-def boxfillcolor    = (runscript mfid_mpvars "fillcolor" ) enddef ;
+def boxfillcolor    = (runscript mfid_mpvars "fillcolor") enddef ;
 
-def boxdashtype     = (runscript mfid_mpvarn "dashtype"  ) enddef ;
+def boxdashtype     = (runscript mfid_mpvarn "dashtype") enddef ;
 
-def boxalternative  = (runscript mfid_mpvarn "alternative" ) enddef;
-def boxdistance     = (runscript mfid_mpvard "distance"    ) enddef;
-def boxtopoffset    = (runscript mfid_mpvard "topoffset"   ) enddef;
+def boxalternative  = (runscript mfid_mpvarn "alternative") enddef;
+def boxdistance     = (runscript mfid_mpvard "distance") enddef;
+def boxtopoffset    = (runscript mfid_mpvard "topoffset") enddef;
 def boxbottomoffset = (runscript mfid_mpvard "bottomoffset") enddef;
 
 def boxgridoptions  = withcolor boxgridcolor enddef ;

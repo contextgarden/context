@@ -65,8 +65,8 @@
    \letcsname typo_injectors_check_#1\endcsname\donothing}
 
 \permanent\protected\def\doactivateinjector#1% used at lua end
-  {\protected\defcsname typo_injectors_mark_#1\endcsname{\dontleavehmode\noexpand\clf_markinjector{#1}}%
-   \protected\defcsname typo_injectors_check_#1\endcsname{\noexpand\clf_checkinjector{#1}}}
+  {\protected\edefcsname typo_injectors_mark_#1\endcsname{\dontleavehmode\noexpand\clf_markinjector{#1}}%
+   \protected\edefcsname typo_injectors_check_#1\endcsname{\noexpand\clf_checkinjector{#1}}}
 
 \permanent\protected\def\dotestinjector#1%  only for testing outside unprotect
   {\begincsname typo_injectors_check_#1\endcsname

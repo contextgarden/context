@@ -13,13 +13,15 @@ if not modules then modules = { } end modules ['util-zip'] = {
 -- keep some hybrid functionality.
 
 local type, tostring, tonumber = type, tostring, tonumber
-local sort = table.sort
+local sort, concat = table.sort, table.concat
 
 local find, format, sub, gsub = string.find, string.format, string.sub, string.gsub
 local osdate, ostime, osclock = os.date, os.time, os.clock
 local ioopen = io.open
 local loaddata, savedata = io.loaddata, io.savedata
 local filejoin, isdir, dirname, mkdirs = file.join, lfs.isdir, file.dirname, dir.mkdirs
+local suffix, suffixes = file.suffix, file.suffixes
+local openfile = io.open
 
 gzip = gzip or { } -- so in luatex we keep the old ones too
 
@@ -505,42 +507,61 @@ if xzip then -- flate then do
 
 end
 
-if not gzip.compress then
+-- todo: compress/decompress that work with offset in string
 
-    -- todo: compress/decompress that work with offset in string
+-- We only have a few official methods here:
+--
+--   local decompressed = gzip.load       (filename)
+--   local resultsize   = gzip.save       (filename,compresslevel)
+--   local compressed   = gzip.compress   (str,compresslevel)
+--   local decompressed = gzip.decompress (str)
+--   local iscompressed = gzip.compressed (str)
+--   local suffix, okay = gzip.suffix     (filename)
+--
+-- In LuaMetaTeX we have only xzip which implements a very few methods:
+--
+--   compress   (str,level,method,window,memory,strategy)
+--   decompress (str,window)
+--   adler32    (str,checksum)
+--   crc32      (str,checksum)
 
-    -- We only have a few official methods here:
-    --
-    --   local decompressed = gzip.load       (filename)
-    --   local resultsize   = gzip.save       (filename,compresslevel)
-    --   local compressed   = gzip.compress   (str,compresslevel)
-    --   local decompressed = gzip.decompress (str)
-    --   local iscompressed = gzip.compressed (str)
-    --   local suffix, okay = gzip.suffix     (filename)
-    --
-    -- In LuaMetaTeX we have only xzip which implements a very few methods:
-    --
-    --   compress   (str,level,method,window,memory,strategy)
-    --   decompress (str,window)
-    --   adler32    (str,checksum)
-    --   crc32      (str,checksum)
-    --
-    -- Special window values are:
-    --
-    -- flate : - 15
-    -- zlib  :   15
-    -- gzip  : - 15
+local pattern   = "^\x1F\x8B\x08"
+local gziplevel = 3
 
-    local suffix     = file.suffix
-    local suffixes   = file.suffixes
-    local find       = string.find
-    local concat     = table.concat
-    local openfile   = io.open
+function gzip.suffix(filename)
+    local suffix, extra = suffixes(filename)
+    local gzipped = extra == "gz"
+    return suffix, gzipped
+end
+
+function gzip.compressed(s)
+    return s and find(s,pattern)
+end
+
+local getdecompressed
+local putcompressed
+
+if gzip.compress then
+
+    local gzipwindow = 15 + 16 -- +16: gzip, +32: gzip|zlib
+
+    local compress   = zlib.compress
+    local decompress = zlib.decompress
+
+    getdecompressed = function(str)
+        return decompress(str,gzipwindow) -- pass offset
+    end
+
+    putcompressed = function(str,level)
+        return compress(str,level or gziplevel,nil,gzipwindow)
+    end
+
+else
+
+    -- Special window values are: flate: -15, zlib: 15, gzip : -15
 
     local gzipwindow = -15 -- miniz needs this
-    local gziplevel  = 3
     local identifier = "\x1F\x8B"
-    local pattern    = "^\x1F\x8B\x08"
 
     local compress      = zlib.compress
     local decompress    = zlib.decompress
@@ -560,7 +581,7 @@ if not gzip.compress then
     local tocardinal1   = streams.tocardinal1
     local tocardinal4   = streams.tocardinal4le
 
-    local function getdecompressed(str)
+    getdecompressed = function(str)
         local s = openstream(str)
         local identifier  = readstring(s,2)
         local method      = readbyte(s,1)
@@ -578,7 +599,7 @@ if not gzip.compress then
         return data
     end
 
-    local function putcompressed(str,level,originalname)
+    putcompressed = function(str,level,originalname)
         return concat {
             identifier,              -- 2 identifier
             tocardinal1(0x08),       -- 1 method
@@ -593,67 +614,56 @@ if not gzip.compress then
         }
     end
 
-    function gzip.load(filename)
-        local f = openfile(filename,"rb")
-        if not f then
-            -- invalid file
-        else
-            local data = f:read("*all")
-            f:close()
-            if data and data ~= "" then
-                if suffix(filename) == "gz" then
-                    data = getdecompressed(data)
-                end
-                return data
+end
+
+function gzip.load(filename)
+    local f = openfile(filename,"rb")
+    if not f then
+        -- invalid file
+    else
+        local data = f:read("*all")
+        f:close()
+        if data and data ~= "" then
+            if suffix(filename) == "gz" then
+                data = getdecompressed(data)
             end
+            return data
         end
     end
+end
 
-    function gzip.save(filename,data,level,originalname)
-        if suffix(filename) ~= "gz" then
-            filename = filename .. ".gz"
-        end
-        local f = openfile(filename,"wb")
-        if f then
-            data = putcompressed(data or "",level or gziplevel,originalname)
-            f:write(data)
-            f:close()
-            return #data
-        end
+function gzip.save(filename,data,level,originalname)
+    if suffix(filename) ~= "gz" then
+        filename = filename .. ".gz"
     end
-
-    function gzip.suffix(filename)
-        local suffix, extra = suffixes(filename)
-        local gzipped = extra == "gz"
-        return suffix, gzipped
+    local f = openfile(filename,"wb")
+    if f then
+        data = putcompressed(data or "",level or gziplevel,originalname)
+        f:write(data)
+        f:close()
+        return #data
     end
+end
 
-    function gzip.compressed(s)
-        return s and find(s,identifier)
-    end
-
-    function gzip.compress(s,level)
-        if s and not find(s,identifier) then -- the find check might go away
-            if not level then
-                level = gziplevel
-            elseif level <= 0 then
-                return s
-            elseif level > 9 then
-                level = 9
-            end
-            return putcompressed(s,level or gziplevel) or s
-        end
-    end
-
-    function gzip.decompress(s)
-        if s and find(s,identifier) then
-            return getdecompressed(s)
-        else
+function gzip.compress(s,level)
+    if s and not find(s,pattern) then
+        if not level then
+            level = gziplevel
+        elseif level <= 0 then
             return s
+        elseif level > 9 then
+            level = 9
         end
+        return putcompressed(s,level or gziplevel) or s
     end
+end
 
-
+function gzip.decompress(s)
+    if s and find(s,pattern) then
+        return getdecompressed(s)
+    else
+        return s
+    end
 end
 
 zipfiles.gunzipfile = gzip.load

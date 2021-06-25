@@ -92,6 +92,9 @@ local tokenscanners  = nil
 local scanset        = nil
 local scanparameters = nil
 
+scanners.typescanners  = typescanners
+scanners.tokenscanners = tokenscanners
+
 scanset = function() -- can be optimized, we now read twice
     scantoken()
     if scantoken(true) == rightbrace_code then

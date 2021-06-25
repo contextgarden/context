@@ -124,25 +124,25 @@ registerdirect("mpvard", function()
 end)
 
 registerdirect("mpvarn", function()
-    if not expandtex(integer_value,  "mpcategoryparameter",true,scanstring(),0) then
+    if not expandtex(integer_value,"mpcategoryparameter",true,scanstring()) then
         injectnumeric(0)
     end
 end)
 
 registerdirect("mpvars", function()
-    if not expandtex(string_value,   "mpcategoryparameter",true,scanstring(),"") then
+    if not expandtex(string_value,"mpcategoryparameter",true,scanstring()) then
         injectstring("")
     end
 end)
 
 registerdirect("mpvarb", function()
-    if not expandtex(boolean_value,  "mpcategoryparameter",true,scanstring(),false) then
+    if not expandtex(boolean_value,"mpcategoryparameter",true,scanstring()) then
         injectboolean(false)
     end
 end)
 
 registerdirect("mpvar", function()
-    if not expandtex(unknown_value,  "mpcategoryparameter",true,scanstring(),0) then
+    if not expandtex(unknown_value,"mpcategoryparameter",true,scanstring()) then
         injectnumeric(0)
     end
 end)

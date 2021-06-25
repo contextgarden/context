@@ -158,11 +158,11 @@
 \let\anch_backgrounds_text_start_indeed\relax
 \let\anch_backgrounds_text_stop_indeed \relax
 
-\setvalue{\??textbackgroundlevel\v!text}%
+\defcsname\??textbackgroundlevel\v!text\endcsname
   {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
    \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt}
 
-\setvalue{\??textbackgroundlevel\v!paragraph}%
+\defcsname\??textbackgroundlevel\v!paragraph\endcsname
   {\ifnum\c_anch_backgrounds_text_level>\textbackgroundparameter\c!criterium\relax
      \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
      \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt
@@ -171,11 +171,11 @@
      \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_par
    \fi}
 
-\setvalue{\??textbackgroundlevel\v!always}%
+\defcsname\??textbackgroundlevel\v!always\endcsname
   {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_par
    \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_par}
 
-\setvalue{\??textbackgroundlevel\v!none}%
+\defcsname\??textbackgroundlevel\v!none\endcsname
   {\anch_backgrounds_text_preset_nop}
 
 \def\anch_backgrounds_text_preset_nop

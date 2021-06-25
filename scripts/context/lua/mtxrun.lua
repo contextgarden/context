@@ -3837,7 +3837,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 19514, stripped down to: 10470
+-- original size: 19654, stripped down to: 10479
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3980,245 +3980,227 @@ if os.type=="windows" then
 else
  os.libsuffix,os.binsuffix,os.binsuffixes='so','',{ '' }
 end
-local execute=os.execute
-local iopopen=io.popen
-local ostype=os.type
-local function resultof(command)
- local handle=iopopen(command,ostype=="windows" and "rb" or "r")
- if handle then
-  local result=handle:read("*all") or ""
-  handle:close()
-  return result
- else
-  return ""
- end
-end
-os.resultof=resultof
-function os.pipeto(command)
- return iopopen(command,"w") 
-end
-local launchers={
- windows="start %s",
- macosx="open %s",
- unix="xdg-open %s &> /dev/null &",
-}
-function os.launch(str)
- local command=format(launchers[os.name] or launchers.unix,str)
- execute(command)
-end
-local gettimeofday=os.gettimeofday or os.clock
-os.gettimeofday=gettimeofday
-local startuptime=gettimeofday()
-function os.runtime()
- return gettimeofday()-startuptime
-end
-local resolvers=os.resolvers or {}
-os.resolvers=resolvers
-setmetatable(os,{ __index=function(t,k)
- local r=resolvers[k]
- return r and r(t,k) or nil 
-end })
-local name,platform=os.name or "linux",os.getenv("MTX_PLATFORM") or ""
-if platform~="" then
- os.platform=platform
-elseif os.type=="windows" then
- function resolvers.platform(t,k)
-  local architecture=os.getenv("PROCESSOR_ARCHITECTURE") or ""
-  local platform=""
-  if find(architecture,"AMD64",1,true) then
-   platform="win64"
+do
+ local execute=os.execute
+ local iopopen=io.popen
+ local ostype=os.type
+ local function resultof(command)
+  local handle=iopopen(command,ostype=="windows" and "rb" or "r")
+  if handle then
+   local result=handle:read("*all") or ""
+   handle:close()
+   return result
   else
-   platform="mswin"
+   return ""
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
  end
-elseif name=="linux" then
- function resolvers.platform(t,k)
-  local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-  local platform=os.getenv("MTX_PLATFORM") or ""
+ os.resultof=resultof
+ function os.pipeto(command)
+  return iopopen(command,"w") 
+ end
+ local launchers={
+  windows="start %s",
+  macosx="open %s",
+  unix="xdg-open %s &> /dev/null &",
+ }
+ function os.launch(str)
+  local command=format(launchers[os.name] or launchers.unix,str)
+  execute(command)
+ end
+end
+do
+ local gettimeofday=os.gettimeofday or os.clock
+ os.gettimeofday=gettimeofday
+ local startuptime=gettimeofday()
+ function os.runtime()
+  return gettimeofday()-startuptime
+ end
+end
+do
+ local name=os.name or "linux"
+ local platform=os.getenv("MTX_PLATFORM") or ""
+ local architecture=os.uname and os.uname().machine 
+ local bits=os.getenv("MTX_BITS") or find(platform,"64") and 64 or 32
+ if platform~="" then
+ elseif os.type=="windows" then
+  architecture=architecture or os.getenv("PROCESSOR_ARCHITECTURE") or ""
+  if architecture=="x86_64" then
+   bits,platform=64,"win64"
+  elseif find(architecture,"AMD64") then
+   bits,platform=64,"win64"
+  elseif find(architecture,"ARM64") then
+   bits,platform=64,"windows-arm64"
+  elseif find(architecture,"ARM32") then
+   bits,platform=32,"windows-arm32"
+  else
+   bits,platform=32,"mswin"
+  end
+ elseif name=="linux" then
+  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
   local musl=find(os.selfdir or "","linuxmusl")
-  if platform~="" then
-  elseif find(architecture,"x86_64",1,true) then
-   platform=musl and "linuxmusl" or "linux-64"
-  elseif find(architecture,"ppc",1,true) then
-   platform="linux-ppc"
+  if find(architecture,"x86_64") then
+   bits,platform=64,musl and "linuxmusl" or "linux-64"
+  elseif find(architecture,"ppc") then
+   bits,platform=32,"linux-ppc" 
   else
-   platform=musl and "linuxmusl" or "linux"
+   bits,platform=32,musl and "linuxmusl" or "linux"
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
- end
-elseif name=="macosx" then
- function resolvers.platform(t,k)
-  local architecture=resultof("echo $HOSTTYPE") or ""
-  local platform=""
+ elseif name=="macosx" then
+  architecture=architecture or resultof("echo $HOSTTYPE") or ""
   if architecture=="" then
-   platform="osx-intel"
-  elseif find(architecture,"i386",1,true) then
-   platform="osx-intel"
-  elseif find(architecture,"x86_64",1,true) then
-   platform="osx-64"
-  elseif find(architecture,"arm64",1,true) then
-   platform="osx-arm"
+   bits,platform=64,"osx-intel"
+  elseif find(architecture,"i386") then
+   bits,platform=64,"osx-intel"
+  elseif find(architecture,"x86_64") then
+   bits,platform=64,"osx-64"
+  elseif find(architecture,"arm64") then
+   bits,platform=64,"osx-arm"
   else
-   platform="osx-ppc"
+   bits,platform=32,"osx-ppc"
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
- end
-elseif name=="sunos" then
- function resolvers.platform(t,k)
-  local architecture=resultof("uname -m") or ""
-  local platform=""
-  if find(architecture,"sparc",1,true) then
-   platform="solaris-sparc"
+ elseif name=="sunos" then
+  architecture=architecture or resultof("uname -m") or ""
+  if find(architecture,"sparc") then
+   bits,platform=32,"solaris-sparc"
   else 
-   platform="solaris-intel"
+   bits,platform=32,"solaris-intel"
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
- end
-elseif name=="freebsd" then
- function resolvers.platform(t,k)
-  local architecture=resultof("uname -m") or ""
-  local platform=""
-  if find(architecture,"amd64",1,true) then
-   platform="freebsd-amd64"
+ elseif name=="freebsd" then
+  architecture=architecture or resultof("uname -m") or ""
+  if find(architecture)=="amd64" or find(architecture)=="AMD64" then
+   bits,platform=64,"freebsd-amd64"
   else
-   platform="freebsd"
+   bits,platform=32,"freebsd"
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
- end
-elseif name=="kfreebsd" then
- function resolvers.platform(t,k)
-  local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-  local platform=""
-  if find(architecture,"x86_64",1,true) then
-   platform="kfreebsd-amd64"
+ elseif name=="kfreebsd" then
+  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+  if architecture=="x86_64" then
+   bits,platform=64,"kfreebsd-amd64"
   else
-   platform="kfreebsd-i386"
+   bits,platform=32,"kfreebsd-i386"
   end
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
+ else
+  architecture=architecture or resultof("uname -m") or ""
+  if find(architecture,"aarch64") then
+   bits,platform="linux-aarch64"
+  elseif find(architecture,"armv7l") then
+   bits,platform=32,"linux-armhf"
+  elseif find(architecture,"mips64") or find(architecture,"mips64el") then
+   bits,platform=64,"linux-mipsel"
+  elseif find(architecture,"mipsel") or find(architecture,"mips") then
+   bits,platform=32,"linux-mipsel"
+  else
+   bits,platform=64,"linux-64" 
+  end
  end
-else
- function resolvers.platform(t,k)
-  local platform="linux"
-  os.setenv("MTX_PLATFORM",platform)
-  os.platform=platform
-  return platform
- end
-end
-os.newline=name=="windows" and "\013\010" or "\010" 
-function resolvers.bits(t,k)
- local bits=find(os.platform,"64",1,true) and 64 or 32
+ os.setenv("MTX_PLATFORM",platform)
+ os.setenv("MTX_BITS",bits)
+ os.platform=platform
  os.bits=bits
- return bits
+ os.newline=name=="windows" and "\013\010" or "\010" 
 end
-local t={ 8,9,"a","b" }
-function os.uuid()
- return format("%04x%04x-4%03x-%s%03x-%04x-%04x%04x%04x",
-  random(0xFFFF),random(0xFFFF),
-  random(0x0FFF),
-  t[ceil(random(4))] or 8,random(0x0FFF),
-  random(0xFFFF),
-  random(0xFFFF),random(0xFFFF),random(0xFFFF)
- )
+do
+ local t={ 8,9,"a","b" }
+ function os.uuid()
+  return format("%04x%04x-4%03x-%s%03x-%04x-%04x%04x%04x",
+   random(0xFFFF),random(0xFFFF),
+   random(0x0FFF),
+   t[ceil(random(4))] or 8,random(0x0FFF),
+   random(0xFFFF),
+   random(0xFFFF),random(0xFFFF),random(0xFFFF)
+  )
+ end
 end
-local d
-function os.timezone(delta)
- d=d or ((tonumber(date("%H")) or 0)-(tonumber(date("!%H")) or 0))
- if delta then
-  if d>0 then
-   return format("+%02i:00",d)
+do
+ local d
+ function os.timezone(delta)
+  d=d or ((tonumber(date("%H")) or 0)-(tonumber(date("!%H")) or 0))
+  if delta then
+   if d>0 then
+    return format("+%02i:00",d)
+   else
+    return format("-%02i:00",-d)
+   end
   else
-   return format("-%02i:00",-d)
+   return 1
   end
- else
-  return 1
+ end
+ local timeformat=format("%%s%s",os.timezone(true))
+ local dateformat="!%Y-%m-%d %H:%M:%S"
+ local lasttime=nil
+ local lastdate=nil
+ function os.fulltime(t,default)
+  t=t and tonumber(t) or 0
+  if t>0 then
+  elseif default then
+   return default
+  else
+   t=time()
+  end
+  if t~=lasttime then
+   lasttime=t
+   lastdate=format(timeformat,date(dateformat))
+  end
+  return lastdate
+ end
+ local dateformat="%Y-%m-%d %H:%M:%S"
+ local lasttime=nil
+ local lastdate=nil
+ function os.localtime(t,default)
+  t=t and tonumber(t) or 0
+  if t>0 then
+  elseif default then
+   return default
+  else
+   t=time()
+  end
+  if t~=lasttime then
+   lasttime=t
+   lastdate=date(dateformat,t)
+  end
+  return lastdate
+ end
+ function os.converttime(t,default)
+  local t=tonumber(t)
+  if t and t>0 then
+   return date(dateformat,t)
+  else
+   return default or "-"
+  end
+ end
+ function os.today()
+  return date("!*t") 
+ end
+ function os.now()
+  return date("!%Y-%m-%d %H:%M:%S") 
  end
 end
-local timeformat=format("%%s%s",os.timezone(true))
-local dateformat="!%Y-%m-%d %H:%M:%S"
-local lasttime=nil
-local lastdate=nil
-function os.fulltime(t,default)
- t=t and tonumber(t) or 0
- if t>0 then
- elseif default then
-  return default
- else
-  t=time()
- end
- if t~=lasttime then
-  lasttime=t
-  lastdate=format(timeformat,date(dateformat))
- end
- return lastdate
-end
-local dateformat="%Y-%m-%d %H:%M:%S"
-local lasttime=nil
-local lastdate=nil
-function os.localtime(t,default)
- t=t and tonumber(t) or 0
- if t>0 then
- elseif default then
-  return default
- else
-  t=time()
- end
- if t~=lasttime then
-  lasttime=t
-  lastdate=date(dateformat,t)
- end
- return lastdate
-end
-function os.converttime(t,default)
- local t=tonumber(t)
- if t and t>0 then
-  return date(dateformat,t)
- else
-  return default or "-"
- end
-end
-local memory={}
-local function which(filename)
- local fullname=memory[filename]
- if fullname==nil then
-  local suffix=file.suffix(filename)
-  local suffixes=suffix=="" and os.binsuffixes or { suffix }
-  for directory in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
-   local df=file.join(directory,filename)
-   for i=1,#suffixes do
-    local dfs=file.addsuffix(df,suffixes[i])
-    if io.exists(dfs) then
-     fullname=dfs
-     break
+do
+ local cache={}
+ local function which(filename)
+  local fullname=cache[filename]
+  if fullname==nil then
+   local suffix=file.suffix(filename)
+   local suffixes=suffix=="" and os.binsuffixes or { suffix }
+   for directory in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+    local df=file.join(directory,filename)
+    for i=1,#suffixes do
+     local dfs=file.addsuffix(df,suffixes[i])
+     if io.exists(dfs) then
+      fullname=dfs
+      break
+     end
     end
    end
+   if not fullname then
+    fullname=false
+   end
+   cache[filename]=fullname
   end
-  if not fullname then
-   fullname=false
-  end
-  memory[filename]=fullname
+  return fullname
  end
- return fullname
-end
-os.which=which
-os.where=which
-function os.today()
- return date("!*t") 
-end
-function os.now()
- return date("!%Y-%m-%d %H:%M:%S") 
+ os.which=which
+ os.where=which
 end
 if not os.sleep then
  local socket=socket
@@ -4229,65 +4211,69 @@ if not os.sleep then
   socket.sleep(n)
  end
 end
-local function isleapyear(year)
- return (year%4==0) and (year%100~=0 or year%400==0)
-end
-os.isleapyear=isleapyear
-local days={ 31,28,31,30,31,30,31,31,30,31,30,31 }
-local function nofdays(year,month,day)
- if not month then
-  return isleapyear(year) and 365 or 364
- elseif not day then
-  return month==2 and isleapyear(year) and 29 or days[month]
- else
-  for i=1,month-1 do
-   day=day+days[i]
-  end
-  if month>2 and isleapyear(year) then
-   day=day+1
-  end
-  return day
+do
+ local function isleapyear(year)
+  return (year%4==0) and (year%100~=0 or year%400==0)
  end
-end
-os.nofdays=nofdays
-function os.weekday(day,month,year)
- return date("%w",time { year=year,month=month,day=day })+1
-end
-function os.validdate(year,month,day)
- if month<1 then
-  month=1
- elseif month>12 then
-  month=12
- end
- if day<1 then
-  day=1
- else
-  local max=nofdays(year,month)
-  if day>max then
-   day=max
+ os.isleapyear=isleapyear
+ local days={ 31,28,31,30,31,30,31,31,30,31,30,31 }
+ local function nofdays(year,month,day)
+  if not month then
+   return isleapyear(year) and 365 or 364
+  elseif not day then
+   return month==2 and isleapyear(year) and 29 or days[month]
+  else
+   for i=1,month-1 do
+    day=day+days[i]
+   end
+   if month>2 and isleapyear(year) then
+    day=day+1
+   end
+   return day
   end
  end
- return year,month,day
-end
-function os.date(fmt,...)
- if not fmt then
-  fmt="%Y-%m-%d %H:%M"
+ os.nofdays=nofdays
+ function os.weekday(day,month,year)
+  return date("%w",time { year=year,month=month,day=day })+1
  end
- return date(fmt,...)
-end
-local osexit=os.exit
-local exitcode=nil
-function os.setexitcode(code)
- exitcode=code
-end
-function os.exit(c)
- if exitcode~=nil then
-  return osexit(exitcode)
+ function os.validdate(year,month,day)
+  if month<1 then
+   month=1
+  elseif month>12 then
+   month=12
+  end
+  if day<1 then
+   day=1
+  else
+   local max=nofdays(year,month)
+   if day>max then
+    day=max
+   end
+  end
+  return year,month,day
  end
- if c~=nil then
-  return osexit(c)
+ function os.date(fmt,...)
+  if not fmt then
+   fmt="%Y-%m-%d %H:%M"
+  end
+  return date(fmt,...)
  end
- return osexit()
+end
+do
+ local osexit=os.exit
+ local exitcode=nil
+ function os.setexitcode(code)
+  exitcode=code
+ end
+ function os.exit(c)
+  if exitcode~=nil then
+   return osexit(exitcode)
+  end
+  if c~=nil then
+   return osexit(c)
+  end
+  return osexit()
+ end
 end
 
 
@@ -15705,7 +15691,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 23162, stripped down to: 13844
+-- original size: 23104, stripped down to: 14029
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15714,12 +15700,14 @@ if not modules then modules={} end modules ['util-zip']={
  license="see context related readme files"
 }
 local type,tostring,tonumber=type,tostring,tonumber
-local sort=table.sort
+local sort,concat=table.sort,table.concat
 local find,format,sub,gsub=string.find,string.format,string.sub,string.gsub
 local osdate,ostime,osclock=os.date,os.time,os.clock
 local ioopen=io.open
 local loaddata,savedata=io.loaddata,io.savedata
 local filejoin,isdir,dirname,mkdirs=file.join,lfs.isdir,file.dirname,dir.mkdirs
+local suffix,suffixes=file.suffix,file.suffixes
+local openfile=io.open
 gzip=gzip or {} 
 if not zlib then
  zlib=xzip 
@@ -16132,16 +16120,31 @@ if xzip then
  zipfiles.zipdir=zipdir
  zipfiles.unzipdir=unzipdir
 end
-if not gzip.compress then
- local suffix=file.suffix
- local suffixes=file.suffixes
- local find=string.find
- local concat=table.concat
- local openfile=io.open
+local pattern="^\x1F\x8B\x08"
+local gziplevel=3
+function gzip.suffix(filename)
+ local suffix,extra=suffixes(filename)
+ local gzipped=extra=="gz"
+ return suffix,gzipped
+end
+function gzip.compressed(s)
+ return s and find(s,pattern)
+end
+local getdecompressed
+local putcompressed
+if gzip.compress then
+ local gzipwindow=15+16 
+ local compress=zlib.compress
+ local decompress=zlib.decompress
+ getdecompressed=function(str)
+  return decompress(str,gzipwindow) 
+ end
+ putcompressed=function(str,level)
+  return compress(str,level or gziplevel,nil,gzipwindow)
+ end
+else
  local gzipwindow=-15 
- local gziplevel=3
  local identifier="\x1F\x8B"
- local pattern="^\x1F\x8B\x08"
  local compress=zlib.compress
  local decompress=zlib.decompress
  local crc32=zlib.crc32
@@ -16157,7 +16160,7 @@ if not gzip.compress then
  local skipbytes=streams.skip
  local tocardinal1=streams.tocardinal1
  local tocardinal4=streams.tocardinal4le
- local function getdecompressed(str)
+ getdecompressed=function(str)
   local s=openstream(str)
   local identifier=readstring(s,2)
   local method=readbyte(s,1)
@@ -16174,7 +16177,7 @@ if not gzip.compress then
   local data=decompress(compressed,gzipwindow) 
   return data
  end
- local function putcompressed(str,level,originalname)
+ putcompressed=function(str,level,originalname)
   return concat {
    identifier,
    tocardinal1(0x08),
@@ -16188,58 +16191,50 @@ if not gzip.compress then
    tocardinal4(#str),
   }
  end
- function gzip.load(filename)
-  local f=openfile(filename,"rb")
-  if not f then
-  else
-   local data=f:read("*all")
-   f:close()
-   if data and data~="" then
-    if suffix(filename)=="gz" then
-     data=getdecompressed(data)
-    end
-    return data
+end
+function gzip.load(filename)
+ local f=openfile(filename,"rb")
+ if not f then
+ else
+  local data=f:read("*all")
+  f:close()
+  if data and data~="" then
+   if suffix(filename)=="gz" then
+    data=getdecompressed(data)
    end
+   return data
   end
  end
- function gzip.save(filename,data,level,originalname)
-  if suffix(filename)~="gz" then
-   filename=filename..".gz"
-  end
-  local f=openfile(filename,"wb")
-  if f then
-   data=putcompressed(data or "",level or gziplevel,originalname)
-   f:write(data)
-   f:close()
-   return #data
-  end
+end
+function gzip.save(filename,data,level,originalname)
+ if suffix(filename)~="gz" then
+  filename=filename..".gz"
  end
- function gzip.suffix(filename)
-  local suffix,extra=suffixes(filename)
-  local gzipped=extra=="gz"
-  return suffix,gzipped
+ local f=openfile(filename,"wb")
+ if f then
+  data=putcompressed(data or "",level or gziplevel,originalname)
+  f:write(data)
+  f:close()
+  return #data
  end
- function gzip.compressed(s)
-  return s and find(s,identifier)
- end
- function gzip.compress(s,level)
-  if s and not find(s,identifier) then 
-   if not level then
-    level=gziplevel
-   elseif level<=0 then
-    return s
-   elseif level>9 then
-    level=9
-   end
-   return putcompressed(s,level or gziplevel) or s
-  end
- end
- function gzip.decompress(s)
-  if s and find(s,identifier) then
-   return getdecompressed(s)
-  else
+end
+function gzip.compress(s,level)
+ if s and not find(s,pattern) then
+  if not level then
+   level=gziplevel
+  elseif level<=0 then
    return s
+  elseif level>9 then
+   level=9
   end
+  return putcompressed(s,level or gziplevel) or s
+ end
+end
+function gzip.decompress(s)
+ if s and find(s,pattern) then
+  return getdecompressed(s)
+ else
+  return s
  end
 end
 zipfiles.gunzipfile=gzip.load
@@ -25897,8 +25892,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1024388
--- stripped bytes    : 402181
+-- original bytes    : 1024470
+-- stripped bytes    : 402069
 
 -- end library merge
 

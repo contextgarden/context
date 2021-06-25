@@ -851,8 +851,7 @@
   {\dontleavehmode
    \begingroup
    \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
- % \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
-   \usedlanguageparameter{\c!left\currentdelimitedtextparent}%
+   \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
    \bgroup
@@ -861,8 +860,7 @@
 
 \def\typo_delimited_fontdriven_e
   {\typo_delimited_stop_content
- % \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
-   \usedlanguageparameter{\c!right\currentdelimitedtextparent}%
+   \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
    \typo_delimited_pop
    \endgroup}

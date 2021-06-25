@@ -327,6 +327,7 @@
 
 \def\anch_positions_meta_graphic_use#1#2#3%
   {\begingroup
+   \edef\currentmpcategory{#1}%
    \anch_positions_meta_graphic_prepare
    \startMPcode#3\stopMPcode
    \endgroup}
@@ -351,7 +352,7 @@
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \enforced\tolerant\protected\def\MPpositiongraphic##=##*##={\anch_positions_meta_graphic_nested{#3}{##1}{##2}}% takes two extra arguments
  % \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
-   \setbox\b_anch_positions_graphic\hbox % \hpack
+   \setbox\b_anch_positions_graphic\hpack
      {\ignorespaces\begincsname#1#2\endcsname\removelastspace}%
    \smashbox\b_anch_positions_graphic
    \box\b_anch_positions_graphic

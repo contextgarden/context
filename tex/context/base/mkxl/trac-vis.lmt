@@ -699,14 +699,11 @@ local math do
         else
             local text, width = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,"trace:dr")
             local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
+            local dist = tag == "beginmath" and width or skip
             setcolor(rule,"trace:dr")
             settransparency(rule,"trace:dr")
             setattr(rule,a_layer,l_math)
-            if tag == "beginmath" then
-                info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-width),text))
-            else
-                info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-skip),text))
-            end
+            info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-dist),text))
             setattr(info,a_layer,l_math)
             m_cache[tag][skip] = info
         end
