@@ -631,7 +631,7 @@ do
         local move = calc_pdfpos(pos_h,pos_v)
 
         if trace_threshold then
-            report(
+            report_fonts(
                 "before: font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
                 font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
             )
@@ -676,7 +676,7 @@ do
         end
 
         if trace_threshold then
-            report(
+            report_fonts(
                  "after : font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
                  font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
              )
@@ -2488,7 +2488,7 @@ local openfile, closefile  do
          else
             f = io.open(filename,"wb")
             if not f then
-                -- message
+                report("quitting because file %a cannot be opened for writing",filename)
                 os.exit()
             end
          -- f:setvbuf("full",64*1024)
@@ -3010,7 +3010,7 @@ do
                     lpdf.finalizepage(true)
                 end
             end)
-            --            --
+            --
             lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
             --
             statistics.register("result saved in file", function()

@@ -67,6 +67,7 @@ local nuts = {
     findnode                = direct.findnode,
     firstglyph              = direct.firstglyph,
     flattendiscretionaries  = direct.flattendiscretionaries,
+    softenhyphens           = direct.softenhyphens,
     flush                   = d_flushnode,
     flushlist               = direct.flushlist,
     flushnode               = d_flushnode,

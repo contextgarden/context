@@ -28,6 +28,8 @@ local getbox       = nuts.getbox
 
 local implement    = interfaces.implement
 
+local v_yes        = interfaces.variables.yes
+
 local actions = tasks.actions("shipouts")
 
 handlers.finalizelist = actions
@@ -36,7 +38,43 @@ function handlers.finalizebox(box)
     actions(getbox(box)) -- nut
 end
 
-handlers.cleanuppage = nuts.flattendiscretionaries
+do
+
+    local flattendiscretionaries = nuts.flattendiscretionaries
+    local softenhyphens          = nuts.softenhyphens
+
+    local report  = logs.reporter("shipout")
+
+    local trace   = false  trackers.register("backend", "cleanup", function(v) trace = v end)
+
+    local flatten = true -- always true
+    local soften  = true -- true by default
+
+    nodes.handlers.cleanuppage = function(head)
+        local count    = 0
+        local found    = 0
+        local replaced = 0
+        if flatten then
+            head, count = flattendiscretionaries(head)
+        end
+        if soften then
+            head, found, replaced = softenhyphens(head) -- could have been a lua loop
+        end
+        if trace then
+            report("%i discretionaries flattened, %i of %i discretionary hyphens softened",count,replaced,found)
+        end
+        return head
+    end
+
+    implement {
+        name      = "setsofthyphens",
+        arguments = "string",
+        actions   = function(v)
+            soften = v == v_yes
+        end
+    }
+
+end
 
 -- interface
 

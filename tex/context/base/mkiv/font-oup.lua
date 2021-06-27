@@ -40,13 +40,13 @@ local f_character_n        = formatters["[ %C ]"]
 local check_duplicates     = true -- can become an option (pseudo feature) / always needed anyway
 local check_soft_hyphen    = true -- can become an option (pseudo feature) / needed for tagging
 
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
-    check_soft_hyphen = false -- solved better elsewhere
-else
-    directives.register("otf.checksofthyphen",function(v)
-        check_soft_hyphen = v
-    end)
-end
+-- if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+--     check_soft_hyphen = false -- solved better elsewhere
+-- else
+--     directives.register("otf.checksofthyphen",function(v)
+--         check_soft_hyphen = v
+--     end)
+-- end
 
 local function replaced(list,index,replacement)
     if type(list) == "number" then

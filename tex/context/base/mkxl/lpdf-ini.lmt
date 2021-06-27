@@ -111,8 +111,8 @@ local pdfreserveobject
 local pdfimmediateobject
 
 updaters.register("backend.update.lpdf",function()
-    pdfreserveobject    = lpdf.reserveobject
-    pdfimmediateobject  = lpdf.immediateobject
+    pdfreserveobject   = lpdf.reserveobject
+    pdfimmediateobject = lpdf.immediateobject
 end)
 
 do

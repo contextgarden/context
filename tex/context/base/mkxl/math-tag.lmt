@@ -195,6 +195,15 @@ end
 --     )
 -- end
 
+-- I need to bring this in sync with new or removed mathml 3, not that there has
+-- been many changes. It will happen in sync with other mathml updates in context
+-- where we also keep adapting to a cycling between either or not support in
+-- browsers, the come-and-go of alternatives like ascii math and mathjax. It's the
+-- web and browser support that drives this, not tex and its community. So, maybe
+-- I'll add some more detail here, nto that it matters much in the long run where we
+-- only focus on structure and let the engine deal with the details. Another reason
+-- to update this is that we can add some tracing (lmtx only).
+
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     for start, id, subtype in nextnode, start do -- current
@@ -582,4 +591,97 @@ function noads.handlers.tags(head,style,penalties)
 -- showtag(head,getid(head),false)
     stop_tagged()
     stop_tagged()
+end
+
+do
+
+    -- This one is meant for tracing (in m4all/m4mbo where it complements some other
+    -- tracing) but it actually can also replace the embedding feature although that
+    -- one might be better when we have more complex code with dependencies outside
+    -- the blob. I'll deal with that when it's needed (trivial). The current
+    -- interface is rather minimalistic.
+
+    local enabled = false
+    local export  = false
+    local allmath = false
+    local warned  = false
+
+    function mathematics.startcollecting()
+        if structures.tags.enabled() then
+            if not enabled then
+                nodes.tasks.enableaction("math", "noads.handlers.export")
+            end
+            enabled = true
+            export  = structures.tags.localexport
+            allmath = { }
+        elseif not warned then
+            report_tags("math collecting only works when tagging is enabled")
+            warned = true
+        end
+    end
+
+    function mathematics.stopcollecting()
+        export = false
+    end
+
+    local function collected(asstring)
+        local a = allmath or { }
+        return asstring and concat(a) or a
+    end
+
+    mathematics.collected = collected
+
+    interfaces.implement {
+        name      = "startcollectingmath",
+     -- public    = true,
+        protected = true,
+        actions   = mathematics.startcollecting
+    }
+
+    interfaces.implement {
+        name      = "stopcollectingmath",
+     -- public    = true,
+        protected = true,
+        actions   = mathematics.stopcollecting
+    }
+
+    interfaces.implement {
+        name      = "processcollectedmath",
+     -- public    = true,
+        protected = true,
+        arguments = "2 strings",
+        actions   = function(filename,buffername)
+            if filename and filename ~= "" then
+                io.savedata(filename,collected(true))
+            elseif buffername then
+                buffers.assign(buffername == interfaces.variables.yes and "" or buffername,collected(true))
+            else
+                return collected
+            end
+        end
+    }
+
+    interfaces.implement {
+        name      = "collectedmath",
+        usage     = "value",
+        protected = true,
+        public    = true,
+        actions = function(what)
+            if what == "value" then
+                return tokens.values.integer, allmath and #allmath or 0
+            else
+                context(allmath and allmath[tokens.scanners.integer()] or nil)
+            end
+        end
+    }
+
+    function noads.handlers.export(head)
+        if export then
+            allmath[#allmath+1] = export(head)
+        end
+        return head
+    end
+
+    nodes.tasks.appendaction("math", "finalizers", "noads.handlers.export", nil, "nonut", "disabled")
+
 end

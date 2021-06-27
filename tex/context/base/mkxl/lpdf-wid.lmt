@@ -79,22 +79,6 @@ local pdfreserveobject         = lpdf.reserveobject
 local pdfpagereference         = lpdf.pagereference
 local pdfshareobjectreference  = lpdf.shareobjectreference
 
--- local pdfflushobject
--- local pdfflushstreamobject
--- local pdfflushstreamfileobject
--- local pdfreserveobject
--- local pdfpagereference
--- local pdfshareobjectreference
---
--- updaters.register("backend.update.lpdf",function()
---     pdfflushobject           = lpdf.flushobject
---     pdfflushstreamobject     = lpdf.flushstreamobject
---     pdfflushstreamfileobject = lpdf.flushstreamfileobject
---     pdfreserveobject         = lpdf.reserveobject
---     pdfpagereference         = lpdf.pagereference
---     pdfshareobjectreference  = lpdf.shareobjectreference
--- end)
-
 -- symbols
 
 local presets = { } -- xforms

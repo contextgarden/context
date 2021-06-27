@@ -137,7 +137,6 @@ local currentdepth      = 0
 local wrapups           = { }
 
 local tree              = { data = { }, fulltag == "root" } -- root
-local treeroot          = tree
 local treehash          = { }
 local extras            = { }
 local checks            = { }
@@ -845,9 +844,9 @@ do
         used[element][detail or ""] = { nature, specification.parents }  -- for template css
         -- also in last else ?
         local metadata = specification.metadata
-        if metadata then
+        if metadata and next(metadata) then
             result[#result+1] = f_metadata_begin(depth)
-            for k, v in table.sortedpairs(metadata) do
+            for k, v in sortedhash(metadata) do
                 if v ~= "" then
                     result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
                 end
@@ -1923,7 +1922,11 @@ do
     local xmlcollected  = xml.collected
     local xmlsetcomment = xml.setcomment
 
-local xmlpreamble = [[
+local xmlpreamble_nop = [[
+<?xml version="1.0" encoding="UTF-8" standalone="%standalone%" ?>
+]]
+
+local xmlpreamble_yes = [[
 <?xml version="1.0" encoding="UTF-8" standalone="%standalone%" ?>
 
 <!--
@@ -1939,8 +1942,8 @@ local xmlpreamble = [[
 
     local flushtree = wrapups.flushtree
 
-    local function wholepreamble(standalone)
-        return replacetemplate(xmlpreamble, {
+    local function wholepreamble(standalone,nocomment)
+        return replacetemplate(nocomment and xmlpreamble_nop or xmlpreamble_yes, {
             standalone     = standalone and "yes" or "no",
             filename       = tex.jobname,
             date           = included.date and os.fulltime(),
@@ -2068,13 +2071,20 @@ local htmltemplate = [[
         return concat(result,"\n\n")
     end
 
-    local function allcontent(tree,embed)
-        local result   = { }
+    local function allcontent(tree)
+        local result = { }
+        local data   = tree.data
+        for i=1,#data do
+            if data[i].tg ~= "document" then
+                data[i] = { }
+            end
+        end
         flushtree(result,tree.data,"display") -- we need to collect images
         result = concat(result)
         -- no need to lpeg .. fast enough
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
+        --
         return result
     end
 
@@ -2351,6 +2361,83 @@ local htmltemplate = [[
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
 
+    local justexport = nodes.handlers.export
+
+    local function wrapuptree(tree)
+        wrapups.fixtree(tree)
+        wrapups.collapsetree(tree)
+        wrapups.indextree(tree)
+        wrapups.checktree(tree)
+        wrapups.breaktree(tree)
+        wrapups.finalizetree(tree)
+    end
+
+    local function localexport(head)
+        starttiming(treehash)
+
+        local saved_treestack    = treestack
+        local saved_nesting      = nesting
+        local saved_currentdepth = currentdepth
+        local saved_tree         = tree
+        local saved_treehash     = treehash
+        local saved_nofbreaks    = nofbreaks
+        local saved_show_comment = show_comment
+
+        treestack         = { }
+        nesting           = { }
+        currentdepth      = 0
+        tree              = { data = { }, fulltag == "root" } -- root
+        treehash          = { }
+        nofbreaks         = 0
+        show_comment      = false
+
+        justexport(head)
+        finishexport()
+        wrapuptree(tree)
+
+     -- tree.data = tree.data[1].data
+
+        local result = concat {
+            wholepreamble(true,true),
+            allcontent(tree),
+        }
+
+        treestack    = saved_treestack
+        nesting      = saved_nesting
+        currentdepth = saved_currentdepth
+        tree         = saved_tree
+        treehash     = saved_treehash
+        nofbreaks    = saved_nofbreaks
+        show_comment = saved_show_comment
+
+        stoptiming(treehash)
+
+        return result
+
+    end
+
+    structurestags.localexport = localexport
+
+    function structures.tags.exportbox(n,filename,buffername)
+        local list = nodes.nuts.getbox(n)
+        if n then
+            local e = localexport(list)
+            if filename and filename ~= "" then
+                io.savedata(filename,e)
+            elseif buffername then
+                buffers.assign(buffername == interfaces.variables.yes and "" or buffername,e)
+            else
+                return e
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "exportbox",
+        arguments = { "integer", "string", "string" },
+        actions   = structures.tags.exportbox
+    }
+
     function structurestags.finishexport()
 
         if exporting then
@@ -2373,14 +2460,7 @@ local htmltemplate = [[
         end
         report_export("")
         --
-        wrapups.fixtree(tree)
-        wrapups.collapsetree(tree)
-        wrapups.indextree(tree)
-        wrapups.checktree(tree)
-        wrapups.breaktree(tree)
-        wrapups.finalizetree(tree)
-        --
-        wrapups.hashlistdata()
+        wrapuptree(tree)
         --
         local askedname = finetuning.file
         --
@@ -2474,14 +2554,7 @@ local htmltemplate = [[
         -- representation that uses verbose element names and carries information in
         -- attributes
 
-        local data = tree.data
-        for i=1,#data do
-            if data[i].tg ~= "document" then
-                data[i] = { }
-            end
-        end
-
-        local result = allcontent(tree,embedmath) -- embedfile is for testing
+        local result = allcontent(tree)
 
         -- ugly but so be it:
 
@@ -2523,7 +2596,7 @@ local htmltemplate = [[
             os.remove(htmlfilename)
 
             result = concat {
-                wholepreamble(true),
+                wholepreamble(true,true),
                 "<!-- This export file is used for filtering runtime only! -->\n",
                 result,
             }

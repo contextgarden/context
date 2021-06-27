@@ -26,12 +26,10 @@ local getnext            = nuts.getnext
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
-local setsubtype         = nuts.setsubtype
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 
 local nextglyph          = nuts.traversers.glyph
-local nextnode           = nuts.traversers.node
 
 local copy_node          = nuts.copy
 
@@ -43,7 +41,6 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local userskip_code      = gluecodes.user
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
 
@@ -62,7 +59,8 @@ local slot  = nil
 local function injectspaces(head)
     -- This can become two fast loops or we just move this to the backend where we can
     -- also check for spaces (it actually is rather old code that relates to tagging
-    -- and so, which was implemented rather early in the mkiv saga).
+    -- and so, which was implemented rather early in the mkiv saga). It can also become
+    -- a helper.
     local p, p_id
     local n = head
     while n do
@@ -75,7 +73,7 @@ local function injectspaces(head)
                     local a = getattr(n,a_characters)
                     setchar(g,slot)
                     setlink(p,g,n)
-                    setwidth(n,getwidth(n) - getwidth(g))
+                    setwidth(n,getwidth(n) - getwidth(g)) -- use criterium
                     if a then
                         setattr(g,a_characters,a)
                     end

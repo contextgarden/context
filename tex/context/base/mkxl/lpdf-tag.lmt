@@ -43,16 +43,6 @@ local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
 
--- local pdfflushobject
--- local pdfreserveobject
--- local pdfpagereference
---
--- updaters.register("backend.update.lpdf",function()
---     pdfflushobject   = lpdf.flushobject
---     pdfreserveobject = lpdf.reserveobject
---     pdfpagereference = lpdf.pagereference
--- end)
-
 local texgetcount         = tex.getcount
 
 local nodecodes           = nodes.nodecodes

@@ -288,10 +288,10 @@
 
 \let\v_colo_freeze_state\s!false
 
-\setvalue{\??colorconversions\v!yes}%
+\defcsname\??colorconversions\v!yes\endcsname
   {\settrue \c_colo_convert_gray}
 
-\setvalue{\??colorconversions\v!always}%
+\defcsname\??colorconversions\v!always\endcsname
   {\settrue \c_colo_convert_gray
    \setfalse\c_colo_rgb_supported
    \setfalse\c_colo_cmyk_supported}

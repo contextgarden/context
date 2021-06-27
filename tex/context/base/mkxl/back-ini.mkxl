@@ -50,6 +50,13 @@
     \clf_setrealspaces{\backendparameter\c!space}%
 \to \everysetupbackend
 
+\appendtoks
+    \clf_setsofthyphens{\backendparameter\c!hyphen}%
+\to \everysetupbackend
+
+\setupbackend
+  [\c!hyphen=\v!yes]
+
 %D For the moment this is an experiment (defauls is pdf, but we also
 %D have lua, json and mps).
 %D

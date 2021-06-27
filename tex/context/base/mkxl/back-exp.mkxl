@@ -358,4 +358,106 @@
     \fi
 \to \everystartdocument
 
+%D This can replace the older (rather unknown) attachment feature because it
+%D is more immediate (same run). I can also use this then for manuals.
+%D
+%D \setuptagging[state=start] % mandate here
+%D
+%D \starttyping
+%D \startmathexport % [buffer=yes]
+%D     test $ x = 1 + a $ test
+%D \stopmathexport
+%D
+%D \typebuffer
+%D
+%D \startmathexport[buffer=math]
+%D     test $ x = 1 + a^2 $ test
+%D     test $ x = 1 + a $ test
+%D     test $ x = z + \sqrt{a} $ test
+%D \stopmathexport
+%D
+%D \typebuffer[math]
+%D
+%D \startmathexport[filename=foo.xml]
+%D     test $ x = z + \sqrt{a} $ test
+%D \stopmathexport
+%D
+%D \dorecurse{\collectedmath} {\page \collectedmath #1 \page}
+%D \stoptyping
+%D
+%D This one also does buffers and files:
+%D
+%D \starttyping
+%D \startboxexport
+%D     \startparagraph
+%D         \input tufte
+%D     \stopparagraph
+%D     \startitemize
+%D         \startitem item one \stopitem
+%D         \startitem item two \stopitem
+%D     \stopitemize
+%D     \startparagraph
+%D         \input tufte
+%D     \stopparagraph
+%D \stopboxexport
+%D
+%D \typebuffer
+%D \stoptyping
+
+\installcorenamespace {boxexport}
+\installcorenamespace {mathexport}
+
+\installsetuponlycommandhandler \??boxexport  {boxexport}
+\installsetuponlycommandhandler \??mathexport {mathexport}
+
+% \permanent\tolerant\protected\def\startboxexport[#1]%
+%   {\dowithnextbox{\strc_export_box{#1}}\vbox\bgroup}
+%
+% \permanent\protected\def\stopboxexport
+%   {\egroup}
+%
+% \def\strc_export_box#1%
+%   {\ctxlua{buffers.assign("#1",structures.tags.exportbox(\number\nextbox))}}
+
+\permanent\tolerant\protected\def\startboxexport[#1]%
+  {\begingroup
+   \iftok{#1}\emptytoks
+      \letboxexportparameter\c!buffer\v!yes
+   \orelse\ifhastok={#1}\relax
+      \setupmathexport[#1]%
+   \else
+      \setboxexportparameter\c!buffer{#1}%
+   \fi
+   \setbox\nextbox\vbox\bgroup}
+
+\permanent\protected\def\stopboxexport
+  {\egroup
+   \clf_exportbox \nextbox
+     {\boxexportparameter\c!file}%
+     {\boxexportparameter\c!buffer}%
+   \endgroup}
+
+\permanent\tolerant\protected\def\startmathexport[#1]%
+  {\begingroup
+   \iftok{#1}\emptytoks
+      \letboxexportparameter\c!buffer\v!yes
+   \orelse\ifhastok={#1}\relax
+      \setupmathexport[#1]%
+   \else
+      \setboxexportparameter\c!buffer{#1}%
+   \fi
+   \clf_startcollectingmath}
+
+\permanent\protected\def\stopmathexport
+  {\clf_stopcollectingmath
+   \clf_processcollectedmath
+     {\boxexportparameter\c!file}
+     {\boxexportparameter\c!buffer}%
+   \endgroup}
+
+% Defined at the \LUA\ end:
+%
+% \the\collectedmath : number of snippets
+% \collectedmath n   : specific snippet
+
 \protect \endinput

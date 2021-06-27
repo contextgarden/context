@@ -48,6 +48,10 @@ do
         before = false
     end
 
+    local prependaction = tasks.prependaction
+    local appendaction  = tasks.appendaction
+    local enableaction  = tasks.enableaction
+
     trackers.register("nodes.callbacks", function(v)
         if not v then
             disableaction("processors","nodes.processors.trace_glyph_run_b")

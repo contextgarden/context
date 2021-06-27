@@ -663,6 +663,7 @@ tasks.new {
         "before",
         "normalizers",
         "builders",
+        "finalizers",
         "after",
     },
     templates = {

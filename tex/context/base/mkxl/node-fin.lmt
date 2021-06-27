@@ -7,11 +7,6 @@ if not modules then modules = { } end modules ['node-fin'] = {
     license   = "see context related readme files",
 }
 
--- this module is being reconstructed
--- local functions, only slightly slower
---
--- leaders are also triggers ... see colo-ext for an example (negate a box)
-
 local next, type, format = next, type, string.format
 local setmetatableindex = table.setmetatableindex
 
@@ -36,7 +31,6 @@ local setlist          = nuts.setlist
 local setleader        = nuts.setleader
 
 local copy_node        = nuts.copy
------ find_tail        = nuts.tail
 local insertnodebefore = nuts.insertbefore
 local insertnodeafter  = nuts.insertafter
 local appendaftertail  = nuts.appendaftertail
@@ -65,8 +59,6 @@ local texgetnest       = tex.getnest
 
 local states           = attributes.states
 local numbers          = attributes.numbers
------ a_trigger        = attributes.private('trigger')
------ triggering       = false
 
 local implement        = interfaces.implement
 
@@ -140,7 +132,7 @@ end
 
 -- the injectors
 
-local nsdata, nsnone, nslistwise, nsforced, nsselector -- , nstrigger
+local nsdata, nsnone, nslistwise, nsforced, nsselector
 local current, current_selector = 0, 0 -- nb, stack has a local current !
 local nsbegin, nsend, nsreset
 
@@ -150,7 +142,6 @@ function states.initialize(namespace,attribute,head)
     nsforced         = namespace.forced
     nsselector       = namespace.selector
     nslistwise       = namespace.listwise
- -- nstrigger        = triggering and namespace.triggering and a_trigger
     current          = 0
     current_selector = 0
     nsstep           = namespace.resolve_step
@@ -169,14 +160,9 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
         if id == hlist_code or id == vlist_code then
             local content = getlist(head)
             if content then
---                 local list = insertnodeafter(content,find_tail(content),copy_node(nsnone)) -- two return values
---                 if list ~= content then
---                     setlist(head,list)
---                 end
                 appendaftertail(content,copy_node(nsnone))
             end
         else
---             head = insertnodeafter(find_tail(head),head,copy_node(nsnone))
             appendaftertail(head,copy_node(nsnone))
         end
         return head, true
@@ -198,11 +184,6 @@ local function process(attribute,head,inheritance,default) -- one attribute
         elseif id == hlist_code or id == vlist_code then
             -- tricky checking
             local outer
---             if subtype == container_code then
---                 check   = true
---                 current = 0
---             end
---             if getorientation(stack) then
             if subtype == container_code or getorientation(stack) then
                 outer = getattr(stack,attribute)
                 if outer then
@@ -225,27 +206,10 @@ local function process(attribute,head,inheritance,default) -- one attribute
                     current = 0
                 end
             end
-            -- begin nested --
-         --
-         -- local list
-         -- if nstrigger and getattr(stack,nstrigger) then
-         --     if not outer then
-         --         outer = getattr(stack,attribute)
-         --     end
-         --     if outer ~= inheritance then
-         --         list = process(attribute,content,inheritance,outer)
-         --     else
-         --         list = process(attribute,content,inheritance,default)
-         --     end
-         -- else
-         --     list = process(attribute,content,inheritance,default)
-         -- end
-         --
             local list = process(attribute,content,inheritance,default)
             if content ~= list then
                 setlist(stack,list)
             end
-            -- end nested --
         elseif id == rule_code then
             check = hasdimensions(stack)
         end
@@ -271,25 +235,10 @@ local function process(attribute,head,inheritance,default) -- one attribute
                         -- for improvement here
                         current = 0
                     end
-                    -- begin nested --
-                 --
-                 -- local list
-                 -- if nstrigger and getattr(stack,nstrigger) then
-                 --     local outer = getattr(stack,attribute)
-                 --     if outer ~= inheritance then
-                 --         list = process(attribute,leader,inheritance,outer)
-                 --     else
-                 --         list = process(attribute,leader,inheritance,default)
-                 --     end
-                 -- else
-                 --     list = process(attribute,leader,inheritance,default)
-                 -- end
-                 --
                     local list = process(attribute,leader,inheritance,default)
                     if leader ~= list then
                         setleader(stack,list)
                     end
-                    -- end nested --
                     current = savedcurrent
                     leader = false
                 end
@@ -322,11 +271,6 @@ local function simple(attribute,head)
             check  = true
             leader = content
         elseif id == hlist_code or id == vlist_code then
---             if subtype == container_code then
---                 check   = true
---                 current = 0
---             end
---             if getorientation(stack) then
             if subtype == container_code or getorientation(stack) then
                 local outer = getattr(stack,attribute)
                 if outer then
@@ -386,137 +330,13 @@ states.simple = function(namespace,attribute,head,default)
     return simple(attribute,head,default)
 end
 
--- we can force a selector, e.g. document wide color spaces, saves a little
--- watch out, we need to check both the selector state (like colorspace) and
--- the main state (like color), otherwise we get into troubles when a selector
--- state changes while the main state stays the same (like two glyphs following
--- each other with the same color but different color spaces e.g. \showcolor)
-
--- local function selective(attribute,head,inheritance,default) -- two attributes
---     local check  = false
---     local leader = nil
---     for stack, id, subtype, content in nextcontent, head do
---         if id == glyph_code or id == disc_code then
---             check = true
---         elseif id == glue_code then
---             check  = true
---             leader = content -- getleader(stack)
---         elseif id == hlist_code or id == vlist_code then
---             -- tricky checking
---             if subtype == container_code then
---                 check = true
--- current = 0
---             end
---             local outer
---             if getorientation(stack) then
---                 outer = getattr(stack,attribute)
---                 if outer then
---                     if default and outer == inheritance then
---                         if current ~= default then
---                             local data = nsdata[default]
---                             head = insertnodebefore(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                             current = default
---                         end
---                     else
---                         local s = getattr(stack,nsselector)
---                      -- local s = nsforced or getattr(stack,nsselector)
---                         if current ~= outer or current_selector ~= s then
---                             local data = nsdata[outer]
---                             head = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
---                             current = outer
---                             current_selector = s
---                         end
---                     end
---                 elseif default and inheritance then
---                     if current ~= default then
---                         local data = nsdata[default]
---                         head    = insertnodebefore(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                         current = default
---                     end
---                 elseif current > 0 then
---                     head = insertnodebefore(head,stack,copy_node(nsnone))
---                     current, current_selector = 0, 0
---                 end
---             end
---             -- begin nested
---             local list
---             if nstrigger and getattr(stack,nstrigger) then
---                 if not outer then
---                     outer = getattr(stack,attribute)
---                 end
---                 if outer ~= inheritance then
---                     list = selective(attribute,content,inheritance,outer)
---                 else
---                     list = selective(attribute,content,inheritance,default)
---                 end
---             else
---                 list = selective(attribute,content,inheritance,default)
---             end
---             if content ~= list then
---                 setlist(stack,list)
---             end
---             -- end nested
---         elseif id == rule_code then
---             if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
---                 -- so no redundant color stuff (only here, layers for instance should obey)
---                 check = false
---             else
---                 check = hasdimensions(stack)
---             end
---         end
---         if check then
---             local c = getattr(stack,attribute)
---             if c then
---                 if default and c == inheritance then
---                     if current ~= default then
---                         local data = nsdata[default]
---                         head = insertnodebefore(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                         current = default
---                     end
---                 else
---                     local s = getattr(stack,nsselector)
---                  -- local s = nsforced or getattr(stack,nsselector)
---                     if current ~= c or current_selector ~= s then
---                         local data = nsdata[c]
---                         head = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
---                         current = c
---                         current_selector = s
---                     end
---                 end
---                 if leader then
---                     -- begin nested
---                     local list
---                     if nstrigger and getattr(stack,nstrigger) then
---                         local outer = getattr(stack,attribute)
---                         if outer ~= inheritance then
---                             list = selective(attribute,leader,inheritance,outer)
---                         else
---                             list = selective(attribute,leader,inheritance,default)
---                         end
---                     else
---                         list = selective(attribute,leader,inheritance,default)
---                     end
---                     if leader ~= list then
---                         setleader(stack,list)
---                     end
---                     -- end nested
---                     leader = false
---                 end
---             elseif default and inheritance then
---                 if current ~= default then
---                     local data = nsdata[default]
---                     head    = insertnodebefore(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                     current = default
---                 end
---             elseif current > 0 then
---                 head = insertnodebefore(head,stack,copy_node(nsnone))
---                 current, current_selector = 0, 0
---             end
---             check = false
---         end
---     end
---     return head
--- end
+-- We can force a selector, e.g. document wide color spaces, saves a little watch
+-- out, we need to check both the selector state (like colorspace) and the main
+-- state (like color), otherwise we get into troubles when a selector state changes
+-- while the main state stays the same (like two glyphs following each other with
+-- the same color but different color spaces e.g. \showcolor). The triggering
+-- mechanism has been removed because it was never really used, but the original can
+-- be seen in the mkiv (lua) code.
 
 local function selective(attribute,head,inheritance,default) -- two attributes
     local check  = false
@@ -526,34 +346,34 @@ local function selective(attribute,head,inheritance,default) -- two attributes
             check = true
         elseif id == glue_code then
             check  = true
-            leader = content -- getleader(stack)
+            leader = content
         elseif id == hlist_code or id == vlist_code then
             local outer, s
-            -- tricky checking
---             if subtype == container_code then
---                 check   = true
---                 current = 0
---             end
---             if getorientation(stack) then
-if subtype == container_code or getorientation(stack) then
+            if subtype == container_code or getorientation(stack) then
                 outer, s = getattrs(stack,attribute,nsselector)
                 if outer then
                     if default and outer == inheritance then
                         if current ~= default then
-                            local data = nsdata[default]
-                            head = insertnodebefore(head,stack,copy_node(data[nsforced or nsselector]))
+                            local data = nsdata[default][nsforced or nsselector]
+                            if data then
+                                head = insertnodebefore(head,stack,copy_node(data))
+                            end
                             current = default
                         end
                     elseif current ~= outer or current_selector ~= s then
-                        local data = nsdata[outer]
-                        head = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
+                        local data = nsdata[outer][nsforced or s or nsselector]
+                        if data then
+                            head = insertnodebefore(head,stack,copy_node(data))
+                        end
                         current = outer
                         current_selector = s
                     end
                 elseif default and inheritance then
                     if current ~= default then
-                        local data = nsdata[default]
-                        head    = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
+                        local data = nsdata[default][nsforced or s or nsselector]
+                        if data then
+                            head = insertnodebefore(head,stack,copy_node(data))
+                        end
                         current = default
                     end
                 elseif current > 0 then
@@ -561,27 +381,10 @@ if subtype == container_code or getorientation(stack) then
                     current, current_selector = 0, 0
                 end
             end
-            -- begin nested
-         --
-         -- local list
-         -- if nstrigger and getattr(stack,nstrigger) then
-         --     if not outer then
-         --         outer = getattr(stack,attribute)
-         --     end
-         --     if outer ~= inheritance then
-         --         list = selective(attribute,content,inheritance,outer)
-         --     else
-         --         list = selective(attribute,content,inheritance,default)
-         --     end
-         -- else
-         --     list = selective(attribute,content,inheritance,default)
-         -- end
-         --
             local list = selective(attribute,content,inheritance,default)
             if content ~= list then
                 setlist(stack,list)
             end
-            -- end nested
         elseif id == rule_code then
             if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
                 -- so no redundant color stuff (only here, layers for instance should obey)
@@ -595,42 +398,33 @@ if subtype == container_code or getorientation(stack) then
             if c then
                 if default and c == inheritance then
                     if current ~= default then
-                        local data = nsdata[default]
-                        head = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
+                        local data = nsdata[default][nsforced or s or nsselector]
+                        if data then
+                            head = insertnodebefore(head,stack,copy_node(data))
+                        end
                         current = default
                     end
                 elseif current ~= c or current_selector ~= s then
-                    local data = nsdata[c]
-                    head = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
+                    local data = nsdata[c][nsforced or s or nsselector]
+                    if data then
+                        head = insertnodebefore(head,stack,copy_node(data))
+                    end
                     current = c
                     current_selector = s
                 end
                 if leader then
-                    -- begin nested
-                 --
-                 -- local list
-                 -- if nstrigger and getattr(stack,nstrigger) then
-                 --     local outer = getattr(stack,attribute)
-                 --     if outer ~= inheritance then
-                 --         list = selective(attribute,leader,inheritance,outer)
-                 --     else
-                 --         list = selective(attribute,leader,inheritance,default)
-                 --     end
-                 -- else
-                 --     list = selective(attribute,leader,inheritance,default)
-                 -- end
-                 --
                     local list = selective(attribute,leader,inheritance,default)
                     if leader ~= list then
                         setleader(stack,list)
                     end
-                    -- end nested
                     leader = false
                 end
             elseif default and inheritance then
                 if current ~= default then
-                    local data = nsdata[default]
-                    head    = insertnodebefore(head,stack,copy_node(data[nsforced or s or nsselector]))
+                    local data = nsdata[default][nsforced or s or nsselector]
+                    if data then
+                        head = insertnodebefore(head,stack,copy_node(data))
+                    end
                     current = default
                 end
             elseif current > 0 then
@@ -656,7 +450,7 @@ end
 -- Todo: make a better stacker. Keep track (in attribute) about nesting level. Not
 -- entirely trivial and a generic solution is nicer (compares to the exporter).
 
-local function stacked(attribute,head,default) -- no triggering, no inheritance, but list-wise
+local function stacked(attribute,head,default) -- no inheritance, but list-wise
     local stack   = head
     local current = default or 0
     local depth   = 0
@@ -677,8 +471,8 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
              -- the problem is that broken lines gets the attribute which can be a later one
                 local list
                 if subtype == container_code then
-                    check = true
-current = 0
+                    check   = true
+                    current = 0
                 end
                 if nslistwise then
                     local a = getattr(stack,attribute)
@@ -742,119 +536,13 @@ states.stacked = function(namespace,attribute,head,default)
     return stacked(attribute,head,default)
 end
 
--- experimental
-
--- local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
---
---  -- nsbegin()
---     local stacked  = false
---
---     local current  = head
---     local previous = head
---     local attrib   = default or unsetvalue
---     local check    = false
---     local leader   = false
---
---     while current do
---         local id = getid(current)
---         if id == glyph_code then
---             check = true
---         elseif id == glue_code then
---             leader = getleader(current)
---             if leader then
---                 check = true
---             end
---         elseif id == hlist_code or id == vlist_code then
---             local content = getlist(current)
---             if content then
---                 local list
---                 if subtype == container_code then
---                     check = true
--- current = 0
---                 end
---                 if nslistwise then
---                     local a = getattr(current,attribute)
---                     if a and attrib ~= a and nslistwise[a] then -- viewerlayer
---                         head = insertnodebefore(head,current,copy_node(nsdata[a]))
---                         list = stacker(attribute,content,a)
---                         if list ~= content then
---                             setlist(current,list)
---                         end
---                         head, current = insertnodeafter(head,current,copy_node(nsnone))
---                     else
---                         list = stacker(attribute,content,attrib)
---                         if list ~= content then
---                             setlist(current,list)
---                         end
---                     end
---                 else
---                     list = stacker(attribute,content,default)
---                     if list ~= content then
---                         setlist(current,list)
---                     end
---                 end
---             end
---         elseif id == rule_code then
---             check = hasdimensions(current)
---         end
---
---         if check then
---             local a = getattr(current,attribute) or unsetvalue
---             if a ~= attrib then
---                 if not stacked then
---                     stacked = true
---                     nsbegin()
---                 end
---                 local n = nsstep(a)
---                 if n then
---                     head = insertnodebefore(head,current,n) -- a
---                 end
---                 attrib = a
---                 if leader then
---                     -- tricky as a leader has to be a list so we cannot inject before
---                  -- local list = stacker(attribute,leader,attrib)
---                  -- leader = false
---
---                     local content = getlist(leader)
---                     if content then
---                         local list = stacker(attribute,leader,attrib)
---                         if leader ~= list then
---                             setleader(current,list)
---                         end
---                     end
---
---                     leader = false
---                 end
---             end
---             check = false
---         end
---
---         previous = current
---         current = getnext(current)
---     end
---
---     if stacked then
---         local n = nsend()
---         while n do
---             head = insertnodeafter(head,previous,n)
---             n = nsend()
---         end
---     end
---
---     return head
--- end
-
-local function stacker(attribute,head,default) -- no triggering, no inheritance, but list-wise
-
- -- nsbegin()
+local function stacker(attribute,head,default) -- no inheritance, but list-wise
     local stacked  = false
-
     local current  = head
     local previous = head
     local attrib   = default or unsetvalue
     local check    = false
     local leader   = false
-
     for current, id, subtype, content in nextcontent, head do
         if id == glyph_code then
             check = true
@@ -865,7 +553,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
             local list
             if subtype == container_code then
                 check = true
--- attrib = default or unsetvalue -- or just umsetvalue
             end
             if nslistwise then
                 local a = getattr(current,attribute)
@@ -896,7 +583,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 check = hasdimensions(current)
             end
         end
-
         if check then
             local a = getattr(current,attribute) or unsetvalue
             if a ~= attrib then
@@ -911,9 +597,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 attrib = a
                 if leader then
                     -- tricky as a leader has to be a list so we cannot inject before
-                 -- local list = stacker(attribute,leader,attrib)
-                 -- leader = false
-
                     local content = getlist(leader)
                     if content then
                         local list = stacker(attribute,leader,attrib)
@@ -930,7 +613,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
 
         previous = current
     end
-
     if stacked then
         local n = nsend()
         while n do
@@ -938,7 +620,6 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
             n = nsend()
         end
     end
-
     return head
 end
 

@@ -36,18 +36,6 @@ local pdfdelayedobject        = lpdf.delayedobject
 local pdfflushstreamobject    = lpdf.flushstreamobject
 local pdfshareobjectreference = lpdf.shareobjectreference
 
--- local pdfflushobject
--- local pdfdelayedobject
--- local pdfflushstreamobject
--- local pdfshareobjectreference
---
--- updaters.register("backend.update.lpdf",function()
---     pdfflushobject          = lpdf.flushobject
---     pdfdelayedobject        = lpdf.delayedobject
---     pdfflushstreamobject    = lpdf.flushstreamobject
---     pdfshareobjectreference = lpdf.shareobjectreference
--- end)
-
 local addtopageattributes     = lpdf.addtopageattributes
 local adddocumentcolorspace   = lpdf.adddocumentcolorspace
 local adddocumentextgstate    = lpdf.adddocumentextgstate

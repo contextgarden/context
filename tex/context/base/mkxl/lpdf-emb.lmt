@@ -51,16 +51,6 @@ local pdfreserveobject     = lpdf.reserveobject
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 
--- local pdfreserveobject
--- local pdfflushobject
--- local pdfflushstreamobject
---
--- updaters.register("backend.update.lpdf",function()
---     pdfreserveobject     = lpdf.reserveobject
---     pdfflushobject       = lpdf.flushobject
---     pdfflushstreamobject = lpdf.flushstreamobject
--- end)
-
 local report_fonts         = logs.reporter("backend","fonts")
 
 local trace_fonts          = false

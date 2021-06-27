@@ -330,6 +330,10 @@ function tags.getextradata()
     return extradata
 end
 
+function tags.enabled()
+    return enabled
+end
+
 function tags.start(tag,specification)
     if not enabled then
         codeinjections.enabletags()
