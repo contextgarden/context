@@ -281,3 +281,79 @@ adds to the format. Convenience has a price.
 \stopchapter
 
 \stopcomponent
+
+% Some bonus content:
+
+When processing thousand paragraphs \type {tufte.tex}, staying below 4 seconds
+(just over 60 pages per second) all|-|in that looks ok. But it doesn't say that
+much. Outputting 1000 pages in 2 seconds tells a bit about the overhead on a page
+but again in practice things work out differently. So what do we need to
+consider?
+
+\startitemize
+
+\startitem
+    Check what macros and resources are preloaded and what gets always loaded at
+    runtime.
+\stopitem
+
+\startitem
+    After a first run it's likely that the operating system has resources in its
+    cache so start measuring after a few runs.
+\stopitem
+
+\startitem
+    Best run a test many times and and take the average runtime.
+\stopitem
+
+\startitem
+    Simple macro performance tests can be faster than in real usage because the
+    related bytes are in \CPU\ cache memory. So one can only use that to test a
+    specific improvement (or hit due to added functionality).
+\stopitem
+
+\startitem
+    The size of the used \TEX\ tree can matter. The file databases need to be
+    loaded and consulted.
+\stopitem
+
+\startitem
+    The binary matters: is it optimized, does it load libraries, is it 64 bit or not.
+\stopitem
+
+\startitem
+    Local and|/|or global font definitions can hit performance and when a style
+    does many redundant switches it might hit performance. Of course that only is
+    the case when font switching is adaptive.
+\stopitem
+
+\startitem
+    The granularity of subsystems impacts performance: advanced color support,
+    inheritance used in mechanisms, abstraction combined with extensive
+    support for features, it all matters.
+\stopitem
+
+\startitem
+    The more features one enables the more it will impact performance as does
+    preprocessing the input (normalizing, bidi checking, etc).
+\stopitem
+
+\startitem
+    It matters how the page (and layout) dimensions are defined. Although
+    language doesn't really play a role (apart from possible hyphenation)
+    specific scripts might.
+\stopitem
+
+\stopitemize
+
+These are just a few points, but it might be clear that I don't take comparisons
+too serious simply because it's real runs that matter. As long as we're in the
+runtime comfort zone we're okay. You can run tests within the domain of a macro
+package but comparing macro package makes not that much sense. It can even
+backfire, especially when claims were made about what should be or not be in a
+kernel (while later violating that) or relying on old stories (or rumors) about a
+variant macro package being slow. (The same is true when comparing one's favorite
+operating system.) Yes, the \CONTEXT\ format file is huge and performance less
+than for instance plain \TEX. If that is a problem and not a virtue then make
+sure your own alternative will never end up like that. And just don't come to
+conclusions about a system that you don't really know.

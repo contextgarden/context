@@ -261,7 +261,7 @@
      \currentconstructiontext
    \endgroup}
 
-\protected\setvalue{\??constructionmainhandler\v!construction}#1%
+\protected\defcsname\??constructionmainhandler\v!construction\endcsname#1%
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize % reinstated
@@ -270,7 +270,7 @@
      \endgroup
    \fi#1}
 
-\protected\setvalue{\??constructiontexthandler\v!construction}%
+\protected\defcsname\??constructiontexthandler\v!construction\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
@@ -294,7 +294,7 @@
 % \def\resetconstructions % to be used in e.g. footnotes
 %   {\c_strc_constructions_nested_state\zerocount}
 
-\protected\setvalue{\??constructioncommandhandler\v!construction}%
+\protected\defcsname\??constructioncommandhandler\v!construction\endcsname
   {\endgroup}
 
 \let\p_strc_constructions_sample        \empty

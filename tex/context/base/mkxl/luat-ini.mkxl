@@ -59,7 +59,8 @@
 %D It is nicer for checking with \type {s-system-macros} if we have some meaning:
 
 \pushoverloadmode
-    \let\-\explicitdiscretionary
+  % \aliased\let\-\explicitdiscretionary
+    \permanent\protected\def\-{\begingroup\hyphenationmode\explicithyphenationmodecode\explicitdiscretionary\endgroup}
 \popoverloadmode
 
 \ifdefined\n \else \mutable\def\n{n} \fi \ifdefined\r \else \mutable\def\r{r} \fi

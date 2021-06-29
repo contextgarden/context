@@ -2488,7 +2488,9 @@ local openfile, closefile  do
          else
             f = io.open(filename,"wb")
             if not f then
+                report()
                 report("quitting because file %a cannot be opened for writing",filename)
+                report()
                 os.exit()
             end
          -- f:setvbuf("full",64*1024)

@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['libs-imp-lzma'] = {
 -- Instead of linking in libs like this we now do them optional. After all, once
 -- we start adding more and more stuff statically we en dup with a mess.
 
+-- e:\tex-context\tex\texmf-win64\bin\lib\luametatex\lzma\liblzma.dll
+
 local libname = "lzma"
 local libfile = "liblzma"
 

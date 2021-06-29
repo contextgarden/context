@@ -449,7 +449,10 @@
      \c_attr_destination\currentconstructionattribute\relax % todo, whole text
      \signalcharacter
      \endgroup
-   \fi#following}
+   \fi
+   \ifconditional\c_strc_notes_flushed\else
+     #following\relax
+   \fi}
 
 \protected\defcsname\??constructionnotehandler\v!notation:\v!note\endcsname % in the running text
   {\ifnotesenabled
@@ -481,6 +484,8 @@
          \global\settrue\postponednote
        \orelse\ifconditional\inlocalnotes % todo: per note class
          \global\settrue\postponednote
+       \orelse\ifconditional\c_strc_notes_flushed
+         \handlenoteitself\currentnote\currentnotenumber
        \orelse\ifconditional\c_strc_notes_delayed
          % probably end notes
        \else
@@ -938,28 +943,49 @@
 \installcorenamespace{notelocation}
 
 \newconditional\c_strc_notes_delayed
+\newconditional\c_strc_notes_flushed
 
-\protected\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed}
-\protected\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed}
+\protected\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed\setfalse\c_strc_notes_flushed}
+\protected\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed\setfalse\c_strc_notes_flushed}
+\protected\def\strc_notes_set_delayed_lst{\settrue \c_strc_notes_delayed\settrue \c_strc_notes_flushed}
 
-\defcsname\??notelocation\v!page       \endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_page}
-\defcsname\??notelocation\v!columns    \endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_columns}
-\defcsname\??notelocation\v!lastcolumn \endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_lastcolumn}
-\defcsname\??notelocation\v!firstcolumn\endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_firstcolumn}
-\defcsname\??notelocation\v!none       \endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_none}
-\defcsname\??notelocation\v!text       \endcsname{\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
-                                                  \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_text}
-\defcsname\??notelocation\v!high       \endcsname{\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_high}
-\defcsname\??notelocation\v!bottom     \endcsname{\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_bottom}
+\defcsname\??notelocation\v!page\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_page}
 
-\defcsname\??notedelayedvariant \??notedelayedvariant \endcsname{\strc_notes_set_delayed_nop}      % not let
-\defcsname\??notepositionvariant\??notepositionvariant\endcsname{\strc_notes_set_position_bottom}  % not let
-\defcsname\??notelocationvariant\??notelocationvariant\endcsname{\strc_notes_set_location_page}    % not let
+\defcsname\??notelocation\v!columns\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_columns}
+
+\defcsname\??notelocation\v!lastcolumn\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_lastcolumn}
+
+\defcsname\??notelocation\v!firstcolumn\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_firstcolumn}
+
+\defcsname\??notelocation\v!none\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_none}
+
+\defcsname\??notelocation\v!list\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_lst
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_none}
+
+\defcsname\??notelocation\v!text\endcsname
+  {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_yes
+   \letcsname\??notelocationvariant\currentnote\endcsname\strc_notes_set_location_text}
+
+\defcsname\??notelocation\v!high\endcsname
+  {\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_high}
+
+\defcsname\??notelocation\v!bottom\endcsname
+  {\letcsname\??notepositionvariant\currentnote\endcsname\strc_notes_set_position_bottom}
+
+\defcsname\??notedelayedvariant \??notedelayedvariant \endcsname{\strc_notes_set_delayed_nop    } % not \let
+\defcsname\??notepositionvariant\??notepositionvariant\endcsname{\strc_notes_set_position_bottom} % not \let
+\defcsname\??notelocationvariant\??notelocationvariant\endcsname{\strc_notes_set_location_page  } % not \let
 
 \protected\def\strc_notes_set_delayed
   {\csname\??notedelayedvariant
@@ -1261,7 +1287,9 @@
    \begstrut
    \strc_references_flush_destination_nodes
    \strc_notes_set_destination_attribute_text
-   \strc_notes_inject_text\relax
+   \ifconditional\c_strc_notes_flushed\else
+     \strc_notes_inject_text\relax
+   \fi
    \ifvmode\obeydepth\else\endstrut\fi % \obeydepth is new per 2015-01-10
    \strc_constructions_stored_stop
    %endgroup
@@ -1269,6 +1297,8 @@
 
 \protected\def\strc_notes_inject_text % hm main?
   {\clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}
+
+\installstructurelistprocessor{construction}{\usestructurelistprocessor{section}}
 
 \newsignal\d_strc_notes_signal
 

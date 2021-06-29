@@ -1766,6 +1766,12 @@
 %   \framed[width=2cm,align=middle,location=lohi]   {location\\equals\\lohi}
 %   \framed[width=2cm,align=middle,location=middle] {location\\equals\\middle}
 %   B}
+% \vskip2cm
+% \ruledhbox
+%  {A
+%   \framed[width=2cm,align=middle,location=keep]   {location\\equals\\top}
+%   \framed[width=2cm,align=middle,location=formula {location\\equals\\bottom}
+%   B}
 
 \installframedlocator \v!hanging % best with strut=no *1* / see mail to list by SB
   {}

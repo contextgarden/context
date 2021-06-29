@@ -92,9 +92,6 @@ local tokenscanners  = nil
 local scanset        = nil
 local scanparameters = nil
 
-scanners.typescanners  = typescanners
-scanners.tokenscanners = tokenscanners
-
 scanset = function() -- can be optimized, we now read twice
     scantoken()
     if scantoken(true) == rightbrace_code then
@@ -165,6 +162,9 @@ table.setmetatableindex(tokenscanners,function()
     return typescanners[e] or scanexpression
 end)
 
+scanners.typescanners  = typescanners
+scanners.tokenscanners = tokenscanners
+
 -- a key like 'color' has code 'declare'
 
 local function scanparameters(fenced)
@@ -179,18 +179,29 @@ local function scanparameters(fenced)
     end
     while true do
      -- local s = scansymbol()
-        local s = scansymbol(false,false)
+        local s = scansymbol(false,false) -- keep expand
         if s == close then
             break;
         elseif s == "," then
             -- continue
         else
-            local t = scantoken(true)
-            if t == equals_code or t == colon_code then
+--             local t = scantoken(true)
+--             if t == equals_code or t == colon_code then
+--                 -- optional equal or :
+--                 scantoken()
+--             else
+--             end
+--             local kind = scantoken(true)
+
+-- test:
+--
+            local kind = scantoken(true)
+            if kind == equals_code or kind == colon_code then
                 -- optional equal or :
                 scantoken()
+                local kind = scantoken(true)
             end
-            local kind = scantoken(true)
+
             if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
                 kind = scanexpression(true)
                 data[s] = (typescanners[kind] or scanexpression)()
@@ -381,9 +392,11 @@ end
 
 -- todo:
 
-local function getparameter()
+local function getparameter(v)
     local list, n = collectnames()
-    local v = namespaces
+    if not v then
+        v = namespaces
+    end
     for i=1,n do
         local l = list[i]
         local vl = v[l]
@@ -750,6 +763,61 @@ end
 
 function metapost.setparameterset(namespace,t)
     namespaces[namespace] = t
+end
+
+-- This is an experiment for Alan and me.
+
+local records    = { }
+local stack      = setmetatableindex("table")
+local nofrecords = 0
+local interim    = 0
+
+registerdirect("newrecord", function()
+    scantoken() -- semicolon
+    local p = get_parameters()
+    local n = 0
+    if interim > 0 then
+        records[interim] = p
+        local top = stack[interim]
+        if top then
+            top = stack[interim][#top]
+            if top then
+                setmetatableindex(p,top)
+            end
+        end
+        n = interim
+        interim = 0
+    else
+        nofrecords = nofrecords + 1
+        records[nofrecords] = p
+        n = nofrecords
+    end
+    return n
+end)
+
+registerdirect("getrecord", function()
+    local n = scaninteger()
+    local v = records[n]
+    while true do
+        local t = scansymbol(true)
+        if t == ";" or t == ")" then
+            return v
+        elseif t == "." then
+            scansymbol()
+        else
+            t = scansymbol()
+            v = v[t]
+        end
+    end
+end)
+
+function metapost.runinternal(n,m)
+    if m == 0 then
+        insert(stack[n],records[n])
+        interim = n
+    elseif m == 1 then
+        records[n] = remove(stack[n]) or records[n]
+    end
 end
 
 -- goodies

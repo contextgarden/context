@@ -209,7 +209,7 @@ function texconfig.init()
 
 end
 
-CONTEXTLMTXMODE = %s
+CONTEXTLMTXMODE = 0
 
 -- we provide a qualified path
 
@@ -256,7 +256,7 @@ local function makestub()
         end
     end
     t[#t+1] = ""
-    t[#t+1] = format(stub,firsttable,tostring(CONTEXTLMTXMODE or 0))
+    t[#t+1] = format(stub,firsttable)
     io.savedata(name,concat(t,"\n"))
     logs.newline()
 end

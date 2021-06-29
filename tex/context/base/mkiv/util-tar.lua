@@ -124,7 +124,7 @@ local readers = {
         return true
     end,
 
-    link = function(t,h)
+    symbolic = function(t,h)
         local metadata = t.metadata
         local filename = h.name
         local linkname = h.linkname
@@ -152,7 +152,7 @@ local skippers = {
         return fileoffset
     end,
 
-    link = function(t,h)
+    symbolic = function(t,h)
         return true
     end,
 

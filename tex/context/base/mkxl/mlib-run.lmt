@@ -214,6 +214,7 @@ function metapost.load(name,method)
         tolerance      = bend_tolerance,
         math_mode      = method,
         run_script     = metapost.runscript,
+        run_internal   = metapost.runinternal,
         script_error   = metapost.scripterror,
         make_text      = metapost.maketext,
         extensions     = 1,

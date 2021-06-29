@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 local type, tonumber, next = type, tonumber, next
 local utfbyte = utf.byte
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
-local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
+local concat, sortedkeys, sortedhash, keys, insert = table.concat, table.sortedkeys, table.sortedhash, table.keys, table.insert
 local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
@@ -506,15 +506,6 @@ else
             return 0
         end
     end
-
-    if CONTEXTLMTXMODE > 0 then
-        numbers[0] = "null"
-        registered.null = {
-            number   = 0,
-            instance = new_language(0),
-        }
-    end
-
 end
 
 -- not that usefull, global values
@@ -590,7 +581,7 @@ languages.logger = languages.logger or { }
 
 function languages.logger.report()
     local result, r = { }, 0
-    for tag, l in sortedpairs(registered) do
+    for tag, l in sortedhash(registered) do
         if l.loaded then
             r = r + 1
             result[r] = format("%s:%s:%s",tag,l.parent,l.number)
