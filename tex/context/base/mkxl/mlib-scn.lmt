@@ -795,15 +795,83 @@ registerdirect("newrecord", function()
     return n
 end)
 
+local function merge(old,new)
+    for knew, vnew in next, new do
+        local vold = old[knew]
+        if vold then
+            if type(vnew) == "table" then
+                if type(vold) == "table" then
+                    merge(vold,vnew)
+                else
+                    old[knew] = vnew
+                end
+            else
+                old[knew] = vnew
+            end
+        else
+            old[knew] = vnew
+        end
+    end
+end
+
+registerdirect("setrecord", function()
+    scantoken() -- semicolon
+    local p = get_parameters()
+    local n = 0
+    if interim > 0 then
+        local r = records[interim]
+        if r then
+            merge(r,p)
+        else
+            records[interim] = p
+        end
+        local top = stack[interim]
+        if top then
+            top = stack[interim][#top]
+            if top then
+                setmetatableindex(p,top)
+            end
+        end
+        n = interim
+        interim = 0
+    else
+        nofrecords = nofrecords + 1
+        records[nofrecords] = p
+        n = nofrecords
+    end
+    return n
+end)
+
+
 registerdirect("getrecord", function()
     local n = scaninteger()
     local v = records[n]
     while true do
         local t = scansymbol(true)
-        if t == ";" or t == ")" then
+        if t == ";" or t == ")" or t == ":" then
             return v
         elseif t == "." then
             scansymbol()
+        elseif t == "#" or t == "##" then -- from tex's we get a double
+            scansymbol()
+            t = scansymbol()
+            v = v[t]
+            return type(v) == "table" and #v or 0
+        elseif t == "[" then
+            scansymbol()
+            t = scansymbol(true)
+            if t == "]" then
+                scansymbol()
+                return #v
+            else
+                t = scaninteger()
+                v = v[t]
+                if scansymbol(true) == "]" then
+                    scansymbol()
+                else
+                    report("] expected")
+                end
+            end
         else
             t = scansymbol()
             v = v[t]
@@ -811,12 +879,16 @@ registerdirect("getrecord", function()
     end
 end)
 
-function metapost.runinternal(n,m)
-    if m == 0 then
-        insert(stack[n],records[n])
-        interim = n
-    elseif m == 1 then
-        records[n] = remove(stack[n]) or records[n]
+function metapost.runinternal(action,index,kind)
+    if action == 0 then
+        -- allocate
+    elseif action == 1 then
+        -- save
+        insert(stack[index],records[index])
+        interim = index
+    elseif action == 2 then
+        -- restore
+        records[index] = remove(stack[index]) or records[index]
     end
 end
 

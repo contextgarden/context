@@ -441,6 +441,7 @@
 
 \permanent \integerdef \partialhyphenationmodecode \numexpr
     \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
+% + \explicithyphenationmodecode          % \-
   + \collapsehyphenationmodecode          % collapse -- and ---
 \relax
 

@@ -363,8 +363,8 @@ do
 
     elseif name == "freebsd" then
 
-        architecture = architecture or resultof("uname -m") or ""
-        if find(architecture) == "amd64" or find(architecture) == "AMD64" then
+        architecture = architecture or os.getenv("MACHTYPE") or resultof("uname -m") or ""
+        if find(architecture,"amd64") or find(architecture,"AMD64") then
             bits, platform = 64, "freebsd-amd64"
         else
             bits, platform = 32, "freebsd"

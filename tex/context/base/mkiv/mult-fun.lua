@@ -38,8 +38,7 @@ return {
         "popparameters",
         "definecolor",
         --
-        "newrecord",
-        "getrecord",
+        "newrecord", "setrecord", "getrecord",
         --
         "anchorxy", "anchorx", "anchory",
         "anchorht", "anchordp",
