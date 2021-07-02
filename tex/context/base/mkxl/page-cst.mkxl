@@ -255,7 +255,6 @@
    \fi
    \endgroup}
 
-
 \protected\def\page_grd_command_set_vsize
   {\clf_setvsizecolumnset{\currentpagegrid}%
    \ifdim\d_page_grd_gap_height<\lineheight

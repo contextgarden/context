@@ -379,6 +379,6 @@
 
 % bonus
 
-% \currentfontinstancespec % define ad the lua end
+% \currentfontinstancespec % defined at the lua end
 
 \protect \endinput

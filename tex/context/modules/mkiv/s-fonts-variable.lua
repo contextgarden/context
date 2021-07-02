@@ -55,9 +55,9 @@ function moduledata.fonts.variable.showvariations(specification)
 --         return
 --     end
 
-if not fontdata.shared.rawdata.metadata.fullname then
-    fontdata.shared.rawdata.metadata.fullname = fontdata.shared.rawdata.metadata.fontname
-end
+    if not fontdata.shared.rawdata.metadata.fullname then
+        fontdata.shared.rawdata.metadata.fullname = fontdata.shared.rawdata.metadata.fontname
+    end
 
     context.starttitle { title = fontdata.shared.rawdata.metadata.fullname }
 
@@ -111,7 +111,7 @@ end
     local designaxis = variabledata.designaxis
 
     context.startsubject { title = "design axis" }
-        if designaxis then
+        if designaxis and #designaxis > 0 then
             context.starttabulate { "||||c|c|c|c|c|" }
                 NC() bold("tag")
                 NC() bold("name")
@@ -159,7 +159,7 @@ end
     local list      = { }
 
     context.startsubject { title = "axis" }
-        if axis then
+        if axis and #axis > 0 then
             context.starttabulate { "|||c|c|c|" }
                 NC() bold("tag")
                 NC() bold("name")

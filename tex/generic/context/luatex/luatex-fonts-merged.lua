@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-06-30 19:17
+-- merge date  : 2021-07-02 13:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -15129,7 +15129,7 @@ if not modules then modules={} end modules ['font-ttf']={
 }
 local next,type,unpack=next,type,unpack
 local band,rshift=bit32.band,bit32.rshift
-local sqrt,round=math.sqrt,math.round
+local sqrt,round,abs,min,max=math.sqrt,math.round,math.abs,math.min,math.max
 local char,rep=string.char,string.rep
 local concat=table.concat
 local idiv=number.idiv
@@ -15263,69 +15263,156 @@ local function curveto(m_x,m_y,l_x,l_y,r_x,r_y)
   r_x+2/3*(m_x-r_x),r_y+2/3*(m_y-r_y),
   r_x,r_y,"c"
 end
+local xv={} 
+local yv={} 
 local function applyaxis(glyph,shape,deltas,dowidth)
  local points=shape.points
  if points then
   local nofpoints=#points
-  local h=nofpoints+2 
-  local l=nofpoints+1
   local dw=0
   local dl=0
   for i=1,#deltas do
    local deltaset=deltas[i]
    local xvalues=deltaset.xvalues
    local yvalues=deltaset.yvalues
-   local dpoints=deltaset.points
-   local factor=deltaset.factor
-   if dpoints then
-    local nofdpoints=#dpoints
-    for i=1,nofdpoints do
-     local d=dpoints[i]
-     local p=points[d]
-     if p then
-      if xvalues then
-       local x=xvalues[i]
-       if x and x~=0 then
+   if xvalues and yvalues then
+    local dpoints=deltaset.points
+    local factor=deltaset.factor
+    if dpoints then
+     local cnt=#dpoints
+     if dowidth then
+      cnt=cnt-4
+     end
+     if cnt==1 then
+      local d=dpoints[1]
+      local x=xvalues[d]*factor
+      local y=yvalues[d]*factor
+      for i=1,nofpoints do
+       local p=points[i]
+       if x~=0 then
+        p[1]=p[1]+x
+       end
+       if y~=0 then
+        p[2]=p[2]+y
+       end
+      end
+     else
+      local function find(i)
+       local prv=cnt
+       for j=1,cnt do
+        local nxt=dpoints[j]
+        if nxt==i then
+         return false,j,false
+        elseif nxt>i then
+         return prv,false,j
+        end
+        prv=j
+       end
+       return prv,false,1
+      end
+      for i=1,nofpoints do
+       local d1,d2,d3=find(i)
+       local p2=points[i]
+       if d2 then
+        xv[i]=xvalues[d2]
+        yv[i]=yvalues[d2]
+       else
+        local n1=dpoints[d1]
+        local n3=dpoints[d3]
+        local p1=points[n1]
+        local p3=points[n3]
+        local p1x=p1[1]
+        local p2x=p2[1]
+        local p3x=p3[1]
+        local p1y=p1[2]
+        local p2y=p2[2]
+        local p3y=p3[2]
+        local x1=xvalues[d1]
+        local y1=yvalues[d1]
+        local x3=xvalues[d3]
+        local y3=yvalues[d3]
+        local fx
+        local fy
+        if p1x==p3x then
+         if x1==x3 then
+          fx=x1
+         else
+          fx=0
+         end
+        elseif p2x<=min(p1x,p3x) then
+         if p1x<p3x then
+          fx=x1
+         else
+          fx=x3
+         end
+        elseif p2x>=max(p1x,p3x) then
+         if p1x>p3x then
+          fx=x1
+         else
+          fx=x3
+         end
+        else
+         fx=(p2x-p1x)/(p3x-p1x)
+         fx=(1-fx)*x1+fx*x3
+        end
+        if p1y==p3y then
+         if y1==y3 then
+          fy=y1
+         else
+          fy=0
+         end
+        elseif p2y<=min(p1y,p3y) then
+         if p1y<p3y then
+          fy=y1
+         else
+          fy=y3
+         end
+        elseif p2y>=max(p1y,p3y) then
+         if p1y>p3y then
+          fy=y1
+         else
+          fy=y3
+         end
+        else
+         fy=(p2y-p1y)/(p3y-p1y)
+         fy=(1-fy)*y1+fy*y3
+        end
+        xv[i]=fx
+        yv[i]=fy
+       end
+      end
+      for i=1,nofpoints do
+       local pi=points[i]
+       local fx=xv[i]
+       local fy=yv[i]
+       if fx~=0 then
+        pi[1]=pi[1]+factor*fx
+       end
+       if fy~=0 then
+        pi[2]=pi[2]+factor*fy
+       end
+      end
+     end
+    else
+     for i=1,nofpoints do
+      local p=points[i]
+      local x=xvalues[i]
+      if x then
+       local y=yvalues[i]
+       if x~=0 then
         p[1]=p[1]+factor*x
        end
-      end
-      if yvalues then
-       local y=yvalues[i]
-       if y and y~=0 then
+       if y~=0 then
         p[2]=p[2]+factor*y
        end
-      end
-     elseif dowidth then
-      if d==h then
-       local x=xvalues[i]
-       if x then
-        dw=dw+factor*x
-       end
-      elseif d==l then
-       local x=xvalues[i]
-       if x then
-        dl=dl+factor*x
-       end
-      end
-     end
-    end
-   else
-    for i=1,nofpoints do
-     local p=points[i]
-     if xvalues then
-      local x=xvalues[i]
-      if x and x~=0 then
-       p[1]=p[1]+factor*x
-      end
-     end
-     if yvalues then
-      local y=yvalues[i]
-      if y and y~=0 then
-       p[2]=p[2]+factor*y
+      else
+       break
       end
      end
     end
     if dowidth then
+     local h=nofpoints+2 
+     local l=nofpoints+1
      local x=xvalues[h]
      if x then
       dw=dw+factor*x
@@ -15904,13 +15991,13 @@ local function readcomposite(f)
     yoffset=yoffset*yscale
    end
   elseif band(flags,0x0080)~=0 then 
-   xscale=read2dot14(f)
-   xrotate=read2dot14(f)
-   yrotate=read2dot14(f)
-   yscale=read2dot14(f)
+   xscale=read2dot14(f) 
+   xrotate=read2dot14(f) 
+   yrotate=read2dot14(f) 
+   yscale=read2dot14(f) 
    if f_xyarg and f_offset then
-    xoffset=xoffset*sqrt(xscale^2+xrotate^2)
-    yoffset=yoffset*sqrt(yrotate^2+yscale^2)
+    xoffset=xoffset*sqrt(xscale^2+yrotate^2) 
+    yoffset=yoffset*sqrt(xrotate^2+yscale^2) 
    end
   end
   nofcomponents=nofcomponents+1
@@ -16063,40 +16150,6 @@ local function readpoints(f)
    end
   end
   return points,p
- end
-end
-local function readdeltas(f,nofpoints)
- local deltas={}
- local p=0
- local z=0
- while nofpoints>0 do
-  local control=readbyte(f)
-if not control then
- break
-end
-  local allzero=band(control,0x80)~=0
-  local runlength=band(control,0x3F)+1
-  if allzero then
-   z=z+runlength
-  else
-   local runreader=band(control,0x40)~=0 and readshort or readinteger
-   if z>0 then
-    for i=1,z do
-     p=p+1
-     deltas[p]=0
-    end
-    z=0
-   end
-   for i=1,runlength do
-    p=p+1
-    deltas[p]=runreader(f)
-   end
-  end
-  nofpoints=nofpoints-runlength
- end
- if p>0 then
-  return deltas
- else
  end
 end
 local function readdeltas(f,nofpoints)
@@ -20859,7 +20912,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.117 
+otf.version=3.118 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -21239,10 +21292,14 @@ elseif CONTEXTLMTXMODE then
   local maxindex=data.nofglyphs or metadata.nofglyphs
   if maxindex then
    for u,d in sortedhash(duplicates) do
-    for uu in sortedhash(d) do
-     maxindex=maxindex+1
-     descriptions[uu].dupindex=descriptions[u].index
-     descriptions[uu].index=maxindex
+    local du=descriptions[u]
+    if du then
+     for uu in sortedhash(d) do
+      maxindex=maxindex+1
+      descriptions[uu].dupindex=du.index
+      descriptions[uu].index=maxindex
+     end
+    else
     end
    end
   end
@@ -23537,7 +23594,10 @@ local f_index=formatters["I%05X"]
 local f_character_y=formatters["%C"]
 local f_character_n=formatters["[ %C ]"]
 local check_duplicates=true 
-local check_soft_hyphen=true
+local check_soft_hyphen=context 
+directives.register("otf.checksofthyphen",function(v)
+ check_soft_hyphen=v 
+end)
 local function replaced(list,index,replacement)
  if type(list)=="number" then
   return replacement
@@ -23925,27 +23985,30 @@ local function copyduplicates(fontdata)
   local resources=fontdata.resources
   local duplicates=resources.duplicates
   if check_soft_hyphen then
-   local ds=descriptions[0xAD]
-   if not ds or ds.width==0 then
-    if ds then
+   local dh=descriptions[0x2D]
+   if dh then
+    local ds=descriptions[0xAD]
+    if not ds or ds.width~=dh.width then
      descriptions[0xAD]=nil
-     if trace_unicodes then
-      report_unicodes("patching soft hyphen")
+     if ds then
+      if trace_unicodes then
+       report_unicodes("patching soft hyphen")
+      end
+     else
+      if trace_unicodes then
+       report_unicodes("adding soft hyphen")
+      end
      end
-    else
-     if trace_unicodes then
-      report_unicodes("adding soft hyphen")
+     if not duplicates then
+      duplicates={}
+      resources.duplicates=duplicates
      end
-    end
-    if not duplicates then
-     duplicates={}
-     resources.duplicates=duplicates
-    end
-    local dh=duplicates[0x2D]
-    if dh then
-     dh[#dh+1]={ [0xAD]=true }
-    else
-     duplicates[0x2D]={ [0xAD]=true }
+     local d=duplicates[0x2D]
+     if d then
+      d[0xAD]=true
+     else
+      duplicates[0x2D]={ [0xAD]=true }
+     end
     end
    end
   end
@@ -36228,7 +36291,7 @@ local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers
-local version=0.010
+local version=otf.version or 0.011
 local shapescache=containers.define("fonts","shapes",version,true)
 local streamscache=containers.define("fonts","streams",version,true)
 local compact_streams=false

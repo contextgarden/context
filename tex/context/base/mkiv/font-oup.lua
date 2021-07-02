@@ -37,16 +37,12 @@ local f_index              = formatters["I%05X"]
 local f_character_y        = formatters["%C"]
 local f_character_n        = formatters["[ %C ]"]
 
-local check_duplicates     = true -- can become an option (pseudo feature) / always needed anyway
-local check_soft_hyphen    = true -- can become an option (pseudo feature) / needed for tagging
+local check_duplicates     = true    -- can become an option (pseudo feature) / always needed anyway
+local check_soft_hyphen    = context -- only in context
 
--- if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
---     check_soft_hyphen = false -- solved better elsewhere
--- else
---     directives.register("otf.checksofthyphen",function(v)
---         check_soft_hyphen = v
---     end)
--- end
+directives.register("otf.checksofthyphen",function(v)
+    check_soft_hyphen = v -- only for testing
+end)
 
 local function replaced(list,index,replacement)
     if type(list) == "number" then
@@ -457,31 +453,48 @@ local function copyduplicates(fontdata)
         local resources    = fontdata.resources
         local duplicates   = resources.duplicates
         if check_soft_hyphen then
-            -- ebgaramond has a zero width empty soft hyphen
-            -- antykwatorunska lacks a soft hyphen
-            local ds = descriptions[0xAD]
-            if not ds or ds.width == 0 then
-                if ds then
+         -- ebgaramond has a zero width empty soft hyphen
+         -- antykwatorunska lacks a soft hyphen
+         -- lucidaot has a halfwidth soft hyphen
+
+         -- local dh = descriptions[0x2D]
+         -- if dh then
+         --     descriptions[0xAD] = nil
+         --     local d = duplicates[0x2D]
+         --     if d then
+         --         d[#d+1] = { [0xAD] = true }
+         --     else
+         --         duplicates[0x2D] = { [0xAD] = true }
+         --     end
+         -- end
+
+            local dh = descriptions[0x2D]
+            if dh then
+                local ds = descriptions[0xAD]
+                if not ds or ds.width ~= dh.width then
                     descriptions[0xAD] = nil
-                    if trace_unicodes then
-                        report_unicodes("patching soft hyphen")
+                    if ds then
+                        if trace_unicodes then
+                            report_unicodes("patching soft hyphen")
+                        end
+                    else
+                        if trace_unicodes then
+                            report_unicodes("adding soft hyphen")
+                        end
                     end
-                else
-                    if trace_unicodes then
-                        report_unicodes("adding soft hyphen")
+                    if not duplicates then
+                        duplicates = { }
+                        resources.duplicates = duplicates
                     end
-                end
-                if not duplicates then
-                    duplicates = { }
-                    resources.duplicates = duplicates
-                end
-                local dh = duplicates[0x2D]
-                if dh then
-                    dh[#dh+1] = { [0xAD] = true }
-                else
-                    duplicates[0x2D] = { [0xAD] = true }
+                    local d = duplicates[0x2D]
+                    if d then
+                        d[0xAD] = true
+                    else
+                        duplicates[0x2D] = { [0xAD] = true }
+                    end
                 end
             end
+
         end
         if duplicates then
            for u, d in next, duplicates do

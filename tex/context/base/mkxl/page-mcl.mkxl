@@ -125,6 +125,7 @@
    \fi \fi
    \c_page_mcl_n_of_lines\noflines}
 
+
 % \protected\def\page_mcl_command_set_vsize
 %   {%%\page_one_command_set_vsize % indeed?
 %    \page_mcl_set_n_of_lines\zeropoint
@@ -187,7 +188,7 @@
   {\scratchdimen\dimexpr
      \d_page_mcl_saved_pagetotal
     -\d_page_mcl_preceding_height
-    -\topskip
+  % -\topskip % no, this is already part of the saved total
    \relax
    \box\b_page_mcl_preceding
    \kern\scratchdimen}

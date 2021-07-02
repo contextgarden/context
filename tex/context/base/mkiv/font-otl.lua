@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.117 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.118 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -512,10 +512,15 @@ elseif CONTEXTLMTXMODE then
         local maxindex = data.nofglyphs or metadata.nofglyphs
         if maxindex then
             for u, d in sortedhash(duplicates) do
-                for uu in sortedhash(d) do
-                    maxindex = maxindex + 1
-                    descriptions[uu].dupindex = descriptions[u].index
-                    descriptions[uu].index    = maxindex
+                local du = descriptions[u]
+                if du then
+                    for uu in sortedhash(d) do
+                        maxindex = maxindex + 1
+                        descriptions[uu].dupindex = du.index
+                        descriptions[uu].index    = maxindex
+                    end
+                else
+                 -- report_otf("no %U in font %a, duplicates ignored",u,filename)
                 end
             end
         end

@@ -26,6 +26,7 @@ local getsubtype         = nuts.getsubtype
 local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local setchar            = nuts.setchar
+local getdiscpart        = nuts.getdiscpart
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local getlanguage        = nuts.getlanguage
@@ -39,6 +40,7 @@ local remove_node        = nuts.remove
 ----- flushnode          = nuts.flushnode
 
 local nextdisc           = nuts.traversers.disc
+local nextglyph          = nuts.traversers.glyph
 
 local new_disc           = nuts.pool.disc
 
@@ -47,6 +49,12 @@ local disccodes          = nodes.disccodes
 
 local disc_code          = nodecodes.disc
 local glyph_code         = nodecodes.glyph
+
+local discoptioncodes    = tex.discoptioncodes
+local pre_part_code      = discoptioncodes.pre
+local post_part_code     = discoptioncodes.post
+local replace_part_code  = discoptioncodes.replace
+local always_part_code   = discoptioncodes.always
 
 local explicitdisc_code  = disccodes.explicit
 
@@ -73,6 +81,20 @@ function languages.visualizediscretionaries(head)
             end
             if replace then
                 setlistcolor(replace,"darkblue")
+            end
+        end
+    end
+    for g in nextglyph, head do
+        if getattr(g,a_visualize) then
+            local c = getdiscpart(g)
+            if c == pre_part_code then
+                setlistcolor(g,"darkmagenta")
+            elseif c == post_part_code then
+                setlistcolor(g,"darkcyan")
+            elseif c == replace_part_code then
+                setlistcolor(g,"darkyellow")
+            elseif c == always_part_code then
+                setlistcolor(g,"darkgray")
             end
         end
     end

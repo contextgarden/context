@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mlib-lmt'] = {
 -- todo: check for possible inject usage
 
 local type = type
-local round = math.round
+local round, abs = math.round, math.abs
 
 local aux            = mp.aux
 local mpdirect       = aux.direct
@@ -154,43 +154,35 @@ todecimal = xdecimal and xdecimal.new or tonumber -- bonus
 -- mail on list by Mikael Sundqvist and Taco's analysis of near duplicate points (2021/02/11+)
 
 registerscript("scrutenized", function()
-    local p = scanpath()
-    local d = 10^scannumeric()
-    for i=1,#p do
-        local pi = p[i]
-        pi[1] = round(pi[1] * d) / d
-        pi[2] = round(pi[2] * d) / d
+    local pth = scanpath()
+    local d   = 1/10^scannumeric() -- decimals
+    local p1  = pth[1]
+    local x1  = p1[1]
+    local y1  = p1[2]
+    local res = { pth[1] }
+    local r   = 1
+    for i=2,#pth do
+        local pi = pth[i]
+        x2 = pi[1]
+        y2 = pi[2]
+        if abs(x1-x2) > d or abs(y1-y2) > d then
+            r = r + 1 res[r] = pi
+        end
+        x1 = x2
+        y1 = y2
     end
-    local x1 = round(p[1][1])
-    local y1 = round(p[1][2])
-    local n = 1
-    local m = #p
-    local t = { p[1], cycle = p.cycle }
-    for i=2,m-1 do
-        local pi = p[i]
-        local x2 = round(pi[1])
-        local y2 = round(pi[2])
-        if x1 ~= x2 or y1 ~= y2 then
-            n = n + 1
-            t[n] = p[i]
-            x1 = x2
-            y1 = y2
+    if pth.cycle then
+        res.cycle = true
+        if abs(x1-p1[1]) > d or abs(y1-p1[2]) > d then
+            -- keep
+        else
+            res[r] = nil
         end
     end
-    local x1 = round(p[1][1])
-    local y1 = round(p[1][2])
-    local x2 = round(p[m][1])
-    local y2 = round(p[m][2])
-    if x1 ~= x2 or y1 ~= y2 then
-        n = n + 1
-        t[n] = p[m]
-    end
-  -- mp.path(t)
-    injectpath(t)
+    injectpath(res)
 end)
 
 -- A goodie, mostly a side effect of updating the metafun manual.
-
 
 local labtorgb = attributes.colors.labtorgb
 

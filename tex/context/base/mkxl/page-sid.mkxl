@@ -472,10 +472,10 @@
 
 \installcorenamespace{sidefloatsteps}
 
-\setvalue{\??sidefloatsteps\v!line  }{\strut}
-\setvalue{\??sidefloatsteps\v!big   }{\strut}
-\setvalue{\??sidefloatsteps\v!medium}{\halflinestrut} % was \halfstrut
-\setvalue{\??sidefloatsteps\v!small }{\noheightstrut} % was \quarterstrut
+\defcsname\??sidefloatsteps\v!line  \endcsname{\strut}
+\defcsname\??sidefloatsteps\v!big   \endcsname{\strut}
+\defcsname\??sidefloatsteps\v!medium\endcsname{\halflinestrut} % was \halfstrut
+\defcsname\??sidefloatsteps\v!small \endcsname{\noheightstrut} % was \quarterstrut
 
 \def\page_sides_flush_floats_tracer
   {\dontleavehmode

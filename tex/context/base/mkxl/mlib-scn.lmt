@@ -767,129 +767,144 @@ end
 
 -- This is an experiment for Alan and me.
 
-local records    = { }
-local stack      = setmetatableindex("table")
-local nofrecords = 0
-local interim    = 0
+do
 
-registerdirect("newrecord", function()
-    scantoken() -- semicolon
-    local p = get_parameters()
-    local n = 0
-    if interim > 0 then
-        records[interim] = p
-        local top = stack[interim]
-        if top then
-            top = stack[interim][#top]
+    local records    = { }
+    local stack      = setmetatableindex("table")
+    local nofrecords = 0
+    local interim    = 0
+    local names      = { }
+ -- local types      = { }
+
+    registerdirect("newrecord", function()
+        scantoken() -- semicolon
+        local p = get_parameters()
+        local n = 0
+        if interim > 0 then
+            records[interim] = p
+            local top = stack[interim]
             if top then
-                setmetatableindex(p,top)
+                top = stack[interim][#top]
+                if top then
+                    setmetatableindex(p,top)
+                end
             end
+            n = interim
+            interim = 0
+        else
+            nofrecords = nofrecords + 1
+            records[nofrecords] = p
+            n = nofrecords
         end
-        n = interim
-        interim = 0
-    else
-        nofrecords = nofrecords + 1
-        records[nofrecords] = p
-        n = nofrecords
-    end
-    return n
-end)
+        return n
+    end)
 
-local function merge(old,new)
-    for knew, vnew in next, new do
-        local vold = old[knew]
-        if vold then
-            if type(vnew) == "table" then
-                if type(vold) == "table" then
-                    merge(vold,vnew)
+    local function merge(old,new)
+        for knew, vnew in next, new do
+            local vold = old[knew]
+            if vold then
+                if type(vnew) == "table" then
+                    if type(vold) == "table" then
+                        merge(vold,vnew)
+                    else
+                        old[knew] = vnew
+                    end
                 else
                     old[knew] = vnew
                 end
             else
                 old[knew] = vnew
             end
-        else
-            old[knew] = vnew
         end
     end
-end
 
-registerdirect("setrecord", function()
-    scantoken() -- semicolon
-    local p = get_parameters()
-    local n = 0
-    if interim > 0 then
-        local r = records[interim]
-        if r then
-            merge(r,p)
-        else
-            records[interim] = p
-        end
-        local top = stack[interim]
-        if top then
-            top = stack[interim][#top]
-            if top then
-                setmetatableindex(p,top)
-            end
-        end
-        n = interim
-        interim = 0
-    else
-        nofrecords = nofrecords + 1
-        records[nofrecords] = p
-        n = nofrecords
-    end
-    return n
-end)
-
-
-registerdirect("getrecord", function()
-    local n = scaninteger()
-    local v = records[n]
-    while true do
-        local t = scansymbol(true)
-        if t == ";" or t == ")" or t == ":" then
-            return v
-        elseif t == "." then
-            scansymbol()
-        elseif t == "#" or t == "##" then -- from tex's we get a double
-            scansymbol()
-            t = scansymbol()
-            v = v[t]
-            return type(v) == "table" and #v or 0
-        elseif t == "[" then
-            scansymbol()
-            t = scansymbol(true)
-            if t == "]" then
-                scansymbol()
-                return #v
+    registerdirect("setrecord", function()
+        scantoken() -- semicolon
+        local p = get_parameters()
+        local n = 0
+        if interim > 0 then
+            local r = records[interim]
+            if r then
+                merge(r,p)
             else
-                t = scaninteger()
-                v = v[t]
-                if scansymbol(true) == "]" then
-                    scansymbol()
-                else
-                    report("] expected")
+                records[interim] = p
+            end
+            local top = stack[interim]
+            if top then
+                top = stack[interim][#top]
+                if top then
+                    setmetatableindex(p,top)
                 end
             end
+            n = interim
+            interim = 0
         else
-            t = scansymbol()
-            v = v[t]
+            nofrecords = nofrecords + 1
+            records[nofrecords] = p
+            n = nofrecords
+        end
+        return n
+    end)
+
+
+    registerdirect("getrecord", function()
+        local n = scaninteger()
+        local v = records[n]
+        while true do
+            local t = scansymbol(true)
+            if t == ";" or t == ")" or t == ":" then
+                return v
+            elseif t == "." then
+                scansymbol()
+            elseif t == "#" or t == "##" then -- from tex's we get a double
+                scansymbol()
+                t = scansymbol()
+                v = v[t]
+                return type(v) == "table" and #v or 0
+            elseif t == "[" then
+                scansymbol()
+                t = scansymbol(true)
+                if t == "]" then
+                    scansymbol()
+                    return #v
+                else
+                    t = scaninteger()
+                    v = v[t]
+                    if scansymbol(true) == "]" then
+                        scansymbol()
+                    else
+                        report("] expected")
+                    end
+                end
+            else
+                t = scansymbol()
+                v = v[t]
+            end
+        end
+    end)
+
+    function metapost.getrecord(name)
+        local index = names[name]
+        if index then
+            return records[index]
         end
     end
-end)
 
-function metapost.runinternal(action,index,kind)
-    if action == 0 then
-        -- allocate
-    elseif action == 1 then
-        -- save
-        insert(stack[index],records[index])
-        interim = index
-    elseif action == 2 then
-        -- restore
-        records[index] = remove(stack[index]) or records[index]
+    function metapost.runinternal(action,index,kind,name)
+        if action == 0 then
+            -- allocate
+            names[name] = index
+         -- types[index] = kind
+        elseif action == 1 then
+            -- save
+            insert(stack[index],records[index])
+            interim = index
+        elseif action == 2 then
+            -- restore
+            records[index] = remove(stack[index]) or records[index]
+        end
     end
+
 end
 
 -- goodies

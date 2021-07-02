@@ -279,12 +279,14 @@ newscriptindex mfun_newrecord ; mfun_newrecord := scriptindex "newrecord" ;
 newscriptindex mfun_setrecord ; mfun_setrecord := scriptindex "setrecord" ;
 newscriptindex mfun_getrecord ; mfun_getrecord := scriptindex "getrecord" ;
 
+let record = runscript ; % We need to use "let" because we don't expand!
+
 def newrecord = runscript mfun_newrecord ; enddef ; % semicolon prevents lookahead
 def setrecord = runscript mfun_setrecord ; enddef ;
 def getrecord = runscript mfun_getrecord   enddef ;
 
 permanent
-    newrecord, setrecord, getrecord ;
+    record, newrecord, setrecord, getrecord ;
 
 % No vardef's because we need to scan for an assignment too and we'll see
 % an endgroup otherwise.
