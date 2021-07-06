@@ -149,8 +149,9 @@ end
 tex.groupcodes       = getthem(tex.getgroupvalues,       "",       "groupcode")
 tex.glyphoptioncodes = getthem(tex.getglyphoptionvalues, "",       "code")
 tex.discoptioncodes  = getthem(tex.getdiscoptionvalues,  "",       "code")
-tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "",       "")
+tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "",       "") -- only at lua end
 tex.mathcontrolcodes = getthem(tex.getmathcontrolvalues, "",       "mathcontrolcode")
+tex.textcontrolcodes = getthem(tex.gettextcontrolvalues, "",       "") -- only at lua end
 tex.mathflattencodes = getthem(tex.getmathflattenvalues, "",       "flattencode")
 tex.hyphenationcodes = getthem(tex.gethyphenationvalues, "",       "hyphenationmodecode")
 tex.frozenparcodes   = getthem(tex.getfrozenparvalues,   "frozen", "code")

@@ -38,8 +38,12 @@ local emptystring = string.is_empty
 local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
 local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
 
-local report_metapost = logs.reporter("metapost")
 local texerrormessage = logs.texerrormessage
+
+local report_metapost = logs.reporter("metapost")
+local report_terminal = logs.reporter("metapost","terminal")
+local report_tracer   = logs.reporter("metapost","trace")
+local report_error    = logs.reporter("metapost","error")
 
 local starttiming     = statistics.starttiming
 local stoptiming      = statistics.stoptiming
@@ -90,17 +94,7 @@ local function prepareddata(data)
     end
 end
 
--- local function executempx(mpx,data)
---     local terminal = mpxterminals[mpx]
---     if terminal then
---         terminal.writer(data)
---         data = ""
---     elseif type(data) == "table" then
---         data = prepareddata(data,collapse)
---     end
---     metapost.nofruns = metapost.nofruns + 1
---     return mpx:execute(data)
--- end
+local execute = mplib.execute
 
 local function executempx(mpx,data)
     local terminal = mpxterminals[mpx]
@@ -111,7 +105,8 @@ local function executempx(mpx,data)
         data = prepareddata(data,collapse)
     end
     metapost.nofruns = metapost.nofruns + 1
-    return mpx:execute(data)
+    local result = execute(mpx,data)
+    return result
 end
 
 directives.register("mplib.texerrors",  function(v) metapost.texerrors = v end)
@@ -207,20 +202,20 @@ function metapost.load(name,method)
             seed = seed % 4096
         end
     end
+--     local loghandler =
     method = method and methods[method] or "scaled"
     local mpx, terminal = new_instance {
--- noninteractive = true;
--- ini_version    = true,
-        tolerance      = bend_tolerance,
-        math_mode      = method,
-        run_script     = metapost.runscript,
-        run_internal   = metapost.runinternal,
-        script_error   = metapost.scripterror,
-        make_text      = metapost.maketext,
-        extensions     = 1,
-     -- random_seed    = seed,
-        utf8_mode      = true,
-        text_mode      = true,
+        tolerance   = bend_tolerance,
+        mathmode    = method,
+        runscript   = metapost.runscript,
+        runinternal = metapost.runinternal,
+        scripterror = metapost.scripterror,
+        maketext    = metapost.maketext,
+        handlers    = {
+            log     = metapost.newlogger(),
+         -- warning = function(...) end,
+         -- error   = function(...) end,
+        },
     }
     report_metapost("initializing number mode %a",method)
     local result
@@ -384,9 +379,6 @@ function metapost.reset(mpx)
     end
 end
 
-local mp_tra = { }
-local mp_tag = 0
-
 -- key/values
 
 do
@@ -448,116 +440,160 @@ end
 --     incontext    boolean
 --     plugmode     boolean
 
-local function makebeginbanner(specification)
-    return formatters["%% begin graphic: n=%s\n\n"](metapost.n)
-end
+do
 
-local function makeendbanner(specification)
-    return "\n% end graphic\n\n"
-end
-
-function metapost.run(specification)
-    local mpx       = specification.mpx
-    local data      = specification.data
-    local converted = false
-    local result    = { }
-    local mpxdone   = type(mpx) == "string"
-    if mpxdone then
-        mpx = metapost.pushformat { instance = mpx, format = mpx }
+    local function makebeginbanner(specification)
+        return formatters["%% begin graphic: n=%s\n\n"](metapost.n)
     end
-    if mpx and data then
-        local tra = nil
-        starttiming(metapost) -- why not at the outer level ...
-        metapost.variables = { } -- todo also push / pop
-        metapost.pushscriptrunner(mpx)
-        if trace_graphics then
-            tra = mp_tra[mpx]
-            if not tra then
-                mp_tag = mp_tag + 1
-                local jobname = tex.jobname
-                tra = {
-                    inp = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag),"w"),
-                    log = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag),"w"),
-                }
-                mp_tra[mpx] = tra
-            end
-            local banner = makebeginbanner(specification)
-            tra.inp:write(banner)
-            tra.log:write(banner)
-        end
-        local function process(d,i)
-            if d then
-                if trace_graphics then
-                    if i then
-                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
-                    end
-                    if type(d) == "table" then
-                        for i=1,#d do
-                            tra.inp:write(d[i])
+
+    local function makeendbanner(specification)
+        return "\n% end graphic\n\n"
+    end
+
+    -- This is somewhat complex. We want a logger that is bound to an instance and
+    -- we implement the rest elsewhere so we need some hook. When we decide to move
+    -- the mlib-fio code here we can avoid some of the fuzzyness.
+
+    -- In the luatex lib we have log and error an dterm fields, but here we don't
+    -- because we handle that ourselves.
+
+    -- mplib.realtimelogging = false
+
+    local mp_tra   = { }
+    local mp_tag   = 0
+
+    local stack   = { }
+    local logger  = false
+    local logging = true
+
+    local function pushlogger(mpx,tra)
+        insert(stack,logger)
+        logger = tra or false
+    end
+
+    local function poplogger(mpx)
+        logger = remove(stack) or false
+    end
+
+    function metapost.checktracingonline(n)
+        -- todo
+    end
+
+    function metapost.setlogging(state)
+        logging = state
+    end
+
+    function metapost.newlogger()
+
+        -- In a traditional scenario there are three states: terminal, log as well
+        -- as both. The overhead of logging is large because metapost flushes each
+        -- character (maybe that should be improved but caching at the libs end also
+        -- has price, probably more than delegating to LUA).
+
+        -- term=1 log=2 term+log =3
+
+        local l, nl, dl = { }, 0, false
+
+        return function(target,str)
+            if not logging then
+                return
+            elseif target == 4 then
+                report_error(str)
+            else
+                if logger and (target == 2 or target == 3) then
+                    logger:write(str)
+                end
+                if target == 1 or target == 3 then
+                    if str == "\n" then
+                        mplib.realtimelogging = true
+                        if nl > 0 then
+                            report_tracer(concat(l,"",1,nl))
+                            nl, dl = 0, false
+                        elseif not dl then
+                            report_tracer("")
+                            dl = true
                         end
                     else
-                        tra.inp:write(d)
-                    end
-                    if i then
-                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
+                        nl = nl + 1
+                        l[nl] = str
                     end
                 end
-                starttiming(metapost.exectime)
-                result = executempx(mpx,d)
-                stoptiming(metapost.exectime)
-                if trace_graphics and result then
-                    local str = result.log or result.error
-                    if str and str ~= "" then
-                        tra.log:write(str)
-                    end
-                end
-                if not metapost.reporterror(result) then
-                    if metapost.showlog then
-                        -- make function and overload in lmtx
-                        local str = result.term ~= "" and result.term or "no terminal output"
-                        if not emptystring(str) then
-                            metapost.lastlog = metapost.lastlog .. "\n" .. str
-                            report_metapost("log: %s",str)
-                        end
-                    end
-                    if result.fig then
-                        converted = metapost.convert(specification,result)
-                    end
-                end
-            elseif i then
-                report_metapost("error: invalid graphic component %s",i)
-            else
-                report_metapost("error: invalid graphic")
             end
         end
 
---         local data = prepareddata(data)
-        if type(data) == "table" then
+    end
+
+    function metapost.run(specification)
+        local mpx       = specification.mpx
+        local data      = specification.data
+        local converted = false
+        local result    = { }
+        local mpxdone   = type(mpx) == "string"
+        if mpxdone then
+            mpx = metapost.pushformat { instance = mpx, format = mpx }
+        end
+        if mpx and data then
+            local tra = false
+            starttiming(metapost) -- why not at the outer level ...
+            metapost.variables = { } -- todo also push / pop
+            metapost.pushscriptrunner(mpx)
+            if trace_graphics then
+                tra = mp_tra[mpx]
+                if not tra then
+                    mp_tag = mp_tag + 1
+                    local jobname = tex.jobname
+                    tra = {
+                        inp = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag),"w"),
+                        log = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag),"w"),
+                    }
+                    mp_tra[mpx] = tra
+                end
+                local banner = makebeginbanner(specification)
+                tra.inp:write(banner)
+                tra.log:write(banner)
+                pushlogger(mpx,tra and tra.log)
+            else
+                pushlogger(mpx,false)
+            end
             if trace_tracingall then
                 executempx(mpx,"tracingall;")
             end
-                process(data)
---             for i=1,#data do
---                 process(data[i],i)
---             end
-        else
-            if trace_tracingall then
-                data = "tracingall;" .. data
+            --
+            if data then
+                if trace_graphics then
+                    if type(data) == "table" then
+                        for i=1,#data do
+                            tra.inp:write(data[i])
+                        end
+                    else
+                        tra.inp:write(data)
+                    end
+                end
+                starttiming(metapost.exectime)
+                result = executempx(mpx,data)
+                stoptiming(metapost.exectime)
+                if not metapost.reporterror(result) and result.fig then
+                    converted = metapost.convert(specification,result)
+                end
+            else
+                report_metapost("error: invalid graphic")
             end
-            process(data)
+            --
+            if trace_graphics then
+                local banner = makeendbanner(specification)
+                tra.inp:write(banner)
+                tra.log:write(banner)
+            end
+            stoptiming(metapost)
+            poplogger()
+            metapost.popscriptrunner()
         end
-        if trace_graphics then
-            local banner = makeendbanner(specification)
-            tra.inp:write(banner)
-            tra.log:write(banner)
+        if mpxdone then
+            metapost.popformat()
         end
-        stoptiming(metapost)
-        metapost.popscriptrunner()
+        return converted, result
     end
-    if mpxdone then
-        metapost.popformat()
-    end
-    return converted, result
+
 end
 
 if not metapost.convert then
@@ -608,9 +644,6 @@ do
             format   = "metafun", -- or: minifun
             method   = "double",
         }
---         if not code then
---             code = ""
---         end
         metapost.process {
             mpx        = mpx,
             flusher    = flusher,

@@ -77,7 +77,7 @@ warnings about unrecognized options are suppressed.
 
 Command line processing happens very early on. So early, in fact, that none of
 \TEX's initializations have taken place yet. The \LUA\ libraries that don't deal
-with \TEX\ are initialized early.
+with \TEX\ are initialized rather soon so you have these available.
 
 \LUAMETATEX\ allows some of the command line options to be overridden by reading
 values from the \type {texconfig} table at the end of script execution (see the
@@ -207,11 +207,16 @@ some care you can deal with \UNICODE\ just fine.
 
 There are some more libraries present. These are discussed on a later chapter.
 For instance we embed \type {luasocket} but contrary to \LUATEX\ don't embed the
-related \LUA\ code. An adapted version of \type {luafilesystem} is also included.
+related \LUA\ code. The \type {luafilesystem} module has been replaced by a more
+efficient one that also deals with the \MSWINDOWS\ file and environment
+properties better (\UNICODE\ support in \MSWINDOWS\ dates from before \UTF8
+became dominant so we need to deal with wide \UNICODE16).
+
 There are more extensive math libraries and there are libraries that deal with
-encryption and compression. At some point some of these might become so called
-optional libraries (read: the handful that we provide interfaces for but that get
-loaded on demand).
+encryption and compression. There are also some optional libraries that we do
+interface but that are loaded on demand. The interfaces are as minimal as can be
+because we so much in \LUA, which also means that one can tune behaviour to
+usage better.
 
 \stopsection
 

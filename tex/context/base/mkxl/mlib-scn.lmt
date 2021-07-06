@@ -902,6 +902,8 @@ do
         elseif action == 2 then
             -- restore
             records[index] = remove(stack[index]) or records[index]
+        elseif action == 3 then
+            metapost.checktracingonline(kind)
         end
     end
 

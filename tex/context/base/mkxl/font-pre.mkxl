@@ -53,6 +53,7 @@
    script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
    autoscript=position,
    autolanguage=position,
+   textcontrol=collapsehyphens,
    kern=yes,     % consider skipping the base passes when no base mode is used
    mark=yes,
    mkmk=yes,
@@ -61,22 +62,23 @@
 \definefontfeature
   [default]
   [always]
-  [liga=yes,
-% ccmp=yes, % maybe too
-% locl=yes, % maybe too
-% calt=yes, % maybe too
-% clig=yes, % maybe too
-% rlig=yes, % maybe too
-% tlig=yes, % no longer default
-% trep=yes, % no longer default
-  ] % texligatures=yes,texquotes=yes
+  [liga=yes]
+
+ % ccmp=yes, % maybe too
+ % locl=yes, % maybe too
+ % calt=yes, % maybe too
+ % clig=yes, % maybe too
+ % rlig=yes, % maybe too
+ % tlig=yes, % no longer default (texligatures=yes)
+ % trep=yes, % no longer default (texquotes=yes)
 
 % if needed users can add this to a local cont-loc.mkxl in texmf-local:
 
 % \definefontfeature
 %   [default]
 %   [default]
-%   [tlig=yes,
+%   [textcontrol=,
+%    tlig=yes,
 %    trep=yes]
 
 \definefontfeature
@@ -86,17 +88,13 @@
 \definefontfeature
   [smallcaps]
   [always]
-  [smcp=yes,
-   tlig=yes,
-   trep=yes] % texligatures=yes,texquotes=yes
+  [smcp=yes]
 
 \definefontfeature
   [oldstyle]
   [always]
   [onum=yes,
-   liga=yes,
-   tlig=yes,
-   trep=yes] % texligatures=yes,texquotes=yes
+   liga=yes]
 
 \definefontfeature
   [inlinenumbers]
@@ -123,9 +121,7 @@
 \definefontfeature % == default unless redefined
   [ligatures]
   [always]
-  [liga=yes,
-   tlig=yes,
-   trep=yes]
+  [liga=yes]
 
 \definefontfeature
   [letterspacing]
@@ -140,19 +136,14 @@
   [complete]
   [always]
   [compose=yes,
-   liga=yes,
-% ccmp=yes,
-% locl=yes,
-% calt=yes,
-% clig=yes,
-% rlig=yes,
-   tlig=yes,
-   trep=yes]
+   liga=yes]
 
 \definefontfeature
   [none]
   [mode=none,
    features=no]
+
+% \definefontfeature[none][none][textcontrol=collapsehyphens]
 
 \definefontfeature
   [semitic-complete]
@@ -409,8 +400,6 @@
  % mode=none, % better, maybe do this last
    kern=yes,
  % liga=yes, % makes no sense
- % tlig=yes, % makes no sense
- % trep=yes, % makes no sense
    mathnolimitsmode={0,800}, % this looks okay on the average font
    mathalternates=yes,
    mathitalics=yes, % we pass them

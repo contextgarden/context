@@ -1,0 +1,30 @@
+if not modules then modules = { } end modules ['font-imp-text'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type = type
+
+local fonts              = fonts
+local registerotffeature = fonts.handlers.otf.features.register
+
+local function initialize(tfmdata,value)
+    if type(value) == "string" then
+        tfmdata.properties.textcontrol = tex.stringtocodesbitmap(value,tex.textcontrolcodes)
+    end
+end
+
+local specification = {
+    name         = "textcontrol",
+    description  = "control specific text handling",
+    initializers = {
+        none = initialize,
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)

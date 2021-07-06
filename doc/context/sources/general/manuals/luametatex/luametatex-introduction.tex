@@ -29,7 +29,7 @@ journals, but all are in the \CONTEXT\ distribution. I did the same with the
 development of \LUAMETATEX.
 
 The \LUAMETATEX\ engine is, as said, a follow up on \LUATEX. Just as we have
-\CONTEXT\ \MKII\ for \PDFTEX\ and \XETEX, we have \MKIV\ for \LUATEX. For
+\CONTEXT\ \MKII\ for \PDFTEX\ and \XETEX, we have \MKIV\ for \LUATEX\ so for
 \LUAMETATEX\ we have yet another version of \CONTEXT: \LMTX. By freezing \MKII,
 and at some point freezing \MKIV, we can move on as we like, but we try to remain
 downward compatible where possible, something that the user interface makes
@@ -56,6 +56,18 @@ been compensated by (hopefully) harmless optimization of code in the engine and
 some more core functionality. In the process system dependencies have been
 minimalized.
 
+One side effect of opening up is that what normally is hidden gets exposed and
+this is also true for all kind of codes that are used internally to distinguish
+states and properties of commands, tokens, nodes and more. Especially during
+development these can change but the good news is that they can be queried so on
+can write in code independent ways (in \LUATEX\ node id's are an example). That
+also means more interface related commands, so again lean and mean is not
+applicable here, especially because the detailed control over the text, math,
+font and language subsystems also results in additional commands to query their
+state. And, as the \METAPOST\ got extended, that subsystem is on the one hand
+leaner and meaner because backend code was dropped but on the other hand got a
+larger code base due to opening up the scanner and adding a feedback mechanism.
+
 This manual started as an adaptation of the \LUATEX\ manual and therefore looks
 similar. Some chapters are removed, others were added and the rest has been (and
 will be further) adapted. It also discusses the (main) differences. Some of the
@@ -64,7 +76,9 @@ new primitives or functions that show up in \LUAMETATEX\ might show up in
 this manual as reference for \LUATEX ! As long as we're experimenting we can
 change things at will but as we keep \CONTEXT\ \LMTX\ synchronized users normally
 won't notice this. Often you can find examples of usage in \CONTEXT\ related
-documents and the source code so that serves a reference too.
+documents and the source code so that serves a reference too. More detailed
+explanations can be found in documents in the \CONTEXT\ distribution, if only
+because there we can present features in the perspective of useability.
 
 For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. As
 mentioned, the \CONTEXT\ variant for this engine is tagged \LMTX. The pair can be
@@ -91,16 +105,6 @@ in, so if you want to complain about \LUAMETATEX, don't bother me. Of course, if
 you really need professional support with these engines (or \TEX\ in general),
 you can always consider contacting the developers.
 
-% And yes, I'm really fed up with receiving mails or seeing comments where there's
-% this 'always need to be present' negative remark (nagging) about the program,
-% documentation, development, support, etc. present, probably to put the writer on
-% a higher stand, or maybe to compensate some other personal shortcoming ... who
-% knows. This 'I need to make my stupid point' behaviour seems to come with the
-% internet and it also seems to increase, but that doesn't mean that I want to deal
-% with those unpleasant people for the sake of the larger "tex good". Therefore, I'm
-% quite happy in the nearly always positive and motivating ConTeXt bubble. It's also
-% why I (start) avoid(ing) certain mailing lists and don't really follow forums.
-
 \blank[big]
 
 Hans Hagen
@@ -116,35 +120,6 @@ Hans Hagen
 \NC \CONTEXT      \EQ MkIV \contextversion \NC \NR
 \NC \LUATEX\ Team \EQ Hans Hagen, Hartmut Henkel, Taco Hoekwater, Luigi Scarso \NC \NR
 \stoptabulate
-
-\vfilll
-
-{\bf remark:} \LUAMETATEX\ development is mostly done by Hans Hagen and in
-adapting the macros to the new features Wolfgang Schuster, who knows the code
-inside||out is a instrumental. In the initial phase Alan Braslau, who love
-playing with the three languages did extensive testing and compiled for several
-platforms. Later Mojca Miklavec make sure all compiles well on the buildbot
-infrastructure. After the first release more users got involved in testing. Many
-thanks for their patience! The development also triggered upgrading of the wiki
-support infrastructure where Taco Hoekwater and Paul Mazaitis have teamed up. So,
-progress all around.
-
-{\bf remark:} When there are non|-|intrusive features that also make sense in
-\LUATEX, these will be applied in the experimental branch first, so that there is
-no interference with the stable release. However, given that in the meantime the
-code bases differs a lot, it is unlikely that much will trickle back. This is no
-real problem as there's not much demand for that anyway.
-
-{\bf remark:} Most \CONTEXT\ users seem always willing to keep up with the latest
-versions which means that \LMTX\ is tested well. We can therefore safely claim
-that end of 2019 the code has become quite stable, although after that in some
-areas there were substantial additions. There are no complaints about performance
-(on my 2013 laptop this manual compiles at 24.5 pps with \LMTX\ versus 20.7 pps
-for the \LUATEX\ manual with \MKIV). After updating some of the \CONTEXT\ code to
-use recently added features by the end of 2020 I could do more than 25.5 pps but
-don't expect spectacular bumps in performance (I need a new machine for that to
-happen). Probably no one notices it, but memory consumption stepwise got reduced
-too. And \unknown\ the binary is still below 3~MegaBytes on all platforms.
 
 \stopchapter
 

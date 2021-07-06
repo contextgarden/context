@@ -12,7 +12,8 @@ local concat = table.concat
 local suffix, addsuffix = file.suffix, file.addsuffix
 
 local findfile     = resolvers.findfile
-local new_instance = mplib.new
+local mplibnew     = mplib.new
+----- mplibexecute = mplib.execute
 
 local trace_terminal = false  trackers.register("metapost.terminal", function(v) trace_terminal = v end)
 
@@ -23,42 +24,40 @@ local report_error    = logs.reporter("metapost","error")
 
 mplib.realtimelogging = false
 
-local l, nl, dl = { }, 0, false
-local t, nt, dt = { }, 0, false
-local e, ne, de = { }, 0, false
+local handlelog  do
 
-local function logger(target,str)
-    if target == 1 then
-        -- log
-    elseif target == 2 or target == 3 then
-        -- term
-        if str == "\n" then
-            mplib.realtimelogging = true
-            if nl > 0 then
-                report_logger(concat(l,"",1,nl))
-                nl, dl = 0, false
-            elseif not dl then
-                report_logger("")
-                dl = true
+    local l, nl, dl = { }, 0, false
+
+    handlelog = function(instance,target,str)
+        if target == 1 then
+            -- log
+        elseif target == 2 or target == 3 then
+            -- term
+            if str == "\n" then
+                mplib.realtimelogging = true
+                if nl > 0 then
+                    report_logger(concat(l,"",1,nl))
+                    nl, dl = 0, false
+                elseif not dl then
+                    report_logger("")
+                    dl = true
+                end
+            else
+                nl = nl + 1
+                l[nl] = str
             end
-        else
-            nl = nl + 1
-            l[nl] = str
+        elseif target == 4 then
+            report_error(str)
         end
-    elseif target == 4 then
-        report_error(str)
     end
+
 end
 
 local finders = { }
 mplib.finders = finders -- also used in meta-lua.lua
 
 local function validftype(ftype)
-    if ftype == "mp" then
-        return "mp"
-    else
-        return nil
-    end
+    return ftype == "mp" and "mp" or nil
 end
 
 -- We can have a list!
@@ -259,8 +258,7 @@ local function handleerror(instance, message, helpinfo, interaction)
     report(helpinfo)
     report()
     if interaction == 5 then
-        -- todo
---         luatex.abort()
+      -- luatex.abort()
     end
 end
 
@@ -271,19 +269,38 @@ local function handlewarning(instance, message)
 end
 
 function mplib.new(specification)
-    local instance
     local openfile = fileopener()
-    specification.find_file     = finder
-    specification.run_logger    = logger
-    specification.run_overload  = overload
-    specification.run_error     = function(...) handleerror  (instance,...) end
-    specification.run_warning   = function(...) handlewarning(instance,...) end
-    specification.open_file     = openfile
-    specification.interaction   = "silent"
-    specification.job_name      = tex.jobname -- mandate in order to get something back
-    specification.halt_on_error = true
-    instance = new_instance(specification)
+    local handlers = specification.handlers
+    local instance
+    instance = mplibnew {
+        -- used
+        tolerance      = specification.tolerance,
+        math_mode      = specification.mathmode,
+        run_script     = specification.runscript,
+        run_internal   = specification.runinternal,
+        script_error   = specification.scripterror,
+        make_text      = specification.maketext,
+        -- always
+        extensions     = 1,
+     -- random_seed    = specification.seed,
+        utf8_mode      = true,
+        text_mode      = true,
+        -- not used
+     -- noninteractive = true;
+     -- ini_version    = true,
+        -- always
+        find_file      = finder,
+        run_overload   = overload,
+        open_file      = openfile,
+        interaction    = "silent",
+        job_name       = tex.jobname, -- mandate in order to get something back
+        halt_on_error  = true,
+        run_logger     = handlers.log     or function(...) handlelog    (instance,...) end,
+        run_error      = handlers.error   or function(...) handleerror  (instance,...) end,
+        run_warning    = handlers.warning or function(...) handlewarning(instance,...) end,
+    }
     return instance, openfile("terminal")
 end
 
-mplib.finder = finder
+mplib.finder  = finder
+-----.execute = executor

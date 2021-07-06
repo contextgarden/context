@@ -61,45 +61,45 @@ mutable ? ;
 
 % These need to be adapted to a library approach:
 
-warningcheck     := 1 ;
+warningcheck := 1 ;
 
 def interact = % sets up to make "show" commands stop
     hide (
-        showstopping  := 1 ;
-        tracingonline := 1 ;
+        interim showstopping  := 1 ;
+        interim tracingonline := 1 ;
     )
 enddef ;
 
 def loggingall = % puts tracing info into the log
-    tracingcommands  := 3 ;
-    tracingtitles    := 1 ;
-    tracingequations := 1 ;
-    tracingcapsules  := 1 ;
-    tracingspecs     := 2 ;
-    tracingchoices   := 1 ;
-    tracingstats     := 1 ;
-    tracingoutput    := 1 ;
-    tracingmacros    := 1 ;
-    tracingrestores  := 1 ;
+    interim tracingtitles    := 1 ;
+    interim tracingequations := 1 ;
+    interim tracingcapsules  := 1 ;
+    interim tracingspecs     := 2 ;
+    interim tracingchoices   := 1 ;
+    interim tracingstats     := 1 ;
+    interim tracingoutput    := 1 ;
+    interim tracingmacros    := 1 ;
+    interim tracingcommands  := 3 ;
+    interim tracingrestores  := 1 ;
 enddef ;
 
 def tracingall = % turns on every form of tracing
-    tracingonline := 1 ;
-    showstopping  := 1 ;
+    interim tracingonline := 1 ;
+    interim showstopping  := 1 ;
     loggingall ;
 enddef ;
 
 def tracingnone = % turns off every form of tracing
-    tracingcommands  := 0 ;
-    tracingtitles    := 0 ;
-    tracingequations := 0 ;
-    tracingcapsules  := 0 ;
-    tracingspecs     := 0 ;
-    tracingchoices   := 0 ;
-    tracingstats     := 0 ;
-    tracingoutput    := 0 ;
-    tracingmacros    := 0 ;
-    tracingrestores  := 0 ;
+    interim tracingrestores  := 0 ;
+    interim tracingcommands  := 0 ;
+    interim tracingtitles    := 0 ;
+    interim tracingequations := 0 ;
+    interim tracingcapsules  := 0 ;
+    interim tracingspecs     := 0 ;
+    interim tracingchoices   := 0 ;
+    interim tracingstats     := 0 ;
+    interim tracingoutput    := 0 ;
+    interim tracingmacros    := 0 ;
 enddef ;
 
 permanent interact, loggingall, tracingall, tracingnone ;

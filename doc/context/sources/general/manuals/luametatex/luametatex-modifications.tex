@@ -483,6 +483,21 @@ that over time system dependencies have been handles with \TEX\ change files, th
 \WEBC\ infrastructure, \KPSE\ features, compilation variables and flags, etc. In
 \LUAMETATEX\ we try to minimize all that.
 
+When it became unavoidable that we output more detail, it also became clear that
+it made no sense to stay log and trace compatible. Some is controlled by
+parameters in order to stay close the original, but \CONTEXT\ is configured such
+that we benefit from the new possibilities. Examples are that in addition to
+\type {\meaning} we have \type {\meaningfull} that also exposes macro properties,
+and \type {\meaningless} that only exposes the body. The \type {\untraced} prefix
+will suppress some in the log, and we set \type {\tracinglevels} to 3 in order to
+get details about the input and grouping level. When there's less shown than
+expected keep in mind that \LUAMETATEX\ has a somewhat optimized saving and
+restoring of meanings so less can happen which is reflected in tracing. When node
+lists are serialized (as with \type {\showbox}) some nodes, like discretionaries
+report more detail. The compact serializer, used for instance to signal overfull
+boxes, also shows a bit more detail with respect to non|-|content nodes. I math
+more is shown if only because we have more control and additional mechanisms.
+
 \stopsubsection
 
 \startsubsection[title=Parsing]

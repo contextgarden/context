@@ -996,8 +996,8 @@
 
 \newconstant\c_fonts_auto_language
 
-\letvalue{\??fontslanguage\v!auto}\plusone % experimental
-%letvalue{\??fontslanguage\v!yes }\plustwo % less efficient, for experiments
+\letcsname\??fontslanguage\v!auto\endcsname\plusone % experimental
+%letcsname\??fontslanguage\v!yes \endcsname\plustwo % less efficient, for experiments
 
 \appendtoks
     \c_fonts_auto_language
@@ -1122,7 +1122,7 @@
    \font_helpers_low_level_define{#2}\v_font_identifier_basic
    \csname\v_font_identifier_basic\endcsname
    \setfalse\c_font_auto_size
-   \setfontcharacteristics
+   \the\everyfont % \setfontcharacteristics
    \the\everyfontswitch
    \let\v_font_identifier_basic\v_font_identifier_basic_saved}
 
@@ -1143,7 +1143,7 @@
    \csname\v_font_identifier_class\endcsname
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics \else
-     \setfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi
    \let\v_font_identifier_class\v_font_identifier_class_saved}
@@ -1152,7 +1152,7 @@
   {\csname\v_font_identifier_class\endcsname
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics \else
-     \setfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi
    \let\v_font_identifier_class\v_font_identifier_class_saved}
@@ -1974,7 +1974,7 @@
    \fi
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics
-     \setfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi}
 
@@ -2187,7 +2187,7 @@
      \font_scale_inherit\??fontscalex
    \fi
    \ifskipfontcharacteristics
-     \setfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi}
 
@@ -2198,7 +2198,7 @@
      \font_scale_inherit\??fontscalexx
    \fi
    \ifskipfontcharacteristics
-     \setfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi}
 

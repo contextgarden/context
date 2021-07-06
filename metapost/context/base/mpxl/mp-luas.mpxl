@@ -112,8 +112,12 @@ vardef MP@#(text t) =
     mlib_luas_lualist("MP." & str @#,t)
 enddef ;
 
-def message expr t =
-    lua.mp.report(tostring(t)) ;
+% todo: runner
+
+newscriptindex mfun_message ; mfun_message := scriptindex("message") ;
+
+def message text t =
+    runscript mfun_message tostring(t) ; % todo: scananything
 enddef ;
 
 permanent newscriptindex, scriptindex, luacall, lua, lualist, mp, MP  ;
@@ -170,6 +174,8 @@ permanent
     getmacro, getdimen, getcount, gettoks,
     setmacro, setdimen, setcount, settoks,
     setglobalmacro, setglobaldimen, setglobalcount, setglobaltoks ;
+
+% todo: mfid_
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
@@ -279,7 +285,9 @@ newscriptindex mfun_newrecord ; mfun_newrecord := scriptindex "newrecord" ;
 newscriptindex mfun_setrecord ; mfun_setrecord := scriptindex "setrecord" ;
 newscriptindex mfun_getrecord ; mfun_getrecord := scriptindex "getrecord" ;
 
-let record = runscript ; % We need to use "let" because we don't expand!
+% let record = runscript ; % We need to use "let" because we don't expand!
+
+def record    = newinternal numeric runscript enddef ;
 
 def newrecord = runscript mfun_newrecord ; enddef ; % semicolon prevents lookahead
 def setrecord = runscript mfun_setrecord ; enddef ;

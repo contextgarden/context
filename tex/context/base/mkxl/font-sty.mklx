@@ -346,6 +346,12 @@
 
 % {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
 
+% too messy for this:
+%
+% \definestylecollection[mine]
+% \definestyleinstance[mine][tt][tf][\nohyphencollapsing]
+% {\tt\mine test--test \bf test--test}
+
 \installcorenamespace{stylecollection}
 
 \permanent\tolerant\protected\def\definestylecollection[#name]%

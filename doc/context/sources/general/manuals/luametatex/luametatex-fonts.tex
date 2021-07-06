@@ -56,6 +56,9 @@ the font level:
                                            character entries for math|-|specific keys \NC \NR
 \NC \type {oldmath}     \NC boolean    \NC this key flags a font as representing an old school \TEX\
                                            math font and disables the \OPENTYPE\ code path \NC \NR
+\NC \type {mathcontrol} \NC bitset     \NC this controls various code paths in the math engine,
+                                           like enforcing the traditional code path \NC \NR
+\NC \type {textcontrol} \NC bitset     \NC this controls various code paths in the text engine \NC \NR
 \LL
 \stoptabulate
 
@@ -228,6 +231,42 @@ glyph that ends up to the right of the insertion point will become the next
 The default value is~0, and can be left out. That signifies a \quote {normal}
 ligature where the ligature replaces both original glyphs. In this table the~\type {|}
 indicates the final insertion point.
+
+The \type {mathcontrol} bitset is mostly there for experimental purposes. Because
+there is inconsistency in the \OPENTYPE\ math fonts with respect to for instance
+glyph dimensions, it is possible to force the traditional code path. We just mention
+the possible flags:
+
+\startluacode
+    context.starttabulate { "|||" }
+    context.DB() context("value") context.BC() context("effect") context.NC() context.NR()
+    context.TB()
+    for k, v in table.sortedhash(tex.getmathcontrolvalues()) do
+        context.NC() context("0x%04X",k) context.NC() context(v) context.NC() context.NR()
+    end
+    context.LL()
+    context.stoptabulate()
+\stopluacode
+
+The \type {textcontrol} field is used to control some aspects of text processing.
+More options might be added in the future.
+
+\startluacode
+    context.starttabulate { "|||" }
+    context.DB() context("value") context.BC() context("effect") context.NC() context.NR()
+    context.TB()
+    for k, v in table.sortedhash(tex.gettextcontrolvalues()) do
+        context.NC() context("0x%04X",k) context.NC() context(v) context.NC() context.NR()
+    end
+    context.LL()
+    context.stoptabulate()
+\stopluacode
+
+In \CONTEXT\ these are interfaced via pseudo features. The math control flags of
+a font can be overloaded by \lpr {mathcontrolmode} on the spot and the set
+controls of a font can be queried by \lpr {fontmathcontrol}. The text control
+flags in a font always win over the ones set by other parameters, like \lpr
+{hyphenationmode}. They can be queried with \lpr {fonttextcontrol}.
 
 \stopsection
 

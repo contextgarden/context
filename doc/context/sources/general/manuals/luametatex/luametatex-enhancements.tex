@@ -111,6 +111,25 @@ The \LUAMETATEX\ version number starts at~2 in order to prevent a clash with
 \LUATEX, and the version commands are the same. This is a way to indicate that
 these projects are related.
 
+The \type {status} library also provides some information including what we get
+with the three mentioned primitives:
+
+\starttabulate[|l|l|]
+\DB field                   \BC value                               \NC \NR
+\TB
+\NC \type {filename}        \NC \cldcontext{status.filename}        \NC \NR
+\NC \type {banner}          \NC \cldcontext{status.banner}          \NC \NR
+\NC \type {luatex_engine}   \NC \cldcontext{status.luatex_engine}   \NC \NR
+\NC \type {luatex_version}  \NC \cldcontext{status.luatex_version}  \NC \NR
+\NC \type {luatex_revision} \NC \cldcontext{status.luatex_revision} \NC \NR
+\NC \type {luatex_verbose}  \NC \cldcontext{status.luatex_verbose}  \NC \NR
+\NC \type {copyright}       \NC \cldcontext{status.copyright}       \NC \NR
+\NC \type {development_id}  \NC \cldcontext{status.development_id}  \NC \NR
+\NC \type {format_id}       \NC \cldcontext{status.format_id}       \NC \NR
+\NC \type {used_compiler}   \NC \cldcontext{status.used_compiler}   \NC \NR
+\LL
+\stoptabulate
+
 \stopsubsection
 
 \stopsection
@@ -413,10 +432,18 @@ mode, but in \LUAMETATEX\ there is no error message and the box the height and
 depth are equally divided. Of course in text mode there is no math axis related
 offset applied.
 
-It is possible to change or add to the attributes assigned to a box:
+It is possible to change or add to the attributes assigned to a box with \lpr
+{boxattribute}:
 
 \starttyping
-\boxattr 0 123 456
+\boxattribute 0 123 456
+\stoptyping
+
+You can set attributes of the current paragraph specification node with \lpr
+{parattribute}:
+
+\starttyping
+\parattribute 123 456
 \stoptyping
 
 \stopsubsection
@@ -1396,7 +1423,65 @@ the acceptable range is from 0 to 65535.
 
 Both rule drawing commands take an optional \type {xoffset} and \type {yoffset}
 parameter. The displacement is virtual and not taken into account when the
-dimensions are calculated.
+dimensions are calculated. A rule is specified in the usual way:
+
+\obeydepth
+
+\startbuffer
+\blue \vrule
+    height 2ex depth 1ex width 10cm
+\relax
+\stopbuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There is however a catch. The keyword scanners in \LUAMETATEX\ are implemented
+slightly different. When \TEX\ scans a keyword it will (case insensitive) scan
+for a whole keyword. So, it scans for \type {height} and when it doesn't find it
+it will scan for \type {depth} etc. When it does find a keyword in this case it
+expects a dimension next. When that criterium is not met it will issue an error
+message.
+
+In order to avoid look ahead failures like that it is recommended to end the
+specification with \type {\relax}. A glue specification is an other example where
+a \type {\relax} makes sense when look ahead issues are expected and actually
+there in traditional scanning the order of keywords can also matter. In any case,
+when no valid keyword is seen the characters scanned so far are pushed back in
+the input.
+
+The main reason for using an adapted scanner is that we always permit repetition
+(consistency) and accept an arbitrary order. Because we have more keywords to
+process the scanner quits at a partial failure. This prevents some push back and
+also gives an earlier warning. Interesting is that some \CONTEXT\ users ran into
+error messages due to a missing \type {\relax} and found out that their style has
+a potential flaw with respect to look ahead. One can be lucky for years.
+
+Back to rules, there are some extra keywords, two deal with an offset, and four
+provide margins. The margins are a bit special because \type {left} and \type
+{top} are the same as are \type {right} and \type {bottom}. They influence the
+edges and these depend on it being a horizontal or vertical rule.
+
+\obeydepth
+
+\startbuffer
+\blue \vrule
+    height 2.0ex depth 1.0ex width 10cm
+\relax
+\white \vrule
+    height 1.0ex depth 0.5ex width  9cm
+    xoffset -9.5cm yoffset .25ex
+\relax
+\blue \vrule
+    height .5ex depth 0.25ex width  8cm
+    xoffset -18cm yoffset .375ex top 1pt
+\relax
+\stopbuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
 
 Two new primitives were introduced: \lpr {nohrule} and \lpr {novrule}. These can
 be used to reserve space. This is often more efficient than creating an empty box
@@ -1412,6 +1497,11 @@ being invisible but still taking space.
 The \prm {vsplit} primitive has to be followed by a specification of the required
 height. As alternative for the \type {to} keyword you can use \type {upto} to get
 a split of the given size but result has the natural dimensions then.
+
+\starttyping
+\vsplit 123 to   10cm % final box has the required height
+\vsplit 123 upto 10cm % final box has its natural height
+\stoptyping
 
 \stopsubsection
 
@@ -2226,6 +2316,8 @@ the noalign primitive. Of course we can also apply the \prm {global} and \lpr
 \NC \type {enforced}   \NC all is permitted (but only in zero mode or ini mode) \NC \NR
 \NC \type {aliased}    \NC the macro gets the same flags as the original \NC \NR
 \HL
+\NC \type {untraced}   \NC the macro gets a different treatment in tracing \NC \NR
+\HL
 \stoptabulate
 
 The not yet discussed \lpr {instance} is just a flag with no special meaning
@@ -2266,6 +2358,10 @@ noted that this feature only makes sense a controlled situation, that is: user
 modules or macros of unpredictable origin will probably suffer from warnings and
 errors when de mode is set to non zero. In \CONTEXT\ we're okay unless of course
 users redefine instances but there a warning or error is kind of welcome.
+
+There is an extra prefix \lpr {untraced} that will suppress the meaning when
+tracing so that the macro looks more like a primitive. It is still somewhat
+experimental so what gets displayed might change.
 
 \stopsection
 

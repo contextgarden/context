@@ -477,6 +477,10 @@ function constructors.scale(tfmdata,specification)
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
     --
+    local textcontrol = properties.textcontrol
+    targetproperties.textcontrol = textcontrol
+    target.textcontrol = textcontrol
+    --
     local hasmath = (properties.hasmath or next(mathparameters)) and true
     --
     if hasmath then
@@ -1095,6 +1099,7 @@ do
         local position = source.position
         setindeed("node",source,target,group,name,position)
         setindeed("base",source,target,group,name,position)
+        setindeed("none",source,target,group,name,position)
         setindeed("plug",source,target,group,name,position)
     end
 
@@ -1162,10 +1167,10 @@ do
                 defaults     = { },
                 descriptions = tables and tables.features or { },
                 used         = statistics and statistics.usedfeatures or { },
-                initializers = { base = { }, node = { }, plug = { } },
-                processors   = { base = { }, node = { }, plug = { } },
-                manipulators = { base = { }, node = { }, plug = { } },
-                finalizers   = { base = { }, node = { }, plug = { } },
+                initializers = { base = { }, node = { }, none = { }, plug = { } },
+                processors   = { base = { }, node = { }, none = { }, plug = { } },
+                manipulators = { base = { }, node = { }, none = { }, plug = { } },
+                finalizers   = { base = { }, node = { }, none = { }, plug = { } },
             }
             features.register = function(specification) return register(features,specification) end
             handler.features = features -- will also become hidden

@@ -176,12 +176,22 @@ do
             local m = runmodes[code]
             if m == "direct" then
                 result = f()
+                if trace_luarun then
+                    report_luarun("%i: direct: %a",nesting,type(result))
+                end
                 nesting = nesting - 1
                 return result, true -- string and tables as string and objects
             elseif m == "tokens" then
                 result = f()
+                if trace_luarun then
+                    report_luarun("%i: tokens: %a",nesting,type(result))
+                end
                 nesting = nesting - 1
                 return result       -- string and tables as text to be scanned
+            else
+                if trace_luarun then
+                    report_luarun("%i: no mode",nesting)
+                end
             end
         else
             if trace_luarun then
@@ -857,13 +867,15 @@ do
         mptriplet(w*bpfactor,h*bpfactor,d*bpfactor)
     end
 
+    -- todo: scan ( ... )
+
     function mp.report(a,b,c,...)
         if c then
             report_message("%s : %s",a,formatters[(gsub(b,"@","%%"))](c,...))
         elseif b then
             report_message("%s : %s",a,b)
         elseif a then
-            report_message("%s : %s","message",a)
+            report_message("message : %s",a)
         end
     end
 
@@ -997,11 +1009,20 @@ do
  --     injectstring(utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric()))
  -- end)
 
-    registerdirect("utfnum", function() utfnum(scanstring()) end)
-    registerdirect("utflen", function() utflen(scanstring()) end)
+    registerdirect("utfnum", function() return utfnum(scanstring()) end)
+    registerdirect("utflen", function() return utflen(scanstring()) end)
 
     registerdirect("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
         utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric())
+    end)
+
+    local setlogging = metapost.setlogging
+
+    registerscript("message", function()
+        setlogging(false)
+        local str = scanstring()
+        setlogging(true)
+        report_message("message : %s",str)
     end)
 
 end
