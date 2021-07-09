@@ -14,6 +14,7 @@ local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
 local formatters, toboolean = string.formatters, string.toboolean
 local exists, savedata = io.exists, io.savedata
+local stepper = utilities.parsers.stepper
 
 local mplib                = mplib
 local metapost             = metapost
@@ -578,6 +579,7 @@ function metapost.graphic_base_pass(specification)
     local top             = startjob(true,"base",mpx)
     local data            = specification.data or ""
     local inclusions      = specification.inclusions or ""
+    local filtering       = specification.filtering
     local initializations = specification.initializations or ""
     local askedfig,
           wrappit         = checkaskedfig(specification.figure)
@@ -589,6 +591,11 @@ function metapost.graphic_base_pass(specification)
     top.mpx               = mpx
     top.data              = data
     top.initializations   = initializations
+    if filtering then
+        local t = { }
+        stepper(filtering,function(k) t[k] = true end)
+        filtering = t
+    end
     if trace_runs then
         report_metapost("running job %s, asked figure %a",nofruns,askedfig)
     end
@@ -596,6 +603,7 @@ function metapost.graphic_base_pass(specification)
         mpx         = mpx,
         askedfig    = askedfig,
         incontext   = true,
+        filtering   = filtering,
         data        = {
             inclusions,
             wrappit and do_begin_fig or "",

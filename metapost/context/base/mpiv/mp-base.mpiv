@@ -85,7 +85,6 @@ def loggingall = % puts tracing info into the log
     tracingchoices   := 1 ;
     tracinglostchars := 1 ;
     tracingstats     := 1 ;
-    tracingoutput    := 1 ;
     tracingmacros    := 1 ;
     tracingrestores  := 1 ;
 enddef ;
@@ -105,7 +104,6 @@ def tracingnone = % turns off every form of tracing
     tracingchoices   := 0 ;
     tracinglostchars := 0 ;
     tracingstats     := 0 ;
-    tracingoutput    := 0 ;
     tracingmacros    := 0 ;
     tracingrestores  := 0 ;
 enddef ;

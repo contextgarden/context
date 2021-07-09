@@ -79,6 +79,26 @@
 \permanent\tolerant\protected\def\flushinitial % when used inside a mechanism that forgets
   {\typo_initial_handle}
 
+\newconstant   \c_initial_lines
+\newconditional\c_initial_synchronize
+
+% First experiment:
+%
+% \startluacode
+%     function nodes.handlers.forgetinitial(mode,indented,context)
+%         token.expandmacro("forgetinitial")
+%         return indented
+%     end
+%     utilities.sequencers.prependaction("paragraph","system","nodes.handlers.forgetinitial")
+%     utilities.sequencers.enableaction("paragraph","nodes.handlers.forgetinitial")
+% \stopluacode
+%
+% Second experiment:
+%
+% \appendtoks
+%     \forgetinitial
+% \to \everybeforepar
+
 \protected\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup
@@ -109,10 +129,49 @@
    \relax
    \c_attr_initial\plusone
    \initialparameter\c!text
-   \endgroup
-   \enforced\glettonothing\typo_initial_handle}
+   \normalexpanded{\endgroup\c_initial_lines\the\scratchcounter}%
+   \enforced\glettonothing\typo_initial_handle
+   \ifconditional\c_initial_synchronize
+     \appendtoks \forgetinitial \to \everybeforepar
+   \fi}
 
 \lettonothing\typo_initial_handle % hook into everypar
+
+\permanent\protected\def\forgetinitial
+  {\ifcase\c_initial_lines\else
+     \begingroup
+     \advance\c_initial_lines-\prevgraf\relax
+     \ifcase\c_initial_lines\else
+       \obeydepth
+       \forgetall
+       \testpage[\the\c_initial_lines]%
+       \dorecurse\c_initial_lines{\nointerlineskip\hpack to \hsize{\strut}\par}%
+     \fi
+     \endgroup
+     \c_initial_lines\zerocount
+     \ifconditional\c_initial_synchronize
+       \removetoks \forgetinitial \from \everybeforepar
+     \fi
+  \fi}
+
+%D \starttyping
+%D \setupinitial[n=2,style=\tfd,location=text]
+%D \setuphead[chapter][after=\placeinitial]
+%D \enableexperiments[autoforgetinitials]
+%D
+%D \starttext
+%D   \chapter{Test me} Hello world!
+%D  %\forgetinitial \input tufte
+%D   \input tufte
+%D \stoptext
+%D \stoptyping
+
+% \enableexperiments[autoforgetinitials]
+
+\installtexexperiment
+   {autoforgetinitials}
+   {\settrue \c_initial_synchronize}
+   {\setfalse\c_initial_synchronize}
 
 % \setupbodyfont[dejavu,9pt]
 %

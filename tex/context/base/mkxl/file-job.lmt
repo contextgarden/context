@@ -901,6 +901,7 @@ end
 
 function environment.loadexamodes(filename)
     if not filename or filename == "" then
+        -- todo: environment.fulljobnmame
         filename = removesuffix(tex.jobname)
     end
     filename = resolvers.findfile(addsuffix(filename,'ctm')) or ""

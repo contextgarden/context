@@ -312,6 +312,15 @@ actions[v_default] = function(head,setting)
             end
             texset("hangafter",hangafter,true)
             texset("hangindent",hangindent,true)
+-- local hsize = texget("hsize",false)
+-- local step  = { hangindent, hsize - hangindent }
+-- local shape = { ["shift"] = true }
+-- for i=1,-hangafter do
+--     shape[#shape+1] = step
+-- end
+-- shape[#shape+1] = { 0, hsize }
+-- texset("parshape",shape)
+-- tex.snapshotpar(0x20000)
         end
         if indent then
             insertafter(first,first,new_kern(-parindent))

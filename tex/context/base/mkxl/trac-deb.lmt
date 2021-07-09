@@ -248,7 +248,7 @@ function tracers.printerror(specification)
             report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
             report_nl()
         end
-        local errname = file.addsuffix(tex.jobname .. "-error","log")
+        local errname = tex.jobname .. "-error.log"
         if quitonerror then
             table.save(errname,specification)
             local help = specification.lasttexhelp
@@ -264,7 +264,7 @@ function tracers.printerror(specification)
     end
 end
 
-luatex.wrapup(function() os.remove(file.addsuffix(tex.jobname .. "-error","log")) end)
+luatex.wrapup(function() os.remove(tex.jobname .. "-error.log") end)
 
 local function processwarning(offset)
     local warningstate = status.warningstate

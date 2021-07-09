@@ -11,10 +11,10 @@ local stoptiming  = statistics.stoptiming
 
 local sequencers  = utilities.sequencers
 
--- This is called a lot! I'm a bit reluctant with this one because it is
--- sensitive for order. In many other callbacks ther eis no action at the
--- tex end but here ... Anyway, it has been around for a while now (2019)
--- and so far I had no need for extensive usage so we're okay.
+-- This is called a lot! I'm a bit reluctant with this one because it is sensitive
+-- for order. In many other callbacks there is no action at the tex end but here ...
+-- Anyway, it has been around for a while now (2019) and so far I had no need for
+-- extensive usage so we're okay.
 
 do
 
@@ -33,7 +33,7 @@ end
 
 -- Originally this one was meant to deal with the indentation (like turn a box into
 -- a skip or prevent it) but that never really was used. The return value still
--- detemines if an indentation box or skip is injected. Will I change that?
+-- determines if an indentation box or skip is injected. Will I change that?
 
 do
 

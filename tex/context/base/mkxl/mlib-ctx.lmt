@@ -223,6 +223,7 @@ implement {
             { "figure" },
             { "method" },
             { "namespace" },
+            { "filtering" },
         }
     }
 }
@@ -313,6 +314,7 @@ implement {
             { "inclusions" },
             { "method" },
             { "namespace" },
+            { "filtering" },
             { "width", "dimension" },
             { "height", "dimension" },
         },

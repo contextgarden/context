@@ -75,7 +75,8 @@
 \to \everysimplifycommands
 
 \appendtoks
-    \everypar\emptytoks % pretty important
+    \everypar      \emptytoks % pretty important
+    \everybeforepar\emptytoks % pretty important
 \to \everyforgetall
 
 %D Page building:

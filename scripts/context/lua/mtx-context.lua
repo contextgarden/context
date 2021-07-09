@@ -712,9 +712,13 @@ function scripts.context.run(ctxdata,filename)
         local basename = filebasename(filename) -- use splitter
         local pathname = filepathpart(filename)
         --
+        if not filesuffix(filename) then
+            filename = addsuffix(filename,"tex")
+        end
+        --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
-            if not validfile(filename) and not validfile(filename..".tex") then
+            if not validfile(filename) then
                 report("warning: no (local) file %a, proceeding",filename)
             end
         end
@@ -836,6 +840,14 @@ function scripts.context.run(ctxdata,filename)
                 --
                 -- todo: --output-file=... in luatex
                 --
+                local usedname = jobname
+                local engine   = analysis.engine or "luametatex"
+                if lmtx and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
+                    mainfile = "" -- we don't need that
+                    usedname = fulljobname
+                end
+                --
+                --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
                  -- ["synctex"]               = false,       -- context has its own way
@@ -845,7 +857,8 @@ function scripts.context.run(ctxdata,filename)
                  -- ["file-line-error-style"] = true,
 --                  ["fmt"]                   = formatfile,
 --                  ["lua"]                   = scriptfile,
-                    ["jobname"]               = jobname,
+--                  ["jobname"]               = jobname,
+                    ["jobname"]               = usedname,
                     ["jithash"]               = a_jithash,
                     ["permitloadlib"]         = a_permitloadlib,
                 }
@@ -873,11 +886,6 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
-                --
-                local engine = analysis.engine or "luametatex"
-                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
-                    mainfile = "" -- we don't need that
-                end
                 --
                 -- can be used to include pages from a previous run, --keeppdf or "% keeppdf" on first-line
                 --

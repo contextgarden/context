@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-07-06 18:44
+-- merge date  : 2021-07-09 18:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -4996,7 +4996,7 @@ nuts.setcomponents=direct.setcomponents
 nuts.setdirection=direct.setdirection
 nuts.setdisc=direct.setdisc
 nuts.setreplace=direct.setreplace
-nuts.setfield=setfield
+nuts.setfield=direct.setfield
 nuts.setkern=direct.setkern
 nuts.setlink=direct.setlink
 nuts.setlist=direct.setlist

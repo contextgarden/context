@@ -302,6 +302,7 @@
          inclusions      {\meta_flush_current_inclusions}%
          definitions     {\meta_flush_current_definitions}%
          figure          {\MPaskedfigure}%
+         filtering       {\mpcategoryparameter\c!list}
          method          {\MPinstanceparameter\c!method}%
          namespace       {\??graphicvariable\currentmpcategory:}%
     \relax}%

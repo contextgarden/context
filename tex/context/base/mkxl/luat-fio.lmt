@@ -80,8 +80,8 @@ if not resolvers.initialized() then
             return name
         end
 
-        register('find_log_file'   , find_any_file,  true)
-        register('find_format_file', find_any_file,  true)
+        register('find_log_file'   , find_any_file,  true) -- why do we have this callback if we just return the name
+        register('find_format_file', find_any_file,  true) -- why do we have this callback if we just return the name
      -- register('find_data_file'  , find_data_file, true)
         register('open_data_file'  , open_data_file, true)
 

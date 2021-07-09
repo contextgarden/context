@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 }
 
 local gsub = string.gsub
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 local setmetatable, rawset, tostring, tonumber, type = setmetatable, rawset, tostring, tonumber, type
 local P, S, C, Ct, Cc, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Carg
@@ -341,7 +341,8 @@ end
 --     end
 -- end
 
-local stack = { }
+local stack      = { }   -- general stack (not related to stacking)
+local nostacking = { 0 } -- layers in figures
 
 local function pushproperties(figure)
     -- maybe there will be getters in lmtx
@@ -373,6 +374,7 @@ function metapost.flush(specification,result)
         local flusher   = specification.flusher
         local askedfig  = specification.askedfig
         local incontext = specification.incontext
+        local filtering = specification.filtering
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
@@ -386,7 +388,9 @@ function metapost.flush(specification,result)
             local textfigure         = flusher.textfigure
          -- local processspecial     = flusher.processspecial or metapost.processspecial
             local tocomment          = flusher.tocomment
-
+            if type(filtering) ~= "table" then
+                filtering = false
+            end
             -- patterns: we always use image 1 and then can use patterns for 2..n (or one number)
             -- we can then do an intermediate flush
 
@@ -394,6 +398,7 @@ function metapost.flush(specification,result)
                 local figure     = figures[index]
                 local properties = pushproperties(figure)
                 if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
+                    local stacking   = figure:stacking() -- This has to happen before fetching objects!
                     local objects    = figure:objects()
                     local tolerance  = figure:tolerance() or getbendtolerance()
                     local result     = { }
@@ -428,248 +433,269 @@ function metapost.flush(specification,result)
     --                             resetplugins(result) -- we should move the colorinitializer here
                                 local savedpath = nil
                                 local savedhtap = nil
-                                for o=1,#objects do
-                                    local object = objects[o]
-                                    local objecttype = object.type
-                                    if objecttype == "fill" or objecttype == "outline" then
-                                        -- we use an indirect table as we want to overload
-                                        -- entries but this is not possible in userdata
-                                        --
-                                        -- can be optimized if no path
-                                        --
-                                        local original = object
-                                        local object   = { }
-                                        setmetatable(object, {
-                                            __index = original
-                                        })
-                                        local before,
-                                              after,
-                                              options    = processplugins(object)
-                                        local evenodd    = false
-                                        local collect    = false
-                                        local both       = false
-                                        local flush      = false
-                                        local postscript = object.postscript
-                                        local tolerance  = options and tonumber(options.tolerance) or tolerance
-                                -- if not object.istext then
-                                        if postscript == "evenodd" then
-                                            evenodd = true
-                                        elseif postscript == "collect" then
-                                            collect = true
-                                        elseif postscript == "flush" then
-                                            flush   = true
-                                        elseif postscript == "both" then
-                                            both = true
-                                        elseif postscript == "eoboth" then
-                                            evenodd = true
-                                            both    = true
-                                        end
-                                --  end
-                                        --
-                                        if flush and not savedpath then
-                                            -- forget about it
-                                        elseif collect then
-                                            if not savedpath then
-                                                savedpath = { object.path or false }
-                                                savedhtap = { object.htap or false }
+                                if stacking then
+                                    stacking = { }
+                                    for o=1,#objects do
+                                        local stack = objects[o].stacking
+                                        if stack then
+                                            if filtering then
+                                                stacking[stack] = filtering[stack]
                                             else
-                                                savedpath[#savedpath+1] = object.path or false
-                                                savedhtap[#savedhtap+1] = object.htap or false
-                                            end
-                                        else
-                                            local objecttype = object.type -- can have changed
-                                            if before then
-                                                result = pluginactions(before,result,flushfigure)
-                                            end
-                                            local ml = object.miterlimit
-                                            if ml and ml ~= miterlimit then
-                                                miterlimit = ml
-                                                result[#result+1] = f_M(ml)
-                                            end
-                                            local lj = object.linejoin
-                                            if lj and lj ~= linejoin then
-                                                linejoin = lj
-                                                result[#result+1] = f_j(lj)
-                                            end
-                                            local lc = object.linecap
-                                            if lc and lc ~= linecap then
-                                                linecap = lc
-                                                result[#result+1] = f_J(lc)
-                                            end
-                                            if both then
-                                                if dashed ~= false then -- was just dashed test
-                                                   result[#result+1] = "[] 0 d"
-                                                   dashed = false
-                                                end
-                                            else
-                                                local dl = object.dash
-                                                if dl then
-                                                    local d = f_d(concat(dl.dashes or {}," "),dl.offset)
-                                                    if d ~= dashed then
-                                                        dashed = d
-                                                        result[#result+1] = d
-                                                    end
-                                                elseif dashed ~= false then -- was just dashed test
-                                                   result[#result+1] = "[] 0 d"
-                                                   dashed = false
-                                                end
-                                            end
-                                            local path        = object.path -- newpath
-                                            local transformed = false
-                                            local penwidth    = 1
-                                            local open        = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                            local pen         = object.pen
-                                            if pen then
-                                               if pen.type == "elliptical" then
-                                                    transformed, penwidth = pen_characteristics(original) -- boolean, value
-                                                    if penwidth ~= linewidth then
-                                                        result[#result+1] = f_w(penwidth)
-                                                        linewidth = penwidth
-                                                    end
-                                                    if objecttype == "fill" then
-                                                        objecttype = "both"
-                                                    end
-                                               else -- calculated by mplib itself
-                                                    objecttype = "fill"
-                                               end
-                                            end
-                                            if transformed then
-                                                result[#result+1] = "q"
-                                            end
-                                            if path then
-                                                if savedpath then
-                                                    for i=1,#savedpath do
-                                                        local path = savedpath[i]
-                                                        if transformed then
-                                                            flushconcatpath(path,result,open,tolerance)
-                                                        else
-                                                            flushnormalpath(path,result,open,tolerance)
-                                                        end
-                                                    end
-                                                    savedpath = nil
-                                                end
-                                                if flush then
-                                                    -- ignore this path
-                                                elseif transformed then
-                                                    flushconcatpath(path,result,open,tolerance)
-                                                else
-                                                    flushnormalpath(path,result,open,tolerance)
-                                                end
-                                                if force_stroke then
-                                                    result[#result+1] = open and "S" or "h S"
-                                                elseif objecttype == "fill" then
-                                                    result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                                elseif objecttype == "outline" then
-                                                    if both then
-                                                        result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
-                                                    else
-                                                        result[#result+1] = open and "S" or "h S"
-                                                    end
-                                                elseif objecttype == "both" then
-                                                    result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
-                                                end
-                                            end
-                                            if transformed then
-                                                result[#result+1] = "Q"
-                                            end
-                                            local path = object.htap
-                                            if path then
-                                                if transformed then
-                                                    result[#result+1] = "q"
-                                                end
-                                                if savedhtap then
-                                                    for i=1,#savedhtap do
-                                                        local path = savedhtap[i]
-                                                        if transformed then
-                                                            flushconcatpath(path,result,open,tolerance)
-                                                        else
-                                                            flushnormalpath(path,result,open,tolerance)
-                                                        end
-                                                    end
-                                                    savedhtap = nil
-                                                    evenodd   = true
-                                                end
-                                                if transformed then
-                                                    flushconcatpath(path,result,open,tolerance)
-                                                else
-                                                    flushnormalpath(path,result,open,tolerance)
-                                                end
-                                                if force_stroke then
-                                                    result[#result+1] = open and "S" or "h S"
-                                                elseif objecttype == "fill" then
-                                                    result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                                elseif objecttype == "outline" then
-                                                    result[#result+1] = open and "S" or "h S"
-                                                elseif objecttype == "both" then
-                                                    result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
-                                                end
-                                                if transformed then
-                                                    result[#result+1] = "Q"
-                                                end
-                                            end
-                                            if after then
-                                                result = pluginactions(after,result,flushfigure)
+                                                stacking[stack] = true
                                             end
                                         end
-                                        if object.grouped then
-                                            -- can be qQ'd so changes can end up in groups
-                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                        end
-                                    elseif objecttype == "start_clip" then
-                                     -- local evenodd = not object.istext and object.postscript == "evenodd"
-                                        local evenodd = object.postscript == "evenodd"
-                                        result[#result+1] = "q"
-                                        flushnormalpath(object.path,result,false,tolerance)
-                                        result[#result+1] = evenodd and "W* n" or "W n"
-                                    elseif objecttype == "stop_clip" then
-                                        result[#result+1] = "Q"
-                                        miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                    elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
-                                        -- skip
-                                    elseif objecttype == "start_group" then
-                                        if lpdf.flushgroup then
-                                            local before, after = processplugins(object)
-                                            if before then
-                                                result[#result+1] = "q"
-                                                result = pluginactions(before,result,flushfigure)
-                                                insert(groupstack, {
-                                                    after  = after,
-                                                    result = result,
-                                                    bbox   = toboundingbox(object.path),
+                                    end
+                                    stacking = sortedkeys(stacking)
+                                else
+                                    stacking = nostacking
+                                end
+                                for i=1,#stacking do
+                                    local stack = stacking[i]
+                                    for o=1,#objects do
+                                        local object = objects[o]
+                                        if stack == object.stacking then
+                                            local objecttype = object.type
+                                            if objecttype == "fill" or objecttype == "outline" then
+                                                -- we use an indirect table as we want to overload
+                                                -- entries but this is not possible in userdata
+                                                --
+                                                -- can be optimized if no path
+                                                --
+                                                local original = object
+                                                local object   = { }
+                                                setmetatable(object, {
+                                                    __index = original
                                                 })
-                                                result = { }
+                                                local before,
+                                                      after,
+                                                      options    = processplugins(object)
+                                                local evenodd    = false
+                                                local collect    = false
+                                                local both       = false
+                                                local flush      = false
+                                                local postscript = object.postscript
+                                                local tolerance  = options and tonumber(options.tolerance) or tolerance
+                                        -- if not object.istext then
+                                                if postscript == "evenodd" then
+                                                    evenodd = true
+                                                elseif postscript == "collect" then
+                                                    collect = true
+                                                elseif postscript == "flush" then
+                                                    flush   = true
+                                                elseif postscript == "both" then
+                                                    both = true
+                                                elseif postscript == "eoboth" then
+                                                    evenodd = true
+                                                    both    = true
+                                                end
+                                        --  end
+                                                --
+                                                if flush and not savedpath then
+                                                    -- forget about it
+                                                elseif collect then
+                                                    if not savedpath then
+                                                        savedpath = { object.path or false }
+                                                        savedhtap = { object.htap or false }
+                                                    else
+                                                        savedpath[#savedpath+1] = object.path or false
+                                                        savedhtap[#savedhtap+1] = object.htap or false
+                                                    end
+                                                else
+                                                    local objecttype = object.type -- can have changed
+                                                    if before then
+                                                        result = pluginactions(before,result,flushfigure)
+                                                    end
+                                                    local ml = object.miterlimit
+                                                    if ml and ml ~= miterlimit then
+                                                        miterlimit = ml
+                                                        result[#result+1] = f_M(ml)
+                                                    end
+                                                    local lj = object.linejoin
+                                                    if lj and lj ~= linejoin then
+                                                        linejoin = lj
+                                                        result[#result+1] = f_j(lj)
+                                                    end
+                                                    local lc = object.linecap
+                                                    if lc and lc ~= linecap then
+                                                        linecap = lc
+                                                        result[#result+1] = f_J(lc)
+                                                    end
+                                                    if both then
+                                                        if dashed ~= false then -- was just dashed test
+                                                           result[#result+1] = "[] 0 d"
+                                                           dashed = false
+                                                        end
+                                                    else
+                                                        local dl = object.dash
+                                                        if dl then
+                                                            local d = f_d(concat(dl.dashes or {}," "),dl.offset)
+                                                            if d ~= dashed then
+                                                                dashed = d
+                                                                result[#result+1] = d
+                                                            end
+                                                        elseif dashed ~= false then -- was just dashed test
+                                                           result[#result+1] = "[] 0 d"
+                                                           dashed = false
+                                                        end
+                                                    end
+                                                    local path        = object.path -- newpath
+                                                    local transformed = false
+                                                    local penwidth    = 1
+                                                    local open        = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
+                                                    local pen         = object.pen
+                                                    if pen then
+                                                       if pen.type == "elliptical" then
+                                                            transformed, penwidth = pen_characteristics(original) -- boolean, value
+                                                            if penwidth ~= linewidth then
+                                                                result[#result+1] = f_w(penwidth)
+                                                                linewidth = penwidth
+                                                            end
+                                                            if objecttype == "fill" then
+                                                                objecttype = "both"
+                                                            end
+                                                       else -- calculated by mplib itself
+                                                            objecttype = "fill"
+                                                       end
+                                                    end
+                                                    if transformed then
+                                                        result[#result+1] = "q"
+                                                    end
+                                                    if path then
+                                                        if savedpath then
+                                                            for i=1,#savedpath do
+                                                                local path = savedpath[i]
+                                                                if transformed then
+                                                                    flushconcatpath(path,result,open,tolerance)
+                                                                else
+                                                                    flushnormalpath(path,result,open,tolerance)
+                                                                end
+                                                            end
+                                                            savedpath = nil
+                                                        end
+                                                        if flush then
+                                                            -- ignore this path
+                                                        elseif transformed then
+                                                            flushconcatpath(path,result,open,tolerance)
+                                                        else
+                                                            flushnormalpath(path,result,open,tolerance)
+                                                        end
+                                                        if force_stroke then
+                                                            result[#result+1] = open and "S" or "h S"
+                                                        elseif objecttype == "fill" then
+                                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                                        elseif objecttype == "outline" then
+                                                            if both then
+                                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
+                                                            else
+                                                                result[#result+1] = open and "S" or "h S"
+                                                            end
+                                                        elseif objecttype == "both" then
+                                                            result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                        end
+                                                    end
+                                                    if transformed then
+                                                        result[#result+1] = "Q"
+                                                    end
+                                                    local path = object.htap
+                                                    if path then
+                                                        if transformed then
+                                                            result[#result+1] = "q"
+                                                        end
+                                                        if savedhtap then
+                                                            for i=1,#savedhtap do
+                                                                local path = savedhtap[i]
+                                                                if transformed then
+                                                                    flushconcatpath(path,result,open,tolerance)
+                                                                else
+                                                                    flushnormalpath(path,result,open,tolerance)
+                                                                end
+                                                            end
+                                                            savedhtap = nil
+                                                            evenodd   = true
+                                                        end
+                                                        if transformed then
+                                                            flushconcatpath(path,result,open,tolerance)
+                                                        else
+                                                            flushnormalpath(path,result,open,tolerance)
+                                                        end
+                                                        if force_stroke then
+                                                            result[#result+1] = open and "S" or "h S"
+                                                        elseif objecttype == "fill" then
+                                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                                        elseif objecttype == "outline" then
+                                                            result[#result+1] = open and "S" or "h S"
+                                                        elseif objecttype == "both" then
+                                                            result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                        end
+                                                        if transformed then
+                                                            result[#result+1] = "Q"
+                                                        end
+                                                    end
+                                                    if after then
+                                                        result = pluginactions(after,result,flushfigure)
+                                                    end
+                                                end
+                                                if object.grouped then
+                                                    -- can be qQ'd so changes can end up in groups
+                                                    miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                end
+                                            elseif objecttype == "start_clip" then
+                                             -- local evenodd = not object.istext and object.postscript == "evenodd"
+                                                local evenodd = object.postscript == "evenodd"
+                                                result[#result+1] = "q"
+                                                flushnormalpath(object.path,result,false,tolerance)
+                                                result[#result+1] = evenodd and "W* n" or "W n"
+                                            elseif objecttype == "stop_clip" then
+                                                result[#result+1] = "Q"
                                                 miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                            elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
+                                                -- skip
+                                            elseif objecttype == "start_group" then
+                                                if lpdf.flushgroup then
+                                                    local before, after = processplugins(object)
+                                                    if before then
+                                                        result[#result+1] = "q"
+                                                        result = pluginactions(before,result,flushfigure)
+                                                        insert(groupstack, {
+                                                            after  = after,
+                                                            result = result,
+                                                            bbox   = toboundingbox(object.path),
+                                                        })
+                                                        result = { }
+                                                        miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                    else
+                                                        insert(groupstack,false)
+                                                    end
+                                                else
+                                                    insert(groupstack,false)
+                                                end
+                                            elseif objecttype == "stop_group" then
+                                                local data = remove(groupstack)
+                                                if data then
+                                                    local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
+                                                    result = data.result
+                                                    result[#result+1] = reference
+                                                    result = pluginactions(data.after,result,flushfigure)
+                                                    result[#result+1] = "Q"
+                                                    miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                end
+                                         -- if objecttype == "text" then
+                                         --     result[#result+1] = "q"
+                                         --     local ot = object.transform -- 3,4,5,6,1,2
+                                         --     result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
+                                         --     flushfigure(result) -- flush accumulated literals
+                                         --     result = { }
+                                         --     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                         --     result[#result+1] = "Q"
+                                         -- elseif objecttype == "special" then
+                                         --     if processspecial then
+                                         --         processspecial(object.prescript)
+                                         --     end
+                                         -- else
                                             else
-                                                insert(groupstack,false)
+                                                -- error
                                             end
-                                        else
-                                            insert(groupstack,false)
                                         end
-                                    elseif objecttype == "stop_group" then
-                                        local data = remove(groupstack)
-                                        if data then
-                                            local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
-                                            result = data.result
-                                            result[#result+1] = reference
-                                            result = pluginactions(data.after,result,flushfigure)
-                                            result[#result+1] = "Q"
-                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                        end
-                                 -- if objecttype == "text" then
-                                 --     result[#result+1] = "q"
-                                 --     local ot = object.transform -- 3,4,5,6,1,2
-                                 --     result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
-                                 --     flushfigure(result) -- flush accumulated literals
-                                 --     result = { }
-                                 --     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
-                                 --     result[#result+1] = "Q"
-                                 -- elseif objecttype == "special" then
-                                 --     if processspecial then
-                                 --         processspecial(object.prescript)
-                                 --     end
-                                 -- else
-                                    else
-                                        -- error
                                     end
                                 end
                             end

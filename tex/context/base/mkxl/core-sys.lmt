@@ -19,23 +19,32 @@ function environment.initializefilenames()
 
     local arguments      = environment.arguments
 
-    local jobname        = arguments.jobname or tex.jobname
-    local fulljobname    = arguments.fulljobname or jobname
-    local inputfilename  = arguments.input or fulljobname
-    local outputfilename = arguments.result or removesuffix(jobname)
+    local jobname        = arguments.jobname
+    local fulljobname    = arguments.fulljobname
+    local inputfilename  = arguments.input
 
-    local inputfilename  = suffixonly(inputfilename) == "tex" and removesuffix(inputfilename) or inputfilename or ""
+    if not fulljobname then
+        fulljobname = inputfilename or tex.jobname
+    end
+    if not inputfilename then
+        inputfilename = fulljobname
+    end
+    if not jobname then
+        jobname = removesuffix(fulljobname)
+    end
+
+    local inputfilebase  = basename(inputfilename)
+    local outputfilename = arguments.result or removesuffix(fulljobname)
+
+--     local inputfilename  = suffixonly(inputfilename) == "tex" and removesuffix(inputfilename) or inputfilename or ""
 
     local filename       = fulljobname
     local suffix         = suffixonly(filename)
 
     local filename       = ctxrunner.resolve(filename) -- in case we're prepped
 
-    local jobfilename    = jobname or inputfilename or tex.jobname or ""
-    local inputfilename  = inputfilename or ""
-
+    local jobfilename    = jobname -- alias
     local jobfilebase    = basename(jobfilename)
-    local inputfilebase  = basename(inputfilename)
 
  -- jobfilename          = gsub(jobfilename,  "^./","")
  -- inputfilename        = gsub(inputfilename,"^./","")

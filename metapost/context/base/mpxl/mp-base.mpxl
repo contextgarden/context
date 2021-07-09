@@ -77,7 +77,6 @@ def loggingall = % puts tracing info into the log
     interim tracingspecs     := 2 ;
     interim tracingchoices   := 1 ;
     interim tracingstats     := 1 ;
-    interim tracingoutput    := 1 ;
     interim tracingmacros    := 1 ;
     interim tracingcommands  := 3 ;
     interim tracingrestores  := 1 ;
@@ -98,7 +97,6 @@ def tracingnone = % turns off every form of tracing
     interim tracingspecs     := 0 ;
     interim tracingchoices   := 0 ;
     interim tracingstats     := 0 ;
-    interim tracingoutput    := 0 ;
     interim tracingmacros    := 0 ;
 enddef ;
 
@@ -997,6 +995,7 @@ def beginfig(expr c) =
     clearpen ;
     pickup defaultpen ;
     drawoptions() ;
+    stacking := 0 ;
     scantokens extra_beginfig ;
 enddef ;
 

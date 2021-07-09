@@ -6,7 +6,7 @@ return {
         "..", "...", "--", "---", "&", "\\",
     },
     primitives = { -- to be checked
-        "charcode", "day", "linecap", "linejoin", "miterlimit", "month", "pausing",
+        "charcode", "day", "linecap", "linejoin", "miterlimit", "stacking", "month", "pausing",
         "prologues", "showstopping", "time", "tracingcapsules", "tracingchoices", "mpprocset",
         "tracingcommands", "tracingequations", "tracinglostchars",
         "tracingmacros", "tracingonline", "tracingoutput", "tracingrestores",
@@ -30,7 +30,7 @@ return {
         "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
         "tertiary", "primarydef", "secondarydef", "tertiarydef",
         "randomseed", "also", "contour", "doublepath",
-        "withcolor", "withcmykcolor", "withpen",
+        "withcolor", "withcmykcolor", "withpen", "withstacking",
         "dashed",
         "envelope",
         "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif", "within",
