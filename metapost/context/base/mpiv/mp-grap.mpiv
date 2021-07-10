@@ -279,13 +279,13 @@ graph_margin_fraction.high=1.07 ;        % bbox fraction for default range stop
 %def graph_with_pen_and_color(expr q) =
 %  withpen penpart q
 %  withcolor
-%  if colormodel q=1 :
+%  if colormodel q=nocolormodel :
 %    false
-%  elseif colormodel q=3 :
+%  elseif colormodel q=graycolormodel :
 %    (greypart q)
-%  elseif colormodel q=5 :
+%  elseif colormodel q=rgbcolormodel :
 %    (redpart q, greenpart q, bluepart q)
-%  elseif colormodel q=7 :
+%  elseif colormodel q=cmykcolormodel :
 %    (cyanpart q, magentapart q, yellowpart q, blackpart q)
 %  fi
 %  withprescript  prescriptpart q

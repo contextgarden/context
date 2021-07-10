@@ -42,13 +42,16 @@
   [MPpage]
   [\c!align=,
    \c!command=\meta_process_graphic_command,
+   \c!stacking=,
    \c!instance=]
 
 \permanent\protected\def\setupMPpage
   {\setupfittingpage[MPpage]}
 
 \protected\def\meta_process_graphic_command
-  {\meta_process_graphic_instance{\fittingpageparameter\c!instance}}
+  {\meta_process_graphic_instance
+     {\fittingpageparameter\c!instance}%
+     {\fittingpageparameter\c!stacking}}
 
 %D \macros
 %D  {MPfigure}

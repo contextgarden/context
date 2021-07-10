@@ -1334,11 +1334,11 @@ vardef properties(text t) =
 enddef ;
 
 def withproperties expr p =
-    if colormodel p = 3 :
+    if colormodel p = graycolormodel :
         withcolor greypart p
-    elseif colormodel p = 5 :
+    elseif colormodel p = rgbcolor :
         withcolor (redpart p,greenpart p,bluepart p)
-    elseif colormodel p = 7 :
+    elseif colormodel p = cmykcolormodel :
         withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
     fi
     withpen penpart p

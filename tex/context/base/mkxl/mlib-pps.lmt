@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
+local next = next
 local format, gmatch, match, split, gsub = string.format, string.gmatch, string.match, string.split, string.gsub
 local tonumber, type, unpack, next, select = tonumber, type, unpack, next, select
 local round, sqrt, min, max, abs = math.round, math.sqrt, math.min, math.max, math.abs
@@ -592,9 +593,13 @@ function metapost.graphic_base_pass(specification)
     top.data              = data
     top.initializations   = initializations
     if filtering then
-        local t = { }
-        stepper(filtering,function(k) t[k] = true end)
-        filtering = t
+        if #filtering > 0 then
+            local t = { }
+            stepper(filtering,function(k) t[k] = true end)
+            filtering = next(t) and t or false
+        else
+            filtering = false
+        end
     end
     if trace_runs then
         report_metapost("running job %s, asked figure %a",nofruns,askedfig)
@@ -1558,15 +1563,19 @@ end
 -- groups
 
 local function getcorners(path)
-    local p1 = path[1]
-    local p2 = path[2]
-    local p3 = path[3]
-    local p4 = path[4]
-    return
-        min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
-        min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord),
-        max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
-        max(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+--     if #path == 1 then
+--         return 0, 0, 0, 0
+--     else
+        local p1 = path[1]
+        local p2 = path[2]
+        local p3 = path[3]
+        local p4 = path[4]
+        return
+            min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
+            min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord),
+            max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord),
+            max(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+--     end
 end
 
 local function gr_process(object,prescript,before,after)

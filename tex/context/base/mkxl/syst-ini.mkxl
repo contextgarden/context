@@ -16,13 +16,77 @@
 %D this loader is found in \type {syst-tex.tex}. Some of the comment's are Don
 %D Knuths and more of it can be found in the plain \TEX\ format.
 %D
+%D Successive versions will be adapted to \LUAMETATEX. That also means that we
+%D define things a bit differently than in \MKII\ and \MKIV. This is party due to
+%D the fact that in this engine we removed some side effects or added features. The
+%D original \TEX\ program is well defined and documented and is still the benchmark.
+%D The \ETEX\ extensions originally were meant as systematic follow up but that
+%D never went beyond a first upgrade. It had a dual mode: compatible or extensible.
+%D We always used the second mode. The \LUATEX\ engines don't have that.
+%D
+%D There are some hard coded properties that relate to for instance node types but
+%D we always used abstraction. There are also side effects that (probably) originate
+%D in the fact that \ETEX\ had to stay compatible with the dominant set of macros
+%D using the original \TEX\ ones (either or not wrapped). Even unwanted side effects
+%D eventually become features. In\LUATEX\ and even more in \LUAMETATEX\ we get
+%D around that by additional mode variables that you can find below.
+%D
+%D Side note: those who complain about \TEX\ as rather special language, \ETEX\
+%D extensions that should have been or be different, should really look into how
+%D \TEX\ and friends evolved, and not come to quick and wrong conclusions. There are
+%D only a very few languages that evolve this way. As a comparison one can wonder
+%D why \CCODE\ never had proper strings like \PASCAL\ bit it's just hindsight and
+%D discussing it has no use. In a similar fashion one should keep in mind that what
+%D you see here is just a logical follow up in \MKII\ where we had to bend the rules
+%D and \MKIV\ where we had a bit more available. Not many who look at the latest
+%D engines had to jump though all the hoops.
+%D
+%D This is for instance noticeable in the names of some primitvies: \CONTEXT\ has a
+%D concept of protection before \type {\protected} showed up, and similarly had
+%D expansion helpers. This is why in \MKII\ you find \type {\protected}, \type
+%D {\expanded}, and \type {\unexpanded} commands with different meanings than the
+%D later \ETEX\ primitives. In \MKIV\ we stuck to the \CONTEXT\ originals and use
+%D \type {\normal...} ones when needed (so \type {\normal...} is there for a
+%D reason!). In \LMTX\ we made the transition from \type {\unexpanded} to \type
+%D {\protected} so again this file looks different than the \MKIV\ ancestor.
+%D
+%D When primitives get initialized they come from the \TEX\ namespace (the
+%D originals), the \ETEX\ extensions (although we dropped some) and \LUATEX\ which
+%D includes the \LUAMETATEX\ ones. The most noticeable \ETEX\ extensions we kept are
+%D those that relate to expansion and the expression scanners. The last group has
+%D always been somewhat special because (we were told) it was modelled after a macro
+%D set so it had to be compatible. It is tempting to replace it (and eventually I
+%D might do that) but for now we stick to them (although with an integer divide
+%D extension (like the \LUA\ \type {//} and the source has commented binary
+%D operators but I haven't yet decided on the symbols to use because we need to
+%D avoid expansion issues). For the record: the more extensive, related to \ETEX\
+%D follow up \NTS\ never took of, probably because of the implementation language
+%D and because performance made it unuseable. This is also why \LUATEX\ took a
+%D different route: extending by an extension language. Of course in the end some
+%D core functionality got added too.
+%D
+%D The most noticeable \LUAMETATEX\ specific code here has to do with additional
+%D data types (integer and dimension constants) and macro argument extensions. We
+%D also set up some defaults in handling math, languages, etc. Elsewhere in the
+%D \CONTEXT\ source the real configuration and usage happens so don't consider this
+%D an tutorial (as the plain format is).
+%D
+%D Category codes are another areas where subtle changed happened. You might not
+%D grasp it (maybe because \CONTEXT\ is alien to you) but whenever you see something
+%D that looks weird keep in mind that there is a valid reason for it.
+%D
+%D In due time I will add some more comments here, also because some \CONTEXT\
+%D users might be interested in the hostiry. Now to the code!
+
 %D Characters can have special states, that can be triggered by setting their
 %D category coded. Some are preset, others are to be set as soon as possible,
 %D otherwise we cannot define any useful macros.
 %D
 %D First we define a bunch of constants. Normally we would \type {\setconstant}
 %D but we're prestine and have no macros defined yet. Abstraction also makes it
-%D possible to avoid the \type {^^} in the input.
+%D possible to avoid the \type {^^} in the input. We no longer define the \ETEX\
+%D nodes here (we have not only more, but also different numbers) so we do it
+%D elsewhere.
 
 % cheatsheet
 %
@@ -311,7 +375,10 @@
 %D consecutive ranges more easily, for instance if for \MPLIB\ we want to allocate a
 %D continuous range of boxes. It also permits us to do a proper upward allocation
 %D for inserts. The current code evolved from code that dealt with older engines but
-%D as all engines now provide many registers we removed all traces.
+%D as all engines now provide many registers we removed all traces. If you ever run
+%D into the \MKII\ \type {mptopdf} code, you'll notice that some register magic was
+%D needed to fit into existing macro packages. The same is true for \PICTEX\ that we
+%D used in (gheneric) \PPCHTEX.
 
 \ifdefined\writestatus \else
    %\protected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
@@ -563,8 +630,8 @@
   {\showboxdepth  \plusthree
    \showboxbreadth\plusfive}
 
-%D Some expected plain variants follow. We don't reuse registers because we
-%D don't want clashes.
+%D Some expected plain variants follow. We don't reuse registers because we don't
+%D want clashes. These will go away and packages that need them have to define them.
 
 \aliased\let\p@     \onepoint
 \aliased\let\m@ne   \minusone
@@ -639,9 +706,12 @@
 \newif\ifscratchconditionone
 \newif\ifscratchconditiontwo
 
+%D This used to be a protected definition with a \type {dimexpr} but now we have
+%D it natively (less tracking noise).
+
 \aliased\let\htdp\boxtotal
 
-%D A few shortcuts:
+%D A few shortcuts (gone by now):
 
 % \permanent\protected\def\udef {\protected\def }
 % \permanent\protected\def\ugdef{\protected\gdef}
@@ -660,7 +730,7 @@
 \permanent\protected\def\defUmathchar       #1#2#3#4{\global\immutable\Umathchardef #1                  "#2 "#3 "#4 }
 
 %D For a while we keep the following, as systems like tikz need it. Best not use
-%D that one \CONTEXT.
+%D that one \CONTEXT. It will probably move to the tikz loader.
 
 \aliased\let\active\activecatcode
 
@@ -1177,7 +1247,7 @@
   {\ifflags#2\permanent\permanent\fi % the rest is taken with the copy
    \def#1{\syst_suggested_alias#1#2}}
 
-% A few traditional allocations (these might go):
+% A few traditional allocations (these might go too):
 
 % \countdef \count@   255 % hm, used in \newif .. todo: replace it there
 % \dimendef \dimen@     0

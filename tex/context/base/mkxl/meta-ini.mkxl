@@ -279,11 +279,12 @@
    \meta_relocate_graphic
    \popMPboundingbox}
 
-\protected\def\meta_process_graphic_instance#1%
+\protected\def\meta_process_graphic_instance#1#2% used in startMPpage
   {\edef\currentMPinstance{#1}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
+   \setmpcategoryparameter\c!stacking{#2}%
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic}
 
@@ -302,7 +303,7 @@
          inclusions      {\meta_flush_current_inclusions}%
          definitions     {\meta_flush_current_definitions}%
          figure          {\MPaskedfigure}%
-         filtering       {\mpcategoryparameter\c!list}
+         filtering       {\mpcategoryparameter\c!stacking}
          method          {\MPinstanceparameter\c!method}%
          namespace       {\??graphicvariable\currentmpcategory:}%
     \relax}%
@@ -661,7 +662,31 @@
 \permanent\protected\def\meta_start_unique_graphic_indeed#1#2#3\stopuniqueMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_unique_graphic{#1}{#2}{#3}}}
 
-\permanent\tolerant\protected\def\uniqueMPgraphic#=#*#=%
+% \permanent\tolerant\protected\def\uniqueMPgraphic#=#*#=%
+%   {\meta_begin_graphic_group{#1}%
+%    \checkmpcategoryparent
+%    \let\currentmpcategory\currentMPgraphicname
+%    \setupcurrentmpcategory[#2]%
+%    \begincsname\??mpgraphic#1\endcsname\empty
+%    \meta_end_graphic_group}
+
+\permanent\tolerant\protected\def\uniqueMPgraphic
+  {\futureexpandis[\meta_uniquempgraphic_yes\meta_uniquempgraphic_nop}
+
+\def\meta_uniquempgraphic_yes[#1]#*#=%
+  {% ugly code but we run on top of older code
+   \letdummyparameter\c!instance\empty
+   \getdummyparameters[#1]%
+   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   % here we feed the instance into the analyzer
+   \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#1}%
+   \checkmpcategoryparent
+   \let\currentmpcategory\currentMPgraphicname
+   \setupcurrentmpcategory[#1]%
+   \begincsname\??mpgraphic#2\endcsname\empty
+   \meta_end_graphic_group}
+
+\def\meta_uniquempgraphic_nop#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \checkmpcategoryparent
    \let\currentmpcategory\currentMPgraphicname
@@ -719,7 +744,51 @@
 \protected\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
 
-\permanent\tolerant\protected\def\useMPgraphic#=#*#=%
+% \permanent\tolerant\protected\def\useMPgraphic#=#*#=%
+%   {\meta_begin_graphic_group{#1}%
+%    \ifcsname\??mpgraphic#1\endcsname
+%      \edef\currentmpcategory{#1}%
+%    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+%      \let\currentmpcategory\currentMPgraphicname
+%    \else
+%      \let\currentmpcategory\empty
+%    \fi
+%    \ifempty\currentmpcategory
+%      % message
+%    \else
+%      \checkmpcategoryparent
+%      \doifsomething{#2}{\setupcurrentmpcategory[#2]}%
+%      \csname\??mpgraphic\currentmpcategory\endcsname
+%    \fi
+%    \meta_end_graphic_group}
+
+\permanent\tolerant\protected\def\useMPgraphic
+  {\futureexpandis[\meta_usempgraphic_yes\meta_usempgraphic_nop}
+
+\def\meta_usempgraphic_yes[#1]#*#=%
+  {% ugly code but we run on top of older code
+   \letdummyparameter\c!instance\empty
+   \getdummyparameters[#1]%
+   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   % here we feed the instance into the analyzer
+   \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#2}%
+   \ifcsname\??mpgraphic#2\endcsname
+     \edef\currentmpcategory{#2}%
+   \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+     \let\currentmpcategory\currentMPgraphicname
+   \else
+     \let\currentmpcategory\empty
+   \fi
+   \ifempty\currentmpcategory
+     % message
+   \else
+     \checkmpcategoryparent
+     \setupcurrentmpcategory[#1]%
+     \csname\??mpgraphic\currentmpcategory\endcsname
+   \fi
+   \meta_end_graphic_group}
+
+\def\meta_usempgraphic_nop#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname
      \edef\currentmpcategory{#1}%
@@ -892,9 +961,40 @@
 %D
 %D The most simple case:
 
-\permanent\tolerant\protected\def\startMPcode#=#:#2\stopMPcode
+% \permanent\tolerant\protected\def\startMPcode#=#:#2\stopMPcode
+%   {\begingroup
+%    \edef\currentMPinstance{#1}%
+%    \ifempty\currentMPinstance
+%      \let\currentMPinstance\defaultMPinstance
+%    \fi
+%    \let\currentMPgraphicname\empty
+%    \edef\currentMPformat{\MPinstanceparameter\s!format}%
+%    \meta_enable_include
+%    \meta_process_graphic{#2}%
+%    \endgroup}
+
+\permanent\tolerant\protected\def\startMPcode
+  {\futureexpandis[\meta_start_mpcode_yes\meta_start_mpcode_nop}
+
+\tolerant\def\meta_start_mpcode_nop#:#=#:#2\stopMPcode
   {\begingroup
    \edef\currentMPinstance{#1}%
+   \ifempty\currentMPinstance
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_enable_include
+   \meta_process_graphic{#2}%
+   \endgroup}
+
+\def\meta_start_mpcode_yes[#1]#2\stopMPcode
+  {\begingroup
+   \letdummyparameter\c!instance\empty
+   \letdummyparameter\c!stacking\empty
+   \getdummyparameters[#1]%
+   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   \setmpcategoryparameter\c!stacking{\dummyparameter\c!stacking}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi

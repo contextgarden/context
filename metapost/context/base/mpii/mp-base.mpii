@@ -122,20 +122,27 @@ yellow = (1,1,0);
 background = white;   % The user can reset this
 
 % color part selection for within
+
+newinternal nocolormodel   ; nocolormodel   := 1 ;
+newinternal greycolormodel ; greycolormodel := 3 ;
+newinternal graycolormodel ; graycolormodel := 3 ;
+newinternal rgbcolormodel  ; rgbcolormodel  := 5 ;
+newinternal cmykcolormodel ; cmykcolormodel := 7 ;
+
 def colorpart primary t =
-  if colormodel t=7:
+  if colormodel t=cmykcolormodel:
     (cyanpart t, magentapart t, yellowpart t, blackpart t)
-  elseif colormodel t=5:
+  elseif colormodel t=rgbcolormodel:
     (redpart t, greenpart t, bluepart t)
-  elseif colormodel t=3:
+  elseif colormodel t=graycolormodel:
     (greypart t)
-  elseif colormodel t=1:
+  elseif colormodel t=nocolormodel:
     false
   else:
     %%% For clipping and bounding paths, etc.
-    if defaultcolormodel=7: (0,0,0,1)
-    elseif defaultcolormodel=5: black
-    elseif defaultcolormodel=3: 0
+    if defaultcolormodel=cmykcolormodel: (0,0,0,1)
+    elseif defaultcolormodel=rgbcolormodel: black
+    elseif defaultcolormodel=graycolormodel: 0
     else: false
     fi
   fi

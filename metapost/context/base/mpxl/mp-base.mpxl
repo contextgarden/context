@@ -206,20 +206,26 @@ let graycolor = numeric ;
 
 % color part (will be overloaded)
 
+newinternal nocolormodel   ; nocolormodel   := 0 ;
+newinternal greycolormodel ; greycolormodel := 1 ;
+newinternal graycolormodel ; graycolormodel := 1 ;
+newinternal rgbcolormodel  ; rgbcolormodel  := 2 ;
+newinternal cmykcolormodel ; cmykcolormodel := 3 ;
+
 def colorpart primary t =
-    if colormodel t = 7:
+    if colormodel t = cmykcolormodel:
         (cyanpart t, magentapart t, yellowpart t, blackpart t)
-    elseif colormodel t = 5 :
+    elseif colormodel t = rgbcolormodel :
         (redpart t, greenpart t, bluepart t)
-    elseif colormodel t = 3 :
+    elseif colormodel t = graycolormodel :
         (greypart t)
-    elseif colormodel t = 1 :
+    elseif colormodel t = nocolormodel :
         false
-    elseif defaultcolormodel = 7 :
+    elseif defaultcolormodel = cmykcolormodel :
         (0,0,0,1)
-    elseif defaultcolormodel = 5 :
+    elseif defaultcolormodel = rgbcolormodel :
         black
-    elseif defaultcolormodel = 3 :
+    elseif defaultcolormodel = graycolormodel :
         0
     else :
         false
@@ -995,7 +1001,7 @@ def beginfig(expr c) =
     clearpen ;
     pickup defaultpen ;
     drawoptions() ;
-    stacking := 0 ;
+    interim stacking := 0 ;
     scantokens extra_beginfig ;
 enddef ;
 

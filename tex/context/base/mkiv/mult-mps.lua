@@ -58,7 +58,7 @@ return {
         "prescriptpart", "postscriptpart",
         "rgbcolor", "cmykcolor", -- "greycolor", "graycolor",
         "colormodel",  "graypart", "greypart", "greycolor", "graycolor",
-        "dashpart", "penpart",
+        "dashpart", "penpart", "stackingpart",
 --         "colorpart",
         "stroked", "filled", "textual", "clipped", "bounded", "pathpart",
         "expandafter",

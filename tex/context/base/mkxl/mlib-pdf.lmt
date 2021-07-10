@@ -388,7 +388,7 @@ function metapost.flush(specification,result)
             local textfigure         = flusher.textfigure
          -- local processspecial     = flusher.processspecial or metapost.processspecial
             local tocomment          = flusher.tocomment
-            if type(filtering) ~= "table" then
+            if type(filtering) ~= "table" or not next(filtering) then
                 filtering = false
             end
             -- patterns: we always use image 1 and then can use patterns for 2..n (or one number)

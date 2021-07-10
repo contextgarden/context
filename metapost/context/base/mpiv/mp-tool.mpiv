@@ -138,12 +138,6 @@ enddef ;
 
 %D Colors:
 
-newinternal nocolormodel   ; nocolormodel   := 1 ;
-newinternal greycolormodel ; greycolormodel := 3 ;
-newinternal graycolormodel ; graycolormodel := 3 ;
-newinternal rgbcolormodel  ; rgbcolormodel  := 5 ;
-newinternal cmykcolormodel ; cmykcolormodel := 7 ;
-
 let grayscale = graycolor ;
 let greyscale = greycolor ;
 

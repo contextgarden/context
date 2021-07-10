@@ -307,6 +307,7 @@ return {
   "enforced",
   "etoksapp",
   "etokspre",
+  "everybeforepar",
   "everytab",
   "exceptionpenalty",
   "expand",

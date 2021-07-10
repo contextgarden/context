@@ -11810,6 +11810,10 @@ return {
    ["pe"]="توده",
    ["ro"]="stack",
   },
+  ["stacking"]={
+   ["en"]="stacking",
+   ["nl"]="stapels",
+  },
   ["stackname"]={
    ["en"]="stackname",
    ["fr"]="nompile",
