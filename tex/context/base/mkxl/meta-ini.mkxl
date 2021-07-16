@@ -686,7 +686,7 @@
    \begincsname\??mpgraphic#2\endcsname\empty
    \meta_end_graphic_group}
 
-\def\meta_uniquempgraphic_nop#=#*#=%
+\tolerant\def\meta_uniquempgraphic_nop#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \checkmpcategoryparent
    \let\currentmpcategory\currentMPgraphicname
@@ -788,7 +788,7 @@
    \fi
    \meta_end_graphic_group}
 
-\def\meta_usempgraphic_nop#=#*#=%
+\tolerant\def\meta_usempgraphic_nop#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname
      \edef\currentmpcategory{#1}%

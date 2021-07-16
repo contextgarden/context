@@ -49,8 +49,10 @@ def resetfig =
     interim linecap := linecap ;
     interim linejoin := linejoin ;
     interim miterlimit := miterlimit ;
-    save _background_ ; color _background_ ; _background_ :=  background  ;
-    save  background  ; color  background  ;  background  := _background_ ;
+    save stacking ; numeric stacking ; stacking := 0 ;
+    save makingfigure ; boolean makingfigure ; makingfigure := true ;
+    save _background_ ; color _background_ ; _background_ := background  ;
+    save  background ; color background ;  background := _background_ ;
     drawoptions () ;
 enddef ;
 

@@ -11,6 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D We don't support \PSTRICKS\ in \LMTX. In \MKIV\ it was already doen by calling
+%D \PDFTEX\ and going the \POSTSCRIPT\ route. We could actually support it sort of
+%D integrated if it were just graphics but I suppose fonts will make it a mess not
+%D worth the trouble. One can always use \MKII\ directly if needed to make graphics
+%D that get included as \PDF.
+
+\ifcase\contextlmtxmode \else
+    \writestatus{modules}{the PStricks graphic system is not supported in LMTX}
+    \expandafter \endinput
+\fi
+
 \registerctxluafile{m-pstricks}{}
 
 \unprotect

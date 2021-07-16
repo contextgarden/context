@@ -48,6 +48,24 @@ if not modules then modules = { } end modules ['m-escrito'] = {
 -- of the VM calls (in direct mode they are no-ops anyway). We can also share some
 -- more code here and there.
 
+-- Notes:
+--
+-- -- all modules are checked / adapted to lmtx but how about this one ... i noticed
+--    that a file in the test suite failed
+--
+-- -- the idea was to use this for the m4all eps files but we swichted the format
+--    there; nevertheless i patched a littl but it's still not ok (cold winter work)
+--
+-- -- for instance some ppor mans fancy shading doesn't show up (not that efficient
+--    either so ...)
+--
+-- -- let's see what the new fast ps->pdf lib from artifact brings ... makes more
+--    sense in the perspective of ps 2 and 3 .. but there is some sentiment involved
+--
+-- -- room for implification (like no integer / real distinction needed)
+--
+-- -- so for now this is not part of the mkiv/lmtx code split (then also go Lua 5.4)
+
 local type, unpack, tonumber, tostring, next = type, unpack, tonumber, tostring, next
 
 local format     = string.format
@@ -78,7 +96,7 @@ local log10      = math.log10
 local random     = math.random
 local setranseed = math.randomseed
 
-local bitand     = bit32.band
+local bitand     = bit32.band     -- when lmtx: Lua 5.4
 local bitor      = bit32.bor
 local bitxor     = bit32.bxor
 local bitrshift  = bit32.rshift
@@ -133,7 +151,7 @@ initializers[#initializers+1] = function()
     VM = { }
 end
 
-local directvm = true
+local directvm = false -- true (but then we ned to patch more VM[..]
 
 local add_VM, get_VM
 
@@ -244,6 +262,9 @@ end
 
 local opstack
 local opstackptr
+
+local b_true  = { 'boolean', 'unlimited', 'literal', true  }
+local b_false = { 'boolean', 'unlimited', 'literal', false }
 
 initializers[#initializers+1] = function()
     opstack    = { }
@@ -489,7 +510,7 @@ function operators.exch()
     if opstackptr < 2 then
         return ps_error('stackunderflow')
     end
-    local prv = opstackptr-1
+    local prv = opstackptr - 1
     opstack[opstackptr], opstack[prv] = opstack[prv], opstack[opstackptr]
     return true
 end
@@ -498,7 +519,7 @@ function operators.dup()
     if opstackptr < 1 then
         return ps_error('stackunderflow')
     end
-    local nxt = opstackptr+1
+    local nxt = opstackptr + 1
     opstack[nxt] = opstack[opstackptr]
     opstackptr = nxt
     return true
@@ -1835,10 +1856,10 @@ function operators.anchorsearch()
         local post = sub(thestring,#thesearch+1)
         push_opstack { 'string',  'unlimited', 'literal', add_VM(post), 1, #post }
         push_opstack { 'string',  'unlimited', 'literal', add_VM(prefix), 1, #prefix }
-        push_opstack { 'boolean', 'unlimited', 'literal', true }
+        push_opstack (b_true)
     else
         push_opstack(a)
-        push_opstack { 'boolean', 'unlimited', 'literal', false }
+        push_opstack (b_false)
     end
     return true
 end
@@ -1884,10 +1905,10 @@ function operators.search()
         push_opstack { 'string',  'unlimited', 'literal', add_VM(post), 1, #post }
         push_opstack { 'string',  'unlimited', 'literal', add_VM(thesearch), 1, #thesearch }
         push_opstack { 'string',  'unlimited', 'literal', add_VM(prefix), 1, #prefix }
-        push_opstack { 'boolean', 'unlimited', 'literal', true }
+        push_opstack (b_true)
     else
         push_opstack(a)
-        push_opstack { 'boolean', 'unlimited', 'literal', false }
+        push_opstack(b_false)
     end
     return true
 end
@@ -1913,7 +1934,7 @@ function operators.token()
         if not v then
             pop_execstack()
             pop_execstack()
-            push_opstack { 'boolean', 'unlimited', 'literal', false }
+            push_opstack(b_false)
         else
             local q = pop_execstack()
             if execstack[execstackptr][1] == '.token' then
@@ -1933,7 +1954,7 @@ function operators.token()
             end
             push_opstack { ta, aa, a[3], add_VM(substring), 1, #substring}
             push_opstack(v)
-            push_opstack { 'boolean', 'unlimited', 'literal', true }
+            push_opstack(b_true)
         end
     else -- file
         if a[7] ~= 'r' then
@@ -1945,7 +1966,7 @@ function operators.token()
         if not v then
             pop_execstack()
             pop_execstack()
-            push_opstack { 'boolean', 'unlimited', 'literal', false }
+            push_opstack(b_false)
         else
             local q = pop_execstack() -- the file
             a[5] = q[5]
@@ -1953,7 +1974,7 @@ function operators.token()
                 pop_execstack()
             end
             push_opstack(v)
-            push_opstack { 'boolean', 'unlimited', 'literal', true }
+            push_opstack(b_true)
         end
     end
     return true
@@ -1994,7 +2015,7 @@ end
 function operators.eq()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a == b }
+        push_opstack(a == b and b_true or b_false)
         return true
     else
         return a
@@ -2004,7 +2025,7 @@ end
 function operators.ne()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a ~= b }
+        push_opstack(a ~= b and b_true or b_false)
         return true
     else
         return a
@@ -2040,7 +2061,7 @@ end
 function operators.ge()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a >= b }
+        push_opstack(a >= b and b_true or b_false)
         return true
     else
         return a
@@ -2050,7 +2071,7 @@ end
 function operators.gt()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a > b }
+        push_opstack(a > b and b_true or b_false)
         return true
     else
         return a
@@ -2060,7 +2081,7 @@ end
 function operators.le()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a <= b }
+        push_opstack(a <= b and b_true or b_false)
         return true
     else
         return a
@@ -2070,7 +2091,7 @@ end
 function operators.lt()
     local ok, a, b = both()
     if ok then
-        push_opstack { 'boolean', 'unlimited', 'literal', a < b }
+        push_opstack(a < b and b_true or b_false)
         return true
     else
         return a
@@ -2104,7 +2125,7 @@ end
 operators["and"]= function()
     local ok, a, b = both()
     if ok == 'boolean' then
-        push_opstack { 'boolean', 'unlimited', 'literal', a[1] and b[1] }
+        push_opstack((a[1] and b[1]) and b_true or b_false)
         return true
     elseif ok == 'integer' then
         push_opstack { 'integer', 'unlimited', 'literal', bitand(a[1],b[1]) }
@@ -2117,7 +2138,7 @@ end
 operators["or"] = function()
     local ok, a, b = both()
     if ok == 'boolean' then
-        push_opstack {'boolean', 'unlimited', 'literal', a[1] or b[1] }
+        push_opstack((a[1] or b[1]) and b_true or b_false)
         return true
     elseif ok == 'integer' then
         push_opstack {'integer', 'unlimited', 'literal', bitor(a[1],b[1]) }
@@ -2130,7 +2151,7 @@ end
 function operators.xor()
     local ok, a, b = both()
     if ok == 'boolean' then
-        push_opstack {'boolean', 'unlimited', 'literal', a[1] ~= b[1] }
+        push_opstack ((a[1] ~= b[1]) and b_true or b_false) -- hm, unequal ?
         return true
     elseif ok == 'integer' then
         push_opstack {'integer', 'unlimited', 'literal', bitxor(a[1],b[1]) }
@@ -2151,7 +2172,7 @@ operators["not"] = function()
         return ps_error('invalidaccess')
     end
     if ta == 'boolean' then
-        push_opstack { 'boolean', 'unlimited', 'literal', not a[4] }
+        push_opstack ((not a[4]) and b_true or b_false)
     elseif ta == 'integer' then
         push_opstack { 'integer', 'unlimited', 'literal', -a[4] - 1 }
     else
@@ -2516,7 +2537,7 @@ function operators.xcheck()
     if not a then
         return ps_error('stackunderflow')
     end
-    push_opstack { 'boolean', 'unlimited', 'literal', a[3] == 'executable' }
+    push_opstack((a[3] == 'executable') and b_true or b_false)
     return true
 end
 
@@ -2602,7 +2623,7 @@ function operators.rcheck()
     else
         return ps_error('typecheck')
     end
-    push_opstack { 'boolean', 'unlimited', 'literal', aa == 'unlimited' or aa == 'read-only' }
+    push_opstack((aa == 'unlimited' or aa == 'read-only') and p_true or p_false)
     return true
 end
 
@@ -2621,7 +2642,7 @@ function operators.wcheck()
     else
         return ps_error('typecheck')
     end
-    push_opstack { 'boolean', 'unlimited', 'literal', aa == 'unlimited' }
+    push_opstack((aa == 'unlimited') and p_true or p_false)
     return true
 end
 
@@ -2906,10 +2927,10 @@ function operators.read()
     end
     if b then
         push_opstack { 'integer', 'unlimited', 'literal', byte(b) }
-        push_opstack { 'boolean', 'unlimited', 'literal', true }
+        push_opstack (p_true)
     else
         f:close()
-        push_opstack { 'boolean', 'unlimited', 'literal', false}
+        push_opstack (p_false)
     end
     return true
 end
@@ -3042,7 +3063,7 @@ do
         end
         if not va then
             push_opstack { 'string', 'unlimited', 'literal', add_VM(''), 0, 0 }
-            push_opstack { 'boolean', 'unlimited', 'literal', false }
+            push_opstack (p_false)
         else
             local n = #va
             if n > b[6] then
@@ -3051,7 +3072,7 @@ do
             local thestring = get_VM(b[4])
             VM[b[4]] = va .. sub(thestring,#va+1, -1)
             push_opstack { 'string', 'unlimited', 'literal', add_VM(va), n, n }
-            push_opstack { 'boolean', 'unlimited', 'literal', true }
+            push_opstack (p_true)
         end
         return true
     end
@@ -3100,7 +3121,7 @@ do
         local n = #va
         VM[b[4]] = repl .. sub(thestring,n+1,-1)
         push_opstack { b[1], b[2], b[3], add_VM(va), n, n }
-        push_opstack { 'boolean', 'unlimited', 'literal', n == b[6] }
+        push_opstack ((n == b[6]) and p_true or p_false)
         return true
     end
 
@@ -3335,8 +3356,8 @@ local function commonstack(seperator)
     for n=1,opstackptr do
         push_opstack { 'string', 'unlimited', 'literal', add_VM(seperator), 1 ,1 }
         push_opstack(opstack[n])
-        push_execstack { 'operator','unlimited','executable', operators.print, 'print'}
-        push_execstack { 'operator','unlimited','executable', operators.equal, '=='}
+        push_execstack { 'operator','unlimited','executable', operators.print, 'print' }
+        push_execstack { 'operator','unlimited','executable', operators.equal, '==' }
     end
     return true
 end
@@ -3377,15 +3398,21 @@ end
 
 function operators.save()
     local saved_VM = { }
-    for k1, v1 in next, VM do
+--     for k1, v1 in next, VM do
+    for k1 = 1, #VM do
+        local v1 = VM[k1]
         if type(v1) == "table" then
             local t1 = { }
             saved_VM[k1] = t1
-            for k2, v2 in next, t1 do
+--             for k2, v2 in next, v1 do
+            for k2=1,#v1 do
+                local v2 = v1[k2]
                 if type(v2) == "table" then
                     local t2 = { }
                     t1[k2] = t2
-                    for k3, v3 in next, v2 do
+--                     for k3, v3 in next, v2 do
+                    for k3=1,#v2 do
+                        local v3 = v2[k3]
                         t2[k3] = v3
                     end
                 else
@@ -3396,6 +3423,13 @@ function operators.save()
             saved_VM[k1] = v1
         end
     end
+    push_gsstack { 'save', copy_gsstate() }
+    savelevel = savelevel + 1
+    push_opstack { 'save', 'unlimited', 'executable', add_VM(saved_VM) }
+end
+
+function operators.save()
+    local saved_VM = table.copy(VM)
     push_gsstack { 'save', copy_gsstate() }
     savelevel = savelevel + 1
     push_opstack { 'save', 'unlimited', 'executable', add_VM(saved_VM) }
@@ -3532,6 +3566,9 @@ end
 
 function operators.gsave()
     push_gsstack { 'gsave', copy_gsstate() }
+    currentpage[#currentpage+1] = {
+        type      = 'gsave',
+    }
     return true
 end
 
@@ -3543,6 +3580,9 @@ function operators.grestore()
             gsstate = g[2]
         end
     end
+    currentpage[#currentpage+1] = {
+        type      = 'grestore',
+    }
     return true
 end
 
@@ -4183,7 +4223,7 @@ function operators.setmatrix()
         if i > 6 then
             return ps_error('rangecheck')
         end
-        matrix[i] = va
+        matrix[i] = tv
     end
     return true
 end
@@ -4856,7 +4896,7 @@ local function commonarc(action)
     if not a then
         return ps_error('stackunderflow')
     end
-    local ta, tb, tc, td, te = a[1], b[1], c[1], d[1], e[1], f[1]
+    local ta, tb, tc, td, te = a[1], b[1], c[1], d[1], e[1]
     if not (ta == 'real' or ta == 'integer') then return ps_error('typecheck') end
     if not (tb == 'real' or tb == 'integer') then return ps_error('typecheck') end
     if not (tc == 'real' or tc == 'integer') then return ps_error('typecheck') end
@@ -5058,6 +5098,7 @@ function operators.rcurveto()
     if #position == 0 then
         return ps_error('nocurrentpoint')
     end
+    local matrix = gsstate.matrix
     local x,   y = do_transform(matrix, e[4], f[4])
     local ax, ay = do_transform(matrix, a[4], b[4])
     local bx, by = do_transform(matrix, c[4], d[4])
@@ -5485,6 +5526,17 @@ end
 
 ------------------------------------------------------------------
 
+function operators.pathbbox()
+    print("todo: pathbbox")
+    push_opstack { "real", 'unlimited', 'literal', 0 }
+    push_opstack { "real", 'unlimited', 'literal', 0 }
+    push_opstack { "real", 'unlimited', 'literal', 1 }
+    push_opstack { "real", 'unlimited', 'literal', 1 }
+    return true
+end
+
+------------------------------------------------------------------
+
 -- most time is spend in calculating the boundingbox
 
 -- NULL output
@@ -5537,113 +5589,136 @@ function pdf.showpage(page)
         local object = page[i]
         local path   = object.path
         local otyp   = object.type
-        if otype ~= "clip" and otype ~= "eoclip" then
-            local colortype = object.colortype
-            local color     = object.color
-            if colortype == "gray" then
-                local v = formatters["%f g %f G"](color,color)
-                if g_color ~= v then
-                    g_colortype = "gray"
-                    g_color     = v
-                    n = n + 1 ; t[n] = v
-                end
-            elseif colortype == "rgb" then
-                local r, g, b = color[1], color[2], color[3]
-                local v = formatters["%f %f %f rg %f %f %f RG"](r,g,b,r,g,b)
-                if g_color ~= v then
-                    g_colortype = "rgb"
-                    g_color     = v
-                    n = n + 1 ; t[n] = v
-                end
-            elseif colortype == "cmyk" then
-                local c, m, y, k = color[1], color[2], color[3], color[4]
-                local v = formatters["%f %f %f %f k %f %f %f %f K"](c,m,y,k,c,m,y,k)
-                if g_color ~= v then
-                    g_colortype = "cmyk"
-                    g_color     = v
-                    n = n + 1 ; t[n] = v
-                end
-            elseif colortype == "hsb" then
-                local r, g, b = hsv_to_rgb(color[1],color[2],color[3])
-                local v = formatters["%f %f %f rg %f %f %f RG"](r,g,b,r,g,b)
-                if g_color ~= v then
-                    g_colortype = "rgb"
-                    g_color     = v
-                    n = n + 1 ; t[n] = v
-                end
-            end
-        end
-        if otype == "stroke" then
-            local miterlimit = object.miterlimit
-            if g_miterlimit ~= miterlimit then
-                g_miterlimit = miterlimit
-                n = n + 1 ; t[n] = formatters["%f M"](miterlimit)
-            end
-            local linejoin = object.linejoin
-            if g_linejoin ~= linejoin then
-                g_linejoin = linejoin
-                n = n + 1 ; t[n] = formatters["%d j"](linejoin)
-            end
-            local linecap = object.linecap
-            if g_linecap ~= linecap then
-                g_linecap = linecap
-                n = n + 1 ; t[n] = formatters["%d J"](linecap)
-            end
-            local linewidth = object.linewidth
-            if g_linewidth ~= linewidth then
-                g_linewidth = linewidth
-                n = n + 1 ; t[n] = formatters["%f w"](linewidth)
-            end
-            local dashpattern = object.dashpattern
-            local dashoffset  = object.dashoffset
-            if g_dashpattern ~= dashpattern or g_dashoffset ~= dashoffset then
-                g_dashpattern = dashpattern
-                g_dashoffset  = dashoffset
-                local l = #dashpattern
-                if l == 0 then
-                    n = n + 1 ; t[n] = "[] 0 d"
-                else
-                    n = n + 1 ; t[n] = formatters["[% t] %d d"](dashpattern,dashoffset)
-                end
-            end
-        end
-        if path then
-            for i=1,#path do
-                local segment = path[i]
-                local styp    = segment[1]
-                if styp == "moveto" then
-                    n = n + 1 ; t[n] = formatters["%f %f m"](segment[2],segment[3])
-                elseif styp == "lineto" then
-                    n = n + 1 ; t[n] = formatters["%f %f l"](segment[2],segment[3])
-                elseif styp == "curveto" then
-                    n = n + 1 ; t[n] = formatters["%f %f %f %f %f %f c"](segment[2],segment[3],segment[4],segment[5],segment[6],segment[7])
-                elseif styp == "closepath" then
-                    n = n + 1 ; t[n] = "h"
-                else
-                    report("unknown path segment type %a",styp)
-                end
-            end
-        end
-        if otyp == "stroke" then
-            n = n + 1 ; t[n] = "S"
-        elseif otyp == "fill" then
-            n = n + 1 ; t[n] = "f"
-        elseif otyp == "eofill" then
-            n = n + 1 ; t[n] = "f*"
-        elseif otyp == "clip" then
-            n = n + 1 ; t[n] = "W n"
-        elseif otyp == "eoclip" then
-            n = n + 1 ; t[n] = "W* n"
-        elseif otyp == "show" then
-            if showfont then
-                if n > 0 then
-                    flushpage(concat(t,"\n"))
-                    n = 0 ; t = { }
-                end
-                showfont(object)
-            end
+        if otyp == "gsave" then
+            n = n + 1 ; t[n] = "q"
+         -- todo push / pop
+g_colortype   = "notacolor"
+g_color       = ""
+g_miterlimit  = -1
+g_linejoin    = -1
+g_linecap     = -1
+g_linewidth   = -1
+g_dashpattern = nil
+g_dashoffset  = -1
+        elseif otyp == "grestore" then
+g_colortype   = "notacolor"
+g_color       = ""
+g_miterlimit  = -1
+g_linejoin    = -1
+g_linecap     = -1
+g_linewidth   = -1
+g_dashpattern = nil
+g_dashoffset  = -1
+            n = n + 1 ; t[n] = "Q"
         else
-            -- nothing to do
+            if otyp ~= "clip" and otyp ~= "eoclip" then
+                local colortype = object.colortype
+                local color     = object.color
+                if colortype == "gray" then
+                    local v = formatters["%f g %f G"](color,color)
+                    if g_color ~= v then
+                        g_colortype = "gray"
+                        g_color     = v
+                        n = n + 1 ; t[n] = v
+                    end
+                elseif colortype == "rgb" then
+                    local r, g, b = color[1], color[2], color[3]
+                    local v = formatters["%f %f %f rg %f %f %f RG"](r,g,b,r,g,b)
+                    if g_color ~= v then
+                        g_colortype = "rgb"
+                        g_color     = v
+                        n = n + 1 ; t[n] = v
+                    end
+                elseif colortype == "cmyk" then
+                    local c, m, y, k = color[1], color[2], color[3], color[4]
+                    local v = formatters["%f %f %f %f k %f %f %f %f K"](c,m,y,k,c,m,y,k)
+                    if g_color ~= v then
+                        g_colortype = "cmyk"
+                        g_color     = v
+                        n = n + 1 ; t[n] = v
+                    end
+                elseif colortype == "hsb" then
+                    local r, g, b = hsv_to_rgb(color[1],color[2],color[3])
+                    local v = formatters["%f %f %f rg %f %f %f RG"](r,g,b,r,g,b)
+                    if g_color ~= v then
+                        g_colortype = "rgb"
+                        g_color     = v
+                        n = n + 1 ; t[n] = v
+                    end
+                end
+            end
+            if otyp == "stroke" then
+                local miterlimit = object.miterlimit
+                if g_miterlimit ~= miterlimit then
+                    g_miterlimit = miterlimit
+                    n = n + 1 ; t[n] = formatters["%f M"](miterlimit)
+                end
+                local linejoin = object.linejoin
+                if g_linejoin ~= linejoin then
+                    g_linejoin = linejoin
+                    n = n + 1 ; t[n] = formatters["%d j"](linejoin)
+                end
+                local linecap = object.linecap
+                if g_linecap ~= linecap then
+                    g_linecap = linecap
+                    n = n + 1 ; t[n] = formatters["%d J"](linecap)
+                end
+                local linewidth = object.linewidth
+                if g_linewidth ~= linewidth then
+                    g_linewidth = linewidth
+                    n = n + 1 ; t[n] = formatters["%f w"](linewidth)
+                end
+                local dashpattern = object.dashpattern
+                local dashoffset  = object.dashoffset
+                if g_dashpattern ~= dashpattern or g_dashoffset ~= dashoffset then
+                    g_dashpattern = dashpattern
+                    g_dashoffset  = dashoffset
+                    local l = #dashpattern
+                    if l == 0 then
+                        n = n + 1 ; t[n] = "[] 0 d"
+                    else
+                        n = n + 1 ; t[n] = formatters["[% t] %d d"](dashpattern,dashoffset)
+                    end
+                end
+            end
+            if path then
+                for i=1,#path do
+                    local segment = path[i]
+                    local styp    = segment[1]
+                    if styp == "moveto" then
+                        n = n + 1 ; t[n] = formatters["%f %f m"](segment[2],segment[3])
+                    elseif styp == "lineto" then
+                        n = n + 1 ; t[n] = formatters["%f %f l"](segment[2],segment[3])
+                    elseif styp == "curveto" then
+                        n = n + 1 ; t[n] = formatters["%f %f %f %f %f %f c"](segment[2],segment[3],segment[4],segment[5],segment[6],segment[7])
+                    elseif styp == "closepath" then
+                        n = n + 1 ; t[n] = "h"
+                    else
+                        report("unknown path segment type %a",styp)
+                    end
+                end
+            end
+            if otyp == "stroke" then
+                n = n + 1 ; t[n] = "S"
+            elseif otyp == "fill" then
+                n = n + 1 ; t[n] = "f"
+            elseif otyp == "eofill" then
+                n = n + 1 ; t[n] = "f*"
+            elseif otyp == "clip" then
+                n = n + 1 ; t[n] = "W n"
+            elseif otyp == "eoclip" then
+                n = n + 1 ; t[n] = "W* n"
+            elseif otyp == "show" then
+                if showfont then
+                    if n > 0 then
+                        flushpage(concat(t,"\n"))
+                        n = 0 ; t = { }
+                    end
+                    showfont(object)
+                end
+            else
+                -- nothing to do
+            end
         end
     end
     n = n + 1 ; t[n] = "Q"
@@ -6198,7 +6273,7 @@ function operators.kshow()
         local entry = execstack[execstackptr]
         if entry[1] == '.exit' and entry[4] == true then
             pop_execstack()
-            return true;
+            return true
         end
         do_show(fontdict,w)
         v = w
@@ -6332,6 +6407,7 @@ initializers[#initializers+1] = function(reset)
             ['cleartomark']       = { 'operator', 'unlimited', 'executable', operators.cleartomark, 'cleartomark' },
             ['clip']              = { 'operator', 'unlimited', 'executable', operators.clip, 'clip' },
             ['clippath']          = { 'operator', 'unlimited', 'executable', operators.clippath, 'clippath' },
+            ['pathbbox']          = { 'operator', 'unlimited', 'executable', operators.pathbbox, 'pathbbox' },
             ['closefile']         = { 'operator', 'unlimited', 'executable', operators.closefile, 'closefile' },
             ['closepath']         = { 'operator', 'unlimited', 'executable', operators.closepath, 'closepath' },
             ['concat']            = { 'operator', 'unlimited', 'executable', operators.concat, 'concat' },
@@ -6535,7 +6611,7 @@ initializers[#initializers+1] = function(reset)
             size    = 1,
             maxsize = 40,
             dict    = {
-                newerror = { 'boolean', 'unlimited', 'literal', false }
+                newerror = p_false
             },
         }
         --
@@ -6638,7 +6714,7 @@ do
     local sign       = S('+-')^-1
     local digit      = R('09')
     local period     = P('.')
-    local letters    = R('!~') - S('[]<>{}()%')
+    local letters    = R('!~') - S('[]<>{}()%/')
     local hexdigit   = R('09','af','AF')
     local radixdigit = R('09','az','AZ')
 
@@ -6732,7 +6808,12 @@ do
                 object[5] = position
             end
             if not value then
-                return false -- handle_error('syntaxerror')
+                if tokentype == "eof" then
+                 -- pop_execstack()
+                    return true
+                else
+                    return false -- handle_error('syntaxerror')
+                end
             elseif tokentype == 'integer' or tokentype == 'real' then
                 if push { tokentype, 'unlimited', 'literal', value } then
                     return true
@@ -6759,6 +6840,8 @@ do
                 end
             elseif tokentype == 'bounding' then
                 specials.boundingbox = value
+            else
+                -- comment
             end
         end
         return position >= length
@@ -6833,7 +6916,7 @@ do
             return false
         end
         local otyp = object[1]
-        if DEBUG then
+        if false then -- debugging
             if otyp == 'operator' then
                 report_exec("%s %s %s",otyp,object[3],object[5])
             elseif otyp == 'dict' then

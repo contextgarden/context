@@ -1,0 +1,293 @@
+% This file is a variant of "macros for boxes"::
+%
+% author    : Taco Hoekwater
+% version   : $Id: boxes.mp,v 1.5 2005/02/25 11:28:56 taco Exp $
+% copyright : Public domain
+% patched   : Hans Hagen
+%
+% The code is the same but I've added s boxes_ namespace for soem so that we don't
+% clash with metafun.
+
+if known metafun_loaded_xbox : endinput ; fi ;
+
+boolean metafun_loaded_xbox ; metafun_loaded_xbox := true ;
+
+% Find the length of the prefix of string s for which cond is true for each character
+% c of the prefix. Loading and initialization is now under metafun control. Only the
+% mpxl variant will be adapted. When needed this file will be adapted.
+
+vardef boxes_str_prefix (expr s) (text cond) =
+    save i_, c; string c; i_ = 0;
+    forever:
+        c := substring (i_, i_ + 1) of s;
+        exitunless cond;
+        exitif incr i_ = length s;
+    endfor
+    i_
+enddef;
+
+% Take a string returned by the str operator and return the same string with explicit
+% numeric subscripts replaced by generic subscript symbols [] (fixed by Eddie Kohler).
+
+vardef generisize (expr ss) =
+    save r, s, l; string r, s;
+    r = ""; % result so far
+    s = ss; % left to process
+    forever:
+        exitif s = "";
+        l := boxes_str_prefix(s, (c<>"[") and ((c<"0") or (c>"9")));
+        r := r & substring (0,l) of s;
+        s := substring (l, infinity) of s;
+        if s <> "" :
+            if (s >= "[") and (length s > 1) :
+                if (substring (1,2) of s) = "[" :
+                    l := 2;
+                    r := r & "[[";
+                else :
+                    l := 1 + boxes_str_prefix(s, c <> "]");
+                    r := r & "[]";
+                fi
+            else :
+                r := r & "[]";
+                l := boxes_str_prefix(s, (c = ".") or ("0" <= c) and (c <= "9"));
+            fi
+            s := substring(l, infinity) of s;
+        fi
+    endfor
+    r
+enddef;
+
+% Make sure the string boxes_n_gen is generisize(_n_):
+
+string boxes_n, boxes_n_cur, boxes_n_gen; boxes_n_cur := "]"; % this won't match _n_
+
+vardef boxes_set_n_gen =
+    if boxes_n <> boxes_n_cur:
+        boxes_n_cur := boxes_n;
+        boxes_n_gen := generisize(boxes_n);
+    fi
+enddef;
+
+% Given a type t and list of variable names vars, make sure that they are of type t
+% and redeclare them as necessary.  In the vars list _n represents scantokens boxes_n,
+% a suffix that might contain numeric subscripts. This suffix needs to be replaced
+% by scantokens boxes_n_gen in order to get a variable that can be declared to be of
+% type t.
+
+vardef boxes_declare(text t) text vars =
+    boxes_set_n_gen;
+    forsuffixes v_ = vars :
+        if forsuffixes _n = scantokens boxes_n : not t v_ endfor :
+            def boxes_gdmac text _n = t v_ enddef;
+            expandafter boxes_gdmac scantokens boxes_n_gen;
+        fi
+    endfor
+enddef;
+
+% Here is another version that redeclares the vars even if they are already of the
+% right type.
+
+vardef boxes_redeclare(text t) text vars =
+    boxes_set_n_gen;
+    def boxes_gdmac text _n = t vars enddef;
+    expandafter boxes_gdmac scantokens boxes_n_gen;
+enddef;
+
+% pp should be a string giving the name of a macro that finds the boundary path and
+% sp should be a string that names a macro for fixing the size and shape. The suffix
+% $ is the name of the box. The text t gives the box contents: either empty, a
+% picture, or a string to typeset.
+
+def boxes_begin (expr pp, sp) (suffix $) (text t) =
+    boxes_n := str $;
+    boxes_declare (pair) _n.off, _n.c;
+    boxes_declare (string) boxes_pproc._n, boxes_sproc._n;
+    boxes_declare (picture) boxes_pic._n;
+    boxes_pproc$ := pp;
+    boxes_sproc$ := sp;
+    boxes_pic$ := nullpicture;
+    for _p_ = t :
+      % boxes_pic$ := if picture _p_: _p_ else: _p_ infont defaultfont scaled defaultscale fi;
+        boxes_pic$ := if picture _p_: _p_ else: textext(_p_) fi;
+    endfor
+    $c = $off + .5[llcorner boxes_pic$, urcorner boxes_pic$]
+enddef;
+
+% The suffix cl names a vardef macro that clears box-related variables. The suffix $
+% is the name of the box being ended.
+
+def boxes_end(suffix cl, $) =
+    if known boxes_pic.boxes_prevbox:
+        boxes_dojoin(boxes_prevbox,$);
+    fi
+    def boxes_prevbox = $ enddef;
+    expandafter def expandafter boxes_clear_all expandafter =
+        boxes_clear_all cl($);
+    enddef
+enddef;
+
+% Text t gives equations for joining box a to box b.
+
+def boxes_boxjoin(text t) =
+    def boxes_prevbox = _ enddef;
+    def boxes_dojoin(suffix a,b) = t enddef;
+enddef ;
+
+def boxes_clear_all = enddef;
+
+% Given a list of box names, give whatever default values are necessary
+% in order to fix the size and shape of each box.
+
+vardef boxes_fixsize(text t) =
+    forsuffixes $ = t : scantokens boxes_sproc$($); endfor
+enddef;
+
+% Given a list of box names, give default values for any unknown positioning offsets.
+
+vardef boxes_fixpos(text t) =
+    forsuffixes $=t:
+        if unknown xpart $.off : xpart $.off = 0; fi
+        if unknown ypart $.off : ypart $.off = 0; fi
+    endfor
+enddef;
+
+% Return the boundary path for the given box
+
+vardef bpath suffix $ =
+    boxes_fixsize($);
+    boxes_fixpos($);
+    scantokens boxes_pproc$($)
+enddef;
+
+% Return the contents of the given box. First define a private version that the user can't
+% accidently clobber.
+
+vardef boxes_pic_mac suffix $ =
+    boxes_fixsize($);
+    boxes_fixpos($);
+    boxes_pic$ shifted $off
+enddef;
+
+vardef pic suffix $ = boxes_pic_mac $ enddef;
+
+% Draw each box:
+
+def drawboxed(text t) =
+    boxes_fixsize(t);
+    boxes_fixpos(t);
+    forsuffixes s = t: draw boxes_pic_mac.s; draw bpath.s; endfor
+enddef;
+
+% Draw contents of each box:
+
+def drawunboxed(text t) =
+    boxes_fixsize(t);
+    boxes_fixpos(t);
+    forsuffixes s = t :
+        draw boxes_pic_mac.s;
+    endfor
+enddef;
+
+% Draw boundary path for each box:
+
+def drawboxes(text t) =
+    forsuffixes s = t :
+        draw bpath.s;
+    endfor
+enddef;
+
+% Rectangular boxes
+
+newinternal defaultdx, defaultdy; defaultdx := defaultdy := 3bp;
+
+vardef boxit@#(text tt) =
+    boxes_begin("boxes_path","boxes_size",@#,tt);
+    boxes_declare (pair) _n.sw, _n.s, _n.se, _n.e, _n.ne, _n.n, _n.nw, _n.w;
+    0 = xpart(@#nw - @#sw) = ypart(@#se - @#sw);
+    0 = xpart(@#ne - @#se) = ypart(@#ne - @#nw);
+    @#w = .5[@#nw,@#sw];
+    @#s = .5[@#sw,@#se];
+    @#e = .5[@#ne,@#se];
+    @#n = .5[@#ne,@#nw];
+    @#ne - @#c = @#c - @#sw = (@#dx,@#dy) + .5*(urcorner boxes_pic@# - llcorner boxes_pic@#);
+    boxes_end(boxes_clear,@#);
+enddef;
+
+def boxes_path(suffix $) =
+    $.sw -- $.se -- $.ne -- $.nw -- cycle
+enddef;
+
+def boxes_size(suffix $) =
+    if unknown $.dx : $.dx = defaultdx; fi
+    if unknown $.dy : $.dy = defaultdy; fi
+enddef;
+
+vardef boxes_clear(suffix $) =
+    boxes_n := str $;
+    boxes_redeclare(numeric) _n.sw, _n.s, _n.se, _n.e, _n.ne, _n.n, _n.nw, _n.w, _n.c, _n.off, _n.dx, _n.dy;
+enddef;
+
+% Circular and oval boxes
+
+newinternal circmargin; circmargin := 2bp;  % default clearance for picture corner
+
+vardef circleit@#(text tt) =
+    boxes_begin("boxes_the_circle","boxes_size_circle",@#,tt);
+    boxes_generic_declare(pair) _n.n, _n.s, _n.e, _n.w;
+    @#e - @#c = @#c - @#w = (@#dx,0) + .5*(lrcorner boxes_pic@# - llcorner boxes_pic@#);
+    @#n - @#c = @#c - @#s = (0,@#dy) + .5*(ulcorner boxes_pic@# - llcorner boxes_pic@#);
+    boxes_end(boxes_clear_circle,@#);
+enddef;
+
+def boxes_the_circle (suffix $) =
+    $.e{up} ... $.n{left} ... $.w{down} ... $.s{right} ... cycle
+enddef;
+
+vardef boxes_clear_circle (suffix $) =
+    boxes_n := str $;
+    boxes_redeclare(numeric) _n.n, _n.s, _n.e, _n.w, _n.c, _n.off, _n.dx, _n.dy;
+enddef;
+
+vardef boxes_size_circle (suffix $) =
+    save a_, b_;
+    (a_,b_) = .5*(urcorner boxes_pic$ - llcorner boxes_pic$);
+    if unknown $dx :
+        if unknown $dy :
+            if unknown($dy-$dx) :
+                a_ + $dx = b_ + $dy;
+            fi
+            if a_ + $dx = b_ + $dy :
+                a_ + $dx = a_ ++ b_ + circmargin;
+            else :
+                $dx = boxes_select(max(a_,b_ + $dx - $dy), (a_ + d_,0){up} ... (0,b_ + d_ + $dy - $dx){left});
+            fi
+        else :
+            $dx = boxes_select(a_, (a_ + d_,0){up}...(0,b_ + $dy){left});
+        fi
+    elseif unknown $dy :
+        $dy = boxes_select(b_, (a_ + $dx,0){up}...(0,b_ + d_){left});
+    fi
+enddef;
+
+vardef boxes_select(expr dhi)(text tt) =
+    save f_, p_; path p_;
+    p_ = origin .. (a_,b_) + circmargin * unitvector(a_,b_);
+    vardef f_ (expr d_) =
+        xpart((tt) intersectiontimes p_) >= 0
+    enddef;
+    solve f_(0, dhi + 1.5circmargin)
+enddef;
+
+def boxes_init_all =
+    boxes_boxjoin();
+    save boxes_pic, boxes_sproc, boxes_pproc;
+    def boxes_clear_all = enddef;
+enddef ;
+
+extra_beginfig := extra_beginfig & "boxes_init_all;";
+extra_endfig   := "boxes_clear_all;" & extra_endfig;
+
+if makingfigure :
+    boxes_init_all;
+fi ;
+

@@ -993,7 +993,9 @@ string extra_beginfig, extra_endfig ;
 extra_beginfig := "" ;
 extra_endfig   := "" ;
 
-def beginfig(expr c) =
+newinternal boolean makingfigure ; makingfigure := false ;
+
+def beginfig(expr c) = % redefined in mp-grph !
     begingroup
     charcode := c ;
     clearxy ;
@@ -1002,6 +1004,7 @@ def beginfig(expr c) =
     pickup defaultpen ;
     drawoptions() ;
     interim stacking := 0 ;
+    interim makingfigure := true;
     scantokens extra_beginfig ;
 enddef ;
 

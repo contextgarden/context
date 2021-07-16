@@ -478,13 +478,13 @@
         \page_layouts_left_edge_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth
       \fi
       \ifdim\leftmarginwidth>\zeropoint
-        \page_layouts_left_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\zerocount
+        \page_layouts_left_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\plusone
       \fi
       \ifdim\makeupwidth>\zeropoint
         \page_layouts_text_body_element_e_r_m_l
       \fi
       \ifdim\rightmarginwidth>\zeropoint
-        \page_layouts_right_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\plusone
+        \page_layouts_right_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\zerocount
       \fi
       \ifdim\rightedgewidth>\zeropoint
         \page_layouts_right_edge_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth
@@ -525,6 +525,9 @@
      {\page_layouts_right_edge_element_indeed#text#style#color#width}}
 
 % margin needs checking!
+
+% \hbox to \leftmarginwidth{\hss\layoutelementparameter\c!margintext}%
+% \hbox to \rightmarginwidth{\layoutelementparameter\c!margintext\hss}%
 
 \def\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo%
   {\letfromlayoutelementparameter\p_text#text%

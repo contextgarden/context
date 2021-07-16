@@ -14,4 +14,8 @@ local registermethod = resolvers.registermethod
 local savers         = allocate { helpers = { } }
 resolvers.savers     = savers
 
-registermethod("savers", savers, "uri")
+local cleaners       = allocate { helpers = { } }
+resolvers.cleaners   = cleaners
+
+registermethod("savers",   savers,   "uri")
+registermethod("cleaners", cleaners, "uri")

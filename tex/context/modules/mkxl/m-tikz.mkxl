@@ -22,35 +22,51 @@
     \protect
 \fi
 
-\pushcatcodetable
 
-    \setcatcodetable\texcatcodes
+\pushoverloadmode
 
-    \catcode`\@=11
-    \catcode`\|=12
-    \catcode`\!=12
+    \pushcatcodetable
 
-    \input t-pgf.tex
-    \input t-pgffor.tex
-    \input tikz.code.tex
+        \setcatcodetable\texcatcodes
 
-\popcatcodetable
+        \catcode`\@=11
+        \catcode`\|=12
+        \catcode`\!=12
+
+        \input t-pgf.tex
+        \input t-pgffor.tex
+        \input tikz.code.tex
+
+    \popcatcodetable
+
+\popoverloadmode
 
 \permanent\protected\def\tikzerrormessage#1#2#3%
   {\writestatus{#1}{#2}}
 
-\let\starttikzsettings\relax
-\let\stoptikzsettings \relax
+% For now we need this but we need to educate the user to wrap settings
+% in the wrappers. So some day the next line will go. I need to check what
+% commands are possible outside a picture.
 
-\protected\def\starttikzpicture
-  {% \dontleavehmode
-   \begingroup
+\overloadmode\zerocount
+
+\permanent\protected\def\starttikzsettings
+  {\pushoverloadmode}
+
+\permanent\protected\def\stoptikzsettings
+  {\popoverloadmode}
+
+\permanent\protected\def\starttikzpicture
+  {\dontleavehmode
+   \hcontainer\bgroup
+ % \pushoverloadmode
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
    \tikzpicture}
 
-\protected\def\stoptikzpicture
+\permanent\protected\def\stoptikzpicture
   {\endtikzpicture
-   \endgroup}
+ % \popoverloadmode
+   \egroup}
 
 % \input t-pgf.tex
 

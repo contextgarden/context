@@ -104,6 +104,11 @@ local function execute(specification)
     if okay() then
         local code = specification.code
         local text = specification.text
+        --
+        if lower(code) == "isbn" then
+            specification.text = text and gsub(text,"[^%d]","") or ""
+        end
+        --
         if code then
             local id = mapping[code]
             if id then

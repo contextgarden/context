@@ -47,10 +47,10 @@ def resetfig =
     interim linecap := linecap ;
     interim linejoin := linejoin ;
     interim miterlimit := miterlimit ;
-    % not really needed:
+    interim stacking := 0 ;
+    interim makingfigure := true;
     save temp_b ; color temp_b ; temp_b := background ;
     save background ; color background ; background := temp_b ;
-    %
     drawoptions () ;
 enddef ;
 

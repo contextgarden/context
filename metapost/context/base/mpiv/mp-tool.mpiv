@@ -3683,3 +3683,48 @@ def yslanted primary s =
             t
         endgroup
 enddef ;
+
+% By Bogluslaw Jackowski (public domain):
+%
+% draw hatched (fullcircle scaled 10cm) (45, 4, 1) withcolor "red" ;
+
+newinternal hatch_match; hatch_match := 1;
+
+vardef hatched(expr o) primary c =
+    save a_, b_, d_, l_, i_, r_, za_, zb_, zc_, zd_;
+    path b_; picture r_; pair za_, zb_, zc_, zd_;
+    r_ := image (
+        a_ := redpart(c) mod 180 ;
+        l_ := greenpart(c) ;
+        d_ := -bluepart(c) ;
+        b_ := o rotated -a_ ;
+        b_ :=
+            if a_ >= 90 :
+                (lrcorner b_ -- llcorner b_ -- ulcorner b_ -- urcorner b_ -- cycle)
+            else :
+                (llcorner b_ -- lrcorner b_ -- urcorner b_ -- ulcorner b_ -- cycle)
+            fi
+            rotated a_ ;
+        za_ := point 0 of b_ ;
+        zb_ := point 1 of b_ ;
+        zc_ := point 2 of b_ ;
+        zd_ := point 3 of b_ ;
+        if hatch_match > 0 :
+            n_ := round(length(zd_-za_) / l_) ;
+            if n_ < 2:
+                n_ := 2 ;
+            fi ;
+            l_ := length(zd_-za_) / n_ ;
+        else :
+            n_ := length(zd_-za_) / l_ ;
+        fi
+        save currentpen; pen currentpen ; pickup pencircle scaled d_;
+        % we use a single path instead:
+        for i_ := if hatch_match > 0 : 1 else : 0 fi upto ceiling n_ - 1 :
+            nodraw (i_/n_)[zd_,za_] -- (i_/n_)[zc_,zb_] ;
+        endfor
+        dodraw origin ;
+    ) ;
+    clip r_ to o;
+    r_
+enddef;

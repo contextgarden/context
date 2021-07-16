@@ -14,12 +14,16 @@
 \registerctxluafile{m-escrito}{}
 
 %D This is a fun project and not meant for production (yet). It's a follow up on a
-%D project by Taco presented at a Bacho\TeX\ meeting years ago. I probably messed up
+%D project by Taco presented at a Bacho\TEX\ meeting years ago. I probably messed up
 %D the code so much that some things don't work but then, fonts are not really
 %D supported well anyway. However for simple \POSTSCRIPT\ things work out ok.
 %D
 %D I (Hans) will occasionally have a look at the code. Who knows what our trips to
-%D \TeX\ meetings lead to.
+%D \TEX\ meetings lead to.
+
+%D Ecause the (already split) barcode modules don't need this I'll postpone the
+%D splitting of this one till later. It's more fun project anyway and there are
+%D buglets as well as no support for tricky features.
 
 \unprotect
 
@@ -78,15 +82,6 @@
 
 \startluacode
 
-    local literal = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral))
-    literal.mode = 0
-
-    local function newliteral(result)
-        local l = nodes.copy(literal)
-        l.data = result
-        return l
-    end
-
     local p = escrito.devices.pdf
 
     function p.startpage(llx,lly,urx,ury)
@@ -98,7 +93,7 @@
     end
 
     function p.flushpage(result)
-        context.(newliteral(result))
+        context.pdfliteral(result) -- LMTX save (test suite reported issue)
     end
 
     -- todo

@@ -354,7 +354,7 @@ local pagespecs = {
     [v_doublesided] = {
         mode   = "UseNone",
         layout = "TwoColumnRight",
-        fit = true,
+        fit    = true,
     },
     [v_singlesided] = {
         mode   = "UseNone"

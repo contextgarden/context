@@ -62,11 +62,16 @@ end
 
 -- We can have a list!
 
+local findtexfile = resolvers.findtexfile
+local opentexfile = resolvers.opentexfile
+local splitlines  = string.splitlines
+
 local suffixlist = { "mpxl", "mpiv", "mp" } -- no "mf"
 
 local function findmpfile(name,ftype)
     local validtyp = validftype(ftype)
-    local fullname = findfile(name,validtyp)
+ -- local fullname = findfile(name,validtyp)
+    local fullname = findtexfile(name,validtyp)
     if fullname and fullname ~= "" then
         return fullname
     elseif suffix(name) == "" then
@@ -96,10 +101,6 @@ local function finder(name,mode,kind) -- fake message for mpost.map and metafun.
     local found = finder(specification,name,mode,validftype(ftype))
     return found
 end
-
-local findtexfile = resolvers.findtexfile
-local opentexfile = resolvers.opentexfile
-local splitlines  = string.splitlines
 
 local function writetoterminal(terminaldata,maxterm,d)
     local t = type(d)

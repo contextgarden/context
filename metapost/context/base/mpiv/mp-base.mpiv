@@ -928,14 +928,21 @@ string extra_beginfig, extra_endfig ;
 extra_beginfig := "" ;
 extra_endfig   := "" ;
 
-def beginfig(expr c) =
+boolean makingfigure ; makingfigure := false ;
+numeric stacking ; stacking := 0 ;
+
+def beginfig(expr c) = % redefined in mp-grph !
     begingroup
+    save makingfigure ; boolean makingfigure ;
+    save stacking ; numeric stacking;
     charcode := c ;
     clearxy ;
     clearit ;
     clearpen ;
     pickup defaultpen ;
     drawoptions() ;
+    stacking := 0 ;
+    makingfigure := true;
     scantokens extra_beginfig ;
 enddef ;
 

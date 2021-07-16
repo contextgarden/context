@@ -17,6 +17,7 @@ trackers.register("resolvers.virtual",  function(v) trace_virtual = v end)
 
 local resolvers = resolvers
 local savers    = resolvers.savers
+local cleaners  = resolvers.cleaners
 
 local data        = { }
 local n           = 0 -- hm, number can be query
@@ -35,6 +36,10 @@ function savers.virtual(specification,content,suffix)
     end
     data[filename] = content
     return filename
+end
+
+function cleaners.virtual(filename)
+    data[filename] = nil
 end
 
 local finders  = resolvers.finders

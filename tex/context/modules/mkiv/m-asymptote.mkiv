@@ -51,7 +51,7 @@
   {\iffirstargument
      \begingroup
      \getdummyparameters[#2]%
-     \edef\lasttypesetbuffer{\ctxlua{moduledata.asympote.process("asymptote:#1","\dummyparameter\c!type")}}%
+     \edef\lasttypesetbuffer{\ctxlua{moduledata.asymptote.process("asymptote:#1","\dummyparameter\c!type")}}%
      \externalfigure
        [\lasttypesetbuffer]%
        [\c!controls=\lasttypesetbuffer,#2]%

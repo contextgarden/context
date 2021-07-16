@@ -11,7 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Just in case someone still uses \PICTEX:
+%D Just in case someone still uses \PICTEX\ we provide a loader. However, because it
+%D expect some plain helpers to be present (like \type {\newhelp} and because it
+%D defined some already used dimensions, we'd either need to adapt or add some
+%D push|/|pop here. Because \CONTEXT\ users have \METAPOST\ support we no longer
+%D support \PICTEX\ in \LMTX.
+
+\ifcase\contextlmtxmode \else
+    \writestatus{modules}{the PicTeX graphic system is not supported in LMTX}
+    \expandafter \endinput
+\fi
 
 \ifdefined\beginpicture \else
 

@@ -1,3 +1,5 @@
+% engine=luatex
+
 %D \module
 %D   [       file=m-barcodes,
 %D        version=2010.03.14,
@@ -19,6 +21,11 @@
 
 \unexpanded\def\barcode[#1]%
   {\normalbarcode[\c!text=\dummyparameter\c!code,\c!alternative=\dummyparameter\c!type,#1]}
+
+%D We keep the following for historic reasons to show progress over years. The
+%D original idea was to use escrito fro the code below but it never happened as
+%D we went zint. I'll look into that when users really want to use pstricks but I
+%D never had requests and the chemical mpoduel also moved on.
 
 \iffalse
 

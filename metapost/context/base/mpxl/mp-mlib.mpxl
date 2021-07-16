@@ -1413,6 +1413,9 @@ def withproperties expr p =
     if length (dashpart p) > 0 :
         dashed dashpart p
     fi
+    if stackingpart p <> 0 :
+        withstacking stackingpart p
+    fi
     withprescript prescriptpart p
     withpostscript postscriptpart p
 enddef ;
