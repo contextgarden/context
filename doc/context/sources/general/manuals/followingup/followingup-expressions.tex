@@ -1,0 +1,309 @@
+% language=us
+
+\startcomponent followingup-expressions
+
+\environment followingup-style
+
+\startchapter[title={Expressions}]
+
+\startsection[title={Introduction}]
+
+Do we need bitwise expressions? Actually the answer is \quotation {no, although
+not until recently}. In \CONTEXT\ \MKII\ and \MKIV\ we just use integer addition
+because we only need to enable things but in \LMTX\ we want to control de
+detailed modes that some mechanisms in the engine provides and in order to not
+have tons of parameters these use bit sets. We manipulate these with the bitwise
+macros that actually are efficient \LUA\ function calls. But, as with some other
+extensions in \LUAMETATEX, one way to prevent tracing clutter is to have a few
+handy primitives. So let's see what we got.
+
+{\em I haven't checked all operators and combinations yet!}
+
+\stopsection
+
+\startsection[title={Exploration}]
+
+Already early in the \LUAMETATEX\ development (2019) the expression parser was
+extended with an integer division operator \type {:} that we actually use in
+\LMTX, and soon after that I added basic bitwise operators but these were never
+activated but kept as comment because I didn't want to impact the scanner (even
+if we can afford to loose some performance because the scanner has been
+optimized). But in the process of cleaning up \quote {todo} comments in the
+source code I eventually arrived at expressions again.
+
+The colon already makes the scanner incompatible because \type {\numexpr 1+2:}
+expects a number (which means that we cannot port back) and more operators only
+make that less likely. In \CONTEXT\ I nearly always use \type {\relax} as
+terminator unless we're sure that lookahead is no issue. \footnote {In the \ETEX\
+expression parser, the normal \type {/} rounds the result. Both the \type {*} and
+\type {/} operator have a dedicated code path that assures no loss of accuracy.
+The \type {:} operator just divides like \LUA's \type {//} which is an integer
+division operator. There are subtle differences between the division variants
+which can be noticeable when you go round trip. That is actually the main reason
+why this was one of the first things added to \LUAMETATEX\ as I wanted to get rid
+of some few scaled point rounding issues. The \ETEX\ expression parser is
+somewhat complicated because it can deal with a mix of integers, dimensions and
+even glue, but always brings the result back to its main operating model. Because
+we adopted some of these \ETEX\ rather early in \CONTEXT\ lookahead pitfalls are
+taken care of already.}
+
+When going over the code in 2021, mostly because I wanted to get rid of some
+commented experiments, I decided that the extension should not go into the
+normal scanner but that a dedicated, simple and integer only scanner made more
+sense, so during a rainy summer weekend I started playing with that. It eventually
+became a bit more than initially intended, although the amount of code is rather
+minimal. The performance was about twice that of the already available bitwise
+macros but operator precedence was not provided (apart from the multiplication
+and division operators). The final implementation was different, not that much
+faster on simple bitwise operations but could do more complex things in one go.
+Performance was not a real reason to provide this anyway because we're talking
+microseconds, it's more about less code and better readability.
+
+The initial primitive command was \type {\bitexpr} and it supported nesting with
+parenthesis as the other expressions do. Because there are many operators, also
+verbose ones, the non|-|optional \type {\relax} token finishes parsing. But
+soon we moved on to two dedicated primitives.
+
+\stopsection
+
+\startsection[title={Operators}]
+
+The set of operators that we have to support is the following. Most have
+alternatives so that we can get around catcode issues.
+
+\starttabulate[||cT|cT|]
+\BC add       \NC +                    \NC        \NC \NR
+\BC subtract  \NC -                    \NC        \NC \NR
+\BC multiply  \NC *                    \NC        \NC \NR
+\BC divide    \NC / :                  \NC        \NC \NR
+\BC mod       \NC \letterpercent       \NC mod    \NC \NR
+\BC band      \NC &                    \NC band   \NC \NR
+\BC bxor      \NC ^                    \NC bxor   \NC \NR
+\BC bor       \NC \letterbar \space v  \NC bor    \NC \NR
+\BC and       \NC &&                   \NC and    \NC \NR
+\BC or        \NC \letterbar\letterbar \NC or     \NC \NR
+\BC setbit    \NC <undecided>          \NC bset   \NC \NR
+\BC resetbit  \NC <undecided>          \NC breset \NC \NR
+\BC left      \NC <<                   \NC        \NC \NR
+\BC right     \NC >>                   \NC        \NC \NR
+\BC less      \NC <                    \NC        \NC \NR
+\BC lessequal \NC <=                   \NC        \NC \NR
+\BC equal     \NC = ==                 \NC        \NC \NR
+\BC moreequal \NC >=                   \NC        \NC \NR
+\BC more      \NC >                    \NC        \NC \NR
+\BC unequal   \NC <> != \lettertilde = \NC        \NC \NR
+\BC not       \NC ! \lettertilde       \NC not    \NC \NR
+\stoptabulate
+
+I considered using \type {++} and type {--} as the \type {bset} and \type
+{bunset} shortcuts but that leads to issues because in \TEX\ \type {-+-++--10} is
+a valid number and one never knows what sequence (without spaces) gets fed into
+an expression.
+
+Originally I'd added some \UNICODE\ characters but for some reason support of
+logical operators is suboptimal so I removed that feature. Because these special
+characters are multi|-|byte \UTF\ sequences they are not that much better than
+verbose words anyway.
+
+% 0x00AC  !    ¬              lua: not
+% 0x00D7  *    ×
+% 0x00F7  /    ÷
+% 0x2227  &&   ∧ c: and       lua: and
+% 0x2228  ||   ∨ c: or        lua: or
+% 0x2229  &    ∩ c: bitand    lua: band
+% 0x222A  |    ∪ c: bitor     lua: bor
+%         ^      c: bitxor    lua: bxor
+% 0x2260  !=   ≠
+% 0x2261  ==   ≡
+% 0x2264  <=   ≤
+% 0x2265  >=   ≥
+% 0x22BB  xor  ⊻
+% 0x22BC  nand ⊼
+% 0x22BD  nor  ⊽
+% 0x22C0  and  ⋀ n-arry logical and
+% 0x22C1  or   ⋁ n-arry logical or
+% 0x2AA1  <<   ⪡
+% 0x2AA2  >>   ⪢
+
+\stopsection
+
+\startsection[title={Integers and dimensions}]
+
+When I was playing a bit with this feature, I wondered if we could mix in some
+dimensions. It was actually not that hard to add this: only explicit (verbose)
+dimensions had to be intercepted because dimen registers and such are seen as
+integers by the integer scanner. Once we're able do handle that, a next step was
+to make sure that \typ {2 * 10pt} was permitted, something that the \ETEX\ \type
+{\dimexpr} primitives can't handle. So, a variant of the dimen parser has to be
+used that makes the unit optional: \type {\dimexpression} and \type
+{\numexpression} were born.
+
+The resulting parsers worked quite well but were about twice as slow as the
+normal expression scanners but that is no surprise because they do more. For
+instance we are case insensitive and need to handle letter and other (and in a
+few cases alignment and superscript) catcodes too. However, with a slightly tuned
+integer parser, also possible because the sentinel \type {\relax} makes parsing
+more predictable, and a dedicated unit scanner, in the end both the integer and
+dimension parser were performing well. It's not like we run them millions of
+times in a document.
+
+\startbuffer
+\scratchcounter = \numexpression
+    "00000 bor "00001 bor "00020 bor "00400 bor "08000 bor "F0000
+\relax
+\stopbuffer
+
+Here is an example that results in {0x\inlinebuffer\uchexnumber\scratchcounter}:
+
+\typebuffer
+
+\startbuffer
+\scratchcounter = \numexpression
+    "FFFFF bxor "10101
+\relax
+\stopbuffer
+
+And this gives {0x\inlinebuffer\uchexnumber\scratchcounter}:
+
+\typebuffer
+
+We can give numerous example but you get the picture. In the above table you can
+see that some operators have equivalents. The reason for this is that a macro
+package can change catcodes and some characters have special meanings. So, the
+scanner is rather tolerant.
+
+\startbuffer
+\scratchcounterone = 10
+\scratchcountertwo = 20
+\ifcase \numexpression
+    (\scratchcounterone > 5) && (\scratchcountertwo > 5)
+\relax yes\else nop\fi
+%
+\space
+%
+\scratchcounterone = 2
+\scratchcountertwo = 4
+\ifcase \numexpression
+    (\scratchcounterone > 5) and (\scratchcountertwo > 5)
+\relax nop\else yes\fi
+\stopbuffer
+
+And this gives \quote {\tttf \inlinebuffer}:
+
+\typebuffer
+
+The normal expansion rules apply, so one can use macros and other symbolic
+numbers. The only difference in handling dimensions is that we don't support
+\type {true} units but these are obsolete in \LUAMETATEX\ anyway.
+
+\stopsection
+
+\startsection[title={Tracing}]
+
+When \type {\tracingexpressions} is set to one or higher the intermediate \quote
+{reverse polish notation} stack that is used for the calculation is shown, for
+instance:
+
+\starttyping
+4:8: {numexpression rpn: 2 5 > 4 5 > and}
+\stoptyping
+
+When you want the output on your console, you need to say:
+
+\starttyping
+\tracingexpressions 1
+\tracingonline      1
+\stoptyping
+
+The fact that we process the expression in two phases makes it possible to provide this
+kind of tracing.
+
+\stopsection
+
+\startsection[title={Performance}]
+
+The following table shows the results of 100.000 evaluations (per line) so you'll
+notice that there is a difference. But keep in mind that the new variant can so
+more, so it might pay off when we have cases that otherwise demand multiple
+traditional expressions.
+
+\starttabulate[|l|c|]
+\NC \type {\dimexpr       4pt*2 + 6pt\relax}        \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchdimen  \dimexpr       4pt*2 + 6pt\relax} \elapsedtime\fi \NC \NR
+\NC \type {\dimexpression 4pt*2 + 6pt\relax}        \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchdimen  \dimexpression 4pt*2 + 6pt\relax} \elapsedtime\fi \NC \NR
+\NC \type {\dimexpression 2*4pt + 6pt\relax}        \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchdimen  \dimexpression 4pt*2 + 6pt\relax} \elapsedtime\fi \NC \NR
+\TB
+\NC \type {\numexpr       4 * 2 + 6\relax}          \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpr       4 * 2 + 6\relax}   \elapsedtime\fi \NC \NR
+\NC \type {\numexpression 2 * 4 + 6\relax}          \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpression 2 * 4 + 6\relax}   \elapsedtime\fi \NC \NR
+\TB
+\NC \type {\numexpr       4*2+6\relax}              \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpr       4*2+6\relax}       \elapsedtime\fi \NC \NR
+\NC \type {\numexpression 2*4+6\relax}              \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpression 2*4+6\relax}       \elapsedtime\fi \NC \NR
+\TB
+\NC \type {\numexpr       (1+2)*(3+4)\relax}        \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpr       (1+2)*(3+4)\relax} \elapsedtime\fi \NC \NR
+\NC \type {\numexpression (1+2)*(3+4)\relax}        \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpression (1+2)*(3+4)\relax} \elapsedtime\fi \NC \NR
+\TB
+\NC \type {\numexpr       (1 + 2) * (3 + 4) \relax} \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpr       (1 + 2) * (3 + 4) \relax} \elapsedtime\fi \NC \NR
+\NC \type {\numexpression (1 + 2) * (3 + 4) \relax} \EQ \iftrialtypesetting\else\testfeatureonce{100000}{\scratchcounter\numexpression (1 + 2) * (3 + 4) \relax} \elapsedtime\fi \NC \NR
+\stoptabulate
+
+As usual I'll probably find some way to improve performance a bit but that might
+than also concern the traditional one. When we compare them, the new numeric
+scanner suffers from more options while the new dimension parser gain on the
+units. Also, keep in mind than the \LUAMETATEX\ normal parsers are already
+somewhat faster than the ones in \LUATEX. The numbers above are calculated when
+this document is rendered, so they may change over time and per run. The two
+engines compare as follows (mid 2021):
+
+\starttabulate[|l|c|c|]
+\NC                                           \BC \LUATEX \BC \LUAMETATEX \NC \NR
+\NC \type {\dimexpr 4pt*2 + 6pt\relax}        \NC 0.073   \NC 0.045 \NC \NR
+\NC \type {\numexpr 4 * 2 + 6\relax}          \NC 0.034   \NC 0.028 \NC \NR
+\NC \type {\numexpr 4*2+6\relax}              \NC 0.035   \NC 0.032 \NC \NR
+\NC \type {\numexpr (1+2)*(3+4)\relax}        \NC 0.050   \NC 0.047 \NC \NR
+\NC \type {\numexpr (1 + 2) * (3 + 4) \relax} \NC 0.052   \NC 0.048 \NC \NR
+\stoptabulate
+
+Of course tests like these are dubious because often \CPU\ cache will keep the
+current code accessible, but who knows.
+
+It will probably take a while before I will use this in the source code because
+first I need to make sure that all works as expected and while doing that I might
+adapt some of this. But the basic framework is there.
+
+\stopsection
+
+% \start
+% \nologbuffering
+% \scratchdimen    100pt
+% \scratchdimenone 65.536pt
+% \scratchdimentwo 65.536bp
+
+% \tracingonline1
+% \tracingexpressions1
+% \scratchcounter\bitexpr \scratchdimen / 2   \relax\the\scratchcounter\par
+
+% \scratchcounter\numexpression \scratchdimen / 2sp \relax \the\scratchcounter\par
+% \scratchcounter\numexpression \scratchdimen / 1pt \relax \the\scratchcounter\par
+% \scratchcounter\numexpression \scratchdimenone / 65.536pt \relax \the\scratchcounter\par
+% \scratchcounter\numexpression \scratchdimentwo / 2 \relax \the\scratchcounter\par
+
+% \scratchcounter\numexpression \scratchcounterone / 4 \relax \the\scratchcounter\par
+% \scratchdimen  \dimexpression \scratchcounterone / 4 \relax \the\scratchdimen\par
+
+% \scratchdimen  \dimexpression 2 * 4pt \relax \the\scratchdimen\par
+
+% \tracingexpressions0
+% \tracingonline0
+
+% \startTEXpage
+% \tracingonline1
+% \tracingexpressions1
+% \the\dimexpr -10pt\relax\quad
+% \the\dimexpr  10pt\relax\quad
+% \the\dimexpr  10.12 pt\relax\quad
+% \the\dimexpression -10pt\relax\quad
+% \the\dimexpression  10pt\relax\quad
+% \stopTEXpage
+
+\stopchapter
+
+\stopcomponent

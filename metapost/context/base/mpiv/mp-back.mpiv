@@ -33,6 +33,23 @@ def some_hash ( expr hash_width     ,
     endgroup ;
 enddef ;
 
+% \starttext
+%
+% \startMPpage
+%     input "mp-back"
+%
+%     some_double_back (1, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white, .6white, .7white, .6white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (2, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white, .6white,   white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (3, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (4, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (5, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (6, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (7, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white) currentpicture := currentpicture shifted (0,-3cm) ;
+%     some_double_back (8, 4.5cm, 1.5cm, .25cm, 1mm, .5white, .8white, .7white,  white,    white,   white)
+% \stopMPpage
+
+% \stoptext
+
 def some_double_back (expr back_type        ,
                            back_width       ,
                            back_height      ,
@@ -163,49 +180,3 @@ def some_double_back (expr back_type        ,
 
     endgroup;
 enddef ;
-
-% endinput ;
-%
-% beginfig (1) ;
-%
-% some_double_back (1, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, .6white, .7white, .6white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (2, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, .6white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (3, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (4, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (5, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (6, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (7, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% currentpicture := currentpicture shifted (0,-3cm) ;
-%
-% some_double_back (8, 4.5cm, 1.5cm, .25cm, 1mm,
-%            .5white, .8white, .7white, white, white, white)
-%
-% endfig ;
-%
-% end .

@@ -352,7 +352,9 @@
 
 \def\page_lines_add_numbers_to_box#box#column#max#nesting%
   {\bgroup
-   \strc_tags_enable_indeed
+   \ifconditional\c_strc_tags_enabled
+     \strc_tags_enable_indeed
+   \fi
    \b_page_lines_number     #box\relax
    \c_page_lines_column     #column\relax
    \c_page_lines_last_column#max\relax

@@ -81,6 +81,8 @@ local parent_ref       -- delayed
 local root             -- delayed
 local names               = { }
 local tree                = { }
+local firstintree         = false
+local lastintree          = false
 local elements            = { }
 
 local structurestags      = structures.tags
@@ -137,9 +139,14 @@ local function finishstructure()
     if root and #structure_kids > 0 then
         local nums   = pdfarray()
         local n      = 0
-        for i=1,#tree do
-            n = n + 1 ; nums[n] = i - 1
-            n = n + 1 ; nums[n] = pdfreference(pdfflushobject(tree[i]))
+        for i=firstintree,lastintree do
+            local ti = tree[i]
+            if ti then
+                n = n + 1 ; nums[n] = i - 1
+                n = n + 1 ; nums[n] = pdfreference(pdfflushobject(ti))
+            else
+                report_tags("beware: missing page %i in tree", i)
+            end
         end
         local parenttree = pdfdictionary {
             Nums = nums
@@ -191,6 +198,19 @@ local function initializepage()
     pagenum = texgetcount("realpageno")
     pageref = pdfreference(pdfpagereference(pagenum))
     list    = pdfarray()
+    -- hm, can be later than 1
+    if not firstintree then
+        if pagenum > 1 then
+            report_tags("beware: first page in tree is %i", pagenum)
+        end
+        firstintree = pagenum
+        lastintree  = pagenum
+    end
+    if pagenum > lastintree then
+        lastintree = pagenum
+    else
+        report_tags("beware: page order problem in tree at page %i", pagenum)
+    end
     tree[pagenum] = list -- we can flush after done, todo
 end
 
@@ -382,19 +402,19 @@ function nodeinjections.addtags(head)
         for n, id in nextnode, head do
             if id == glyph_code then
                 -- maybe also disc
-if getchar(n) ~= 0 then
-                local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-             -- if not at then
-             --     range = nil
-             -- elseif ...
-                if last ~= at then
-                    range = { at, "glyph", n, n, list } -- attr id start stop list
-                    ranges[#ranges+1] = range
-                    last = at
-                elseif range then
-                    range[4] = n -- stop
+                if getchar(n) ~= 0 then
+                    local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                 -- if not at then
+                 --     range = nil
+                 -- elseif ...
+                    if last ~= at then
+                        range = { at, "glyph", n, n, list } -- attr id start stop list
+                        ranges[#ranges+1] = range
+                        last = at
+                    elseif range then
+                        range[4] = n -- stop
+                    end
                 end
-end
             elseif id == hlist_code or id == vlist_code then
                 local at = getattr(n,a_image)
                 if at then

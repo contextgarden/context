@@ -283,6 +283,11 @@ def boxes_init_all =
     def boxes_clear_all = enddef;
 enddef ;
 
+def boxjoin(text t) =
+    def boxes_prevbox = _ enddef;
+    def boxes_dojoin(suffix a,b) = t enddef;
+enddef;
+
 extra_beginfig := extra_beginfig & "boxes_init_all;";
 extra_endfig   := "boxes_clear_all;" & extra_endfig;
 

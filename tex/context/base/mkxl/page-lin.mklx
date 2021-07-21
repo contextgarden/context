@@ -344,7 +344,9 @@
 
 \def\page_lines_add_numbers_to_box#box#column#max#nesting%
   {\bgroup
-   \strc_tags_enable_indeed
+   \ifconditional\c_strc_tags_enabled
+     \strc_tags_enable_indeed
+   \fi
    \b_page_lines_number     #box\relax
    \c_page_lines_column     #column\relax
    \c_page_lines_last_column#max\relax
@@ -466,13 +468,13 @@
       \dostoptagged}%
    \dostoptagged}
 
-\setuvalue{\??linenumberinghandler\v!left}%
+\protected\defcsname\??linenumberinghandler\v!left\endcsname
   {\page_line_handle_left\p_align\leftmarginwidth\leftmargindistance}
 
-\setuvalue{\??linenumberinghandler\v!right}%
+\protected\defcsname\??linenumberinghandler\v!right\endcsname
   {\page_line_handle_right\p_align\rightmarginwidth\rightmargindistance}
 
-\setuvalue{\??linenumberinghandler\v!inner}%
+\protected\defcsname\??linenumberinghandler\v!inner\endcsname
   {\ifodd\realpageno
      \ifx\p_align\v!inner
        \page_line_handle_left\v!flushleft\leftmarginwidth\leftmargindistance
@@ -491,7 +493,7 @@
      \fi
    \fi}
 
-\setuvalue{\??linenumberinghandler\v!outer}%
+\protected\defcsname\??linenumberinghandler\v!outer\endcsname
   {\ifodd\realpageno
      \ifx\p_align\v!inner
        \page_line_handle_right\v!flushleft\leftmarginwidth\leftmargindistance

@@ -32,7 +32,7 @@ if not known mpversion : string mpversion ; mpversion := "0.641" ; fi ;
 
 % newinternal metapostversion ; metapostversion := scantokens(mpversion) ;
 
-newinternal metapostversion ; metapostversion := 2.0 ; permanent metapostversion ;
+newinternal metapostversion ; metapostversion := 3.0 ; permanent metapostversion ;
 
 %D We always want \EPS\ conforming output, so we say:
 

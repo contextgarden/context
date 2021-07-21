@@ -635,7 +635,9 @@ local builtin = {
     match        = "(ll.mi or 1)",
     namespace    = "ll.ns",
     ns           = "ll.ns",
-
+    -- new
+ -- attribute    = "ll.at",
+ -- at           = "ll.at",
 }
 
 local lp_builtin   = lpeg.utfchartabletopattern(builtin)/builtin * ((spaces * P("(") * spaces * P(")"))/"")

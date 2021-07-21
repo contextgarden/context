@@ -335,6 +335,8 @@
   {\enforced\let\getelementtag             \donothing
    \enforced\let\setupelementuserproperties\gobbletwooptionals}
 
+\strc_tags_disable
+
 %D The triggers:
 
 \newtoks\everyenableelements

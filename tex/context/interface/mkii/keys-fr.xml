@@ -1242,6 +1242,7 @@
 		<cd:constant name='splitoffset' value='decalagepartage'/>
 		<cd:constant name='spot' value='tondirect'/>
 		<cd:constant name='stack' value='pile'/>
+		<cd:constant name='stacking' value='stacking'/>
 		<cd:constant name='stackname' value='nompile'/>
 		<cd:constant name='start' value='début'/>
 		<cd:constant name='starter' value='demarreur'/>

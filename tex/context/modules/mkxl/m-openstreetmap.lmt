@@ -1,0 +1,906 @@
+if not modules then modules = { } end modules ['m-openstreetmap'] = {
+    version   = 1.001,
+    comment   = "companion to m-openstreetmap.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local sin, cos, floor, ceil = math.sin, math.cos, math.floor, math.ceil
+local formatters = string.formatters
+local concat, tohash, sortedhash, setmetatableindex, insert = table.concat, table.tohash, table.sortedhash, table.setmetatableindex, table.insert
+local xmlcollected, xmlparent, xmlfirst, xmlfilter = xml.collected, xml.parent, xml.first, xml.filter
+local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg, lpeg.match
+
+local openstreetmap      = { }
+moduledata.openstreetmap = openstreetmap
+
+local report = logs.reporter("openstreetmap")
+
+-- At one of the bachotex meetings Mojca and I sat down to render the bachotek camp site
+-- as available in openstreetmap. Of course that was a limited setup and after figuring
+-- out some details it went well. Of course we used metapost.
+--
+-- Years later in 2021 on the mailing list there was some discussion on country outlines
+-- and disappointed by the quality of what was referred to I remembered the openstreetmap
+-- adventure. I found that I could export my hometown from the web page so I started from
+-- that: just stepwise seeing what 'ways' passed and assigning them colors. Just as with
+-- the bachotex drawing.
+--
+-- Then I went searching for what tags actually were available and ran into:
+--
+-- https://github.com/openstreetmap/osm2pgsql/blob/master/docs/lua.md
+--
+-- I'm not sure where the script is used, and there are dead linsk on these pages but some
+-- information can be found in that file so I could combine our findings with these. There
+-- is a whole infrastructure out there with impressive machinery, style sheet generation
+-- etc. but we don't need that here. Also, we don't need to play routes.
+--
+-- Colors are one thing (not too hard with a k/v mapping), but a nest hurdle is to decide
+-- what is a polygon. Actually I found that just checking on something being closed is
+-- rather ok. There are a few extra ones. But we can also use the list in the file mentioned.
+-- We probably need to check it occasionally with the original, although it looks quite
+-- stable.
+
+local polygons = tohash {
+    "abandoned:aeroway", "abandoned:amenity", "abandoned:building",
+    "abandoned:landuse", "abandoned:power", "aeroway", "allotments",
+    "amenity", "area:highway", "craft", "building", "building:part", "club",
+    "golf", "emergency", "harbour", "healthcare", "historic", "landuse",
+    "leisure", "man_made", "military", "natural", "office", "place", "power",
+    "public_transport", "shop", "tourism", "water", "waterway", "wetland",
+
+ -- "bridge",
+}
+
+-- The amenity tag is sort of overloading the main tag so we put it in the main
+-- hash. This might change.
+--
+-- The stacking order is important and we just started with processing the tags
+-- in a certain order. However, in \LUAMETATEX\ we can now use stacking so that
+-- makes for a nice test. At the cost of a bit more metapost code and conversion
+-- time we can use that. Anyway, this is the list we use and it's an adaption
+-- from the bachitex one.
+
+local order = {
+    "landuse",
+    "leisure",
+    "natural",
+ -- "geological",
+
+    "water",
+    "amenity",
+    "building",
+    "barrier",
+    "man_made",
+    "bridge",
+
+    "historic",
+    "military",
+
+ -- "office",
+ -- "craft",
+
+ -- "emergency",
+ -- "healthcare",
+ -- "place",
+ -- "power",
+ -- "shop",
+ -- "sport",
+ -- "telecom",
+
+ -- "publictransport",
+
+    "waterway",
+    "highway",
+    "railway",
+    "aeroway",
+    "aerialway",
+
+ -- "tourism",
+    "boundary", -- overlaps ! not okay for hasselt.osm
+ -- "route",
+}
+
+-- From the mentioned lua file we get the stacking (funny numbers are used):
+
+-- In Hasselt we have a combination, highway should win :
+--
+--  <tag k="bridge" v="yes"/>
+--  <tag k="highway" v="footway"/>
+
+local stacking = {
+    highway = {
+        motorway       = 180,
+        trunk          = 170,
+        primary        = 160,
+        secondary      = 150,
+        tertiary       = 140,
+        residential    = 130,
+        unclassified   = 130,
+        road           = 130,
+        living_street  = 120,
+        pedestrian     = 110,
+        raceway        = 100,
+        motorway_link  = 140,
+        trunk_link     = 130,
+        primary_link   = 120,
+        secondary_link = 110,
+        tertiary_link  = 100,
+        service        = 150,
+        track          = 110,
+        path           = 100,
+        footway        = 100,
+        bridleway      = 100,
+        cycleway       = 100,
+        steps          = 190,
+        platform       = 190,
+    },
+    railway = {
+        rail           = 140,
+        subway         = 120,
+        narrow_gauge   = 120,
+        light_rail     = 120,
+        funicular      = 120,
+        preserved      = 120,
+        monorail       = 120,
+        miniature      = 120,
+        turntable      = 120,
+        tram           = 110,
+        disused        = 100,
+        construction   = 100,
+        platform       = 190,
+    },
+    aeroway = {
+        runway         = 160,
+        taxiway        = 150,
+    },
+    boundary = {
+        administrative =  0,
+    },
+
+ -- bridge = {
+ --     yes            = 103,
+ --     movable        = 102,
+ --     viaduct        = 103,
+ -- },
+}
+
+setmetatableindex(stacking,function(t,k)
+    local v = setmetatableindex(function(t,k)
+        t[k] = false return false
+    end)
+    t[k] = v
+    return v
+end)
+
+-- reservoir_covered: @ bachotex
+
+local colors = {
+
+    -- these concern details:
+
+    amenity = {
+        arts_centre      = true,
+        bar              = true,
+        bicycle_parking  = true,
+        college          = true,
+        courthouse       = true,
+        fountain         = true,
+        hospital         = true,
+        kindergarten     = true,
+        marketplace      = true,
+        parking          = true,
+        parking_space    = true,
+        pharmacy         = true,
+        place_of_worship = true,
+        police           = true,
+        restaurant       = true,
+        school           = true,
+        shower           = true,
+        social_facility  = true,
+        toilets          = true,
+        townhall         = true,
+        university       = true,
+    },
+
+    -- these are basic:
+
+    boundary = {
+        aboriginal_lands = true,
+        national_park    = true,
+        protected_area   = true,
+        administrative   = true,
+    },
+    building = {
+        apartments       = true,
+        bandstand        = true,
+        cathedral        = true,
+        civic            = true,
+        commercial       = true,
+        construction     = true, -- no roadtrip
+        garage           = true,
+        government       = true,
+        hospital         = true,
+        house            = true,
+        houseboat        = true,
+        hut              = true,
+        industrial       = true,
+        kiosk            = true,
+        public           = true,
+        residential      = true,
+        retail           = true,
+        roof             = true,
+        school           = true,
+        shed             = true,
+        townhall         = true,
+        yes              = true,
+    },
+    emergency = {
+        designated       = true,
+        destination      = true,
+        no               = true,
+        official         = true,
+        yes              = true,
+    },
+    man_made = {
+        breakwater       = true,
+        bridge           = true,
+        instrument       = true,
+        pier             = true,
+        quay             = true,
+        tower            = true,
+        windmill         = true,
+        cutline          = true,
+        embankment       = true,
+        groyne           = true,
+        pipeline         = true,
+    },
+    natural = {
+        arete            = true,
+        cliff            = true,
+        earth_bank       = true,
+        ridge            = true,
+        sand             = true,
+        scrub            = true,
+        tree_row         = true,
+        water            = true,
+        wetland          = true,
+        wood             = true,
+    },
+    barrier = {
+        chain            = true,
+        city_wall        = true,
+        fence            = true,
+        gate             = true,
+        guard_rail       = true,
+        hedge            = true,
+        retaining_wall   = true,
+        wall             = true,
+        yes              = true,
+    },
+    leisure = {
+        garden           = true,
+        ice_rink         = true,
+        marina           = true,
+        park             = true,
+        pitch            = true,
+        playground       = true,
+        slipway          = true,
+        sports_centre    = true,
+        track            = true,
+        beach            = true,
+    },
+    boat = {
+        yes              = true,
+    },
+    landuse = {
+        allotments       = true,
+        cemetery         = true,
+        commercial       = true,
+        construction     = true,
+        forest           = true,
+        grass            = true,
+        industrial       = true,
+        meadow           = true,
+        residential      = true,
+        static_building  = true,
+        village_green    = true,
+    },
+    ["bridge:support"] = {
+        pier             = true,
+    },
+    golf = { -- funny, this category
+        cartpath         = true,
+        hole             = true,
+        path             = true,
+    },
+    area = {
+        yes              = true,
+    },
+    bridge = {
+        yes              = true,
+        movable          = true,
+        viaduct          = true,
+    },
+    agricultural = {
+        yes              = true,
+        no               = true,
+    },
+    historic = {
+        citywalls        = true,
+    },
+    tourism = {
+        yes              = true,
+    },
+    power = {
+        cable            = true,
+        line             = true,
+        minor_line       = true,
+    },
+    junction = {
+        yes              = true,
+    },
+    water = {
+        river            = true,
+        basin            = true,
+    },
+
+    -- these indicate routes:
+
+    highway = {
+        corridor         = true,
+        bridleway        = true,
+        cycleway         = true,
+        footway          = true,
+        living_street    = true,
+        motorway         = true,
+        motorway_link    = true,
+        path             = true,
+        pedestrian       = true,
+        platform         = true,
+        primary          = true,
+        primary_link     = true,
+        raceway          = true,
+        residential      = true,
+        rest_area        = true,
+        road             = true,
+     -- secondary        = true,
+        secondary_link   = true,
+        service          = true,
+        services         = true,
+        steps            = true,
+        tertiary         = true,
+        tertiary_link    = true,
+        track            = true,
+        trunk            = true,
+        trunk_link       = true,
+        unclassified     = true,
+    },
+    waterway = {
+        canal            = true,
+        derelict_canal   = true,
+        ditch            = true,
+        drain            = true,
+        river            = true,
+        stream           = true,
+        tidal_channel    = true,
+        wadi             = true,
+        weir             = true,
+    },
+    railway = {
+        construction     = true,
+        disused          = true,
+        funicular        = true,
+        light_rail       = true,
+        miniature        = true,
+        monorail         = true,
+        narrow_gauge     = true,
+        platform         = true,
+        preserved        = true,
+        rail             = true,
+        station          = true,
+        subway           = true,
+        tram             = true,
+        turntable        = true,
+    },
+
+    aeroway = {
+        runway           = true,
+        taxiway          = true,
+    },
+    aerialway = {
+        station          = true,
+    },
+}
+
+-- We use this 'inside' knowledge encoded in the mentioned script to avoid bad fills
+-- (for instance polygons can be unconnected and unordered). We define the table a bit
+-- different.
+
+local forcedlines = {
+    golf      = { "cartpath", "hole", "path" },
+    emergency = { "designated", "destination", "no", "official", "yes" },
+    historic  = { "citywalls" },
+    leisure   = { "track", "slipway" },
+    man_made  = { "breakwater", "cutline", "embankment", "groyne", "pipeline" },
+    natural   = { "cliff", "earth_bank", "tree_row", "ridge", "arete" },
+    power     = { "cable", "line", "minor_line" },
+    tourism   = { "yes"},
+    waterway  = { "canal", "derelict_canal", "ditch", "drain", "river", "stream", "tidal_channel", "wadi", "weir" },
+}
+
+do
+
+    local function never(t,k) t[k] = false return false end
+
+    for k, v in next, forcedlines do
+        forcedlines[k] = setmetatableindex(tohash(v),never)
+    end
+
+    setmetatableindex(forcedlines,function(t,k)
+        local v = setmetatableindex(never)
+        t[k] = v
+        return v
+    end)
+
+end
+
+-- For fast checking we apply the usual context tricks:
+
+
+for k, v in next, colors do
+    for kk, vv in next, v do
+        v[kk] = "osm:" .. k .. ":" .. kk
+    end
+end
+
+-- We draw and fill but sometimes we do both:
+
+local lines = {
+    amenity  = true,
+    building = true,
+    man_made = true,
+    boat     = true,
+}
+
+-- When checking labels for a while I had a blacklist of tags (keys) but
+-- dropped that when most was done. So, we're now ready for the real deal:
+
+-- this only works for positive numbers
+
+local f_f_degree_to_str = formatters["%d°%d’%.0f”"]
+
+local function f_degree_to_str(num)
+    local deg = floor(num)
+    num = (num - deg) * 60
+    local min = floor(num)
+    num = (num - min) * 60
+    local sec = num
+    return f_f_degree_to_str(deg,min,sec)
+end
+
+-- local f_pattern     = formatters["/osm/(way|relation)[@visible='true']/tag[@k='%s']"]
+local f_pattern     = formatters["/osm/(way|relation)[@visible!='false']/tag[@k='%s']"]
+local f_way         = formatters["/osm/way[@id='%s']"]
+local f_relation    = formatters["/osm/relation[@id='%s']"]
+
+-- We could reuse paths and concat 0,n in the call but when testing it the gain was
+-- not much so I went for readability.
+
+local f_draw        = formatters['D %--t W "%s";']
+local f_fill        = formatters['F %--t--C W "%s";']
+local f_both        = formatters['P := %--t--C; F P W "%s"; D P W "white" L 2;']
+local f_draw_s      = formatters['D %--t W "%s" L %s;']
+local f_fill_s      = formatters['F %--t--C W "%s" L %s;']
+local f_both_s      = formatters['P := %--t--C; F P W "%s"; D P W "white" L %s;']
+
+local f_nodraw      = formatters['ND %--t;']
+local f_nofill      = formatters['NF %--t--C;']
+local f_nodraw_s    = formatters['ND %--t;']
+local f_nofill_s    = formatters['NF %--t--C;']
+
+local f_background  = formatters['F %--t -- C W "osm:background";']
+local f_bounds      = formatters['setbounds currentpicture to %--t--C ;']
+
+-- For now no labels are printed, also because that's now what we use this for. At
+-- some point I will provide some hooks to put text at coordinates.
+
+-- local f_draw_p      = formatters["path p ; p := %--t ; D p W %s;"]
+-- local f_fill_p      = formatters["path p ; p := %--t -- C ; F p W %s;"]
+-- local f_textext     = formatters['draw (textext("\\bf %s") scaled 0.35) shifted center p withcolor white;']
+
+-- Grids were also part of the original code, so I kept that. It's done a bit more
+-- efficient by using a single path.
+
+local f_draw_grid_b = formatters['nodraw %--t L 100;']
+local f_draw_grid_e = formatters['dodraw origin dashed %s withcolor "osm:grid" withpen pencircle scaled %N  L 100;']
+local f_label_lat   = formatters['label.urt((textext("\\infofont\\strut %s")), %s shifted (3,0)) withcolor white L 100;']
+local f_label_lon   = formatters['label.top((textext("\\infofont\\strut %s")), %s shifted (0,3)) withcolor white L 100;']
+
+local beginmp = [[
+    begingroup ;
+    pickup pencircle scaled 1 ;
+    save P ; path P ;
+    save D ; let D = draw ;
+    save F ; let F = fill ;
+    save C ; let C = cycle ;
+    save W ; let W = withcolor ;
+    save L ; let L = withstacking ;
+    save ND ; let ND = nodraw ;
+    save DD ; let DD = dodraw ;
+    save NF ; let NF = nofill ;
+    save DF ; let DF = dofill ;
+]]
+
+local endmp = [[
+    endgroup;
+]]
+
+local p_strip = lpeg.Cs( (
+    (
+          ( P("version") + P("changeset") + P("timestamp") + P("user") + P("uid") )
+          * P('="') * (1-P('"'))^0 * P('"')
+    ) / ""
+  + P(">") * (S("\n\r\t\f ")^1 / "") * P("<")
+  + P('visible="true"') / ""
+  + P(1)
+)^1 )
+
+function openstreetmap.convert(specification)
+
+    local starttime = os.clock()
+    local filename  = specification.filename
+
+    if not io.exists(filename) then
+        return
+    end
+
+    report("processing file %a",filename)
+
+    -- we can consider stripping crap first
+
+ -- local root   = xml.load(filename)
+
+    local root = io.loaddata(filename)
+    local olds = #root
+          root = lpegmatch(p_strip,root)
+    local news = #root
+
+    report("original size %i bytes, stripped down to %i bytes",olds,news)
+
+    root = xml.convert(root)
+
+    if root.error then
+        report("error in xml",olds,news)
+        return
+    else
+        report("xml data loaded")
+    end
+
+    local bounds = xmlfirst(root,"/osm/bounds")
+    if not bounds then
+        return
+    end
+
+    local usercolors = specification.used
+    local usedcolors = table.copy(colors)
+
+    if usercolors then
+        for k, v in next, usercolors do
+            local u = usedcolors[k]
+            if not u then
+                -- error
+            elseif v == false then
+                usedcolors[k] = false
+             -- for k in next, u do
+             --     u[k] = false
+             -- end
+            elseif type(v) == "string" then
+                for k in next, u do
+                    u[k] = v
+                end
+            elseif type(v) == "table" then
+                for kk, vv in next, v do
+                    if vv == false then
+                        u[kk] = false
+                    elseif type(vv) == "string" then
+                        u[kk] = vv
+                    end
+                end
+            end
+        end
+    end
+
+ -- inspect(usedcolors)
+
+    local minlat     = bounds.at.minlat
+    local minlon     = bounds.at.minlon
+    local maxlat     = bounds.at.maxlat
+    local maxlon     = bounds.at.maxlon
+    local midlat     = 0.5 * (minlat + maxlat)
+    local deg_to_rad = math.pi / 180.0
+    local scale      = 3600 -- vertical scale: 1" = 1cm
+
+    local function f_pair(lon, lat)
+        return formatters("(%.3Ncm,%.3Ncm)", (lon - minlon) * scale * cos(midlat * deg_to_rad), (lat-minlat) * scale)
+    end
+
+    local rendering   = table.tohash(order)
+    local coordinates = { }
+    local ways        = { }
+    local result      = { }
+    local r           = 0
+    local done        = { }
+    local missing     = false -- setmetatableindex("table")
+    local layers      = { }
+    local areas       = { }
+
+    for c in xmlcollected(root,"/osm/node") do
+        local a = c.at
+        coordinates[a.id] = a
+    end
+
+    for c in xmlcollected(root,"/osm/way") do
+        ways[c.at.id] = c
+    end
+
+    for c in xml.collected(root,"tag[@k='area']") do
+        areas[c] = c.at.v
+    end
+
+    for c in xml.collected(root,"tag[@k='layer']") do
+        layers[c] = c.at.v
+    end
+
+    -- Collecting is more a private option. It doesn't save much on the output
+    -- but looks better with transparency, which makes no sense using anyway.
+
+    local collected = specification.collect and setmetatableindex(function(t,k)
+        local v = setmetatableindex(function(t,k)
+            local v = {
+                draw = setmetatableindex("table"),
+                fill = setmetatableindex("table"),
+            }
+            t[k] = v
+            return v
+        end)
+        t[k] = v
+        return v
+    end) or false
+
+    local function drawshapes(what,order)
+
+        -- see bachotex rendering for an example
+        -- also layer and polygon
+
+        function xml.expressions.osm(k)
+            return usedcolors[k]
+        end
+
+        local function getcolor(r)
+            local t = xmlfirst(r,"/tag[osm(@k)]")
+            if t then
+                local at  = t.at
+                local v   = at.v
+                if v ~= "no" then
+                    local k   = at.k
+                    local col = usedcolors[k][v]
+                    -- we need an example: if layers[r] then print(layers[r]) end
+                    if col then
+                        -- todo : trace colors and stacking
+                        return k, col, lines[k], stacking[k][v], forcedlines[k][v]
+                    elseif missing then
+                        missing[k][v] = (missing[k][v] or 0) + 1
+                    end
+                end
+            end
+        end
+
+        local function addpath(r, p, n)
+         -- if done[r] then
+         --     print("AGAIN")
+         -- else
+                for c in xmlcollected(r,"/nd") do
+                    local coordinate = coordinates[c.at.ref]
+                    if coordinate then
+                        n = n + 1  p[n] = f_pair(coordinate.lon, coordinate.lat)
+                    end
+                end
+         --     done[r] = true
+         -- end
+            return p, n
+        end
+
+        local checkpath = collected and
+
+            function(parent,p,n)
+                local what, color, both, stacking, forced = getcolor(parent)
+                if what and rendering[what] then
+                    local where = collected[stacking or order]
+                    if not polygons[what] or forced or areas[parent] == "no" then
+                        insert(where[color]  .draw, f_nodraw(p))
+                    elseif both then
+                        insert(where[color]  .fill, f_nofill(p))
+                        insert(where["white"].draw, f_nodraw(p))
+                    else
+                        insert(where[color]  .fill, f_nofill(p))
+                    end
+                end
+            end
+
+        or
+
+            function(parent,p,n)
+                local what, color, both, stacking, forced = getcolor(parent)
+                if what and rendering[what] then
+                    r = r + 1
+                 -- if not stacking then
+                 --     stacking = order
+                 -- end
+                    if not polygons[what] or forced or areas[parent] == "no" then
+                        result[r] = stacking and f_draw_s(p,color,stacking) or f_draw(p,color)
+                    elseif both then
+                        result[r] = stacking and f_both_s(p,color,stacking) or f_both(p,color)
+                    else
+                        result[r] = stacking and f_fill_s(p,color,stacking) or f_fill(p,color)
+                    end
+                end
+            end
+
+        -- There are ways and relations. Relations can have members that poitn to
+        -- ways but also relations. My impression is that we can stick to way members
+        -- but I'll deal with that when needed.
+
+        for c in xmlcollected(root,f_pattern(what)) do
+            local parent = xmlparent(c)
+            local tag    = parent.tg
+            if tag == "way" then
+                local p, n = addpath(parent, { }, 0)
+                if n > 1 then
+                    checkpath(parent,p,n)
+                end
+            elseif tag == "relation" then
+                if xmlfilter(parent,"xml://tag[@k='type' and (@v='multipolygon' or @v='boundary' or @v='route')]") then
+                    local what, color, both, stacking, forced = getcolor(parent)
+                    if rendering[what] then
+                        local p, n = { }, 0
+                        for m in xmlcollected(parent,"/member[(@type='way') and (@role='outer')]") do
+                         -- local f = xmlfirst(root,f_way(m.at.ref))
+                            local f = ways[m.at.ref]
+                            if f then
+                                p, n = addpath(f,p,n)
+                            end
+                        end
+                        if n > 1 then
+                            checkpath(parent,p,n)
+                        end
+                    end
+                else
+                    for m in xmlcollected(parent,"/member[@type='way']") do
+                     -- local f = xmlfirst(root,f_way(m.at.ref))
+                        local f = ways[m.at.ref]
+                        if f then
+                            local p, n = addpath(f, { }, 0)
+                            if n > 1 then
+                                checkpath(parent,p,n)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+    end
+
+    -- As with the other latitude and longitude mapping calculations the next magick
+    -- comes from Mojca.
+
+    local function drawgrid()
+        local lat0 = ceil (3600*minlat)
+        local lat1 = floor(3600*maxlat)
+        local pen  = tonumber(specification.griddot) or 1.5
+        local lat
+        local labels = { }
+        for i=lat0,lat1 do
+            lat = i/3600
+            local p = {
+                f_pair(minlon,lat),
+                f_pair(maxlon,lat),
+            }
+            r = r + 1 result[r] = f_draw_grid_b(p)
+            if i ~= lat0 and i ~= lat1 then
+                labels[#labels+1] = f_label_lat(f_degree_to_str(lat),p[1])
+            end
+        end
+
+        local lon0 = ceil (1800*minlon)*2
+        local lon1 = floor(1800*maxlon)*2
+        local lon
+        for i=lon0,lon1,2 do
+            lon=i/3600
+            local p = {
+                f_pair(lon, minlat),
+                f_pair(lon, maxlat),
+            }
+            r = r + 1 result[r] = f_draw_grid_b(p)
+            if i ~= lon0 and i ~= lon1 then
+                labels[#labels+1] = f_label_lon(f_degree_to_str(lon),p[1])
+            end
+        end
+        r = r + 1 result[r] = f_draw_grid_e("withdots", pen)
+        r = r + 1 result[r] = concat(labels)
+    end
+
+    -- We add a background first and clip later. Beware: There can be substantial bits
+    -- outside the clip path (like rivers) but because paths are not that detailed we
+    -- don't wast time on building a cycle. We could check if points are ouside the
+    -- boundingbox and then use the metapost buildpath macro .. some day.
+
+    local boundary = {
+        f_pair(minlon,minlat),
+        f_pair(maxlon,minlat),
+        f_pair(maxlon,maxlat),
+        f_pair(minlon,maxlat),
+    }
+
+    r = r + 1 result[r] = beginmp
+    r = r + 1 result[r] = f_background(boundary)
+
+ -- r = r + 1 result[r] = "drawoptions (withtransparency (1,.5)) ;"
+
+    -- use stacking instead
+
+    for i=1,#order do
+        local o = order[i]
+        if usedcolors[o] then
+            drawshapes(o,i)
+        end
+    end
+
+    if specification.grid == "dots" then
+        drawgrid()
+    end
+
+    if collected then
+
+        for stacking, colors in sortedhash(collected) do
+            for color, bunch in next, colors do
+                local draw = bunch.draw
+                local fill = bunch.fill
+                if fill and #fill > 0 then
+                    r = r + 1 result[r] = "draw image ("
+                    r = r + 1 result[r] = concat(fill)
+                    r = r + 1 result[r] = 'DF origin--cycle;'
+                    r = r + 1 result[r] = formatters[') W "%s" L %s;'](color,stacking) ;
+                end
+                if draw and #draw > 0 then
+                    r = r + 1 result[r] = "draw image ("
+                    r = r + 1 result[r] = concat(draw)
+                    r = r + 1 result[r] = 'DD origin;'
+                    r = r + 1 result[r] = formatters[') W "%s" L %s;'](color,stacking+1) ;
+                end
+            end
+        end
+
+    end
+
+    r = r + 1 result[r] = f_bounds(boundary)
+    r = r + 1 result[r] = endmp
+
+    if missing then
+        inspect(missing)
+    end
+
+    result = concat(result)
+
+    report("%s characters metapost code, preprocessing time %0.3f seconds",#result,os.clock()-starttime)
+
+    return result
+
+end
+
+function mp.lmt_do_openstreetmap()
+    local specification = metapost.getparameterset("openstreetmap")
+    return openstreetmap.convert(specification)
+end

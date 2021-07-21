@@ -38,27 +38,36 @@ For the engine to work well, the following information has to be present at
 the font level:
 
 \starttabulate[|l|l|pl|]
-\DB key                 \BC value type \BC description \NC \NR
+\DB key                       \BC value type \BC description \NC \NR
 \TB
-\NC \type {name}        \NC string     \NC metric (file) name \NC \NR
-\NC \type {characters}  \NC table      \NC the defined glyphs of this font \NC \NR
-\NC \type {designsize}  \NC number     \NC expected size (default: 655360 == 10pt) \NC \NR
-\NC \type {fonts}       \NC table      \NC locally used fonts \NC \NR
-\NC \type {hyphenchar}  \NC number     \NC default: \TEX's \prm {hyphenchar} \NC \NR
-\NC \type {parameters}  \NC hash       \NC default: 7 parameters, all zero \NC \NR
-\NC \type {size}        \NC number     \NC the required scaling (by default the same as designsize) \NC \NR
-\NC \type {skewchar}    \NC number     \NC default: \TEX's \prm {skewchar} \NC \NR
-\NC \type {stretch}     \NC number     \NC the \quote {stretch} \NC \NR
-\NC \type {shrink}      \NC number     \NC the \quote {shrink} \NC \NR
-\NC \type {step}        \NC number     \NC the \quote {step} \NC \NR
-\NC \type {nomath}      \NC boolean    \NC this key allows a minor speedup for text fonts; if it
-                                           is present and true, then \LUATEX\ will not check the
-                                           character entries for math|-|specific keys \NC \NR
-\NC \type {oldmath}     \NC boolean    \NC this key flags a font as representing an old school \TEX\
-                                           math font and disables the \OPENTYPE\ code path \NC \NR
-\NC \type {mathcontrol} \NC bitset     \NC this controls various code paths in the math engine,
-                                           like enforcing the traditional code path \NC \NR
-\NC \type {textcontrol} \NC bitset     \NC this controls various code paths in the text engine \NC \NR
+\NC \type {name}              \NC string     \NC metric (file) name \NC \NR
+\NC \type {original}          \NC string     \NC the name used in logging and feedback \NC \NR
+\NC \type {designsize}        \NC number     \NC expected size (default: 655360 == 10pt) \NC \NR
+\NC \type {size}              \NC number     \NC the required scaling (by default the same as designsize) \NC \NR
+\HL
+\NC \type {characters}        \NC table      \NC the defined glyphs of this font \NC \NR
+\NC \type {fonts}             \NC table      \NC locally used fonts \NC \NR
+\NC \type {parameters}        \NC hash       \NC default: 7 parameters, all zero \NC \NR
+\HL
+\NC \type {stretch}           \NC number     \NC the \quote {stretch} \NC \NR
+\NC \type {shrink}            \NC number     \NC the \quote {shrink} \NC \NR
+\NC \type {step}              \NC number     \NC the \quote {step} \NC \NR
+\HL
+\NC \type {textcontrol}       \NC bitset     \NC this controls various code paths in the text engine \NC \NR
+\NC \type {hyphenchar}        \NC number     \NC default: \TEX's \prm {hyphenchar} \NC \NR
+\HL
+\NC \type {skewchar}          \NC number     \NC default: \TEX's \prm {skewchar} \NC \NR
+\NC \type {nomath}            \NC boolean    \NC this key allows a minor speedup for text fonts; if it
+                                                 is present and true, then \LUATEX\ will not check the
+                                                 character entries for math|-|specific keys \NC \NR
+\NC \type {oldmath}           \NC boolean    \NC this key flags a font as representing an old school \TEX\
+                                                 math font and disables the \OPENTYPE\ code path \NC \NR
+\NC \type {mathcontrol}       \NC bitset     \NC this controls various code paths in the math engine,
+                                                 like enforcing the traditional code path \NC \NR
+\NC \type {compactmath}       \NC boolean    \NC experimental: use the smaller chain to locate a character \NC \NR
+\NC \type {textscale}         \NC number     \NC scale applied to math text \NC \NR
+\NC \type {scriptscale}       \NC number     \NC scale applied to math script \NC \NR
+\NC \type {scriptscriptscale} \NC number     \NC scale applied to math script script \NC \NR
 \LL
 \stoptabulate
 
@@ -247,6 +256,11 @@ the possible flags:
     context.LL()
     context.stoptabulate()
 \stopluacode
+
+Compact math is an experimental feature. The smaller field in a character
+definition of a text character can point to a script character that itself can
+point to a scriptscript one. When set the \type {textscale}, \type {scriptscale}
+and \type {scriptscriptscale} is applied to those.
 
 The \type {textcontrol} field is used to control some aspects of text processing.
 More options might be added in the future.

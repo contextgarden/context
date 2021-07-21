@@ -1,0 +1,461 @@
+%D \module
+%D   [       file=m-database,
+%D        version=2020.07.18,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Rendering Openstreetmap,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a follow up on something that Mojca and I did at at bachotex
+%D meeting. Some attendants had made up that map during a few years. The
+%D \CONTEXT\ group donated a map that could be mounted outside drawn by
+%D Duane and after that we decided to see if we could keep up by rendering
+%D the openstreetmap variant with \METAPOST.
+%D
+%D There are some comments in the \LUA\ file and that one might evolve over
+%D time as there is some trial and error involved. The \typ {osm} file is
+%D read in, stripped a bit, the \XML\ is analyzed and \METAPOST\ code is
+%D generated. The level of detail can be influenced.
+
+% This will change ... users are invited to come with variants.
+
+\definecolor [osm:special]          [s=.25]
+
+\definecolor [osm:building:special] [r=.75]
+\definecolor [osm:building]         [r=.50]
+
+\definecolor [osm:parking]          [s=.25]
+\definecolor [osm:bridge]           [s=.50]
+\definecolor [osm:quay]             [s=.25]
+\definecolor [osm:barrier]          [s=.25]
+\definecolor [osm:industrial]       [s=.70]
+\definecolor [osm:residential]      [s=.75]
+\definecolor [osm:cemetery]         [s=.50]
+
+\definecolor [osm:boat]             [b=.25]
+
+\definecolor [osm:water]            [b=.75]
+\definecolor [osm:waterway]         [r=.75,g=.75]
+
+\definecolor [osm:wetland]          [g=.25]
+\definecolor [osm:grass]            [g=.50]
+\definecolor [osm:park]             [g=.60]
+\definecolor [osm:forest]           [g=.75]
+
+\definecolor [osm:sand]             [y=.75]
+
+\definecolor [osm:footway]          [b=.3]
+\definecolor [osm:cycleway]         [b=.5]
+\definecolor [osm:path]             [b=.7]
+\definecolor [osm:track]            [s=.4]
+
+\definecolor [osm:bridge]           [s=.25]
+\definecolor [osm:bridge:special]   [s=.50]
+
+\definecolor [osm:unknown]          [s=0]
+
+\definecolor [osm:background]       [s=.8]
+\definecolor [osm:grid]             [s=1]
+
+% We can define them global, in which case we can check for actually
+% used colors.
+
+\definecolor[osm:aerialway:station]         [osm:unknown]
+
+\definecolor[osm:aeroway:runway]            [osm:unknown]
+\definecolor[osm:aeroway:taxiway]           [osm:unknown]
+
+\definecolor[osm:agricultural:no]           [osm:unknown]
+\definecolor[osm:agricultural:yes]          [osm:unknown]
+
+\definecolor[osm:amenity:arts_centre]       [osm:building:special]
+\definecolor[osm:amenity:bar]               [osm:building:special]
+\definecolor[osm:amenity:bicycle_parking]   [osm:parking]
+\definecolor[osm:amenity:college]           [osm:building:special]
+\definecolor[osm:amenity:courthouse]        [osm:building:special]
+\definecolor[osm:amenity:fountain]          [osm:building:special]
+\definecolor[osm:amenity:hospital]          [osm:building:special]
+\definecolor[osm:amenity:kindergarten]      [osm:building:special]
+\definecolor[osm:amenity:marketplace]       [osm:parking]
+\definecolor[osm:amenity:parking]           [osm:parking]
+\definecolor[osm:amenity:parking_space]     [osm:parking]
+\definecolor[osm:amenity:pharmacy]          [osm:building:special]
+\definecolor[osm:amenity:place_of_worship]  [osm:building:special]
+\definecolor[osm:amenity:police]            [osm:building:special]
+\definecolor[osm:amenity:restaurant]        [osm:building:special]
+\definecolor[osm:amenity:school]            [osm:building:special]
+\definecolor[osm:amenity:shower]            [osm:building:special]
+\definecolor[osm:amenity:social_facility]   [osm:building:special]
+\definecolor[osm:amenity:toilets]           [osm:building:special]
+\definecolor[osm:amenity:townhall]          [osm:building:special]
+\definecolor[osm:amenity:university]        [osm:building:special]
+
+\definecolor[osm:area:yes]                  [osm:unknown]
+
+\definecolor[osm:barrier:chain]             [osm:barrier]
+\definecolor[osm:barrier:city_wall]         [osm:barrier]
+\definecolor[osm:barrier:fence]             [osm:barrier]
+\definecolor[osm:barrier:gate]              [osm:barrier]
+\definecolor[osm:barrier:guard_rail]        [osm:barrier]
+\definecolor[osm:barrier:hedge]             [osm:barrier]
+\definecolor[osm:barrier:retaining_wall]    [osm:barrier]
+\definecolor[osm:barrier:wall]              [osm:barrier]
+\definecolor[osm:barrier:yes]               [osm:barrier]
+
+\definecolor[osm:boat:yes]                  [osm:boat]
+
+\definecolor[osm:boundary:aboriginal_lands] [osm:unknown]
+\definecolor[osm:boundary:administrative]   [osm:unknown]
+\definecolor[osm:boundary:national_park]    [osm:unknown]
+\definecolor[osm:boundary:protected_area]   [osm:unknown]
+
+\definecolor[osm:bridge:movable]            [osm:bridge:special]
+\definecolor[osm:bridge:viaduct]            [osm:bridge]
+\definecolor[osm:bridge:yes]                [osm:footway]
+
+\definecolor[osm:bridge:support:pier]       [osm:special]
+
+\definecolor[osm:building:apartments]       [osm:building]
+\definecolor[osm:building:bandstand]        [osm:building:special]
+\definecolor[osm:building:cathedral]        [osm:building]
+\definecolor[osm:building:civic]            [osm:building]
+\definecolor[osm:building:commercial]       [osm:building:special]
+\definecolor[osm:building:construction]     [osm:building:special]
+\definecolor[osm:building:garage]           [osm:building]
+\definecolor[osm:building:government]       [osm:building]
+\definecolor[osm:building:hospital]         [osm:building]
+\definecolor[osm:building:house]            [osm:building]
+\definecolor[osm:building:houseboat]        [osm:boat]
+\definecolor[osm:building:hut]              [osm:building]
+\definecolor[osm:building:industrial]       [osm:building:special]
+\definecolor[osm:building:kiosk]            [osm:building:special]
+\definecolor[osm:building:public]           [osm:building]
+\definecolor[osm:building:residential]      [osm:building]
+\definecolor[osm:building:retail]           [osm:building:special]
+\definecolor[osm:building:roof]             [osm:building]
+\definecolor[osm:building:school]           [osm:building:special]
+\definecolor[osm:building:shed]             [osm:building]
+\definecolor[osm:building:townhall]         [osm:building]
+\definecolor[osm:building:yes]              [osm:building]
+
+\definecolor[osm:emergency:designated]      [osm:unknown]
+\definecolor[osm:emergency:destination]     [osm:unknown]
+\definecolor[osm:emergency:no]              [osm:unknown]
+\definecolor[osm:emergency:official]        [osm:unknown]
+\definecolor[osm:emergency:yes]             [osm:unknown]
+
+\definecolor[osm:golf:cartpath]             [osm:unknown]
+\definecolor[osm:golf:hole]                 [osm:unknown]
+\definecolor[osm:golf:path]                 [osm:unknown]
+
+\definecolor[osm:highway:bridleway]         [osm:unknown]
+\definecolor[osm:highway:corridor]          [osm:track]
+\definecolor[osm:highway:cycleway]          [osm:cycleway]
+\definecolor[osm:highway:footway]           [osm:footway]
+\definecolor[osm:highway:living_street]     [osm:track]
+\definecolor[osm:highway:motorway]          [osm:unknown]
+\definecolor[osm:highway:motorway_link]     [osm:unknown]
+\definecolor[osm:highway:path]              [osm:path]
+\definecolor[osm:highway:pedestrian]        [osm:track]
+\definecolor[osm:highway:platform]          [osm:unknown]
+\definecolor[osm:highway:primary]           [osm:track]
+\definecolor[osm:highway:primary_link]      [osm:unknown]
+\definecolor[osm:highway:raceway]           [osm:unknown]
+\definecolor[osm:highway:residential]       [osm:track]
+\definecolor[osm:highway:rest_area]         [osm:unknown]
+\definecolor[osm:highway:road]              [osm:unknown]
+\definecolor[osm:highway:secondary_link]    [osm:unknown]
+\definecolor[osm:highway:service]           [osm:track]
+\definecolor[osm:highway:services]          [osm:unknown]
+\definecolor[osm:highway:steps]             [osm:track]
+\definecolor[osm:highway:tertiary]          [osm:track]
+\definecolor[osm:highway:tertiary_link]     [osm:unknown]
+\definecolor[osm:highway:track]             [osm:track]
+\definecolor[osm:highway:trunk]             [osm:unknown]
+\definecolor[osm:highway:trunk_link]        [osm:unknown]
+\definecolor[osm:highway:unclassified]      [osm:track]
+
+\definecolor[osm:historic:citywalls]        [osm:unknown]
+
+\definecolor[osm:junction:yes]              [osm:unknown]
+
+\definecolor[osm:landuse:allotments]        [osm:grass]
+\definecolor[osm:landuse:cemetery]          [osm:cemetery]
+\definecolor[osm:landuse:commercial]        [osm:industrial]
+\definecolor[osm:landuse:construction]      [osm:industrial]
+\definecolor[osm:landuse:forest]            [osm:forest]
+\definecolor[osm:landuse:grass]             [osm:grass]
+\definecolor[osm:landuse:industrial]        [osm:industrial]
+\definecolor[osm:landuse:meadow]            [osm:grass]
+\definecolor[osm:landuse:residential]       [osm:residential]
+\definecolor[osm:landuse:static_building]   [osm:special]
+\definecolor[osm:landuse:village_green]     [osm:forest]
+
+\definecolor[osm:leisure:beach]             [osm:sand]
+\definecolor[osm:leisure:garden]            [osm:park]
+\definecolor[osm:leisure:ice_rink]          [osm:water]
+\definecolor[osm:leisure:marina]            [osm:quay]
+\definecolor[osm:leisure:park]              [osm:park]
+\definecolor[osm:leisure:pitch]             [osm:special]
+\definecolor[osm:leisure:playground]        [osm:special]
+\definecolor[osm:leisure:slipway]           [osm:unknown]
+\definecolor[osm:leisure:sports_centre]     [osm:special]
+\definecolor[osm:leisure:track]             [osm:track]
+
+\definecolor[osm:man_made:breakwater]       [osm:water]
+\definecolor[osm:man_made:bridge]           [osm:bridge]
+\definecolor[osm:man_made:cutline]          [osm:unknown]
+\definecolor[osm:man_made:embankment]       [osm:unknown]
+\definecolor[osm:man_made:groyne]           [osm:unknown]
+\definecolor[osm:man_made:instrument]       [osm:special]
+\definecolor[osm:man_made:pier]             [osm:quay]
+\definecolor[osm:man_made:pipeline]         [osm:unknown]
+\definecolor[osm:man_made:quay]             [osm:quay]
+\definecolor[osm:man_made:tower]            [osm:special]
+\definecolor[osm:man_made:windmill]         [osm:special]
+
+\definecolor[osm:natural:arete]             [osm:unknown]
+\definecolor[osm:natural:cliff]             [osm:unknown]
+\definecolor[osm:natural:earth_bank]        [osm:unknown]
+\definecolor[osm:natural:ridge]             [osm:unknown]
+\definecolor[osm:natural:sand]              [osm:sand]
+\definecolor[osm:natural:scrub]             [osm:forest]
+\definecolor[osm:natural:tree_row]          [osm:forest]
+\definecolor[osm:natural:water]             [osm:water]
+\definecolor[osm:natural:wetland]           [osm:wetland]
+\definecolor[osm:natural:wood]              [osm:forest]
+
+\definecolor[osm:power:cable]               [osm:unknown]
+\definecolor[osm:power:line]                [osm:unknown]
+\definecolor[osm:power:minor_line]          [osm:unknown]
+
+\definecolor[osm:railway:construction]      [osm:unknown]
+\definecolor[osm:railway:disused]           [osm:unknown]
+\definecolor[osm:railway:funicular]         [osm:unknown]
+\definecolor[osm:railway:light_rail]        [osm:unknown]
+\definecolor[osm:railway:miniature]         [osm:unknown]
+\definecolor[osm:railway:monorail]          [osm:unknown]
+\definecolor[osm:railway:narrow_gauge]      [osm:unknown]
+\definecolor[osm:railway:platform]          [osm:unknown]
+\definecolor[osm:railway:preserved]         [osm:unknown]
+\definecolor[osm:railway:rail]              [osm:unknown]
+\definecolor[osm:railway:subway]            [osm:unknown]
+\definecolor[osm:railway:tram]              [osm:unknown]
+\definecolor[osm:railway:turntable]         [osm:unknown]
+
+\definecolor[osm:tourism:yes]               [osm:unknown]
+
+\definecolor[osm:water:basin]               [osm:water]
+\definecolor[osm:water:river]               [osm:water]
+
+\definecolor[osm:waterway:canal]            [osm:waterway]
+\definecolor[osm:waterway:derelict_canal]   [osm:waterway]
+\definecolor[osm:waterway:ditch]            [osm:waterway]
+\definecolor[osm:waterway:drain]            [osm:waterway]
+\definecolor[osm:waterway:river]            [osm:waterway]
+\definecolor[osm:waterway:stream]           [osm:waterway]
+\definecolor[osm:waterway:tidal_channel]    [osm:waterway]
+\definecolor[osm:waterway:wadi]             [osm:waterway]
+\definecolor[osm:waterway:weir]             [osm:waterway]
+
+\registerctxluafile{m-openstreetmap}{autosuffix}
+
+\startMPdefinitions
+
+    presetparameters "openstreetmap" [
+        filename = "test.osm",
+      % grid     = "dots",
+        griddot  = 1.5,
+    ] ;
+
+    def lmt_openstreetmap = applyparameters "openstreetmap" "lmt_do_openstreetmap" enddef ;
+
+    vardef lmt_do_openstreetmap =
+        image (
+            lua.mp.lmt_do_openstreetmap() ;
+        )
+    enddef ;
+
+\stopMPdefinitions
+
+\continueifinputfile{m-openstreetmap.mkxl}
+
+\startMPpage
+    draw lmt_openstreetmap [
+        filename = "hasselt.osm"
+        used     = [
+             boundary     = false,
+        ],
+    ] ;
+\stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "e:/tmp/hulshorst.osm"
+%         used     = [
+%              boundary     = false,
+%         ],
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "hasselt.osm"
+%         used     = [
+%              boundary     = false,
+%              emergency    = false,
+%              boat         = false,
+%              golf         = false,
+%              area         = false,
+%              agricultural = false,
+%              historic     = false,
+%              tourism      = false,
+%              power        = false,
+%              junction     = false,
+%              water        = false,
+%              highway      = false,
+%              waterway     = false,
+%              railway      = false,
+%              aeroway      = false,
+%              aerialway    = false,
+%         ]
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "hasselt.osm"
+%         used     = [
+%             amenity      = false,
+%             boundary     = false,
+%             building     = false,
+%             emergency    = false,
+%             man_made     = false,
+%             natural      = "magenta",
+%             barrier      = false,
+%             leisure      = "cyan",
+%             bridge       = false,
+%             boat         = false,
+%             landuse      = "green",
+%             golf         = false,
+%             area         = false,
+%             bridge       = false,
+%             agricultural = false,
+%             historic     = false,
+%             tourism      = false,
+%             power        = false,
+%             junction     = false,
+%             water        = false,
+%             highway      = false,
+%             waterway     = false,
+%             railway      = false,
+%             aeroway      = false,
+%             aerialway    = false,
+%         ]
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "hasselt-large.osm"
+%         grid     = "dots",
+%       % collect  = true,
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "e:/tmp/map.osm"
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "e:/tmp/map-x.osm"
+%         grid     = "dots",
+%         griddot  = 1,
+%     ] ;
+% \stopMPpage
+
+% \startMPpage
+%     draw lmt_openstreetmap [
+%         filename = "e:/temporary/ford-collins.osm"
+%     ] ;
+% \stopMPpage
+
+\stoptext
+
+% -- -- The original approaches:
+% --
+% -- local colors = {
+% --     amenity = {
+% --         arts_centre      = "osm:special",
+% --         ...
+% --     }
+% -- }
+% --
+% -- local function getcolor(r)
+% --     local what, color, both
+% --     for t in xmlcollected(r,"/tag") do
+% --         local at  = t.at
+% --         local k   = at.k
+% --         local all = usedcolors[k]
+% --         if all then
+% --             local v   = at.v
+% --             local col = all[v]
+% --             if col then
+% --                 what  = k
+% --                 color = col
+% --                 both  = lines[k]
+% --             elseif missing then
+% --                 missing[k][v] = (missing[k][v] or 0) + 1
+% --             end
+% --         end
+% --         if k == "amenity" then
+% --             break
+% --         end
+% --     end
+% --     return what, color, both
+% -- end
+%
+% -- -- maybe nested:
+%
+% -- for m in xmlcollected(parent,"/member[@type='relation']") do
+% --     local f = xmlfirst(root,f_relation(m.at.ref))
+% --     if f then
+% --         for m in xmlcollected(f,"/member[@type='way']") do
+% --          -- local f = xmlfirst(root,f_way(m.at.ref))
+% --             local f = ways[m.at.ref]
+% --             if f then
+% --                 local p, n = addpath(f, { }, 0)
+% --                 if n > 1 then
+% --                     local what, color = getcolor(parent)
+% --                     if what and rendering[what] then
+% --                         r = r + 1
+% --                         if p[1] == p[n] then
+% --                             result[r] = f_fill(p,color)
+% --                         else
+% --                             result[r] = f_draw(p,color)
+% --                         end
+% --                     end
+% --                 end
+% --             end
+% --         end
+% --     end
+% -- end
+%
+% -- local filename = resolvers.savers.virtual("foo",result,"mp")
+% -- context([[input "%s" ;]],filename)
+% -- context([[runscript "resolvers.cleaners.virtual('%s')" ;]],filename)
+%
+% -- context.startTEXpage()
+% -- context.startMPcode("doublefun")
+% -- context("lua.mp.fetchresult();")
+% -- context.stopMPcode()
+% -- context.stopTEXpage()
+
