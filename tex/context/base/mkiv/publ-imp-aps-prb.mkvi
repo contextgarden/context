@@ -1,0 +1,40 @@
+%D \module
+%D   [       file=publ-imp-aps-prb,
+%D        version=2015.03.22,
+%D          title=Phys. Rev. B APS bibliography style,
+%D       subtitle=Publications,
+%D         author=Alan Braslau and Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
+%D by \PRAGMA. See mreadme.pdf for details.
+
+\startbtxrenderingdefinitions[aps-prb]
+
+\loadbtxdefinitionfile[aps]
+
+\setupbtxlist
+  [aps]
+  [\c!alternative=\v!paragraph,
+   \c!width=\v!auto,
+   \c!distance=\zeropoint,
+   \c!numberalign=\v!flushright]
+
+\setupbtx
+  [aps:list:numbering:num]
+  [\c!command=\high,
+   \c!left=,
+   \c!right=,
+   \c!stopper=]
+
+\setupbtx
+  [aps:cite:num]
+  [\c!command=\high,
+   \c!left=,
+   \c!right=]
+
+%\setupbtx
+%  [\c!specification=aps]
+
+\stopbtxrenderingdefinitions

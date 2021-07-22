@@ -1,0 +1,118 @@
+%D \module
+%D   [       file=meta-imp-kindergarten,
+%D        version=2020.00.00,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Kindergarten Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \nopdfcompression
+
+%D For Arthur, who told me that about the urban legend that \CONTEXT\ can do only
+%D kindergarten math. Somehow I'd forgotten top add this to the distribution
+
+\startMPcalculation{simplefun}
+
+    pen KindergartenPen ; KindergartenPen := pencircle scaled 1 ;
+
+    % 10 x 10 grid
+
+    vardef KindergartenEqual =
+        draw image
+            (
+                draw (2,6) -- (9,5) ;
+                draw (2,4) -- (8,3) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenEqual"
+    enddef ;
+    vardef KindergartenPlus =
+        draw image
+            (
+                draw (1,4) -- (9,5) ;
+                draw (4,1) -- (5,8) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenPlus"
+    enddef ;
+    vardef KindergartenMinus =
+        draw image
+            (
+                draw (1,5) -- (9,4) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenMinus"
+    enddef ;
+    vardef KindergartenTimes =
+        draw image
+            (
+                draw (2,1) -- (9,8) ;
+                draw (8,1) -- (2,8) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenTimes"
+    enddef ;
+    vardef KindergartenDivided =
+        draw image
+            (
+                draw (2,1) -- (8,9) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenDivided"
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "kindergarten",
+        units    = 10,
+      % usecolor = true,
+        width    = 10,
+        height   = 8,
+        depth    = 2,
+    ] ;
+
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x003D",
+        code = "KindergartenEqual"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x002B",
+        code = "KindergartenPlus"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x2212",
+        code = "KindergartenMinus"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x00D7",
+        code = "KindergartenTimes"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x002F",
+        code = "KindergartenDivided"
+    ] ;
+
+\stopMPcalculation
+
+\definecolor[KindergartenEqual]  [darkgreen]
+\definecolor[KindergartenPlus]   [darkred]
+\definecolor[KindergartenMinus]  [darkred]
+\definecolor[KindergartenTimes]  [darkblue]
+\definecolor[KindergartenDivided][darkblue]
+
+\continueifinputfile{meta-imp-kindergarten.mkxl}
+
+\definefontfeature
+  [mathextra]
+  [metapost=kindergarten]
+
+\setupbodyfont[dejavu]
+
+\startTEXpage[offset=10pt]
+    $ y = 2 \times x + a - b / 3 $ \par
+    \hfill \infofont{kindergarten math}
+\stopTEXpage

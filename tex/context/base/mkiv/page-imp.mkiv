@@ -102,6 +102,15 @@
 \installshipoutmethod \v!none
   {\page_shipouts_ignore}
 
+% \setuppaper[method=rotate,rotation=15] \showframe
+% \starttext \dorecurse{10}{\input knuth\endgraf} \stoptext
+
+\installshipoutmethod\v!rotate
+  {\page_shipouts_rotate}
+
+\protected\def\page_shipouts_rotate#1%
+  {\invokepagehandler\v!normal{\rotate[\c!rotation=\rootlayouttargetparameter\c!rotation]{#1}}}
+
 % extension mechanism
 
 \newcount\c_page_boxes_flush_n % set at the lua end

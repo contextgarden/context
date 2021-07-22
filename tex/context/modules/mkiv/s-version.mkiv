@@ -1,0 +1,123 @@
+%D \module
+%D   [      file=s-version,
+%D        version=2011.07.28,
+%D          title=\CONTEXT\ Version Pictogram,
+%D       subtitle=Basics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an oldie that we use to generate a pictogram that reflects the current
+%D version.
+
+\startMPextensions
+vardef context_version(expr variant, mark, year, month, day, hours, minutes, seconds) =
+
+    image (
+
+        interim overloadmode := 0;
+
+        save angle, min, max, mk, yr, mo, da, ho, mi, se, max_mk, max_yr, max_mo, max_da, max_ho, max_mi, max_se ;
+
+        numeric angle, delta ; pair min, max ; angle := 360/7.25 ; delta := (360-7*angle)/7 ; min := (0,10) ; max := (0,100) ;
+
+        numeric mk, max_mk ; max_mk :=    8 ; mk := if (mark    <=    0) or (mark    > max_mk) : max_mk else : mark    fi ;
+        numeric yr, max_yr ; max_yr := 2050 ; yr := if (year    <= 2000) or (year    > max_yr) : max_yr else : year    fi ;
+        numeric mo, max_mo ; max_mo :=   12 ; mo := if (month   <=    0) or (month   > max_mo) : max_mo else : month   fi ;
+        numeric da, max_da ; max_da :=   31 ; da := if (day     <=    0) or (day     > max_da) : max_da else : day     fi ;
+        numeric ho, max_ho ; max_ho :=   24 ; ho := if (hours   <=    0) or (hours   > max_ho) : max_ho else : hours   fi ;
+        numeric mi, max_mi ; max_mi :=   60 ; mi := if (minutes <=    0) or (minutes > max_mi) : max_mi else : minutes fi ;
+        numeric se, max_se ; max_se :=   60 ; se := if (seconds <=    0) or (seconds > max_se) : max_se else : seconds fi ;
+
+        max_da := if (mo = 2) : 28 elseif (mo = 4) or (mo = 6) or (mo = 9) or (mo = 11) : 30 else : 31 fi ;
+
+        if da > max_da : da := max_da fi ; yr := yr - 2000 ; max_yr := max_yr - 2000 ;
+
+        if (variant = 2) or (variant = 3) :
+            fill fullcircle scaled 205 withcolor .7white ;
+        fi ;
+
+        color colorant[] ;
+
+        vardef do_context_version(expr i, amount) =
+            fill (min/2 rotated (-angle/2) -- max { dir -40             } .. max rotated -angle -- cycle) rotated -(i*(angle+delta)) withcolor .3colorant[i] ;
+            fill (min   rotated (-angle/2) -- max { dir -(45+45*amount) } .. max rotated -angle -- cycle) rotated -(i*(angle+delta)) withcolor .7colorant[i] ;
+        enddef ;
+
+        color orange ; orange := (1,.62,.06) ; % .5white
+
+        colorant[0] := red  ; colorant[1] := green   ; colorant[2] := blue   ; colorant[3] := orange ;
+        colorant[4] := cyan ; colorant[5] := magenta ; colorant[6] := yellow ;
+
+        do_context_version(0, (yr-1)/max_yr) ;
+        do_context_version(1, (mo-1)/max_mo) ;
+        do_context_version(2, (da-1)/max_da) ;
+        do_context_version(3, (mk-1)/max_mk) ;
+        do_context_version(4, (ho-1)/max_ho) ;
+        do_context_version(5, (mi-1)/max_mi) ;
+        do_context_version(6, (se-1)/max_se) ;
+
+        currentpicture := currentpicture slanted .15 ;
+
+        if (variant = 3) :
+            setbounds currentpicture to boundingbox currentpicture enlarged 10 ;
+            addbackground withcolor .3white ;
+            setbounds currentpicture to boundingbox currentpicture enlarged -5 ;
+        fi ;
+
+    )
+
+enddef ;
+
+% draw context_version(4,2011,07,28,14,50,30) ;
+% draw context_version(4,01,01,01,01,01,01) ;
+% draw context_version(4,99,12,31,24,60,60) ;
+
+\stopMPextensions
+
+\startluacode
+    moduledata.versions = moduledata.versions or { }
+
+    function moduledata.versions.drawcontextversion(variant, mark, year, month, day, hours, minutes, seconds)
+        if not variant then
+            variant = 3
+        end
+        if not mark then
+            mark = 4
+            year, month, day, hours, minutes, seconds = string.match(environment.version,"(....).(..).(..) (..).(..)")
+            seconds = 30
+        end
+        context.startMPcode()
+            context("draw context_version(%s,%s,%s,%s,%s,%s,%s,%s) ;",
+                variant or 1,
+                mark    or 4,
+                year    or os.date("%y"),
+                month   or os.date("%m"),
+                day     or os.date("%d"),
+                hours   or os.date("%H"),
+                minutes or os.date("%M"),
+                seconds or os.date("%S")
+            )
+        context.stopMPcode()
+    end
+\stopluacode
+
+\continueifinputfile{s-version.mkiv}
+
+\starttext
+
+\startluacode
+    context.startTEXpage()
+        moduledata.versions.drawcontextversion()
+    context.stopTEXpage()
+\stopluacode
+
+\stoptext
+
+% d:\imagemagick\convert.exe -geometry 256x256 s-version.pdf context-version.png
+% d:\imagemagick\convert.exe -geometry   72x72 s-version.pdf context-version.ico
+% d:\imagemagick\convert.exe -geometry 128x128 s-version.pdf context-version.icns

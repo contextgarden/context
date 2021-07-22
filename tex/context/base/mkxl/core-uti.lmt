@@ -348,30 +348,6 @@ function job.loadother(filename)
     statistics.stoptiming(_load_)
 end
 
--- function job.keep(filename)
---     local suffix = file.suffix(filename)
---     local base   = file.removesuffix(filename)
---     if suffix == "" then
---         suffix = "tuc"
---     end
---     for i=1,10 do
---         local tmpname = format("%s-%s-%02d.tmp",base,suffix,i)
---         if lfs.isfile(tmpname) then
---             os.remove(tmpname)
---             report_passes("removing %a",tmpname)
---         end
---     end
---     if lfs.isfile(filename) then
---         local tmpname = format("%s-%s-%02d.tmp",base,suffix,environment.currentrun or 1)
---         report_passes("copying %a into %a",filename,tmpname)
---         file.copy(filename,tmpname)
---     else
---         report_passes("no file %a, nothing kept",filename)
---     end
--- end
-
--- eventually this will end up in strc-ini
-
 statistics.register("startup time", function()
     return statistics.elapsedseconds(statistics,"including runtime option file processing")
 end)
@@ -393,17 +369,16 @@ statistics.register("jobdata time",function()
 end)
 
 statistics.register("callbacks", function()
-    local c_internal = status.callbacks or 0
-    local c_file     = status.indirect_callbacks or 0
-    local c_direct   = status.direct_callbacks or 0
-    local c_late     = backends.getcallbackstate().count
-    local c_function = status.function_callbacks or 0
-    local c_total    = c_internal + c_file + c_direct + c_late + c_function
-    local n_pages    = structures.pages.nofpages or 0
-    local c_average  = n_pages > 0 and math.round(c_total/n_pages) or 0
-    local result     = format (
-        "internal: %s, file: %s, direct: %s, late: %s, function %s, total: %s (%s per page)",
-        c_internal, c_file, c_direct, c_late, c_function, c_total, c_average
+    local backend  = backends.getcallbackstate()
+    local frontend = status.getcallbackstate()
+    local pages    = structures.pages.nofpages or 0
+    local total    = frontend.count + backend.count
+    local average  = pages > 0 and math.round(total/pages) or 0
+    local result   = format (
+        "file: %s, saved: %s, direct: %s, function: %s, value: %s, message: %s, bytecode: %s, late %s, total: %s (%s per page)",
+        frontend.file,  frontend.saved,   frontend.direct,   frontend["function"],
+        frontend.value, frontend.message, frontend.bytecode, backend.count,
+        total, average
     )
     statistics.callbacks = function()
         return result
@@ -416,15 +391,6 @@ statistics.register("randomizer", function()
         return format("%s with value %s",rmethod,rvalue)
     end
 end)
-
--- a sort of joke (for ctx meeting)
-
--- local kg_per_watt_per_second  = 1 / 15000000
--- local watts_per_core          = 50
--- local speedup_by_other_engine = 1.2
--- local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
--- local used_wood_factor        = (50 / 15000000) / 1.2
-
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
@@ -448,9 +414,10 @@ function statistics.formatruntime(runtime)
 end
 
 implement {
-    name      = "savevariable",
+    name      = "savecurrentvalue",
+    public    = true,
     actions   = job.variables.save,
-    arguments = "2 strings",
+    arguments = { "csname", "argument" },
 }
 
 implement {

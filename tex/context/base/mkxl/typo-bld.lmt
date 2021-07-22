@@ -176,7 +176,7 @@ local function processor(head,followed_by_display)
     -- todo: not again in otr so we need to flag
     if enabled then
         starttiming(parbuilders)
-        head = actions(head,followed_by_display)
+        head = tonode(actions(tonut(head),followed_by_display))
         stoptiming(parbuilders)
         return head
     else

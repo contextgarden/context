@@ -1492,6 +1492,8 @@ local function tr_process(object,prescript,before,after)
                 sp_specs = concat(sp_specs,",")
                 definemultitonecolor(sp_name,sp_specs,"","")
                 sp_type = "named"
+            elseif sp_type == "named" then
+                cs = { 1 } -- factor 1
             end
             if sp_type == "named" then
                 -- we might move this to another namespace .. also, named can be a spotcolor

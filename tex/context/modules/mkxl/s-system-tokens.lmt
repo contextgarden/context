@@ -1,0 +1,247 @@
+if not modules then modules = { } end modules['s-system-tokens'] = {
+    version   = 1.001,
+    comment   = "companion to s-system-tokens.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local context = context
+local ctx_NC  = context.NC
+local ctx_BC  = context.BC
+local ctx_NR  = context.NR
+local ctx_FL  = context.FL
+local ctx_ML  = context.ML
+local ctx_LL  = context.LL
+local gsub    = string.gsub
+local find    = string.find
+local concat  = table.concat
+
+moduledata.system        = moduledata.system        or { }
+moduledata.system.tokens = moduledata.system.tokens or { }
+
+local getrange    = token.get_range
+local getcmdchrcs = token.get_cmdchrcs
+local whatever    = { [1] = true, [4] = true, [8] = true }
+
+local collected = nil -- at some point we might have this one preloaded
+
+function moduledata.system.tokens.collect()
+
+    if not collected then
+
+        local allcommands = tokens.commands
+        local primitives  = tex.primitives()
+              collected = { }
+
+        for i=0,#allcommands do
+            local codes = { }
+            local kind, min, max, fixedvalue = getrange(i)
+            if min and whatever[kind] and max >= 0 and max <= 256 then
+                 for i=min,max do
+                     codes[i] = false
+                 end
+            end
+            collected[i] = codes
+            collected[allcommands[i]] = codes
+        end
+
+        for i=1,#primitives do
+            local prm = primitives[i]
+            local cmd, chr = getcmdchrcs("normal"..prm)
+            local codes = collected[cmd]
+            if codes and codes[chr] == false then
+                codes[chr] = prm
+                codes[prm] = chr
+            else
+             -- print(cmd,chr)
+            end
+        end
+
+        collected.undefined_cs = nil
+
+     -- table.save("whatever.lua",collected)
+     -- local p = token.getprimitives()
+     -- table.sort(p,function(a,b) if a[1] == b[1] then return a[2] < b[2] else return a[1] < b[1] end end)
+     -- table.save("moreever.lua",p)
+
+     --  local p = token.getprimitives()
+     --  for i=1,#p do
+     --     local t = p[i]
+     --     pi[i] = { t[1], t[2], t[3], getrange(t[1]) }
+     --  end
+
+     -- inspect(collected)
+
+    end
+
+    return collected
+
+end
+
+function moduledata.system.tokens.showlist()
+
+    local l = tokens.commands
+    local t = moduledata.system.tokens.collect()
+
+    context.starttabulate { "|cT|rT|lT|rT|rT|pTA{flushleft,verytolerant,stretch}|" }
+    ctx_FL()
+    ctx_BC() context("")
+    ctx_BC() context("cmd")
+    ctx_BC() context("name")
+    ctx_BC() context("min")
+    ctx_BC() context("max")
+    ctx_BC() context("default or subcommands")
+    ctx_BC() ctx_NR()
+    ctx_ML()
+    for i=0,#l do
+        local kind, min, max, fixedvalue = getrange(i)
+        local what = whatever[kind]
+        ctx_NC() context(kind)
+        ctx_NC() context(i)
+        ctx_NC() context(l[i])
+        ctx_NC() if min then if what or min == 0 then context(min) else context("-0x%X",-min) end end
+        ctx_NC() if max then if what or max == 0 then context(max) else context("0x%X",max) end end
+        ctx_NC()
+        if min and what and max >= 0 and max <= 256 then
+            local l = { }
+            local c = t[i]
+            if c then
+                for j=min, max do
+                    local s = c[j]
+                    if s == " " then
+                        s = "<space>"
+                    elseif not s then
+                        s = "<unavailable>"
+                    end
+                    l[#l+1] = j .. "=" .. s
+                end
+                if (#l > 0) then
+                    context(table.concat(l," "))
+                elseif fixedvalue ~= 0 then
+                    context("0x%X",fixedvalue)
+                end
+            else
+                print("weird")
+            end
+        elseif fixedvalue and fixedvalue ~= 0 then
+            context("0x%X",fixedvalue)
+        end
+        ctx_NC() ctx_NR()
+    end
+    ctx_LL()
+    context.stoptabulate()
+
+end
+
+function moduledata.system.tokens.table(t)
+    local t = t or token.peek_next() -- local t = token.scan_next() token.put_back(t)
+    local n = ""
+    local w = ""
+    local c = t.cmdname
+    if c == "left_brace" then
+        w = "given token list"
+        t = token.scan_toks(false)
+    elseif c == "register_toks" then
+        token.scan_next()
+        w = "token register"
+        n = t.csname or t.index
+        t = tex.gettoks(n,true)
+    elseif c == "internal_toks" then
+        token.scan_next()
+        w = "internal token variable"
+        n = t.csname or t.index
+        t = tex.gettoks(n,true)
+    else
+        n = token.scan_csname()
+        local r = { }
+        local m = token.get_meaning(n,true)
+        if t.frozen    then r[#r+1] = "frozen"    end
+        if t.permanent then r[#r+1] = "permanent" end
+        if t.immutable then r[#r+1] = "immutable" end
+        if t.primitive then r[#r+1] = "primitive" end
+        if t.mutable   then r[#r+1] = "mutable"   end
+        if t.noaligned then r[#r+1] = "noaligned" end
+        if t.instance  then r[#r+1] = "instance"  end
+        if t.tolerant  then r[#r+1] = "tolerant"  end
+        if t.protected then r[#r+1] = "protected" end
+        r[#r+1] = "control sequence"
+        if type(m) == "table" then
+            t = m
+        else
+            t = { t }
+        end
+        w = concat(r, " ")
+    end
+    if type(t) == "table" then
+        context.starttabulate { "|l|r|r|l|c|l|l|" }
+        ctx_FL()
+        ctx_NC() context.formatted.rlap("\\bold %s: %s",w,n)
+        ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC()
+        ctx_NC() ctx_NR()
+        ctx_ML()
+        for i=1,#t do
+            local ti = t[i]
+            local cs = ti.csname
+            local id = ti.id
+            local ix = ti.index
+            local cd = ti.command
+            local cn = gsub(ti.cmdname,"_"," ")
+            ctx_NC() context(id)
+            ctx_NC() context(cd)
+            ctx_NC() context("%3i",ix)
+            ctx_NC() context(cn)
+            if cs then
+                ctx_NC()
+                ctx_NC()
+                ctx_NC() context(cs)
+                ctx_NC() ctx_NR()
+            elseif cn == "letter" or cn == "other char" then
+                ctx_NC() context.char(ix)
+                ctx_NC() context("%U",ix)
+                ctx_NC()
+                ctx_NC() ctx_NR()
+            elseif cn == "match" then
+                ctx_NC()
+                ctx_NC()
+                    if ix == 32 then context("optional spacer")     -- space
+                elseif ix == 43 then context("keep braces")         -- "+"
+                elseif ix == 45 then context("thrash")              -- "-"
+                elseif ix == 61 then context("mandate braces")      -- "="
+                elseif ix == 94 then context("keep spaces")         -- "^"
+                elseif ix == 95 then context("keep mandate braces") -- "_"
+                else                 context("argument %c",ix)
+                end
+                ctx_NC()
+                ctx_NC() ctx_NR()
+            else
+                ctx_NC()
+                ctx_NC()
+                ctx_NC()
+                ctx_NC() ctx_NR()
+                if cn == "end match" then
+                    context.ML()
+                end
+            end
+        end
+        context.LL()
+        context.stoptabulate()
+    else
+        context.starttabulate { "|l|" }
+        ctx_FL()
+        ctx_NC() context("%s: %s",w,n)
+        ctx_NC() ctx_NR()
+        ctx_ML()
+        ctx_NC() context("<no tokens>")
+        ctx_NC() ctx_NR()
+        ctx_LL()
+        context.stoptabulate()
+    end
+end
+
+interfaces.implement {
+    name      = "luatokentable",
+    public    = true,
+    protected = true,
+    actions   = moduledata.system.tokens.table,
+}
