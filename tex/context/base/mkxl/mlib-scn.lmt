@@ -550,7 +550,6 @@ local function getparameterdefault()
                      -- return injectnumeric(0)
                         return 0
                     else
-                    print("LAST",last)
                      -- return get(last)
                         return last
                     end
@@ -765,6 +764,30 @@ function metapost.setparameterset(namespace,t)
     namespaces[namespace] = t
 end
 
+function metapost.getparameterpreset(namespace,t)
+    return namespace and presets[namespace] or presets
+end
+
+local function setluaparameter()
+    local namespace = scanstring()
+    local name      = scanstring()
+    local value     = scanstring()
+    local code      = load("return " .. value)
+    if type(code) == "function" then
+        local result = code()
+        if result then
+            local data = namespace and namespaces[namespace] or namespaces
+            data[name] = result
+        else
+            report("no result from lua code: %s",value)
+        end
+    else
+        report("invalid lua code: %s",value)
+    end
+end
+
+registerdirect("setluaparameter", setluaparameter)
+
 -- This is an experiment for Alan and me.
 
 do
@@ -887,6 +910,15 @@ do
         local index = names[name]
         if index then
             return records[index]
+        end
+    end
+
+    function metapost.setrecord(name,data)
+        if type(data) == "table" then
+            local index = names[name]
+            if index then
+                records[index] = data
+            end
         end
     end
 

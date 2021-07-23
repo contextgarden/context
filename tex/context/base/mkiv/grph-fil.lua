@@ -42,13 +42,20 @@ end
 
 job.register('job.files.collected', tobesaved, initializer)
 
+-- When there is a runpath specified, we're already there, so then we only need to
+-- pass the orginal path. But we pass it because it will prevent prepending the
+-- current direction to the given name.
+
 local runner = sandbox.registerrunner {
     name     = "hashed context run",
     program  = "context",
-    template = [[%options% %filename%]],
+    template = [[%options% --path=%path% %filename%]],
+    template = [[%options% %?path: --path=%path% ?% %?runpath: --runpath=%runpath% ?% %filename%]],
     checkers = {
         options  = "string",
         filename = "readable",
+        path     = "string",
+        runpath  = "string",
     }
 }
 
@@ -90,7 +97,13 @@ function jobfiles.run(name,action)
             -- can be anything but we assume it gets checked by the sandbox
             os.execute(action)
         elseif ta == "table" then
+            local path    = action.path
+            local runpath = action.runpath
+            action.path    = environment.arguments.path
+            action.runpath = environment.arguments.runpath
             runner(action)
+            action.path    = path
+            action.runpath = runpath
         else
             report_run("processing file, no action given for processing %a",name)
         end

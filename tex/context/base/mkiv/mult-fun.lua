@@ -36,6 +36,7 @@ return {
         "applyparameters",
         "pushparameters",
         "popparameters",
+        "setluaparameter",
         "definecolor",
         --
         "record", "newrecord", "setrecord", "getrecord",

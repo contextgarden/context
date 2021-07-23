@@ -678,6 +678,7 @@ function scripts.context.run(ctxdata,filename)
     local a_purgeall      = getargument("purgeall")
     local a_purgeresult   = getargument("purgeresult")
     local a_global        = getargument("global")
+    local a_runpath       = getargument("runpath")
     local a_timing        = getargument("timing")
     local a_profile       = getargument("profile")
     local a_batchmode     = getargument("batchmode")
@@ -737,6 +738,31 @@ function scripts.context.run(ctxdata,filename)
             if analysis.interface and analysis.interface ~= interface then
                 formatname = formatofinterface[analysis.interface] or formatname
                 formatfile, scriptfile = resolvers.locateformat(formatname)
+            end
+            --
+            local runpath = a_runpath or analysis.runpath
+            if type(runpath) == "string" and runpath ~= "" then
+                runpath = resolvers.resolve(runpath)
+                local currentdir = dir.current()
+                if not lfs.isdir(runpath) then
+                    if dir.makedirs(runpath) then
+                        report("runpath %a has been created",runpath)
+                    else
+                        report("error: runpath %a cannot be created",runpath)
+                        os.exit()
+                    end
+                end
+                if lfs.chdir(runpath) then
+                    report("changing to runpath %a",runpath)
+                else
+                    report("error: changing to runpath %a is impossible",runpath)
+                    os.exit()
+                end
+                environment.arguments.path    = currentdir
+                environment.arguments.runpath = runpath
+                if filepathpart(filename) == "." then
+                    filename = filebasename(filename)
+                end
             end
             --
             a_jithash       = validstring(a_jithash or analysis.jithash) or nil

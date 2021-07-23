@@ -1595,9 +1595,10 @@ do
             local filename = ref.filename
             local fragment = ref.fragment
             if filename and filename ~= "" then
-                if lfs.isfile(filename) then
-                    report("loading use file: %s",filename)
-                    local root = xml.load(filename)
+                local fullname = resolvers.findbinfile(filename)
+                if lfs.isfile(fullname) then
+                    report("loading use file: %s",fullname)
+                    local root = xml.load(fullname)
                     res = xmlfirst(root,"**[@id='"..fragment.."']")
                     if res then
                         xmlinheritattributes(res,c) -- tricky
@@ -3525,7 +3526,8 @@ do
     local bpfactor = number.dimenfactors.bp
 
     function metapost.includesvgfile(filename,offset) -- offset in sp
-        if lfs.isfile(filename) then
+        local fullname = resolvers.findbinfile(filename)
+        if lfs.isfile(fullname) then
             context.startMPcode("doublefun")
                 context('draw lmt_svg [ filename = "%s", offset = %N ] ;',filename,(offset or 0)*bpfactor)
             context.stopMPcode()
@@ -3553,8 +3555,9 @@ do
     function metapost.showsvgpage(data)
         local dd = data.data
         if not dd then
-            local fn = data.filename
-            dd = fn and table.load(fn)
+            local filename = data.filename
+            local fullname = filename and resolvers.findbinfile(filename)
+            dd = fullname and table.load(fullname)
         end
         if type(dd) == "table" then
             local comment = data.comment

@@ -79,6 +79,9 @@ end
 function mp.lmt_svg_include()
     local labelfile = metapost.getparameter { "labelfile" }
     if labelfile and labelfile ~= "" then
+        labelfile = resolvers.findbinfile(labelfile)
+    end
+    if labelfile and labelfile ~= "" then
         local labels = table.load(labelfile) -- todo: same path as svg file
         if type(labels) == "table" then
             for i=1,#labels do
@@ -103,8 +106,9 @@ function mp.lmt_svg_include()
     end
     local filename = metapost.getparameter { "filename" }
     if filename and filename ~= "" then
+        local ok, data = resolvers.loadbinfile(filename)
         mpdirect ( metapost.svgtomp {
-            data     = io.loaddata(filename),
+            data     = data,
             remap    = true,
             colormap = colormap,
             id       = filename,

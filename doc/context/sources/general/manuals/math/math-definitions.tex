@@ -1,3 +1,5 @@
+% language=us runpath=texruns:manuals/math
+
 \environment math-layout
 
 \startcomponent math-definitions
@@ -77,8 +79,8 @@ So this time we get:
 
 \getbuffer
 
-We can now redefine the \quote {interiorset} symbol to use
-\type {0x2217} instead of \type {0x2218}:
+We can now redefine the \quote {interiorset} symbol to use \type {0x2217} instead
+of \type {0x2218}:
 
 \startbuffer
 \definemathover[mysymbol][interiorset]["2217]
@@ -92,7 +94,9 @@ We can now redefine the \quote {interiorset} symbol to use
 
 Of course normally you will not use color:
 
+\pushoverloadmode
 \getbuffer
+\popoverloadmode
 
 \stopsection
 

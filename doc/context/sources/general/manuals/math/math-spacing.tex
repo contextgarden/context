@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/math
 
 \environment math-layout
 
@@ -611,9 +611,9 @@ Math has its own direction control:
 
 \starttexdefinition unexpanded MathTest #1#2#3
     \ruledvbox \bgroup
-        \mathdir#1\relax
-        \textdir#2\relax
-        \pardir #3\relax
+        \mathdirection#1\relax
+        \textdirection#2\relax
+        \pardirection #3\relax
         \hsize=30mm
         \startformula
             a^2+b^2=c^2
@@ -629,14 +629,14 @@ Math has its own direction control:
 
 \startbuffer
 \startcombination[nx=4,ny=2,distance=1cm]
-    {\MathTest{TLT}{TLT}{TLT}} {\MathShow1{TLT}{TLT}{TLT}}
-    {\MathTest{TLT}{TLT}{TRT}} {\MathShow2{TLT}{TLT}{TRT}}
-    {\MathTest{TLT}{TRT}{TLT}} {\MathShow3{TLT}{TRT}{TLT}}
-    {\MathTest{TLT}{TRT}{TRT}} {\MathShow4{TLT}{TRT}{TRT}}
-    {\MathTest{TRT}{TLT}{TLT}} {\MathShow5{TRT}{TLT}{TLT}}
-    {\MathTest{TRT}{TLT}{TRT}} {\MathShow6{TRT}{TLT}{TRT}}
-    {\MathTest{TRT}{TRT}{TLT}} {\MathShow7{TRT}{TRT}{TLT}}
-    {\MathTest{TRT}{TRT}{TRT}} {\MathShow8{TRT}{TRT}{TRT}}
+    {\MathTest{0}{0}{0}} {\MathShow1{0}{0}{0}}
+    {\MathTest{0}{0}{1}} {\MathShow2{0}{0}{1}}
+    {\MathTest{0}{1}{0}} {\MathShow3{0}{1}{0}}
+    {\MathTest{0}{1}{1}} {\MathShow4{0}{1}{1}}
+    {\MathTest{1}{0}{0}} {\MathShow5{1}{0}{0}}
+    {\MathTest{1}{0}{1}} {\MathShow6{1}{0}{1}}
+    {\MathTest{1}{1}{0}} {\MathShow7{1}{1}{0}}
+    {\MathTest{1}{1}{1}} {\MathShow8{1}{1}{1}}
 \stopcombination
 \stopbuffer
 

@@ -1,3 +1,5 @@
+% language=us runpath=texruns:manuals/math
+
 \environment math-layout
 
 \startcomponent math-tricks
@@ -334,6 +336,8 @@ return {
 
 \startsection[title=Integrals]
 
+{\em This section needs to be adapted to extensible integrals.}
+
 A curious exception in the math system is the integral sign. Its companions are
 the summation and product signs, but integral has as extra property that it has a
 slant. In \LUATEX\ there is rather advanced control over how the (optional)
@@ -347,13 +351,12 @@ liking. One reason for this is that you might want a consistent size across
 formulas. Let's use the following setup:
 
 \startbuffer[setup]
-\setupmathextensible
+% \setupmathextensible
+\setupmathdelimiter
   [integral]
   [rightoffset=-1mu,
    exact=yes,
    factor=2]
-
-\let\int\integral
 \stopbuffer
 
 \typebuffer[setup]
@@ -376,7 +379,11 @@ We use the following exmaple:
 
 This renders as:
 
+\pushoverloadmode
+
 \dontleavehmode\hbox{\getbuffer[setup,demo]}
+
+\popoverloadmode
 
 \stopsection
 

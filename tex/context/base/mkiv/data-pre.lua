@@ -25,6 +25,8 @@ if not modules then modules = { } end modules ['data-pre'] = {
 -- version         : operating system version
 -- release         : operating system release
 
+
+local ipairs = ipairs
 local insert, remove = table.insert, table.remove
 
 local resolvers     = resolvers
@@ -40,6 +42,7 @@ local dirname       = file.dirname
 local joinpath      = file.join
 
 local isfile        = lfs.isfile
+local isdir         = lfs.isdir
 
 prefixes.environment = function(str)
     return cleanpath(expansion(str))
@@ -92,6 +95,8 @@ prefixes.pathname = function(str)
     return cleanpath(dirname((fullname ~= "" and fullname) or str))
 end
 
+-- we can actually freeze these
+
 prefixes.selfautoloc = function(str)
     local pth = getenv('SELFAUTOLOC')
     return cleanpath(str and joinpath(pth,str) or pth)
@@ -110,6 +115,34 @@ end
 prefixes.home = function(str)
     local pth = getenv('HOME')
     return cleanpath(str and joinpath(pth,str) or pth)
+end
+
+do
+    local tmppth
+
+    prefixes.temp = function(str)
+        if not tmppth then
+            for _, s in ipairs { "TMP", "TEMP", "TMPDIR", "TEMPDIR" } do
+                tmppth = getenv(s)
+                if tmppth ~= "" and isdir(tmppth) then
+                    break
+                end
+            end
+            if not tmppth or tmppth == "" then
+                tmppth = "."
+            end
+        end
+        return cleanpath(str and joinpath(tmppth,str) or tmppth)
+    end
+
+    prefixes.texruns = function(str)
+        local pth = getenv('TEXRUNS')
+        if pth == "" then
+            pth = tmppth
+        end
+        return cleanpath(str and joinpath(pth,str) or pth)
+    end
+
 end
 
 prefixes.env  = prefixes.environment

@@ -555,6 +555,11 @@ function figures.setpaths(locationset,pathlist)
             end
         end
     end
+    -- new
+    if environment.arguments.path then
+        table.insert(t,1,environment.arguments.path)
+    end
+    --
     figure_paths  = t
     last_pathlist = pathlist
     figures.paths = figure_paths

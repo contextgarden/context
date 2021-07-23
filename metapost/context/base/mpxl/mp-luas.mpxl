@@ -260,6 +260,7 @@ newscriptindex mfid_getparametertext     ; mfid_getparametertext     := scriptin
 newscriptindex mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
 newscriptindex mfid_pushparameters       ; mfid_pushparameters       := scriptindex "pushparameters" ;
 newscriptindex mfid_popparameters        ; mfid_popparameters        := scriptindex "popparameters" ;
+newscriptindex mfid_setluaparameter      ; mfid_setluaparameter      := scriptindex "setluaparameter" ;
 
 def getparameters        = runscript mfid_getparameters        enddef ;
 def presetparameters     = runscript mfid_presetparameters     enddef ;
@@ -276,10 +277,11 @@ def getparametertext     = runscript mfid_getparametertext     enddef ;
 def applyparameters      = runscript mfid_applyparameters      enddef ;
 def pushparameters       = runscript mfid_pushparameters       enddef ;
 def popparameters        = runscript mfid_popparameters        enddef ;
+def setluaparameter      = runscript mfid_setluaparameter      enddef ;
 
 permanent getparameters, presetparameters, hasparameter, hasoption, getparameter, getparameterdefault,
     getparametercount, getmaxparametercount, getparameterpath, getparameterpen, getparametertext, % getparameteroption,
-    applyparameters, pushparameters, popparameters ;
+    applyparameters, pushparameters, popparameters, setluaparameter ;
 
 newscriptindex mfun_newrecord ; mfun_newrecord := scriptindex "newrecord" ;
 newscriptindex mfun_setrecord ; mfun_setrecord := scriptindex "setrecord" ;
