@@ -20,9 +20,9 @@
 
 \unprotect
 
-\settrue \xmllshowbuffer
-\setfalse\xmllshowtitle
-\settrue \xmllshowwarning
+\settrue \xmllshowbuffertoo
+\setfalse\xmllshowtitletoo
+\settrue \xmllshowwarningtoo
 
 \definehead
   [lshowtitle]
@@ -35,10 +35,10 @@
 \permanent\protected\def\xmllshow#1%
   {\ctxlua{xml.ctx.tshow {
         pattern = \!!bs\detokenize{#1}\!!es,
-    \ifconditional\xmllshowtitle
+    \ifconditional\xmllshowtitletoo
         title = "lshowtitle",
     \fi
-    \ifconditional\xmllshowwarning
+    \ifconditional\xmllshowwarningtoo
         warning = true,
     \fi
     } }}
@@ -46,11 +46,11 @@
 \permanent\protected\def\xmllshowbuffer#1#2#3%
   {\ctxlua{xml.ctx.tshow {
         pattern = \!!bs\detokenize{#2}\!!es,
-    \ifconditional\xmllshowbuffer
+    \ifconditional\xmllshowbuffertoo
         xmlroot   = "#1",
         attribute = "#3",
     \fi
-    \ifconditional\xmllshowwarning
+    \ifconditional\xmllshowwarningtoo
         warning = true,
     \fi
      } }}

@@ -59,18 +59,20 @@ local function readfilename(specification,backtrack,treetoo)
             end
         end
         if not fnd and backtrack then
+            local path = environment.arguments.runpath and environment.arguments.path or ""
             for i=1,#names do
                 local fname = names[i]
                 for i=1,backtrack,1 do
                     fname = "../" .. fname
-                    if isfile(fname) then
+                    local pname = path and (path .. "/" .. fname) or fname
+                    if isfile(pname) then
                         if trace_files then
-                            report_files("found by backtracking: %s",fname)
+                            report_files("found by backtracking: %s",pname)
                         end
-                        fnd = fname
+                        fnd = pname
                         break
                     elseif trace_files then
-                        report_files("not found by backtracking: %s",fname)
+                        report_files("not found by backtracking: %s",pname)
                     end
                 end
                 if fnd then

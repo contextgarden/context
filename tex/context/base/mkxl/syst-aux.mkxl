@@ -4197,15 +4197,21 @@
 \let\syst_helpers_par_before\relax
 \let\syst_helpers_par_around\relax
 
+% \permanent\protected\def\dowithpar#1#2%
+%   {\globalpushmacro\syst_helpers_par_around
+%    \def\syst_helpers_par_around##1\par{#1##1#2\globalpopmacro\syst_helpers_par_around}%
+%    \expandafter\syst_helpers_par_around\ignorepars}
+
+% \permanent\protected\def\dogotopar#1%
+%   {\globalpushmacro\syst_helpers_par_before
+%    \def\syst_helpers_par_before{#1\globalpopmacro\syst_helpers_par_before}%
+%    \expandafter\syst_helpers_par_before\ignorepars}
+
 \permanent\protected\def\dowithpar#1#2%
-  {\globalpushmacro\syst_helpers_par_around
-   \def\syst_helpers_par_around##1\par{#1##1#2\globalpopmacro\syst_helpers_par_around}%
-   \expandafter\syst_helpers_par_around\ignorepars}
+  {\begingroup\aftergrouped{#1\dontleavehmode\wrapuppar{#2}}\expandafter\endgroup\ignorepars}
 
 \permanent\protected\def\dogotopar#1%
-  {\globalpushmacro\syst_helpers_par_before
-   \def\syst_helpers_par_before{#1\globalpopmacro\syst_helpers_par_before}%
-   \expandafter\syst_helpers_par_before\ignorepars}
+  {\begingroup\aftergrouped{#1}\expandafter\endgroup\ignorepars}
 
 \aliased\let\dogotoparcs\dogotopar
 
@@ -6263,12 +6269,14 @@
 \permanent\protected\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
 \permanent\protected\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
 
-\def\syst_helpers_unprotected#1\par
-  {#1\protect}
+%D This is obsolete, just use \type {\unprotect} and \type {\protect} instead.
 
-\permanent\protected\def\unprotected
-  {\unprotect
-   \syst_helpers_unprotected}
+% \def\syst_helpers_unprotected#1\par
+%   {#1\protect}
+%
+% \permanent\protected\def\unprotected
+%   {\unprotect
+%    \syst_helpers_unprotected}
 
 \aliased\let\resettimer    \clf_resettimer  % todo: at lua end
 \aliased\let\elapsedtime   \clf_elapsedtime % todo: at lua end

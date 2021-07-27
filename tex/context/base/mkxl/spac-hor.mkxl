@@ -19,10 +19,10 @@
 
 \aliased\let\parfillrightskip\parfillskip
 
-\bitwiseflip \normalizelinemode \parindentskipcode
-\bitwiseflip \normalizelinemode \normalizelinecode
-\bitwiseflip \normalizelinemode \clipwidthcode
-\bitwiseflip \normalizelinemode \flattendiscretionariescode
+\bitwiseflip \normalizelinemode \parindentskipnormalizecode
+\bitwiseflip \normalizelinemode \normalizelinenormalizecode
+\bitwiseflip \normalizelinemode \clipwidthnormalizecode
+\bitwiseflip \normalizelinemode \flattendiscretionariesnormalizecode
 
 \let\v_spac_indentation_current\empty % amount/keyword
 

@@ -80,7 +80,7 @@
 
 \def\syst_visualizers_speedup{\the\t_syst_visualizers_optimize}
 
-\appendtoks
+% \appendtoks
 %     \enforced\global\protected\edef\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \number\clf_getvisual{simplehbox} }
 %     \enforced\global\protected\edef\ruledhpack  {\syst_visualizers_hpack   attr \visualattribute \number\clf_getvisual{simplehbox} }
 %     \enforced\global\protected\edef\ruledvbox   {\syst_visualizers_vbox    attr \visualattribute \number\clf_getvisual{simplevbox} }
@@ -88,7 +88,7 @@
 %     \enforced\global\protected\edef\ruledvtop   {\syst_visualizers_vtop    attr \visualattribute \number\clf_getvisual{simplevtop} }
 %     \enforced\global\protected\edef\ruledtpack  {\syst_visualizers_tpack   attr \visualattribute \number\clf_getvisual{simplevtop} }
 %     \enforced\global\protected\edef\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \number\clf_getvisual{simplevbox} }
-\to \t_syst_visualizers_optimize
+% \to \t_syst_visualizers_optimize
 
 \permanent\tolerant\protected\def\showmakeup[#1]%
   {\ifarguments

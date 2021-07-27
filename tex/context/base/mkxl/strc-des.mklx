@@ -67,14 +67,14 @@
         \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%
     \fi
     % We can combine these but in tracing (or errors) using a different caller is nicer.
-    \frozen\instance\setuevalue        {\currentdescription}{\strc_descriptions_command[\currentdescription]}%
-    \frozen\instance\setuevalue{\e!start\currentdescription}{\strc_descriptions_start  [\currentdescription]}%
-    \frozen\instance\setuevalue{\e!stop \currentdescription}{\strc_descriptions_stop}%
+    \frozen\protected\instance\edefcsname        \currentdescription\endcsname{\strc_descriptions_command[\currentdescription]}%
+    \frozen\protected\instance\edefcsname\e!start\currentdescription\endcsname{\strc_descriptions_start  [\currentdescription]}%
+    \frozen\protected\instance\edefcsname\e!stop \currentdescription\endcsname{\strc_descriptions_stop}%
 \to \everydefinedescription
 
 \let\p_strc_constructions_title \empty
 
-\protected\setvalue{\??constructioninitializer\v!description}%
+\protected\defcsname\??constructioninitializer\v!description\endcsname
   {\let         \currentdescription              \currentconstruction
    \enforced\let\constructionparameter           \descriptionparameter
    \enforced\let\constructionnamespace           \??description
@@ -165,16 +165,16 @@
 \letcsname\??constructioncommandhandler\v!description\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
 \letcsname\??constructiontexthandler   \v!description\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
 
-\protected\setvalue{\??constructioncommandhandler\v!description}%
+\protected\defcsname\??constructioncommandhandler\v!description\endcsname
   {\dowithpar
      {\csname\??constructionstarthandler\v!construction\endcsname}%
      {\csname\??constructionstophandler \v!construction\endcsname\endgroup}}
 
-\protected\setvalue{\??constructionstarthandler\v!description}%
+\protected\defcsname\??constructionstarthandler\v!description\endcsname
   {\dogotopar
      {\csname\??constructionstarthandler\v!construction\endcsname}}
 
-\protected\setvalue{\??constructionstophandler\v!description}%
+\protected\defcsname\??constructionstophandler\v!description\endcsname
   {\csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
 

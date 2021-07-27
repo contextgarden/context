@@ -1240,4 +1240,15 @@
 
 \let\nexttoken\relax
 
+%D We need to disable this feature (comes from pdftex) because it not only messes up
+%D the nested content and wrappers (like in the page builder) but also is rather
+%D confusing wrt grouping. In \CONTEXT\ we don't redefine \type {\par} anyway, so
+%D best not expose this feature.
+
+\ifdefined\partokenname
+    \let\partokencontext\relax
+    \newcount\partokencontext
+    \let\partokenname\gobbleoneargument
+\fi
+
 \protect \endinput

@@ -438,7 +438,6 @@ local function documentspecification()
             end
         end
     end
-
     -- maybe interfaces.variables
     local layout    = spec.layout
     local mode      = spec.mode

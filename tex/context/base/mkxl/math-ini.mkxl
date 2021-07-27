@@ -123,11 +123,11 @@
 \definesystemattribute[displaymath]    [public]
 
 \mathflattenmode\numexpr
-    \ordflattencode
-   +\binflattencode
-   +\relflattencode
-   +\punctflattencode
-   +\innerflattencode
+    \ordmathflattencode
+   +\binmathflattencode
+   +\relmathflattencode
+   +\punctmathflattencode
+   +\innermathflattencode
 \relax
 
 \ifdefined\ordlimits\else
@@ -3040,6 +3040,10 @@
 \permanent\protected\tolerant\def\subsupprescr[#1]#:#*#2#3%
   {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
    \Usubprescript{#2}\Usuperprescript{#3}}
+
+%D For now (needed in asciimath):
+
+\def\math_relax_limits{\enforced\let\limits\relax}
 
 \protect \endinput
 

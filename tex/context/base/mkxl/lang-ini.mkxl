@@ -418,31 +418,31 @@
 
 % \uchyph\plusone :
 
-% \chardef \completehyphenationmodecode \numexpr
-\permanent \integerdef \completehyphenationmodecode \numexpr
-    \normalhyphenationmodecode            % \discretionary
-  + \automatichyphenationmodecode         % -
-  + \explicithyphenationmodecode          % \-
-  + \syllablehyphenationmodecode          % pattern driven
-  + \uppercasehyphenationmodecode         % replaces \uchyph
-  + \compoundhyphenationmodecode          % replaces \compoundhyphenmode
-  % \strictstarthyphenationmodecode       % replaces \hyphenationbounds (strict = original tex)
-  % \strictendhyphenationmodecode         % replaces \hyphenationbounds (strict = original tex)
-  + \automaticpenaltyhyphenationmodecode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
-  + \explicitpenaltyhyphenationmodecode   % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
-  + \permitgluehyphenationmodecode        % turn glue into kern in \discretionary
-  + \permitallhyphenationmodecode         % okay, let's be even more tolerant
-  + \permitmathreplacehyphenationmodecode % and again we're more permissive
-  + \forcehandlerhyphenationmodecode      % kick in the handler (could be an option)
-  + \feedbackcompoundhyphenationmodecode  % feedback compound snippets
-  + \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
-  + \collapsehyphenationmodecode          % collapse -- and ---
+% \chardef \completehyphenationcode \numexpr
+\permanent \integerdef \completehyphenationcode \numexpr
+    \normalhyphenationcode            % \discretionary
+  + \automatichyphenationcode         % -
+  + \explicithyphenationcode          % \-
+  + \syllablehyphenationcode          % pattern driven
+  + \uppercasehyphenationcode         % replaces \uchyph
+  + \compoundhyphenationcode          % replaces \compoundhyphenmode
+  % \strictstarthyphenationcode       % replaces \hyphenationbounds (strict = original tex)
+  % \strictendhyphenationcode         % replaces \hyphenationbounds (strict = original tex)
+  + \automaticpenaltyhyphenationcode  % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \explicitpenaltyhyphenationcode   % replaces \hyphenpenaltymode (otherwise use \exhyphenpenalty)
+  + \permitgluehyphenationcode        % turn glue into kern in \discretionary
+  + \permitallhyphenationcode         % okay, let's be even more tolerant
+  + \permitmathreplacehyphenationcode % and again we're more permissive
+  + \forcehandlerhyphenationcode      % kick in the handler (could be an option)
+  + \feedbackcompoundhyphenationcode  % feedback compound snippets
+  + \ignoreboundshyphenationcode      % just in case we have hyphens at the edges
+  + \collapsehyphenationcode          % collapse -- and ---
 \relax
 
-\permanent \integerdef \partialhyphenationmodecode \numexpr
-    \ignoreboundshyphenationmodecode      % just in case we have hyphens at the edges
-% + \explicithyphenationmodecode          % \-
-  + \collapsehyphenationmodecode          % collapse -- and ---
+\permanent \integerdef \partialhyphenationcode \numexpr
+    \ignoreboundshyphenationcode      % just in case we have hyphens at the edges
+% + \explicithyphenationcode          % \-
+  + \collapsehyphenationcode          % collapse -- and ---
 \relax
 
 \hccode"002D "002D
@@ -461,30 +461,30 @@
 
 % maybe a (un)setter for handlers
 
-\permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationmodecode}
-\permanent\protected\def\nohyphens {\hyphenationmode\partialhyphenationmodecode}
+\permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationcode}
+\permanent\protected\def\nohyphens {\hyphenationmode\partialhyphenationcode}
 
 % \permanent\protected\def\dohyphens
-%   {\ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
-%      \hyphenationmode\completehyphenationmodecode
+%   {\ifbitwiseand\hyphenationmode\collapsehyphenationcode
+%      \hyphenationmode\completehyphenationcode
 %    \else
-%      \hyphenationmode\numexpr\completehyphenationmodecode-\collapsehyphenationmodecode\relax
+%      \hyphenationmode\numexpr\completehyphenationcode-\collapsehyphenationcode\relax
 %    \fi}
 
 % \permanent\protected\def\nohyphens
-%   {\ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
-%      \hyphenationmode\partialhyphenationmodecode
+%   {\ifbitwiseand\hyphenationmode\collapsehyphenationcode
+%      \hyphenationmode\partialhyphenationcode
 %    \else
-%      \hyphenationmode\numexpr\partialhyphenationmodecode-\collapsehyphenationmodecode\relax
+%      \hyphenationmode\numexpr\partialhyphenationcode-\collapsehyphenationcode\relax
 %    \fi}
 
-\permanent\protected\def\dohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode \collapsehyphenationmodecode}
-\permanent\protected\def\nohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode-\collapsehyphenationmodecode}
+\permanent\protected\def\dohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode \collapsehyphenationcode}
+\permanent\protected\def\nohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode-\collapsehyphenationcode}
 
 \permanent\protected\def\usehyphensparameter#1%
   {\edef\p_hyphens{#1\c!hyphens}%
    \ifx\p_hyphens\v!no
-     \ifbitwiseand\hyphenationmode\collapsehyphenationmodecode
+     \ifbitwiseand\hyphenationmode\collapsehyphenationcode
        \nohyphens
      \else
        \nohyphens
@@ -835,20 +835,20 @@
 %D {ef{\norightligaturing f}icient ff fi}\par
 %D \stoptyping
 
-\immutable\chardef\nokerningcode   \numexpr\noleftkerncode    +\norightkerncode    \relax
-\immutable\chardef\noligaturingcode\numexpr\noleftligaturecode+\norightligaturecode\relax
+\immutable\chardef\nokerningcode   \numexpr\noleftkernglyphoptioncode    +\norightkernglyphoptioncode    \relax
+\immutable\chardef\noligaturingcode\numexpr\noleftligatureglyphoptioncode+\norightligatureglyphoptioncode\relax
 
 \permanent\protected\def\nokerning   {\bitwiseflip\glyphoptions\nokerningcode}
 \permanent\protected\def\noligaturing{\bitwiseflip\glyphoptions\noligaturingcode}
 
-\permanent\protected\def\noleftkerning    {\bitwiseflip\glyphoptions\noleftkerncode}
-\permanent\protected\def\noleftligaturing {\bitwiseflip\glyphoptions\noleftligaturecode}
-\permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkerncode}
-\permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligaturecode}
+\permanent\protected\def\noleftkerning    {\bitwiseflip\glyphoptions\noleftkernglyphoptioncode}
+\permanent\protected\def\noleftligaturing {\bitwiseflip\glyphoptions\noleftligatureglyphoptioncode}
+\permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkernglyphoptioncode}
+\permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligatureglyphoptioncode}
 
 % This is not really language related but let's define it here:
 
-\permanent\protected\def\noitaliccorrection{\bitwiseflip\glyphoptions\noitaliccorrectioncode}
+\permanent\protected\def\noitaliccorrection{\bitwiseflip\glyphoptions\noitaliccorrectionglyphoptioncode}
 
 %D Also \LMTX:
 

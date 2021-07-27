@@ -210,6 +210,8 @@
 		<cd:variable name='fixed' value='fisso'/>
 		<cd:variable name='flexible' value='flessibile'/>
 		<cd:variable name='float' value='oggettomobile'/>
+		<cd:variable name='flushbackward' value='flushbackward'/>
+		<cd:variable name='flushforward' value='flushforward'/>
 		<cd:variable name='flushinner' value='flushinner'/>
 		<cd:variable name='flushleft' value='flushleft'/>
 		<cd:variable name='flushouter' value='flushouter'/>

@@ -40,6 +40,8 @@
 
 \stopitemize
 
+\stoptitle
+
 \starttitle[title=Some implementation details]
 
 \startitemize
@@ -127,7 +129,7 @@ Token memory:
     \eTABLE
 \stoplinecorrection
 
-\stoptable
+\stoptitle
 
 \starttitle[title=The hash table (simplified)]
 
@@ -170,9 +172,9 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 \starttitle[title=Other data management]
 
 \startitemize
-\startitem Grouping is handles by a nesting stack. \stopitem
+\startitem Grouping is handled by a nesting stack. \stopitem
 \startitem Nested conditionals (\type {\if...}) have their own stack. \stopitem
-\startitem The values before assignments are saved ion the save stack. \stopitem
+\startitem The values before assignments are saved on the save stack. \stopitem
 \startitem Also other local changes (housekeeping) ends up in the save stack. \stopitem
 \startitem Token lists and macro aliases have references pointers (reuse). \stopitem
 \startitem Attributes, being linked node lists, have their own management. \stopitem
@@ -190,7 +192,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 1: in the input]
+\starttitle[title=Example 2: in the input]
 
 \startbuffer
 \luatokentable{a \the\scratchcounter b \the\parindent \hbox to 10pt{x}}
@@ -200,7 +202,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 2: user registers]
+\starttitle[title=Example 3: user registers]
 
 \startbuffer
 \scratchtoks{foo \framed{\red 123}456}
@@ -212,7 +214,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 3: internal variables]
+\starttitle[title=Example 4: internal variables]
 
 \startbuffer
 \luatokentable\everypar
@@ -222,7 +224,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 4: macro definitions]
+\starttitle[title=Example 5: macro definitions]
 
 \startbuffer
 \protected\def\whatever#1[#2](#3)\relax{oeps #1 and #2 & #3 done ## error}
@@ -234,7 +236,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 5: commands]
+\starttitle[title=Example 6: commands]
 
 \startbuffer
 \luatokentable\startitemize
@@ -244,7 +246,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 6: commands]
+\starttitle[title=Example 7: commands]
 
 \startbuffer
 \luatokentable\doifelse
@@ -254,7 +256,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 7: nothing]
+\starttitle[title=Example 8: nothing]
 
 \startbuffer
 \luatokentable\relax
@@ -264,7 +266,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 8: Hashes]
+\starttitle[title=Example 9: hashes]
 
 \startbuffer
 \edef\foo#1#2{(#1)(\letterhash)(#2)}  \luatokentable\foo
@@ -274,7 +276,7 @@ Equivalents (registers direct, macros indirect i.e.\ token lists):
 
 \stoptitle
 
-\starttitle[title=Example 9: Nesting]
+\starttitle[title=Example 10: nesting]
 
 \startbuffer
 \def\foo#1{\def\foo##1{(#1)(##1)}}  \luatokentable\foo

@@ -70,4 +70,14 @@
 % %     \enableattributeinheritance % might become default
 % % \to\everyjob
 
+% This is just a compatibility hack:
+
+\newcount\c_syst_attr_trigger
+
+\permanent\protected\def\attributedcopy{\afterassignment\syst_attr_copy\c_syst_attr_trigger}
+\permanent\protected\def\attributedbox {\afterassignment\syst_attr_box \c_syst_attr_trigger}
+
+\def\syst_attr_copy{\recolorbox\c_syst_attr_trigger\copy\c_syst_attr_trigger}
+\def\syst_attr_box {\recolorbox\c_syst_attr_trigger\box \c_syst_attr_trigger}
+
 \protect \endinput

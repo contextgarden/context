@@ -1,18 +1,42 @@
+% language=us runpath=texruns:manuals/xml
+
 \environment xml-mkiv-style
 
 \startcomponent xml-mkiv-titlepage
 
 \setuplayout[page]
 
+\ifcase\contextlmtxmode
+
+    \usemodule[punk]
+
+    \usetypescript[punk]
+
+    \definefont[PunkSmall][demo@punk at 18pt]
+    \definefont[PunkLarge][demo@punk at 90pt]
+
+\else
+
+    \useMPlibrary[punk]
+
+    \definefont[PunkSmall][Serif*punkrandom @ 18pt]
+    \definefont[PunkLarge][Serif*punkrandom @ 90pt]
+
+\fi
+
 \startstandardmakeup
     \startfontclass[none] % nil the current fontclass since it may append its features
-    \EnableRandomPunk
+    \ifcase\contextlmtxmode
+        \EnableRandomPunk
+    \else
+        \enablerandomvariants
+    \fi
     \setlayerframed
       [page]
       [width=\paperwidth,height=\paperheight,
        background=color,backgroundcolor=colorone,backgroundoffset=1ex,frame=off]
       {}
-    \definedfont[demo@punk at 18pt]
+    \PunkSmall
     \setbox\scratchbox\vbox {
         \hsize\dimexpr\paperwidth+2ex\relax
         \setupinterlinespace
@@ -24,14 +48,14 @@
       [page]
       [preset=middle]
       {\vsplit\scratchbox to \dimexpr\paperheight+2ex\relax}
-    \definedfont[demo@punk at 90pt]
+    \PunkLarge
     \setstrut
     \setlayerframed
       [page]
       [preset=rightbottom,offset=10mm]
       [foregroundcolor=colorthree,align=flushright,offset=overlay,frame=off]
       {Dealing\\with XML in\\Con\TeX t MkIV}
-    \definedfont[demo@punk at 18pt]
+    \PunkSmall
     \setstrut
     \setlayerframed
       [page]

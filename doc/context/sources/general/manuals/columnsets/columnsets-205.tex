@@ -6,7 +6,11 @@
 
 \environment columnsets-000
 
-\unprotected \def\SpreadGapText#1#2{{\def\+{\blackrule[\c!width=#1]}#2}}
+\unprotect
+
+\def\SpreadGapText#1#2{{\def\+{\blackrule[\c!width=#1]}#2}}
+
+\protect
 
 \definecolumnset[example][n=4,page=left]
 

@@ -488,17 +488,17 @@
 
 \installtextracker
   {linecorrection.boxes}
-  {\letfrozen\let\spac_lines_vbox\ruledvbox}
-  {\letfrozen\let\spac_lines_vbox\vbox}
+  {\enforced\let\spac_lines_vbox\ruledvbox}
+  {\enforced\let\spac_lines_vbox\vbox}
 
 \let\v_spac_lines_around_action_set\relax
 \let\m_spac_lines_around           \empty
 
 \newconstant\c_spac_lines_correction_mode
 
-\setvalue{\??linesaround\v!blank  }{\blank}
-\letvalue{\??linesaround\empty    }\relax
-\setvalue{\??linesaround\s!unknown}{\directcheckedvspacing\m_spac_lines_around} % \blank[\m_spac_lines_around]}
+\defcsname\??linesaround\v!blank  \endcsname{\blank}
+\letcsname\??linesaround\empty    \endcsname\relax
+\defcsname\??linesaround\s!unknown\endcsname{\directcheckedvspacing\m_spac_lines_around} % \blank[\m_spac_lines_around]}
 
 \def\spac_lines_action_around % we used to let this one but it's cleaner this way
   {\csname\??linesaround      % i.e. do it twice

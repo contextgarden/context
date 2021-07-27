@@ -130,33 +130,46 @@ interfaces.implement {
 -- For the moment here, will move to initex only (also see node-ini.lua); we need
 -- to actually store these.
 
-local function getthem(getter,pre,post)
+local context = context
+
+local function getthem(getter,post)
     local codes = { }
     if getter then
         local texintegerdef = tex.integerdef
         for k, v in next, getter() do
             codes[k] = gsub(v,"[_ ]","")
         end
-        if post ~= "" and environment.initex then
-            for k, v in next, codes do
-                texintegerdef(pre .. v .. post,k,"immutable")
+        if post ~= "" then
+            if environment.initex then
+                for k, v in next, codes do
+                    texintegerdef(v .. post,k,"immutable")
+                end
             end
+            interfaces.implement {
+                name      = post .. "string",
+                public    = true,
+                arguments = "integer",
+                actions   = function(i)
+                    context(codes[i] or "unknown")
+                end
+            }
         end
     end
     return utilities.storage.allocate(table.swapped(codes,codes))
 end
 
-tex.groupcodes       = getthem(tex.getgroupvalues,       "",       "groupcode")
-tex.glyphoptioncodes = getthem(tex.getglyphoptionvalues, "",       "code")
-tex.discoptioncodes  = getthem(tex.getdiscoptionvalues,  "",       "code")
-tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "",       "") -- only at lua end
-tex.mathcontrolcodes = getthem(tex.getmathcontrolvalues, "",       "mathcontrolcode")
-tex.textcontrolcodes = getthem(tex.gettextcontrolvalues, "",       "") -- only at lua end
-tex.mathflattencodes = getthem(tex.getmathflattenvalues, "",       "flattencode")
-tex.hyphenationcodes = getthem(tex.gethyphenationvalues, "",       "hyphenationmodecode")
-tex.frozenparcodes   = getthem(tex.getfrozenparvalues,   "frozen", "code")
-tex.flagcodes        = getthem(tex.getflagvalues,        "",       "flagcode" )
-tex.normalizecodes   = getthem(tex.getnormalizevalues,   "",       "code")
+tex.discoptioncodes  = getthem(tex.getdiscoptionvalues,  "discoptioncode")
+tex.flagcodes        = getthem(tex.getflagvalues,        "flagcode" )
+tex.frozenparcodes   = getthem(tex.getfrozenparvalues,   "frozenparcode")
+tex.glyphoptioncodes = getthem(tex.getglyphoptionvalues, "glyphoptioncode")
+tex.groupcodes       = getthem(tex.getgroupvalues,       "groupcode")
+tex.hyphenationcodes = getthem(tex.gethyphenationvalues, "hyphenationcode")
+tex.mathcontrolcodes = getthem(tex.getmathcontrolvalues, "mathcontrolcode")
+tex.mathflattencodes = getthem(tex.getmathflattenvalues, "mathflattencode")
+tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "") -- only at lua end
+tex.normalizecodes   = getthem(tex.getnormalizevalues,   "normalizecode")
+tex.parcontextcodes  = getthem(tex.getparcontextvalues,  "parcontextcode")
+tex.textcontrolcodes = getthem(tex.gettextcontrolvalues, "") -- only at lua end
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

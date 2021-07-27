@@ -1,9 +1,12 @@
+% language=us runpath=texruns:manuals/xml
+
 \startenvironment xml-mkiv-style
 
 \input lxml-ctx.mkiv
 
-\settrue \xmllshowtitle
-\setfalse\xmllshowwarning
+\settrue \xmllshowtitletoo
+\settrue \xmllshowbuffertoo
+\setfalse\xmllshowwarningtoo
 
 \usemodule[set-11]
 
@@ -137,10 +140,6 @@
   [framecolor=colorone,
    rulethickness=1pt,
    corner=round]
-
-\usemodule[punk]
-
-\usetypescript[punk]
 
 \definelayer
   [page]

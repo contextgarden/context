@@ -15573,6 +15573,12 @@ return {
    ["pe"]="شناور",
    ["ro"]="obiectmobil",
   },
+  ["flushforward"]={
+   ["en"]="flushforward",
+  },
+  ["flushbackward"]={
+   ["en"]="flushbackward",
+  },
   ["flushinner"]={
    ["cs"]="flushinner",
    ["de"]="flushinner",

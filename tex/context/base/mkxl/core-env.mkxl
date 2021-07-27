@@ -341,9 +341,10 @@
 \def\syst_modes_set_quit#-\stopmodeset
   {\pop_macro_c_syst_modes_set_done}
 
-%D Lets now set a mode:
+%D Lets now set a few modes:
 
-\enablemode[mkiv] \newsystemmode{mkiv} \setsystemmode{mkiv}
+\enablemode[mkiv] \newsystemmode{mkiv} \setsystemmode{mkiv} % also mkxl
+\enablemode[lmtx] \newsystemmode{lmtx} \setsystemmode{lmtx}
 
 %D Setups:
 

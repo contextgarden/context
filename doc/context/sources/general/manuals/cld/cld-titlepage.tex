@@ -1,12 +1,22 @@
+% language=us runpath=texruns:manuals/cld
+
 \startcomponent cld-titlepage
 
 \environment cld-environment
 
-% \cldprocessfile{cld-mkiv-titlepage.cld}
+\iffalse
 
-\startTEXpage
-    \externalfigure[cld-mkiv-titlepage.pdf]%
-\stopTEXpage % faster during writing
+    \cldprocessfile{cld-mkiv-titlepage.cld} % kind of slow each time
+
+\else
+
+    \ctxlua{document.checkcldresource("cld-mkiv-titlepage.cld")}
+
+    \startTEXpage
+        \externalfigure[cld-mkiv-titlepage.pdf]%
+    \stopTEXpage
+
+\fi
 
 \startstandardmakeup[doublesided=no,page=no]
 \stopstandardmakeup

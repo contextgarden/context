@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/cld
 
 \startcomponent cld-ctxscanners
 
@@ -41,6 +41,7 @@ Of course in practice the \type {actions} will be more complex.
     interfaces.implement {
         name      = "MyMacroA",
         public    = true,
+        permanent = false,
         arguments = "string",
         actions   = function(s)
             context("(%s)",s)
@@ -84,14 +85,19 @@ The meaning of \type {\temp} is:
 
 We can also define the macro to be protected (\type {\unexpanded}) in \CONTEXT\
 speak). We can overload existing scanners but unless we specify the \type
-{overload} option, we get a warning on the console.
+{overload} option, we get a warning on the console. However, in \LMTX\ there is
+catch. Implementers by default define macros as permanent unless one explicitly
+disables this so this is why in the previous definition we have done so. The
+overload flag below only makes sense in special cases, when for instance format
+file is made. (Of course overload protection only kicks in when it has been
+enabled.)
 
 \startbuffer[definition]
 \startluacode
     interfaces.implement {
         name      = "MyMacroA",
         public    = true,
---      overload  = true,
+     -- overload  = true,
         protected = true,
         arguments = "string",
         actions   = function(s)
@@ -407,14 +413,14 @@ that doesn't expand. Take this:
 
 \typebuffer[definition] \getbuffer[definition]
 
-Now take this input:
+Now take this input: % we use \C* because \c is already defined
 
 \startbuffer[usage]
-\def\a{A} \def\b{B} \def\c{C}
+\def\Ca{A} \def\Cb{B} \def\Cc{C}
 \MyMacroH{a}{b}{c}
-\MyMacroH{a\a}{b\b}{c\c}
-\MyMacroH\a\b\c\relax
-\MyMacroH\a xx\relax
+\MyMacroH{a\Ca}{b\Cb}{c\Cc}
+\MyMacroH\Ca\Cb\Cc\relax
+\MyMacroH\Ca xx\relax
 \stopbuffer
 
 \typebuffer[usage]

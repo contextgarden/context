@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/cld
 
 \startcomponent cld-afewdetails
 
@@ -342,7 +342,7 @@ The \LUA\ code like similar to the code presented before:
 \startluacode
 local setcolor    = nodes.tracers.colors.setlist
 local getmarker   = nodes.markers.get
-local hlist_code  = nodes.codes.hlist
+local hlist_code  = nodes.nodecodes.hlist
 local traverse_id = node.traverse_id
 
 function userdata.processmystuff(head)

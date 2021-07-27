@@ -107,7 +107,7 @@
 
 %D New in \LMTX: can be used grouped.
 
-\permanent\protected\def\noexpansion {\bitwiseflip\glyphoptions\noexpansioncode}
-\permanent\protected\def\noprotrusion{\bitwiseflip\glyphoptions\noprotrusioncode}
+\permanent\protected\def\noexpansion {\bitwiseflip\glyphoptions\noexpansionglyphoptioncode}
+\permanent\protected\def\noprotrusion{\bitwiseflip\glyphoptions\noprotrusionglyphoptioncode}
 
 \protect \endinput

@@ -132,23 +132,23 @@
 
 \appendtoks
     \ifempty\currentconstructionparent
-        \letvalue{\??constructionmain\currentconstruction}\currentconstruction
+        \letcsname\??constructionmain\currentconstruction\endcsname\currentconstruction
         \definelist[\currentconstruction]% goodie
     \else
-        \letvalue{\??constructionmain\currentconstruction}\currentconstructionparent
+        \letcsname\??constructionmain\currentconstruction\endcsname\currentconstructionparent
         \definelist[\currentconstruction][\currentconstructionparent]% goodie
     \fi
-    \setevalue{\??constructionlevel\currentconstruction}{\number\constructionparameter\c!level}%
-    \setevalue{\??constructionclass\currentconstruction}{\constructionparameter\s!handler}%
+    \edefcsname\??constructionlevel\currentconstruction\endcsname{\number\constructionparameter\c!level}%
+    \edefcsname\??constructionclass\currentconstruction\endcsname{\constructionparameter\s!handler}%
 \to \everydefineconstruction
 
 % todo: inhibit this when we have a different handle .. current we cannot do \frozen
 
 \appendtoks
     \ifconditional\c_strc_constructions_define_commands
-     %% \instance\setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
-        \instance\setuevalue{\e!start\currentconstruction}{\strc_constructions_start[\currentconstruction]}%
-        \instance\setuevalue{\e!stop \currentconstruction}{\strc_constructions_stop}%
+     %% \protected\instance\edefcsname\e!start\currentconstruction\endcsname{\strc_constructions_start{\currentconstruction}}%
+        \protected\instance\edefcsname\e!start\currentconstruction\endcsname{\strc_constructions_start[\currentconstruction]}%
+        \protected\instance\edefcsname\e!stop \currentconstruction\endcsname{\strc_constructions_stop}%
     \fi
 \to \everydefineconstruction
 
@@ -443,7 +443,7 @@
    \updateparagraphshapes
    \ignorespaces} % args not needed
 
-\protected\setvalue{\??constructionstophandler\v!construction}%
+\protected\defcsname\??constructionstophandler\v!construction\endcsname
   {\strc_constructions_close_symbol_place
    \doifnot{\constructionparameter\c!display}\v!no\par
    \dostoptagged % content

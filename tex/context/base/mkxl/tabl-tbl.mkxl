@@ -1050,8 +1050,8 @@
 \appendtoks
      \enforced\permanent\protected\edefcsname\e!start       \currenttabulation\endcsname{\tabl_start_defined[\currenttabulation]}%
      \enforced\aliased            \letcsname \e!stop        \currenttabulation\endcsname\relax
-     \enforced\aliased            \letcsname \??tabulatehead\currenttabulation\endcsname\empty
-     \enforced\aliased            \letcsname \??tabulatefoot\currenttabulation\endcsname\empty
+     \mutable                     \letcsname \??tabulatehead\currenttabulation\endcsname\empty
+     \mutable                     \letcsname \??tabulatefoot\currenttabulation\endcsname\empty
 \to \everydefinetabulation
 
 \aliased  \let\tabulateparameter\tabulationparameter % will stay for a while

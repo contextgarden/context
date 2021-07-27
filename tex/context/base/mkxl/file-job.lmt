@@ -191,7 +191,7 @@ implement {
 
 -- moved from tex to lua:
 
-local texpatterns = { "%s.mkvi", "%s.mkiv", "%s.mklx", "%s.mkxl", "%s.tex" }
+local texpatterns = { "%s.mklx", "%s.mkxl", "%s.mkvi", "%s.mkiv", "%s.tex" }
 local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua", "%s.lmt" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
@@ -813,18 +813,32 @@ implement { name = "usecomponent",   public = true, protected = true, actions = 
 -- todo: setsystemmode to currenttype
 -- todo: make start/stop commands at the tex end
 
+-- local start = {
+--     [v_project]     = context.startprojectindeed,
+--     [v_product]     = context.startproductindeed,
+--     [v_component]   = context.startcomponentindeed,
+--     [v_environment] = context.startenvironmentindeed,
+-- }
+
+-- local stop = {
+--     [v_project]     = context.stopprojectindeed,
+--     [v_product]     = context.stopproductindeed,
+--     [v_component]   = context.stopcomponentindeed,
+--     [v_environment] = context.stopenvironmentindeed,
+-- }
+
 local start = {
-    [v_project]     = context.startprojectindeed,
-    [v_product]     = context.startproductindeed,
-    [v_component]   = context.startcomponentindeed,
-    [v_environment] = context.startenvironmentindeed,
+    [v_project]     = "startprojectindeed",
+    [v_product]     = "startproductindeed",
+    [v_component]   = "startcomponentindeed",
+    [v_environment] = "startenvironmentindeed",
 }
 
 local stop = {
-    [v_project]     = context.stopprojectindeed,
-    [v_product]     = context.stopproductindeed,
-    [v_component]   = context.stopcomponentindeed,
-    [v_environment] = context.stopenvironmentindeed,
+    [v_project]     = "stopprojectindeed",
+    [v_product]     = "stopproductindeed",
+    [v_component]   = "stopcomponentindeed",
+    [v_environment] = "stopenvironmentindeed",
 }
 
 local function gotonextlevel(what,name) -- todo: something with suffix name
@@ -833,19 +847,20 @@ local function gotonextlevel(what,name) -- todo: something with suffix name
     currenttype = what
     pushtree(what,name)
     if start[what] then
-        start[what]()
+     -- start[what]()
+        token.expandmacro(start[what])
     end
 end
 
 local function gotopreviouslevel(what)
     if stop[what] then
-        stop[what]()
+        token.expandmacro(stop[what])
+     -- stop[what]() -- not immediate
     end
     poptree()
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
-    context.endinput()
---     context.signalendofinput(what)
+ -- context.endinput() -- now at the tex end !
 end
 
 local function autoname()

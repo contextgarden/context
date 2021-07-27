@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/cld
 
 \startcomponent cld-somemoreexamples
 
@@ -332,6 +332,8 @@ context.starttext()
 context.stoptext()
 \stoptyping
 
+\ctxlua{document.checkcldresource("cld-005.cld")}
+
 \placefigure
   [here]
   [fig:lorien]
@@ -627,7 +629,7 @@ example:
 
 \startbuffer
 \defineframed
-  [colored]
+  [coloredframed]
   [foregroundcolor=red,
    foregroundstyle=\underbar,
    offset=.1ex,
@@ -637,7 +639,7 @@ example:
 \typebuffer \getbuffer
 
 \startbuffer
-\processisolatedwords {\input ward \relax} \colored
+\processisolatedwords {\input ward \relax} \coloredframed
 \stopbuffer
 
 \typebuffer \blank \getbuffer \blank
@@ -661,7 +663,7 @@ local function process(data)
     else
         context.space()
     end
-    context.colored(words[i])
+    context.coloredframed(words[i])
   end
 
 end
@@ -693,7 +695,7 @@ local function apply(s)
     done = true
     context.dontleavehmode()
   end
-  context.colored(s)
+  context.coloredframed(s)
 end
 
 local splitter = lpeg.P(reset)
@@ -709,7 +711,7 @@ next one is comaprable:
 
 \starttyping
 local function apply(s)
-  context.colored("%s ",s)
+  context.coloredframed("%s ",s)
 end
 
 local splitter lpeg.splitter(lpeg.patterns.spacer,apply)

@@ -2344,13 +2344,13 @@ permanent
 
 % nice hack
 
-newscriptindex mfid_scrutenized ; mfid_scrutenized := scriptindex "scrutenized" ;
+newscriptindex mfid_scrutinized ; mfid_scrutinized := scriptindex "scrutinized" ;
 
-primarydef p scrutenized n =
-    runscript mfid_scrutenized p n
+primarydef p scrutinized n =
+    runscript mfid_scrutinized p n
 enddef ;
 
-permanent scrutenized ;
+permanent scrutinized ;
 
 % for now here
 

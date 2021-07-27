@@ -139,7 +139,7 @@
 
 \unexpanded\def\asciimathoptext        #1{\ifmmode\mathoptext{#1}\else#1\fi}
 \unexpanded\def\asciimathoptexttraced  #1{\ifmmode\mathoptext{\color[darkgreen]{#1}}\else\color[darkgreen]{#1}\fi}
-\unexpanded\def\asciimathstackrel    #1#2{\mathematics{\mathop{\let\limits\relax\mover{#2}{#1}}}}
+\unexpanded\def\asciimathstackrel    #1#2{\mathematics{\mathop{\math_relax_limits\mover{#2}{#1}}}}
 \unexpanded\def\asciimathroot        #1#2{\sqrt[#1]{#2}}
 \unexpanded\def\asciimathsqrt          #1{\sqrt{#1}}
 

@@ -614,7 +614,6 @@ dimensions of a glyph.
 
 {\getbuffer}
 
-
 \stopsection
 
 \startsection[title={Implementation}]
@@ -652,51 +651,6 @@ enable, or not.
 \stopchapter
 
 \stopcomponent
-
-% sample file
-
-\setuplayout[topspace=1cm,header=1cm] \setuplayout[middle]
-
-\setupbodyfont[pagella,10pt]
-
-\setupalign[verytolerant,stretch]
-
-\setupwhitespace[big]
-
-\starttext
-
-\startbuffer
-\definetweakedfont[bfe][xscale=2000,yscale=6000,style=bf]
-
-\setuphead[chapter][style=\bfe]
-
-\dostepwiserecurse {10} {2020} {10} {
-    \title{Here we go #1!}
-    \start
-    \glyphxscale#1\relax
-    \glyphyscale#1\relax
-    \setupinterlinespace
-    \samplefile{ward}%
-    \start
-    \bf
-    \samplefile{ward}%
-    \glyphxscale\numexpr(#1*2)/3\relax
-    \glyphyscale#1\relax
-    \samplefile{ward}%
-    \par
-    \stop
-    \def\TEST{y = \sqrt{x^2 + 1}^3}%
-    \dontleavehmode
-    \ruledhbox{\glyphxscale #1                 \glyphyscale #1                 $\left{\TEST\right}$}
-    \ruledhbox{\glyphxscale #1                 \glyphyscale \numexpr#1*3\relax $\left{\TEST\right}$}
-    \ruledhbox{\glyphxscale \numexpr#1/2\relax \glyphyscale \numexpr#1*2\relax $\left{\TEST\right}$}
-    \par
-    \stop
-    \page
-}
-\stopbuffer
-
-\getbuffer
 
 % As often there is a musical timestamp to this text: discovering Julia Hofer
 % (bass, came there via checking out (of course) Leland Sklar, and now i have to

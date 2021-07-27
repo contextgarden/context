@@ -822,6 +822,10 @@ local function register(askedname,specification)
                 local oldname = specification.fullname
                 local newpath = file.dirname(oldname)
                 local oldbase = file.basename(oldname)
+                local runpath = environment.arguments.runpath
+                if runpath and runpath ~= "" and newpath == environment.arguments.path then
+                    newpath = runpath
+                end
                 --
                 -- problem: we can have weird filenames, like a.b.c (no suffix) and a.b.c.gif
                 -- so we cannot safely remove a suffix (unless we do that for known suffixes)

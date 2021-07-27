@@ -109,8 +109,11 @@
 
 \permanent\let\stopindentedtext\strc_indentedtexts_stop
 
-\protected\def\strc_indentedtexts_direct#1#2#3\par % no longer clever grabpar trickery
-  {\strc_indentedtexts_start{#1}{#2}#3\strc_indentedtexts_stop}
+% \protected\def\strc_indentedtexts_direct#1#2#3\par % no longer clever grabpar trickery
+%   {\strc_indentedtexts_start{#1}{#2}#3\strc_indentedtexts_stop}
+
+\protected\def\strc_indentedtexts_direct#1#2% more modern anyway
+  {\strc_indentedtexts_start{#1}{#2}\wrapuppar{\strc_indentedtexts_stop}}
 
 \setupindentedtext
   [\c!style=\v!normal,

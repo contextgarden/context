@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/mathml
 
 % author    : Hans Hagen
 % copyright : PRAGMA ADE & ConTeXt Development Team
@@ -16,6 +16,12 @@
 % comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
 %             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
 %             to users for testing, feedback and corrections.
+
+% The layout is made for the traditional lucida bright fonts. In the meantime we
+% use the opentype variant but it sometimes has different default shapes. So,
+% rendering has become less optimal. However, this is one of the oldest documents
+% that come with \CONTEXT, which has always supported \MATHML, so we keep it as it
+% is. The same is true for the style definition, which hasn't changed much.
 
 % \setupbackend[export=yes]
 
@@ -87,11 +93,13 @@
    textcolor=darkred,
    after={\blank[big]}]
 
-\unexpanded\def\SectionCommand#1#2%
-  {\darkblue<--\enspace\ifconditional\headshownumber\enspace#1\quad\fi#2\enspace-->}
+\protected\def\SectionCommand#1#2%
+% {\darkblue<--\enspace\ifconditional\headshownumber#1\quad\fi#2\enspace-->}
+  {\darkblue<--\enspace\ifconditional\headshownumber#1\enspace\fi#2\enspace-->}
 
-\unexpanded\def\SubSectionCommand#1#2%
-  {\darkblue<?\enspace\ifconditional\headshownumber#1\quad\fi#2\enspace ?>}
+\protected\def\SubSectionCommand#1#2%
+% {\darkblue<?\enspace\ifconditional\headshownumber#1\quad\fi#2\enspace ?>}
+  {\darkblue<?\space\ifconditional\headshownumber#1\enspace\fi#2\enspace ?>}
 
 \setuplayout
   [style=\hw]
@@ -600,17 +608,21 @@
     local gsub = string.gsub
     local mapping = {
         [";"] = "{{\\darkblue\\string;}}",
-        ["&"] = "{{\\ttsl\\darkblue\\string&}}", -- otherwise "et"
+     -- ["&"] = "{{\\ttx\\sl\\darkblue\\string&}}", -- too ugly
+        ["&"] = "{{\\darkblue\\string&}}", -- otherwise "et"
         ["/"] = "{{\\darkblue\\string/}}",
         ["<"] = "{{\\darkblue\\string<}}",
         [">"] = "{{\\darkblue\\string>}}",
     }
     function document.filterxmltitlestuff(name)
-        local data = io.loaddata(name) or ""
-        data = gsub(data,"<math[^>]*>","<math>")
-        data = gsub(data,"[%s ]+"," ")
-        data = gsub(data,"(.)",mapping)
-        context(data)
+--      local data = io.loaddata(name) or ""
+local data = io.loaddata(resolvers.findfile(name)) or ""
+        if data then
+            data = gsub(data,"<math[^>]*>","<math>")
+            data = gsub(data,"[%s ]+"," ")
+            data = gsub(data,"(.)",mapping)
+            context(data)
+        end
     end
 \stopluacode
 

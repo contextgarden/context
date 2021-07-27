@@ -1,3 +1,5 @@
+% language=us runpath=texruns:manuals/xml
+
 \environment xml-mkiv-style
 
 \startcomponent xml-mkiv-filtering
@@ -35,11 +37,11 @@ conform the indentation in the whole \XML\ file. \footnote {The (probably
 outdated) \XML\ file contains the collection stores on my slimserver instance.
 You can use the \type {mtxrun --script flac} to generate such files.}
 
-\doifmodeelse {atpragma} {
-    \getbuffer
-} {
+% \doifmodeelse {atpragma} {
+%     \getbuffer
+% } {
     \typefile{xml-mkiv-01.xml}
-}
+% }
 
 An alternative written in \LUA\ looks as follows:
 
@@ -56,11 +58,11 @@ An alternative written in \LUA\ looks as follows:
 
 This produces:
 
-\doifmodeelse {atpragma} {
-    \getbuffer
-} {
+% \doifmodeelse {atpragma} {
+%     \getbuffer
+% } {
     \typefile{xml-mkiv-02.xml}
-}
+% }
 
 You can use both methods mixed but in practice we will use the \TEX\ commands in
 regular styles and the mixture in modules, for instance in those dealing with

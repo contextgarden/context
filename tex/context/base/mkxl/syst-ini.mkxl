@@ -1397,4 +1397,13 @@
 
 \tracinghyphenation\plusone
 
+%D Sometimes nicer:
+
+\let\ifexpression\ifnumexpression
+
+%D This will be default:
+
+\autoparagraphmode\plusone  % we need at least 1 in order to be able to switch to 2
+%autoparagraphmode\plustwo  % because we define two \par delimited macros
+
 \protect \endinput

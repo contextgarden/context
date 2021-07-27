@@ -736,3 +736,51 @@ end
 trackers.register("fonts.result.show", function(v)
     nodes.tasks.setaction("processors","nodes.handlers.show",v)
 end)
+
+-- This is a weird spot but it's just a compatibility hack:
+
+local getattributes   = nuts.getattributes
+local patchattributes = nuts.patchattributes
+
+local texgetattribute = tex.getattribute
+
+function recolor(head,colormodel,color,transparency)
+    -- todo loop over content
+    for n, id in nextnode, head do
+        if id == glyph_code or id == rule_code then
+            local m, c, t = getattributes(n,a_colormodel,a_color,a_transparency)
+            if not c or c == 1 then
+                if not t then
+                    patchattributes(n,a_colormodel,colormodel,a_color,color,a_transparency,transparency)
+                else
+                    patchattributes(n,a_colormodel,colormodel,a_color,color)
+                end
+            else
+                if not t then
+                    patchattributes(n,a_transparency,transparency)
+                end
+            end
+            -- maybe skip the visuals
+        elseif id == hlist_node or id == vlist_node then
+            recolor(getlist(n),colormodel,color,transparency)
+        end
+    end
+end
+
+local function recolorbox(head)
+    recolor(getlist(head),texgetattribute(a_colormodel),texgetattribute(a_color),texgetattribute(a_transparency))
+end
+
+nodes.handlers.recolor = recolorbox
+
+local getbox = nodes.nuts.getbox
+
+interfaces.implement {
+    name      = "recolorbox",
+    public    = true,
+    protected = true,
+    arguments = { "integer" },
+    actions   = function(n)
+        recolor(getbox(n))
+    end
+}

@@ -138,22 +138,6 @@
 % \startcomponent   [#name] or #name<space> % defined at lua end
 % \startenvironment [#name] or #name<space> % defined at lua end
 
-\newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
-
-% \protected\def\signalendofinput#1% argument just for tracing
-%   {\global\settrue\endofinput}
-%
-% \protected\def\honorendofinput
-%   {\ifconditional\endofinput
-%      \global\setfalse\endofinput
-%      \endinput
-%    \fi}
-
-% \protected\def\stopproject     {\clf_stopproject    \honorendofinput} % todo
-% \protected\def\stopproduct     {\clf_stopproduct    \honorendofinput} % todo
-% \protected\def\stopcomponent   {\clf_stopcomponent  \honorendofinput} % todo
-% \protected\def\stopenvironment {\clf_stopenvironment\honorendofinput} % todo
-
 % \currentproject            % defined at lua end
 % \currentproduct            % defined at lua end
 % \currentcomponent          % defined at lua end
@@ -189,7 +173,9 @@
 
 \neverypar\emptytoks
 
-%D Wrappers (the signal is a synchronization with lua hack):
+%D Wrappers. The \type {\endinput} is tricky because we call macros at the \LUA\
+%D end. In \LMTX\ we now do an immediate one, so the ending happens here now. It
+%D is different that in \MKIV, but you can compare the code.
 
 \newsystemmode\v!project
 \newsystemmode\v!product
@@ -204,7 +190,7 @@
 \permanent\protected\def\stopprojectindeed
   {\popsystemmode\v!project
    %stoptext
-   }%\signalendofinput\v!project}
+   \endinput}
 
 \permanent\protected\def\startproductindeed
   {\starttext
@@ -214,7 +200,7 @@
 \permanent\protected\def\stopproductindeed
   {\popsystemmode\v!product
    \stoptext
-   }%\signalendofinput\v!product}
+   \endinput}
 
 \permanent\protected\def\startcomponentindeed
   {\starttext
@@ -226,7 +212,7 @@
   {\popsystemmode\v!component
    \popreferenceprefix
    \stoptext
-   }%\signalendofinput\v!component}
+   \endinput}
 
 \permanent\protected\def\startenvironmentindeed
   {\pushsystemmode\v!environment
@@ -234,7 +220,7 @@
 
 \permanent\protected\def\stopenvironmentindeed
   {\popsystemmode\v!environment
-   }%\signalendofinput\v!environment}
+   \endinput}
 
 %D Upgraded after the ctx 2020 meeting:
 %D

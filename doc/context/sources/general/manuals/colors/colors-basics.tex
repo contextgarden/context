@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/colors
 
 \startcomponent colors-basics
 
@@ -897,7 +897,7 @@ are easier to deal with and therefore in \MKIV\ we have a trick to make sure the
 outer color gets applied to the box:
 
 \startbuffer[enable]
-\enabledirectives
+\enabledirectives % only mkiv
   [attributes.inheritance]
 \stopbuffer
 
@@ -908,7 +908,7 @@ default {\bf \darkyellow yellow {\attributedbox0} yellow} default
 \typebuffer
 
 So, we get: \start\inlinebuffer[box]\inlinebuffer[enable]\space\inlinebuffer
-\stop, but only after we have enabled this mechanisms explicitly:
+\stop. In \MKIV\ you need to enable inheritance first with:
 
 \typebuffer[enable]
 
@@ -937,6 +937,12 @@ foregroundcolor because otherwise attributes are not set. This is no problem
 because contrary to \MKII\ colors don't interfere (no extra nodes). We could have
 flushed the framed content using \type {\attributedbox}, but we don't want to
 enable inheritance by default because it comes with some overhead.
+
+{\em The \type {\attributedbox} command is considered obsolete. In \LMTX\ there
+is a \type {\recolorbox} command that recolors a box. Because these commands are
+probably never needed it made more sense to move the burden to a specific command
+than to add additional overhead to the whole color mechanism. My experience is
+that unboxing and copying is very rare in \CONTEXT.}
 
 \stopsection
 

@@ -87,7 +87,7 @@
 
 \appendtoks
     \edef\p_option{\directionsparameter\c!break}% name can change
-    \bitwiseflip\normalizelinemode\ifx\p_option\v!both\else-\fi\breakafterdircode
+    \bitwiseflip\normalizelinemode\ifx\p_option\v!both\else-\fi\breakafterdirnormalizecode
 \to \everysetupdirections
 
 % bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)

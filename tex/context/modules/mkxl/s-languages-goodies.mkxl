@@ -126,7 +126,7 @@
 %     {\hsize 1mm Offline\par}
 
 
-%     \hyphenationmode\bitwiseflip\hyphenationmode-\forcehandlerhyphenationmodecode
+%     \hyphenationmode\bitwiseflip\hyphenationmode-\forcehandlerhyphenationcode
 
 %     \de \dontcomplain
 

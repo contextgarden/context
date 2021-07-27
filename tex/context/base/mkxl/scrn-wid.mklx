@@ -649,6 +649,7 @@
     \letrenderingwindowparameter\c!closepageaction\empty
     \setrenderingwindowparameter\c!width          {\d_scrn_rendering_width }%
     \setrenderingwindowparameter\c!height         {\d_scrn_rendering_height}%
+    \letrenderingwindowparameter\c!align          \v!flushleft
 \to \everypresetrenderingwindow
 
 \permanent\tolerant\protected\def\placerenderingwindow[#window]#spacer[#rendering]% do all in lua

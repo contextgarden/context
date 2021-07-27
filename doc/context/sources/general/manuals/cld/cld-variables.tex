@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/cld
 
 \startcomponent cld-variables
 
@@ -156,8 +156,9 @@ variables. However, there are also primitives that deal with these data values:
 
 \startbuffer[usage]
 \setdatavalue{my-data}{12345}%
-\letdatacode  \MyData  67890
-\thedatavalue{my-data} \the\MyData
+\integerdef   \MyDataI 67890
+\dimensiondef \MyDataD 12345pt
+\thedatavalue{my-data}, \the\MyDataI, \the\MyDataD.
 \stopbuffer
 
 \typebuffer[usage]

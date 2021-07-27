@@ -157,23 +157,26 @@ todecimal = xdecimal and xdecimal.new or tonumber -- bonus
 
 -- mail on list by Mikael Sundqvist and Taco's analysis of near duplicate points (2021/02/11+)
 
-registerscript("scrutenized", function()
-    local pth = scanpath()
-    local d   = 1/10^scannumeric() -- decimals
-    local p1  = pth[1]
-    local x1  = p1[1]
-    local y1  = p1[2]
-    local res = { pth[1] }
-    local r   = 1
+registerscript("scrutinized", function()
+    local pth  = scanpath()
+    local d    = 1/10^scannumeric() -- decimals
+    local p1   = pth[1]
+    local x1   = p1[1]
+    local y1   = p1[2]
+    local res  = { pth[1] }
+    local r    = 1
     for i=2,#pth do
         local pi = pth[i]
         x2 = pi[1]
         y2 = pi[2]
         if abs(x1-x2) > d or abs(y1-y2) > d then
             r = r + 1 res[r] = pi
+            x1 = x2
+            y1 = y2
+        else
+            res[r][5] = pi[5]
+            res[r][6] = pi[6]
         end
-        x1 = x2
-        y1 = y2
     end
     if pth.cycle then
         res.cycle = true

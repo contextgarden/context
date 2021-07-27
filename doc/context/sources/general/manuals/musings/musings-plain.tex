@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/musings
 
 % \showfontkerns
 
@@ -259,8 +259,8 @@ This definition is kind of interesting as it assumes knowledge about what is
 acceptable for \TEX\ as dimension:
 
 \startbuffer
-{\maxdimen=16383.99999pt \the\maxdimen \quad \number\maxdimen}
-{\maxdimen=16383.99998pt \the\maxdimen \quad \number\maxdimen}
+{\dimen0=16383.99999pt \the\dimen0 \quad \number\dimen0}
+{\dimen0=16383.99998pt \the\dimen0 \quad \number\dimen0}
 \stopbuffer
 
 \typebuffer
@@ -269,7 +269,7 @@ acceptable for \TEX\ as dimension:
 \getbuffer
 \stoplines
 
-Indeed it is the largest legal dimension but the real largest one is slighly
+Indeed it is the largest legal dimension but the real largest one is slightly
 less. We could also have said the following, which also indicates what the
 maximum cardinal is:
 

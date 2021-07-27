@@ -41,26 +41,45 @@ function injectors.reset(name)
     list[name] = nil
 end
 
-function injectors.set(name,numbers,command)
-    local injector = list[name]
-    local actions = injector.actions
-    local places  = settings_to_array(numbers)
-    for i=1,#places do
-        actions[tonumber(places[i])] = command
-    end
+local function activate(injector,name)
     if not injector.active then
         ctx_doactivateinjector(name)
         injector.active = true
+        if showall then
+            -- in case we already enabled tracing
+            injector.show = true
+        end
     end
+end
+
+function injectors.set(name,numbers,command)
+    local injector = list[name]
+    local actions  = injector.actions
+    local places   = settings_to_array(numbers)
+    for i=1,#places do
+        actions[tonumber(places[i])] = command
+    end
+    -- not: injector.show = true
+    activate(injector,name)
 end
 
 function injectors.show(name)
     if not name or name == "" then
         showall = true
+        local names = settings_to_array(name)
+        for name, injector in next, list do
+            injector.show = true
+            activate(injector,name)
+        end
     else
-        local list = settings_to_array(name)
-        for i=1,#list do
-            list[list[i]].show = true
+        local names = settings_to_array(name)
+        for i=1,#names do
+            local name     = names[i]
+            local injector = list[name]
+            if injector then
+                injector.show = true
+                activate(injector,name)
+            end
         end
     end
 end

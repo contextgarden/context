@@ -1,4 +1,4 @@
-% language=us
+% language=us runpath=texruns:manuals/primitives
 
 % The usual time stamp. This written while listening intermized to Fish (just ran
 % into), Lazulli (some yt videos too, looking forward to a next live act) and
@@ -51,6 +51,8 @@
 
 \starttext
 
+\pushoverloadmode
+
 \startMPpage
     fill Page
         withcolor "darkgray" ;
@@ -102,6 +104,68 @@ them. These are not discussed here.
 In this document the section titles that discuss the \color [nonecolor] {original
 \TEX\ and \ETEX\ primitives} have a different color those explaining the \color
 [primcolor] {\LUATEX\ and \LUAMETATEX\ primitives}.
+
+Primitives that extend typesetting related functionality, provide control over
+subsystems (like math), allocate additional datatypes and resources, deal with
+fonts and languages, manipulate boxes and glyphs, etc.\ are not discussed here.
+In this document we concentrate on the programming aspects.
+
+\startalign[verytolerant,stretch]
+To be described here: \typ {enforced}, \typ {immutable}, \typ {instance},
+\typ {aliased}, \typ {mutable}, \typ {overloaded}, \typ {overloadmode}, \typ
+{tolerant}, \typ {permanent}, \typ {ifflags}, \typ {ifinsert}, \typ
+{ifmathparameter}, \typ {ifmathstyle}, \typ {ifparameter}, \typ
+{ifparameters}, \typ {ignorearguments}, \typ {ignorepars}, \typ
+{parametercount}, \typ {lastchkdim}, \typ {lastchknum}.
+
+Of a different order: \typ {adjustspacing}, \typ {adjustspacingshrink}, \typ
+{adjustspacingstep}, \typ {adjustspacingstretch}, \typ {attribute}, \typ
+{attributedef}, \typ {automaticdiscretionary}, \typ {automatichyphenpenalty},
+\typ {automigrationmode}, \typ {boundary}, \typ {boxattribute}, \typ
+{boxdirection}, \typ {boxorientation}, \typ {boxtotal}, \typ {boxxmove}, \typ
+{boxxoffset}, \typ {boxymove}, \typ {boxyoffset}, \typ {catcodetable}, \typ
+{clearmarks}, \typ {crampeddisplaystyle}, \typ {crampedscriptscriptstyle},
+\typ {crampedscriptstyle}, \typ {crampedtextstyle}, \typ {directlua}, \typ
+{efcode}, \typ {everybeforepar}, \typ {everytab}, \typ {exceptionpenalty},
+\typ {explicitdiscretionary}, \typ {explicithyphenpenalty}, \typ
+{firstvalidlanguage}, \typ {fontid}, \typ {fontmathcontrol}, \typ
+{fontspecifiedsize}, \typ {fonttextcontrol}, \typ {formatname}, \typ
+{gleaders}, \typ {gluespecdef}, \typ {glyphdatafield}, \typ {glyphoptions},
+\typ {glyphscale}, \typ {glyphscriptfield}, \typ {glyphscriptscale}, \typ
+{glyphscriptscriptscale}, \typ {glyphstatefield}, \typ {glyphtextscale}, \typ
+{glyphxoffset}, \typ {glyphxscale}, \typ {glyphyoffset}, \typ {glyphyscale},
+\typ {hccode}, \typ {hjcode}, \typ {hpack}, \typ {hyphenationmin}, \typ
+{hyphenationmode}, \typ {initcatcodetable}, \typ {insertbox},\typ
+{insertcopy}, \typ {insertdepth}, \typ {insertdistance}, \typ {insertheight},
+\typ {insertheights}, \typ {insertlimit}, \typ {insertmode}, \typ
+{insertmultiplier}, \typ {insertprogress}, \typ {insertunbox}, \typ
+{insertuncopy}, \typ {insertwidth}, \typ {lastnodesubtype}, \typ
+{leftmarginkern}, \typ {letcharcode}, \typ {linedirection}, \typ {linepar},
+\typ {localbrokenpenalty}, \typ {localinterlinepenalty}, \typ {lpcode}, \typ
+{luabytecode}, \typ {luabytecodecall}, \typ {luacopyinputnodes}, \typ
+{luadef}, \typ {luaescapestring}, \typ {luafunction}, \typ {luafunctioncall},
+\typ {luatexbanner}, \typ {luatexrevision}, \typ {luatexversion}, \typ
+{mathcontrolmode}, \typ {mathdelimitersmode}, \typ {mathdirection}, \typ
+{mathdisplayskipmode}, \typ {matheqnogapstep}, \typ {mathflattenmode}, \typ
+{mathfontcontrol}, \typ {mathitalicsmode}, \typ {mathnolimitsmode}, \typ
+{mathpenaltiesmode}, \typ {mathrulesfam}, \typ {mathrulesmode}, \typ
+{mathrulethicknessmode}, \typ {mathscale}, \typ {mathscriptboxmode}, \typ
+{mathscriptcharmode}, \typ {mathscriptsmode}, \typ {mathstyle}, \typ
+{mathsurroundmode}, \typ {mathsurroundskip}, \typ {mugluespecdef}, \typ
+{noaligned}, \typ {noboundary}, \typ {nohrule}, \typ {normalizelinemode},
+\typ {nospaces}, \typ {novrule}, \typ {numericscale}, \typ {numexpression},
+\typ {outputbox}, \typ {parattribute}, \typ {pardirection}, \typ
+{postexhyphenchar}, \typ {posthyphenchar}, \typ {prebinoppenalty}, \typ
+{predisplaygapfactor}, \typ {preexhyphenchar}, \typ {prehyphenchar}, \typ
+{prerelpenalty}, \typ {protrudechars}, \typ {protrusionboundary}, \typ
+{pxdimen}, \typ {quitvmode}, \typ {rightmarginkern}, \typ {rpcode}, \typ
+{savecatcodetable}, \typ {scantextokens}, \typ {setfontid}, \typ
+{snapshotpar}, \typ {supmarkmode}, \typ {textdirection}, \typ
+{thewithoutunit}, \typ {thewithproperty}, \typ {tpack}, \typ
+{tracingexpressions}, \typ {tracingfonts}, \typ {tracinghyphenation}, \typ
+{tracingmath}, \typ {undent}, \typ {vpack}, \typ {wordboundary}, \typ
+{wrapuppar}.
+\stopalign
 
 \stopsubject
 
@@ -551,15 +615,15 @@ character code. Because it assumes some knowledge of \TEX\ we can show it
 using some \type {\expandafter} magic:
 
 \startbuffer
-\expandafter\let\expandafter\temp\expandtoken 11 `X \meaning\temp\crlf
-\expandafter\let\expandafter\temp\expandtoken 12 `X \meaning\temp\crlf
+\expandafter\let\expandafter\temp\expandtoken 11 `X \meaning\temp
+\expandafter\let\expandafter\temp\expandtoken 12 `X \meaning\temp
 \stopbuffer
 
 \typebuffer
 
 The meanings are:
 
-{\getbuffer}
+\startlines \tttf \getbuffer \stoplines
 
 Using other catcodes is possible but the results of injecting them into the input
 directly (or here by injecting \type {\temp}) can be unexpected because of what
@@ -569,9 +633,9 @@ catcode|/|character combinations as signals and there is no reason to change
 those internals. That said:
 
 \startbuffer
-\edef\tempA{\expandtoken  9 `X} \meaning\tempA\crlf
-\edef\tempB{\expandtoken 10 `X} \meaning\tempB\crlf
-\edef\tempC{\expandtoken 11 `X} \meaning\tempC\crlf
+\edef\tempA{\expandtoken  9 `X} \meaning\tempA
+\edef\tempB{\expandtoken 10 `X} \meaning\tempB
+\edef\tempC{\expandtoken 11 `X} \meaning\tempC
 \edef\tempD{\expandtoken 12 `X} \meaning\tempD
 \stopbuffer
 
@@ -579,7 +643,7 @@ those internals. That said:
 
 are all valid and from the meaning you cannot really deduce what's in there:
 
-{\getbuffer}
+\startlines \tttf \getbuffer \stoplines
 
 But you can be assured that:
 
@@ -815,14 +879,15 @@ where expansion is happening, like in an \type {\edef}. In \CONTEXT\ you need to
 use \type {\normalunexpanded} because we already had a macro with that name.
 
 \startbuffer
-\def\A{!}
-\def\B{?}
-
-\edef\C{\A\B}                    \meaning\C \crlf
-\edef\C{\normalunexpanded{\A}\B} \meaning\C \crlf
+\def \A{!}                       \meaning\A
+\def \B{?}                       \meaning\B
+\edef\C{\A\B}                    \meaning\C
+\edef\C{\normalunexpanded{\A}\B} \meaning\C
 \stopbuffer
 
-\typebuffer {\getbuffer}
+\typebuffer
+
+\startlines \tttf \getbuffer \stoplines
 
 \stopoldprimitive
 
@@ -832,11 +897,13 @@ This \ETEX\ primitive turns the content of the provides list will become
 characters, kind of verbatim.
 
 \startbuffer
-\expandafter\let\expandafter\temp\detokenize{1} \meaning\temp \crlf
-\expandafter\let\expandafter\temp\detokenize{A} \meaning\temp \crlf
+\expandafter\let\expandafter\temp\detokenize{1} \meaning\temp
+\expandafter\let\expandafter\temp\detokenize{A} \meaning\temp
 \stopbuffer
 
-\typebuffer {\getbuffer}
+\typebuffer
+
+\startlines \tttf \getbuffer \stoplines
 
 \stopoldprimitive
 
@@ -849,18 +916,16 @@ Just as \type {\expanded} has a counterpart \type {\unexpanded}, it makes sense 
 \edef\foo{\detokenize{\inframed{foo}}}
 \edef\oof{\detokenize{\inframed{oof}}}
 
-\meaning\foo \crlf
-\dontleavehmode\foo
+\meaning\foo \crlf \dontleavehmode\foo
 
 \edef\foo{\tokenized{\foo\foo}}
 
-\meaning\foo \crlf
-\dontleavehmode\foo
+\meaning\foo \crlf \dontleavehmode\foo
 
 \dontleavehmode\tokenized{\foo\oof}
 \stopbuffer
 
-\typebuffer {\getbuffer}
+\typebuffer {\tttf \getbuffer}
 
 This primitive is similar to:
 
@@ -893,54 +958,71 @@ examples:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {immediateassignment}}]
+\startnewprimitive[title={\tex {numexpression}}]
 
-Assignments are not expandable which means that you cannot define fully
-expandable macros that have assignments. But, there is a way out of this:
+The normal \tex {numexpr} primitive understands the \type {+}, \type {-}, \type
+{*} and \type {/} operators but in \LUAMETATEX\ we also can use \type {:} for a
+non rounded integer division (think of \LUA's \type {//}). if you want more than
+that, you can use the new expression primitive where you can use the following
+operators.
 
-\startbuffer
-\scratchcounter = 10
-\edef\whatever{%
-    (\the\scratchcounter)
-    \immediateassignment\scratchcounter\numexpr\scratchcounter+10\relax
-    \immediateassignment\advance\scratchcounter -5
-    (\the\scratchcounter)
-}
-\meaning\whatever
-\stopbuffer
+\starttabulate[||cT|cT|]
+\BC add       \NC +                    \NC        \NC \NR
+\BC subtract  \NC -                    \NC        \NC \NR
+\BC multiply  \NC *                    \NC        \NC \NR
+\BC divide    \NC / :                  \NC        \NC \NR
+\BC mod       \NC \letterpercent       \NC mod    \NC \NR
+\BC band      \NC &                    \NC band   \NC \NR
+\BC bxor      \NC ^                    \NC bxor   \NC \NR
+\BC bor       \NC \letterbar \space v  \NC bor    \NC \NR
+\BC and       \NC &&                   \NC and    \NC \NR
+\BC or        \NC \letterbar\letterbar \NC or     \NC \NR
+\BC setbit    \NC <undecided>          \NC bset   \NC \NR
+\BC resetbit  \NC <undecided>          \NC breset \NC \NR
+\BC left      \NC <<                   \NC        \NC \NR
+\BC right     \NC >>                   \NC        \NC \NR
+\BC less      \NC <                    \NC        \NC \NR
+\BC lessequal \NC <=                   \NC        \NC \NR
+\BC equal     \NC = ==                 \NC        \NC \NR
+\BC moreequal \NC >=                   \NC        \NC \NR
+\BC more      \NC >                    \NC        \NC \NR
+\BC unequal   \NC <> != \lettertilde = \NC        \NC \NR
+\BC not       \NC ! \lettertilde       \NC not    \NC \NR
+\stoptabulate
 
-\typebuffer
+An example of the verbose bitwise operators is:
 
-Don't expect miracles: you can't mix|-|in content or unexpandable tokens as they
-will either show up or quit the scanning.
+\starttyping
+\scratchcounter = \numexpression
+    "00000 bor "00001 bor "00020 bor "00400 bor "08000 bor "F0000
+\relax
+\stoptyping
 
-{\getbuffer}
+In the table you might have notices that some operators have equivalents. This
+makes the scanner a bit less sensitive for catcode regimes.
+
+When \type {\tracingexpressions} is set to one or higher the intermediate \quote
+{reverse polish notation} stack that is used for the calculation is shown, for
+instance:
+
+\starttyping
+4:8: {numexpression rpn: 2 5 > 4 5 > and}
+\stoptyping
+
+When you want the output on your console, you need to say:
+
+\starttyping
+\tracingexpressions 1
+\tracingonline      1
+\stoptyping
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {immediateassigned}}]
+\startnewprimitive[title={\tex {dimexpression}}]
 
-This is the multi|-|token variant of the primitive mentioned in the previous
-section.
-
-\startbuffer
-\scratchcounter = 10
-\edef\whatever{%
-    (\the\scratchcounter)
-    \immediateassigned{
-        \scratchcounter\numexpr\scratchcounter+10\relax
-        \advance\scratchcounter -5
-    }%
-    (\the\scratchcounter)
-}
-\meaning\whatever
-\stopbuffer
-
-\typebuffer
-
-The results are the same as in the previous section:
-
-{\getbuffer}
+This command is like \tex {numexpression} but results in a dimension instead of
+an integer. Where \tex {dimexpr} doesn't like \typ {2 * 10pt} this expression
+primitive is quite happy with it.
 
 \stopnewprimitive
 
@@ -1487,7 +1569,7 @@ look like \type {\newif} creates one, it actually just defined three macros.
 \meaning\ifMyTest    \crlf
 \stopbuffer
 
-\typebuffer {\getbuffer}
+\typebuffer {\tttf \getbuffer}
 
 This means that when you say:
 
@@ -1572,6 +1654,13 @@ is \ifusercmd\MyMacro \else not \fi a primitive
 
 It is not always possible to determine this but it should work okay for regular
 macros, register allocations and character definitions.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifrelax}}]
+
+This is a convenient shortcut for \typ {\ifx\relax} and the motivation for adding
+this one is (as with some others) to get less tracing.
 
 \stopnewprimitive
 
@@ -1760,6 +1849,36 @@ ok:
 
 \stopnewprimitive
 
+\startnewprimitive[title={\tex {ifnumexpression}}]
+
+Here is an example of a conditional using expressions:
+
+\startbuffer
+\ifnumexpression (\scratchcounterone > 5) and (\scratchcountertwo > 5) \relax
+    do-something
+\fi
+\stopbuffer
+
+This matches when the result is non zero, and you can mix calculations and tests
+as with normal expressions.
+
+\stopnewprimitive
+\startnewprimitive[title={\tex {ifdimexpression}}]
+
+The companion of the previous primitive is:
+
+\startbuffer
+\ifdimexpression 10pt > 10bp \relax
+    do-something
+\fi
+\stopbuffer
+
+This matches when the result is non zero, and you can mix calculations and tests
+as with normal expressions. Contrary to the number variant units can be used and
+precision kicks in.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\tex {else}}]
 
 This traditional primitive is part of the condition testing mechanism. When a
@@ -1893,6 +2012,13 @@ masters \TEX\ might hurt.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\tex {orunless}}]
+
+This is the negated variant of \tex {\orelse} (prefixing that one with \tex
+{unless} doesn't work well.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\tex {futurelet}}]
 
 The original \TEX\ primitive \type {\futurelet} can be used to create an alias to a next token,
@@ -1950,6 +2076,17 @@ So we're back to what we want:
 
 \stopnewprimitive
 
+\startnewprimitive[title={\tex {futurecsname}}]
+
+In order to make the repertoire of \type {def}, \type {let} and \type {futurelet}
+primitives complete we also have:
+
+\starttyping
+\futurecsname MyMacro:1\endcsname\MyAction
+\stoptyping
+
+\stopnewprimitive
+
 \startnewprimitive[title={\tex {letcharcode}}]
 
 Assigning a meaning to an active character can sometimes be a bit cumbersome;
@@ -1966,12 +2103,12 @@ used only a few times and then never looked at again. So we have this:
 here we define \type {A} as an active charcter with meaning \type {1} in the
 first line and \type {2} in the second.
 
-{\getbuffer}
+{\tttf \getbuffer}
 
 Normally one will assign a control sequence:
 
 \startbuffer
-{\letcharcode 66 \bf \catcode 66 13 {B bold}: \meaning B}\crlf
+{\letcharcode 66 \bf \catcode 66 13 {B   bold}: \meaning B}\crlf
 {\letcharcode 73 \it \catcode 73 13 {I italic}: \meaning I}\crlf
 \stopbuffer
 
@@ -1979,7 +2116,7 @@ Normally one will assign a control sequence:
 
 Of course \type {\bf} and \type {\it} are \CONTEXT\ specific commands:
 
-{\getbuffer}
+{\tttf \getbuffer}
 
 \stopnewprimitive
 
@@ -2030,6 +2167,66 @@ In \CONTEXT\ we use either \type {\protected} or \type {\unexpanded} because the
 later was the command we used to achieve the same results before \ETEX\
 introduced this protection primitive. Originally the \type {\protected} macro was
 also defined but it has been dropped.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {expand}}]
+
+Beware, this is not a prefix but a directive to ignore the protected characters of
+the following macro.
+
+\startbuffer
+\protected \def \testa{\the\scratchcounter}
+           \edef\testb{\testa}
+           \edef\testc{\expand\testa}
+\stopbuffer
+
+\typebuffer
+
+The meaning of the three macros is:
+
+\startlines \getbuffer \tttf
+\meaningfull\testa
+\meaningfull\testb
+\meaningfull\testc
+\stoplines
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {untraced}}]
+
+Related to the meaning providers is the \tex {untraced} prefix. It marks a macro
+as to be reported by name only. It makes the macro look like a primitive.
+
+\starttyping
+         \def\foo{}
+\untraced\def\oof{}
+
+\scratchtoks{\foo\foo\oof\oof}
+
+\tracingall \the\scratchtoks \tracingnone
+\stoptyping
+
+This will show up in the log as follows:
+
+\starttyping
+1:4: {\the}
+1:5: \foo ->
+1:5: \foo ->
+1:5: \oof
+1:5: \oof
+\stoptyping
+
+This is again a trick to avoid too much clutter in a log. Often it doesn't matter
+to users what the meaning of a macro is (if they trace at all). \footnote {An
+earlier variant could also hide the expansion completely but that was just
+confusing.}
+
+\startoldprimitive[title={\tex {immediate}}]
+
+This one has no effect unless you intercept it at the \LUA\ end and act upon it.
+In original \TEX\ immediate is used in combination with read from and write to
+file operations. So, this is an old primitive with a new meaning.
 
 \stopoldprimitive
 
@@ -2181,6 +2378,59 @@ it that it shares all variables with the parent loop.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\tex {localcontrolled}}]
+
+The previously described local control feature comes with two extra helpers. The
+\tex {localcontrolled} primitive takes a token list and wraps this into a local
+control sidetrack. For example:
+
+\startbuffer
+\edef\testa{\scratchcounter123 \the\scratchcounter}
+\edef\testb{\localcontrolled{\scratchcounter123}\the\scratchcounter}
+\stopbuffer
+
+\typebuffer
+
+The two meanings are:
+
+\start \getbuffer
+\starttabulate[|T|T|]
+\NC \string\testa \NC \meaningfull\testa \NC \NR
+\NC \string\testb \NC \meaningfull\testb \NC \NR
+\stoptabulate
+\stop
+
+The assignment is applied immediately in the expanded definition.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {localcontrol}}]
+
+This primitive takes a single token:
+
+\startbuffer
+\edef\testa{\scratchcounter123 \the\scratchcounter}
+\edef\testc{\testa \the\scratchcounter}
+\edef\testd{\localcontrol\testa \the\scratchcounter}
+\stopbuffer
+
+\typebuffer
+
+The three meanings are:
+
+\start \getbuffer
+\starttabulate[|T|T|]
+\NC \string\testa \NC \meaning\testa \NC \NR
+\NC \string\testc \NC \meaning\testc \NC \NR
+\NC \string\testd \NC \meaning\testd \NC \NR
+\stoptabulate
+\stop
+
+The \tex {\localcontrol} makes that the following token gets expanded so we don't
+see the yet to be expanded assignment show up in the macro body.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\tex {alignmark}}]
 
 When you have the \type{#} not set up as macro parameter character cq.\ align
@@ -2196,6 +2446,218 @@ instead. The same rules apply with respect to multiple such tokens in (nested)
 macros and alignments.
 
 \stopnewprimitive
+
+\startnewprimitive[title={\tex {defcsname}}]
+
+We now get a series of log clutter avoidance primitives. It's fine if you argue
+that they are not really needed, just don't use them.
+
+\starttyping
+\expandafter\def\csname MyMacro:1\endcsname{...}
+             \defcsname MyMacro:1\endcsname{...}
+\stoptyping
+
+The fact that \TEX\ has three (expanded and global) companions can be seen as a
+signal that less verbosity makes sense. It's just that macro packages use plenty
+of \tex {\csname}'s.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {edefcsname}}]
+
+This is the companion of \tex {\edef}:
+
+\starttyping
+\expandafter\edef\csname MyMacro:1\endcsname{...}
+             \edefcsname MyMacro:1\endcsname{...}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {gdefcsname}}]
+
+As with standard \TEX\ we also define global ones:
+
+\starttyping
+\expandafter\gdef\csname MyMacro:1\endcsname{...}
+             \gdefcsname MyMacro:1\endcsname{...}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {xdefcsname}}]
+
+This is the companion of \tex {\xdef}:
+
+\starttyping
+\expandafter\xdef\csname MyMacro:1\endcsname{...}
+             \xdefcsname MyMacro:1\endcsname{...}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {glet}}]
+
+This is the global companion of \tex {\let}. The fact that it is not an original
+primitive is probably due to the expectation for it not it not being used (as)
+often (as in \CONTEXT).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {letcsname}}]
+
+It is easy to see that we save two tokens when we use this primitive. As with the
+\type {..defcs..} variants it also saves a push back of the composed macro name.
+
+\starttyping
+\expandafter\let\csname MyMacro:1\endcsname\relax
+             \letcsname MyMacro:1\endcsname\relax
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {gletcsname}}]
+
+Naturally \LUAMETATEX\ also provides a global variant:
+
+\starttyping
+\expandafter\global\expandafter\let\csname MyMacro:1\endcsname\relax
+\expandafter                  \glet\csname MyMacro:1\endcsname\relax
+                               \gletcsname MyMacro:1\endcsname\relax
+\stoptyping
+
+So, here we save even more.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {lettonothing}}]
+
+This one let's a control sequence to nothing. Assuming that \tex {empty}
+is indeed empty, these two lines are equivalent.
+
+\starttyping
+\let         \foo\empty
+\lettonothing\oof
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {glettonothing}}]
+
+This is the global companion of \tex {lettonothing}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {norelax}}]
+
+The rationale for this command can be shown by a few examples:
+
+\startbuffer
+\dimen0 1pt \dimen2 1pt \dimen4 2pt
+\edef\testa{\ifdim\dimen0=\dimen2\norelax N\else Y\fi}
+\edef\testb{\ifdim\dimen0=\dimen2\relax   N\else Y\fi}
+\edef\testc{\ifdim\dimen0=\dimen4\norelax N\else Y\fi}
+\edef\testd{\ifdim\dimen0=\dimen4\relax   N\else Y\fi}
+\edef\teste{\norelax}
+\stopbuffer
+
+\typebuffer
+
+The five meanings are:
+
+\start \getbuffer \starttabulate[|T|T|]
+\NC \string\testa \NC \meaning\testa \NC \NR
+\NC \string\testb \NC \meaning\testb \NC \NR
+\NC \string\testc \NC \meaning\testc \NC \NR
+\NC \string\testd \NC \meaning\testd \NC \NR
+\NC \string\teste \NC \meaning\teste \NC \NR
+\stoptabulate \stop
+
+So, the \type {\norelax} acts like \type {\relax} but is not pushed back as
+usual (in some cases).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {swapcsvalues}}]
+
+Because we mention some \type {def} and \type {let} primitives here, it makes
+sense to also mention a primitive that will swap two values (meanings). This one
+has to be used with care. Of course that what gets swapped has to be of the same
+type (or at least similar enough to to cause issues). Registers for instance
+store their values in the token, but as soon as we are dealing with token lists
+we also need to keep an eye on reference counting. So, to some extend this is
+an experimental feature.
+
+\stopnewprimitive
+
+"untraced",
+
+% \startnewprimitive[title={\tex {dimensiondef}}]
+% \stopnewprimitive
+
+% \startnewprimitive[title={\tex {integerdef}}]
+% \stopnewprimitive
+
+\startsubject[title=Obsolete]
+
+The \LUAMETATEX\ engine has more than its \LUATEX\ ancestor but it also has less.
+Because in the end the local control mechanism performed quite okay I decided to
+drop the \tex {immediateassignment} and \tex {immediateassigned} variants. They
+sort of used the same trick so there isn't much to gain and it was less generic
+(read: error prone).
+
+% \startnewprimitive[title={\tex {immediateassignment}}]
+%
+% Assignments are not expandable which means that you cannot define fully
+% expandable macros that have assignments. But, there is a way out of this:
+%
+% \startbuffer
+% \scratchcounter = 10
+% \edef\whatever{%
+%     (\the\scratchcounter)
+%     \immediateassignment\scratchcounter\numexpr\scratchcounter+10\relax
+%     \immediateassignment\advance\scratchcounter -5
+%     (\the\scratchcounter)
+% }
+% \meaning\whatever
+% \stopbuffer
+%
+% \typebuffer
+%
+% Don't expect miracles: you can't mix|-|in content or unexpandable tokens as they
+% will either show up or quit the scanning.
+%
+% {\getbuffer}
+%
+% \stopnewprimitive
+%
+% \startnewprimitive[title={\tex {immediateassigned}}]
+%
+% This is the multi|-|token variant of the primitive mentioned in the previous
+% section.
+%
+% \startbuffer
+% \scratchcounter = 10
+% \edef\whatever{%
+%     (\the\scratchcounter)
+%     \immediateassigned{
+%         \scratchcounter\numexpr\scratchcounter+10\relax
+%         \advance\scratchcounter -5
+%     }%
+%     (\the\scratchcounter)
+% }
+% \meaning\whatever
+% \stopbuffer
+%
+% \typebuffer
+%
+% The results are the same as in the previous section:
+%
+% {\getbuffer}
+%
+% \stopnewprimitive
+
+\stopsubject
 
 \page
 
@@ -2374,5 +2836,7 @@ evolve.
 Hans Hagen \crlf Hasselt NL
 
 \stopsubject
+
+\popoverloadmode
 
 \stoptext

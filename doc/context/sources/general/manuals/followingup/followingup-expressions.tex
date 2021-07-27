@@ -196,6 +196,30 @@ The normal expansion rules apply, so one can use macros and other symbolic
 numbers. The only difference in handling dimensions is that we don't support
 \type {true} units but these are obsolete in \LUAMETATEX\ anyway.
 
+In the end I decided to also add an extra conditional so that we can say:
+
+\starttyping
+\ifexpression (\scratchcounterone > 5) and (\scratchcountertwo > 5)\relax
+    nop
+\else
+    yes
+\fi
+\stoptyping
+
+which looks more natural. Actually, this is an nowadays alias because we have two
+variants:
+
+\starttyping
+\ifnumexpression ... \relax ... \else ... \fi
+\ifdimexpression ... \relax ... \else ... \fi
+\stoptyping
+
+where the later is equivalent to
+
+\starttyping
+\ifboolean\dimexpression ... \relax ... \else ... \fi
+\stoptyping
+
 \stopsection
 
 \startsection[title={Tracing}]

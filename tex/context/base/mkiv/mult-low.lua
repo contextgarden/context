@@ -69,12 +69,12 @@ return {
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
         "primeasciicode", "hyphenasciicode", "percentasciicode", "leftbracketasciicode", "rightbracketasciicode",
         --
-        "frozenhsizecode", "frozenskipcode", "frozenhangcode", "frozenindentcode", "frozenparfillcode",
-        "frozenadjustcode", "frozenprotrudecode", "frozentolerancecode", "frozenstretchcode",
-        "frozenloosenesscode", "frozenlastlinecode", "frozenlinepenaltycode", "frozenclubpenaltycode",
-        "frozenwidowpenaltycode", "frozendisplaypenaltycode", "frozenbrokenpenaltycode",
-        "frozendemeritscode", "frozenshapecode", "frozenlinecode", "frozenhyphenationcode",
-        "frozenallcode",
+        "hsizefrozenparcode", "skipfrozenparcode", "hangfrozenparcode", "indentfrozenparcode", "parfillfrozenparcode",
+        "adjustfrozenparcode", "protrudefrozenparcode", "tolerancefrozenparcode", "stretchfrozenparcode",
+        "loosenessfrozenparcode", "lastlinefrozenparcode", "linepenaltyfrozenparcode", "clubpenaltyfrozenparcode",
+        "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
+        "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
+        "allfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -102,6 +102,14 @@ return {
         "delimiteritalickernmathcontrolcode", "orditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
         "charitalicnoreboxmathcontrolcode", "boxednoitalickernmathcontrolcode", "nostaircasekernmathcontrolcode",
         "textitalickernmathcontrolcode",
+        --
+        "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
+        "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",
+        "noitaliccorrectionglyphoptioncode",
+        --
+        "normalparcontextcode", "vmodeparcontextcode", "vboxparcontextcode", "vtopparcontextcode", "vcenterparcontextcode",
+        "vadjustparcontextcode", "insertparcontextcode", "outputparcontextcode", "alignparcontextcode",
+        "noalignparcontextcode", "spanparcontextcode", "resetparcontextcode",
         --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
@@ -164,30 +172,29 @@ return {
         --
         "wildcardsymbol",
         --
-        "normalhyphenationmodecode", "automatichyphenationmodecode", "explicithyphenationmodecode",
-        "syllablehyphenationmodecode", "uppercasehyphenationmodecode", "collapsehyphenationmodecode",
-        "compoundhyphenationmodecode", "strictstarthyphenationmodecode", "strictendhyphenationmodecode",
-        "automaticpenaltyhyphenationmodecode", "explicitpenaltyhyphenationmodecode",
-        "permitgluehyphenationmodecode", "permitallhyphenationmodecode", "permitmathreplacehyphenationmodecode",
-        "forcecheckhyphenationmodecode", "lazyligatureshyphenationmodecode", "forcehandlerhyphenationmodecode",
-        "feedbackcompoundhyphenationmodecode", "ignoreboundshyphenationmodecode",
+        "normalhyphenationcode", "automatichyphenationcode", "explicithyphenationcode", "syllablehyphenationcode", "uppercasehyphenationcode",
+        "collapsehyphenationmcode", "compoundhyphenationcode", "strictstarthyphenationcode", "strictendhyphenationcode",
+        "automaticpenaltyhyphenationcode", "explicitpenaltyhyphenationcode", "permitgluehyphenationcode", "permitallhyphenationcode",
+        "permitmathreplacehyphenationcode", "forcecheckhyphenationcode", "lazyligatureshyphenationcode", "forcehandlerhyphenationcode",
+        "feedbackcompoundhyphenationcode", "ignoreboundshyphenationcode", "partialhyphenationcode", "completehyphenationcode",
         --
-        "partialhyphenationmodecode", "completehyphenationmodecode",
+        "normalizelinenormalizecode", "parindentskipnormalizecode", "swaphangindentnormalizecode", "swapparsshapenormalizecode",
+        "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
         --
-        "normalizelinecode", "parindentskipcode", "swaphangindentcode", "swapparsshapecode", "breakafterdircode", "removemarginkernscode",
-        "clipwidthcode", "flattendiscretionariescode",
+        "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
+        "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",
+        "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode", "noitaliccorrectionglyphoptioncode",
+        -- extras:
+        "nokerningcode", "noligaturingcode",
         --
-        "noligaturingcode", "nokerningcode", "noleftligaturecode", "noleftkerncode", "norightligaturecode", "norightkerncode",
-        "noexpansioncode", "noprotrusioncode", "noitaliccorrectioncode",
+        "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode",
+        "mutableflagcode", "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
         --
-        "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode", "mutableflagcode",
-        "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
+        "ordmathflattencode", "binmathflattencode", "relmathflattencode", "punctmathflattencode", "innermathflattencode",
         --
-        "ordflattencode", "binflattencode", "relflattencode", "punctflattencode", "innerflattencode",
+        "normalworddiscoptioncode", "preworddiscoptioncode", "postworddiscoptioncode",
         --
-        "prewordcode", "postwordcode",
-        --
-        "continuewhenlmtxmode"
+        "continuewhenlmtxmode",
     },
     ["helpers"] = {
         --
@@ -573,8 +580,14 @@ return {
         --
         "showboxhere",
         --
+        "discoptioncodestring", "flagcodestring", "frozenparcodestring", "glyphoptioncodestring", "groupcodestring",
+        "hyphenationcodestring", "mathcontrolcodestring", "mathflattencodestring", "normalizecodestring",
+        "parcontextcodestring",
+        --
         "newlocalcount", "newlocaldimen", "newlocalskip", "newlocalmuskip", "newlocaltoks", "newlocalbox",
         "newlocalwrite", "newlocalread",
         "setnewlocalcount", "setnewlocaldimen", "setnewlocalskip", "setnewlocalmuskip", "setnewlocaltoks", "setnewlocalbox",
+        --
+        "ifexpression"
     }
 }

@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/cld
 
 \startenvironment cld-environment
 
@@ -220,5 +220,28 @@
 \setuplist
   [chapter,section]
   [interaction=all]
+
+% a hack:
+
+\startluacode
+    function document.checkcldresource(filename)
+        if environment.arguments.runpath then
+            -- We're running elsewhere so we can have started fresh.
+            local cldname = file.replacesuffix(filename,"cld")
+            local pdfname = file.replacesuffix(filename,"pdf")
+            if not lfs.isfile(pdfname) then
+                -- We don't have the titlepage yet but need to fetch
+                -- the template from the real path.
+                local path = environment.arguments.path
+                if lfs.isdir(path) then
+                    os.execute('context --global --path="' .. path .. '" ' .. cldname)
+                else
+                    -- bad news
+                end
+            end
+        end
+    end
+\stopluacode
+
 
 \stopenvironment

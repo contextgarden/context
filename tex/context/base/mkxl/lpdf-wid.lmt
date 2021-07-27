@@ -23,6 +23,9 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- the other fragile bit. And, now that adobe quits flash in 2020 we're without any
 -- video anyway. Also, it won't play on all platforms and devices so let's wait for
 -- html5 media in pdf then.
+--
+-- See mail by Michal Vlasák to the mailing list that discusses current support in
+-- viewers and also mentions a few fixes wrt embedding media.
 
 local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
@@ -689,18 +692,19 @@ local function insertrendering(specification)
      --          B = start,
      --     }
      -- }
-     -- local parameters = pdfdictionary {
-     --     Type = pdfconstant(MediaPermissions),
-     --     TF   = pdfstring("TEMPALWAYS") }, -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS
-     -- }
+        local parameters = pdfdictionary {
+            Type = pdfconstant(MediaPermissions),
+            TF   = pdfstring("TEMPALWAYS"), -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS / needed for acrobat/wmp
+        }
         local descriptor = pdfdictionary {
             Type = pdfconstant("Filespec"),
             F    = filename,
         }
         if isurl then
             descriptor.FS = pdfconstant("URL")
+            descriptor = pdfreference(pdfflushobject(descriptor))
         elseif option[v_embed] then
-            descriptor.EF = codeinjections.embedfile {
+            descriptor = codeinjections.embedfile {
                 file     = filename,
                 mimetype = mimetype, -- yes or no
                 compress = false,
@@ -712,8 +716,8 @@ local function insertrendering(specification)
             N    = label,
             CT   = mimetype,
             Alt  = pdfarray { "", "file not found" }, -- language id + message
-            D    = pdfreference(pdfflushobject(descriptor)),
-         -- P    = pdfreference(pdfflushobject(parameters)),
+            D    = descriptor,
+            P    = pdfreference(pdfflushobject(parameters)),
         }
         local rendition = pdfdictionary {
             Type = pdfconstant("Rendition"),
