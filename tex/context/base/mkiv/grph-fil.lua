@@ -97,6 +97,7 @@ function jobfiles.run(name,action)
             -- can be anything but we assume it gets checked by the sandbox
             os.execute(action)
         elseif ta == "table" then
+            -- these paths will be ignored when they are not set
             local path    = action.path
             local runpath = action.runpath
             action.path    = environment.arguments.path

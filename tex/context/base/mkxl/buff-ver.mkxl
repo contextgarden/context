@@ -177,8 +177,8 @@
 \installcommandhandler \??typing {typing} \??typing
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currenttyping}{\buff_verbatim_typing_start{\currenttyping}}%
-    \frozen\instance\setuevalue{\e!stop \currenttyping}{\buff_verbatim_typing_stop {\currenttyping}}%
+    \frozen\protected\instance\edefcsname\e!start\currenttyping\endcsname{\buff_verbatim_typing_start{\currenttyping}{\currenttyping}}%
+    \frozen\protected\instance\edefcsname\e!stop \currenttyping\endcsname{\buff_verbatim_typing_stop}%
     \ifempty\currenttypingparent
       \normalexpanded{\definelinenumbering[\currenttyping]}%
     \else
@@ -452,11 +452,25 @@
 \mutable\let\beginofverbatimlines\relax % hooks
 \mutable\let\endofverbatimlines  \relax % hooks
 
-\protected\def\buff_verbatim_typing_start#1% tricky non standard lookahead
+\protected\def\buff_verbatim_typing_start#1#2% tricky non standard lookahead
   {\begingroup
-   \edef\currenttyping{#1}%
+   \edef\currenttyping       {#1}%
+   \edef\currenttypingwrapper{#2}%
    \obeylines
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
+
+\def\buff_verbatim_typing_start_yes[#1]%
+  {\ifcondition\validassignment{#1}%
+     \setupcurrenttyping[#1]%
+   \else
+     \doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}%
+   \fi
+   \typingparameter\c!before\relax % moved down
+   \startpacked[\v!blank]%         % moved down
+   \buff_verbatim_setup_line_numbering
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_setup_keep_together
+   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
 
 \def\buff_verbatim_typing_start_nop
   {\typingparameter\c!before\relax
@@ -464,22 +478,7 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_setup_keep_together
-   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
-
-\def\buff_verbatim_typing_start_yes[#1]%
-  {\typingparameter\c!before\relax
-   \startpacked[\v!blank]%
-   \ifcondition\validassignment{#1}%
-     \setupcurrenttyping[#1]%
-   \else
-     \doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}%
-   \fi
-   \buff_verbatim_setup_line_numbering
-   \buff_verbatim_initialize_typing_one
-   \buff_verbatim_setup_keep_together
-   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
-
-% \startnamedtyping[#1]
+   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
 
 \protected\def\buff_verbatim_setup_keep_together
   {\edef\p_keeptogether{\typingparameter\c!keeptogether}%
@@ -518,12 +517,17 @@
    \dostoptagged
    \begincsname#2\endcsname}
 
-\protected\def\buff_verbatim_typing_stop#1% hm, currenttyping
+\protected\def\buff_verbatim_typing_stop
   {\stoppacked
    \typingparameter\c!after\relax
    \useindentnextparameter\typingparameter
    \endgroup
    \dorechecknextindentation}
+
+\permanent\protected\def\startnamedtyping[#1]%
+  {\buff_verbatim_typing_start{#1}\e!namedtyping}
+
+\permanent\let\stopnamedtyping\buff_verbatim_typing_stop
 
 %D Line numbering for files is combined with filtering, while display verbatim has
 %D the ability to continue.
@@ -581,7 +585,7 @@
 \mutable\let\currenttypingfile\empty
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!type\currenttyping\v!file}{\typefile[\currenttyping]}%
+    \frozen\protected\instance\edefcsname\e!type\currenttyping\v!file\endcsname{\typefile[\currenttyping]}%
 \to \everydefinetyping
 
 \permanent\tolerant\protected\def\typefile[#1]#*[#2]#:#3%

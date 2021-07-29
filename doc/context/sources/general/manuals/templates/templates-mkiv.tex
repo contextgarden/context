@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/templates
 
 % author    : Hans Hagen
 % copyright : PRAGMA ADE & ConTeXt Development Team
@@ -66,8 +66,8 @@
         for j=1 upto m :
             fill
                 unitsquare
-                xysized (w,h)
-                shifted ((i-1)*w,(j-1)*h)
+                xysized (w+1/5,h+1/5) % a little overlap to get rid of viewer inaccuracies
+                shifted ((i-1)*w-1/10,(j-1)*h-1/10)
                 withcolor (.5[red,blue] randomized(.75,.75,.75))
             ;
         endfor ;

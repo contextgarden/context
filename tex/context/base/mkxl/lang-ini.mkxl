@@ -811,10 +811,14 @@
 \protected\def\lang_basics_traced_discretionary#1#2#3#4%
   {\normaldiscretionary#1{\darkred#2}{\darkgreen#3}{\darkblue#4}}
 
+\def\lang_basics_trace_discretionary_yes{\enforced\let\discretionary\traceddiscretionary} % indirect because of overload
+\def\lang_basics_trace_discretionary_nop{\enforced\let\discretionary\normaldiscretionary} % indirect because of overload
+
+
 \installtextracker
   {discretionaries}
-  {\enforced\let\discretionary\traceddiscretionary}
-  {\enforced\let\discretionary\normaldiscretionary}
+  {\lang_basics_trace_discretionary_yes}
+  {\lang_basics_trace_discretionary_nop}
 
 \permanent\protected\def\samplediscretionary
   {\traceddiscretionary

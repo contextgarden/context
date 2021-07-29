@@ -64,7 +64,7 @@ local function readfilename(specification,backtrack,treetoo)
                 local fname = names[i]
                 for i=1,backtrack,1 do
                     fname = "../" .. fname
-                    local pname = path and (path .. "/" .. fname) or fname
+                    local pname = path and (path ~= "") and (path .. "/" .. fname) or fname
                     if isfile(pname) then
                         if trace_files then
                             report_files("found by backtracking: %s",pname)

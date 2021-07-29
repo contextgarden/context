@@ -331,6 +331,13 @@
     \let\colo_helpers_show_message\showmessage
 \to \everyjob
 
+% handled elsewhere but kind of a reference here:
+%
+% \def\colo_force_colormodel#1#2%
+%   {\setcolorsparameter\c!rgb {#1}%
+%    \setcolorsparameter\c!cmyk{#2}%
+%    \the\everysetupcolors}
+
 %D We provide stacking independent of grouping.
 
 % the old one

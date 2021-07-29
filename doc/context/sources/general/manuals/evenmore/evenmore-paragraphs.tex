@@ -1,0 +1,397 @@
+% language=us runpath=texruns:manuals/evenmore
+
+% End of July 2020 I decided to look into some of the backlog items and paragraphs
+% are on them, as are inserts and so. The usual musical time stamp is buying the
+% excellent Prince Live at the Aladdin Las Vegas DVD which I ran between the
+% moments that I had enough of coding. Some tracks, like Family Name, fit perfectly
+% in mid 2020.
+
+% https://www.youtube.com/watch?v=f8FAJXPBdOg
+
+\environment evenmore-style
+
+\startcomponent evenmore-paragraphs
+
+\enableexperiments[paragraphs.freeze]
+
+\startchapter[title=Paragraphs]
+
+{\em This is mostly a wrapup of some developments, and definitely not a tutorial.
+What is described here is experimental and successive version of \CONTEXT\ \LMTX\
+will explore their potential. As long a users stay away from the low level
+primitives we can try to guarantee consistent behavior (and catch side effect or
+deal with known issues).}
+
+\startsection[title=Freezing]
+
+A well known property of paragraphs is that when the moment is there to split
+into lines, the current state of variables drives it. There are a lot of quite
+some variables involved. The most significant one is the \type {\hsize}. Take
+this:
+
+\startbuffer
+\bgroup
+    {\bf Ward:}
+    \hsize .25\textwidth
+    {\bf Ward:} \samplefile{ward}
+    \hsize .75\textwidth % last value
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\forgetparagraphfreezing \getbuffer}
+
+But wait, why do we get the full text width here? The reason is that by the time
+the paragraph ends, after the \type {\egroup}, the \type {\hsize} is set back to
+what it was before the group started.
+
+\startbuffer
+\bgroup
+    \hsize .25\textwidth
+    {\bf Ward:} \samplefile{ward}
+    \hsize .75\textwidth % last value
+    \par
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\forgetparagraphfreezing \getbuffer}
+
+The last \type {\hsize} specified is used. That is not really a problem, but the
+fact that we need to explicitly end a paragraph before the group ends actually
+is, and in a moment we will see an example where that matters a lot. First a
+general solution to this problem is discussed. In the next example, we do group,
+but inside that group we take a snapshot of the \type {\hsize}:
+
+\startbuffer
+\bgroup
+    \hsize .80\textwidth
+    \dontleavehmode
+    \snapshotpar "000001
+    {\bf Ward:} \samplefile{ward}
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This time we get:
+
+{\forgetparagraphfreezing \getbuffer}
+
+The magic number used in the snapshot relates to the \type {\hsize}.
+
+\startcolumns[n=2]
+\starttabulate[|T||]
+\NC 0x\uchexnumbers{\hsizefrozenparcode        } \NC hsize \NC \NR
+\NC 0x\uchexnumbers{\skipfrozenparcode         } \NC leftskip rightskip \NC \NR
+\NC 0x\uchexnumbers{\hangfrozenparcode         } \NC hangindent hangafter \NC \NR
+\NC 0x\uchexnumbers{\indentfrozenparcode       } \NC parindent \NC \NR
+\NC 0x\uchexnumbers{\parfillfrozenparcode      } \NC parfillskip parfillleftskip \NC \NR
+\NC 0x\uchexnumbers{\adjustfrozenparcode       } \NC adjustspacing adjustspacingstep adjustspacingshrink adjustspacingstretch \NC \NR
+\NC 0x\uchexnumbers{\protrudefrozenparcode     } \NC protrudechars \NC \NR
+\NC 0x\uchexnumbers{\tolerancefrozenparcode    } \NC pretolerance tolerance \NC \NR
+\NC 0x\uchexnumbers{\stretchfrozenparcode      } \NC emergencystretch \NC \NR
+\NC 0x\uchexnumbers{\loosenessfrozenparcode    } \NC looseness \NC \NR
+\NC 0x\uchexnumbers{\lastlinefrozenparcode     } \NC lastlinefit \NC \NR
+\NC 0x\uchexnumbers{\linepenaltyfrozenparcode  } \NC linepenalty interlinepenalty interlinepenalties \NC \NR
+\NC 0x\uchexnumbers{\clubpenaltyfrozenparcode  } \NC clubpenalty clubpenalties \NC \NR
+\NC 0x\uchexnumbers{\widowpenaltyfrozenparcode } \NC widowpenalty widowpenalties displaywidowpenalty displaywidowpenalties \NC \NR
+\NC 0x\uchexnumbers{\brokenpenaltyfrozenparcode} \NC brokenpenalty \NC \NR
+\NC 0x\uchexnumbers{\demeritsfrozenparcode     } \NC adjdemerits doublehyphendemerits finalhyphendemerits \NC \NR
+\NC 0x\uchexnumbers{\shapefrozenparcode        } \NC parshape \NC \NR
+\NC 0x\uchexnumbers{\linefrozenparcode         } \NC baselineskip lineskip lineskiplimit \NC \NR
+\NC                                              \NC \NC \NR
+\NC 0xFFFFFFF                                    \BC all of them \NC \NR
+\stoptabulate
+\stopcolumns
+
+In practice you will set them all on one go, so:
+
+\starttyping
+\snapshotpar "FFFFFFF
+\stoptyping
+
+How often do we need such a feature? Actually more often than one thinks,
+especially when we have an unpredictable situation. For instance, when you
+typeset from an \XML\ source you often don't know what you get, and you can have
+cases that end up like this:
+
+\startbuffer
+\placefigure[left,none]{}{} {Ward: \bf  \dorecurse{3}{\samplefile{ward}} } \par
+\placefigure[left,none]{}{} {\bf Ward:} \dorecurse{3}{\samplefile{ward}}   \par
+\stopbuffer
+
+\typebuffer
+
+This might render as:
+
+{\forgetparagraphfreezing \getbuffer} \forgetsidefloats % needed due to interference
+
+The placement of such a figure is hooked into \type {\everypar} and uses hanging
+indentation. Like \type {\hsize}, \type {\hangafter} and \type {\hangindent} can
+be forgotten before the paragraph ends. In \MKII\ and \MKIV\ the recommended
+solution is to always start a paragraph explicitly, with a strut, forced
+indentation of preferably:
+
+\startbuffer
+\dontleavehmode {Ward: \bf  \dorecurse{3}{\samplefile{ward} } } \par
+\dontleavehmode {\bf Ward:} \dorecurse{3}{\samplefile{ward} }   \par
+\stopbuffer
+
+\typebuffer
+
+In an \XML\ mapping we can hide it but in a regular \TEX\ source this is not
+pretty. With little effort we can do the snapping automatically, so that we get:
+
+\placefigure[left,none]{}{} {Ward: \bf  \dorecurse{3}{\samplefile{ward} } } \par
+\placefigure[left,none]{}{} {\bf Ward:} \dorecurse{3}{\samplefile{ward} }   \par
+
+and this is what \CONTEXT\ \LMTX\ will do once we're sure that the snapshot
+feature behaves well and has no side effects. There is of course some overhead
+involved in taking snapshots, keeping track of the values and accessing them
+later, but it is rewarding.
+
+In addition to the numeric \type {\snapshotpar} primitive there is also another
+way to take s snapshot. As with the numeric variant, it only takes a snapshot when
+in horizontal mode: there has to be a so called local par node at the head of the
+current list. The next code shows some how to play with some of what \CONTEXT\
+offers:
+
+\starttyping
+\setuplayout[alternative=doublesided]
+
+\starttext
+
+\startbuffer
+    \dorecurse{8}{
+        \interlinepenalties 1 \maxcard
+        CASE 1: \samplefile{tufte} \par
+    } \page
+
+    \dorecurse{8}{
+        CASE 2: \samplefile{tufte}
+        \interlinepenalties 1 \maxcard \par
+    } \page
+
+    \dorecurse{8}{
+        CASE 3: \samplefile{tufte}
+        \interlinepenalties 1 \maxcard \freezeparagraphproperties \par
+    } \page
+
+    \dorecurse{8}{
+        CASE 4: \samplefile{tufte}
+        \frozen \interlinepenalties 1 \maxcard \par
+    } \page
+
+    \dorecurse{8}{
+        CASE 5: \samplefile{tufte}
+        \frozen \interlinepenalty \maxcard \par
+    } \page
+\stopbuffer
+
+\typebuffer \page \getbuffer
+
+\stoptext
+\stoptyping
+
+When you process this you will notice that the \type {\frozen} prefix also
+snapshots the parameter that gets set. Now, there is a pitfall here: some for
+these settings are persistent, i.e. they are not reset after a paragraph has been
+typeset. For instance, \type {\tolerance} is a general setting, but \type
+{\hangindent} is a one shot setting: it's value gets reset after the paragraph
+has been dealt with.
+
+Here is another test one can run to see what happens:
+
+\starttyping
+\dontleavehmode
+\defrostparagraphproperties
+\writestatus{state}{after  start            \uchexnumbers{\the\snapshotpar}}%
+\writestatus{state}{before set   hangindent \uchexnumbers{\the\snapshotpar}}%
+\frozen\hangindent10pt
+\writestatus{state}{after  set   hangindent \uchexnumbers{\the\snapshotpar}}%
+\writestatus{state}{before set   looseness  \uchexnumbers{\the\snapshotpar}}%
+\frozen\looseness 1
+\writestatus{state}{after  set   looseness  \uchexnumbers{\the\snapshotpar}}%
+\writestatus{state}{before set   hangafter  \uchexnumbers{\the\snapshotpar}}%
+\frozen\hangafter 2
+\writestatus{state}{after  set   hangafter  \uchexnumbers{\the\snapshotpar}}%
+\begingroup
+\writestatus{state}{before set   rightskip  \uchexnumbers{\the\snapshotpar}}%
+\frozen\rightskip2cm
+\writestatus{state}{after  set   rightskip  \uchexnumbers{\the\snapshotpar}}%
+\endgroup
+\writestatus{state}{before reset hangindent \uchexnumbers{\the\snapshotpar}}%
+\snapshotpar-\frozenhangindentcode
+\writestatus{state}{after  reset hangindent \uchexnumbers{\the\snapshotpar}}%
+\writestatus{state}{before reset hangafter  \uchexnumbers{\the\snapshotpar}}%
+\snapshotpar-\frozenhangaftercode
+\writestatus{state}{after  reset hangafter  \uchexnumbers{\the\snapshotpar}}%
+... content ...
+\stoptyping
+
+You can group an assignment and then take a snapshot. That way the change doesn't
+affect following paragraphs, unless of course to did a global assignment. In
+\CONTEXT\ we have a bunch of constants that can be used instead of the hard to
+remember bit positions. The \type {\frozen} prefix can also be used with for
+instance a \type {\advance} operation. Of course it only has effect for those
+(internal) parameters that relate to a paragraph.
+
+Keep in mind that what is show here will evolve: in \CONTEXT\ \LMTX\ we will
+snapshot by default and the core macros are aware of this fact. Although the way
+\CONTEXT\ is set up makes it relatively easy to make this paradigm shift users
+should anyway be aware of this change when they do their own low level tweaking,
+but in that case they probably already are aware of possible interferences.
+
+\stopsection
+
+\startsection[title=Wrapping up]
+
+Another new (low level) feature is wrapping up a paragraph. Traditional \TEX\
+comes with the powerful \type {\everypar} and in \LUAMETATEX\ we now have \type
+{\wrapuppar}. This primitive collects tokens that will be expanded just before
+the paragraph ends. Here is an example:
+
+\startbuffer
+\dontleavehmode
+\wrapuppar{\hfill {\bf ONE}}%
+\wrapuppar{\crlf\strut\hfill {\bf TWO}\hfill\strut}%
+\wrapuppar{\crlf\strut {\bf THREE}\hfill\strut {\bf FOUR}}%
+\samplefile{ward}
+
+\samplefile{ward}
+\stopbuffer
+
+\typebuffer
+
+We can only wrapup when we are in a paragraph although one can of course use the
+\type {\wrapuppar} command inside an \type {\everypar} if needed.
+
+\getbuffer
+
+An more useful example is the following. We leave it to the reader to check it
+out:
+
+\starttyping
+\dorecurse{10}{
+    \bgroup
+        \advance\hsize by -#1cm\relax
+        \dontleavehmode
+        \wrapuppar{\strut\nobreak\hfill\nobreak QED}%
+        \samplefile{ward}
+    \egroup
+    \par
+}
+\stoptyping
+
+\stopsection
+
+\startsection[title=Insertions]
+
+The concept of inserts is kind of complicated. They are nodes in a list that make
+separate streams. An application of inserts are footnotes. In the text flow a
+symbol is typeset (like a raised number) and the note itself becomes an insert.
+When a paragraph is broken into lines, these inserts end up in to be boxed line,
+but when the line is actually wrapped in a box, these inserts are collected and
+injected after the line. The page builder will then take their dimensions into
+account when it comes to breaking pages. Depending on how strict the rules are
+the inserts will end up on the same page, move, of be broken into lines.
+
+This all works well as long as the inserts are not burried into boxes: they then
+are invisible to the mechanism described before. Take the following example:
+
+\starttyping
+\dontleavehmode
+l\hbox{h\footnote{h1} test}
+l\hbox{h\footnote{h2}} test
+l\hbox{h\footnote{h3}} test
+l\footnote{l4} test
+l\footnote{l5} test
+l\hbox{h\footnote{h6} test}
+l\hbox{\hbox{\hbox{h\footnote{h7} test}}}
+l\footnote{l8} test
+\par
+\stoptyping
+
+% \starttabulate
+% \NC test \NC test \footnote{before} \samplefile{tufte} \footnote{after}\NC \NR
+% ...
+% \NC test \NC test \footnote{before} \samplefile{tufte} \footnote{after}\NC \NR
+% \stoptabulate
+
+In the engines used with \MKII\ only a few footnotes actually show up. In \MKIV\
+the situation is slightly better because there we use some trickery to migrate
+these notes to the outer level. But even there it's not perfect because the order
+changes. We can actually fix that (and do so) but it comes at a performance penalty
+so this is why in \MKIV\ dealing with this is optional.
+
+\start
+    \def\Hi#1{\high{\tx#1}}
+    \dontleavehmode
+    \hbox{lh\H1 test lh\H2 test lh\H3 test l\H4 test l\H5 test lh\H6 test lh\H7 test l\H8 test}
+
+    \starttabulate[|||||||||||]
+    \NC \MKII \NC \PDFTEX\ & \XETEX         \NC \Hi4 l4 \NC \Hi5 l5 \NC \Hi8 l8 \NC         \NC         \NC         \NC         \NC         \NC \NR
+    \NC \MKIV \footnote{In older versions.} \NC \LUATEX             \NC \Hi1 h1 \NC \Hi2 h2 \NC \Hi3 h3 \NC \Hi6 h6 \NC \Hi7 h7 \NC \Hi4 l4 \NC \Hi5 l5 \NC \Hi8 l8 \NC \NR
+    \NC \LMTX \NC \LUAMETATEX               \NC \Hi1 h1 \NC \Hi2 h2 \NC \Hi3 h3 \NC \Hi4 l4 \NC \Hi5 l5 \NC \Hi6 h6 \NC \Hi7 h7 \NC \Hi8 l8 \NC \NR
+    \stoptabulate
+\stop
+
+However, when you look at the results of \LMTX\ you will notice that the
+situation is better. This is because we have some code to \LUAMETATEX\ that can
+better deal with some cases. Combined with some \LUA\ magic (as in \MKIV) we get
+the right order at hardly any runtime overhead. It must be noted that the
+original \TEX\ engine for good reason works as it does because there the actual
+typesetting (read: resolving glyphs, hyphenation, applying ligatures and kerns,
+etc.) is interwoven with the main scanning|/|expanding loops in order to be
+efficient on the machines of those times. In \LUATEX\ we have these stages
+separated but the code dealing with inserts is the same, if only because we have
+to be compatible. In \LUAMETATEX\ we have again a bit simpler code because we use
+the fact that lists are double linked, which also makes it possible to add some
+magic code dealing with nested inserts without obscuring the code. It comes of
+course at a bit performance hit and the nodes related to lists also because
+larger but they are already much larger than in other engines, so we don't care
+too much about that. It is anyway a mechanism that need to be enabled explicitly.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \starttext
+
+%     \def\TestA  {\registerparwrapper       {A}  {[\ignorespaces}{\removeunwantedspaces]\showparwrapperstate{A}}}
+%     \def\TestB#1{\registerparwrapper       {B#1}{(\ignorespaces}{\removeunwantedspaces)\showparwrapperstate{B#1}}}
+%     \def\TestC  {\registerparwrapper       {C}  {<\ignorespaces}{\removeunwantedspaces>\showparwrapperstate{C}\forgetparwrapper}}
+%     \def\TestR  {\registerparwrapperreverse{R}  {<\ignorespaces}{\removeunwantedspaces>\showparwrapperstate{R}}}
+
+%     \start
+%         \TestA
+%         \dorecurse{3}{1.#1 before \ruledvbox{\hsize2em\raggedcenter\TestB1 !\par} after\par} \blank
+%         \dorecurse{3}{2.#1 before \ruledvbox{\hsize3em\raggedcenter        !\par} after\par} \blank
+%         \dorecurse{3}{3.#1 before \ruledvbox{\hsize4em\raggedcenter\TestB2 !}     after\par} \blank
+%         \forgetparwrapper
+%         \dorecurse{3}{4.#1 before \ruledvbox{\hsize5em\raggedcenter\TestB3 !}     after\par} \blank
+%         \TestC
+%         \dorecurse{3}{5.#1 before \ruledvbox{\hsize2em\raggedcenter\TestA   !}     after\par} \blank
+%     \stop
+
+
+%     \start
+%         \TestA
+%         \dorecurse{3}{6.#1  before after\par} \blank
+%         \TestB4
+%         \dorecurse{3}{7.#1 before after\par} \blank
+%         \TestB5
+%         \TestR
+%         \dorecurse{3}{8.#1 before after\par} \blank
+%     \stop
+
+% \stoptext

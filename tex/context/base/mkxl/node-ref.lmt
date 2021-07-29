@@ -566,7 +566,7 @@ do
                 if depth  < dp then depth  = dp end
             end
          -- logs.report("temp","used: ht=%p dp=%p",height,depth)
-            local annot = nodeinjections.reference(width,height,depth,set,resolved.mesh)
+            local annot = nodeinjections.reference(reference,width,height,depth,set,resolved.mesh)
             if annot then
                 annot = tonut(annot) -- todo
                 nofreferences = nofreferences + 1

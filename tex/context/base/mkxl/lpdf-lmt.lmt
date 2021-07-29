@@ -1196,7 +1196,7 @@ local flushimage  do
             BBox      = pdfarray(bbox),
             Resources = lpdf.collectedresources { serialize = false },
         }
-        local objnum = pdfflushstreamobject(content,wrapper,false)
+        local objnum = pdfflushstreamobject(content,wrapper,false) -- why not compressed ?
         groups = groups + 1
         usedxgroups[groups] = objnum
         return f_gr(groups)
@@ -1770,7 +1770,7 @@ local finalize  do
                 boundingbox[4] * bpfactor,
             }
 
-            local contentsobj = pdfflushstreamobject(content,false,false)
+            local contentsobj = pdfflushstreamobject(content,false,true)
 
             pageattributes.Type      = pdf_page
             pageattributes.Contents  = pdfreference(contentsobj)
@@ -1861,7 +1861,7 @@ local finalize  do
             wrapper.Resources = next(boxresources) and boxresources or nil
             wrapper.ProcSet   = lpdf.procset()
 
-            pdfflushstreamobject(content,wrapper,false,specification.objnum)
+            pdfflushstreamobject(content,wrapper,true,specification.objnum)
 
         end
 
@@ -2164,7 +2164,7 @@ do
         local kind     = compressed == "raw" and "raw" or "stream"
         local nolength = nil
         if compressed == "raw" then
-            compressed = nil
+            compressed = false
             nolength   = true
          -- data       = string.formatters["<< %s >>stream\n%s\nendstream"](attr,data)
         end
@@ -2172,7 +2172,8 @@ do
             objnum        = objnum,
             immediate     = true,
             nolength      = nolength,
-            compresslevel = compressed == false and 0 or nil,
+--             compresslevel = compressed == false and 0 or nil,
+            compresslevel = compressed,
             type          = "stream",
             string        = data,
             attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
@@ -2187,7 +2188,8 @@ do
         return pdfdeferredobject {
             objnum        = objnum,
             immediate     = true,
-            compresslevel = compressed == false and 0 or nil,
+--             compresslevel = compressed == false and 0 or nil,
+            compresslevel = compressed,
             type          = "stream",
             file          = filename,
             attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
@@ -2279,25 +2281,30 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         n = nofobjects
     end
     local size = #data
+    if comp ~= false then
+        comp = compress and size > threshold
+    end
     if level == 0 then
         local b = nil
         local e = s_stream_e
         if nolength then
-            b = f_stream_b_d_r(n,dict)
+            b = f_stream_b_d_r(n,dict) -- raw object, already treated
         else
-            local done = false
-            if comp ~= false and compress and size > threshold then
+            if comp then
                 local compdata = compressdata(data,size)
                 if compdata then
                     local compsize = #compdata
                     if compsize <= size - threshold then
                         data = compdata
                         size = compsize
-                        done = true
+                    else
+                        comp = false
                     end
+                else
+                    comp = false
                 end
             end
-            if done then
+            if comp then
                 b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
             else
                 b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
@@ -2310,21 +2317,23 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         offset = offset + #b + size + #e
     else
         if nolength then
-            data = f_stream_d_r(n,dict,data)
+            data = f_stream_d_r(n,dict,data) -- raw object, already treated
         else
-            local done = false
-            if comp ~= false and compress and size > threshold then
+            if comp then
                 local compdata = compressdata(data,size)
                 if compdata then
                     local compsize = #compdata
                     if compsize <= size - threshold then
                         data = compdata
                         size = compsize
-                        done = true
+                    else
+                        comp = false
                     end
+                else
+                    comp = false
                 end
             end
-            if done then
+            if comp then
                 data = dict and f_stream_d_c(n,dict,size,data) or f_stream_n_c(n,size,data)
             else
                 data = dict and f_stream_d_u(n,dict,size,data) or f_stream_n_u(n,size,data)
@@ -2417,7 +2426,8 @@ pdfimmediateobject = function(a,b,c,d)
     end
     -- todo: immediate
     if kind == "stream" then
-        flushstreamobj(data,objnum,attr,compresslevel and compresslevel > 0 or nil,nolength)
+--         flushstreamobj(data,objnum,attr,compresslevel and compresslevel > 0 or nil,nolength) -- nil == auto
+        flushstreamobj(data,objnum,attr,compresslevel,nolength) -- nil == auto
     elseif objectstream and objcompression ~= false then
         addtocache(objnum,data)
     else
@@ -2815,8 +2825,8 @@ do
                 specification.type = kind
                 specification.kind = kind
             end
-            local compress = compresslevel and compresslevel > 0 or nil
-            flushstreamobj(stream,objnum,dict,compress,nolength)
+--             flushstreamobj(stream,objnum,dict,compresslevel and compresslevel > 0 or nil,nolength)
+            flushstreamobj(stream,objnum,dict,compresslevel,nolength)
             specification.objnum      = objnum
             specification.rotation    = specification.rotation or 0
             specification.orientation = specification.orientation or 0

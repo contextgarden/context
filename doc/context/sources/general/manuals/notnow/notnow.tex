@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/notnow
 
 \usemodule[typesetting]
 
@@ -128,6 +128,26 @@ already complex code more than needed. Also, it will never be perfect anyway.
 
 \stopchapter
 
+\startchapter[title=Sidefloats]
+
+Support for side floats is non|-|trivial and no solution will serve all intended
+usage. Over the years we have improved on border cases but it is still not
+perfect. For that reason the implementation is (apart from solving bugs, mostly) frozen.
+Here is an example of a use case that we ran into. We manipulate the spacing with
+an offset parameter.
+
+\typefile{notnow-sidefloats.tex}
+
+You can best play with these parameters and see what they do. If you use this
+mechanism in a long term project, use a frozen instance of \CONTEXT !
+
+\TwoPages{notnow-sidefloats}
+
+The second pages has preceding and trailing whitespace outside the sidefloat
+flow.
+
+\stopchapter
+
 \startpagemakeup[pagestate=stop,page=left,doublesided=no]
     \scale[width=\paperwidth,height=\paperheight] \bgroup
         \bTABLE[strut=no,height=29.7pt,width=21pt,align={lohi,middle},foregroundcolor=white,framecolor=white,background=color]
@@ -151,25 +171,5 @@ already complex code more than needed. Also, it will never be perfect anyway.
         \eTABLE
     \egroup
 \stoppagemakeup
-
-\startchapter[title=Sidefloats]
-
-Support for side floats is non|-|trivial and no solution will serve all intended
-usage. Over the years we have improved on border cases but it is still not
-perfect. For that reason the implementation is (apart from solving bugs, mostly) frozen.
-Here is an example of a use case that we ran into. We manipulate the spacing with
-an offset parameter.
-
-\typefile{notnow-sidefloats.tex}
-
-You can best play with these parameters and see what they do. If you use this
-mechanism in a long term project, use a frozen instance of \CONTEXT !
-
-\TwoPages{notnow-sidefloats}
-
-The second pages has preceding and trailing whitespace outside the sidefloat
-flow.
-
-\stopchapter
 
 \stopdocument

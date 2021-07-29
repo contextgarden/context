@@ -19,7 +19,7 @@
 
 \unprotect
 
-\registerctxluafile{lang-rep}{}
+\registerctxluafile{lang-rep}{autosuffix}
 
 \definesystemattribute[replacements][public,global]
 

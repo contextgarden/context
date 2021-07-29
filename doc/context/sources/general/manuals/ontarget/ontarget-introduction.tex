@@ -1,0 +1,104 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-introduction
+
+\environment ontarget-style
+
+\startchapter[title={Introduction}]
+
+This is the seventh wrapup of the \LUATEX\ and \LUAMETATEX\ development cycle. It
+is dedicated to all those users who kept up with developments and are always
+willing to test the new features. Without them a project like this would not be
+possible.
+
+At the time this introduction is written the \LUAMETATEX\ code base is rather
+stable and quite a bit of the \MKIV\ code base has been adapted to new situation.
+But, as usual, there are always new possibilities to explore, so I expect that
+this document will grow over time as did the others. I'm not going to repeat all
+that has been done because that's what the previous episodes are about.
+
+As the title suggest, we're still on target. When the \LUAMETATEX\ project
+started there actually was no deadline formulated so in fact we're always on
+target. The core components \TEX, \METAPOST, and \LUA\ are all long term efforts
+so we're in no hurry at all. However, this is the year that a fast pace will
+become a slow pace with respect to the \LUAMETATEX\ code base. There are still
+some things on the agenda but in principle the goals are reached. One problem in
+today's code development is that useability and quality seems to relate to the
+amount of changes in code. No update can mean old, unusable and uninteresting.
+It's probably why some sources get this silly yearly copyright year update.
+However, the update cycle of good old \TEX\ has an decade interval by now while
+it is still a pretty useable program. It would be nice to end up in such a long
+term cycle with \LUAMETATEX: bug fixes only.
+
+Although \CONTEXT\ has always adapted early to new developments (color, graphics,
+\PDF, \METAPOST, \ETEX, \PDFTEX, \LUATEX, \UTF, fonts) the effects on the
+\CONTEXT\ code base are mostly hidden for users. There have been some changes
+between \MKII\ and \MKIV, simply because there has been a shift from specific
+eight bit encodings to \UTF\ and \TYPEONE\ to \OPENTYPE\ fonts. Both had an
+impact on important subsystems: input encodings, font definitions and features,
+language and script support. On other subsystems the impact was hardly
+noticeable, like for instance backend related features (these have always been
+kind of abstract). That doesn't mean that these haven't changed deep down, they
+definitely have. Some mechanisms became better in \MKIV, simply because less
+hackery was needed. My experience is that when users see that it gets better or
+easier, they are also willing to adapt the few lines in their document source
+that benefit from it. Of course the impact on the \METAPOST\ integration in
+\CONTEXT\ had a real large impact, especially in terms of performance.
+
+The upgrade to \LMTX, the version of \CONTEXT\ for \LUAMETATEX, is even less
+visible although already some new mechanisms showed up. This time a couple of
+engine specific features have been improved and made more flexible. In fact, the
+whole code base of the engine has been overhauled. This happened stepwise because
+we had to make sure all things kept working. As a first step code was made
+independent of the compilation infrastructure and the dependencies, other than a
+very few small ones, have been removed. The result is a rather lean and mean
+setup, even when we consider what has been added at the primitive level and
+traditional subsystems. A benefit is that in the meantime the \LUAMETATEX\ \LMTX\
+combination outperforms \LUATEX\ with \MKIV, something that was not ensured when
+the built|-|in \PDF\ backend was removed and delegated to \LUA. By binding
+development closely to \CONTEXT\ we also hope that the code base stays clean of
+arbitrary extensions.
+
+Because in the end, \TEX\ is also a programming language, there have been
+extensions that make programming easier. There is already a stable middle layer
+of auxiliary macros in \CONTEXT\ that help the user who likes to program but
+doesn't like real low level primitives and dirty tricks, but by extending the
+primitive repertoire a bit users can now stay closer to the original \TEX\
+concepts. Adding more and more layers of indirectness makes no sense if we can
+improve the bottom programming layer. It also makes coding a bit more natural
+(the \TEX\ look), apart from offering performance benefits. This is where you can
+see differences between the \MKIV\ and \LMTX\ code base which for that reason is
+now nearly split completely. The \METAPOST\ subsystem has been extended with
+proper scanners so that we can enhance the interfaces in a natural way and as a
+result we also have an upgraded code base there. We also moved to \LUA 5.4 and
+will keep up as long as compatibility is no issue. Some \LUA\ code is likely to
+remain common between \MKIV\ and \LMTX, for instance font handling and helpers
+but we'll see where that ends.
+
+The \LUAMETATEX\ engine provides control over most internals and there are all
+kind of new interesting features. Decades of \CONTEXT\ development are behind
+that. Also, in the days that there were discussions about extending \TEX,
+\CONTEXT\ was not that much of influence and on the road to and from user group
+meetings, Taco and I often discussed what we'd like to see added (and some was
+actually implemented in \type {eetex} but that only lived on our machines. One
+can consider \LUATEX\ to be a follow up on that, and \LUAMETATEX\ in turn follows
+up on that project, which we both liked doing a lot. In some way \LUATEX\ lowered
+the boundary for implementing some of the more intrusive extensions in
+\LUAMETATEX\ and the follow up on \MPLIB. And once you start along that road
+small steps become large steps and one can as well be try to be as complete as
+possible. We've come a long way but eventually arrived at the destination.
+Personally I think we got there by not being in a hurry.
+
+But even targets that are reached can eventually move,
+
+\blank[2*big]
+
+\startlines
+Hans Hagen
+Hasselt NL
+August 2021\high{++}
+\stoplines
+
+\stopchapter
+
+\stopcomponent

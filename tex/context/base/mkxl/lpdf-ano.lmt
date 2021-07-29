@@ -754,6 +754,8 @@ local nofused    = 0
 local nofspecial = 0
 local share      = true
 
+local refobjects = { }
+
 local f_annot    = formatters["<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>"]
 local f_quadp    = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>"]
 
@@ -803,8 +805,18 @@ local function finishreference(specification)
     else
         specifier = f_annot(prerolled,llx,lly,urx,ury)
     end
+    local objref = hashed[specifier]
+    local refatt = specification.reference
+    specification.objref = objref
     nofused = nofused + 1
-    return pdfregisterannotation(hashed[specifier])
+    if refatt then
+        refobjects[refatt] = objref
+    end
+    return pdfregisterannotation(objref)
+end
+
+function codeinjections.getrefobj(refatt) -- bad name but experiment anyway
+    return refobjects[refatt]
 end
 
 local function finishannotation(specification)
@@ -818,18 +830,20 @@ local function finishannotation(specification)
         pdfdelayedobject(annot,objref)
     else
         objref = pdfdelayedobject(annot)
+        specification.objref = objref
     end
     nofspecial = nofspecial + 1
     return pdfregisterannotation(objref)
 end
 
-function nodeinjections.reference(width,height,depth,prerolled,mesh)
+function nodeinjections.reference(reference,width,height,depth,prerolled,mesh)
     if prerolled then
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
         return new_latelua {
             action    = finishreference,
+            reference = reference,
             width     = width,
             height    = height,
             depth     = depth,
@@ -868,6 +882,7 @@ pdfregisterannotation = function(n)
     else
         annotations = pdfarray { pdfreference(n) } -- no need to use lpdf.array cum suis
     end
+    return n
 end
 
 lpdf.registerannotation = pdfregisterannotation
@@ -1219,24 +1234,24 @@ local pdf_stop   = pdfconstant("Stop")
 local pdf_resume = pdfconstant("Resume")
 local pdf_pause  = pdfconstant("Pause")
 
-local function movie_or_sound(operation,arguments)
+local function movie_or_sound(operation,what,arguments)
     arguments = (type(arguments) == "table" and arguments) or settings_to_array(arguments)
     return pdfdictionary {
         S         = pdf_movie,
-        T         = format("movie %s",arguments[1] or "noname"),
+        T         = format("%s %s",what,arguments[1] or "noname"),
         Operation = operation,
     }
 end
 
-function executers.startmovie (arguments) return movie_or_sound(pdf_start ,arguments) end
-function executers.stopmovie  (arguments) return movie_or_sound(pdf_stop  ,arguments) end
-function executers.resumemovie(arguments) return movie_or_sound(pdf_resume,arguments) end
-function executers.pausemovie (arguments) return movie_or_sound(pdf_pause ,arguments) end
+function executers.startmovie (arguments) return movie_or_sound(pdf_start ,"movie",arguments) end
+function executers.stopmovie  (arguments) return movie_or_sound(pdf_stop  ,"movie",arguments) end
+function executers.resumemovie(arguments) return movie_or_sound(pdf_resume,"movie",arguments) end
+function executers.pausemovie (arguments) return movie_or_sound(pdf_pause ,"movie",arguments) end
 
-function executers.startsound (arguments) return movie_or_sound(pdf_start ,arguments) end
-function executers.stopsound  (arguments) return movie_or_sound(pdf_stop  ,arguments) end
-function executers.resumesound(arguments) return movie_or_sound(pdf_resume,arguments) end
-function executers.pausesound (arguments) return movie_or_sound(pdf_pause ,arguments) end
+function executers.startsound (arguments) return movie_or_sound(pdf_start ,"sound",arguments) end
+function executers.stopsound  (arguments) return movie_or_sound(pdf_stop  ,"sound",arguments) end
+function executers.resumesound(arguments) return movie_or_sound(pdf_resume,"sound",arguments) end
+function executers.pausesound (arguments) return movie_or_sound(pdf_pause ,"sound",arguments) end
 
 function specials.action(var)
     local operation = var.operation

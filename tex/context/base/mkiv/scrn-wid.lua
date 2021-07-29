@@ -231,13 +231,15 @@ function soundclips.register(specification)
     end
 end
 
-function soundclips.insert(tag)
-    local sc = soundclips[tag]
-    if not sc then
-        -- todo: message
-        return soundclips.register { tag = tag }
-    else
-        return sc
+function soundclips.insert(specification)
+    local tag = specification.tag
+    if tag and tag ~= "" then
+        local sc = soundclips[tag]
+        if not sc then
+            -- todo: message
+            sc = soundclips.register { tag = tag }
+        end
+        nodeinjections.insertsound(sc)
     end
 end
 

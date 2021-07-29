@@ -913,6 +913,11 @@ function codeinjections.setformat(s)
             --     rgb  = spec.rgb_colors  and variables.yes or variables.no,
             -- }
             --
+            local rgb = spec.rgb_colors  and variables.yes or variables.no
+            local cmy = spec.cmyk_colors and variables.yes or variables.no
+            report_backend("permitted colorspaces: rgb %a, cmyk %a",rgb,cmy)
+         -- token.expandmacro ("colo_force_colormodel",true,rgb,true,cmy)
+            --
             colors.forcesupport(
                 spec.gray_scale          or false,
                 spec.rgb_colors          or false,
@@ -952,6 +957,8 @@ function codeinjections.setformat(s)
                     report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
                 end
             end
+            -- we could just pass the spec to the backend
+            lpdf.setincludecidset(spec.include_cidsets)
         else
             report_backend("error, format %a is not supported",format)
         end

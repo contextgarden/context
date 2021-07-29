@@ -1,0 +1,73 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-titlepage
+
+\environment ontarget-style
+
+\startMPpage[pagestate=stop]
+
+StartPage ;
+
+    picture p ; p := image (
+
+        numeric d ; d := 6.5 ;
+
+        path c ; c := fullcircle scaled 40 shifted (2,7) ;
+
+        path e ; e :=
+            (0,0) -- (3,0) --
+            (3,1) -- (1,1) --
+            (1,2) -- (3,2) --
+            (3,3) -- (1,3) --
+            (1,4) -- (3,4) --
+            (3,4) -- (3,4) --
+            (3,5) -- (0,5) -- cycle ;
+
+        path r ; r := ((0,0) -- (3,0) -- (3,5) -- (0,5)) -- reverse e -- cycle;
+
+        path q ; q := fullsquare xyscaled (3,60) shifted (3/2,0) ;
+
+        fill c withcolor "lightgray" ;
+
+        fill q withpen pencircle scaled 1/5 withcolor "white" ;
+
+        for i=-25 step 5 until 35 :
+            fill (if (i mod 10) = 0 : e else : r fi) shifted (0,i - d) withcolor "darkred" ;
+        endfor ;
+
+        draw q withpen pencircle scaled 1/5 withcolor "darkgray" ;
+
+        for i=-25 step 10 until 30 :
+            draw textext.lft("\tttf " & decimal ((i/10)+21.5)) ysized 3
+                shifted (9,19 + i-6.5 - d) withcolor "darkgray" ;
+        endfor ;
+
+        draw ((-25,  0) -- (25, 0)) shifted center c withpen pencircle scaled 2/10 withcolor "yellow" ;
+        draw ((  0,-25) -- ( 0,25)) shifted center c withpen pencircle scaled 2/10 withcolor "yellow" ;
+
+        clip currentpicture to c ;
+        draw                   c withpen pencircle scaled 4/10 withcolor "yellow" ;
+    ) ;
+
+    fill Page withcolor "darkred" ;
+
+    p := p shifted - center p ;
+
+    draw p scaled 6mm
+        shifted center Page
+        shifted (0mm,50mm) ;
+
+    draw image (draw textext ("\tt\bf on\thinspace target") xsized (16cm) withcolor "yellow")
+        shifted center bottomboundary Page
+        shifted (0mm,45mm) ;
+
+    draw image (draw textext ("\tttf luametatex & context lmtx") xsized (13cm) withcolor "yellow")
+        shifted center bottomboundary Page
+        shifted (0mm,20mm) ;
+
+StopPage ;
+
+\stopMPpage
+
+\stopcomponent
+

@@ -1,0 +1,198 @@
+% language=us runpath=texruns:manuals/evenmore
+
+\environment evenmore-style
+
+\startcomponent evenmore-inserts
+
+\startchapter[title=Inserts]
+
+{\em As in other chapters, this is mostly a wrapup of some developments and nota
+manual. What is described here might actually evolve. Normally \CONTEXT\ users
+will not notice these details, but it might help them to get an idea of what
+complications we're dealing with.}
+
+\startsection[title=Notes]
+
+Quite some \TEX\ users love footnotes. These typographical elements have two
+properties:
+
+\startitemize[n]
+\startitem
+    A blob of text, often placed at the bottom of a page or at the end of a
+    section, chapter or document. A note can be a short one|-|liner but also
+    a paragraph of text.
+\stopitem
+\startitem
+    A symbol in the running text that serves as reference to that blob. It can be
+    a number of just some unique symbol.
+\stopitem
+\stopitemize
+
+When such a note is placed at the bottom of a page, the page builder needs to
+take its dimensions into account when calculating an optimal page break. It might
+even have to split a note over pages. Preferably the reference and note are on
+the same page. In order to achieve this there is a special mechanism that deals
+with this: inserts. In this chapter we only discuss them in the perspective of
+notes but they can also be used for, for instance, top or bottom figures, tables,
+etc.
+
+\stopsection
+
+\startsection[title=Global and local]
+
+Normally notes are placed in the text flow. We call these global inserts. When
+they are attached to a specific typographical element we tend to call them local
+and there is a good reason for that. For instance, when used in a table, one
+might want to keep them with that table when it is moved to a place where it
+fits. When notes are packaged {\em with} the table they are flushed on demand and
+not handled by the page builder. Actually they don't use inserts then. One
+problem with global notes is that the \TEX\ engine has some limitations with
+respect to inserts. In traditional \TEX, the following example will only result
+in note \quote {a} being placed. The other two are buried too deeply.
+
+\startbuffer[insert]
+test \footnote {a} \hbox {test \footnote{b} \hbox {test \footnote {c}} test} test
+\stopbuffer
+
+\typebuffer[insert]
+
+There are a few places where \TEX\ will bubble up the notes: when it constructs
+lines during a breaking a paragraph into lines, and when constructing alignment
+cells. In all other cases they are simply discarded.
+
+In \CONTEXT\ \MKII\ there is a mechanism that can postpone such notes. Normally a
+user will not use boxes directly so when some mechanism is used that does box
+its content, \CONTEXT\ can collect the notes and flush them in a spot that
+exposes them. This works reasonable well be it that we loose some of the
+synchronization with the page builder: flushing can happen after a page break.
+
+Already early in the \CONTEXT\ \MKIV\ development a more advanced mechanism was
+introduced, using \LUA\ callbacks: auto migration. There (optionally) inserts are
+bubbled up to a level where they are visible but even that has its limitations. Users
+explicitly need to enable automigration in \MKIV.
+
+In \CONTEXT\ \LMTX\ we do it a bit different because the \LUAMETATEX\ engine has
+a feature that helps. More about that next.
+
+\stopsection
+
+\startsection[title=Pre and post migration]
+
+There is another mechanism that moves material from the spot: adjusts. Here is an
+example (watch the interline spacing):
+
+\startbuffer[adjust]
+\strut test \vadjust pre {\red \strut before} test \vadjust {\red \strut after}
+\stopbuffer
+
+\typebuffer[adjust]
+
+This gives:
+
+\blank {\bf\showstruts \getbuffer[adjust]} \blank
+
+The \type {pre} variant was introduced in \PDFTEX\ at a time that I actually has
+use for it (think of marginal notes) but in \MKIV\ we don't use this adjust
+mechanism.
+
+Inserts on the other hand always end up \quote {post} where they are injected.
+Some day I might think about what good there is in injecting them \quote {pre}
+where they are injected. It might become an option.
+
+\blank {\bf \showboxes \getbuffer[insert]} \blank
+
+In this already shown example the footnotes (that are implemented using inserts)
+result indeed in text showing up at the bottom of the page, even when they are
+wrapped in boxes. The reason is that we have enabled a mechanism that
+automatically bubble them up:
+
+\starttyping
+\automigrationmode = 3 % \numexpr 1 + 2 \relax
+\stoptyping
+
+Here bit~1 controls migration in lists and bit~2 controls migration in the main
+vertical list (the page flow). In \CONTEXT\ \LMTX\ we enable both.
+
+\startbuffer
+h: \setbox0\hbox{box    \footnote{h:     box}}\setbox2\hbox{\box    0}\box2\quad
+h: \setbox0\hbox{copy   \footnote{h:    copy}}\setbox2\hbox{\copy   0}\box2\quad
+h: \setbox0\hbox{unbox  \footnote{h:  unhbox}}\setbox2\hbox{\unhbox 0}\box2\quad
+h: \setbox0\hbox{uncopy \footnote{h: unhcopy}}\setbox2\hbox{\unhcopy0}\box2\quad
+v: \setbox0\hbox{box    \footnote{v:     box}}\setbox2\vbox{\box    0}\box2\quad
+v: \setbox0\hbox{copy   \footnote{v:    copy}}\setbox2\vbox{\copy   0}\box2\quad
+v: \setbox0\hbox{unbox  \footnote{v:  unhbox}}\setbox2\vbox{\unhbox 0}\box2\quad
+v: \setbox0\hbox{uncopy \footnote{v: unhcopy}}\setbox2\vbox{\unhcopy0}\box2\quad
+\stopbuffer
+
+\typebuffer
+
+This is a kind of torture test:
+
+\blank \hbox{\bf \getbuffer} \blank
+
+It might look kind of trivial to accomplish this but it actually took some
+experimenting to get it right. It also must be noted that because in \LUATEX\ and
+even more in \LUAMETATEX\ the nodes that store a box are much larger than in
+traditional \TEX\ and that the price for adding some additional overhead for
+dealing with pre- and post material had not that much impact on the performance
+of \LUAMETATEX.
+
+On the one hand we need to make sure that the inserts are kept with the box but
+on the other hand they should really migrate when the boxed material gets boxed
+itself. This has to be combined with unboxing and copying. It has to work in
+regular boxes but also in the main vertical list (the page flow).
+
+\stopsection
+
+\startsection[title=Playground]
+
+You can play a bit with this mechanism by getting and setting the pre and post
+material than relates to a box.
+
+\startbuffer
+\setbox0\ruledhbox{\strut content \footnote {footnote}}
+
+[flush  pre\prelistbox    0] % \prelistcopy  0
+[flush post\postlistbox   0] % \postlistcopy 0
+[set    pre\setprelistbox 0\ruledhbox{\strut before}]
+[set   post\setpostlistbox0\ruledhbox{\strut  after}]
+
+\blank \box0 \blank
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Of course there can be side effects but so far this mechanism works reasonable
+well, given what it has to deal with.
+
+\stopsection
+
+\startsection[title=Marks]
+
+The low level marks mechanism can use the same pre and post mechanisms but I
+didn't test that yet. We have a different approach to marks but eventually might
+revert to using the build in mechanism, be it in adapted form.
+
+\stopsection
+
+% \startsection[title=Maybe]
+%
+% Inserts are implemented in a bit special way. A class of inserts needs a box,
+% dimen, count and skip register. So, the macro package has to allocate these
+% en|-|block. This puts some constraints on the register allocation macros. On the
+% agenda is to investigate if a dedicated compound register makes sense. However,
+% this means that the interfaces change, but because a \CONTEXT\ user doesn't use
+% the low level inserts directly this is not really a problem. Adapting the
+% implementation can have the side effect of using a different insert chaining
+% which can give a better interface to \LUA\ because the current interface is not
+% really useable.
+%
+% \stopsection
+
+\stopchapter
+
+\stopcomponent
+
+

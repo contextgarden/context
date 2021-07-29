@@ -1,0 +1,194 @@
+% language=us runpath=texruns:manuals/evenmore
+
+\environment evenmore-style
+
+\startcomponent evenmore-bitwise
+
+\startchapter[title={Bitwise operations}]
+
+Occasionally we use a bit set to pass (or store) options and one way of doing
+that is to add up some constants. However, what you would like to do is to set a
+specific bit. Of course one can write macros for that but performance wise one
+can wonder if there are other ways. One solution is to extend the engine but that
+has its own pitfalls. For instance, I played with additions to \type {\numexpr}
+and although they worked okay and brought now performance degradation, I decided
+to remove that experiment. One problem is that we have no real 32 bit cardinals
+(unsigned integers) in \TEX\ and the engine makes sure that we never exceed the
+minima and maxima. Another problem is that in expressions we then need either
+verbose \type {and}, \type {or}, \type {xor}, \type {not} and other verbose
+operators, if only because the usual symbols can have catcodes that are
+unsuitable.
+
+So in the end I decided to come up with a set of primitive like commands that
+do the job. It is no problem to have a set of dedicated verbose commands and we
+can extend the repertoire if needed. So this is what we have now:
+
+\starttabulate[||i2c||]
+\NC command                    \NC operator equivalent  \NC optional     \NC \NR
+\NC \type {\bitwiseset      a} \NC \type {a}            \NC              \NC \NR
+\NC \type {\bitwisenot      a} \NC \type {~a}           \NC              \NC \NR
+\NC \type {\bitwisenil   a  b} \NC \type {a & (~ b)}    \NC \type {with} \NC \NR
+\NC \type {\bitwiseand   a  b} \NC \type {a & b}        \NC \type {with} \NC \NR
+\NC \type {\bitwiseor    a  b} \NC \type {a | b}        \NC \type {with} \NC \NR
+\NC \type {\bitwisexor   a  b} \NC \type {a ~ b}        \NC \type {with} \NC \NR
+\NC \type {\bitwiseshift a  b} \NC \type {a >> b}       \NC \type {by}   \NC \NR
+\NC \type {\bitwiseshift a -b} \NC \type {a << b}       \NC \type {by}   \NC \NR
+\NC \type {\ifbitwiseand a  b} \NC \type {(a & b) ~= 0} \NC              \NC \NR
+\stoptabulate
+
+Here a some examples:
+
+\startbuffer
+\scratchcounter = \bitwiseand "01      "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwiseand "01 with "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwiseand "03      "02 \uchexnumbers{\scratchcounter} \qquad
+\scratchcounter = \bitwiseor  "01      "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwiseor  "01 with "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwiseor  "03      "02 \uchexnumbers{\scratchcounter} \qquad
+\scratchcounter = \bitwisexor "01      "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwisexor "01 with "02 \uchexnumbers{\scratchcounter} \quad
+\scratchcounter = \bitwisexor "03      "02 \uchexnumbers{\scratchcounter}
+\stopbuffer
+
+\typebuffer
+
+This gives the nine values:
+
+{\tt\getbuffer}
+
+Because they are numeric operations you can chain them, as in:
+
+\starttyping
+\scratchcounter = \bitwisenil \bitwisenil "0F      "02      "01 \relax
+\scratchcounter = \bitwisenil \bitwisenil "0F with "02 with "01 \relax
+\stoptyping
+
+We try as good as possible to support all bits in the range from zero upto \type
+{0xFFFFFFFF};
+
+\startbuffer
+\scratchcounter \bitwiseset "FFFFFFFF
+
+\ifbitwiseand \scratchcounter "80000000 YES \else NOP \fi
+\ifbitwiseand \scratchcounter "F0000000 YES \else NOP \fi
+\ifbitwiseand \scratchcounter "10000000 YES \else NOP \fi
+
+\scratchcounter \bitwisenot \scratchcounter
+
+\ifbitwiseand \scratchcounter "80000000 YES \else NOP \fi
+\ifbitwiseand \scratchcounter "F0000000 YES \else NOP \fi
+\ifbitwiseand \scratchcounter "10000000 YES \else NOP \fi
+\stopbuffer
+
+\typebuffer
+
+and we get:
+
+\startpacked \tt \getbuffer \stoppacked
+
+Of course you can just use normal counters and \TEX\ integers but using the bit
+commands have the advantage that they do some checking and can do real \type {or}
+etc operations. Here is some food for thought:
+
+\startbuffer
+\scratchcounter \bitwiseand "01 "02
+\scratchcounter \numexpr    "01+"02\relax
+
+\ifcase      \bitwiseand \scratchcounterone \plusone \else \fi
+\ifbitwiseand            \scratchcounterone \plusone \else \fi
+\ifnum                   \scratchcounterone=\plusone \else \fi
+\stopbuffer
+
+\typebuffer
+
+and we get:
+
+\startpacked \tt \getbuffer \stoppacked
+
+You can also go real binary, but we only provide a combined setter|/|getter for
+that, but you can mix that one with the other commands:
+
+\startbuffer
+\scratchcounterone   = \bitwise 1101
+\scratchcountertwo   = \bitwise 11011101110111011101110111011101
+\scratchcounterthree = \bitwiseor \bitwise 0001 \bitwise 1100
+
+{0x\uchexnumber{\scratchcounterone}   \bitwise\scratchcounterone  }\par
+{0x\uchexnumber{\scratchcountertwo}   \bitwise\scratchcountertwo  }\par
+{0x\uchexnumber{\scratchcounterthree} \bitwise\scratchcounterthree}\par
+\stopbuffer
+
+\typebuffer
+
+We get bits back:
+
+\startpacked \tt \getbuffer \stoppacked
+
+The above commands are typical for the things we can do with \LUAMETATEX\ and
+\LMTX\ and are unlikely to become available in \MKIV.
+
+There is a special command for (re)setting a bit in a register:
+
+\startbuffer
+             \scratchcounter  0
+\bitwiseflip \scratchcounter  1 [\the\scratchcounter]
+\bitwiseflip \scratchcounter  4 [\the\scratchcounter]
+\bitwiseflip \scratchcounter  8 [\the\scratchcounter]
+\bitwiseflip \scratchcounter -5 [\the\scratchcounter]
+\stopbuffer
+
+\typebuffer
+
+This gives: \inlinebuffer. Of course a global assignment works too:
+
+\startbuffer
+ \global              \globalscratchcounter  0
+{\global \bitwiseflip \globalscratchcounter  2 } [\the\globalscratchcounter]
+{\global \bitwiseflip \globalscratchcounter  4 } [\the\globalscratchcounter]
+{\global \bitwiseflip \globalscratchcounter  8 } [\the\globalscratchcounter]
+{\global \bitwiseflip \globalscratchcounter -6 } [\the\globalscratchcounter]
+\stopbuffer
+
+\typebuffer
+
+Here we get: \inlinebuffer. A side effect of it being an number makes that
+this is also valid:
+
+\starttyping
+\scratchcounterone\bitwiseflip \scratchcountertwo -16
+\stoptyping
+
+\stopchapter
+
+\stopcomponent
+
+% (\scratchcounterone \bitwiseset "F        \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FF       \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFF      \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFFF     \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFFFF    \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFFFFF   \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFFFFFF  \uchexnumber{\scratchcounterone})\par
+% (\scratchcounterone \bitwiseset "FFFFFFFF \uchexnumber{\scratchcounterone})\par
+%
+% (\scratchcounterone \bitwiseset       "0000FFFF
+%  \scratchcounterone \bitwiseshift     \scratchcounterone  -16
+%  \uchexnumber{\scratchcounterone})\par
+%
+% \scratchcounterone \bitwiseset "FFFFFFFF
+% \scratchcountertwo \bitwiseset "FFFFFFFE
+%
+% \the\scratchcounterone : \uchexnumber{\scratchcounterone}\par
+% \the\scratchcountertwo : \uchexnumber{\scratchcountertwo}\par
+
+% I need to check this on the garden run as it looks like that server is some 50%
+% faster than my (in terms of computers) old laptop.
+
+% \testfeatureonce{10000}{\scratchcounter \bitwiseand "01 "02      }                \elapsedtime\par
+% \testfeatureonce{10000}{\scratchcounter \numexpr    "01+"02\relax}                \elapsedtime\par
+% \testfeatureonce{10000}{\ifcase\bitwiseand \scratchcounterone \plusone \else \fi} \elapsedtime\par
+% \testfeatureonce{10000}{\ifbitwiseand      \scratchcounterone \plusone \else \fi} \elapsedtime\par
+% %testfeatureonce{10000}{\ifnum             \scratchcounterone=\plusone \else \fi} \elapsedtime\par
+%
+% \testfeatureonce{100000}{\scratchcounter = \bitwise 1101 } \elapsedtime\par
+% \testfeatureonce{100000}{\scratchcounter = \bitwise 11011101110111011101110111011101 } \elapsedtime\par

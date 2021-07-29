@@ -171,7 +171,7 @@
    \setupattachment[\currentattachment][#settings]%
    \expandnamespaceparameter\??attachmentmethod\attachmentparameter\c!method\v!normal}
 
-\setvalue{\??attachmentmethod\v!normal}%
+\defcsname\??attachmentmethod\v!normal\endcsname
   {\edef\currentattachmentsymbol{\attachmentparameter\c!symbol}%
    \edef\currentattachmentwidth {\attachmentparameter\c!width }%
    \edef\currentattachmentheight{\attachmentparameter\c!height}%
@@ -214,7 +214,7 @@
    \dp\b_scrn_attachment_link\currentattachmentdepth
    \expandnamespaceparameter\??attachmentlocation\attachmentparameter\c!location\s!unknown}
 
-\setvalue{\??attachmentmethod\v!hidden}%
+\defcsname\??attachmentmethod\v!hidden\endcsname
   {\clf_insertattachment
      tag        {\currentattachment}%
      registered {\currentattachmentregistered}%
@@ -249,14 +249,14 @@
 
 \let\scrn_attachment_flush\scrn_attachment_flush_normal
 
-\setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     {\scrn_attachment_flush}}
-\setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   {\scrn_attachment_flush}}
-\setvalue{\??attachmentlocation\v!rightedge  }{\inrightedge  {\scrn_attachment_flush}}
-\setvalue{\??attachmentlocation\v!leftmargin }{\inleftmargin {\scrn_attachment_flush}}
-\setvalue{\??attachmentlocation\v!rightmargin}{\inrightmargin{\scrn_attachment_flush}}
-\setvalue{\??attachmentlocation\v!high       }{\high         {\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!inmargin   \endcsname{\inmargin     {\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!leftedge   \endcsname{\inleftedge   {\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!rightedge  \endcsname{\inrightedge  {\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!leftmargin \endcsname{\inleftmargin {\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!rightmargin\endcsname{\inrightmargin{\scrn_attachment_flush}}
+\defcsname\??attachmentlocation\v!high       \endcsname{\high         {\scrn_attachment_flush}}
 
-\setvalue{\??attachmentlocation\v!none}%
+\defcsname\??attachmentlocation\v!none\endcsname
   {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
      \ifvoid\b_scrn_attachment_collect\else
        \box\b_scrn_attachment_collect
@@ -265,7 +265,7 @@
      \scrn_attachment_flush
    \egroup}
 
-\setvalue{\??attachmentlocation\s!unknown}%
+\defcsname\??attachmentlocation\s!unknown\endcsname
   {\ifvoid\b_scrn_attachment_collect\else
      \box\b_scrn_attachment_collect
    \fi}
@@ -409,9 +409,9 @@
 \mutable\let\currentcommentwidth \empty
 
 \appendtoks
-    \frozen\instance\setuevalue         \currentcomment {\scrn_comment_argument[\currentcomment]}%
-    \frozen\instance\setuevalue{\e!start\currentcomment}{\scrn_comment_start   [\currentcomment]}%
-    \frozen\instance\setuevalue{\e!stop \currentcomment}{\scrn_comment_stop                     }%
+    \frozen\protected\instance\edefcsname        \currentcomment\endcsname{\scrn_comment_argument[\currentcomment]}%
+    \frozen\protected\instance\edefcsname\e!start\currentcomment\endcsname{\scrn_comment_start   [\currentcomment]}%
+    \frozen\protected\instance\edefcsname\e!stop \currentcomment\endcsname{\scrn_comment_stop                     }%
 \to \everydefinecomment
 
 \tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#settings]#:#text%%
@@ -461,7 +461,7 @@
 %D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
 %D weird, esp because for instance attachment symbols do scale).
 
-\setvalue{\??commentmethods\v!normal}%
+\defcsname\??commentmethods\v!normal\endcsname
   {\edef\currentcommentsymbol{\commentparameter\c!symbol}%
    \edef\currentcommentwidth {\commentparameter\c!width }%
    \edef\currentcommentheight{\commentparameter\c!height}%
@@ -527,14 +527,14 @@
 
 % todo: dedicated margin classes
 
-\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\scrn_comment_flush}}
-\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\scrn_comment_flush}}
-\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\scrn_comment_flush}}
-\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\scrn_comment_flush}}
-\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\scrn_comment_flush}}
-\setvalue{\??commentlocation\v!high       }{\high         {\scrn_comment_flush}}
+\defcsname\??commentlocation\v!inmargin   \endcsname{\inmargin     {\scrn_comment_flush}}
+\defcsname\??commentlocation\v!leftedge   \endcsname{\inleftedge   {\scrn_comment_flush}}
+\defcsname\??commentlocation\v!rightedge  \endcsname{\inrightedge  {\scrn_comment_flush}}
+\defcsname\??commentlocation\v!leftmargin \endcsname{\inleftmargin {\scrn_comment_flush}}
+\defcsname\??commentlocation\v!rightmargin\endcsname{\inrightmargin{\scrn_comment_flush}}
+\defcsname\??commentlocation\v!high       \endcsname{\high         {\scrn_comment_flush}}
 
-\setvalue{\??commentlocation\v!none}%
+\defcsname\??commentlocation\v!none\endcsname
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
      \ifvoid\b_scrn_comment_collect\else
        \box\b_scrn_comment_collect
@@ -543,7 +543,7 @@
      \scrn_comment_flush
    \egroup}
 
-\setvalue{\??commentlocation\s!unknown}%
+\defcsname\??commentlocation\s!unknown\endcsname
   {\ifvoid\b_scrn_comment_collect\else
      \box\b_scrn_comment_collect
    \fi}
@@ -569,8 +569,20 @@
 %D
 %D associated actions: StartSound StopSound PauseSound ResumeSound
 %D
-%D Todo: like external figures, also search on path,
-%D although, they need to be present ar viewing time, so ...
+%D Todo: like external figures, also search on path, although, they need to be
+%D present at viewing time, so ...
+%D
+%D A soundtrack needs to be embedded explicitly with \type {\checksoundtrack}
+%D although we could hook it into the first goto.
+%D
+%D \starttyping
+%D \useexternalsoundtrack[myaudio][hastobe.wav] % surprise ... no longer mp3
+%D
+%D \starttext
+%D     \checksoundtrack{myaudio}
+%D     \goto{play sound}[StartSound{myaudio}]
+%D \stoptext
+%D \starttyping
 
 \installcorenamespace{externalsoundtracks}
 

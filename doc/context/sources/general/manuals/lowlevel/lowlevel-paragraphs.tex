@@ -992,12 +992,46 @@ examples are visualized in \in {figure} [fig:flow].
 
 \stopsection
 
+\startsection[title=Dirty tricks]
+
+{\em todo: explain example for combining paragraphs}
+
+% test\wrapuppar{\crlf\ignorepars}
+%
+% test
+%
+% test\wrapuppar{\ignorepars}
+%
+% test
+%
+% test\wrapuppar{\removeunwantedspaces\ignorepars}
+%
+% test
+
+\stopsection
+
 \stopdocument
 
-\everyhbox \everyvbox : useless unless one resets
-\parattr
-\snapshotpar
-\wrapuppar
+% I rewarded myself after writing a section by watching the video "Final Thing On
+% My Mind", The Pineapple This, Live, 2020, the usual perfect GH performance,
+% wondering if live would turn to normal so that we could go to such concerts once
+% again given successive covids. Writing manuals can do with a distraction.
+%
+% Gavin Harrison: Soundcheck, Drummerworld Jan 27, 2021 ... I wish I could make
+% something called a check into pefect solo. Okay, another section and I'll check
+% out the latest Simon Phillips and other favourite dummer uploads.
+
+% todo:
+
+% \everyhbox \everyvbox : useless unless one resets
+% \parattr
+% \snapshotpar
+% \wrapuppar
+
+% \normalizelinemode0
+% x\ruledhbox{\parindent 1cm\indent x \indent x}
+% \normalizelinemode \parindentskipnormalizecode
+% x\ruledhbox{\parindent 1cm\indent x \indent x}
 
 % \starttext
 %     \tracingoutput1 \tracingonline1
@@ -1012,14 +1046,3 @@ examples are visualized in \in {figure} [fig:flow].
 % \par[newgraf][16=1,17=1], .... pretolerance 6000, ....
 
 % \parfillleftskip
-
-% I rewarded myself after writing a section by watching the video "Final Thing On
-% My Mind", The Pineapple This, Live, 2020, the usual perfect GH performance,
-% wondering if live would turn to normal so that we could go to such concerts once
-% again given successive covids. Writing manuals can do with a distraction.
-%
-% Gavin Harrison: Soundcheck, Drummerworld Jan 27, 2021 ... I wish I could make
-% something called a check into pefect solo. Okay, another section and I'll check
-% out the latest Simon Phillips and other favourite dummer uploads.
-
-

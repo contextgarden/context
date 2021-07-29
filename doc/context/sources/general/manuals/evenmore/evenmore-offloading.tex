@@ -1,0 +1,127 @@
+% language=us runpath=texruns:manuals/evenmore
+
+% \showusage
+
+% This chapter was started when I updated some of the dynamic memory management
+% code. The musical timestamp is the discovery (via Sputs & Ghostnote drumming
+% sessions) of DOMI & JS BECK (also see: keyscape, nord) and after that Louis
+% Cole (Live 2019). So much talent around ...
+
+\environment evenmore-style
+
+\startcomponent evenmore-offloading
+
+\startchapter[title={Offloading}]
+
+The \LUAMETATEX\ source code started from \LUATEX\ with the idea to make a lean
+and mean variant. In the process the whole code base has been overhauled. Because
+we develop and maintain \CONTEXT\ in parallel all kind of experiments can be
+conducted. \footnote {To my best knowledge macro packages like \LATEX\ have
+decided to use the (mostly stable) \LUATEX\ in combination with a built in font
+renderer. The wish for stability from developers of other macro packages was one
+of the reasons for starting the \LUAMETATEX\ project: \LUATEX\ could no longer
+evolve without folks complaining. So, \LUAMETATEX, at least in the short run, is
+no reasonable option for other macro packages, unless policies have changed.}
+
+Already early in the process the decision was made to remove the backend code. I
+already had a working \LUATEX\ & \MKIV\ setup with an independent backend so that
+was an easy step. Later I removed that code from \MKIV\ because a dualistic model
+made for a messy \CONTEXT\ code base, and for \LUATEX\ I like to stick to the
+reference implementation. Of course one can wonder if we still have \TEX\ when
+there is no backend but you need to keep in mind that \TEX\ always needs some
+kind of backend program. If \DVI\ was still a used format (with \CONTEXT) I could
+write a \DVI\ backend without much effort, but \PDF\ is kind of the standard now.
+The relevant primitives can easily be defined in \LUA.
+
+What more defines \TEX ? Of course the macro language, but in addition to that we
+have the handling of fonts, hyphenation and building various lists, those that
+eventually make it into paragraphs and pages. The \ETEX, \PDFTEX\ and \OMEGA\
+engines have added bits and pieces and of course \LUATEX\ added its share.
+
+In \LUAMETATEX\ the macro part has been extended. Very few things were dropped,
+most noticeably \type {\long} and \type {\outer} are no longer effective but
+that made for a better \type {\protected} and gave room for \type {\frozen}.
+
+The handling of fonts is mostly delegated to callbacks but we do have the
+original transformation mechanism available. However, loading fonts is now up to
+\LUA. If that is done right, there is no difference with \TEX. One can argue that
+when a missing piece in the binary is complemented by a \LUA\ solution that gets
+plugged in we just are like \TEX. After all, nowhere is said that the engine has
+to be written in one language and in the \CWEB\ setup of \TEXLIVE\ we already mix
+languages anyway.
+
+The language part is also upgraded and because handling hyphenation has been
+extended we're, as with fonts, going beyond what traditional \TEX\ offers. The
+code for hyphenating is slightly different because we permit runtime loading and
+extension, compound and weighted patterns, etc.
+
+Another deviation is the handling of input and output. Although currently the log
+file still happens at the engine end, all the reading and writing from files is
+delegated to \LUA. This means that primitives like \type {\openin} and \type
+{\write} have to be implemented in \LUA, which is not that hard. It makes a lot
+of sense because everything already was driven by callbacks so delegating more to
+\LUA\ in the end gave a simpler input handler. For the user (or macro package) it
+makes no difference.
+
+So, assuming that the primitives not present in the engine are provided by \LUA\
+driven counterparts, we can speak of \TEX. So how about \ETEX ? We kept the macro
+language extensions, but dropped some others, like the direction related code.
+Also the querying of internal codes has been adapted to \LUATEX's internals.
+Expressions have been extended a bit. The \type {\scantokens} primitive now uses
+the same machinery as the \LUA|-|\TEX\ pipe, which made for less code and adds to
+consistency. From the \PDFTEX\ engine we only kept a few things, like protrusion
+and expansion. From \OMEGA\ only the concept of localpar and part of the
+directional model was kept, but because it's the backend that deals with
+directions there is not much there. We also dropped some \LUATEX\ features, for
+instance first class image handling only stays as concept (a special kind of
+rule) but again it is the backend that really needs to deal with it.
+
+So, in the end we end up, as intended, with a simpler code base indeed. Of course
+there is also stuff that is not in a traditional \TEX\ or \LUATEX. In addition to
+\LUA\ some libraries are present, but we avoid dependencies on large third party
+bodies of code. The continuous updating in \LUATEX\ told me that this dependency
+is a bad thing of we want the program to compile in decades from now (as
+libraries come and go and often also politics are involved). There is a small
+canonical set of what we provide and although one can use extra libraries it
+takes some effort. The internals of \LUAMETATEX\ are hidden.
+
+Just for the record. Because I want to keep as working engine and adapt \CONTEXT\
+in parallel, the process is rather time consuming. Every optimization, removal of
+unused code, addition of a feature, etc.\ takes multiple runs of the test suite,
+checking with \CONTEXT, generating binaries, updating the distribution, and so
+on. When we don't use something in \CONTEXT\ it goes on the todo stack, which
+means that testing is delayed to when I wrap up in documentation, which only
+happens when I think it's stable. For instance: when \type {\openin} and friends
+were delegated to \LUA, the \type {\ifeof} primitive was kept around with a
+temporary callback, so that \type {tikz} kept working. We don't use those read
+channels in \CONTEXT\ so that was a compromise. A while later the if test was
+also delegated and the temporary callback removed. There is no way I could do
+this kind of stepwise development were it now within the \CONTEXT\ community
+where users are willing to accept this.
+
+Another example of something that took some time is checking all memory
+allocation code, adding safeguards, make it more dynamic, making sure we have
+more statistics. It needs some experimenting and the \CONTEXT\ tracking code had
+to be extended. The main motivation for this is that there are some users out
+there (most noticeably Massimiliano who is involved in typesetting some scholar
+encyclopedia work) who run really huge jobs and we can run out of memory or even
+crash then. \footnote {I'm not that worried about an occasional bug, because the
+number is small compared to what got added, changed and improved, but of course
+there are always folks who ignore that fact and stress bug(let)s. But, as said,
+the \CONTEXT\ users are a patient lot.} Tracing shows that although \TEX\
+allocates its share of memory, in these thousand plus page documents in small
+print the regular few dozen megabytes can grow to hundreds, most noticeably taken
+up by fonts. Tracing also gives some insight in how fast token and node memory
+grows. Of course in this case \LUA\ takes way more memory, something between 1.5
+and 2~GB. Again this is due to the large amount of font instances and also is a
+side effect of massive \XML\ processing (keep in mind that the whole tree is in
+memory) and the fact that there are plenty of optimizations wrt typesetting
+implemented and multiple large registers are added. It's this kind of
+(regression) tests that help in stepwise improving \LUAMETATEX. \footnote {In the
+process one sometimes find ways to safe memory. For instance, marks used
+preallocated arrays that took 1280 KB memory while of course in practice no one
+needs that many mark registers. By making that more dynamic we saved a lot.}
+
+\stopchapter
+
+\stopcomponent

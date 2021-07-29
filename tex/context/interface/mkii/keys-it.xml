@@ -1376,6 +1376,7 @@
 		<cd:element name='load' value='carica'/>
 		<cd:element name='local' value='locale'/>
 		<cd:element name='makeup' value='makeup'/>
+		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='successivo'/>
 		<cd:element name='place' value='metti'/>
 		<cd:element name='previous' value='precedente'/>

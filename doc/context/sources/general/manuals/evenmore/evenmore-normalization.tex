@@ -1,4 +1,4 @@
-% language=us
+% language=us runpath=texruns:manuals/evenmore
 
 % \enabletrackers[nodes.directions]
 
@@ -102,8 +102,8 @@ The decision making is influenced by quite some factors, like:
 
 \starttexdefinition Sample #1#2
     \OldNormalizeLineMode\normalizelinemode
-    \bitwiseflip \normalizelinemode \normalizelinemodecode
-    \bitwiseflip \normalizelinemode \indentskipmodecode
+    \bitwiseflip \normalizelinemode \normalizelinenormalizecode
+    \bitwiseflip \normalizelinemode \parindentskipnormalizecode
     \startsubsubject[title={#1}]
         \typebuffer[#2]
         \startlinecorrection

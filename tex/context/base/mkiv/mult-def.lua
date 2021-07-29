@@ -12884,6 +12884,9 @@ return {
    ["pe"]="آرایش",
    ["ro"]="makeup",
   },
+  ["namedtyping"]={
+   ["en"]="namedtyping",
+  },
   ["next"]={
    ["cs"]="dalsi",
    ["de"]="folgende",

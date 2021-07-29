@@ -279,6 +279,12 @@ end
     includecidset = false
     forcecidset   = false -- for private testing only
 
+    function lpdf.setincludecidset(v)
+        -- incredible ... it's obselete, no viewer needs it so why still this crap
+        -- so in the end it had to be introduced again
+        includecidset = v
+    end
+
     directives.register("backend.pdf.forcecidset",function(v)
         forcecidset = v
     end)
@@ -873,7 +879,7 @@ do
             StemV       = scale(stemv),
             XHeight     = scale(xheight),
             FontFile2   = pdfreference(pdfflushstreamobject(fontdata)),
---             CIDSet      = tocidset,
+            CIDSet      = tocidset, -- no longer needed but verifyers want it
             Metadata    = fontmeta and pdfreference(pdfflushstreamobject(fontmeta)) or nil,
         }
         local parent = pdfdictionary {
@@ -1827,13 +1833,17 @@ do
             elseif kind == "user" then
                 return setmetatableindex(function(t,k)
                     local list = data[k]
-                    local kind = list.kind
                     local v
-                    if kind == "values" then
-                        local d = list.data
-                        v = direct(d.r or 0,d.g or 0,d.b or 0)
-                    elseif kind == "attributes" then
-                        v = indirect(list.color,list.transparency)
+                    if list then
+                        local kind = list.kind
+                        if kind == "values" then
+                            local d = list.data
+                            v = direct(d.r or 0,d.g or 0,d.b or 0)
+                        elseif kind == "attributes" then
+                            v = indirect(list.color,list.transparency)
+                        else
+                            v = false -- textcolor
+                        end
                     else
                         v = false -- textcolor
                     end

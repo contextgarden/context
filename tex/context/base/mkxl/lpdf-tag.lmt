@@ -180,7 +180,20 @@ local function finishstructure()
         end
         --
         for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
-            pdfflushobject(element.knum,element.kids)
+            local kids = element.kids
+         -- if element.tag == "link" then
+         --     local d = kids[2]
+         --     if type(d) == "table" then
+         --         local refatt = element.refatt
+         --         if refatt then
+         --             local refobj = codeinjections.getrefobj(refatt)
+         --             if refobj then
+         --                 d.Obj = pdfreference(refobj)
+         --             end
+         --         end
+         --     end
+         -- end
+            pdfflushobject(element.knum,kids)
         end
     end
 end
@@ -192,6 +205,7 @@ local index, pageref, pagenum, list = 0, nil, 0, nil
 local pdf_mcr            = pdfconstant("MCR")
 local pdf_struct_element = pdfconstant("StructElem")
 local pdf_s              = pdfconstant("S")
+local pdf_objr           = pdfconstant("OBJR")
 
 local function initializepage()
     index   = 0
@@ -251,7 +265,7 @@ local function makeelement(fulltag,parent)
     local attributes    = nil
     if tagname == "ignore" then
         return false
-    elseif tagname == "mstackertop" or tagname == "mstackerbot" or tagname == "mstackermid"then
+    elseif tagname == "mstackertop" or tagname == "mstackerbot" or tagname == "mstackermid" then
         -- TODO
         return true
     elseif tagname == "tabulatecell" then
@@ -338,7 +352,10 @@ end
 
 local f_BDC = formatters["/%s <</MCID %s>> BDC"]
 
-local function makecontent(parent,id,specification)
+local a_destination = attributes.private('destination')
+local a_reference   = attributes.private('reference')
+
+local function makecontent(start,parent,id,specification)
     local tag  = parent.tag
     local kids = parent.kids
     local last = index
@@ -355,6 +372,16 @@ local function makecontent(parent,id,specification)
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then
         kids[#kids+1] = last
+     -- if tag == "link" then
+     --     local ra = getattr(start,a_reference)
+     --     if ra then
+     --         parent.refatt = ra
+     --         kids[#kids+1] = pdfdictionary {
+     --             Type = pdf_objr,
+     --             Obj  = pdfreference(0),
+     --         }
+     --     end
+     -- end
     else
         local d = pdfdictionary {
             Type = pdf_mcr,
@@ -530,7 +557,7 @@ function nodeinjections.addtags(head)
                 end
             end
             if prev then
-                literal = setstate(makecontent(prev,id,specification))
+                literal = setstate(makecontent(start,prev,id,specification))
             elseif ignore then
                 literal = setstate(makeignore(specification))
             else
@@ -676,7 +703,7 @@ end
 --          -- else
 --                 prev = prv
 --                 r = r + 1
---                 result[r] = makecontent(prev,id)
+--                 result[r] = makecontent(start,prev,id)
 --          -- end
 --         end
 --

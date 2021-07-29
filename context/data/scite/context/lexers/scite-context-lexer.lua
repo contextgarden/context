@@ -12,6 +12,24 @@ local info = {
 -- before version 10 but I can't figure out what else to do. It looks like there
 -- is some loading of lexer.lua but I can't see where.
 
+-- For a while it looked like we're stuck with scite 3 because there would be no
+-- update of scintillua for the newer versions (c++ changes) but now it looks that
+-- there will be updates (2021). There is a dll for scite >= 5 but it doesn't
+-- work (yet). In version 5.20+ the scintillua dll makes scite crash (alsl when I
+-- use the recommended import). In an early 5.02 loading the (shipped) lpeg lexer
+-- does nothing at all. There have been changes in the lua interface too but I need
+-- to compare the old and new lib. For now I gave up and got back to version 3+. It
+-- would be nice if error messages would go to the log pane so that wget an idea
+-- what happens. After all the code involved (below) is not that much and not that
+-- complex either.
+--
+-- Actually, scite 5.22 also crashed when a program was launched so better wait
+-- for a while. (In the worst case, when it all stops working, we need to migrate
+-- to visual code, which is out backup/fallback plan.) I didn't test if the latest
+-- textadept still works with our lexer variant. In the meantime that editor has
+-- grown to some 30 MB so it is no longer a lightweight option (scite with scintilla
+-- is still quite small).
+
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 
 local log      = false
@@ -71,7 +89,7 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 -- big deal as we already had that in place (ConTeXt used lpeg from the day it
 -- showed up so we have several lexing options there too).
 --
--- Keep in mind that in ConTeXt (typesetting) lexing can follow several approached:
+-- Keep in mind that in ConTeXt (typesetting) lexing can follow several approaches:
 -- line based (which is handy for verbatim mode), syntax mode (which is nice for
 -- tutorials), and tolerant mode (so that one can also show bad examples or errors).
 -- These demands can clash.

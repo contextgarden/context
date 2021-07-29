@@ -1,0 +1,426 @@
+% language=us runpath=texruns:manuals/evenmore
+
+\environment evenmore-style
+
+\startcomponent evenmore-hyphenation
+
+\usebodyfont[pagella]
+
+\startchapter[title=Hyphenation]
+
+\startsection[title={Introduction}]
+
+Hyphenation is driven by the character codes. In a traditional \TEX\ such a code
+accesses a glyph in a font, which is why the font encoding mattered, but in
+\LUATEX\ we use \UNICODE\ and when hyphenation is applied. \footnote {In
+\CONTEXT\ \MKII\ we also use \UTF\ patterns, which made it possible to ship
+patterns that didn't depend on a font encoding. Mojca and Arthur made \UTF\ the
+default when the (upgraded) hyphenation pattern project started.} Later, the
+character codes are adapted by the font handler where they become glyphs. There
+are moments when you don't want to hyphenate and a cheap trick is to switch to a
+language that has no hyphenation patterns. But, in a system like \CONTEXT\ that
+doesn't work well because we have lots of language bound properties. Therefore in
+\MKIV\ we set the left- and right hyphen minima to extreme values, something that
+blocks hyphenation quite well. But this is not a pretty solution at all. Even
+worse is that when we have situations where discretionaries (\type
+{\discretionary}), automatic (\type{-}) or explicit (\type {\-}) are used these
+still kick in.
+
+For that reason in \LMTX\ we have a mode variable that controls hyphenation. In
+\LUATEX\ we have primitives like \type {\compoundhyphenmode}, \type
+{\hyphenationbounds} and \type {\hyphenpenaltymode} that controlled how
+hyphenation and discretionary injection is handled but when in \LUAMETATEX\ the
+more generic \type {\hyphenationmode} parameter was introduced the precursors
+were all merged into this one. One can argue that this is a form of regression
+but there are good reasons, most noticeably the fact that we keep these
+properties with glyph nodes so that we have better control over them in grouped
+situations where as some operations happen when the paragraph as whole get
+treated local overloads are lost. \footnote {Of course it also is a wink to those
+who complain that we add primitives to an otherwise leaner variant of \LUATEX,
+but let us not elaborate on that misunderstanding.} It anyway means that in
+\LMTX\ we have to set different parameters but that is no big deal because users
+are supposed to use the more high level interfaces; instead of setting parameters
+to values one flips bits in \type {\hyphenationmode}, which in the end makes more
+sense and also permits extensions later without adding much overhead.
+
+Currently this mode parameter controls the following options:
+
+\starttabulate[|Tr|||]
+\NC \uchexnumber{\normalhyphenationcode}           \NC \type{\normalhyphenationcode}           \NC honour the (normal) \type{\discretionary} primitive \NC \NR
+\NC \uchexnumber{\automatichyphenationcode}        \NC \type{\automatichyphenationcode}        \NC turn \type {-} into (automatic) discretionaries \NC \NR
+\NC \uchexnumber{\explicithyphenationcode}         \NC \type{\explicithyphenationcode}         \NC turn \type {\-} into (explicit) discretionaries \NC \NR
+\NC \uchexnumber{\syllablehyphenationcode}         \NC \type{\syllablehyphenationcode}         \NC hyphenate (syllable) according to language \NC \NR
+\NC \uchexnumber{\uppercasehyphenationcode}        \NC \type{\uppercasehyphenationcode}        \NC hyphenate uppercase characters too \NC \NR
+\NC \uchexnumber{\compoundhyphenationcode}         \NC \type{\compoundhyphenationcode}         \NC permit break at an explicit hyphen (border cases) \NC \NR
+\NC \uchexnumber{\strictstarthyphenationcode}      \NC \type{\strictstarthyphenationcode}      \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
+\NC \uchexnumber{\strictendhyphenationcode}        \NC \type{\strictendhyphenationcode}        \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
+\NC \uchexnumber{\automaticpenaltyhyphenationcode} \NC \type{\automaticpenaltyhyphenationcode} \NC use \type {\automatichyphenpenalty} \NC \NR
+\NC \uchexnumber{\explicitpenaltyhyphenationcode}  \NC \type{\explicitpenaltyhyphenationcode}  \NC use \type {\explicithyphenpenalty} \NC \NR
+\NC \uchexnumber{\permitgluehyphenationcode}       \NC \type{\permitgluehyphenationcode}       \NC turn glue in discretionaries into kerns \NC \NR
+\stoptabulate
+
+The default \CONTEXT\ setup is:
+
+\starttyping
+\hyphenationmode \numexpr
+    \normalhyphenationcode
+  + \automatichyphenationcode
+  + \explicithyphenationcode
+  + \syllablehyphenationcode
+  + \uppercasehyphenationcode
+  + \compoundhyphenationcode
+  % \strictstarthyphenationcode
+  % \strictendhyphenationcode
+  + \automaticpenaltyhyphenationcode
+  + \explicitpenaltyhyphenationcode
+  + \permitgluehyphenationcode
+\relax
+\stoptyping
+
+When a discretionary node is created (triggered by \type {\discretionary}) the
+current value is used. Injected glyph nodes on the other hand will store the
+current value and use that when it is needed for hyphenating the list.
+
+\stopsection
+
+\startsection[title={Controlling hyphenation}]
+
+We start with an example that has some Dutch words:
+
+\startbuffer[sample]
+NEDERLANDS\par Nederlands\par nederlands\par
+\CONTEXT  \par test\-test\par test-test \par
+\stopbuffer
+
+\typebuffer[sample]
+
+\startbuffer[result]
+\startlinecorrection
+\dontleavehmode \dorecurse{\boxlines\scratchboxone} {%
+   \setbox\scratchbox\boxline\scratchboxone#1%
+   \ruledhpack{\strut\unhbox\scratchbox}%
+   \kern.25\emwidth
+}
+\stoplinecorrection
+\stopbuffer
+
+When we typeset this with a \type {\hsize} of 2mm we get:
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+
+\getbuffer[result]
+
+But when we block hyphenation with \type {\nohyhens} we see:
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \nohyphens \getbuffer[sample]}
+
+\getbuffer[result]
+
+The \MKIV\ behavior can be emulated by setting the mode as follows
+
+\startbuffer[demo]
+\bitwiseflip \hyphenationmode \syllablehyphenationcode
+\stopbuffer
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[demo] \getbuffer[sample]}
+
+\getbuffer[result]
+
+This time the three non|-|syllable variants get hyphenated and that is not what
+we want. In this case there is a \type {\discretionary} in the definition of the
+macro that generates \CONTEXT\ and, apart from the fact that we might not even
+want to hyphenate logos, we have to block it when we apply \type {\nohyphens}.
+
+This mode setting are directly applied to the three non|-|syllable variants but
+delayed in the syllable discretionaries because hyphenation happens later so the
+state becomes a property of glyph nodes. Doing the same for the other
+discretionaries would demand an adaption of various pieces of the engine code and
+plugged in user (\LUA) code also has to consider it which makes no sense.
+
+\startbuffer[sample]
+\nohyphens nederlands {\dohyphens nederlands} nederlands\par
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+Compare this with:
+
+\startbuffer[sample]
+nederlands {\nohyphens nederlands} nederlands\par
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+\stopsection
+
+\startsection[title={Compound hyphenation}]
+
+Yet another discretionary related issue is with compound words, that is: cases
+where \type {\discretionary} commands sit between words. There are of course
+tricks to deal with it like adding a huge penalty combined with a zero skip. This
+is okay in a traditional \TEX\ engine but in an opened up one you might not want
+this. Just to mention one aspect: when processing \OPENTYPE\ fonts you actually
+need to look into discretionaries in order to deal with glyphs that interact. And
+you don't want to deal with penalties and skips unless they have an explicit
+meaning. We show the four possibilities:
+
+\startbuffer[sample]
+nederlands\discretionary           {!}{!}{!}nederlands\blank
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+\startbuffer[sample]
+nederlands\discretionary options 1 {!}{!}{!}nederlands\blank
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+\startbuffer[sample]
+nederlands\discretionary options 2 {!}{!}{!}nederlands\blank
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+\startbuffer[sample]
+nederlands\discretionary options 3 {!}{!}{!}nederlands\blank
+\stopbuffer
+
+\typebuffer[sample]
+
+\setbox\scratchboxone\vbox{\dontcomplain \nl \hsize 2mm \getbuffer[sample]}
+\getbuffer[result]
+
+Here is an example of such an interference. Of course in practice this happens
+seldom and certainly not with ligatures. Some fonts have kerning between certain
+glyphs and for instance dashes and there it could matter.
+
+\startbuffer
+ef%
+\penalty \plustenthousand
+\hskip   \zeropoint
+\discretionary{-}{f}{f}%
+\penalty \plustenthousand
+\hskip   \zeropoint
+e
+ef\discretionary options 3 {-}{f}{f}e
+\stopbuffer
+
+\typebuffer
+
+As you can see, we only get the ligature when we set the options. In the process
+of processing \OPENTYPE\ features it can be that one actually looses a
+discretionary, although we try to prevent this when possible.
+
+\startlinecorrection
+\scale[height=2cm]{\setupbodyfont[pagella]\showglyphs\getbuffer}
+\stoplinecorrection
+
+But, as said, the fact that we don't need the penalties and glue helps at the
+\LUA\ end: the cleaner the node list, the better.
+
+\stopsection
+
+\startsection[title={Tracing}]
+
+The already present tracker command has been extended so handle the options:
+
+\startbuffer[sample0]
+\enabletrackers[discretionaries]
+\stopbuffer
+\startbuffer[sample1]
+test\discretionary {]} {[} {[]}test
+\stopbuffer
+\startbuffer[sample2]
+testing\discretionary {]} {[} {[]}testing
+\stopbuffer
+\startbuffer[sample3]
+testing\discretionary options 3 {]} {[} {[]}testing
+\stopbuffer
+
+\typebuffer[sample0,sample1,sample2,sample3]
+
+\setbox\scratchboxone\vbox{\dontcomplain            \getbuffer[sample0,sample1]} \getbuffer[result]
+\setbox\scratchboxone\vbox{\dontcomplain \hsize 2mm \getbuffer[sample0,sample2]} \getbuffer[result]
+\setbox\scratchboxone\vbox{\dontcomplain \hsize 2mm \getbuffer[sample0,sample3]} \getbuffer[result]
+
+\stopsection
+
+\startsection[title={Glue in discretionaries}]
+
+In the case you cannot predict what goes into a discretionary you can get run into
+an error message with respect to unsupported glue in a disc node. The mode value
+\number\permitgluehyphenationcode\space makes glue acceptable and turn into
+kern, as demonstrated here;
+
+\startbuffer
+{\hsize 1mm \darkblue \discretionary{potential conspiracy}{prophets}{influencers}\par}
+\stopbuffer
+
+\typebuffer
+
+The line break occurs but the space in the pre part is of course frozen:
+
+{\getbuffer}
+
+As usual \TEX\ users will come up with applications.
+
+\stopsection
+
+\startsection[title={Penalties}]
+
+By default the par builder will use the value of \type {\hyphenpenalty} that gets
+stored in the discretionary node. However, when the \type {\discretionary} is
+followed by a \type {penalty} keyword and a number, that one will.
+
+\stopsection
+
+\startsection[title=Exceptions]
+
+At some point a user on the \CONTEXT\ mailing list wondered how to deal with a case
+like this:
+
+\startbuffer[example]
+\switchtobodyfont[pagella]\mainlanguage[de]auffasse
+\stopbuffer
+
+\typebuffer[example]
+
+\startlinecorrection
+\scale[height=2cm]{\inlinebuffer[example]}
+\stoplinecorrection
+
+\startbuffer
+\startexceptions[de]
+au{f-}{-f}{ff}(f\zwnj f)asse
+\stopexceptions
+\stopbuffer
+
+In \LUAMETATEX\ you can block the unwanted ligature using this trick:
+
+\typebuffer \getbuffer
+
+\startlinecorrection
+\scale[height=2cm]{\inlinebuffer[example]}
+\stoplinecorrection
+
+The exception mechanism in \LUATEX\ and therefore \LUAMETATEX\ works as follows.
+When we have this exception:
+
+\starttyping
+au{f-}{-f}{ff}asse
+\stoptyping
+
+the engine will register that exception under \type {auffasse}, that is: the
+replacement part determines the word. When it runs into that word, it will create
+a so called discretionary node with a pre, post and replace part. However, it
+only uses the \type {ff} for a lookup and keeps the original two glyphs: these
+become the replacement text. However, in \LUAMETATEX\ you can add an alternative
+replacement:
+
+\startbuffer
+\startexceptions[de]
+au{f-}{-f}{ff}(st)asse
+\stopexceptions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time the replacement text becomes \type {xx}. So we get \type {austasse} and
+it is that sequence that is seen by the font handler when it applies its tricks.
+On some fonts however
+
+\startbuffer[example]
+\switchtobodyfont[pagella]\mainlanguage[de]auffasse
+\stopbuffer
+
+\startlinecorrection
+\scale[height=2cm]{\showglyphs\showfontkerns\inlinebuffer[example]}
+\stoplinecorrection
+
+But in the Pagella font that we use here, a kern is added between the \type {s} and
+the \type {t}. If you don't want that you can say this:
+
+\startbuffer
+\startexceptions[de]
+au{f-}{-f}{ff}(s\zwnj t)asse
+\stopexceptions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection
+\scale[height=2cm]{\showglyphs\showfontkerns\inlinebuffer[example]}
+\stoplinecorrection
+
+A \type {zwj} will block a ligature (some fonts have an \type {st} ligature) and a
+\type {zwnj} blocks a ligatures as well as kerns.
+
+You can actually abuse this mechanism for trickery like this:
+
+\startbuffer
+\startexceptions[nl]
+wis-kun-d{e-}{o}{eo}(e-o)n-der-wijs
+\stopexceptions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The Dutch word \type {wiskundeonderwijs} is found as exception and comes out like
+this:
+
+\startbuffer[example]
+\switchtobodyfont[pagella]\mainlanguage[nl]wiskundeonderwijs
+\stopbuffer
+
+\startlinecorrection
+\scale[height=1cm]{\showglyphs\showfontkerns\inlinebuffer[example]}
+\stoplinecorrection
+
+Watch the hyphen that makes the compound word more visible! The other hyphens in
+the exception are proper hyphenation points and when a break happens there a
+hyphen is automatically added. The \type {\nokerning} and \type {\noligaturing}
+macros can be used grouped:
+
+\startbuffer[example]
+{every}\quad
+{\nokerning every}\quad
+{\noligaturing every}\quad
+{e{\nokerning v}ery}\quad
+{e{\glyphoptions\noleftkernglyphoptioncode  v}ery}\quad
+{e{\glyphoptions\norightkernglyphoptioncode v}ery}\quad
+\stopbuffer
+
+\typebuffer[example]
+
+There are several low level control options. In addition to those shown here we
+have a pair for ligatures: \typ {\noleftligatureglyphoptioncode} and \typ
+{\norightligatureglyphoptioncode}.
+
+\startlinecorrection[blank]
+\scale[width=\textwidth]{\showglyphs\showfontkerns\inlinebuffer[example]}
+\stoplinecorrection
+
+There are alternative mechanism, like a blocker that implements a font feature
+and a replacement mechanism, but these are not discussed here.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -765,7 +765,7 @@
    \tracingmacros    \plusthree % > 2: obey \untraced
    \tracingoutput    \plusone
    \tracingpages     \plusone
-   \tracingparagraphs\plusone
+   \tracingparagraphs\plustwo
    \tracingrestores  \plusone
    \tracinggroups    \plusone
    \tracingifs       \plusone

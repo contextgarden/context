@@ -210,6 +210,8 @@
 		<cd:variable name='fixed' value='fixed'/>
 		<cd:variable name='flexible' value='flexible'/>
 		<cd:variable name='float' value='float'/>
+		<cd:variable name='flushbackward' value='flushbackward'/>
+		<cd:variable name='flushforward' value='flushforward'/>
 		<cd:variable name='flushinner' value='flushinner'/>
 		<cd:variable name='flushleft' value='flushleft'/>
 		<cd:variable name='flushouter' value='flushouter'/>
@@ -1242,6 +1244,7 @@
 		<cd:constant name='splitoffset' value='splitoffset'/>
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
+		<cd:constant name='stacking' value='stacking'/>
 		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='start'/>
 		<cd:constant name='starter' value='starter'/>
@@ -1271,6 +1274,7 @@
 		<cd:constant name='symbolset' value='symbolset'/>
 		<cd:constant name='symcolor' value='symcolor'/>
 		<cd:constant name='symstyle' value='symstyle'/>
+		<cd:constant name='synchronize' value='synchronize'/>
 		<cd:constant name='synonym' value='synonym'/>
 		<cd:constant name='synonymcolor' value='synonymcolor'/>
 		<cd:constant name='synonymcommand' value='synonymcommand'/>
@@ -1372,6 +1376,7 @@
 		<cd:element name='load' value='load'/>
 		<cd:element name='local' value='local'/>
 		<cd:element name='makeup' value='makeup'/>
+		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='next'/>
 		<cd:element name='place' value='place'/>
 		<cd:element name='previous' value='previous'/>

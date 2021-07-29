@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/xtables
 
 % author    : Hans Hagen
 % copyright : PRAGMA ADE & ConTeXt Development Team
@@ -131,7 +131,7 @@ pages.
           \startxcell[settings] ... \stopxcell
         \stopxcellgroup
       \stopxrow
-    \startxrowgroup
+    \stopxrowgroup
   \stopxtablehead|next|body|foot
 \stopxtable
 \stoptyping
@@ -954,7 +954,7 @@ The setups themselves are rather simple as we don't capture any attributes.
 We now process the example. Of course it will also work for files.
 
 \startbuffer
-  \xmlprocessbuffer{main}{test}{}
+\xmlprocessbuffer{main}{test}{}
 \stopbuffer
 
 \typebuffer
@@ -989,7 +989,6 @@ After that:
     \bTD[background=color,backgroundcolor=yellow] beta \eTD
   \eTR
 \eTABLE
-\stopbuffer
 \stopbuffer
 
 \typebuffer
@@ -1613,6 +1612,8 @@ in the distribution.
 \stopbuffer
 
 \typebuffer \getbuffer
+
+\stopsection
 
 \page
 
