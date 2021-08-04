@@ -22,20 +22,6 @@ local preparetemplate    = helpers.preparetemplate
 local setmetatable       = setmetatable
 local formatters         = string.formatters
 
------ sqlite             = require("swiglib.sqlite.core")
------ swighelpers        = require("swiglib.helpers.core")
------
------ get_list_item      = sqlite.char_p_array_getitem
------ is_okay            = sqlite.SQLITE_OK
------ execute_query      = sqlite.sqlite3_exec_lua_callback
------ error_message      = sqlite.sqlite3_errmsg
------
------ new_db             = sqlite.new_sqlite3_p_array
------ open_db            = sqlite.sqlite3_open
------ get_db             = sqlite.sqlite3_p_array_getitem
------ close_db           = sqlite.sqlite3_close
------ dispose_db         = sqlite.delete_sqlite3_p_array
-
 local ffi = require("ffi")
 
 ffi.cdef [[

@@ -67,16 +67,16 @@ end
 local function result()
     -- todo: we're now still in the pdf backend but need different codeinjections
     local codeinjections = backends.pdf.codeinjections
-    local getvariable    = codeinjections.getidentityvariable or function() end
+    local identity       = interactions.general.getidentity()
     local jobname        = environment.jobname or tex.jobname or "unknown"
     return {
         metadata = {
             unit     = "bp",
             jobname  = jobname,
-            title    = getvariable("title") or jobname,
-            subject  = getvariable("subject"),
-            author   = getvariable("author"),
-            keywords = getvariable("keywords"),
+            title    = identity.title,
+            subject  = identity.subject,
+            author   = identity.author,
+            keywords = identity.keywords,
             time     = os.date("%Y-%m-%d %H:%M"),
             engine   = environment.luatexengine .. " " .. environment.luatexversion,
             context  = environment.version,

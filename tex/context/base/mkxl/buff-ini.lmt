@@ -8,9 +8,10 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 
 local concat = table.concat
 local type, next, load = type, next, load
-local sub, format = string.sub, string.format
+local sub, format, find, match = string.sub, string.format, string.find, string.match
 local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
-local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
+local P, S, C, Ct, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs
+local patterns, lpegmatch = lpeg.patterns, lpeg.match
 local utfchar  = utf.char
 local nameonly = file.nameonly
 local totable  = string.totable
@@ -54,6 +55,7 @@ local replacesuffix     = file.replacesuffix
 local registertempfile  = luatex.registertempfile
 
 local v_yes             = variables.yes
+local v_append          = variables.append
 
 local eol               = patterns.eol
 local space             = patterns.space
@@ -86,33 +88,63 @@ local function erase(name)
     cache[name] = nil
 end
 
-local function assign(name,str,catcodes)
-    cache[name] = {
-        data     = str,
-        catcodes = catcodes,
-        typeset  = false,
-    }
-end
+local assign  do
 
-local function combine(name,str,prepend)
-    local buffer = cache[name]
-    if buffer then
-        buffer.data    = prepend and (str .. buffer.data) or (buffer.data .. str)
-        buffer.typeset = false
-    else
+    -- Ther eis no gain in an immediate concatenating lpeg
+
+    local action  = whitespace^0 * C(P("+")^1 + P("*")) * whitespace^0
+    local equal   = whitespace^0 * patterns.equal * whitespace^0
+    local name    = C((1-action)^1)
+    local pattern = C((1-equal)^1) * equal * Ct((action + name)^1)
+
+    assign = function(name,str,catcodes)
+        local target, content = lpegmatch(pattern,name)
+        if target and content then
+            for i=1,#content do
+                local c = content[i]
+                if c == "+" then
+                    content[i] = ""
+                elseif c == "++" then
+                    content[i] = " "
+                elseif c == "+++" then
+                    content[i] = "\r\r"
+                elseif c == "*" then
+                    content[i] = str
+                else
+                    local s = cache[c]
+                    content[i] = s and s.data or ""
+                end
+            end
+            name = target
+            str  = concat(content)
+        end
         cache[name] = {
             data     = str,
+            catcodes = catcodes,
             typeset  = false,
         }
     end
+
 end
 
-local function prepend(name,str)
-    combine(name,str,true)
-end
+local prepend, append  do
 
-local function append(name,str)
-    combine(name,str)
+    local function combine(name,str,prepend)
+        local buffer = cache[name]
+        if buffer then
+            buffer.data    = prepend and (str .. buffer.data) or (buffer.data .. str)
+            buffer.typeset = false
+        else
+            cache[name] = {
+                data     = str,
+                typeset  = false,
+            }
+        end
+    end
+
+    prepend = function(name,str) combine(name,str,true) end
+    append  = function(name,str) combine(name,str)      end
+
 end
 
 local function exists(name)
@@ -122,6 +154,14 @@ end
 local function getcontent(name)
     local buffer = name and cache[name]
     return buffer and buffer.data or ""
+end
+
+local function empty(name)
+    if find(getcontent(name),"%S") then
+        return false
+    else
+        return true
+    end
 end
 
 local function getlines(name)
@@ -200,6 +240,7 @@ buffers.assign         = assign
 buffers.prepend        = prepend
 buffers.append         = append
 buffers.exists         = exists
+buffers.empty          = empty
 buffers.getcontent     = getcontent
 buffers.getlines       = getlines
 buffers.collectcontent = collectcontent
@@ -642,7 +683,7 @@ implement {
     end
 }
 
-local function savebuffer(list,name,prefix) -- name is optional
+local function savebuffer(list,name,prefix,option,directory) -- name is optional
     if not list or list == "" then
         list = name
     end
@@ -656,13 +697,16 @@ local function savebuffer(list,name,prefix) -- name is optional
     if prefix == v_yes then
         name = addsuffix(tex.jobname .. "-" .. name,"tmp")
     end
-    io.savedata(name,replacenewlines(content))
+    if directory ~= "" and dir.makedirs(directory) then
+        name = file.join(directory,name)
+    end
+    io.savedata(name,replacenewlines(content),"\n",option == v_append)
 end
 
 implement {
     name      = "savebuffer",
     actions   = savebuffer,
-    arguments = "3 strings",
+    arguments = "5 strings",
 }
 
 -- we can consider adding a size to avoid unlikely clashes
@@ -675,10 +719,11 @@ local runner = sandbox.registerrunner {
     name     = "run buffer",
     program  = "context",
     method   = "execute",
-    template = jit and "--purgeall --jit %filename%" or "--purgeall %filename%",
+    template = [[--purgeall %?path: --path=%path% ?% %filename%]],
     reporter = report_typeset,
     checkers = {
         filename = "readable",
+        path     = "string",
     }
 }
 
@@ -769,7 +814,10 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
         end
         savedata(filename,content)
         report_typeset("processing saved buffer %a\n",filename)
-        runner { filename = filename }
+        runner {
+            filename = filename,
+            path     = environment.arguments.path, -- maybe take all set paths
+        }
     end
     new[tag] = (new[tag] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)
@@ -846,6 +894,16 @@ implement {
 implement {
     name      = "doifelsebuffer",
     actions   = { exists, commands.doifelse },
+    public    = true,
+ -- protected = false,
+    arguments = "string"
+}
+
+implement {
+    name      = "doifelsebufferempty",
+    actions   = { empty, commands.doifelse },
+    public    = true,
+    protected = true,
     arguments = "string"
 }
 
@@ -885,10 +943,10 @@ end
 -- moved here:
 
 function buffers.samplefile(name)
-    if not buffers.exists(name) then
-        buffers.assign(name,io.loaddata(resolvers.findfile(name)))
+    if not exists(name) then
+        assign(name,io.loaddata(resolvers.findfile(name)))
     end
-    buffers.get(name)
+    getbuffer(name)
 end
 
 implement {

@@ -365,7 +365,7 @@ vardef lmt_do_followtext =
         interim tracingfollowtext := if getparameter "trace" : 1 else : 0 fi ;
         draw followtext (
             if (getparameter "reverse") : reverse fi (getparameter "path"),
-                getparameter "text"
+            (getparameter "text")
         ) ;
         popparameters ;
     )

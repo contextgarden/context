@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['util-sql-imp-swiglib'] = {
     license   = "see context related readme files"
 }
 
+if true then
+    logs.report("warning","swiglib is no longer supported")
+end
+
 -- As the regular library is flawed (i.e. there are crashes in the table
 -- construction code) and also not that efficient, Luigi Scarso looked into
 -- a swig binding. This is a bit more low level approach but as we stay

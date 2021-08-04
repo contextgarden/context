@@ -350,8 +350,9 @@ else
         if how == "image" then
             tex.sprint(format("\\MPLIBpdftext{%s}{%s}",what,depth))
         else
-            text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost
-            tex.sprint(format("\\MPLIBtextext{%s}{%s}{%s}{%s}",font,size,text,depth))
+         -- text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost
+         -- tex.sprint(format("\\MPLIBtextext{%s}{%s}{%s}{%s}",font,size,text,depth))
+            tex.sprint(format("\\MPLIBtextext{%s}{%s}{\\hpack{\\detokenize{%s}}}{%s}",font,size,text,depth))
         end
     end
 

@@ -82,6 +82,7 @@
 		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
+		<cd:variable name='append' value='append'/>
 		<cd:variable name='appendices' value='پیوستها'/>
 		<cd:variable name='appendix' value='پیوست'/>
 		<cd:variable name='april' value='آوریل'/>
@@ -210,6 +211,8 @@
 		<cd:variable name='fixed' value='ثابت'/>
 		<cd:variable name='flexible' value='انعطافپذیر'/>
 		<cd:variable name='float' value='شناور'/>
+		<cd:variable name='flushbackward' value='flushbackward'/>
+		<cd:variable name='flushforward' value='flushforward'/>
 		<cd:variable name='flushinner' value='پمپ‌داخلی'/>
 		<cd:variable name='flushleft' value='پمپ‌چپ'/>
 		<cd:variable name='flushouter' value='پمپ‌خارجی'/>
@@ -437,6 +440,7 @@
 		<cd:variable name='postscript' value='پست‌اسکریپت'/>
 		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='ترجیح'/>
+		<cd:variable name='prepend' value='prepend'/>
 		<cd:variable name='preview' value='پیش‌دید'/>
 		<cd:variable name='previous' value='قبلی'/>
 		<cd:variable name='previousevenpage' value='صفحه‌زوج‌قبلی'/>
@@ -1374,6 +1378,8 @@
 		<cd:element name='load' value='بارگذاشتن'/>
 		<cd:element name='local' value='موضعی'/>
 		<cd:element name='makeup' value='آرایش'/>
+		<cd:element name='namednotation' value='namednotation'/>
+		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='بعدی'/>
 		<cd:element name='place' value='مکان'/>
 		<cd:element name='previous' value='قبلی'/>
@@ -1545,6 +1551,7 @@
 		<cd:command name='definereferencelist' value='تعریف‌لیست‌مرجع'/>
 		<cd:command name='defineregister' value='تعریف‌ثبت'/>
 		<cd:command name='definerule' value='تعریف‌خط‌حائل'/>
+		<cd:command name='definesavebuffer' value='startsavebuffer'/>
 		<cd:command name='definesection' value='تعریف‌بخش'/>
 		<cd:command name='definesectionblock' value='تعریف‌بلوک‌بخش'/>
 		<cd:command name='definesorting' value='تعریف‌ترتیب'/>
@@ -1721,6 +1728,9 @@
 		<cd:command name='moveformula' value='انتقال‌فرمول'/>
 		<cd:command name='moveongrid' value='انتقال‌به‌توری'/>
 		<cd:command name='movesidefloat' value='انتقال‌کنار‌شناور'/>
+		<cd:command name='namedconstruction' value='namedconstruction'/>
+		<cd:command name='nameddescription' value='nameddescription'/>
+		<cd:command name='namedenumeration' value='namedenumeration'/>
 		<cd:command name='navigating' value='هدایت'/>
 		<cd:command name='nodimension' value='بدون‌بعد'/>
 		<cd:command name='noheaderandfooterlines' value='بدون‌خط‌سروته‌برگ'/>
@@ -2092,6 +2102,13 @@
 		<cd:command name='startmakeup' value='شروع‌آرایش'/>
 		<cd:command name='startmarginblock' value='شروع‌بلوک‌حاشیه'/>
 		<cd:command name='startmarginrule' value='شروع‌خط‌حاشیه'/>
+		<cd:command name='startnamedconstruction' value='startnamedconstruction'/>
+		<cd:command name='startnameddescription' value='startnameddescription'/>
+		<cd:command name='startnamedenumeration' value='startnamedenumeration'/>
+		<cd:command name='startnamedmatrix' value='startnamedmatrix'/>
+		<cd:command name='startnamedsection' value='startnamedsection'/>
+		<cd:command name='startnamedsubformulas' value='startnamedsubformulas'/>
+		<cd:command name='startnamedtyping' value='startnamedtyping'/>
 		<cd:command name='startnarrower' value='شروع‌باریکتر'/>
 		<cd:command name='startopposite' value='شروع‌مخالف'/>
 		<cd:command name='startoverlay' value='شروع‌پوشش'/>
@@ -2135,6 +2152,13 @@
 		<cd:command name='stopmakeup' value='پایان‌آرایش'/>
 		<cd:command name='stopmarginblock' value='پایان‌بلوک‌حاشیه'/>
 		<cd:command name='stopmarginrule' value='پایان‌خط‌حاشیه'/>
+		<cd:command name='stopnamedconstruction' value='stopnamedconstruction'/>
+		<cd:command name='stopnameddescription' value='stopnameddescription'/>
+		<cd:command name='stopnamedenumeration' value='stopnamedenumeration'/>
+		<cd:command name='stopnamedmatrix' value='stopnamedmatrix'/>
+		<cd:command name='stopnamedsection' value='stopnamedsection'/>
+		<cd:command name='stopnamedsubformulas' value='stopnamedsubformulas'/>
+		<cd:command name='stopnamedtyping' value='stopnamedtyping'/>
 		<cd:command name='stopnarrower' value='پایان‌نازکتر'/>
 		<cd:command name='stopopposite' value='پایان‌مخالف'/>
 		<cd:command name='stopoverlay' value='پایان‌پوشش'/>

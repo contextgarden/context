@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 
 local concat = table.concat
 local type, next, load = type, next, load
-local sub, format = string.sub, string.format
+local sub, format, find = string.sub, string.format, string.find
 local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local utfchar  = utf.char
@@ -55,6 +55,7 @@ local replacesuffix     = file.replacesuffix
 local registertempfile  = luatex.registertempfile
 
 local v_yes             = variables.yes
+local v_append          = variables.append
 
 local eol               = patterns.eol
 local space             = patterns.space
@@ -118,6 +119,14 @@ end
 
 local function exists(name)
     return cache[name]
+end
+
+local function empty(name)
+    if find(getcontent(name),"%S") then
+        return false
+    else
+        return true
+    end
 end
 
 local function getcontent(name)
@@ -201,6 +210,7 @@ buffers.assign         = assign
 buffers.prepend        = prepend
 buffers.append         = append
 buffers.exists         = exists
+buffers.empty          = empty
 buffers.getcontent     = getcontent
 buffers.getlines       = getlines
 buffers.collectcontent = collectcontent
@@ -642,7 +652,7 @@ implement {
     end
 }
 
-local function savebuffer(list,name,prefix) -- name is optional
+local function savebuffer(list,name,prefix,option,directory) -- name is optional
     if not list or list == "" then
         list = name
     end
@@ -656,13 +666,16 @@ local function savebuffer(list,name,prefix) -- name is optional
     if prefix == v_yes then
         name = addsuffix(tex.jobname .. "-" .. name,"tmp")
     end
-    io.savedata(name,replacenewlines(content))
+    if directory ~= "" and dir.makedirs(directory) then
+        name = file.join(directory,name)
+    end
+    io.savedata(name,replacenewlines(content),"\n",option == v_append)
 end
 
 implement {
     name      = "savebuffer",
     actions   = savebuffer,
-    arguments = "3 strings",
+    arguments = "5 strings",
 }
 
 -- we can consider adding a size to avoid unlikely clashes
@@ -675,7 +688,7 @@ local runner = sandbox.registerrunner {
     name     = "run buffer",
     program  = "context",
     method   = "execute",
-    template = jit and "--purgeall --jit %filename%" or "--purgeall %filename%",
+    template = (jit and "--jit " or "") .. "--purgeall %?path: --path=%path% ?% %filename%",
     reporter = report_typeset,
     checkers = {
         filename = "readable",
@@ -769,7 +782,10 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
         end
         savedata(filename,content)
         report_typeset("processing saved buffer %a\n",filename)
-        runner { filename = filename }
+        runner {
+            filename = filename,
+            path     = environment.arguments.path, -- maybe take all set paths
+        }
     end
     new[tag] = (new[tag] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)
@@ -849,6 +865,12 @@ implement {
     arguments = "string"
 }
 
+implement {
+    name      = "doifelsebufferempty",
+    actions   = { empty, commands.doifelse },
+    arguments = "string"
+}
+
 -- This only used for mp buffers and is a kludge. Don't change the
 -- texprint into texsprint as it fails because "p<nl>enddef" becomes
 -- "penddef" then.
@@ -885,10 +907,10 @@ end
 -- moved here:
 
 function buffers.samplefile(name)
-    if not buffers.exists(name) then
-        buffers.assign(name,io.loaddata(resolvers.findfile(name)))
+    if not exists(name) then
+        assign(name,io.loaddata(resolvers.findfile(name)))
     end
-    buffers.get(name)
+    getbuffer(name)
 end
 
 implement {

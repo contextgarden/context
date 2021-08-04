@@ -3033,7 +3033,7 @@ end
 
 do
 
-    local getfontoffamily = font.getfontoffamily
+    local getfontoffamily = tex.getfontoffamily
     local new_glyph       = nodes.pool.glyph
     local fontproperties  = fonts.hashes.properties
 

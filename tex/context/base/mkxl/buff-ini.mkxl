@@ -24,7 +24,8 @@
 
 \mutable\let\currentbuffer\empty
 
-\permanent\def\doifelsebuffer#1{\clf_doifelsebuffer{#1}} % expandable, todo: use public implementor
+% \doifelsebuffer      {#1} % expandable
+% \doifelsebufferempty {#1} % non expandable
 
 \aliased\let\doifbufferelse\doifelsebuffer
 
@@ -188,12 +189,14 @@
 % \savebufferinfile[x][temp.log] % gets name: temp.log
 
 \installcorenamespace{savebuffer}
+\installcorenamespace{savebuffercounter}
 
-\installsetuponlycommandhandler \??savebuffer {savebuffer}
+\installcommandhandler \??savebuffer {savebuffer} \??savebuffer
 
 \setupsavebuffer
   [\c!list=,
    \c!file=,
+   \c!directory=,
    \c!prefix=\v!yes]
 
 \permanent\tolerant\protected\def\savebuffer[#1]#*[#2]%
@@ -203,8 +206,53 @@
    \else
      \setupcurrentsavebuffer[\c!list={#1},\c!file=#2]%
    \fi
-   \clf_savebuffer{\directsavebufferparameter\c!list}{\directsavebufferparameter\c!file}{\directsavebufferparameter\c!prefix}%
+   \clf_savebuffer % will become key/value
+     {\savebufferparameter\c!list}%
+     {\savebufferparameter\c!file}%
+     {\savebufferparameter\c!prefix}%
+     {\savebufferparameter\c!option}%
+     {\savebufferparameter\c!directory}%
    \endgroup}
+
+%D \starttyping
+%D \definesavebuffer[slide]
+%D
+%D \starttext
+%D     \startslide
+%D         \starttext
+%D     \stopslide
+%D     \startslide
+%D         slide 1
+%D     \stopslide
+%D     text 1 \par
+%D     \startslide
+%D         slide 2
+%D     \stopslide
+%D     text 2 \par
+%D     \startslide
+%D         \stoptext
+%D     \stopslide
+%D \stoptext
+%D \stoptyping
+
+\appendtoks
+    \ifcsname\e!stop\currentsavebuffer\endcsname\else
+      \definebuffer[\currentsavebuffer]%
+      \expandafter\newcount\csname\??savebuffercounter\currentsavebuffer\endcsname
+      \protected\edefcsname\e!stop\currentsavebuffer\endcsname{\buff_stop_save_buffer{\currentsavebuffer}}%
+      \setsavebufferparameter\c!file{\currentsavebuffer.tex}%
+    \fi
+\to \everydefinesavebuffer
+
+\protected\def\buff_stop_save_buffer#1%
+  {\edef\currentsavebuffer{#1}%
+   \global\advance\csname\??savebuffercounter\currentsavebuffer\endcsname\plusone
+   \clf_savebuffer % will become key/value
+     {\thedefinedbuffer{\currentsavebuffer}}%
+     {\savebufferparameter\c!file}%
+     {\savebufferparameter\c!prefix}%
+     {\ifnum\csname\??savebuffercounter\currentsavebuffer\endcsname>\plusone\v!append\fi}%
+     {\savebufferparameter\c!directory}}
 
 %D Experimental: no expansion of commands in buffer!
 

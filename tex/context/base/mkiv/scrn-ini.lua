@@ -33,7 +33,7 @@ interfaces.implement {
     arguments = {
         {
             { "title" },
-            { "subtitle" },
+            { "subtitle"},
             { "author" },
             { "creator" },
             { "date" },

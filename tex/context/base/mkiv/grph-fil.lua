@@ -49,89 +49,106 @@ job.register('job.files.collected', tobesaved, initializer)
 local runner = sandbox.registerrunner {
     name     = "hashed context run",
     program  = "context",
-    template = [[%options% --path=%path% %filename%]],
-    template = [[%options% %?path: --path=%path% ?% %?runpath: --runpath=%runpath% ?% %filename%]],
+    template = [[%options% %?path: --runpath=%path% ?% %filename%]],
     checkers = {
         options  = "string",
         filename = "readable",
         path     = "string",
-        runpath  = "string",
+     -- runpath  = "string",
     }
 }
 
-function jobfiles.run(name,action)
-    local usedname    = addsuffix(name,inputsuffix) -- we assume tex if not set
-    local oldchecksum = collected[usedname]
-    local newchecksum = checksum(usedname)
-    local resultfile  = replacesuffix(usedname,resultsuffix)
+-- we can also use:
+--
+-- local jobvariables = job.variables
+-- jobvariables.getchecksum(tag)
+-- jobvariables.makechecksum(data)
+-- jobvariables.setchecksum(tag,checksum)
+
+-- The runpath features makes things more complex than needed, so we need to wrap
+-- that some day in a helper. This is also very sensitive for both being set!
+
+local function analyzed(name)
+    local actiontype = type(action)
+    local usedname   = addsuffix(name,inputsuffix)      -- we assume tex if not set
+    local resultname = replacesuffix(name,resultsuffix) -- we assume tex if not set
+    local pathname   = file.pathpart(usedname)
+    local runpath    = environment.arguments.path -- sic, no runpath
+    if pathname ~= "" then
+        if runpath then
+            runpath = file.join(action.path,pathname)
+        else
+            runpath = pathname
+        end
+        usedname = file.basename(usedname)
+    end
+    return {
+        options  = options,
+        path     = runpath,
+        filename = usedname,
+        result   = resultname,
+    }
+end
+
+function jobfiles.run(action)
+    local filename    = action.filename
+    local result      = action.result
+    local oldchecksum = collected[filename]
+    local newchecksum = checksum(filename)
     local tobedone    = false
     if jobfiles.forcerun then
         tobedone = true
         if trace_run then
-            report_run("processing file, changes in %a, %s",name,"processing forced")
+            report_run("processing file, changes in %a, %s",filename,"processing forced")
         end
     end
     if not tobedone and not oldchecksum then
         tobedone = true
         if trace_run then
-            report_run("processing file, changes in %a, %s",name,"no checksum yet")
+            report_run("processing file, changes in %a, %s",filename,"no checksum yet")
         end
     end
     if not tobedone and oldchecksum ~= newchecksum then
         tobedone = true
         if trace_run then
-            report_run("processing file, changes in %a, %s",name,"checksum mismatch")
+            report_run("processing file, changes in %a, %s",filename,"checksum mismatch")
         end
     end
-    if not tobedone and not isfile(resultfile) then
+    if not tobedone and not isfile(result) then
         tobedone = true
         if trace_run then
-            report_run("processing file, changes in %a, %s",name,"no result file")
+            report_run("processing file, changes in %a, %s",filename,"no result file")
         end
     end
     if tobedone then
-        local ta = type(action)
-        if ta == "function" then
-            action(name)
-        elseif ta == "string" and action ~= "" then
-            -- can be anything but we assume it gets checked by the sandbox
-            os.execute(action)
-        elseif ta == "table" then
-            -- these paths will be ignored when they are not set
-            local path    = action.path
-            local runpath = action.runpath
-            action.path    = environment.arguments.path
-            action.runpath = environment.arguments.runpath
-            runner(action)
-            action.path    = path
-            action.runpath = runpath
-        else
-            report_run("processing file, no action given for processing %a",name)
-        end
+        runner(action)
     elseif trace_run then
         report_run("processing file, no changes in %a, not processed",name)
     end
-    tobesaved[name] = newchecksum
+    tobesaved[filename] = newchecksum
 end
 
 --
 
 local done = { }
 
-function jobfiles.context(name,options)
+function jobfiles.context(name,options) -- runpath ?
     if type(name) == "table" then
         local result = { }
         for i=1,#name do
             result[#result+1] = jobfiles.context(name[i],options)
         end
         return result
-    else
-        local result = replacesuffix(name,resultsuffix)
+    elseif name ~= "" then
+        local action = analyzed(name,options)
+        local result = action.result
         if not done[result] then
-            jobfiles.run(name, { options = options, filename = name })
+            jobfiles.run(action)
             done[result] = true
         end
         return result
+    else
+        return { }
     end
 end
 

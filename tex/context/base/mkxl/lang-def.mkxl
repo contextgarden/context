@@ -564,8 +564,7 @@
    \c!rightquote=\upperrightsingleninequote,      %U+2019,
    \c!leftquotation=\upperleftdoublesixquote,     %U+201C,
    \c!rightquotation=\upperrightdoubleninequote,  %U+201D,
-   \c!date={\v!year,~m.,\space,\v!month,\space,\v!day,~d.},
-   \c!date={\v!day-a\space de\space \v!month\space \v!year},
+   \c!date={\v!day,-a\space de\space,\v!month,\space \v!year},
    \s!patterns=eo,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2]

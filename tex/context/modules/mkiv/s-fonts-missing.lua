@@ -9,35 +9,53 @@ if not modules then modules = { } end modules ['s-fonts-missing'] = {
 moduledata.fonts         = moduledata.fonts         or { }
 moduledata.fonts.missing = moduledata.fonts.missing or { }
 
-local function legend(id)
-    local privates = fonts.helpers.getprivates(id)
-    if privates then
-        local categories = table.swapped(fonts.loggers.category_to_placeholder)
-        context.starttabulate { "|c|l|" }
-            context.HL()
-            context.NC()
-            context.bold("symbol")
-            context.NC()
-            context.bold("name")
-            context.NC()
-            context.NR()
-            context.HL()
-            for k, v in table.sortedhash(privates) do
-                local tag = characters.categorytags[categories[k]]
-                if tag and tag ~= "" then
-                    context.NC()
-                    context.dontleavehmode()
-                    context.char(v)
-                    context.NC()
-                    context(k)
-                    context.NC()
-                    context.NR()
+local legend = fonts.loggers.category_to_placeholder and
+
+    function(id)
+        local privates = fonts.helpers.getprivates(id)
+        if privates then
+            local categories = table.swapped(fonts.loggers.category_to_placeholder)
+            context.starttabulate { "|c|l|" }
+                context.HL()
+                context.NC() context.bold("symbol")
+                context.NC() context.bold("name")
+                context.NC() context.NR()
+                context.HL()
+                for k, v in table.sortedhash(privates) do
+                    local tag = characters.categorytags[categories[k]]
+                    if tag and tag ~= "" then
+                        context.NC() context.dontleavehmode() context.char(v)
+                        context.NC() context(k)
+                        context.NC() context.NR()
+                    end
                 end
+                context.HL()
+            context.stoptabulate()
+        end
+    end
+
+or
+
+    function(id)
+        local mapping = fonts.checkers.mapping
+        context.starttabulate { "|c|c|l|l|" }
+            context.HL()
+            context.NC() context.bold("symbol")
+            context.NC() context.bold("tag")
+            context.NC() context.bold("name")
+            context.NC() context.NR()
+            context.HL()
+            for k, v in table.sortedhash(mapping) do
+                local p = fonts.helpers.newprivateslot(v[1] .. "-" .. v[2])
+                fonts.checkers.placeholder(font.current(),p,k)
+                context.NC() context.char(p)
+                context.NC() context(k)
+                context.NC() context(v[1])
+                context.NC() context.NR()
             end
             context.HL()
         context.stoptabulate()
     end
-end
 
 function moduledata.fonts.missing.showlegend(specification)
     specification = interfaces.checkedspecification(specification)
@@ -52,30 +70,20 @@ local function missings()
     for filename, list in table.sortedhash(collected) do
         if #list > 0 then
             context.starttabulate { "|l|l|" }
-                context.NC()
-                context.bold("filename")
-                context.NC()
-                context(file.basename(filename))
-                context.NC()
-                context.NR()
-                context.NC()
-                context.bold("missing")
-                context.NC()
-                context(#list)
-                context.NC()
-                context.NR()
+                context.NC() context.bold("filename")
+                context.NC() context(file.basename(filename))
+                context.NC() context.NR()
+                context.NC() context.bold("missing")
+                context.NC() context(#list)
+                context.NC() context.NR()
             context.stoptabulate()
             context.starttabulate { "|l|c|l|" }
                 for i=1,#list do
                     local u = list[i]
-                    context.NC()
-                    context("%U",u)
-                    context.NC()
-                    context.char(u)
-                    context.NC()
-                    context(characters.data[u].description)
-                    context.NC()
-                    context.NR()
+                    context.NC() context("%U",u)
+                    context.NC() context.char(u)
+                    context.NC() context(characters.data[u].description)
+                    context.NC() context.NR()
                 end
             context.stoptabulate()
         end

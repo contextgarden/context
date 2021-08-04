@@ -197,7 +197,33 @@
    \egroup
    \endgroup}
 
-\permanent\protected\def\getshapetext
+% \permanent\protected\def\getshapetext
+%   {\vbox\bgroup
+%    \forgetall
+%    \dontcomplain
+%    \global\advance\shapetextindex\plusone
+%    \scratchcounter\getshapeparameter{lines}\relax
+%    \ifnum\scratchcounter>\zerocount
+%      \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
+%      \scratchheight \getshapeparameter{height}\scaledpoint\relax
+%      \setbox\scratchbox\vpack to \scratchheight
+%        {\splittopskip\strutheight
+%         \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+%         \ifcase\numexpr\getshapeparameter{first}\relax\else
+%           \vskip\lineheight
+%         \fi
+%         \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+%         \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
+%      \wd\scratchbox\scratchwidth
+%      \ht\scratchbox\scratchheight
+%      \dp\scratchbox\zeropoint
+%      \box\scratchbox
+%    \else
+%       % what now
+%    \fi
+%    \egroup}
+
+\pushoverloadmode\permanent\protected\def\getshapetext
   {\vbox\bgroup
    \forgetall
    \dontcomplain
@@ -206,21 +232,24 @@
    \ifnum\scratchcounter>\zerocount
      \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
      \scratchheight \getshapeparameter{height}\scaledpoint\relax
+     \scratchhoffset\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+     \scratchvoffset\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
      \setbox\scratchbox\vpack to \scratchheight
        {\splittopskip\strutheight
-        \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+        \vskip\scratchvoffset
         \ifcase\numexpr\getshapeparameter{first}\relax\else
           \vskip\lineheight
         \fi
-        \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
+        \hskip\scratchhoffset
         \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
-     \wd\scratchbox\scratchwidth
-     \ht\scratchbox\scratchheight
-     \dp\scratchbox\zeropoint
+     \wd\scratchbox\dimexpr\scratchwidth +\scratchhoffset\relax
+     \ht\scratchbox\dimexpr\scratchheight+\scratchvoffset\relax
+     \dp\scratchbox\strutdp % zeropoint
      \box\scratchbox
    \else
       % what now
    \fi
    \egroup}
+
 
 \protect

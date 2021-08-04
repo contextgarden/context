@@ -200,7 +200,7 @@ metapost.installplugin {
 }
 
 -- Here follows an example of usage of the above: a more modern
--- version of followokens (in meta-imp-txt.mkiv).
+-- version of followtokens (in meta-imp-txt.mkiv).
 
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes

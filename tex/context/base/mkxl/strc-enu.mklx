@@ -131,15 +131,15 @@
 \protected\def\strc_define_commands_enumeration#tag#level#parent%
   {\doifelsenothing{#parent}
      {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
-      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration}}%
+      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration}}%
      {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
-      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration#parent}}%
-   \frozen\instance\setuevalue{\e!next #tag}{\strc_enumerations_next   {#tag}{\number#level}}% obsolete
-   \frozen\instance\setuevalue{\c!reset#tag}{\strc_enumerations_reset  {#tag}{\number#level}}% obsolete
-   %frozen\instance\setuevalue{\c!set  #tag}{\strc_enumerations_set    {#tag}{\number#level}}% obsolete
-   \frozen\instance\setuevalue        {#tag}{\strc_enumerations_command[#tag]}% we could pass level here as well (faster)
-   \frozen\instance\setuevalue{\e!start#tag}{\strc_enumerations_start  [#tag]}% we could pass level here as well (faster)
-   \frozen\instance\setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
+      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration#parent}}%
+   \frozen\protected\instance\edefcsname\e!next #tag\endcsname{\strc_enumerations_next{#tag}{\number#level}}%  obsolete
+   \frozen\protected\instance\edefcsname\c!reset#tag\endcsname{\strc_enumerations_reset{#tag}{\number#level}}% obsolete
+   %frozen\protected\instance\edefcsname\c!set  #tag\endcsname{\strc_enumerations_set{#tag}{\number#level}}%   obsolete
+   \frozen\protected\instance\edefcsname        #tag\endcsname{\namedenumeration[#tag]}%
+   \frozen\protected\instance\edefcsname\e!start#tag\endcsname{\startnamedenumeration[#tag]}%
+   \frozen\protected\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}}
 
 \let\m_strc_enumeration_sub\empty
 
@@ -180,7 +180,7 @@
 \let\p_strc_constructions_title \empty
 \let\p_strc_constructions_number\empty
 
-\protected\setvalue{\??constructioninitializer\v!enumeration}%
+\protected\defcsname\??constructioninitializer\v!enumeration\endcsname
   {\let         \currentenumeration              \currentconstruction
    \enforced\let\constructionparameter           \enumerationparameter
    \enforced\let\constructionnamespace           \??enumeration
@@ -205,7 +205,7 @@
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\protected\setvalue{\??constructionfinalizer\v!enumeration}%
+\protected\defcsname\??constructionfinalizer\v!enumeration\endcsname
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -214,9 +214,9 @@
 
 %D Interfaces:
 
-\let\strc_enumerations_command\strc_descriptions_command
-\let\strc_enumerations_start  \strc_descriptions_start
-\let\strc_enumerations_stop   \strc_descriptions_stop
+\let\namedenumeration     \nameddescription
+\let\startnamedenumeration\startnameddescription
+\let\stopnamedenumeration \stopnameddescription
 
 \protected\def\strc_enumerations_next {\strc_constructions_next_indeed \namedenumerationparameter} % #1#2
 \protected\def\strc_enumerations_reset{\strc_constructions_reset_indeed\namedenumerationparameter} % #1#2
@@ -250,7 +250,7 @@
 \letcsname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
 \letcsname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
 
-\protected\setvalue{\??constructiontexthandler\v!enumeration}%
+\protected\defcsname\??constructiontexthandler\v!enumeration\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
    \strc_enumerations_text

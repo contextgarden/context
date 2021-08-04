@@ -146,22 +146,21 @@
 
 \appendtoks
     \ifconditional\c_strc_constructions_define_commands
-     %% \protected\instance\edefcsname\e!start\currentconstruction\endcsname{\strc_constructions_start{\currentconstruction}}%
-        \protected\instance\edefcsname\e!start\currentconstruction\endcsname{\strc_constructions_start[\currentconstruction]}%
-        \protected\instance\edefcsname\e!stop \currentconstruction\endcsname{\strc_constructions_stop}%
+        \protected\instance\edefcsname\e!start\currentconstruction\endcsname{\startnamedconstruction[\currentconstruction]}%
+        \protected\instance \defcsname\e!stop \currentconstruction\endcsname{\stopnamedconstruction}%
     \fi
 \to \everydefineconstruction
 
 %D Just a basic environment (mostly for testing). We will provide a 'setup' based
 %D plugin once the rest is sorted out.
 
-\tolerant\protected\def\strc_constructions_start[#1]#*[#2]#*[#3]%
+\tolerant\permanent\protected\def\startnamedconstruction[#1]#*[#2]#*[#3]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \strc_constructions_register[#3][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
-\protected\def\strc_constructions_stop
+\permanent\protected\def\stopnamedconstruction
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname
    \endgroup}
 
@@ -196,11 +195,11 @@
 \newconditional\c_strc_constructions_number_state
 \newconditional\c_strc_constructions_title_state
 
-\protected\setvalue{\??constructioninitializer\v!construction}%
+\protected\defcsname\??constructioninitializer\v!construction\endcsname
   {\setfalse\c_strc_constructions_number_state
    \setfalse\c_strc_constructions_title_state}
 
-\protected\setvalue{\??constructionfinalizer\v!construction}%
+\protected\defcsname\??constructionfinalizer\v!construction\endcsname
   {}
 
 %D We keep the command variant around but rather would move to the start-stop one.
@@ -331,7 +330,7 @@
    % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
    \settrue\c_strc_constructions_distance_none}
 
-\protected\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
+\protected\defcsname\??constructionstarthandler\v!construction\endcsname % this will be redone (reorganized) .. too much boxing
   {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
 %    \dotagsetconstruction
    \constructionparameter\c!before

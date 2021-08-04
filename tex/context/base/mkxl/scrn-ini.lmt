@@ -1,0 +1,54 @@
+if not modules then modules = { } end modules ['scrn-ini'] = {
+    version   = 1.001,
+    comment   = "companion to scrn-int.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local next = next
+
+-- We delay preroll because it needs a font and don't want to force a font load (at
+-- startup) because we preset a field so some are tokenlists as we need to preserve
+-- catcodes.
+
+interactions         = { }
+interactions.general = interactions.general or { }
+local general        = interactions.general
+
+local expand_macro   = token.expand_macro
+
+local prerolled      = { }
+local identitydata   = { }
+
+local function setidentityvariable(key,value)
+    prerolled[key] = value
+end
+
+table.setmetatableindex(identitydata, function(t,k)
+    if k == "keywords" then
+        k = "keyword"
+    end
+    -- fetch and process at the tex end (catcode etc)
+    expand_macro("scrn_identity_get",true,k)
+    -- return the registered return value
+    local v = prerolled[k] or ""
+    if k == "title" and v == "" then
+        v = tex.jobname
+    end
+    return v
+end)
+
+function general.getidentityvariable(name)
+    return identitydata[name]
+end
+
+function general.getidentity()
+    return identitydata
+end
+
+interfaces.implement {
+    name      = "setidentityvariable",
+    actions   = setidentityvariable,
+    arguments = "2 strings",
+}

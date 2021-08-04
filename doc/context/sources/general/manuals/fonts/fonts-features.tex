@@ -1,4 +1,4 @@
-% language=uk
+% language=us runpath=texruns:manuals/fonts
 
 \startcomponent fonts-features
 
@@ -883,7 +883,7 @@ results might differ a bit.
         \stopcombination
     \stopplacefigure
 
-    \definefont[emoji][file:emojionecolor-svginot.ttf*default,svg]
+    \definefont[Emoji][file:emojionecolor-svginot.ttf*default,svg]
 
     \def\FourFaces{\char128104\zwj\char128105\zwj\char128102\zwj\char128102\relax}
 
@@ -892,67 +892,67 @@ results might differ a bit.
     \def\Boy  {\char"1F466\relax}
     \def\Girl {\char"1F467\relax}
 
-    How do we know what faces add up to the ligature {\emoji\Man \zwj \Woman \zwj
+    How do we know what faces add up to the ligature {\Emoji\Man \zwj \Woman \zwj
     \Girl \zwj \Boy} and how are we supposed to know that there should {\darkgray
     \type {zwj}} in between? When we input four faces separated by zero width
     joiners, we get a four face symbol instead. The reason for having the joiners in
     between is probably to avoid unexpected ligatures. The sequence \type {man},
     \type {woman}, \type {boy}, \type {boy} gives \type {family}:
     %
-    {\emoji\Man}   + {\darkgray \type {zwj}}
-    {\emoji\Woman} + {\darkgray \type {zwj}}
-    {\emoji\Boy}   + {\darkgray \type {zwj}}
-    {\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Boy},
+    {\Emoji\Man}   + {\darkgray \type {zwj}}
+    {\Emoji\Woman} + {\darkgray \type {zwj}}
+    {\Emoji\Boy}   + {\darkgray \type {zwj}}
+    {\Emoji\Boy}   = {\Emoji\Man \zwj \Woman \zwj \Boy \zwj \Boy},
     %
     but two girls also work:
     %
-    {\emoji\Man}   + {\darkgray \type {zwj}}
-    {\emoji\Woman} + {\darkgray \type {zwj}}
-    {\emoji\Girl}  + {\darkgray \type {zwj}}
-    {\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Girl},
+    {\Emoji\Man}   + {\darkgray \type {zwj}}
+    {\Emoji\Woman} + {\darkgray \type {zwj}}
+    {\Emoji\Girl}  + {\darkgray \type {zwj}}
+    {\Emoji\Girl}  = {\Emoji\Man \zwj \Woman \zwj \Girl \zwj \Girl},
     %
     so does a mixture of kids:
     %
-    {\emoji\Man}   + {\darkgray \type {zwj}}
-    {\emoji\Woman} + {\darkgray \type {zwj}}
-    {\emoji\Girl}  + {\darkgray \type {zwj}}
-    {\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Boy},
+    {\Emoji\Man}   + {\darkgray \type {zwj}}
+    {\Emoji\Woman} + {\darkgray \type {zwj}}
+    {\Emoji\Girl}  + {\darkgray \type {zwj}}
+    {\Emoji\Boy}   = {\Emoji\Man \zwj \Woman \zwj \Girl \zwj \Boy},
     %
     although (at least currently):
     %
-    {\emoji\Man}   + {\darkgray \type {zwj}}
-    {\emoji\Woman} + {\darkgray \type {zwj}}
-    {\emoji\Boy}   + {\darkgray \type {zwj}}
-    {\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Girl},
+    {\Emoji\Man}   + {\darkgray \type {zwj}}
+    {\Emoji\Woman} + {\darkgray \type {zwj}}
+    {\Emoji\Boy}   + {\darkgray \type {zwj}}
+    {\Emoji\Girl}  = {\Emoji\Man \zwj \Woman \zwj \Boy \zwj \Girl},
     %
-    gives twin boys. Of course the real family emoj is {\emoji\char"1F46A}.
+    gives twin boys. Of course the real family emoj is {\Emoji\char"1F46A}.
 
     In our times for sure many combinations are possible, so:
     %
-    {\emoji\Man}  + {\darkgray \type {zwj}}
-    {\emoji\Man}  + {\darkgray \type {zwj}}
-    {\emoji\Girl} + {\darkgray \type {zwj}}
-    {\emoji\Girl} = {\emoji\Man \zwj \Man \zwj \Girl \zwj \Girl},
+    {\Emoji\Man}  + {\darkgray \type {zwj}}
+    {\Emoji\Man}  + {\darkgray \type {zwj}}
+    {\Emoji\Girl} + {\darkgray \type {zwj}}
+    {\Emoji\Girl} = {\Emoji\Man \zwj \Man \zwj \Girl \zwj \Girl},
     %
     indeed gives a family, but I wonder at what point cultural bias will creep into
     font design. One can even wonder how clothing and haircut will demand frequent
-    font updates: {\emoji\char"1F46B}, {\emoji\char"1F46C}, {\emoji\char"1F46D}.
+    font updates: {\Emoji\char"1F46B}, {\Emoji\char"1F46C}, {\Emoji\char"1F46D}.
 
     In the math alphabets we have a couple of annoying holes because some characters
     were already present in \UNICODE. The bad thing here is that we now always have
     to deal with these exceptions. But not so with emojis because here eventually all
     variants will show up. Where a character \type {A} in red or blue uses the same
-    code point, a white telephone {\emoji\char"1F57E} and black telephone
-    {\emoji\char"1F57F} have their own. And because obsolete scripts are already
+    code point, a white telephone {\Emoji\char"1F57E} and black telephone
+    {\Emoji\char"1F57F} have their own. And because obsolete scripts are already
     supported in \UNICODE\ and more get added, we can expect old artifacts also
-    showing up at some time. Soon the joystick {\emoji\char"1F579} will be an unknown
+    showing up at some time. Soon the joystick {\Emoji\char"1F579} will be an unknown
     item to most of us, while the \MICROSOFT\ hololens migth get its slot.
 
     \startplacefigure[title={Will all animals come in stages of development?}]
         \startcombination [3*1]
-            {\scale[width=.3\textwidth]{\emoji\char"1F423}} {\type{U+1F423}: hatching chick}
-            {\scale[width=.3\textwidth]{\emoji\char"1F424}} {\type{U+1F424}: baby chick}
-            {\scale[width=.3\textwidth]{\emoji\char"1F425}} {\type{U+1F425}: front-facing baby chick}
+            {\scale[width=.3\textwidth]{\Emoji\char"1F423}} {\type{U+1F423}: hatching chick}
+            {\scale[width=.3\textwidth]{\Emoji\char"1F424}} {\type{U+1F424}: baby chick}
+            {\scale[width=.3\textwidth]{\Emoji\char"1F425}} {\type{U+1F425}: front-facing baby chick}
         \stopcombination
     \stopplacefigure
 

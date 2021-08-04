@@ -177,7 +177,11 @@ function environment.usemodules(prefix,askedname,truename)
                 for i=1,#prefixes do
                     -- todo: reconstruct name i.e. basename
                     local thename = prefixes[i] .. "-" .. truename
-                    if usemodule(thename) then
+                    if thename == tex.jobname then
+                        -- in case we process a module
+                        status = 1
+                        break
+                    elseif usemodule(thename) then
                         status = 1
                         break
                     end

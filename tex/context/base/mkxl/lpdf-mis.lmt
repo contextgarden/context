@@ -186,21 +186,7 @@ end
 lpdf.registerpagefinalizer    (flushpageactions,    "page actions")
 lpdf.registerdocumentfinalizer(flushdocumentactions,"document actions")
 
---- info : this can change and move elsewhere
-
-local identity = { }
-
-function codeinjections.setupidentity(specification)
-    for k, v in next, specification do
-        if v ~= "" then
-            identity[k] = v
-        end
-    end
-end
-
-function codeinjections.getidentityvariable(name)
-    return identity[name]
-end
+-- the code above will move to scrn-ini
 
 local done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
 
@@ -212,22 +198,21 @@ local function setupidentity()
         local time     = metadata.time
         local jobname  = environment.jobname or tex.jobname or "unknown"
         --
+        local identity = interactions.general.getidentity()
+        --
         local title = identity.title
-        if not title or title == "" then
-            title = tex.jobname
-        end
         addtoinfo("Title", pdfunicode(title), title)
-        local subtitle = identity.subtitle or ""
+        local subtitle = identity.subtitle
         if subtitle ~= "" then
             addtoinfo("Subject", pdfunicode(subtitle), subtitle)
         end
-        local author = identity.author or ""
+        local author = identity.author
         if author ~= "" then
             addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
         end
         addtoinfo("Creator", pdfunicode(creator), creator)
         addtoinfo("CreationDate", pdfstring(formattedtimestamp(time)))
-        local date = identity.date or ""
+        local date = identity.date
         local pdfdate = date and formattedtimestamp(date)
         if pdfdate then
             addtoinfo("ModDate", pdfstring(pdfdate), date)
@@ -236,7 +221,7 @@ local function setupidentity()
             -- and if not provided that way we use the creation time instead
             addtoinfo("ModDate", pdfstring(formattedtimestamp(time)),time)
         end
-        local keywords = identity.keywords or ""
+        local keywords = identity.keywords
         if keywords ~= "" then
             keywords = concat(settings_to_array(keywords), " ")
             addtoinfo("Keywords", pdfunicode(keywords), keywords)

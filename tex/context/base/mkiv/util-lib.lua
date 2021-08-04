@@ -245,6 +245,8 @@ end
 
 resolvers.locatelib = locate -- for now
 
+-- swiglib is no longer officially supported
+
 do
 
     local report_swiglib = logs.reporter("swiglib")

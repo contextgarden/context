@@ -14,7 +14,8 @@ if not modules then modules = { } end modules ['luat-log'] = {
 -- mtxrun.
 --
 -- We use different targets: "terminal" "logfile", "both" and have no number
--- channel.
+-- channel. Actually, the log channels are now numeric (1,2,3) as with other
+-- symbolics.
 
 local next, type, select, print = next, type, select, print
 local format, gmatch, find = string.format, string.gmatch, string.find
@@ -120,21 +121,17 @@ do
                 status_yes    = formatters["%-15s : %s\n"],
                 status_nop    = formatters["%-15s :\n"],
             },
-            targets = setmetatableindex( {
---                 logfile  = "logfile",
---                 log      = "logfile",
---                 file     = "logfile",
---                 console  = "terminal",
---                 terminal = "terminal",
---                 both     = "terminal_and_logfile",
+            targets = setmetatableindex( { -- 1, 2, 3,
                 logfile  = 2,
                 log      = 2,
                 file     = 2,
                 console  = 1,
                 terminal = 1,
                 both     = 3,
---             }, function(t,k) local v = "terminal_and_logfile" t[k] = v return v end),
-            }, function(t,k) local v = 3 t[k] = v return v end),
+            },
+            function(t,k)
+                local v = 3 t[k] = v return v
+            end),
         },
         ansi = {
             formats = {
@@ -149,17 +146,13 @@ do
                 status_yes    = formatters["[0;33m%-15s [0;1m:[0m %s\n"],
                 status_nop    = formatters["[0;33m%-15s [0;1m:[0m\n"],
             },
-            targets = setmetatableindex( {
+            targets = setmetatableindex( { 1, 1, 1,
                 logfile  = false,
                 log      = false,
                 file     = false,
---                 console  = "terminal",
---                 terminal = "terminal",
---                 both     = "terminal",
                 console  = 1,
                 terminal = 1,
                 both     = 1,
---             }, function(t,k) local v = "terminal" t[k] = v return v end),
             }, function(t,k) local v = 1 t[k] = v return v end),
         }
     }
@@ -261,7 +254,7 @@ do
             whereto = "both"
             target  = targets[whereto]
         end
-        if target == "terminal" or target == "terminal_and_logfile" then
+        if target == targets.both or target == targets.terminal then
             logs.flush = io.flush
         else
             logs.flush = ignore

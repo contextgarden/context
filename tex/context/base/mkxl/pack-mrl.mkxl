@@ -189,7 +189,7 @@
         \s!height\linewidth
         \s!depth \zeropoint}}
 
-% \let\dovlwdhtdp\pack_rule_vl_indeed % used elsewhere .. not any more
+\let\dovlwdhtdp\pack_rule_vl_indeed % used elsewhere .. in font manual
 
 %D \macros
 %D   {hairline, thinrule, thinrules, setupthinrules}

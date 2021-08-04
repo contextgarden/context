@@ -159,9 +159,9 @@ checkers.mapping = mapping
 -- sure the dimensions are known at the lua and tex end. For previous variants see
 -- the mkiv files or older lmtx files. I decided to just drop the old stuff here.
 
-function checkers.placeholder(font,char)
-    local category = chardata[char].category or "lu" -- todo: unknown
-    local fakedata = mapping[category]
+function checkers.placeholder(font,char,category)
+    local category = category or chardata[char].category or "lu" -- todo: unknown
+    local fakedata = mapping[category] or mapping.lu
     local tfmdata  = fontdata[font]
     local units    = tfmdata.parameters.units or 1000
     local slant    = (tfmdata.parameters.slant or 0)/65536

@@ -16,6 +16,8 @@
 
 \startmodule[present-steps]
 
+\pushoverloadmode
+
 \startluacode
 
 moduledata.steps = moduledata.steps or { }
@@ -167,6 +169,8 @@ end
      \fi
    \fi
    \ctxlua{moduledata.steps.stopsubstep()}}
+
+\popoverloadmode
 
 \stopmodule
 

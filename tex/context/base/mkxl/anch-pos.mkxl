@@ -286,6 +286,9 @@
 
 % beware we need to pass \somethingexpanded or { }
 
+% Is this really always needed? We use \enabletextarearegistration for page areas so why
+% not also for this.
+
 \protected\def\anch_mark_column_box#1#2% box n
   {\global\advance\c_anch_column\plusone
    \clf_markregionboxtaggedn#1{columnarea:\the\c_anch_column}#2\relax} % extra height

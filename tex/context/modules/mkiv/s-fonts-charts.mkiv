@@ -54,6 +54,7 @@
 
 \starttexdefinition unexpanded FontChartSetLegend #1
     \dontleavehmode
+%     \kern .5mm
     \setbox\scratchbox\hbox to 1cm \bgroup
         \infofont\hss#1\hss
     \egroup
@@ -89,7 +90,8 @@
 
         local filename = settings.filename or settings.name or ""
         local fontid   = true
-        local newpage  = settings.page == interfaces.variables.yes
+        local newpage  = settings.page   == interfaces.variables.yes
+        local all      = settings.option == interfaces.variables.all
 
         if filename ~= "" then
             fontid = fonts.definers.internal({ name = filename, size = "10pt" },"chartfont")
@@ -101,7 +103,7 @@
         local chars    = data.characters
 
         for u in table.sortedhash(chars) do
-            if u >= private then
+            if not all and u >= private then
                 break
             else
                 ranges[div(u,0xFF)] = true
@@ -127,6 +129,7 @@
                 context.offinterlineskip()
                 ctx_noslot()
                 for i=0,0xF do
+                    ctx_gap()
                     ctx_setlegend(formatters["%03X"](r*0x10+i))
                 end
                 r = r * 0xFF
@@ -169,7 +172,9 @@
 
 \starttext
 
-    \showfontchart[filename=aegean,page=yes]
+    \showfontchart[filename=texgyredejavu-math.otf,page=yes,option=all]
+
+%     \showfontchart[filename=aegean,page=yes]
 %     \showfontchart[filename=veramono.ttf,page=yes]
 %     \showfontchart[filename=CoelacanthSubhdHeavy.otf,page=yes]
 

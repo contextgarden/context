@@ -15,14 +15,14 @@
 
 \installcorenamespace{multilingual}
 
-\immutable\setvalue{\??multilingual    czech}{cs}
-\immutable\setvalue{\??multilingual   german}{de}
-\immutable\setvalue{\??multilingual  english}{en}
-\immutable\setvalue{\??multilingual   french}{fr}
-\immutable\setvalue{\??multilingual  italian}{it}
-\immutable\setvalue{\??multilingual    dutch}{nl}
-\immutable\setvalue{\??multilingual  persian}{pe}
-\immutable\setvalue{\??multilingual romanian}{ro}
+\immutable\defcsname\??multilingual    czech\endcsname{cs}
+\immutable\defcsname\??multilingual   german\endcsname{de}
+\immutable\defcsname\??multilingual  english\endcsname{en}
+\immutable\defcsname\??multilingual   french\endcsname{fr}
+\immutable\defcsname\??multilingual  italian\endcsname{it}
+\immutable\defcsname\??multilingual    dutch\endcsname{nl}
+\immutable\defcsname\??multilingual  persian\endcsname{pe}
+\immutable\defcsname\??multilingual romanian\endcsname{ro}
 
 \permanent\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\lastnamedcs\else en\fi}
 \permanent\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\lastnamedcs\else en\fi}

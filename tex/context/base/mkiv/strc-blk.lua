@@ -95,8 +95,11 @@ function blocks.setstate(state,name,tag)
     end
 end
 
-function blocks.select(state,name,tag,criterium)
-    criterium = criterium or "text"
+
+local function selectblocks(state,name,tag,criterium,action)
+    if not criterium or criterium == "" then
+        criterium = "text"
+    end
     if find(tag,"=",1,true) then
         tag = ""
     end
@@ -115,20 +118,39 @@ function blocks.select(state,name,tag,criterium)
         local metadata = ri.metadata
         if names[metadata.name] then
             if all then
-                printblock(ri.index,name,ri.data,hide)
+                if action(ri.index,name,ri.data,hide) then
+                    return
+                end
             else
                 local mtags = metadata.tags
                 if mtags then
                     for tag, sta in next, tags do
                         if mtags[tag] then
-                            printblock(ri.index,name,ri.data,hide)
-                            break
+                            if action(ri.index,name,ri.data,hide) then
+                                return
+                            else
+                                break
+                            end
                         end
                     end
                 end
             end
         end
     end
+end
+
+function blocks.select(state,name,tag,criterium)
+    selectblocks(state,name,tag,criterium,printblock)
+end
+
+function blocks.empty(state,name,tag,criterium)
+    local found = false
+    local function checkempty(_,_,data)
+        found = type(data) == "string" and find(data,"%S")
+        return found
+    end
+    selectblocks(state,name,tag,criterium,checkempty)
+    return not found
 end
 
 function blocks.save(name,tag,userdata,buffer) -- wrong, not yet adapted
@@ -183,6 +205,7 @@ function blocks.save(name,tag,userdata,buffer) -- wrong, not yet adapted
     buffers.erase(buffer)
 end
 
+
 -- interface
 
 implement { name = "definestructureblock",       actions = blocks.define,       arguments = "string" }
@@ -190,3 +213,11 @@ implement { name = "savestructureblock",         actions = blocks.save,         
 implement { name = "selectstructureblock",       actions = blocks.select,       arguments = "4 strings" }
 implement { name = "setstructureblockstate",     actions = blocks.setstate,     arguments = "3 strings" }
 implement { name = "structureblockuservariable", actions = blocks.uservariable, arguments = { "integer", "string" } }
+
+implement {
+    name      = "doifelsestructureblocksempty",
+    arguments = "3 strings",
+    actions   = function(name,tag,criterium)
+        commands.doifelse(blocks.empty(false,name,tag,criterium))
+    end,
+}

@@ -868,7 +868,7 @@ function scripts.context.run(ctxdata,filename)
                 --
                 local usedname = jobname
                 local engine   = analysis.engine or "luametatex"
-                if lmtx and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
+                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
                     mainfile = "" -- we don't need that
                     usedname = fulljobname
                 end

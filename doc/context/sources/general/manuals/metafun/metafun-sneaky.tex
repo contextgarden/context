@@ -159,9 +159,12 @@ The result is predictable:
 
 Of course there is also a \type {cld} approach possible:
 
+% context.startMPpage { offset = "10pt" }
+% context.stopMPpage()
+
 \startbuffer
 \startluacode
-  context.startMPcode() -- context.startMPpage { offset = "10pt" }
+  context.startMPcode()
     for i=0,100,20 do
       context ( [[draw fullcircle scaled (%s * cm)
         withcolor "darkmagenta" withpen pencircle scaled 1cm ;]], i)
@@ -170,7 +173,7 @@ Of course there is also a \type {cld} approach possible:
       context ( [[draw fullcircle scaled (%s * cm)
         withcolor "darkcyan" withpen pencircle scaled 1cm ;]], i)
     end
-  context.stopMPcode() -- context.stoppage()
+  context.stopMPcode()
 \stopluacode
 \stopbuffer
 
@@ -185,8 +188,6 @@ example is scaled down:
 All these methods are rather efficient because all happens in memory and without
 intermediate runs. It is this kind of features that the tight integration of \TEX,
 \METAPOST\ and \LUA\ make possible.
-
-\stoptext
 
 \stopsection
 

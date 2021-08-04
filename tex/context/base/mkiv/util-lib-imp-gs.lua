@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['util-lib-imp-gs'] = {
     license   = "see context related readme files",
 }
 
+if true then
+    logs.report("warning","swiglib is no longer supported")
+end
+
 local insert = table.insert
 local formatters = string.formatters
 

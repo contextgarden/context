@@ -168,4 +168,6 @@
 \permanent\protected\def\processblocks{\strc_blocks_select   [process]}
 \permanent\protected\def\selectblocks {\strc_blocks_select   [use]}
 
+\permanent\protected\def\doifelseblocksempty{\clf_doifelsestructureblocksempty} % {name}{tag}{criterium}
+
 \protect \endinput

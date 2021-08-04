@@ -91,20 +91,15 @@
 \installcommandhandler \????userdata            {userdata}            \????userdata
 \installcommandhandler \????userdataalternative {userdataalternative} \????userdataalternative
 
+\appendtoks
+    \setuevalue{\e!start\currentuserdata}{\dodoubleempty\userdata_start_instance[\currentuserdata]}%
+    \setuevalue{\e!stop \currentuserdata}{\userdata_stop_instance}%
+\to \everydefineuserdata
+
 \unexpanded\def\startuserdata
   {\begingroup
    \let\currentuserdata\empty
    \doifelsenextoptionalcs\userdata_start_delayed\userdata_start_indeed}
-
-% This variant works only when the userdata instance exists while the assignment check
-% can also be used with undefined instances which falls back to the global settings.
-%
-% \def\userdata_start_delayed[#1]%
-%   {\ifcsname\nameduserdatahash{\detokenize\expandafter{\normalexpanded{#1}}}\s!parent\endcsname
-%      \expandafter\userdata_start_delayed_name
-%    \else
-%      \expandafter\userdata_start_delayed_parameters
-%    \fi[#1]}
 
 \def\userdata_start_delayed[#1]%
   {\doifelseassignmentcs{#1}%
@@ -121,26 +116,27 @@
    \checkuserdataparent
    \doifelsenextoptionalcs\userdata_start_delayed_parameters\userdata_start_indeed}
 
-\def\userdata_start_indeed
-  {\grabbufferdatadirect\s!userdata{\csstring\startuserdata}{\csstring\stopuserdata}}
+\unexpanded\def\userdata_start_instance[#1][#2]%
+  {\begingroup
+   \edef\currentuserdata{#1}%
+   \setupcurrentuserdata[#2]%
+   \grabbufferdatadirect
+     {\s!userdata:\currentuserdata}%
+     {\e!start\currentuserdata}%
+     {\e!stop \currentuserdata}}
 
-% \unexpanded\def\stopuserdata
-%   {\useuserdatastyleandcolor\c!style\c!color
-%    \usealignparameter\userdataparameter
-%    \edef\currentuserdataalternative{\userdataparameter\c!alternative}%
-%    \ifcsname\currentuserdataalternativehash\s!parent\endcsname \else
-%      \let\currentuserdataalternative\s!default
-%    \fi
-%    \edef\p_renderingsetup{\userdataalternativeparameter\c!renderingsetup}%
-%    \directsetup\p_renderingsetup
-%    \endgroup}
+\def\userdata_start_indeed
+  {\grabbufferdatadirect
+     {\s!userdata:\currentuserdata}%
+     {\csstring\startuserdata}%
+     {\csstring\stopuserdata}}
 
 \unexpanded\def\stopuserdata
-  {\userdataparameter\c!before % HH: moved, so we obey the outer spacing
-   \dostarttagged\t!userdata\currentuserdata % HH: added, maybe move up ?
+  {\userdataparameter\c!before
+   \dostarttagged\t!userdata\currentuserdata
    \begingroup
    \useuserdatastyleandcolor\c!style\c!color
-   \usealignparameter\userdataparameter % HH: added
+   \usealignparameter\userdataparameter
    \edef\currentuserdataalternative{\userdataparameter\c!alternative}%
    \ifcsname\currentuserdataalternativehash\s!parent\endcsname \else
      \let\currentuserdataalternative\s!default
@@ -150,14 +146,13 @@
    \directsetup\p_renderingsetup
    \endgroup
    \dostoptagged
-   \userdataparameter\c!after % HH: moved
+   \userdataparameter\c!after
    \endgroup}
 
-\unexpanded\def\getuserdata
-  {\getbufferdata[\s!userdata]}
+\let\userdata_stop_instance\stopuserdata
 
-\unexpanded\def\getinlineuserdata
-  {\inlinebuffer[\s!userdata]}
+\unexpanded\def\getuserdata      {\getbufferdata[\s!userdata]}
+\unexpanded\def\getinlineuserdata{\inlinebuffer[\s!userdata]}
 
 \defineuserdataalternative
   [\s!default]

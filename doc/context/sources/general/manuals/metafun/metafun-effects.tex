@@ -247,7 +247,8 @@ fill p rotated 330 withcolor (0,0,1)   withtransparency("\MPvar{a}",.5) ;
     }
     \startcombination
       {\useMPgraphic{test}{a=normal}}     {\tttf normal}
-      {\useMPgraphic{test}{a=multiply}}   {\tttf multiply}
+    % {\useMPgraphic{test}{a=multiply}}   {\tttf multiply} % here the mu in multiply triggers lookahead in lmtx
+      {\useMPgraphic{test}{a=2}}          {\tttf multiply} % so we go for the numeric value instead (for now)
       {\useMPgraphic{test}{a=screen}}     {\tttf screen}
       {\useMPgraphic{test}{a=overlay}}    {\tttf overlay}
       {\useMPgraphic{test}{a=softlight}}  {\tttf softlight}

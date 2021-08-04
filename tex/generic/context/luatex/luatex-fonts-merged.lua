@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-07-30 00:41
+-- merge date  : 2021-08-04 17:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -2255,9 +2255,12 @@ function io.copydata(source,target,action)
   flush()
  end
 end
-function io.savedata(filename,data,joiner)
- local f=open(filename,"wb")
+function io.savedata(filename,data,joiner,append)
+ local f=open(filename,append and "ab" or "wb")
  if f then
+  if append and joiner and f:seek("end")>0 then
+   f:write(joiner)
+  end
   if type(data)=="table" then
    f:write(concat(data,joiner or ""))
   elseif type(data)=="function" then
@@ -3118,7 +3121,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
+local format,gsub,rep,sub,find,char=string.format,string.gsub,string.rep,string.sub,string.find,string.char
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
 local unpack,concat=table.unpack,table.concat
@@ -3471,12 +3474,20 @@ local template=[[
 return function(%s) return %s end
 ]]
 local pattern=Cs(Cc('"')*(
- (1-S('"\\\n\r'))^1+P('"')/'\\"'+P('\\')/'\\\\'+P('\n')/'\\n'+P('\r')/'\\r'
+ (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\020'+P('\n')/'\\013'+P('\r')/'\\010'
 )^0*Cc('"'))
 patterns.escapedquotes=pattern
 function string.escapedquotes(s)
  return lpegmatch(pattern,s)
 end
+local pattern=(1-P("\\"))^1;pattern=Cs (
+ pattern*((P("\\")/""*(digit^-3/function(s) return char(tonumber(s)) end))+pattern )^1
+)
+patterns.unescapedquotes=pattern
+function string.unescapedquotes(s)
+ return lpegmatch(pattern,s) or s
+end
+string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
 local preamble=""
 local environment={
  global=global or _G,

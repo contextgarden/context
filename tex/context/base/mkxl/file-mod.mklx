@@ -259,4 +259,7 @@
 
 \aliased\let\fetchruntimecommand\fetchmodulecommand % obsolete
 
+% \permanent\protected\def\moduleoverloaded
+%   {\enforced}
+
 \protect \endinput

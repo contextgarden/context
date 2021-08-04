@@ -10,7 +10,7 @@ local sql     = utilities.sql
 local tracers = { }
 sql.tracers   = tracers
 
-sql.setmethod("swiglib")
+sql.setmethod("library")
 
 local gsub, lower = string.gsub, string.lower
 

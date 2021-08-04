@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['util-lib-imp-gm'] = {
     license   = "see context related readme files",
 }
 
+if true then
+    logs.report("warning","swiglib is no longer supported")
+end
+
 local graphicmagick     = utilities.graphicmagick or { }
 utilities.graphicmagick = graphicmagick
 

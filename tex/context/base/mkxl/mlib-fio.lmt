@@ -286,6 +286,7 @@ function mplib.new(specification)
      -- random_seed    = specification.seed,
         utf8_mode      = true,
         text_mode      = true,
+        show_mode      = true,
         -- not used
      -- noninteractive = true;
      -- ini_version    = true,

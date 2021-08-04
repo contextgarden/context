@@ -148,8 +148,8 @@
 
 %D Interfaces:
 
-\protected\def\strc_labels_command{\setfalse\c_strc_constructions_number_keep\strc_descriptions_command}
-\protected\def\strc_labels_current{\settrue \c_strc_constructions_number_keep\strc_descriptions_command}
+\protected\def\strc_labels_command{\setfalse\c_strc_constructions_number_keep\nameddescription}
+\protected\def\strc_labels_current{\settrue \c_strc_constructions_number_keep\nameddescription}
 
 \protected\def\strc_labels_next   {\strc_constructions_next_indeed \namedlabelparameter} % #1#2
 \protected\def\strc_labels_reset  {\strc_constructions_reset_indeed\namedlabelparameter} % #1#2

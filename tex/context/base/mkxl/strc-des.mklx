@@ -67,9 +67,9 @@
         \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%
     \fi
     % We can combine these but in tracing (or errors) using a different caller is nicer.
-    \frozen\protected\instance\edefcsname        \currentdescription\endcsname{\strc_descriptions_command[\currentdescription]}%
-    \frozen\protected\instance\edefcsname\e!start\currentdescription\endcsname{\strc_descriptions_start  [\currentdescription]}%
-    \frozen\protected\instance\edefcsname\e!stop \currentdescription\endcsname{\strc_descriptions_stop}%
+    \frozen\protected\instance\edefcsname        \currentdescription\endcsname{\nameddescription[\currentdescription]}%
+    \frozen\protected\instance\edefcsname\e!start\currentdescription\endcsname{\startnameddescription[\currentdescription]}%
+    \frozen\protected\instance \defcsname \e!stop\currentdescription\endcsname{\stopnameddescription}%
 \to \everydefinedescription
 
 \let\p_strc_constructions_title \empty
@@ -99,7 +99,7 @@
 
 % A bit over the top, the optional title but mkii has it too.
 
-\tolerant\protected\def\strc_descriptions_start[#1]#*[#2]%
+\tolerant\permanent\protected\def\startnameddescription[#1]#*[#2]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \ifhastok={#2}%
@@ -130,13 +130,13 @@
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
-\protected\def\strc_descriptions_stop
+\permanent\protected\def\stopnameddescription
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
 % \description [reference]         text \par
 % \description [reference] {title} text \par
 
-\tolerant\protected\def\strc_descriptions_command[#1]#*[#2]%
+\tolerant\permanent\protected\def\nameddescription[#1]#*[#2]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \ifhastok={#2}%

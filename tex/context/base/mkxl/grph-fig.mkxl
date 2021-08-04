@@ -78,7 +78,9 @@
 \installcorenamespace{typesettingfile}
 
 \tolerant\permanent\protected\def\definetypesetting[#1]#*[#2]#*[#3]% <name> options settings-a
-  {\ifparameter#1\or\setuvalue{\??typesettingfile#1}{\grph_typesetting_process_indeed{#2}{#3}}\fi}
+  {\ifparameter#1\or
+     \frozen\instance\protected\defcsname\??typesettingfile#1\endcsname{\grph_typesetting_process_indeed{#2}{#3}}%
+   \fi}
 
 \tolerant\permanent\protected\def\typesetfile[#1]#*[#2]#*[#3]% <name> filename settings-b | filename options settings
   {\ifcsname\??typesettingfile#1\endcsname

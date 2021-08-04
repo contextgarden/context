@@ -1,4 +1,4 @@
-% language=us runpath=texruns:manuals/metafun macros=mkvi
+% language=us runpath=texruns:manuals/metafun
 
 % author    : Hans Hagen
 % copyright : PRAGMA ADE & ConTeXt Development Team
@@ -32,8 +32,15 @@
 % comment   : Before I started updating the manual to lmtx (luametafun) I made sure that it
 %             processed okay in the february 2021 version of lmtx. The runtime for 448 pages
 %             (which is 20 more than the previous test) is some 16.5 seconds (just below 16
-%             with compact fonts). So we can safely conclude that we're not worse off with
+%             with compact fonts). So we can safely conclude that we're not worse of with
 %             respect to performance. (I use the same machine.)
+%
+% comment   : June 31 2020, in the process of checking manuals with the runpath feature, the
+%             manual has 414 (some mkii and mkiv stuff has been removed) pages and processing
+%             takes 14.2 seconds (13.7 with compact fonts). With about 29 pps for the removed
+%             pages we then come to about 15.5 seconds so again we gained some (which is what
+%             I expect with the more efficient \LUA|-|\METAPOST\ interfacing). It also means
+%             that \LUAMETATEX|-|\LMTX\ is now comparable with \LUAJITTEX|-|\MKIV.
 
 % \enableexperiments[fonts.compact]
 

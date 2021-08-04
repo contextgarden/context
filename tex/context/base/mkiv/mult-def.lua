@@ -7271,6 +7271,62 @@ return {
    ["pe"]="بنویس‌درثبت",
    ["ro"]="scrieinregistru",
   },
+  -- we still need to add some new ones here as i completely forgot that it's
+  -- needed ... maybe ws has a backlog for setups that we can use
+  ["definesavebuffer"]={
+   ["en"]="startsavebuffer",
+  },
+  ["startnamedtyping"]={
+   ["en"]="startnamedtyping",
+  },
+  ["stopnamedtyping"]={
+   ["en"]="stopnamedtyping",
+  },
+  ["namedconstruction"]={
+   ["en"]="namedconstruction",
+  },
+  ["startnamedconstruction"]={
+   ["en"]="startnamedconstruction",
+  },
+  ["stopnamedconstruction"]={
+   ["en"]="stopnamedconstruction",
+  },
+  ["nameddescription"]={
+   ["en"]="nameddescription",
+  },
+  ["startnameddescription"]={
+   ["en"]="startnameddescription",
+  },
+  ["stopnameddescription"]={
+   ["en"]="stopnameddescription",
+  },
+  ["namedenumeration"]={
+   ["en"]="namedenumeration",
+  },
+  ["startnamedenumeration"]={
+   ["en"]="startnamedenumeration",
+  },
+  ["stopnamedenumeration"]={
+   ["en"]="stopnamedenumeration",
+  },
+  ["startnamedsection"]={
+   ["en"]="startnamedsection",
+  },
+  ["stopnamedsection"]={
+   ["en"]="stopnamedsection",
+  },
+  ["startnamedmatrix"]={
+   ["en"]="startnamedmatrix",
+  },
+  ["stopnamedmatrix"]={
+   ["en"]="stopnamedmatrix",
+  },
+  ["startnamedsubformulas"]={
+   ["en"]="startnamedsubformulas",
+  },
+  ["stopnamedsubformulas"]={
+   ["en"]="stopnamedsubformulas",
+  },
  },
  ["constants"]={
   ["action"]={
@@ -12887,6 +12943,9 @@ return {
   ["namedtyping"]={
    ["en"]="namedtyping",
   },
+  ["namednotation"]={
+   ["en"]="namednotation",
+  },
   ["next"]={
    ["cs"]="dalsi",
    ["de"]="folgende",
@@ -14504,6 +14563,12 @@ return {
    ["nl"]="antwoordgebied",
    ["pe"]="answerarea",
    ["ro"]="answerarea",
+  },
+  ["append"]={
+   ["en"]="append",
+  },
+  ["prepend"]={
+   ["en"]="prepend",
   },
   ["appendices"]={
    ["cs"]="dodatky",

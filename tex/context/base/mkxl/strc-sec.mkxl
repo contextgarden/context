@@ -847,7 +847,7 @@
 \permanent\tolerant\protected\def\placeheadtext[#1]%
   {\dontleavehmode
    \begingroup
-   \protected\def\\{\space}% messy here, but the default (and needs to be grouped)
+   \enforced\permanent\protected\def\\{\space}% messy here, but the default (and needs to be grouped)
    \global\settrue\headisdisplay % triggers interlinespace checking
    \edef\currenthead{#1}% maybe only when #1 is given
    \strc_rendering_initialize_style_and_color\c!textstyle\c!textcolor

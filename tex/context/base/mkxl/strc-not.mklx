@@ -140,11 +140,11 @@
      {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
       \edefcsname\??note    #tag:\s!parent\endcsname{\??note#parent}% see later for \s!note
       \edefcsname\??notation#tag:\s!parent\endcsname{\??notation#parent}}%
-   \instance\protected\edefcsname\e!next #tag\endcsname{\strc_notations_next   {#tag}{\number#level}}% obsolete
-   \instance\protected\edefcsname\c!reset#tag\endcsname{\strc_notations_reset  {#tag}{\number#level}}% obsolete
+   \instance\protected\edefcsname\e!next #tag\endcsname{\strc_notations_next{#tag}{\number#level}}% obsolete
+   \instance\protected\edefcsname\c!reset#tag\endcsname{\strc_notations_reset{#tag}{\number#level}}% obsolete
    \instance\protected\edefcsname        #tag\endcsname{\strc_notations_command[#tag]}%
-   \instance\protected\edefcsname\e!start#tag\endcsname{\strc_notations_start  [#tag]}%
-   \instance\protected\edefcsname\e!stop #tag\endcsname{\strc_notations_stop   }}
+   \instance\protected\edefcsname\e!start#tag\endcsname{\strc_notations_start[#tag]}%
+   \instance\protected\edefcsname\e!stop #tag\endcsname{\strc_notations_stop}}
 
 \let\m_strc_notation_sub\empty
 
@@ -187,7 +187,7 @@
 \let\p_strc_constructions_title \empty
 \let\p_strc_constructions_number\empty
 
-\protected\setvalue{\??constructioninitializer\v!notation}%
+\protected\defcsname\??constructioninitializer\v!notation\endcsname
   {\let         \currentnotation                 \currentconstruction
    \enforced\let\constructionparameter           \notationparameter
    \enforced\let\constructionnamespace           \??notation
@@ -212,7 +212,7 @@
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\protected\setvalue{\??constructionfinalizer\v!notation}%
+\protected\defcsname\??constructionfinalizer\v!notation\endcsname
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -280,32 +280,45 @@
    \strc_constructions_finalize
    \strc_notations_finalize}
 
-\tolerant\protected\def\strc_notations_start[#1]#*[#2]%
+\tolerant\protected\def\strc_notations_start
+  {\strc_notations_start_indeed{\csname\e!stop\currentnotation\endcsname}}
+
+\tolerant\protected\defcsname\e!start\e!namednotation\endcsname
+  {\strc_notations_start_indeed{\csname\e!stop\e!namednotation\endcsname}}
+
+\ifdefined\startnamednotation
+    % we're in the english interface
+\else
+    \tolerant\protected\def\startnamednotation
+      {\strc_notations_start_indeed\stopnamednotation}
+\fi
+
+\tolerant\protected\def\strc_notations_start_indeed#1#*[#2]#*[#3]%
   {\begingroup
-   \edef\currentnote{#1}%
-   \strc_constructions_initialize{#1}%
+   \edef\currentnote{#2}%
+   \strc_constructions_initialize{#2}%
    \strc_notes_synchronize
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
-   \ifhastok={#2}%
+   \ifhastok={#3}%
      \expandafter\strc_notations_start_setups
    \else
      \expandafter\strc_notations_start_reference
-   \fi[#2]}
+   \fi#1[#2]}
 
 \let\strc_notations_pickup_yes\relax
 
-\protected\def\strc_notations_start_setups[#1]%
-  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_setups_indeed[#1]{##1}}}%
+\protected\def\strc_notations_start_setups#1[#2]%
+  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_setups_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_setups_indeed[#1]#*#2%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
-\protected\def\strc_notations_start_reference[#1]%
-  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/\csname\e!stop\currentconstruction\endcsname{\strc_notations_start_reference_indeed[#1]{##1}}}%
+\protected\def\strc_notations_start_reference#1[#2]%
+  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_reference_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_reference_indeed[#1]#*#2%
@@ -323,7 +336,7 @@
 \protected\defcsname\??constructionnotehandler\v!notation\endcsname
   {\csname\??constructionnotehandler\currentconstructionhandler:\constructionparameter\c!type\endcsname}
 
-\protected\defcsname\??constructionnotehandler\v!notation:\endcsname% empty case
+\protected\defcsname\??constructionnotehandler\v!notation:\endcsname % empty case
   {[\currentconstructionhandler:\currentconstruction]}
 
 %D Here is a simple renderer for notes

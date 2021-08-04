@@ -26,7 +26,6 @@ if not modules then modules = { } end modules ['util-sql'] = {
 
 -- util-sql-imp-client.lua
 -- util-sql-imp-library.lua
--- util-sql-imp-swiglib.lua
 -- util-sql-imp-lmxsql.lua
 
 -- local sql = require("util-sql")
@@ -36,8 +35,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 --     { name = "data",type = "string" },
 -- }
 --
--- local execute = sql.methods.swiglib.execute
--- -- local execute = sql.methods.library.execute
+-- local execute = sql.methods.library.execute
 -- -- local execute = sql.methods.client.execute
 -- -- local execute = sql.methods.lmxsql.execute
 --
@@ -114,7 +112,6 @@ if optional then
     local methods = {
         ffi       = "mysql",
         library   = "mysql",
-        swiglib   = "mysql",
         postgress = "postgress",
         sqlite    = "sqlite",
         sqlite3   = "sqlite",
@@ -192,8 +189,7 @@ local function makeconverter(entries,celltemplate,wraptemplate)
             assignments[#assignments+1] = format("[%q] = %s,",name,value)
         end
     end
-    local code = format(wraptemplate,concat(shortcuts,"\n"),key and "{ }" or "data",key or "i",concat(assignments,"\n            "))
- -- print(code)
+    local code = format(wraptemplate,concat(shortcuts,"\n"),key and "{ }" or "data",key or "i",concat(assignments,"\n        "))
     local func = load(code)
     return func and func()
 end

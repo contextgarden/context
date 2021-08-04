@@ -1,4 +1,4 @@
-%D \module
+D \module
 %D   [       file=strc-blk,
 %D        version=2008.10.20,
 %D          title=\CONTEXT\ Structure Macros,
@@ -176,5 +176,7 @@
 \unexpanded\def\useblocks    {\doquadrupleempty\strc_blocks_select   [use]}
 \unexpanded\def\processblocks{\doquadrupleempty\strc_blocks_select   [process]}
 \unexpanded\def\selectblocks {\doquadrupleempty\strc_blocks_select   [use]}
+
+unexpanded\def\doifelseblocksempty{\clf_doifelsestructureblocksempty} % {name}{tag}{criterium}
 
 \protect \endinput

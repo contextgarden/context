@@ -13,9 +13,11 @@
 
 %D Optima
 
+% \overloadmode\zerocount % for now (me)
+
 \startmodule[present-stepper]
 
-\usemodule[pre-60]
+\usemodule[present-stepwise]
 
 \doifmodeelse {atpragma,asintended} {
     \usetypescriptfile[ghz]
@@ -74,12 +76,12 @@
    frame=off]
 
 \startinteractionmenu[bottom]
-  \but [firstpage]               \symbol[firstpage]      \\
-  \but [previouspage]            \symbol[previouspage]   \\
-  \but [InvokeStepper] \StartBusy\symbol[PauseRendering]\StopBusy \\
-  \but [nextpage]                \symbol[nextpage]       \\
-  \but [lastpage]                \symbol[lastpage]       \\
-  \but [CloseDocument]           \symbol[CloseDocument]  \\
+  \startbut [firstpage]               \symbol[firstpage]      \stopbut
+  \startbut [previouspage]            \symbol[previouspage]   \stopbut
+  \startbut [InvokeStepper] \StartBusy\symbol[PauseRendering]\StopBusy \stopbut
+  \startbut [nextpage]                \symbol[nextpage]       \stopbut
+  \startbut [lastpage]                \symbol[lastpage]       \stopbut
+  \startbut [CloseDocument]           \symbol[CloseDocument]  \stopbut
 \stopinteractionmenu
 
 % maybe in colo-sjk : \setupcolor[sjk]
@@ -189,7 +191,7 @@
   {\setups[fonts:normalize]
    \resetsetups[fonts:normalize]
    \startstandardmakeup[headerstate=high]
-     \enforced\protected\def\\{\enforced\protected\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
+     \protected\def\\{\protected\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
      #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
    \stopstandardmakeup}
 

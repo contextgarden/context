@@ -69,17 +69,18 @@ local pdfreference             = lpdf.reference
 local pdfunicode               = lpdf.unicode
 local pdfstring                = lpdf.string
 local pdfboolean               = lpdf.boolean
+local pdfaction                = lpdf.action
+local pdfborder                = lpdf.border
+
+local pdftransparencyvalue     = lpdf.transparencyvalue
+local pdfcolorvalues           = lpdf.colorvalues
+
 local pdfflushobject           = lpdf.flushobject
 local pdfflushstreamobject     = lpdf.flushstreamobject
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 local pdfreserveobject         = lpdf.reserveobject
 local pdfpagereference         = lpdf.pagereference
 local pdfshareobjectreference  = lpdf.shareobjectreference
-local pdfaction                = lpdf.action
-local pdfborder                = lpdf.border
-
-local pdftransparencyvalue     = lpdf.transparencyvalue
-local pdfcolorvalues           = lpdf.colorvalues
 
 -- symbols
 
@@ -258,7 +259,7 @@ local function flushembeddedfiles()
         for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
-            elseif referenced[tag] == "hidden" then
+            elseif referenced[tag] == "hidden" or referenced[tag] == "forced" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
                 f[#f+1] = reference -- collect all file description references
@@ -368,6 +369,9 @@ function codeinjections.embedfile(specification)
         }
         local r = pdfreference(pdfflushobject(d))
         filestreams[hash] = r
+        if specification.forcereference == true then
+            referenced[hash] = "forced"
+        end
         return r
     end
 end
@@ -651,9 +655,6 @@ local function insertrenderingwindow(specification)
     }
     local width = specification.width or 0
     local height = specification.height or 0
-    if height == 0 or width == 0 then
-        -- todo: sound needs no window
-    end
     context(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
@@ -704,9 +705,10 @@ local function insertrendering(specification)
             descriptor = pdfreference(pdfflushobject(descriptor))
         elseif option[v_embed] then
             descriptor = codeinjections.embedfile {
-                file     = filename,
-                mimetype = mimetype, -- yes or no
-                compress = false,
+                file           = filename,
+                mimetype       = mimetype, -- yes or no
+                compress       = false,
+                forcereference = true,
             }
         end
         local clip = pdfdictionary {

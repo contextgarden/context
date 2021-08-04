@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{scrn-ini}{}
+\registerctxluafile{scrn-ini}{autosuffix}
 
 %D There is no interaction at all unless enabled by saying:
 %D
@@ -184,56 +184,11 @@
 
 %D Identity
 
-% \newconditional\c_scrn_identity_preroll
-%
-% \installtexdirective
-%   {interaction.identity.preroll}
-%   {\settrue \c_scrn_identity_preroll}
-%   {\setfalse\c_scrn_identity_preroll}
-%
-% \def\scrn_identity_prerolled#1%
-%   {\begingroup
-%    \edef\tempstring{\interactionparameter#1}%
-%    \ifempty\tempstring
-%      \endgroup
-%    \else
-%      \the\everypreroll
-%      \nodestostring\tempstring{\tempstring}%
-%      \normalexpanded{\endgroup\setexpandedinteractionparameter{#1}{\tempstring}}%
-%    \fi}
-%
-% \def\scrn_identity_synchronize
-%   {\begingroup
-%    \ifconditional\c_scrn_identity_preroll
-%      \scrn_identity_prerolled\c!title
-%      \scrn_identity_prerolled\c!subtitle
-%      \scrn_identity_prerolled\c!author
-%      \scrn_identity_prerolled\c!date
-%      \scrn_identity_prerolled\c!keyword
-%    \fi
-%    \clf_setupidentity
-%        title    {\interactionparameter\c!title}%
-%        subtitle {\interactionparameter\c!subtitle}%
-%        author   {\interactionparameter\c!author}%
-%      % creator  {ConTeXt - \contextversion}%
-%        date     {\interactionparameter\c!date}%
-%        keywords {\interactionparameter\c!keyword}%
-%    \relax
-%    \endgroup}
+%D We want to delay the preroll as it needs fonts so we now actively fetch from
+%D the \LUA\ end. So this one gets called by the time we need the value.
 
-\def\scrn_identity_synchronize
-  {\clf_setupidentity
-       title    {\prerolltostring{\interactionparameter\c!title}}%
-       subtitle {\prerolltostring{\interactionparameter\c!subtitle}}%
-       author   {\prerolltostring{\interactionparameter\c!author}}%
-     % creator  {ConTeXt - \contextversion}% fixed
-       date     {\prerolltostring{\interactionparameter\c!date}}%
-       keywords {\prerolltostring{\interactionparameter\c!keyword}}%
-   \relax}
-
-\appendtoks
-    \scrn_identity_synchronize
-\to \everysetupinteraction
+\def\scrn_identity_get#1%
+  {\clf_setidentityvariable{#1}{\prerolltostring{\interactionparameter{#1}}}}
 
 % this comes before starttext
 
