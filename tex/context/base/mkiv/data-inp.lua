@@ -15,11 +15,14 @@ local registermethod = resolvers.registermethod
 local finders = allocate { helpers = { }, notfound = function() end }
 local openers = allocate { helpers = { }, notfound = function() end }
 local loaders = allocate { helpers = { }, notfound = function() return false, nil, 0 end }
+local tracers = allocate { helpers = { }, notfound = function() end }
 
 registermethod("finders", finders, "uri")
 registermethod("openers", openers, "uri")
 registermethod("loaders", loaders, "uri")
+registermethod("tracers", tracers, "uri")
 
 resolvers.finders = finders
 resolvers.openers = openers
 resolvers.loaders = loaders
+resolvers.tracers = tracers

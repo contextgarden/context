@@ -96,8 +96,12 @@ function layouts.setupcanvas(specification)
     canvas.marked      = specification.print
     --
     local copies = specification.copies
-    if type(copies) == "number" and copies < 2 then
-        canvas.copies = false
+    if type(copies) == "number" then
+        if copies < 2 then
+            canvas.copies = false
+        else
+            canvas.copies = copies
+        end
     end
     --
     local doublesided = specification.doublesided

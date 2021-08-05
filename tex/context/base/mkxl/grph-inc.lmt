@@ -441,14 +441,14 @@ function figures.setorder(list) -- can be table or string
     end
 end
 
-local function guessfromstring(str)
+local function guessfromstring(str,name)
     if str then
         for i=1,#figures_magics do
             local pattern = figures_magics[i]
             if lpegmatch(pattern.pattern,str) then
                 local format = pattern.format
-                if trace_figures then
-                    report_inclusion("file %a has format %a",filename,format)
+                if trace_figures and name then
+                    report_inclusion("file %a has format %a",name,format)
                 end
                 return format
             end
@@ -1023,14 +1023,30 @@ local function locate(request) -- name, format, cache
         end
     else
         local foundname = resolvers.findbinfile(askedname)
-        if not foundname or not isfile(foundname) then -- foundname can be dummy
+        -- we need a neutral isfile
+        if foundname then
+            if hashed.scheme == "file" and not isfile(foundname) then
+                foundname = false
+            end
+        end
+        if not foundname then -- foundname can be dummy
             if trace_figures then
                 report_inclusion("unknown url %a",askedname)
             end
             -- url not found
             return register(askedname)
         end
-        local guessedformat = figures.guess(foundname)
+        -- ok for now but we need a loadbinfile option to emulate a file
+        -- so that we justy share it .. we now rely on os caching of files
+        -- but normally scheme based files are not that large anyway
+        local guessedformat = false
+        if hashed.scheme == "file" then
+            guessedformat = figures.guess(foundname)
+        else
+            -- kind of costly: todo pseudo file and just acccess
+            local found, data = resolvers.loadbinfile(foundname)
+            guessedformat = figures.guessfromstring(data)
+        end
         if askedformat ~= guessedformat then
             if trace_figures then
                 report_inclusion("url %a has unknown format",askedname)

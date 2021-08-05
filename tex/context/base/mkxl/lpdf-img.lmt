@@ -75,14 +75,36 @@ trackers.register("graphics.backend", function(v) trace = v end)
 local injectors = { }
 lpdf.injectors  = injectors
 
--- todo: load from a virtual file
+-- local function loadcontent(filename,method)
+--     return method == "string" and filename or loaddata(filename)
+-- end
 
-local function loadcontent(filename,method)
-    return method == "string" and filename or loaddata(filename)
+-- local function newcontent(filename,method)
+--     return newreader(filename,method)
+-- end
+
+local function loadcontent(filename,method,wipe)
+    if method == "string" then
+        return filename
+    else
+        local found, data = resolvers.loadbinfile(filename)
+        if wipe then
+            resolvers.cleanupbinfile(filename)
+        end
+        return data
+    end
 end
 
-local function newcontent(filename,method)
-    return newreader(filename,method)
+local function newcontent(filename,method,wipe)
+    if method == "string" then
+        return newreader(filename,method)
+    else
+        local found, data = resolvers.loadbinfile(filename)
+        if wipe then
+            resolvers.cleanupbinfile(filename)
+        end
+        return newreader(data or "", "string")
+    end
 end
 
 --
@@ -118,7 +140,7 @@ do
         local xsize      = specification.xsize
         local ysize      = specification.ysize
         local colordepth = specification.colordepth
-        local content    = loadcontent(filename,method)
+        local content    = loadcontent(filename,method,true)
         local xobject    = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
@@ -160,7 +182,7 @@ do
         -- todo: set filename
         local xsize   = specification.xsize
         local ysize   = specification.ysize
-        local content = loadcontent(filename,method)
+        local content = loadcontent(filename,method,true)
         local xobject = pdfdictionary {
             Type    = pdfconstant("XObject"),
             Subtype = pdfconstant("Image"),
@@ -972,7 +994,7 @@ do
         if not idat then
             return
         end
-        local pngfile = newcontent(filename,method)
+        local pngfile = newcontent(filename,method,true)
         if not pngfile then
             return
         end

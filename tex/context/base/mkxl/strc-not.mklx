@@ -305,7 +305,7 @@
      \expandafter\strc_notations_start_setups
    \else
      \expandafter\strc_notations_start_reference
-   \fi#1[#2]}
+   \fi#1[#3]}
 
 \let\strc_notations_pickup_yes\relax
 

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-08-04 17:48
+-- merge date  : 2021-08-06 01:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -3474,7 +3474,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local pattern=Cs(Cc('"')*(
- (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\020'+P('\n')/'\\013'+P('\r')/'\\010'
+ (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\092'+P('\n')/'\\013'+P('\r')/'\\010'
 )^0*Cc('"'))
 patterns.escapedquotes=pattern
 function string.escapedquotes(s)

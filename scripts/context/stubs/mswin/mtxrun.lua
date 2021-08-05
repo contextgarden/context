@@ -6890,7 +6890,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local pattern=Cs(Cc('"')*(
- (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\020'+P('\n')/'\\013'+P('\r')/'\\010'
+ (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\092'+P('\n')/'\\013'+P('\r')/'\\010'
 )^0*Cc('"'))
 patterns.escapedquotes=pattern
 function string.escapedquotes(s)
@@ -9236,7 +9236,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 24683, stripped down to: 16431
+-- original size: 24692, stripped down to: 16432
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -9730,7 +9730,7 @@ local cache={}
 local spaces=lpegpatterns.space^0
 local dummy=function() end
 setmetatableindex(cache,function(t,k)
- local separator=P(k)
+ local separator=S(k) 
  local value=(1-separator)^0
  local pattern=spaces*C(value)*separator^0*Cp()
  t[k]=pattern
@@ -23903,7 +23903,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-inp"] = package.loaded["data-inp"] or true
 
--- original size: 910, stripped down to: 818
+-- original size: 1050, stripped down to: 946
 
 if not modules then modules={} end modules ['data-inp']={
  version=1.001,
@@ -23919,12 +23919,15 @@ local registermethod=resolvers.registermethod
 local finders=allocate { helpers={},notfound=function() end }
 local openers=allocate { helpers={},notfound=function() end }
 local loaders=allocate { helpers={},notfound=function() return false,nil,0 end }
+local tracers=allocate { helpers={},notfound=function() end }
 registermethod("finders",finders,"uri")
 registermethod("openers",openers,"uri")
 registermethod("loaders",loaders,"uri")
+registermethod("tracers",tracers,"uri")
 resolvers.finders=finders
 resolvers.openers=openers
 resolvers.loaders=loaders
+resolvers.tracers=tracers
 
 
 end -- of closure
@@ -25932,8 +25935,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1026329
--- stripped bytes    : 402829
+-- original bytes    : 1026478
+-- stripped bytes    : 402849
 
 -- end library merge
 

@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['data-bin'] = {
 
 local resolvers     = resolvers
 local methodhandler = resolvers.methodhandler
-local notfound      = resolvers.loaders.notfound
+
+local notfound = resolvers.loaders.notfound
 
 function resolvers.findbinfile(filename,filetype)
     return methodhandler('finders',filename,filetype)
@@ -24,6 +25,17 @@ function resolvers.loadbinfile(filename,filetype)
     local fname = methodhandler('finders',filename,filetype)
     if fname and fname ~= "" then
         return openbinfile(fname) -- a bit weird: open
+    else
+        return notfound()
+    end
+end
+
+local notfound = resolvers.cleaners.notfound
+
+function resolvers.cleanupbinfile(filename)
+    local fname = methodhandler('finders',filename)
+    if fname and fname ~= "" then
+        return methodhandler('cleaners',fname)
     else
         return notfound()
     end

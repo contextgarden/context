@@ -24,6 +24,15 @@ local graphics       = graphics or { }
 local identifiers    = { }
 graphics.identifiers = identifiers
 
+local function checkedmethod(filename,method)
+    if method ~= "string" then
+        local found, data = resolvers.loadbinfile(filename)
+        return data, "string"
+    else
+        return filename, method
+    end
+end
+
 do
 
     local colorspaces = {
@@ -222,6 +231,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
+        filename, method = checkedmethod(filename,method)
         local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
@@ -454,6 +464,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
+        filename, method = checkedmethod(filename,method)
         local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
@@ -558,6 +569,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
+        filename, method = checkedmethod(filename,method)
         local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
@@ -727,21 +739,18 @@ end
 
 function graphics.identify(filename,filetype)
     local identify = filetype and identifiers[filetype]
+    if not identify then
+        identify = identifiers[suffixonly(filename)]
+    end
     if identify then
         return identify(filename)
-    end
-    local identify = identifiers[suffixonly(filename)]
-    if identify then
-        identify = identify(filename)
     else
-        identify = {
+        return {
             filename = filename,
             filetype = filetype,
             error    = "identification failed",
         }
     end
- -- inspect(identify)
-    return identify
 end
 
 -- inspect(identifiers.jpg("t:/sources/hacker.jpg"))

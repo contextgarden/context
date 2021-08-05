@@ -681,7 +681,7 @@ local spaces  = lpegpatterns.space^0
 local dummy   = function() end
 
 setmetatableindex(cache,function(t,k)
-    local separator = P(k)
+    local separator = S(k) -- was P
     local value     = (1-separator)^0
     local pattern   = spaces * C(value) * separator^0 * Cp()
     t[k] = pattern
