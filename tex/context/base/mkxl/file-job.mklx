@@ -18,6 +18,7 @@
 %D This module delegates most of the work to \LUA\ and therefore also let it
 %D define the commands, which is more efficient.
 
+\registerctxluafile{data-hsh}{autosuffix}
 \registerctxluafile{file-job}{autosuffix}
 
 %D Here are some helpers for processing and path control. In the following example

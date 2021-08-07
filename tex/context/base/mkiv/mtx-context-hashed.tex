@@ -1,0 +1,136 @@
+%D \module
+%D   [       file=mtx-context-hashed,
+%D        version=2009.03.21,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Combine Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=hashed [options] list-of-files
+%
+% --database    : database to create or extend
+% --pattern     : file pattern
+% --patterns    : pattern file
+% --compression : apply compression
+%
+% end help
+
+% \startluacode
+%     if not resolvers.finders.helpers.validhashed("hasheddata") then
+%         resolvers.finders.helpers.createhashed {
+%             database = "hasheddata",
+%             pattern  = "m4all/**.jpg$",
+%             compress = false,
+%         }
+%         resolvers.finders.helpers.createhashed {
+%             database = "hasheddata",
+%             pattern  = "m4all/**.png$",
+%             compress = false,
+%         }
+%         resolvers.finders.helpers.createhashed {
+%             database = "hasheddata",
+%             pattern  = "m4all/**.xml$",
+%             compress = true,
+%         }
+%     end
+% \stopluacode
+
+% \startluacode
+%     if not resolvers.finders.helpers.validhashed("hasheddata") then
+%         resolvers.finders.helpers.createhashed {
+%             database = "hasheddata",
+%             patterns = {
+%                 { pattern  = "m4all/**.jpg$", compress = false },
+%                 { pattern  = "m4all/**.png$", compress = false },
+%                 { pattern  = "m4all/**.xml$", compress = true  },
+%             },
+%         }
+%     end
+% \stopluacode
+
+% context --extra=hashed --database=hasheddata --pattern=m4all/**.jpg
+% context --extra=hashed --database=hasheddata --pattern=m4all/**.png
+% context --extra=hashed --database=hasheddata --pattern=m4all/**.xml --compress
+% context --extra=hashed --database=hasheddata --pattern=m4all/**.svg --compress
+
+% -- m4all.lua:
+%
+% return {
+%     { pattern  = "m4all/**.jpg$", compress = false },
+%     { pattern  = "m4all/**.png$", compress = false },
+%     { pattern  = "m4all/**.svg$", compress = true  },
+%     { pattern  = "m4all/**.xml$", compress = true  },
+% }
+%
+% context --extra=hashed --database=hasheddata --patterns=m4all.lua
+
+% \registerhashedfiles[hasheddata]
+% \registerfilescheme[hashed]
+%
+% \externalfigure[hashed:///m4all/books/chapters/h3/h3-if1/images/highres/casino.jpg]      [height=1cm]
+% \externalfigure[hashed:///m4all/books/chapters/ha/ha-c4/images/highres/ha-c44-ex2-s1.png][height=1cm]
+% \externalfigure[m4all/books/chapters/h3/h3-if1/images/highres/casino.jpg]                [height=1cm]
+% \externalfigure[m4all/books/chapters/ha/ha-c4/images/highres/ha-c44-ex2-s1.png]          [height=1cm]
+
+\input mtx-context-common.tex
+
+\noheaderandfooterlines \setupbodyfont[tt]
+
+\starttext
+
+\startluacode
+
+    if CONTEXTLMTXMODE > 0 then
+
+        local database = document.arguments.database
+
+        if database then
+            local metadata = false
+            if tex.systemmodes["first"] then
+                metadata = resolvers.finders.helpers.createhashed {
+                    database = database,
+                    pattern  = document.arguments.pattern,
+                    compress = document.arguments.compress,
+                    patterns = document.arguments.patterns and table.load(document.arguments.patterns),
+                }
+            else
+                metadata = resolvers.finders.helpers.validhashed(database)
+                if metadata then
+                    metadata = metadata.metadata
+                end
+            end
+            if metadata then
+                local function show(what)
+                    context.NC() context(what)
+                    context.EQ() context(metadata[what])
+                    context.NC() context.NR()
+                end
+                context.starttitle { title = "database: " .. database }
+                    context.starttabulate { "||r|" }
+                        show("nofnames")
+                        show("nofpaths")
+                        show("nofblobs")
+                        show("nofcompressed")
+                    context.stoptabulate()
+                context.stoptitle()
+            else
+                context("something went wrong, invalid database")
+            end
+        else
+            context("something went wrong, no database specified")
+        end
+    else
+        context("you need lmtx")
+    end
+
+\stopluacode
+
+\stoptext
+

@@ -8,12 +8,13 @@
 
 \startsection[title=Bad names]
 
-After many years of using \CONTEXT\ in workflows where large amounts of source files
-as well as graphics were involved we can safely say that it's hard for publishers to
-control the way these are named. This is probably due to the fact that in a
-click|-|and|-|point based desktop publishing workflow names don't matter as one stays on
-one machine, and names are only entered once (after that these names become abstractions and
-get cut and pasted). Proper consistent resource managament is simply not part of the flow.
+After many years of using \CONTEXT\ in workflows where large amounts of source
+files as well as graphics were involved we can safely say that it's hard for
+publishers to control the way these are named. This is probably due to the fact
+that in a click|-|and|-|point based desktop publishing workflow names don't
+matter as one stays on one machine, and names are only entered once (after that
+these names become abstractions and get cut and pasted). Proper consistent
+resource managament is simply not part of the flow.
 
 This means that you get names like:
 
@@ -29,19 +30,20 @@ like one. In fancy screen fonts upper and lowercase usage might get obscured. It
 really makes one wonder if copy|-|editing or adding labels to graphics isn't
 suffering from the same problem.
 
-Anyhow, as in an automated rendering workflow the rendering is often the last step you
-can imagine that when names get messed up it's that last step that gets blamed. It's not
-that hard to sanitize names of files on disk as well as in the files that refer to them,
-and we normally do that we have complete control. This is no option when all the resources
-are synchronzied from elsewhere. In that case the only way out is signaling potential
-issues. Say that in the source file there is a reference:
+Anyhow, as in an automated rendering workflow the rendering is often the last
+step you can imagine that when names get messed up it's that last step that gets
+blamed. It's not that hard to sanitize names of files on disk as well as in the
+files that refer to them, and we normally do that we have complete control. This
+is no option when all the resources are synchronzied from elsewhere. In that case
+the only way out is signaling potential issues. Say that in the source file there
+is a reference:
 
 \starttyping
 foo_Bar_01_03-a.EPS
 \stoptyping
 
-and that the graphic on disk has the same name, but for some reason after an update
-has become:
+and that the graphic on disk has the same name, but for some reason after an
+update has become:
 
 \starttyping
 foo-Bar_01_03-a.EPS

@@ -170,12 +170,26 @@
    \currentsymbolfont
    \gletcsname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
 
+% \definefontfeature[colored][colr=yes]
+% \definefontsynonym[flags][file:BabelStoneFlagsDual.ttf*colored]
+% \definesymbol[BR][{\getnamedglyphdirect          {flags}{br}}]
+% \definesymbol[PT][{\getnamedglyphdirect          {flags}{pt}}]
+% \definesymbol[BR][{\getnamedglyphdirectscaled{.7}{flags}{br}}]
+% \definesymbol[PT][{\getnamedglyphdirectscaled{.7}{flags}{pt}}]
+%
+% \def\glyphscaled#1{\cldcontext{math.floor(\the\glyphscale*#1)}\relax}
+% \definesymbol[BR][{\glyphscale\glyphscaled{.7}\getnamedglyphdirect{flags}{br}}]
+% \definesymbol[PT][{\glyphscale\glyphscaled{.7}\getnamedglyphdirect{flags}{pt}}]
+
 \permanent\protected\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \permanent\protected\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \permanent\protected\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
 \permanent\protected\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
 \permanent\protected\def\resolvedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_tochar{#character}}}
 \permanent\protected\def\resolvedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_tochar{#character}}}
+
+\permanent\protected\def\getnamedglyphdirectscaled#scale#fontname#character%
+  {{\setscaleddirectsymbolicfont\fontbody{#scale}{#fontname}\clf_fontchar{#character}}}
 
 % this one is wrong:
 

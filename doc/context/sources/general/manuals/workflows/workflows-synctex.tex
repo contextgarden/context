@@ -82,10 +82,10 @@ editor} are the following:
 
 \stopitemize
 
-It is unavoidable that we get more run time but I assume that for the average user
-that is no big deal. It pays off when you have a workflow when a book (or even a
-chapter in a book) is generated from hundreds of small \XML\ files. There is no
-overhead when \SYNCTEX\ is not used.
+It is unavoidable that we get more run time but I assume that for the average
+user that is no big deal. It pays off when you have a workflow when a book (or
+even a chapter in a book) is generated from hundreds of small \XML\ files. There
+is no overhead when \SYNCTEX\ is not used.
 
 In \CONTEXT\ we don't use the built|-|in \SYNCTEX\ features, that is: we let
 filename and line numbers be set but often these are overloaded explicitly. The
@@ -120,10 +120,10 @@ A third method is to put this at the top of your file:
 
 Often an \XML\ files is very structured and although probably the main body of
 text is flushed as a stream, specific elements can be flushed out of order. In
-educational documents flushing for instance answers to exercises can happen out of
-order. In that case we still need to make sure that we go to the right spot in
-the file. It will never be 100\% perfect but it's better than nothing. The
-above command will also enable \XML\ support.
+educational documents flushing for instance answers to exercises can happen out
+of order. In that case we still need to make sure that we go to the right spot in
+the file. It will never be 100\% perfect but it's better than nothing. The above
+command will also enable \XML\ support.
 
 If you don't want a file to be accessed, you can block it:
 
@@ -131,8 +131,8 @@ If you don't want a file to be accessed, you can block it:
 \blocksynctexfile[foo.tex]
 \stoptyping
 
-Of course you need to configure the viewer to respond to the request for
-editing. In Sumatra combined with SciTE the magic command is:
+Of course you need to configure the viewer to respond to the request for editing.
+In Sumatra combined with \SCITE\ the magic command is:
 
 \starttyping
 c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l"
@@ -199,6 +199,23 @@ that hits performance badly.
 Depending on needs the functionality can be improved and|/|or extended. Of course
 you can always use the traditional \SYNCTEX\ method but don't expect it to behave
 as described here.
+
+\stopsection
+
+\startsection[title=Two-way]
+
+In for instance the \TEX shop editor, there is a two way connection. The nice
+thing about this editor is, is that it is also the first one to use the \type
+{mtx-synctex} script to resolve these links, instead of relying on a library. You
+can also use this script to inspect a \SYNCTEX\ file yourself, The help into
+shows the possible directives.
+
+\starttyping
+mtxrun --script synctex
+\stoptyping
+
+You can resolve positions in the \PDF\ as well as in the sources and list all the
+known areas in the log.
 
 \stopsection
 

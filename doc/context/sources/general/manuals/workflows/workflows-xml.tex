@@ -15,9 +15,9 @@
 \startchapter[title={XML}]
 
 When you have an \XML\ project with many files involved, finding the right spot
-of something that went wrong can be a pain. In one of our project the production of
-some 50 books involves 60.000 \XML\ files and 20.000 images. Say that we have the
-following file:
+of something that went wrong can be a pain. In one of our project the production
+of some 50 books involves 60.000 \XML\ files and 20.000 images. \footnote {In the
+meantime we could trim this down a lot.} Say that we have the following file:
 
 \startbuffer[demo]
 <?xml version='1.0'?>
@@ -32,9 +32,9 @@ following file:
 
 \typebuffer[demo]
 
-Before we process this file we will merge the content of the files defined
-as includes into it. When this happens the filename is automatically
-registered so it can be accessed later.
+Before we process this file we will merge the content of the files defined as
+includes into it. When this happens the filename is automatically registered so
+it can be accessed later.
 
 \startbuffer
 \startxmlsetups xml:initialize

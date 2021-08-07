@@ -1,0 +1,382 @@
+-- only lmt because the backend code doesn't deal with it and it makes
+-- no sense to waste time on that for mkiv
+
+if not modules then modules = { } end modules ['data-hsh'] = {
+    version   = 0.002,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- todo: options
+--
+-- lowercase
+-- cleanupnames (normalize)
+-- use database from project tree
+
+local type = type
+local gsub = string.gsub
+local addsuffix, basename, pathpart, filesuffix, filesize = file.addsuffix, file.basename, file.pathpart, file.suffix, file.size
+local loadtable, savetable = table.load, table.save
+local loaddata, savedata, open = io.loaddata, io.savedata, io.open
+
+local trace_hashed  = false
+local report_hashed = logs.reporter("resolvers","hashed")
+
+trackers.register("resolvers.locating", function(v) trace_hashed = v end)
+trackers.register("resolvers.hashed",   function(v) trace_hashed = v end)
+
+-- we can have a virtual file: open at the position, make sure read and seek don't
+-- go beyond the boundaries
+
+local resolvers = resolvers
+local finders   = resolvers.finders
+local openers   = resolvers.openers
+local loaders   = resolvers.loaders
+
+local ordered = { }
+local hashed  = { }
+local version = 0.002
+
+-- local lowercase = characters.lower
+
+local function showstatus(database,metadata)
+    report_hashed("database %a, %i paths, %i names, %i unique blobs, %i compressed blobs",
+        database, metadata.nofpaths, metadata.nofnames, metadata.nofblobs, metadata.nofcompressed
+    )
+end
+
+local function validhashed(database)
+    local found = hashed[database]
+    if found then
+        return found
+    else
+        local metaname = addsuffix(database,"lua")
+        local dataname = addsuffix(database,"dat")
+        local metadata = loadtable(metaname)
+        if type(metadata) ~= "table" then
+            report_hashed("invalid database %a",metaname)
+        elseif metadata.version ~= version then
+            report_hashed("version mismatch in database %a",metaname)
+        elseif not lfs.isfile(dataname) then
+            report_hashed("missing data data file for %a",metaname)
+        else
+            return {
+                database = database,
+                metadata = metadata,
+                dataname = dataname,
+            }
+        end
+    end
+end
+
+local function registerhashed(database)
+    if not hashed[database] then
+        local valid = validhashed(database)
+        if valid then
+            ordered[#ordered + 1] = valid
+            hashed[database] = ordered[#ordered]
+            showstatus(database,valid.metadata)
+        end
+    end
+end
+
+local registerfilescheme  do
+
+    local findfile = finders.file
+
+    local list = { }
+    local done = { }
+    local hash = { }
+
+    registerfilescheme = function(name)
+        if not done[name] then
+            list[#list+1] = name
+            done[name]    = true
+        end
+    end
+
+    -- why does the finder not remember ?
+
+    function finders.file(specification,filetype)
+        if type(specification) == "table" then
+            local original = specification.original
+         -- print(original)
+            if original then
+                local found = hash[original]
+                if found == nil then
+                    for i=1,#list do
+                        local scheme = list[i]
+                        local found  = finders[scheme](specification,filetype)
+                        if found then
+                            hash[original] = found
+                            if trace_hashed then
+                                report_hashed("found by auto scheme %s: %s",scheme,found)
+                            end
+                            return found
+                        end
+                    end
+                    local found = findfile(specification,filetype)
+                    if found then
+                        hash[original] = found
+                        if trace_hashed then
+                            report_hashed("found by normal file scheme: %s",found)
+                        end
+                        return found
+                    end
+                    hash[original] = false
+                elseif found then
+                    return found
+                end
+                return false
+            else
+                -- something is wrong here, maybe we should trace it (scheme can be "unknown")
+            end
+        end
+        -- again, something is wrong
+        return findfile(specification,filetype)
+    end
+
+end
+
+finders.helpers.validhashed        = validhashed
+finders.helpers.registerhashed     = registerhashed
+finders.helpers.registerfilescheme = registerfilescheme
+
+local function locate(found,path,name)
+    local files  = found.metadata.files
+    local hashes = found.metadata.hashes
+    local fp = files[path]
+    local hash = fp and fp[name]
+    if hash and hashes[hash] then
+        return hash
+    end
+end
+
+local function locatehash(filename,database)
+    if filename then
+        local name = basename(filename)
+        local path = pathpart(filename)
+        local hash = false
+        if database then
+            local found = hashed[database]
+            if found then
+                hash = locate(found,path,name), database, path, name
+            end
+        else
+            for i=1,#ordered do
+                local found = ordered[i]
+                hash = locate(found,path,name)
+                if hash then
+                    database = found.database
+                    break
+                end
+            end
+        end
+        if hash then
+            return {
+                hash = hash,
+                name = name,
+                path = path,
+                base = database,
+            }
+        end
+    end
+end
+
+-- no caching yet, we don't always want the file and it's fast enough
+
+local function locateblob(filename,database)
+    local found = locatehash(filename,database)
+    if found then
+        local database = found.base
+        local data     = hashed[database]
+        if data then
+            local metadata = data.metadata
+            local dataname = data.dataname
+            local hashes   = metadata.hashes
+            local blobdata = hashes[found.hash]
+            if blobdata and dataname then
+                local position = blobdata.position
+                local f = open(dataname,"rb")
+                if f then
+                    f:seek("set",position)
+                    local blob = f:read(blobdata.datasize)
+                    if blobdata.compress == "zip" then
+                        blob = zlib.decompresssize(blob,blobdata.filesize)
+                    end
+                    return blob
+                end
+            end
+        end
+    end
+end
+
+local finders  = resolvers.finders
+local notfound = finders.notfound
+
+function finders.hashed(specification)
+    local original = specification.original
+    local fullpath = specification.path
+    if fullpath then
+        local found = locatehash(fullpath)
+        if found then
+            if trace_hashed then
+                report_hashed("finder: file %a found",original)
+            end
+            return original
+        end
+    end
+    if trace_hashed then
+        report_hashed("finder: unknown file %a",original)
+    end
+    return notfound()
+end
+
+local notfound   = openers.notfound
+local textopener = openers.helpers.textopener
+
+function openers.hashed(specification)
+    local original = specification.original
+    local fullpath = specification.path
+    if fullpath then
+        local found = locateblob(fullpath)
+        if found then
+            if trace_hashed then
+                report_hashed("finder: file %a found",original)
+            end
+            return textopener("hashed",original,found,"utf-8")
+        end
+    end
+    if trace_hashed then
+        report_hashed("finder: unknown file %a",original)
+    end
+    return notfound()
+end
+
+local notfound = loaders.notfound
+
+function loaders.hashed(specification)
+    local original = specification.original
+    local fullpath = specification.path
+    if fullpath then
+        local found = locateblob(fullpath)
+        if found then
+            if trace_hashed then
+                report_hashed("finder: file %a found",original)
+            end
+            return true, found, found and #found or 0
+        end
+    end
+    if trace_hashed then
+        report_hashed("finder: unknown file %a",original)
+    end
+    return notfound()
+end
+
+-- this actually could end up in the generate namespace but it is not
+-- really a 'generic' feature, more a module (at least for now)
+
+local calculatehash = sha2.HEX256 -- md5.HEX is not unique enough
+
+function resolvers.finders.helpers.createhashed(specification)
+    local database = specification.database
+    local patterns = specification.patterns
+    if not patterns then
+        local pattern = specification.pattern
+        if pattern then
+            patterns = {
+                {
+                    pattern  = pattern,
+                    compress = specification.compress,
+                }
+            }
+        end
+    end
+    local datname  = addsuffix(database,"dat")
+    local luaname  = addsuffix(database,"lua")
+    local metadata = loadtable(luaname)
+    if type(metadata) ~= "table" then
+        metadata = false
+    elseif metadata.kind == "hashed" and metadata.version ~= version then
+        report_hashed("version mismatch, starting with new table")
+        metadata = false
+    end
+    if not metadata then
+        metadata = {
+            version       = version,
+            kind          = "hashed",
+            files         = { },
+            hashes        = { },
+            nofnames      = 0,
+            nofpaths      = 0,
+            nofblobs      = 0,
+            nofcompressed = 0,
+        }
+    end
+    local files         = metadata.files
+    local hashes        = metadata.hashes
+    local nofpaths      = metadata.nofpaths
+    local nofnames      = metadata.nofnames
+    local nofblobs      = metadata.nofblobs
+    local nofcompressed = metadata.nofcompressed
+    if type(patterns) == "table" then
+        for i=1,#patterns do
+            local pattern = patterns[i].pattern
+            if pattern then
+                local compress = patterns[i].compress
+                local list     = dir.glob(pattern)
+                local total    = #list
+                report_hashed("database %a, adding pattern %a, compression %l",database,pattern,compress)
+                for i=1,total do
+                    local filename = list[i]
+                    local name     = basename(filename)
+                    local path     = pathpart(filename)
+                    local data     = loaddata(filename)
+                    -- cleanup
+                    path = gsub(path,"^[./]*","")
+                    --
+                    if data then
+                        local fp = files[path]
+                        if not fp then
+                            fp = { }
+                            files[path] = fp
+                            nofpaths = nofpaths + 1
+                        end
+                        local ff = fp[name]
+                        if not ff then
+                            local hash = calculatehash(data)
+                            if not hashes[hash] then
+                                local size = #data
+                                if compress then
+                                    data = zlib.compresssize(data,size)
+                                    nofcompressed = nofcompressed + 1
+                                end
+                                local position = filesize(datname)
+                                savedata(datname,data,"",true)
+                                hashes[hash] = {
+                                    filesize = size,
+                                    datasize = #data,
+                                    compress = compress and "zip",
+                                    position = position,
+                                }
+                                nofblobs = nofblobs + 1
+                            end
+                            fp[name] = hash
+                            nofnames = nofnames + 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+    metadata.nofpaths      = nofpaths
+    metadata.nofnames      = nofnames
+    metadata.nofblobs      = nofblobs
+    metadata.nofcompressed = nofcompressed
+    savetable(luaname, metadata)
+    showstatus(database,metadata)
+    return metadata
+end
+

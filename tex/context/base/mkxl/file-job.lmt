@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- and push/poppign at the tex end
 
 local next, rawget, tostring, tonumber = next, rawget, tostring, tonumber
-local gsub, match, find = string.gsub, string.match, string.find
+local gsub, match, gmatch, ind = string.gsub, string.match, string.gmatch, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring, formatters = string.valid, string.formatters
 local sortedhash = table.sortedhash
@@ -1300,3 +1300,45 @@ implement {
 --         ctx_doifelse(continue)
     end
 }
+
+-- data-hsh.lmt:
+
+local helpers            = resolvers.finders.helpers
+local validhashed        = helpers.validhashed
+local registerhashed     = helpers.registerhashed
+local registerfilescheme = helpers.registerfilescheme
+
+implement {
+    name      = "registerhashedfiles",
+    public    = true,
+    protected = true,
+    arguments = "optional",
+    actions   = function(list)
+        for name in gmatch(list,"[^, ]+") do
+            registerhashed(name)
+        end
+    end,
+}
+
+implement {
+    name      = "registerfilescheme",
+    public    = true,
+    protected = true,
+    arguments = "optional",
+    actions   = function(list)
+        for name in gmatch(list,"[^, ]+") do
+            registerfilescheme(name)
+        end
+    end,
+}
+
+implement {
+    name      = "doifelsevalidhashedfiles",
+    public    = true,
+    protected = true,
+    arguments = "string",
+    actions   = function(name)
+        ctx_doifelse(validhashed(name))
+    end,
+}
+

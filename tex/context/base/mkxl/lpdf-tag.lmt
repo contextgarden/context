@@ -223,7 +223,7 @@ local function initializepage()
     if pagenum > lastintree then
         lastintree = pagenum
     else
-        report_tags("beware: page order problem in tree at page %i", pagenum)
+     -- report_tags("beware: page order problem in tree at page %i", pagenum)
     end
     tree[pagenum] = list -- we can flush after done, todo
 end
