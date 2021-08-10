@@ -98,7 +98,7 @@ characters long. The language is stored with each character. You can set
 \prm {firstvalidlanguage} to for instance~1 and make thereby language~0
 an ignored hyphenation language.
 
-The new primitive \lpr {hyphenationmin} can be used to signal the minimal length
+The new primitive \prm {hyphenationmin} can be used to signal the minimal length
 of a word. This value is stored with the (current) language.
 
 Because the \prm {uchyph} value is saved in the actual nodes, its handling is
@@ -130,7 +130,7 @@ hyphenation happens is (normally) when the paragraph or a horizontal box is
 constructed. When \prm {savinghyphcodes} was zero when the language got
 initialized you start out with nothing, otherwise you already have a set.
 
-When a \lpr {hjcode} is greater than 0 but less than 32 is indicates the
+When a \prm {hjcode} is greater than 0 but less than 32 is indicates the
 to be used length. In the following example we map a character (\type {x}) onto
 another one in the patterns and tell the engine that \type {œ} counts as two
 characters. Because traditionally zero itself is reserved for inhibiting
@@ -192,7 +192,7 @@ The start and end of a sequence of characters is signalled by a \nod {glue}, \no
 {penalty}, \nod {kern} or \nod {boundary} node. But by default also a \nod
 {hlist}, \nod {vlist}, \nod {rule}, \nod {dir}, \nod {whatsit}, \nod {insert}, and
 \nod {adjust} node indicate a start or end. You can omit the last set from the
-test by setting flags in \lpr {hyphenationmode}:
+test by setting flags in \prm {hyphenationmode}:
 
 \starttabulate[|c|l|]
 \DB value      \BC behaviour \NC \NR
@@ -324,8 +324,8 @@ examples.
 \NC \number \compoundhyphenationcode          \NC permit break at an explicit hyphen (border cases) \NC \NR
 \NC \number \strictstarthyphenationcode       \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
 \NC \number \strictendhyphenationcode         \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
-\NC \number \automaticpenaltyhyphenationcode  \NC use \lpr {automatichyphenpenalty} \NC \NR
-\NC \number \explicitpenaltyhyphenationcode   \NC use \lpr {explicithyphenpenalty} \NC \NR
+\NC \number \automaticpenaltyhyphenationcode  \NC use \prm {automatichyphenpenalty} \NC \NR
+\NC \number \explicitpenaltyhyphenationcode   \NC use \prm {explicithyphenpenalty} \NC \NR
 \NC \number \permitgluehyphenationcode        \NC turn glue in discretionaries into kerns \NC \NR
 \NC \number \permitallhyphenationcode         \NC okay, let's be even more tolerant in discretionaries \NC \NR
 \NC \number \permitmathreplacehyphenationcode \NC and again we're more permissive \NC \NR
@@ -451,12 +451,12 @@ have been added:
 \explicithyphenpenalty
 \stoptyping
 
-The usage of these penalties is controlled by the \lpr {hyphenationmode} flags
+The usage of these penalties is controlled by the \prm {hyphenationmode} flags
 \number\automaticpenaltyhyphenationcode\space and
 \number\explicitpenaltyhyphenationcode\space and when these are not set \prm
 {exhyphenpenalty} is used.
 
-You can use the \lpr {tracinghyphenation} variable to get a bit more information
+You can use the \prm {tracinghyphenation} variable to get a bit more information
 about what happens.
 
 \starttabulate[|lT|l|]
@@ -547,7 +547,7 @@ actual explicit hyphen character if needed). For example, this matches the word
 The motivation behind the \ETEX\ extension \prm {savinghyphcodes} was that
 hyphenation heavily depended on font encodings. This is no longer true in
 \LUATEX, and the corresponding primitive is basically ignored. Because we now
-have \lpr {hjcode}, the case related codes can be used exclusively for \prm
+have \prm {hjcode}, the case related codes can be used exclusively for \prm
 {uppercase} and \prm {lowercase}.
 
 The three curly brace pair pattern in an exception can be somewhat unexpected so
@@ -556,7 +556,7 @@ creates a lookup \type {fooxbar} and the pattern \type {foo{}{}{}bar} creates
 \type {foobar}. Then, when a hit happens there is a replacement text (\type {x})
 or none. Because we introduced penalties in discretionary nodes, the exception
 syntax now also can take a penalty specification. The value between square brackets
-is a multiplier for \lpr {exceptionpenalty}. Here we have set it to 10000 so
+is a multiplier for \prm {exceptionpenalty}. Here we have set it to 10000 so
 effectively we get 30000 in the example.
 
 \def\ShowSample#1#2%
@@ -633,10 +633,10 @@ of the implementation:
     needed.
 \stopitem
 \startitem
-    \LUATEX\ uses the language-specific variables \lpr {prehyphenchar} and \lpr
+    \LUATEX\ uses the language-specific variables \prm {prehyphenchar} and \prm
     {posthyphenchar} in the creation of implicit discretionaries, instead of
     \TEX82's \prm {hyphenchar}, and the values of the language|-|specific
-    variables \lpr {preexhyphenchar} and \lpr {postexhyphenchar} for explicit
+    variables \prm {preexhyphenchar} and \prm {postexhyphenchar} for explicit
     discretionaries (instead of \TEX82's empty discretionary).
 \stopitem
 \startitem
@@ -734,7 +734,7 @@ In so called base mode, where \TEX\ does the work, the ligature construction
 \type {ff} ligatures and that one followed by an \type {i} can become a \type
 {ffi} ligature. The situation can be complicated by hyphenation points between
 these characters. When there are several in a ligature collapsing happens. Flag
-{\tttf "\uchexnumbers {\lazyligatureshyphenationcode}} in the \lpr
+{\tttf "\uchexnumbers {\lazyligatureshyphenationcode}} in the \prm
 {hyphenationmode} variable determines if this happens lazy or greedy, i.e.\ the
 first hyphen wins or the last one does. In practice a \CONTEXT\ user won't have
 to deal with this because most fonts are processed in node mode.

@@ -17,6 +17,9 @@
 %D days of \LUATEX) was dropped when I realized that there is not common ground to
 %D cover between formats. It is simply not worth the trouble.
 
+%D Maybe we also need a copy of \type {\ctxcatcodes} so that we can always go back
+%D to the unpatched regime.
+
 \ifdefined\nilcatcodes \else \newcatcodetable \nilcatcodes \fi
 \ifdefined\texcatcodes \else \newcatcodetable \texcatcodes \fi
 \ifdefined\luacatcodes \else \newcatcodetable \luacatcodes \fi

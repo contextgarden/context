@@ -180,19 +180,19 @@ local foundintree        = resolvers.foundintree
 
 local getpagedimensions  = layouts.getpagedimensions
 
-local eol                = "\010"
+local eol        <const> = "\010"
 
 ----- f_glue             = formatters["g%i,%i:%i,%i\010"]
 ----- f_glyph            = formatters["x%i,%i:%i,%i\010"]
 ----- f_kern             = formatters["k%i,%i:%i,%i:%i\010"]
 ----- f_rule             = formatters["r%i,%i:%i,%i:%i,%i,%i\010"]
 ----- f_form             = formatters["f%i,%i,%i\010"]
-local z_hlist            = "[0,0:0,0:0,0,0\010"
-local z_vlist            = "(0,0:0,0:0,0,0\010"
------ z_xform            = "<0,0:0,0,0\010" -- or so
-local s_hlist            = "]\010"
-local s_vlist            = ")\010"
------ s_xform            = ">\010"
+local z_hlist    <const> = "[0,0:0,0:0,0,0\010"
+local z_vlist    <const> = "(0,0:0,0:0,0,0\010"
+----- z_xform    <const> = "<0,0:0,0,0\010" -- or so
+local s_hlist    <const> = "]\010"
+local s_vlist    <const> = ")\010"
+----- s_xform    <const> = ">\010"
 local f_hlist_1          = formatters["h%i,%i:%i,%i:%i,%i,%i\010"]
 local f_hlist_2          = formatters["h%i,%i:%i,%s:%i,%i,%i\010"]
 local f_vlist_1          = formatters["v%i,%i:%i,%i:%i,%i,%i\010"]

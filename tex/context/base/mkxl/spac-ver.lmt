@@ -751,9 +751,10 @@ do
 
     local k_fixed    = variables.fixed
     local k_flexible = variables.flexible
-    local k_category = "category"
-    local k_penalty  = "penalty"
-    local k_order    = "order"
+
+    local k_category <const> = "category"
+    local k_penalty  <const> = "penalty"
+    local k_order    <const> = "order"
 
     function vspacing.setmap(from,to)
         map[from] = to

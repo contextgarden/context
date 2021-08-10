@@ -816,6 +816,10 @@
 \newcount\locationorder
 \newbox  \locationbox
 
+\appendtoks
+    \locationfalse
+\to \everypreroll
+
 \permanent\def\nextinternalreference     {\the\locationcount}
 \permanent\def\nextinternalorderreference{\the\locationorder}
 

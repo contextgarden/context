@@ -117,7 +117,8 @@ local f_scn   = formatters["%.3N"]
 
 local f_shade = formatters["MpSh%s"]
 local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
-local s_cm_e  = "Q"
+
+local s_cm_e <const> = "Q"
 
 local function checked_color_pair(color,...)
     if not color then
@@ -529,9 +530,9 @@ metapost.sxsy = sxsy
 
 -- for stock mp we need to declare the booleans first
 
-local do_begin_fig = "; beginfig(1) ; "
-local do_end_fig   = "; endfig ;"
-local do_safeguard = ";"
+local do_begin_fig <const> = "; beginfig(1) ; "
+local do_end_fig   <const> = "; endfig ;"
+local do_safeguard <const> = ";"
 
 function metapost.preparetextextsdata()
     local textexts  = top.textexts

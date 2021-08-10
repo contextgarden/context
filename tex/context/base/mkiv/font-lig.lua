@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-lig'] = {
     license   = "see context related readme files",
 }
 
--- This module is not loaded but generated a file for plain TeX as a substitute
+-- This module is not loaded but generates a file for plain TeX as a substitute
 -- for collapsing the input: "luatex-fonts-lig.lua" with "collapse=yes".
 
 local next = next

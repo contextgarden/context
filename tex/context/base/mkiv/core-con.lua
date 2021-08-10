@@ -1152,6 +1152,8 @@ local ordinals = {
     french = function(n)
         if n == 1 then
             return "er"
+        else
+            return "e"
         end
     end,
 }

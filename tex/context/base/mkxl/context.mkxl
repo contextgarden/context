@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.08.07 22:49}
+\immutable\edef\contextversion{2021.08.10 12:37}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -121,7 +121,7 @@
 %D This needs more checking for clashes:
 %D
 %D \starttyping
-%D \doifelsefileexists{l-macro-imp-codes-luametatex.lua}{\registerctxluafile{l-macro-imp-codes-luametatex}{}}{}
+% \doifelsefileexists{l-macro-imp-codes-luametatex.lua}{\registerctxluafile{l-macro-imp-codes-luametatex}{}}{}
 %D \stoptyping
 
 \loadmkxlfile{supp-dir}

@@ -2915,7 +2915,7 @@
   {\enforced\let\redoglobal\syst_helpers_redo_global
    \enforced\let\dodoglobal\syst_helpers_dodo_global}
 
-%D Whatever (will be overtoaded):
+%D Whatever (will be overloaded):
 
 \protected\def\define#1%
   {\ifdefined#1%
@@ -2961,22 +2961,30 @@
 %
 % [\test]
 
+%D When okay the parameter hack will also go into \MKIV.
+
+\integerdef\c_syst_parameter_catcode\parametercatcode
+
 \bgroup \obeylines
 
 \permanent\protected\gdef\starttexdefinition%
-  {\bgroup%
+  {\integerdef\c_syst_parameter_catcode\catcode\hashasciicode%
+   \catcode\hashasciicode\parametercatcode%
+   \bgroup%
    \obeylines%
    \syst_helpers_start_tex_definition}
 
 \gdef\syst_helpers_start_tex_definition#1
-  {\catcode\endoflineasciicode\ignorecatcode%
+  {%catcodetable\ctxcatcodes% can be adapted
+   \catcode\endoflineasciicode\ignorecatcode%
    \clf_texdefinition_one{#1}}
 
 \permanent\protected\glettonothing\stoptexdefinition
 
 \permanent\gdef\dostarttexdefinition#1\stoptexdefinition%
   {\egroup%
-   \clf_texdefinition_two{#1}}
+   \clf_texdefinition_two{#1}%
+   \catcode\hashasciicode\c_syst_parameter_catcode}
 
 \egroup
 

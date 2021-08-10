@@ -1221,10 +1221,11 @@ do
 
     local f_actual_text_p     = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
     local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e     = "EMC ET"
     local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e_not = "EMC"
     local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
+
+    local s_actual_text_e     <const> = "EMC ET"
+    local s_actual_text_e_not <const> = "EMC"
 
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down

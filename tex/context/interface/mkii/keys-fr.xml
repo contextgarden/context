@@ -82,6 +82,7 @@
 		<cd:variable name='anchor' value='ancre'/>
 		<cd:variable name='and' value='et'/>
 		<cd:variable name='answerarea' value='zonereponse'/>
+		<cd:variable name='append' value='append'/>
 		<cd:variable name='appendices' value='annexes'/>
 		<cd:variable name='appendix' value='annexe'/>
 		<cd:variable name='april' value='avril'/>
@@ -210,6 +211,8 @@
 		<cd:variable name='fixed' value='fixe'/>
 		<cd:variable name='flexible' value='flexible'/>
 		<cd:variable name='float' value='flottant'/>
+		<cd:variable name='flushbackward' value='flushbackward'/>
+		<cd:variable name='flushforward' value='flushforward'/>
 		<cd:variable name='flushinner' value='alignerinterieur'/>
 		<cd:variable name='flushleft' value='alignergauche'/>
 		<cd:variable name='flushouter' value='alignerexterieur'/>
@@ -437,6 +440,7 @@
 		<cd:variable name='postscript' value='postscript'/>
 		<cd:variable name='precedingpage' value='pageantecedent'/>
 		<cd:variable name='preference' value='preference'/>
+		<cd:variable name='prepend' value='prepend'/>
 		<cd:variable name='preview' value='apercu'/>
 		<cd:variable name='previous' value='precedent'/>
 		<cd:variable name='previousevenpage' value='pagepaireprecedente'/>
@@ -1374,6 +1378,8 @@
 		<cd:element name='load' value='charger'/>
 		<cd:element name='local' value='local'/>
 		<cd:element name='makeup' value='composition'/>
+		<cd:element name='namednotation' value='namednotation'/>
+		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='suivant'/>
 		<cd:element name='place' value='placer'/>
 		<cd:element name='previous' value='precedent'/>
@@ -1545,6 +1551,7 @@
 		<cd:command name='definereferencelist' value='définirlistereference'/>
 		<cd:command name='defineregister' value='définirregistre'/>
 		<cd:command name='definerule' value='définirtrait'/>
+		<cd:command name='definesavebuffer' value='startsavebuffer'/>
 		<cd:command name='definesection' value='définirsection'/>
 		<cd:command name='definesectionblock' value='définirblocsection'/>
 		<cd:command name='definesorting' value='définirtri'/>
@@ -1721,6 +1728,9 @@
 		<cd:command name='moveformula' value='deplacerformule'/>
 		<cd:command name='moveongrid' value='deplacersurgrille'/>
 		<cd:command name='movesidefloat' value='deplacerflottantcote'/>
+		<cd:command name='namedconstruction' value='namedconstruction'/>
+		<cd:command name='nameddescription' value='nameddescription'/>
+		<cd:command name='namedenumeration' value='namedenumeration'/>
 		<cd:command name='navigating' value='navigation'/>
 		<cd:command name='nodimension' value='sansdimension'/>
 		<cd:command name='noheaderandfooterlines' value='sansentêtenipdp'/>
@@ -2092,6 +2102,13 @@
 		<cd:command name='startmakeup' value='débutcomposition'/>
 		<cd:command name='startmarginblock' value='débutblocmarge'/>
 		<cd:command name='startmarginrule' value='débuttraitmarge'/>
+		<cd:command name='startnamedconstruction' value='startnamedconstruction'/>
+		<cd:command name='startnameddescription' value='startnameddescription'/>
+		<cd:command name='startnamedenumeration' value='startnamedenumeration'/>
+		<cd:command name='startnamedmatrix' value='startnamedmatrix'/>
+		<cd:command name='startnamedsection' value='startnamedsection'/>
+		<cd:command name='startnamedsubformulas' value='startnamedsubformulas'/>
+		<cd:command name='startnamedtyping' value='startnamedtyping'/>
 		<cd:command name='startnarrower' value='débutplusetroit'/>
 		<cd:command name='startopposite' value='débutopposition'/>
 		<cd:command name='startoverlay' value='débutsuperposition'/>
@@ -2135,6 +2152,13 @@
 		<cd:command name='stopmakeup' value='fincomposition'/>
 		<cd:command name='stopmarginblock' value='finblocmarge'/>
 		<cd:command name='stopmarginrule' value='fintraitmarge'/>
+		<cd:command name='stopnamedconstruction' value='stopnamedconstruction'/>
+		<cd:command name='stopnameddescription' value='stopnameddescription'/>
+		<cd:command name='stopnamedenumeration' value='stopnamedenumeration'/>
+		<cd:command name='stopnamedmatrix' value='stopnamedmatrix'/>
+		<cd:command name='stopnamedsection' value='stopnamedsection'/>
+		<cd:command name='stopnamedsubformulas' value='stopnamedsubformulas'/>
+		<cd:command name='stopnamedtyping' value='stopnamedtyping'/>
 		<cd:command name='stopnarrower' value='finplusetroit'/>
 		<cd:command name='stopopposite' value='finopposition'/>
 		<cd:command name='stopoverlay' value='finsuperposition'/>

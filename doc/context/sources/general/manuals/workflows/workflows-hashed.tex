@@ -11,14 +11,14 @@
 
 In a (basically free content) project we had to deal with tens of thousands of
 files. Most are in \XML\ format, but there are also thousands of \PNG, \JPG\ and
-\SVG images. In large project like this, which covers a large part of Dutch
+\SVG\ images. In a large project like this, which covers a large part of Dutch
 school math, images can be shared. All the content is available for schools as
 \HTML\ but can also be turned into printable form and because schools want to
 have stable content over specified periods one has to make a regular snapshot of
-this corpus. Also, distributing a few gigabytes if data is not much fun.
+this corpus. Also, distributing a few gigabytes of data is not much fun.
 
 So, in order to bring the amount down a dedicated mechanism for handling files
-has bene introduced. After playing with a \SQLITE\ database we finally settled on
+has been introduced. After playing with a \SQLITE\ database we finally settled on
 just \LUA, simply because it was faster and it also makes the solution
 independent.
 
@@ -53,7 +53,7 @@ return {
 context --extra=hashed --database=m4 --patterns=m4all.lua
 \stoptyping
 
-You should see something like on the console:
+You should see something like this on the console:
 
 \starttyping
 hashed > database 'hasheddata', 1627 paths, 46141 names,
@@ -106,7 +106,7 @@ a database first:
 \registerhashedfiles[m4]
 \stoptyping
 
-A fully qualified specifier looks like this (not to different from other
+A fully qualified specifier looks like this (not too different from other
 specifiers):
 
 \starttyping
@@ -152,8 +152,8 @@ and act upon the outcome:
 }
 \stoptyping
 
-Future version might introduce filename normalization (lowercase, cleanup) so
-consider this is first step. First we need test it for a while.
+Future versions might introduce filename normalization (lowercase, cleanup) so
+consider this as a first step. First we need test it for a while.
 
 \stopchapter
 

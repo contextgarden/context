@@ -28,6 +28,8 @@ return {
         --
         "emptytoks", "empty", "undefined",
         --
+        "prerollrun",
+        --
         "voidbox", "emptybox", "emptyvbox", "emptyhbox",
         --
         "bigskipamount", "medskipamount", "smallskipamount",

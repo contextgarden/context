@@ -305,8 +305,8 @@ local converters        = allocate()   figures.converters  = converters
 local identifiers       = allocate()   figures.identifiers = identifiers
 local programs          = allocate()   figures.programs    = programs
 
-local defaultformat     = "pdf"
-local defaultprefix     = "m_k_i_v_"
+local defaultformat <const> = "pdf"
+local defaultprefix <const> = "m_k_i_v_"
 
 figures.localpaths = allocate {
     ".", "..", "../.."

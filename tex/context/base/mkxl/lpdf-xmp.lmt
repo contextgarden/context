@@ -241,10 +241,11 @@ local function flushxmpinfo()
 
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
-    local metadata   = pdfgetmetadata()
-    local time       = metadata.time
-    local producer   = metadata.producer
-    local creator    = metadata.creator
+
+    local metadata = pdfgetmetadata()
+    local time     = metadata.time
+    local producer = metadata.producer
+    local creator  = metadata.creator
 
     if included.id ~= "fake" then
         documentid = "uuid:" .. os.uuid()

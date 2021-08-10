@@ -815,9 +815,9 @@ do
 
     local nodeproperties = nodes.properties.data
 
-    local s_matrix_0 = "1 0 0 1 0 0 cm"
-    local f_matrix_2 = formatters["%.6N 0 0 %.6N 0 0 cm"]
-    local f_matrix_4 = formatters["%.6N %.6N %.6N %.6N 0 0 cm"]
+    local s_matrix_0 <const> = "1 0 0 1 0 0 cm"
+    local f_matrix_2         = formatters["%.6N 0 0 %.6N 0 0 cm"]
+    local f_matrix_4         = formatters["%.6N %.6N %.6N %.6N 0 0 cm"]
 
     local flushsetmatrix = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
@@ -1013,8 +1013,8 @@ local flushimage  do
     local f_im = formatters["/Im%d Do"]
     local f_gr = formatters["/Gp%d Do"]
 
-    local s_b  = "q"
-    local s_e  = "Q"
+    local s_b <const> = "q"
+    local s_e <const> = "Q"
 
     local f_v  = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
     local f_h  = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
@@ -1939,8 +1939,8 @@ local f_stream_b_d_u = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010
 local f_stream_b_d_c = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010"]
 local f_stream_b_d_r = formatters["%i 0 obj\010<< %s >>\010stream\010"]
 
------ s_object_e     = "\010endobj\010"
-local s_stream_e     = "\010endstream\010endobj\010"
+----- s_object_e <const> = "\010endobj\010"
+local s_stream_e <const> = "\010endstream\010endobj\010"
 
 do
 
@@ -2466,6 +2466,9 @@ local openfile, closefile  do
     local close    = false
     local update   = false
 
+ -- local banner <const> = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
+    local banner <const> = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
+
  -- local removefile = os.remove
 
     openfile = function(filename)
@@ -2512,12 +2515,10 @@ local openfile, closefile  do
                 f:write(s)
             end
         end
-        local v = f_pdf_tag(majorversion,minorversion)
-     -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
-        local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
-        flush(f,v)
-        flush(f,b)
-        offset = offset + #v + #b
+        local version = f_pdf_tag(majorversion,minorversion)
+        flush(f,version)
+        flush(f,banner)
+        offset = offset + #version + #banner
     end
 
     closefile = function(abort)

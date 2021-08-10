@@ -100,12 +100,12 @@ local overloads         = fonts.mappings.overloads
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.35"
-local mathmlns          = "http://www.w3.org/1998/Math/MathML"
-local contextns         = "http://www.contextgarden.net/context/export" -- whatever suits
-local cssnamespaceurl   = "@namespace context url('%namespace%') ;"
-local cssnamespace      = "context|"
------ cssnamespacenop   = "/* no namespace */"
+local exportversion     <const> = "0.35"
+local mathmlns          <const> = "http://www.w3.org/1998/Math/MathML"
+local contextns         <const> = "http://www.contextgarden.net/context/export" -- whatever suits
+local cssnamespaceurl   <const> = "@namespace context url('%namespace%') ;"
+local cssnamespace      <const> = "context|"
+----- cssnamespacenop   <const> = "/* no namespace */"
 
 local usecssnamespace   = false
 
@@ -296,7 +296,7 @@ structurestags.backend = {
     destinationhash = destinationhash,
 }
 
-local namespacetemplate = [[
+local namespacetemplate <const> = [[
 /* %what% for file %filename% */
 
 %cssnamespaceurl%
@@ -312,7 +312,7 @@ do
     -- /* text-justify : inter-word ; */
     -- /* text-align : justify ; */
 
-local documenttemplate = [[
+local documenttemplate <const> = [[
 document,
 %namespace%div.document {
     font-size  : %size% !important ;
@@ -321,7 +321,7 @@ document,
     hyphens    : %hyphens% !important ;
 }]]
 
-local styletemplate = [[
+local styletemplate <const> = [[
 %element%[detail="%detail%"],
 %namespace%div.%element%.%detail% {
     display      : inline ;
@@ -409,7 +409,7 @@ end
 
 do
 
-local imagetemplate = [[
+local imagetemplate <const> = [[
 %element%[id="%id%"], %namespace%div.%element%[id="%id%"] {
     display           : block ;
     background-image  : url('%url%') ;
@@ -1983,7 +1983,7 @@ local cssheadlink = [[
         return concat(result), concat(extras)
     end
 
-local elementtemplate = [[
+local elementtemplate <const> = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
 %element%,
@@ -1991,7 +1991,7 @@ local elementtemplate = [[
     display: %display% ;
 }]]
 
-local detailtemplate = [[
+local detailtemplate <const> = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
 %element%[detail=%detail%],
@@ -2001,7 +2001,7 @@ local detailtemplate = [[
 
 -- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd" >
 
-local htmltemplate = [[
+local htmltemplate <const> = [[
 %preamble%
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:math="http://www.w3.org/1998/Math/MathML">

@@ -133,7 +133,7 @@ do
 
     local tounicode = fonts.mappings.tounicode
 
-local tounicode_template = [[
+local tounicode_template <const> = [[
 %%!PS-Adobe-3.0 Resource-CMap
 %%%%DocumentNeededResources: ProcSet (CIDInit)
 %%%%IncludeResource: ProcSet (CIDInit)
@@ -448,7 +448,7 @@ do
             "fullname", "postscriptname",
         }
 
-    local template = [[
+    local template <const> = [[
 <?xpacket begin="﻿﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
   <x:xmpmeta xmlns:x="adobe:ns:meta/">
     <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">

@@ -115,9 +115,9 @@ has no ligatures and kerns and is normally not processed at all.
 \NC \type {italic}           \NC number  \NC italic correction in sp (default 0) \NC\NR
 \NC \type {top_accent}       \NC number  \NC top accent alignment place in sp (default zero) \NC\NR
 \NC \type {bot_accent}       \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
-\NC \type {left_protruding}  \NC number  \NC left protruding factor (\lpr {lpcode}) \NC\NR
-\NC \type {right_protruding} \NC number  \NC right protruding factor (\lpr {rpcode}) \NC\NR
-\NC \type {expansion_factor} \NC number  \NC expansion factor (\lpr {efcode}) \NC\NR
+\NC \type {left_protruding}  \NC number  \NC left protruding factor (\prm {lpcode}) \NC\NR
+\NC \type {right_protruding} \NC number  \NC right protruding factor (\prm {rpcode}) \NC\NR
+\NC \type {expansion_factor} \NC number  \NC expansion factor (\prm {efcode}) \NC\NR
 \NC \type {next}             \NC number  \NC \quote {next larger} character index \NC\NR
 \NC \type {extensible}       \NC table   \NC constituent parts of an extensible recipe \NC\NR
 \NC \type {vert_variants}    \NC table   \NC constituent parts of a vertical variant set \NC \NR
@@ -160,9 +160,9 @@ processing. \type {right_boundary} is similar but not actually used for anything
 The values of \type {top_accent}, \type {bot_accent} and \type {mathkern} are
 used only for math accent and superscript placement, see \at {page} [math] in
 this manual for details. The values of \type {left_protruding} and \type
-{right_protruding} are used only when \lpr {protrudechars} is non-zero. Whether
+{right_protruding} are used only when \prm {protrudechars} is non-zero. Whether
 or not \type {expansion_factor} is used depends on the font's global expansion
-settings, as well as on the value of \lpr {adjustspacing}.
+settings, as well as on the value of \prm {adjustspacing}.
 
 A math character can have a \type {next} field that points to a next larger
 shape. However, the presence of \type {extensible} will overrule \type {next}, if
@@ -277,10 +277,10 @@ More options might be added in the future.
 \stopluacode
 
 In \CONTEXT\ these are interfaced via pseudo features. The math control flags of
-a font can be overloaded by \lpr {mathcontrolmode} on the spot and the set
-controls of a font can be queried by \lpr {fontmathcontrol}. The text control
-flags in a font always win over the ones set by other parameters, like \lpr
-{hyphenationmode}. They can be queried with \lpr {fonttextcontrol}.
+a font can be overloaded by \prm {mathcontrolmode} on the spot and the set
+controls of a font can be queried by \prm {fontmathcontrol}. The text control
+flags in a font always win over the ones set by other parameters, like \prm
+{hyphenationmode}. They can be queried with \prm {fonttextcontrol}.
 
 \stopsection
 
@@ -353,7 +353,7 @@ ever seen in the engine.
 \NC \type{down}    \NC 1         \NC number    \NC move down on the page \NC \NR
 \NC \type{right}   \NC 1         \NC number    \NC move right on the page \NC \NR
 \HL
-\NC \type{special} \NC 1         \NC string    \NC output a \prm {special} command \NC \NR
+\NC \type{special} \NC 1         \NC string    \NC output a driver directive \NC \NR
 \HL
 \NC \type{nop}     \NC 0         \NC           \NC do nothing \NC \NR
 \NC \type{slot}    \NC 2         \NC 2 numbers \NC a shortcut for the combination of a font and char command\NC \NR
@@ -452,7 +452,7 @@ expansion takes place inside the argument.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {fontid} and \lpr {setfontid}}]
+\startsubsection[title={\prm {fontid} and \prm {setfontid}}]
 
 \startsyntax
 \fontid\font
@@ -480,12 +480,12 @@ order of loading fonts. For instance, when in \CONTEXT\ virtual math \UNICODE\
 fonts are used, we can easily get over a hundred ids in use. Not all ids have to
 be bound to a real font, after all it's just a number.
 
-The primitive \lpr {setfontid} can be used to enable a font with the given id,
+The primitive \prm {setfontid} can be used to enable a font with the given id,
 which of course needs to be a valid one.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {glyphoptions}}]
+\startsubsection[title={\prm {glyphoptions}}]
 
 \topicindex {ligatures+suppress}
 \topicindex {kerns+suppress}
@@ -494,7 +494,7 @@ which of course needs to be a valid one.
 
 In \LUATEX\ the \type {\noligs} and \type {\nokerns} primitives suppress these
 features but in \LUAMETATEX\ these primitives are gone. They are replace by a more
-generic control primitive \lpr {glyphoptions}. This numerical parameter is a
+generic control primitive \prm {glyphoptions}. This numerical parameter is a
 bitset with the following fields:
 
 \starttabulate[|l|pl|]
@@ -516,18 +516,18 @@ glyph, this because the current value of this option is stored with glyphs.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {glyphxscale}, \lpr {glyphyscale} and \lpr {scaledfontdimen}}]
+\startsubsection[title={\prm {glyphxscale}, \prm {glyphyscale} and \prm {scaledfontdimen}}]
 
 The two scale parameters control the current scaling. They are traditional \TEX\
 integer parameters that operate independent of each other. The scaling is
 reflected in the dimensions of glyphs as well as in the related font dimensions,
 which means that units like \type {ex} and \type {em} work as expected. If you
-query a font dimensions with \prm {fontdimen} you get the raw value but with \lpr
+query a font dimensions with \prm {fontdimen} you get the raw value but with \prm
 {scaledfontdimen} you get the useable value.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {glyphxoffset}, \lpr {glyphyoffset}}]
+\startsubsection[title={\prm {glyphxoffset}, \prm {glyphyoffset}}]
 
 These two parameters control the horizontal and vertical shift of glyphs with,
 when applied to a stretch of them, the horizontal offset probably being the least
@@ -535,7 +535,7 @@ useful.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {glyph}}]
+\startsubsection[title={\prm {glyph}}]
 
 This command is a variation in \prm {char} that takes keywords:
 
@@ -570,7 +570,7 @@ Visualized:
 
 \stopsubsection
 
-\startsubsection[title={\lpr{nospaces}}]
+\startsubsection[title={\prm{nospaces}}]
 
 \topicindex {spaces+suppress}
 
@@ -580,7 +580,7 @@ triggers no injection while \type{2} results in injection of a zero skip. In \in
 {figure} [fig:nospaces] we see the results for four characters separated by a
 space.
 
-\startplacefigure[reference=fig:nospaces,title={The \lpr {nospaces} options.}]
+\startplacefigure[reference=fig:nospaces,title={The \prm {nospaces} options.}]
 \startcombination[3*2]
     {\ruledhbox to 5cm{\vtop{\hsize 10mm\nospaces=0\relax x x x x \par}\hss}} {\type {0 / hsize 10mm}}
     {\ruledhbox to 5cm{\vtop{\hsize 10mm\nospaces=1\relax x x x x \par}\hss}} {\type {1 / hsize 10mm}}
@@ -593,7 +593,7 @@ space.
 
 \stopsubsection
 
-\startsubsection[title={\lpr{protrusionboundary}}]
+\startsubsection[title={\prm{protrusionboundary}}]
 
 \topicindex {protrusion}
 \topicindex {boundaries}
@@ -712,7 +712,7 @@ font.current(<number> i)
 
 \stopsubsection
 
-\startsubsection[title={Glyph data: \lpr {glyphdata}, \lpr {glyphscript}, \lpr {glyphstate}}]
+\startsubsection[title={Glyph data: \prm {glyphdatafield}, \prm {glyphscriptfield}, \prm {glyphstatefield}}]
 
 These primitives can be used to set an additional glyph properties. Of course
 it's very macro package dependant what is done with that. It started with just

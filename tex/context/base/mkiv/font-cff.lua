@@ -707,6 +707,7 @@ do
     local y            = 0
     local width        = false
     local lsb          = 0
+local result = { }
     local r            = 0
     local stems        = 0
     local globalbias   = 0
@@ -2128,7 +2129,6 @@ do
         end
 
         process(tab)
-
         if hack then
             return x, y
         end
@@ -2151,6 +2151,7 @@ do
             r = r + 1
             result[r] = c_endchar
             local stream = concat(result)
+result = nil
          -- if trace_charstrings then
          --     report("vdata: %s",stream)
          -- end
@@ -2177,6 +2178,7 @@ do
                 name        = charset and charset[index] or nil,
              -- sidebearing = 0,
             }
+result = nil
         else
             glyphs[index] = {
                 boundingbox = boundingbox,

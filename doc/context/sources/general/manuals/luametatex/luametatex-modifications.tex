@@ -113,10 +113,10 @@ most still comes from original Knuthian \TEX. But we divert a bit.
 \stopitem
 
 \startitem
-    Because the backend is not built|-|in, the magnification (\prm {mag})
-    primitive is gone. A \type {shipout} just discards the content of the given
-    box. The write related primitives have to be implemented in the used macro
-    package using \LUA. None of the \PDFTEX\ derived primitives is present.
+    Because the backend is not built|-|in, the magnification (\tex {mag})
+    primitive is gone. A \tex {shipout} command just discards the content of the
+    given box. The write related primitives have to be implemented in the used
+    macro package using \LUA. None of the \PDFTEX\ derived primitives is present.
 \stopitem
 
 \startitem
@@ -209,7 +209,7 @@ features, but with a few small adaptations.
 \stopitem
 
 \startitem
-    The \prm {readline} primitive has to be implemented in \LUA. This is a side
+    The \tex {readline} primitive has to be implemented in \LUA. This is a side
     effect of delegating all file \IO.
 \stopitem
 
@@ -237,27 +237,27 @@ don't expect \LUAMETATEX\ to be compatible.
 \startitemize
 
 \startitem
-    The experimental primitives \lpr {ifabsnum} and \lpr {ifabsdim} have been
+    The experimental primitives \prm {ifabsnum} and \prm {ifabsdim} have been
     promoted to core primitives.
 \stopitem
 
 \startitem
-    The primitives \lpr {ifincsname}, \lpr {expanded} and \lpr {quitvmode}
+    The primitives \prm {ifincsname}, \prm {expanded} and \prm {quitvmode}
     have become core primitives.
 \stopitem
 
 \startitem
     As the hz (expansion) and protrusion mechanism are part of the core the
-    related primitives \lpr {lpcode}, \lpr {rpcode}, \lpr {efcode}, \lpr
-    {leftmarginkern}, \lpr {rightmarginkern} are promoted to core primitives. The
-    two commands \lpr {protrudechars} and \lpr {adjustspacing} control these
+    related primitives \prm {lpcode}, \prm {rpcode}, \prm {efcode}, \prm
+    {leftmarginkern}, \prm {rightmarginkern} are promoted to core primitives. The
+    two commands \prm {protrudechars} and \prm {adjustspacing} control these
     processes.
 \stopitem
 
 \startitem
     In \LUAMETATEX\ three extra primitives can be used to overload the font
-    specific settings: \lpr {adjustspacingstep} (max: 100), \lpr
-    {adjustspacingstretch} (max: 1000) and \lpr {adjustspacingshrink} (max: 500).
+    specific settings: \prm {adjustspacingstep} (max: 100), \prm
+    {adjustspacingstretch} (max: 1000) and \prm {adjustspacingshrink} (max: 500).
 \stopitem
 
 \startitem
@@ -270,25 +270,25 @@ don't expect \LUAMETATEX\ to be compatible.
 \stopitem
 
 \startitem
-    When \lpr {adjustspacing} has value~2, hz optimization will be applied to
+    When \prm {adjustspacing} has value~2, hz optimization will be applied to
     glyphs and kerns. When the value is~3, only glyphs will be treated. A value
     smaller than~2 disables this feature.
 \stopitem
 
 \startitem
-    When \lpr {protrudechars} has a value larger than zero characters at the edge
+    When \prm {protrudechars} has a value larger than zero characters at the edge
     of a line can be made to hang out. A value of~2 will take the protrusion into
     account when breaking a paragraph into lines. A value of~3 will try to deal
     with right|-|to|-|left rendering; this is a still experimental feature.
 \stopitem
 
 \startitem
-    The pixel multiplier dimension \lpr {pxdimen} has be inherited as core
+    The pixel multiplier dimension \prm {pxdimen} has be inherited as core
     primitive.
 \stopitem
 
 \startitem
-    The primitive \lpr {tracingfonts} is now a core primitive but doesn't relate
+    The primitive \prm {tracingfonts} is now a core primitive but doesn't relate
     to the backend.
 \stopitem
 
@@ -382,13 +382,13 @@ The Program mostly applies!
 \startsubsection[title=Sparse arrays]
 
 The \prm {mathcode}, \prm {delcode}, \prm {catcode}, \prm {sfcode}, \prm {lccode}
-and \prm {uccode} (and the new \lpr {hjcode}) tables are now sparse arrays that
+and \prm {uccode} (and the new \prm {hjcode}) tables are now sparse arrays that
 are implemented in~\CCODE. They are no longer part of the \TEX\ \quote
 {equivalence table} and because each had 1.1 million entries with a few memory
 words each, this makes a major difference in memory usage. Performance is not
 really hurt by this.
 
-The \prm {catcode}, \prm {sfcode}, \prm {lccode}, \prm {uccode} and \lpr {hjcode}
+The \prm {catcode}, \prm {sfcode}, \prm {lccode}, \prm {uccode} and \prm {hjcode}
 assignments don't show up when using the \ETEX\ tracing routines \prm
 {tracingassigns} and \prm {tracingrestores} but we don't see that as a real
 limitation. It also saves a lot of clutter.

@@ -431,18 +431,25 @@
 \usemodule[abbreviations-logos]
 
 \defineregister[topicindex]
+\defineregister[luatexindex]
+\defineregister[etexindex]
+\defineregister[texindex]
 \defineregister[primitiveindex]
 \defineregister[callbackindex]
 \defineregister[nodeindex]
 \defineregister[libraryindex]
 
-\protected\def\lpr#1{\doifmode{*bodypart}{\primitiveindex[#1]{\bf\tex {#1}}}\tex {#1}}
-\protected\def\prm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
-\protected\def\orm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
+\setupregister[etexindex]  [textstyle=bold]
+\setupregister[luatexindex][textstyle=bold]
+
+%protected\def\lpr#1{\doifmode{*bodypart}{\primitiveindex[#1]{\bf\tex {#1}}}\tex {#1}}
+%protected\def\prm#1{\doifmode{*bodypart}{\primitiveindex[#1]{\tex    {#1}}}\tex {#1}}
 \protected\def\cbk#1{\doifmode{*bodypart}{\callbackindex [#1]{\type   {#1}}}\type{#1}}
 \protected\def\nod#1{\doifmode{*bodypart}{\nodeindex     [#1]{\bf\type{#1}}}\type{#1}}
 \protected\def\whs#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
 \protected\def\noa#1{\doifmode{*bodypart}{\nodeindex     [#1]{\type   {#1}}}\type{#1}}
+
+\protected\def\prm#1{\doifmode{*bodypart}{\getvalue{\ctxlua{document.primitiveorigin("#1")}index}{\tex{#1}}}\tex{#1}}
 
 \hyphenation{sub-nodes}
 
@@ -490,9 +497,26 @@
 % video: interesting what comes out of top musicians working remote.
 
 \startluacode
-local list = token.getprimitives()
+local list    = token.getprimitives()
+local origins = tex.getprimitiveorigins()
+local hash    = { }
+
+for i=1,#list do
+    local l = list[i]
+    hash[l[3]] = l
+end
 
 -- redo this:
+
+function document.primitiveorigin(name)
+    local h = hash[name]
+    if h then
+        context(origins[h[4]])
+    else
+        logs.report("!!!!!!","unknown primitive %s",name)
+        context("tex")
+    end
+end
 
 function document.showprimitives(tag)
     local t = tex.extraprimitives(tag)
@@ -530,14 +554,15 @@ end
 
 function document.allprimitives()
     local c = tokens.commands
-    local o = tex.getprimitiveorigins()
+    local o = origins
     table.sort(list, function(a,b)
         return a[3] < b[3]
     end)
-    context.starttabulate { "|T|T|Tc|T|" }
+    context.starttabulate { "|T|T|Tr|Tr|T|" }
     context.DB() context("primitive")
-    context.BC() context("command code")
-    context.BC() context("char code")
+    context.BC() context("command name")
+    context.BC() context("cmd")
+    context.BC() context("chr")
     context.BC() context("origin")
     context.NC() context.NR()
     context.TB()
@@ -545,6 +570,7 @@ function document.allprimitives()
         local l = list[i]
         context.NC() context.tex(l[3])
         context.NC() context(c[l[1]])
+        context.NC() context(l[1])
         context.NC() context(l[2])
         context.NC() context(o[l[4]])
         context.NC() context.NR()
@@ -555,3 +581,65 @@ end
 \stopluacode
 
 \stopenvironment
+
+% \startluacode
+%
+% local function identify(name, l)
+%     local t = { }
+%     local l = l or _G[name]
+%     if type(l) == "table" then
+%         for k, v in next, l do
+%         print(k)
+%             if string.find(k,"^_") then
+%             elseif type(v) == "table" then
+%                 t[k] = identify(k,v)
+%             else
+%                 t[k] = type(v)
+%             end
+%         end
+%     else
+%         print("unknown " .. name)
+%     end
+%     return t
+% end
+%
+% local builtin = {
+%     --
+%     md5            = identify("md5"),
+%     sha2           = identify("sha2"),
+%     basexx         = identify("basexx"),
+%     lfs            = identify("lfs"),
+%     fio            = identify("fio"),
+%     sio            = identify("sio"),
+%     sparse         = identify("sparse"),
+%     xzip           = identify("xzip"),
+%     xmath          = identify("xmath") ,
+%     xcomplex       = identify("xcomplex"),
+%     xdecimal       = identify("xdecimal"),
+%     --
+%     socket         = identify("socket"),
+%     mime           = identify("mime"),
+%     --
+%     lua            = identify("lua"),
+%     status         = identify("status"),
+%     texio          = identify("texio"),
+%     --
+%     tex            = identify("tex"),
+%     token          = identify("token"),
+%     node           = identify("node"),
+%     callback       = identify("callback"),
+%     font           = identify("font"),
+%     language       = identify("language"),
+%     --
+%     mplib          = identify("mplib"),
+%     --
+%     pdfe           = identify("pdfe"),
+%     pdfdecode      = identify("pdfdecode"),
+%     pngdecode      = identify("pngdecode"),
+%     --
+%     optional       = identify("optional"),
+% };
+%
+% inspect(builtin)
+%
+% \stopluacode

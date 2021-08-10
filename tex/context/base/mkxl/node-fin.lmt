@@ -79,7 +79,7 @@ nodes.plugindata = nil
 
 -- inheritance: -0x7FFFFFFF -- we can best use nil and skip !
 
-local template = [[
+local template <const> = [[
 local plugin = nodes.plugindata
 local starttiming = statistics.starttiming
 local stoptiming = statistics.stoptiming

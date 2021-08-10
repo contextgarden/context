@@ -52,7 +52,7 @@ purpose apart from the fact that it reveals some history.
 
 \startsubsection[title={Version information}]
 
-\startsubsubsection[title={\lpr {luatexbanner}, \lpr {luatexversion} and \lpr {luatexrevision}}]
+\startsubsubsection[title={\prm {luatexbanner}, \prm {luatexversion} and \prm {luatexrevision}}]
 
 \topicindex{version}
 \topicindex{banner}
@@ -70,11 +70,11 @@ There are three primitives to test the version of \LUATEX\ (and \LUAMETATEX):
 \DB primitive             \BC value
                           \BC explanation \NC \NR
 \TB
-\NC \lpr {luatexbanner}   \NC \VersionHack{\luatexbanner}
+\NC \prm {luatexbanner}   \NC \VersionHack{\luatexbanner}
                           \NC the banner reported on the console \NC \NR
-\NC \lpr {luatexversion}  \NC \the\luatexversion
+\NC \prm {luatexversion}  \NC \the\luatexversion
                           \NC major and minor number combined \NC \NR
-\NC \lpr {luatexrevision} \NC \the\luatexrevision
+\NC \prm {luatexrevision} \NC \the\luatexrevision
                           \NC the revision number \NC \NR
 \LL
 \stoptabulate
@@ -83,7 +83,7 @@ A version is defined as follows:
 
 \startitemize
 \startitem
-    The major version is the integer result of \lpr {luatexversion} divided by
+    The major version is the integer result of \prm {luatexversion} divided by
     100. The primitive is an \quote {internal variable}, so you may need to prefix
     its use with \prm {the} or \prm {number} depending on the context.
 \stopitem
@@ -91,7 +91,7 @@ A version is defined as follows:
     The minor version is a number running from 0 upto 99.
 \stopitem
 \startitem
-    The revision is reported by \lpr {luatexrevision}. Contrary to other engines
+    The revision is reported by \prm {luatexrevision}. Contrary to other engines
     in \LUAMETATEX\ is also a number so one needs to prefix it with \prm {the} or
     \prm {number}. \footnote {In the past it always was good to prefix the
     revision with \prm {number} anyway, just to play safe, although there have
@@ -158,8 +158,8 @@ problem for well|-|behaved input files, but it could create incompatibilities fo
 input that would have generated an error when processed by older \TEX|-|based
 engines. The affected commands with an altered initial (left of the equal sign)
 or secondary (right of the equal sign) value are: \prm {char}, \prm {lccode},
-\prm {uccode}, \lpr {hjcode}, \prm {catcode}, \prm {sfcode}, \lpr {efcode}, \lpr
-{lpcode}, \lpr {rpcode}, \prm {chardef}.
+\prm {uccode}, \prm {hjcode}, \prm {catcode}, \prm {sfcode}, \prm {efcode}, \prm
+{lpcode}, \prm {rpcode}, \prm {chardef}.
 
 As far as the core engine is concerned, all input and output to text files is
 \UTF-8 encoded. Input files can be pre|-|processed using the \type {reader}
@@ -180,11 +180,11 @@ live in a \UNICODE\ galaxy that is no real problem.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {Uchar}}]
+\startsubsection[title={\prm {Uchar}}]
 
 \topicindex{\UNICODE}
 
-The expandable command \lpr {Uchar} reads a number between~0 and $1{,}114{,}111$
+The expandable command \prm {Uchar} reads a number between~0 and $1{,}114{,}111$
 and expands to the associated \UNICODE\ character.
 
 \stopsubsection
@@ -432,14 +432,14 @@ mode, but in \LUAMETATEX\ there is no error message and the box the height and
 depth are equally divided. Of course in text mode there is no math axis related
 offset applied.
 
-It is possible to change or add to the attributes assigned to a box with \lpr
+It is possible to change or add to the attributes assigned to a box with \prm
 {boxattribute}:
 
 \starttyping
 \boxattribute 0 123 456
 \stoptyping
 
-You can set attributes of the current paragraph specification node with \lpr
+You can set attributes of the current paragraph specification node with \prm
 {parattribute}:
 
 \starttyping
@@ -540,7 +540,7 @@ within the \TEX\ portion of the executable.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {luaescapestring}}]
+\startsubsection[title={\prm {luaescapestring}}]
 
 \topicindex {escaping}
 
@@ -566,13 +566,13 @@ in a separate file and load it using \LUA's \type {dofile}:
 
 \stopsubsection
 
-\startsubsection[title={\lpr {luafunction}, \lpr {luafunctioncall} and \lpr {luadef}}]
+\startsubsection[title={\prm {luafunction}, \prm {luafunctioncall} and \prm {luadef}}]
 
 The \prm {directlua} commands involves tokenization of its argument (after
 picking up an optional name or number specification). The tokenlist is then
 converted into a string and given to \LUA\ to turn into a function that is
 called. The overhead is rather small but when you have millions of calls it can
-have some impact. For this reason there is a variant call available: \lpr
+have some impact. For this reason there is a variant call available: \prm
 {luafunction}. This command is used as follows:
 
 \starttyping
@@ -599,7 +599,7 @@ in the following example the number \type {8} gets typeset.
 }
 \stoptyping
 
-The \lpr {luafunctioncall} primitive does the same but is unexpandable, for
+The \prm {luafunctioncall} primitive does the same but is unexpandable, for
 instance in an \prm {edef}. In addition \LUATEX\ provides a definer:
 
 \starttyping
@@ -617,7 +617,7 @@ normal usage should not give problems.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {luabytecode} and \lpr {luabytecodecall}}]
+\startsubsection[title={\prm {luabytecode} and \prm {luabytecodecall}}]
 
 Analogue to the function callers discussed in the previous section we have byte
 code callers. Again the call variant is unexpandable.
@@ -666,9 +666,9 @@ contents is stored and retrieved from the format file.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {catcodetable}}]
+\startsubsection[title={\prm {catcodetable}}]
 
-The primitive \lpr {catcodetable} switches to a different catcode table. Such a
+The primitive \prm {catcodetable} switches to a different catcode table. Such a
 table has to be previously created using one of the two primitives below, or it
 has to be zero. Table zero is initialized by \INITEX.
 
@@ -678,13 +678,13 @@ has to be zero. Table zero is initialized by \INITEX.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {initcatcodetable}}]
+\startsubsection[title={\prm {initcatcodetable}}]
 
 \startsyntax
 \initcatcodetable <15-bit number>
 \stopsyntax
 
-The primitive \lpr {initcatcodetable} creates a new table with catcodes
+The primitive \prm {initcatcodetable} creates a new table with catcodes
 identical to those defined by \INITEX. The new catcode table is allocated
 globally: it will not go away after the current group has ended. If the supplied
 number is identical to the currently active table, an error is raised. The
@@ -707,13 +707,13 @@ initial values are:
 
 \stopsubsection
 
-\startsubsection[title={\lpr {savecatcodetable}}]
+\startsubsection[title={\prm {savecatcodetable}}]
 
 \startsyntax
 \savecatcodetable <15-bit number>
 \stopsyntax
 
-\lpr {savecatcodetable} copies the current set of catcodes to a new table with
+\prm {savecatcodetable} copies the current set of catcodes to a new table with
 the requested number. The definitions in this new table are all treated as if
 they were made in the outermost level. Again, the new table is allocated globally:
 it will not go away after the current group has ended. If the supplied number is
@@ -725,11 +725,11 @@ the currently active table, an error is raised.
 
 \startsection[title={Tokens, commands and strings}]
 
-\startsubsection[title={\lpr {scantextokens} and \lpr {tokenized}}]
+\startsubsection[title={\prm {scantextokens} and \prm {tokenized}}]
 
 \topicindex {tokens+scanning}
 
-The syntax of \lpr {scantextokens} is identical to \prm {scantokens}. This
+The syntax of \prm {scantextokens} is identical to \prm {scantokens}. This
 primitive is a slightly adapted version of \ETEX's \prm {scantokens}. The
 differences are:
 
@@ -738,7 +738,7 @@ differences are:
     The last (and usually only) line does not have a \prm {endlinechar} appended.
 \stopitem
 \startitem
-    \lpr {scantextokens} never raises an EOF error, and it does not execute
+    \prm {scantextokens} never raises an EOF error, and it does not execute
     \prm {everyeof} tokens.
 \stopitem
 \startitem
@@ -762,8 +762,8 @@ that was interwoven with the old code.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {toksapp}, \lpr {tokspre}, \lpr {etoksapp}, \lpr {etokspre},
-\lpr {gtoksapp}, \lpr {gtokspre}, \lpr {xtoksapp},  \lpr {xtokspre}}]
+\startsubsection[title={\prm {toksapp}, \prm {tokspre}, \prm {etoksapp}, \prm {etokspre},
+\prm {gtoksapp}, \prm {gtokspre}, \prm {xtoksapp},  \prm {xtokspre}}]
 
 Instead of:
 
@@ -782,13 +782,13 @@ expand the passed general text. The \type {g} and \type {x} variants are global.
 
 \stopsubsection
 
-\startsubsection[title={\prm {csstring}, \lpr {begincsname} and \lpr {lastnamedcs}}]
+\startsubsection[title={\prm {csstring}, \prm {begincsname} and \prm {lastnamedcs}}]
 
 These are somewhat special. The \prm {csstring} primitive is like
 \prm {string} but it omits the leading escape character. This can be
 somewhat more efficient than stripping it afterwards.
 
-The \lpr {begincsname} primitive is like \prm {csname} but doesn't create
+The \prm {begincsname} primitive is like \prm {csname} but doesn't create
 a relaxed equivalent when there is no such name. It is equivalent to
 
 \starttyping
@@ -798,7 +798,7 @@ a relaxed equivalent when there is no such name. It is equivalent to
 \stoptyping
 
 The advantage is that it saves a lookup (don't expect much speedup) but more
-important is that it avoids using the \prm {if} test. The \lpr {lastnamedcs}
+important is that it avoids using the \prm {if} test. The \prm {lastnamedcs}
 is one that should be used with care. The above example could be written as:
 
 \starttyping
@@ -813,7 +813,7 @@ that it saves a few tokens and can make code a bit more readable.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {clearmarks}}]
+\startsubsection[title={\prm {clearmarks}}]
 
 \topicindex {marks}
 
@@ -827,15 +827,15 @@ immediate command (no synchronization node is used).
 
 \stopsubsection
 
-\startsubsection[title={\lpr {alignmark} and \lpr {aligntab}}]
+\startsubsection[title={\prm {alignmark} and \prm {aligntab}}]
 
-The primitive \lpr {alignmark} duplicates the functionality of \type {#} inside
-alignment preambles, while \lpr {aligntab} duplicates the functionality of \type
+The primitive \prm {alignmark} duplicates the functionality of \type {#} inside
+alignment preambles, while \prm {aligntab} duplicates the functionality of \type
 {&}.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {letcharcode}}]
+\startsubsection[title={\prm {letcharcode}}]
 
 This primitive can be used to assign a meaning to an active character, as in:
 
@@ -848,7 +848,7 @@ This can be a bit nicer than using the uppercase tricks (using the property of
 
 \stopsubsection
 
-\startsubsection[title={\lpr {lettonothing} and \lpr {glettonothing}}]
+\startsubsection[title={\prm {lettonothing} and \prm {glettonothing}}]
 
 This primitive is equivalent to:
 
@@ -863,7 +863,7 @@ name (relaxing would show the relax equivalent).
 
 \stopsubsection
 
-\startsubsection[title={\lpr {glet}}]
+\startsubsection[title={\prm {glet}}]
 
 This primitive is similar to:
 
@@ -876,7 +876,7 @@ but faster (only measurable with millions of calls) and probably more convenient
 
 \stopsubsection
 
-\startsubsection[title={\lpr {defcsname}, \lpr {edefcsname}, \lpr {edefcsname} and \lpr {xdefcsname}}]
+\startsubsection[title={\prm {defcsname}, \prm {edefcsname}, \prm {edefcsname} and \prm {xdefcsname}}]
 
 Although we can implement these primitives easily using macros it makes sense,
 given the popularity of \prm {csname} to have these as primitives. It also saves
@@ -888,11 +888,11 @@ some \prm {expandafter} usage and it looks a bit better in the source.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {expanded}}]
+\startsubsection[title={\prm {expanded}}]
 
 \topicindex {expansion}
 
-The \lpr {expanded} primitive takes a token list and expands its content which
+The \prm {expanded} primitive takes a token list and expands its content which
 can come in handy: it avoids a tricky mix of \prm {expandafter} and \prm
 {noexpand}. You can compare it with what happens inside the body of an \prm
 {edef}. The \tex {immediateassignment} and \tex {immediateassigned} commands are
@@ -908,11 +908,11 @@ primitives back you can say:
 
 \stopsubsection
 
-% \startsubsection[title={\lpr {expanded}, \lpr {immediateassignment} and \lpr {immediateassigned}}]
+% \startsubsection[title={\prm {expanded}, \prm {immediateassignment} and \prm {immediateassigned}}]
 %
 % \topicindex {expansion}
 %
-% The \lpr {expanded} primitive takes a token list and expands its content which can
+% The \prm {expanded} primitive takes a token list and expands its content which can
 % come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
 % You can compare it with what happens inside the body of an \prm {edef}. But this
 % kind of expansion still doesn't expand some primitive operations.
@@ -1005,14 +1005,14 @@ primitives back you can say:
 %
 % \stopsubsection
 
-\startsubsection[title={\lpr {ignorepars}}]
+\startsubsection[title={\prm {ignorepars}}]
 
 This primitive is like \prm {ignorespaces} but also skips paragraph ending
 commands (normally \prm {par} and empty lines).
 
 \stopsubsection
 
-\startsubsection[title={\lpr {futureexpand}, \lpr {futureexpandis}, \lpr {futureexpandisap}}]
+\startsubsection[title={\prm {futureexpand}, \prm {futureexpandis}, \prm {futureexpandisap}}]
 
 These commands are used as:
 
@@ -1027,7 +1027,7 @@ When there is no match and a space was gobbled a space will be put back. The
 
 \stopsubsection
 
-\startsubsection[title={\lpr {aftergrouped}}]
+\startsubsection[title={\prm {aftergrouped}}]
 
 There is a new experimental feature that can inject multiple tokens to after the group
 ends. An example demonstrate its use:
@@ -1069,7 +1069,7 @@ This gives:
 
 \startsection[title=Conditions]
 
-\startsubsection[title={\lpr{ifabsnum} and \lpr {ifabsdim}}]
+\startsubsection[title={\prm{ifabsnum} and \prm {ifabsdim}}]
 
 There are two tests that we took from \PDFTEX:
 
@@ -1090,8 +1090,8 @@ This gives
 
 \stopsubsection
 
-\startsubsection[title={\lpr{ifcmpnum}, \lpr {ifcmpdim}, \lpr {ifnumval}, \lpr
-{ifdimval}, \lpr {ifchknum} and \lpr {ifchkdim}}]
+\startsubsection[title={\prm{ifcmpnum}, \prm {ifcmpdim}, \prm {ifnumval}, \prm
+{ifdimval}, \prm {ifchknum} and \prm {ifchkdim}}]
 
 \topicindex {conditions+numbers}
 \topicindex {conditions+dimensions}
@@ -1150,12 +1150,12 @@ or more than zero.
 
 \typebuffer \blank {\tt \getbuffer} \blank
 
-The last checked values are available in \lpr {lastchknum} and \lpr {lastchkdim}.
+The last checked values are available in \prm {lastchknum} and \prm {lastchkdim}.
 These don't obey grouping.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifmathstyle} and \lpr {ifmathparameter}}]
+\startsubsection[title={\prm {ifmathstyle} and \prm {ifmathparameter}}]
 
 These two are variants on \prm {ifcase} where the first one operates with values
 in ranging from zero (display style) to seven (cramped script script style) and
@@ -1166,7 +1166,7 @@ valid style identifier (a primitive identifier or number). The \type
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifempty}}]
+\startsubsection[title={\prm {ifempty}}]
 
 This primitive tests for the following token (control sequence) having no
 content. Assuming that \type {\empty} is indeed empty, the following two are
@@ -1182,14 +1182,14 @@ lead to less clutter in tracing.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifrelax}}]
+\startsubsection[title={\prm {ifrelax}}]
 
 This primitive complements \type {\ifdefined}, \type {\ifempty} and \type
 {\ifcsname} so that we have all reasonable tests directly available.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifboolean}}]
+\startsubsection[title={\prm {ifboolean}}]
 
 This primitive tests for non|-|zero, so the next variants are similar
 
@@ -1201,7 +1201,7 @@ This primitive tests for non|-|zero, so the next variants are similar
 
 \stopsubsection
 
-\startsubsection[title={\lpr {iftok} and \lpr {ifcstok}}]
+\startsubsection[title={\prm {iftok} and \prm {ifcstok}}]
 
 \topicindex {conditions+tokens}
 \topicindex {tokens}
@@ -1230,7 +1230,7 @@ one might evolve).
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifarguments}, \lpr {ifparameters} and \lpr {ifparameter}}]
+\startsubsection[title={\prm {ifarguments}, \prm {ifparameters} and \prm {ifparameter}}]
 
 These are part of the extended macro argument parsing features. The \type
 {\ifarguments} condition is like an \type {\ifcase} where the number is the
@@ -1257,7 +1257,7 @@ No expansion of arguments takes place here but you can use a test like this:
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifcondition}}]
+\startsubsection[title={\prm {ifcondition}}]
 
 \topicindex {conditions}
 
@@ -1315,7 +1315,7 @@ we use \type {\unless} to negate the result.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {orelse} and \lpr {orunless}}]
+\startsubsection[title={\prm {orelse} and \prm {orunless}}]
 
 Sometimes you have successive tests that, when laid out in the source lead to
 deep trees. The \type {\ifcase} test is an exception. Experiments with \type
@@ -1381,7 +1381,7 @@ Of course it is only useful at the right level, so you might end up with cases l
 \fi
 \stoptyping
 
-The \lpr {orunless} variant negates the next test, just like \prm {unless}. In
+The \prm {orunless} variant negates the next test, just like \prm {unless}. In
 some cases these commands look at the next token to see if it is an if|-|test so
 a following negation will not work (read: making that work would complicate the
 code and hurt efficiency too). Side note: interesting is that in \CONTEXT\ we
@@ -1389,13 +1389,14 @@ hardly use this kind of negation.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {ifprotected}, \lpr {frozen}, \lpr {iffrozen} and \lpr {ifusercmd}}]
+\startsubsection[title={\prm {ifflags}}]
 
-These checkers deal with control sequences. You can check if a command is a
+This checker deal with control sequences. You can check if a command is a
 protected one, that is, defined with the \type {\protected} prefix. A command is
 frozen when it has been defined with the \type {\frozen} prefix. Beware: only
 macros can be frozen. A user command is a command that is not part of the
-predefined set of commands. This is an experimental command.
+predefined set of commands. This is an experimental command. The flag values can
+be queried with \typ {tex.getflagvalues}.
 
 \stopsubsection
 
@@ -1403,7 +1404,7 @@ predefined set of commands. This is an experimental command.
 
 \startsection[title={Boxes, rules and leaders}]
 
-\startsubsection[title={\lpr {outputbox}}]
+\startsubsection[title={\prm {outputbox}}]
 
 \topicindex {output}
 
@@ -1417,7 +1418,7 @@ the acceptable range is from 0 to 65535.
 
 \stopsubsection
 
-\startsubsection[title={\prm {hrule}, \prm {vrule}, \lpr {nohrule} and \lpr {novrule}}]
+\startsubsection[title={\prm {hrule}, \prm {vrule}, \prm {nohrule} and \prm {novrule}}]
 
 \topicindex {rules}
 
@@ -1483,7 +1484,7 @@ edges and these depend on it being a horizontal or vertical rule.
 \getbuffer
 \stoplinecorrection
 
-Two new primitives were introduced: \lpr {nohrule} and \lpr {novrule}. These can
+Two new primitives were introduced: \prm {nohrule} and \prm {novrule}. These can
 be used to reserve space. This is often more efficient than creating an empty box
 with fake dimensions. Of course this assumes that the backend implements them
 being invisible but still taking space.
@@ -1546,22 +1547,22 @@ of course be implemented in \LUA.
 \starttabulate[|l|p|]
 \DB command \BC explanation \NC \NR
 \TB
-\NC \lpr {saveboxresource}             \NC save the box as an object to be included later \NC \NR
-\NC \lpr {saveimageresource}           \NC save the image as an object to be included later \NC \NR
-\NC \lpr {useboxresource}              \NC include the saved box object here (by index) \NC \NR
-\NC \lpr {useimageresource}            \NC include the saved image object here (by index) \NC \NR
-\NC \lpr {lastsavedboxresourceindex}   \NC the index of the last saved box object \NC \NR
-\NC \lpr {lastsavedimageresourceindex} \NC the index of the last saved image object \NC \NR
-\NC \lpr {lastsavedimageresourcepages} \NC the number of pages in the last saved image object \NC \NR
+\NC \tex {saveboxresource}             \NC save the box as an object to be included later \NC \NR
+\NC \tex {saveimageresource}           \NC save the image as an object to be included later \NC \NR
+\NC \tex {useboxresource}              \NC include the saved box object here (by index) \NC \NR
+\NC \tex {useimageresource}            \NC include the saved image object here (by index) \NC \NR
+\NC \tex {lastsavedboxresourceindex}   \NC the index of the last saved box object \NC \NR
+\NC \tex {lastsavedimageresourceindex} \NC the index of the last saved image object \NC \NR
+\NC \tex {lastsavedimageresourcepages} \NC the number of pages in the last saved image object \NC \NR
 \LL
 \stoptabulate
 
 An implementation probably should accept the usual optional dimension parameters
 for \type {\use...resource} in the same format as for rules. With images, these
-dimensions are then used instead of the ones given to \lpr {useimageresource} but
-the original dimensions are not overwritten, so that a \lpr {useimageresource}
-without dimensions still provides the image with dimensions defined by \lpr
-{saveimageresource}. These optional parameters are not implemented for \lpr
+dimensions are then used instead of the ones given to \tex {useimageresource} but
+the original dimensions are not overwritten, so that a \tex {useimageresource}
+without dimensions still provides the image with dimensions defined by \tex
+{saveimageresource}. These optional parameters are not implemented for \tex
 {saveboxresource}.
 
 \starttyping
@@ -1580,7 +1581,7 @@ packages.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {hpack}, \lpr {vpack} and \lpr {tpack}}]
+\startsubsection[title={\prm {hpack}, \prm {vpack} and \prm {tpack}}]
 
 These three primitives are the equivalents of \prm {hbox}, \prm {vbox} and
 \prm {vtop} but they don't trigger the packaging related callbacks. Of course
@@ -1591,7 +1592,7 @@ mode.
 
 \stopsubsection
 
-\startsubsection[title={\lpr {gleaders}},reference=sec:gleaders]
+\startsubsection[title={\prm {gleaders}},reference=sec:gleaders]
 
 \topicindex {leaders}
 
@@ -1606,7 +1607,7 @@ smallest\/}. The \type {g} stresses this global nature.
 
 \startsection[title={Languages}]
 
-\startsubsection[title={\lpr {hyphenationmin}}]
+\startsubsection[title={\prm {hyphenationmin}}]
 
 \topicindex {languages}
 \topicindex {hyphenation}
@@ -1654,7 +1655,7 @@ and for nodes that have sublists (like discretionaries) these are also shown. Al
 that could have been delegated to \LUA\ but it felt wrong to not made that a core
 engine feature.
 
-When bit~1 of \lpr {tracinglevels} is set the current level is prepended to
+When bit~1 of \prm {tracinglevels} is set the current level is prepended to
 tracing lines in the log and when bit~2 is set the input level is prepended. You
 can set both bits and get both numbers prepended. In \CONTEXT\ we default to
 the value~3, so you get prefixes like \type {3:4:} followed by a space.
@@ -1684,8 +1685,8 @@ for instance \type {\meaningfull} and \type {\meaningless} as variants of \type
 
 \stopsubsection
 
-% \startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
-% {currentiftype} and \lpr {internalcodesmode}.}]
+% \startsubsection[title={\prm {lastnodetype}, \prm {lastnodesubtype}, \prm
+% {currentiftype} and \prm {internalcodesmode}.}]
 %
 % The \ETEX\ command \type {\lastnodetype} is limited to some nodes. When the
 % parameter \type {\internalcodesmode} is set to a non|-|zero value the normal
@@ -1695,7 +1696,7 @@ for instance \type {\meaningfull} and \type {\meaningless} as variants of \type
 %
 % \stopsubsection
 
-\startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
+\startsubsection[title={\prm {lastnodetype}, \prm {lastnodesubtype}, \prm
 {currentiftype}}]
 
 The \ETEX\ command \type {\lastnodetype} returns the node codes as used in the
@@ -1727,11 +1728,11 @@ they will be stable.
 
 This allows for embedded spaces, without the need for double quotes. Macro
 expansion takes place inside the argument. Keep in mind that as side effect of
-delegating \IO\ to \LUA\ the \prm {openin} primitive is nor provided by the
+delegating \IO\ to \LUA\ the \tex {openin} primitive is not provided by the
 engine and has to be implemented by the macro package. This also means that the
 limit on the number of open files is not enforced by the engine.
 
-The \lpr {tracingfonts} primitive that has been inherited from \PDFTEX\ has
+The \prm {tracingfonts} primitive that has been inherited from \PDFTEX\ has
 been adapted to support variants in reporting the font. The reason for this
 extension is that a csname not always makes sense. The zero case is the default.
 
@@ -1897,7 +1898,7 @@ It gets typeset as:
 We could define the two helpers to look back, pick up a skip, remove it and
 inject it after the dir node. But that way we loose the subtype information that
 for some applications can be handy to be kept as|-|is. This is why we now have a
-variant of \lpr {textdirection} which injects the balanced node before the skip.
+variant of \prm {textdirection} which injects the balanced node before the skip.
 Instead of the previous definition we can use:
 
 \startbuffer[def]
@@ -1926,7 +1927,7 @@ comes out as a properly spaced:
 
 Anything more complex that this, like combination of skips and penalties, or
 kerns, should be handled in the input or macro package because there is no way we
-can predict the expected behaviour. In fact, the \lpr {linedir} is just a
+can predict the expected behaviour. In fact, the \prm {linedirection} is just a
 convenience extra which could also have been implemented using node list parsing.
 
 Directions are complicated by the fact that they often need to work over groups
@@ -1949,7 +1950,7 @@ width. In \LUATEX\ glue got subtypes so we can recognize the left-, right and
 parfill skips, but still there is no hundred percent certainty about the shape.
 
 In \LUAMETATEX\ lines can be normalized. This is optional because we want to
-preserve the original (for comparison) and is controlled by \lpr
+preserve the original (for comparison) and is controlled by \prm
 {normalizelinemode}. That variable actually drives some more. An earlier version
 provided a few more granular options (for instance: does a leftskip comes before
 or after a left hanging indentation) but in the end that was dropped. Because
@@ -1983,7 +1984,7 @@ in future releases.
 %
 % Another adaptation to the \ALEPH\ directional model is control over shapes driven
 % by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
-% \lpr {shapemode}:
+% \prm {shapemode}:
 %
 % \starttabulate[|c|l|l|]
 % \DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
@@ -2046,10 +2047,10 @@ in future releases.
 % \type {\linedirection} that is like \type {\textdirection} but with some
 % additional (inline) glue checking.
 
-% Controlling glue with \lpr {breakafterdirmode}
+% Controlling glue with \prm {breakafterdirmode}
 %
 % Glue after a dir node is ignored in the linebreak decision but you can bypass that
-% by setting \lpr {breakafterdirmode} to~\type {1}. The following table shows the
+% by setting \prm {breakafterdirmode} to~\type {1}. The following table shows the
 % difference. Watch your spaces.
 %
 % \def\ShowSome#1{%
@@ -2160,14 +2161,14 @@ had an issue that had to be fixed.
 
 \stopsection
 
-\startsection[title=Expressions and \lpr {numericscale}]
+\startsection[title=Expressions and \prm {numericscale}]
 
 The \type {*expr} parsers now accept \type {:} as operator for integer division
 (the \type {/} operators does rounding. This can be used for division compatible
 with \type {\divide}. I'm still wondering if adding a couple of bit operators
 makes sense (for integers).
 
-The \lpr{numericscale} parser is kind of special (and might evolve). For now it
+The \prm{numericscale} parser is kind of special (and might evolve). For now it
 converts a following number in a scale value as often used in \TEX, where 1000
 means scaling by~1.0. The trick is in the presence of a digit (or comma): 1.234
 becomes 1234 but 1234 stays 1234 and from this you can deduce that 12.34 becomes
@@ -2186,7 +2187,7 @@ Again this is experimental and (used and) discussed in document that come with t
 \stoptyping
 
 Here the first argument between parentheses is mandate. But the magic
-prefix \lpr {tolerant} makes that limitation go away:
+prefix \prm {tolerant} makes that limitation go away:
 
 \starttyping
 \tolerant\def\foo(#1)#2{...}
@@ -2259,7 +2260,7 @@ features.
 There is an experimental overload protection mechanism that we will test for a
 while before declaring it stable. The reason for that is that we need to adapt
 the \CONTEXT\ code base in order to test its usefulness. Protection is achieved
-via prefixes. Depending on the value of the \lpr {overloadmode} variable
+via prefixes. Depending on the value of the \prm {overloadmode} variable
 warnings or errors will be triggered. Examples of usage can be found in some
 documents that come with \CONTEXT, so here we just stick to the basics.
 
@@ -2271,10 +2272,10 @@ documents that come with \CONTEXT, so here we just stick to the basics.
 \aliased  \def\foo{...}
 \stoptyping
 
-A \lpr {mutable} macro can always be changed contrary to an \lpr {immutable} one.
-For instance a macro that acts as a variable is normally \lpr {mutable}, while a
+A \prm {mutable} macro can always be changed contrary to an \prm {immutable} one.
+For instance a macro that acts as a variable is normally \prm {mutable}, while a
 constant can best be immutable. It makes sense to define a public core macro as
-\lpr {permanent}. Primives start out a \lpr {permanent} ones but with a primitive
+\prm {permanent}. Primives start out a \prm {permanent} ones but with a primitive
 property instead.
 
 \startbuffer
@@ -2285,16 +2286,16 @@ property instead.
 
 \typebuffer
 
-The \lpr {meaningfull} primitive is like \prm {meaning} but report the
-properties too. The \lpr {meaningless} companion reports the body of a macro.
+The \prm {meaningfull} primitive is like \prm {meaning} but report the
+properties too. The \prm {meaningless} companion reports the body of a macro.
 Anyway, this typesets:
 
 \startlines \tttf \getbuffer \stoplines
 
-So, the \lpr {aliased} prefix copies the properties. Keep in mind that a macro
+So, the \prm {aliased} prefix copies the properties. Keep in mind that a macro
 package can redefine primitives, but \prm {relax} is an unlikely candidate.
 
-There is an extra prefix \lpr {noaligned} that flags a macro as being valid
+There is an extra prefix \prm {noaligned} that flags a macro as being valid
 for \prm {noalign} compatible usage (which means that the body must contain that
 one. The idea is that we then can do this:
 
@@ -2306,7 +2307,7 @@ that is: we can have protected macros that don't trigger an error in the parser
 where there is a look ahead for \prm {noalign} which is why normally protection
 doesn't work well. So: we have macro flagged as permanent (overload protection),
 being protected (that is, not expandable by default) and a valid equivalent of
-the noalign primitive. Of course we can also apply the \prm {global} and \lpr
+the noalign primitive. Of course we can also apply the \prm {global} and \prm
 {tolerant} prefixes here. The complete repertoire of extra prefixes is:
 
 \starttabulate
@@ -2329,12 +2330,12 @@ the noalign primitive. Of course we can also apply the \prm {global} and \lpr
 \HL
 \stoptabulate
 
-The not yet discussed \lpr {instance} is just a flag with no special meaning
-which can be used as classifier. The \lpr {frozen} also protects against overload
+The not yet discussed \prm {instance} is just a flag with no special meaning
+which can be used as classifier. The \prm {frozen} also protects against overload
 which brings amount of blockers to four.
 
 To what extent the engine will complain when a property is changed in a way that
-violates the flags depends on the parameter \lpr {overloadmode}. When this
+violates the flags depends on the parameter \prm {overloadmode}. When this
 parameter is set to zero no checking takes place. More interesting are values
 larger than zero. If that is the case, when a control sequence is flagged as
 mutable, it is always permitted to change. When it is set to immutable one can
@@ -2352,11 +2353,11 @@ the following overload values are used:
 \stoptabulate
 
 The even values (except zero) will abort the run. A value of 255 will freeze this
-parameter. At level five and above the \lpr {instance} flag is also checked but
+parameter. At level five and above the \prm {instance} flag is also checked but
 no drastic action takes place. We use this to signal to the user that a specific
 instance is redefined (of course the definition macros can check for that too).
 
-The \lpr {overloaded} prefix can be used to overload a frozen macro. The \lpr
+The \prm {overloaded} prefix can be used to overload a frozen macro. The \prm
 {enforced} is more powerful and forces an overload but that prefix is only
 effective in ini mode or when it's embedded in the body of a macro or token list
 at ini time unless of course at runtime the mode is zero.
@@ -2368,13 +2369,13 @@ modules or macros of unpredictable origin will probably suffer from warnings and
 errors when de mode is set to non zero. In \CONTEXT\ we're okay unless of course
 users redefine instances but there a warning or error is kind of welcome.
 
-There is an extra prefix \lpr {untraced} that will suppress the meaning when
+There is an extra prefix \prm {untraced} that will suppress the meaning when
 tracing so that the macro looks more like a primitive. It is still somewhat
 experimental so what gets displayed might change.
 
 \stopsection
 
-\startsection[title={Constants with \lpr{integerdef} and \lpr {dimendef}}]
+\startsection[title={Constants with \prm{integerdef} and \prm {dimensiondef}}]
 
 It is rather common to store constant values in a register or character
 definition.
@@ -2388,8 +2389,8 @@ definition.
 But in \LUAMETATEX\ we also can do this:
 
 \starttyping
-\integerdef\MyConstantC 456
-\dimendef  \MyConstantD 456pt
+\integerdef  \MyConstantC 456
+\dimensiondef\MyConstantD 456pt
 \stoptyping
 
 These two are stored as efficient as a register but don't occupy a register slot.
@@ -2402,7 +2403,7 @@ in a previous section.
 
 \stopsection
 
-\startsection[title={Serialization with \lpr {todimension}, \lpr {toscaled} and \lpr {tointeger}}]
+\startsection[title={Serialization with \prm {todimension}, \prm {toscaled} and \prm {tointeger}}]
 
 These three serializers take a verbose or symbolic quantity:
 

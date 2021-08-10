@@ -624,21 +624,23 @@ return function(%s) return %s end
 
 -- We only use fast serialize in controlled cases.
 
--- local pattern = Cs(Cc('"') * (
---     (1-S('"\\\n\r'))^1
---   + P('"')  / '\\"'
---   + P('\\') / '\\\\'
---   + P('\n') / '\\n'
---   + P('\r') / '\\r'
--- )^0 * Cc('"'))
-
 local pattern = Cs(Cc('"') * (
     (1-S('"\\\n\r'))^1
-  + P('"')  / '\\034'
-  + P('\\') / '\\092'
-  + P('\n') / '\\013'
-  + P('\r') / '\\010'
+  + P('"')  / '\\"'
+  + P('\\') / '\\\\'
+  + P('\n') / '\\n'
+  + P('\r') / '\\r'
 )^0 * Cc('"'))
+
+-- -- I need to do more experiments with this:
+--
+-- local pattern = Cs(Cc('"') * (
+--     (1-S('"\\\n\r'))^1
+--   + P('"')  / '\\034'
+--   + P('\\') / '\\092'
+--   + P('\n') / '\\013'
+--   + P('\r') / '\\010'
+-- )^0 * Cc('"'))
 
 patterns.escapedquotes = pattern
 

@@ -90,7 +90,21 @@ local function analyzed(name)
     }
 end
 
-function jobfiles.run(action)
+function jobfiles.run(name,action)
+    local kind = type(name)
+    if kind == "string" then
+        local usedname = addsuffix(name,inputsuffix)
+        action = {
+            filename   = usedname,
+            action     = action,
+            resultfile = replacesuffix(usedname,resultsuffix),
+        }
+    elseif kind == "table" then
+        action = name
+    else
+        report_run("invalid specification for jobfiles.run")
+        return
+    end
     local filename    = action.filename
     local result      = action.result
     local oldchecksum = collected[filename]
@@ -121,7 +135,17 @@ function jobfiles.run(action)
         end
     end
     if tobedone then
-        runner(action)
+        kind = type(action)
+        if kind == "function" then
+            action(filename)
+        elseif kind == "string" and action ~= "" then
+            -- can be anything but we assume it gets checked by the sandbox
+            os.execute(action)
+        elseif kind == "table" then
+            runner(action)
+        else
+            report_run("processing file, no action given for processing %a",name)
+        end
     elseif trace_run then
         report_run("processing file, no changes in %a, not processed",name)
     end

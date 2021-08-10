@@ -23,14 +23,6 @@ such a userdata object is represented as \syntax {<node>}.
 \dontleavehmode {\bf The return values of \type {node.types} are:} \showtypes
 \blank
 
-In \ETEX\ the \prm {lastnodetype} primitive has been introduced. With this
-primitive the valid range of numbers is still $[-1,15]$ and glyph nodes (formerly
-known as char nodes) have number~0. That way macro packages can use the same
-symbolic names as in traditional \ETEX. But you need to keep in mind that these
-\ETEX\ node numbers are different from the real internal ones. When you set \prm
-{internalcodesmode} to a non|-|zero value, the internal codes will be used in
-the \ETEX\ introspection commands \prm {lastnodetype} and \prm {currentiftype}.
-
 You can ask for a list of fields with \type {node.fields} and for valid subtypes
 with \type {node.subtypes}. The \type {node.values} function reports some used
 values. Valid arguments are \type {glue}, \type {style} and \type {math}. Keep in
@@ -133,9 +125,10 @@ more sense.
 \topicindex {nodes+rules}
 \topicindex {rules}
 
-Contrary to traditional \TEX, \LUATEX\ has more \prm {rule} subtypes because we
-also use rules to store reuseable objects and images. User nodes are invisible
-and can be intercepted by a callback. The supported fields are \showfields {rule}.
+Contrary to traditional \TEX, \LUATEX\ has more \prm {hrule} and \prm {vrule}
+subtypes because we also use rules to store reuseable objects and images. User
+nodes are invisible and can be intercepted by a callback. The supported fields
+are \showfields {rule}.
 
 \starttabulate[|l|l|p|]
 \DB field            \BC type   \BC explanation \NC \NR
@@ -539,13 +532,13 @@ too much with this one. Valid fields are: \showfields {par}.
 \DB field                  \BC type   \BC explanation \NC \NR
 \TB
 \NC \type{attr}            \NC node   \NC list of attributes \NC \NR
-\NC \type{pen_inter}       \NC number \NC local interline penalty (from \lpr {localinterlinepenalty}) \NC \NR
-\NC \type{pen_broken}      \NC number \NC local broken penalty (from \lpr {localbrokenpenalty}) \NC \NR
+\NC \type{pen_inter}       \NC number \NC local interline penalty (from \prm {localinterlinepenalty}) \NC \NR
+\NC \type{pen_broken}      \NC number \NC local broken penalty (from \prm {localbrokenpenalty}) \NC \NR
 \NC \type{dir}             \NC string \NC the direction of this par. see~\in [dirnodes] \NC \NR
-\NC \type{box_left}        \NC node   \NC the \lpr {localleftbox} \NC \NR
-\NC \type{box_left_width}  \NC number \NC width of the \lpr {localleftbox} \NC \NR
-\NC \type{box_right}       \NC node   \NC the \lpr {localrightbox} \NC \NR
-\NC \type{box_right_width} \NC number \NC width of the \lpr {localrightbox} \NC \NR
+\NC \type{box_left}        \NC node   \NC the \prm {localleftbox} \NC \NR
+\NC \type{box_left_width}  \NC number \NC width of the \prm {localleftbox} \NC \NR
+\NC \type{box_right}       \NC node   \NC the \prm {localrightbox} \NC \NR
+\NC \type{box_right_width} \NC number \NC width of the \prm {localrightbox} \NC \NR
 \LL
 \stoptabulate
 
@@ -561,7 +554,7 @@ error may result.
 \topicindex {directions}
 
 Direction nodes mark parts of the running text that need a change of direction
-and the \prm {textdir} command generates them. Again this is a small node, we
+and the \prm {textdirection} command generates them. Again this is a small node, we
 just have \showfields {dir}.
 
 \starttabulate[|l|l|p|]
@@ -812,7 +805,7 @@ is correct, otherwise an error can be triggered.
 \NC \type{sub}     \NC kernel node    \NC subscript \NC \NR
 \NC \type{sup}     \NC kernel node    \NC superscript \NC \NR
 \NC \type{left}    \NC delimiter node \NC \NC \NR
-\NC \type{degree}  \NC kernel node    \NC only set by \lpr {Uroot} \NC \NR
+\NC \type{degree}  \NC kernel node    \NC only set by \prm {Uroot} \NC \NR
 \NC \type{width}   \NC number         \NC required width \NC \NR
 \NC \type{options} \NC number         \NC bitset of rendering options \NC \NR
 \LL

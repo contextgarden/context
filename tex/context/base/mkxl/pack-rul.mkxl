@@ -2763,12 +2763,12 @@
   {\bgroup
    \edef\currentframedtext{#1}
    \doifelseassignment{#2}
-     {\pack_framed_text_start_continue\empty{#2}}
-     {\pack_framed_text_start_continue{#2}{#3}}}
+     {\pack_framed_text_start_indeed\empty{#2}}
+     {\pack_framed_text_start_indeed{#2}{#3}}}
 
-% todo: sort out first/lastline ht/dp
+% todo: sort out first/lastline ht/dp . . will be a more advanced mechanism some day (soon)
 
-\def\pack_framed_text_start_continue#1#2%
+\def\pack_framed_text_start_indeed#1#2%
   {\setupframedtexts[\currentframedtext][#2]%
    \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
    \setfalse\c_framed_text_location_none
@@ -2790,7 +2790,7 @@
          \else
             \bgroup
          \fi
-         \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
+         % no longer: \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
          \doinhibitblank
          \useindentingparameter\framedtextparameter
          \useframedtextstyleandcolor\c!style\c!color
@@ -2903,7 +2903,7 @@
      \blank[\v!disable]%
      \enforced\let\\\endgraf
      \useframedtextstyleandcolor\c!style\c!color
-     \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
+     % no longer: \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
      \framedtextparameter\c!inner
      \ifx\p_framed_text_strut\v!no
         \let\pack_framed_strut\relax

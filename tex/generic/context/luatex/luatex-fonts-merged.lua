@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-08-07 22:49
+-- merge date  : 2021-08-10 12:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -3474,7 +3474,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local pattern=Cs(Cc('"')*(
- (1-S('"\\\n\r'))^1+P('"')/'\\034'+P('\\')/'\\092'+P('\n')/'\\013'+P('\r')/'\\010'
+ (1-S('"\\\n\r'))^1+P('"')/'\\"'+P('\\')/'\\\\'+P('\n')/'\\n'+P('\r')/'\\r'
 )^0*Cc('"'))
 patterns.escapedquotes=pattern
 function string.escapedquotes(s)
@@ -13423,6 +13423,7 @@ do
  local y=0
  local width=false
  local lsb=0
+local result={}
  local r=0
  local stems=0
  local globalbias=0
@@ -14633,6 +14634,7 @@ do
    r=r+1
    result[r]=c_endchar
    local stream=concat(result)
+result=nil
    if glyph then
     glyph.stream=stream
    else
@@ -14654,6 +14656,7 @@ do
     width=width,
     name=charset and charset[index] or nil,
    }
+result=nil
   else
    glyphs[index]={
     boundingbox=boundingbox,

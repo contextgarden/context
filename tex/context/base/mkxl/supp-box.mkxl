@@ -2681,7 +2681,12 @@
   {\beginlocalcontrol\begingroup
    \dowithnextboxcs\syst_boxes_contenttostring\hbox}
 
-\newtoks\everypreroll
+\newtoks \everypreroll
+\newif   \ifprerolling
+
+\appendtoks
+    \prerollingtrue
+\to \everypreroll
 
 \let\prerolltostring\firstofoneargument % we need to bypass initializations
 

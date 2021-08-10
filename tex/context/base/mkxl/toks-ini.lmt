@@ -293,7 +293,7 @@ end
 
 tokens.cache = table.setmetatableindex(function(t,k)
     if not isdefined(k) then
-        setmacro(k,"","global")
+        setmacro(k,"","global") -- So we default to nothing! Maybe some message as option?
     end
     local v = createtoken(k)
     t[k] = v

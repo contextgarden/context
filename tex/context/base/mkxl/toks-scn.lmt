@@ -287,43 +287,43 @@ tokens.converters = {
 -- the gain is only some 10 percent but if we don't have keywords with numbers it might
 -- make sense in the end, some day.
 
-local f_if       = formatters[    "  if scankeywordcs('%s') then data['%s'] = scan%s()"]
-local f_elseif   = formatters["  elseif scankeywordcs('%s') then data['%s'] = scan%s()"]
+local f_if           = formatters[    "  if scankeywordcs('%s') then data['%s'] = scan%s()"]
+local f_elseif       = formatters["  elseif scankeywordcs('%s') then data['%s'] = scan%s()"]
 
------ f_if_x     = formatters[    "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
------ f_elseif_x = formatters["  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
+----- f_if_x         = formatters[    "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
+----- f_elseif_x     = formatters["  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
 
------ f_if       = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
------ f_elseif   = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
+----- f_if           = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
+----- f_elseif       = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
 
-local f_local    = formatters["local scan%s = scanners.%s"]
-local f_scan     = formatters["scan%s()"]
-local f_shortcut = formatters["local %s = scanners.converters.%s"]
+local f_local        = formatters["local scan%s = scanners.%s"]
+local f_scan         = formatters["scan%s()"]
+local f_shortcut     = formatters["local %s = scanners.converters.%s"]
 
-local f_if_c     = formatters[    "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
-local f_elseif_c = formatters["  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
-local f_scan_c   = formatters["%s(scan%s())"]
+local f_if_c         = formatters[    "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
+local f_elseif_c     = formatters["  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
+local f_scan_c       = formatters["%s(scan%s())"]
 
 -- see above
 
------ f_if_c     = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
------ f_elseif_c = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
+----- f_if_c         = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
+----- f_elseif_c     = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
 
-local f_any      = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
-local f_any_c    = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]
-local s_done     = "  else break end"
+local f_any          = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
+local f_any_c        = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]
+local s_done <const> = "  else break end"
 
-local f_any_all  = formatters["  local key = scanword(true) if key then data[key] = scan%s() else break end"]
-local f_any_all_c= formatters["  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"]
+local f_any_all      = formatters["  local key = scanword(true) if key then data[key] = scan%s() else break end"]
+local f_any_all_c    = formatters["  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"]
 
-local f_table    = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
-local f_sequence = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
-local f_singular = formatters["%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"]
-local f_simple   = formatters["%\nt\nreturn function()\n    return %s\nend\n"]
-local f_string   = formatters["%q"]
-local f_action_f = formatters["action%s(%s)"]
-local f_action_s = formatters["local action%s = tokens._action[%s]"]
-local f_nested   = formatters["local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"]
+local f_table        = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
+local f_sequence     = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
+local f_singular     = formatters["%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"]
+local f_simple       = formatters["%\nt\nreturn function()\n    return %s\nend\n"]
+local f_string       = formatters["%q"]
+local f_action_f     = formatters["action%s(%s)"]
+local f_action_s     = formatters["local action%s = tokens._action[%s]"]
+local f_nested       = formatters["local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"]
 
 local f_check = formatters[ [[
   local wrapped = scanopen()

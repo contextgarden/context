@@ -142,9 +142,8 @@ local trace_fonts  = false  trackers.register("metapost.svg.fonts",  function(v)
 
 -- This is just an experiment. Todo: reset hash etc. Also implement an option handler.
 
-local s_draw_image_start = "draw image ("
-local s_draw_image_stop  = ") ;"
-
+local s_draw_image_start <const> = "draw image ("
+local s_draw_image_stop  <const> = ") ;"
 
 local ignoredopacity = 1
 
@@ -1207,34 +1206,34 @@ end
 
 -- todo: viewbox helper
 
-local s_wrapped_start = s_draw_image_start
-local f_wrapped_stop  = formatters[") shifted (0,%N) scaled %N ;"]
+local s_wrapped_start <const> = "draw image ("
+local f_wrapped_stop          = formatters[") shifted (0,%N) scaled %N ;"]
 
 local handletransform, handleviewbox  do
 
     local sind = math.sind
 
- -- local f_rotatedaround   = formatters["svg_p := svg_p rotatedaround((%N,%N),%N) ;"]
- -- local f_rotated         = formatters["svg_p := svg_p rotated(%N) ;"]
- -- local f_shifted         = formatters["svg_p := svg_p shifted(%N,%N) ;"]
- -- local f_slanted_x       = formatters["svg_p := svg_p xslanted(%N) ;"]
- -- local f_slanted_y       = formatters["svg_p := svg_p yslanted(%N) ;"]
- -- local f_scaled          = formatters["svg_p := svg_p scaled(%N) ;"]
- -- local f_xyscaled        = formatters["svg_p := svg_p xyscaled(%N,%N) ;"]
- -- local f_matrix          = formatters["svg_p := svg_p transformed bymatrix(%N,%N,%N,%N,%N,%N) ;"]
- -- local s_transform_start = "draw image ( begingroup ; save svg_p ; picture svg_p ; svg_p := image ( "
- -- local f_transform_stop  = formatters[" ; ) ; %s ; draw svg_p ; endgroup ; ) ; "]
+ -- local f_rotatedaround           = formatters["svg_p := svg_p rotatedaround((%N,%N),%N) ;"]
+ -- local f_rotated                 = formatters["svg_p := svg_p rotated(%N) ;"]
+ -- local f_shifted                 = formatters["svg_p := svg_p shifted(%N,%N) ;"]
+ -- local f_slanted_x               = formatters["svg_p := svg_p xslanted(%N) ;"]
+ -- local f_slanted_y               = formatters["svg_p := svg_p yslanted(%N) ;"]
+ -- local f_scaled                  = formatters["svg_p := svg_p scaled(%N) ;"]
+ -- local f_xyscaled                = formatters["svg_p := svg_p xyscaled(%N,%N) ;"]
+ -- local f_matrix                  = formatters["svg_p := svg_p transformed bymatrix(%N,%N,%N,%N,%N,%N) ;"]
+ -- local s_transform_start <const> = "draw image ( begingroup ; save svg_p ; picture svg_p ; svg_p := image ( "
+ -- local f_transform_stop          = formatters[" ; ) ; %s ; draw svg_p ; endgroup ; ) ; "]
 
-    local f_rotatedaround   = formatters["rotatedaround((%N,%N),%N) "]
-    local f_rotated         = formatters["rotated(%N) "]
-    local f_shifted         = formatters["shifted(%N,%N) "]
-    local f_slanted_x       = formatters["xslanted(%N) "]
-    local f_slanted_y       = formatters["yslanted(%N) "]
-    local f_scaled          = formatters["scaled(%N) "]
-    local f_xyscaled        = formatters["xyscaled(%N,%N) "]
-    local f_matrix          = formatters["transformed bymatrix(%N,%N,%N,%N,%N,%N) "]
-    local s_transform_start = "draw image ( "
-    local f_transform_stop  = formatters[") %s ; "]
+    local f_rotatedaround           = formatters["rotatedaround((%N,%N),%N) "]
+    local f_rotated                 = formatters["rotated(%N) "]
+    local f_shifted                 = formatters["shifted(%N,%N) "]
+    local f_slanted_x               = formatters["xslanted(%N) "]
+    local f_slanted_y               = formatters["yslanted(%N) "]
+    local f_scaled                  = formatters["scaled(%N) "]
+    local f_xyscaled                = formatters["xyscaled(%N,%N) "]
+    local f_matrix                  = formatters["transformed bymatrix(%N,%N,%N,%N,%N,%N) "]
+    local s_transform_start <const> = "draw image ( "
+    local f_transform_stop          = formatters[") %s ; "]
 
     local transforms    = { }
     local noftransforms = 0
@@ -1690,17 +1689,16 @@ do
 
     -- todo: clip = [ auto | rect(llx,lly,urx,ury) ]
 
-    local s_rotation_start  = "draw image ( "
-    local f_rotation_stop   = formatters[") rotatedaround((0,0),-angle((%N,%N))) ;"]
-    local f_rotation_angle  = formatters[") rotatedaround((0,0),-%N) ;"]
+    local s_rotation_start <const> = "draw image ( "
+    local f_rotation_stop          = formatters[") rotatedaround((0,0),-angle((%N,%N))) ;"]
+    local f_rotation_angle         = formatters[") rotatedaround((0,0),-%N) ;"]
 
-    local s_offset_start    = "draw image ( "
-    local f_offset_stop     = formatters[") shifted (%N,%N) ;"]
-    local s_size_start      = "draw image ( "
-    local f_size_stop       = formatters[") xysized (%N,%N) ;"]
+    local s_offset_start   <const> = "draw image ( "
+    local f_offset_stop            = formatters[") shifted (%N,%N) ;"]
+    local s_size_start     <const> = "draw image ( "
+    local f_size_stop              = formatters[") xysized (%N,%N) ;"]
 
     local handleoffset, handlesize do
-
 
         handleoffset = function(at)
             local x = asnumber_vx(rawget(at,"x"))
@@ -2018,9 +2016,9 @@ local fraction = offset and asnumber_p(offset)
         return p, d, c, o
     end
 
-    local s_opacity_start   = s_draw_image_start
-    local f_opacity_content = formatters["setgroup currentpicture to boundingbox currentpicture withopacity %N;"]
-    local s_opacity_stop    = s_draw_image_stop
+    local s_opacity_start   <const> = "draw image ("
+    local f_opacity_content         = formatters["setgroup currentpicture to boundingbox currentpicture withopacity %N;"]
+    local s_opacity_stop    <const> = ") ;"
 
     local function sharedopacity(at)
         local o = at["opacity"]
@@ -2073,11 +2071,11 @@ local fraction = offset and asnumber_p(offset)
 
     local viewport do
 
-        local s_viewport_start  = s_draw_image_start
-        local s_viewport_stop   = s_draw_image_stop
-        local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%N,%N);"]
-        local f_viewport_scale  = formatters["currentpicture := currentpicture xysized (%N,%N);"]
-        local f_viewport_clip   = formatters["clip currentpicture to (unitsquare xyscaled (%N,%N));"]
+        local s_viewport_start  <const> = "draw image ("
+        local s_viewport_stop   <const> = ") ;"
+        local f_viewport_shift          = formatters["currentpicture := currentpicture shifted (%N,%N);"]
+        local f_viewport_scale          = formatters["currentpicture := currentpicture xysized (%N,%N);"]
+        local f_viewport_clip           = formatters["clip currentpicture to (unitsquare xyscaled (%N,%N));"]
 
         viewport = function(x,y,w,h,noclip,scale)
             r = r + 1 ; result[r] = s_viewport_start
@@ -2189,25 +2187,25 @@ setmetatableindex(res.at,at)
         end
     end
 
-    local f_no_draw       = formatters['  nodraw (%s)']
-    local f_do_draw       = formatters['  draw (%s)']
-    local f_no_fill_c     = formatters['  nofill closedcurve(%s)']
-    local f_do_fill_c     = formatters['  fill closedcurve(%s)']
-    local f_eo_fill_c     = formatters['  eofill closedcurve(%s)']
-    local f_no_fill_l     = formatters['  nofill closedlines(%s)']
-    local f_do_fill_l     = formatters['  fill closedlines(%s)']
-    local f_eo_fill_l     = formatters['  eofill closedlines(%s)']
-    local f_closed_draw   = formatters['  draw closedcurve(%s)']
-    local f_do_fill       = f_do_fill_c
-    local f_eo_fill       = f_eo_fill_c
-    local f_no_fill       = f_no_fill_c
-    local s_clip_start    = 'save p ; picture p ; p := image ('
-    local f_clip_stop_c   = formatters[') ; clip p to closedcurve(%s) %s ; draw p ;']
-    local f_clip_stop_l   = formatters[') ; clip p to closedlines(%s) %s ; draw p ;']
-    local f_clip_stop     = f_clip_stop_c
-    local f_eoclip_stop_c = formatters[') ; eoclip p to closedcurve(%s) %s ; draw p ;']
-    local f_eoclip_stop_l = formatters[') ; eoclip p to closedlines(%s) %s ; draw p ;']
-    local f_eoclip_stop   = f_eoclip_stop_c
+    local f_no_draw               = formatters['  nodraw (%s)']
+    local f_do_draw               = formatters['  draw (%s)']
+    local f_no_fill_c             = formatters['  nofill closedcurve(%s)']
+    local f_do_fill_c             = formatters['  fill closedcurve(%s)']
+    local f_eo_fill_c             = formatters['  eofill closedcurve(%s)']
+    local f_no_fill_l             = formatters['  nofill closedlines(%s)']
+    local f_do_fill_l             = formatters['  fill closedlines(%s)']
+    local f_eo_fill_l             = formatters['  eofill closedlines(%s)']
+    local f_closed_draw           = formatters['  draw closedcurve(%s)']
+    local f_do_fill               = f_do_fill_c
+    local f_eo_fill               = f_eo_fill_c
+    local f_no_fill               = f_no_fill_c
+    local s_clip_start    <const> = 'save p ; picture p ; p := image ('
+    local f_clip_stop_c           = formatters[') ; clip p to closedcurve(%s) %s ; draw p ;']
+    local f_clip_stop_l           = formatters[') ; clip p to closedlines(%s) %s ; draw p ;']
+    local f_clip_stop             = f_clip_stop_c
+    local f_eoclip_stop_c         = formatters[') ; eoclip p to closedcurve(%s) %s ; draw p ;']
+    local f_eoclip_stop_l         = formatters[') ; eoclip p to closedlines(%s) %s ; draw p ;']
+    local f_eoclip_stop           = f_eoclip_stop_c
 
     -- could be shared and then beginobject | endobject
 
@@ -2258,8 +2256,8 @@ setmetatableindex(res.at,at)
         local f_linejoin   = formatters["  interim linejoin := %s ;"]
         local f_miterlimit = formatters["  interim miterlimit := %s ;"]
 
-        local s_begingroup = "begingroup;"
-        local s_endgroup   = "endgroup;"
+        local s_begingroup <const> = "begingroup;"
+        local s_endgroup   <const> = "endgroup;"
 
         local linecaps  = { butt  = "butt",    square = "squared", round = "rounded" }
         local linejoins = { miter = "mitered", bevel  = "beveled", round = "rounded" }
@@ -2658,8 +2656,8 @@ setmetatableindex(res.at,at)
         function handlers.polyline(c) poly(c,       ")") end
         function handlers.polygon (c) poly(c,"--cycle)") end
 
-        local s_image_start = s_draw_image_start
-        local s_image_stop  = s_draw_image_stop
+        local s_image_start <const> = "draw image ("
+        local s_image_stop  <const> = ") ;"
 
         function handlers.path(c)
             local at = c.at
@@ -2926,21 +2924,21 @@ setmetatableindex(res.at,at)
 
         do
 
-            local s_start     = "\\svgstart "
-            local s_stop      = "\\svgstop "
-            local f_set       = formatters["\\svgset{%N}{%N}"] -- we need a period
-            local f_color_c   = formatters["\\svgcolorc{%.3N}{%.3N}{%.3N}{"]
-            local f_color_o   = formatters["\\svgcoloro{%.3N}{"]
-            local f_color_b   = formatters["\\svgcolorb{%.3N}{%.3N}{%.3N}{%.3N}{"]
-            local f_poscode   = formatters["\\svgpcode{%N}{%N}{%s}"]
-            local f_poschar   = formatters["\\svgpchar{%N}{%N}{%s}"]
-            local f_posspace  = formatters["\\svgpspace{%N}{%N}"]
-            local f_code      = formatters["\\svgcode{%s}"]
-            local f_char      = formatters["\\svgchar{%s}"]
-            local s_space     = "\\svgspace "
-            local f_size      = formatters["\\svgsize{%0.6f}"]             -- we need a period
-            local f_font      = formatters["\\svgfont{%s}{%s}{%s}"]
-            local f_hashed    = formatters["\\svghashed{%s}"]
+            local s_start     <const> = "\\svgstart "
+            local s_stop      <const> = "\\svgstop "
+            local f_set               = formatters["\\svgset{%N}{%N}"] -- we need a period
+            local f_color_c           = formatters["\\svgcolorc{%.3N}{%.3N}{%.3N}{"]
+            local f_color_o           = formatters["\\svgcoloro{%.3N}{"]
+            local f_color_b           = formatters["\\svgcolorb{%.3N}{%.3N}{%.3N}{%.3N}{"]
+            local f_poscode           = formatters["\\svgpcode{%N}{%N}{%s}"]
+            local f_poschar           = formatters["\\svgpchar{%N}{%N}{%s}"]
+            local f_posspace          = formatters["\\svgpspace{%N}{%N}"]
+            local f_code              = formatters["\\svgcode{%s}"]
+            local f_char              = formatters["\\svgchar{%s}"]
+            local s_space     <const> = "\\svgspace "
+            local f_size              = formatters["\\svgsize{%0.6f}"]             -- we need a period
+            local f_font              = formatters["\\svgfont{%s}{%s}{%s}"]
+            local f_hashed            = formatters["\\svghashed{%s}"]
 
             ----- p_texescape = lpegpatterns.texescape
 

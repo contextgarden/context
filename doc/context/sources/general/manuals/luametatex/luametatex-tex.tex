@@ -249,7 +249,7 @@ Most variables speak for themselves, some are more obscure. For instance the
 \DB n \NC meaning      \NC explanation \NC \NR
 \TB
 \NC 0 \NC initializing \NC \type {--ini} mnode \NC \NR
-\NC 1 \NC updating     \NC relates to \lpr {overloadmode} \NC \NR
+\NC 1 \NC updating     \NC relates to \prm {overloadmode} \NC \NR
 \NC 2 \NC production   \NC a regular (format driven) run \NC \NR
 \LL
 \stoptabulate
@@ -442,7 +442,7 @@ provide a consistent \LUA\ interface.
 
 \libindex{getmark}
 
-\TEX's attributes (\lpr {attribute}), counters (\prm {count}), dimensions (\prm
+\TEX's attributes (\prm {attribute}), counters (\prm {count}), dimensions (\prm
 {dimen}), skips (\prm {skip}, \prm {muskip}) and token (\prm {toks}) registers
 can be accessed and written to using two times five virtual sub|-|tables of the
 \type {tex} table:
@@ -460,7 +460,7 @@ tex.toks
 \stoptyping
 \stopthreecolumns
 
-It is possible to use the names of relevant \lpr {attributedef}, \prm {countdef},
+It is possible to use the names of relevant \prm {attributedef}, \prm {countdef},
 \prm {dimendef}, \prm {skipdef}, or \prm {toksdef} control sequences as indices
 to these tables:
 
@@ -470,7 +470,7 @@ enormous = tex.dimen['maxdimen']
 \stoptyping
 
 In this case, \LUATEX\ looks up the value for you on the fly. You have to use a
-valid \prm {countdef} (or \lpr {attributedef}, or \prm {dimendef}, or \prm
+valid \prm {countdef} (or \prm {attributedef}, or \prm {dimendef}, or \prm
 {skipdef}, or \prm {toksdef}), anything else will generate an error (the intent
 is to eventually also allow \type {<chardef tokens>} and even macros that expand
 into a number).
@@ -693,7 +693,7 @@ smallfam, smallchar, largefam, largechar =
 \stopfunctioncall
 
 Normally, the third and fourth values in a delimiter code assignment will be zero
-according to \lpr {Udelcode} usage, but the returned table can have values there
+according to \prm {Udelcode} usage, but the returned table can have values there
 (if the delimiter code was set using \prm {delcode}, for example). Unset \type
 {delcode}'s can be recognized because \type {dval[1]} is $-1$.
 
@@ -927,9 +927,9 @@ The known fields are:
                                                  for \prm {over} etc. \NC \NR
 \NC \type{delimptr}    \NC node    \NC mmode \NC used for temporary storage of the previous math delimiter,
                                                  for \prm {middle} \NC \NR
-\NC \type{mathdir}     \NC boolean \NC mmode \NC true when during math processing the \lpr {mathdir} is not
-                                                 the same as the surrounding \lpr {textdir} \NC \NR
-\NC \type{mathstyle}   \NC number  \NC mmode \NC the current \lpr {mathstyle} \NC \NR
+\NC \type{mathdir}     \NC boolean \NC mmode \NC true when during math processing the \prm {mathdirection} is not
+                                                 the same as the surrounding \prm {textdirection} \NC \NR
+\NC \type{mathstyle}   \NC number  \NC mmode \NC the current \prm {mathstyle} \NC \NR
 \LL
 \stoptabulate
 
@@ -970,7 +970,7 @@ table argument instead of a list of strings, this has to be a consecutive array
 of strings to print (the first non-string value will stop the printing process).
 
 The optional parameter can be used to print the strings using the catcode regime
-defined by \lpr {catcodetable}~\type {n}. If \type {n} is $-1$, the currently
+defined by \prm {catcodetable}~\type {n}. If \type {n} is $-1$, the currently
 active catcode regime is used. If \type {n} is $-2$, the resulting catcodes are
 the result of \prm {the} \prm {toks}: all category codes are 12 (other) except for
 the space character, that has category code 10 (space). Otherwise, if \type {n}
@@ -1054,7 +1054,7 @@ tokenized into a token list but it has a reference to a real node. Normally this
 goes fine. But now assume that you store the whole lot in a macro: in that case
 the tokenized node can be flushed many times. But, after the first such flush the
 node is used and its memory freed. You can prevent this by using copies which is
-controlled by setting \lpr {luacopyinputnodes} to a non|-|zero value. This is one
+controlled by setting \prm {luacopyinputnodes} to a non|-|zero value. This is one
 of these fuzzy areas you have to live with if you really mess with these low
 level issues.
 
@@ -1424,7 +1424,7 @@ tex.enableprimitives('LuaTeX', {'formatname'})
 \stoptyping
 
 will define \type {\LuaTeXformatname} with the same intrinsic meaning as the
-documented primitive \lpr {formatname}, provided that the control sequences \type
+documented primitive \prm {formatname}, provided that the control sequences \type
 {\LuaTeXformatname} is currently undefined.
 
 When \LUATEX\ is run with \type {--ini} only the \TEX82 primitives and \prm
@@ -2174,7 +2174,7 @@ set_lua("mycode",id,"global","protected")
 
 This creates a token that refers to a \LUA\ function with an entry in the table
 that you can access with \type {lua.getfunctions_table}. It is the companion
-to \lpr {luadef}. When the first (and only) argument is true the size will preset
+to \prm {luadef}. When the first (and only) argument is true the size will preset
 to the value of \type {texconfig.function_size}.
 
 The \type {pushmacro} and \type {popmacro} function are very experimental and

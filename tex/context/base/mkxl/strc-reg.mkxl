@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Registers}
 
-\registerctxluafile{strc-reg}{}
+\registerctxluafile{strc-reg}{autosuffix}
 
 \unprotect
 
@@ -206,6 +206,8 @@
 
 \def\strc_registers_register_page_entry
   {\iftrialtypesetting
+     \expandafter\gobblethreearguments
+   \orelse\ifconditional\prerollrun
      \expandafter\gobblethreearguments
    \else
      \expandafter\strc_registers_register_page_entry_indeed
@@ -441,16 +443,16 @@
    \fi}
 
 \def\strc_registers_insert_entry_nop_par#1#2%
-  {\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}}
+  {\ifprerolling\else\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}\fi}
 
 \def\strc_registers_insert_entry_yes_par#1#2#3%
-  {\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}}}
+  {\ifprerolling\else\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}}\fi}
 
 \def\strc_registers_insert_entry_nop_txt#1#2%
-  {\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}
+  {\ifprerolling\else\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}\fi}
 
 \def\strc_registers_insert_entry_yes_txt#1#2#3%
-  {\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}}
+  {\ifprerolling\else\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}\fi}
 
 %D This is one of the few commands where a stop has arguments.
 
@@ -846,6 +848,17 @@
 
 \newconstant\c_strc_registers_page_state % 0=nothing  1=page  2=see
 \newdimen   \d_strc_registers_distance
+\newcount   \c_strc_register_level
+
+\def\strc_registers_update_text_properties
+  {\ifx\m_current_register\currentregister\else
+     \useregisterstyleandcolor\c!textstyle\c!textcolor
+   \fi}
+
+\def\strc_registers_update_page_properties
+  {\ifx\m_current_register\currentregister\else
+     \useregisterstyleandcolor\c!pagestyle\c!pagecolor
+   \fi}
 
 \permanent\protected\def\startregisteroutput
   {\endgraf
@@ -877,13 +890,13 @@
 \permanent\protected\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
-   \scratchcounter\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
+   \c_strc_register_level\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
 %    \let\savedcurrentregister\currentregister
    \pushmacro\currentregister
-   \edef\currentregister{\currentregister:\number\scratchcounter}%
+   \edef\currentregister{\currentregister:\number\c_strc_register_level}%
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
-   \ifnum\scratchcounter>\plusone
+   \ifnum\c_strc_register_level>\plusone
      \advance\leftskip\d_strc_registers_distance\relax
    \fi
    \d_strc_registers_hangindent\registerparameter\c!distance\relax
@@ -978,6 +991,8 @@
      \fi
    \fi}
 
+\let\m_current_register\empty
+
 \permanent\protected\def\pushcurrentregister#1%
   {\let\m_current_register\currentregister
    \edef\currentregister{#1}}
@@ -987,6 +1002,7 @@
 
 \permanent\protected\def\registeronepage#1#2#3#4#5% #1:class #2:processor content
   {\pushcurrentregister{#1}%
+   \strc_registers_update_page_properties
    \edef\p_pagenumber{\registerparameter\c!pagenumber}%
    \ifx\p_pagenumber\v!no\else
      \registerpageseparator
@@ -1011,6 +1027,7 @@
 
 \permanent\protected\def\registerpagerange#1#2#3#4#5#6#7#8% #1:class #2:processor  content, content todo: -- configurable
   {\pushcurrentregister{#1}%
+   \strc_registers_update_page_properties
    \edef\p_pagenumber{\registerparameter\c!pagenumber}%
    \ifx\p_pagenumber\v!no\else
      \registerpageseparator
@@ -1037,6 +1054,7 @@
 
 \permanent\protected\def\defaultregisterentry#1#2#3#4#5% #1:class #2:processor #3:internal #4:seeindex #5:word
   {\pushcurrentregister{#1}%
+   \strc_registers_update_text_properties
    \def\currentregisterpageindex{#3}%
    \iflocation
      \def\currentregisterseeindex{#4}%
