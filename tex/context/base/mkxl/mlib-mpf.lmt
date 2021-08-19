@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mlib-mpf'] = {
 -- moved from mlib-lua:
 
 local type, tostring, tonumber, select, loadstring = type, tostring, tonumber, select, loadstring
-local find, match, gsub, gmatch = string.find, string.match, string.gsub, string.gmatch
+local find, gsub = string.find, string.gsub
 local concat = table.concat
 
 local formatters   = string.formatters
@@ -31,8 +31,6 @@ local set    = mp.set
 local get    = mp.get
 local aux    = mp.aux
 local scan   = mp.scan
-local skip   = mp.skip
-local inject = mp.inject
 
 do
 
@@ -41,7 +39,7 @@ do
     local f_integer      = formatters["%i"]
     local f_numeric      = formatters["%F"]
 
-    -- no %n as that can produce -e notation and that is not so nice for scaled butmaybe we
+    -- no %n as that can produce -e notation and that is not so nice for scaled but maybe we
     -- should then switch between ... i.e. make a push/pop for the formatters here ... not now.
 
     local f_integer      = formatters["%i"]
@@ -127,30 +125,8 @@ do
     local buffer  = gbuffer
     local n       = 0
 
-    local function mpdirect1(a)
+    local function mpdirect(a)
         n = n + 1 buffer[n] = a
-    end
-    local function mpdirect2(a,b)
-        n = n + 1 buffer[n] = a
-        n = n + 1 buffer[n] = b
-    end
-    local function mpdirect3(a,b,c)
-        n = n + 1 buffer[n] = a
-        n = n + 1 buffer[n] = b
-        n = n + 1 buffer[n] = c
-    end
-    local function mpdirect4(a,b,c,d)
-        n = n + 1 buffer[n] = a
-        n = n + 1 buffer[n] = b
-        n = n + 1 buffer[n] = c
-        n = n + 1 buffer[n] = d
-    end
-    local function mpdirect5(a,b,c,d,e)
-        n = n + 1 buffer[n] = a
-        n = n + 1 buffer[n] = b
-        n = n + 1 buffer[n] = c
-        n = n + 1 buffer[n] = d
-        n = n + 1 buffer[n] = e
     end
 
     local function mpflush(separator)
@@ -299,7 +275,7 @@ do
 
     -- writers
 
-    local function mpp(value)
+    local function rawmpp(value)
         n = n + 1
         local t = type(value)
         if t == "number" then
@@ -320,13 +296,13 @@ do
     local function mpprint(first,second,...)
         if second == nil then
             if first ~= nil then
-                mpp(first)
+                rawmpp(first)
             end
         else
             for i=1,select("#",first,second,...) do
                 local value = (select(i,first,second,...))
                 if value ~= nil then
-                    mpp(value)
+                    rawmpp(value)
                 end
             end
         end
@@ -404,7 +380,7 @@ do
         if type(x) == "table" then
             buffer[n] = f_pair(x[1],x[2])
         else
-            buffer[n] = f_pair(x,y)
+            buffer[n] = f_pair(x,y or x)
         end
     end
 
@@ -413,7 +389,7 @@ do
         if type(x) == "table" then
             buffer[n] = f_pair_pt(x[1],x[2])
         else
-            buffer[n] = f_pair_pt(x,y)
+            buffer[n] = f_pair_pt(x,y or x)
         end
     end
 
@@ -605,11 +581,7 @@ do
         end
     end
 
-    aux.direct          = mpdirect1
-    aux.direct1         = mpdirect1
-    aux.direct2         = mpdirect2
-    aux.direct3         = mpdirect3
-    aux.direct4         = mpdirect4
+    aux.direct          = mpdirect
     aux.flush           = mpflush
 
     aux.print           = mpprint
@@ -705,11 +677,28 @@ do
 
     for k, v in next, aux do mp[k] = v end
 
+ -- mp.print = table.setmetatablecall(aux, function(t,...)
+ --     mpprint(...)
+ -- end)
+
+    mp.print = table.setmetatablecall(aux, function(t,first,second,...)
+        if second == nil then
+            if first ~= nil then
+                rawmpp(first)
+            end
+        else
+            for i=1,select("#",first,second,...) do
+                local value = (select(i,first,second,...))
+                if value ~= nil then
+                    rawmpp(value)
+                end
+            end
+        end
+    end)
+
 end
 
 do
-
-    -- Another experimental feature:
 
     local mpnumeric   = mp.numeric
     local scanstring  = scan.string
@@ -725,27 +714,6 @@ do
 
     metapost.registerdirect("scriptindex",function()
         return scriptindex(scanstring())
-    end)
-
-end
-
--- the next will move to mlib-lmp.lua
-
-do
-
-    local mpnamedcolor = attributes.colors.mpnamedcolor
-    local mpprint      = aux.print
-    local scanstring   = scan.string
-
-    mp.mf_named_color = function(str)
-        mpprint(mpnamedcolor(str))
-    end
-
-    -- todo: we can inject but currently we always get a string back so then
-    -- we need to deal with it upstream in the color module ... not now
-
-    metapost.registerscript("namedcolor",function()
-        mpprint(mpnamedcolor(scanstring()))
     end)
 
 end
@@ -839,407 +807,14 @@ end
 
 -- texts:
 
-do
-
-    local mptriplet    = mp.triplet
-
-    local bpfactor     = number.dimenfactors.bp
-    local textexts     = nil
-    local mptriplet    = mp.triplet
-    local nbdimensions = nodes.boxes.dimensions
-
-    function mp.mf_tt_initialize(tt)
-        textexts = tt
+function mp.report(a,b,c,...)
+    if c then
+        report_message("%s : %s",a,formatters[(gsub(b,"@","%%"))](c,...))
+    elseif b then
+        report_message("%s : %s",a,b)
+    elseif a then
+        report_message("message : %s",a)
     end
-
-    function mp.mf_tt_dimensions(n)
-        local box = textexts and textexts[n]
-        if box then
-            -- could be made faster with nuts but not critical
-            mptriplet(box.width*bpfactor,box.height*bpfactor,box.depth*bpfactor)
-        else
-            mptriplet(0,0,0)
-        end
-    end
-
-    function mp.mf_tb_dimensions(category,name)
-        local w, h, d = nbdimensions(category,name)
-        mptriplet(w*bpfactor,h*bpfactor,d*bpfactor)
-    end
-
-    -- todo: scan ( ... )
-
-    function mp.report(a,b,c,...)
-        if c then
-            report_message("%s : %s",a,formatters[(gsub(b,"@","%%"))](c,...))
-        elseif b then
-            report_message("%s : %s",a,b)
-        elseif a then
-            report_message("message : %s",a)
-        end
-    end
-
-end
-
-do
-
-    local mpprint     = aux.print
-    local modes       = tex.modes
-    local systemmodes = tex.systemmodes
-
-    function mp.mode(s)
-        mpprint(modes[s] and true or false)
-    end
-
-    function mp.systemmode(s)
-        mpprint(systemmodes[s] and true or false)
-    end
-
-    mp.processingmode = mp.mode
-
-end
-
--- for alan's nodes:
-
-do
-
-    local mpprint  = aux.print
-    local mpquoted = aux.quoted
-
-    function mp.isarray(str)
-         mpprint(find(str,"%d") and true or false)
-    end
-
-    function mp.prefix(str)
-         mpquoted(match(str,"^(.-)[%d%[]") or str)
-    end
-
-    -- function mp.dimension(str)
-    --     local n = 0
-    --     for s in gmatch(str,"%[?%-?%d+%]?") do --todo: lpeg
-    --         n = n + 1
-    --     end
-    --     mpprint(n)
-    -- end
-
-    mp.dimension = lpeg.counter(P("[") * lpegpatterns.integer * P("]") + lpegpatterns.integer,mpprint)
-
-    -- faster and okay as we don't have many variables but probably only
-    -- basename makes sense and even then it's not called that often
-
-    -- local hash  = table.setmetatableindex(function(t,k)
-    --     local v = find(k,"%d") and true or false
-    --     t[k] = v
-    --     return v
-    -- end)
-    --
-    -- function mp.isarray(str)
-    --      mpprint(hash[str])
-    -- end
-    --
-    -- local hash  = table.setmetatableindex(function(t,k)
-    --     local v = '"' .. (match(k,"^(.-)%d") or k) .. '"'
-    --     t[k] = v
-    --     return v
-    -- end)
-    --
-    -- function mp.prefix(str)
-    --      mpprint(hash[str])
-    -- end
-
-end
-
-do
-
-    local scanstring     = scan.string
-    local scannumeric    = scan.numeric
-    local scaninteger    = scan.integer
-    local skiptoken      = skip.token
-
-    ----- injectstring   = inject.string
-    ----- injectnumeric  = inject.numeric
-
-    local registerdirect = metapost.registerdirect
-    local registerscript = metapost.registerscript
-
-    local comma_code     = metapost.codes.comma
-
-    local getmacro       = tokens.getters.macro
-    local setmacro       = tokens.setters.macro
-
-    local getdimen       = tex.getdimen
-    local getcount       = tex.getcount
-    local gettoks        = tex.gettoks
-    local setdimen       = tex.setdimen
-    local setcount       = tex.setcount
-    local settoks        = tex.settoks
-
-    local bpfactor       = number.dimenfactors.bp
-
-    -- more helpers
-
- -- registerscript("getmacro", function() injectstring (getmacro(scanstring())) end)
- -- registerscript("getcount", function() injectnumeric(getcount(scanstring())) end)
- -- registerscript("gettoks",  function() injectstring (gettoks (scanstring())) end)
- -- registerscript("getdimen", function() injectnumeric(getdimen(scanstring()) * bpfactor) end)
-
-    registerdirect("getmacro", function() return getmacro(scanstring()) end)
-    registerdirect("getcount", function() return getcount(scanstring()) end)
-    registerdirect("gettoks",  function() return gettoks (scanstring()) end)
-    registerdirect("getdimen", function() return getdimen(scanstring()) * bpfactor end)
-
-    registerscript("setmacro", function() setmacro(scanstring(),scanstring()) end)
-    registerscript("setdimen", function() setdimen(scanstring(),scannumeric()/bpfactor) end)
-    registerscript("setcount", function() setcount(scanstring(),scannumeric()) end)
-    registerscript("settoks",  function() settoks (scanstring(),scanstring()) end)
-
-    registerscript("setglobalmacro", function() setmacro(scanstring(),scanstring(),"global") end)
-    registerscript("setglobaldimen", function() setdimen("global",scanstring(),scannumeric()/bpfactor) end)
-    registerscript("setglobalcount", function() setcount("global",scanstring(),scaninteger()) end)
-    registerscript("setglobaltoks",  function() settoks ("global",scanstring(),scanstring()) end)
-
-    local utfnum = utf.byte
-    local utflen = utf.len
-    local utfsub = utf.sub
-
- -- registerscript("utfnum", function() injectnumeric(utfnum(scanstring())) end)
- -- registerscript("utflen", function() injectnumeric(utflen(scanstring())) end)
- --
- -- registerscript("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
- --     injectstring(utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric()))
- -- end)
-
-    registerdirect("utfnum", function() return utfnum(scanstring()) end)
-    registerdirect("utflen", function() return utflen(scanstring()) end)
-
-    registerdirect("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
-        utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric())
-    end)
-
-    local setlogging = metapost.setlogging
-
-    registerscript("message", function()
-        setlogging(false)
-        local str = scanstring()
-        setlogging(true)
-        report_message("message : %s",str)
-    end)
-
-end
-
--- position fun
-
-do
-
-    local mpprint      = mp.print
-    local mpfprint     = mp.fprint
-    local mpquoted     = mp.quoted
-    local jobpositions = job.positions
-    local getwhd       = jobpositions.whd
-    local getxy        = jobpositions.xy
-    local getposition  = jobpositions.position
-    local getpage      = jobpositions.page
-    local getregion    = jobpositions.region
-    local getmacro     = tokens.getters.macro
-
-    function mp.positionpath(name)
-        local w, h, d = getwhd(name)
-        if w then
-            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",0,-d,w,-d,w,h,0,h)
-        else
-            mpprint("(origin--cycle)")
-        end
-    end
-
-    function mp.positioncurve(name)
-        local w, h, d = getwhd(name)
-        if w then
-            mpfprint("((%p,%p)..(%p,%p)..(%p,%p)..(%p,%p)..cycle)",0,-d,w,-d,w,h,0,h)
-        else
-            mpprint("(origin--cycle)")
-        end
-    end
-
-    function mp.positionbox(name)
-        local p, x, y, w, h, d = getposition(name)
-        if p then
-            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
-        else
-            mpprint("(%p,%p)",x,y)
-        end
-    end
-
-    function mp.positionxy(name)
-        local x, y = getxy(name)
-        if x then
-            mpfprint("(%p,%p)",x,y)
-        else
-            mpprint("origin")
-        end
-    end
-
-    function mp.positionpage(name)
-        mpfprint("%i",getpage(name) or 0)
-    end
-
-    function mp.positionregion(name)
-        local r = getregion(name)
-        if r then
-            mpquoted(r)
-        else
-            mpquoted("unknown")
-        end
-    end
-
-    function mp.positionwhd(name)
-        local w, h, d = getwhd(name)
-        if w then
-            mpfprint("(%p,%p,%p)",w,h,d)
-        else
-            mpprint("(0,0,0)")
-        end
-    end
-
-    function mp.positionpxy(name)
-        local p, x, y = getposition(name)
-        if p then
-            mpfprint("(%p,%p,%p)",p,x,y)
-        else
-            mpprint("(0,0,0)")
-        end
-    end
-
-    function mp.positionanchor()
-        mpquoted(getmacro("MPanchorid"))
-    end
-
-end
-
-do
-
- -- local mppair = mp.pair
- --
- -- function mp.textextanchor(s)
- --     local x, y = match(s,"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
- --     if x and y then
- --         x = tonumber(x)
- --         y = tonumber(y)
- --     end
- --     mppair(x or 0,y or 0)
- -- end
-
-    local injectpair = inject.pair
-    local scanstring = scan.string
-
-    metapost.registerscript("textextanchor", function()
-        local x, y = match(scanstring(),"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
-        if x and y then
-            x = tonumber(x)
-            y = tonumber(y)
-        end
-        injectpair(x or 0,y or 0)
-    end)
-
-end
-
-do
-
-    local mpprint  = mp.print
-    local mpquoted = mp.quoted
-    local getmacro = tokens.getters.macro
-
-    function mp.texvar(name)
-        mpprint(getmacro(metapost.namespace .. name))
-    end
-
-    function mp.texstr(name)
-        mpquoted(getmacro(metapost.namespace .. name))
-    end
-
-end
-
-do
-
-    local mpprint  = aux.print
-    local mpvprint = aux.vprint
-
-    local hashes   = { }
-
-    function mp.newhash(name)
-        if name then
-            hashes[name] = { }
-        else
-            for i=1,#hashes+1 do
-                if not hashes[i] then
-                    hashes[i] = { }
-                    mpvprint(i)
-                    return
-                end
-            end
-        end
-    end
-
-    function mp.disposehash(n)
-        if tonumber(n) then
-            hashes[n] = false
-        else
-            hashes[n] = nil
-        end
-    end
-
-    function mp.inhash(n,key)
-        local h = hashes[n]
-        mpvprint(h and h[key] and true or false)
-    end
-
-    function mp.tohash(n,key,value)
-        local h = hashes[n]
-        if h then
-            if value == nil then
-                h[key] = true
-            else
-                h[key] = value
-            end
-        end
-    end
-
-    function mp.fromhash(n,key)
-        local h = hashes[n]
-        mpvprint(h and h[key] or false)
-    end
-
-    interfaces.implement {
-        name      = "MPfromhash",
-        arguments = "2 strings",
-        actions   = function(name,key)
-            local h = hashes[name] or hashes[tonumber(name)]
-            if h then
-                local v = h[key] or h[tonumber(key)]
-                if v then
-                    context(v)
-                end
-            end
-        end
-    }
-
-end
-
-do
-
-    -- a bit overkill: just a find(str,"mf_object=") can be enough
-    --
-    -- todo : share with mlib-pps.lua metapost,isobject
-
-    local mpboolean = aux.boolean
-
-    local p1        = P("mf_object=")
-    local p2        = lpegpatterns.eol * p1
-    local pattern   = (1-p2)^0 * p2 + p1
-
-    function mp.isobject(str)
-        mpboolean(pattern and str ~= "" and lpegmatch(pattern,str))
-    end
-
 end
 
 function mp.flatten(t)

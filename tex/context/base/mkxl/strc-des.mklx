@@ -58,6 +58,7 @@
   %\s!catcodes=,
    \c!title=\v!yes,
   %\c!text=,
+   \c!define=\v!yes,
   ]
 
 \appendtoks
@@ -67,9 +68,11 @@
         \defineconstruction[\currentdescription][\s!handler=\v!description,\c!level=1]%
     \fi
     % We can combine these but in tracing (or errors) using a different caller is nicer.
-    \frozen\protected\instance\edefcsname        \currentdescription\endcsname{\nameddescription[\currentdescription]}%
-    \frozen\protected\instance\edefcsname\e!start\currentdescription\endcsname{\startnameddescription[\currentdescription]}%
-    \frozen\protected\instance \defcsname \e!stop\currentdescription\endcsname{\stopnameddescription}%
+    \ifcstok{\descriptionparameter\c!define}\v!yes
+        \frozen\protected\instance\edefcsname        \currentdescription\endcsname{\nameddescription[\currentdescription]}%
+        \frozen\protected\instance\edefcsname\e!start\currentdescription\endcsname{\startnameddescription[\currentdescription]}%
+        \frozen\protected\instance \defcsname \e!stop\currentdescription\endcsname{\stopnameddescription}%
+    \fi
 \to \everydefinedescription
 
 \let\p_strc_constructions_title \empty

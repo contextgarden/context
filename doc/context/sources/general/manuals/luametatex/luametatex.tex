@@ -55,6 +55,10 @@
 % rpi 64        : 26.0 (overclocked)
 % amd 10 fitlet : 28.2
 
+% 20210812      : 298 pages
+%
+% mingw         :  9.7
+
 % But speed can differ a bit per compilation (upto .5 seconds maybe due to how
 % compiled code is organized which might influence caching. Who knows ... (or
 % cares). For instance at 20200407 I measured 10.9 seconds after some new low level
@@ -63,7 +67,8 @@
 % took 10.5 seconds, that is, we were at exactly 24 pages per second but after
 % switching to gcc9 it dropped again. In december 2020, with IPO enabled I crossed
 % the 26 pps barrier and went below 10 seconds but that was also after some further
-% cleanup in \LMTX.
+% cleanup in \LMTX. Mid August 2021 I measured over 30 pps but not all is due to
+% the engine I guess.
 
 % msvc           1899k (2% slower than mingw)
 % msvc /GL       2297k (similar to mingw)

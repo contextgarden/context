@@ -2437,6 +2437,7 @@
 %D         \getboxfromcache{foo}{\recurselevel}\zerocount
 %D     \fi
 %D }
+%D % \startMPcode draw rawtexbox("category","name") ; \stopMPcode
 %D \resetboxesincache{foo}
 %D \stoptyping
 

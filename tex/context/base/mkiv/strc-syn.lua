@@ -86,12 +86,12 @@ function synonyms.register(class,kind,spec)
     local tag        = definition.tag or ""
     data.metadata.kind = kind -- runtime, not saved in format (yet)
     if not hash[tag] then
-        if definition.used == nil then
-            definition.used = false
-        end
-        if definition.shown == nil then
-            definition.shown = false
-        end
+--         if definition.used == nil then
+--             definition.used = false
+--         end
+--         if definition.shown == nil then
+--             definition.shown = false
+--         end
         local entries = data.entries
         entries[#entries+1] = spec
         hash[tag] = spec
@@ -121,24 +121,26 @@ end
 function synonyms.isused(class,tag)
     local data = tobesaved[class]
     local okay = data.hash[tag]
-    return okay and okay.definition.used
+    return okay and okay.definition.used or false
 end
 
 function synonyms.isshown(class,tag)
     local data = tobesaved[class]
     local okay = data.hash[tag]
-    return okay and okay.definition.shown
+    return okay and okay.definition.shown or false
 end
 
 function synonyms.resetused(class)
     for tag, data in next, tobesaved[class].hash do
-        data.definition.used = false
+--         data.definition.used = false
+        data.definition.used = nil
     end
 end
 
 function synonyms.resetshown(class)
     for tag, data in next, tobesaved[class].hash do
-        data.definition.shown = false
+--         data.definition.shown = false
+        data.definition.shown = nil
     end
 end
 

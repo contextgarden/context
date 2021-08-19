@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['good-gen'] = {
 
 local type, next = type, next
 local lower = string.lower
-
+local filesuffix, replacesuffix = file.suffix, file.replacesuffix
 local fonts = fonts
 
 ----- trace_goodies  = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
@@ -130,6 +130,16 @@ function fontgoodies.filenames.resolve(name)
     if fd and findfile(name) == "" then
         for i=1,#fd do
             local fn = fd[i]
+            if findfile(fn) ~= "" then
+                return fn
+            end
+        end
+    elseif filesuffix(name) == "any" then
+        -- This is a bit weird place but it's a kind of fallback option in case
+        -- we can't resolve due to a name conflict.
+        local sequence = fonts.readers.sequence
+        for i=1,#sequence do
+            local fn = replacesuffix(name,sequence[i])
             if findfile(fn) ~= "" then
                 return fn
             end

@@ -632,13 +632,13 @@ do
     local r_value    = reference * Carg(1) / resolve
 
     local balanced   = P {
-        [1] = ((escape * (left+right)) + (collapsed + r_value + 1 - (left+right))^1 + V(2))^0,
-        [2] = left * V(1) * right,
+        ((escape * (left+right)) + (collapsed + r_value + 1 - (left+right))^1 + V(2))^0,
+        left * V(1) * right,
     }
 
  -- local unbalanced = P {
- --     [1] = left * V(2) * right,
- --     [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
+ --     left * V(2) * right,
+ --     ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
  -- }
 
     local unbalanced = (left/"") * balanced * (right/"") * P(-1)

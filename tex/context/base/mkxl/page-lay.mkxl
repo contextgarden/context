@@ -469,35 +469,58 @@
    \global\c_page_target_print_orientation\uprotationangle
    \global\c_page_target_print_reverse    \uprotationangle}
 
-\letvalue{\??layoutpaper\v!reset}\page_paper_reset_paper
-\letvalue{\??layoutprint\v!reset}\page_paper_reset_print
+\letcsname\??layoutpaper\v!reset\endcsname\page_paper_reset_paper
+\letcsname\??layoutprint\v!reset\endcsname\page_paper_reset_print
 
-\setvalue{\??layoutpaper\v!landscape              }{\global\settrue\c_page_target_paper_landscape}
-\setvalue{\??layoutpaper\v!mirrored               }{\global\settrue\c_page_target_paper_mirror}
-\setvalue{\??layoutpaper\v!negative               }{\global\settrue\c_page_target_paper_negate}
-\setvalue{\??layoutpaper\v!rotated                }{\global\c_page_target_paper_orientation\rightrotationangle
-                                                    \global\c_page_target_paper_reverse    \leftrotationangle}
-\setvalue{\??layoutpaper\number\rightrotationangle}{\global\c_page_target_paper_orientation\rightrotationangle
-                                                    \global\c_page_target_paper_reverse    \leftrotationangle}
-\setvalue{\??layoutpaper\number\downrotationangle }{\global\c_page_target_paper_orientation\downrotationangle
-                                                    \global\c_page_target_paper_reverse    \zerocount}
-\setvalue{\??layoutpaper\number\leftrotationangle }{\global\c_page_target_paper_orientation\leftrotationangle
-                                                    \global\c_page_target_paper_reverse    \rightrotationangle}
+\defcsname\??layoutpaper\v!landscape\endcsname
+  {\global\settrue\c_page_target_paper_landscape}
 
-\setvalue{\??layoutprint\v!landscape              }{\global\settrue\c_page_target_print_landscape}
-\setvalue{\??layoutprint\v!mirrored               }{\global\settrue\c_page_target_print_mirror}
-\setvalue{\??layoutprint\v!negative               }{\global\settrue\c_page_target_print_negate}
-\setvalue{\??layoutprint\v!rotated                }{\global\c_page_target_print_orientation\rightrotationangle
-                                                    \global\c_page_target_print_reverse    \leftrotationangle}
-\setvalue{\??layoutprint\number\rightrotationangle}{\global\c_page_target_print_orientation\rightrotationangle
-                                                    \global\c_page_target_print_reverse    \leftrotationangle}
-\setvalue{\??layoutprint\number\downrotationangle }{\global\c_page_target_print_orientation\downrotationangle
-                                                    \global\c_page_target_print_reverse    \zerocount}
-\setvalue{\??layoutprint\number\leftrotationangle }{\global\c_page_target_print_orientation\leftrotationangle
-                                                    \global\c_page_target_print_reverse    \rightrotationangle}
+\defcsname\??layoutpaper\v!mirrored\endcsname
+  {\global\settrue\c_page_target_paper_mirror}
 
-%def\page_paper_handle_page_option #1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\fi}
-%def\page_paper_handle_print_option#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\fi}
+\defcsname\??layoutpaper\v!negative\endcsname
+  {\global\settrue\c_page_target_paper_negate}
+
+\defcsname\??layoutpaper\v!rotated\endcsname
+  {\global\c_page_target_paper_orientation\rightrotationangle
+   \global\c_page_target_paper_reverse    \leftrotationangle}
+
+\defcsname\??layoutpaper\number\rightrotationangle\endcsname
+  {\global\c_page_target_paper_orientation\rightrotationangle
+   \global\c_page_target_paper_reverse    \leftrotationangle}
+
+\defcsname\??layoutpaper\number\downrotationangle\endcsname
+  {\global\c_page_target_paper_orientation\downrotationangle
+   \global\c_page_target_paper_reverse    \zerocount}
+
+\defcsname\??layoutpaper\number\leftrotationangle\endcsname
+  {\global\c_page_target_paper_orientation\leftrotationangle
+   \global\c_page_target_paper_reverse    \rightrotationangle}
+
+\defcsname\??layoutprint\v!landscape\endcsname
+  {\global\settrue\c_page_target_print_landscape}
+
+\defcsname\??layoutprint\v!mirrored\endcsname
+  {\global\settrue\c_page_target_print_mirror}
+
+\defcsname\??layoutprint\v!negative\endcsname
+  {\global\settrue\c_page_target_print_negate}
+
+\defcsname\??layoutprint\v!rotated\endcsname
+  {\global\c_page_target_print_orientation\rightrotationangle
+   \global\c_page_target_print_reverse    \leftrotationangle}
+
+\defcsname\??layoutprint\number\rightrotationangle\endcsname
+  {\global\c_page_target_print_orientation\rightrotationangle
+   \global\c_page_target_print_reverse    \leftrotationangle}
+
+\defcsname\??layoutprint\number\downrotationangle \endcsname
+  {\global\c_page_target_print_orientation\downrotationangle
+   \global\c_page_target_print_reverse    \zerocount}
+
+\defcsname\??layoutprint\number\leftrotationangle \endcsname
+  {\global\c_page_target_print_orientation\leftrotationangle
+   \global\c_page_target_print_reverse    \rightrotationangle}
 
 \def\page_paper_handle_page_option #1{\begincsname\??layoutpaper#1\endcsname}
 \def\page_paper_handle_print_option#1{\begincsname\??layoutprint#1\endcsname}
@@ -847,13 +870,6 @@
 \installlayoutmethod\v!default{\page_layouts_check_default}
 \installlayoutmethod\v!normal {\page_layouts_check_default}
 
-% \def\page_layouts_check_next
-%   {\csname\??layoutmethod\ifcsname\??layoutmethod\layoutparameter\c!method\endcsname
-%      \layoutparameter\c!method
-%    \else
-%      \v!normal
-%    \fi\endcsname}
-
 \permanent\protected\def\page_layouts_check_next
   {\ifcsname\??layoutmethod\layoutparameter\c!method\endcsname
      \lastnamedcs
@@ -907,41 +923,55 @@
   {\setfalse\c_page_layouts_location_is_set
    \setfalse\c_page_layouts_location_is_middle
    \let\v_page_target_left_fill  \relax
-   \let\v_page_target_right_fill \hss % ? \relax
+   \let\v_page_target_right_fill \hss  % ? \relax
    \let\v_page_target_top_fill   \relax
    \let\v_page_target_bottom_fill\vss} % \relax}
 
-\setvalue{\??layoutlocation\v!right      }{\settrue\c_page_layouts_location_is_set
-                                           \setfalse\c_page_layouts_location_is_middle
-                                           \let\v_page_target_left_fill  \hss
-                                           \let\v_page_target_right_fill \relax}
-\setvalue{\??layoutlocation\v!left       }{\settrue\c_page_layouts_location_is_set
-                                           \setfalse\c_page_layouts_location_is_middle
-                                           \let\v_page_target_left_fill  \relax
-                                           \let\v_page_target_right_fill \hss}
-\setvalue{\??layoutlocation\v!bottom     }{\settrue\c_page_layouts_location_is_set
-                                           \setfalse\c_page_layouts_location_is_middle
-                                           \let\v_page_target_top_fill   \vss
-                                           \let\v_page_target_bottom_fill\relax}
-\setvalue{\??layoutlocation\v!top        }{\settrue\c_page_layouts_location_is_set
-                                           \setfalse\c_page_layouts_location_is_middle
-                                           \let\v_page_target_top_fill   \relax
-                                           \let\v_page_target_bottom_fill\vss}
-\setvalue{\??layoutlocation\v!middle     }{\settrue\c_page_layouts_location_is_set
-                                           \settrue\c_page_layouts_location_is_middle
-                                           \let\v_page_target_left_fill  \hss
-                                           \let\v_page_target_right_fill \hss
-                                           \let\v_page_target_top_fill   \vss
-                                           \let\v_page_target_bottom_fill\vss}
-\setvalue{\??layoutlocation\empty        }{\setfalse\c_page_layouts_location_is_set % default also signal to scrn_
-                                           \setfalse\c_page_layouts_location_is_middle
-                                           \let\v_page_target_right_fill \hss
-                                           \let\v_page_target_bottom_fill\hss}
-\setvalue{\??layoutlocation\v!doublesided}{\settrue \c_page_target_print_doublesided}
-\setvalue{\??layoutlocation\v!singlesided}{\setfalse\c_page_target_print_doublesided}
+\defcsname\??layoutlocation\v!right\endcsname
+  {\settrue\c_page_layouts_location_is_set
+   \setfalse\c_page_layouts_location_is_middle
+   \let\v_page_target_left_fill \hss
+   \let\v_page_target_right_fill\relax}
+
+\defcsname\??layoutlocation\v!left\endcsname
+  {\settrue\c_page_layouts_location_is_set
+   \setfalse\c_page_layouts_location_is_middle
+   \let\v_page_target_left_fill \relax
+   \let\v_page_target_right_fill\hss}
+
+\defcsname\??layoutlocation\v!bottom\endcsname
+  {\settrue\c_page_layouts_location_is_set
+   \setfalse\c_page_layouts_location_is_middle
+   \let\v_page_target_top_fill   \vss
+   \let\v_page_target_bottom_fill\relax}
+
+\defcsname\??layoutlocation\v!top\endcsname
+  {\settrue\c_page_layouts_location_is_set
+   \setfalse\c_page_layouts_location_is_middle
+   \let\v_page_target_top_fill    \relax
+   \let\v_page_target_bottom_fill\vss}
+
+\defcsname\??layoutlocation\v!middle\endcsname
+  {\settrue\c_page_layouts_location_is_set
+   \settrue\c_page_layouts_location_is_middle
+   \let\v_page_target_left_fill  \hss
+   \let\v_page_target_right_fill \hss
+   \let\v_page_target_top_fill   \vss
+   \let\v_page_target_bottom_fill\vss}
+
+\defcsname\??layoutlocation\empty\endcsname
+  {\setfalse\c_page_layouts_location_is_set % default also signal to scrn_
+   \setfalse\c_page_layouts_location_is_middle
+   \let\v_page_target_right_fill \hss
+   \let\v_page_target_bottom_fill\hss}
+
+\defcsname\??layoutlocation\v!doublesided\endcsname
+  {\settrue\c_page_target_print_doublesided}
+
+\defcsname\??layoutlocation\v!singlesided\endcsname
+  {\setfalse\c_page_target_print_doublesided}
 
 \def\page_target_check_centering_indeed#1%
- % {\ifcsname\??layoutlocation#1\endcsname\csname\??layoutlocation#1\endcsname\fi}
   {\begincsname\??layoutlocation#1\endcsname}
 
 \protected\def\page_target_check_centering
@@ -966,13 +996,6 @@
 
 \installlayoutalternative\v!default{\page_boxes_construct_content_default}
 \installlayoutalternative\v!normal {\page_boxes_construct_content_default}
-
-% \def\page_boxes_construct_content % targetbox flusher box
-%   {\csname\??layoutalternative\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
-%      \layoutparameter\c!alternative
-%    \else
-%      \v!normal
-%    \fi\endcsname}
 
 \def\page_boxes_construct_content % targetbox flusher box
   {\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
@@ -1031,9 +1054,9 @@
         \global\d_page_adapts_height\footerheight
       \fi
    \fi
-%
+   %
    \global\d_page_adapts_delta-\dimexpr\adaptlayoutparameter\c!top\relax
-%
+   %
    \global\advance\textheight   \d_page_adapts_height
    \global\advance\footerheight-\d_page_adapts_height
    \showmessage\m!layouts1{\the\dimexpr\d_page_adapts_height,\the\realpageno}%
@@ -1043,14 +1066,6 @@
    \page_backgrounds_recalculate
    \glet\page_adapts_push\relax
    \glet\page_adapts_pop\page_adapts_pop_indeed}
-
-% \def\page_adapts_check
-%   {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
-%
-% \def\page_adapts_reset
-%   {\ifcsname\??pageadaptations\the\realpageno\endcsname
-%      \global\undefinevalue{\??pageadaptations\the\realpageno}%
-%    \fi}
 
 \def\page_adapts_check
   {\begincsname\??pageadaptations\the\realpageno\endcsname}

@@ -334,9 +334,9 @@ local styletemplate <const> = [[
 
     local numbertoallign = {
         [0] = "justify", ["0"] = "justify", [variables.normal    ] = "justify",
-        [1] = "right",   ["1"] = "right",   [variables.flushright] = "right",
-        [2] = "center",  ["2"] = "center",  [variables.middle    ] = "center",
-        [3] = "left",    ["3"] = "left",    [variables.flushleft ] = "left",
+              "right",   ["1"] = "right",   [variables.flushright] = "right",
+              "center",  ["2"] = "center",  [variables.middle    ] = "center",
+              "left",    ["3"] = "left",    [variables.flushleft ] = "left",
     }
 
     function wrapups.allusedstyles(filename)

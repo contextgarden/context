@@ -558,8 +558,8 @@
      \edef\m_overlay_region{\reservedautoregiontag}%
    \fi}
 
-\def\pack_framed_add_region % experiment
-  {\anch_mark_tagged_box\b_framed_normal\m_overlay_region}
+\def\pack_framed_add_region % experiment, zerocount forces the given region
+  {\anch_mark_tagged_box\b_framed_normal\m_overlay_region\zerocount}
 
 \def\pack_framed_add_background
   {\ifconditional\c_pack_reanchor

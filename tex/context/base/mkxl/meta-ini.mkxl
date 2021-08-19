@@ -514,7 +514,8 @@
      \meta_mpvar_default
    \orelse\ifchkdim\m_meta_current_variable\or
      \todimension\m_meta_current_variable\space\space
-   \orelse\ifchknum\m_meta_current_variable\or
+ % \orelse\ifchknum\m_meta_current_variable\or % we need to catch 1>2
+   \orunless\iftok{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}\emptytoks
      \tointeger\m_meta_current_variable\space\space
    \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
      \MPcolor\m_meta_current_variable\space
@@ -532,7 +533,8 @@
      \meta_mpvar_default
    \orelse\ifchkdim\m_meta_current_variable\or
      \todimension\m_meta_current_variable\space\space
-   \orelse\ifchknum\m_meta_current_variable\or
+ % \orelse\ifchknum\m_meta_current_variable\or % we need to catch 1>2
+   \orunless\iftok{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}\emptytoks
      \tointeger\m_meta_current_variable\space\space
    \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
      \MPcolor\m_meta_current_variable\space

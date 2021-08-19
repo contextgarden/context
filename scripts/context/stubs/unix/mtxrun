@@ -1201,7 +1201,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38747, stripped down to: 19489
+-- original size: 38742, stripped down to: 19489
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -3285,7 +3285,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11951, stripped down to: 6430
+-- original size: 11988, stripped down to: 6430
 
 if not modules then modules={} end modules ['l-io']={
  version=1.001,
@@ -5110,7 +5110,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 18253, stripped down to: 10816
+-- original size: 18217, stripped down to: 10792
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5300,15 +5300,15 @@ local separator,pattern
 if onwindows then 
  local slash=S("/\\")/"/"
  pattern={
-  [1]=(Cs(P(".")+slash^1)+Cs(R("az","AZ")*P(":")*slash^0)+Cc("./"))*V(2)*V(3),
-  [2]=Cs(((1-S("*?/\\"))^0*slash)^0),
-  [3]=Cs(P(1)^0)
+  (Cs(P(".")+slash^1)+Cs(R("az","AZ")*P(":")*slash^0)+Cc("./"))*V(2)*V(3),
+  Cs(((1-S("*?/\\"))^0*slash)^0),
+  Cs(P(1)^0)
  }
 else
  pattern={
-  [1]=(C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
-  [2]=C(((1-S("*?/"))^0*P("/"))^0),
-  [3]=C(P(1)^0)
+  (C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
+  C(((1-S("*?/"))^0*P("/"))^0),
+  C(P(1)^0)
  }
 end
 local filter=Cs ((
@@ -7467,7 +7467,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 32815, stripped down to: 18257
+-- original size: 33089, stripped down to: 18163
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7794,9 +7794,6 @@ if JITSUPPORTED then
   return concat(fastserialize(t,true))
  end
 else
- local f_v=formatters["[%q]=%q,"]
- local f_t=formatters["[%q]="]
- local f_q=formatters["%q,"]
  function table.fastserialize(t,prefix) 
   local r={ type(prefix)=="string" and prefix or "return" }
   local m=1
@@ -9236,7 +9233,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 24692, stripped down to: 16432
+-- original size: 24819, stripped down to: 16424
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -9285,8 +9282,8 @@ local noparent=1-(lparent+rparent)
 local nobracket=1-(lbracket+rbracket)
 local escape,left,right=P("\\"),P('{'),P('}')
 lpegpatterns.balanced=P {
- [1]=((escape*(left+right))+(1-(left+right))+V(2))^0,
- [2]=left*V(1)*right
+ ((escape*(left+right))+(1-(left+right))+V(2))^0,
+ left*V(1)*right
 }
 local nestedbraces=P { lbrace*(nobrace+V(1))^0*rbrace }
 local nestedparents=P { lparent*(noparent+V(1))^0*rparent }
@@ -21547,7 +21544,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16409, stripped down to: 11591
+-- original size: 16456, stripped down to: 11636
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -21593,7 +21590,7 @@ local readables={}
 local usedreadables={}
 local compilelua=luautilities.compile
 local luasuffixes=luautilities.suffixes
-caches.base=caches.base or "luatex-cache"  
+caches.base=caches.base or (LUATEXENGINE and LUATEXENGINE.."-cache") or "luatex-cache"  
 caches.more=caches.more or "context"    
 caches.defaults={ "TMPDIR","TEMPDIR","TMP","TEMP","HOME","HOMEPATH" }
 local direct_cache=false 
@@ -25935,8 +25932,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1026528
--- stripped bytes    : 402906
+-- original bytes    : 1026972
+-- stripped bytes    : 403431
 
 -- end library merge
 

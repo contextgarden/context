@@ -550,7 +550,9 @@ end
 
 local function poptree()
     top = remove(treestack)
- -- inspect(top)
+    if #top[#top].branches == 0 then
+        top[#top].branches = nil -- saves space in tuc
+    end
 end
 
 do
@@ -558,10 +560,15 @@ do
     local function log_tree(report,top,depth)
         report("%s%s: %s",depth,top.type,top.name)
         local branches = top.branches
-        if #branches > 0 then
-            depth = depth .. "  "
-            for i=1,#branches do
-                log_tree(report,branches[i],depth)
+        if branches then
+            local n = #branches
+            if n > 0 then
+                depth = depth .. "  "
+                for i=1,n do
+                    log_tree(report,branches[i],depth)
+                end
+            else
+                top.brances = nil -- saves space in tuc
             end
         end
     end
@@ -1045,6 +1052,7 @@ function document.setcommandline() -- has to happen at the tex end in order to e
 
     -- in the new mtx=context approach we always pass a stub file so we need to
     -- to trick the files table which actually only has one entry in a tex job
+
 
     if arguments.timing then
         context.usemodule { "timing" }

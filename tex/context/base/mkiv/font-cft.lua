@@ -439,7 +439,7 @@ do
         },
         colorschemes = {
             default = {
-                [1] = { t_string },
+                { t_string },
             }
         },
         files = {

@@ -5,6 +5,14 @@
 % copyright : Public domain
 % patched   : Hans Hagen
 %
+% author    : Karl Berry
+% version   : $Id: rboxes.mp,v 1.2 2004/09/19 21:47:11 karl Exp $
+% copyright : Public domain
+% patched   : Hans Hagen
+%
+% The code is the same but I've added a boxes_ namespace for some so that we don't
+% clash with metafun.
+
 % The code is the same but I've added s boxes_ namespace for soem so that we don't
 % clash with metafun. Loading and initialization is now under metafun control.
 
@@ -13,7 +21,8 @@ if known metafun_loaded_xbox : endinput ; fi ;
 newinternal boolean metafun_loaded_xbox ; metafun_loaded_xbox := true ; immutable metafun_loaded_xbox ;
 
 % Find the length of the prefix of string s for which cond is true for each character
-% c of the prefix.
+% c of the prefix. Loading and initialization is now under metafun control. Only the
+% mpxl variant will be adapted. When needed this file will be adapted.
 
 vardef boxes_str_prefix (expr s) (text cond) =
     save i_, c; string c; i_ = 0;
@@ -294,4 +303,30 @@ extra_endfig   := "boxes_clear_all;" & extra_endfig;
 if makingfigure :
     boxes_init_all;
 fi ;
+
+% Rectangular boxes with rounded corners
+
+newinternal rbox_radius ; rbox_radius := 8bp ;
+
+vardef rboxit@#(text tt) =
+    boxes_begin("boxes_the_rounded","boxes_size",@#,tt) ;
+    boxes_generic_declare (pair) _n.sw, _n.s, _n.se, _n.e, _n.ne, _n.n, _n.nw, _n.w ;
+    0 = xpart(@#nw - @#sw) = ypart(@#se - @#sw) ;
+    0 = xpart(@#ne - @#se) = ypart(@#ne - @#nw) ;
+    @#w = .5[@#nw,@#sw] ;
+    @#s = .5[@#sw,@#se] ;
+    @#e = .5[@#ne,@#se] ;
+    @#n = .5[@#ne,@#nw] ;
+    @#ne - @#c = @#c - @#sw = (@#dx,@#dy) + .5*(urcorner boxes_pic@# - llcorner boxes_pic@#) ;
+    boxes_end(boxes_clear,@#) ;
+enddef;
+
+def boxes_the_rounded(suffix $) =
+    save _r ; _r = min(rbox_radius, .5*ypart($.n-$.s), .5*xpart($.e-$.w));
+    $.sw + (_r,0) {right} .. {right} $.se - (_r,0) ..
+    $.se + (0,_r)    {up} .. {up}    $.ne - (0,_r) ..
+    $.ne - (_r,0)  {left} .. {left}  $.nw + (_r,0) ..
+    $.nw - (0,_r)  {down} .. {down}  $.sw + (0,_r) ..
+    cycle
+enddef;
 

@@ -97,9 +97,9 @@
 \installcommandhandler \??textbackground {textbackground} \??textbackground
 
 \appendtoks
-    \frozen\instance\setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
-    \frozen\instance\setuevalue{\e!start\currenttextbackground}{\starttextbackground[\currenttextbackground]}%
-    \frozen\instance\setuevalue{\e!stop \currenttextbackground}{\stoptextbackground}%
+    \frozen\instance\protected\edefcsname        \currenttextbackground\endcsname{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
+    \frozen\instance\protected\edefcsname\e!start\currenttextbackground\endcsname{\starttextbackground[\currenttextbackground]}%
+    \frozen\instance\protected\edefcsname\e!stop \currenttextbackground\endcsname{\stoptextbackground}%
 \to \everydefinetextbackground
 
 \newconstant   \c_anch_backgrounds_pos_state
@@ -134,9 +134,11 @@
    \ifparameter#settings\or
      \setupcurrenttextbackground[#settings]%
    \fi
-   \doifelse{\textbackgroundparameter\c!state}\v!start
+   \ifcstok{\textbackgroundparameter\c!state}\v!start
      \anch_backgrounds_text_preset_yes
+   \else
      \anch_backgrounds_text_preset_nop
+   \fi
    \anch_backgrounds_text_start_indeed}
 
 \def\anch_backgrounds_text_level_start
@@ -292,10 +294,8 @@
         \kern\textbackgroundskip\nobreak
      \fi
    \fi
-   \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
-   \advance\leftskip\leftskipadaption
-   \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
-   \advance\rightskip\leftskipadaption
+   \doadaptleftskip {\textbackgroundparameter\c!leftoffset}%
+   \doadaptrightskip{\textbackgroundparameter\c!rightoffset}%
    % new
    \dosetraggedcommand{\textbackgroundparameter\c!align}%
    \raggedcommand

@@ -3028,6 +3028,7 @@ do
             --
             statistics.register("result saved in file", function()
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
+                outputfilename = string.gsub(outputfilename,"^%./+","") -- todo: make/use a helper
                 return string.format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",lpdf.getcompression())
             end)
             --

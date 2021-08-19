@@ -1429,7 +1429,7 @@
 
 \tolerant\def\tabl_table_define_template[#1]#*[#2]#*[#3]#*[#4]%
   {\ifarguments\or\else
-     \setgvalue{\??tabletemplate#1}{\tabl_table_use_template{#2}{#3}{#4}}%
+     \gdefcsname\??tabletemplate#1\endcsname{\tabl_table_use_template{#2}{#3}{#4}}%
    \fi
    \egroup}
 
@@ -1656,9 +1656,6 @@
 \newconditional\preventtablebreak
 \newconditional\hassometablehead
 \newconditional\hassometabletail
-
-% \def\tabl_table_set_head[#1][#2]#3\end{\setvalue{\??tablehead#1}{\noalign{\global\settrue\hassometablehead}#3}}
-% \def\tabl_table_set_tail[#1][#2]#3\end{\setvalue{\??tabletail#1}{\noalign{\global\settrue\hassometabletail}#3}}
 
 \permanent\protected\def\settablehead{\dodoubleempty\tabl_table_set_head} % todo: use pickup
 \permanent\protected\def\settabletail{\dodoubleempty\tabl_table_set_tail} % todo: use pickup

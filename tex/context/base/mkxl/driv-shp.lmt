@@ -148,7 +148,6 @@ local flush_character do
     local vfinjectors = fonts.helpers.vfinjectors
 
     local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
-
         if nesting > 100 then
             return
         elseif nesting == 0 then
@@ -194,7 +193,6 @@ local flush_character do
         end
 
         local refactored = 1000000
-
         for i=1,#vfcommands do
             local packet  = vfcommands[i]
             local command = packet[1]

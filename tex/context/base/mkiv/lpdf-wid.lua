@@ -25,7 +25,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- html5 media in pdf then.
 --
 -- See mail by Michal Vlasák to the mailing list that discusses current support in
--- viewers and also mentions a few fixes wrt embedding media.
+-- viewers and also mentions (and submitted) a few fixes wrt embedding media.
 
 local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
@@ -60,6 +60,7 @@ local v_auto                   = variables.auto
 local v_embed                  = variables.embed
 local v_max                    = variables.max
 local v_yes                    = variables.yes
+local v_compress               = variables.compress
 
 local pdfconstant              = lpdf.constant
 local pdfnull                  = lpdf.null
@@ -649,6 +650,7 @@ local function insertrenderingwindow(specification)
         Subtype = pdfconstant("Screen"),
         P       = pdfreference(pdfpagereference(page)),
         A       = a, -- needed in order to make the annotation clickable (i.e. don't bark)
+        T       = pdfunicode(label), -- for JS
         Border  = bs,
         C       = bc,
         AA      = actions,
@@ -662,7 +664,7 @@ end
 -- some dictionaries can have a MH (must honor) or BE (best effort) capsule
 
 local function insertrendering(specification)
-    local label = specification.label
+    local label  = specification.label
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
@@ -693,7 +695,7 @@ local function insertrendering(specification)
      --     }
      -- }
         local parameters = pdfdictionary {
-            Type = pdfconstant(MediaPermissions),
+            Type = pdfconstant("MediaPermissions"),
             TF   = pdfstring("TEMPALWAYS"), -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS / needed for acrobat/wmp
         }
         local descriptor = pdfdictionary {
@@ -707,7 +709,7 @@ local function insertrendering(specification)
             descriptor = codeinjections.embedfile {
                 file           = filename,
                 mimetype       = mimetype, -- yes or no
-                compress       = false,
+                compress       = option[v_compress] or false,
                 forcereference = true,
             }
         end
@@ -723,7 +725,7 @@ local function insertrendering(specification)
         local rendition = pdfdictionary {
             Type = pdfconstant("Rendition"),
             S    = pdfconstant("MR"),
-            N    = label,
+            N    = pdfunicode(label),
             C    = pdfreference(pdfflushobject(clip)),
         }
         mf[label] = pdfreference(pdfflushobject(rendition))
@@ -760,6 +762,21 @@ function codeinjections.processrendering(label)
         insertrenderingobject(specification)
     end
 end
+
+-- needed mapping for access from JS
+
+local function flushrenderings()
+    if next(mf) then
+        local r = pdfarray()
+        for label, reference in sortedhash(mf) do
+            r[#r+1] = pdfunicode(label)
+            r[#r+1] = reference -- already a reference
+        end
+        lpdf.addtonames("Renditions",pdfreference(pdfflushobject(pdfdictionary{ Names = r })))
+    end
+end
+
+lpdf.registerdocumentfinalizer(flushrenderings,"renderings")
 
 function codeinjections.insertrenderingwindow(specification)
     local label = specification.label

@@ -8,7 +8,9 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
 
 -- path relates stuff ... todo: use a stack (or numeric index to list)
 
-local type = type
+local type, tonumber, tostring = type, tonumber, tostring
+local find, match = string.find, string.match
+local insert, remove = table.insert, table.remove
 
 local aux            = mp.aux
 local mpnumeric      = aux.numeric
@@ -18,60 +20,86 @@ local registerdirect = metapost.registerdirect
 local registerscript = metapost.registerscript
 
 local scan           = mp.scan
+local skip           = mp.skip
 local get            = mp.get
+local inject         = mp.inject
+
 local scannumber     = scan.number
 local scanstring     = scan.string
+local scaninteger    = scan.integer
+local scannumeric    = scan.numeric
+local scanwhatever   = scan.whatever
 local scanpath       = scan.path
 local scanproperty   = scan.property
+
 local gethashentry   = get.hashentry
 
-local p = nil
-local n = 0
+local bpfactor       = number.dimenfactors.bp
 
-registerscript("pathreset", function()
-    p = nil
-    n = 0
-end)
+local injectwhatever = inject.whatever
+local injectboolean  = inject.boolean
+local injectnumeric  = inject.numeric
+local injectstring   = inject.string
+local injectpair     = inject.pair
 
-registerscript("pathlengthof", function()
-    p = scanpath()
-    n = p and #p or 1
-    mpnumeric(n)
-end)
+local injectwhd      = inject.whd -- scaled
+local injectxy       = inject.xy
+local injectpt       = inject.pt
 
-registerscript("pathpointof", function()
-    local i = scannumber()
-    if i > 0 and i <= n then
-        local pi = p[i]
-        mppair(pi[1],pi[2])
-    end
-end)
+local report         = logs.reporter("metapost", "log")
+local report_message = logs.reporter("metapost")
 
-registerscript("pathleftof", function()
-    local i = scannumber()
-    if i > 0 and i <= n then
-        local pi = p[i]
-        mppair(pi[5],pi[6])
-    end
-end)
+local codes          = metapost.codes
+local types          = metapost.types
+local procodes       = mplib.propertycodes
 
-registerscript("pathrightof", function()
-    local i = scannumber()
-    if i > 0 and i <= n then
-        local pn
-        if i == 1 then
-            pn = p[2] or p[1]
-        else
-            pn = p[i+1] or p[1]
+local implement      = interfaces.implement
+
+do
+
+    local p = nil
+    local n = 0
+
+    registerscript("pathreset", function()
+        p = nil
+        n = 0
+    end)
+
+    registerdirect("pathlengthof", function()
+        p = scanpath()
+        return p and #p or 1
+    end)
+
+    registerdirect("pathpointof", function()
+        local i = scannumber()
+        if i > 0 and i <= n then
+            local pi = p[i]
+            injectpair(pi[1],pi[2])
         end
-        mppair(pn[3],pn[4])
-    end
-end)
+    end)
 
-local report   = logs.reporter("metapost", "log")
-local codes    = metapost.codes
-local types    = metapost.types
-local procodes = mplib.propertycodes
+    registerdirect("pathleftof", function()
+        local i = scannumber()
+        if i > 0 and i <= n then
+            local pi = p[i]
+            injectpair(pi[5],pi[6])
+        end
+    end)
+
+    registerdirect("pathrightof", function()
+        local i = scannumber()
+        if i > 0 and i <= n then
+            local pn
+            if i == 1 then
+                pn = p[2] or p[1]
+            else
+                pn = p[i+1] or p[1]
+            end
+            injectpair(pn[3],pn[4])
+        end
+    end)
+
+end
 
 registerscript("showproperty", function()
     local k, s, p, d = scanproperty()
@@ -92,9 +120,6 @@ end)
 
 -- local getmacro      = tokens.getters.macro
 -- local mpgnamespace  = getmacro("??graphicvariable")
--- local scanmpstring  = mp.scan.string
--- local injectnumeric = mp.inject.numeric
--- local injectstring  = mp.inject.string
 
 -- registerscript("mpv_numeric",   function() injectnumeric  (getmacro(mpgnamespace .. getmacro("currentmpcategory") .. ":" .. scanmpstring())) end)
 -- registerscript("mpv_dimension", function() return getmacro(mpgnamespace .. getmacro("currentmpcategory") .. ":" .. scanmpstring()) end)
@@ -103,46 +128,380 @@ end)
 -- registerscript("mpvar", function() return getmacro(mpgnamespace .. getmacro("currentmpcategory") .. ":" .. scanmpstring(), true) end) -- Isn't it already edef'd?
 -- registerscript("mpvar", function() return getmacro(metapost.namespace .. scanmpstring(), true) end) -- Isn't it already edef'd?
 
-local scanstring      = mp.scan.string
-local expandtex       = mp.expandtex
+do
 
-local injectnumeric   = mp.inject.numeric
-local injectstring    = mp.inject.string
-local injectboolean   = mp.inject.boolean
+    local expandtex       = mp.expandtex
 
-local tokenvalues     = tokens.values
-local dimension_value = tokenvalues.dimension
-local integer_value   = tokenvalues.integer
-local boolean_value   = tokenvalues.boolean
-local string_value    = tokenvalues.string
-local unknown_value   = tokenvalues.none
+    local tokenvalues     = tokens.values
+    local dimension_value = tokenvalues.dimension
+    local integer_value   = tokenvalues.integer
+    local boolean_value   = tokenvalues.boolean
+    local string_value    = tokenvalues.string
+    local unknown_value   = tokenvalues.none
 
-registerdirect("mpvard", function()
-    if not expandtex(dimension_value,"mpcategoryparameter",true,scanstring()) then
-        injectnumeric(0)
+    registerdirect("mpvard", function()
+        if not expandtex(dimension_value,"mpcategoryparameter",true,scanstring()) then
+            injectnumeric(0)
+        end
+    end)
+
+    registerdirect("mpvarn", function()
+        if not expandtex(integer_value,"mpcategoryparameter",true,scanstring()) then
+            injectnumeric(0)
+        end
+    end)
+
+    registerdirect("mpvars", function()
+        if not expandtex(string_value,"mpcategoryparameter",true,scanstring()) then
+            injectstring("")
+        end
+    end)
+
+    registerdirect("mpvarb", function()
+        if not expandtex(boolean_value,"mpcategoryparameter",true,scanstring()) then
+            injectboolean(false)
+        end
+    end)
+
+    registerdirect("mpvar", function()
+        if not expandtex(unknown_value,"mpcategoryparameter",true,scanstring()) then
+            injectnumeric(0)
+        end
+    end)
+
+    --
+
+    local mpprint  = mp.print
+    local mpquoted = mp.quoted
+    local getmacro = tokens.getters.macro
+
+    registerscript("texvar", function() mpprint (getmacro(metapost.namespace .. scanstring())) end)
+    registerscript("texstr", function() mpquoted(getmacro(metapost.namespace .. scanstring())) end)
+
+end
+
+do
+
+    registerscript("textextanchor", function()
+        local x, y = match(scanstring(),"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
+        if x and y then
+            x = tonumber(x)
+            y = tonumber(y)
+        end
+        injectpair(x or 0,y or 0)
+    end)
+
+end
+
+do
+
+    local mpnamedcolor = attributes.colors.mpnamedcolor
+    local mpprint      = mp.aux.print
+
+    mp.mf_named_color = function(str)
+        mpprint(mpnamedcolor(str))
     end
-end)
 
-registerdirect("mpvarn", function()
-    if not expandtex(integer_value,"mpcategoryparameter",true,scanstring()) then
-        injectnumeric(0)
-    end
-end)
+    -- todo: we can inject but currently we always get a string back so then
+    -- we need to deal with it upstream in the color module ... not now
 
-registerdirect("mpvars", function()
-    if not expandtex(string_value,"mpcategoryparameter",true,scanstring()) then
-        injectstring("")
-    end
-end)
+    registerscript("namedcolor",function() mpprint(mpnamedcolor(scanstring())) end)
 
-registerdirect("mpvarb", function()
-    if not expandtex(boolean_value,"mpcategoryparameter",true,scanstring()) then
-        injectboolean(false)
-    end
-end)
+end
 
-registerdirect("mpvar", function()
-    if not expandtex(unknown_value,"mpcategoryparameter",true,scanstring()) then
-        injectnumeric(0)
+do
+
+    local hashes = table.setmetatableindex("table")
+
+    registerdirect("lmt_hash_new", function()
+     -- local name  = scanstring()
+        local name  = scanwhatever()
+        hashes[name] = { }
+    end)
+
+    registerdirect("lmt_hash_dispose", function()
+     -- local name  = scanstring()
+        local name  = scanwhatever()
+        hashes[name] = nil
+    end)
+
+    registerdirect("lmt_hash_in", function()
+     -- local name  = scanstring()
+        local name  = scanwhatever()
+     -- local key   = scanstring()
+        local key   = scanwhatever()
+        local hash  = hashes[name]
+        injectwhatever(hash and hash[key] and true or false)
+    end)
+
+    registerdirect("lmt_hash_to", function()
+     -- local name  = scanstring()
+        local name  = scanwhatever()
+     -- local key   = scanstring()
+        local key   = scanwhatever()
+        local value = scanwhatever()
+        local hash  = hashes[name]
+        if hash then
+            hash[key] = value
+        end
+    end)
+
+    registerdirect("lmt_hash_from", function()
+     -- local name  = scanstring()
+        local name  = scanwhatever()
+     -- local key  = scanstring()
+        local key  = scanwhatever()
+        local hash = hashes[name]
+        injectwhatever(hash and hash[key] or false)
+    end)
+
+    interfaces.implement {
+        name      = "MPfromhash",
+        arguments = "2 strings",
+        actions   = function(name,key)
+            local hash = hashes[name] or hashes[tonumber(name)] or hashes[tostring(name)]
+            if hash then
+                local v = hash[key]
+                if v then
+                    context(v)
+                end
+            end
+        end
+    }
+
+end
+
+do
+
+    local bpfactor     = number.dimenfactors.bp
+    local nbdimensions = nodes.boxes.dimensions
+
+    registerdirect("boxdimensions", function()
+        local category = scanstring()
+        local index    = scanwhatever()
+        injectwhd(nbdimensions(category,index))
+    end)
+
+end
+
+do
+
+    local skiptoken      = skip.token
+
+    local comma_code     = codes.comma
+
+    local getmacro       = tokens.getters.macro
+    local setmacro       = tokens.setters.macro
+
+    local getdimen       = tex.getdimen
+    local getcount       = tex.getcount
+    local gettoks        = tex.gettoks
+    local setdimen       = tex.setdimen
+    local setcount       = tex.setcount
+    local settoks        = tex.settoks
+
+    -- more helpers
+
+    registerdirect("getmacro", function() return getmacro(scanstring()) end)
+    registerdirect("getcount", function() return getcount(scanwhatever()) end)
+    registerdirect("gettoks",  function() return gettoks (scanwhatever()) end)
+    registerdirect("getdimen", function() return getdimen(scanwhatever()) * bpfactor end)
+
+    registerscript("setmacro", function() setmacro(scanstring(),scanstring()) end)
+    registerscript("setdimen", function() setdimen(scanwhatever(),scannumeric()/bpfactor) end)
+    registerscript("setcount", function() setcount(scanwhatever(),scannumeric()) end)
+    registerscript("settoks",  function() settoks (scanwhatever(),scanstring()) end)
+
+    registerscript("setglobalmacro", function() setmacro(scanstring(),scanstring(),"global") end)
+    registerscript("setglobaldimen", function() setdimen("global",scanwhatever(),scannumeric()/bpfactor) end)
+    registerscript("setglobalcount", function() setcount("global",scanwhatever(),scaninteger()) end)
+    registerscript("setglobaltoks",  function() settoks ("global",scanwhatever(),scanstring()) end)
+
+    local utfnum = utf.byte
+    local utflen = utf.len
+    local utfsub = utf.sub
+
+    registerdirect("utfnum", function() return utfnum(scanstring()) end)
+    registerdirect("utflen", function() return utflen(scanstring()) end)
+
+    registerdirect("utfsub", function() -- we have an optional third argument so we explicitly scan a text argument
+        return utfsub(scanstring(),skiptoken(comma_code) and scannumeric(),skiptoken(comma_code) and scannumeric())
+    end)
+
+    local setlogging = metapost.setlogging
+
+    registerscript("message", function()
+        setlogging(false)
+        local str = scanstring()
+        setlogging(true)
+        report_message("message : %s",str)
+    end)
+
+end
+
+-- position fun
+
+do
+
+    local mpprint        = mp.print
+    local mpfprint       = mp.fprint
+
+    local jobpositions   = job.positions
+    local getwhd         = jobpositions.whd
+    local getxy          = jobpositions.xy
+    local getposition    = jobpositions.position
+    local getpage        = jobpositions.page
+    local getparagraph   = jobpositions.paragraph
+    local getregion      = jobpositions.region
+    local getcolumn      = jobpositions.column
+    local getmacro       = tokens.getters.macro
+
+    registerscript("positionpath", function()
+        local w, h, d = getwhd(scanstring())
+        if w then
+            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",0,-d,w,-d,w,h,0,h)
+        else
+            mpprint("(origin--cycle)")
+        end
+    end)
+
+    registerscript("positioncurve", function()
+        local w, h, d = getwhd(scanstring())
+        if w then
+            mpfprint("((%p,%p)..(%p,%p)..(%p,%p)..(%p,%p)..cycle)",0,-d,w,-d,w,h,0,h)
+        else
+            mpprint("(origin--cycle)")
+        end
+    end)
+
+    registerscript("positionbox", function()
+        local p, x, y, w, h, d = getposition(scanstring())
+        if p then
+            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
+        else
+            mpprint("(%p,%p)--cycle",x or 0,y or 0)
+        end
+    end)
+
+    registerdirect("positionpage",      function() return getpage     (scanstring()) or 0 end)
+    registerdirect("positioncolumn",    function() return getcolumn   (scanstring()) or 0 end)
+    registerdirect("positionparagraph", function() return getparagraph(scanstring()) or 0 end)
+    registerdirect("positionregion",    function() return getregion   (scanstring()) or "unknown" end)
+    registerdirect("positionanchor",    function() return getmacro    ("MPanchorid") end)
+    registerdirect("positionwhd",       function() injectwhd(getwhd(scanstring())) end)
+    registerdirect("positionxy",        function() injectxy (getxy (scanstring())) end)
+    registerdirect("positionx",         function() injectpt (getx  (scanstring())) end)
+    registerdirect("positiony",         function() injectpt (gety  (scanstring())) end)
+
+end
+
+do
+
+    local modes       = tex.modes
+    local systemmodes = tex.systemmodes
+
+    registerdirect("mode",       function() injectboolean(modes      [scanstring()] and true or false) end)
+    registerdirect("systemmode", function() injectboolean(systemmodes[scanstring()] and true or false) end)
+
+end
+
+-- for alan's nodes:
+
+do
+
+    local lpegmatch, lpegpatterns, P = lpeg.match, lpeg.patterns, lpeg.P
+
+    -- todo: scansuffix / why no return boolean (first one)
+
+    registerdirect("isarray", function()
+         injectboolean(find(scanstring(),"%d") and true or false)
+    end)
+
+    registerdirect("prefix", function()
+        local str = scanstring()
+        return match(str,"^(.-)[%d%[]") or str
+    end)
+
+    local dimension = lpeg.counter(P("[") * lpegpatterns.integer * P("]") + lpegpatterns.integer)
+
+    registerdirect("dimension", function() return dimension(scanstring()) end)
+
+    -- todo : share with mlib-pps.lua metapost,isobject
+
+    -- registerdirect("isobject", function()
+    --     injectboolean(find(scanstring(),"mf_object="))
+    -- end
+
+    local p1      = P("mf_object=")
+    local p2      = lpegpatterns.eol * p1
+    local pattern = (1-p2)^0 * p2 + p1
+
+    registerdirect("isobject", function()
+        local str = scanstring()
+        injectboolean(pattern and str ~= "" and lpegmatch(pattern,str))
+    end)
+
+end
+
+-- key/values (moved here, old mechanism)
+
+do
+
+    local stack, top = { }, nil
+
+    local function setvariable(k,v)
+        if top then
+            top[k] = v
+        else
+            metapost.variables[k] = v
+        end
     end
-end)
+
+    local function pushvariable(k)
+        local t = { }
+        if top then
+            insert(stack,top)
+            top[k] = t
+        else
+            metapost.variables[k] = t
+        end
+        top = t
+    end
+
+    local function popvariable()
+        top = remove(stack)
+    end
+
+    registerscript("passvariable", function() setvariable (scanstring(), scanwhatever()) end)
+    registerscript("pushvariable", function() pushvariable(scanstring()) end)
+    registerscript("popvariable",  function() popvariable () end)
+
+    local stack = { }
+
+    local function pushvariables()
+        insert(stack,metapost.variables)
+        metapost.variables = { }
+    end
+
+    local function popvariables()
+        metapost.variables = remove(stack) or metapost.variables
+    end
+
+    metapost.setvariable   = setvariable
+    metapost.pushvariable  = pushvariable
+    metapost.popvariable   = popvariable
+    metapost.pushvariables = pushvariables
+    metapost.popvariables  = popvariables
+
+    implement {
+        name      = "mppushvariables",
+        actions   = pushvariables,
+    }
+
+    implement {
+        name      = "mppopvariables",
+        actions   = popvariables,
+    }
+
+end
+

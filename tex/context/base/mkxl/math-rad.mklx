@@ -110,12 +110,14 @@
 
 \def\m_math_no_degree{{}}
 
+% style width [options: left middle right]
+
 \def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 
-\setvalue{\??mathradicalalternative\v!default}%  #body%
+\defcsname\??mathradicalalternative\v!default\endcsname %  #body%
   {\rootradical{\currentmathradicaldegree}}   % {#body}}
 
-\setvalue{\??mathradicalalternative\v!normal}#body%
+\defcsname\??mathradicalalternative\v!normal\endcsname#body%
   {\edef\p_color{\mathradicalparameter\c!color}%
    \ifempty\p_color
      \styledrootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
@@ -150,7 +152,7 @@
 
 % todo: spacing .. this is just an experiment (article driven)
 
-\setvalue{\??mathradicalalternative\v!mp}#body% we could use dowithnextbox
+\defcsname\??mathradicalalternative\v!mp\endcsname#body% we could use dowithnextbox
   {\begingroup
    \scratchoffset\mathradicalparameter\c!mpoffset
    \setbox\nextbox\mathstylehbox{#body}%
@@ -213,7 +215,7 @@
    \csname\??mathornamentalternative\mathornamentparameter\c!alternative\endcsname{#body}%
    \endgroup}
 
-\setvalue{\??mathornamentalternative\v!mp}#body% we could use dowithnextbox
+\defcsname\??mathornamentalternative\v!mp\endcsname#body% we could use dowithnextbox
   {\begingroup
    \scratchoffset\mathornamentparameter\c!mpoffset
    \setbox\nextbox\mathstylehbox{#body}%

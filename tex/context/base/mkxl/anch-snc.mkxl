@@ -125,10 +125,12 @@
 %D \stoptext
 %D \stoptyping
 
+%D We could actually use par positions but in \LMTX\ we have syncpos entries
+%D somewhat optimized.
+
 \unprotect
 
-\ifdefined\??syncposcounter \else \installcorenamespace{syncposcounter} \fi
-\ifdefined\s!syncpos        \else \def\s!syncpos       {syncpos}        \fi
+\installcorenamespace{syncposcounter}
 
 \let\c_sync_n\relax
 
@@ -137,7 +139,7 @@
      \expandafter\newcount\csname\??syncposcounter:#1\endcsname
    \fi}
 
-\permanent\tolerant\protected\def\syncposition[#1]#*[#2]% we could actually use par positions
+\permanent\tolerant\protected\def\syncposition[#1]#*[#2]%
   {\dontleavehmode
    \ifcsname\??syncposcounter:#1\endcsname
      \let\c_sync_n\lastnamedcs

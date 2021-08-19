@@ -713,8 +713,8 @@ function scripts.context.run(ctxdata,filename)
         local basename = filebasename(filename) -- use splitter
         local pathname = filepathpart(filename)
         --
-        if not filesuffix(filename) then
-            filename = addsuffix(filename,"tex")
+        if filesuffix(filename) == "" then
+            filename = fileaddsuffix(filename,"tex")
         end
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then

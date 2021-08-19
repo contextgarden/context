@@ -147,8 +147,8 @@ local p_expression = P("match")/"" * Cs(p_compare)
                      ) / test_key_value
 
 local pattern = Cs {
-    [1] = V(2) * (p_combine * V(2))^0,
-    [2] = p_expression,
+    V(2) * (p_combine * V(2))^0,
+    p_expression,
 }
 
 -- -- -- -- -- -- -- -- -- -- -- -- --

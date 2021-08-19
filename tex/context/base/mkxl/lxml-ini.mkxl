@@ -195,6 +195,23 @@
    %xmlpopdocument
    \endgroup}
 
+% This still doesn't solve a problem with weird grouping (start inside xml and
+% end outside, so one has to do proper grouping inside xml mode).
+%
+% \def\lxml_process#1#2#3#4#5% flag \loader id name what initializersetup
+%   {%\begingroup
+%    \pushmacro\xmldocument
+%    \edef\xmldocument{#3}% #2 can be \xmldocument and set as such
+%    #2{#3}{#4}%
+%    \pushcatcodetable
+%    \setcatcodetable\notcatcodes
+%    \doifelsenothing{#5}%
+%      {\xmlsetup{#3}{xml:process}}%
+%      {\xmlsetup{#3}{#5}}%
+%    \popcatcodetable
+%    \popmacro\xmldocument
+%    }%\endgroup}
+
 \permanent\protected\def\xmlprocessfile  {\lxml_process\plusone  \xmlload}
 \permanent\protected\def\xmlprocessdata  {\lxml_process\zerocount\xmlloaddata}
 \permanent\protected\def\xmlprocessbuffer{\lxml_process\zerocount\xmlloadbuffer}

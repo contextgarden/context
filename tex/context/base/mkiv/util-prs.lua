@@ -55,9 +55,13 @@ local nobracket   = 1 - (lbracket + rbracket)
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
+-- lpegpatterns.balanced = P {
+--     [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
+--     [2] = left * V(1) * right
+-- }
 lpegpatterns.balanced = P {
-    [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
-    [2] = left * V(1) * right
+    ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
+    left * V(1) * right
 }
 
 local nestedbraces   = P { lbrace   * (nobrace   + V(1))^0 * rbrace }

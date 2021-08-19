@@ -210,8 +210,7 @@ local getscales          = nuts.getscales
 ---------------------------------------------------------------------------------------
 
 -- Beware: In ConTeXt components no longer are real components. We only keep track of
--- their positions because some complex ligatures might need that. For the moment we
--- use an x_ prefix because for now generic follows the other approach.
+-- their positions because some complex ligatures might need that.
 
 local components         = nuts.components
 local copynocomponents   = components.copynocomponents
@@ -244,9 +243,6 @@ local setmetatableindex  = table.setmetatableindex
 
 local nextnode           = nuts.traversers.node
 
------ zwnj               = 0x200C
------ zwj                = 0x200D
-
 local nodecodes          = nodes.nodecodes
 local glyphcodes         = nodes.glyphcodes
 
@@ -261,7 +257,7 @@ local lefttoright_code   = nodes.dirvalues.lefttoright
 local righttoleft_code   = nodes.dirvalues.righttoleft
 
 local discretionarydisc_code = nodes.disccodes.discretionary
-local ligatureglyph_code     = glyphcodes.ligature
+----- ligatureglyph_code     = glyphcodes.ligature
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -378,7 +374,7 @@ local function cref(dataset,sequence,index)
         return "no valid dataset"
     end
     local merged = sequence.merged and "merged " or ""
-    if index then
+    if index and index > 1 then
         return formatters["feature %a, type %a, %schain lookup %a, index %a"](
             dataset[4],sequence.type,merged,sequence.name,index)
     else
@@ -484,7 +480,7 @@ local function markstoligature(head,start,stop,char)
         end
         resetinjection(base)
         setchar(base,char)
-        setsubtype(base,ligatureglyph_code)
+     -- setsubtype(base,ligatureglyph_code)
         setcomponents(base,start)
         setlink(prev,base,next)
         flushcomponents(start)
@@ -536,7 +532,7 @@ local function inhibited(start,stop)
 end
 
 local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound,hasmarks) -- brr head
-    if start == stop and getchar(start) == char then
+    if start == stop and getchar(start) == char and not hasmarks then
         resetinjection(start)
         setchar(start,char)
         return head, start
@@ -556,7 +552,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     resetinjection(base)
     setchar(base,char)
     setoptions(base,getoptions(start) | getoptions(stop)) -- maybe only lig options
-    setsubtype(base,ligatureglyph_code)
+ -- setsubtype(base,ligatureglyph_code)
     setcomponents(base,comp)
     setlink(prev,base,next)
     if not discfound then
@@ -790,7 +786,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
         while current do
             local nxt, char = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
             if char and not hasglyphoption(current,no_left_ligature_code) then
-                local lg = ligature[char]
+                local lg = not tonumber(ligature) and ligature[char]
                 if lg then
                     stop     = current
                     ligature = lg
@@ -803,14 +799,14 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             end
         end
         if stop then
-            local lig = ligature.ligature
-            if lig then
+            local ligature = tonumber(ligature) or ligature.ligature
+            if ligature then
                 if trace_ligatures then
                     local stopchar = getchar(stop)
-                    head, start = markstoligature(head,start,stop,lig)
+                    head, start = markstoligature(head,start,stop,ligature)
                     logprocess("%s: replacing %s upto %s by ligature %s case 1",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(getchar(start)))
                 else
-                    head, start = markstoligature(head,start,stop,lig)
+                    head, start = markstoligature(head,start,stop,ligature)
                 end
                 return head, start, true, false
             else
@@ -828,7 +824,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 elseif hasglyphoption(current,no_left_ligature_code) then
                     break
                 else
-                    local lg = ligature[char]
+                    local lg = not tonumber(ligature) and ligature[char]
                     if lg then
                         if marks[char] then
                             hasmarks = true
@@ -856,7 +852,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
         --
         -- Challenge for Kai (latinmodern):  \hyphenation{fii-f-f-iif} fiiffiif
         --
-        if discfound then
+        if tonumber(ligature) then
+            -- we're already done (endpoint reached)
+        elseif discfound then
             -- todo: check for no right ligature
             -- don't assume marks in a disc and we don't run over a disc (for now)
             local pre, post, replace = getdisc(discfound)
@@ -920,27 +918,28 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 start = discfound
                 return head, start, true, true
             end
+            ligature = ligature.ligature
         end
-        local lig = ligature.ligature
-        if lig then
+     -- local ligature = tonumber(ligature) or ligature.ligature
+        if ligature then
             if stop then
                 if trace_ligatures then
                     local stopchar = getchar(stop)
-                 -- head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
-                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,false,hasmarks)
-                    logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(lig))
+                 -- head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound,hasmarks)
+                    head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,false,hasmarks)
+                    logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(ligature))
                  -- we can have a rare case of multiple disc in a lig but that makes no sense language wise but if really
                  -- needed we could backtrack if we're in a disc node
                 else
-                 -- head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
-                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,false,hasmarks)
+                 -- head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound,hasmarks)
+                    head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,false,hasmarks)
                 end
             else
                 -- weird but happens (in some arabic font)
                 resetinjection(start)
-                setchar(start,lig)
+                setchar(start,ligature)
                 if trace_ligatures then
-                    logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(dataset,sequence),gref(startchar),gref(lig))
+                    logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(dataset,sequence),gref(startchar),gref(ligature))
                 end
             end
             return head, start, true, false
@@ -1502,19 +1501,19 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             local last            = stop
             local nofreplacements = 1
             while current do
-                local nxt, schar, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
-                if schar then
-if current and hasglyphoption(current,no_left_ligature_code) then
-    break
-end
-                    if skiphash and skiphash[schar] then -- marks
+                local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                if char then
+                    if current and hasglyphoption(current,no_left_ligature_code) then
+                        break
+                    end
+                    if skiphash and skiphash[char] then -- marks
                         -- if current == stop then -- maybe add this
                         --     break
                         -- else
                             current = nxt
                         -- end
                     else
-                        local lg = ligatures[schar]
+                        local lg = not tonumber(ligatures) and ligatures[char]
                         if lg then
                             ligatures       = lg
                             last            = current
@@ -1544,7 +1543,8 @@ end
                     break
                 end
             end
-            local ligature = ligatures.ligature
+            -- we can avoid the tonumber as already done but messy
+            local ligature = tonumber(ligatures) or ligatures.ligature
             if ligature then
                 if chainindex then
                     stop = last
@@ -2001,7 +2001,6 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
     local size         = ck[5] - ck[4] + 1
     local chainlookups = ck[6]
     local done         = false
-
     -- current match
     if chainlookups then
         -- Lookups can be like { 1, false, 3 } or { false, 2 } or basically anything and
@@ -2012,7 +2011,6 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
          -- if nofchainlookups > size then
          --     -- bad rules
          -- end
-
             local chainlookup = chainlookups[1]
             for j=1,#chainlookup do
                 local chainstep = chainlookup[j]
@@ -2020,6 +2018,9 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
                 local chainproc = chainprocs[chainkind]
                 if chainproc then
                     local ok
+                 -- HH: chainindex 1 added here (for KAI to check too), there are weird ligatures e.g.
+                 -- char + mark -> char where mark has to disappear
+                 -- head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
                     head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash)
                     if ok then
                         done = true
@@ -2515,6 +2516,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         local ck  = contexts[k]
         local seq = ck[3]
         local f   = ck[4] -- first current
+local last = start
         if not startchar or not seq[f][startchar] then
             -- report("no hit in %a at %i of %i contexts",sequence.type,k,nofcontexts)
             goto next
@@ -2525,7 +2527,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         else
             local l       = ck[5] -- last current
             local current = start
-            local last    = start
+-- local last    = start
 
             if l > f then
                 -- before/current/after | before/current | current/after
@@ -3443,7 +3445,7 @@ local function t_run_single(start,stop,lookupcache)
                 while s do
                     local nxt, char = isnextchar(s,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                     if char then
-                        local lg = lookupmatch[char]
+                        local lg = not tonumber(lookupmatch) and lookupmatch[char]
                         if lg then
                             if sstop then
                                 d = 1
@@ -3473,7 +3475,7 @@ local function t_run_single(start,stop,lookupcache)
                         break
                     end
                 end
-                if l and l.ligature then -- so we test for ligature
+                if l and (tonumber(l) or l.ligature) then -- so we test for ligature
                     lastd = d
                 end
             end
@@ -3587,7 +3589,7 @@ local function t_run_multiple(start,stop,steps,nofsteps)
                     while s do
                         local nxt, char = isnextchar(s,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                         if char then
-                            local lg = lookupmatch[char]
+                            local lg = not tonumber(lookupmatch) and lookupmatch[char]
                             if lg then
                                 if sstop then
                                     d = 1
@@ -3617,7 +3619,7 @@ local function t_run_multiple(start,stop,steps,nofsteps)
                             break
                         end
                     end
-                    if l and l.ligature then
+                    if l and (tonumber(l) or l.ligature) then
                         lastd = d
                     end
                 end
@@ -3728,7 +3730,14 @@ do
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
     -- often a is not set at all so that one is a bit debatable
 
-    local otfdataset = nil -- todo: make an installer
+ -- local otfdataset = nil
+    local otfdataset
+
+    otfdataset = function(...)
+        -- delayed alias
+        otfdataset = otf.dataset
+        return otfdataset(...)
+    end
 
     local getfastdisc = { __index = function(t,k)
         local v = usesfont(k,currentfont)
@@ -3752,9 +3761,6 @@ do
         if nesting == 1 then
             currentfont    = font
             currentdynamic = dynamic
---             currentscale   = false
---             currentxscale  = false
---             currentyscale  = false
             currentscale   = 1000
             currentxscale  = 1000
             currentyscale  = 1000
@@ -3768,11 +3774,11 @@ do
             factor         = getthreshold(font)
             checkmarks     = tfmdata.properties.checkmarks
 
-            if not otfdataset then
-                otfdataset = otf.dataset
-            end
+         -- if not otfdataset then
+         --     otfdataset = otf.dataset
+         -- end
 
-            discs  = fastdisc and n and n > 1 and setmetatable({},getfastdisc) -- maybe inline
+            discs  = fastdisc and n and n > 1 and setmetatable({},getfastdisc)
             spaces = setmetatable({},getfastspace)
 
         elseif currentfont ~= font then
@@ -3806,7 +3812,7 @@ do
         -- We don't goto the next node when a disc node is created so that we can then treat
         -- the pre, post and replace. It's a bit of a hack but works out ok for most cases.
 
-        for s=1,#datasets do
+        for s=1,#datasets do -- todo: datasets.n
             local dataset      = datasets[s]
             local state        = dataset[2]
             local sequence     = dataset[3] -- sequences[s] -- also dataset[5]
@@ -4194,8 +4200,8 @@ registerotffeature {
     }
 }
 
--- Moved here (up) a bit. This doesn't really belong in generic so it will
--- move to a context module some day.
+-- Moved here (up) a bit. This doesn't really belong in generic so it will move to a
+-- context module some day.
 
 local function markinitializer(tfmdata,value)
     local properties = tfmdata.properties
@@ -4223,239 +4229,3 @@ registerotffeature {
 -- Also see (!!).
 
 otf.handlers = handlers
-
-if context then
-    return
-else
-    -- todo: move the following code someplace else
-end
-
-local setspacekerns = nodes.injections.setspacekerns if not setspacekerns then os.exit() end
-
-local tag = "kern"
-
--- if fontfeatures then
-
---     function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,dynamic)
---         local features = fontfeatures[font]
---         local enabled  = features and features.spacekern and features[tag]
---         if enabled then
---             setspacekerns(font,sequence)
---         end
---         return head, enabled
---     end
-
--- else -- generic (no hashes)
-
-    function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,dynamic)
-        local shared   = fontdata[font].shared
-        local features = shared and shared.features
-        local enabled  = features and features.spacekern and features[tag]
-        if enabled then
-            setspacekerns(font,sequence)
-        end
-        return head, enabled
-    end
-
--- end
-
--- There are fonts out there that change the space but we don't do that kind of
--- things in TeX.
-
-local function hasspacekerns(data)
-    local resources = data.resources
-    local sequences = resources.sequences
-    local validgpos = resources.features.gpos
-    if validgpos and sequences then
-        for i=1,#sequences do
-            local sequence = sequences[i]
-            local steps    = sequence.steps
-            if steps and sequence.features[tag] then
-                local kind = sequence.type
-                if kind == "gpos_pair" or kind == "gpos_single" then
-                    for i=1,#steps do
-                        local step     = steps[i]
-                        local coverage = step.coverage
-                        local rules    = step.rules
-                        if rules then
-                            -- not now: analyze (simple) rules
-                        elseif not coverage then
-                            -- nothing to do
-                        elseif kind == "gpos_single" then
-                            -- maybe a message that we ignore
-                        elseif kind == "gpos_pair" then
-                            local format = step.format
-                            if format == "move" or format == "kern" then
-                                local kerns  = coverage[32]
-                                if kerns then
-                                    return true
-                                end
-                                for k, v in next, coverage do
-                                    if v[32] then
-                                        return true
-                                    end
-                                end
-                            elseif format == "pair" then
-                                local kerns  = coverage[32]
-                                if kerns then
-                                    for k, v in next, kerns do
-                                        local one = v[1]
-                                        if one and one ~= true then
-                                            return true
-                                        end
-                                    end
-                                end
-                                for k, v in next, coverage do
-                                    local kern = v[32]
-                                    if kern then
-                                        local one = kern[1]
-                                        if one and one ~= true then
-                                            return true
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return false
-end
-
-otf.readers.registerextender {
-    name   = "spacekerns",
-    action = function(data)
-        data.properties.hasspacekerns = hasspacekerns(data)
-    end
-}
-
-local function spaceinitializer(tfmdata,value) -- dynamic
-    local resources  = tfmdata.resources
-    local spacekerns = resources and resources.spacekerns
-    if value and spacekerns == nil then
-        local rawdata    = tfmdata.shared and tfmdata.shared.rawdata
-        local properties = rawdata.properties
-        if properties and properties.hasspacekerns then
-            local sequences = resources.sequences
-            local validgpos = resources.features.gpos
-            if validgpos and sequences then
-                local left  = { }
-                local right = { }
-                local last  = 0
-                local feat  = nil
-                for i=1,#sequences do
-                    local sequence = sequences[i]
-                    local steps    = sequence.steps
-                    if steps then
-                        -- we don't support space kerns in other features
-                        local kern = sequence.features[tag]
-                        if kern then
-                            local kind = sequence.type
-                            if kind == "gpos_pair" or kind == "gpos_single" then
-                                if feat then
-                                    for script, languages in next, kern do
-                                        local f = feat[script]
-                                        if f then
-                                            for l in next, languages do
-                                                f[l] = true
-                                            end
-                                        else
-                                            feat[script] = languages
-                                        end
-                                    end
-                                else
-                                    feat = kern
-                                end
-                                for i=1,#steps do
-                                    local step     = steps[i]
-                                    local coverage = step.coverage
-                                    local rules    = step.rules
-                                    if rules then
-                                        -- not now: analyze (simple) rules
-                                    elseif not coverage then
-                                        -- nothing to do
-                                    elseif kind == "gpos_single" then
-                                        -- makes no sense in TeX
-                                    elseif kind == "gpos_pair" then
-                                        local format = step.format
-                                        if format == "move" or format == "kern" then
-                                            local kerns  = coverage[32]
-                                            if kerns then
-                                                for k, v in next, kerns do
-                                                    right[k] = v
-                                                end
-                                            end
-                                            for k, v in next, coverage do
-                                                local kern = v[32]
-                                                if kern then
-                                                    left[k] = kern
-                                                end
-                                            end
-                                        elseif format == "pair" then
-                                            local kerns  = coverage[32]
-                                            if kerns then
-                                                for k, v in next, kerns do
-                                                    local one = v[1]
-                                                    if one and one ~= true then
-                                                        right[k] = one[3]
-                                                    end
-                                                end
-                                            end
-                                            for k, v in next, coverage do
-                                                local kern = v[32]
-                                                if kern then
-                                                    local one = kern[1]
-                                                    if one and one ~= true then
-                                                        left[k] = one[3]
-                                                    end
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                                last = i
-                            end
-                        else
-                            -- no steps ... needed for old one ... we could use the basekerns
-                            -- instead
-                        end
-                    end
-                end
-                left  = next(left)  and left  or false
-                right = next(right) and right or false
-                if left or right then
-                    spacekerns = {
-                        left  = left,
-                        right = right,
-                    }
-                    if last > 0 then
-                        local triggersequence = {
-                            -- no steps, see (!!)
-                            features = { [tag] = feat or { dflt = { dflt = true, } } },
-                            flags    = noflags,
-                            name     = "trigger_space_kerns",
-                            order    = { tag },
-                            type     = "trigger_space_kerns",
-                            left     = left,
-                            right    = right,
-                        }
-                        insert(sequences,last,triggersequence)
-                    end
-                end
-            end
-        end
-        resources.spacekerns = spacekerns
-    end
-    return spacekerns
-end
-
-registerotffeature {
-    name         = "spacekern",
-    description  = "space kern injection",
-    default      = true,
-    initializers = {
-        node     = spaceinitializer,
-    },
-}

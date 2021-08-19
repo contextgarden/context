@@ -16,8 +16,6 @@ local report = logs.reporter("metapost","instance")
 local codes = mplib.getcodes()
 local types = mplib.gettypes()
 
--- for k,v in next, mplib do if type(v) == "function" then local f = v mplib[k] = function(...) print(k) return v(...) end end end
-
 table.hashed(codes)
 table.hashed(types)
 
@@ -29,6 +27,7 @@ local skip   = mp.skip
 local get    = mp.get
 local inject = mp.inject
 
+local bpfactor   = number.dimenfactors.bp
 local currentmpx = nil
 local stack      = { }
 
@@ -106,6 +105,12 @@ inject.whatever  = function(...)             if trace then reporti("whatever")  
 inject.triplet    = inject.color
 inject.quadruplet = inject.cmykcolor
 
+-- these can be optimized for zero:
+
+inject.whd = function(w,h,d) injectcolor  (currentmpx,(w or 0)*bpfactor,(h or 0)*bpfactor,(d or 0)*bpfactor) end
+inject.xy  = function(x,y)   injectpair   (currentmpx,(x or 0)*bpfactor,(y or 0)*bpfactor) end
+inject.pt  = function(n)     injectnumeric(currentmpx,(x or 0)*bpfactor) end
+
 local function same(p,n)
     local f = p[1]
     local l = p[n]
@@ -121,35 +126,6 @@ local function same(p,n)
     end
     return false
 end
-
--- local p = mp.scan.path()
--- mp.inject.path(p,true,true)
-
--- function inject.path(p,close,connector)
---     local curled = false
---     local n = #p
---     if p.close or p.cycle then
---         close = true
---     end
---     if p.curled then
---         curled = true
---     end
---     if n > 1 then
---         -- [ ../true | --/false | nil/auto ]
---         if connector == nil or connector == "auto" then
---             connector = #p[1] > 2
---         end
---         if connector == false or connector == "--" then
---             curled = true
---         elseif connector == true or connector == ".." then
---             if close and not same(p,n) then
---                 p[n+1] = p[1]
---             end
---         end
---     end
---     if trace then reporti("path") end
---     return injectpath(currentmpx,p,close,curled)
--- end
 
 function inject.path(p,close,connector)
     local closed = false

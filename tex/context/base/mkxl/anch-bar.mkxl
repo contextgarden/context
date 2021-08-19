@@ -15,8 +15,6 @@
 
 \unprotect
 
-%D This can be done better now ...
-
 %D We will implement a sidebar mechanism using the functionality from \type
 %D {core-pos}.
 %D
@@ -54,6 +52,8 @@
 %D   \input tufte
 %D \stopsidebar
 %D \stoptyping
+%D
+%D This can be done better now ... maybe also by using the syncpos features.
 
 \installcorenamespace{sidebar}
 

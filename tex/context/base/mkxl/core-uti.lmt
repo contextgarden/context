@@ -19,7 +19,7 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local math = math
 local format, match = string.format, string.match
-local next, type, tostring, tonumber = next, type, tostring, tonumber
+local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local concat = table.concat
 
 local definetable    = utilities.tables.definetable
@@ -43,7 +43,7 @@ local report_passes  = logs.reporter("job","passes")
 job                  = job or { }
 local job            = job
 
-job.version          = 1.32
+job.version          = 1.33
 job.packversion      = 1.02
 
 -- some day we will implement loading of other jobs and then we need
@@ -209,6 +209,67 @@ local skiplist = {
     "positions",
 }
 
+-- I'm not that impressed by the savings. It's some 5 percent on the luametatex
+-- manual and probably some more on the m4 files (if so I might enable it).
+
+local deltapacking = false
+-- local deltapacking = true
+
+local function packnumberdata(tobesaved)
+    if deltapacking and tobesaved[1] then
+        local last
+        local current
+        for i=1,#tobesaved do
+            current = tobesaved[i]
+            if last then
+                if last.numbers and last.block then
+                    for k, v in next, last do
+                        if k ~= "numbers" and v ~= current[k] then
+                            goto DIFFERENT
+                        end
+                    end
+                    for k, v in next, current do
+                        if k ~= "numbers" and v ~= last[k] then
+                            goto DIFFERENT
+                        end
+                    end
+                    tobesaved[i] = {
+                        numbers = current.numbers,
+                    }
+                    goto CONTINUE
+                else
+                    current = nil
+                end
+            end
+          ::DIFFERENT::
+            last = current
+          ::CONTINUE::
+        end
+    end
+end
+
+local function unpacknumberdata(collected)
+    if deltapacking and collected[1] then
+        local key  = "numbers"
+        local last = collected[1]
+        local meta = false
+        for i=2,#collected do
+            local c = collected[i]
+            if c.block then
+                last = c
+                meta = false
+            elseif c.numbers then
+                if not meta then
+                    meta = { __index = last }
+                end
+                setmetatable(c, meta)
+            end
+        end
+    end
+end
+
+-- -- --
+
 -- not ok as we can have arbitrary keys in userdata and dataset so some day we
 -- might need a bit more granularity, like skippers
 
@@ -253,6 +314,7 @@ function job.save(filename) -- we could return a table but it can get pretty lar
         end
         if job.pack then
             packers.strip(jobpacker)
+packnumberdata(jobpacker.index)
          -- f:write("do\n\n")
             f:write(serialize(jobpacker,"utilitydata.job.packed",true),"\n\n")
          -- f:write("end\n\n")
@@ -265,7 +327,6 @@ end
 
 local function load(filename)
     if lfs.isfile(filename) then
-
         local function dofile(filename)
             local result = loadstring(io.loaddata(filename))
             if result then
@@ -274,7 +335,6 @@ local function load(filename)
                 return nil
             end
         end
-
         local okay, data = pcall(dofile,filename)
         if okay and type(data) == "table" then
             local jobversion  = job.version
@@ -299,28 +359,26 @@ function job.load(filename)
     local utilitydata = load(filename)
     if utilitydata then
         local jobpacker = utilitydata.job.packed
-        local handlers  = { }
+unpacknumberdata(jobpacker.index)
         for i=1,#savelist do
-            local list        = savelist[i]
-            local target      = list[1]
-            local initializer = list[3]
-            local result      = accesstable(target,utilitydata)
+            local list   = savelist[i]
+            local target = list[1]
+            local result = accesstable(target,utilitydata)
             if result then
                 local done = packers.unpack(result,jobpacker,true)
                 if done then
                     migratetable(target,mark(result))
-                    if type(initializer) == "function" then
-                        handlers[#handlers+1] = { initializer, result }
-                    end
                 else
                     report_passes("pack version mismatch")
                 end
             end
         end
-        -- so we have all tables available (unpacked)
-        for i=1,#handlers do
-            local handler = handlers[i]
-            handler[1](handler[2])
+    end
+    for i=1,#savelist do
+        local list        = savelist[i]
+        local initializer = list[3]
+        if type(initializer) == "function" then
+            initializer(utilitydata and accesstable(list[1],utilitydata) or nil)
         end
     end
     statistics.stoptiming(_load_)

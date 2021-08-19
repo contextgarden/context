@@ -88,7 +88,7 @@
   {\glet\font_preload_default_fonts_tt\relax
    \glet\font_preload_default_fonts_mm\relax
    \glet\font_preloads_third_stage    \relax
-%  \glet\font_preloads_fourth_stage   \relax
+   \glet\font_preloads_fourth_stage   \relax
   }
 
 \def\font_preloads_zero_stage_indeed

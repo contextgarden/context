@@ -2101,6 +2101,7 @@ function lpdf.flushfonts()
         local hash = getstreamhash(fontid)
         if hash then
             local parent = mainfonts[hash]
+-- print("before",fontid,hash,parent)
             if not parent then
                 local fontdata   = usedfonts[fontid]
                 local rawdata    = fontdata.shared and fontdata.shared.rawdata
@@ -2145,6 +2146,7 @@ function lpdf.flushfonts()
                     noffonts = noffonts + 1
                 end
             end
+-- print("after ",fontid,hash,parent)
             if parent then
                 local indices = parent.indices
                 for k, v in next, used do
@@ -2159,21 +2161,23 @@ function lpdf.flushfonts()
     for hash, details in sortedhash(mainfonts) do
         local filename = details.filename
         if next(details.indices) then
-            if trace_fonts then
-                report_fonts("embedding %a hashed as %a",filename,hash)
-            end
             local properties = details.properties
             local bitmap     = properties.usedbitmap
             local method     = properties.method -- will be pk | pdf | svg | ...
+            if trace_fonts then
+                if method then
+                    report_fonts("embedding %a hashed as %a using method %a",filename,hash,method)
+                else
+                    report_fonts("embedding %a hashed as %a",filename,hash)
+                end
+            end
             if bitmap or method then
                 local format = "type3"
                 local writer = mainwriters[format]
-                if writer then
-                    if trace_fonts then
-                        report_fonts("using main writer %a",format)
-                    end
-                    writer(details)
+                if trace_fonts then
+                    report_fonts("using main writer %a",format)
                 end
+                writer(details)
             else
                 local format = properties.format
                 local writer = mainwriters[format]
@@ -2285,7 +2289,10 @@ function lpdf.flushfonts()
          -- report_fonts("no indices for %a",filename)
         end
         if trace_fonts then
-            report_fonts("embedded indices: % t",table.sortedkeys(details.indices))
+            local indices = details.indices
+            if indices and next(indices) then
+                report_fonts("embedded indices: % t",table.sortedkeys(details.indices))
+            end
         end
         mainfonts[details.hash] = false -- done
     end

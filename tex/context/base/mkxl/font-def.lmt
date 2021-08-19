@@ -183,6 +183,7 @@ function resolvers.file(specification)
         specification.forcedname = name
         specification.name       = removesuffix(name)
     else
+        -- maybe when no suffix and not found, then still run over suffixes
         specification.name       = name -- can be resolved
     end
 end

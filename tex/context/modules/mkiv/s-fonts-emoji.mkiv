@@ -293,39 +293,64 @@ end
 
 \start
 
-\definedfont[seguiemj*seguiemj-cl]
+\definedfont[file:seguiemj.any*default,seguiemj-cl]
 
-\ShowEmojiSnippets
-  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+% \ShowEmojiSnippets
+%   [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
 
-\ShowEmojiSnippetsOverlay
-  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+% \ShowEmojiSnippetsOverlay
+%   [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
 
-\ShowEmojiGlyphs
-  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+% \ShowEmojiGlyphs
+%   [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
 
-\page
+% \page
 
-\ShowEmoji[^man]
+% \ShowEmoji[^man]
 
-\page
+% \ShowEmoji[backhand index pointing down]
+% \ShowEmoji[backhand index pointing up]
 
-\definecolor[emoji-base][r=.4]
-\definecolor[emoji-gray][s=.5,t=.5,a=1]
+\startTEXpage
+[\char8205\char128104]=\char988828\par
+[\char8205\char128105]=\char988851\par
+[\char8205\char983484]=\char988834\par
+[\char8205\char983485]=\char988835\par
+[\char8205\char983486]=\char988836\par
+[\char8205\char983487]=\char988837\par
+[\char8205\char983488]=\char988838\par
+[\char8205\char983495]=\char988858\par
+[\char8205\char983496]=\char988859\par
+[\char8205\char983497]=\char988860\par
+[\char8205\char983498]=\char988861\par
+[\char8205\char983499]=\char988862\par
+\stopTEXpage
 
-\definefontcolorpalette
-  [emoji-gray]
-  [emoji-base,emoji-gray]
 
-\definefontfeature[seguiemj-cl][ccmp=yes,dist=yes,colr=emoji-gray]
 
-\definedfont[seguiemj*seguiemj-cl]
 
-\ShowEmoji
 
-\page
 
-\ShowEmojiPalettes[1]
+
+
+% \page
+
+% \definecolor[emoji-base][r=.4]
+% \definecolor[emoji-gray][s=.5,t=.5,a=1]
+
+% \definefontcolorpalette
+%   [emoji-gray]
+%   [emoji-base,emoji-gray]
+
+% \definefontfeature[seguiemj-cl][ccmp=yes,dist=yes,colr=emoji-gray]
+
+% \definedfont[seguiemj*seguiemj-cl]
+
+% \ShowEmoji
+
+% \page
+
+% \ShowEmojiPalettes[1]
 
 \stop
 

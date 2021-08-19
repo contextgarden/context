@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['anch-snc'] = {
     license   = "see context related readme files"
 }
 
-local tonumber, next, setmetatable = tonumber, next, setmetatable
+local tonumber, next, setmetatable, rawget = tonumber, next, setmetatable, rawget
 local concat, sort, remove, copy = table.concat, table.sort, table.remove, table.copy
 local match, find = string.match, string.find
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -17,9 +17,10 @@ graphics                = graphics or { }
 local synchronizers     = { }
 graphics.synchronizers  = synchronizers
 
+local jobpositions      = job.positions
+
 local p_number = lpegpatterns.cardinal/tonumber
 local p_space  = lpegpatterns.whitespace^0
-local p_tag    = P("syncpos:") * p_number * P(":") * p_number
 local p_option = p_number * ((P(",") * p_space * P("reset") * Cc(true)) + Cc(false)) -- for now
 
 local list     = { }
@@ -31,39 +32,10 @@ local kinds    = {
     below    = 5,
 }
 
-local allentries = setmetatableindex(function(t,category)
-    setmetatable(t,nil)
-    for tag, pos in next, job.positions.collected do
-        local c, n = lpegmatch(p_tag,tag)
-        if c then
-            local tc = t[c]
-            if tc then
-                tc[n] = pos
-            else
-                t[c] = { [n] = pos }
-            end
-        end
-    end
-    for k, list in next, t do
-        sort(list,function(a,b)
-            local ap = a.p
-            local bp = b.p
-            if ap == bp then
-                return b.y < a.y
-            else
-                return ap < bp
-            end
-        end)
-        list.start = 1
-    end
-    setmetatableindex(t,"table")
-    return t[category]
-end)
-
 local lastdone = { }
 
 function synchronizers.collect(category,realpage,region)
-    local all = allentries[category]
+    local all = jobpositions.getsync(category)
     local m   = 0
     local n   = #all
     list = { }
@@ -78,7 +50,7 @@ function synchronizers.collect(category,realpage,region)
             local r = pos.r
             if r == region then
                 if not done then
-                    local region = job.positions.collected[r]
+                    local region = jobpositions.collected[r]
                     list.region  = region
                     list.page    = region
                     rtop = (region.y or 0) + (region.h or 0)
@@ -106,8 +78,8 @@ function synchronizers.collect(category,realpage,region)
             local p = pos.p
             if p == realpage then
                 if not done then
-                    local region = job.positions.collected[pos.r]
-                    local page   = job.positions.collected["page:"..realpage] or region
+                    local region = jobpositions.collected[pos.r]
+                    local page   = jobpositions.collected["page:"..realpage] or region
                     list.region  = region
                     list.page    = page
                     rtop = (region.y or 0) + (region.h or 0)
@@ -223,6 +195,8 @@ function synchronizers.collapse()
     end
     return n
 end
+
+-- These operate on the currently set list:
 
 function synchronizers.getsize  ()  return #list               end
 function synchronizers.gettop   (n) return list[n].top         end

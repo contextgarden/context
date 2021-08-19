@@ -688,9 +688,9 @@ local issygreek = regular_tf.symbols
 local isgreek   = merged(islcgreek,isucgreek,issygreek)
 
 local greekremapping = {
-    [1] = { what = "unchanged" }, -- upright
-    [2] = { what = "upright", it = "tf", bi = "bf" }, -- upright
-    [3] = { what = "italic",  tf = "it", bf = "bi" }, -- italic
+    { what = "unchanged" }, -- upright
+    { what = "upright", it = "tf", bi = "bf" }, -- upright
+    { what = "italic",  tf = "it", bf = "bi" }, -- italic
 }
 
 local usedremap = { }

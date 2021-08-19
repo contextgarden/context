@@ -497,7 +497,22 @@ local function preprocessentries(rawdata)
             if not ok and etk == "" then
                 entries[k] = nil
             else
-                entries[k] = { etk or "", ktk ~= "" and ktk or false, ptk ~= "" and ptk or false }
+                if not etk then
+                    etk = ""
+                end
+                -- we save some space by pruning
+                if ptk == "" then
+                    ptk = nil
+                end
+                -- we save even more space by pruning
+                if ktk == "" then
+                    if ptk then
+                        ktk = false
+                    else
+                        ktk = nil
+                    end
+                end
+                entries[k] = { etk, ktk, ptk }
                 ok = true
             end
         end
@@ -563,6 +578,7 @@ local function storeregister(rawdata) -- metadata, references, entries
     --
     local data     = notsaved and collected[name] or tobesaved[name]
     local entries  = data.entries
+    --
     internalreferences[internal] = rawdata
     preprocessentries(rawdata)
     entries[#entries+1] = rawdata

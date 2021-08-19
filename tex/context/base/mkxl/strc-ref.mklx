@@ -1234,20 +1234,20 @@
    \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
    \the\rightreferencetoks}
 
-\letvalue{\??referencinginteraction\v!all}\strc_references_interaction_all
+\letcsname\??referencinginteraction\v!all\endcsname\strc_references_interaction_all
 
-\setvalue{\??referencinginteraction\v!label}%
+\defcsname\??referencinginteraction\v!label\endcsname
   {\leftofreference
    \the\leftreferencetoks
    \the\rightreferencetoks
    \rightofreference}
 
-\setvalue{\??referencinginteraction\v!text}%
+\defcsname\??referencinginteraction\v!text\endcsname
   {\leftofreference
    \currentreferencecontent
    \rightofreference}
 
-\setvalue{\??referencinginteraction\v!symbol}%
+\defcsname\??referencinginteraction\v!symbol\endcsname
   {\referencesymbol}
 
 \permanent\def\referencesequence

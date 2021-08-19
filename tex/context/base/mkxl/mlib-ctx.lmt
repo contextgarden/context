@@ -118,15 +118,15 @@ implement {
     arguments = "string",
     actions   = function(name)
         local value = metapost.variables[name]
-        if value ~= nil then
-            local tvalue = type(value)
-            if tvalue == "table" then
-                context(concat(value," "))
-            elseif tvalue == "number" or tvalue == "boolean" then
-                context(tostring(value))
-            elseif tvalue == "string" then
-                context(value)
-            end
+        local tvalue = type(value)
+        if tvalue == "nil" then
+            context("0")
+        elseif tvalue == "table" then
+            context(concat(value," "))
+        elseif tvalue == "number" or tvalue == "boolean" then
+            context(tostring(value))
+        elseif tvalue == "string" then
+            context(value)
         end
     end
 }
@@ -360,16 +360,6 @@ end
 function mptex.reset()
     environments = { }
 end
-
-implement {
-    name      = "mppushvariables",
-    actions   = metapost.pushvariables,
-}
-
-implement {
-    name      = "mppopvariables",
-    actions   = metapost.popvariables,
-}
 
 implement {
     name      = "mptexset",

@@ -121,17 +121,17 @@ local function exists(name)
     return cache[name]
 end
 
+local function getcontent(name)
+    local buffer = name and cache[name]
+    return buffer and buffer.data or ""
+end
+
 local function empty(name)
     if find(getcontent(name),"%S") then
         return false
     else
         return true
     end
-end
-
-local function getcontent(name)
-    local buffer = name and cache[name]
-    return buffer and buffer.data or ""
 end
 
 local function getlines(name)

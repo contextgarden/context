@@ -120,7 +120,8 @@
    \c!number=\v!yes, % else description
    \c!start=0,
    \c!state=\v!start,
-   \c!levels=4]
+   \c!levels=4,
+   \c!define=\v!yes]
 
 % to be considered:
 %
@@ -129,17 +130,21 @@
 % with push/pop (also at definition time)
 
 \protected\def\strc_define_commands_enumeration#tag#level#parent%
-  {\doifelsenothing{#parent}
-     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
-      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration}}%
-     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
-      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration#parent}}%
-   \frozen\protected\instance\edefcsname\e!next #tag\endcsname{\strc_enumerations_next{#tag}{\number#level}}%  obsolete
-   \frozen\protected\instance\edefcsname\c!reset#tag\endcsname{\strc_enumerations_reset{#tag}{\number#level}}% obsolete
-   %frozen\protected\instance\edefcsname\c!set  #tag\endcsname{\strc_enumerations_set{#tag}{\number#level}}%   obsolete
-   \frozen\protected\instance\edefcsname        #tag\endcsname{\namedenumeration[#tag]}%
-   \frozen\protected\instance\edefcsname\e!start#tag\endcsname{\startnamedenumeration[#tag]}%
-   \frozen\protected\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}}
+  {\iftok{#parent}\emptytoks
+     \normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
+     \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration}%
+   \else
+     \normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
+     \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration#parent}%
+   \fi
+   \ifcstok{\enumerationparameter\c!define}\v!yes
+     \frozen\protected\instance\edefcsname\e!next #tag\endcsname{\strc_enumerations_next{#tag}{\number#level}}%  obsolete
+     \frozen\protected\instance\edefcsname\c!reset#tag\endcsname{\strc_enumerations_reset{#tag}{\number#level}}% obsolete
+     %frozen\protected\instance\edefcsname\c!set  #tag\endcsname{\strc_enumerations_set{#tag}{\number#level}}%   obsolete
+     \frozen\protected\instance\edefcsname        #tag\endcsname{\namedenumeration[#tag]}%
+     \frozen\protected\instance\edefcsname\e!start#tag\endcsname{\startnamedenumeration[#tag]}%
+     \frozen\protected\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}%
+   \fi}
 
 \let\m_strc_enumeration_sub\empty
 

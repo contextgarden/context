@@ -120,13 +120,13 @@ local accents = allocate {
 
 local codes = allocate {
     ordinary       = 0, [0] = "ordinary",
-    largeoperator  = 1, [1] = "largeoperator",
-    binaryoperator = 2, [2] = "binaryoperator",
-    relation       = 3, [3] = "relation",
-    openingsymbol  = 4, [4] = "openingsymbol",
-    closingsymbol  = 5, [5] = "closingsymbol",
-    punctuation    = 6, [6] = "punctuation",
-    variable       = 7, [7] = "variable",
+    largeoperator  = 1,       "largeoperator",
+    binaryoperator = 2,       "binaryoperator",
+    relation       = 3,       "relation",
+    openingsymbol  = 4,       "openingsymbol",
+    closingsymbol  = 5,       "closingsymbol",
+    punctuation    = 6,       "punctuation",
+    variable       = 7,       "variable",
 }
 
 local extensibles = allocate {

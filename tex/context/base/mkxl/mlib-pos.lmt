@@ -57,3 +57,7 @@ registerdirect("getposupperleft",  function() local x, y = upperleft (scanstring
 registerdirect("getposlowerleft",  function() local x, y = lowerleft (scanstring()) t[1] = x * factor t[2] = y * factor return t end)
 registerdirect("getposupperright", function() local x, y = upperright(scanstring()) t[1] = x * factor t[2] = y * factor return t end)
 registerdirect("getposlowerright", function() local x, y = lowerright(scanstring()) t[1] = x * factor t[2] = y * factor return t end)
+registerdirect("getposllx",        function() local x, y = lowerleft (scanstring()) return x * factor end)
+registerdirect("getposlly",        function() local x, y = lowerleft (scanstring()) return y * factor end)
+registerdirect("getposurx",        function() local x, y = upperright(scanstring()) return x * factor end)
+registerdirect("getposury",        function() local x, y = upperright(scanstring()) return y * factor end)

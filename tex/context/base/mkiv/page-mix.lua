@@ -59,7 +59,7 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
-local getindex            = nuts.getindex
+local getindex            = nuts.getindex or nuts.getsubtype -- luatex catch
 local getbox              = nuts.getbox
 local getattr             = nuts.getattr
 local getwhd              = nuts.getwhd
@@ -78,6 +78,8 @@ local new_vlist           = nodepool.vlist
 local new_glue            = nodepool.glue
 
 local points              = number.points
+
+local setinsertcontent    = tex.setinsertcontent or tex.setbox
 
 local settings_to_hash    = utilities.parsers.settings_to_hash
 
@@ -986,9 +988,8 @@ local function getsplit(result,n)
         for i=1,#list-1 do
             setdepth(list[i],0)
         end
-        local b = vpack(l)    -- multiple arguments, todo: fastvpack
---         setbox("global",c,b)  -- when we wrap in a box
-        tex.setinsertcontent(c,tonode(b))  -- when we wrap in a box
+        local b = vpack(l)            -- multiple arguments, todo: fastvpack
+        setinsertcontent(c,tonode(b)) -- when we wrap in a box
         r.inserts[c] = nil
     end
 

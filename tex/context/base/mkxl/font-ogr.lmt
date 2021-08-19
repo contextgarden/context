@@ -36,6 +36,9 @@ otf.pngenabled    = true
 
 -- what here and what in backend ...
 
+local report_fonts = logs.reporter("backend","fonts")
+local trace_fonts    trackers.register("backend.fonts",function(v) trace_fonts = v end)
+
 do
 
     -- This is a prelude to something better but I'm still experimenting. We should delay more.
@@ -59,7 +62,8 @@ do
         local t_properties        = t_tfmdata.properties
         local d_tfmdata           = setmetatableindex({ },t_tfmdata)
         local d_properties        = setmetatableindex({ },t_properties)
-        d_properties.basefontname = "ContextRuntimeFont" .. droppedin
+        local d_basefontname      = "ContextRuntimeFont" .. droppedin
+        d_properties.basefontname = d_basefontname
         d_tfmdata.properties      = d_properties
         local d_characters        = { } -- setmetatableindex({ },t_characters)   -- hm, index vs unicode
         local d_descriptions      = { } -- setmetatableindex({ },t_descriptions) -- hm, index vs unicode
@@ -75,6 +79,9 @@ do
         d_properties.indexdata    = { indexdata, ... } -- can take quite some memory
         local slot                = #fonts + 1
         fonts[slot]               = { id = droppedin }
+        if trace_fonts then
+            report_fonts("registering dropin %a using method %a",d_basefontname,method)
+        end
         return slot, droppedin, d_tfmdata, d_properties
     end
 
@@ -84,9 +91,10 @@ do
         if method and shapes then
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
-            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
+            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes, props
             local idx  = 255
             local slot = 0
+            -- sorted ?
             for k, v in next, characters do
                 local index = v.index
                 if index then
@@ -97,7 +105,7 @@ do
                             if idx >= 255 then
                                 idx = 1
                                 colrshapes = setmetatableindex({ },shapes)
-                                slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
+                                slot, droppedin, tfmdrop, props = dropins.provide(method,tfmdata,colrshapes)
                                 dropchars = tfmdrop.characters
                                 dropdescs = tfmdrop.descriptions
                             else

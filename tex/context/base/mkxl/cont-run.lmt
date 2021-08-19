@@ -219,6 +219,14 @@ local function processjob()
 
     environment.lmtxmode = CONTEXTLMTXMODE -- should be true
 
+    -- directives
+    -- silent
+    -- batchmode
+
+if arguments.directives then
+    directives.enable(arguments.directives)
+end
+
     if arguments.nosynctex then
         luatex.synctex.setup {
             state  = interfaces.variables.never,

@@ -138,18 +138,30 @@ permanent resolvedcolor ;
 
 % Modes:
 
-vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
-vardef systemmode(expr s) = lua.mp("systemmode",s) enddef ;
+newscriptindex mfid_mode       ; mfid_mode       := scriptindex "mode" ;
+newscriptindex mfid_systemmode ; mfid_systemmode := scriptindex "systemmode" ;
+
+vardef texmode    (expr s) = runscript mfid_mode       s enddef ;
+vardef systemmode (expr s) = runscript mfid_systemmode s enddef ;
+
+% let processingmode = systemmode ;
 
 permanent texmode, systemmode ;
 
 % A few helpers
 
-vardef isarray   suffix a = lua.mp.isarray  (str a) enddef ;
-vardef prefix    suffix a = lua.mp.prefix   (str a) enddef ;
-vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
+newscriptindex mfid_isarray   ; mfid_isarray   := scriptindex "isarray"   ;
+newscriptindex mfid_prefix    ; mfid_prefix    := scriptindex "prefix"    ;
+newscriptindex mfid_dimension ; mfid_dimension := scriptindex "dimension" ;
+newscriptindex mfid_isobject  ; mfid_isobject  := scriptindex "isobject"  ;
 
-permanent isarray, prefix, dimension ;
+vardef isarray   suffix a = runscript mfid_isarray  (str a) enddef ;
+vardef prefix    suffix a = runscript mfid_prefix   (str a) enddef ;
+vardef dimension suffix a = runscript mfid_dimension(str a) enddef ;
+
+vardef isobject  expr p = if picture p : runscript mfid_isobject prescriptpart p else : false fi enddef ;
+
+permanent isarray, prefix, dimension, isobject ;
 
 % More access
 
@@ -175,17 +187,31 @@ permanent
     setmacro, setdimen, setcount, settoks,
     setglobalmacro, setglobaldimen, setglobalcount, setglobaltoks ;
 
-% todo: mfid_
+newscriptindex mfid_positionpath   ; mfid_positionpath   := scriptindex("positionpath") ;
+newscriptindex mfid_positioncurve  ; mfid_positioncurve  := scriptindex("positioncurve") ;
+newscriptindex mfid_positionxy     ; mfid_positionxy     := scriptindex("positionxy") ;
+newscriptindex mfid_positionx      ; mfid_positionx      := scriptindex("positionx") ;
+newscriptindex mfid_positiony      ; mfid_positiony      := scriptindex("positiony") ;
+newscriptindex mfid_positionpar    ; mfid_positionpar    := scriptindex("positionpar") ;
+newscriptindex mfid_positionwhd    ; mfid_positionwhd    := scriptindex("positionwhd") ;
+newscriptindex mfid_positionpage   ; mfid_positionpage   := scriptindex("positionpage") ;
+newscriptindex mfid_positionregion ; mfid_positionregion := scriptindex("positionregion") ;
+newscriptindex mfid_positionbox    ; mfid_positionbox    := scriptindex("positionbox") ;
+newscriptindex mfid_positionanchor ; mfid_positionanchor := scriptindex("positionanchor") ;
 
-vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
-vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
-vardef positionxy    (expr name) = lua.mp.positionxy    (name) enddef ;
-vardef positionpxy   (expr name) = lua.mp.positionpxy   (name) enddef ;
-vardef positionwhd   (expr name) = lua.mp.positionwhd   (name) enddef ;
-vardef positionpage  (expr name) = lua.mp.positionpage  (name) enddef ;
-vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
-vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
-vardef positionanchor            = lua.mp.positionanchor()     enddef ;
+vardef positionpath     (expr name) = runscript mfid_positionpath      name enddef ;
+vardef positioncurve    (expr name) = runscript mfid_positioncurve     name enddef ;
+vardef positionxy       (expr name) = runscript mfid_positionxy        name enddef ;
+vardef positionx        (expr name) = runscript mfid_positionx         name enddef ;
+vardef positiony        (expr name) = runscript mfid_positiony         name enddef ;
+vardef positionpar      (expr name) = runscript mfid_positionpar       name enddef ;
+vardef positionwhd      (expr name) = runscript mfid_positionwhd       name enddef ;
+vardef positionpage     (expr name) = runscript mfid_positionpage      name enddef ;
+vardef positioncolumn   (expr name) = runscript mfid_positioncolumn    name enddef ;
+vardef positionparagraph(expr name) = runscript mfid_positionparagraph name enddef ;
+vardef positionregion   (expr name) = runscript mfid_positionregion    name enddef ;
+vardef positionbox      (expr name) = runscript mfid_positionbox       name enddef ;
+vardef positionanchor               = runscript mfid_positionanchor         enddef ;
 
 vardef positioninregion =
     currentpicture := currentpicture shifted - positionxy(positionanchor) ;
@@ -195,8 +221,9 @@ vardef positionatanchor(expr name) =
     currentpicture := currentpicture shifted - positionxy(name) ;
 enddef ;
 
-permanent positionpath, positioncurve, positionxy, positionpxy, positionwhd, positionpage,
-    positionregion, positionbox, positionanchor, positioninregion, positionatanchor ;
+permanent positionpath, positioncurve, positionxy, positionwhd,
+    positionpage, positionregion, positioncolumn, positionparagraph,
+    positionbox, positionanchor, positioninregion, positionatanchor ;
 
 let wdpart = redpart ;
 let htpart = greenpart ;
@@ -204,8 +231,8 @@ let dppart = bluepart ;
 
 permanent wdpart, htpart, dppart;
 
-vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
-vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
+newscriptindex mfid_texvar ; mfid_texvar := scriptindex "texvar" ; vardef texvar(expr s) = runscript mfid_texvar s enddef ;
+newscriptindex mfid_texstr ; mfid_texstr := scriptindex "texstr" ; vardef texstr(expr s) = runscript mfid_texstr s enddef ;
 
 newscriptindex mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
 newscriptindex mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;

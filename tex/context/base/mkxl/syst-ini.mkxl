@@ -1389,9 +1389,11 @@
 \permanent\protected\def\newlocaltoks  #1{\setnewlocaltoks  #1\emptytoks }
 \permanent\protected\def\newlocalbox   #1{\setnewlocalbox   #1\emptybox  }
 
-%D Let's be detailed: grouplevel:inputlevel:
+%D Let's be detailed: grouplevel:inputlevel:catcodetable (bits 1 2 4)
 
 \tracinglevels\plusthree
+
+\permanent\protected\def\tracingcatcodes{\tracinglevels\plusseven}
 
 %D We just report duplicate patterns being ignored:
 

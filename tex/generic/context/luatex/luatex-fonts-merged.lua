@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-08-10 12:37
+-- merge date  : 2021-08-19 19:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -11298,15 +11298,15 @@ local weights={
  [900]="black",
 }
 local widths={
- [1]="ultracondensed",
- [2]="extracondensed",
- [3]="condensed",
- [4]="semicondensed",
- [5]="normal",
- [6]="semiexpanded",
- [7]="expanded",
- [8]="extraexpanded",
- [9]="ultraexpanded",
+ "ultracondensed",
+ "extracondensed",
+ "condensed",
+ "semicondensed",
+ "normal",
+ "semiexpanded",
+ "expanded",
+ "extraexpanded",
+ "ultraexpanded",
 }
 setmetatableindex(weights,function(t,k)
  local r=floor((k+50)/100)*100
@@ -11316,30 +11316,28 @@ end)
 setmetatableindex(widths,function(t,k)
  return "normal"
 end)
-local panoseweights={
- [ 0]="normal",
- [ 1]="normal",
- [ 2]="verylight",
- [ 3]="light",
- [ 4]="thin",
- [ 5]="book",
- [ 6]="medium",
- [ 7]="demi",
- [ 8]="bold",
- [ 9]="heavy",
- [10]="black",
+local panoseweights={ [0]="normal",
+ "normal",
+ "verylight",
+ "light",
+ "thin",
+ "book",
+ "medium",
+ "demi",
+ "bold",
+ "heavy",
+ "black",
 }
-local panosewidths={
- [ 0]="normal",
- [ 1]="normal",
- [ 2]="normal",
- [ 3]="normal",
- [ 4]="normal",
- [ 5]="expanded",
- [ 6]="condensed",
- [ 7]="veryexpanded",
- [ 8]="verycondensed",
- [ 9]="monospaced",
+local panosewidths={ [0]="normal",
+ "normal",
+ "normal",
+ "normal",
+ "normal",
+ "expanded",
+ "condensed",
+ "veryexpanded",
+ "verycondensed",
+ "monospaced",
 }
 local helpers={}
 readers.helpers=helpers
@@ -12882,6 +12880,9 @@ function readers.expand(fontdata)
 end
 function readers.compact(fontdata)
  report("the %a helper is not yet implemented","compact")
+end
+function readers.condense(fontdata)
+ report("the %a helper is not yet implemented","condense")
 end
 local extenders={}
 function readers.registerextender(extender)
@@ -15333,6 +15334,12 @@ local function applyaxis(glyph,shape,deltas,dowidth)
        else
         local n1=dpoints[d1]
         local n3=dpoints[d3]
+        if n1>nofpoints then
+         n1=nofpoints
+        end
+        if n3>nofpoints then
+         n3=nofpoints
+        end
         local p1=points[n1]
         local p3=points[n3]
         local p1x=p1[1]
@@ -20926,7 +20933,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.118 
+otf.version=3.119 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -21060,6 +21067,9 @@ function otf.load(filename,sub,instance)
    otfreaders.extend(data)
    if cleanup==0 then
     checkmemory(used,threshold,tracememory)
+   end
+   if context then
+    otfreaders.condense(data)
    end
    otfreaders.pack(data)
    report_otf("loading done")
@@ -21746,49 +21756,60 @@ end
 local function makefake(tfmdata,name,present)
  local private=getprivate(tfmdata)
  local character={ intermediate=true,ligatures={} }
- resources.unicodes[name]=private
+ tfmdata.resources.unicodes[name]=private
  tfmdata.characters[private]=character
  tfmdata.descriptions[private]={ name=name }
  present[name]=private
  return character
 end
 local function make_1(present,tree,name)
- for k,v in next,tree do
-  if k=="ligature" then
-   present[name]=v
+ if tonumber(tree) then
+  present[name]=v
+ else
+  for k,v in next,tree do
+   if k=="ligature" then
+    present[name]=v
+   else
+    make_1(present,v,name.."_"..k)
+   end
+  end
+ end
+end
+local function make_3(present,tfmdata,characters,tree,name,preceding,unicode,done,v)
+ local character=characters[preceding]
+ if not character then
+  if trace_baseinit then
+   report_prepare("weird ligature in lookup %a, current %C, preceding %C",sequence.name,v,preceding)
+  end
+  character=makefake(tfmdata,name,present)
+ end
+ local ligatures=character.ligatures
+ if ligatures then
+  ligatures[unicode]={ char=v }
+ else
+  character.ligatures={ [unicode]={ char=v } }
+ end
+ if done then
+  local d=done[name]
+  if not d then
+   done[name]={ "dummy",v }
   else
-   make_1(present,v,name.."_"..k)
+   d[#d+1]=v
   end
  end
 end
 local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done)
- for k,v in next,tree do
-  if k=="ligature" then
-   local character=characters[preceding]
-   if not character then
-    if trace_baseinit then
-     report_prepare("weird ligature in lookup %a, current %C, preceding %C",sequence.name,v,preceding)
-    end
-    character=makefake(tfmdata,name,present)
-   end
-   local ligatures=character.ligatures
-   if ligatures then
-    ligatures[unicode]={ char=v }
+ if tonumber(tree) then
+  make_3(present,tfmdata,characters,tree,name,preceding,unicode,done,tree)
+ else
+  for k,v in next,tree do
+   if k=="ligature" then
+    make_3(present,tfmdata,characters,tree,name,preceding,unicode,done,v)
    else
-    character.ligatures={ [unicode]={ char=v } }
+    local code=present[name] or unicode
+    local name=name.."_"..k
+    make_2(present,tfmdata,characters,v,name,code,k,done)
    end
-   if done then
-    local d=done[name]
-    if not d then
-     done[name]={ "dummy",v }
-    else
-     d[#d+1]=v
-    end
-   end
-  else
-   local code=present[name] or unicode
-   local name=name.."_"..k
-   make_2(present,tfmdata,characters,v,name,code,k,done)
   end
  end
 end
@@ -24514,6 +24535,10 @@ function readers.getcomponents(fontdata)
       local function traverse(p,k,v)
        if k=="ligature" then
         collected[v]={ unpack(l) }
+       elseif tonumber(v) then
+        insert(l,k)
+        collected[v]={ unpack(l) }
+        remove(l)
        else
         insert(l,k)
         for k,vv in next,v do
@@ -24674,7 +24699,6 @@ local function tabstr_flat(t)
  end
 end
 local function tabstr_mixed(t) 
- local s={}
  local n=#t
  if n==0 then
   return ""
@@ -24688,6 +24712,7 @@ local function tabstr_mixed(t)
    return tostring(k) 
   end
  else
+  local s={}
   for i=1,n do
    local k=t[i]
    if k==true then
@@ -26011,6 +26036,85 @@ function readers.compact(data)
   end
  end
 end
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ local done=0
+ local function condense_1(k,v,t)
+  if type(v)=="table" then
+   local u=false
+   local l=false
+   for k,v in next,v do
+    if k=="ligature" then
+     l=v
+     if u then
+      break
+     end
+    elseif u then
+     break
+    else
+     u=true
+    end
+   end
+   if l and not u then
+    t[k]=l
+    done=done+1
+   end
+   if u then
+    for k,vv in next,v do
+     if k~="ligature" then
+      condense_1(k,vv,v)
+     end
+    end
+   end
+  end
+ end
+ local function condensesteps_1(lookup)
+  done=0
+  if lookup.type=="gsub_ligature" then
+   local steps=lookup.steps
+   if steps then
+    for i=1,#steps do
+     local step=steps[i]
+     local coverage=step.coverage
+     if coverage then
+      for k,v in next,coverage do
+       if condense_1(k,v,coverage) then
+        coverage[k]=v.ligature
+        done=done+1
+       end
+      end
+     end
+    end
+   end
+  end
+  return done
+ end
+ function readers.condense(data)
+  if not data or data.condensed then
+   return
+  else
+   data.condensed=true
+  end
+  local resources=data.resources
+  local condensed=0
+  local function condense(what)
+   local lookups=resources[what]
+   if lookups then
+    for i=1,#lookups do
+     condensed=condensed+condensesteps_1(lookups[i])
+    end
+   elseif trace_optimizations then
+    report_optimizations("no lookups in %a",what)
+   end
+  end
+  condense("sequences")
+  condense("sublookups")
+  if trace_optimizations then
+   if condensed>0 then
+    report_optimizations("%i ligatures condensed",condensed)
+   end
+  end
+ end
+end
 local function mergesteps(t,k)
  if k=="merged" then
   local merged={}
@@ -27263,7 +27367,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
   while current do
    local char=ischar(current,currentfont)
    if char then
-    local lg=ligature[char]
+    local lg=not tonumber(ligature) and ligature[char]
     if lg then
      stop=current
      ligature=lg
@@ -27276,14 +27380,14 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
    end
   end
   if stop then
-   local lig=ligature.ligature
-   if lig then
+   local ligature=tonumber(ligature) or ligature.ligature
+   if ligature then
     if trace_ligatures then
      local stopchar=getchar(stop)
-     head,start=markstoligature(head,start,stop,lig)
+     head,start=markstoligature(head,start,stop,ligature)
      logprocess("%s: replacing %s upto %s by ligature %s case 1",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(getchar(start)))
     else
-     head,start=markstoligature(head,start,stop,lig)
+     head,start=markstoligature(head,start,stop,ligature)
     end
     return head,start,true,false
    else
@@ -27298,7 +27402,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     if skiphash and skiphash[char] then
      current=getnext(current)
     else
-     local lg=ligature[char]
+     local lg=not tonumber(ligature) and ligature[char]
      if lg then
       if marks[char] then
        hasmarks=true
@@ -27324,20 +27428,20 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
    local match
    if replace then
     local char=ischar(replace,currentfont)
-    if char and ligature[char] then
+    if char and (not tonumber(ligature) and ligature[char]) then
      match=true
     end
    end
    if not match and pre then
     local char=ischar(pre,currentfont)
-    if char and ligature[char] then
+    if char and (not tonumber(ligature) and ligature[char]) then
      match=true
     end
    end
    if not match and not pre or not replace then
     local n=getnext(discfound)
     local char=ischar(n,currentfont)
-    if char and ligature[char] then
+    if char and (not tonumber(ligature) and ligature[char]) then
      match=true
     end
    end
@@ -27380,21 +27484,21 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     return head,start,true,true
    end
   end
-  local lig=ligature.ligature
-  if lig then
+  local ligature=tonumber(ligature) or ligature.ligature
+  if ligature then
    if stop then
     if trace_ligatures then
      local stopchar=getchar(stop)
-     head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,false,hasmarks)
-     logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(lig))
+     head,start=toligature(head,start,stop,ligature,dataset,sequence,skiphash,false,hasmarks)
+     logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(ligature))
     else
-     head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,false,hasmarks)
+     head,start=toligature(head,start,stop,ligature,dataset,sequence,skiphash,false,hasmarks)
     end
    else
     resetinjection(start)
-    setchar(start,lig)
+    setchar(start,ligature)
     if trace_ligatures then
-     logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(dataset,sequence),gref(startchar),gref(lig))
+     logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(dataset,sequence),gref(startchar),gref(ligature))
     end
    end
    return head,start,true,false
@@ -27868,7 +27972,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
      if skiphash and skiphash[schar] then
        current=getnext(current)
      else
-      local lg=ligatures[schar]
+      local lg=not tonumber(ligatures) and ligatures[schar]
       if lg then
        ligatures=lg
        last=current
@@ -27887,7 +27991,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
      end
     end
    end
-   local ligature=ligatures.ligature
+   local ligature=tonumber(ligatures) or ligatures.ligature
    if ligature then
     if chainindex then
      stop=last
@@ -28299,7 +28403,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
     local chainproc=chainprocs[chainkind]
     if chainproc then
      local ok
-     head,start,ok=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash)
+     head,start,ok=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
      if ok then
       done=true
      end
@@ -28716,6 +28820,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local ck=contexts[k]
   local seq=ck[3]
   local f=ck[4] 
+local last=start
   if not startchar or not seq[f][startchar] then
    goto next
   end
@@ -28724,7 +28829,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   else
    local l=ck[5] 
    local current=start
-   local last=start
    if l>f then
     local discfound 
     local n=f+1
@@ -29508,7 +29612,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
      while s do
       local char=ischar(s,font)
       if char then
-       local lg=lookupmatch[char]
+       local lg=not tonumber(lookupmatch) and lookupmatch[char]
        if lg then
         if sstop then
          d=1
@@ -29538,7 +29642,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
        break
       end
      end
-     if l and l.ligature then 
+     if l and (tonumber(l) or l.ligature) then 
       lastd=d
      end
     else
@@ -29663,7 +29767,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
       while s do
        local char=ischar(s)
        if char then
-        local lg=lookupmatch[char]
+        local lg=not tonumber(lookupmatch) and lookupmatch[char]
         if lg then
          if sstop then
           d=1
@@ -29693,7 +29797,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
         break
        end
       end
-      if l and l.ligature then
+      if l and (tonumber(l) or l.ligature) then
        lastd=d
       end
      end
@@ -31665,7 +31769,7 @@ local function initializedevanagi(tfmdata)
                local h=coverage[k]
                if h then
                 for k,v in next,h do
-                 found=v and v.ligature
+                 found=v and (tonumber(v) or v.ligature)
                  if found then
                   pre_base_reordering_consonants[found]=true
                   break
@@ -31682,7 +31786,7 @@ local function initializedevanagi(tfmdata)
           end
          else
           for k,v in next,r do
-           found=v and v.ligature
+           found=v and (tonumber(v) or v.ligature)
            if found then
             pre_base_reordering_consonants[found]=true
             break
@@ -31730,7 +31834,7 @@ local function initializedevanagi(tfmdata)
                   for k,v in next,halant do
                    local h=r[k]
                    if h then
-                    reph=h.ligature or false
+                    reph=tonumber(h) or h.ligature or false
                     break
                    end
                   end
@@ -31747,7 +31851,7 @@ local function initializedevanagi(tfmdata)
             for k,v in next,halant do
              local h=r[k]
              if h then
-              reph=h.ligature or false
+              reph=tonumber(h) or h.ligature or false
               break
              end
             end
@@ -31791,7 +31895,7 @@ local function initializedevanagi(tfmdata)
                 local h=coverage[k]
                 if h then
                  for k,v in next,h do
-                  found=v and v.ligature
+                  found=v and (tonumber(v) or v.ligature)
                   if found then
                    pre_base_reordering_consonants[found]=true
                    break
@@ -31808,7 +31912,7 @@ local function initializedevanagi(tfmdata)
            end
           else
            for k,v in next,h do
-            found=v and v.ligature
+            found=v and (tonumber(v) or v.ligature)
             if found then
              pre_base_reordering_consonants[found]=true
              break

@@ -165,6 +165,15 @@ end)
 scanners.typescanners  = typescanners
 scanners.tokenscanners = tokenscanners
 
+scanners.whatever = function()
+    local kind = scantoken(true)
+    if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
+        return (typescanners[scanexpression(true)] or scanexpression)()
+    else
+        return tokenscanners[kind]()
+    end
+end
+
 -- a key like 'color' has code 'declare'
 
 local function scanparameters(fenced)

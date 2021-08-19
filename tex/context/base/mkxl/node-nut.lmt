@@ -150,6 +150,7 @@ local nuts = {
     insertbefore            = d_insertbefore,
     appendaftertail         = direct.appendaftertail,
     prependbeforehead       = direct.prependbeforehead,
+    getparstate             = direct.getparstate,
     isdirect                = isdirect,
     isnode                  = isnode,
     isnut                   = isdirect,

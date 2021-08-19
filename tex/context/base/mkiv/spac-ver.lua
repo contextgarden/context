@@ -710,19 +710,19 @@ local function snap_topskip(current,method)
     return w, 0
 end
 
-local categories = {
-     [0] = "discard",
-     [1] = "largest",
-     [2] = "force",
-     [3] = "penalty",
-     [4] = "add",
-     [5] = "disable",
-     [6] = "nowhite",
-     [7] = "goback",
-     [8] = "packed",
-     [9] = "overlay",
-    [10] = "enable",
-    [11] = "notopskip",
+local categories = { [0] =
+    "discard",
+    "largest",
+    "force",
+    "penalty",
+    "add",
+    "disable",
+    "nowhite",
+    "goback",
+    "packed",
+    "overlay",
+    "enable",
+    "notopskip",
 }
 
 categories          = allocate(table.swapped(categories,categories))

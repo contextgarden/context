@@ -700,9 +700,9 @@
 %
 % \installcorenamespace{tabulatewidth}
 %
-% \setvalue{\??tabulatewidth\v!fit  }{\c_tabl_tabulate_modus\plusthree}
-% \setvalue{\??tabulatewidth\v!fixed}{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_nopbreak}
-% \setvalue{\??tabulatewidth\v!auto }{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
+% \defcsname\??tabulatewidth\v!fit  \endcsname{\c_tabl_tabulate_modus\plusthree}
+% \defcsname\??tabulatewidth\v!fixed\endcsname{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_nopbreak}
+% \defcsname\??tabulatewidth\v!auto \endcsname{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
 %
 % \def\tabl_tabulate_set_width_step#1%
 %   {\ifcsname\??tabulatewidth#1\endcsname

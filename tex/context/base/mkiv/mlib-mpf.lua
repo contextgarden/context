@@ -247,7 +247,7 @@ do
 
     -- writers
 
-    local function mpp(value)
+    local function rawmpp(value)
         n = n + 1
         local t = type(value)
         if t == "number" then
@@ -268,13 +268,13 @@ do
     local function mpprint(first,second,...)
         if second == nil then
             if first ~= nil then
-                mpp(first)
+                rawmpp(first)
             end
         else
             for i=1,select("#",first,second,...) do
                 local value = (select(i,first,second,...))
                 if value ~= nil then
-                    mpp(value)
+                    rawmpp(value)
                 end
             end
         end
@@ -652,6 +652,25 @@ do
     aux.fill = mpfill
 
     for k, v in next, aux do mp[k] = v end
+
+ -- mp.print = table.setmetatablecall(aux, function(t,...)
+ --     mpprint(...)
+ -- end)
+
+    mp.print = table.setmetatablecall(aux, function(t,first,second,...)
+        if second == nil then
+            if first ~= nil then
+                rawmpp(first)
+            end
+        else
+            for i=1,select("#",first,second,...) do
+                local value = (select(i,first,second,...))
+                if value ~= nil then
+                    rawmpp(value)
+                end
+            end
+        end
+    end)
 
 end
 

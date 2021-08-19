@@ -17,19 +17,6 @@ newinternal boolean metafun_loaded_mlib ; metafun_loaded_mlib := true ; immutabl
 
 % numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY or (status and status.development_id) or 6346)") ;
 
-%D Objects:
-
-vardef isobject expr p =
-    if picture p :
-      % lua.mp.isobject(prescriptpart p)
-        runscript("mp.isobject(" & prescriptpart p & ")")
-    else :
-        false
-    fi
-enddef ;
-
-permanent isobject ;
-
 %D Color and transparency
 %D
 %D Separable:
@@ -146,12 +133,11 @@ newinternal textextoffset ; textextoffset := 0 ;
 
 permanent textextoffset ;
 
-%%%%%%% mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
-color   mfun_tt_b ;
-numeric mfun_tt_n ; mfun_tt_n := 0 ;
-picture mfun_tt_p ; mfun_tt_p := nullpicture ;
-picture mfun_tt_o ; mfun_tt_o := nullpicture ;
-picture mfun_tt_c ; mfun_tt_c := nullpicture ;
+rgbcolor mfun_tt_r ;
+numeric  mfun_tt_n ; mfun_tt_n := 0 ;
+picture  mfun_tt_p ; mfun_tt_p := nullpicture ;
+picture  mfun_tt_o ; mfun_tt_o := nullpicture ;
+picture  mfun_tt_c ; mfun_tt_c := nullpicture ;
 
 if unknown mfun_trial_run :
     boolean mfun_trial_run ;
@@ -213,8 +199,9 @@ immutable inicatcoderegime, texcatcoderegime, luacatcoderegime, notcatcoderegime
 
 permanent catcoderegime ;
 
-newscriptindex mfid_sometextext ; mfid_sometextext := scriptindex "sometextext" ;
-newscriptindex mfid_madetextext ; mfid_madetextext := scriptindex "madetextext" ;
+newscriptindex mfid_sometextext   ; mfid_sometextext   := scriptindex "sometextext" ;
+newscriptindex mfid_madetextext   ; mfid_madetextext   := scriptindex "madetextext" ;
+newscriptindex mfid_boxdimensions ; mfid_boxdimensions := scriptindex "boxdimensions" ;
 
 vardef rawtextext(expr s) =
     if s = "" :
@@ -254,6 +241,10 @@ vardef rawmadetext =
     mfun_tt_c
 enddef ;
 
+% \setbox\scratchbox\hbox{!!!!!!!!!!!!!}
+% \putboxincache{one}{a}\scratchbox
+% \startMPcode draw rawtexbox("one","a") ; \stopMPcode
+
 vardef validtexbox(expr category, name) =
     if category == "" :
         false
@@ -269,11 +260,12 @@ enddef ;
 vardef rawtexbox(expr category, name) =
     mfun_tt_c := nullpicture ;
     if validtexbox(category,name) :
-        mfun_tt_b := lua.mp.mf_tb_dimensions(category, name) ;
+      % mfun_tt_r := lua.mp.mf_tb_dimensions(category, name) ;
+        mfun_tt_r := runscript mfid_boxdimensions category name ;
         addto mfun_tt_c doublepath unitsquare
-            xscaled wdpart mfun_tt_b
-            yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
-            shifted (0,- dppart mfun_tt_b)
+            xscaled wdpart mfun_tt_r
+            yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+            shifted (0,- dppart mfun_tt_r)
             withprescript "mf_object=box"
             withprescript "bx_category=" & if numeric category : decimal fi category
             withprescript "bx_name=" & if numeric name : decimal fi name ;
@@ -1671,102 +1663,20 @@ permanent tostring, topair, quote, quotation ;
 % but running lua is fast enough so we can gain on string construction in metapost
 % which is also not that efficient.
 
-vardef mfun_key_to_lua(expr k) =
-    if numeric k : decimal k else : "'" & k & "'" fi
-enddef ;
+newscriptindex mfid_passvariable ; mfid_passvariable := scriptindex("passvariable") ;
+newscriptindex mfid_pushvariable ; mfid_pushvariable := scriptindex("pushvariable") ;
+newscriptindex mfid_popvariable  ; mfid_popvariable  := scriptindex("popvariable") ;
 
-vardef mfun_point_to_lua(expr k,p,i) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
-        decimal xpart (point       i of p) & "," &
-        decimal ypart (point       i of p) & "," &
-        decimal xpart (precontrol  i of p) & "," &
-        decimal ypart (precontrol  i of p) & "," &
-        decimal xpart (postcontrol i of p) & "," &
-        decimal ypart (postcontrol i of p)
-    & "})" ) ;
-enddef ;
-
-vardef mfun_transform_to_lua(expr k,t) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
-        decimal xxpart t & "," &   % rx
-        decimal xypart t & "," &   % sx
-        decimal yxpart t & "," &   % sy
-        decimal yypart t & "," &   % ry
-        decimal xpart  t & "," &   % tx
-        decimal ypart  t           % ty
-    & "})" ) ;
-enddef ;
-
-vardef mfun_numeric_to_lua(expr k,n) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & "," & decimal n & ")" ) ;
-enddef ;
-
-vardef mfun_pair_to_lua(expr k,p) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
-        decimal xpart p & "," &
-        decimal ypart p
-    & "})" ) ;
-enddef ;
-
-vardef mfun_rgbcolor_to_lua(expr k,c) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
-        decimal redpart   c & "," &
-        decimal greenpart c & "," &
-        decimal bluepart  c
-    & "})" ) ;
-enddef ;
-
-vardef mfun_cmykcolor_to_lua(expr k,c) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",{" &
-        decimal cyanpart    c & "," &
-        decimal magentapart c & "," &
-        decimal yellowpart  c & "," &
-        decimal blackpart   c
-    & "})" ) ;
-enddef ;
-
-vardef mfun_path_to_lua(expr k,p) =
-    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
-    for i=0 upto length(p) :
-        mfun_point_to_lua(i+1,p,i) ;
-    endfor ;
-    runscript("metapost.popvariable()") ;
-enddef ;
-
-vardef mfun_boolean_to_lua(expr k,b) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & if b : ",true)" else : ",false)" fi ) ;
-enddef ;
-
-vardef mfun_string_to_lua(expr k,s) =
-    runscript( "metapost.setvariable(" & mfun_key_to_lua(k) & ",[==[" & s & "]==])" ) ;
-enddef ;
-
-def passvariable(expr key, value) =
-    if     numeric   value : mfun_numeric_to_lua  (key,value) ;
-    elseif pair      value : mfun_pair_to_lua     (key,value) ;
-    elseif string    value : mfun_string_to_lua   (key,value) ;
-    elseif boolean   value : mfun_boolean_to_lua  (key,value) ;
-    elseif path      value : mfun_path_to_lua     (key,value) ;
-    elseif rgbcolor  value : mfun_rgbcolor_to_lua (key,value) ;
-    elseif cmykcolor value : mfun_cmykcolor_to_lua(key,value) ;
-    elseif transform value : mfun_transform_to_lua(key,value) ;
-    fi ;
-enddef ;
+def passvariable        (expr key, value) = runscript mfid_passvariable key value ; enddef ;
+def startpassingvariable(expr key)        = runscript mfid_pushvariable key ; enddef ;
+def stoppassingvariable                   = runscript mfid_popvariable ; enddef ;
 
 def passarrayvariable(expr key)(suffix values)(expr first, last, stp) =
-    runscript("metapost.pushvariable(" & mfun_key_to_lua(key) & ")") ;
+    startpassingvariable(key) ;
     for i=first step stp until last :
         passvariable(i, values[i]) ;
     endfor
-    runscript("metapost.popvariable()") ;
-enddef ;
-
-def startpassingvariable(expr k) =
-    runscript("metapost.pushvariable(" & mfun_key_to_lua(k) & ")") ;
-enddef ;
-
-def stoppassingvariable =
-    runscript("metapost.popvariable()") ;
+    stoppassingvariable ;
 enddef ;
 
 permanent passvariable, passarrayvariable, startpassingvariable, stoppassingvariable ;
@@ -1844,7 +1754,6 @@ permanent format, formatted ;
 % def strfmt = format    enddef ; % old
 % def varfmt = formatted enddef ; % old
 
-
 % def fmttext = lua.mp.formatted enddef ;
 
 % new
@@ -1894,6 +1803,18 @@ permanent comment, report ;
 
 % todo: use mfid_* cum suis
 
+newscriptindex mfid_hash_new     ; mfid_hash_new     := scriptindex("lmt_hash_new") ;
+newscriptindex mfid_hash_dispose ; mfid_hash_dispose := scriptindex("lmt_hash_dispose") ;
+newscriptindex mfid_hash_in      ; mfid_hash_in      := scriptindex("lmt_hash_in") ;
+newscriptindex mfid_hash_from    ; mfid_hash_from    := scriptindex("lmt_hash_from") ;
+newscriptindex mfid_hash_to      ; mfid_hash_to      := scriptindex("lmt_hash_to") ;
+
+def newhash                          = runscript mfid_hash_new                 enddef ;
+def disposehash (expr n)             = runscript mfid_hash_dispose n           enddef ;
+def inhash      (expr n, key)        = runscript mfid_hash_in      n key       enddef ;
+def fromhash    (expr n, key)        = runscript mfid_hash_from    n key       enddef ;
+def tohash      (expr n, key, value) = runscript mfid_hash_to      n key value enddef ;
+
 vardef uniquelist(suffix list) =
     % this can be optimized by passing all values at once and returning
     % a result but for now this is ok .. we need an undef foo
@@ -1905,20 +1826,20 @@ vardef uniquelist(suffix list) =
         i := 1 ;
         j := 0 ;
     fi ;
-    h := lua.mp.newhash() ;
+    h := runscript mfid_hash_new ;
     forever :
         exitif unknown list[i] ;
-        if not lua.mp.inhash(h,list[i]) :
+        if not (runscript mfid_hash_in h list[i]) :
             j := j + 1 ;
             list[j] := list[i] ;
-            lua.mp.tohash(h,list[i]) ;
+            runscript mfid_hash_to h list[i] ;
         fi ;
         i := i + 1 ;
     endfor ;
     for n = j+1 step 1 until i-1 :
         dispose(list[n])
     endfor ;
-    lua.mp.disposehash(h) ;
+    runscript mfid_hash_dispose h ;
 enddef ;
 
 permanent uniquelist ;

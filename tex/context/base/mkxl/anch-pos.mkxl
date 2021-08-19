@@ -164,7 +164,7 @@
   {\anch_positions_initialize
    \hbox % \hpack
      {\edef\currentposition{#1}%
-      \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
+      \dosetpositionwhd\currentposition{#2}{#3}{#4}%
       \anch_positions_trace_left
       \dopositionaction\currentposition
       \hss}}
@@ -184,7 +184,8 @@
 
 \def\anch_positions_set_box_finish#1%
   {\anch_positions_initialize
-   \hbox to \wd\nextbox % \hpack
+  %\hbox to \wd\nextbox
+   \hpack to \wd\nextbox
      {\edef\currentposition{#1}%
       \dosetpositionbox\currentposition\nextbox
       \anch_positions_trace_left
@@ -244,7 +245,7 @@
   {\anch_positions_initialize
    \hbox % \hpack
      {\edef\currentposition{#1}%
-      \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
+      \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}%
       \anch_positions_trace_right
       \dopositionaction\currentposition
       \hss}}
@@ -288,12 +289,15 @@
 
 % Is this really always needed? We use \enabletextarearegistration for page areas so why
 % not also for this.
+%
+% At some point we can switch to dedicated markers because there are not
+% that many variants: text, page, textarea, columnarea, free.
 
 \protected\def\anch_mark_column_box#1#2% box n
   {\global\advance\c_anch_column\plusone
-   \clf_markregionboxtaggedn#1{columnarea:\the\c_anch_column}#2\relax} % extra height
+   \clf_markregionboxtaggedn#1{columnarea}\c_anch_column#2\relax} % extra height
 
-\protected\def\anch_mark_region_box
+\protected\def\anch_mark_region_box % auto region:index
   {\iftrialtypesetting
      \expandafter\gobbleoneargument
    \orelse\ifpositioning
@@ -308,37 +312,44 @@
 \protected\def\anch_mark_flow_box#1% will be extended / renamed
   {\hpack\bgroup
    \global\advance\c_anch_text\plusone
-   \clf_markregionboxtagged#1{textarea:\the\c_anch_text}%
+   \clf_markregionboxtagged#1{textarea}\c_anch_text % will become flow:
    \box#1%
    \egroup}
 
-\protected\def\anch_mark_tagged_box#1#2%
-  {\clf_markregionboxtagged#1{#2}}
+\protected\def\anch_mark_tagged_box#1#2#3%
+  {\clf_markregionboxtagged#1{#2}#3\relax}
 
 \protected\def\anch_mark_flow_only#1% will be extended / renamed
   {\global\advance\c_anch_text\plusone
-   \clf_markregionboxcorrected#1{textarea:\the\c_anch_text}}
+   \clf_markregionboxcorrected#1{textarea}\c_anch_text}% will become flow:
 
 \protected\def\anch_make_page_box#1% maybe like text
-  {\clf_setregionboxtagged#1{page:\the\realpageno}}
+  {\clf_setregionboxtagged#1{page}\realpageno}
 
 \protected\def\anch_mark_text_box#1%
-  {\clf_markregionboxtagged#1{text:\the\realpageno}} % needs an hbox
+  {\clf_markregionboxtagged#1{text}\realpageno} % needs an hbox
+
+\protected\def\anch_mark_tagged_box_free
+  {\ifpositioning
+     \expandafter\anch_mark_tagged_box_free_yes
+   \else
+     \expandafter\gobblesixarguments
+   \fi}
 
 \newcount\c_anch_free
 
-\protected\def\anch_mark_tagged_box_free#1#2#3#4#5#6% only needed when positions
-  {\ifpositioning
-     \global\advance\c_anch_free\plusone % could be done at the lua end
-     \clf_markregionboxtaggedkind
-       #1%
-       {free:\number\c_anch_free}%
-       #2\space % kind
-       #3\space % leftoffset
-       #4\space % rightoffset
-       #5\space % topoffset
-       #6\relax % bottomoffset
-   \fi}
+\protected\def\anch_mark_tagged_box_free_yes#1#2#3#4#5#6% only needed when positions
+  {\global\advance\c_anch_free\plusone % could be done at the lua end
+   \clf_markregionboxtaggedkind
+     #1%
+     {free}%
+     \c_anch_free
+     #2% kind         % single token value
+     #3% leftoffset   % single token value
+     #4% rightoffset  % single token value
+     #5% topoffset    % single token value
+     #6% bottomoffset % single token value
+   \relax}
 
 % \reservedautoregiontag % define at lua end
 

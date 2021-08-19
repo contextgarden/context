@@ -115,7 +115,8 @@
 
 \setupbuffer
   [\c!before=,
-   \c!after=]
+   \c!after=,
+   \c!define=\v!yes]
 
 \newcount\c_buff_n_of_defined
 
@@ -125,8 +126,12 @@
     \global\advance\c_buff_n_of_defined\plusone
     \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
     \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
-    \frozen\instance\setuevalue{\e!start\currentbuffer}{\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
-    \frozen\instance\setuevalue{\e!get  \currentbuffer}{\buff_get_stored   {\currentbuffer}{\currentdefinedbuffer}}%
+    \ifcstok{\bufferparameter\c!define}\v!yes
+      \frozen\instance\protected\edefcsname\e!start\currentbuffer\endcsname
+        {\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
+      \frozen\instance\protected\edefcsname\e!get  \currentbuffer\endcsname
+        {\buff_get_stored   {\currentbuffer}{\currentdefinedbuffer}}%
+    \fi
 \to \everydefinebuffer
 
 \protected\def\buff_start_defined

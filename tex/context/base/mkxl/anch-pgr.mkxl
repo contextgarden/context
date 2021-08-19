@@ -245,7 +245,7 @@
         {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
       \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
-      \anch_mark_tagged_box\scratchbox\MPanchorid % needs an hbox
+      \anch_mark_tagged_box\scratchbox\MPanchorid\zerocount % needs an hbox
       \box\scratchbox
       \vfill}}
 
@@ -427,7 +427,7 @@
 
 \def\anch_positions_meta_graphic_cleanup_range#1#2#3#4% pos tag setups
   {\ifnum\MPp{#2}<\realpageno \else
-     \noexpand \anch_positions_meta_graphic_handle_range_indeed{#1}{#2}{#3}{#4}%
+     \noexpand\anch_positions_meta_graphic_handle_range_indeed{#1}{#2}{#3}{#4}%
    \fi}
 
 \appendtoks

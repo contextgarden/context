@@ -652,6 +652,12 @@
 
 \let\m_scrn_rendering_page\!!zerocount
 
+%D \starttyping
+%D \definerenderingwindow[soundplace][width=0pt, height=0pt]
+%D \useexternalrendering[mainsound][audio/mp3][sound.mp3][embed=yes]
+%D \placerenderingwindow[soundplace][mainsound]
+%D \stoptyping
+
 \installcorenamespace{renderingwindow}
 
 \installframedcommandhandler \??renderingwindow {renderingwindow} \??renderingwindow

@@ -18,7 +18,7 @@
 \registerctxluafile{util-fil}{autosuffix}
 \registerctxluafile{util-sac}{autosuffix}
 \registerctxluafile{util-sto}{} % could also be done in trac-deb.mkiv
-\registerctxluafile{util-pck}{}
+\registerctxluafile{util-pck}{autosuffix}
 \registerctxluafile{util-prs}{}
 \registerctxluafile{util-fmt}{}
 \registerctxluafile{util-dim}{}

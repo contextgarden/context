@@ -179,16 +179,17 @@ newscriptindex mfid_getmultipars ; mfid_getmultipars := scriptindex "getmultipar
 def getposboxes (expr tags, anchor) = runscript mfid_getposboxes  tags anchor ; enddef ;
 def getmultipars(expr tags, anchor) = runscript mfid_getmultipars tags anchor ; enddef ;
 
-newscriptindex mfid_getpospage       ; mfid_getpospage       := scriptindex "getpospage"       ; vardef getpospage      (expr n) = runscript mfid_getpospage       n enddef ;
-newscriptindex mfid_getposparagraph  ; mfid_getposparagraph  := scriptindex "getposparagraph"  ; vardef getposparagraph (expr n) = runscript mfid_getposparagraph  n enddef ;
-newscriptindex mfid_getposcolumn     ; mfid_getposcolumn     := scriptindex "getposcolumn"     ; vardef getposcolumn    (expr n) = runscript mfid_getposcolumn     n enddef ;
-newscriptindex mfid_getposregion     ; mfid_getposregion     := scriptindex "getposregion"     ; vardef getposregion    (expr n) = runscript mfid_getposregion     n enddef ;
+newscriptindex mfid_getpospage      ; mfid_getpospage      := scriptindex "getpospage"      ; vardef getpospage     (expr n) = runscript mfid_getpospage      n enddef ;
+newscriptindex mfid_getposparagraph ; mfid_getposparagraph := scriptindex "getposparagraph" ; vardef getposparagraph(expr n) = runscript mfid_getposparagraph n enddef ;
+newscriptindex mfid_getposcolumn    ; mfid_getposcolumn    := scriptindex "getposcolumn"    ; vardef getposcolumn   (expr n) = runscript mfid_getposcolumn    n enddef ;
+newscriptindex mfid_getposregion    ; mfid_getposregion    := scriptindex "getposregion"    ; vardef getposregion   (expr n) = runscript mfid_getposregion    n enddef ;
 
-newscriptindex mfid_getposx          ; mfid_getposx          := scriptindex "getposx"          ; vardef getposx         (expr n) = runscript mfid_getposx          n enddef ;
-newscriptindex mfid_getposy          ; mfid_getposy          := scriptindex "getposy"          ; vardef getposy         (expr n) = runscript mfid_getposy          n enddef ;
-newscriptindex mfid_getposwidth      ; mfid_getposwidth      := scriptindex "getposwidth"      ; vardef getposwidth     (expr n) = runscript mfid_getposwidth      n enddef ;
-newscriptindex mfid_getposheight     ; mfid_getposheight     := scriptindex "getposheight"     ; vardef getposheight    (expr n) = runscript mfid_getposheight     n enddef ;
-newscriptindex mfid_getposdepth      ; mfid_getposdepth      := scriptindex "getposdepth"      ; vardef getposdepth     (expr n) = runscript mfid_getposdepth      n enddef ;
+newscriptindex mfid_getposx ; mfid_getposx := scriptindex "getposx" ; vardef getposx(expr n) = runscript mfid_getposx n enddef ;
+newscriptindex mfid_getposy ; mfid_getposy := scriptindex "getposy" ; vardef getposy(expr n) = runscript mfid_getposy n enddef ;
+
+newscriptindex mfid_getposwidth  ; mfid_getposwidth  := scriptindex "getposwidth"  ; vardef getposwidth (expr n) = runscript mfid_getposwidth  n enddef ;
+newscriptindex mfid_getposheight ; mfid_getposheight := scriptindex "getposheight" ; vardef getposheight(expr n) = runscript mfid_getposheight n enddef ;
+newscriptindex mfid_getposdepth  ; mfid_getposdepth  := scriptindex "getposdepth"  ; vardef getposdepth (expr n) = runscript mfid_getposdepth  n enddef ;
 
 newscriptindex mfid_getposleftskip   ; mfid_getposleftskip   := scriptindex "getposleftskip"   ; vardef getposleftskip  (expr n) = runscript mfid_getposleftskip   n enddef ;
 newscriptindex mfid_getposrightskip  ; mfid_getposrightskip  := scriptindex "getposrightskip"  ; vardef getposrightskip (expr n) = runscript mfid_getposrightskip  n enddef ;
@@ -203,9 +204,15 @@ newscriptindex mfid_getposlowerleft  ; mfid_getposlowerleft  := scriptindex "get
 newscriptindex mfid_getposupperright ; mfid_getposupperright := scriptindex "getposupperright" ; vardef getposupperright(expr n) = runscript mfid_getposupperright n enddef ;
 newscriptindex mfid_getposlowerright ; mfid_getposlowerright := scriptindex "getposlowerright" ; vardef getposlowerright(expr n) = runscript mfid_getposlowerright n enddef ;
 
+newscriptindex mfid_getposllx ; mfid_getposllx := scriptindex "getposllx" ; vardef getposllx(expr n) = runscript mfid_getposllx n enddef ;
+newscriptindex mfid_getposlly ; mfid_getposlly := scriptindex "getposlly" ; vardef getposlly(expr n) = runscript mfid_getposlly n enddef ;
+newscriptindex mfid_getposurx ; mfid_getposurx := scriptindex "getposurx" ; vardef getposurx(expr n) = runscript mfid_getposurx n enddef ;
+newscriptindex mfid_getposury ; mfid_getposury := scriptindex "getposury" ; vardef getposury(expr n) = runscript mfid_getposury n enddef ;
+
 permanent
     getposboxes, getmultipars,
     getpospage, getposparagraph, getposcolumn, getposregion,
     getposx, getposy, getposwidth, getposheight, getposdepth,
     getposleftskip, getposrightskip, getposhsize, getposparindent, getposhangindent, getposhangafter,
-    getposxy, getposupperleft, getposlowerleft, getposupperright, getposlowerright ;
+    getposxy, getposupperleft, getposlowerleft, getposupperright, getposlowerright,
+    getposllx, getposlly, getposurx, getposury ;

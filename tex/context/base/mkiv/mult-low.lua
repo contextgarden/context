@@ -357,7 +357,7 @@ return {
         --
         "quitcondition", "truecondition", "falsecondition",
         --
-        "tracingall", "tracingnone", "loggingall",
+        "tracingall", "tracingnone", "loggingall", "tracingcatcodes",
         "showluatokens",
         --
         "aliasmacro",

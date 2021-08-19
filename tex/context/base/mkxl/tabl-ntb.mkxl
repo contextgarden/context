@@ -1437,14 +1437,14 @@
   {\global\advance\c_tabl_ntb_col\plusone
    \kern\d_tabl_ntb_columndistance}
 
-\setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
+\defcsname\??naturaltablecell\the\c_tabl_ntb_none\endcsname#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
      \etoksapp\t_tabl_ntb_row
        {\tabl_ntb_span{\the\scratchcounter}}%
    \fi}
 
-\setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
+\defcsname\??naturaltablecell\the\c_tabl_ntb_cell\endcsname#1#2%
   {\toksapp\t_tabl_ntb_row{\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount

@@ -40,16 +40,16 @@ callback.register("provide_charproc_data",function(action,f,...)
 end)
 
 local defaults = {
-    [1] = function() return 0, 0 end,
-    [2] = function() return 0, 0 end,
-    [3] = function() return 0.001, "" end,
+    function() return 0, 0 end,
+    function() return 0, 0 end,
+    function() return 0.001, "" end,
 }
 
 local function registeractions(t)
     return {
-        [1] = t.preroll or defaults[1],
-        [2] = t.collect or defaults[2],
-        [3] = t.wrapup  or defaults[3],
+        t.preroll or defaults[1],
+        t.collect or defaults[2],
+        t.wrapup  or defaults[3],
     }
 end
 

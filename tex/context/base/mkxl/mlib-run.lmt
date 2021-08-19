@@ -379,49 +379,6 @@ function metapost.reset(mpx)
     end
 end
 
--- key/values
-
-do
-
-    local stack, top = { }, nil
-
-    function metapost.setvariable(k,v)
-        if top then
-            top[k] = v
-        else
-            metapost.variables[k] = v
-        end
-    end
-
-    function metapost.pushvariable(k)
-        local t = { }
-        if top then
-            insert(stack,top)
-            top[k] = t
-        else
-            metapost.variables[k] = t
-        end
-        top = t
-    end
-
-    function metapost.popvariable()
-        top = remove(stack)
-    end
-
-    local stack = { }
-
-    function metapost.pushvariables()
-        insert(stack,metapost.variables)
-        metapost.variables = { }
-    end
-
-    function metapost.popvariables()
-        metapost.variables = remove(stack) or metapost.variables
-    end
-
-end
-
-
 if not metapost.process then
 
     function metapost.process(specification)

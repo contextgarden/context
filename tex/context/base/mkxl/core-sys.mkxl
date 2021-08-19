@@ -257,7 +257,8 @@
 
 \appendtoks
     \ifcstok{\highlightparameter\c!define}\v!yes
-        \frozen\instance\setuevalue\currenthighlight{\typo_highlights_indeed{\currenthighlight}}%
+        \frozen\instance\protected\edefcsname\currenthighlight\endcsname
+           {\typo_highlights_indeed{\currenthighlight}}%
     \fi
 \to \everydefinehighlight
 
@@ -291,6 +292,7 @@
 
 \aliased\let\directhighlight\typo_highlights_indeed
 
+%D Defining commands (rather old):
 
 \permanent\protected\def\defineexpandable
   {\integerdef\c_syst_parameter_catcode\catcode\hashasciicode

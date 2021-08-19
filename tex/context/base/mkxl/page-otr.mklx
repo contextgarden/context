@@ -86,10 +86,9 @@
     \let\page_otr_specifics_preset\page_otr_specifics_preset_traced
 \to \t_page_otr_tracers
 
-%D We have a couple of output routines and the default one is
-%D the single column routine. Then there is a multicolumn variant
-%D that can be used mixed, and a columnset variant that is more
-%D exclusive.
+%D We have a couple of output routines and the default one is the single column
+%D routine. Then there is a multicolumn variant that can be used mixed, and a
+%D columnset variant that is more exclusive.
 
 \installcorenamespace{otrtriggers}
 
@@ -176,26 +175,6 @@
       #content\relax
       \the\everyafteroutput}}
 
-% Just as fuzzy (and in 'one' we are okay with \aftergroup anyway):
-%
-% \ifdefined\everybeforeoutputgroup \else \newtoks\everybeforeoutputgroup \fi
-% \ifdefined\everyafteroutputgroup  \else \newtoks\everyafteroutputgroup  \fi
-%
-% \def\page_otr_set_engine_output_routine#content%
-%   {\the\everybeforeoutputgroup
-%    \global\output
-%      {\inotrtrue
-%       \the\everybeforeoutput
-%       #content\relax
-%       \the\everyafteroutput
-%       \aftergroup\the\aftergroup\everyafteroutputgroup}}
-%
-% \appendtoks
-%     \ifnum\c_page_postponed_mode=\plusone
-%         \page_postponed_blocks_flush % and then not in \page_otr_construct_and_shipout
-%     \fi
-% \to \everyafteroutputgroup
-
 \page_otr_set_engine_output_routine\page_otr_triggered_output_routine
 
 \installoutputroutine\synchronizeoutput % use \triggerpagebuilder instead
@@ -261,16 +240,14 @@
    \penalty\c_page_otr_super_penalty
    \resetpagebreak}
 
-%D For those who've read the plain \TEX\ book, we provide the next
-%D macro:
+%D For those who've read the plain \TEX\ book, we provide the next macro:
 
 \permanent\protected\def\bye
   {\writestatus\m!system{Sorry, you're not done yet, so no goodbye!}}
 
-%D We define a few constants because that (1) provides some checking
-%D and (2) is handier when aligning definitions (checks nicer). Most
-%D routines will use ard codes names but sometimes we want to adapt,
-%D which is why we have these:
+%D We define a few constants because that (1) provides some checking and (2) is
+%D handier when aligning definitions (checks nicer). Most routines will use ard
+%D codes names but sometimes we want to adapt, which is why we have these:
 
 \definesystemconstant{page_otr_command_routine}
 \definesystemconstant{page_otr_command_package_contents}

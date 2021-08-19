@@ -209,8 +209,8 @@
 %D We can also define xtables.
 
 \appendtoks
-    \permanent\setuevalue{\e!start\currentxtable}{\tabl_x_start_named[\currentxtable]}%
-    \permanent\setuevalue{\e!stop \currentxtable}{\tabl_x_stop_named}%
+    \permanent\protected\edefcsname\e!start\currentxtable\endcsname{\tabl_x_start_named[\currentxtable]}%
+    \permanent\protected\edefcsname\e!stop \currentxtable\endcsname{\tabl_x_stop_named}%
 \to \everydefinextable
 
 \protected\def\tabl_x_start_named[#tag]#spacer[#settings]%

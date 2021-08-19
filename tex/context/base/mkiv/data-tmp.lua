@@ -74,7 +74,7 @@ local usedreadables = { }
 local compilelua    = luautilities.compile
 local luasuffixes   = luautilities.suffixes
 
-caches.base         = caches.base or "luatex-cache"  -- can be local
+caches.base         = caches.base or (LUATEXENGINE and LUATEXENGINE .. "-cache") or "luatex-cache"  -- can be local
 caches.more         = caches.more or "context"       -- can be local
 caches.defaults     = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 

@@ -15390,6 +15390,10 @@ return {
    ["pe"]="eight",
    ["ro"]="eight",
   },
+  ["compress"]={
+   ["en"]="compress",
+   ["nl"]="comprimeer",
+  },
   ["embed"]={
    ["en"]="embed",
    ["fr"]="integrer",

@@ -189,9 +189,16 @@ return {
         "setmacro", "setdimen", "setcount", "settoks",
         "setglobalmacro", "setglobaldimen", "setglobalcount", "setglobaltoks",
         --
-        "positionpath", "positioncurve", "positionxy", "positionpxy",
-        "positionwhd", "positionpage", "positionregion", "positionbox",
+        "positionpath", "positioncurve", "positionxy", "positionparagraph", "positioncolumn",
+        "positionwhd", "positionpage", "positionregion", "positionbox", "positionx", "positiony",
         "positionanchor", "positioninregion", "positionatanchor",
+        --
+        "getposboxesv, getmultipars",
+        "getpospage", "getposparagraph", "getposcolumn", "getposregion",
+        "getposx", "getposy", "getposwidth", "getposheight", "getposdepth",
+        "getposleftskip", "getposrightskip", "getposhsize", "getposparindent", "getposhangindent", "getposhangafter",
+        "getposxy", "getposupperleft", "getposlowerleft", "getposupperright", "getposlowerright".
+        "getposllx", "getposlly", "getposurx", "getposury" ;
         --
         "wdpart", "htpart", "dppart",
         --
@@ -201,7 +208,7 @@ return {
         --
         "utfnum", "utflen", "utfsub",
         --
-        "newhash", "disposehash", "inhash", "tohash",
+        "newhash", "disposehash", "inhash", "tohash", "fromhash",
         --
         "isarray", "prefix", "isobject",
         --

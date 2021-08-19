@@ -648,14 +648,14 @@ implement {
 --     name      = "hascommonargumentcondition",
 --     actions   = hascommonargumentcondition,
 --     arguments = "2 strings",
---     arguments = { "argument", "argument" },
+--     arguments = "2 arguments",
 -- }
 
 implement {
     name      = "doifelseinset",
     actions   = doifelseinset,
     arguments = "2 strings",
---     arguments = { "argument", "argument" },
+--  arguments = "2 arguments",
 }
 
 implement {
