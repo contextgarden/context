@@ -19,6 +19,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 %D One can (mis)use this mechanism to (re)arrange pages of already produced files.
 %D
 %D \starttyping
@@ -63,9 +65,9 @@
    \dontcomplain
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
-     [\c!width=\zeropoint,%
-      \c!n=\noffigurepages,%
-      \c!category=,%
+     [\c!width=\zeropoint,
+      \c!n=\noffigurepages,
+      \c!category=,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
@@ -85,9 +87,9 @@
    \dontcomplain
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
-     [\c!width=\zeropoint,%
-      \c!n=\noffigurepages,%
-      \c!category=,%
+     [\c!width=\zeropoint,
+      \c!n=\noffigurepages,
+      \c!category=,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
@@ -136,10 +138,10 @@
   {\bgroup
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
-     [\c!marking=\v!off,%
-      \c!offset=\zeropoint,%
-      \c!n=\noffigurepages,%
-      \c!category=,%
+     [\c!marking=\v!off,
+      \c!offset=\zeropoint,
+      \c!n=\noffigurepages,
+      \c!category=,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchoffset\directwithpagesparameter\c!offset\relax
@@ -212,7 +214,7 @@
    \directwithpagesparameter\c!after
    \egroup}
 
-\setvalue{\??combinepagesalternative\v!a}% use hpacks
+\defcsname\??combinepagesalternative\v!a\endcsname % use hpacks
   {\global\combinedpagescounter\directwithpagesparameter\c!start\relax
    \doloop
      {\vbox to \textheight
@@ -237,7 +239,7 @@
                              \c!backgroundcolor=\directwithpagesparameter\c!backgroundcolor,
                              \c!frame=\directwithpagesparameter\c!frame]%
                         \fi
-                        \directwithpagesparameter\c!right}
+                        \directwithpagesparameter\c!right}%
                      \directwithpagesparameter\c!bottom}%
                   \global\advance\combinedpagescounter\plusone
                   \hfil}%
@@ -249,7 +251,7 @@
            \exitloop
          \fi}}
 
-\setvalue{\??combinepagesalternative\v!c}%
+\defcsname\??combinepagesalternative\v!c\endcsname
   {\global\combinedpagescounter\directwithpagesparameter\c!start\relax
    \doloop
      {\vbox to \textheight
@@ -288,7 +290,7 @@
 \letcsname\??combinepagesalternative\v!horizontal\expandafter\endcsname\csname\??combinepagesalternative\v!a\endcsname
 \letcsname\??combinepagesalternative\v!vertical  \expandafter\endcsname\csname\??combinepagesalternative\v!c\endcsname
 
-\setvalue{\??combinepagesalternative\v!b}%
+\defcsname\??combinepagesalternative\v!b\endcsname
   {\global\combinedpagescounter\directwithpagesparameter\c!start\relax
    \doloop
      {\startbaselinecorrection
@@ -332,20 +334,23 @@
    \glet\slicedpagenumber\!!zerocount
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
-     [\c!offset=\zeropoint,%
-      \c!hoffset=\zeropoint,%
+     [\c!offset=\zeropoint,
+      \c!hoffset=\zeropoint,
       \c!voffset=\zeropoint,
-      \c!width=\figurewidth,%
-      \c!height=\figureheight,%
-      \c!n=\noffigurepages,%
-      \c!category=,%
+      \c!width=\figurewidth,
+      \c!height=\figureheight,
+      \c!n=\noffigurepages,
+      \c!category=,
       #oddsettings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \ifnum\c_page_selectors_n>\zerocount
      \definepapersize
-       [\s!dummy][\c!height=\directwithpagesparameter\c!height,\c!width=\directwithpagesparameter\c!width]%
+       [\s!dummy]
+       [\c!height=\directwithpagesparameter\c!height,
+        \c!width=\directwithpagesparameter\c!width]%
      \setuppapersize
-       [\s!dummy][\s!dummy]%
+       [\s!dummy]
+       [\s!dummy]%
      \setuplayout
        [\c!backspace=\zeropoint,\c!topspace=\zeropoint,
         \c!height=\v!middle,\c!width=\v!middle,
@@ -360,9 +365,9 @@
            \dorecurse\c_page_selectors_n
              {\let\slicedpagestepy\recurselevel
               \clip
-                [\c!nx=\c_page_selectors_n,\c!ny=\c_page_selectors_n,\c!x=\slicedpagestepx,\c!y=\slicedpagestepy]
+                [\c!nx=\c_page_selectors_n,\c!ny=\c_page_selectors_n,\c!x=\slicedpagestepx,\c!y=\slicedpagestepy]%
                 {\scale
-                   [\c!scale=\number\c_page_selectors_n000]
+                   [\c!scale=\number\c_page_selectors_n000]%
                    {\externalfigure[#filename][\c!page=\slicedpagenumber]}}%
               \page}}%
       \else
@@ -385,21 +390,21 @@
 \permanent\protected\def\trimpages[#1]% was for a over decade in p-pdf-51.tex
   {\begingroup
    \getdummyparameters
-     [\c!file=dummy,
+     [\c!file=dummy,%
       \c!hoffset=\zeropoint,
       \c!voffset=\zeropoint,
       \c!width=17cm,
       \c!height=24cm,
       \c!x=\zeropoint,
       \c!y=\zeropoint,
-      #1]
+      #1]%
    \getfiguredimensions
      [\dummyparameter\c!file]
-     [\c!object=\v!no]
+     [\c!object=\v!no]%
    \dorecurse\noffigurepages
      {\scale
         [\c!width=\paperwidth,
-         \c!height=\paperheight]
+         \c!height=\paperheight]%
         {\offset
            [\c!x=\dummyparameter\c!x,
             \c!y=\dummyparameter\c!y]
@@ -417,5 +422,7 @@
                  \box\nextbox
                \fi}}}}%
    \endgroup}
+
+\stopcontextdefinitioncode
 
 \protect \endinput

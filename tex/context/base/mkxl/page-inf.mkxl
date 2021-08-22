@@ -29,12 +29,14 @@
 
 \permanent\tolerant\protected\def\setupversion[#1]%
   {\the\everyresetversion
-   \doifelseassignment{#1}%
-     {\getdummyparameters[\c!alternative=,\c!text=,#1]%
-      \edef\currentversioninfo{\dummyparameter\c!alternative}%
-      \edef\currentversiontext{\dummyparameter\c!text}}%
-     {\edef\currentversioninfo{#1}%
-      \let \currentversiontext\empty}%
+   \ifhastok={#1}%
+     \getdummyparameters[\c!alternative=,\c!text=,#1]%
+     \edef\currentversioninfo{\dummyparameter\c!alternative}%
+     \edef\currentversiontext{\dummyparameter\c!text}%
+   \else
+     \edef\currentversioninfo{#1}%
+     \let \currentversiontext\empty
+   \fi
    \ifcsname\??layoutinfo\currentversioninfo\endcsname
      \let\page_info_add_to_box\page_info_add_to_box_indeed
    \else
@@ -49,7 +51,7 @@
   {\begincsname\??layoutinfo\currentversioninfo\endcsname}
 
 \permanent\protected\def\installversioninfo#1#2%
-  {\setvalue{\??layoutinfo#1}{#2}}
+  {\defcsname\??layoutinfo#1\endcsname{#2}}
 
 \permanent\protected\def\includeversioninfo#1%
   {\begincsname\??layoutinfo#1\endcsname}

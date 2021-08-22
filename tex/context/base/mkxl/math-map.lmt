@@ -46,6 +46,9 @@ local setmetatableindex   = table.setmetatableindex
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 
+local texgetmode          = tex.getmode
+local mathmode_code       = tex.modelevels.math
+
 local trace_greek         = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 local report_remapping    = logs.reporter("mathematics","remapping")
 
@@ -651,34 +654,46 @@ end
 
 implement {
     name      = "setmathattribute",
-    arguments = "2 strings",
+    arguments = "2 arguments",
+    public    = true,
+    protected = true,
     actions   = function(alphabet,style)
-        local data = alphabets[alphabet] or regular
-        data = data[style] or data.tf
-        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        if texgetmode() == mathmode_code then
+            local data = alphabets[alphabet] or regular
+            data = data[style] or data.tf
+            texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        end
     end
 }
 
 implement {
-    name      = "setmathstyle",
-    arguments = "string",
+    name      = "setmathfontstyle",
+    arguments = "argument",
+    public    = true,
+    protected = true,
     actions   = function(style)
-        local r = mathremap[texgetattribute(mathalphabet)]
-        local alphabet = r and r.alphabet or "regular"
-        local data = alphabets[alphabet][style]
-        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        if texgetmode() == mathmode_code then
+            local r = mathremap[texgetattribute(mathalphabet)]
+            local alphabet = r and r.alphabet or "regular"
+            local data = alphabets[alphabet][style]
+            texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        end
     end
 }
 
 implement {
     name      = "setmathalphabet",
-    arguments = "string",
+    arguments = "argument",
+    public    = true,
+    protected = true,
     actions   = function(alphabet)
-     -- local r = mathremap[mathalphabet]
-        local r = mathremap[texgetattribute(mathalphabet)]
-        local style = r and r.style or "tf"
-        local data = alphabets[alphabet][style]
-        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        if texgetmode() == mathmode_code then
+         -- local r = mathremap[mathalphabet]
+            local r = mathremap[texgetattribute(mathalphabet)]
+            local style = r and r.style or "tf"
+            local data = alphabets[alphabet][style]
+            texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+        end
     end
 }
 

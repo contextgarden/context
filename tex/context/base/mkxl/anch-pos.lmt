@@ -285,7 +285,7 @@ if treemode then
             local prefix, one, two = lpegmatch(p_splitter,k)
             local list = rawget(t,prefix)
             if list and type(list) == "table" then
-                v = list[one] or false
+                local v = list[one] or false
                 if v then
                     if prefix == "p" then
                         if deltapacking and type(v) == "number" then

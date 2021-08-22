@@ -18,7 +18,7 @@
 \pushoverloadmode % cap etc
 
 \startluacode
-    mathematics.define(\number\defaultmathfamily)
+    mathematics.define()
  -- mathematics.xml.registerentities()
 \stopluacode
 

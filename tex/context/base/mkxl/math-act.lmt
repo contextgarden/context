@@ -355,13 +355,13 @@ end
 mathematics.extensiblecode = extensiblecode
 mathematics.horizontalcode = horizontalcode
 
-interfaces.implement {
+interfaces.implement { -- can be public with two times "integerargument"
     name      = "extensiblecode",
     arguments = { "integer", "integer" },
     actions   = { extensiblecode, context }
 }
 
-interfaces.implement {
+interfaces.implement { -- can be public with two times "integerargument"
     name      = "horizontalcode",
     arguments = { "integer", "integer" },
     actions   = function(family,unicode)

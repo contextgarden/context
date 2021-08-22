@@ -13,6 +13,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 %D The old one:
 
 \definemixedcolumns
@@ -50,8 +52,10 @@
    \edef\rigidcolumnlines
      {\directdummyparameter\c!lines}%
    \setrigidcolumnhsize
-     {\directdummyparameter\c!width}%
-     {\directdummyparameter\c!distance}%
+     {\directdummyparameter\c!width}
+     {\directdummyparameter\c!distance}
      {\directdummyparameter\c!n}}
+
+\stopcontextdefinitioncode
 
 \protect \endinput

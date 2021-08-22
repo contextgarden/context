@@ -173,7 +173,7 @@ function moduledata.system.tokens.table(t)
         end
         w = concat(r, " ")
     end
-    if type(t) == "table" then
+    if type(t) == "table" and #t > 0 then
         context.starttabulate { "|l|r|r|l|c|l|l|" }
         ctx_FL()
         ctx_NC() context.formatted.rlap("\\bold %s: %s",w,n)

@@ -251,10 +251,9 @@ do
 
     -- there will be a combined \(math)chardef (tracker)
 
-    function mathematics.define(family)
-        family = family or 0
-        family = families[family] or family
-        local data = characters.data
+    function mathematics.define() -- we now always use family zero
+        local family = 0
+        local data   = characters.data
         for unicode, character in sortedhash(data) do
             local symbol = character.mathsymbol
             local mset   = true

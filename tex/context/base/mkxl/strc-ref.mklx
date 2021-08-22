@@ -188,7 +188,7 @@
 \protected\def\strc_references_destination_point_yes
   {\strc_references_inject_before % new
    \dostarttagged\t!reference\empty
-   \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+   \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup % \hpack
      \strc_references_flush_destination_nodes
      \strc_references_placeholder
      \egroup
@@ -198,7 +198,7 @@
 \protected\def\strc_references_destination_point_nop
   {\strc_references_inject_before % new
    \dostarttagged\t!reference\empty
-   \dontleavehmode\hbox \bgroup
+   \dontleavehmode\hbox \bgroup % \hpack
      \strc_references_flush_destination_nodes
      \strc_references_placeholder
    \egroup

@@ -154,6 +154,7 @@
 		<cd:variable name='commands' value='commandes'/>
 		<cd:variable name='comment' value='commentaire'/>
 		<cd:variable name='component' value='composant'/>
+		<cd:variable name='compress' value='compress'/>
 		<cd:variable name='compressseparator' value='separateurreduction'/>
 		<cd:variable name='compressstopper' value='stoppeurreduction'/>
 		<cd:variable name='concept' value='concept'/>

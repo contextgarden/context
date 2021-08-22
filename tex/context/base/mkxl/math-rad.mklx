@@ -23,8 +23,8 @@
 
 %D Old stuff:
 
-% \def\rootradical{\Uroot    \defaultmathfamily "221A } % can be done in char-def
-% \def\surdradical{\Uradical \defaultmathfamily "221A } % can be done in char-def
+% \def\rootradical{\Uroot    0 "221A } % can be done in char-def
+% \def\surdradical{\Uradical 0 "221A } % can be done in char-def
 
 \permanent\protected\def\root#1\of{\rootradical{#1}} % #2
 

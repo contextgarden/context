@@ -594,6 +594,8 @@ local function featurecreep()
                     conversion = getset("structure:conversions",p.block,conversionset,1,"numbers")
                 end
             end
+            -- If needed we can do some preroll on a prefix (label) but this is a rather useless
+            -- feature (creep) anyway so why bother.
             conversion = conversion and map[conversion] or map.numbers
             if number == 1 or oldlabel ~= label or oldconversion ~= conversion then
                 list[#list+1] = i - 1 -- pdf starts numbering at 0

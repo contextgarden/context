@@ -919,6 +919,8 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 return head, start, true, true
             end
             ligature = ligature.ligature
+        else
+            ligature = ligature.ligature
         end
      -- local ligature = tonumber(ligature) or ligature.ligature
         if ligature then

@@ -47,6 +47,9 @@ local registerdirective  = directives.register
 local logreporter        = logs.reporter
 local setmetatableindex  = table.setmetatableindex
 
+local texgetmode         = tex.getmode
+local mathmode_code      = tex.modelevels.math
+
 local colortracers       = nodes.tracers.colors
 
 local trace_remapping    = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
@@ -1412,6 +1415,7 @@ do
     local fontresources   = fonts.hashes.resources
 
     local function getalternate(fam,tag,current)
+        -- fam is always zero, so we assume a very consistent setup
         local resources = fontresources[getfontoffamily(fam)]
         local attribute = unsetvalue
         if resources then
@@ -1452,26 +1456,28 @@ do
         end
     end
 
-    local function presetalternate(fam,tag)
-        texsetattribute(a_mathalternate,getalternate(fam,tag))
-    end
-
     implement {
-        name      = "presetmathalternate",
-        actions   = presetalternate,
-        arguments = { "integer", "string" }
+        name      = "presetmathfontalternate",
+        arguments = "argument",
+        public    = true,
+        protected = true,
+        actions   = function(tag)
+            if texgetmode() == mathmode_code then
+                texsetattribute(a_mathalternate,getalternate(0,tag))
+            end
+        end,
     }
 
-    local function setalternate(fam,tag)
-        local a = texgetattribute(a_mathalternate)
-        local v = getalternate(fam,tag,a)
-        texsetattribute(a_mathalternate,v)
-    end
-
     implement {
-        name      = "setmathalternate",
-        actions   = setalternate,
-        arguments = { "integer", "string" }
+        name      = "setmathfontalternate",
+        arguments = "argument",
+        public    = true,
+        protected = true,
+        actions   = function(tag)
+            if texgetmode() == mathmode_code then
+                texsetattribute(a_mathalternate,getalternate(0,tag,texgetattribute(a_mathalternate)))
+            end
+        end,
     }
 
     alternate[mathchar_code] = function(pointer) -- slow

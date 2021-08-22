@@ -66,7 +66,7 @@
 
 % \fi
 
-\setvalue{\??pagecommentstates\v!start}%
+\defcsname\??pagecommentstates\v!start\endcsname
   {\d_page_comments_offset  \directpagecommentparameter\c!offset  \relax
    \d_page_comments_distance\directpagecommentparameter\c!distance\relax
    \d_page_comments_width   \directpagecommentparameter\c!width   \relax
@@ -76,41 +76,41 @@
    \setuppapersize[\papersize][\v!pagecomment]%
    \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]} % maybe append if already set
 
-\setvalue{\??pagecommentstates\v!stop}%
+\defcsname\??pagecommentstates\v!stop\endcsname
   {\setupbackgrounds[\v!paper][\c!background=]}
 
-\setvalue{\??pagecommentstates\v!none}%
+\defcsname\??pagecommentstates\v!none\endcsname
   {}
 
-\setvalue{\??pagecommentlocations\v!bottom}%
+\defcsname\??pagecommentlocations\v!bottom\endcsname
   {\setuplayout[\c!location=]%
    \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=\vss,\c!left=\hskip\d_page_comments_offset,\c!right=]%
    \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_height\relax
    \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset\relax
    \defineoverlay[\v!pagecomment][\page_comments_top_bottom]}
 
-\setvalue{\??pagecommentlocations\v!top}%
+\defcsname\??pagecommentlocations\v!top\endcsname
   {\setuplayout[\c!location=]%
    \setuppapersize[\c!top=\vss,\c!bottom=\vskip\d_page_comments_offset,\c!left=\hskip\d_page_comments_offset,\c!right=]%
    \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_height\relax
    \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset\relax
    \defineoverlay[\v!pagecomment][\page_comments_top_bottom]}
 
-\setvalue{\??pagecommentlocations\v!left}%
+\defcsname\??pagecommentlocations\v!left\endcsname
   {\setuplayout[\c!location=]%
    \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=,\c!left=\hss,\c!right=\hskip\d_page_comments_offset]%
    \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset\relax
    \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_width\relax
    \defineoverlay[\v!pagecomment][\page_comments_left_right]}
 
-\setvalue{\??pagecommentlocations\v!right}%
+\defcsname\??pagecommentlocations\v!right\endcsname
   {\setuplayout[\c!location=]%
    \setuppapersize[\c!top=\vskip\d_page_comments_offset,\c!bottom=,\c!left=\hskip\d_page_comments_offset,\c!right =\hss]%
    \d_page_comments_page_height\dimexpr\paperheight+2\d_page_comments_offset\relax
    \d_page_comments_page_width \dimexpr\paperwidth +2\d_page_comments_offset+\d_page_comments_distance+\d_page_comments_width\relax
    \defineoverlay[\v!pagecomment][\page_comments_left_right]}
 
-\setvalue{\??pagecommentlocations\v!none}%
+\defcsname\??pagecommentlocations\v!none\endcsname
   {}% \setuppapersize[\c!bottom=,\c!top=,\c!left=,\c!right=]}
 
 \protected\def\page_comments_top_bottom

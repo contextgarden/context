@@ -142,9 +142,9 @@
 \def\page_shipouts_ignore#1%
   {\begingroup
    \writestatus\m!system
-     {\ifarrangingpages arranged \fi page
+     {\ifarrangingpages arranged\normalspace\fi page\normalspace
       \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
-       not flushed}%
+       not\normalspace flushed}%
  % \setbox\scratchbox\hpack
  %   {#1}% no finalize
    \deadcycles\zerocount

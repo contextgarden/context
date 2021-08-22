@@ -252,12 +252,12 @@
 \def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
   {\limitated
       left     \p_width
-      text     {#content}
-      sentinel {\unknown}
+      text     {#content}%
+      sentinel {\unknown}%
    \relax}
 
-\setvalue{\??layouttextspecial\v!pagenumber}{\page_layouts_place_page_number}
-\setvalue{\??layouttextspecial\v!date      }{\currentdate}
+\defcsname\??layouttextspecial\v!pagenumber\endcsname{\page_layouts_place_page_number}
+\defcsname\??layouttextspecial\v!date      \endcsname{\currentdate}
 
 %D When specified, the texts are automatically limited in length.
 
@@ -321,24 +321,24 @@
 
 \newconditional\resyncaftertextline
 
-\setvalue{\??layouttextsline\v!normal}{\page_layouts_place_text_line_indeed}
-\setvalue{\??layouttextsline\empty   }{\page_layouts_place_text_line_indeed}
+\defcsname\??layouttextsline\v!normal\endcsname{\page_layouts_place_text_line_indeed}
+\defcsname\??layouttextsline\empty   \endcsname{\page_layouts_place_text_line_indeed}
 
-\letvalue{\??layouttextsline\v!none}\gobbletwoarguments
-\letvalue{\??layouttextsline\v!stop}\gobbletwoarguments
+\letcsname\??layouttextsline\v!none\endcsname\gobbletwoarguments
+\letcsname\??layouttextsline\v!stop\endcsname\gobbletwoarguments
 
-\setvalue{\??layouttextsline\v!high}#vertical#height%
+\defcsname\??layouttextsline\v!high\endcsname#vertical#height%
   {\global\settrue\resyncaftertextline
    \page_layouts_reset_element_status#vertical}
 
-\setvalue{\??layouttextsline\v!empty}#vertical#height%
+\defcsname\??layouttextsline\v!empty\endcsname#vertical#height%
   {\page_layouts_reset_element_status#vertical}
 
-\setvalue{\??layouttextsline\v!start}#vertical#height%
+\defcsname\??layouttextsline\v!start\endcsname#vertical#height%
   {\page_layouts_reset_element_status#vertical%
    \page_layouts_place_text_line_indeed#vertical#height}
 
-\setvalue{\??layouttextsline\v!nomarking}#vertical#height%
+\defcsname\??layouttextsline\v!nomarking\endcsname#vertical#height%
   {\bgroup
    \page_layouts_reset_element_status#vertical%
    \settrue\inhibitgetmarking
@@ -367,7 +367,7 @@
    \page_layouts_place_text_line_indeed#vertical#height%
    \endgroup}
 
-\letvalue{\??layouttextsline\s!unknown}\page_layouts_place_text_line_unknown
+\letcsname\??layouttextsline\s!unknown\endcsname\page_layouts_place_text_line_unknown
 
 %D The following macro has to be called after a page is flushed.
 
@@ -788,25 +788,25 @@
   {\let\m_page_layouts_page_number_location_v\v!footer
    \let\m_page_layouts_page_number_location_h\v!text
    \let\m_page_layouts_page_number_location_x\c!middletext
-   \processallactionsinset[\directpagenumberingparameter\c!location]
-     [    \v!header=>\let\m_page_layouts_page_number_location_v\v!header,
-          \v!footer=>\let\m_page_layouts_page_number_location_v\v!footer,
+   \processallactionsinset[\directpagenumberingparameter\c!location]%
+     [    \v!header=>\let\m_page_layouts_page_number_location_v\v!header,%
+          \v!footer=>\let\m_page_layouts_page_number_location_v\v!footer,%
           \v!middle=>\let\m_page_layouts_page_number_location_h\v!text
-                     \let\m_page_layouts_page_number_location_x\c!middletext,
+                     \let\m_page_layouts_page_number_location_x\c!middletext,%
             \v!left=>\let\m_page_layouts_page_number_location_h\v!text
-                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,%
            \v!right=>\let\m_page_layouts_page_number_location_h\v!text
-                     \let\m_page_layouts_page_number_location_x\c!righttext,
+                     \let\m_page_layouts_page_number_location_x\c!righttext,%
           \v!inleft=>\let\m_page_layouts_page_number_location_h\v!margin
-                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,%
          \v!inright=>\let\m_page_layouts_page_number_location_h\v!margin
-                     \let\m_page_layouts_page_number_location_x\c!righttext,
+                     \let\m_page_layouts_page_number_location_x\c!righttext,%
         \v!inmargin=>\let\m_page_layouts_page_number_location_h\v!margin
-                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},%
           \v!margin=>\let\m_page_layouts_page_number_location_h\v!margin
-                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},%
         \v!atmargin=>\let\m_page_layouts_page_number_location_h\v!text
-                     \let\m_page_layouts_page_number_location_x\c!marginedgetext,
+                     \let\m_page_layouts_page_number_location_x\c!marginedgetext,%
       \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
                      \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
 

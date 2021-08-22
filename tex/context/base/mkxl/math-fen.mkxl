@@ -856,9 +856,9 @@
 %D The next characters were used for constructing nicer extensibles but
 %D nowadays we have real characters.
 
-\immutable\Umathchardef\braceld\zerocount \defaultmathfamily "FF07A
-\immutable\Umathchardef\bracerd\zerocount \defaultmathfamily "FF07B
-\immutable\Umathchardef\bracelu\zerocount \defaultmathfamily "FF07C
-\immutable\Umathchardef\braceru\zerocount \defaultmathfamily "FF07D
+\immutable\Umathchardef\braceld\zerocount \zerocount "FF07A
+\immutable\Umathchardef\bracerd\zerocount \zerocount "FF07B
+\immutable\Umathchardef\bracelu\zerocount \zerocount "FF07C
+\immutable\Umathchardef\braceru\zerocount \zerocount "FF07D
 
 \protect

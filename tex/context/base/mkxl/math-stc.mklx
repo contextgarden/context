@@ -1028,8 +1028,8 @@
 % \setupbodyfont[xits]    \getbuffer
 % \setupbodyfont[cambria] \getbuffer
 
-\immutable\protected\def\normaldoublebrace {\Umathaccents 0 \defaultmathfamily "23DE 0 \defaultmathfamily "23DF }
-\immutable\protected\def\normaldoubleparent{\Umathaccents 0 \defaultmathfamily "23DC 0 \defaultmathfamily "23DD }
+\immutable\protected\def\normaldoublebrace {\Umathaccents \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
+\immutable\protected\def\normaldoubleparent{\Umathaccents \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
 
 % let's keep this
 
@@ -1340,7 +1340,7 @@
    \fi
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\usemathstackerscolorparameter\c!color
-      \Umathchar\zerocount\defaultmathfamily#codepoint}%
+      \Umathchar\zerocount\zerocount#codepoint}%
    \ifempty\p_moffset \else
      \mskip\p_moffset\relax
    \fi
@@ -1370,10 +1370,10 @@
 % \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}
 % \limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
 
-% $\Uoverdelimiter \defaultmathfamily "2194 {xxxx}$
-% $\Uunderdelimiter\defaultmathfamily "2194 {xxxx}$
-% $\Udelimiterover \defaultmathfamily "2194 {xxxx}$
-% $\Udelimiterunder\defaultmathfamily "2194 {xxxx}$
-% $\Udelimiterover \defaultmathfamily "219A {\Udelimiterunder \defaultmathfamily "219B {xxxx}}$
+% $\Uoverdelimiter \zerocount "2194 {xxxx}$
+% $\Uunderdelimiter\zerocount "2194 {xxxx}$
+% $\Udelimiterover \zerocount "2194 {xxxx}$
+% $\Udelimiterunder\zerocount "2194 {xxxx}$
+% $\Udelimiterover \zerocount "219A {\Udelimiterunder \zerocount "219B {xxxx}}$
 
 % $a \mathrel{\mathop{\filledhboxr{mid}}}\limits^{\filledhboxg{\strut top}}_{\filledhboxb{\strut bottom}} b$

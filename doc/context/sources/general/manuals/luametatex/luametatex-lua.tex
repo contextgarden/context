@@ -15,17 +15,13 @@
 
 Although \LUAMETATEX\ is primarily meant as a \TEX\ engine, it can also serve as
 a stand alone \LUA\ interpreter. There are two ways to make \LUAMETATEX\ behave
-like a standalone \LUA\ interpreter:
-
-\startitemize[packed]
-\startitem
-    if a \type {--luaonly} option is given on the commandline, or
-\stopitem
-\startitem
-    if the only non|-|option argument (file) on the commandline has the extension
-    \type {lua} or \type {luc}.
-\stopitem
-\stopitemize
+like a standalone \LUA\ interpreter. The first method uses the command line
+option \type {--luaonly} followed by a filename. The second is more automatic: if
+the only non|-|option argument (file) on the commandline has the extension \type
+{lmt} or \type {lua}. The \type {luc} extension has been dropped because bytecode
+compiled files are not portable and one can always load indirect. The \type {lmt}
+suffix is more \CONTEXT\ specific and makes it possible to have files for
+\LUATEX\ and \LUAMETATEX\ alongside.
 
 In this mode, it will set \LUA's \type {arg[0]} to the found script name, pushing
 preceding options in negative values and the rest of the command line in the
@@ -39,8 +35,10 @@ possible below the 3MB which is okay for a script engine.
 When no argument is given, \LUAMETATEX\ will look for a \LUA\ file with the same
 name as the binary and run that one when present. This makes it possible to use
 the engine as a stub. For instance, in \CONTEXT\ a symlink from \type {mtxrun} to
-type {luametatex} will run the \type {mtxrun.lua} script when present in the same
-path as the binary itself
+type {luametatex} will run the \type {mtxrun.lmt} or \type {mtxrun.lua} script
+when present in the same path as the binary itself. As mentioned before first
+checking for (\CONTEXT) \type {lmt} files permits different files for different
+engines in the same path.
 
 \stopsubsection
 

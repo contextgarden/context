@@ -413,11 +413,11 @@
 \to \t_font_math_strategies
 
 \ifdefined\defaultmathfamily \else
-    \setnewconstant\defaultmathfamily\zerocount
+    \setnewconstant\defaultmathfamily\zerocount % no longer used, always zero
 \fi
 
 \appendtoks
-    \fam\defaultmathfamily % all characters and symbols are in this family
+    \fam\zerocount % all characters and symbols are in this family
 \to \everymathematics
 
 \protected\def\font_helpers_synchronize_math_family_mr

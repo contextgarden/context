@@ -143,8 +143,6 @@
     \c_attr_displaymath\plusone
 \to \everybeforedisplayformula
 
-\defaultmathfamily \zerocount % 255
-
 % defined at lua end \permanent\protected\def\resetmathattributes{\resetmathattributes}
 
 % handy
@@ -417,10 +415,10 @@
 % todo: only in mmode
 % these commands are semi-public but should not be used directly (lua names wil change)
 
-\permanent\protected\def\setmathattribute  #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
-\permanent\protected\def\setmathalphabet     #1{\ifmmode\clf_setmathalphabet{#1}\fi}
-\permanent\protected\def\setmathfontstyle    #1{\ifmmode\clf_setmathstyle{#1}\fi}
-\permanent\protected\def\setmathfontalternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
+%permanent\protected\def\setmathattribute  #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
+%permanent\protected\def\setmathalphabet     #1{\ifmmode\clf_setmathalphabet{#1}\fi}
+%permanent\protected\def\setmathfontstyle    #1{\ifmmode\clf_setmathstyle{#1}\fi}
+%permanent\protected\def\setmathfontalternate#1{\ifmmode\clf_setmathalternate{#1}\fi}
 
 \installcorenamespace{mathstylealternative} % might become a setuphandler
 
@@ -441,7 +439,7 @@
 \appendtoks
     \edef\p_stylealternative{\mathematicsparameter\c!stylealternative}%
     \ifempty\p_stylealternative\else
-        \clf_presetmathalternate\defaultmathfamily{\p_stylealternative}%
+        \presetmathfontalternate{\p_stylealternative}%
     \fi
 \to \everymathematics
 
@@ -1372,8 +1370,8 @@
 
 \installcorenamespace{mathaligndirection}
 
-\setvalue{\??mathaligndirection           r2l}{\settrue\c_math_right_to_left}
-\setvalue{\??mathaligndirection\v!righttoleft}{\settrue\c_math_right_to_left}
+\defcsname\??mathaligndirection           r2l\endcsname{\settrue\c_math_right_to_left}
+\defcsname\??mathaligndirection\v!righttoleft\endcsname{\settrue\c_math_right_to_left}
 
 \appendtoks
     \ifcsname\??mathaligndirection\mathematicsparameter\c!align\endcsname
@@ -1528,7 +1526,7 @@
 \letcsname\??mathitalics       2\endcsname\plustwo              % fontdata
 \letcsname\??mathitalics       3\endcsname\plusthree            % quad based
 \letcsname\??mathitalics       4\endcsname\plusfour             % combination of 1 and 3
-\letcsname\??mathitalics\v!none \endcsname\attributeunsetvalue
+\letcsname\??mathitalics \v!none\endcsname\attributeunsetvalue
 \letcsname\??mathitalics\v!reset\endcsname\attributeunsetvalue
 
 \def\math_italics_initialize
@@ -2533,8 +2531,8 @@
 
 \newcount\interdisplaylinepenalty \interdisplaylinepenalty\plushundred
 
-% Actually, not using an if saves one macro so there is no penalty
-% for splitting up this macro.
+% Actually, not using an if saves one macro so there is no penalty for splitting up
+% this macro.
 %
 % \newif\ifdt@p
 %
@@ -2626,8 +2624,8 @@
 
 % this should be a primitive:
 
-\permanent\def\mathextensiblecode#1#2{\clf_extensiblecode\numexpr#1\relax\numexpr#2\relax}
-\permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode\numexpr#1\relax\numexpr#2\relax}
+\permanent\def\mathextensiblecode#1#2{\clf_extensiblecode\numexpr#1\relax\numexpr#2\relax} % todo: use public lua but needs testing
+\permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode\numexpr#1\relax\numexpr#2\relax} % todo: use public lua but needs testing
 
 % experimental:
 

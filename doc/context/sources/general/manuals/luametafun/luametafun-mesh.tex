@@ -3,6 +3,12 @@
 \environment luametafun-style
 \environment luametafun-mesh-examples
 
+\doiffileelse{luatex-mesh-examples.pdf} {
+    % okay
+} {
+    \ctxlua{os.execute("context luatex-mesh-examples.tex")}
+}
+
 \startcomponent luametafun-mesh
 
 \startchapter[title={Mesh}]

@@ -19,6 +19,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 % maybe use \currentframedhash here
 
 %D For special purposes, users can question the \type {*background} mode. This mode
@@ -663,6 +665,8 @@
    \page_backgrounds_check_background}
 
 \permanent\let\popbackground\relax
+
+\stopcontextdefinitioncode
 
 \protect \endinput
 

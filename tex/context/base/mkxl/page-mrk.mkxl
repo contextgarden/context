@@ -103,7 +103,7 @@
    \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
      \useMPgraphic
        {print:number}%
-       {w=\the\scratchwidth ,h=\the\scratchheight,%
+       {w=\the\scratchwidth,h=\the\scratchheight,%
         l=\pagecutmarklength,o=\pagecutmarkoffset,%
         n=\number\ifcase\arrangeno\realpageno\else\arrangeno\fi}%
    \egroup

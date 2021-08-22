@@ -111,6 +111,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 \installcorenamespace{layoutmakeupalternative}
 
 \def\page_boxes_construct_content_makeup#1#2#3% targetbox flusher box
@@ -196,8 +198,8 @@
 
 % to be done nicely (proper namespacing)
 
-\setvalue{\??layoutmakeupalternative\v!leftpage }{\csname\??layoutmakeupalternative\v!page\endcsname}
-\setvalue{\??layoutmakeupalternative\v!rightpage}{\csname\??layoutmakeupalternative\v!page\endcsname}
+\defcsname\??layoutmakeupalternative\v!leftpage \endcsname{\csname\??layoutmakeupalternative\v!page\endcsname}
+\defcsname\??layoutmakeupalternative\v!rightpage\endcsname{\csname\??layoutmakeupalternative\v!page\endcsname}
 
 \permanent\protected\def\startpagelayout
   {\bgroup
@@ -208,6 +210,8 @@
 
 \def\page_layouts_start_layout[#1]#2\stoppagelayout
   {\egroup
-   \setvalue{\??layoutmakeupalternative#1}{#2}}
+   \defcsname\??layoutmakeupalternative#1\endcsname{#2}}
+
+\stopcontextdefinitioncode
 
 \protect \endinput
