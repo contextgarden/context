@@ -799,11 +799,8 @@
 
 %D When we want to see a box we can as well show all of it.
 
-% \showboxdepth  \maxcount
-% \showboxbreadth\maxcount
-
 \showboxdepth  \maxcount
-\showboxbreadth\plusten
+\showboxbreadth\maxcount
 
 %D Just for tracing purposes we set:
 

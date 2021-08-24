@@ -1850,3 +1850,10 @@ permanent uniquelist ;
 def withtolerance expr n =
     withprescript ("tolerance=" & decimal n)
 enddef ;
+
+% fun stuff: randomseed := repeatablerandom("default") ;
+
+newscriptindex mfid_repeatablerandom ; mfid_repeatablerandom := scriptindex("repeatablerandom") ;
+
+def repeatablerandom = runscript mfid_repeatablerandom enddef ;
+

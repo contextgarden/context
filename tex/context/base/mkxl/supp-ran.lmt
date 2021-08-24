@@ -1,0 +1,245 @@
+if not modules then modules = { } end modules ['supp-ran'] = {
+    version   = 1.001,
+    comment   = "companion to supp-ran.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We cannot ask for the current seed, so we need some messy hack here.
+
+local report_system = logs.reporter("system","randomizer")
+
+local trace_random  = false  trackers.register("system.randomizer",         function(v) trace_random = v end)
+local trace_details = false  trackers.register("system.randomizer.details", function(v) trace_random = v trace_details = v end)
+
+local insert, remove = table.insert, table.remove
+
+local tonumber   = tonumber
+local sub        = string.sub
+local math       = math
+local context    = context
+local implement  = interfaces.implement
+
+local random     = math.random
+local randomseed = math.randomseed
+local round      = math.round
+local stack      = { }
+local last       = 1
+local maxcount   = 0x3FFFFFFF -- 2^30-1
+
+math.random = function(...)
+    local n = random(...)
+    if trace_details then
+        report_system("math %s",n)
+    end
+    return n
+end
+
+local function setrandomseedi(n)
+    if n <= 1 then
+        n = n * maxcount
+    elseif n < 1000 then
+        n = n * 1000
+    end
+    n = round(n)
+    randomseed(n)
+    last = random(0,maxcount) -- we need an initial value
+    if trace_details then
+        report_system("seed %s from %s",last,n)
+    elseif trace_random then
+        report_system("setting seed %s",n)
+    end
+end
+
+math.setrandomseedi = setrandomseedi
+
+local function getrandomnumber(min,max)
+    if min > max then
+        min, max = max, min
+    end
+    last = random(min,max)
+    if trace_details then
+        report_system("number %s",last)
+    end
+    return last
+end
+
+local function setrandomseed(n)
+    last = n
+    setrandomseedi(n)
+end
+
+local function getrandomseed()
+    return last
+end
+
+-- local function getmprandomnumber()
+--     last = random(0,4095)
+--     if trace_details then
+--         report_system("mp number %s",last)
+--     end
+--     return last
+-- end
+
+-- maybe stack
+
+local function pushrandomseed()
+ -- insert(stack,last) -- doesn't work okay
+    insert(stack,randomseed(last) or last)
+    if trace_random or trace_details then
+        report_system("pushing seed %s",last)
+    end
+end
+
+local function reuserandomseed(n)
+    local seed = stack[#stack]
+    if seed then
+        if trace_random or trace_details then
+            report_system("reusing seed %s",last)
+        end
+        randomseed(seed)
+    end
+end
+
+local function poprandomseed()
+    local seed = remove(stack)
+    if seed then
+        if trace_random or trace_details then
+            report_system("popping seed %s",seed)
+        end
+        randomseed(seed)
+    end
+end
+
+local function getrandom(where,...)
+    if type(where) == "string" then
+        local n = random(...)
+        if trace_details then
+            report_system("%s %s",where,n)
+        end
+        return n
+    else
+        local n = random(where,...)
+        if trace_details then
+            report_system("utilities %s",n)
+        end
+        return n
+    end
+end
+
+-- todo: also open up in utilities.randomizer.*
+
+implement { name = "getrandomnumber", actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
+implement { name = "getrandomdimen",  actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
+implement { name = "getrandomfloat",  actions = { getrandomnumber, context }, arguments = { "number", "number" } }
+implement { name = "getrandomseed",   actions = { getrandomseed,   context } }
+implement { name = "setrandomseed",   actions = setrandomseed, arguments = "integer" }
+implement { name = "pushrandomseed",  actions = pushrandomseed, public = true, }
+implement { name = "poprandomseed",   actions = poprandomseed, public = true, }
+implement { name = "reuserandomseed", actions = reuserandomseed, public = true, }
+
+-- fun stuff
+
+local newrepeatable, getrepeatable, getrepeatableseed, repeatable
+
+do
+
+    local default = environment.version or "context lmtx"
+    local hashed  = md5.HEX
+    ----- hashed  = sha2.HASH256
+    local list    = { }
+    local saved   = false
+
+    newrepeatable = function(name,seed)
+        if not name or name == "" then
+            name = "default"
+            seed = default
+        elseif not seed then
+            seed = default
+        end
+        if not saved then
+            saved = { }
+            job.variables.collected.repeatable = saved
+        end
+        saved[name] = seed
+        local hash = hashed(seed)
+        if trace_random then
+            report_system("repeatable %a with seed %a starts out as %a",name,seed,hash)
+        end
+        local func = function()
+            local n = tonumber(sub(hash,1,8),16)
+         -- local n = tonumber(sub(hash,1,15),16)
+            local r = n / 0xFFFFFFFF
+         -- local r = n / 0xFFFFFFFFFFFFFFF
+            hash = hashed(hash)
+            if trace_details then
+                report_system("repeatable %a moves on to %a giving %i and %0.9f",name,hash,n,r)
+            end
+            return r
+        end
+        list[name] = func
+        -- we need to delay this till we have job available
+        -- but we seldom call this so it's okay
+        return func
+    end
+
+    table.setmetatableindex(list,function(t,k)
+        local v = rawget(t,"default")
+        if not v then
+            v = newrepeatable("default",default)
+        end
+        t[k] = v
+        return v
+    end)
+
+    getrepeatable = function(name)
+        return list[name or "default"]
+    end
+
+    repeatable = function(name)
+        return list[name or "default"]()
+    end
+
+    getrepeatableseed = function(name)
+        local r = job.variables.collected.repeatable
+        return r and r[name or "default"] or default
+    end
+
+    implement {
+        name      = "newrepeatablerandom",
+        public    = true,
+        protected = true,
+        arguments = { "csnameunchecked", "argument" },
+        actions   = function(c,s)
+         -- local c = tokens.scanners.csname(true)
+         -- local s = tokens.scanners.argument()
+            implement {
+                name    = c,
+                public  = true,
+                actions = { newrepeatable(c,s), context },
+            }
+        end
+    }
+
+end
+
+-- public
+
+utilities.randomizer = {
+    setseedi          = setrandomseedi,
+    getnumber         = getrandomnumber,
+    setseed           = setrandomseed,
+    getseed           = getrandomseed,
+ -- getmpnumber       = getmprandomnumber,
+    pushseed          = pushrandomseed,
+    reuseseed         = reuserandomseed,
+    popseed           = poprandomseed,
+    get               = getrandom,
+    -- the original, only for testing
+ -- mathrandom        = random,
+    newrepeatable     = newrepeatable,
+    getrepeatable     = getrepeatable,
+    getrepeatableseed = getrepeatableseed,
+    repeatable        = repeatable,
+}

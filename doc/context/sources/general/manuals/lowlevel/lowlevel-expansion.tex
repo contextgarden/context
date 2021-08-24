@@ -1,5 +1,7 @@
 % language=us runpath=texruns:manuals/lowlevel
 
+\usemodule[system-tokens]
+
 \environment lowlevel-style
 
 \startdocument
@@ -22,7 +24,7 @@ aspects.
 
 The \TEX\ language provides quite some commands and those built in are called
 primitives. User defined commands are called macros. A macro is a shortcut to a
-list of primitives or macro calls. All can be mixed with characters that are to
+list of primitives, macro calls. All can be mixed with characters that are to
 be typeset somehow.
 
 \starttyping[option=TEX]
@@ -39,7 +41,8 @@ treatment as the \type {a}. The macro ends, the input level decrements and the
 \type {c} gets its treatment.
 
 A macro can contain references to macros so in practice the input can go several
-levels down.
+levels up and some applications push back a lot so this is why your \TEX\ input
+stack can be configured.
 
 \starttyping[option=TEX]
 \def\MyMacroA{ and }
@@ -64,14 +67,14 @@ a\MyMacroA b
 
 In the previous example an \type {\edef} is used, where the \type {e} indicates
 expansion. This time the meaning gets expanded. So we get effectively the same
-as
+as in:
 
 \starttyping[option=TEX]
 \def\MyMacroB{1 and 2}
 \stoptyping
 
-Characters are easy: they just expand, but not all primitives expand to their
-meaning or effect.
+Characters are easy: they just expand to themselves or trigger adding a glyph
+node, but not all primitives expand to their meaning or effect.
 
 \startbuffer
 \def\MyMacroA{\scratchcounter = 1 }
@@ -197,7 +200,7 @@ Indeed the macro gets expanded but only one level: \MyShow. Compare this with:
 \typebuffer[option=TEX]
 
 The trick is to expand in two steps: \MyShow. Later we will see that other
-engines provide some more expansion tricks. The only way to get a grip on
+engines provide some more expansion tricks. The only way to get some grip on
 expansion is to just play with it.
 
 The \type {\expandafter} primitive expands the token (which can be a macro) after
@@ -247,7 +250,8 @@ more. We only discuss a few that relate to expansion. There is however a pitfall
 here. Before \ETEX\ showed up, \CONTEXT\ already had a few mechanism that also
 related to expansion and it used some names for macros that clash with those in
 \ETEX. This is why we will use the \type {\normal} prefix here to indicate the
-primitive.
+primitive. \footnote {In the meantime we no longer have a low level \type
+{\protected} macro so one can use the primitive}.
 
 \startbuffer
 \def\MyMacroA{a}
@@ -364,8 +368,8 @@ The result is \quotation {\tt\inlinebuffer}: two characters are marked as \quote
 
 \startsection[title={\LUATEX\ primitives}]
 
-This engine adds a little in the expansion arena. First of all it offers a way to
-extend token lists registers
+This engine adds a little to the expansion repertoire. First of all it offers a
+way to extend token lists registers:
 
 \startbuffer
 \def\MyMacroA{a}
@@ -400,79 +404,544 @@ local appending and prepending, with global companions: \type {\gtoksapp} and
 \type {\gtokspre}, as well as expanding variant: \type {\etoksapp}, \type
 {\etokspre}, \type {\xtoksapp} and \type {\xtokspre}.
 
-There are not beforehand more efficient that using intermediate expanded macros
+These are not beforehand more efficient that using intermediate expanded macros
 or token lists, simply because in the process \TEX\ has to create tokens lists
-too, but sometimes they're just more convenient to use.
-
-A second extension is \type {\immediateassignment} which instead in tokenizing
-the assignment directive applies it right now.
-
-\startbuffer
-\edef\MyMacroA
-  {\scratchcounter 123
-   \noexpand\the\scratchcounter}
-
-\edef\MyMacroB
-  {\immediateassignment\scratchcounter 123
-   \noexpand\the\scratchcounter}
-\stopbuffer
-
-\typebuffer[option=TEX]
-
-\getbuffer
-
-These two macros now have the meaning:
-
-\startlines \tt
-\meaning\MyMacroA
-\meaning\MyMacroB
-\stoplines
+too, but sometimes they're just more convenient to use. In \CONTEXT\ we actually
+do benefit from these.
 
 \stopsection
 
 \startsection[title={\LUAMETATEX\ primitives}]
 
-To be discussed:
+We already saw that macro's can be defined protected which means that
 
-\starttyping
-\expand
-\expandtoken
-\localcontrol
-\localcontrolled
-\beginlocalcontrol ... \endlocalcontrol
-\immediate
+\startbuffer
+           \def\TestA{A}
+\protected \def\TestB{B}
+          \edef\TestC{\TestA\TestB}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+gives this:
+
+\startlines
+\type{\TestC} : {\tttf \meaningless\TestC}
+\stoplines
+
+One way to get \type {\TestB} expanded it to prefix it with \type {\expand}:
+
+\startbuffer
+           \def\TestA{A}
+\protected \def\TestB{B}
+          \edef\TestC{\TestA\TestB}
+          \edef\TestD{\TestA\expand\TestB}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We now get:
+
+\startlines
+\type{\TestC} : {\tttf \meaningless\TestC}
+\type{\TestD} : {\tttf \meaningless\TestD}
+\stoplines
+
+There are however cases where one wishes this to happen automatically but that
+will also make protected macros expand that create havoc, like switching fonts.
+
+\startbuffer
+               \def\TestA{A}
+\protected     \def\TestB{B}
+\semiprotected \def\TestC{C}
+              \edef\TestD{\TestA\TestB\TestC}
+              \edef\TestE{\normalexpanded{\TestA\TestB\TestC}}
+              \edef\TestF{\semiexpanded  {\TestA\TestB\TestC}}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This time \type {\TestC} looses its protection:
+
+\startlines
+\type{\TestA} : {\tttf \meaningless\TestA}
+\type{\TestB} : {\tttf \meaningless\TestB}
+\type{\TestC} : {\tttf \meaningless\TestC}
+\type{\TestD} : {\tttf \meaningless\TestD}
+\type{\TestE} : {\tttf \meaningless\TestE}
+\type{\TestF} : {\tttf \meaningless\TestF}
+\stoplines
+
+Actually adding \type {\fullyexpanded} would be trivial but it makes not much
+sense to add that overhead (at least not now). This feature is experimental
+anyway so it might go away when I see no real advantage.
+
+When you store something in a macro or token register you always need to keep an
+eye on category codes. A dollar in the input is normally treated as math shift, a
+hash indicates a macro parameter or preamble entry. Characters like \quote {A}
+are letters but \quote {[} and \quote {]} are tagged as \quote {other}. The \TEX\
+scanner acts according to these codes. If you ever find yourself in a situation
+that changing catcodes is no option or cumbersome, you can do this:
+
+\starttyping[option=TEX]
+\edef\TestOA{\expandtoken\othercatcode `A}
+\edef\TestLA{\expandtoken\lettercatcode`A}
 \stoptyping
 
-And maybe also here:
+In both cases the meaning is \type {A} but in the first case it's not a letter
+but a character flagged as \quote {other}.
 
-\starttyping
-\tokenized  : a bonus
-\scantokens : original etex, now using the lua method
+A whole new category of commands has to do with so called local control. When
+\TEX\ scans and interprets the input, a process takes place that is called
+tokenizing: (sequences of) characters get a symbolic representation and travel
+through the system as tokens. Often they immediately get interpreted and then
+discarded, but when for instance you define a macro they end up as a linked list
+of tokens in the macro body. We already saw that expansion plays a role. In most
+cases, unless \TEX\ is collecting tokens, the main action is dealt with in the so
+called main loop. Something gets picked up from the input but can also be pushed
+back, for instance because of some lookahead that didn't result in some action.
+Quite some time is spent in pushing and popping from the so called input stack.
+
+When we are in \LUA, we can pipe back into the engine but all is collected till
+we're back in \TEX\ where the collected result is pushed into the input. Because
+\TEX\ is a mix of programming and action there basically is only that main loop.
+There is no real way to start a sub run in \LUA\ and do all kind of things
+independent of the current run. This makes sense when you consider the mix: it
+would get too confusing.
+
+However, in \LUATEX\ and even better in \LUAMETATEX, we can enter a sort of local
+state and this is called \quote {local control}. When we are in local control a
+new main loop is entered and the current state is temporarily forgotten: we can for
+instance expand where one level up expansion was not done. It sounds complicated
+an indeed it is complicated so examples have to clarify it.
+
+\starttyping[option=TEX]
+1 \setbox0\hbox to 10pt{2} \count0=3 \the\count0 \multiply\count0 by 4
 \stoptyping
 
-% \aftergroups
-% \aftergrouped
+This snippet of code is not that useful but illustrates what we're dealing with:
 
-And:
+\startitemize
 
-\starttyping
-          \def\foo{foo}
-\protected\def\oof{oof}
+\startitem
+    The \type {1} gets typeset. So, characters like that are seen as text.
+\stopitem
 
-\csname foo\endcsname
-\csname oof\endcsname
-\csname \foo\endcsname
-% \csname \oof\endcsname % error in luametatex
+\startitem
+    The \type {\setbox} primitive triggers picking up a register number, then
+    goes on scanning for a box specification and that itself will typeset a
+    sequence of whatever until the group ends.
+\stopitem
 
-\ifcsname  foo\endcsname yes\else nop\fi
-\ifcsname  oof\endcsname yes\else nop\fi
-\ifcsname \foo\endcsname yes\else nop\fi
-\ifcsname \oof\endcsname yes\else nop\fi % nop in luametatex
+\startitem
+    The \type {count} primitive triggers scanning for a register number (or
+    reference) and then scans for a number; the equal sign is optional.
+\stopitem
+
+\startitem
+    The \type {the} primitive injects some value into the current input stream
+    and it does so by entering a new input level.
+\stopitem
+
+\startitem
+    The \type {multiply} primitive picks up a register specification and
+    multiplies that by the next scanned number. The \type {by} is optional.
+\stopitem
+
+\stopitemize
+
+We now look at this snippet again but with an expansion context:
+
+\startbuffer[def]
+\def \TestA{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\typebuffer[def] [option=TEX]
+\typebuffer[edef][option=TEX]
+
+\getbuffer[def]
+\getbuffer[edef]
+
+These two macros have a slightly different body. Make sure you see the
+difference before reading on.
+
+\luatokentable\TestA
+
+\luatokentable\TestB
+
+We now introduce a new primitive \type {\localcontrolled}:
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[ldef]
+\edef\TestC{1 \setbox0\hbox{2} \localcontrolled{\count0=3} \the\count0}
+\stopbuffer
+
+\typebuffer[edef][option=TEX]
+\typebuffer[ldef][option=TEX]
+
+\getbuffer[edef]
+\getbuffer[ldef]
+
+Again, watch the subtle differences:
+
+\luatokentable\TestB
+
+\luatokentable\TestC
+
+Another example:
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[ldef]
+\edef\TestD{\localcontrolled{1 \setbox0\hbox{2} \count0=3 \the\count0}}
+\stopbuffer
+
+\typebuffer[edef][option=TEX]
+\typebuffer[ldef][option=TEX]
+
+\getbuffer[edef]\getbuffer[ldef]\quad{\darkgray\leftarrow\space Watch how the results end up here!}
+
+\luatokentable\TestB
+
+\luatokentable\TestD
+
+We can use this mechanism to define so called fully expandable macros:
+
+\startbuffer[def]
+\def\WidthOf#1%
+  {\beginlocalcontrol
+   \setbox0\hbox{#1}%
+   \endlocalcontrol
+   \wd0 }
+\stopbuffer
+
+\startbuffer[use]
+\scratchdimen\WidthOf{The Rite Of Spring}
+
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[def][option=TEX]
+\typebuffer[use][option=TEX]
+
+\getbuffer[def]\getbuffer[use]
+
+When you want to add some grouping, it quickly can become less pretty:
+
+\startbuffer[def]
+\def\WidthOf#1%
+  {\dimexpr
+      \beginlocalcontrol
+        \begingroup
+          \setbox0\hbox{#1}%
+          \expandafter
+        \endgroup
+      \expandafter
+      \endlocalcontrol
+      \the\wd0
+   \relax}
+\stopbuffer
+
+\startbuffer[use]
+\scratchdimen\WidthOf{The Rite Of Spring}
+
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[def][option=TEX]
+\typebuffer[use][option=TEX]
+
+\getbuffer[def]\getbuffer[use]
+
+A single token alternative is available too and its usage us like this:
+
+\startbuffer
+ \def\TestA{\scratchcounter=100 }
+\edef\TestB{\localcontrol\TestA \the\scratchcounter}
+\edef\TestC{\localcontrolled{\TestA} \the\scratchcounter}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The content of \type {\TestB} is \quote {\tttf\meaningless\TestB} and of course
+the \type {\TestC} macro gives \quote {\tttf\meaningless\TestC}.
+
+We now move to the \LUA\ end. Right from the start the way to get something into
+\TEX\ from \LUA\ has been the print functions. But we can also go local
+(immediate). There are several methods:
+
+\startitemize[packed]
+\startitem via a set token register \stopitem
+\startitem via a defined macro \stopitem
+\startitem via a string \stopitem
+\stopitemize
+
+Among the things to keep in mind are catcodes, scope and expansion (especially in
+when the result itself ends up in macros). We start with an example where we go via
+a token register:
+
+\startbuffer[set]
+\toks0={\setbox0\hbox{The Rite Of Spring}}
+\toks2={\setbox0\hbox{The Rite Of Spring!}}
+\stopbuffer
+
+\typebuffer[set][option=TEX]
+
+\startbuffer[run]
+\startluacode
+tex.runlocal(0) context("[1: %p]",tex.box[0].width)
+tex.runlocal(2) context("[2: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[set,run] \stop
+
+We can also use a macro:
+
+\startbuffer[set]
+\def\TestA{\setbox0\hbox{The Rite Of Spring}}
+\def\TestB{\setbox0\hbox{The Rite Of Spring!}}
+\stopbuffer
+
+\typebuffer[set][option=TEX]
+
+\startbuffer[run]
+\startluacode
+tex.runlocal("TestA") context("[3: %p]",tex.box[0].width)
+tex.runlocal("TestB") context("[4: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[set,run] \stop
+
+A third variant is more direct and uses a (\LUA) string:
+
+\startbuffer[run]
+\startluacode
+tex.runstring([[\setbox0\hbox{The Rite Of Spring}]])
+
+context("[5: %p]",tex.box[0].width)
+
+tex.runstring([[\setbox0\hbox{The Rite Of Spring!}]])
+
+context("[6: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[run] \stop
+
+A bit more high level:
+
+\starttyping[option=LUA]
+context.runstring([[\setbox0\hbox{(Here \bf 1.2345)}]])
+context.runstring([[\setbox0\hbox{(Here \bf   %.3f)}]],1.2345)
 \stoptyping
 
-\stoptext
+Before we had the string runner this was the way to do it when staying in \LUA\
+was needed:
+
+\startbuffer[run]
+\startluacode
+token.setmacro("TestX",[[\setbox0\hbox{The Rite Of Spring}]])
+tex.runlocal("TestX")
+context("[7: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[run] \stop
+
+\startbuffer[run]
+\startluacode
+tex.scantoks(0,tex.ctxcatcodes,[[\setbox0\hbox{The Rite Of Spring!}]])
+tex.runlocal(0)
+context("[8: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[run] \stop
+
+The order of flushing matters because as soon as something is not stored in a
+token list or macro body, \TEX\ will typeset it. And as said, a lot this relates
+to pushing stuff into the input which is stacked. Compare:
+
+\startbuffer[run]
+\startluacode
+context("[HERE 1]")
+context("[HERE 2]")
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[run] \stop
+
+with this:
+
+\startbuffer[run]
+\startluacode
+tex.pushlocal() context("[HERE 1]") tex.poplocal()
+tex.pushlocal() context("[HERE 2]") tex.poplocal()
+\stopluacode
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\start \getbuffer[run] \stop
+
+You can expand a macro at the \LUA\ end with \type {token.expandmacro} which has
+a peculiar interface. The first argument has to be a string (the name of a macro)
+or a user data (a valid macro token). This macro can be fed with parameters by
+passing more arguments:
+
+\starttabulate[|||]
+\NC string \NC serialized to tokens \NC \NR
+\NC true   \NC wrap the next string in curly braces \NC \NR
+\NC table  \NC each entry will become an argument wrapped in braces \NC \NR
+\NC token  \NC inject the token directly \NC \NR
+\NC number \NC change control to the given catcode table \NC \NR
+\stoptabulate
+
+There are more scanner related primitives, like the \ETEX\ primitive
+\type {\detokenize}:
+
+\startbuffer[run]
+[\detokenize {test \relax}]
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+This gives: {\tttf \getbuffer[run]}. In \LUAMETATEX\ we also have complementary
+primitive(s):
+
+\startbuffer[run]
+[\tokenized   catcodetable \vrbcatcodes {test {\bf test} test}]
+[\tokenized                             {test {\bf test} test}]
+[\retokenized              \vrbcatcodes {test {\bf test} test}]
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+The \type {\tokenized} takes an optionally keyword and the examples above give: {\tttf
+\getbuffer[run]}. The \LUATEX\ primitive \type {\scantextokens} which is a
+variant of \ETEX's \type {\scantokens} operate under the current catcode regime
+(the last one honors \type {\everyeof}). The difference with \type {\tokenized}
+is that this one first serializes the given token list (just like \type
+{\detokenize}). \footnote {The \type {\scan*tokens} primitives now share the same
+helpers as \LUA, but they should behave the same as in \LUATEX.}
+
+With \type {\retokenized} the catcode table index is mandate (it saves a bit of
+scanning and is easier on intermixed \type {\expandafter} usage. There
+often are several ways to accomplish the same:
+
+\startbuffer[run]
+\def\MyTitle{test {\bf test} test}
+\detokenize               \expandafter{\MyTitle}: 0.46\crlf
+\meaningless                           \MyTitle : 0.47\crlf
+\retokenized              \notcatcodes{\MyTitle}: 0.87\crlf
+\tokenized   catcodetable \notcatcodes{\MyTitle}: 0.93\crlf
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+\getbuffer[run]
+
+Here the numbers show the relative performance of these methods. The \type
+{\detokenize} and \type {\meaningless} win because they already know that that a
+verbose serialization is needed. The last two first serialize and then
+reinterpret the resulting token list using the given catcode regime. The last one
+is slowest because has to scan the keyword.
+
+There is however a pitfall here:
+
+\startbuffer[run]
+\def\MyText {test}
+\def\MyTitle{test \MyText\space test}
+\detokenize               \expandafter{\MyTitle}\crlf
+\meaningless                           \MyTitle \crlf
+\retokenized              \notcatcodes{\MyTitle}\crlf
+\tokenized   catcodetable \notcatcodes{\MyTitle}\crlf
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+The outcome is different now because we have an expandable embedded macro call.
+The fact that we expand in the last two primitives is also a reason why they are
+\quote {slower}.
+
+\getbuffer[run]
+
+To complete this picture, we show a variant than combines much of what has been
+introduced in this section:
+
+\startbuffer[run]
+\semiprotected\def\MyTextA {test}
+\def\MyTextB {test}
+\def\MyTitle{test \MyTextA\space \MyTextB\space test}
+\detokenize               \expandafter{\MyTitle}\crlf
+\meaningless                           \MyTitle \crlf
+\retokenized              \notcatcodes{\MyTitle}\crlf
+\retokenized              \notcatcodes{\semiexpanded{\MyTitle}}\crlf
+\tokenized   catcodetable \notcatcodes{\MyTitle}\crlf
+\tokenized   catcodetable \notcatcodes{\semiexpanded{\MyTitle}}\crlf
+\stopbuffer
+
+\typebuffer[run][option=TEX]
+
+This time compare the last four lines:
+
+\getbuffer[run]
+
+Of course the question remains to what extend we need this and eventually will
+apply it in \CONTEXT. The \type {\detokenize} is used already. History shows that
+eventually there is a use for everything and given the way \LUAMETATEX\ is
+structured it was not that hard to provide the alternatives without sacrificing
+performance or bloating the source.
+
+% tex.quitlocal
+%
+% tex.expandmacro   : string|userdata + [string|true|table|userdata|number]*
+% tex.expandasvalue : kind + string|userdata + [string|true|table|userdata|number]*
+% tex.runstring     : [catcode] + string + expand + grouped
+% tex.runlocal      : function|number(register)|string(macro)|userdata(token) + expand + grouped
+% mplib.expandtex   : mpx + kind + string|userdata + [string|true|table|userdata|number]*
 
 \stopsection
 
 \stopdocument
 
+% \aftergroups
+% \aftergrouped
+%
+%     \starttyping
+%           \def\foo{foo}
+% \protected\def\oof{oof}
+%
+% \csname foo\endcsname
+% \csname oof\endcsname
+% \csname \foo\endcsname
+% \begincsname \oof\endcsname % error in luametatex, but in texexpand l 477 we can block an error
+%
+% \ifcsname  foo\endcsname yes\else nop\fi
+% \ifcsname  oof\endcsname yes\else nop\fi
+% \ifcsname \foo\endcsname yes\else nop\fi
+% \ifcsname \oof\endcsname yes\else nop\fi % nop in luametatex
+% \stoptyping

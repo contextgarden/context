@@ -72,15 +72,14 @@
      \fi
    \relax}
 
-%D The \type {\immediateassignment} and \type {\immediateassigned} primitives are
-%D kind of obsolete and might be dropped (if not already) from \LUAMETATEX. Local
-%D scanning is, although it is a bit slower, more general. We didn't really need and
-%D use these primitives in \CONTEXT\ anyway, apart from some playing around with
-%D some full expansion, which made no sense in the end so it was dropped. When
-%D things get that hairy it's often a good reason to look into \LUA\ variants.
+%D The \type {\immediateassignment} and \type {\immediateassigned} primitives that
+%D are in \LUATEX\ are obsolete in \LUAMETATEX. Local scanning is, although it is
+%D a bit slower, more general. We didn't really need and use these primitives in
+%D \CONTEXT\ anyway, apart from some playing around with some full expansion, which
+%D made no sense in the end so it was dropped. When things get that hairy it's often
+%D a good reason to look into \LUA\ variants.
 
 \def\auto_orientation#1%
- %{\immediateassignment\global\expandafter\chardef\csname\??orientations#1\endcsname\stringtoorientation{#1}%              % quite fast
   {\beginlocalcontrol\global\expandafter\chardef\csname\??orientations#1\endcsname\stringtoorientation{#1}\endlocalcontrol % good enough
  %{\localcontrolled{\global\expandafter\chardef\csname\??orientations#1\endcsname\stringtoorientation{#1}}%                % a bit slower
    \csname\??orientations#1\endcsname}

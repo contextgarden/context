@@ -46,7 +46,7 @@ job.register('job.files.collected', tobesaved, initializer)
 -- pass the orginal path. But we pass it because it will prevent prepending the
 -- current direction to the given name.
 
-local runner = sandbox.registerrunner {
+local contextrunner = sandbox.registerrunner {
     name     = "hashed context run",
     program  = "context",
     template = [[%options% %?path: --runpath=%path% ?% %filename%]],
@@ -68,7 +68,79 @@ local runner = sandbox.registerrunner {
 -- The runpath features makes things more complex than needed, so we need to wrap
 -- that some day in a helper. This is also very sensitive for both being set!
 
-local function analyzed(name)
+function jobfiles.run(action)
+    local filename = action.filename
+    if filename and filename ~= "" then
+        local result      = action.result
+        local runner      = action.runner or contextrunner
+        local oldchecksum = collected[filename]
+        local newchecksum = checksum(filename)
+        local tobedone    = false
+        local forcerun    = action.forcerun or jobfiles.forcerun
+        if not result then
+            result = replacesuffix(usedname,resultsuffix)
+            action.result = result
+        end
+        if forcerun then
+            tobedone = true
+            if trace_run then
+                report_run("processing file, changes in %a, %s",filename,"processing forced")
+            end
+        end
+        if not tobedone and not oldchecksum then
+            tobedone = true
+            if trace_run then
+                report_run("processing file, changes in %a, %s",filename,"no checksum yet")
+            end
+        end
+        if not tobedone and oldchecksum ~= newchecksum then
+            tobedone = true
+            if trace_run then
+                report_run("processing file, changes in %a, %s",filename,"checksum mismatch")
+            end
+        end
+        if not tobedone and not isfile(result) then
+            tobedone = true
+            if trace_run then
+                report_run("processing file, changes in %a, %s",filename,"no result file")
+            end
+        end
+        if tobedone then
+            local kind = type(runner)
+            if kind == "function" then
+                if trace_run then
+                    report_run("processing file, command: %s",action.name or "unknown")
+                end
+                -- We can have a sandbox.registerrunner here in which case we need to make
+                -- sure that we don't feed a function into the checker. So one cannot use a
+                -- variable named "runner" in the template but that's no big deal.
+                local r = action.runner
+                action.runner = nil
+                runner(action)
+                action.runner = r
+            elseif kind == "string" then
+                -- can be anything but we assume it gets checked by the sandbox
+                if trace_run then
+                    report_run("processing file, command: %s",runner)
+                end
+                os.execute(runner)
+            else
+                report_run("processing file, changes in %a, %s",filename,"no valid runner")
+            end
+        elseif trace_run then
+            report_run("processing file, no changes in %a, %s",filename,"not processed")
+        end
+        tobesaved[filename] = newchecksum
+    else
+        -- silently ignore error
+    end
+end
+
+--
+
+local done = { }
+
+local function analyzed(name,options)
     local actiontype = type(action)
     local usedname   = addsuffix(name,inputsuffix)      -- we assume tex if not set
     local resultname = replacesuffix(name,resultsuffix) -- we assume tex if not set
@@ -89,72 +161,6 @@ local function analyzed(name)
         result   = resultname,
     }
 end
-
-function jobfiles.run(name,action)
-    local kind = type(name)
-    if kind == "string" then
-        local usedname = addsuffix(name,inputsuffix)
-        action = {
-            filename   = usedname,
-            action     = action,
-            resultfile = replacesuffix(usedname,resultsuffix),
-        }
-    elseif kind == "table" then
-        action = name
-    else
-        report_run("invalid specification for jobfiles.run")
-        return
-    end
-    local filename    = action.filename
-    local result      = action.result
-    local oldchecksum = collected[filename]
-    local newchecksum = checksum(filename)
-    local tobedone    = false
-    if jobfiles.forcerun then
-        tobedone = true
-        if trace_run then
-            report_run("processing file, changes in %a, %s",filename,"processing forced")
-        end
-    end
-    if not tobedone and not oldchecksum then
-        tobedone = true
-        if trace_run then
-            report_run("processing file, changes in %a, %s",filename,"no checksum yet")
-        end
-    end
-    if not tobedone and oldchecksum ~= newchecksum then
-        tobedone = true
-        if trace_run then
-            report_run("processing file, changes in %a, %s",filename,"checksum mismatch")
-        end
-    end
-    if not tobedone and not isfile(result) then
-        tobedone = true
-        if trace_run then
-            report_run("processing file, changes in %a, %s",filename,"no result file")
-        end
-    end
-    if tobedone then
-        kind = type(action)
-        if kind == "function" then
-            action(filename)
-        elseif kind == "string" and action ~= "" then
-            -- can be anything but we assume it gets checked by the sandbox
-            os.execute(action)
-        elseif kind == "table" then
-            runner(action)
-        else
-            report_run("processing file, no action given for processing %a",name)
-        end
-    elseif trace_run then
-        report_run("processing file, no changes in %a, not processed",name)
-    end
-    tobesaved[filename] = newchecksum
-end
-
---
-
-local done = { }
 
 function jobfiles.context(name,options) -- runpath ?
     if type(name) == "table" then

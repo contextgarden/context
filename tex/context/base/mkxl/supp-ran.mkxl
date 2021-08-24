@@ -26,7 +26,7 @@
 %D                   \type{new}: \dorecurse{10}{\randomnumber{1}{100} }\par
 %D \stoptyping
 
-\registerctxluafile{supp-ran}{}
+\registerctxluafile{supp-ran}{autosuffix}
 
 \unprotect
 
@@ -48,5 +48,42 @@
 
 \permanent\def\randomnumber  #1#2{\clf_getrandomnumber\numexpr#1\relax\numexpr#2\relax}
 \permanent\def\mprandomnumber    {\clf_getrandomnumber\zerocount\mpscaledmax}
+
+%D \startbuffer
+%D \enabletrackers[system.randomizer.details]
+%D
+%D \newrepeatablerandom\MyRandom {Welcome 2 America}
+%D \newrepeatablerandom\MyRandomN{\randomnumber{0}{1000}}
+%D \newrepeatablerandom\MyRandomM{\randomnumber{0}{1000}}
+%D
+%D \cldcontext{utilities.randomizer.getrepeatableseed()}\par
+%D \cldcontext{utilities.randomizer.getrepeatableseed("default")}\par
+%D \cldcontext{utilities.randomizer.getrepeatableseed("MyRandom")}\par
+%D \cldcontext{utilities.randomizer.getrepeatableseed("MyRandomN")}\par
+%D \cldcontext{utilities.randomizer.getrepeatableseed("MyRandomM")}\par
+%D
+%D \dorecurse{10}{\MyRandom\par}
+%D
+%D \startMPcode
+%D     randomseed := repeatablerandom("MyRandom") ;
+%D     draw image (
+%D         for i=1 upto 10000 :
+%D             draw origin randomized 100 ;
+%D         endfor ;
+%D     ) withpen pencircle scaled 1 ;
+%D \stopMPcode
+%D
+%D \startluacode
+%D     context(utilities.randomizer.getrepeatableseed("MyRandom"))
+%D     context.par()
+%D     local rep = utilities.randomizer.getrepeatable("MyRandom")
+%D     for i=1,5 do
+%D         context(rep())
+%D         context.par()
+%D     end
+%D \stopluacode
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
 
 \protect \endinput

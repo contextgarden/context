@@ -197,8 +197,8 @@ return {
         "getpospage", "getposparagraph", "getposcolumn", "getposregion",
         "getposx", "getposy", "getposwidth", "getposheight", "getposdepth",
         "getposleftskip", "getposrightskip", "getposhsize", "getposparindent", "getposhangindent", "getposhangafter",
-        "getposxy", "getposupperleft", "getposlowerleft", "getposupperright", "getposlowerright".
-        "getposllx", "getposlly", "getposurx", "getposury" ;
+        "getposxy", "getposupperleft", "getposlowerleft", "getposupperright", "getposlowerright",
+        "getposllx", "getposlly", "getposurx", "getposury",
         --
         "wdpart", "htpart", "dppart",
         --

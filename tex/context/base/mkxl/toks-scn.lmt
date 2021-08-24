@@ -202,10 +202,15 @@ local function scanargumentasis()
     return scanargument(false)
 end
 
-scanners.bracketed     = scanbracketed
-scanners.optional      = scanoptional
-scanners.bracketedasis = scanbracketedasis
-scanners.argumentasis  = scanargumentasis
+local function scancsnameunchecked()
+    return scancsname(true)
+end
+
+scanners.bracketed       = scanbracketed
+scanners.optional        = scanoptional
+scanners.bracketedasis   = scanbracketedasis
+scanners.argumentasis    = scanargumentasis
+scanners.csnameunchecked = scancsnameunchecked
 
 local shortcuts = {
     tokens              = tokens,
@@ -243,6 +248,7 @@ local shortcuts = {
     scanclose           = scanclose,
     scanlist            = scanlist,
     scancsname          = scancsname,
+    scancsnameunchecked = scancsnameunchecked,
     scandelimited       = scandelimited, -- not directly useable
     scanbracketed       = scanbracketed,
     scanoptional        = scanoptional,

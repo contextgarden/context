@@ -505,3 +505,12 @@ do
 
 end
 
+do
+
+    local repeatable = utilities.randomizer.repeatable
+
+    registerdirect("repeatablerandom", function()
+        return repeatable(scanstring())
+    end)
+
+end

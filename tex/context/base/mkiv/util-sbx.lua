@@ -330,7 +330,7 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
                     -- for now, we will have a "flags" checker
                 else
                     local checker = validators[chktype]
-                    if checker then
+                    if checker and type(value) == "string" then
                         value = checker(unquoted(value),strict)
                         if value then
                             variables[variable] = optionalquoted(value)
@@ -350,7 +350,7 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
                     local chktype = checkers[variable]
                     if chktype == "verbose" then
                         -- for now, we will have a "flags" checker
-                    else
+                    elseif type(default) == "string" then
                         local checker = validators[chktype]
                         if checker then
                             default = checker(unquoted(default),strict)

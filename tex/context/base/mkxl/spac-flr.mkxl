@@ -82,10 +82,10 @@
    \endgroup
    \ignorespaces}
 
-\setvalue{\??filleralternative\s!unknown}%
+\defcsname\??filleralternative\s!unknown\endcsname
   {}
 
-\setvalue{\??filleralternative\v!symbol}%
+\defcsname\??filleralternative\v!symbol\endcsname
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \ifdim\fillerparameter\c!offset>\zeropoint
         \simplealignedspreadbox
@@ -100,23 +100,23 @@
      \fi
    \hfill}
 
-\setvalue{\??filleralternative\v!stretch}%
+\defcsname\??filleralternative\v!stretch\endcsname
   {\hfill}
 
-\setvalue{\??filleralternative\v!space}%
+\defcsname\??filleralternative\v!space\endcsname
   {\hskip\fillerparameter\c!distance\relax}
 
-\setvalue{\??filleralternative\v!rule}%
+\defcsname\??filleralternative\v!rule\endcsname
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \hrule
        \s!height\fillerparameter\c!height
        \s!depth \fillerparameter\c!depth
    \hfill}
 
-\letvalue{\??fillerleadermethod\s!local }\normalleaders  % overflow ends up inbetween (current box)
-\letvalue{\??fillerleadermethod\v!global}\normalgleaders % overflow ends up inbetween (outermost box)
-\letvalue{\??fillerleadermethod\v!middle}\normalcleaders % overflow ends up before, after (current box)
-\letvalue{\??fillerleadermethod\v!broad }\normalxleaders % overflow ends up before, inbetween, after (current box)
+\letcsname\??fillerleadermethod\s!local \endcsname\normalleaders  % overflow ends up inbetween (current box)
+\letcsname\??fillerleadermethod\v!global\endcsname\normalgleaders % overflow ends up inbetween (outermost box)
+\letcsname\??fillerleadermethod\v!middle\endcsname\normalcleaders % overflow ends up before, after (current box)
+\letcsname\??fillerleadermethod\v!broad \endcsname\normalxleaders % overflow ends up before, inbetween, after (current box)
 
 \setupfillers
   [\c!width=\emwidth,

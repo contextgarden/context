@@ -123,7 +123,7 @@ return {
             -- texconfig.function_size   =    32768
             -- texconfig.properties_size =    10000
 
-            -- These are for metaluatex:
+            -- These are for luametatex:
 
             ["luametatex.errorlinesize"]     = { size =      250                 }, -- max =       255
             ["luametatex.halferrorlinesize"] = { size =      250                 }, -- max =       255

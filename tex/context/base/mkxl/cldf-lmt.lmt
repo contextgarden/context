@@ -1024,3 +1024,21 @@ do
     }
 
 end
+
+-- for now here:
+
+do
+
+    local runstring   = tex.runstring
+    local ctxcatcodes = tex.ctxcatcodes
+    local formatters  = string.formatters
+
+    function context.runstring(fmt,str,...)
+        if str then
+            runstring(ctxcatcodes,formatters[fmt](str,...))
+        elseif fmt then
+            runstring(ctxcatcodes,fmt)
+        end
+    end
+
+end

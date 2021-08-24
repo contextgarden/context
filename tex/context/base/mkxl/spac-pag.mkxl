@@ -155,7 +155,7 @@
      \pagechangedtrue
    \fi
    \ifpagechanged
-     \letgvalue{\??pagechanges#2:#1}\m_spac_pagestates_realpage
+     \gletcsname\??pagechanges#2:#1\endcsname\m_spac_pagestates_realpage
      \glet\lastchangedpage\m_spac_pagestates_realpage
    \else
      \glet\lastchangedpage\realfolio
