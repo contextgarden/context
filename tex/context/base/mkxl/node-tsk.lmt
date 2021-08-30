@@ -347,6 +347,57 @@ tasks.new {
     templates = templates,
 }
 
+-- -- alignment -- --
+
+tasks.new {
+    name      = "alignments",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "after",       -- users
+    },
+    templates = {
+
+default = [[
+return function(head)
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,attr,preamble)
+    local nuthead     = tonut(head)
+    local nutattr     = tonut(attr)
+    local nutpreamble = tonut(preamble)
+
+%actions%
+end
+]],
+
+step = [[
+    %action%(head,attr,preamble)
+]],
+
+nut  = [[
+    %action%(nuthead,nutattr,nutpreamble)
+]],
+
+nohead = [[
+    %action%(head,attr,preamble)
+]],
+
+nonut = [[
+    %action%(nuthead,nutattr,nutpreamble)
+]],
+
+    }
+}
+
 -- -- finalizers -- --
 
 tasks.new {

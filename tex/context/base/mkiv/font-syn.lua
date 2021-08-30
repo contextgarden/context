@@ -1408,13 +1408,30 @@ here is for testing purposes only (it deals with names prefixed by an
 encoding name).</p>
 --ldx]]--
 
-local function fuzzy(mapping,sorted,name,sub)
+local function fuzzy(mapping,sorted,name,sub) -- no need for reverse sorted here
     local condensed = gsub(name,"[^%a%d]","")
+    local pattern   = condensed .. "$"
+    local matches   = false
     for k=1,#sorted do
         local v = sorted[k]
-        if find(v,condensed) then
+        if v == condensed then
             return mapping[v], v
+        elseif find(v,pattern) then
+            return mapping[v], v
+        elseif find(v,condensed) then
+            if matches then
+                matches[#matches+1] = v
+            else
+                matches = { v }
+            end
         end
+    end
+    if matches then
+        if #matches > 1 then
+            sort(matches,function(a,b) return #a < #b end)
+        end
+        matches = matches[1]
+        return mapping[matches], matches
     end
 end
 

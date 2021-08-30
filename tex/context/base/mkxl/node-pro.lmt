@@ -129,7 +129,19 @@ do
         end
     end
 
-    callbacks.register("contribute_filter", processors.contribute_filter,"things done with lines")
+    callbacks.register("contribute_filter", processors.contribute_filter, "things done with lines")
+
+end
+
+do
+
+    local actions = tasks.actions("alignments")
+
+    function processors.alignment_filter(head,attr,preamble)
+        actions(head,attr,preamble)
+    end
+
+    callbacks.register("alignment_filter", processors.alignment_filter, "things done with alignments")
 
 end
 

@@ -772,7 +772,7 @@
    \tracingnesting   \plusthree
    \tracingassigns   \plustwo
    \tracingmath      \plusone
-   \tracingalignments\plusone
+   \tracingalignments\plustwo   % > 1: also show preamble
    \showboxbreadth   \maxcount
    \showboxdepth     \maxcount}
 

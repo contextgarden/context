@@ -1,0 +1,285 @@
+if not modules then modules = { } end modules ['node-ali'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local a_alignchar  = attributes.private("aligncharacter")
+
+local nuts         = nodes.nuts
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
+local getwidth     = nuts.getwidth
+local setwidth     = nuts.setwidth
+local getid        = nuts.getid
+local getattr      = nuts.getattr
+local setnext      = nuts.setnext
+local getnext      = nuts.getnext
+local getprev      = nuts.getprev
+local setglue      = nuts.setglue
+local getglue      = nuts.getglue
+local getlist      = nuts.getlist
+local setlist      = nuts.setlist
+local setattrlist  = nuts.setattrlist
+local getchar      = nuts.getchar
+local addmargins   = nuts.addmargins
+local findtail     = nuts.tail
+local hasglyph     = nuts.hasglyph
+local getwordrange = nuts.getwordrange
+local dimensions   = nuts.rangedimensions
+local nextrecord   = nuts.traversers.alignrecord
+local nextunset    = nuts.traversers.unset
+local nextglyph    = nuts.traversers.glyph
+local nextglue     = nuts.traversers.glue
+local nextnode     = nuts.traversers.node
+local prevnode     = nuts.treversers.node
+local flushnode    = nuts.flush
+local hpack        = nuts.hpack
+
+local glyph_code      = nodes.nodecodes.glyph
+local glue_code       = nodes.nodecodes.glue
+local kern_code       = nodes.nodecodes.kern
+local disc_code       = nodes.nodecodes.disc
+
+local spaceskip_code  = nodes.gluecodes.spaceskip
+local xspaceskip_code = nodes.gluecodes.xspaceskip
+local fontkern_code   = nodes.kerncodes.fontkern
+
+local newkern      = nuts.pool.kern
+local insertbefore = nuts.insertbefore
+local insertafter  = nuts.insertafter
+
+-- todo statistics and tracing
+
+local method   = 2
+local unislots = fonts.hashes.unislots -- todo
+local chardata = fonts.hashes.characters
+
+function nodes.handlers.aligncharacter(head,attr,preamble)
+    local attr = getattr(attr,a_alignchar) -- 1 : value doesn't matter (for now)
+    if attr then
+        local widths = { }
+        local data   = { }
+        local rows   = 0
+        local cols   = 0
+        for col in nextrecord, preamble do
+            cols = cols + 1
+            local w, s = getwidth(col,true)
+            widths[cols] = { col, w, s }
+        end
+        --
+        for row in nextunset, head do
+            rows = rows + 1
+            local c = 0
+            local d = { }
+            data[rows] = d
+            for col in nextunset, getlist(row) do
+                c = c + 1
+                if widths[c][2] then
+                    local list = getlist(col)
+                 -- if method == 1 then
+                 --     local left   = nil
+                 --     local right  = nil
+                 --     local middle = nil
+                 --     for g, char in nextglyph, list do
+                 --         if not left then
+                 --             left = g
+                 --         end
+                 --         if char == getattr(g,a_alignchar) then
+                 --             middle = g
+                 --         end
+                 --         right = g
+                 --     end
+                 --     d[c] = middle and { col, left, middle, right, 0, 0, getwidth(middle) } or false
+                 -- elseif method == 2 then
+                        local middle = nil
+                        -- we can either cache unislots or we can cache for this font
+                        for g, char, font in nextglyph, list do
+                            local unicode = getattr(g,a_alignchar)
+                            if unicode then
+                                if char == unicode then
+                                    middle = g
+                                elseif unislots[font][char] == unicode then
+                                    middle = g
+                                end
+                            end
+                        end
+                        if middle then
+                            local left, right = getwordrange(middle) -- not real gain but handy anyway (less code too)
+                         -- local left  = middle
+                         -- local right = middle
+                         -- for g, id, subtype in nextnode, middle do
+                         --     if id == glyph_code or id == disc_code then
+                         --         right = g
+                         --     elseif id == kern_code and subtype == fontkern_code then
+                         --         right = g
+                         --     else
+                         --         break
+                         --     end
+                         -- end
+                         -- for g, id, subtype in prevnode, middle do
+                         --     if id == glyph_code or id == disc_code then
+                         --         left = g
+                         --     elseif id == kern_code and subtype == fontkern_code then
+                         --         left = g
+                         --     else
+                         --         break
+                         --     end
+                         -- end
+                            d[c] = { col, left, middle, right, 0, 0, getwidth(middle) }
+                        else
+                            d[c] = false
+                        end
+                 -- else
+                 --     local middle = nil
+                 --     for g, char in nextglyph, list do
+                 --         if char == getattr(g,a_alignchar) then
+                 --             middle = g
+                 --         end
+                 --     end
+                 --     if middle then
+                 --         local left  = list
+                 --         local right = findtail(list)
+                 --         if getid(left) == glue_code then
+                 --             left = getnext(left)
+                 --         end
+                 --         if getid(right) == glue_code then
+                 --             right = getprev(right)
+                 --         end
+                 --         d[c] = { col, left, middle, right, 0, 0, getwidth(middle) }
+                 --     else
+                 --         d[c] = false
+                 --     end
+                 -- end
+                else
+                    d[c] = false
+                end
+            end
+        end
+        --
+        for col=1,cols do
+            local maxl = 0
+            local maxr = 0
+            local minm = 0
+            local maxm = 0
+            local colw = widths[col]
+            for row=1,rows do
+                local d = data[row][col]
+                if d then
+                    local p = d[1]
+                    local l = d[2]
+                    local m = d[3]
+                    local r = d[4]
+                    if m then
+                        local lw = l == m and 0 or dimensions(p,l,m)
+                        local rw = m == r and 0 or dimensions(p,getnext(m),getnext(r))
+                        d[5] = lw
+                        d[6] = rw
+                        if lw > maxl then
+                            maxl = lw
+                        end
+                        if rw > maxr then
+                            maxr = rw
+                        end
+                        local mw = d[7]
+                        if maxm == 0 then
+                            minm = mw
+                            maxm = mw
+                        else
+                            if mw > maxm then
+                                maxm = mw
+                            end
+                            if mw < minm then
+                                minm = mw
+                            end
+                        end
+                    end
+                end
+            end
+            --
+            local fixedwidth = colw[3] ~= 0
+            --
+            local old = colw[2]
+            local new = old
+            for row=1,rows do
+                local d = data[row][col]
+                if d then
+                    local p = d[1]
+                    local l = d[2]
+                    local m = d[3]
+                    local r = d[4]
+                    if l and m and r then
+                        local lw = d[5]
+                        local rw = d[6]
+                        local mw = d[7]
+                        dl = maxl - lw
+                        dr = maxr - rw
+                        if dl ~= 0 or dr ~= 0 or mw ~= maxm then
+                            local lst = getlist(p)
+                            local wid = getwidth(p)
+                            if dl ~= 0 then
+                                local k = newkern(dl)
+                                lst = insertbefore(lst,l,k)
+                                setattrlist(k,m)
+                                setlist(p,lst)
+                                wid = wid + dl
+                            end
+                            if dr ~= 0 then
+                                local k = newkern(dr)
+                                insertafter(lst,r,k)
+                                setattrlist(k,m)
+                                wid = wid + dr
+                            end
+                            if mw ~= maxm then
+                                local dw = (maxm - mw)
+                                local dx = dw / 2
+                                addmargins(m,-dx,-dx)
+                                wid = wid + dw
+                            end
+                            setwidth(p,wid)
+                            if wid > new then
+                                new = wid
+                            end
+                            setlist(p,lst)
+                            -- somewhat fuzzy:
+                            if fixedwidth then
+                                local l = hpack(h,getwidth(p),"exactly")
+                                setglue(p,getglue(l))
+                                setlist(l)
+                                flushnode(l)
+                            else
+                                setglue(p)
+                            end
+                            --
+                        end
+                    end
+                end
+            end
+            if new > old then
+                if fixedwidth then
+                    -- issue overflow warning
+                else
+                    setwidth(colw[1],new)
+                end
+            end
+        end
+    end
+end
+
+local enabled = false
+
+interfaces.implement {
+    name      = "enablealignmentcharacter",
+ -- onlyonce  = true,
+    public    = true,
+    protected = true,
+    actions   = function()
+        if not enabled then
+            nodes.tasks.enableaction("alignments", "nodes.handlers.aligncharacter")
+            enabled = true
+        end
+    end,
+}
+

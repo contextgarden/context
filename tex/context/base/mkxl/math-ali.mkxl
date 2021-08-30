@@ -92,9 +92,9 @@
       \ialign{%
         \strut
         \hfil
-        \startforceddisplaymath{\alignmark\alignmark}\stopforceddisplaymath
+        \startforceddisplaymath{\aligncontent}\stopforceddisplaymath
         \aligntab
-        \startforceddisplaymath{{}\alignmark\alignmark{}}\stopforceddisplaymath
+        \startforceddisplaymath{{}\aligncontent{}}\stopforceddisplaymath
         \hfil\crcr
         #1\crcr}%
      }%
@@ -110,13 +110,13 @@
   {\t_math_align_a
      {\strut
       \tabskip\zeropoint
-      \alignmark\alignmark % for picking up the number
+      \aligncontent % for picking up the number
       \aligntab
       \math_first_in_eqalign
       \hfil
       \math_left_of_eqalign
       \span
-      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
       \tabskip\zeropoint}%
    \t_math_align_b
@@ -124,7 +124,7 @@
       \math_next_in_eqalign
       \math_left_of_eqalign
       \span
-      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
       \tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
@@ -132,7 +132,7 @@
        {\hfil
         \aligntab
         \span
-        \math_text_in_eqalign{\alignmark\alignmark}%
+        \math_text_in_eqalign{\aligncontent}%
         \tabskip\zeropoint}%
    \orelse\ifnum\mathraggedstatus=\plusthree
      \t_math_align_c
@@ -140,7 +140,7 @@
         \tabskip\zeropoint\s!plus 1\s!fill
         \aligntab
         \span
-        \math_text_in_eqalign{\alignmark\alignmark}%
+        \math_text_in_eqalign{\aligncontent}%
         \tabskip\zeropoint}%
    \else
      \t_math_align_c
@@ -148,7 +148,7 @@
         \tabskip\centering
         \aligntab
         \span
-        \llap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \llap{\math_text_in_eqalign{\aligncontent}}%
         \tabskip\zeropoint}%
    \fi
    \math_build_eqalign
@@ -159,13 +159,13 @@
   {\t_math_align_a
      {\strut
       \tabskip\zeropoint
-      \alignmark\alignmark % for picking up the number
+      \aligncontent % for picking up the number
       \aligntab
       \math_first_in_eqalign
       \hfil
       \math_left_of_eqalign
       \span
-      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
       \tabskip\zeropoint}%
    \t_math_align_b
@@ -173,7 +173,7 @@
       \math_next_in_eqalign
       \math_left_of_eqalign
       \span
-      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
       \tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
@@ -182,7 +182,7 @@
         \aligntab
         \kern-\displaywidth
         \span
-        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \rlap{\math_text_in_eqalign{\aligncontent}}
         \tabskip\displaywidth}%
    \orelse\ifnum\mathraggedstatus=\plusthree
      \t_math_align_c
@@ -191,7 +191,7 @@
         \aligntab
         \kern-\displaywidth
         \span
-        \math_rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \math_rlap{\math_text_in_eqalign{\aligncontent}}%
         \tabskip\displaywidth}%
    \else
      \t_math_align_c
@@ -200,7 +200,7 @@
         \aligntab
         \kern-\displaywidth
         \span
-        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \rlap{\math_text_in_eqalign{\aligncontent}}%
         \tabskip\displaywidth}%
    \fi
    \math_build_eqalign
@@ -736,19 +736,19 @@
 %    \halign\bgroup
 %      \startimath
 %      \mathcasesparameter\c!style
-%      \alignmark\alignmark
+%      \aligncontent
 %      \stopimath
 %      \hfil
 %      \aligntab
 %      \hskip\mathcasesparameter\c!distance\relax
 %      \pop_macro_math_cases_NC
 %      \math_cases_strut % looks better
-%      \alignmark\alignmark
+%      \aligncontent
 %      \hfil
 %      \aligntab
 %      \hskip\mathcasesparameter\c!numberdistance\relax
 %    % \let\formuladistance\!!zeropoint
-%      \span\math_text_in_eqalign{\alignmark\alignmark}%
+%      \span\math_text_in_eqalign{\aligncontent}%
 %      \crcr} % todo: number
 %
 % % When we have just protected we get an extra row but we can no flag
@@ -848,17 +848,17 @@
    \halign\bgroup
      \ifmmode\else\startimath\fi
      \mathcasesparameter\c!style
-     \alignmark\alignmark
+     \aligncontent
      \ifmmode\stopimath\fi
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!distance\relax
      \math_cases_strut % looks better
-     \alignmark\alignmark
+     \aligncontent
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!numberdistance\relax
-     \span\math_text_in_eqalign{\alignmark\alignmark}%
+     \span\math_text_in_eqalign{\aligncontent}%
      \crcr} % todo: number
 
 \noaligned\permanent\protected\def\math_cases_stop
@@ -1047,14 +1047,14 @@
    \math_matrix_distance_first
    \global\advance\c_math_eqalign_column\plusone
    \math_matrix_start_cell
-     \alignmark\alignmark
+     \aligncontent
    \math_matrix_stop_cell
    \aligntab
    \aligntab
    \math_matrix_distance
    \global\advance\c_math_eqalign_column\plusone
    \math_matrix_start_cell
-     \alignmark\alignmark
+     \aligncontent
    \math_matrix_stop_cell}
 
 \permanent\protected\def\math_matrix_NR
@@ -1509,7 +1509,7 @@
    \enforced\let\NC\relax
    \enforced\let\MC\relax
    \enforced\let\NR\crcr
-   \halign\bgroup\hfil\normalstartimath\scriptstyle\alignmark\alignmark\normalstopimath\hfil\crcr}
+   \halign\bgroup\hfil\normalstartimath\scriptstyle\aligncontent\normalstopimath\hfil\crcr}
 
 \noaligned\permanent\protected\def\stopsubstack
   {\crcr

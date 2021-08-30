@@ -923,6 +923,7 @@ local ruledglue, ruledmathglue do
     local indentskip_code       = gluecodes.indentskip
     local intermathskip_code    = gluecodes.intermathskip
     local correctionskip_code   = gluecodes.correctionskip
+    local tabskip_code          = gluecodes.tabskip
 
     local g_cache_v  = caches["vglue"]
     local g_cache_h  = caches["hglue"]
@@ -947,7 +948,7 @@ local ruledglue, ruledmathglue do
         [gluecodes.belowdisplayshortskip] = "SB",
         [gluecodes.topskip]               = "TS",
         [gluecodes.splittopskip]          = "ST",
-        [gluecodes.tabskip]               = "AS",
+        [tabskip_code]                    = "TB",
         [gluecodes.thinmuskip]            = "MS",
         [gluecodes.medmuskip]             = "MM",
         [gluecodes.thickmuskip]           = "ML",
@@ -1029,6 +1030,8 @@ local ruledglue, ruledmathglue do
                 else
                     info = sometext(amount,l_glue,"trace:g")
                 end
+            elseif subtype == tabskip_code then
+                info = sometext(amount,l_glue,"trace:s")
             elseif subtype == indentskip_code or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,"trace:s")
             elseif subtype == leftskip_code then

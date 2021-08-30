@@ -17,6 +17,30 @@
 
 \pushoverloadmode
 
+\registerctxluafile{node-ali}{autosuffix}
+
+\definesystemattribute[aligncharacter][public]
+
+\permanent\protected\def\setalignmentcharacter#1%
+  {\enablealignmentcharacter
+   \global\settrue\c_tabl_use_size
+   \global\settrue\c_tabl_sparse_skips
+   \enforced\permanent\protected\gdef\setalignmentcharacter##1%
+     {\attribute\aligncharacterattribute`##1\relax}%
+   \attribute\aligncharacterattribute`#1\relax}
+
+\permanent\protected\def\resetalignmentcharacter
+  {\attribute\aligncharacterattribute\attributeunsetvalue}
+
+\permanent\def\alignmentcharactertrigger
+  {\s!callback\space\s!attr\aligncharacterattribute\plusone}
+
+\noaligned\permanent\protected\def\aligncontentleft  {\ignorespaces\aligncontent\unskip\hss}
+\noaligned\permanent\protected\def\aligncontentmiddle{\hss\ignorespaces\aligncontent\unskip\hss}
+\noaligned\permanent\protected\def\aligncontentright {\hss\ignorespaces\aligncontent\unskip}
+
+% \enablealignmentcharacter % defined at the lua end
+
 % maybe frozen instead
 
 \permanent\protected\lettonothing\AR

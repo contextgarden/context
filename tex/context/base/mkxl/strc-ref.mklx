@@ -842,7 +842,7 @@
 
 \installcorenamespace{savedinternalreference}
 
-\letvalue{\??savedinternalreference\s!default}\!!zerocount
+\letcsname\??savedinternalreference\s!default\endcsname\!!zerocount
 
 \permanent\protected\def\storeinternalreference#1#2%
   {\xdefcsname\??savedinternalreference\currentstructurename\endcsname{\number#2}}

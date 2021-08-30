@@ -147,6 +147,8 @@ local flush_character do
 
     local vfinjectors = fonts.helpers.vfinjectors
 
+    -- current can go
+
     local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
         if nesting > 100 then
             return
@@ -161,7 +163,7 @@ local flush_character do
         local saved_r = pos_r
                 pos_r = lefttoright_code
 
-        local data  = fontdata[font]
+        local data  = fontdata[font] -- hm, so why pass data
         local fnt   = font
         local fonts = data.fonts
         local siz   = (data.parameters.factor or 1)/65536
@@ -186,7 +188,8 @@ local flush_character do
                 if fnt == 0 then
                     fnt = main
                 end
-                return flush_character(current,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+                -- here no current!
+                return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
             else
                 return 0
             end
@@ -682,7 +685,8 @@ local hlist_out, vlist_out  do
                 pos_v = pos_v + raise
                 pos_h = pos_h - left
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
-                cur_h = cur_h + wd - right -- hm, no left here?
+--                 cur_h = cur_h + wd - right -- hm, no left here?
+cur_h = cur_h + wd -- see new tabulate alignment code
             elseif id == glue_code then
                 local gluewidth = effectiveglue(current,this_box)
                 if gluewidth ~= 0 then

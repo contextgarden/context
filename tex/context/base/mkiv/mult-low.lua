@@ -450,6 +450,8 @@ return {
         "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
         --
+        "aligncontentleft", "aligncontentmiddle", "aligncontentright",
+        --
         "shiftbox", "vpackbox", "hpackbox", "vpackedbox", "hpackedbox",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",

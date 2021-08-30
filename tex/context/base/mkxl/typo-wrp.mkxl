@@ -15,7 +15,9 @@
 
 \unprotect
 
-\registerctxluafile{typo-wrp}{}
+\registerctxluafile{typo-wrp}{autosuffix}
+
+\definesystemattribute[crlf]
 
 \permanent\protected\def\crlf
   {\ifhmode
@@ -25,27 +27,29 @@
 \protected\def\spac_crlf
   {\clf_enablecrlf % once
    \unskip
-   \spac_crlf_placeholder
-   \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
-   % in bad usage this can lead to: [break -10000] [wordboundary] [line(break)penalty] [parfillskip]
-   \break
    \wordboundary
+   \spac_crlf_placeholder % box
+   \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
+   % in bad usage this can lead to: [break -10000] [wordboundary] [line(break)penalty] [glue (filler)]
+   \break
+   \begingroup
+   \c_attr_crlf\plusone
+   \wordboundary
+   \endgroup
    % which we then remove (maybe we should flag the wordboundary with an attribute but not now
    \ignorespaces}
 
 \protected\def\spac_crlf_placeholder
-  {\wordboundary\strut} % or \endstrut
+  {\strut} % or \endstrut
 
 \protected\def\spac_crlf_placeholder_show
-  {\wordboundary
-  %\nobreak
-   \hpack to \zeropoint{\strut{\infofont\kern.25\emwidth}\lohi{\infofont CR}{\infofont LF}\hss}}
+  {\hpack to \zeropoint{\strut{\infofont\kern.25\emwidth}\lohi{\infofont CR}{\infofont LF}\hss}}
 
 \permanent\protected\def\settestcrlf
   {\let\spac_crlf_placeholder\spac_crlf_placeholder_show}
 
 \permanent\protected\def\crlfplaceholder % for old times sake
-  {\spac_crlf_placeholder}
+  {\wordboundary\strut}
 
 \appendtoks
     \let\spac_crlf_placeholder\empty

@@ -551,6 +551,12 @@ do
         return v
     end)
 
+    local treversers = table.setmetatableindex(function(t,k)
+        local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph,true)
+        t[k] = v
+        return v
+    end)
+
     -- these are special:
 
     traversers.node    = nuts.traverse       (glyph)
@@ -559,6 +565,13 @@ do
     traversers.list    = nuts.traverselist   (glyph)
     traversers.content = nuts.traversecontent(glyph)
 
+    treversers.node    = nuts.traverse       (glyph,true)
+    treversers.char    = nuts.traversechar   (glyph,true)
+    treversers.glyph   = nuts.traverseglyph  (glyph,true)
+    treversers.list    = nuts.traverselist   (glyph,true)
+    treversers.content = nuts.traversecontent(glyph,true)
+
     nuts.traversers = traversers
+    nuts.treversers = treversers
 
 end

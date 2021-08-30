@@ -4662,8 +4662,8 @@
 %D Which in terms of \TEX\ looks like:
 
 \permanent\protected\def\removesubstring#1\from#2\to#3%
-  {\splitstring#2\to\m_syst_string_one\and\m_syst_string_two
-   \dodoglobal#3{\m_syst_string_one\m_syst_string_two}}
+  {\splitstring#2\at#1\to\m_syst_string_one\and\m_syst_string_two
+   \dodoglobal\def#3{\m_syst_string_one\m_syst_string_two}}
 
 %D \macros
 %D   {appendtocommalist,prependtocommalist,
@@ -6704,5 +6704,72 @@
 
 \permanent\protected\def\resetmacros[#1]%
   {\processcommalist[#1]\syst_reset_macro}
+
+%D These demos are for hvdm who needs ways to manipulate arguments but
+%D in a fully expandable way (some explanation is given in the low level
+%D expansion manual).
+%D
+%D \startbuffer
+%D \edef\xxx{[\wipetokens {123}{abc123abc123abc123abc123abc}]}1 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {123}{abc}]}                        2 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {123}{123}]}                        3 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {123}{123123}]}                     4 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {123}{}]}                           5 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {}{123}]}                           6 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {\relax}{1\relax2\relax3}]}         7 : \meaningless\xxx\par
+%D \edef\xxx{[\wipetokens {1}{1{2}3}]}                        8 : \meaningless\xxx\par
+%D \edef\xxx{[\wipedtokens{{1}}{{1}23}]}                      9 : \meaningless\xxx\par
+%D \edef\xxx{[\wipedtokens{{1}}{123}]}                        0 : \meaningless\xxx\par
+%D \stopbuffer
+%D
+%D \typebuffer \startpacked \getbuffer \stoppacked
+
+\def\syst_helpers_wipe_tokens_nop#0^^04{}%
+
+\permanent\def\wipetokens#1#2%
+  {\beginlocalcontrol
+   \tolerant\def\syst_helpers_wipe_tokens_yes##1#1##2^^04%
+     {##1%
+      \ifparameter##2\or
+        \expandafter\syst_helpers_wipe_tokens_yes
+      \else
+        \expandafter\syst_helpers_wipe_tokens_nop
+      \fi
+      ##2^^04}%
+   \endlocalcontrol
+   \syst_helpers_wipe_tokens_yes#2#1^^04}
+
+\permanent\def\wipedtokens#1#2%
+  {\tokenized{\normalexpanded{\noexpand\wipetokens{\detokenize{#1}}{\detokenize{#2}}}}}
+
+%D \startbuffer
+%D                \def\abc{abc}
+%D \semiprotected \def\xyz{xyz}
+%D               \edef\pqr{\expandtoken\notcatcodes`p%
+%D                         \expandtoken\notcatcodes`q%
+%D                         \expandtoken\notcatcodes`r}
+%D
+%D 1: \ifcondition\similartokens{abc} {def}YES\else NOP\fi (NOP) \quad
+%D 2: \ifcondition\similartokens{abc}{\abc}YES\else NOP\fi (YES)
+%D
+%D 3: \ifcondition\similartokens{xyz} {pqr}YES\else NOP\fi (NOP) \quad
+%D 4: \ifcondition\similartokens{xyz}{\xyz}YES\else NOP\fi (YES)
+%D
+%D 5: \ifcondition\similartokens{pqr} {pqr}YES\else NOP\fi (YES) \quad
+%D 6: \ifcondition\similartokens{pqr}{\pqr}YES\else NOP\fi (YES)
+%D \stopbuffer
+%D
+%D \typebuffer \startpacked \getbuffer \stoppacked
+
+\permanent\protected\def\similartokens#1#2%
+ %{\normalexpanded{\noexpand\iftok{\noexpand\detokenize{#1}}{\noexpand\detokenize{#2}}}}
+  {\semiexpanded{\noexpand\iftok{\noexpand\detokenize{#1}}{\noexpand\detokenize{#2}}}}
+
+\permanent\protected\def\doifelsesimilartokens#1#2%
+  {\ifcondition\similartokens{#1}{#2}%
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \protect \endinput

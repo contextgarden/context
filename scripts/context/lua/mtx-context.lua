@@ -22,6 +22,7 @@ local setargument   = environment.setargument
 
 local filejoinname  = file.join
 local filebasename  = file.basename
+local filenameonly  = file.nameonly
 local filepathpart  = file.pathpart
 local filesuffix    = file.suffix
 local fileaddsuffix = file.addsuffix
@@ -106,11 +107,11 @@ end
 -- -- The way we use stubs will change in a bit in 2019 (mtxrun and context). We also normalize
 -- -- the platforms to use a similar approach to this.
 
-local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
-local engine_old = file.nameonly(environment.ownmain) or file.nameonly(environment.ownbin)
+local engine_new = filenameonly(getargument("engine") or directives.value("system.engine"))
+local engine_old = filenameonly(environment.ownmain) or filenameonly(environment.ownbin)
 
 local function restart(engine_old,engine_new)
-    local ownname = file.join(file.dirname(environment.ownname),"mtxrun.lua")
+    local ownname = filejoinname(filepathpart(environment.ownname),"mtxrun.lua")
     local command = format("%s --luaonly %q %s --redirected",engine_new,ownname,environment.reconstructcommandline())
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
@@ -795,7 +796,7 @@ function scripts.context.run(ctxdata,filename)
                 if not resultname or resultname == "" then
                     resultname = validstring(analysis.result)
                 end
-                local resultpath = file.pathpart(resultname)
+                local resultpath = filepathpart(resultname)
                 if resultpath ~= "" then
                     resultname  = nil
                 elseif suffix then
@@ -971,7 +972,7 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if environment.arguments["ansilog"] then
-                    local logfile = file.replacesuffix(jobname,"log")
+                    local logfile = filereplacesuffix(jobname,"log")
                     local logdata = io.loaddata(logfile) or ""
                     if logdata ~= "" then
                         io.savedata(logfile,(gsub(logdata,"%[.-m","")))
@@ -1496,7 +1497,7 @@ end
 function scripts.context.pages()
     local filename = environment.files[1]
     if filename then
-        local u = table.load(file.addsuffix(filename,"tuc"))
+        local u = table.load(fileaddsuffix(filename,"tuc"))
         if u then
             local p = u.structures.pages.collected
             local l = u.structures.lists.collected
@@ -1836,7 +1837,7 @@ end
 do
 
     if getargument("wipebusy") then
-        os.remove("context-is-busy.tmp")
+        removefile("context-is-busy.tmp")
     end
 
 end

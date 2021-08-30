@@ -151,6 +151,7 @@ local nuts = {
     appendaftertail         = direct.appendaftertail,
     prependbeforehead       = direct.prependbeforehead,
     getparstate             = direct.getparstate,
+    getwordrange            = direct.getwordrange,
     isdirect                = isdirect,
     isnode                  = isnode,
     isnut                   = isdirect,

@@ -1,0 +1,44 @@
+<?xml version='1.0' ?>
+
+<!-- This is not fake but real. More about this Pluto thing can be found in The Pluto Files
+by Neil deGrasse Tyson. The state of New Mexico -->
+
+<bills>
+    <bill>
+        <title>California Assembly Bill HR 36</title>
+        <introduced>INTRODUCED BY Assembly Members ...</introduced>
+        <date>AUGUST 24, 2006</date>
+        <concerns>Relative to Pluto's planetary status.</concerns>
+        <text>
+            <whereas>WHEREAS, Recent astronomical discoveries, including Pluto's oblong orbit and the sighting of a slightly larger Kuiper Belt object, have led astronomers to question the planetary status of Pluto; and</whereas>
+            <whereas>WHEREAS, The mean-spirited International Astronomical Union decided on August 24, 2006, to disrespect Pluto by stripping Pluto of its planetary status and reclassifying it as a lowly dwarf planet; and</whereas>
+            <whereas>WHEREAS, Pluto was discovered in 1930 by an American, Clyde Tombaugh, at the Lowell Observatory in Arizona, and this discovery resulted in millions of Californians being taught that Pluto was the ninth planet in the solar system; and</whereas>
+            <whereas>WHEREAS, Pluto, named after the Roman God of the underworld and affectionately sharing the name of California's most famous animated dog, has a special connection to California history and culture; and</whereas>
+            <whereas>WHEREAS, Downgrading Pluto's status will cause psychological harm to some Californians who question their place in the universe and worry about the instability of universal constants; and</whereas>
+            <whereas>WHEREAS, The deletion of Pluto as a planet renders millions of text books, museum displays, and children's refrigerator art projects obsolete, and represents a substantial unfunded mandate that must be paid by dwindling Proposition 98 education funds, thereby harming California's children and widening its budget deficits; and</whereas>
+            <whereas>WHEREAS, The deletion of Pluto as a planet is a hasty, ill-considered scientific heresy similar to questioning the Copernican theory, drawing maps of a round world, and proving the existence of the time and space continuum; and</whereas>
+            <whereas>WHEREAS, The downgrading of Pluto reduces the number of planets available for legislative leaders to hide redistricting legislation and other inconvenient political reform measures; and</whereas>
+            <whereas>WHEREAS, The California Legislature, in the closing days of the 2005-06 session, has been considering few matters important to the future of California, and the status of Pluto takes precedence and is worthy of this body's immediate attention; now, therefore, be it</whereas>
+            <resolved>Resolved by the Assembly of the State of California, That the Assembly hereby condemns the International Astronomical Union's decision to strip Pluto of its planetary status for its tremendous impact on the people of California and the state's long term fiscal health; and be it further</resolved>
+            <resolved>Resolved, That the Assembly Clerk shall send a copy of the resolution to the International Astronomical Union and to any Californian who, believing that his or her legislator is addressing the problems that threaten the future of the Golden State, requests a copy of the resolution.</resolved>
+        </text>
+    </bill>
+    <bill>
+        <title>HOUSE JOINT MEMORIAL 54 48th legislature - STATE OF NEW MEXICO - first session, 2007</title>
+        <title>A JOINT MEMORIAL DECLARING PLUTO A PLANET AND DECLARING MARCH 13, 2007, "PLUTO PLANET DAY" AT THE LEGISLATURE.</title>
+        <introduced>INTRODUCED BY ...</introduced>
+        <concerns>New Mexico Legislature: Declaring Pluto a Planet and March 13, 2007 as Pluto Planet Day</concerns>
+        <text>
+            <whereas>WHEREAS, the state of New Mexico is a global center for astronomy, astrophysics and planetary science; and</whereas>
+            <whereas>WHEREAS, New Mexico is home to world class astronomical observing facilities, such as the Apache Point observatory, the very large array, the Magdalena Ridge observatory and the national solar observatory; and</whereas>
+            <whereas>WHEREAS, Apache Point observatory, operated by New Mexico state university, houses the astrophysical research consortium's three-and-one-half meter telescope, as well as the unique two-and-one-half meter diameter Sloan digital sky survey telescope; and</whereas>
+            <whereas>WHEREAS, New Mexico state university has the state's only independent, doctorate-granting astronomy department; and</whereas>
+            <whereas>WHEREAS, New Mexico state university and Dona Ana county were the longtime home of Clyde Tombaugh, discoverer of Pluto; and</whereas>
+            <whereas>WHEREAS, Pluto has been recognized as a planet for seventy-five years; and</whereas>
+            <whereas>WHEREAS, Pluto's average orbit is three billion six hundred ninety-five million nine hundred fifty thousand miles from the sun, and its diameter is approximately one thousand four hundred twenty-one miles; and</whereas>
+            <whereas>WHEREAS, Pluto has three moons known as Charon, Nix and Hydra; and</whereas>
+            <whereas>WHEREAS, a spacecraft called new horizons was launched in January 2006 to explore Pluto in the year 2015;</whereas>
+            <resolved>NOW, THEREFORE, BE IT RESOLVED BY THE LEGISLATURE OF THE STATE OF NEW MEXICO that, as Pluto passes overhead through New Mexico's excellent night skies, it be declared a planet and that March 13, 2007 be declared "Pluto Planet Day" at the legislature.</resolved>
+        </text>
+    </bill>
+</bills>

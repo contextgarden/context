@@ -131,6 +131,7 @@
 \definesystemconstant {bp}
 \definesystemconstant {bs}
 \definesystemconstant {b}
+\definesystemconstant {callback}
 \definesystemconstant {calligraphy}
 \definesystemconstant {Calligraphy}
 \definesystemconstant {Caps}
@@ -283,6 +284,7 @@
 \definesystemconstant {noheight}
 \definesystemconstant {nomath}
 \definesystemconstant {none}
+\definesystemconstant {noskips}
 \definesystemconstant {normal}
 \definesystemconstant {Normal}
 \definesystemconstant {nowidth}

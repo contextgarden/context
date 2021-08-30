@@ -37,6 +37,7 @@ local italics        = hashes.italics        or allocate()
 local lastmathids    = hashes.lastmathids    or allocate()
 local dynamics       = hashes.dynamics       or allocate()
 local unicodes       = hashes.unicodes       or allocate()
+local unislots       = hashes.unislots       or allocate()
 local originals      = hashes.originals      or allocate()
 local modes          = hashes.modes          or allocate()
 local variants       = hashes.variants       or allocate()
@@ -59,12 +60,13 @@ hashes.italics        = italics
 hashes.lastmathids    = lastmathids
 hashes.dynamics       = dynamics
 hashes.unicodes       = unicodes
+hashes.unislots       = unislots
 hashes.originals      = originals
 hashes.modes          = modes
 hashes.variants       = variants
 
-local nodepool      = nodes and nodes.pool
-local dummyglyph    = nodepool and nodepool.register(nodepool.glyph())
+local nodepool   = nodes and nodes.pool
+local dummyglyph = nodepool and nodepool.register(nodepool.glyph())
 
 local nulldata = allocate {
     name         = "nullfont",
@@ -337,6 +339,22 @@ setmetatableindex(originals, function(t,k) -- always a unicode
             local v = d and d.unicode or u or 0 -- so we return notdef (at least for the moment)
             t[name] = u
             return v
+        end)
+        t[k] = resolved
+        return resolved
+    end
+end)
+
+setmetatableindex(unislots, function(t,k)
+    if k == true then
+        return unislots[currentfont()]
+    else
+        local characters = identifiers[k].characters
+        local resolved   = setmetatableindex(function(t,k)
+            local c = characters[k]
+            local v = c and c.unicode or 0xFFFD
+            t[k] = v
+            return v -- can be a table !
         end)
         t[k] = resolved
         return resolved

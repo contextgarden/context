@@ -1,0 +1,81 @@
+if not modules then modules = { } end modules ['typo-wrp'] = {
+    version   = 1.001,
+    comment   = "companion to typo-wrp.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- begin/end par wrapping stuff ... more to come
+
+local boundary_code     = nodes.nodecodes.boundary
+local wordboundary_code = nodes.boundarycodes.word
+
+local nuts              = nodes.nuts
+
+local findtail          = nuts.tail
+local getprev           = nuts.getprev
+local setnext           = nuts.setnext
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getattr           = nuts.getattr
+local flushnodelist     = nuts.flushlist
+
+local enableaction      = nodes.tasks.enableaction
+
+local wrappers          = { }
+typesetters.wrappers    = wrappers
+
+local trace_wrappers    = trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
+local report            = logs.reporter("paragraphs","wrappers")
+
+-- In luametatex we don't have the parfilskip attached yet but we can have final glue
+-- anyway. This check is very bound to the \crlf definition where we get:
+--
+-- ... boundary [strut: hlist] [break: glue penalty] boundary
+
+local a_crlf = attributes.private("crlf")
+
+local function remove_dangling_crlf(head,tail)
+    if head and tail then
+        if getid(tail) == boundary_code and getsubtype(tail) == wordboundary_code then
+            -- findnode could run backwards
+            if getattr(tail,a_crlf) then
+                local t = tail
+                while t do
+                    t = getprev(t)
+                    if not t then
+                        break
+                    elseif getid(t) == boundary_code and getsubtype(t) == wordboundary_code then
+                        if t ~= head then
+                            if trace_wrappers then
+                                report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
+                            end
+                            tail = getprev(t)
+                            setnext(tail)
+                            flushnodelist(t)
+                        end
+                        break
+                    end
+                end
+            end
+        end
+    end
+    return head, tail
+end
+
+function wrappers.handler(head)
+    if head then
+        local tail = findtail(head)
+        head, tail = remove_dangling_crlf(head,tail) -- will be action chain
+    end
+    return head
+end
+
+interfaces.implement {
+    name     = "enablecrlf",
+    onlyonce = true,
+    actions  = function()
+        enableaction("processors","typesetters.wrappers.handler")
+    end
+}

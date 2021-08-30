@@ -295,7 +295,8 @@
 % 1 = RC column raw    RQ equal column raw
 % 2 = HC column hook   HQ equal column hook
 
-% [|lg{.}|] => \NG 12.34 \NC
+% [|lg{.}|] => \NG 12.34 \NC % old
+% [|lG{.}|] => \NG 12.34 \NC % new
 
 \def\tabl_tabulate_nobreak_inject_tracer
   {\red % maybe use the fast color switcher here
@@ -422,19 +423,37 @@
 \let\tabl_tabulate_hook_b\donothing
 \let\tabl_tabulate_hook_e\donothing
 \let\tabl_tabulate_hook_g\donothing
+\let\tabl_tabulate_hook_G\donothing
+
+\newconditional\c_tabl_use_size
+\newconditional\c_tabl_sparse_skips
+
+% \settrue\c_tabl_use_size
+% \settrue\c_tabl_sparse_skips
+
+\installtexexperiment {tabulateusesize}     {\settrue\c_tabl_use_size}     {\setfalse\c_tabl_use_size}
+\installtexexperiment {tabulatesparseskips} {\settrue\c_tabl_sparse_skips} {\setfalse\c_tabl_sparse_skips}
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%
+        % begin of between/initial part
         \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
         \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
         \tabl_tabulate_check_local_color\constantemptyargument\m_tabl_tabulate_color\constantnumberargument\c_tabl_tabulate_colorspan
         \tabl_tabulate_color_side_right
+        % end of between/initial part
         \aligntab
+        % begin of left part
         \tabl_tabulate_column_vrule_inject
         \tabl_tabulate_color_side_left
         \tabl_tabulate_inject_pre_skip{\the\dimexpr\s_tabl_tabulate_pre}% get rid of plus
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
+        % end of left part
+        \ifconditional\c_tabl_use_size
+          \tabsize\zeropoint
+        \fi
         \aligntab
+        % begin of main cell
         \tabl_tabulate_color_side_both
         \global\c_tabl_tabulate_colorspan\zerocount
         \global\c_tabl_tabulate_column\constantnumber\c_tabl_tabulate_columns
@@ -448,7 +467,11 @@
             \fi
         \else
             \ifcase\c_tabl_tabulate_modus
-                \hbox to
+                \ifconditional\c_tabl_use_size
+                    \tabsize % we could remove one level of grouping
+                \else
+                    \hbox to
+                \fi
             \else
                 \hsize
             \fi
@@ -483,8 +506,9 @@
                 % grouping needs to be outside macros (or expandable), nice test
                 % example \NC \string \aligntab \NC which will fail otherwise (mk)
                 \bgroup
+                \tabl_tabulate_hook_G
                 \tabl_tabulate_entry_before
-                \alignmark\alignmark
+                \aligncontent % \alignmark\alignmark
                 \tabl_tabulate_entry_after
                 \egroup
                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
@@ -498,12 +522,18 @@
                 \tabl_tabulate_hook_e
             \egroup
         \egroup
+        % end of main cell
         \aligntab
+        \ifconditional\c_tabl_use_size
+          \tabsize\zeropoint
+        \fi
+        % begin of right part
         \noexpand\dostoptagged
         \tabl_tabulate_inject_post_skip
           {\the\ifconditional\c_tabl_post_is_set\s_tabl_tabulate_post\else\s_tabl_tabulate_last\fi}%
           {\the\s_tabl_tabulate_post}%
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
+        % end of right part
    }%
    \toksapp\t_tabl_tabulate_dummy{\NC}%
    \s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\relax
@@ -557,6 +587,7 @@
 \installtabulatepreambleoption{e}{\toksapp\t_tabl_tabulate_settings{\global\settrue\c_tabl_tabulate_equal}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{g}{\tabl_tabulate_set_align}
+\installtabulatepreambleoption{G}{\tabl_tabulate_set_align_new}
 \installtabulatepreambleoption{.}{\tabl_tabulate_set_align.}
 \installtabulatepreambleoption{,}{\tabl_tabulate_set_align,}
 \installtabulatepreambleoption{C}{\tabl_tabulate_set_color_span}
@@ -623,7 +654,8 @@
 
 % begin of character align plugin
 
-\newconditional\c_tabl_auto_align_mode % reset later
+\newconditional\c_tabl_auto_align_mode     % reset later
+\newconditional\c_tabl_auto_align_mode_new % reset later
 
 \def\tabl_tabulate_hook_g % partly expanded
   {\ifconditional\c_tabl_auto_align_mode
@@ -631,9 +663,22 @@
      \typo_charalign_adapt_font
    \fi}
 
+\def\tabl_tabulate_hook_G % partly expanded
+  {\ifconditional\c_tabl_auto_align_mode_new
+     \typo_charalign_adapt_font
+     \attribute\aligncharacterattribute\the\attribute\aligncharacterattribute\relax
+   \else
+     \attribute\aligncharacterattribute\attributeunsetvalue
+   \fi}
+
 \def\tabl_tabulate_set_align#1%
   {\global\settrue\c_tabl_auto_align_mode
    \setcharacteralign\c_tabl_tabulate_columns{#1}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_align_new#1%
+  {\global\settrue\c_tabl_auto_align_mode_new
+   \iftok{#1}\emptytoks\else\setalignmentcharacter{#1}\fi% todo: check for number or char or ... in lua
    \tabl_tabulate_set_preamble}
 
 % end of character align plugin
@@ -794,6 +839,9 @@
    \glet\m_tabl_tabulate_vrule_color\empty
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\setfalse\c_tabl_auto_align_mode
+   \global\setfalse\c_tabl_auto_align_mode_new
+   \resetalignmentcharacter
+%  \attribute\aligncharacterattribute\attributeunsetvalue
    \global\advance\c_tabl_tabulate_columns\plusone
    \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \iftok{#1}\emptytoks
@@ -1166,10 +1214,10 @@
 \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
   {\let\currenttabulation\currenttabulationparent
    \iftok{#1}\emptytoks
-     \ifhastok={#2}\relax
+     \ifhaschar={#2}\relax
        \setupcurrenttabulation[#2]%
      \fi
-   \orelse\ifhastok={#1}\relax
+   \orelse\ifhaschar={#1}\relax
      \iftok{#2}\emptytoks\else
         \settabulationparameter\c!format{#2}%
      \fi
@@ -1178,7 +1226,7 @@
      \iftok{#1}\emptytoks\else
        \settabulationparameter\c!format{#1}%
      \fi
-     \ifhastok={#2}\relax
+     \ifhaschar={#2}\relax
        \setupcurrenttabulation[#2]%
      \fi
    \fi
@@ -2248,11 +2296,11 @@
         \tabl_tabulate_flush_indent
 % \global\advance\c_tabl_tabulate_noflines\plusone
         \strut
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
         \tabskip\d_tabl_tabulate_margin
         \strut
         \aligntab
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
         \tabskip\zeropoint}%
    \else
      \t_tabl_tabulate_preamble
@@ -2260,9 +2308,9 @@
         \tabl_tabulate_flush_indent
 % \global\advance\c_tabl_tabulate_noflines\plusone
         \strut
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
         \aligntab
-        \alignmark\alignmark
+        \aligncontent % \alignmark\alignmark
         \tabskip\zeropoint}%
    \fi
    \d_tabl_tabulate_width\zeropoint
@@ -2276,7 +2324,8 @@
    \d_tabl_tabulate_width\zeropoint
    \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
    \toksapp\t_tabl_tabulate_preamble{%
-     \aligntab\alignmark\alignmark
+     \aligntab
+     \aligncontent % \alignmark\alignmark
      \global\advance\c_tabl_tabulate_column\plusone % maybe just set it already
    }%
    \toksapp\t_tabl_tabulate_dummy{%
@@ -2302,7 +2351,10 @@
       \d_tabl_tabulate_indent\zeropoint
       \settrialtypesetting % very important
       \anch_backgrounds_text_level_start
-      \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
+      \halign
+        \ifconditional\c_tabl_sparse_skips \s!noskips\fi
+        \ifconditional\c_tabl_auto_align_mode_new \alignmentcharactertrigger\fi
+        \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
       \anch_backgrounds_text_level_stop
       \ifcase\c_anch_backgrounds_text_state\else
         \global\settrue\tablehaspositions
@@ -2349,7 +2401,10 @@
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
 %  % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
-   \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
+   \halign
+     \ifconditional\c_tabl_sparse_skips \s!noskips\fi
+     \ifconditional\c_tabl_auto_align_mode_new \alignmentcharactertrigger\fi
+     \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged
    \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack

@@ -601,9 +601,11 @@ local function actuarian(data)
     return {
         -- todo: add alttext
         -- compromise: lm has large hooks e.g. \actuarial{a}
-        width     = basewidth + 4 * linewidth,
-        unicode   = 0x20E7,
-        commands  = {
+        width    = basewidth + 4 * linewidth,
+        height   = basechar.height,
+        depth    = basechar.depth,
+        unicode  = 0x20E7,
+        commands = {
             rightcommand[2 * linewidth],
             downcommand[- baseheight - 3 * linewidth],
             { "rule", linewidth, basewidth + 4 * linewidth },
@@ -623,13 +625,15 @@ local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
     local basechar   = characters[snippet]
     local advance    = advance * parameters.quad
     return {
-        unicode   = unicode,
-        width     = n*basechar.width + (n-1)*advance,
-        commands  = {
+        unicode  = unicode,
+        width    = n*basechar.width - (n-1)*advance,
+        height   = basechar.height,
+        depth    = basechar.depth,
+        commands = {
             charcommand[snippet],
-            rightcommand[advance],
+            leftcommand[advance],
             charcommand[snippet],
-            n > 2 and rightcommand[advance] or nil,
+            n > 2 and leftcommand[advance] or nil,
             n > 2 and charcommand[snippet] or nil,
         },
     }

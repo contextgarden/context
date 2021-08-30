@@ -282,83 +282,84 @@ if treemode then
         -- todo: use a raw collected and a weak proxy
         --
         setmetatableindex(collected,function(t,k)
-            local prefix, one, two = lpegmatch(p_splitter,k)
-            local list = rawget(t,prefix)
-            if list and type(list) == "table" then
-                local v = list[one] or false
-                if v then
-                    if prefix == "p" then
-                        if deltapacking and type(v) == "number" then
-                            for i=one,1,-1 do
-                                local l = list[i]
-                                if type(l) ~= "number" then
-                                    if not getmetatable(l) then
-                                        checkcommondata(l,x_h_d_hs_list)
+            if k ~= true then
+                local prefix, one, two = lpegmatch(p_splitter,k)
+                local list = rawget(t,prefix)
+                if list and type(list) == "table" then
+                    local v = list[one] or false
+                    if v then
+                        if prefix == "p" then
+                            if deltapacking and type(v) == "number" then
+                                for i=one,1,-1 do
+                                    local l = list[i]
+                                    if type(l) ~= "number" then
+                                        if not getmetatable(l) then
+                                            checkcommondata(l,x_h_d_hs_list)
+                                        end
+                                        v = setmetatable({ y = v }, { __index = l })
+                                        list[one] = v
+                                        break
                                     end
-                                    v = setmetatable({ y = v }, { __index = l })
-                                    list[one] = v
-                                    break
                                 end
+                            else
+                                checkcommondata(v,x_h_d_hs_list)
                             end
-                        else
-                            checkcommondata(v,x_h_d_hs_list)
-                        end
-                    elseif prefix == "text" or prefix == "textarea" then
-                        if type(v) == "number" then
-                            for i=one,1,-1 do
-                                local l = list[i]
-                                if type(l) ~= "number" then
-                                    if not getmetatable(l) then
-                                        checkcommondata(l,x_y_w_h_list)
+                        elseif prefix == "text" or prefix == "textarea" then
+                            if type(v) == "number" then
+                                for i=one,1,-1 do
+                                    local l = list[i]
+                                    if type(l) ~= "number" then
+                                        if not getmetatable(l) then
+                                            checkcommondata(l,x_y_w_h_list)
+                                        end
+                                        v = setmetatable({ p = p }, { __index = l })
+                                        list[one] = v
+                                        break
                                     end
-                                    v = setmetatable({ p = p }, { __index = l })
-                                    list[one] = v
-                                    break
                                 end
+                            else
+                                checkcommondata(v,x_y_w_h_list)
                             end
+                        elseif prefix == "columnarea" then
+                            if not columndone then
+                                checkcommondata(v,y_w_h_d_list)
+                            end
+                        elseif prefix == "syncpos" then
+                            -- will become an error
+                            if two then
+                             -- v = syncdata[one][two] or { }
+                                v = v[two] or { }
+                            else
+                                v = { }
+                            end
+                         -- for j=1,#v do
+                         --     checkcommondata(v[j],x_h_d_list)
+                         -- end
+                        elseif prefix == "free" then
+                            -- will become an error
+                        elseif prefix == "page" then
+                            checkcommondata(v)
                         else
-                            checkcommondata(v,x_y_w_h_list)
+                            checkcommondata(v)
                         end
-                    elseif prefix == "columnarea" then
-                        if not columndone then
-                            checkcommondata(v,y_w_h_d_list)
-                        end
-                    elseif prefix == "syncpos" then
-                        -- will become an error
-                        if two then
-                         -- v = syncdata[one][two] or { }
-                            v = v[two] or { }
-                        else
-                            v = { }
-                        end
-                     -- for j=1,#v do
-                     --     checkcommondata(v[j],x_h_d_list)
-                     -- end
-                    elseif prefix == "free" then
-                        -- will become an error
-                    elseif prefix == "page" then
-                        checkcommondata(v)
                     else
-                        checkcommondata(v)
-                    end
-                else
-                    if prefix == "page" then
-                        for i=one,1,-1 do
-                            local data = list[i]
-                            if data then
-                                v = setmetatableindex({ free = free or false, p = p },last)
-                                list[one] = v
-                                break
+                        if prefix == "page" then
+                            for i=one,1,-1 do
+                                local data = list[i]
+                                if data then
+                                    v = setmetatableindex({ free = free or false, p = p },last)
+                                    list[one] = v
+                                    break
+                                end
                             end
                         end
                     end
+                    t[k] = v
+                    return v
                 end
-                t[k] = v
-                return v
-            else
-                t[k] = false
-                return false
             end
+            t[k] = false
+            return false
         end)
         --
         setmetatableindex(tobesaved,function(t,k)

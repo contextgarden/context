@@ -141,14 +141,13 @@ end
 local done = { }
 
 local function analyzed(name,options)
-    local actiontype = type(action)
     local usedname   = addsuffix(name,inputsuffix)      -- we assume tex if not set
     local resultname = replacesuffix(name,resultsuffix) -- we assume tex if not set
     local pathname   = file.pathpart(usedname)
     local runpath    = environment.arguments.path -- sic, no runpath
     if pathname ~= "" then
         if runpath then
-            runpath = file.join(action.path,pathname)
+            runpath = file.join(runpath,pathname)
         else
             runpath = pathname
         end
@@ -156,7 +155,7 @@ local function analyzed(name,options)
     end
     return {
         options  = options,
-        path     = runpath,
+        path     = runpath, -- or nil
         filename = usedname,
         result   = resultname,
     }

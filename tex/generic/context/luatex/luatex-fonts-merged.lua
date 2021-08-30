@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-08-24 22:14
+-- merge date  : 2021-08-30 16:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -2794,7 +2794,7 @@ function file.join(one,two,three,...)
  if not two then
   return one=="" and one or lpegmatch(reslasher,one)
  end
- if one=="" then
+ if not one or one=="" then
   return lpegmatch(stripper,three and concat({ two,three,... },"/") or two)
  end
  if lpegmatch(isnetwork,one) then

@@ -427,16 +427,16 @@ local function pickup(start,stop)
     local list         = { }
     local size         = 0
     local depth        = 0
---  local done         = 32
+ -- local done         = 32
     local scancode     = experiment and scantokencode or scancode
     while true do -- or use depth
         local char = scancode()
         if char then
---             if char < done then
---                 -- we skip leading control characters so that we can use them to
---                 -- obey spaces (a dirty trick)
---             else
---                 done = 0
+          -- if char < done then
+          --     -- we skip leading control characters so that we can use them to
+          --     -- obey spaces (a dirty trick)
+          -- else
+          --     done = 0
                 char = utfchar(char)
                 size = size + 1
                 list[size] = char
@@ -473,7 +473,7 @@ local function pickup(start,stop)
                         depth = depth + 1
                     end
                 end
---             end
+         -- end
         else
          -- local t = scantoken()
             local t = gettoken()
@@ -485,7 +485,7 @@ local function pickup(start,stop)
                     if char then
                         size = size + 1 ; list[size] = char
                     else
---                         local csname = getcsname(t)
+                     -- local csname = getcsname(t)
                         local csname = scancsname(t)
                         if csname == stop then
                             stoplength = 0
@@ -598,8 +598,8 @@ end
 --                     if char then
 --                         size = size + 1 ; list[size] = char
 --                     else
---                         local csname = getcsname(t)
-                        local csname = scancsname(t)
+--                      -- local csname = getcsname(t)
+--                         local csname = scancsname(t)
 --                         if csname == stop then
 --                             stoplength = 0
 --                             break

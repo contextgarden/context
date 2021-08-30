@@ -154,6 +154,7 @@
 		<cd:variable name='commands' value='فرمانها'/>
 		<cd:variable name='comment' value='توضیح'/>
 		<cd:variable name='component' value='مولفه'/>
+		<cd:variable name='compress' value='compress'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
 		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='مفهوم'/>

@@ -68,7 +68,7 @@ You can use \type {insert} and \type {remove} for adding or replacing entries in
 an indexed table.
 
 \starttyping
-table.insert(t,value,position)
+table.insert(t,position,value)
 value = table.remove(t,position)
 \stoptyping
 
@@ -310,7 +310,7 @@ local merged = table.imerged (one, two, ...)
 \startsummary[title={copy fastcopy}]
 
 When copying a table we need to make a real and deep copy. The \type {copy}
-function is an adapted version from the \LUA\ wiki. The \type {fastopy} is faster
+function is an adapted version from the \LUA\ wiki. The \type {fastcopy} is faster
 because it does not check for circular references and does not share tables when
 possible. In practice using the fast variant is okay.
 

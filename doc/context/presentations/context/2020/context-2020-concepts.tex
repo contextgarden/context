@@ -2,6 +2,11 @@
 
 \usemodule[present-boring,abbreviations-logos]
 
+% This was a talk about a preliminary mechanism so it has been adapted to run in
+% the current version. I need to check other 2020 files and examples and will do
+% that when I update (especially the low level) manuals. Let me know when there
+% are issues.
+
 \startdocument
   [title={CONCEPTS},
    banner={experiments turned features},
@@ -110,6 +115,10 @@ $\whatevera a = (-2) \quad \whateverb a = (-2)$ \par
 
 \typebuffer \startpacked \getbuffer \stoppacked
 
+{\em We can now also enable and disable specific features in the engine that
+control traditional or \OPENTYPE\ approaches. This is only there for experimental
+and educational purposes.}
+
 \stoptitle
 
 \starttitle[title=Macros]
@@ -163,6 +172,9 @@ Special behaviour:
 #3<-3
 \stoptyping
 
+{\em There are more specifiers and I admit that they are hard to remember. But
+they are mostly used in low level macros anyway.}
+
 \page
 
 Optional tokens (we also show some \TEX-expansion-horror here):
@@ -183,6 +195,9 @@ Optional tokens (we also show some \TEX-expansion-horror here):
 \stoptyping
 
 or as tokens (\type{\showluatokens\doifelseinset}) on the next page:
+
+{\em There are some expansion related extensions that are discussed in the low
+level expansion manual.}
 
 \page
 
@@ -248,7 +263,7 @@ As in:
 
 Hyphenation at work:
 
-\startlinecorrection[line]
+\startlinecorrection[line] \small
 \startcombination[distance=3cm,nx=6]
     {\vtop{\hsize 2mm \strut NEDERLANDS\vskip.5\lineheight}} {\type{NEDERLANDS}}
     {\vtop{\hsize 2mm \strut Nederlands\vskip.5\lineheight}} {\type{Nederlands}}
@@ -360,6 +375,9 @@ nederlands\discretionary options 3 {!}{!}{!}nederlands
 At some point it will become \quote {frozen} functionality and that's when it gets
 documented (first we need to integrate and play a bit more with it in \CONTEXT).
 
+{\em There is now a plugin mechanism that provides more control over language
+specific hyphenation, e.g.\ compound words combined with ligatures.}
+
 \stoptitle
 
 \starttitle[title=Local control]
@@ -449,8 +467,11 @@ And a teaser:
 
 \starttyping
 \protected\def\widthofcontent#1{\beginlocalcontrol
-     \setbox\scratchbox\hbox{#1}\endlocalcontrol   \wd\scratchbox}
+     \setbox\scratchbox\hbox{#1}\endlocalcontrol \wd\scratchbox}
 \stoptyping
+
+{\em These mechanisms can have surprising side effects due to input stacking.
+There is some more info in the low level expansion manual.}
 
 \stoptitle
 
@@ -544,6 +565,10 @@ v: \setbox0\hbox{uncopy \footnote{v: unhcopy}}\setbox2\vbox{\unhcopy0}\box2\par
 % \setprelistbox0\hbox{BEFORE} \setpostlistbox0\hbox{AFTER}
 % \box0
 
+{\em Everything insert related will always have side effects. It's complicated
+by the fact that the page flow interferes with expectations of where notes
+break cq.\ end up.}
+
 \stoptitle
 
 \starttitle[title=Normalizing lines]
@@ -559,16 +584,16 @@ We can have predictable lines:
 Standard (but already with left skips):
 
 \start
-    \bitwiseflip \normalizelinemode -\indentskipmodecode
-    \bitwiseflip \normalizelinemode -\normalizelinemodecode
+    \bitwiseflip \normalizelinemode -\parindentskipnormalizecode
+    \bitwiseflip \normalizelinemode -\normalizelinenormalizecode
     \showmakeup \relax \getbuffer
 \stop
 
 Normalized (enhanced, no shifts, indent skip):
 
 \start
-    \bitwiseflip \normalizelinemode \indentskipmodecode
-    \bitwiseflip \normalizelinemode \normalizelinemodecode
+    \bitwiseflip \normalizelinemode \parindentskipnormalizecode
+    \bitwiseflip \normalizelinemode \normalizelinenormalizecode
     \showmakeup \relax \getbuffer
 \stop
 
@@ -583,36 +608,51 @@ Normalized (enhanced, no shifts, indent skip):
 Standard:
 
 \start
-    \bitwiseflip \normalizelinemode -\indentskipmodecode
-    \bitwiseflip \normalizelinemode -\normalizelinemodecode
+    \bitwiseflip \normalizelinemode -\parindentskipnormalizecode
+    \bitwiseflip \normalizelinemode -\normalizelinenormalizecode
     \showmakeup \relax \getbuffer
 \stop
 
 Normalized:
 
 \start
-    \bitwiseflip \normalizelinemode \indentskipmodecode
-    \bitwiseflip \normalizelinemode \normalizelinemodecode
+    \bitwiseflip \normalizelinemode \parindentskipnormalizecode
+    \bitwiseflip \normalizelinemode \normalizelinenormalizecode
     \showmakeup \relax \getbuffer
 \stop
 
 % {\showmakeup \getbuffer}
 
+{\em There might be some more normalization in the future in other subsystems of
+the engine. One should be aware of this when manipulating node lists after they
+come out such subsystems.}
+
 \stoptitle
 
 \starttitle[title=Freezing paragraph properties]
 
-\startbuffer
-\forgetparagraphfreezing \placefigure[left]{}{} {\bf Andrew Cuomo:} \input cuomo
+\startbuffer[sample]
+\startplacefigure[location=left,number=no] \externalfigure[halslegacy.jpg][width=30pt] \stopplacefigure
+
+{\bf David Stork:} \samplefile{stork}
 \stopbuffer
 
-\typebuffer[style=\tt\small] \start \switchtobodyfont[8pt] \getbuffer \par \stop
-
-\startbuffer
-\setparagraphfreezing \placefigure[left]{}{} {\bf Andrew Cuomo:}  \input cuomo
+\startbuffer[demo]
+\forgetparagraphfreezing \getbuffer[sample]
 \stopbuffer
 
-\typebuffer[style=\tt\small] \start \switchtobodyfont[8pt] \getbuffer \par \stop
+\typebuffer[demo][style=\tt\small] \start \switchtobodyfont[6pt] \getbuffer[demo] \par \stop
+
+\startbuffer[demo]
+\setparagraphfreezing    \getbuffer[sample]
+\stopbuffer
+
+\typebuffer[demo][style=\tt\small] \start \switchtobodyfont[6pt] \getbuffer[demo] \par \stop
+
+Sample: \typebuffer[sample][style=\tt\small\small]
+
+{\em This feature will stepwise be applied to mechanism and might have side effects when
+users have their own hacks around \TEX's limitations (and side effects).}
 
 \stoptitle
 
@@ -688,6 +728,9 @@ Example 2:
 \typebuffer[style=\tt\small]
 
 \startcolumns  \startpacked \getbuffer \stoppacked \stopcolumns
+
+{\em These are just weird examples, but you can expect more interesting features to
+show up. Beware of stacking because order matters.}
 
 \stoptitle
 

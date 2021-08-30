@@ -327,13 +327,14 @@
    \multiply\c_pack_combinations_y\c_pack_combinations_x
    \tabskip\zeropoint
    \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
+ % \halign noskips \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
    \aligntab
    \m_pack_combinations_leftfiller
-   \alignmark\alignmark
+   \aligncontent
    \m_pack_combinations_rightfiller
    \aligntab
    \tabskip\zeropoint \s!plus 1fill % \fillskip
-   \alignmark\alignmark
+   \aligncontent
    \cr
    \pack_combinations_pickup}
 
@@ -981,10 +982,10 @@
 \def\pack_sidebyside_one    {\bgroup\setbox\scratchboxone\box\nextbox\dowithnextboxcs\pack_sidebyside_two    \hbox}
 
 \def\pack_topofeachother_two{\setbox\scratchboxtwo\box\nextbox
-                             \halign{\hss\alignmark\alignmark\hss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
+                             \halign{\hss\aligncontent\hss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
                              \egroup\egroup}
 \def\pack_sidebyside_two    {\setbox\scratchboxtwo\box\nextbox
-                             \valign{\vss\alignmark\alignmark\vss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
+                             \valign{\vss\aligncontent\vss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
                              \egroup\egroup}
 
 \protect \endinput

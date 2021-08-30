@@ -149,13 +149,15 @@ appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler",     
 
 appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",                   nil, "nut",    "disabled"  )
 
+appendaction("alignments",   "normalizers", "nodes.handlers.aligncharacter",                    nil, "nut",    "disabled"  )
+
 -- some protection
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")
 freezecallbacks("open_.*_file", "open file for reading")
 
--- experimental:
+-- experimental (needs to be updated):
 
 freezegroup("processors",   "normalizers")
 freezegroup("processors",   "characters")
@@ -184,6 +186,8 @@ freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")
 
 freezegroup("everypar",     "normalizers")
+
+freezegroup("alignments",   "normalizers")
 
 -- new: disabled here
 

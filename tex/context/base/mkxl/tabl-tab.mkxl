@@ -207,7 +207,7 @@
       \else
         \!tgValue
       \fi
-      \alignmark\alignmark\alignmark\alignmark
+      \aligncontent
       \hfil
       \the\!taRuleColumnTemplate}%
   \!tfAdjoinPriorColumn}
@@ -231,9 +231,9 @@
   \fi
   \advance\!taColumnNumber\plusone
   \if!taOnceOnlyTabskip
-    \!thToksEdef\!taDataColumnTemplate{\alignmark\alignmark\alignmark\alignmark\tabskip\the\!taLastRegularTabskip}%
+    \!thToksEdef\!taDataColumnTemplate{\aligncontent\tabskip\the\!taLastRegularTabskip}%
   \else
-    \!taDataColumnTemplate{\alignmark\alignmark}%
+    \!taDataColumnTemplate{\aligncontent}%
   \fi
   \!taRuleColumnTemplate\emptytoks
   \!taLeftGlue{\hfil}%
@@ -266,17 +266,17 @@
 
 \def\!tfFinishFormat
   {\!thToksEdef\!taPreamble{%
-     \alignmark\alignmark\alignmark\alignmark\tabskip\tablelefttabskip
+     \aligncontent\tabskip\tablelefttabskip
      \aligntab
      \the\!taPreamble\tabskip\tablerighttabskip
      \aligntab
-     \alignmark\alignmark\alignmark\alignmark\tabskip\zeropoint\cr}
+     \aligncontent\tabskip\zeropoint\cr}
    \!taBeginFormatfalse
    \!ttDoHalign}
 
 \def\tabl_table_reformat[#1]% will become local
   {\omit
-   \!taDataColumnTemplate{\alignmark\alignmark}%
+   \!taDataColumnTemplate{\aligncontent}%
    \!taLeftGlue\emptytoks
    \!taRightGlue\emptytoks
    \begingroup

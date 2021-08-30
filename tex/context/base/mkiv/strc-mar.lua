@@ -43,7 +43,7 @@ local lateluawhatsit_code = whatsitcodes.latelua
 
 local texsetattribute     = tex.setattribute
 
-local a_marks             = attributes.private("structure","marks")
+local a_marks             = attributes.private("marks")
 
 local trace_set     = false  trackers.register("marks.set",     function(v) trace_set     = v end)
 local trace_get     = false  trackers.register("marks.get",     function(v) trace_get     = v end)
