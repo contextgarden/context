@@ -299,14 +299,14 @@ do
         -- PROCESSOR_ARCHITECTURE : binary platform
         -- PROCESSOR_ARCHITEW6432 : OS platform
 
-        architecture = architecture or os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        architecture = string.lower(architecture or os.getenv("PROCESSOR_ARCHITECTURE") or "")
         if architecture == "x86_64" then
             bits, platform = 64, "win64"
-        elseif find(architecture,"AMD64") then
+        elseif find(architecture,"amd64") then
             bits, platform = 64, "win64"
-        elseif find(architecture,"ARM64") then
+        elseif find(architecture,"arm64") then
             bits, platform = 64, "windows-arm64"
-        elseif find(architecture,"ARM32") then
+        elseif find(architecture,"arm32") then
             bits, platform = 32, "windows-arm32"
         else
             bits, platform = 32, "mswin"

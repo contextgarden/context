@@ -82,6 +82,7 @@
 		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
+		<cd:variable name='append' value='append'/>
 		<cd:variable name='appendices' value='dodatky'/>
 		<cd:variable name='appendix' value='dodatek'/>
 		<cd:variable name='april' value='duben'/>
@@ -153,6 +154,7 @@
 		<cd:variable name='commands' value='prikazy'/>
 		<cd:variable name='comment' value='komentar'/>
 		<cd:variable name='component' value='komponenta'/>
+		<cd:variable name='compress' value='compress'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
 		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='koncept'/>
@@ -210,6 +212,8 @@
 		<cd:variable name='fixed' value='fixne'/>
 		<cd:variable name='flexible' value='prizpusobive'/>
 		<cd:variable name='float' value='plvouciobjekt'/>
+		<cd:variable name='flushbackward' value='flushbackward'/>
+		<cd:variable name='flushforward' value='flushforward'/>
 		<cd:variable name='flushinner' value='flushinner'/>
 		<cd:variable name='flushleft' value='flushleft'/>
 		<cd:variable name='flushouter' value='flushouter'/>
@@ -437,6 +441,7 @@
 		<cd:variable name='postscript' value='postscript'/>
 		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='nastaveni'/>
+		<cd:variable name='prepend' value='prepend'/>
 		<cd:variable name='preview' value='nahled'/>
 		<cd:variable name='previous' value='predchozi'/>
 		<cd:variable name='previousevenpage' value='predchozisudastranka'/>
@@ -1242,6 +1247,7 @@
 		<cd:constant name='splitoffset' value='splitoffset'/>
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
+		<cd:constant name='stacking' value='stacking'/>
 		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='start'/>
 		<cd:constant name='starter' value='starter'/>
@@ -1373,6 +1379,8 @@
 		<cd:element name='load' value='nacist'/>
 		<cd:element name='local' value='lokalne'/>
 		<cd:element name='makeup' value='zlom'/>
+		<cd:element name='namednotation' value='namednotation'/>
+		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='dalsi'/>
 		<cd:element name='place' value='umisti'/>
 		<cd:element name='previous' value='predchozi'/>
@@ -1544,6 +1552,7 @@
 		<cd:command name='definereferencelist' value='definujseznamodkazu'/>
 		<cd:command name='defineregister' value='definujrejstrik'/>
 		<cd:command name='definerule' value='definerule'/>
+		<cd:command name='definesavebuffer' value='startsavebuffer'/>
 		<cd:command name='definesection' value='definujsekci'/>
 		<cd:command name='definesectionblock' value='definujbloksekce'/>
 		<cd:command name='definesorting' value='definujtrideni'/>
@@ -1720,6 +1729,9 @@
 		<cd:command name='moveformula' value='moveformula'/>
 		<cd:command name='moveongrid' value='premistinamrizku'/>
 		<cd:command name='movesidefloat' value='movesidefloat'/>
+		<cd:command name='namedconstruction' value='namedconstruction'/>
+		<cd:command name='nameddescription' value='nameddescription'/>
+		<cd:command name='namedenumeration' value='namedenumeration'/>
 		<cd:command name='navigating' value='navigating'/>
 		<cd:command name='nodimension' value='zadnyrozmer'/>
 		<cd:command name='noheaderandfooterlines' value='zadnezahlaviaupati'/>
@@ -2091,6 +2103,13 @@
 		<cd:command name='startmakeup' value='startuprava'/>
 		<cd:command name='startmarginblock' value='startmarginalniblok'/>
 		<cd:command name='startmarginrule' value='startmarginalnilinka'/>
+		<cd:command name='startnamedconstruction' value='startnamedconstruction'/>
+		<cd:command name='startnameddescription' value='startnameddescription'/>
+		<cd:command name='startnamedenumeration' value='startnamedenumeration'/>
+		<cd:command name='startnamedmatrix' value='startnamedmatrix'/>
+		<cd:command name='startnamedsection' value='startnamedsection'/>
+		<cd:command name='startnamedsubformulas' value='startnamedsubformulas'/>
+		<cd:command name='startnamedtyping' value='startnamedtyping'/>
 		<cd:command name='startnarrower' value='startzuzeni'/>
 		<cd:command name='startopposite' value='startprotejsek'/>
 		<cd:command name='startoverlay' value='startprekryv'/>
@@ -2134,6 +2153,13 @@
 		<cd:command name='stopmakeup' value='stopuprava'/>
 		<cd:command name='stopmarginblock' value='stopmarginalniblok'/>
 		<cd:command name='stopmarginrule' value='stopmarginalnilinka'/>
+		<cd:command name='stopnamedconstruction' value='stopnamedconstruction'/>
+		<cd:command name='stopnameddescription' value='stopnameddescription'/>
+		<cd:command name='stopnamedenumeration' value='stopnamedenumeration'/>
+		<cd:command name='stopnamedmatrix' value='stopnamedmatrix'/>
+		<cd:command name='stopnamedsection' value='stopnamedsection'/>
+		<cd:command name='stopnamedsubformulas' value='stopnamedsubformulas'/>
+		<cd:command name='stopnamedtyping' value='stopnamedtyping'/>
 		<cd:command name='stopnarrower' value='stopzuzeni'/>
 		<cd:command name='stopopposite' value='stopprotejsek'/>
 		<cd:command name='stopoverlay' value='stopprekryv'/>
