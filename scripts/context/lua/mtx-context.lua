@@ -20,18 +20,18 @@ local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.
 local getargument   = environment.getargument or environment.argument
 local setargument   = environment.setargument
 
-local filejoinname      = file.join
-local filebasename      = file.basename
-local filenameonly      = file.nameonly
-local filepathpart      = file.pathpart
-local filesuffix        = file.suffix
-local fileaddsuffix     = file.addsuffix
-local filereplacesuffix = file.replacesuffix
-local removesuffix      = file.removesuffix
-local validfile         = lfs.isfile
-local removefile        = os.remove
-local renamefile        = os.rename
-local formatters        = string.formatters
+local filejoinname  = file.join
+local filebasename  = file.basename
+local filenameonly  = file.nameonly
+local filepathpart  = file.pathpart
+local filesuffix    = file.suffix
+local fileaddsuffix = file.addsuffix
+local filenewsuffix = file.replacesuffix
+local removesuffix  = file.removesuffix
+local validfile     = lfs.isfile
+local removefile    = os.remove
+local renamefile    = os.rename
+local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
@@ -972,7 +972,7 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if environment.arguments["ansilog"] then
-                    local logfile = filereplacesuffix(jobname,"log")
+                    local logfile = filenewsuffix(jobname,"log")
                     local logdata = io.loaddata(logfile) or ""
                     if logdata ~= "" then
                         io.savedata(logfile,(gsub(logdata,"%[.-m","")))
