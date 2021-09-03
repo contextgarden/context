@@ -25377,7 +25377,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["libs-ini"] = package.loaded["libs-ini"] or true
 
--- original size: 6478, stripped down to: 4023
+-- original size: 6525, stripped down to: 4064
 
 if not modules then modules={} end modules ['libs-ini']={
  version=1.001,
@@ -25419,10 +25419,10 @@ local function findlib(required)
   for i=1,#list do
    local name=list[i]
    local found=findfile(name,"lib")
-   if not found then
+   if not found or found=="" then
     found=findfile(addsuffix(name,suffix),"lib")
    end
-   if found then
+   if found and found~="" then
     if trace then
      report("library %a resolved via %a path to %a",name,"tds lib",found)
     end
@@ -25435,9 +25435,9 @@ local function findlib(required)
    for i=1,#list do
     local full=joinfile(list[i],base)
     local found=isfile(full) and full
-    if found then
+    if found and found~="" then
      if trace then
-      report("library %a resolved via %a path to %a",name,"system",found)
+      report("library %a resolved via %a path to %a",full,"system",found)
      end
      return found
     end
@@ -25932,8 +25932,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1027058
--- stripped bytes    : 403435
+-- original bytes    : 1027105
+-- stripped bytes    : 403441
 
 -- end library merge
 

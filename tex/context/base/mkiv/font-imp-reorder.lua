@@ -35,6 +35,7 @@ local trace_reorder  = trackers.register("fonts.reorderlookups",function(v) trac
 local report_reorder = logs.reporter("fonts","reorder")
 
 local vectors = { }
+otf.vectors   = vectors -- kind of private
 
 vectors.arab = {
     gsub = {
@@ -97,7 +98,7 @@ function otf.reorderlookups(tfmdata,vector)
                     if not what then
                         what = find(kind,"^gsub") and "gsub" or "gpos"
                     end
-                    local newwhen = order[what][feature]
+--                     local newwhen = order[what][feature]
                     if not newwhen then
                         -- skip
                     elseif not when then

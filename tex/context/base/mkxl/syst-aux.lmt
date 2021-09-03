@@ -780,3 +780,30 @@ implement {
     public  = true,
     actions = function() getshape("widowpenalties") end,
 }
+
+implement {
+    name      = "loopcs",
+    public    = true,
+    arguments = { "integerargument", "csname" },
+    actions   = function(n,cs)
+       local c = context[cs]
+       if n < 0 then
+           for i=-n,1 do c() end
+       else
+           for i= 1,n do c() end
+       end
+    end
+}
+implement {
+    name      = "loopcsn",
+    public    = true,
+    arguments = { "integerargument", "csname" },
+    actions   = function(n,cs)
+       local c = context[cs]
+       if n < 0 then
+           for i=-n,1 do c(i) end
+       else
+           for i= 1,n do c(i) end
+       end
+    end
+}

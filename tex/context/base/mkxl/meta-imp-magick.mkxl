@@ -1,0 +1,77 @@
+%D \module
+%D   [       file=meta-imp-magick,
+%D        version=2021.08.03,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Magick Manipulations,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{libs-imp-graphicsmagick}{autosuffix}
+
+\startluacode
+    function mp.lmt_magick_convert()
+        local specification = metapost.getparameterset("magick")
+        local inputname     = specification.filename
+        if inputname then
+            -- we don't want to trigger reuse when we have the same input file
+            local hash       = md5.HEX(table.sequenced(specification))
+            local outputname = file.addsuffix("m_k_i_v_mp_fuzzy_" .. hash,file.suffix(inputname))
+            luatex.registertempfile(outputname)
+            -- make the table a bit unique and don't polute it
+            local whattodo   = table.setmetatableindex( {
+                inputname  = inputname,
+                outputname = outputname,
+            }, specification)
+            -- now do the magick
+            utilities.graphicsmagick.convert(whattodo)
+            -- and return the result
+            return [[figure("]] .. outputname .. [[")]]
+        else
+            -- bad luck
+            return [[textext("missing filename")]]
+        end
+    end
+\stopluacode
+
+\startMPdefinitions
+
+    presetparameters "magick" [
+        filename = "unset",
+      % blur     = [ radius = 10, sigma = 5 ],
+      % noise    = [ type = 4 ],
+    ] ;
+
+    def lmt_magick = applyparameters "magick" "lmt_do_magick" enddef ;
+
+    vardef lmt_do_magick = lua.mp.lmt_magick_convert() enddef ;
+
+\stopMPdefinitions
+
+\continueifinputfile{meta-imp-magick.mkxl}
+
+\enabletrackers[*lib*]
+
+\startMPpage
+    draw lmt_magick [
+        filename = "hacker.jpg",
+        blur     = [ radius = 10, sigma = 5 ],
+        noise    = [ type = 2 ],
+    ] ysized 4cm ;
+
+    draw lmt_magick [
+        filename = "hacker.jpg",
+        blur     = [ radius = 5, sigma = 3 ],
+        noise    = [ type = 4 ],
+    ] ysized 4cm shifted (0, -4cm) ;
+
+    draw lmt_magick [
+        filename = "hacker.jpg",
+        blur     = [ radius = 10, sigma = 5 ],
+        noise    = [ type = 4 ],
+    ] ysized 4cm shifted (0, -8cm) ;
+\stopMPpage

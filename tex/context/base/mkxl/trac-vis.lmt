@@ -56,6 +56,7 @@ local getdepth            = nuts.getdepth
 local getexpansion        = nuts.getexpansion
 local getstate            = nuts.getstate
 local getoffsets          = nuts.getoffsets
+local getindex            = nuts.getindex
 
 local isglyph             = nuts.isglyph
 
@@ -156,11 +157,13 @@ local modes = {
     dir           = 0x0400000,
     par           = 0x0800000,
     mathglue      = 0x1000000,
+    mark          = 0x2000000,
+    insert        = 0x4000000,
 }
 
 local usedfont, exheight, emwidth
 local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathlistkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
-    l_dir, l_whatsit
+    l_dir, l_whatsit, l_mark, l_insert
 
 local enabled = false
 local layers  = { }
@@ -172,6 +175,7 @@ local preset_all    = preset_makeup
                     + modes.fontkern + modes.marginkern + modes.mathlistkern
                     + modes.whatsit + modes.glyph + modes.user + modes.math
                     + modes.dir + modes.whatsit + modes.mathglue
+                    + modes.mark + modes.insert
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -226,6 +230,8 @@ local function initialize()
     l_depth         = layers.depth
     l_dir           = layers.dir
     l_par           = layers.par
+    l_mark          = layers.mark
+    l_insert        = layers.insert
     --
     if not userrule then
        userrule = nuts.rules.userrule
@@ -484,11 +490,11 @@ local fontkern, italickern, marginkern, mathlistkern do
 
 end
 
-local glyphexpansion do
+local ruledglyphexpansion do
 
     local f_cache = caches["glyphexpansion"]
 
-    glyphexpansion = function(head,current)
+    ruledglyphexpansion = function(head,current)
         local extra = getexpansion(current)
         if extra and extra ~= 0 then
             extra = extra / 1000
@@ -554,7 +560,50 @@ local kernexpansion do
 
 end
 
-local whatsit do
+local ruledmark do
+
+    local set_code = nodes.markcodes.set
+
+    local sm_cache = setmetatableindex(caches["setmark"], function(t,index)
+        local info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+        setattr(info,a_layer,l_mark)
+        t[index] = info
+        return info
+    end)
+
+    local rm_cache = setmetatableindex(caches["resetmark"], function(t,index)
+        local info = sometext(formatters["RM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+        setattr(info,a_layer,l_mark)
+        t[index] = info
+        return info
+    end)
+
+    ruledmark = function(head,current)
+        local index = getindex(current)
+        local info  = getsubtype(current) == set_code and sm_cache[index] or rm_cache[index]
+        head, current = insertnodeafter(head,current,copylist(info))
+        return head, current
+    end
+
+end
+
+local ruledinsert do
+
+    local si_cache = setmetatableindex(caches["insert"], function(f,index)
+        local info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
+        setattr(info,a_layer,l_insert)
+        i_cache[index] = info
+    end)
+
+    ruledinsert = function(head,current)
+        local info = si_cache[getindex(current)]
+        head, current = insertnodeafter(head,current,copylist(info))
+        return head, current
+    end
+
+end
+
+local ruledwhatsit do
 
     local whatsitcodes = nodes.whatsitcodes
     local w_cache      = caches["whatsit"]
@@ -584,7 +633,7 @@ local whatsit do
         [whatsitcodes.setstate]       = "SET",   -- can't happen because these are added after visualizing
     }
 
-    whatsit = function(head,current)
+    ruledwhatsit = function(head,current)
         local what = getsubtype(current)
         local info = w_cache[what]
         if info then
@@ -600,7 +649,7 @@ local whatsit do
 
 end
 
-local dir, par do
+local ruleddir, ruledpar do
 
     local dircodes     = nodes.dircodes
     local dirvalues    = nodes.dirvalues
@@ -620,7 +669,7 @@ local dir, par do
         par    = "PAR",
     }
 
-    par = function(head,current)
+    ruledpar = function(head,current)
         local what = "par" -- getsubtype(current)
         local info = d_cache[what]
         if info then
@@ -634,7 +683,7 @@ local dir, par do
         return head, current
     end
 
-    dir = function(head,current)
+    ruleddir = function(head,current)
         local what = getsubtype(current)
         if what == cancel_code then
             what = "cancel"
@@ -657,11 +706,11 @@ local dir, par do
 
 end
 
-local user do
+local ruleduser do
 
     local u_cache = caches["user"]
 
-    user = function(head,current)
+    ruleduser = function(head,current)
         local what = getsubtype(current)
         local info = u_cache[what]
         if info then
@@ -677,7 +726,7 @@ local user do
 
 end
 
-local math do
+local ruledmath do
 
     local mathcodes = nodes.mathcodes
     local m_cache   = {
@@ -689,7 +738,7 @@ local math do
         endmath   = "E",
     }
 
-    math = function(head,current)
+    ruledmath = function(head,current)
         local what = getsubtype(current)
         local tag  = mathcodes[what]
         local skip = getkern(current) + getwidth(current) -- surround
@@ -1269,6 +1318,8 @@ do
     local mathlistkern_code    = nodecodes.mathlistkern
     local dir_code             = nodecodes.dir
     local par_code             = nodecodes.par
+    local mark_code            = nodecodes.mark
+    local insert_code          = nodecodes.insert
 
     local kerncodes            = nodes.kerncodes
     local fontkern_code        = kerncodes.fontkern
@@ -1321,6 +1372,8 @@ do
         local trace_dir             = false
         local trace_par             = false
         local trace_math_glue       = false
+        local trace_mark            = false
+        local trace_insert          = false
         local current               = head
         local previous              = nil
         local attr                  = unsetvalue
@@ -1367,6 +1420,8 @@ do
                     trace_dir           = false
                     trace_par           = false
                     trace_math_glue     = false
+                    trace_mark          = false
+                    trace_insert        = false
                     if id == kern_code then
                         goto kern
                     else
@@ -1399,6 +1454,8 @@ do
                     trace_dir           = a & 0x0400000 ~= 0
                     trace_par           = a & 0x0800000 ~= 0
                     trace_math_glue     = a & 0x1000000 ~= 0
+                    trace_mark          = a & 0x2000000 ~= 0
+                    trace_insert        = a & 0x4000000 ~= 0
                 end
             elseif a == unsetvalue then
                 goto list
@@ -1410,7 +1467,7 @@ do
                     head, current = ruledglyph(head,current,previous)
                 end
                 if trace_expansion then
-                    head, current = glyphexpansion(head,current)
+                    head, current = ruledglyphexpansion(head,current)
                 end
             elseif id == disc_code then
                 if trace_discretionary then
@@ -1439,15 +1496,15 @@ do
                 goto list
             elseif id == whatsit_code then
                 if trace_whatsit then
-                    head, current = whatsit(head,current)
+                    head, current = ruledwhatsit(head,current)
                 end
             elseif id == user_code then
                 if trace_user then
-                    head, current = user(head,current)
+                    head, current = ruleduser(head,current)
                 end
             elseif id == math_code then
                 if trace_math then
-                    head, current = math(head,current)
+                    head, current = ruledmath(head,current)
                 end
             elseif id == marginkern_code then
                 if trace_kern then
@@ -1455,11 +1512,19 @@ do
                 end
             elseif id == dir_code then
                 if trace_dir then
-                    head, current = dir(head,current)
+                    head, current = ruleddir(head,current)
                 end
             elseif id == par_code then
                 if trace_par then
-                    head, current = par(head,current)
+                    head, current = ruledpar(head,current)
+                end
+            elseif id == mark_code then
+                if trace_mark then
+                    head, current = ruledmark(head,current)
+                end
+            elseif id == insert_code then
+                if trace_insert then
+                    head, current = ruledinsert(head,current)
                 end
             end
             goto next

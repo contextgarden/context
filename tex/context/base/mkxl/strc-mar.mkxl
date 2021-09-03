@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Markings}
 
-\registerctxluafile{strc-mar}{}
+\registerctxluafile{strc-mar}{autosuffix}
 
 \unprotect
 
@@ -34,6 +34,10 @@
 %D implementations but in practice this is not a real problem. It's also easier now
 %D to extend this mechanism.
 
+% first last previous next top bottom [:nocheck]
+% current
+% default page all keep
+
 \definesystemattribute [marks] [global]
 
 \installcorenamespace{marking}
@@ -53,6 +57,8 @@
 \permanent\protected\tolerant\def\resetmarking                  [#1]{\clf_resetmarking{#1}}
 \permanent\protected\tolerant\def\synchronizemarking[#1]#*[#2]#*[#3]{\ifvoid#2\else\clf_synchronizemarking{#1}#2{#3}\fi}
 \permanent                   \def\doifelsemarking                 #1{\clf_doifelsemarking{#1}}  % no \noexpanded
+
+\aliased\let\clearmarking\resetmarking % different in the new situation
 
 \def\strc_markings_synchronize#1#2#3{\ifvoid#2\else\clf_synchronizemarking{#1}#2{#3}\fi} % called in page-ini
 

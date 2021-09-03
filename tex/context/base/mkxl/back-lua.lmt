@@ -41,6 +41,7 @@ local used      = { }
 local shapes    = { }
 local glyphs    = { }
 local buffer    = { }
+local metadata  = nil
 local b         = 0
 local converter = nil
 
@@ -65,25 +66,11 @@ local function reset()
 end
 
 local function result()
-    -- todo: we're now still in the pdf backend but need different codeinjections
-    local codeinjections = backends.pdf.codeinjections
-    local identity       = interactions.general.getidentity()
-    local jobname        = environment.jobname or tex.jobname or "unknown"
     return {
-        metadata = {
-            unit     = "bp",
-            jobname  = jobname,
-            title    = identity.title,
-            subject  = identity.subject,
-            author   = identity.author,
-            keywords = identity.keywords,
-            time     = os.date("%Y-%m-%d %H:%M"),
-            engine   = environment.luatexengine .. " " .. environment.luatexversion,
-            context  = environment.version,
-        },
-        fonts  = fonts,
-        pages  = pages,
-        shapes = shapes,
+        metadata = metadata,
+        fonts    = fonts,
+        pages    = pages,
+        shapes   = shapes,
     }
 end
 
@@ -128,6 +115,23 @@ local function finalize(driver,details)
             b[4] * bpfactor,
         },
     }
+    if not metadata then
+        -- this has to happen while we're still running tex because we do
+        -- prerolls
+        local identity = interactions.general.getidentity()
+        local jobname  = environment.jobname or tex.jobname or "unknown"
+        metadata = {
+            unit     = "bp",
+            jobname  = jobname,
+            title    = identity.title,
+            subject  = identity.subject,
+            author   = identity.author,
+            keywords = identity.keywords,
+            time     = os.date("%Y-%m-%d %H:%M"),
+            engine   = environment.luatexengine .. " " .. environment.luatexversion,
+            context  = environment.version,
+        }
+    end
 end
 
 local function wrapup(driver)
@@ -195,7 +199,7 @@ local function flushcharacter(current, pos_h, pos_v, pos_r, font, char)
     end
 end
 
-local function rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
+local function flush_rule(current, pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
     b = b + 1
     buffer[b] = {
         t = "rule" ~= t and "rule" or nil,
@@ -218,23 +222,22 @@ end
 local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
     local rule_s, rule_o
     if subtype == normalrule_code then
-        rule_s = "normal"
+        rule_s = normal_rule_code
     elseif subtype == outlinerule_code then
-        rule_s = "outline"
+        rule_s = outline_rule_code
         rule_o = getdata(current)
     else
         return
     end
-    return rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
+    return flush_rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
 end
 
 local function flushsimplerule(pos_h, pos_v, pos_r, size_h, size_v)
-    return rule(pos_h, pos_v, pos_r, size_h, size_v, "normal", nil)
+    return flush_rule(false,pos_h,pos_v,pos_r,size_h,size_v,normalrule_code,nil)
 end
 
 local function flushspecialrule(pos_h, pos_v, pos_r, w, h, d, l, outline)
-    -- no l support yet
-    return rule(pos_h, pos_v - d, pos_r, w, h + d, outline and "outline" or "normal")
+    return flush_rule(false,pos_h,pos_v-d,pos_r,w,h+d,outline and outlinerule_code or normalrule_code)
 end
 
 -- file stuff too
@@ -296,11 +299,13 @@ drivers.install {
     name    = "json",
     actions = {
         prepare         = prepare,
-        initialize      = initialize,
-        finalize        = finalize,
         wrapup          = wrapup,
         cleanup         = cleanup,
+        --
+        initialize      = initialize,
         convert         = convert,
+        finalize        = finalize,
+        --
         outputfilename  = outputfilename,
     },
     flushers = {
@@ -309,6 +314,7 @@ drivers.install {
         rule            = flushrule,
         simplerule      = flushsimplerule,
         specialrule     = flushspecialrule,
+        setstate        = function() end,
     }
 }
 

@@ -50,6 +50,70 @@ purpose apart from the fact that it reveals some history.
 
 \stopsubsection
 
+\startsubsection[title={Rationale}]
+
+One can argue that \TEX\ should stay as it is but over decades usage of this
+program has evolved and resulted in large macro packages that often need to rely
+on what the \TEX\ books calls \quote {dirty tricks}. When you look deep down in
+the code of \CONTEXT\ \MKII, \MKIV\ and \MKXL\ (aka \LMTX) you will see plenty of
+differences but quite a bit of the functionality in the most recent versions is
+also available in \MKII. Of course more has been added over time, and some
+mechanisms could be made more efficient and reliable but plenty was possible.
+
+So, when you see something done in \CONTEXT\ \LMTX\ using new \LUAMETATEX\
+primitives you can assume that somehow the same is done in \CONTEXT\ \MKIV. We
+don't really need \LUAMETATEX\ instead of \LUATEX. Among the main reasons for
+still going for this new engine are:
+
+\startitemize[packed]
+\startitem
+    some new primitives make for less tracing and tracing has become rather
+    verbose over years (just try \prm {tracingall}); examples are the new macro
+    argument handling and some new hooks
+\stopitem
+\startitem
+    some new primitives permits more efficient coding and have a positive impact
+    on performance (this sort of compensates a performance hit due to delegating
+    work to \LUA)
+\stopitem
+\startitem
+    other primitives are there because they make the code look better; good
+    examples are the extensions to conditionals; they remove the necessity for
+    all kind of (somewhat unnatural) middle layers; take local control as example
+\stopitem
+\startitem
+    a few primitives make complex and demanding mechanism a bit easier to grasp
+    and explain; think of alignments, inserts and marks
+\stopitem
+\startitem
+    more access from the \LUA\ end to \TEX\ internals: a few more callbacks, more
+    options, more robust interfaces, etc
+\stopitem
+\stopitemize
+
+I realize that new primitives also can make some \TEX\ code look less threatening
+to new users. It removes a bit of hackery and limits the level of guru that comes
+with showing off the mastery of expansion and lookahead. So be it. I wonder if
+those objecting to some of the extensions (with the argument that they are not
+needed, and \CONTEXT\ \MKIV\ is proof of that) can resist using them. I admit
+that it sometimes hurt to throw away good working but cumbersome code that took a
+while to evolve, but I also admit that I favor long distance traveling by bike or
+car over riding horseback.
+
+It took a few years for \LUAMETATEX\ to evolve to what it is now and most
+extensions are not there \quotation {because they were easy} or \quotation {could
+be done}. If that were the case, there would be plenty more. In many aspects it
+has been a balancing act and much also relates to looking at the \CONTEXT\ source
+code (\TEX\ as well as \LUA) and wondering why it looks that way. It is also
+driven by the fact that I want to be able to explain to users why things are done
+in a certain way. In fact, I want users to be able to look at the code and
+understand it (apart from maybe a few real dirty low level helpers that are also
+dirty because of performance reasons). Just take this into account when reading on.
+
+And yes, there are still a few possibilities I want to explore \unknown
+
+\stopsubsection
+
 \startsubsection[title={Version information}]
 
 \startsubsubsection[title={\prm {luatexbanner}, \prm {luatexversion} and \prm {luatexrevision}}]
@@ -813,25 +877,67 @@ that it saves a few tokens and can make code a bit more readable.
 
 \stopsubsection
 
-\startsubsection[title={\prm {clearmarks}}]
+\startsubsection[title={\prm {clearmarks}, \prm {flushmarks}, \prm {currentmarks}}]
 
 \topicindex {marks}
 
-This primitive complements the \ETEX\ mark primitives and clears a mark class
-completely, resetting all three connected mark texts to empty. It is an
-immediate command (no synchronization node is used).
+The \prm {clearmarks} primitive complements the \ETEX\ mark primitives and clears
+a mark class completely, resetting all three connected mark texts to empty. It is
+an immediate command (no synchronization node is used).
 
 \startsyntax
 \clearmarks <16-bit number>
 \stopsyntax
 
+The \prm {flushmarks} variant is delayed but puts a (mark) node in the list as
+signal (we could have gone for a keyword to \prm {marks} instead).
+
+\startsyntax
+\flushmarks <16-bit number>
+\stopsyntax
+
+In addition to the three mark fetch commands, we also have access to the last set
+mark in the given class.
+
+\startsyntax
+\currentmarks <16-bit number>
+\stopsyntax
+
+Marks can be traced with \prm {tracingmarks}. When set to~1 the page builder
+shows the set values, and when set to a higher value details about collecting
+them are shown.
+
 \stopsubsection
 
-\startsubsection[title={\prm {alignmark} and \prm {aligntab}}]
+\startsubsection[title={\prm {alignmark}, \prm {aligntab}, \prm {aligncontent} and \prm {tabsize}}]
 
 The primitive \prm {alignmark} duplicates the functionality of \type {#} inside
 alignment preambles, while \prm {aligntab} duplicates the functionality of \type
-{&}.
+{&}. The \prm {aligncontent} primitive directly refers to an entry so that one
+does not get repeated.
+
+Alignments can be traced with \prm {tracingalignments}. When set to~1 basics
+usage is shown, for instance of \prm {noalign} but more interesting is~2 or more:
+you then get the preambles reported.
+
+The \prm {halign} (tested) and \prm {valign} (yet untested) primitives accept a
+few keywords in addition to \type {to} and \type {spread}:
+
+\starttabulate[|l|p|]
+\DB keyword \BC explanation \NC \NR
+\TB
+\NC \type {attr}     \NC set the given attribute to the given value \NC \NR
+\NC \type {callback} \NC trigger the \type {alignment_filter} callback \NC \NR
+\NC \type {discard}  \NC discard zero \prm {tabskip}'s \NC \NR
+\NC \type {noskips}  \NC don't even process zero \prm {tabskip}'s \NC \NR
+\NC \type {reverse}  \NC reverse the final rows \NC \NR
+\LL
+\stoptabulate
+
+In the preamble the \prm {tabsize} primitive can be used to set the width of a
+column. By doing so one can avoid using a box in the preamble which, combined
+with the sparse tabskip features, is a bit easier on memory when you produce
+tables that span hundreds of pages and have a dozen columns.
 
 \stopsubsection
 

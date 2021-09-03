@@ -31,8 +31,8 @@
     local registered  = {}
 
     function gadgets.functions.reverve()
-        local numb = newtoken.scan_int()
-        local name = newtoken.scan_string()
+        local numb = token.scan_int()
+        local name = token.scan_string()
         local okay = string.gsub(name,"[\string\\ ]","")
         registered[okay] = numb
         texio.write_nl("reserving lua function '"..okay.."' with number "..numb)
@@ -62,15 +62,18 @@
 
 % an example of usage (if we ever support it it will go to the plain gadgets module):
 %
+% \newluafunction\UcharcatLuaOne
+% \newluafunction\UcharcatLuaTwo
+%
 % \directlua {
 %
 %     local cct = nil
 %     local chr = nil
 %
 %     gadgets.functions.register("UcharcatLuaOne",function()
-%         chr = newtoken.scan_int()
+%         chr = token.scan_int()
 %         cct = tex.getcatcode(chr)
-%         tex.setcatcode(chr,newtoken.scan_int())
+%         tex.setcatcode(chr,token.scan_int())
 %         tex.sprint(unicode.utf8.char(chr))
 %     end)
 %
@@ -88,6 +91,5 @@
 % A:\the\catcode65:\Ucharcat 65 11:A:\the\catcode65\par
 % A:\the\catcode65:\Ucharcat 65  5:A:\the\catcode65\par
 % A:\the\catcode65:\Ucharcat 65 11:A:\the\catcode65\par
-
 
 \endinput

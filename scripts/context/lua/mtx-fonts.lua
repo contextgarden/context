@@ -12,7 +12,7 @@ local givenfiles  = environment.files
 
 local suffix, addsuffix, removesuffix, replacesuffix = file.suffix, file.addsuffix, file.removesuffix, file.replacesuffix
 local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename, file.join, file.collapsepath
-local lower = string.lower
+local lower, gsub = string.lower, string.gsub
 local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
@@ -187,6 +187,9 @@ function fonts.names.simple(alsotypeone)
     local simplelist = { "ttf", "otf", "ttc", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
     local path = collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
+
+    path = gsub(path, "luametatex%-cache", "luatex-cache") -- maybe have an option to force it
+
     fonts.names.filters.list = simplelist
     fonts.names.version = simpleversion -- this number is the same as in font-dum.lua
     report("generating font database for 'luatex-fonts' version %s",fonts.names.version)

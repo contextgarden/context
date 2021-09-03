@@ -54,10 +54,10 @@ local function findlib(required) -- todo: cache
         for i=1,#list do
             local name  = list[i]
             local found = findfile(name,"lib")
-            if not found then
+            if not found or found == "" then
                 found = findfile(addsuffix(name,suffix),"lib")
             end
-            if found then
+            if found and found ~= "" then
                 if trace then
                     report("library %a resolved via %a path to %a",name,"tds lib",found)
                 end
@@ -70,9 +70,9 @@ local function findlib(required) -- todo: cache
             for i=1,#list do
                 local full  = joinfile(list[i],base)
                 local found = isfile(full) and full
-                if found then
+                if found and found ~= "" then
                     if trace then
-                        report("library %a resolved via %a path to %a",name,"system",found)
+                        report("library %a resolved via %a path to %a",full,"system",found)
                     end
                     return found
                 end

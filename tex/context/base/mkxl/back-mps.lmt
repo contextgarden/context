@@ -40,6 +40,8 @@ local function reset()
     b      = 0
 end
 
+-- todo: high efficient helpers:
+
 local f_font    = formatters[ "\\definefont[%s][file:%s*none @ %sbp]\n" ]
 
 local f_glyph   = formatters[ [[draw textext.drt("\%s\char%i\relax") shifted (%N,%N);]] ]
@@ -122,12 +124,12 @@ local function updatefontstate(id)
     end
 end
 
-local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
+local function flushcharacter(current, pos_h, pos_v, pos_r, font, char)
     b = b + 1
     buffer[b] = f_glyph(last,char,pos_h*bpfactor,pos_v*bpfactor)
 end
 
-local function flushrule(current, pos_h, pos_v, pod_r, size_h, size_v, subtype)
+local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
     if subtype == normalrule_code then
         b = b + 1
         buffer[b] = f_rule(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
@@ -137,12 +139,12 @@ local function flushrule(current, pos_h, pos_v, pod_r, size_h, size_v, subtype)
     end
 end
 
-local function flushsimplerule(pos_h, pos_v, pod_r, size_h, size_v)
-    flush_rule(false,pos_h,pos_v,pod_r,size_h,size_v,normalrule_code)
+local function flushsimplerule(pos_h, pos_v, pos_r, size_h, size_v)
+    flushrule(false,pos_h,pos_v,pos_r,size_h,size_v,normalrule_code)
 end
 
-local function flushspecialrule(pos_h, pos_v, pod_r, w, h, d, l, outline)
-    flush_rule(false,pos_h,pos_v-d,pod_r,w,h+d,outline and outlinerule_code or normalrule_code)
+local function flushspecialrule(pos_h, pos_v, pos_r, w, h, d, l, outline)
+    flushrule(false,pos_h,pos_v-d,pos_r,w,h+d,outline and outlinerule_code or normalrule_code)
 end
 
 -- installer

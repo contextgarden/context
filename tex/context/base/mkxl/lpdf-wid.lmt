@@ -60,7 +60,10 @@ local v_auto                   = variables.auto
 local v_embed                  = variables.embed
 local v_max                    = variables.max
 local v_yes                    = variables.yes
+local v_no                     = variables.no
 local v_compress               = variables.compress
+local v_list                   = variables.list
+local v_title                  = variables.title
 
 local pdfconstant              = lpdf.constant
 local pdfnull                  = lpdf.null
@@ -709,8 +712,9 @@ local function insertrendering(specification)
             descriptor = codeinjections.embedfile {
                 file           = filename,
                 mimetype       = mimetype, -- yes or no
+                title          = option[v_title],
                 compress       = option[v_compress] or false,
-                forcereference = true,
+                forcereference = option[v_list] ~= v_no,
             }
         end
         local clip = pdfdictionary {

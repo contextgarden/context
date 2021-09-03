@@ -59,6 +59,10 @@
 %
 % mingw         :  9.7
 
+% 20210903      : 300 pages
+%
+% mingw         :  9.6
+
 % But speed can differ a bit per compilation (upto .5 seconds maybe due to how
 % compiled code is organized which might influence caching. Who knows ... (or
 % cares). For instance at 20200407 I measured 10.9 seconds after some new low level
@@ -68,7 +72,11 @@
 % switching to gcc9 it dropped again. In december 2020, with IPO enabled I crossed
 % the 26 pps barrier and went below 10 seconds but that was also after some further
 % cleanup in \LMTX. Mid August 2021 I measured over 30 pps but not all is due to
-% the engine I guess.
+% the engine I guess. End august we were are over 31 pps so it's not getting worse.
+
+% (This means that on a modern desktop we probably can get around 100 pps on a
+% manual like this but, always using laptops, I don't have access to machines like
+% that. A modern laptop probably could perform over 50 pps.)
 
 % msvc           1899k (2% slower than mingw)
 % msvc /GL       2297k (similar to mingw)

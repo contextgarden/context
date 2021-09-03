@@ -511,9 +511,9 @@
 %aliased\let\resetcurrentstructuremarks        \relax
 \aliased\let\resetcurrentstructuremarkswithpage\relax
 
-\permanent\protected\def\resetallstructuremarks            {\resetmarking[\firstsectionname]} % will become option (was \v!section-1)
-\permanent\protected\def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
-%permanent\protected\def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
+\permanent\protected\def\resetallstructuremarks            {\clearmarking[\firstsectionname]} % will become option (was \v!section-1)
+\permanent\protected\def\resetcurrentstructuremarks        {\clearmarking[\lastsectionname]}  % will become option
+%permanent\protected\def\resetcurrentstructuremarkswithpage{\clearmarking[\lastsectionname]}  % will become option
 
 % We could use a commandhandler here but sections are somewhat special in the
 % sense that we have two ways of chaining: the main section (levels) as well
@@ -557,7 +557,7 @@
      \edef\currenthead{#1}%
      \let\currentsection\currenthead % just an alias
      \global\advance\maxstructuredepth\plusone
-     \setevalue{\??headlevel#1}{\the\maxstructuredepth}%
+     \edefcsname\??headlevel#1\endcsname{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
      \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
      \the\everydefinesection
@@ -1028,21 +1028,46 @@
      \smashedbox\b_sectioning_delayed
    \fi}
 
-\protected\def\strc_rendering_place_head_section % see hidden below
-  {\global\setbox\b_sectioning_delayed\hpack\bgroup
-     \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-     \hpack\headreferenceattributes{}% also does the mark
-     \theheadsynchronization
-   \egroup}
+\ifdefined\??markingclass % uses a node, so we need to embed / bind
 
-\protected\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
-  {\xdefcsname\??hiddenheadattr\currenthead\endcsname
-     {\headreferenceattributes}% can be used when making a box
-   \xdefcsname\??hiddenheadsync\currenthead\endcsname
-     {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
-      \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-      \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
-      \theheadsynchronization}} % and it's a node anyway
+    \protected\def\strc_rendering_place_head_section % see hidden below
+      {\global\setbox\b_sectioning_delayed\hpack\bgroup
+         \hpack\headreferenceattributes\bgroup
+            \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}% also does the mark
+         \egroup
+         \theheadsynchronization
+       \egroup}
+
+    \protected\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
+      {\xdefcsname\??hiddenheadattr\currenthead\endcsname
+         {\headreferenceattributes}% can be used when making a box
+       \xdefcsname\??hiddenheadsync\currenthead\endcsname
+         {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
+       % {\noexpand\gletcsname\??hiddenheadsync\currenthead\endcsname\relax
+          \hpack\headreferenceattributes\bgroup
+            \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
+          \egroup
+          \theheadsynchronization}} % and it's a node anyway
+
+\else % uses attributes so no interference
+
+    \protected\def\strc_rendering_place_head_section % see hidden below
+      {\global\setbox\b_sectioning_delayed\hpack\bgroup
+         \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
+         \hpack\headreferenceattributes{}% also does the mark
+         \theheadsynchronization
+       \egroup}
+
+    \protected\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
+      {\xdefcsname\??hiddenheadattr\currenthead\endcsname
+         {\headreferenceattributes}% can be used when making a box
+       \xdefcsname\??hiddenheadsync\currenthead\endcsname
+         {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
+          \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
+          \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
+          \theheadsynchronization}} % and it's a node anyway
+
+\fi
 
 \permanent\def\synchronizehead           #1{\begincsname\??hiddenheadsync#1\endcsname}
 \permanent\def\theheadreferenceattributes#1{\begincsname\??hiddenheadattr#1\endcsname}

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-08-30 19:53
+-- merge date  : 2021-09-03 18:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -10263,10 +10263,16 @@ local encodings={}
 fonts.encodings=encodings
 encodings.agl={}
 encodings.known={}
+encodings.glyphlistfilename="font-age.lua"
 setmetatable(encodings.agl,{ __index=function(t,k)
  if k=="unicodes" then
   logs.report("fonts","loading (extended) adobe glyph list")
-  local unicodes=dofile(resolvers.findfile("font-age.lua"))
+  local foundname=resolvers.findfile(encodings.glyphlistfilename) or ""
+  local unicodes=foundname~="" and dofile(foundname)
+  if type(unicodes)~="table" then
+   logs.report("fonts","missing or invalid (extended) adobe glyph list")
+   unicodes={}
+  end
   encodings.agl={ unicodes=unicodes }
   return unicodes
  else

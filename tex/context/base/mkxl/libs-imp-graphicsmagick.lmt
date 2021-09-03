@@ -55,7 +55,13 @@ function graphicsmagick.convert(specification)
         --
         report("run %s, input file %a, outputfile %a",nofruns,inputname,outputname)
         --
-        gm_execute { inputfile = inputname, outputfile = outputname }
+        specification.inputfile  = inputname
+        specification.outputfile = outputname
+        --
+        local okay, detail = gm_execute(specification)
+        if not okay then
+            report("error %a",detail)
+        end
         --
         statistics.stoptiming(graphicsmagick)
     end

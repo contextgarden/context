@@ -108,6 +108,8 @@
 \permanent\protected\lettonothing\RB
 \permanent\protected\lettonothing\RT
 
+\permanent\protected\lettonothing\NS % span
+
 \popoverloadmode
 
 \installmacrostack\BC

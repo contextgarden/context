@@ -329,8 +329,10 @@
 \protected\def\tabl_tabulate_setups_check
   {\begincsname\??tabulatesetup\the\c_tabl_tabulate_column\endcsname}
 
+\let\tabl_tabulate_kooh\relax
+
 \protected\def\tabl_tabulate_entry_before{\ignorespaces\tabl_tabulate_hook}
-\protected\def\tabl_tabulate_entry_after {\unskip\unskip\ifmmode\else\endgraf\fi}
+\protected\def\tabl_tabulate_entry_after {\unskip\unskip\ifmmode\else\endgraf\fi\tabl_tabulate_kooh}
 
 \protected\def\tabl_tabulate_shaped_par_begin
   {\dowithnextboxcs\tabl_tabulate_shaped_par_finish\vbox\bgroup}
@@ -3016,5 +3018,45 @@
    \c!backgroundcolor=\tabulationparameter\c!rulecolor,
    \c!foregroundcolor=,
    \c!foregroundstyle=\tabulationparameter\c!headstyle]
+
+%D Only for simple cases (read:myself):
+%D
+%D \starttyping
+%D \starttabulate[|c|c|c|]
+%D     \NC 1   \NC second column \NC third column \NC \NR
+%D     \NC 2   \NC second        \NC third        \NC \NR
+%D     \NC 3 r \NS[1][r]second & third \NC \NR
+%D     \NC 3 c \NS[1][c]second & third \NC \NR
+%D     \NC 3 l \NS[1][l]second & third \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+\installcorenamespace{tabulatespanb}
+\installcorenamespace{tabulatespana}
+
+\noaligned\def\tabl_tabulate_span{\omit\span\omit\span\omit\span}
+
+%\letcsname\??tabulatespanb l\endcsname\relax
+\letcsname\??tabulatespana l\endcsname\hfill
+\letcsname\??tabulatespanb c\endcsname\hfill
+\letcsname\??tabulatespana c\endcsname\hfill
+\letcsname\??tabulatespanb m\endcsname\hfill
+\letcsname\??tabulatespana m\endcsname\hfill
+\letcsname\??tabulatespanb r\endcsname\hfill
+%\letcsname\??tabulatespana r\endcsname\relax
+
+\noaligned\tolerant\def\tabl_tabulate_NS[#1]#*[#2]%
+  {\NC\loopcs{#1}\tabl_tabulate_span
+   \gdef\tabl_tabulate_kooh{\begincsname\??tabulatespana#2\endcsname}%
+   \begincsname\??tabulatespanb#2\endcsname
+   \ignorespaces}
+
+\appendtoks
+    \enforced\let\NS\tabl_tabulate_NS
+\to \t_tabl_tabulate_initializers_first
+
+% \appendtoks
+%     \let\NS\tabl_tabulate_NS
+% \to \t_tabl_tabulate_initializers_second
 
 \protect \endinput

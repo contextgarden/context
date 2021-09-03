@@ -305,6 +305,8 @@
 \permanent\countdef\c_syst_min_allocated_iohandle  = 203 \c_syst_min_allocated_iohandle  =     0
 \permanent\countdef\c_syst_max_allocated_iohandle  = 204 \c_syst_max_allocated_iohandle  =  1023
 \permanent\countdef\c_syst_min_allocated_attribute = 205 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
+\permanent\countdef\c_syst_min_allocated_mark      = 206 \c_syst_min_allocated_mark      =    16 % a few scratch ones
+\permanent\countdef\c_syst_max_allocated_mark      = 207 \c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
 
 \permanent\countdef\c_syst_last_allocated_count    = 211 \c_syst_last_allocated_count  = \c_syst_min_allocated_register
 \permanent\countdef\c_syst_last_allocated_dimen    = 212 \c_syst_last_allocated_dimen  = \c_syst_min_allocated_register
@@ -314,7 +316,7 @@
 \permanent\countdef\c_syst_last_allocated_toks     = 216 \c_syst_last_allocated_toks   = \c_syst_min_allocated_register
 \permanent\countdef\c_syst_last_allocated_read     = 217 \c_syst_last_allocated_read   = \c_syst_min_allocated_iohandle
 \permanent\countdef\c_syst_last_allocated_write    = 218 \c_syst_last_allocated_write  = \c_syst_min_allocated_iohandle
-\permanent\countdef\c_syst_last_allocated_marks    = 219 \c_syst_last_allocated_marks  = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_marks    = 219 \c_syst_last_allocated_marks  = \c_syst_min_allocated_mark
 
 \permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value = -"7FFFFFFF
 \permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value =  "7FFFFFFF
@@ -334,7 +336,8 @@
 
 \permanent\let\wlog\gobbleoneargument % Let's get rid of this one.
 
-%D The allocators share a common helper macro.
+%D The allocators share a common helper macro. Marks might be changed to work in lower
+%D regions and we always assumes allocation.
 
 \permanent\protected\def\newcount {\syst_basics_allocate\c_syst_last_allocated_count \count \countdef  \c_syst_max_allocated_register}
 \permanent\protected\def\newdimen {\syst_basics_allocate\c_syst_last_allocated_dimen \dimen \dimendef  \c_syst_max_allocated_register}
@@ -344,7 +347,7 @@
 \permanent\protected\def\newtoks  {\syst_basics_allocate\c_syst_last_allocated_toks  \toks  \toksdef   \c_syst_max_allocated_register}
 \permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read  \integerdef\c_syst_max_allocated_iohandle}
 \permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write \integerdef\c_syst_max_allocated_iohandle}
-\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_register}
+\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_mark    }
 
 \firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might become the default
 
