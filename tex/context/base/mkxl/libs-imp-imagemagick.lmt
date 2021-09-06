@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['libs-imp-graphicsmagick'] = {
+if not modules then modules = { } end modules ['libs-imp-imagemagick'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkxl",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -6,12 +6,24 @@ if not modules then modules = { } end modules ['libs-imp-graphicsmagick'] = {
     license   = "see context related readme files",
 }
 
-local libname = "graphicsmagick"
-local libfile = { "CORE_RL_magick_", "CORE_RL_wand_" }
+-- \registerctxluafile{libs-imp-imagemagick}{autosuffix}
+-- \starttext
+--     \startluacode
+--         utilities.imagemagick.convert {
+--             inputname  = "hacker.jpg",
+--             outputname = "m_k_v_i_hacker.png",
+--             options    = { "-rotate", 90, "-noise", 2 },
+--         }
+--         context.externalfigure { "hacker.png" }
+--     \stopluacode
+-- \stoptext
 
-local gmlib = resolvers.libraries.validoptional(libname)
+local libname = "imagemagick"
+local libfile = { "CORE_RL_MagickCore_", "CORE_RL_MagickWand_" }
 
-if not gmlib then return end
+local imlib = resolvers.libraries.validoptional(libname)
+
+if not imlib then return end
 
 local function okay()
     if resolvers.libraries.optionalloaded(libname,libfile) then
@@ -22,24 +34,23 @@ local function okay()
     return okay()
 end
 
-local graphicsmagick     = utilities.graphicsmagick or { }
-utilities.graphicsmagick = graphicsmagick
-utilities.graphicmagick  = graphicsmagick
+local imagemagick     = utilities.imagemagick or { }
+utilities.imagemagick = imagemagick
 
-local gm_execute = gmlib.execute
+local im_execute = imlib.execute
 local nofruns    = 0
 local report     = logs.reporter(libname)
 
-function graphicsmagick.convert(specification)
+function imagemagick.convert(specification)
     if okay() then
         --
         nofruns = nofruns + 1
-        statistics.starttiming(graphicsmagick)
+        statistics.starttiming(imagemagick)
         --
         local inputname  = specification.inputname
         if not inputname or inputname == "" then
             report("invalid run %s, no inputname specified",nofruns)
-            statistics.stoptiming(graphicsmagick)
+            statistics.stoptiming(imagemagick)
             return false
         end
         local outputname = specification.outputname
@@ -49,7 +60,7 @@ function graphicsmagick.convert(specification)
         --
         if not lfs.isfile(inputname) then
             report("invalid run %s, input file %a is not found",nofruns,inputname)
-            statistics.stoptiming(graphicsmagick)
+            statistics.stoptiming(imagemagick)
             return false
         end
         --
@@ -58,17 +69,17 @@ function graphicsmagick.convert(specification)
         specification.inputfile  = inputname
         specification.outputfile = outputname
         --
-        local okay, detail = gm_execute(specification)
+        local okay, detail = im_execute(specification)
         if not okay then
-            report("error %a",detail)
+            report("error %a (make sure options start with one -) ",detail)
         end
         --
-        statistics.stoptiming(graphicsmagick)
+        statistics.stoptiming(imagemagick)
     end
 end
 
-function graphicsmagick.statistics(feedback)
-    local runtime = statistics.elapsedtime(graphicsmagick)
+function imagemagick.statistics(feedback)
+    local runtime = statistics.elapsedtime(imagemagick)
     if feedback then
         report("nofruns %s, runtime %s",nofruns,runtime)
     else
@@ -79,5 +90,5 @@ function graphicsmagick.statistics(feedback)
     end
 end
 
--- graphicsmagick.convert { inputname = "t:/sources/hacker.jpg", outputname = "e:/tmp/hacker.png" }
--- graphicsmagick.statistics(true)
+-- imagemagick.convert { inputname = "t:/sources/hacker.jpg", outputname = "e:/tmp/hacker.png" }
+-- imagemagick.statistics(true)

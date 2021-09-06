@@ -81,8 +81,8 @@ local v_first      = variables.first
 local v_last       = variables.last
 local v_top        = variables.top
 local v_bottom     = variables.bottom
-local v_minheight  = variables.minheight
 local v_maxheight  = variables.maxheight
+local v_minheight  = variables.minheight
 local v_mindepth   = variables.mindepth
 local v_maxdepth   = variables.maxdepth
 local v_offset     = variables.offset
@@ -127,7 +127,6 @@ local getid               = nuts.getid
 local getlist             = nuts.getlist
 local setlist             = nuts.setlist
 local getattr             = nuts.getattr
-local getattrs            = nuts.getattrs
 local setattr             = nuts.setattr
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
@@ -163,8 +162,6 @@ local nextnode            = nuts.traversers.node
 local nexthlist           = nuts.traversers.hlist
 
 local nodereference       = nuts.reference
-
-local theprop             = nuts.theprop
 
 local listtoutf           = nodes.listtoutf
 local nodeidstostring     = nodes.idstostring
@@ -352,339 +349,343 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     return false
 end
 
--- quite tricky: ceil(-something) => -0
-
-local function ceiled(n)
-    if n < 0 or n < 0.01 then
-        return 0
-    else
-        return ceil(n)
-    end
-end
-
-local function floored(n)
-    if n < 0 or n < 0.01 then
-        return 0
-    else
-        return floor(n)
-    end
-end
-
 -- check variables.none etc
 
-local function fixedprofile(current)
-    local profiling = builders.profiling
-    return profiling and profiling.fixedprofile(current)
-end
+local snap_hlist  do
 
-local function snap_hlist(where,current,method,height,depth) -- method[v_strut] is default
-    if fixedprofile(current) then
-        return
+    local function fixedprofile(current)
+        local profiling = builders.profiling
+        return profiling and profiling.fixedprofile(current)
     end
-    local list = getlist(current)
-    local t = trace_vsnapping and { }
-    if t then
-        t[#t+1] = formatters["list content: %s"](listtoutf(list))
-        t[#t+1] = formatters["snap method: %s"](method.name) -- not interfaced
-        t[#t+1] = formatters["specification: %s"](method.specification) -- not interfaced
-    end
-    local snapht, snapdp
-    if method[v_local] then
-        -- snapping is done immediately here
-        snapht = texgetdimen("bodyfontstrutheight")
-        snapdp = texgetdimen("bodyfontstrutdepth")
-        if t then
-            t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
-        end
-    elseif method[v_global] then
-        snapht = texgetdimen("globalbodyfontstrutheight")
-        snapdp = texgetdimen("globalbodyfontstrutdepth")
-        if t then
-            t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
-        end
-    else
-        -- maybe autolocal
-        -- snapping might happen later in the otr
-        snapht = texgetdimen("globalbodyfontstrutheight")
-        snapdp = texgetdimen("globalbodyfontstrutdepth")
-        local lsnapht = texgetdimen("bodyfontstrutheight")
-        local lsnapdp = texgetdimen("bodyfontstrutdepth")
-        if snapht ~= lsnapht and snapdp ~= lsnapdp then
-            snapht, snapdp = lsnapht, lsnapdp
-        end
-        if t then
-            t[#t+1] = formatters["auto: snapht %p snapdp %p"](snapht,snapdp)
+
+    -- quite tricky: ceil(-something) => -0
+
+    local function ceiled(n)
+        if n < 0 or n < 0.01 then
+            return 0
+        else
+            return ceil(n)
         end
     end
 
-    local wd, ht, dp = getwhd(current)
-
-    local h        = (method[v_noheight] and 0) or height or ht
-    local d        = (method[v_nodepth]  and 0) or depth  or dp
-    local hr       = method[v_hfraction] or 1
-    local dr       = method[v_dfraction] or 1
-    local br       = method[v_bfraction] or 0
-    local ch       = h
-    local cd       = d
-    local tlines   = method[v_tlines] or 1
-    local blines   = method[v_blines] or 1
-    local done     = false
-    local plusht   = snapht
-    local plusdp   = snapdp
-    local snaphtdp = snapht + snapdp
-    local extra    = 0
-
-    if t then
-        t[#t+1] = formatters["hlist: wd %p ht %p (used %p) dp %p (used %p)"](wd,ht,h,dp,d)
-        t[#t+1] = formatters["fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s"](hr,dr,br,tlines,blines)
+    local function floored(n)
+        if n < 0 or n < 0.01 then
+            return 0
+        else
+            return floor(n)
+        end
     end
 
-    if method[v_box] then
-        local br = 1 - br
-        if br < 0 then
-            br = 0
-        elseif br > 1 then
-            br = 1
+    snap_hlist = function(where,current,method,height,depth) -- method[v_strut] is default
+        if fixedprofile(current) then
+            return
         end
-        local n = ceiled((h+d-br*snapht-br*snapdp)/snaphtdp)
-        local x = n * snaphtdp - h - d
-        plusht = h + x / 2
-        plusdp = d + x / 2
+        local list = getlist(current)
+        local t = trace_vsnapping and { }
         if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_box,plusht,plusdp)
+            t[#t+1] = formatters["list content: %s"](listtoutf(list))
+            t[#t+1] = formatters["snap method: %s"](method.name) -- not interfaced
+            t[#t+1] = formatters["specification: %s"](method.specification) -- not interfaced
         end
-    elseif method[v_max] then
-        local n = ceiled((h+d)/snaphtdp)
-        local x = n * snaphtdp - h - d
-        plusht = h + x / 2
-        plusdp = d + x / 2
+        local snapht, snapdp
+        if method[v_local] then
+            -- snapping is done immediately here
+            snapht = texgetdimen("bodyfontstrutheight")
+            snapdp = texgetdimen("bodyfontstrutdepth")
+            if t then
+                t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
+            end
+        elseif method[v_global] then
+            snapht = texgetdimen("globalbodyfontstrutheight")
+            snapdp = texgetdimen("globalbodyfontstrutdepth")
+            if t then
+                t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
+            end
+        else
+            -- maybe autolocal
+            -- snapping might happen later in the otr
+            snapht = texgetdimen("globalbodyfontstrutheight")
+            snapdp = texgetdimen("globalbodyfontstrutdepth")
+            local lsnapht = texgetdimen("bodyfontstrutheight")
+            local lsnapdp = texgetdimen("bodyfontstrutdepth")
+            if snapht ~= lsnapht and snapdp ~= lsnapdp then
+                snapht, snapdp = lsnapht, lsnapdp
+            end
+            if t then
+                t[#t+1] = formatters["auto: snapht %p snapdp %p"](snapht,snapdp)
+            end
+        end
+
+        local wd, ht, dp = getwhd(current)
+
+        local h        = (method[v_noheight] and 0) or height or ht
+        local d        = (method[v_nodepth]  and 0) or depth  or dp
+        local hr       = method[v_hfraction] or 1
+        local dr       = method[v_dfraction] or 1
+        local br       = method[v_bfraction] or 0
+        local ch       = h
+        local cd       = d
+        local tlines   = method[v_tlines] or 1
+        local blines   = method[v_blines] or 1
+        local done     = false
+        local plusht   = snapht
+        local plusdp   = snapdp
+        local snaphtdp = snapht + snapdp
+        local extra    = 0
+
         if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_max,plusht,plusdp)
+            t[#t+1] = formatters["hlist: wd %p ht %p (used %p) dp %p (used %p)"](wd,ht,h,dp,d)
+            t[#t+1] = formatters["fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s"](hr,dr,br,tlines,blines)
         end
-    elseif method[v_min] then
-        -- we catch a lone min
-        if method.specification ~= v_min then
-            local n = floored((h+d)/snaphtdp)
+
+        if method[v_box] then
+            local br = 1 - br
+            if br < 0 then
+                br = 0
+            elseif br > 1 then
+                br = 1
+            end
+            local n = ceiled((h+d-br*snapht-br*snapdp)/snaphtdp)
             local x = n * snaphtdp - h - d
             plusht = h + x / 2
             plusdp = d + x / 2
-            if plusht < 0 then
-                plusht = 0
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_box,plusht,plusdp)
             end
-            if plusdp < 0 then
-                plusdp = 0
+        elseif method[v_max] then
+            local n = ceiled((h+d)/snaphtdp)
+            local x = n * snaphtdp - h - d
+            plusht = h + x / 2
+            plusdp = d + x / 2
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_max,plusht,plusdp)
             end
-        end
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_min,plusht,plusdp)
-        end
-    elseif method[v_none] then
-        plusht, plusdp = 0, 0
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_none,0,0)
-        end
-    end
-    -- for now, we actually need to tag a box and then check at several points if something ended up
-    -- at the top of a page
-    if method[v_halfline] then -- extra halfline
-        extra  = snaphtdp/2
-        plusht = plusht + extra
-        plusdp = plusdp + extra
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline,plusht,plusdp)
-        end
-    end
-    if method[v_line] then -- extra line
-        extra  = snaphtdp
-        plusht = plusht + extra
-        plusdp = plusdp + extra
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line,plusht,plusdp)
-        end
-    end
-    if method[v_halfline_m] then -- extra halfline
-        extra  = - snaphtdp/2
-        plusht = plusht + extra
-        plusdp = plusdp + extra
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline_m,plusht,plusdp)
-        end
-    end
-    if method[v_line_m] then -- extra line
-        extra  = - snaphtdp
-        plusht = plusht + extra
-        plusdp = plusdp + extra
-        if t then
-            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line_m,plusht,plusdp)
-        end
-    end
-    if method[v_first] then
-        local thebox = current
-        local id = getid(thebox)
-        if id == hlist_code then
-            thebox = validvbox(id,getlist(thebox))
-            id = thebox and getid(thebox)
-        end
-        if thebox and id == vlist_code then
-            local list = getlist(thebox)
-            local lw, lh, ld
-            for n in nexthlist, list do
-                lw, lh, ld = getwhd(n)
-                break
-            end
-            if lh then
-                local wd, ht, dp = getwhd(thebox)
-                if t then
-                    t[#t+1] = formatters["first line: height %p depth %p"](lh,ld)
-                    t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+        elseif method[v_min] then
+            -- we catch a lone min
+            if method.specification ~= v_min then
+                local n = floored((h+d)/snaphtdp)
+                local x = n * snaphtdp - h - d
+                plusht = h + x / 2
+                plusdp = d + x / 2
+                if plusht < 0 then
+                    plusht = 0
                 end
-                local delta = h - lh
-                ch, cd = lh, delta + d
-                h, d = ch, cd
-                local shifted = hpack_node(getlist(current))
-                setshift(shifted,delta)
-                setlist(current,shifted)
-                done = true
-                if t then
-                    t[#t+1] = formatters["first: height %p depth %p shift %p"](ch,cd,delta)
+                if plusdp < 0 then
+                    plusdp = 0
                 end
-            elseif t then
-                t[#t+1] = "first: not done, no content"
             end
-        elseif t then
-            t[#t+1] = "first: not done, no vbox"
-        end
-    elseif method[v_last] then
-        local thebox = current
-        local id = getid(thebox)
-        if id == hlist_code then
-            thebox = validvbox(id,getlist(thebox))
-            id = thebox and getid(thebox)
-        end
-        if thebox and id == vlist_code then
-            local list = getlist(thebox)
-            local lw, lh, ld
-            for n in nexthlist, list do
-                lw, lh, ld = getwhd(n)
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_min,plusht,plusdp)
             end
-            if lh then
-                local wd, ht, dp = getwhd(thebox)
-                if t then
-                    t[#t+1] = formatters["last line: height %p depth %p" ](lh,ld)
-                    t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+        elseif method[v_none] then
+            plusht, plusdp = 0, 0
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_none,0,0)
+            end
+        end
+        -- for now, we actually need to tag a box and then check at several points if something ended up
+        -- at the top of a page
+        if method[v_halfline] then -- extra halfline
+            extra  = snaphtdp/2
+            plusht = plusht + extra
+            plusdp = plusdp + extra
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline,plusht,plusdp)
+            end
+        end
+        if method[v_line] then -- extra line
+            extra  = snaphtdp
+            plusht = plusht + extra
+            plusdp = plusdp + extra
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line,plusht,plusdp)
+            end
+        end
+        if method[v_halfline_m] then -- extra halfline
+            extra  = - snaphtdp/2
+            plusht = plusht + extra
+            plusdp = plusdp + extra
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline_m,plusht,plusdp)
+            end
+        end
+        if method[v_line_m] then -- extra line
+            extra  = - snaphtdp
+            plusht = plusht + extra
+            plusdp = plusdp + extra
+            if t then
+                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line_m,plusht,plusdp)
+            end
+        end
+        if method[v_first] then
+            local thebox = current
+            local id = getid(thebox)
+            if id == hlist_code then
+                thebox = validvbox(id,getlist(thebox))
+                id = thebox and getid(thebox)
+            end
+            if thebox and id == vlist_code then
+                local list = getlist(thebox)
+                local lw, lh, ld
+                for n in nexthlist, list do
+                    lw, lh, ld = getwhd(n)
+                    break
                 end
-                local delta = d - ld
-                cd, ch = ld, delta + h
-                h, d = ch, cd
-                local shifted = hpack_node(getlist(current))
-                setshift(shifted,delta)
-                setlist(current,shifted)
-                done = true
-                if t then
-                    t[#t+1] = formatters["last: height %p depth %p shift %p"](ch,cd,delta)
+                if lh then
+                    local wd, ht, dp = getwhd(thebox)
+                    if t then
+                        t[#t+1] = formatters["first line: height %p depth %p"](lh,ld)
+                        t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+                    end
+                    local delta = h - lh
+                    ch, cd = lh, delta + d
+                    h, d = ch, cd
+                    local shifted = hpack_node(getlist(current))
+                    setshift(shifted,delta)
+                    setlist(current,shifted)
+                    done = true
+                    if t then
+                        t[#t+1] = formatters["first: height %p depth %p shift %p"](ch,cd,delta)
+                    end
+                elseif t then
+                    t[#t+1] = "first: not done, no content"
                 end
             elseif t then
-                t[#t+1] = "last: not done, no content"
+                t[#t+1] = "first: not done, no vbox"
             end
-        elseif t then
-            t[#t+1] = "last: not done, no vbox"
+        elseif method[v_last] then
+            local thebox = current
+            local id = getid(thebox)
+            if id == hlist_code then
+                thebox = validvbox(id,getlist(thebox))
+                id = thebox and getid(thebox)
+            end
+            if thebox and id == vlist_code then
+                local list = getlist(thebox)
+                local lw, lh, ld
+                for n in nexthlist, list do
+                    lw, lh, ld = getwhd(n)
+                end
+                if lh then
+                    local wd, ht, dp = getwhd(thebox)
+                    if t then
+                        t[#t+1] = formatters["last line: height %p depth %p" ](lh,ld)
+                        t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+                    end
+                    local delta = d - ld
+                    cd, ch = ld, delta + h
+                    h, d = ch, cd
+                    local shifted = hpack_node(getlist(current))
+                    setshift(shifted,delta)
+                    setlist(current,shifted)
+                    done = true
+                    if t then
+                        t[#t+1] = formatters["last: height %p depth %p shift %p"](ch,cd,delta)
+                    end
+                elseif t then
+                    t[#t+1] = "last: not done, no content"
+                end
+            elseif t then
+                t[#t+1] = "last: not done, no vbox"
+            end
         end
+        if method[v_minheight] then
+            ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
+            if t then
+                t[#t+1] = formatters["minheight: %p"](ch)
+            end
+        elseif method[v_maxheight] then
+            ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
+            if t then
+                t[#t+1] = formatters["maxheight: %p"](ch)
+            end
+        else
+            ch = plusht
+            if t then
+                t[#t+1] = formatters["set height: %p"](ch)
+            end
+        end
+        if method[v_mindepth] then
+            cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
+            if t then
+                t[#t+1] = formatters["mindepth: %p"](cd)
+            end
+        elseif method[v_maxdepth] then
+            cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
+            if t then
+                t[#t+1] = formatters["maxdepth: %p"](cd)
+            end
+        else
+            cd = plusdp
+            if t then
+                t[#t+1] = formatters["set depth: %p"](cd)
+            end
+        end
+        if method[v_top] then
+            ch = ch + tlines * snaphtdp
+            if t then
+                t[#t+1] = formatters["top height: %p"](ch)
+            end
+        end
+        if method[v_bottom] then
+            cd = cd + blines * snaphtdp
+            if t then
+                t[#t+1] = formatters["bottom depth: %p"](cd)
+            end
+        end
+        local offset = method[v_offset]
+        if offset then
+            -- we need to set the attr
+            if t then
+                local wd, ht, dp = getwhd(current)
+                t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
+            end
+            local shifted = hpack_node(getlist(current))
+            setshift(shifted,offset)
+            setlist(current,shifted)
+            if t then
+                local wd, ht, dp = getwhd(current)
+                t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
+            end
+            setattr(shifted,a_snapmethod,0)
+            setattr(current,a_snapmethod,0)
+        end
+        if not height then
+            setheight(current,ch)
+            if t then
+                t[#t+1] = formatters["forced height: %p"](ch)
+            end
+        end
+        if not depth then
+            setdepth(current,cd)
+            if t then
+                t[#t+1] = formatters["forced depth: %p"](cd)
+            end
+        end
+        local lines = (ch+cd)/snaphtdp
+        if t then
+            local original = (h+d)/snaphtdp
+            local whatever = (ch+cd)/(texgetdimen("globalbodyfontstrutheight") + texgetdimen("globalbodyfontstrutdepth"))
+            t[#t+1] = formatters["final lines : %p -> %p (%p)"](original,lines,whatever)
+            t[#t+1] = formatters["final height: %p -> %p"](h,ch)
+            t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
+        end
+    -- todo:
+    --
+    --     if h < 0 or d < 0 then
+    --         h = 0
+    --         d = 0
+    --     end
+        if t then
+            report_snapper("trace: %s type %s\n\t%\n\tt",where,nodecodes[getid(current)],t)
+        end
+        if not method[v_split] then
+            -- so extra will not be compensated at the top of a page
+            extra = 0
+        end
+        return h, d, ch, cd, lines, extra
     end
-    if method[v_minheight] then
-        ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
-        if t then
-            t[#t+1] = formatters["minheight: %p"](ch)
-        end
-    elseif method[v_maxheight] then
-        ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
-        if t then
-            t[#t+1] = formatters["maxheight: %p"](ch)
-        end
-    else
-        ch = plusht
-        if t then
-            t[#t+1] = formatters["set height: %p"](ch)
-        end
-    end
-    if method[v_mindepth] then
-        cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
-        if t then
-            t[#t+1] = formatters["mindepth: %p"](cd)
-        end
-    elseif method[v_maxdepth] then
-        cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
-        if t then
-            t[#t+1] = formatters["maxdepth: %p"](cd)
-        end
-    else
-        cd = plusdp
-        if t then
-            t[#t+1] = formatters["set depth: %p"](cd)
-        end
-    end
-    if method[v_top] then
-        ch = ch + tlines * snaphtdp
-        if t then
-            t[#t+1] = formatters["top height: %p"](ch)
-        end
-    end
-    if method[v_bottom] then
-        cd = cd + blines * snaphtdp
-        if t then
-            t[#t+1] = formatters["bottom depth: %p"](cd)
-        end
-    end
-    local offset = method[v_offset]
-    if offset then
-        -- we need to set the attr
-        if t then
-            local wd, ht, dp = getwhd(current)
-            t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
-        end
-        local shifted = hpack_node(getlist(current))
-        setshift(shifted,offset)
-        setlist(current,shifted)
-        if t then
-            local wd, ht, dp = getwhd(current)
-            t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
-        end
-        setattr(shifted,a_snapmethod,0)
-        setattr(current,a_snapmethod,0)
-    end
-    if not height then
-        setheight(current,ch)
-        if t then
-            t[#t+1] = formatters["forced height: %p"](ch)
-        end
-    end
-    if not depth then
-        setdepth(current,cd)
-        if t then
-            t[#t+1] = formatters["forced depth: %p"](cd)
-        end
-    end
-    local lines = (ch+cd)/snaphtdp
-    if t then
-        local original = (h+d)/snaphtdp
-        local whatever = (ch+cd)/(texgetdimen("globalbodyfontstrutheight") + texgetdimen("globalbodyfontstrutdepth"))
-        t[#t+1] = formatters["final lines : %p -> %p (%p)"](original,lines,whatever)
-        t[#t+1] = formatters["final height: %p -> %p"](h,ch)
-        t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
-    end
--- todo:
---
---     if h < 0 or d < 0 then
---         h = 0
---         d = 0
---     end
-    if t then
-        report_snapper("trace: %s type %s\n\t%\n\tt",where,nodecodes[getid(current)],t)
-    end
-    if not method[v_split] then
-        -- so extra will not be compensated at the top of a page
-        extra = 0
-    end
-    return h, d, ch, cd, lines, extra
+
 end
 
 local categories = { [0] =
@@ -732,6 +733,95 @@ vspacingdata.skip = vspacingdata.skip or { } -- allocate ?
 storage.register("builders/vspacing/data/map",  vspacingdata.map,  "builders.vspacing.data.map")
 storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vspacing.data.skip")
 
+local setspecification, getspecification
+
+-- attributes : more overhead : feels faster than properties
+-- properties : more natural  : feels slower than attributes
+-- data       : more native   : is little faster than attributes
+
+if true then
+-- if false then
+
+    -- quite okay but more memory due to attributes (not many)
+
+    local setattrs = nuts.setattrs
+    local getattrs = nuts.getattrs
+
+    setspecification = function(n,category,penalty,order)
+        setattrs(n,false,a_skipcategory,category,a_skippenalty,penalty,a_skiporder,order or 1)
+    end
+
+    getspecification = function(n)
+        return getattrs(n,a_skipcategory,a_skippenalty,a_skiporder)
+    end
+
+-- elseif true then
+elseif false then
+
+    -- more natural as we stay in lua
+
+    setspecification = function(n,category,penalty,order)
+        -- we know that there are no properties
+        properties[n] = {
+            [a_skipcategory] = category,
+            [a_skippenalty]  = penalty,
+            [a_skiporder]    = order or 1,
+        }
+    end
+
+    getspecification = function(n)
+        local p = properties[n]
+        if p then
+            return p[a_skipcategory], p[a_skippenalty], p[a_skiporder]
+        end
+    end
+
+else
+
+    -- quite efficient but needs testing because we limit values
+
+    local getdata = nuts.getdata
+    local setdata = nuts.setdata
+
+    setspecification = function(n,category,penalty,order)
+        if not category or category > 0xF then
+            category = 0xF
+        end
+        if not order or order > 0xFF then
+            order = 0xFF
+        end
+        if not penalty or penalty > 0x7FFFF then
+            penalty = 0x7FFFF
+        elseif penalty < -0x7FFFF then
+            penalty = -0x7FFFF
+        end
+        -- we need overflow checks
+        setdata(n, (penalty << 12) + (order << 4) + category)
+    end
+
+    getspecification = function(n)
+        local data = getdata(n)
+        if data and data ~= 0 then
+            local category =  data        & 0x0F
+            local order    = (data >>  4) & 0xFF
+            local penalty  =  data >> 12
+            if category == 0xF then
+                category = nil
+            end
+            if order == 0xFF then
+                order = nil
+            end
+            if penalty == 0x7FFFF then
+                penalty = nil
+            end
+            return category, penalty, order
+        else
+            return nil, nil, nil
+        end
+    end
+
+end
+
 do
 
     local P, C, R, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
@@ -772,8 +862,6 @@ do
  -- local setmacro    = tokens.setters.macro
  -- local settoks     = tex.settoks
     local toscaled    = tex.toscaled
-
-    local setattrs    = nuts.setattrs
 
     local b_done     = false
     local b_packed   = false
@@ -819,7 +907,7 @@ do
 
     local function inject()
         local n = new_glue(b_amount,b_stretch,b_shrink)
-        setattrs(n,false,a_skipcategory,b_category,a_skippenalty,b_penalty,a_skiporder,b_order or 1)
+        setspecification(n,b_category,b_penalty,b_order or 1)
         write_node(n)
     end
 
@@ -943,19 +1031,22 @@ do
 
     function vspacing.injectpenalty(penalty)
         local n = new_glue()
-        setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
+     -- setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
+        setspecification(n,categories.penalty,penalty,1)
         write_node(n)
     end
 
     function vspacing.injectskip(amount)
         local n = new_glue(amount)
-        setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
+     -- setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
+        setspecification(n,categories.largest,false,1)
         write_node(n)
     end
 
     function vspacing.injectdisable(amount)
         local n = new_glue()
-        setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
+     -- setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
+        setspecification(n,categories.disable,false,1)
         write_node(n)
     end
 
@@ -1615,7 +1706,8 @@ do
             elseif id == glue_code then
                 local subtype = getsubtype(current)
                 if subtype == userskip_code then
-                    local sc, so, sp = getattrs(current,a_skipcategory,a_skiporder,a_skippenalty)
+                 -- local sc, so, sp = getattrs(current,a_skipcategory,a_skiporder,a_skippenalty)
+                    local sc, sp, so = getspecification(current)
                     if not so then
                         so = 1 -- the others have no default value
                     end
@@ -1877,7 +1969,8 @@ do
                     end
                 elseif subtype == topskip_code or subtype == splittopskip_code then
                     local next = getnext(current)
-                    if next and getattr(next,a_skipcategory) == notopskip then
+                 -- if next and getattr(next,a_skipcategory) == notopskip then
+                    if next and getspecification(next) == notopskip then
                         nuts.setglue(current) -- zero
                     end
                     if snap then
@@ -2034,7 +2127,9 @@ setnext(glue_data)
                 if id ~= glue_code then
                     flush = true
                 elseif subtype == userskip_code then
-                    if getattr(n,a_skipcategory) then
+                 -- local sc = getattr(n,a_skipcategory)
+                    local sc = getspecification(n)
+                    if sc then
                         stackhack = true
                     else
                         flush = true

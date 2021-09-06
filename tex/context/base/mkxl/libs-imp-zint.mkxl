@@ -22,6 +22,8 @@
 %D
 %D % e:\tex-context\tex\texmf-win64\bin\lib\luametatex\zint\libzint.dll
 
+\enabletrackers[*res*]
+
 \registerctxluafile{libs-imp-zint}{autosuffix}
 
 \unprotect

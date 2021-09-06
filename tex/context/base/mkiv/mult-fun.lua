@@ -193,7 +193,7 @@ return {
         "positionwhd", "positionpage", "positionregion", "positionbox", "positionx", "positiony",
         "positionanchor", "positioninregion", "positionatanchor",
         --
-        "getposboxesv, getmultipars",
+        "getposboxes", "getmultipars",
         "getpospage", "getposparagraph", "getposcolumn", "getposregion",
         "getposx", "getposy", "getposwidth", "getposheight", "getposdepth",
         "getposleftskip", "getposrightskip", "getposhsize", "getposparindent", "getposhangindent", "getposhangafter",

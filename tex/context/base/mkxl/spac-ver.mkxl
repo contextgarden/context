@@ -1928,33 +1928,33 @@
 
 %D The injector code (generated at the \LUA\ end). This will go away!
 
-\newtoks\everybeforeblankhandling
-\newtoks\everyafterblankhandling
-
-\newconditional\c_space_vspacing_done
-\newconditional\c_space_vspacing_fixed
-\newconditional\c_space_ignore_parskip
-
-\appendtoks
-    \s_spac_vspacing_temp\zeropoint
-    \c_attr_skipcategory\plusone
-    \c_attr_skippenalty \attributeunsetvalue
-    \c_attr_skiporder   \attributeunsetvalue
-    \ifgridsnapping
-        \settrue\c_space_vspacing_fixed
-    \else
-        \setfalse\c_space_vspacing_fixed
-    \fi
-\to \everybeforeblankhandling
-
-\appendtoks
-    \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
-      \ifconditional\c_space_vspacing_fixed \else
-        \s!plus \skipgluefactor\s_spac_vspacing_temp
-        \s!minus\skipgluefactor\s_spac_vspacing_temp
-      \fi
-    \relax
-\to \everyafterblankhandling
+% \newtoks\everybeforeblankhandling
+% \newtoks\everyafterblankhandling
+%
+% \newconditional\c_space_vspacing_done
+% \newconditional\c_space_vspacing_fixed
+% \newconditional\c_space_ignore_parskip
+%
+% \appendtoks
+%     \s_spac_vspacing_temp\zeropoint
+%     \c_attr_skipcategory\plusone
+%     \c_attr_skippenalty \attributeunsetvalue
+%     \c_attr_skiporder   \attributeunsetvalue
+%     \ifgridsnapping
+%         \settrue\c_space_vspacing_fixed
+%     \else
+%         \setfalse\c_space_vspacing_fixed
+%     \fi
+% \to \everybeforeblankhandling
+%
+% \appendtoks
+%     \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
+%       \ifconditional\c_space_vspacing_fixed \else
+%         \s!plus \skipgluefactor\s_spac_vspacing_temp
+%         \s!minus\skipgluefactor\s_spac_vspacing_temp
+%       \fi
+%     \relax
+% \to \everyafterblankhandling
 
 % The main spacer:
 

@@ -1227,10 +1227,10 @@
 
 %D Often used as cs key:
 
-\mutable\let\on  \empty
-\mutable\let\of  \empty
-\mutable\let\and \empty
-\mutable\let\with\empty
+\mutable\let\on  \relax % \empty
+\mutable\let\of  \relax % \empty
+\mutable\let\and \relax % \empty
+\mutable\let\with\relax % \empty
 \mutable\let\nop \empty % used often
 \mutable\let\yes \empty % used often
 

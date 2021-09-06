@@ -113,7 +113,7 @@ local function execute(specification)
             local id = mapping[code]
             if id then
                 specification.code = id
-                local result = zintlib_execute(specification)
+                local result, detail = zintlib_execute(specification)
                 if result then
                     -- not that fast but if needed we can speed it up
                     context.startMPcode()
@@ -167,6 +167,8 @@ local function execute(specification)
                         context("% t",strings)
                     end
                     context.stopMPcode()
+                else
+                    report("something went wrong: %s",detail or "unknown error")
                 end
             else
                 report("unknown barcode alternative %a",code)

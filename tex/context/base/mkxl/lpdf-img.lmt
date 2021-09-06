@@ -1312,7 +1312,7 @@ do
         elseif colorspace == 2 then
             colorspace = "DeviceRGB"
         elseif colorspace == 3 then
-            colorspace  = "DeviceCMYK"
+            colorspace = "DeviceCMYK"
         end
         local colordepth = (specification.colordepth or 2) == 16 or 8
         local index      = specification.index
@@ -1348,8 +1348,10 @@ do
             }
             xobject.SMask = pdfreference(pdfflushstreamobject(pack(specification,"mask"),d()))
         end
+        local w = specification.width
+        local h = specification.height
         return createimage {
-            bbox     = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
+            bbox     = { 0, 0, w and (w/xsize) or xsize, h and (h/ysize) or ysize }, -- mandate
          -- nolength = true,
             nobbox   = true,
             notype   = true,
