@@ -149,7 +149,7 @@
 \installcommandhandler \??type {type} \??type
 
 \appendtoks
-    \frozen\instance\setuevalue{\currenttype}{\buff_verbatim_type{\currenttype}}%
+    \frozen\instance\protected\edefcsname\currenttype\endcsname{\buff_verbatim_type{\currenttype}}%
 \to \everydefinetype
 
 \appendtoks

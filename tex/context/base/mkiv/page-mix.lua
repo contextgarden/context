@@ -251,12 +251,19 @@ local function preparesplit(specification) -- a rather large function
         report_state("fatal error, no list")
         return
     end
-    local head = getlist(list) or specification.originalhead
+    local head = nil
+    if getid(list) == hlist_code then
+        head = list
+    else
+        head = getlist(list) or specification.originalhead
+    end
     if not head then
         report_state("fatal error, no head")
         return
     end
+
     slidenodes(head) -- we can have set prev's to nil to prevent backtracking
+
     local discarded      = { }
     local originalhead   = head
     local originalwidth  = specification.originalwidth  or getwidth(list)
@@ -441,6 +448,7 @@ local function preparesplit(specification) -- a rather large function
         if column == nofcolumns then
             column = 0 -- nicer in trace
             rest   = head
+-- rest   = nil
             return false, 0
         else
             local skipped
@@ -637,7 +645,6 @@ local function preparesplit(specification) -- a rather large function
     end
 
     local function process_list(current,nxt)
--- print(nuts.getpre(current),nuts.getpost(current))
         local nxtid = nxt and getid(nxt)
         line = line + 1
         local inserts, insertskips, nextskips, inserttotal = nil, 0, 0, 0
@@ -773,7 +780,6 @@ local function preparesplit(specification) -- a rather large function
     specification.rest           = rest
     specification.overflow       = overflow
     specification.discarded      = discarded
-
     setlist(getbox(specification.box))
 
     return specification
@@ -900,6 +906,7 @@ local function getsplit(result,n)
     end
 
     setprev(h) -- move up
+
     local strutht    = result.strutht
     local strutdp    = result.strutdp
     local lineheight = strutht + strutdp
@@ -907,6 +914,19 @@ local function getsplit(result,n)
 
     local v = new_vlist()
     setlist(v,h)
+
+    -- safeguard ... i need to figure this out some day
+
+    local c = r.head
+    while c do
+        if c == result.rest then
+            report_state("flush, column %s, %s",n,"suspicous rest")
+            result.rest = nil
+            break
+        else
+            c = getnext(c)
+        end
+    end
 
  -- local v = vpack(h,"exactly",height)
 
@@ -1067,7 +1087,10 @@ implement {
     arguments = "integer",
     actions   = function(n)
         if result then
-            context(tonode(getsplit(result,n)))
+            local list = getsplit(result,n)
+            if list then
+                context(tonode(list))
+            end
         end
     end,
 }
@@ -1085,7 +1108,10 @@ implement {
     name    = "mixflushrest",
     actions = function()
         if result then
-            context(tonode(getrest(result)))
+            local rest = getrest(result)
+            if rest then
+                context(tonode(rest))
+            end
         end
     end
 }
@@ -1094,7 +1120,10 @@ implement {
     name = "mixflushlist",
     actions = function()
         if result then
-            context(tonode(getlist(result)))
+            local list = getlist(result)
+            if list then
+                context(tonode(list))
+            end
         end
     end
 }

@@ -419,7 +419,8 @@
         \doifelseinsertion\currentnote
           \donothing
           {\defineinsertion[\currentnote]% could be an option
-           \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
+%            \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
+           \xtoksapp\t_strc_notes{\noexpand\strc_notes_process_list{\currentnote}}}%
         \letnoteparameter\s!insert\currentnote
         \definenotation[\currentnote][\c!type=\v!note]%
     \else

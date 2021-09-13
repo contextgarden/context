@@ -22,7 +22,7 @@
   [title=macros,
    color=middleorange]
 
-\startsection[title=Preamble]
+\startsectionlevel[title=Preamble]
 
 This chapter overlaps with other chapters but brings together some extensions to
 the macro definition and expansion parts. As these mechanisms were stepwise
@@ -33,9 +33,9 @@ have \TEX\ act like before. We keep the charm of the macro language but these
 additions make for easier definitions, but (at least initially) none that could
 not be done before using more code.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Definitions]
+\startsectionlevel[title=Definitions]
 
 A macro definition normally looks like like this: \footnote {The \type
 {\dontleavehmode} command make the examples stay on one line.}
@@ -563,9 +563,9 @@ when the matching quits.
 Gobbling spaces versus pushing back is an interface design decision because it
 has to do with consistency.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Runaway arguments]
+\startsectionlevel[title=Runaway arguments]
 
 There is a particular troublesome case left: a runaway argument. The solution is
 not pretty but it's the only way: we need to tell the parser that it can quit.
@@ -611,9 +611,9 @@ offset by some inefficient styling. Of course another gain of loosing some
 indirectness is that error messages point to the macro that the user called for
 and not to some follow up.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Introspection]
+\startsectionlevel[title=Introspection]
 
 A macro has a meaning. You can serialize that meaning as follows:
 
@@ -659,9 +659,9 @@ macro is a special version of the online variant:
 That one is always available and shows a similar list on the console. Again, users
 normally don't want to know such details.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=nesting]
+\startsectionlevel[title=nesting]
 
 You can nest macros, as in:
 
@@ -760,9 +760,9 @@ sure I do know why I dislike some languages for it). The \TEX\ system is not the
 only one where dollars, percent signs, ampersands and hashes have special
 meaning.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Prefixes]
+\startsectionlevel[title=Prefixes]
 
 Traditional \TEX\ has three prefixes that can be used with macros: \type {\global},
 \type {\outer} and \type {\long}. The last two are no|-|op's in \LUAMETATEX\ and
@@ -903,24 +903,24 @@ The level of checking is controlled with the \type {\overloadmode} but I'm still
 not sure about how many levels we need there. A zero value disables checking,
 the values 1 and 3 give warnings and the values 2 and 4 trigger an error.
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 
-freezing pitfalls:
-
-- \futurelet  : \overloaded needed
-- \let        : \overloaded sometimes needed
-
-primitive protection:
-
-\newif\iffoo \footrue \foofalse : problem when we make iftrue and iffalse
-permanent ... they inherit, so we can't let them, we need a not permanent
-alias which is again tricky ... something native?
-
-immutable : still \count000 but we can consider blocking that, for instance
-by \def\count{some error}
-
-\defcsname
-\edefcsname
-\letcsname
+% freezing pitfalls:
+%
+% - \futurelet  : \overloaded needed
+% - \let        : \overloaded sometimes needed
+%
+% primitive protection:
+%
+% \newif\iffoo \footrue \foofalse : problem when we make iftrue and iffalse
+% permanent ... they inherit, so we can't let them, we need a not permanent
+% alias which is again tricky ... something native?
+%
+% immutable : still \count000 but we can consider blocking that, for instance
+% by \def\count{some error}
+%
+% \defcsname
+% \edefcsname
+% \letcsname

@@ -8,7 +8,7 @@
   [title=alignments,
    color=middlegreen]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 \TEX\ has a couple of subsystems and alignments is one of them. This mechanism is
 used to construct tables or alike. Because alignments use low level primitives to
@@ -115,9 +115,9 @@ that relates to a parameter and alignment tab (and in \CONTEXT\ that is not the
 case). The \TEX book has plenty alignment examples so if you really want to learn
 about them, consult that must|-|have|-|book.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Between the lines]
+\startsectionlevel[title=Between the lines]
 
 The individual rows of a horizontal alignment are treated as lines. This means that,
 as we see in the previous section, the interline spacing is okay. However, that also
@@ -240,9 +240,9 @@ there.
 A third overhaul of the code actually did lead to some adaptations in the way
 alignments are constructed so let's move on to that.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={Pre-, inter- and post-tab skips}]
+\startsectionlevel[title={Pre-, inter- and post-tab skips}]
 
 The basic structure of a preamble and row is actually not that complex: it is
 a mix of tab skip glue and cells (that are just boxes):
@@ -372,9 +372,9 @@ skips and it triggers a check later on when the rows are constructed. The \type
 {<content>} is what get injected in the cell (represented by \type {\alignmark}).
 The pseudo primitives are internal and not public.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={Cell widths}]
+\startsectionlevel[title={Cell widths}]
 
 Imagine this:
 
@@ -428,9 +428,9 @@ So, both the sparse skip and new \type {\tabsize} feature help to make these
 extreme tables (spanning hundreds of pages) not consume irrelevant memory and
 also make that later on we don't have to consult useless nodes.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Plugins]
+\startsectionlevel[title=Plugins]
 
 Yet another \LUAMETATEX\ extension is a callback that kicks in between the
 preamble preroll and finalizing the alignment. Initially as test and
@@ -556,9 +556,9 @@ instead?}
 As always with such mechanisms, the question is \quotation {Where to stop?} But it
 makes for nice demos and as long as little code is needed it doesn't hurt.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Pitfalls and tricks]
+\startsectionlevel[title=Pitfalls and tricks]
 
 The next example mixes bidirectional typesetting. It might look weird at first
 sight but the result conforms to what we discussed in previous paragraphs.
@@ -679,9 +679,9 @@ that it's a lot of work but by providing a set of helpers like here might change
 that a bit. Keep in mind that much of the above is not new in the sense that we
 could not achieve the same already, it's just a bit programmer friendly.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Remark]
+\startsectionlevel[title=Remark]
 
 It can be that the way alignments are interfaced with respect to attributes is a bit
 different between \LUATEX\ and \LUAMETATEX\ but because the former is frozen (in
@@ -692,7 +692,7 @@ In principle we can have hooks into the rows for pre and post material but it
 doesn't really pay of as grouping will still interfere. So for now I decided not
 to add these.
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

@@ -11,7 +11,7 @@
   [title=expansion,
    color=middleyellow]
 
-\startsection[title=Preamble]
+\startsectionlevel[title=Preamble]
 
 This short manual demonstrates a couple of properties of the macro language. It
 is not an in|-|depth philosophical expose about macro languages, tokens,
@@ -23,9 +23,9 @@ book does and although there is no way to avoid the word \quote {token} I will d
 my best to not complicate matters by too much token speak. Examples show best
 what we mean.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\TEX\ primitives}]
+\startsectionlevel[title={\TEX\ primitives}]
 
 The \TEX\ language provides quite some commands and those built in are called
 primitives. User defined commands are called macros. A macro is a shortcut to a
@@ -316,9 +316,9 @@ The first one gives \inlinebuffer[a], while the second gives \inlinebuffer[b].
 % \afterassignment
 % \aftergroup
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\ETEX\ primitives}]
+\startsectionlevel[title={\ETEX\ primitives}]
 
 In this engine a couple of extensions were added and later on \PDFTEX\ added some
 more. We only discuss a few that relate to expansion. There is however a pitfall
@@ -439,9 +439,9 @@ letters. The next snippet shows these catcodes:
 The result is \quotation {\tt\inlinebuffer}: two characters are marked as \quote
 {letter} and two fall in the \quote {other} category.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUATEX\ primitives}]
+\startsectionlevel[title={\LUATEX\ primitives}]
 
 This engine adds a little to the expansion repertoire. First of all it offers a
 way to extend token lists registers:
@@ -484,9 +484,9 @@ or token lists, simply because in the process \TEX\ has to create tokens lists
 too, but sometimes they're just more convenient to use. In \CONTEXT\ we actually
 do benefit from these.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUAMETATEX\ primitives}]
+\startsectionlevel[title={\LUAMETATEX\ primitives}]
 
 We already saw that macro's can be defined protected which means that
 
@@ -999,9 +999,9 @@ performance or bloating the source.
 % tex.runlocal      : function|number(register)|string(macro)|userdata(token) + expand + grouped
 % mplib.expandtex   : mpx + kind + string|userdata + [string|true|table|userdata|number]*
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Dirty tricks]
+\startsectionlevel[title=Dirty tricks]
 
 When I was updating this manual Hans vd Meer and I had some discussions about
 expansion and tokenization related issues when combining of \XML\ processing with
@@ -1116,7 +1116,7 @@ so that we can do:
 A companion macro of this is \type {\wipetoken} but for that one you need to look
 into the source.
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

@@ -779,6 +779,12 @@
    \showboxbreadth   \maxcount
    \showboxdepth     \maxcount}
 
+\permanent\protected\def\tracingless
+  {\tracingall
+   \tracingoutput    \zerocount
+   \showboxbreadth   \maxcount
+   \showboxdepth     \plusten}
+
 \permanent\protected\def\loggingall
   {\tracingall
    \tracingonline    \zerocount}

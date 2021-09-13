@@ -1239,38 +1239,41 @@ do
             s = - s
         end
         if s > 0 then
-            if s == 1 then
-                for i=1,y do
-                    local r = d[i]
-                    for j=1,x do
-                        n = n + 1 ; t[n] = chars[r[j]]
-                    end
-                end
-            elseif s == 2 then
-                for i=1,y do
-                    local r = d[i]
-                    for j=1,x do
-                        local c = r[j]
-                        n = n + 1 ; t[n] = chars[c[1]]
-                        n = n + 1 ; t[n] = chars[c[2]]
-                        n = n + 1 ; t[n] = chars[c[3]]
-                     -- n = n + 1 ; t[n] = char(c[1],c[2],c[3]) -- test this
-                    end
-                end
-            elseif s == 3 then
-                for i=1,y do
-                    local r = d[i]
-                    for j=1,x do
-                        local c = r[j]
-                        n = n + 1 ; t[n] = chars[c[1]]
-                        n = n + 1 ; t[n] = chars[c[2]]
-                        n = n + 1 ; t[n] = chars[c[3]]
-                        n = n + 1 ; t[n] = chars[c[4]]
-                     -- n = n + 1 ; t[n] = char(c[1],c[2],c[3],c[4]) -- test this
-                    end
-                end
-            end
-            return concat(t)
+         -- if true then
+                return string.packrowscolumns(d)
+         -- end
+         -- if s == 1 then
+         --     for i=1,y do
+         --         local r = d[i]
+         --         for j=1,x do
+         --             n = n + 1 ; t[n] = chars[r[j]]
+         --         end
+         --     end
+         -- elseif s == 2 then
+         --     for i=1,y do
+         --         local r = d[i]
+         --         for j=1,x do
+         --             local c = r[j]
+         --             n = n + 1 ; t[n] = chars[c[1]]
+         --             n = n + 1 ; t[n] = chars[c[2]]
+         --             n = n + 1 ; t[n] = chars[c[3]]
+         --          -- n = n + 1 ; t[n] = char(c[1],c[2],c[3]) -- test this
+         --         end
+         --     end
+         -- elseif s == 3 then
+         --     for i=1,y do
+         --         local r = d[i]
+         --         for j=1,x do
+         --             local c = r[j]
+         --             n = n + 1 ; t[n] = chars[c[1]]
+         --             n = n + 1 ; t[n] = chars[c[2]]
+         --             n = n + 1 ; t[n] = chars[c[3]]
+         --             n = n + 1 ; t[n] = chars[c[4]]
+         --          -- n = n + 1 ; t[n] = char(c[1],c[2],c[3],c[4]) -- test this
+         --         end
+         --     end
+         -- end
+         -- return concat(t)
         else
             local z = d[0] and 0 or 1
             if s == -1 then

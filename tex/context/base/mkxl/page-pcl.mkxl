@@ -100,20 +100,6 @@
 
 %D \unknown
 
-\protected\def\page_col_command_set_vsize % \page_one_command_set_vsize minus the pagegoal setting
-  {\ifgridsnapping
-     \ifcase\layoutlines
-       \getrawnoflines\textheight
-     \else
-       \noflines\layoutlines
-     \fi
-     \global\vsize\noflines\openlineheight
-   \else
-     \global\vsize\textheight
-   \fi}
-
-%D \unknown
-
 \def\page_col_registered_text_area_b#1%
   {\begingroup
    \makeupwidth\d_page_col_column_width
@@ -233,6 +219,8 @@
      \fi
      \global\advance\c_page_col_current\plusone
    \fi
+   %
+   \page_col_notes_synchronize
    %
    \page_col_command_set_vsize
    \page_col_command_set_hsize}
@@ -719,8 +707,8 @@
    \c!direction=\v!normal]
 
 \appendtoks % could become an option
-    \frozen\instance\setuevalue{\e!start\currentpagecolumns}{\startpagecolumns[\currentpagecolumns]}%
-    \frozen\instance\setuevalue{\e!stop \currentpagecolumns}{\stoppagecolumns}%
+    \frozen\instance\protected\edefcsname\e!start\currentpagecolumns\endcsname{\startpagecolumns[\currentpagecolumns]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentpagecolumns\endcsname{\stoppagecolumns}%
 \to \everydefinepagecolumns
 
 \def\page_col_pickup_preceding
@@ -753,6 +741,47 @@
      \stopplacefigure
      \endgroup
    \fi}
+
+% \let\page_col_notes_initialize \relax
+% \let\page_col_notes_synchronize\relax
+% \let\page_col_notes_reset      \relax
+%
+% \protected\def\page_col_command_set_vsize % \page_one_command_set_vsize minus the pagegoal setting
+%   {\ifgridsnapping
+%      \ifcase\layoutlines
+%        \getrawnoflines\textheight
+%      \else
+%        \noflines\layoutlines
+%      \fi
+%      \global\vsize\noflines\openlineheight
+%    \else
+%      \global\vsize\textheight
+%    \fi}
+
+\newconditional\c_page_col_notes_lastcolumn
+
+\def\page_col_notes_synchronize
+  {\insertstoring\zerocount
+   \ifnum\c_page_col_current=\c_page_col_n_of_columns\relax
+     \strc_notes_process\page_col_notes_inject
+     \ifconditional\c_page_col_notes_lastcolumn
+       \insertstoring\plusone
+     \fi
+   \else
+     \strc_notes_process\page_col_notes_delay
+     \ifconditional\c_page_col_notes_lastcolumn
+       \insertstoring\plustwo
+     \fi
+   \fi}
+
+\def\page_col_notes_delay {\setfalse\c_page_col_notes_lastcolumn\ifcstok{\noteparameter\c!location}\v!lastcolumn\settrue\c_page_col_notes_lastcolumn\insertstorage\currentnoteinsertionnumber\plusone  \fi}
+\def\page_col_notes_inject{\setfalse\c_page_col_notes_lastcolumn\ifcstok{\noteparameter\c!location}\v!lastcolumn\settrue\c_page_col_notes_lastcolumn\insertstorage\currentnoteinsertionnumber\zerocount\fi}
+
+\def\page_col_notes_initialize {\insertstoring\zerocount\strc_notes_process\page_col_notes_delay}
+\def\page_col_notes_reset      {\insertstoring\zerocount\strc_notes_process\page_col_notes_inject}
+
+\protected\def\page_col_command_set_vsize % different !
+  {\page_one_command_set_vsize}
 
 \permanent\tolerant\protected\def\startpagecolumns[#1]%
   {\begingroup
@@ -824,6 +853,8 @@
    \setupfloats[\c!ntop=\plusthousand]%
  % \setupfloats[\c!nbottom=\plusthousand]%
    %
+   \page_col_notes_initialize
+   %
    \page_col_command_set_vsize
    \page_col_command_set_hsize
    %
@@ -843,6 +874,7 @@
    \page_otr_command_set_vsize
    \page_otr_command_set_hsize
    \page
+   \page_col_notes_reset
    \endgroup}
 
 \protected\def\page_col_stop_nop

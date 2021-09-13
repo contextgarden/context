@@ -6,7 +6,7 @@
   [title=paragraphs,
    color=middlecyan]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 This manual is mostly discussing a few low level wrappers around low level \TEX\
 features. Its writing is triggered by an update to the \METAFUN\ and \LUAMETAFUN\
@@ -29,9 +29,9 @@ they get enabled by default. \footnote {For this we have \type
 them, make sure they don't interfere; they are not part of the updates, contrary
 to \type {cont-new.mkxl}.}
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Paragraphs]
+\startsectionlevel[title=Paragraphs]
 
 Before we demonstrate some trickery, let's see what a paragraph is. Normally a
 document source is formatted like this:
@@ -200,9 +200,9 @@ program it using macros: pickup a token, check and push it back when it's not a
 par equivalent token. The primitive is is just nicer (and easier on the log when
 tracing is enabled).
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Properties]
+\startsectionlevel[title=Properties]
 
 A paragraph is just a collection of lines that result from one input line that
 got broken. This process of breaking into lines is influenced by quite some
@@ -319,9 +319,9 @@ this new mechanism has been active for a while. Actually, when you now change a
 parameter inside the paragraph its new value will not be applied (unless you
 prefix it with \type {\frozen} or snapshot it) but no one did that anyway.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Wrapping up]
+\startsectionlevel[title=Wrapping up]
 
 In \CONTEXT\ \LMTX\ we have a mechanism to exercise macros (or content) before a
 paragraph ends. This is implemented using the \type {\wrapuppar} primitive. The
@@ -343,9 +343,9 @@ question is: where do we apply it in old mechanisms and where not.
 % $$x = \vcenter{vcenter : \wrapuppar{1}test\par x\wrapuppar{2}test}$$\blank
 % x\vadjust{vadjust : \wrapuppar{1}test\par x\wrapuppar{2}test}x\blank
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Hanging]
+\startsectionlevel[title=Hanging]
 
 There are two mechanisms for getting a specific paragraph shape: rectangular
 hanging and arbitrary shapes. Both mechanisms work top|-|down. The first
@@ -377,9 +377,9 @@ uses at the same time).
 \stopcombination
 \stopplacefigure
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Shapes]
+\startsectionlevel[title=Shapes]
 
 In \CONTEXT\ we don't use \type {\parshape} a lot. It is used in for instance
 side floats but even there not in all cases. It's more meant for special
@@ -970,10 +970,10 @@ examples are visualized in \in {figure} [fig:flow].
     \stopcombination
 \stopplacefigure
 
-\stopsection
+\stopsectionlevel
 
-% \startsection[title=Linebreaks]
-\startsection[title=Modes]
+% \startsectionlevel[title=Linebreaks]
+\startsectionlevel[title=Modes]
 
 % \ruledvbox{1\ifhmode\writestatus{!}{HMODE 1}\fi}                               % hsize
 % \ruledvbox{\hbox{\strut 2}\ifhmode\writestatus{!}{HMODE 2}\fi}                 % fit
@@ -984,15 +984,15 @@ examples are visualized in \in {figure} [fig:flow].
 
 {\em todo: some of the side effects of so called modes}
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Normalization]
+\startsectionlevel[title=Normalization]
 
 {\em todo: users don't need to bother about this but it might be interesting anyway}
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Dirty tricks]
+\startsectionlevel[title=Dirty tricks]
 
 {\em todo: explain example for combining paragraphs}
 
@@ -1008,7 +1008,7 @@ examples are visualized in \in {figure} [fig:flow].
 %
 % test
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

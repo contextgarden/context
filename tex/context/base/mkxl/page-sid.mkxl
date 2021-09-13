@@ -84,7 +84,7 @@
 \newcount       \c_page_sides_m_of_lines
 \newconditional \c_page_sides_delayed
 
-\newconditional \c_page_sides_check_same_page
+%newconditional \c_page_sides_check_same_page
 
 \newif          \iftracesidefloats % public (might change)
 
@@ -397,24 +397,31 @@
 %D preceding material has more depth than that already. This way anchoring
 %D becomes predictable.
 
+% \protected\def\page_sides_force_depth
+%   {\iftracesidefloats
+%     \begingroup
+%      \c_page_force_strut_depth_trace_mode\plusone
+%      \ifconditional\c_page_sides_check_same_page
+%        \forcestrutdepthplus
+%      \else
+%        \forcestrutdepth
+%     \fi
+%     \endgroup
+%    \else
+%      \ifconditional\c_page_sides_check_same_page
+%        \forcestrutdepthplus
+%      \else
+%        \forcestrutdepth
+%      \fi
+%    \fi
+%    \page_otr_command_set_vsize} % new
+
 \protected\def\page_sides_force_depth
   {\iftracesidefloats
-     \begingroup
-     \c_page_force_strut_depth_trace_mode\plusone
-     \ifconditional\c_page_sides_check_same_page
-       \forcestrutdepthplus
-     \else
-       \forcestrutdepth
-     \fi
-     \endgroup
-   \else
-     \ifconditional\c_page_sides_check_same_page
-       \forcestrutdepthplus
-     \else
-       \forcestrutdepth
-     \fi
+     \enabletrackers[otr.forcestrutdepth]% \c_page_force_strut_depth_trace_mode\plusone
    \fi
-   \page_otr_command_set_vsize} % new
+   \forcestrutdepth
+   \page_otr_command_set_vsize} % new, no longer really needed
 
 \def\page_sides_flush_floats
   {\par
@@ -781,18 +788,18 @@
 
 \def\page_sides_analyse_space
   {\page_sides_analyse_space_stage_one
-   \ifconditional\c_page_sides_check_same_page
-     \ifdim\d_spac_prevcontent>\zeropoint
-       \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
-         \clf_pushatsame
-         \setbox\scratchbox\vpack{\clf_popatsame}%
-         \page
-         \box\scratchbox
-         \vskip-\lineskip
-         \page_sides_analyse_space_stage_one
-       \fi
-     \fi
-   \fi
+ % \ifconditional\c_page_sides_check_same_page
+ %   \ifdim\d_spac_prevcontent>\zeropoint
+ %     \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
+ %       \clf_pushatsame
+ %       \setbox\scratchbox\vpack{\clf_popatsame}%
+ %       \page
+ %       \box\scratchbox
+ %       \vskip-\lineskip
+ %       \page_sides_analyse_space_stage_one
+ %     \fi
+ %   \fi
+ % \fi
    \page_sides_analyse_space_stage_two}
 
 %D As we have no clear end of one or more paragraphs we only have pre float

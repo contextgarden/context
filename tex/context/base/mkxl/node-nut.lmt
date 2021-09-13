@@ -263,6 +263,8 @@ local nuts = {
     xscaled                 = direct.xscaled,
     yscaled                 = direct.yscaled,
  -- getxyoffsets            = direct.getxyoffsets,
+    getspeciallist          = direct.getspeciallist,
+    setspeciallist          = direct.setspeciallist,
 }
 
 nodes.nuts     = nuts

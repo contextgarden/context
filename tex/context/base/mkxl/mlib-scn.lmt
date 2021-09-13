@@ -658,6 +658,11 @@ local function getparameterpath()
     end
     if type(v) == "table" then
         return injectpath(v,connector,close)
+    elseif type(v) == "string" then
+        local code = load("return " .. v)
+        if code then
+            return code()
+        end
     else
         return injectpair(0,0)
     end

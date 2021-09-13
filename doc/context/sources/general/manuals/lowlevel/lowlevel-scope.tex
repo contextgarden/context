@@ -9,15 +9,15 @@
   [title=scope,
    color=middleblue]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 When I visited the file where register allocations are implemented I wondered to
 what extend it made sense to limit allocation to global instances only. This
 chapter deals with this phenomena.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Registers]
+\startsectionlevel[title=Registers]
 
 In \TEX\ definitions can be local or global. Most assignments are local within a
 group. Registers and definitions can be assigned global by using the \type
@@ -108,9 +108,9 @@ here the dimension is \the\scratchdimen\par
 
 \typebuffer[option=TEX] \startlines \getbuffer \stoplines
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Allocation]
+\startsectionlevel[title=Allocation]
 
 The plain \TEX\ format has set some standards and one of them is that registers
 are allocated with \type {\new...} commands. So we can say:
@@ -252,9 +252,9 @@ So, again we get:
 When used in the body of the macro there is of course a little overhead
 involved in the repetitive allocation but normally that can be neglected.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Files]
+\startsectionlevel[title=Files]
 
 When adding these new allocators I also wondered about the read and write
 allocators. We don't use them in \CONTEXT\ but maybe users like them, so let's
@@ -334,7 +334,7 @@ SOME LINE 3
 As you see in these examples, we an locally define a read channel without
 getting a message about it already being defined.
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

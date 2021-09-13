@@ -957,6 +957,9 @@
      \expandafter\firstofoneargument
    \fi}
 
+\permanent\def\ifcommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname}
+
 % another set of (fast) helpers (grep for usage):
 
 \permanent\def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \v!yy

@@ -21,7 +21,7 @@
   [title=security,
    color=middleorange]
 
-\startsection[title=Preamble]
+\startsectionlevel[title=Preamble]
 
 Here I will discuss a moderate security subsystem of \LUAMETATEX\ and therefore
 \CONTEXT\ \LMTX. This is not about security in the sense of the typesetting
@@ -35,9 +35,9 @@ might take a few years before the security model is finalized and all files are
 updated accordingly. There are lots of files and macros involved. In the process
 the underlying features in the engine might evolve.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Flags]
+\startsectionlevel[title=Flags]
 
 Before we go into the security levels we see what flags can be set. The \TEX\
 language has a couple of so called prefixes that can be used when setting values
@@ -205,9 +205,9 @@ really want to avoid that you can set the overload mode to 255 after which it
 cannot be set any more. However, it can be useful to set the mode to zero (or
 some warning level) when foreign macro packages are used.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Complications]
+\startsectionlevel[title=Complications]
 
 One side effect of all this is that all those prefixes can lead to more code. On
 the other hand we save some due to the extended macro argument handling features.
@@ -220,9 +220,9 @@ about the same. \footnote {And if you wonder about memory, by compacting the use
 (often scattered) token memory before dumping I manages to save some 512K on the
 format file, so often the loss and gain are somewhere else.}
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Introspection]
+\startsectionlevel[title=Introspection]
 
 In case you want to get some details about the properties of a macro, you can
 check its meaning. The full variant shows all of them.
@@ -241,7 +241,7 @@ check its meaning. The full variant shows all of them.
 
 \startpacked \getbuffer \stoppacked
 
-\stopsection
+\stopsectionlevel
 
 % In \CONTEXT:
 % c! v! s! ??

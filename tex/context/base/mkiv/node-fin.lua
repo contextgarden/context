@@ -203,7 +203,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
                                 current = default
                             end
                         elseif current ~= outer then
-                            head    = insertnodebefore(head,stack,copy_node(nsdata[c]))
+                            head    = insertnodebefore(head,stack,copy_node(nsdata[c])) -- hm, what is c ... bug
                             current = outer
                         end
                     elseif default and inheritance then

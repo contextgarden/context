@@ -144,15 +144,15 @@
 
 \definelist[\v!formula]
 
-\permanent\defcsname\e!start\v!formula\endcsname{\strc_formulas_start_formula{}}
-\permanent\defcsname\e!stop \v!formula\endcsname{\strc_formulas_stop_formula}
+\permanent\protected\defcsname\e!start\v!formula\endcsname{\strc_formulas_start_formula{}}
+\permanent\protected\defcsname\e!stop \v!formula\endcsname{\strc_formulas_stop_formula}
 
 \let\strc_formulas_start_formula\relax % defined later
 \let\strc_formulas_stop_formula \relax % defined later
 
 \permanent\tolerant\protected\def\defineformulaalternative[#1]#*[#2]#*[#3]%
-  {\frozen\instance\defcsname\e!start#1\v!formula\endcsname{#2}%
-   \frozen\instance\defcsname\e!stop #1\v!formula\endcsname{#3}}
+  {\frozen\instance\protected\defcsname\e!start#1\v!formula\endcsname{#2}%
+   \frozen\instance\protected\defcsname\e!stop #1\v!formula\endcsname{#3}}
 
 % sp = single line paragraph  sd = single line display
 % mp = multi  line paragraph  md = multy  line display

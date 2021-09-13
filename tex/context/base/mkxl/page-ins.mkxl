@@ -60,7 +60,7 @@
 
 \newtoks\t_page_inserts_list
 
-\mutable\let\doprocessinsert\relax % probably kind of obsolete now
+\mutable\let\doprocessinsert\gobbleoneargument % probably kind of obsolete now
 
 %D Maybe some day we will move settings here.
 
@@ -87,14 +87,14 @@
 \permanent\protected\def\processinsertions
   {\the\t_page_inserts_list}
 
-\permanent\protected\def\synchronizeinsertions
-  {\let\doprocessinsert\page_inserts_synchronize
-   \processinsertions}
-
-\protected\def\page_inserts_synchronize#1% yes or no
-  {\ifvoid#1\else
-     \page_inserts_inject#1{\unvbox#1}%
-   \fi}
+% \permanent\protected\def\synchronizeinsertions
+%   {\let\doprocessinsert\page_inserts_synchronize
+%    \processinsertions}
+%
+% \protected\def\page_inserts_synchronize#1% yes or no
+%   {\ifvoid#1\else
+%      \page_inserts_inject#1{\unvbox#1}%
+%    \fi}
 
 \permanent\protected\def\doifelseinsertion#1%
   {\ifcsname\??insertionnumber#1\endcsname
@@ -180,9 +180,10 @@
                 number \currentinsertionnumber
             }%
           \relax
-          \t_page_inserts_list\expandafter\expandafter\expandafter
-            {\expandafter\the\expandafter\t_page_inserts_list
-             \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
+%           \t_page_inserts_list\expandafter\expandafter\expandafter
+%             {\expandafter\the\expandafter\t_page_inserts_list
+%              \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
+          \xtoksapp\t_page_inserts_list{\page_inserts_process{\currentinsertion}}%
           \page_inserts_set_multiplier\currentinsertionnumber\plusthousand
           \page_inserts_set_distance  \currentinsertionnumber\zeropoint
           \page_inserts_set_limit     \currentinsertionnumber\maxdimen

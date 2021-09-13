@@ -31,6 +31,24 @@
 % offsets (inner ones, so we change the hsize  ... needed with backgrounds
 % when no content we currently loose the page
 
+% nasty test case from mailing list (rest issue)
+%
+% \starttext
+% . \blank[32*big]
+% \startitemize
+%     \item 0 \startchoice[text] \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice \blank[6*big]
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+%     \item 0 \startchoice       \item 0 \item 0 \item 0 \item 0 \stopchoice
+% \stopitemize
+% \stoptext
+
 \registerctxluafile{page-mix}{}
 
 \unprotect

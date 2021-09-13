@@ -9,7 +9,7 @@
   [title=boxes,
    color=middlered]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 An average \CONTEXT\ user will not use the low level box primitives but a basic
 understanding of how \TEX\ works doesn't hurt. In fact, occasionally using a box
@@ -23,9 +23,9 @@ about all kind of glues, kerns and penalties, just boxes it is.
 This explanation will be extended when I feel the need (or users have questions
 that can be answered here).
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Boxes]
+\startsectionlevel[title=Boxes]
 
 This paragraph of text is made from lines that contain words that themselves
 contain symbolic representations of characters. Each line is wrapped in a so
@@ -66,11 +66,9 @@ other hand wraps a linked list of so called nodes: glyphs, kerns, glue,
 penalties, rules, boxes, etc. It is a container with properties like width,
 height, depth and shift.
 
-\stopsection
+\stopsectionlevel
 
-\stopsection
-
-\startsection[title={\TEX\ primitives}]
+\startsectionlevel[title={\TEX\ primitives}]
 
 The box model is reflected in \TEX's user interface but not by that many
 commands, most noticeably \type {\hbox}, \type {\vbox} and \type {\vtop}. Here is
@@ -218,9 +216,9 @@ we use copy because it serves the examples.
 \box \scratchbox
 \stoptyping
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\ETEX\ primitives}]
+\startsectionlevel[title={\ETEX\ primitives}]
 
 The \ETEX\ extensions don't add something relevant for boxes, apart from that you
 can use the expressions mechanism to mess around with their dimensions. There is
@@ -229,9 +227,9 @@ capabilities and doesn't change much as it's mostly a way to trick the backend
 into outputting a stretch of text in the other direction. This feature is not
 available in \LUATEX\ because it has an alternative direction mechanism.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUATEX\ primitives}]
+\startsectionlevel[title={\LUATEX\ primitives}]
 
 The concept of boxes is the same in \LUATEX\ as in its predecessors but there are
 some aspects to keep in mind. When a box is typeset this happens in \LUATEX:
@@ -289,9 +287,9 @@ but because in \LUAMETATEX\ there are only two. Because this model has been upgr
 it will be discusses in the next section. A \CONTEXT\ user is supposed to use the
 official \CONTEXT\ interfaces in order to be downward compatible.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUAMETATEX\ primitives}]
+\startsectionlevel[title={\LUAMETATEX\ primitives}]
 
 There are two possible directions: left to right (the default) and right to left
 for Hebrew and Arabic. Here is an example that shows how it'd done with low level
@@ -691,7 +689,7 @@ test\quad
 \ruledhbox{\getbuffer}
 \stoplinecorrection
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

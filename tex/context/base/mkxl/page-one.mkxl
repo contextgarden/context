@@ -35,6 +35,39 @@
 \protected\def\page_one_command_set_float_hsize
   {\global\hsize\textwidth}
 
+%D It's complicated:
+
+\newconditional\c_page_one_set_vsize_tmp
+
+\installtextracker{otr.insertheights}
+  {\settrue\c_page_one_set_vsize_tmp}
+  {\setfalse\c_page_one_set_vsize_tmp}
+
+\def\page_one_command_set_vsize_tmp
+  {\settotalinsertionheight
+   \writestatus
+     {set vsize one}
+     {insert heights=\the\insertheights,
+      total insertion height=\the\totalinsertionheight,
+      delta=\the\dimexpr\insertheights-\totalinsertionheight}%
+   \page_one_command_set_vsize_new}
+
+\def\page_one_command_set_vsize_old
+  {\settotalinsertionheight
+   \pagegoal\dimexpr
+      \vsize
+     -\totalinsertionheight
+   \relax}
+
+\def\page_one_command_set_vsize_new
+  {\pagegoal\dimexpr
+      \vsize
+     -\d_page_floats_inserted_top
+     -\d_page_floats_inserted_bottom
+     -\insertheights
+   \relax
+   \insertheights\zeropoint}
+
 \protected\def\page_one_command_set_vsize
   {\ifgridsnapping
      \ifcase\layoutlines
@@ -49,12 +82,14 @@
    \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
-   \pagegoal\dimexpr
-      \vsize
-     -\d_page_floats_inserted_top
-     -\d_page_floats_inserted_bottom
-     -\insertheights
-   \relax}
+ % \writestatus{!!!!!!!!}{\the\vsize-> v:\the\pagevsize,g:\the\pagegoal,t:\the\pagetotal,i:\the\insertheights}%
+   \ifconditional\c_page_one_set_vsize_tmp
+     \page_one_command_set_vsize_tmp
+   \orelse\ifzeropt\insertheights
+     \page_one_command_set_vsize_old
+   \else
+     \page_one_command_set_vsize_new
+   \fi}
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 
@@ -581,14 +616,24 @@
 %    \page_floats_report_total
 %    \dohandlenextfloatindent}
 
+% \def\page_one_place_float_here_indeed
+%   {\ifgridsnapping
+%      % otherwise real bad outcome
+%    \else
+%     % this was not really applied (delayed)
+%     % \baselinecorrection % this has to be done better (and definitely not in column mode)
+%     % so we now use this:
+%       \checkprevdepth
+%    \fi
+%    \doplacefloatbox
+%    \page_floats_report_total
+%    \dohandlenextfloatindent}
+
 \def\page_one_place_float_here_indeed
   {\ifgridsnapping
      % otherwise real bad outcome
    \else
-    % this was not really applied (delayed)
-    % \baselinecorrection % this has to be done better (and definitely not in column mode)
-    % so we now use this:
-      \checkprevdepth
+    \forcestrutdepth
    \fi
    \doplacefloatbox
    \page_floats_report_total

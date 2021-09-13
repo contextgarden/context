@@ -77,6 +77,7 @@ local rule_code       = nodecodes.rule
 local dir_code        = nodecodes.dir
 local par_code        = nodecodes.par
 local whatsit_code    = nodecodes.whatsit
+local passive_code    = nodecodes.passive
 
 local dimenfactors    = number.dimenfactors
 local formatters      = string.formatters
@@ -303,57 +304,68 @@ end
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
 local function listtoutf(h,joiner,textonly,last,nodisc)
-    local w = { }
-    local n = 0
-    local g = formatters["<%i>"]
-    local d = formatters["[%s|%s|%s]"]
-    while h do
-        local c, id = isglyph(h)
-        if c then
-            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or g(c)
-            if joiner then
-                n = n + 1 ; w[n] = joiner
-            end
-        elseif id == disc_code then
-            local pre, pos, rep = getdisc(h)
-            if not nodisc then
-                n = n + 1 ; w[n] = d(
-                    pre and listtoutf(pre,joiner,textonly) or "",
-                    pos and listtoutf(pos,joiner,textonly) or "",
-                    rep and listtoutf(rep,joiner,textonly) or ""
-                )
-            elseif rep then
-                n = n + 1 ; w[n] = listtoutf(rep,joiner,textonly) or ""
-            end
-            if joiner then
-                n = n + 1 ; w[n] = joiner
-            end
-        elseif textonly then
-            if id == glue_code then
-                if getwidth(h) > 0 then
-                    n = n + 1 ; w[n] = " "
+    if h then
+        local w = { }
+        local n = 0
+        local g = formatters["<%i>"]
+        local d = formatters["[%s|%s|%s]"]
+        while h do
+            local c, id = isglyph(h)
+            if c then
+                n = n + 1 ; w[n] = c >= 0 and utfchar(c) or g(c)
+                if joiner then
+                    n = n + 1 ; w[n] = joiner
                 end
-            elseif id == hlist_code or id == vlist_code then
-                n = n + 1 ; w[n] = "["
-                n = n + 1 ; w[n] = listtoutf(getlist(h),joiner,textonly,last,nodisc)
-                n = n + 1 ; w[n] = "]"
+            elseif id == disc_code then
+                local pre, pos, rep = getdisc(h)
+                if not nodisc then
+                    n = n + 1 ; w[n] = d(
+                        pre and listtoutf(pre,joiner,textonly) or "",
+                        pos and listtoutf(pos,joiner,textonly) or "",
+                        rep and listtoutf(rep,joiner,textonly) or ""
+                    )
+                elseif rep then
+                    n = n + 1 ; w[n] = listtoutf(rep,joiner,textonly) or ""
+                end
+                if joiner then
+                    n = n + 1 ; w[n] = joiner
+                end
+            elseif id == passive_code then
+                -- smells like a bug in luatex
+                print("weird: passive node in listtoutf")
+                return ""
+            elseif textonly then
+                if id == glue_code then
+                    if getwidth(h) > 0 then
+                        n = n + 1 ; w[n] = " "
+                    end
+                elseif id == hlist_code or id == vlist_code then
+                    local l = getlist(h)
+                    n = n + 1 ; w[n] = "["
+                    if l then
+                        n = n + 1 ; w[n] = listtoutf(l,joiner,textonly,last,nodisc)
+                    end
+                    n = n + 1 ; w[n] = "]"
+                end
+            else
+                n = n + 1 ; w[n] = "[-]"
             end
-        else
-            n = n + 1 ; w[n] = "[-]"
+            if h == last then
+                break
+            else
+                h = getnext(h)
+            end
         end
-        if h == last then
-            break
-        else
-            h = getnext(h)
-        end
+        return concat(w,"",1,(w[n] == joiner) and (n-1) or n)
+    else
+        return ""
     end
-    return concat(w,"",1,(w[n] == joiner) and (n-1) or n)
 end
 
 function nodes.listtoutf(h,joiner,textonly,last,nodisc)
     if h then
         local joiner = joiner == true and utfchar(0x200C) or joiner -- zwnj
-        return listtoutf(tonut(h),joiner,textonly,last and tonut(last),nodisc)
+        return listtoutf(tonut(h),joiner,textonly,last and tonut(last) or nil,nodisc)
     else
         return ""
     end

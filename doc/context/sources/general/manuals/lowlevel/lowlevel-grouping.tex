@@ -6,15 +6,15 @@
   [title=grouping,
    color=middlecyan]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 This is a rather short explanation. I decided to write it after presenting the
 other topics at the 2019 \CONTEXT\ meeting where there was a question about
 grouping.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=\PASCAL]
+\startsectionlevel[title=\PASCAL]
 
 In a language like \PASCAL, the language that \TEX\ has been written in, or
 \MODULA, its successor, there is no concept of grouping like in \TEX. But we can
@@ -30,9 +30,9 @@ instance an assignment in \METAPOST\ uses \type {:=} too. However, the \type
 can have local variables in a procedure or function but the block is just a way
 to pack a sequence of statements.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=\TEX]
+\startsectionlevel[title=\TEX]
 
 In \TEX\ macros (or source code) the following can occur:
 
@@ -79,9 +79,9 @@ The bottomline is: if you want a value to persist after the group, you need to
 explicitly change its value globally. This makes a lot of sense in the perspective
 of \TEX.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=\METAPOST]
+\startsectionlevel[title=\METAPOST]
 
 The \METAPOST\ language also has a concept of grouping but in this case it's more like a
 programming language.
@@ -110,9 +110,9 @@ implicit.
 So, in \METAPOST\ all assignments are global, unless a variable is explicitly
 saved inside a group.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=\LUA]
+\startsectionlevel[title=\LUA]
 
 In \LUA\ all assignments are global unless a variable is defines local:
 
@@ -132,9 +132,9 @@ some \METAPOST\ coding or using \type {end} instead of \type {endfor} in
 \METAPOST\ which can make the library wait for more without triggering an error.
 Proper syntax highlighting in an editor clearly helps.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=\CCODE]
+\startsectionlevel[title=\CCODE]
 
 The \LUA\ language is a mix between \PASCAL\ (which is one reason why I like it)
 and \CCODE.
@@ -151,20 +151,6 @@ for (i=1; i<=10;i++) {
 The semicolon is also used in \PASCAL\ but there it is a separator and not a
 statement end, while in \METAPOST\ it does end a statement (expression).
 
-\stopsection
-
-\stopsection
-
-\startsubject[title=Colofon]
-
-\starttabulate
-\NC Author      \NC Hans Hagen         \NC \NR
-\NC \CONTEXT    \NC \contextversion    \NC \NR
-\NC \LUAMETATEX \NC \texengineversion  \NC \NR
-\NC Support     \NC www.pragma-ade.com \NC \NR
-\NC             \NC contextgarden.net  \NC \NR
-\stoptabulate
-
-\stopsubject
+\stopsectionlevel
 
 \stopdocument

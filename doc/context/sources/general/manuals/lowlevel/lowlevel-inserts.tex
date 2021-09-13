@@ -1,0 +1,202 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=inserts,
+   color=middlecyan]
+
+\startsectionlevel[title=Introduction]
+
+This document is a mixed bag. We do discuss inserts but also touch elements of
+the page builder because inserts and regular page content are handled there.
+Examples of mechanisms that use inserts are footnotes. These have an anchor in
+the running text and some content that ends up (normally) at the bottom of the
+page. When considering a page break the engine tries to make sure that the anchor
+(reference) and the content end up on the same page. When there is too much, it
+will distribute (split) the content over pages.
+
+We can discuss page breaks in a (pseudo) scientific way and explore how to
+optimize this process, taking into accounts also inserts that contain images but
+it doesn't make much sense to do that because in practice we can encounter all
+kind of interferences. Theory and practice are too different because a document
+can contain a wild mix of text, figures, formulas, notes, have backgrounds and
+location dependent processing. It get seven more complex when we are dealing with
+columns because \TEX\ doesn't really know that concept.
+
+I will therefore stick to some practical aspects and the main reason for this
+document is that I sort of document engine features and at the same time give an
+impression of what we deal with. I will do that in the perspective of
+\LUAMETATEX, which has a few more options and tracing than other engines.
+
+{\em Currently this document is mostly for myself to keep track of the state of
+inserts and the page builder in \LUAMETATEX\ and \CONTEXT\ \LMTX. The text is not
+yet corrected and can have errors.}
+
+\stopsectionlevel
+
+\startsectionlevel[title=The page builder]
+
+When your document is processed content eventually gets added to the so called
+main vertical list (mvl). Content first get appended to the list of contributions
+and at specific moments it will be handed over to the mvl. This process is called
+page building. There we can encounter the following elements (nodes):
+
+\starttabulate
+\NC \type {glue}     \NC a vertical skip \NC \NR
+\NC \type {penalty}  \NC a vertical penalty \NC \NR
+\NC \type {kern}     \NC a vertical kern \NC \NR
+\NC \type {vlist}    \NC a a vertical box \NC \NR
+\NC \type {hlist}    \NC a horizontal box (often a line) \NC \NR
+\NC \type {rule}     \NC a horizontal rule \NC \NR
+\NC \type {boundary} \NC a boundary node \NC \NR
+\NC \type {whatsit}  \NC a node that is used by user code (often some extension) \NC \NR
+\NC \type {mark}     \NC a token list (as used for running headers) \NC \NR
+\NC \type {insert}   \NC a node list (as used for notes) \NC \NR
+\stoptabulate
+
+The engine itself will not insert anything other than this but \LUA\ code can
+mess up the contribution list and the mvl and that can trigger an error. Handing
+over the contributions is done by the page builder and that one kicks in in
+several places:
+
+\startitemize[packed]
+\startitem
+    When a penalty gets inserted it is part of evaluating if the output routine
+    should be triggered. This triggering can be enforced by values equal or below
+    10.000 that then can be checked in the set routine.
+\stopitem
+\startitem
+    The builder is {\em not} exercised when a glue or kern is injected so there can
+    be multiple of them before another element triggers the builder.
+\stopitem
+\startitem
+    Adding a box triggers the builder as does the result of an alignment which can
+    be a list of boxes.
+\stopitem
+\startitem
+    When the output routine is finished the builder is executed because the
+    routine can have pushed back content.
+\stopitem
+\startitem
+    When a new paragraph is triggered by the \type {\par} command the builder kicks in
+    but only when the engine was able to enter vertical mode.
+\stopitem
+\startitem
+    When the job is finished the builder will make sure that pending content is handled.
+\stopitem
+\startitem
+    An insert and vadjust {\em can} trigger the builder but only at the nesting level zero
+    which normally is not the case (I need an example).
+\stopitem
+\startitem
+    At the beginning of a paragraph (like text), before display math is entered,
+    and when display math ends the builder is also activated.
+\stopitem
+\stopitemize
+
+At the \TEX\ the builder is triggered automatically in the mentioned cases but at
+the \LUA\ end you can use \type {tex.triggerbuildpage()} to flush the pending
+contributions.
+
+The properties that relate to the page look like counter and dimension registers ut
+they are not. These variables are global and managed differently.
+
+\starttabulate
+\NC \type {\pagegoal}         \NC the available space \NC \NR
+\NC \type {\pagetotal}        \NC the accumulated space \NC \NR
+\NC \type {\pagestretch}      \NC the possible zero order stretch \NC \NR
+\NC \type {\pagefilstretch}   \NC the possible one order stretch \NC \NR
+\NC \type {\pagefillstretch}  \NC the possible second order stretch \NC \NR
+\NC \type {\pagefilllstretch} \NC the possible third order stretch \NC \NR
+\NC \type {\pageshrink}       \NC the possible shrink \NC \NR
+\NC \type {\pagedepth}        \NC the current page depth \NC \NR
+\NC \type {\pagevsize}        \NC the initial page goal \NC \NR
+\stoptabulate
+
+When the first content is added to an empty page the \type {\pagegoal} gets the
+value of \type {\vsize} and gets frozen but the value is diminished by the space
+needed by left over inserts. These inserts are managed via a separate list so
+they don't interfere with the page that itself of course can have additional
+inserts. The \type {\pagevsize} is just a (\LUAMETATEX) status variable that hold
+the initial \type {\pagegoal} but it might play a role in future extensions.
+
+Another variable is \type {\deadcycles} that registers the number of times the
+output routine is called without returning result.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Inserts]
+
+We now come to inserts. In traditional \TEX\ an insert is a data structure that
+runs on top of registers: a box, count, dimension and skip. An insert is accessed
+by a number so for instance insert 123 will use the four registers of that
+number. Because \TEX\ only offers a command alias mechanism for registers (like
+\type {\countdef}) a macro package will implement some allocator management
+subsystem (like \type {\newcount}). A \type {\newinsert} has to be defined in a
+way that the four registers are not clashing with other allocators. When you
+start with \TEX\ seeing code that deals with in (in plain \TEX) can be puzzling
+but it follows from the way \TEX\ is set up. But inserts are probably not what
+you start exploring right away away.
+
+In \LUAMETATEX\ you can set \type {\insertmode} to 1 and that is what we do in
+\CONTEXT. In that mode inserts are taken from a pool instead of registers. A side
+effect is that like the page properties the insert properties are global too but
+that is normally no problem and can be managed well by a macro package (that
+probably would assign register the values globally too). The insert pool will
+grow dynamically on demand so one can just start at 1; in \CONTEXT\ \MKIV\ we use
+the range 127 upto 255 in order to avoid a clash with registers. In \LMTX\ we start
+at 1 because there are no clashes.
+
+A consequence of this approach is that we use dedicated commands to set the insert
+properties:
+
+\starttabulate[|l|l|p|]
+\NC \type {\insertdistance}   \NC glue  \NC the space before the first instance (on a page) \NC \NR
+\NC \type {\insertmultiplier} \NC count \NC a factor that is used to calculate the height used \NC \NR
+\NC \type {\insertlimit}      \NC dimen \NC the maximum amount of space on a page to be taken \NC \NR
+\NC \type {\insertpenalty}    \NC count \NC the floating penalty (used when set) \NC \NR
+\NC \type {\insertmaxdepth}   \NC dimen \NC the maximum split depth (used when set) \NC \NR
+\NC \type {\insertstorage}    \NC count \NC signals that the insert has to be stored for later \NC \NR
+\NC \type {\insertheight}     \NC dimen \NC the accumulated height of the inserts so far \NC \NR
+\NC \type {\insertdepth}      \NC dimen \NC the current depth of the inserts so far \NC \NR
+\NC \type {\insertwidth}      \NC dimen \NC the width of the inserts \NC \NR
+\stoptabulate
+
+These commands take a number and an integer, dimension or glue specification.
+They can be set and queried but setting the dimensions can have side effects. The
+accumulated height of the inserts is available in \type {\insertheights} (which
+can be set too). The \type {\floatingpenalty} variable determines the penalty
+applied when a split is needed.
+
+In the output routine the original \TEX\ variable \type {\insertpenalties} is a
+counter that keeps the number of insertions that didn't fit on the page while
+otherwise if has the accumulated penalties of the split insertions. When \type
+{\holdinginserts} is non zero the inserts in the list are not collected for
+output, which permits the list to be fed back for reprocessing.
+
+The \LUAMETATEX\ specific storage mode \type {\insertstoring} variable is
+explained in the next section.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Storing]
+
+This feature is kind of special and still experimental. When \type
+{\insertstoring} is set 1, all inserts that have their storage flag set will be
+saved. Think of a multi column setup where inserts have to end up in the last
+column. If there are three columns, the first two will store inserts. Then when
+the last column is dealt with \type {\insertstoring} can be set to 2 and that
+will signal the builder that we will inject the inserts. In both cases, the value
+of this register will be set to zero so that it doesn't influence further
+processing.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Callbacks]
+
+{\em Todo, nothing new there, so no hurry.}
+
+\stopsectionlevel
+
+\stopdocument

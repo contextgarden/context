@@ -2331,14 +2331,14 @@ do
     end
 
     local trace       = false
-    local last        = nil
+ -- local last        = nil
     local vmode_code  = tex.modelevels.vertical
     local temp_code   = nodecodes.temp
     local texgetnest  = tex.getnest
     local texgetlist  = tex.getlist
     local getnodetail = nodes.tail
 
-    trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
+ -- trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
     -- abs : negative is inner
 
@@ -2375,68 +2375,143 @@ do
         actions   = vspacing.checkstrutdepth,
     }
 
-    function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
-        local box = texgetbox(n)
-        if box then
-            box = tonut(box)
-            local head = getlist(box)
-            if head then
-                local tail = find_node_tail(head)
-                if tail then
-                    if getid(tail) == hlist_code then
-                        local dp = getdepth(tail)
-                        if dp < depth then
-                            setdepth(tail,depth)
-                            outer.prevdepth = depth
-                            if trace or trace_mode > 0 then
-                                nuts.setvisual(tail,"depth")
-                            end
-                        end
-                    end
-                    last = nil
-                    if plus then
-                        -- penalty / skip ...
-                        local height = 0
-                        local sofar  = 0
-                        local same   = false
-                        local seen   = false
-                        local list   = { }
-                              last   = nil
-                        while tail do
-                            local id = getid(tail)
-                            if id == hlist_code or id == vlist_code then
-                                local w, h, d = getwhd(tail)
-                                height = height + h + d + sofar
-                                sofar  = 0
-                                last   = tail
-                            elseif id == kern_code then
-                                sofar = sofar + getkern(tail)
-                            elseif id == glue_code then
-                                if seen then
-                                    sofar = sofar + getwidth(tail)
-                                    seen  = false
-                                else
-                                    break
-                                end
-                            elseif id == penalty_code then
-                                local p = getpenalty(tail)
-                                if p >= 10000 then
-                                    same = true
-                                    seen = true
-                                else
-                                    break
-                                end
-                            else
-                                break
-                            end
-                            tail = getprev(tail)
-                        end
-                        texsetdimen("global","d_spac_prevcontent",same and height or 0)
+ -- function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
+ --     local box = texgetbox(n)
+ --     if box then
+ --         box = tonut(box)
+ --         local head = getlist(box)
+ --         if head then
+ --             local tail = find_node_tail(head)
+ --             if tail then
+ --                 if getid(tail) == hlist_code then
+ --                     local dp = getdepth(tail)
+ --                     if dp < depth then
+ --                         setdepth(tail,depth)
+ --                         outer.prevdepth = depth
+ --                         if trace or trace_mode > 0 then
+ --                             nuts.setvisual(tail,"depth")
+ --                         end
+ --                     end
+ --                 end
+ --              -- last = nil
+ --              -- if plus then
+ --              --     -- penalty / skip ...
+ --              --     local height = 0
+ --              --     local sofar  = 0
+ --              --     local same   = false
+ --              --     local seen   = false
+ --              --     local list   = { }
+ --              --           last   = nil
+ --              --     while tail do
+ --              --         local id = getid(tail)
+ --              --         if id == hlist_code or id == vlist_code then
+ --              --             local w, h, d = getwhd(tail)
+ --              --             height = height + h + d + sofar
+ --              --             sofar  = 0
+ --              --             last   = tail
+ --              --         elseif id == kern_code then
+ --              --             sofar = sofar + getkern(tail)
+ --              --         elseif id == glue_code then
+ --              --             if seen then
+ --              --                 sofar = sofar + getwidth(tail)
+ --              --                 seen  = false
+ --              --             else
+ --              --                 break
+ --              --             end
+ --              --         elseif id == penalty_code then
+ --              --             local p = getpenalty(tail)
+ --              --             if p >= 10000 then
+ --              --                 same = true
+ --              --                 seen = true
+ --              --             else
+ --              --                 break
+ --              --             end
+ --              --         else
+ --              --             break
+ --              --         end
+ --              --         tail = getprev(tail)
+ --              --     end
+ --              --     texsetdimen("global","d_spac_prevcontent",same and height or 0)
+ --              -- end
+ --             end
+ --         end
+ --     end
+ -- end
+
+    local hlist_code = nodes.nodecodes.hlist
+    local line_code  = nodes.listcodes.line
+
+    local nuts             = nodes.nuts
+    local getid            = nuts.getid
+    local getsubtype       = nuts.getsubtype
+    local getdepth         = nuts.getdepth
+    local setdepth         = nuts.setdepth
+    local gettotal         = nuts.gettotal
+    local getspeciallist   = nuts.getspeciallist
+    local setspeciallist   = nuts.setspeciallist
+
+    local triggerbuildpage = tex.triggerbuildpage
+
+    local texgetdimen = tex.getdimen
+    local texsetdimen = tex.setdimen
+    local texgetnest  = tex.getnest
+    local texget      = tex.get
+    local texset      = tex.set
+
+    local trace = false  trackers.register("otr.forcestrutdepth", function(v)
+        trace = v and function(n)
+            nuts.setvisual(nuts.tonut(n),nodes.visualizers.modes.depth)
+        end
+    end)
+
+    function vspacing.forcestrutdepth()
+        -- check if in mvl
+        if texgetnest("ptr") == 0 then
+             triggerbuildpage() -- return true when mvl
+             local head, tail = getspeciallist("page_head")
+             if tail and getid(tail) == hlist_code and getsubtype(tail) == line_code then -- isline(tail)
+                local strutdp = texgetdimen("strutdp")
+                local delta   = strutdp - getdepth(tail)
+                if delta > 0 then
+                    setdepth(tail,strutdp)
+                    texset("pagetotal",texget("pagetotal") + delta)
+                    texset("pagedepth",strutdp)
+                    if trace then
+                        trace(tail)
                     end
                 end
-            end
+             end
+        else
+            local nest = texgetnest()
+         -- if abs(nest.mode) == vmode_code and nest.head then
+                local tail = nest.tail
+                if tail.id == hlist_code and tail.subtype == line_code then
+                    local strutdp = texgetdimen("strutdp")
+                    if tail.depth < strutdp then
+                        tail.depth = strutdp
+                    end
+                    nest.prevdepth = strutdp
+                    if trace then
+                        trace(tail)
+                    end
+                end
+         -- end
         end
     end
+
+ -- interfaces.implement {
+ --     name    = "removelastline",
+ --     actions = function()
+ --         local h, t = getspeciallist("page_head")
+ --         if t and getid(t) == hlist_code and getsubtype(t) == line_code then
+ --             local total = gettotal(t)
+ --             h = remove_node(h,t,true)
+ --             setspeciallist(h)
+ --             texset("pagetotal",texget("pagetotal") - total)
+ --             -- set prevdepth
+ --         end
+ --     end
+ -- }
 
     function vspacing.pushatsame()
         -- needs better checking !
@@ -2488,18 +2563,25 @@ do
         scope     = "private"
     }
 
-    implement {
-        name      = "forcestrutdepth",
-        arguments = { "integer", "dimension", "integer" },
-        actions   = vspacing.forcestrutdepth,
-        scope     = "private"
-    }
+ -- implement {
+ --     name      = "forcestrutdepth",
+ --     arguments = { "integer", "dimension", "integer" },
+ --     actions   = vspacing.forcestrutdepth,
+ --     scope     = "private"
+ -- }
+
+ -- implement {
+ --     name      = "forcestrutdepthplus",
+ --     arguments = { "integer", "dimension", "integer", true },
+ --     actions   = vspacing.forcestrutdepth,
+ --     scope     = "private"
+ -- }
 
     implement {
-        name      = "forcestrutdepthplus",
-        arguments = { "integer", "dimension", "integer", true },
+        name      = "forcestrutdepth",
+        public    = true,
+        protected = true,
         actions   = vspacing.forcestrutdepth,
-        scope     = "private"
     }
 
     implement {

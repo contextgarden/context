@@ -6,7 +6,7 @@
   [title=registers,
    color=darkmagenta]
 
-\startsection[title=Preamble]
+\startsectionlevel[title=Preamble]
 
 Registers are sets of variables that are accessed by index and a such resemble
 registers in a processing unit. You can store a quantity in a register, retrieve
@@ -14,9 +14,9 @@ it, and also manipulate it.
 
 There is hardly any need to use them in \CONTEXT\ so we keep it simple.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\TEX\ primitives}]
+\startsectionlevel[title={\TEX\ primitives}]
 
 There are several categories:
 
@@ -105,9 +105,11 @@ but in a macro package you should not use that one but the higher level \type
 
 Watch the difference:
 
+\pushoverloadmode
 \startlines\tt
 \getbuffer[1,2]
 \stoplines
+\popoverloadmode
 
 The first definition uses a yet free register so you won't get a clash. The
 second one is just a shortcut using a macro and the third one too but again
@@ -182,9 +184,9 @@ If you want to know more about all these quantities, \quotation {\TEX\ By Topic}
 provides a good summary of what \TEX\ has to offer, and there is no need to repeat
 it here.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\ETEX\ primitives}]
+\startsectionlevel[title={\ETEX\ primitives}]
 
 Apart from the ability to use expressions, the contribution to registers that
 \ETEX\ brought was that suddenly we could use upto 65K of them, which is more
@@ -194,9 +196,9 @@ and later \LUATEX\ regular arrays were used, at the cost of more memory which in
 the meantime has become cheap. As \CONTEXT\ moved to \ETEX\ rather early its
 users never had to worry about it.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUATEX\ primitives}]
+\startsectionlevel[title={\LUATEX\ primitives}]
 
 The \LUATEX\ engine introduced attributes. These are numeric properties that are
 bound to the nodes that are the result of typesetting operations. They are
@@ -239,13 +241,13 @@ Just be aware that defining attributes can have an impact on performance. As you
 cannot access them at the \TEX\ end you seldom need them. If you do you can
 better use the proper more high level definers (not discussed here).
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title={\LUAMETATEX\ primitives}]
+\startsectionlevel[title={\LUAMETATEX\ primitives}]
 
 {\em todo}
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
 

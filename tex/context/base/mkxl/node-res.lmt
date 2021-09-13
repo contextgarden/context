@@ -183,6 +183,8 @@ local rule              = register_nut(new_nut(rule_code))                   -- 
 local emptyrule         = register_nut(new_nut(rule_code,rulecodes.empty))   -- setdirection(rule, lefttoright_code)
 local userrule          = register_nut(new_nut(rule_code,rulecodes.user))    -- setdirection(rule, lefttoright_code)
 local outlinerule       = register_nut(new_nut(rule_code,rulecodes.outline)) -- setdirection(rule, lefttoright_code)
+local imagerule         = register_nut(new_nut(rule_code,rulecodes.image))   -- setdirection(rule, lefttoright_code)
+local boxrule           = register_nut(new_nut(rule_code,rulecodes.box))     -- setdirection(rule, lefttoright_code)
 local hlist             = register_nut(new_nut(nodecodes.hlist))             setdirection(hlist,lefttoright_code)
 local vlist             = register_nut(new_nut(nodecodes.vlist))             setdirection(vlist,lefttoright_code)
 
@@ -370,6 +372,22 @@ function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let t
     end
     if line then
         setruledata(n,line)
+    end
+    return n
+end
+
+function nutpool.imagerule(width,height,depth) -- w/h/d == nil will let them adapt
+    local n = copy_nut(imagerule)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
+    end
+    return n
+end
+
+function nutpool.boxrule(width,height,depth) -- w/h/d == nil will let them adapt
+    local n = copy_nut(boxrule)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     return n
 end

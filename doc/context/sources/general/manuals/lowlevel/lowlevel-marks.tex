@@ -1,14 +1,12 @@
 % language=us runpath=texruns:manuals/lowlevel
 
-\startcomponent lowlevel-marks
-
 \environment lowlevel-style
 
 \startdocument
   [title=marks,
    color=middlemagenta]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 Marks are one of the subsystems of \TEX, as are for instance alignments and math
 as well as inserts which they share some properties with. Both inserts and marks
@@ -50,9 +48,9 @@ In this document we discuss marks but assume that \LUAMETATEX\ is used with
 a few \LUA\ mechanisms, but it is to be seen if that will be either a replacement
 or an alternative.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=The basics]
+\startsectionlevel[title=The basics]
 
 Although the original \TEX\ primitives are there, the plural \ETEX\ mark commands
 are to be used. Marks, signals with token lists, are set with:
@@ -117,9 +115,9 @@ The current, latest assigned, value of a mark is available too:
 Using this value in for instance headers and footers makes no sense because the
 last node set can be on a following page.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Migration]
+\startsectionlevel[title=Migration]
 
 In the introduction we mentioned that \LUAMETATEX\ has migration built in. In
 \MKIV\ we have this as option too, but there it is delegated to \LUA. It permits
@@ -306,9 +304,9 @@ Here \type {sm} means \quote {set mark} while \type {rm} would indicate a \quote
 the box and thereby have become a a specific box property as can be seen in the
 above trace.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Tracing]
+\startsectionlevel[title=Tracing]
 
 The \LUAMETATEX\ engine has a dedicated tracing option for marks. The fact that
 the traditional engine doesn't have this can be seen as indication that this is
@@ -355,9 +353,9 @@ When tracing is set to 2 you also get details we get a list of marks of the anal
 1:9: ..bot {sample 9.1}
 \stoptyping
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=High level commands]
+\startsectionlevel[title=High level commands]
 
 I think that not that many users define their own marks. They are useful for
 showing section related titles in headers and footers but the implementation of
@@ -493,14 +491,21 @@ The following three variants are (what is called) fully expandable:
 % \resetsynchronizemarking[#1]%
 % \synchronizemarking[#1][#2][#3]% (#3: options (no longer used))
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=Pitfalls]
+\startsectionlevel[title=Pitfalls]
 
 The main pitfall is that a (re)setting a mark will inject a node which in
 vertical mode can interfere with spacing. In for instance section commands we
 wrap them with the title so there it should work out okay.
 
-\stopsection
+\stopsectionlevel
 
 \stopdocument
+
+% Musical timestamp: videos showing up on YT with Nandi Bushell performing with
+% Dave Grohl (e.g. https://www.youtube.com/watch?v=_AVkGj41RuA) ... the highlight
+% of a nice and emotional thread of exchange between a young and capable energetic
+% drummer challenging an experienced musician. During the pandemic one could
+% witness quite some interesting musical experiments and Nandi and Yoyoka are some
+% inspiring discoveries.

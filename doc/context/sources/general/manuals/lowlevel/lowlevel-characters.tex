@@ -6,15 +6,15 @@
   [title=characters,
    color=middlered]
 
-\startsection[title=Introduction]
+\startsectionlevel[title=Introduction]
 
 This explanation is part of the low level manuals because in practice users will
 not have to deal with these matters in \MKIV\ and even less in \LMTX. You can
 skip to the last section for commands.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=History]
+\startsectionlevel[title=History]
 
 If we travel back in time to when \TEX\ was written we end up in eight bit
 character universe. In fact, the first versions assumed seven bits, but for
@@ -79,9 +79,9 @@ depending on the (local) language, referencing the relevant font. It permits
 users to enter the text in their preferred input encoding and also get the words
 properly hyphenated. But we can leave these \MKII\ details behind.
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=The heritage]
+\startsectionlevel[title=The heritage]
 
 In \MKIV\ we got rid of input and font encodings, although one can still load
 files in a specific code page. \footnote {I'm not sure if users ever depend on an
@@ -112,9 +112,9 @@ format file. \footnote {In \MKII\ we have an abstract front|-|end with respect t
 encodings and also an abstract backend with respect to supported drivers but both
 approaches no longer make sense today.}
 
-\stopsection
+\stopsectionlevel
 
-\startsection[title=The \LMTX\ approach]
+\startsectionlevel[title=The \LMTX\ approach]
 
 In the process of tagging all (public) macros in \LMTX\ (which happened in
 2020|-|2021) I wondered if we should keep these one character macros, the
@@ -220,19 +220,7 @@ We get this list:
 Some combinations are special for \CONTEXT\ because \UNICODE\ doesn't specify
 decomposition for all composed characters.
 
-\stopsection
-
-\startsubject[title=Colofon]
-
-\starttabulate
-\NC Author      \NC Hans Hagen         \NC \NR
-\NC \CONTEXT    \NC \contextversion    \NC \NR
-\NC \LUAMETATEX \NC \texengineversion  \NC \NR
-\NC Support     \NC www.pragma-ade.com \NC \NR
-\NC             \NC contextgarden.net  \NC \NR
-\stoptabulate
-
-\stopsubject
+\stopsectionlevel
 
 \stopdocument
 

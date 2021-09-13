@@ -44,6 +44,10 @@
   [style=\bfa,
    color=darkgray]
 
+\setuplist
+  [chapter]
+  [style=bold]
+
 \setupfootertexts
   [section] % [\documentvariable{title}]
 
@@ -87,6 +91,15 @@
         withcolor "white" ;
 \stopuseMPgraphic
 
+\definesectionlevels
+  [default]
+  [%{chapter,title},
+   {section,subject},
+   {subsection,subsubject},
+   {subsubsection,subsubsubject},
+   {subsubsubsection,subsubsubject},
+   {subsubsubsubsection,subsubsubject}]
+
 \startsetups document:start
 
     \startMPpage
@@ -95,9 +108,29 @@
 
     \page
 
-    \startsubject[title=Contents]
-        \placelist[section][criterium=previous]
-    \stopsubject
+    \startsubjectlevel[title=Contents]
+        \placelist[chapter,section] [criterium=previous]
+    \stopsubjectlevel
+
+\stopsetups
+
+\startsetups document:stop
+
+\testpage[6]
+
+%startsubjectlevel[title=Colofon]
+\startsectionlevel[title=Colofon,number=no,saveinlist=no]
+
+    \starttabulate
+        \NC Author      \NC Hans Hagen         \NC \NR
+        \NC \CONTEXT    \NC \contextversion    \NC \NR
+        \NC \LUAMETATEX \NC \texengineversion  \NC \NR
+        \NC Support     \NC www.pragma-ade.com \NC \NR
+        \NC             \NC contextgarden.net  \NC \NR
+    \stoptabulate
+
+\stopsectionlevel
+%stopsubjectlevel
 
 \stopsetups
 

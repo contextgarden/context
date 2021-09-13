@@ -63,6 +63,22 @@
 %      \fi
 %    \fi}
 
+% \unexpanded\def\page_one_command_set_vsize
+%   {\ifgridsnapping
+%      \ifcase\layoutlines
+%        \getrawnoflines\textheight
+%      \else
+%        \noflines\layoutlines
+%      \fi
+%      \global\vsize\noflines\openlineheight
+%    \else
+%      \global\vsize\textheight
+%    \fi
+%    \global\advance\vsize\d_page_adapts_delta
+%    % alternatively we could set it in builders.buildpage_filter
+%  % \ifdim\pagegoal<\maxdimen .. \fi
+%    \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
+
 \unexpanded\def\page_one_command_set_vsize
   {\ifgridsnapping
      \ifcase\layoutlines
@@ -75,10 +91,10 @@
      \global\vsize\textheight
    \fi
    \global\advance\vsize\d_page_adapts_delta
-   % alternatively we could set it in builders.buildpage_filter
- % \ifdim\pagegoal<\maxdimen .. \fi
-   \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
-
+ % \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
+ % per 2021/9/9 : otherwise weird notes overlap with side floats
+   \settotalinsertionheight
+   \pagegoal\dimexpr\vsize-\totalinsertionheight\relax}
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 

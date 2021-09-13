@@ -109,23 +109,6 @@ local a_layer             = attributes.private("viewerlayer")
 
 local enableaction        = nodes.tasks.enableaction
 
--- local trace_hbox
--- local trace_vbox
--- local trace_vtop
--- local trace_kern
--- local trace_glue
--- local trace_penalty
--- local trace_fontkern
--- local trace_strut
--- local trace_whatsit
--- local trace_user
--- local trace_math
--- local trace_italic
--- local trace_discretionary
--- local trace_expansion
--- local trace_line
--- local trace_space
-
 local report_visualize = logs.reporter("visualize")
 
 local modes = {
@@ -160,6 +143,8 @@ local modes = {
     mark          = 0x2000000,
     insert        = 0x4000000,
 }
+
+visualizers.modes = modes
 
 local usedfont, exheight, emwidth
 local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathlistkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
@@ -280,7 +265,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         else
             a = a | preset_all
         end
-    else
+    elseif type(n) == "string" then
         for s in gmatch(n,"[a-z]+") do
             local m = modes[s]
             if not m then
@@ -291,6 +276,8 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
                 a = a | m
             end
         end
+    elseif type(n) == "number" then
+        a = a | n
     end
     if not a or a == 0 or a == unsetvalue then
         return unsetvalue

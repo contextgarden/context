@@ -251,6 +251,21 @@
         end
     end
 
+    function graphics.bitmaps.manipulators.evening(b,m)
+        local xsize = b.xsize
+        local ysize = b.ysize
+        local data  = b.data
+        local colorspace = b.colorspace
+        if colorspace == 1 then
+            for r=1,ysize do
+                local row = data[r]
+                for c=1,xsize do
+                    row[c] = row[c] // 2
+                end
+            end
+        end
+    end
+
     context.startTEXpage()
         local b = graphics.bitmaps.load("hacker.jpg")
         graphics.bitmaps.manipulators.myframe(b,20)
@@ -265,20 +280,34 @@
         graphics.bitmaps.tocontext(b,50*65536,nil)
     context.stopTEXpage()
 
-    local m = table.setmetatableindex(function(t,k) local v = { k, k, k } t[k] = v return v end)
+    do
 
---  local c = { 255,   0,   0 } for i=0x00,0x1F do m[i] = c end
---  local c = {   0, 255,   0 } for i=0x20,0x3F do m[i] = c end
-    local c = {   0,   0, 255 } for i=0x40,0x5F do m[i] = c end
---  local c = { 255, 255,   0 } for i=0x60,0x7F do m[i] = c end
---  local c = { 255,   0, 255 } for i=0x80,0x9F do m[i] = c end
---  local c = {   0, 255, 255 } for i=0xA0,0xBF do m[i] = c end
---  local c = { 255, 255, 255 } for i=0xC0,0xDF do m[i] = c end
---  local c = {   0,   0,   0 } for i=0xE0,0xFF do m[i] = c end
+        local m = table.setmetatableindex(function(t,k) local v = { k, k, k } t[k] = v return v end)
+
+     -- local c = { 255,   0,   0 } for i=0x00,0x1F do m[i] = c end
+     -- local c = {   0, 255,   0 } for i=0x20,0x3F do m[i] = c end
+     -- local c = {   0,   0, 255 } for i=0x40,0x5F do m[i] = c end
+     -- local c = { 255, 255,   0 } for i=0x60,0x7F do m[i] = c end
+     -- local c = { 255,   0, 255 } for i=0x80,0x9F do m[i] = c end
+     -- local c = {   0, 255, 255 } for i=0xA0,0xBF do m[i] = c end
+     -- local c = { 255, 255, 255 } for i=0xC0,0xDF do m[i] = c end
+     -- local c = {   0,   0,   0 } for i=0xE0,0xFF do m[i] = c end
+
+        local c = {   0,   0, 255 } for i=0x40,0x5F do m[i] = c end
+        local c = {   0, 255,   0 } for i=0x80,0x9F do m[i] = c end
+        local c = { 255,   0,   0 } for i=0xB0,0xCF do m[i] = c end
+
+        context.startTEXpage()
+            local b = graphics.bitmaps.load("mill.png")
+            graphics.bitmaps.manipulators.colorize(b,m)
+            graphics.bitmaps.tocontext(b,50*65536,nil)
+        context.stopTEXpage()
+
+    end
 
     context.startTEXpage()
         local b = graphics.bitmaps.load("mill.png")
-        graphics.bitmaps.manipulators.colorize(b,m)
+        graphics.bitmaps.manipulators.evening(b)
         graphics.bitmaps.tocontext(b,50*65536,nil)
     context.stopTEXpage()
 
@@ -290,6 +319,8 @@
     graphics.bitmaps.manipulators.myframe(b,20)
     graphics.bitmaps.tocontext(b,50*65536,nil)
 }}
+
+% This is inefficient because textext processes twice, so a "todo".
 
 \startMPpage
 

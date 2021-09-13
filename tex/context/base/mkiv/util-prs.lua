@@ -572,9 +572,9 @@ end
 -- "1","2","3","4"
 -- "5","6","7","8"
 -- ]]
---
+
 -- local mycsvsplitter = parsers.csvsplitter { numbers = true }
---
+
 -- local list = mycsvsplitter(crap) inspect(list)
 
 -- and this is a slightly patched version of a version posted by Philipp Gesang

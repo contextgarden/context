@@ -47,6 +47,7 @@ local zlibcompresssize       = xzip.compresssize
 
 local nuts                   = nodes.nuts
 local tonut                  = nodes.tonut
+local tonode                 = nuts.tonode
 
 local pdfreference           = lpdf.reference
 local pdfdictionary          = lpdf.dictionary
@@ -986,16 +987,18 @@ local localconverter = nil -- will be set
 
 local flushimage  do
 
-    local rulecodes         = nodes.rulecodes
-    local newrule           = nodes.pool.rule
+    local newimagerule      = nuts.pool.imagerule
+    local newboxrule        = nuts.pool.boxrule
 
     local setprop           = nuts.setprop
     local getprop           = nuts.getprop
+    local setattrlist       = nuts.setattrlist
 
     local getwhd            = nuts.getwhd
     local flushlist         = nuts.flushlist
     local getdata           = nuts.getdata
 
+    local rulecodes         = nodes.rulecodes
     local normalrule_code   = rulecodes.normal
     local boxrule_code      = rulecodes.box
     local imagerule_code    = rulecodes.image
@@ -1083,10 +1086,10 @@ local flushimage  do
             else
                 wd, ht, dp = l.width, l.height, l.depth
             end
-            local rule   = newrule(wd,ht,dp) -- newboxrule
-            rule.subtype = boxrule_code
-            setprop(tonut(rule),"index",index)
-            return rule, wd, ht, dp
+            local rule = newboxrule(wd,ht,dp)
+            setattrlist(rule,true)
+            setprop(rule,"index",index)
+            return tonode(rule), wd, ht, dp
         else
             report("no box resource %S",index)
         end
@@ -2749,9 +2752,9 @@ do
     local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream
     local img_none       = imagetypes.none
 
-    local rulecodes      = nodes.rulecodes
-
-    local setprop        = nodes.nuts.setprop
+    local newimagerule   = nuts.pool.imagerule
+    local setattrlist    = nuts.setattrlist
+    local setprop        = nuts.setprop
 
     local report_images  = logs.reporter("backend","images")
 
@@ -2759,7 +2762,6 @@ do
     local indices        = { }
 
     local bpfactor       = number.dimenfactors.bp
-    local imagerule_code = rulecodes.image
 
     function codeinjections.newimage(specification)
         return specification
@@ -2849,14 +2851,14 @@ do
             embedimage(specification)
         end
         --
-        local width  = specification.width  or 0
-        local height = specification.height or 0
-        local depth  = specification.depth  or 0
-        -- newimagerule
-        local n      = nodes.pool.rule(width,height,depth)
-        n.subtype    = imagerule_code
-        setprop(tonut(n),"index",specification.index)
-        return n
+        local n = newimagerule(
+            specification.width  or 0,
+            specification.height or 0,
+            specification.depth  or 0
+        )
+        setattrlist(n,true)
+        setprop(n,"index",specification.index)
+        return tonode(n)
     end
 
     pdfincludeimage = function(index)

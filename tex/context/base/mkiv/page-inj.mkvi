@@ -33,8 +33,14 @@
 \let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
 \def\page_injections_flush_indeed
-  {\scrn_canvas_synchronize_set{\pageinjectionparameter\c!width}{\pageinjectionparameter\c!height}%
-   \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+  {\begingroup
+   \setbox\scratchbox\normalhpack
+     {\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+   \printpaperwidth \wd\scratchbox
+   \printpaperheight\ht\scratchbox
+   \scrn_canvas_synchronize_only
+   \invokepagehandler\v!normal{\box\scratchbox}%
+   \endgroup
    \scrn_canvas_synchronize_reset}
 
 \def\page_injections_flush_saved#name#parameters%
