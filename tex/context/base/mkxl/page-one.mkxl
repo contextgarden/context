@@ -66,7 +66,7 @@
      -\d_page_floats_inserted_bottom
      -\insertheights
    \relax
-   \insertheights\zeropoint}
+   }% no: \insertheights\zeropoint}
 
 \protected\def\page_one_command_set_vsize
   {\ifgridsnapping

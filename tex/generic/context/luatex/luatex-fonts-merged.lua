@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-09-13 09:37
+-- merge date  : 2021-09-14 21:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -32036,36 +32036,40 @@ local function initialize_one(font,attr)
 end
 local function contextchain(contexts,n)
  local char=getchar(n)
- for k=1,#contexts do
-  local ck=contexts[k]
-  local seq=ck[3]
-  local f=ck[4]
-  local l=ck[5]
-  if (l-f)==1 and seq[f+1][char] then
-   local ok=true
-   local c=n
-   for i=l+1,#seq do
-    c=getnext(c)
-    if not c or not seq[i][ischar(c)] then
-     ok=false
-     break
-    end
-   end
-   if ok then
-    c=getprev(n)
-    for i=1,f-1 do
-     c=getprev(c)
-     if not c or not seq[f-i][ischar(c)] then
+ if not contexts.n then
+  return contexts[char]
+ else
+  for k=1,#contexts do
+   local ck=contexts[k]
+   local seq=ck[3]
+   local f=ck[4]
+   local l=ck[5]
+   if (l-f)==1 and seq[f+1][char] then
+    local ok=true
+    local c=n
+    for i=l+1,#seq do
+     c=getnext(c)
+     if not c or not seq[i][ischar(c)] then
       ok=false
+      break
      end
     end
-   end
-   if ok then
-    return true
+    if ok then
+     c=getprev(n)
+     for i=1,f-1 do
+      c=getprev(c)
+      if not c or not seq[f-i][ischar(c)] then
+       ok=false
+      end
+     end
+    end
+    if ok then
+     return true
+    end
    end
   end
+  return false
  end
- return false
 end
 local function order_matras(c)
  local cn=getnext(c)
@@ -32751,7 +32755,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      if found[getchar(next)] or contextchain(found,next) then 
+      if contextchain(found,next) then 
        local afternext=next~=stop and getnext(next)
        if afternext and zw_char[getchar(afternext)] then 
         current=afternext 
@@ -32775,7 +32779,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local found=lookupcache[c]
      if found then 
       local next=getnext(current)
-      if found[getchar(next)] or contextchain(found,next) then
+      if contextchain(found,next) then
        if (not getstate(current) and not getstate(next)) then	
         setstate(current,s_pref)
         setstate(next,s_pref)
@@ -32795,7 +32799,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      if found[getchar(next)] or contextchain(found,next) then
+      if contextchain(found,next) then
        if next~=stop and getchar(getnext(next))==c_zwnj then 
         current=next
        elseif (not getstate(current)) then	
@@ -32819,7 +32823,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      if found[getchar(next)] or contextchain(found,next) then
+      if contextchain(found,next) then
        if (not getstate(current) and not getstate(next)) then 
         setstate(current,s_blwf)
         setstate(next,s_blwf)
@@ -32840,7 +32844,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      if found[getchar(next)] or contextchain(found,next) then
+      if contextchain(found,next) then
        if (not getstate(current) and not getstate(next)) then 
         setstate(current,s_pstf)
         setstate(next,s_pstf)
@@ -32932,7 +32936,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   return head,stop,nbspaces
  else
   if getstate(base) then 
-   setstate(base,unsetvalue)
+   setstate(base,unsetvalue)  
   end
   basepos=base
  end

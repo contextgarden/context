@@ -300,7 +300,6 @@ implement {
     actions   = renderings.register,
     arguments = {
         {
-            { "type" },
             { "label" },
             { "mime" },
             { "filename" },
@@ -323,6 +322,8 @@ implement {
             { "height", "dimen"  },
             { "option" },
             { "page", "integer" },
+            { "openpage" },
+            { "closepage" },
         }
     }
 }

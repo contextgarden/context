@@ -354,3 +354,19 @@ implement {
         ctx_doifelse(p)
     end,
 }
+
+-- implement {
+--     name    = "pagestate",
+--     public  = true,
+--     usage   = "value",
+--     actions = function()
+--         local result = 0
+--         if nodes.nuts.getspeciallist("contribute_head") then
+--             result = result | 1
+--         end
+--         if nodes.nuts.getspeciallist("page_head") then
+--             result = result | 2
+--         end
+--         return tokens.values.integer, result
+--     end
+-- }

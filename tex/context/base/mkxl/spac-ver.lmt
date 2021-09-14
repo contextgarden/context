@@ -2438,8 +2438,10 @@ do
  --     end
  -- end
 
-    local hlist_code = nodes.nodecodes.hlist
-    local line_code  = nodes.listcodes.line
+    local hlist_code  = nodes.nodecodes.hlist
+    local insert_code = nodes.nodecodes.insert
+    local mark_code   = nodes.nodecodes.mark
+    local line_code   = nodes.listcodes.line
 
     local nuts             = nodes.nuts
     local getid            = nuts.getid
@@ -2464,23 +2466,40 @@ do
         end
     end)
 
+    local treversenode = nuts.treversers.node
+
     function vspacing.forcestrutdepth()
         -- check if in mvl
         if texgetnest("ptr") == 0 then
-             triggerbuildpage() -- return true when mvl
-             local head, tail = getspeciallist("page_head")
-             if tail and getid(tail) == hlist_code and getsubtype(tail) == line_code then -- isline(tail)
-                local strutdp = texgetdimen("strutdp")
-                local delta   = strutdp - getdepth(tail)
-                if delta > 0 then
-                    setdepth(tail,strutdp)
-                    texset("pagetotal",texget("pagetotal") + delta)
-                    texset("pagedepth",strutdp)
-                    if trace then
-                        trace(tail)
+            -- this flushes the contributions
+            while getspeciallist("contribute_head") do
+                triggerbuildpage()
+            end
+            -- now we consult the last line (if present)
+            local head, tail = getspeciallist("page_head")
+            if tail then
+                for n, id, subtype in treversenode, tail do
+                    if id == hlist_code then
+                        if subtype == line_code then
+                            local strutdp = texgetdimen("strutdp")
+                            local delta   = strutdp - getdepth(n)
+                            if delta > 0 then
+                                setdepth(n,strutdp)
+                                texset("pagetotal",texget("pagetotal") + delta)
+                                texset("pagedepth",strutdp)
+                                if trace then
+                                    trace(n)
+                                end
+                            end
+                        end
+                        break
+                    elseif id == insert_code or id == mark_code then
+                        -- prev
+                    else
+                        break
                     end
                 end
-             end
+            end
         else
             local nest = texgetnest()
          -- if abs(nest.mode) == vmode_code and nest.head then

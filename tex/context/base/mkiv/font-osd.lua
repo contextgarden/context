@@ -881,38 +881,44 @@ local function initialize_one(font,attr) -- we need a proper hook into the datas
 
 end
 
+-- HH: somehow we can get a non context here so for now we check for .n
+
 local function contextchain(contexts, n)
     local char = getchar(n)
-    for k=1,#contexts do
-        local ck  = contexts[k]
-        local seq = ck[3]
-        local f   = ck[4]
-        local l   = ck[5]
-        if (l - f) == 1 and seq[f+1][char] then
-            local ok = true
-            local c = n
-            for i=l+1,#seq do
-                c = getnext(c)
-                if not c or not seq[i][ischar(c)] then
-                    ok = false
-                    break
-                end
-            end
-            if ok then
-                c = getprev(n)
-                for i=1,f-1 do
-                    c = getprev(c)
-                    if not c or not seq[f-i][ischar(c)] then
+    if not contexts.n then
+        return contexts[char]
+    else
+        for k=1,#contexts do
+            local ck  = contexts[k]
+            local seq = ck[3]
+            local f   = ck[4]
+            local l   = ck[5]
+            if (l - f) == 1 and seq[f+1][char] then
+                local ok = true
+                local c = n
+                for i=l+1,#seq do
+                    c = getnext(c)
+                    if not c or not seq[i][ischar(c)] then
                         ok = false
+                        break
                     end
                 end
-            end
-            if ok then
-                return true
+                if ok then
+                    c = getprev(n)
+                    for i=1,f-1 do
+                        c = getprev(c)
+                        if not c or not seq[f-i][ischar(c)] then
+                            ok = false
+                        end
+                    end
+                end
+                if ok then
+                    return true
+                end
             end
         end
+        return false
     end
-    return false
 end
 
 local function order_matras(c)
@@ -1765,7 +1771,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                     local found = lookupcache[c]
                     if found then
                         local next = getnext(current)
-                        if found[getchar(next)] or contextchain(found, next) then    --above-base: rphf    Consonant + Halant
+                     -- if found[getchar(next)] or contextchain(found, next) then    --above-base: rphf    Consonant + Halant
+                        if contextchain(found, next) then    --above-base: rphf    Consonant + Halant
                             local afternext = next ~= stop and getnext(next)
                             if afternext and zw_char[getchar(afternext)] then -- ZWJ and ZWNJ prevent creation of reph
                                 current = afternext -- getnext(next)
@@ -1789,7 +1796,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                     local found = lookupcache[c]
                     if found then -- pre-base: pref	Halant + Consonant
                         local next = getnext(current)
-                        if found[getchar(next)] or contextchain(found, next) then
+                     -- if found[getchar(next)] or contextchain(found, next) then
+                        if contextchain(found, next) then
                             if (not getstate(current) and not getstate(next)) then	--KE: state can also be init...
                                 setstate(current,s_pref)
                                 setstate(next,s_pref)
@@ -1809,7 +1817,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                     local found = lookupcache[c]
                     if found then
                         local next = getnext(current)
-                        if found[getchar(next)] or contextchain(found, next) then
+                     -- if found[getchar(next)] or contextchain(found, next) then
+                        if contextchain(found, next) then
                             if next ~= stop and getchar(getnext(next)) == c_zwnj then    -- zwnj prevent creation of half
                                 current = next
                             elseif (not getstate(current)) then	--KE: state can also be init...
@@ -1833,7 +1842,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                     local found = lookupcache[c]
                     if found then
                         local next = getnext(current)
-                        if found[getchar(next)] or contextchain(found, next) then
+                     -- if found[getchar(next)] or contextchain(found, next) then
+                        if contextchain(found, next) then
                             if (not getstate(current) and not getstate(next)) then --KE: state can also be init...
                                 setstate(current,s_blwf)
                                 setstate(next,s_blwf)
@@ -1854,7 +1864,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                     local found = lookupcache[c]
                     if found then
                         local next = getnext(current)
-                        if found[getchar(next)] or contextchain(found, next) then
+                     -- if found[getchar(next)] or contextchain(found, next) then
+                        if contextchain(found, next) then
                             if (not getstate(current) and not getstate(next)) then -- KE: state can also be init...
                                 setstate(current,s_pstf)
                                 setstate(next,s_pstf)
@@ -1953,7 +1964,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
         return head, stop, nbspaces
     else
         if getstate(base) then -- state can also be init
-            setstate(base,unsetvalue)
+            setstate(base,unsetvalue)  -- THIS RESETS THE HALF STATE
         end
         basepos = base
     end

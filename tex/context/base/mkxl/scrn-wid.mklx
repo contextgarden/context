@@ -605,14 +605,30 @@
      \relax
    \fi}
 
-%D Renderings (not yet tested in mkvi):
-
-% Todo: multiple instances and inheritance .. will be done when needed i.e. when I
-% see usage. Probaly by that time this feature is dropped (as are other media
-% rel;ated ones).
+%D Renderings (adapted to \MKIV\ by Michal Vlasák). We no longer have the \MKII\ internal
+%D and external rendering because over time all this widget stuff changed in \PDF\ and
+%D Acrobat.
+%D
+%D \starttyping
+%D \setupinteraction[state=start]
+%D
+%D \starttext
+%D     \startTEXpage[offset=10pt]
+%D       % \definerenderingwindow[myrenderingwindow][width=\textwidth, height=\textwidth]
+%D       % \definerenderingwindow[myrenderingwindow][width=\textwidth, height=\textwidth, openpageaction=StartRendering{myvideo}]
+%D         \definerenderingwindow[myrenderingwindow][width=\textwidth, height=\textwidth, openpageaction=StartCurrentRendering, closepageaction=StopCurrentRendering]
+%D       % \userendering[myvideo][video/mp4][edited.mp4][embed=yes, auto]
+%D         \userendering[myvideo][video/mp4][woodwork.mp4][embed=yes, auto]
+%D         % auto = openpageaction=StartCurrentRendering, closepageaction=StopCurrentRendering
+%D         \placerenderingwindow[myrenderingwindow][myvideo]
+%D         \blank
+%D         \goto{start}[StartRendering{myvideo}]
+%D         \goto{stop}[StopRendering{myvideo}]
+%D     \stopTEXpage
+%D \stoptext
+%D \stoptyping
 
 \mutable\let\currentrendering      \empty
-\mutable\let\currentrenderingtype  \empty
 \mutable\let\currentrenderingwindow\empty
 
 \definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
@@ -620,31 +636,16 @@
 \definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
 \definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
 
-\permanent\tolerant\protected\def\useexternalrendering[#tag]#spacer[#mime]#spacer[#file]#spacer[#option]%
+\permanent\tolerant\protected\def\userendering[#tag]#spacer[#mime]#spacer[#file]#spacer[#option]%
   {\clf_registerrendering
-     type     {external}%
      label    {#tag}%
      mime     {#mime}%
      filename {#file}%
      option   {#option}%
    \relax}
 
-\permanent\tolerant\protected\def\setinternalrendering[#tag]#spacer[#option]% {content} % crappy
-  {\bgroup
-   \dowithnextbox
-     {\clf_registerrendering
-         type     {internal}%
-         label    {#tag}%
-         mime     {IRO}% brrr
-         filename {#tag}%
-         option   {#option}%
-      \relax
-      \let\objectoffset\zeropoint
-      \setobject{IRO}{#tag}\hpack{\box\nextbox}%
-      \egroup}%
-     \hbox}
+\permanent\tolerant\protected\let\useexternalrendering\userendering
 
-\permanent\def\renderingtype  #tag{\clf_renderingvar{#tag}{type}}
 \permanent\def\renderingoption#tag{\clf_renderingvar{#tag}{option}}
 
 \newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
@@ -681,13 +682,7 @@
    \else
      \edef\currentrenderingwindow{#window}%
    \fi
-   \edef\currentrenderingtype{\renderingtype\currentrendering}%
-   \ifx\currentrenderingtype\s!internal
-     \getobjectdimensions{IRO}\currentrendering
-     \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
-     \d_scrn_rendering_width\objectwidth\relax
-     \getobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page
-   \orelse\ifx\currentrenderingwindow\s!default
+   \ifx\currentrenderingwindow\s!default
      \d_scrn_rendering_height\vsize
      \d_scrn_rendering_width \hsize
      \let\m_scrn_rendering_page\realpageno
@@ -696,19 +691,18 @@
      \d_scrn_rendering_width \renderingwindowparameter\c!width
      \let\m_scrn_rendering_page\realpageno
    \fi
- % todo:
- % \handlereferenceactions{\renderingwindowparameter\c!openpageaction }\dosetuprenderingopenpageaction
- % \handlereferenceactions{\renderingwindowparameter\c!closepageaction}\dosetuprenderingclosepageaction
    \letrenderingwindowparameter\c!offset\v!overlay
    \inheritedrenderingwindowframed
      {\vfilll
       \dontleavehmode
       \clf_insertrenderingwindow
-        label  {\currentrendering}%
-        width  \d_scrn_rendering_width
-        height \d_scrn_rendering_height
-        option {\renderingoption\currentrendering}%
-        page   \m_scrn_rendering_page
+        label     {\currentrendering}%
+        width     \d_scrn_rendering_width
+        height    \d_scrn_rendering_height
+        option    {\renderingoption\currentrendering}%
+        page      \m_scrn_rendering_page
+        openpage  {\renderingwindowparameter\c!openpageaction}%
+        closepage {\renderingwindowparameter\c!closepageaction}%
       \relax
       \hfill}%
    \egroup}

@@ -420,7 +420,12 @@
   {\iftracesidefloats
      \enabletrackers[otr.forcestrutdepth]% \c_page_force_strut_depth_trace_mode\plusone
    \fi
+   % flush what we have and check
    \forcestrutdepth
+   % trigger pagebuilder
+ % \penalty\zerocount
+   \pageboundary
+   % catch up
    \page_otr_command_set_vsize} % new, no longer really needed
 
 \def\page_sides_flush_floats
@@ -734,7 +739,7 @@
 % \ifdim\pagegoal=\maxdimen
 %     \pagegoal\textheight % maybe
 % \fi
-   \global\d_page_sides_page_total \pagetotal % global
+   \global\d_page_sides_page_total\pagetotal % global
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_width \zeropoint
    \orelse\ifnum\c_page_sides_float_type>\plusfive
@@ -746,7 +751,7 @@
      \global\d_page_sides_width\zeropoint
    \fi
    \global\d_page_sides_hsize \dimexpr\hsize-\d_page_sides_width\relax
-   \global\d_page_sides_height\dimexpr\ht\floatbox+\dp\floatbox+\d_page_sides_toptotal\relax
+   \global\d_page_sides_height\dimexpr\htdp\floatbox+\d_page_sides_toptotal\relax
    \global\d_page_sides_vsize \dimexpr\d_page_sides_height+\d_page_sides_page_total\relax
    \scratchdimenone\d_page_sides_vsize
    \scratchdimentwo\pagegoal

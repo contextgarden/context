@@ -3866,7 +3866,6 @@ do
             local steps        = sequence.steps
             local nofsteps     = sequence.nofsteps
             local skiphash     = sequence.skiphash
-
             if not steps then
                 -- This permits injection, watch the different arguments. Watch out, the arguments passed
                 -- are not frozen as we might extend or change this. Is this used at all apart from some
@@ -3921,11 +3920,19 @@ do
                     local lookupcache = step.coverage
                     while start do
                         local nxt, char, id = isnextchar(start,font,dynamic,state) -- we can move the data/state checks here
+-- if forcetestrun and sequence.name == "s_s_7" then
+--     if nuts.getid(start) == nodecodes.glyph then
+--         print("C F D S",start,char,font,dynamic,state,nuts,getstate(start))
+--     end
+-- end
                         if char then
                             if skiphash and skiphash[char] then -- we never needed it here but let's try
                                 start = nxt
                             else
                                 local lookupmatch = lookupcache[char]
+-- if forcetestrun and sequence.name == "s_s_7" then
+--     print(lookupmatch)
+-- end
                                 if lookupmatch then
                                     currentscale, currentxscale, currentyscale = getscales(start)
                                     local ok, df

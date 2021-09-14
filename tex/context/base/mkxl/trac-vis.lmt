@@ -277,7 +277,11 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             end
         end
     elseif type(n) == "number" then
-        a = a | n
+        if not a or a == 0 or a == unsetvalue then
+            a = n
+        else
+            a = a | n
+        end
     end
     if not a or a == 0 or a == unsetvalue then
         return unsetvalue

@@ -45,6 +45,7 @@ local nodes                    = nodes
 local context                  = context
 
 local texgetcount              = tex.getcount
+local getmacro                 = tokens.getters.macro
 
 local hpacknode                = nodes.hpack
 
@@ -616,32 +617,45 @@ end
 local ms, mu, mf = { }, { }, { }
 
 local function delayed(label)
-    local a = pdfreserveobject()
-    mu[label] = a
-    return pdfreference(a)
+    local reserved = mu[label]
+    if not reserved then
+        reserved = pdfreserveobject()
+        mu[label] = reserved
+    end
+    return pdfreference(reserved)
+end
+
+local function checkedreference(ref)
+    local set, bug = structures.references.identify("",ref)
+    if not bug and #set > 0 then
+        return pdfaction(set)
+    end
 end
 
 local function insertrenderingwindow(specification)
-    local label = specification.label
- -- local openpage = specification.openpage
- -- local closepage = specification.closepage
-    if specification.option == v_auto then
-        if openpageaction then
-            -- \handlereferenceactions{\v!StartRendering{#2}}
+    local actions   = nil
+    local label     = specification.label
+    local openpage  = specification.openpage
+    local closepage = specification.closepage
+    local option    = settings_to_hash(specification.option)
+    if option[v_auto] then
+        if not openpage or openpage == "" then
+            openpage = variables.StartCurrentRendering
         end
-        if closepageaction then
-            -- \handlereferenceactions{\v!StopRendering {#2}}
+        if not closepage or closepage == "" then
+            closepage = variables.StopCurrentRendering
         end
     end
-    local actions = nil
+    openpage  = checkedreference(openpage)
+    closepage = checkedreference(closepage)
     if openpage or closepage then
         actions = pdfdictionary {
-            PO = (openpage  and lpdfaction(openpage )) or nil,
-            PC = (closepage and lpdfaction(closepage)) or nil,
+            PO = openpage,
+            PC = closepage,
         }
     end
     local page = tonumber(specification.page) or texgetcount("realpageno") -- todo
-    local r = mu[label] or pdfreserveobject() -- why the reserve here?
+    local r = mu[label] or pdfreserveobject() -- reserve, child refers to parent
     local a = pdfdictionary {
         S  = pdfconstant("Rendition"),
         R  = mf[label],
@@ -671,99 +685,79 @@ local function insertrendering(specification)
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
-        local isurl    = find(filename,"://",1,true)
-        local mimetype = specification.mimetype or specification.mime
-     -- local start = pdfdictionary {
-     --     Type = pdfconstant("MediaOffset"),
-     --     S = pdfconstant("T"), -- time
-     --     T = pdfdictionary { -- time
-     --         Type = pdfconstant("Timespan"),
-     --         S    = pdfconstant("S"),
-     --         V    = 3, -- time in seconds
-     --     },
-     -- }
-     -- local start = pdfdictionary {
-     --     Type = pdfconstant("MediaOffset"),
-     --     S = pdfconstant("F"), -- frame
-     --     F = 100 -- framenumber
-     -- }
-     -- local start = pdfdictionary {
-     --     Type = pdfconstant("MediaOffset"),
-     --     S = pdfconstant("M"), -- mark
-     --     M = "somemark",
-     -- }
-     -- local parameters = pdfdictionary {
-     --     BE = pdfdictionary {
-     --          B = start,
-     --     }
-     -- }
-        local parameters = pdfdictionary {
-            Type = pdfconstant("MediaPermissions"),
-            TF   = pdfstring("TEMPALWAYS"), -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS / needed for acrobat/wmp
-        }
-        local descriptor = pdfdictionary {
-            Type = pdfconstant("Filespec"),
-            F    = filename,
-        }
-        if isurl then
-            descriptor.FS = pdfconstant("URL")
-            descriptor = pdfreference(pdfflushobject(descriptor))
-        elseif option[v_embed] then
-            descriptor = codeinjections.embedfile {
-                file           = filename,
-                mimetype       = mimetype, -- yes or no
-                title          = option[v_title],
-                compress       = option[v_compress] or false,
-                forcereference = option[v_list] ~= v_no,
+        if filename and filename ~= "" then
+            local isurl    = find(filename,"://",1,true)
+            local mimetype = specification.mimetype or specification.mime
+         -- local start = pdfdictionary {
+         --     Type = pdfconstant("MediaOffset"),
+         --     S = pdfconstant("T"), -- time
+         --     T = pdfdictionary { -- time
+         --         Type = pdfconstant("Timespan"),
+         --         S    = pdfconstant("S"),
+         --         V    = 3, -- time in seconds
+         --     },
+         -- }
+         -- local start = pdfdictionary {
+         --     Type = pdfconstant("MediaOffset"),
+         --     S = pdfconstant("F"), -- frame
+         --     F = 100 -- framenumber
+         -- }
+         -- local start = pdfdictionary {
+         --     Type = pdfconstant("MediaOffset"),
+         --     S = pdfconstant("M"), -- mark
+         --     M = "somemark",
+         -- }
+         -- local parameters = pdfdictionary {
+         --     BE = pdfdictionary {
+         --          B = start,
+         --     }
+         -- }
+            local parameters = pdfdictionary {
+                Type = pdfconstant("MediaPermissions"),
+                TF   = pdfstring("TEMPALWAYS"), -- TEMPNEVER TEMPEXTRACT TEMPACCESS TEMPALWAYS / needed for acrobat/wmp
             }
+            local descriptor = pdfdictionary {
+                Type = pdfconstant("Filespec"),
+                F    = filename,
+            }
+            if isurl then
+                descriptor.FS = pdfconstant("URL")
+                descriptor = pdfreference(pdfflushobject(descriptor))
+            elseif option[v_embed] then
+                descriptor = codeinjections.embedfile {
+                    file           = filename,
+                    mimetype       = mimetype, -- yes or no
+                    title          = option[v_title],
+                    compress       = option[v_compress] or false,
+                    forcereference = option[v_list] ~= v_no,
+                }
+            end
+            local clip = pdfdictionary {
+                Type = pdfconstant("MediaClip"),
+                S    = pdfconstant("MCD"),
+                N    = label,
+                CT   = mimetype,
+                Alt  = pdfarray { "", "file not found" }, -- language id + message
+                D    = descriptor,
+                P    = pdfreference(pdfflushobject(parameters)),
+            }
+            local rendition = pdfdictionary {
+                Type = pdfconstant("Rendition"),
+                S    = pdfconstant("MR"),
+                N    = pdfunicode(label),
+                C    = pdfreference(pdfflushobject(clip)),
+            }
+            mf[label] = pdfreference(pdfflushobject(rendition))
         end
-        local clip = pdfdictionary {
-            Type = pdfconstant("MediaClip"),
-            S    = pdfconstant("MCD"),
-            N    = label,
-            CT   = mimetype,
-            Alt  = pdfarray { "", "file not found" }, -- language id + message
-            D    = descriptor,
-            P    = pdfreference(pdfflushobject(parameters)),
-        }
-        local rendition = pdfdictionary {
-            Type = pdfconstant("Rendition"),
-            S    = pdfconstant("MR"),
-            N    = pdfunicode(label),
-            C    = pdfreference(pdfflushobject(clip)),
-        }
-        mf[label] = pdfreference(pdfflushobject(rendition))
-    end
-end
-
-local function insertrenderingobject(specification) -- todo
-    local label = specification.label
-    if not mf[label] then
-        report_media("unknown medium, label %a",label)
-        local clip = pdfdictionary { -- does  not work that well one level up
-            Type = pdfconstant("MediaClip"),
-            S    = pdfconstant("MCD"),
-            N    = label,
-            D    = pdfreference(unknown), -- not label but objectname, hm .. todo?
-        }
-        local rendition = pdfdictionary {
-            Type = pdfconstant("Rendition"),
-            S    = pdfconstant("MR"),
-            N    = label,
-            C    = pdfreference(pdfflushobject(clip)),
-        }
-        mf[label] = pdfreference(pdfflushobject(rendition))
     end
 end
 
 function codeinjections.processrendering(label)
     local specification = interactions.renderings.rendering(label)
-    if not specification then
-        -- error
-    elseif specification.type == "external" then
+    if specification then
         insertrendering(specification)
     else
-        insertrenderingobject(specification)
+        -- error
     end
 end
 
@@ -788,17 +782,23 @@ function codeinjections.insertrenderingwindow(specification)
     ms[label] = insertrenderingwindow(specification)
 end
 
-local function set(operation,arguments)
-    codeinjections.processrendering(arguments)
-    return pdfdictionary {
-        S  = pdfconstant("Rendition"),
-        OP = operation,
-        R  = mf[arguments],
-        AN = ms[arguments] or delayed(arguments),
-    }
+local function set(operation,label)
+    if not label or label == "" then
+        -- This one is local to the window so unlikely to be set.
+        label = getmacro("currentrendering")
+    end
+    if label and label ~= "" then
+        codeinjections.processrendering(label)
+        return pdfdictionary {
+            S  = pdfconstant("Rendition"),
+            OP = operation,
+            R  = mf[label],
+            AN = ms[label] or delayed(label),
+        }
+    end
 end
 
-function executers.startrendering (arguments) return set(0,arguments) end
-function executers.stoprendering  (arguments) return set(1,arguments) end
-function executers.pauserendering (arguments) return set(2,arguments) end
-function executers.resumerendering(arguments) return set(3,arguments) end
+function executers.startrendering (label) return set(0,label) end
+function executers.stoprendering  (label) return set(1,label) end
+function executers.pauserendering (label) return set(2,label) end
+function executers.resumerendering(label) return set(3,label) end
