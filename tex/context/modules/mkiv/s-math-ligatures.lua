@@ -59,7 +59,7 @@ function moduledata.math.ligatures.showlist(specification)
         local vs = v.specials
         if vs and #vs > 2 then
             local kind = vs[1]
-            if (v.mathclass or v.mathspec) and (kind == "char" or kind == "compat") then
+            if (v.mathclass or v.mathspec) and (kind == "char" or kind == "with" or kind == "compat") then
                 setlist(unicode,vs,2,v,"sp")
             end
         end

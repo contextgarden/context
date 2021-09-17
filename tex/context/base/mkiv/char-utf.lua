@@ -148,7 +148,7 @@ else
         if vs then
             local kind = vs[1]
             local size = #vs
-            if kind == "char" then
+            if kind == "char" or char == "with" then -- with added
                 if size == 3 then
                     local one = vs[2]
                     local two = vs[3]

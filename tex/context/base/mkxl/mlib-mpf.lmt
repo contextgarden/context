@@ -134,6 +134,25 @@ do
         n = 1
     end
 
+    function metapost.getbuffer()
+        local b = { }
+        for i=1,n do
+            b[i] = buffer
+        end
+        return b, n
+    end
+
+    function metapost.setbuffer(b, s)
+        n = 0
+        for i=1,(s or #b) do
+            local bi = b[i]
+            if bi then
+                n = n + 1
+                buffer[n] = tostring(bi)
+            end
+        end
+    end
+
     function metapost.runscript(code)
         nesting = nesting + 1
         runs    = runs + 1

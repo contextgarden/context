@@ -503,6 +503,7 @@ local function btxauthor(dataset,tag,field,settings)
             ctx_btxsetup(combiner)
             ctx_btxstopauthor()
         end
+
         if index then
             oneauthor(index)
         elseif max == 1 then
@@ -515,9 +516,11 @@ local function btxauthor(dataset,tag,field,settings)
                 oneauthor(absmax,true)
             end
         end
+
     else
         report("ignored field %a of tag %a, used field %a is no author",field,tag,usedfield)
     end
+
 end
 
 implement {

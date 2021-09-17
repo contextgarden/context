@@ -118,6 +118,14 @@
     \fastsetup{\s!btx:\s!cite:\s!author:others}
 \stopsetups
 
+\startsetups \s!btx:\s!cite:\s!author:invertedfirst
+    \ifnum\currentbtxauthorindex>\plusone
+        \fastsetup{\s!btx:\s!cite:\s!author:normal}
+    \else
+        \fastsetup{\s!btx:\s!cite:\s!author:inverted}
+    \fi
+\stopsetups
+
 \startsetups \s!btx:\s!cite:\s!author:invertedshort
     \fastsetup{\s!btx:\s!cite:\s!author:concat}
     \ifx\currentbtxvons\empty \else
@@ -256,6 +264,14 @@
         }
     \fi
     \fastsetup{\s!btx:\s!list:\s!author:others}
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:invertedfirst
+    \ifnum\currentbtxauthorindex>\plusone
+        \fastsetup{\s!btx:\s!list:\s!author:normal}
+    \else
+        \fastsetup{\s!btx:\s!list:\s!author:inverted}
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:invertedshort

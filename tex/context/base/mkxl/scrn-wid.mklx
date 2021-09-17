@@ -631,11 +631,6 @@
 \mutable\let\currentrendering      \empty
 \mutable\let\currentrenderingwindow\empty
 
-\definereference[StartCurrentRendering] [\v!StartRendering {\currentrendering}]
-\definereference[StopCurrentRendering]  [\v!StopRendering  {\currentrendering}]
-\definereference[PauseCurrentRendering] [\v!PauseRendering {\currentrendering}]
-\definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
-
 \permanent\tolerant\protected\def\userendering[#tag]#spacer[#mime]#spacer[#file]#spacer[#option]%
   {\clf_registerrendering
      label    {#tag}%

@@ -589,11 +589,16 @@ else
         local timestamp   = readcardinal4(s)
         local compression = readbyte(s,1)
         local operating   = readbyte(s,1)
-        local isjusttext  = (flags & 0x01 ~= 0) and true             or false
-        local extrasize   = (flags & 0x04 ~= 0) and readcardinal2(s) or 0
-        local filename    = (flags & 0x08 ~= 0) and readcstring(s)   or ""
-        local comment     = (flags & 0x10 ~= 0) and readcstring(s)   or ""
-        local checksum    = (flags & 0x02 ~= 0) and readcardinal2(s) or 0
+     -- local isjusttext  = (flags & 0x01 ~= 0) and true             or false
+     -- local extrasize   = (flags & 0x04 ~= 0) and readcardinal2(s) or 0
+     -- local filename    = (flags & 0x08 ~= 0) and readcstring(s)   or ""
+     -- local comment     = (flags & 0x10 ~= 0) and readcstring(s)   or ""
+     -- local checksum    = (flags & 0x02 ~= 0) and readcardinal2(s) or 0
+        local isjusttext  = band(flags,0x01) ~= 0 and true             or false
+        local extrasize   = band(flags,0x04) ~= 0 and readcardinal2(s) or 0
+        local filename    = band(flags,0x08) ~= 0 and readcstring(s)   or ""
+        local comment     = band(flags,0x10) ~= 0 and readcstring(s)   or ""
+        local checksum    = band(flags,0x02) ~= 0 and readcardinal2(s) or 0
         local compressed  = readstring(s,#str)
         local data = decompress(compressed,gzipwindow) -- pass offset
         return data

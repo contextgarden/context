@@ -664,18 +664,18 @@ vardef lmt_do_function =
                     for s = 1 upto getparametercount "functions" :
                         pushparameters "functions" s ;
                         lmt_do_function_p (
-                            getparameterdefault "xmin",
-                            getparameterdefault "xmax",
-                            getparameterdefault "xstep",
-                            getparameterdefault "code",
-                            getparameterdefault "shape",
-                            getparameterdefault "close",
-                            getparameterdefault "fillcolor",
-                            getparameterdefault "drawsize",
-                            getparameterdefault "drawcolor",
-                            getparameterdefault "pointsymbol",
-                            getparameterdefault "pointsize",
-                            getparameterdefault "pointcolor"
+                            getparameter "xmin",
+                            getparameter "xmax",
+                            getparameter "xstep",
+                            getparameter "code",
+                            getparameter "shape",
+                            getparameter "close",
+                            getparameter "fillcolor",
+                            getparameter "drawsize",
+                            getparameter "drawcolor",
+                            getparameter "pointsymbol",
+                            getparameter "pointsize",
+                            getparameter "pointcolor"
                         ) ;
                         popparameters ;
                     endfor ;

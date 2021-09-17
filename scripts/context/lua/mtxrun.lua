@@ -6525,7 +6525,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 45916, stripped down to: 23839
+-- original size: 46322, stripped down to: 24128
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6543,6 +6543,7 @@ local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setme
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
+local tsplitat=lpeg.tsplitat
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=function(str,shortcuts)
  if shortcuts then
@@ -7439,7 +7440,6 @@ function number.to16dot16(n)
  return f_16_16(n/65536.0)
 end
 if not string.explode then
- local tsplitat=lpeg.tsplitat
  local p_utf=patterns.utf8character
  local p_check=C(p_utf)*(P("+")*Cc(true))^0
  local p_split=Ct(C(p_utf)^0)
@@ -7457,6 +7457,20 @@ if not string.explode then
   else
    return lpegmatch(p_space,str)
   end
+ end
+end
+do
+ local p_whitespace=patterns.whitespace^1
+ local cache=setmetatable({},{ __index=function(t,k)
+  local p=tsplitat(p_whitespace*P(k)*p_whitespace)
+  local v=function(s)
+   return lpegmatch(p,s)
+  end
+  t[k]=v
+  return v
+ end })
+ function string.wordsplitter(s)
+  return cache[s]
  end
 end
 
@@ -15699,7 +15713,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 23104, stripped down to: 14029
+-- original size: 23490, stripped down to: 14039
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -16176,11 +16190,11 @@ else
   local timestamp=readcardinal4(s)
   local compression=readbyte(s,1)
   local operating=readbyte(s,1)
-  local isjusttext=(flags & 0x01~=0) and true    or false
-  local extrasize=(flags & 0x04~=0) and readcardinal2(s) or 0
-  local filename=(flags & 0x08~=0) and readcstring(s)   or ""
-  local comment=(flags & 0x10~=0) and readcstring(s)   or ""
-  local checksum=(flags & 0x02~=0) and readcardinal2(s) or 0
+  local isjusttext=band(flags,0x01)~=0 and true    or false
+  local extrasize=band(flags,0x04)~=0 and readcardinal2(s) or 0
+  local filename=band(flags,0x08)~=0 and readcstring(s)   or ""
+  local comment=band(flags,0x10)~=0 and readcstring(s)   or ""
+  local checksum=band(flags,0x02)~=0 and readcardinal2(s) or 0
   local compressed=readstring(s,#str)
   local data=decompress(compressed,gzipwindow) 
   return data
@@ -25932,8 +25946,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1027101
--- stripped bytes    : 403437
+-- original bytes    : 1027893
+-- stripped bytes    : 403930
 
 -- end library merge
 

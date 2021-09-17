@@ -465,7 +465,7 @@ local function errorchar(font,char)
             return fake
         else
             local kind, fake = fonts.checkers.placeholder(font,char)
-            if not fake or kind ~= "char" then
+            if not fake or kind ~= "char" then -- Also check for "with" here?
                 fake = 0x3F
             end
             cached[font][char] = fake

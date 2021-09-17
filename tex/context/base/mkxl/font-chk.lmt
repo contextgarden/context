@@ -198,7 +198,7 @@ function checkers.missing(head)
                     local c = chardata[char]
                     if c then
                         local s = c.specials
-                        if s and s[1] == "char" then
+                        if s and (s[1] == "char" or s[1] == "with") then -- with added
                             local l = #s
                             if l > 2 then
                                 -- check first
