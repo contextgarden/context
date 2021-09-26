@@ -49,7 +49,9 @@
 
 \starttext
 
-% \dorecurse{1000}{
+\dontcomplain
+
+\dorecurse{1}{
     \startTEXpage
         \barcode[alternative=PDF417,text={Hans Hagen}]%
         \blank
@@ -60,11 +62,11 @@
         \barcode[alternative=isbn,text=9789490688011,width=3cm]%
         \blank
         \dontleavehmode
-        \barcode[alternative=qr code,text={This is ConTeXt MKIV}]
+        \barcode[alternative=qr code,text={This is ConTeXt MKIV : #1}]
         \barcode[alternative=qr code,text={This is ConTeXt LMTX}]
         \barcode[alternative=qr code,text={\cldloadfile{tufte}},width=3cm]
     \stopTEXpage
-% }
+}
 
 \stoptext
 

@@ -54,6 +54,8 @@ local detailed           = publications.detailed
 local enhancer           = publications.enhancer
 local enhancers          = publications.enhancers
 
+if not publications.btx then publications.btx = { } end -- user space
+
 local tracers            = publications.tracers or { }
 publications.tracers     = tracers
 

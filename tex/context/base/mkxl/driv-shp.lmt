@@ -98,7 +98,7 @@ local fontcharacters = nil
 
 local magicconstants = tex.magicconstants
 local maxdimen       = magicconstants.maxdimen
-local running        = magicconstants.running
+local runningrule    = magicconstants.runningrule
 
 local pos_h          = 0
 local pos_v          = 0
@@ -696,10 +696,10 @@ cur_h = cur_h + wd -- see new tabulate alignment code
                             local width, height, depth = getwhd(leader)
                             if getid(leader) == rule_code then
                                 if gluewidth > 0 then
-                                    if height == running then
+                                    if height == runningrule then
                                         height = boxheight
                                     end
-                                    if depth == running then
+                                    if depth == runningrule then
                                         depth = boxdepth
                                     end
                                     local total = height + depth
@@ -873,10 +873,10 @@ cur_h = cur_h + wd -- see new tabulate alignment code
             elseif id == rule_code then
                 local width, height, depth = getwhd(current)
                 if width > 0 then
-                    if height == running then
+                    if height == runningrule then
                         height = boxheight
                     end
-                    if depth == running then
+                    if depth == runningrule then
                         depth = boxdepth
                     end
                     local total = height + depth
@@ -1031,7 +1031,7 @@ cur_h = cur_h + wd -- see new tabulate alignment code
                                 depth = 0 -- hm
                                 total = glueheight -- forgotten ... needs testing
                                 if total > 0 then
-                                    if width == running then
+                                    if width == runningrule then
                                         width = boxwidth
                                     end
                                     if width > 0 then
@@ -1176,7 +1176,7 @@ cur_h = cur_h + wd -- see new tabulate alignment code
                 local width, height, depth = getwhd(current)
                 local total = height + depth
                 if total > 0 then
-                    if width == running then
+                    if width == runningrule then
                         width = boxwidth
                     end
                     if width > 0 then

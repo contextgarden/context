@@ -639,12 +639,13 @@ permanent interpath, solve, buildcycle, tolerance ;
 
 mm :=  2.83464 ;
 pt :=  0.99626 ;
-dd :=  1.06601 ;
+dd :=  1.06601 ; % 1.0660068107174
 bp :=  1 ;
 cm := 28.34645 ;
 pc := 11.95517 ;
 cc := 12.79213 ;
 in := 72 ;
+dk :=  6.41577 ; % 6.4157650704225 ;
 
 immutable mm, pt, bp, cm, in ; % we don't protect (yet): dd, pc cc (used as locals)
 

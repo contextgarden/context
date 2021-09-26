@@ -218,7 +218,7 @@ longer interferes with the line break algorithm. The magic primitive is \type
 {\snapshotpar} which takes a number made from categories mentioned below:
 
 \starttabulate[|l|l|r|]
-\BC variable                       \BC category        \BC code                                     \NC \NR
+\BC variable                       \BC category        \BC code                                        \NC \NR
 \NC \type {\hsize}                 \NC hsize           \NC 0x\uchexnumbers\hsizefrozenparcode          \NC \NR
 \NC \type {\leftskip}              \NC skip            \NC 0x\uchexnumbers\skipfrozenparcode           \NC \NR
 \NC \type {\rightskip}             \NC skip            \NC 0x\uchexnumbers\skipfrozenparcode           \NC \NR
@@ -256,7 +256,6 @@ longer interferes with the line break algorithm. The magic primitive is \type
 \NC \type {\lineskiplimit}         \NC line            \NC 0x\uchexnumbers\linefrozenparcode           \NC \NR
 \NC \type {\hyphenationmode}       \NC hyphenation     \NC 0x\uchexnumbers\hyphenationfrozenparcode    \NC \NR
 \stoptabulate
-
 
 As you can see here, there are more paragraph related parameters than in for
 instance \PDFTEX\ and \LUATEX\ and these are (to be) explained in the

@@ -34,8 +34,18 @@ local getvalues     = node.values
 tex.magicconstants = { -- we use tex.constants for something else
     running  = -1073741824, -- null_flag
     maxdimen =  1073741823, -- max_dimen
-    trueinch =     4736286,
+ -- trueinch =     4736286, -- obsolete
 }
+
+do
+    local c = status.getconstants()
+    local t = { }
+    for k, v in next, c do
+        t[gsub(k,"_","")] = v
+    end
+
+    tex.magicconstants = table.setmetatableindex(t,c)
+end
 
 local listcodes     = mark(getsubtypes("list"))
 local rulecodes     = mark(getsubtypes("rule"))

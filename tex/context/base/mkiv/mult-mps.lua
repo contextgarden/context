@@ -117,7 +117,7 @@ return {
         --
         "red", "green", "blue", "cyan", "magenta", "yellow", "black", "white", "background",
         --
-        "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in",
+        "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in", "dk",
         --
         "triplet", "quadruplet", "totransform", "bymatrix", "closedcurve", "closedlines",
         --

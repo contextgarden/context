@@ -466,7 +466,12 @@ function selectfont.registerfiles(index)
                     argument = method
                     method   = "name"
                 end
-                (extras[method] or methods[method] or methods[v_default])(data,alternative,argument)
+                if #entries == 1 and method == "features" then
+                    extras["features"](data,alternative,argument)
+                    methods[v_default](data,alternative)
+                else
+                    (extras[method] or methods[method] or methods[v_default])(data,alternative,argument)
+                end
             end
         else
             methods[v_default](data,alternative)
